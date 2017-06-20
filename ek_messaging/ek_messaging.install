@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the ek_messaging module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function ek_messaging_uninstall() {
+  // Clear ek_messaging data out of the cache.
+  \Drupal::cache('data')->deleteAll();
+}
+
+
+/**
+ * Implements hook_schema().
+ * schema installation is not done at install time but wihin the application
+ * in a separate database
+ */

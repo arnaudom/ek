@@ -1,0 +1,67 @@
+<?php
+
+use Drupal\Core\Database\Database;
+
+/**
+ * @file
+ * Install, update and uninstall functions for the ek_documents module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function ek_documents_uninstall() {
+  // Clear data out of the cache.
+  \Drupal::cache('data')->deleteAll();
+}
+
+/**
+ * Implements hook_schema().
+ * schema installation is not done at install time but wihin the application
+ * in a separate database
+ */
+
+/**
+ * Add settings table.
+ * 
+*/
+function ek_documents_update_8001() {
+    
+    $schema = Database::getConnection('external_db','external_db')->schema();
+        if (!$schema->tableExists('ek_document_settings')) {
+            
+                $table =  [
+                    'description' => 'Stores document settings.',
+                    'fields' => [
+                      'id' => [
+                        'description' => 'Primary Key: Unique ID.',
+                        'type' => 'int',
+                        'unsigned' => TRUE,
+                        'not null' => TRUE,
+                      ],
+                      'settings' => [
+                        'description' => 'A serialized array containing the settings.',
+                        'type' => 'blob',
+                        'not null' => FALSE,
+                        'size' => 'big',
+                      ],
+                    ],
+                    'primary key' => ['id'],
+                    
+                  ];
+            
+            $schema->createTable('ek_document_settings', $table);
+            
+            Database::getConnection('external_db', 'external_db')
+                ->insert('ek_document_settings')
+                ->fields(array(
+                  'id' => 0,
+                  'settings' => '',
+                ))
+                ->execute(); 
+            
+            \Drupal::service('router.builder')->rebuild();
+            return t('Documents settings table created.');
+        }
+
+}

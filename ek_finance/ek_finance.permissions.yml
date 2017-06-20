@@ -1,0 +1,70 @@
+administrate_finance:
+  title: 'Administrate finance parameters'
+  description: 'Administrate finance parameters'  
+finance_dashboard:
+  title: 'Access finance dashboard'
+post_new_year:
+  title: 'Post new financial years'
+budgeting_reporting:
+  title: 'Monthly budget and reporting'
+  description: 'Access or view budget, reporting data'  
+update_finance_budget:
+  title: 'Monthly budget edit'
+  description: 'Edit, update budget data'
+view_finance_balances:
+  title: 'View financial balances and reports'
+  description: 'Extract journal, ledger, trial balance, P&L and balance sheet'
+view_finance_reporting:
+  title: 'View reporting, budget'
+  description: 'Extract analytical reporting, budgets'
+reconcile:
+  title: 'Reconcile accounts'
+edit_journal:
+  title: 'Edit journal entries'
+manage_expenses:
+  title: 'Manage expenses'
+  description: 'Record and list expenses.'
+edit_expenses:
+  title: 'Edit expenses'
+  description: 'Edit and change expenses data entries.'
+delete_expenses:
+  title: 'Delete expense entry'
+view_finance_sales_ledger:
+  title: 'Extract sales purchases ledger'
+  description: 'View sales data per client or vendor (need sales module).'
+#memos
+admin_memos:
+  title: 'Administrator privilege to edit memos'
+edit_internal_memos:
+  title: 'Manage and edit internal memos'
+edit_claim_memos:
+  title: 'Manage and edit personal memos'
+attach_file_memos:
+  title: 'Attach files to memos'
+  description: 'Image attachment to internal and personal memos'
+list_memos:
+  title: 'List memos'
+pay_memos:
+  title: 'Record memo payment' 
+record_memos:
+  title: 'Record memo in expenses'  
+receive_memos:
+  title: 'Record memo receipt'  
+print_memos:
+  title: 'Print a memo' 
+delete_memos:
+  title: 'Delete a memo'   
+
+#cash bank
+manage_currency:
+  title: 'Manage currencies'
+  description: 'Set active currencies and exchange rates'
+edit_cash:
+  title: 'Edit cash transactions'
+  description: 'Record cash movement between entities and check balances.'
+bank_statements:
+  title: 'View bank transactions'
+edit_bank:
+  title: 'Edit bank accounts data'
+list_bank:
+  title: 'View list of bank entities'

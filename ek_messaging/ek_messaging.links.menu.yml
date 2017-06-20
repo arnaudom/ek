@@ -1,0 +1,10 @@
+ek_messaging_main:
+  title: 'Messages'
+  description: 'System messaging management'
+  route_name: ek_messaging_inbox
+  expanded: true
+  hidden: 0
+  weight: -5
+    
+
+  

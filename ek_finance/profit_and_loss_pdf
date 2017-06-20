@@ -1,0 +1,657 @@
+<?php
+use Drupal\Core\Database\Database;
+use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\ek_finance\Journal;
+$journal = new Journal();
+$period = $params['year'] . '-' . $params['month'] . 
+        '-' . cal_days_in_month(CAL_GREGORIAN,$params['month'] ,$params['year']);
+$daysInMonth = cal_days_in_month(CAL_GREGORIAN, $fiscalMonth , $fiscalYear );
+$from = date('Y-m-d', strtotime($fiscalYear . '-' . $fiscalMonth . '-' . $daysInMonth . ' - 1 year + 1 day'));
+$to = $params['year'] .'-' . $params['month'] . '-' . cal_days_in_month(CAL_GREGORIAN, $params['month'] , $params['year']);
+$stop_date = date('Y-m-d', strtotime($to . ' + 1 day'));
+
+class PDF extends FPDF
+{
+
+//multicell maxline------------------------------------------------------
+function MultiCell($w,$h,$txt,$border=0,$align='J',$fill=0,$maxline=0)
+    {
+        //Output text with automatic or explicit line breaks, maximum of $maxlines
+        $cw=&$this->CurrentFont['cw'];
+        if($w==0)
+            $w=$this->w-$this->rMargin-$this->x;
+        $wmax=($w-2*$this->cMargin)*1000/$this->FontSize;
+        $s=str_replace("\r",'',$txt);
+        $nb=strlen($s);
+        if($nb>0 and $s[$nb-1]=="\n")
+            $nb--;
+        $b=0;
+        if($border)
+        {
+            if($border==1)
+            {
+                $border='LTRB';
+                $b='LRT';
+                $b2='LR';
+            }
+            else
+            {
+                $b2='';
+                if(is_int(strpos($border,'L')))
+                    $b2.='L';
+                if(is_int(strpos($border,'R')))
+                    $b2.='R';
+                $b=is_int(strpos($border,'T')) ? $b2.'T' : $b2;
+            }
+        }
+        $sep=-1;
+        $i=0;
+        $j=0;
+        $l=0;
+        $ns=0;
+        $nl=1;
+        while($i<$nb)
+        {
+            //Get next character
+            $c=$s[$i];
+            if($c=="\n")
+            {
+                //Explicit line break
+                if($this->ws>0)
+                {
+                    $this->ws=0;
+                    $this->_out('0 Tw');
+                }
+                $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
+                $i++;
+                $sep=-1;
+                $j=$i;
+                $l=0;
+                $ns=0;
+                $nl++;
+                if($border and $nl==2)
+                    $b=$b2;
+                if ( $maxline  && $nl > $maxline ) 
+                    return substr($s,$i);
+                continue;
+            }
+            if($c==' ')
+            {
+                $sep=$i;
+                $ls=$l;
+                $ns++;
+            }
+            $l+=$cw[$c];
+            if($l>$wmax)
+            {
+                //Automatic line break
+                if($sep==-1)
+                {
+                    if($i==$j)
+                        $i++;
+                    if($this->ws>0)
+                    {
+                        $this->ws=0;
+                        $this->_out('0 Tw');
+                    }
+                    $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
+                }
+                else
+                {
+                    if($align=='J')
+                    {
+                        $this->ws=($ns>1) ? ($wmax-$ls)/1000*$this->FontSize/($ns-1) : 0;
+                        $this->_out(sprintf('%.3f Tw',$this->ws*$this->k));
+                    }
+                    $this->Cell($w,$h,substr($s,$j,$sep-$j),$b,2,$align,$fill);
+                    $i=$sep+1;
+                }
+                $sep=-1;
+                $j=$i;
+                $l=0;
+                $ns=0;
+                $nl++;
+                if($border and $nl==2)
+                    $b=$b2;
+                if ( $maxline  && $nl > $maxline ) 
+                    return substr($s,$i);
+            }
+            else
+                $i++;
+        }
+        //Last chunk
+        if($this->ws>0)
+        {
+            $this->ws=0;
+            $this->_out('0 Tw');
+        }
+        if($border and is_int(strpos($border,'B')))
+            $b.='B';
+        $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
+        $this->x=$this->lMargin;
+        return '';
+    }
+//
+// Page header
+//
+
+function Header()
+{
+
+    //Logo
+    if ($this->company->logo <> '') {
+    
+    $logo = drupal_realpath($this->company->logo);
+    $this->Image($logo,20,10,43);
+    
+    
+    }
+    //Arial bold 15
+    $this->Ln(10);
+    $this->SetFont('Arial','',12);
+    //Move to the right
+    $this->Cell(110);
+    $this->Cell(50,5,$this->company->name,0,1);
+    $this->SetFont('Arial','',8);
+    $this->Cell(110);    
+    $this->Cell(60,4, $this->company->address1,0,1);
+    $this->Cell(110);    
+    $this->Cell(60,4, $this->company->address2,0,1);
+    $this->Cell(110);
+    $this->Cell(50,4, $this->company->postcode . ',' .$this->company->country ,0,1);
+    if ($this->company->reg_number <> '') {
+    $this->Cell(110);
+    $this->Cell(8,3,t("Reg.").$this->company->reg_number,0,1);
+    }    
+    
+    if ($this->company->telelephone <> '') {
+    $this->Cell(110);
+    $this->Cell(8,3,t("tel:").$this->company->telelephone,0,1);
+    }
+    if ($this->companyfax <> '') {
+    $this->Cell(110);
+    $this->Cell(8,4,t("fax:").$this->company->fax,0,1);
+    }
+    //Line break
+    $this->Ln(8);
+    
+   
+    
+}
+
+function setHeaderData($company){ 
+$this->company = $company;
+
+
+} 
+
+//Page footer
+function Footer()
+{
+
+    //Position at 1.5 cm from bottom
+    $this->SetY(-15);
+    //Arial italic 8
+    $this->SetFont('Arial','I',8);
+    //Page number
+    $this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
+    
+}
+  
+}
+
+
+$pdf = new PDF();
+$pdf->SetTitle($fileName);
+$pdf->setHeaderData($company); 
+$pdf->AliasNbPages();
+$pdf->AddPage(P,A4);
+
+
+//margin settings - to adjust output
+$m0 = 1; $m1=5; $m2=5; $m3=5;
+$c1=25; $c2=30; $c3=30; $c3a=10; $c3b=20;
+$c4=40; $c5=40;
+
+
+//DISPLAY DATA
+$pdf->SetTextColor(0,128,255);
+$pdf->SetFont('Arial','',16);
+    $pdf->Cell(60,5, t("Profit & loss") ,'B');
+$pdf->SetFont('Arial','',8);
+$pdf->SetTextColor(0,0,0);
+
+
+    $pdf->Cell(100,5, t('As of') . ": " . $period ,'0',1,'R');
+$pdf->Ln(5);
+
+//header
+$pdf->SetFont('Arial','',10);
+    
+    $pdf->Cell($c1,5, t('account') ,'B',0);
+    $pdf->Cell($c2,5, t('name') ,'B',0);
+    $pdf->Cell($c3,5,'','B',0);
+    $pdf->Cell($c5,5,t('Base currency') . ' ' . $params['baseCurrency'] ,'B',0,'R');
+    $pdf->Cell($c4,5, t('Multi currency') ,'B',1,'R');
+    
+    
+ $pdf->Ln(1);
+
+
+////////////////////// REVENUE /////////////////////////////
+//header account
+$q = "SELECT aid,aname FROM {ek_accounts} "
+        . "WHERE (aid like :aid1 or aid like :aid2) "
+        . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
+$a = array( ':aid1' => $chart['income'] . '%',
+            ':aid2' => $chart['other_income'] . '%',
+            ':type' => 'header',
+            ':status' => 1,
+            ':coid' => $params['coid']);
+$rh = Database::getConnection('external_db', 'external_db')
+        ->query($q,$a)->fetchObject();
+
+
+//-----------------------------//
+$pdf->SetFont('Arial','B',12);
+$pdf->SetTextColor(0,61,121);
+    $pdf->Cell($c1,5, $rh->aid ,0,0);
+    $pdf->Cell($c2,5, $rh->aname ,0,1);
+$pdf->SetTextColor(88,88,88);
+//-----------------------------//    
+
+
+$q = "SELECT aid,aname FROM {ek_accounts} "
+        . "WHERE (aid like :aid1 or aid like :aid2) "
+        . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
+$a = array(
+            ':aid1' => $chart['income'] . '%',
+            ':aid2' => $chart['other_income'] . '%',
+            ':type' => 'class',
+            ':status' => 1, 
+            ':coid' => $params['coid']
+        );
+$result = Database::getConnection('external_db', 'external_db')->query($q,$a);
+
+
+while ($r=$result->fetchObject()) {
+
+if($params['summary'] == 0){
+    //-----------------------------//
+    $pdf->SetFont('Arial','B',8);
+        $pdf->Cell($m1,5,"",0,0);
+        $pdf->Cell($c1,5, $r->aid ,0,0);
+        $pdf->Cell($c2,5, $r->aname ,0,1);    
+    //-----------------------------//  
+}
+$aid = substr($r->aid,0,2);
+$total_detail=0;
+$total_detail_l=0;
+$q = "SELECT aid,aname FROM {ek_accounts} "
+        . "WHERE aid like :aid AND atype=:type AND coid=:coid order by aid";
+$a = array(':aid'=> $aid . '%' ,':type' => 'detail', ':coid' => $params['coid']);
+$result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
+
+    while ($r2=$result2->fetchAssoc()) {
+    
+        $d = $journal->transactions(
+                array( 
+                'aid' => $r2['aid'],
+                'type' => 'debit',
+                'coid' => $params['coid'] ,
+                'from' => $from ,
+                'to' => $to
+                 )
+                );
+    
+        $c = $journal->transactions(
+                array( 
+                'aid' => $r2['aid'],
+                'type' => 'credit',
+                'coid' => $params['coid'],
+                'from' => $from,
+                'to' => $to
+                 )
+                );    
+    $b = $c[0]-$d[0];
+    $b_exc = $c[1]-$d[1];
+    if ($params['summary'] == 0){
+        //detail-----------------------------//
+        $pdf->SetFont('Arial','',8);
+        $pdf->Cell($m1,5,"",0,0);
+        $pdf->Cell($m2,5,"",0,0);
+        $pdf->Cell($c1,5, $r2['aid'] ,0,0);
+        $pdf->Cell($c2,5, $r2['aname'] ,0,0);
+        $pdf->Cell($c3b,5,"",0,0);   
+        $pdf->Cell($c4,5,number_format($b_exc,2),0,0,'R'); 
+        $pdf->Cell($c5,5,number_format($b,2),0,1,'R');
+        //-----------------------------//  
+    }
+    $total_detail+=$b_exc;
+    $total_detail_l+=$b;
+    }    
+    
+    //Sub total-----------------------------//
+    $pdf->SetFont('Arial','B',9);
+    $pdf->Cell($m0,5,"",'T',0);
+    $pdf->Cell($c1,5, (STRING) t("TOTAL") . ' ' .  $r->aid ,'T',0);
+    $pdf->Cell($c2,5, $r->aname ,'T',0);    
+    $pdf->Cell($c3,5,"",'T',0);   
+    $pdf->Cell($c4,5,number_format($total_detail,2),'T',0,'R'); 
+    $pdf->Cell($c5,5,number_format($total_detail_l,2),'T',1,'R');
+    //-----------------------------//    
+    
+    $total_class4+=$total_detail;
+    $total_class4_l+=$total_detail_l;
+    
+    
+}
+
+    //Head total-----------------------------//
+    $pdf->SetFont('Arial','B',10);
+    $pdf->SetTextColor(0,61,121);
+    $pdf->Cell($c1,8,(STRING) t("TOTAL") . ' ' . $rh->aid ,'T,B',0);
+    $pdf->Cell($c2,8, $rh->aname,'T,B',0);    
+    $pdf->Cell($m1,8, "" ,'T,B',0);
+    $pdf->Cell($c3,8, "" ,'T,B',0);   
+    $pdf->Cell($c4,8,number_format($total_class4,2),'T,B',0,'R'); 
+    $pdf->Cell($c5,8,number_format($total_class4_l,2),'T,B',1,'R');
+    $pdf->SetTextColor(88,88,88);
+    //-----------------------------// 
+
+$total_detail=0;
+$total_detail_l=0;
+$total_class=0;
+$total_class_l=0;
+
+$pdf->Ln(3);
+
+////////////////////// COS /////////////////////////////
+//header account
+$q = "SELECT aid,aname FROM {ek_accounts} "
+        . "WHERE aid like :aid AND atype=:type AND astatus=:status AND coid=:coid order by aid";
+$a = array(
+            ':aid' => $chart['cos'] . '%', 
+            ':type' => 'header',
+            ':status' => 1, 
+            ':coid' => $params['coid']);
+$rh = Database::getConnection('external_db', 'external_db')->query($q,$a)->fetchObject();
+
+
+//Head-----------------------------//
+$pdf->SetFont('Arial','B',12);
+$pdf->SetTextColor(0,61,121);
+    $pdf->Cell($c1,5, $rh->aid ,0,0);
+    $pdf->Cell($c2,5, $rh->aname ,0,1);
+$pdf->SetTextColor(88,88,88);
+//-----------------------------//  
+
+$q = "SELECT aid,aname FROM {ek_accounts} "
+        . "WHERE aid like :aid AND atype=:type AND astatus=:status AND coid=:coid order by aid";
+$a = array(
+            ':aid' => $chart['cos'] . '%', 
+            ':type' => 'class', 
+            ':status' => 1, 
+            ':coid' => $params['coid']);
+
+$result = Database::getConnection('external_db', 'external_db')->query($q,$a);
+
+
+while ($r=$result->fetchAssoc()) {
+ if ($params['summary'] == 0){
+    //-----------------------------//
+    $pdf->SetFont('Arial','B',8);
+        $pdf->Cell($m1,5, "" ,0,0);
+        $pdf->Cell($c1,5, $r['aid'] ,0,0);
+        $pdf->Cell($c2,5, $r['aname'],0,1);    
+    //-----------------------------//  
+ }
+$aid = substr($r['aid'],0,2);;
+$total_detail=0;
+$total_detail_l=0;
+$q = "SELECT aid,aname FROM {ek_accounts} "
+        . "WHERE aid like :aid AND atype=:type AND coid=:coid order by aid";
+$a = array(':aid' => $aid . '%', ':type' => 'detail', ':coid' => $params['coid']);
+$result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
+
+    while ($r2 = $result2->fetchAssoc()) {
+    
+        $d = $journal->transactions(
+                array( 
+                'aid' => $r2['aid'],
+                'type'=> 'debit',
+                'coid' => $params['coid'] ,
+                'from' => $from ,
+                'to' => $to
+                 )
+                );
+
+        $c = $journal->transactions(
+                array( 
+                'aid' => $r2['aid'],
+                'type' => 'credit',
+                'coid' => $params['coid'],
+                'from' => $from,
+                'to' => $to
+                 )
+                );    
+
+    $b = $c[0]-$d[0];
+    $b_exc = $c[1]-$d[1];
+    if ($params['summary'] == 0){
+    //Detail-----------------------------//
+        $pdf->SetFont('Arial','',8);
+        $pdf->Cell($m1,5, "" ,0,0);
+        $pdf->Cell($m2,5, "" ,0,0);
+        $pdf->Cell($c1,5, $r2['aid']  ,0,0);
+        $pdf->Cell($c2,5, $r2['aname'] ,0,0);
+        $pdf->Cell($c3b,5,"",0,0);   
+        $pdf->Cell($c4,5,number_format($b_exc,2),0,0,'R'); 
+        $pdf->Cell($c5,5,number_format($b,2),0,1,'R');
+    //-----------------------------//  
+    }
+    
+    $total_detail+=$b_exc;
+    $total_detail_l+=$b;
+    
+    
+    }    
+    
+    //Sub total-----------------------------//
+    $pdf->SetFont('Arial','B',9);
+    $pdf->Cell($m0,5,"",'T',0);
+    $pdf->Cell($c1,5, (STRING) t("TOTAL") . ' ' .  $r['aid'] ,'T',0);
+    $pdf->Cell($c2,5, $r['aname'] ,'T',0);    
+    $pdf->Cell($c3,5, "" ,'T',0);   
+    $pdf->Cell($c4,5,number_format($total_detail,2),'T',0,'R'); 
+    $pdf->Cell($c5,5,number_format($total_detail_l,2),'T',1,'R');
+    //-----------------------------//    
+    
+    $total_class5+=$total_detail;
+    $total_class5_l+=$total_detail_l;
+    
+    
+}
+
+    //Head total-----------------------------//
+    $pdf->SetFont('Arial','B',10);
+    $pdf->SetTextColor(0,61,121);
+    $pdf->Cell($c1,8,(STRING) t("TOTAL") . ' ' . $rh->aid ,'T,B',0);
+    $pdf->Cell($c2,8, $rh->aname ,'T,B',0);    
+    $pdf->Cell($m1,8,"",'T,B',0);
+    $pdf->Cell($c3,8, "" ,'T,B',0);   
+    $pdf->Cell($c4,8,number_format($total_class5,2),'T,B',0,'R'); 
+    $pdf->Cell($c5,8,number_format($total_class5_l,2),'T,B',1,'R');
+    $pdf->SetTextColor(88,88,88);
+    //-----------------------------// 
+    
+
+$total_detail=0;
+$total_detail_l=0;
+$total_class=0;
+$total_class_l=0;
+
+$pdf->Ln(2);
+
+////////////////////// CHARGES /////////////////////////////
+//header account
+$q = "SELECT aid,aname FROM {ek_accounts} "
+        . "WHERE (aid like :aid1 or aid like :aid2) "
+        . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
+$a = array(
+            ':aid1' => $chart['expenses'] . '%',
+            ':aid2' => $chart['other_expenses'] . '%',
+            ':type' => 'header', 
+            ':status' => 1,
+            ':coid' => $params['coid']);
+
+$rh =  Database::getConnection('external_db', 'external_db')->query($q,$a)->fetchObject();
+
+
+//Head-----------------------------//
+$pdf->SetFont('Arial','B',12);
+$pdf->SetTextColor(0,61,121);
+    $pdf->Cell($c1,5, $rh->aid ,0,0);
+    $pdf->Cell($c2,5, $rh->aname ,0,1);
+$pdf->SetTextColor(88,88,88);
+//-----------------------------//    
+
+
+$q = "SELECT aid,aname FROM {ek_accounts} "
+        . "WHERE (aid like :aid1 or aid like :aid2) "
+        . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
+$a = array(
+            ':aid1' => $chart['expenses'] . '%',
+            ':aid2' => $chart['other_expenses'] . '%', 
+            ':type' => 'class', 
+            ':status' => 1, 
+            ':coid' => $params['coid']);
+
+$result = Database::getConnection('external_db', 'external_db')->query($q,$a);
+
+
+while ($r = $result->fetchAssoc()) {
+ if ($params['summary'] == 0){
+    //-----------------------------//
+    $pdf->SetFont('Arial','B',8);
+        $pdf->Cell($m1,5, "" ,0,0);
+        $pdf->Cell($c1,5, $r['aid'] ,0,0);
+        $pdf->Cell($c2,5, $r['aname'] ,0,1);    
+    //-----------------------------//  
+ }
+$aid =substr($r['aid'],0,2);
+$total_detail=0;
+$total_detail_l=0;
+$q = "SELECT aid,aname FROM {ek_accounts} "
+        . "WHERE aid like :aid AND atype=:type AND coid=:coid order by aid";
+$a = array(':aid'=> $aid . '%',':type'=>'detail',':coid'=>$params['coid']);
+
+$result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
+
+    while ($r2=$result2->fetchAssoc()) {
+    
+        $d = $journal->transactions(
+                array( 
+                'aid' => $r2['aid'],
+                'type' => 'debit',
+                'coid' => $params['coid'] ,
+                'from' => $from ,
+                'to' => $to
+                 )
+                );
+    
+        $c = $journal->transactions(
+                array( 
+                'aid' => $r2['aid'],
+                'type' => 'credit',
+                'coid' => $params['coid'],
+                'from' => $from,
+                'to'=> $to
+                 )
+                );    
+    $b = $c[0]-$d[0];
+    $b_exc = $c[1]-$d[1];
+    if ($params['summary'] == 0){
+        //Detail-----------------------------//
+        $pdf->SetFont('Arial','',8);
+        $pdf->Cell($m1,5, "" ,0,0);
+        $pdf->Cell($m2,5, "" ,0,0);
+        $pdf->Cell($c1,5, $r2['aid'],0,0);
+        $pdf->Cell($c2,5, $r2['aname'] ,0,0);
+        $pdf->Cell($c3b,5, "" ,0,0);   
+        $pdf->Cell($c4,5,number_format($b_exc,2),0,0,'R'); 
+        $pdf->Cell($c5,5,number_format($b,2),0,1,'R');
+        //-----------------------------//  
+    }
+
+    $total_detail+=$b_exc;
+    $total_detail_l+=$b;
+    }    
+    
+    //Sub total-----------------------------//
+    $pdf->SetFont('Arial','B',9);
+    $pdf->Cell($m0,5,"",'T',0);
+    $pdf->Cell($c1,5, (STRING)t("TOTAL") . ' ' . $r['aid'] ,'T',0);
+    $pdf->Cell($c2,5, $r['aname'] ,'T',0);    
+
+    $pdf->Cell($c3,5, "" ,'T',0);   
+    $pdf->Cell($c4,5,number_format($total_detail,2),'T',0,'R'); 
+    $pdf->Cell($c5,5,number_format($total_detail_l,2),'T',1,'R');
+    //-----------------------------//    
+   
+    $total_class6+=$total_detail;
+    $total_class6_l+=$total_detail_l;
+    
+    
+}
+
+    //Head total-----------------------------//
+    $pdf->SetFont('Arial','B',10);
+    $pdf->SetTextColor(0,61,121);
+    $pdf->Cell($c1,8,(STRING)t("TOTAL") . ' ' . $rh->aid ,'T,B',0);
+    $pdf->Cell($c2,8, $rh->aname ,'T,B',0);    
+    $pdf->Cell($m1,8, "" ,'T,B',0);
+
+    $pdf->Cell($c3,8,"",'T,B',0);   
+    $pdf->Cell($c4,8,number_format($total_class6,2),'T,B',0,'R'); 
+    $pdf->Cell($c5,8,number_format($total_class6_l,2),'T,B',1,'R');
+    $pdf->SetTextColor(88,88,88);
+    //-----------------------------// 
+   
+$pdf->Ln(3);
+
+$result = $total_class4+$total_class5+$total_class6;
+$result_l = $total_class4_l+$total_class5_l+$total_class6_l;
+
+if ($result < 0) {
+    $result="(".number_format(abs($result),2).")";
+    $pdf->SetTextColor(255,34,34);
+} else {
+    $result=number_format($result,2);
+}
+if ($result_l < 0) {
+    $result_l="(".number_format(abs($result_l),2).")";
+    $pdf->SetTextColor(255,34,34);
+} else {
+    $result_l=number_format($result_l,2);
+}
+$pdf->Ln(5);
+    //-----------------------------//
+    $pdf->SetFont('Arial','B',12);
+    $pdf->Cell($c1,8,(STRING) t("Profit (loss)") ,'T,B',0);
+    $pdf->Cell($c2,8,"",'T,B',0);    
+    $pdf->Cell($m1,8,"",'T,B',0);
+    $pdf->Cell($c3,8,"",'T,B',0);   
+    $pdf->Cell($c4,8,$result,'T,B',0,'R'); 
+    $pdf->Cell($c5,8,$result_l,'T,B',1,'R');
+    //-----------------------------//  
+ 
+  
+ 
+ 
+ $pdf->Ln(5);
+    $pdf->SetFont('Arial','',7);
+    $pdf->SetTextColor(0,0,0);
+    $pdf->Cell(20,3,"printed by",0,0);
+    $pdf->Cell(40,3, $userName ,0,0);
+    $pdf->Cell(40,3,"on " . date('Y-m-d') ,0,0);

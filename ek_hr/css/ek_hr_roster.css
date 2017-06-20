@@ -1,0 +1,123 @@
+.hand {
+  cursor:pointer;
+}
+
+.table {
+  display: table;
+  width: 100%;
+}
+
+.row {
+  display : table-row;
+  height:auto;
+  
+}
+
+.header_tb {  
+  display : table-cell;
+}
+
+.cell {  
+  display : table-cell;
+}
+
+.cell20 {  
+  display :inline-block;
+  width: 20px;
+}
+
+.cell50 {  
+  display :inline-block;
+  width: 50px;
+}
+
+.cell100 {  
+  display :inline-block;
+  width: 100px;
+}
+
+.cell150 {  
+  display :inline-block;
+  width: 150px;
+}
+
+
+.cellcenter {
+	padding: 1px;
+	text-align: center;
+}
+
+.form-item, .form-actions {
+    margin-bottom: 0em !important;
+    margin-top: 0em !important;
+}
+
+.row .form-item, .form-actions {
+    margin-bottom: 0em !important;
+    margin-top: 0em !important;
+}
+
+.cellborder {  
+  border-width: thin ;
+	border-spacing: 1px;
+	border-style: solid;
+	border-color: #A4A4A4;
+	border-collapse: collapse;
+	padding: 1px;
+	text-align: center;
+}
+
+.ph {
+	background-color: #FFBF00;
+}
+
+.sun {
+	background-color: #A4A4A4;
+}
+
+.week {
+	background-color: #FFFFFF;
+}
+
+.slide {
+ display:none;
+}
+
+.handle {
+  width:5%;
+}
+
+.time{
+ font-size:0.9em;
+}
+
+.sliderbox {
+  float:left;
+  border-width: thin ;
+	border-spacing: 1px;
+	border-style: solid;
+	border-color: #A4A4A4;
+  font-size:0.8em;
+  background-color: #FFF;
+}
+
+.sliderui {
+  width:15%;
+  float:left;
+  padding: 1px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top:10px;
+}
+
+.status {
+  width:5%;
+}
+
+.calendar-ico {
+  background-image: url(images/calendar.png) ;
+  background-repeat: no-repeat;
+  width: 32px;
+  height:32px;
+
+}

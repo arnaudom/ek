@@ -1,0 +1,330 @@
+<?php
+
+class PDF extends FPDF {
+
+//Page header
+    function Header() {
+        //Logo
+        if ($this->company->logo <> '') {
+            $logo = drupal_realpath($this->company->logo);
+            if (file_exists($logo)) {
+                $this->Image($logo, 10, 4, 33);
+            }
+        }
+
+        $category = array(1 => "Internal invoice", 2 => "Purchase", 3 => "Claim", 4 => "Advance", 5 => "Personal claim");
+        //Arial bold 15
+        $this->SetFont('Arial', 'B', 15);
+        //Move to the right
+        $this->Cell(80);
+        $this->SetTextColor(68, 151, 242);
+        //Title
+        $this->Cell(50, 10, $category[$this->head->category], 1, 0, 'C');
+        //Line break
+        $this->Ln(20);
+    }
+
+    function setHeaderData($company, $head) {
+        $this->company = $company;
+        $this->head = $head;
+    }
+
+//Page footer
+    function Footer() {
+        //Position at 1.5 cm from bottom
+        $this->SetY(-15);
+        //Arial italic 8
+        $this->SetFont('Arial', 'I', 8);
+        //Page number
+        $this->Cell(0, 10, 'Page ' . $this->PageNo() . '/{nb}', 0, 0, 'C');
+    }
+
+}
+
+//Instanciation of inherited class
+$pdf = new PDF();
+$pdf->setHeaderData($company, $head);
+$pdf->AliasNbPages();
+$pdf->AddPage('P','A4');
+
+
+
+$left_margin = 1;
+$col1_width = 20;
+$col2_width = 70;
+$col3_width = 20;
+$col4_width = 60;
+$col5_width = 45;
+
+
+
+$pdf->SetTextColor(0, 0, 0);
+$pdf->SetFont('Arial', 'B', 11);
+$pdf->Cell($left_margin, 5, '', 0, 0);
+$pdf->Cell($col1_width, 5, t('FROM'), 0, 0);
+$pdf->Cell($col2_width, 5, '', 0, 0);
+$pdf->Cell($col3_width, 5, t('TO'), 0, 0);
+$pdf->Cell($col4_width, 5, '', 0, 1);
+
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($left_margin, 5, '', 0, 0);
+
+$pdf->Cell($col1_width, 5, t('Payee') . ':', 0, 0);
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->Cell($col2_width, 5, $company->name, 0, 0);
+
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($col3_width, 5, t('Company') . ':', 0, 0);
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->Cell($col4_width, 5, $company_to->name, 0, 1);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($left_margin, 5, '', 0, 0);
+$pdf->Cell($col1_width, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 9);
+
+$pdf->Cell($col2_width, 5, '(' . $company->reg_number . ')', 0, 0);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($col3_width, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->Cell($col4_width, 5, '(' . $company_to->reg_number . ')', 0, 1);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($left_margin, 5, '', 0, 0);
+$pdf->Cell($col1_width, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 9);
+
+$pdf->Cell($col2_width, 5, $company->address1, 0, 0);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($col3_width, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->Cell($col4_width, 5, $company_to->address1, 0, 1);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($left_margin, 5, '', 0, 0);
+$pdf->Cell($col1_width, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 9);
+
+$pdf->Cell($col2_width, 5, $company->address2, 0, 0);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($col3_width, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->Cell($col4_width, 5, $company_to->address2, 0, 1);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($left_margin, 5, '', 0, 0);
+$pdf->Cell($col1_width, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 9);
+
+$pdf->Cell($col2_width, 5, $company->postcode . ' ' . $company->city, 0, 0);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($col3_width, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->Cell($col4_width, 5, $company_to->postcode . ' ' . $company_to->city, 0, 1);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($left_margin, 5, '', 0, 0);
+$pdf->Cell($col1_width, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 9);
+
+$pdf->Cell($col2_width, 5, $company->country, 0, 0);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($col3_width, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->Cell($col4_width, 5, $company_to->country2, 0, 1);
+
+if ($company->telephone != '') {
+    $t1 = t('Tel') . ':' . $company->telephone;
+}
+if ($company->fax != '') {
+    $t1 .= ' ' . t('Fax') . ':' . $company->fax;
+}
+if ($company_to->telephone != '') {
+    $t2 = t('Tel') . ':' . $company_to->telephone;
+}
+if ($company_to->fax != '') {
+    $t2 .= ' ' . t('Fax') . ':' . $company_to->fax;
+}
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($left_margin, 5, '', 0, 0);
+$pdf->Cell($col1_width, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 8);
+
+$pdf->Cell($col2_width, 5, $t1, 0, 0);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($col3_width, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 8);
+$pdf->Cell($col4_width, 5, $t2, 0, 1);
+
+$pdf->SetFont('Arial', '', 10);
+if ($company->contact) {
+    $pdf->Cell($left_margin, 5, t('Contact') . ':', 0, 0);
+    $pdf->Cell($col1_width, 5, '', 0, 0);
+    $pdf->SetFont('Arial', 'B', 9);
+    $pdf->Cell($col2_width, 5, $company->contact, 0, 0);
+} else {
+    $pdf->Cell($left_margin, 5, '', 0, 0);
+    $pdf->Cell($col1_width, 5, '', 0, 0);
+    $pdf->SetFont('Arial', 'B', 9);
+    $pdf->Cell($col2_width, 5, '', 0, 0);
+}
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($col3_width, 5, t('Contact') . ':', 0, 0);
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->Cell($col4_width, 5, $company_to->contact, 0, 1);
+
+
+$pdf->Ln(2);
+
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell(190, 3, '', 'LTR', 1);
+$pdf->Cell($left_margin, 5, '', 'L', 0);
+$pdf->Cell(50, 5, t('Document ref.') . ':', 0, 0);
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell(139, 5, $head->serial, 'R', 1);
+$pdf->Cell($left_margin, 5, '', 'L', 0);
+$pdf->Cell(50, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 10);
+
+$pdf->Cell(139, 5, $head->mission, 'R', 1);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($left_margin, 5, '', 'L', 0);
+$pdf->Cell(50, 5, t('Project reference') . ':', 0, 0);
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell(139, 5, $client->name, 'R', 1);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($left_margin, 5, '', 'L', 0);
+$pdf->Cell(50, 5, '', 0, 0);
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell(139, 5, $head->pcode, 'R', 1);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($left_margin, 5, '', 'L', 0);
+$pdf->Cell(50, 5, t('Document created on') . ':', 0, 0);
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell(139, 5, $head->date, 'R', 1);
+$pdf->Cell(190, 3, '', 'LBR', 1);
+
+if ($head->status > 1) {
+
+    $paid = drupal_get_path('module', 'ek_finance') . "/art/paid.png";
+    if (file_exists($paid)) {
+        $pdf->Image($paid, 120, 90, 20);
+    }
+}
+
+
+
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Ln(10);
+$pdf->Cell(190, 5, t('Details') . ':', 1, 1);
+
+$pdf->Ln(5);
+
+$pdf->Cell(50, 5, t('Category'), 1, 0);
+$pdf->Cell(85, 5, t('Description'), 1, 0);
+$pdf->Cell(20, 5, t('Amount'), 1, 0);
+$pdf->Cell(20, 5, t('Currency'), 1, 0);
+$pdf->Cell(15, 5, t('Receipt'), 1, 1);
+$pdf->Ln(2);
+$pdf->SetFont('Arial', '', 8);
+
+
+while ($l = $lines->fetchObject()) {
+
+    $pdf->Cell(50, 5, $l->aid . ' ' . $l->aname, 0, 0);
+    $pdf->Cell(85, 5, $l->description, 0, 0);
+    $pdf->Cell(20, 5, number_format($l->amount, 2), 0, 0, 'R');
+    $pdf->Cell(20, 5, $head->currency, 0, 0);
+    $pdf->Cell(15, 5, $l->receipt, 0, 1);
+
+    $amount = $amount + $l->amount;
+}
+
+$pdf->Ln(2);
+$pdf->SetFont('Arial', 'B', 8);
+$pdf->Cell(135, 5, t('TOTAL') . ':', 1, 0);
+$pdf->Cell(20, 5, number_format($amount, 2), 1, 0, 'R');
+$pdf->Cell(20, 5, $head->currency, 1, 0, 'L');
+
+$pdf->Ln(15);
+
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell(50, 5, t('Comment') . ': ', 0, 0);
+$pdf->SetFont('Arial', '', 8);
+$pdf->MultiCell(130, 5, $head->comment, 0, 1);
+
+//STAMP============================================================ 
+
+if ($stamp == "2") {
+    $copy = drupal_get_path('module', 'ek_finance') . "/art/copy.png";
+    if (file_exists($copy)) {
+        $pdf->Image($copy, 130, 30, 50);
+    }
+} elseif ($stamp == "1") {
+    $original = drupal_get_path('module', 'ek_finance') . "/art/original.png";
+    if (file_exists($original)) {
+        $pdf->Image($original, 130, 30, 50);
+    }
+}
+
+if ($auth[0] == 1) {
+    $na = drupal_get_path('module', 'ek_finance') . "/art/authopending.jpeg";
+    if (file_exists($na))
+        $pdf->Image($na, 130, 60, 60);
+}
+if ($auth[0] == 3) {
+    $na = drupal_get_path('module', 'ek_finance') . "/art/notapproved.jpeg";
+    if (file_exists($na))
+        $pdf->Image($na, 130, 60, 50);
+}
+
+//SIGNATURE============================================================ 
+if ($signature == 1) {
+    $pdf->Cell(100);
+    if (isset($company->sign)) {
+        $sign = drupal_get_path($company->sign);
+        $pdf->Image($sign, 20, 210, 50);
+    }
+}
+
+
+
+//show receipts
+/**/
+
+while ($d = $documents->fetchObject()) {
+    
+    if (file_exists($d->uri)) {
+        $pdf->AddPage('P','A4');
+        $info = getimagesize($d->uri);
+        $h = $info[1] ;
+        $w = $info[0] ;
+        $r = 150/$w;
+        $parts = explode('/', $d->uri);
+        $parts = array_reverse($parts);
+        $pdf->Cell(100, 5, $parts[0], 0, 1);
+        $pdf->Image($d->uri, 10, 50, 150, $h*$r);
+    } else {
+        $pdf->SetFont('Arial', '', 10);
+        $pdf->Cell(50, 5, t('Attachment') . ': ', 0, 0);
+        $pdf->SetFont('Arial', '', 8);
+        $parts = explode('/', $d->uri);
+        $parts = array_reverse($parts);
+        $pdf->Cell(100, 5, $parts[0], 0, 1);
+        
+    }
+}
+?>

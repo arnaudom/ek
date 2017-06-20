@@ -1,0 +1,171 @@
+{{ items.form }}
+{{ items.excel }}
+{% set i = 0 %}
+
+<table style='text-align: left;' id='table_cashflow' class='' >
+    <thead class=''>
+        <tr>
+            <td></td>
+            <td>{{ 'Account'|t }}</td>
+            <td class='right'>{{ 'Transactions'|t }} {{ 'from'|t }} {{ items.from }} {{ 'to'|t }} {{ items.to }} ({{ items.baseCurrency }})</spn></td>
+            <td class='right'>{{ 'Balance'|t }} ({{ items.baseCurrency }})</spn></td>
+        </tr> 
+    </thead>
+    <tbody>
+
+
+
+        {#transactions with banks and cash #}
+    <thead class='header_tb'>
+        <tr>
+            <td colspan='2'>{{ 'Bank'|t }}</td>
+        </tr>
+    </thead> 
+    {% for rows in items.cash_bank %}
+    {% set i = i+1 %}
+        <tr id='row{{ i }}'>
+            <td><INPUT type='checkbox' value='{{ rows.balance_base }}' checked id='box{{ i }}' class='calculate'>
+            <INPUT type='hidden' value='{{ rows.closing_base }}' id='box2{{ i }}'/></td>
+            <td><a class='use-ajax' href ='{{ rows.link }}'>{{ rows.aid }}</a> {{ rows.name }}</td>
+            <td id='value{{ i }}' class='right'>{{ rows.balance_base|number_format('2', '.', ',') }}</td>
+            <td id='valuec{{ i }}' class='right'>{{ rows.closing_base|number_format('2', '.', ',') }}</td>
+        </tr>
+
+    {% endfor %}
+    <thead class='subtotal'>
+        <tr>
+            <td colspan='2'>{{ 'Total'|t }}</td>
+            <td class='right'>{{ items.cash_bank_total.balance_base|number_format('2', '.', ',') }}</td>
+            <td class='right'>{{ items.cash_bank_total.closing_base|number_format('2', '.', ',') }}</td>
+        </tr>
+    </thead> 
+
+    <thead class='header_tb'>
+        <tr>
+            <td colspan='2'>{{ 'Cash'|t }}</td>
+        </tr>
+    </thead> 
+    {% for rows in items.cash %}
+        {% set i = i+1 %}
+        <tr id='row{{ i }}'>
+            <td><INPUT type='checkbox' value='{{ rows.balance_base }}' checked id='box{{ i }}' class='calculate'>
+            <INPUT type='hidden' value='{{ rows.closing_base }}' id='box2{{ i }}'/></td>
+            <td><a class='use-ajax' href ='{{ rows.link }}'>{{ rows.aid }}</a> {{ rows.name }}</td>
+            <td id='value{{ i }}' class='right'>{{ rows.balance_base|number_format('2', '.', ',') }}</td>
+            <td id='valuec{{ i }}' class='right'>{{ rows.closing_base|number_format('2', '.', ',') }}</td>
+        </tr>
+
+    {% endfor %}
+    <thead class='subtotal'>
+        <tr>
+            <td colspan='2'>{{ 'Total'|t }}</td>
+            <td class='right'>{{ items.cash_total.balance_base|number_format('2', '.', ',') }}</td>
+            <td class='right'>{{ items.cash_total.closing_base|number_format('2', '.', ',') }}</td>
+        </tr>
+    </thead> 
+
+    {#transactions with debtors - receivable #}
+    <thead class='header_tb'>
+        <tr>
+            <td colspan='2'>{{ 'Receivable'|t }}</td>
+        </tr>
+    </thead> 
+    {% for rows in items.receivable %}
+        {% set i = i+1 %}
+        <tr id='row{{ i }}'>
+            <td><INPUT type='checkbox' value='{{ rows.balance_base }}' checked id='box{{ i }}' class='calculate'>
+            <INPUT type='hidden' value='{{ rows.closing_base }}' id='box2{{ i }}'/></td>
+            <td><a class='use-ajax' href ='{{ rows.link }}'>{{ rows.aid }}</a> {{ rows.name }}</td>
+            <td id='value{{ i }}' class='right'>{{ rows.balance_base|number_format('2', '.', ',') }}</td>
+            <td id='valuec{{ i }}' class='right'>{{ rows.closing_base|number_format('2', '.', ',') }}</td>
+        </tr>
+
+    {% endfor %}
+    <thead class='subtotal'>
+        <tr>
+            <td colspan='2'>{{ 'Total'|t }}</td>
+            <td class='right'>{{ items.receivable_total.balance_base|number_format('2', '.', ',') }}</td>
+            <td class='right'>{{ items.receivable_total.closing_base|number_format('2', '.', ',') }}</td>
+        </tr>
+    </thead>     
+
+  
+    <tr class='total'>
+        <td colspan='2'>{{ 'Total current assets'|t }}</td>
+        <td class='right'>{{ items.total_assets_exc|number_format('2', '.', ',') }}</td>
+        <td class='right'>{{ items.total_closing_assets_exc|number_format('2', '.', ',') }}</td>
+    </tr>    
+
+    {#transactions with creditors - payable #}
+    <thead class='header_tb'>
+        <tr>
+            <td colspan='2'>{{ 'Payable'|t }}</td>
+        </tr>
+    </thead> 
+    {% for rows in items.payable %}
+        {% set i = i+1 %}
+        <tr id='row{{ i }}'>
+            <td><INPUT type='checkbox' value='{{ rows.balance_base }}' checked id='box{{ i }}' class='calculate'>
+            <INPUT type='hidden' value='{{ rows.closing_base }}' id='box2{{ i }}'/></td>
+            <td><a class='use-ajax' href ='{{ rows.link }}'>{{ rows.aid }}</a> {{ rows.name }}</td>
+            <td id='value{{ i }}' class='right'>{{ rows.balance_base|number_format('2', '.', ',') }}</td>
+            <td id='valuec{{ i }}' class='right'>{{ rows.closing_base|number_format('2', '.', ',') }}</td>
+        </tr>
+
+    {% endfor %}
+    <thead class='subtotal'>
+        <tr>
+            <td colspan='2'>{{ 'Total'|t }}</td>
+            <td class='right'>{{ items.payable_total.balance_base|number_format('2', '.', ',') }}</td>
+            <td class='right'>{{ items.payable_total.closing_base|number_format('2', '.', ',') }}</td>
+        </tr>
+    </thead>     
+  
+    <tr class='total'>
+        <td colspan='2'>{{ 'Total current liabilities'|t }}</td>
+        <td class='right'>{{ items.total_liabilities_exc|number_format('2', '.', ',') }}</td>
+        <td class='right'>{{ items.total_closing_liabilities_exc|number_format('2', '.', ',') }}</td>
+    </tr> 
+    <tr class='grandtotal'>
+        <td colspan='2'>{{ 'Grand total'|t }}</td>
+        <td class='right'><span id='grandtotal'>{{ items.grand_total_exc|number_format('2', '.', ',') }}</span></td>
+        <td class='right'><span id='grandtotal2'>{{ items.grand_total_closing_exc|number_format('2', '.', ',') }}</span></td>
+    </tr> 
+    
+{#average expenses per month #}
+{% set i = i+1 %}
+    <thead class='header_tb'>
+        <tr>
+            <td colspan='2'>{{ 'Overhead'|t }}</td>
+        </tr>
+    </thead>     
+        <tr id='row{{ i }}'>
+            <td><INPUT type='checkbox' value='{{ items.average_expenses }}' checked id='expenses' class='calculate'></td>
+            <td>{{ 'Per month'|t }}</td>
+            <td  class='right' colspan='2'>
+             <INPUT  class='right calculate' type='text' value='{{ items.average_expenses|number_format('2', '.', ',') }}' id='valueexpenses' />
+            </td>
+            
+        </tr>  
+{% if items.amortization > 0 %}
+        {% set i = i+1 %}    
+        <tr id='row{{ i }}'>
+            <td><INPUT type='checkbox' value='{{ items.amortization }}' checked id='amortization' class='calculate'></td>
+            <td>{{ 'Monthly amortization'|t }}</td>
+            <td  class='right' colspan='2'>
+             <INPUT  class='right calculate' type='text' value='{{ items.amortization|number_format('2', '.', ',') }}' id='valueamortization' />
+            </td>
+            
+        </tr>  
+        {% endif %}       
+{% set i = i+1 %}
+        <tr id='row{{ i }}'>
+            
+            <td colspan='2'>{{ 'Ratio: cash flow / overhead'|t }}</td>
+            <td class='right'><span id='ratio1'>{{ items.ratio1|number_format('2', '.', ',') }}</span> {{ 'month(s)'|t }}</td>
+            <td class='right'><span id='ratio2'>{{ items.ratio2|number_format('2', '.', ',') }}</span> {{ 'month(s)'|t }}</td>
+        </tr>    
+        
+        
+</tbody>
+</table>

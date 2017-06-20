@@ -1,0 +1,9 @@
+name : 'ek_admin'
+type: module
+description: 'administration functions module for ek management tools suite'
+core: 8.x
+package: ek 
+version: "8.3.x.y"
+project: "ARREA"
+datestamp: "1398873600"
+

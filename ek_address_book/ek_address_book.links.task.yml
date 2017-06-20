@@ -1,0 +1,59 @@
+ek_address_book.search:
+  route_name: ek_address_book.search
+  base_route: ek_address_book.search
+  title: 'Search'
+  weight: 1
+  
+ek_address_book.list:
+  route_name: ek_address_book.list
+  base_route: ek_address_book.search
+  title: 'Companies list'
+  weight: 2
+  
+ek_address_book.contacts:
+  route_name: ek_address_book.contacts
+  base_route: ek_address_book.search
+  title: 'Contacts list'
+  weight: 3  
+  
+ek_address_book.new:
+  route_name: ek_address_book.new
+  base_route: ek_address_book.search
+  title: 'New'
+  weight: 4
+
+#administrate - import - export
+ek_address_book.admin:
+  route_name: ek_address_book.admin
+  base_route: ek_address_book.search
+  title: 'Administrate'
+  weight: 5
+  
+ek_address_book.admin_import:
+  route_name: ek_address_book.import
+  title: 'Import'
+  parent_id: ek_address_book.admin
+  weight: 1
+
+ek_address_book.admin_export:
+  route_name: ek_address_book.export
+  title: 'Export'
+  parent_id: ek_address_book.admin
+  weight: 2
+  
+  
+ek_address_book.view:
+  route_name: ek_address_book.view
+  base_route: ek_address_book.view
+  title: 'View'
+  weight: 1
+  
+ek_address_book.edit:
+  route_name: ek_address_book.edit
+  base_route: ek_address_book.view
+  title: 'Edit'
+  weight: 3
+  
+#ek_address_book.sales_data:
+#  class: \Drupal\Core\Menu\LocalTaskDefault
+#  deriver: 'Drupal\ek_address_book\Plugin\Derivative\DynamicLocalTasks'

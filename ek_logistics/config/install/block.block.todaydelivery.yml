@@ -1,0 +1,29 @@
+uuid: 6587f8dd-7bf1-4545-b100-fa00b6124e6b
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_logistics
+    - system
+  theme:
+    - bartik
+id: todaydeliveries
+theme: bartik
+region: content
+weight: -7
+provider: null
+plugin: logistics_today_delivery_block
+settings:
+  id: logistics_today_delivery_block
+  label: 'Today deliveries'
+  provider: ek_logistics
+  label_display: '0'
+  cache:
+    max_age: 0
+    contexts: {  }
+visibility:
+  request_path:
+    id: request_path
+    pages: /ek_logistics/dashboard
+    negate: false
+    context_mapping: {  }

@@ -1,0 +1,32 @@
+uuid: 4c146dfb-5863-4944-8d00-d7de3fc10a05
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_projects
+    - node
+    - system
+    - user
+  theme:
+    - bartik
+id: mytasks
+theme: bartik
+region: content
+weight: -1
+provider: null
+plugin: my_tasks_block
+settings:
+  id: my_tasks_block
+  label: 'My tasks'
+  provider: ek_projects
+  label_display: '0'
+  cache:
+    max_age: 0
+    contexts: {  }
+visibility:
+  request_path:
+    id: request_path
+    pages: /projects/project
+    negate: false
+    context_mapping: {  }
+

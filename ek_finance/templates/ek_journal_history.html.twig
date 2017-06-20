@@ -1,0 +1,54 @@
+
+<table style='text-align: left;' id='table1' class='' >
+    <thead class=''>
+        <tr>
+          <td align=right><span>{{ 'opening'|t }}</span> {{ items.opening|number_format(2) }}</td>
+          <td align=right><span>{{ 'debits'|t }}</span> {{ items.total_debit|number_format(2) }}</td>
+          <td align=right><span>{{ 'credits'|t }}</span> {{ items.total_credit|number_format(2) }}</td>
+          <td align=right><span>{{ 'transactions'|t }}</span> {{ items.total_transaction|number_format(2) }}</td>
+          <td align=right><span>{{ 'closing'|t }}</span> {{ items.closing|number_format(2) }}</td>
+          
+        </tr> 
+        <tr>
+          <td align=right>{{ items.baseCurrency }} {{ items.opening_exchange|number_format(2) }}</td>
+          <td align=right>{{ items.total_debit_exchange|number_format(2)}}</td>
+          <td align=right>{{ items.total_credit_exchange|number_format(2)}}</td>
+          <td align=right>{{ items.total_transaction_exchange|number_format(2) }}</td>
+          <td align=right>{{ items.closing_exchange|number_format(2) }}</td>
+        </tr>        
+    </thead>
+
+<thead class=''>
+            <tr class='' style=''>
+              <th >{{ 'Ref'|t }}</th>
+              <th >{{ 'Date'|t }}</th>
+              <th>{{ 'Account'|t }}</th>
+              <th>{{ 'Comment'|t }}</th>
+              <th></th>
+              <th >{{ 'debit'|t }}</th>
+              <th >{{ 'credit'|t }}</th>
+              </tr></thead>
+<tbody class=''>
+    
+    {% for rows in items.transaction %}
+        
+        <tr class=''>
+            <td>{{ rows.id }} - {{ rows.count }}</td>
+            <td>{{ rows.date }}</td>
+            <td>{{ rows.aid }}</td>
+            <td>{{ rows.reference }}</td>
+            {% if rows.exchange == 1 %}
+            <td align=center>{{ rows.currency }} {{ 'exchange'|t }}</td>
+            {% else %}
+            <td align=center>{{ rows.currency }} </td> 
+            {% endif %}
+            {% if rows.type == 'debit' %}
+                <td align=right >{{ rows.value|number_format(2) }}</td><td></td>
+            {% else %}
+                <td></td><td align=right >{{ rows.value|number_format(2) }}</td>
+            {% endif %}  
+        </tr>
+                
+    {% endfor %} {#transaction in items.transaction#}
+    
+</tbody></table>

@@ -1,0 +1,34 @@
+uuid: ae156e19-5895-44ea-9b44-68b64ea5c1db
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_sales
+    - system
+    - user
+  theme:
+    - bartik
+id: purchasesperaccountblock
+theme: bartik
+region: content
+weight: -7
+provider: null
+plugin: Purchases_per_account_block
+settings:
+  id: Purchases_per_account_block
+  label: 'Purchases per account block'
+  provider: ek_sales
+  label_display: '0'
+visibility:
+  request_path:
+    id: request_path
+    pages: /sales_management
+    negate: false
+    context_mapping: {  }
+  user_role:
+    id: user_role
+    roles:
+      authenticated: authenticated
+    negate: false
+    context_mapping:
+      user: '@user.current_user_context:current_user'

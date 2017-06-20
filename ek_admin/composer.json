@@ -1,0 +1,13 @@
+{
+  "name": "drupal/ek_admin",
+  "type": "drupal-module",
+  "description": "Provides main functionality running EK management tools suite",
+
+  "license": "GPL-2.0+",
+  "require": {
+    "phpoffice/phpexcel": "1.8.*",
+    "setasign/fpdf": "1.8.*",
+    "tecnickcom/tcpdf": "6.2.*"
+  }
+
+}

@@ -1,0 +1,14 @@
+administrate:
+  title: 'Administrate data'
+  description: 'Allows user to administrate data.'  
+company_list:
+  title: 'View company list'
+  description: 'Allows user to view company list.'   
+company_documents:
+  title: 'View company documents'
+  description: 'Allows user to view company documents attached.' 
+company_extract:
+  title: 'Extract company details'
+  description: 'In pdf or excel formats.'  
+access_user_autocomplete:
+  title: 'Allows autocomplete users name in forms'

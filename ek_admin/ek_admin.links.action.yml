@@ -1,0 +1,31 @@
+   
+ek_admin_task_excel:
+  route_name: ek_admin_company.excel
+  title: 'Excel list'
+  appears_on:
+    - ek_admin.company.list
+
+ek_admin_action_global_settings:
+  route_name: ek_admin.settings
+  title: 'Global settings'
+  appears_on:
+    - ek_admin.main
+    - ek_admin.company.list
+    
+ek_admin_action_company:
+  route_name: ek_admin.company.list
+  title: 'Companies'
+  appears_on:
+    - ek_admin.main
+ 
+ek_admin_action_country:
+  route_name: ek_admin.country.list
+  title: 'Countries'
+  appears_on:
+    - ek_admin.main
+    
+ek_admin_action_access:
+  route_name: ek_admin.access.company
+  title: 'Access'
+  appears_on:
+    - ek_admin.main

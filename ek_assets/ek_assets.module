@@ -1,0 +1,286 @@
+<?php
+    ///////////////////////////////////////////////////
+    //                  COPYRIGHT                    //
+    //                                               //
+    // DEVELOPPED BY ARREA LTD                       //
+    // all rights reserved                           //
+    // Please read and agree with software           //
+    // application license                           //
+    ///////////////////////////////////////////////////
+
+/**
+ * @file
+ *  module . ek_assets
+ */
+
+
+/**
+ * Implementation hook_theme().
+ */
+function ek_assets_theme() {
+  return array(
+
+    'ek_assets_card' => array
+    (
+      'template' => 'ek_assets_card',
+      'variables' => array('items' => array()),
+    ),
+    // for the dashboard
+    'ek_assets_dashboard' => array
+    (
+      'template' => 'ek_assets_dashboard',
+      'variables' => array('items' => array()),
+    ), 
+  );
+}
+
+/**
+ * Implementation hook download.
+ */
+function ek_assets_file_download($uri) {
+
+    if (strpos($uri,'/assets/')) {
+        return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($uri));
+    }
+}
+
+
+/**
+ * Implements hook_views_data().
+ */
+function ek_assets_views_data() {
+  
+  $data['ek_assets']['table']['group'] = t('ek assets');
+
+  // Define this as a base table – a table that can be described in itself by
+  // views (and not just being brought in as a relationship). 
+  $data['ek_assets']['table']['base'] = array(
+    'field' => 'id', // This is the identifier field for the view.
+    'title' => t('ek assets'),
+    'help' => t('ek assets contains assets data.'),
+    'database' => 'external_db',
+    'weight' => -10,
+  );
+
+  $data['ek_assets']['id'] = array(
+    'title' => t('asset id'),
+    'help' => t('asset id'),
+    'field' => array('id' => 'numeric',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+    'relationship' => array(
+      'base' => 'ek_assets_amortization', 
+      'field' => 'asid', // The name of the field to join with
+      'id' => 'standard',
+      'label' => t('Amortization schedule'),
+    ),
+    
+  );
+  
+  $data['ek_assets']['asset_name'] = array(
+    'title' => t('name'),
+    'help' => t('name'),
+    'field' => array('id' => 'standard',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+  );
+  
+  $data['ek_assets']['asset_brand'] = array(
+    'title' => t('brand'),
+    'help' => t('brand or name complement'),
+    'field' => array('id' => 'standard',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+  );
+   
+  $data['ek_assets']['asset_ref'] = array(
+    'title' => t('reference'),
+    'help' => t('a reference or article code'),
+    'field' => array('id' => 'standard',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+  );
+  
+  $data['ek_assets']['coid'] = array(
+    'title' => t('company id'),
+    'help' => t('id of company linked'),
+    'field' => array('id' => 'numeric',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+    'relationship' => array(
+        'base' => 'ek_company', // The name of the table to join with
+        'field' => 'id', // The name of the field to join with
+        'id' => 'standard',
+        'label' => t('Company ref'),
+    ),     
+  );
+  
+  $data['ek_assets']['unit'] = array(
+    'title' => t('unit'),
+    'help' => t('quantity of assets'),
+    'field' => array('id' => 'numeric',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+  
+  $data['ek_assets']['aid'] = array(
+    'title' => t('aid'),
+    'help' => t('journal account reference id'),
+    'field' => array('id' => 'numeric',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+    'relationship' => array(
+        'base' => 'ek_accounts', // The name of the table to join with
+        'field' => 'aid', // The name of the field to join with
+        'id' => 'standard',
+        'label' => t('Chart of accounts'),
+    ),        
+  );
+
+  $data['ek_assets']['comment'] = array(
+    'title' => t('comment'),
+    'help' => t('comment'),
+    'field' => array('id' => 'standard',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+  );
+
+  $data['ek_assets']['asset_doc'] = array(
+    'title' => t('asset document'),
+    'help' => t('attachment'),
+    'field' => array('id' => 'standard',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+  );
+
+  $data['ek_assets']['asset_pic'] = array(
+    'title' => t('asset picture'),
+    'help' => t('attachment'),
+    'field' => array('id' => 'standard',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+  );
+  
+  $data['ek_assets']['asset_value'] = array(
+    'title' => t('value'),
+    'help' => t('purchase value'),
+    'field' => array('id' => 'numeric',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+
+  $data['ek_assets']['currency'] = array(
+    'title' => t('currency'),
+    'help' => t('currency of purchase'),
+    'field' => array('id' => 'standard',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+  );
+
+  $data['ek_assets']['date_purchase'] = array(
+    'title' => t('date'),
+    'help' => t('date of purchase'),
+    'field' => array('id' => 'standard',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+  );
+  
+
+  
+  $data['ek_assets_amortization']['table']['group'] = t('ek assets amortization schedule');
+   
+  $data['ek_assets_amortization']['table']['base'] = array(
+    'field' => 'asid', // This is the identifier field for the view.
+    'title' => t('ek assets amortization schedule'),
+    'help' => t('ek assets amortization schedule contains amortization data.'),
+    'weight' => -10,
+    'database' => 'external_db',
+  );
+
+  $data['ek_assets_amortization']['asid'] = array(
+    'title' => t('Asset id'),
+    'help' => t('main asset id'),
+    'field' => array('id' => 'numeric',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+  
+
+  $data['ek_assets_amortization']['term_unit'] = array(
+    'title' => t('term unit'),
+    'help' => t('Y: year or M: month'),
+    'field' => array('id' => 'standard',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+  );
+  
+  $data['ek_assets_amortization']['method'] = array(
+    'title' => t('method'),
+    'help' => t('depreciation method Ex. 1: linear'),
+    'field' => array('id' => 'numeric',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+  
+  $data['ek_assets_amortization']['term'] = array(
+    'title' => t('term'),
+    'help' => t('number of term units or periods'),
+    'field' => array('id' => 'numeric',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+  
+  
+  $data['ek_assets_amortization']['amort_rate'] = array(
+    'title' => t('rate'),
+    'help' => t('rate of amortization in %'),
+    'field' => array('id' => 'numeric',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+  
+  
+  $data['ek_assets_amortization']['amort_value'] = array(
+    'title' => t('value'),
+    'help' => t('cumulated value of amortization'),
+    'field' => array('id' => 'numeric',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+  
+    
+  $data['ek_assets_amortization']['amort_salvage'] = array(
+    'title' => t('salvage value'),
+    'help' => t('residual value after amortization'),
+    'field' => array('id' => 'numeric',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+
+  $data['ek_assets_amortization']['amort_record'] = array(
+    'title' => t('amortization record'),
+    'help' => t('array of amortization schedule and recorded in journal'),
+    'field' => array('id' => 'standard',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+  );
+  
+    
+  $data['ek_assets_amortization']['amort_status'] = array(
+    'title' => t('status'),
+    'help' => t('0: not amortized 1: amortized'),
+    'field' => array('id' => 'numeric',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+  
+  $data['ek_assets_amortization']['alert'] = array(
+    'title' => t('alert'),
+    'help' => t('alert uid'),
+    'field' => array('id' => 'standard',),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+  );  
+
+  return $data;
+}

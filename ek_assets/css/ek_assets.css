@@ -1,0 +1,82 @@
+.thumbnail {
+    width : 75px;
+}
+
+.medium {
+    width : 150px;
+}
+
+.large {
+  width : 300px;
+}
+
+.delete {
+    background-color: #FF6666;
+    color: #FFFFFF;
+}
+
+.text-right {
+  text-align:right;
+}
+.text-left {
+  text-align:left;
+}
+.text-center {
+  text-align:center;
+}
+
+.table {
+  display: table;
+  width: 100%;
+}
+
+.row {
+  display : table-row;
+  height:auto;
+  
+}
+
+.cell {  
+  display : table-cell;
+  vertical-align: middle;
+}
+
+.cell50 {  
+  display :inline-block;
+  width: 50px;
+}
+
+.cell100 {  
+  display :inline-block;
+  width: 100px;
+}
+
+.cell150 {  
+  display :inline-block;
+  width: 150px;
+}
+
+.cell200 {  
+  display :inline-block;
+  width: 200px;
+}
+
+.cell300 {  
+  display :inline-block;
+  width: 300px;
+}
+
+.cellcenter {
+  padding: 2px;
+  text-align: center;
+}
+
+.cellborder {  
+  border-width: thin ;
+  border-spacing: 1px;
+  border-style: solid;
+  border-color: #A4A4A4;
+  border-collapse: collapse;
+  background-color: #CEE3F6;
+  padding: 2px;
+}

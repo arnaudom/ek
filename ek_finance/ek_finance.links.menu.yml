@@ -1,0 +1,71 @@
+ek_finance.menu:
+  title: 'Finance'
+  description: 'Manage finances'
+  route_name: ek_finance.main
+  expanded: true
+  hidden: 0
+  weight: 14
+      
+ek_finance.journal:
+  title: 'Journal'
+  description: 'Accounting journal records'
+  route_name: ek_finance.extract.general_journal
+  parent: ek_finance.menu
+  weight: 1
+
+ek_finance.expenses:
+  title: 'Expenses'
+  description: 'Expenses records'
+  route_name: ek_finance.manage.list_expense
+  parent: ek_finance.menu
+  weight: 2
+
+ek_finance.bank:
+  title: 'Bank'
+  description: 'Bank references'
+  route_name: ek_finance.manage.bank_list
+  parent: ek_finance.menu
+  weight: 3  
+  
+ek_finance.cash:
+  title: 'Cash'
+  description: 'Cash management'
+  route_name: ek_finance.manage.cash_balance
+  parent: ek_finance.menu
+  weight: 4
+
+  
+ek_finance_memo:
+  title: 'Memos'
+  description: 'Internal and personal memos'
+  route_name: ek_finance_manage_list_memo_internal
+  parent: ek_finance.menu
+  weight: 5
+    
+ek_finance.reconciliation:
+  title: 'Reconciliation'
+  description: 'Reconcile accounts'
+  route_name: ek_finance.manage.reconciliation
+  parent: ek_finance.menu
+  weight: 6
+
+ek_finance.tax:
+  title: 'Tax'
+  description: 'Tax collectible and deductible'
+  route_name: ek_finance_tax
+  parent: ek_finance.menu
+  weight: 7
+  
+ek_finance.reporting:
+  title: 'Report & budget'
+  description: 'Monthly report and budget'
+  route_name: ek_finance_reporting
+  parent: ek_finance.menu
+  weight: 8
+  
+ek_finance.settings:
+  title: 'Settings'
+  description: 'Settings and parameters'
+  route_name: ek_finance.admin.settings
+  parent: ek_finance.menu
+  weight: 9

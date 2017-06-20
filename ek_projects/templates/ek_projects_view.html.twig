@@ -1,0 +1,534 @@
+<section class="project-head">
+
+    <div id="head">
+        <table class='table'>
+            <tbody>
+                <tr>
+                    <td id='project-name'><h2>{{ items.project.0.pname }}</h2><span class='field_edit'>{{ items.project.0.edit_pname|raw }}</span></td>
+                    <td>
+                        <span id='project-edit'>{{ items.project.0.edit_mode|raw }}</span>
+                        <span id='project-notify'>{{ items.project.0.keep_notify|raw }}</span>
+                        &nbsp;<a href="{{ items.followers.0.url }}" class="use-ajax blue"><i class="fa fa-users" aria-hidden="true"></i></a>
+                    </td>
+                </tr>
+                <tr>
+                    <td id='project-last_view'>{{ 'last view'|t }}:{{ items.project.0.last_modified }}</td>
+                    <td></td>
+                </tr>            
+                <tr>
+                    <td id='project-type'>{{ items.type }}</td>
+                    <td id='project-client'>
+                        <i class="fa fa-address-card-o fa-fw" aria-hidden="true"></i>&nbsp;{{ items.client.0.url|raw }} 
+                        <span class='field_edit'>{{ items.project.0.edit_client_id|raw }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td id='project-level'>{{ items.project.0.level }}</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td id='project-extranet'>
+                        {% if items.project.0.extranet %}
+                            <i class='fa fa-exchange fa-fw'></i>&nbsp;{{ items.project.0.extranet }} 
+                        {% endif %} </td>
+                    <td id='project-owner'>
+                        <i class="fa fa-user-circle-o fa-fw" aria-hidden="true"></i>&nbsp;{{ 'Owner'|t }}: {{ items.user.0.name }}
+                        <span class='field_edit'>{{ items.project.0.edit_owner|raw }}</span>
+                    </td>
+                </tr> 
+
+                <tr>
+                    <td id='project-notification'><i class='fa fa-envelope-o fa-fw'></i>&nbsp;{{ items.project.0.notification }}</td>
+                    <td id='project-access'> 
+                        {% if items.project.0.access %}  <i class='fa fa-lock fa-fw'></i>&nbsp;{{ items.project.0.access }} {% endif %} </td>
+                </tr>
+                <tr>
+                    <td id='project-task'><i class='fa fa-tasks fa-fw'></i>&nbsp;{{ items.project.0.new_project_task }}</td>
+                    <td id='status_container' class='{{ items.project.0.status }}'>
+                        <a href="{{ items.project.0.edit_statusUrl }}" class="use-ajax blue">{{ 'Status'|t }}</a>: 
+                        <span id='status'>{{ items.project.0.status }}</span> 
+                        <span class='field_edit'>{{ items.project.0.edit_status|raw }}</span></td>
+                </tr>                                  
+            </tbody>
+        </table>
+    </div>
+</section>
+<section class="">
+    <div class='text-right'>
+        <div id='expand' class='close-ico'></div>
+    </div>
+</section>    
+                <br/>
+<section class="project">
+    {% if items.sub %}      
+        <div class="panel panel-default">
+
+            <div class="panel-heading" id='ps0'><a href='#s0'  onclick="jQuery('#s0').toggle('fast');">
+                    <h4 class="panel-title">{{ 'Linked projects'|t }}</h4></a>
+            </div>
+
+            <div class="panel-body"  style='display:none;' id="s0">
+                {% for key, item in items.sub %}
+
+                    <div>{{ item|raw }}</div>
+
+                {% endfor %}
+            </div>
+
+        </div>
+    {% endif %}  
+
+    {% if items.section_1 %}
+        <div class="panel panel-default">
+
+            <div class="panel-heading" id='ps1'><a href='#s1'  onclick="jQuery('#s1').toggle('fast');">
+                    <h4 class="panel-title">{{ 'Main data'|t }}</h4></a>
+            </div>
+
+            <div class="panel-body"  style='display:none;' id="s1">
+
+                <table class='table'>
+                    <tbody>
+
+                        <tr>
+                            <td>{{ 'Priority'|t }}: <span id='priority'>{{ items.project.0.priority }}</span> <span class='field_edit'>{{ items.project.0.edit_priority|raw }}</span></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>{{ 'Proposal date'|t }}: <span id='submission'>{{ items.description.0.submission }}</span> <span class='field_edit'>{{ items.description.0.edit_submission|raw }}</span></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>{{ 'Validation date'|t }}: <span id='validation'>{{ items.description.0.validation }}</span> <span class='field_edit'>{{ items.description.0.edit_validation|raw }}</span></td>
+                            <td>{{ 'Start date'|t }}: <span id='start_date'>{{ items.description.0.start_date }}</span> <span class='field_edit'>{{ items.description.0.edit_start_date|raw }}</span></td>
+                        </tr> 
+                        <tr>
+                            <td>{{ 'Deadline'|t }}: <span id='deadline'>{{ items.description.0.deadline }}</span> <span class='field_edit'>{{ items.description.0.edit_deadline|raw }}</span></td>
+                            <td>{{ 'Completion date'|t }}: <span id='completion'>{{ items.description.0.completion }}</span> <span class='field_edit'>{{ items.description.0.edit_completion|raw }}</span></td>
+                        </tr>                                      
+                    </tbody>
+                </table>
+
+                <table class='table'>
+                    <thead>
+                        <tr>
+                            <th>{{ 'In charge'|t }}</th>
+                            <th>{{ 'Responsibility'|t }}</th>
+                            <th>{{ 'Main task'|t }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            <td ><span id='perso_1'>{{ items.description.0.perso_1 }}</span> <span class='field_edit'>{{ items.description.0.edit_perso_1|raw }}</span></td>
+                            <td><span id='repo_1'>{{ items.description.0.repo_1 }}</span> <span class='field_edit'>{{ items.description.0.edit_repo_1|raw }}</span></td>
+                            <td><span id='task_1'>{{ items.description.0.task_1 }}</span> <span class='field_edit'>{{ items.description.0.edit_task_1|raw }}</span></td>
+                        </tr>
+                        <tr>
+                            <td ><span id='perso_2'>{{ items.description.0.perso_2 }}</span> <span class='field_edit'>{{ items.description.0.edit_perso_2|raw }}</span></td>
+                            <td><span id='repo_2'>{{ items.description.0.repo_2 }}</span> <span class='field_edit'>{{ items.description.0.edit_repo_2|raw }}</span></td>
+                            <td><span id='task_2'>{{ items.description.0.task_2 }}</span> <span class='field_edit'>{{ items.description.0.edit_task_2|raw }}</td>
+                        </tr>
+                        <tr>
+                            <td ><span id='perso_3'>{{ items.description.0.perso_3 }}</span> <span class='field_edit'>{{ items.description.0.edit_perso_3|raw }}</span></td>
+                            <td><span id='repo_3'>{{ items.description.0.repo_3 }}</span> <span class='field_edit'>{{ items.description.0.edit_repo_3|raw }}</span></td>
+                            <td><span id='task_3'>{{ items.description.0.task_3 }}</span> <span class='field_edit'>{{ items.description.0.edit_task_3|raw }}</span></td>
+                        </tr> 
+                    </tbody>
+                </table>        
+                {% autoescape %}
+                    <table class='table'>
+                        <tbody>
+                            <tr>
+                                <td class='tlabel' width="20%">{{ 'Description'|t }} <span class='field_edit'>{{ items.description.0.edit_project_description|raw }}</span></td>
+                                <td> <span id='project_description'>{{ items.description.0.project_description|nl2br }}</span></td>
+                            </tr>
+                            <tr>
+                                <td class='tlabel'>{{ 'Comments'|t }} <span class='field_edit'>{{ items.description.0.edit_project_comment|raw }}</span></td>
+                                <td><span id='project_comment'>{{ items.description.0.project_comment|nl2br }}</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                {% endautoescape %}
+                
+                
+                    <table class='table'>
+                        <tbody>
+                            <tr>
+                                <td class='tlabel'  width="20%">{{ 'Suppliers'|t }} <span class='field_edit'>{{ items.description.0.edit_supplieroffer|raw }}</span></td>
+                                <td id='suppliers'>
+                                    {% if items.description.0.supplieroffer %} 
+                                    <ul>
+                                        {% for key, item in items.description.0.supplieroffer %}
+                                            <li>{{ item.url|raw }}</li>
+                                        {% endfor %} 
+                                    </ul>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                     
+
+            </div>
+
+
+        </div>
+    {% endif %}  
+    {% if items.section_2 %}     
+        <div class="panel panel-default">
+
+            <div class="panel-heading" id='ps2'><a href='#s2'  onclick="jQuery('#s2').toggle('fast');">
+                    <h4 class="panel-title">{{ 'Tasks'|t }}</h4></a>
+            </div>
+
+            <div class="panel-body" style='display:none;' id="s2">
+                <div class='text-right'>
+                    {{ items.project.0.new_project_task }}
+                </div>
+                <div  id='tasks_table'>
+                    {{ items.project.0.task_list }}
+                </div>
+
+            </div>
+
+
+        </div>      
+    {% endif %}  
+    {% if items.section_3 %} 
+        <div class="panel panel-default">
+
+            <div class="panel-heading" id='ps3'><a href='#s3'  onclick="jQuery('#s3').toggle('fast');">
+                    <h4 class="panel-title">{{ 'Communication'|t }}</h4></a>
+            </div>
+
+            <div class="panel-body" style='display:none;' id="s3">
+                <table class='table'>
+                    <tbody>
+                        <tr>
+                            <td style="width:30%;" class='tlabel'>{{ 'Attachments'|t }}</td>
+                            <td style="width:30%;">
+                                <a title="{{ 'Upload new file'|t }}" href="{{ items.communication.0.uploadUrl }}" class="use-ajax blue">
+                                    <i class="fa fa-upload fa-2x" aria-hidden="true"></i></a>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>         
+                    <tbody id='project_com_docs'>
+                    </tbody>
+                </table>
+                
+
+                <hr>
+                {% if items.reports.0.list %} 
+                <h3>{{ 'Reports'|t }}</h3>
+                <table class='table'>
+                    <tbody id='_reports'>
+
+                        {% for key, item in items.reports.0.list %}
+
+                            <tr>
+                                <td title='{{ 'reference'|t }}' > {{ item.serial|raw }} </td>
+                                <td title='{{ 'last edit'|t }}' > {{ item.edit }} </td>
+                                <td title='{{ 'last edit'|t }}' > {{ item.description }} </td>
+                            </tr>
+                        {% endfor %}               
+
+                    </tbody>
+                    <tfoot>
+
+                    </tfoot>
+                </table>
+                {% endif %}
+            </div>
+
+
+        </div> 
+    {% endif %}  
+    {% if items.section_4 %} 
+        <div class="panel panel-default">
+
+            <div class="panel-heading" id='ps4'><a href='#s4'  onclick="jQuery('#s4').toggle('fast');">
+                    <h4 class="panel-title">{{ 'Logistics'|t }}</h4></a>
+            </div>
+
+            <div class="panel-body" style='display:none;' id="s4">
+
+                <table class='table'>
+                    <tbody>
+                        <tr>
+                            <td align='center'><b>{{ 'First shipment'|t }}</b></td>
+                            <td><b>{{ 'Second'|t }}</b></td>
+                            <td><b>{{ 'Third'|t }}</b></td>
+                            <td><b>{{ 'Fourth'|t }}</b></td>
+                        </tr>            
+                        <tr>
+                            <td><span id='first_ship'>{{ items.logisitc.0.first_ship }}</span>  <span class='field_edit'>{{ items.logistic.0.edit_first_ship|raw }}</span></td>
+                            <td><span id='second_ship'>{{ items.logistic.0.second_ship }}</span>  <span class='field_edit'>{{ items.logistic.0.edit_second_ship|raw }}</span></td>
+                            <td><span id='third_ship'>{{ items.logistic.0.third_ship }}</span>  <span class='field_edit'>{{ items.logistic.0.edit_third_ship|raw }}</span></td>
+                            <td><span id='four_ship'>{{ items.logistic.0.four_ship }}</span>  <span class='field_edit'>{{ items.logistic.0.edit_four_ship|raw }}</span></td>
+                        </tr>
+
+                        <tr>
+                            <td align='center' colspan='2'><b>{{ 'Status'|t }}</b></td>
+                            <td colspan='2'><b>{{ 'Last delivery'|t }}</b></td>
+                        </tr>            
+                        <tr>
+                            <td colspan='2' ><span id='ship_status'>{{ items.logistic.0.ship_status }}</span>  <span class='field_edit'>{{ items.logistic.0.edit_ship_status|raw }}</span></td>
+                            <td colspan='2'><span id='last_delivery'>{{ items.logistic.0.last_delivery }}</span>  <span class='field_edit'>{{ items.logistic.0.edit_last_delivery|raw }}</span></td>
+
+                        </tr>  
+                    </tbody>
+                </table>
+
+                {% if items.logistic.0.receiving %}
+                    <table class='table'>
+                        <tbody>
+                            <tr><td colspan='2' class='tlabel'>{{ 'Receiving orders'|t }}</td></tr>
+
+                            {% for key, item in items.logistic.0.receiving %}
+                                <tr>
+                                    <td>{{ item.serial }}</td>
+                                    <td>{{ item.client }}</td>
+                                    <td title="{{ 'Receiving date'|t }}">{{ item.date }}</td>
+                                    <td>{{ item.status }}</td>
+                                    <td>{{ item.url|raw }}</td>
+                                </tr>
+                            {% endfor %} {# RR list #}
+                        </tbody>
+                    </table>
+                {% endif %}         
+                {% if items.logistic.0.delivery %}
+                    <table class='table'>
+                        <tbody>
+                            <tr><td colspan='2' class='tlabel'>{{ 'Delivery orders'|t }}</td></tr>
+
+                            {% for key, item in items.logistic.0.delivery %}
+                                <tr>
+                                    <td>{{ item.serial }}</td>
+                                    <td>{{ item.client }}</td>
+                                    <td title="{{ 'Delivery date'|t }}">{{ item.date }}</td>
+                                    <td>{{ item.status }}</td>
+                                    <td>{{ item.url|raw }}</td>
+                                </tr>
+                            {% endfor %} {# DO list #}
+                        </tbody>
+                    </table>
+                {% endif %}          
+
+            </div>
+
+
+        </div>  
+    {% endif %}  
+    {% if items.section_5 %}       
+        <div class="panel panel-default">
+
+            <div class="panel-heading" id='ps5'><a href='#s5'  onclick="jQuery('#s5').toggle('fast');">
+                    <h4 class="panel-title">{{ 'Finance'|t }}</h4></a>
+            </div>
+
+            <div class="panel-body" style='display:none;' id="s5">
+
+                <table class='table'>
+                    <tbody>
+                        <tr>
+                            <td align='center'><b>{{ 'Currency'|t }}</b></td>
+                            <td><b>{{ 'Proposed value'|t }}</b></td>
+                            <td><b>{{ 'Agreed value'|t }}</b></td>
+                            <td><b>{{ 'Payment terms'|t }}</b></td>
+                            <td><b>{{ 'Discount'|t }}</b></td>
+                        </tr>            
+                        <tr>
+                            <td><span id='currency'>{{ items.finance.0.currency }}</span>  <span class='field_edit'>{{ items.finance.0.edit_currency|raw }}</span></td>
+                            <td><span id='tender_offer'>{{ items.finance.0.tender_offer }}</span>  <span class='field_edit'>{{ items.finance.0.edit_tender_offer|raw }}</span></td>
+                            <td><span id='project_amount'>{{ items.finance.0.project_amount }}</span>  <span class='field_edit'>{{ items.finance.0.edit_project_amount|raw }}</span></td>
+                            <td><span id='payment_terms'>{{ items.finance.0.payment_terms }}</span>  <span class='field_edit'>{{ items.finance.0.edit_payment_terms|raw }}</span></td>
+                            <td><span id='discount_offer'>{{ items.finance.0.discount_offer }}</span>  <span class='field_edit'>{{ items.finance.0.edit_discount_offer|raw }}</span></td>
+                        </tr>
+
+                        <tr>
+                            <td align='center'><b>{{ 'Offer validity'|t }}</b></td>
+                            <td><b>{{ 'Offer deadline'|t }}</b></td>
+                            <td><b>{{ 'Incoterm'|t }}</b></td>
+                            <td colspan='2'><b>{{ 'Purchase budget'|t }}</b></td>
+                        </tr>            
+                        <tr>
+                            <td><span id='offer_validity'>{{ items.finance.0.offer_validity }}</span>  <span class='field_edit'>{{ items.finance.0.edit_offer_validity|raw }}</span></td>
+                            <td><span id='offer_delivery'>{{ items.finance.0.offer_delivery }}</span>  <span class='field_edit'>{{ items.finance.0.edit_offer_delivery|raw }}</span></td>
+                            <td><span id='incoterm'>{{ items.finance.0.incoterm }}</span>  <span class='field_edit'>{{ items.finance.0.edit_incoterm|raw }}</span></td>
+                            <td colspan='2'><span id='purchase_value'>{{ items.finance.0.purchase_value }}</span>  <span class='field_edit'>{{ items.finance.0.edit_purchase_value|raw }}</span></td>
+                        </tr>              
+
+                        <tr>
+                            <td align='center'><b>{{ 'LC status'|t }}</b></td>
+                            <td><b>{{ 'LC revision / ref'|t }}</b></td>
+                            <td><b>{{ 'LC expiry'|t }}</b></td>
+                            <td colspan='2'><b>{{ 'Payment'|t }}</b></td>
+                        </tr>            
+                        <tr>
+                            <td><span id='lc_status'>{{ items.finance.0.lc_status }}</span>  <span class='field_edit'>{{ items.finance.0.edit_lc_status|raw }}</span></td>
+                            <td><span id='lc_revision'>{{ items.finance.0.lc_revision }}</span>  <span class='field_edit'>{{ items.finance.0.edit_lc_revision|raw }}</span></td>
+                            <td><span id='lc_expiry'>{{ items.finance.0.lc_expiry }} </span> <span class='field_edit'>{{ items.finance.0.edit_lc_expiry|raw }}</span></td>
+                            <td colspan='2'><span id='payment'>{{ items.finance.0.payment }}</span>  <span class='field_edit'>{{ items.finance.0.edit_payment|raw }}</span></td>
+                        </tr>               
+                    </tbody>
+                </table>
+
+                {% if items.finance.0.po %}
+                    <table class='table'>
+                        <tbody>
+                            <tr><td colspan='1' class='tlabel'>{{ 'Purchase orders'|t }}</td></tr>
+
+                            {% for key, item in items.finance.0.po %}
+                                <tr>
+                                    <td style="width:35%;"><a href="{{ item.href }}">{{ item.serial }}</a></td>
+                                    <td style="width:25%;">{{ item.amount }}</td>
+                                    <td style="width:25%;">{{ item.amountbc }} </td>
+                                    <td style="width:5%;"><i class="fa fa-circle {{ item.due }}" aria-hidden="true" title="{{ item.duedate }}"></i> </td>
+                                    <td style=""><a class="use-ajax red"  data-accepts="application/vnd.drupal-modal" href="{{ item.more }}">{{ item.status }}</a></td>
+                                    
+                                </tr>
+
+                            {% endfor %} {# po list #}
+                            <tr>
+                                <td>{{ 'Total'|t }}</td>
+                                <td></td>
+                                <td><strong>{{ items.finance.0.po_sum.sum_bc }}</strong></td>
+                                <td/>
+                                <td></td>
+                                
+                            </tr>             
+                        </tbody>
+                    </table>
+
+                {% endif %}            
+                {% if items.finance.0.quote %}
+                    <table class='table'>
+                        <tbody>
+                            <tr><td colspan='1' class='tlabel'>{{ 'Quotations'|t }}</td></tr>
+
+                            {% for key, item in items.finance.0.quote %}
+
+                                <tr>
+                                    <td style="width:35%;"><a href="{{ item.href }}">{{ item.serial }}</a></td>
+                                    <td style="width:55%;">{{ item.amount }}</td>
+                                    <td style="">{{ item.status }}</td>
+                                    
+                                </tr>
+
+                            {% endfor %} {# quote list #}           
+                        </tbody>
+                    </table>        
+                {% endif %}            
+                {% if items.finance.0.invoice %} 
+                    <table class='table'>
+                        <tbody>
+                            <tr><td colspan='1' class='tlabel'>{{ 'Invoices'|t }}</td></tr>
+
+                            {% for key, item in items.finance.0.invoice %}
+                                <tr>
+                                    <td style="width:35%;"><a href="{{ item.href }}">{{ item.serial }}</a></td>
+                                    <td style="width:25%;">{{ item.amount }}</td>
+                                    <td style="width:25%;">{{ item.amountbc }} </td>
+                                    <td style="width:5%;"><i class="fa fa-circle {{ item.due }}" aria-hidden="true" title="{{ item.duedate }}"></i> </td>
+                                    <td style=""><a class="use-ajax red"  data-accepts="application/vnd.drupal-modal" href="{{ item.more }}">{{ item.status }}</a></td>
+                                    
+                                </tr>
+                            {% endfor %} {# invoice list #}
+                            <tr>
+                                <td>{{ 'Total'|t }}</td>
+                                <td></td>
+                                <td><strong>{{ items.finance.0.invoice_sum.sum_bc }}</strong></td>
+                                <td></td>
+                                <td></td>
+                                
+                            </tr>             
+                        </tbody>
+                    </table>
+                {% endif %}          
+                {% if items.finance.0.expenses %} 
+                    <table class='table'>
+                        <tbody>
+                            <tr>
+                                <td style="width:35%;" class='tlabel'>{{ 'COS'|t }}</td>
+                                <td>{{ items.finance.0.expenses5 }}</td>
+                            </tr>  
+                            <tr>
+                                <td width="20%" class='tlabel'>{{ 'Overhead'|t }}</td>
+                                <td>{{ items.finance.0.expenses6 }}</td>
+                            </tr>                             
+                            <tr>
+                                <td width="20%" class='tlabel'>{{ 'Total expenses'|t }}</td>
+                                <td>{{ items.finance.0.expenses }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                {% endif %} 
+                {% if items.finance.0.memo %} 
+                    <table class='table'>
+                        <tbody>
+                            <tr><td colspan='1' class='tlabel'>{{ 'Internal memos'|t }}</td></tr>
+
+                            {% for key, item in items.finance.0.memo %}
+                                <tr>
+                                    <td style="width:35%;"><a title="{{ item.mission }}" href="{{ item.href }}">{{ item.serial }}</a></td>
+                                    <td style="width:25%;">{{ item.amount }}</td>
+                                    <td style="width:25%;">{{ item.amountbc }} </td>
+                                    <td><i class="fa fa-circle {{ item.status_class }}" aria-hidden="true" title="{{ item.status }}"></i></td>
+                                    
+                                </tr>
+                            {% endfor %} {# memos list #}
+                            <tr>
+                                <td>{{ 'Total'|t }}</td>
+                                <td></td>
+                                <td><strong>{{ items.finance.0.memo_sum.sum_bc }}</strong></td>
+                                <td></td>
+                                
+                            </tr>             
+                        </tbody>
+                    </table>
+                {% endif %}          
+                <table class='table'>
+                    <tbody>
+                        <tr>
+                            <td style="width:18%;" class='tlabel'>{{ 'Comments'|t }} <span class='field_edit'>{{ items.finance.0.edit_comment|raw }}</span></td>
+                            <td><span id='comment'>{{ items.finance.0.comment|nl2br }}</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class='table'>
+                    <tbody>
+                        <tr>
+                            <td colspan='1' style="width:30%;" class='tlabel'>{{ 'Attachments'|t }}</td>
+                            <td style="width:30%;">
+                                <a title="{{ 'Upload new file'|t }}" href="{{ items.finance.0.uploadUrl }}" class="use-ajax blue">
+                                    <i class="fa fa-upload fa-2x" aria-hidden="true"></i></a>
+                            </td>
+                            <td>
+                                
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <tbody id='project_fi_docs'>
+                    </tbody>
+                </table>
+                <div>{{ c }}</div>
+
+            </div>
+
+
+        </div> 
+    {% endif %}                 
+    <hr>
+
+</section>
+                 

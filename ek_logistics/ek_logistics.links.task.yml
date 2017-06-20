@@ -1,0 +1,35 @@
+ek_logistics_task_delivery_list:
+  route_name: ek_logistics_list_delivery
+  base_route: ek_logistics_list_delivery
+  title: 'Delivery list'
+  weight: 1
+
+ek_logistics_task_delivery_edit:
+  route_name: ek_logistics_delivery_edit
+  base_route: ek_logistics_list_delivery
+  title: 'New order'
+  weight: 2
+  
+ek_logistics_task_receiving_list:
+  route_name: ek_logistics_list_receiving
+  base_route: ek_logistics_list_receiving
+  title: 'Receiving list'
+  weight: 1
+
+ek_logistics_task_receiving_edit:
+  route_name: ek_logistics_receiving_edit
+  base_route: ek_logistics_list_receiving
+  title: 'New receiving'
+  weight: 2
+  
+ek_logistics_task_returning_list:
+  route_name: ek_logistics_list_returning
+  base_route: ek_logistics_list_returning
+  title: 'Returning list'
+  weight: 1
+
+ek_logistics_task_returning_edit:
+  route_name: ek_logistics_returning_edit
+  base_route: ek_logistics_list_returning
+  title: 'New return order'
+  weight: 2

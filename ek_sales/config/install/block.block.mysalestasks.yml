@@ -1,0 +1,34 @@
+uuid: d87ce433-2fbf-4989-b559-c58ef82b6d76
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_sales
+    - system
+    - user
+  theme:
+    - bartik
+id: mysalestasks
+theme: bartik
+region: content
+weight: -7
+provider: null
+plugin: my_sales_tasks_block
+settings:
+  id: my_sales_tasks_block
+  label: 'My sales tasks'
+  provider: ek_sales
+  label_display: '0'
+visibility:
+  request_path:
+    id: request_path
+    pages: /sales_management
+    negate: false
+    context_mapping: {  }
+  user_role:
+    id: user_role
+    roles:
+      authenticated: authenticated
+    negate: false
+    context_mapping:
+      user: '@user.current_user_context:current_user'

@@ -1,0 +1,56 @@
+<?php
+
+$pdf=new FPDF();
+$pdf->SetTitle($fileName);
+$pdf->AliasNbPages();
+$pdf->AddPage('P','A4');
+$pdf->SetMargins(10,10);
+
+
+$pdf->SetDrawColor(128, 128, 128);  
+
+$pdf->SetFont('Arial','',16); 
+$pdf->Cell(100,15, t('Chart of accounts') .  ': ' . $company  ,0,1); 
+
+$pdf->SetFont('Arial','',8); 
+While($d = $data->fetchObject()) {
+    
+    if($d->astatus == 0) {
+        $pdf->SetTextColor(192,192,192);
+    } else {
+        $pdf->SetTextColor(0,0,0);
+    }
+    
+    if($d->atype == 'header') {
+        $pdf->SetFont('Arial','',10); 
+        $pdf->Cell(5,6, '' ,0,0); 
+        $pdf->Cell(25,6, $d->aid ,'B',0); 
+        $pdf->Cell(100,6, $d->aname ,'B',1);
+        
+    } elseif($d->atype == 'class') {
+        $pdf->SetFont('Arial','',9); 
+        $pdf->Cell(8,5, '' ,0,0); 
+        $pdf->Cell(25,5, $d->aid ,'B',0); 
+        $pdf->Cell(100,5, $d->aname ,'B',1);
+        
+    } else {
+        $pdf->SetFont('Arial','',8); 
+        $pdf->Cell(10,4, '' ,0,0); 
+        $pdf->Cell(25,4, $d->aid ,0,0); 
+        $pdf->Cell(100,4, $d->aname ,0,1);
+    }
+    
+}
+
+
+header('Cache-Control: private');
+header('Content-Type: application/pdf');
+header("Content-Disposition: 'attachment'; filename=\"" . t('chart') . '_' . str_replace(' ', '_', $company) . "\" ");
+$f = str_replace(' ', '_', $company) . '_chart.pdf';
+echo $pdf->Output($f, 'I');
+flush();
+
+
+
+
+

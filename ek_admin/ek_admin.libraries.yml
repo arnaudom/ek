@@ -1,0 +1,50 @@
+ek_admin_css:
+  version: VERSION
+  css:
+    theme:
+      css/ek_admin.css: {}
+      https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css: { type: external }
+
+ek_admin.script.sn:
+  version: VERSION
+  js:
+    js/ek_admin_sn.js: {}
+  dependencies:
+    - core/jquery
+
+#used in ek_sales
+ek_admim.users_autocomplete:
+  version: VERSION
+  js:
+    js/ek_admin_users_autocomplete.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.ui.autocomplete
+       
+ek_admin_docs_updater:
+  version: VERSION
+  js:
+    js/updater.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupal.form
+    - core/jquery.form
+    - core/drupalSettings
+    - core/drupal.ajax
+    - core/drupal.dialog
+    - core/backbone
+ 
+    
+ek_admin_charts:
+  version: VERSION
+  css:
+    theme:
+      https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css: { type: external }
+  js:
+    https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js: { type: external }
+    https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js: { type: external }
+  dependencies:
+    - core/jquery
+    
+

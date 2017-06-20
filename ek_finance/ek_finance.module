@@ -1,0 +1,258 @@
+<?php
+
+    ///////////////////////////////////////////////////
+    //                  COPYRIGHT                    //
+    //                                               //
+    // DEVELOPED BY ARREA LTD                       //
+    // all rights reserved                           //
+    // Please read and agree with software           //
+    // application license                           //
+    ///////////////////////////////////////////////////
+
+/**
+ * @file
+ *  module ek_finance
+ */
+
+use Drupal\ek_finance\Journal;
+
+
+/**
+ * Implementation hook download.
+ */
+function ek_finance_file_download($uri) {
+
+if (strpos($uri,'/finance/')) {
+return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($uri));
+}
+}
+
+
+/**
+ * Implementation hook_theme().
+ */
+function ek_finance_theme() {
+  return array(
+    'ek_finance_settings_form' => array
+    (
+      'template' => 'ek_finance_settings',
+      'variables' => array('items' => array()),
+    ),   
+    // for the dashboard
+    'ek_finance_dashboard' => array
+    (
+      'template' => 'ek_finance_dashboard',
+      'variables' => array('items' => array()),
+    ), 
+    //monthly reoprt, budget
+    'ek_finance_reporting' => array
+    (
+      'template' => 'ek_finance_reporting',
+      'variables' => array('items' => array()),
+    ), 
+        'ek_finance_budgeting' => array
+    (
+      'template' => 'ek_finance_budgeting',
+      'variables' => array('items' => array()),
+    ),  
+    // for the journal items display
+    'ek_finance_journal' => array
+    (
+      'template' => 'ek_finance_journal',
+      'variables' => array('items' => array()),
+    ), 
+    // for account history
+    'ek_journal_history' => array
+    (
+      'template' => 'ek_journal_history',
+      'variables' => array('items' => array()),
+    ),
+    // for the ledger items display
+    'ek_finance_ledger' => array
+    (
+      'template' => 'ek_finance_ledger',
+      'variables' => array('items' => array()),
+    ),
+    'ek_finance_sales_ledger' => array
+    (
+      'template' => 'ek_finance_sales_ledger',
+      'variables' => array('items' => array()),
+    ),
+    // for the trial balalnce items display
+    'ek_finance_trial' => array
+    (
+      'template' => 'ek_finance_trial',
+      'variables' => array('items' => array()),
+    ),
+    // for the cash items display
+    'ek_finance_cash' => array
+    (
+      'template' => 'ek_finance_cash',
+      'variables' => array('items' => array()),
+    ), 
+    // for the balance sheet
+    'ek_balance_sheet' => array
+    (
+      'template' => 'ek_balance_sheet',
+      'variables' => array('items' => array()),
+    ),
+    // for the memos transactions
+    'ek_finance_memo_transactions' => array
+    (
+      'template' => 'ek_finance_memo_transactions',
+      'variables' => array('title' => NULL, 
+                            'baseCurrency' => NULL,
+                            'form' => [], 
+                            'companies' => [], 
+                            'company_access' => [],
+                            'sum' => [], 
+                            'due' => []),
+    ),
+    'ek_finance_memo_transactions_bycoid' => array
+    (
+      'template' => 'ek_finance_memo_transactions_bycoid',
+      'variables' => array('form' => [],
+                            'coid' => NULL,
+                            'baseCurrency' => NULL, 
+                            'companies' => [],
+                            'transactions' => [] ,
+                            'sumCredit' => [], 
+                            'sumDebit' => []),
+    ),
+    // for the profit loss display
+    'ek_profit_loss' => array
+    (
+      'template' => 'ek_profit_loss',
+      'variables' => array('items' => array()),
+    ),
+    // for the tax report
+    'ek_finance_tax' => array
+    (
+      'template' => 'ek_finance_tax',
+      'variables' => array('items' => array()),
+    ),
+    // for cash flow statement
+    'ek_finance_cashflow' => array
+    (
+      'template' => 'ek_finance_cashflow',
+      'variables' => array('items' => array()),
+    ),
+    // for iframe display / pdf
+    'iframe' => array
+    (
+      'template' => 'iframe',
+      'variables' => array('items' => array()),
+    ),      
+  );     
+}
+
+/**
+ * Return account history
+ * @param
+ * param = array()
+ * id = a modal identifier
+   aid = account id
+ * coid = company id
+ * from = from date
+ * to = to date
+*
+*/
+  function history( $param ) {
+  
+  $journal = new Journal();
+  $history = $journal->history($param);
+     return array(
+      '#theme' => 'ek_journal_history',
+      '#items' => unserialize($history),
+      '#attached' => array(
+          'library' => array('ek_finance/ek_finance'),      
+      ),
+    );
+  }
+  
+/**
+ * Implementation hook_mail().
+ */
+function ek_finance_mail($key, &$message, $params) {
+
+    $theme = theme_get_setting('logo');
+    $params['options']['logo'] = $GLOBALS['base_url'] . $theme['url'];
+    $params['options']['site'] = \Drupal::config('system.site')->get('name');
+    $params['options']['origin'] = \Drupal::currentUser()->getUsername();
+    $params['options']['stamp'] = date('F j, Y, g:i a');
+    
+    switch($key) {
+      case 'key_memo_note':
+        $render = [
+            '#markup' => $params['body'],
+        ];
+        $message['subject'] = $params['subject'];
+        $message['body'][] = \Drupal::service('renderer')->render($render);
+        $message['options'] = $params['options'];
+        break;
+
+    }
+}
+  
+/**
+ * Preprocess variables for views.
+ *
+ * @param array $variables
+ *  An associative array containing:
+ *   
+ */
+ function ek_finance_views_data() {
+ 
+//CREATE TABLE `ek_expenses` (
+//	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+//	`class` VARCHAR(200) NOT NULL,
+//	`type` VARCHAR(200) NOT NULL,
+//	`allocation` VARCHAR(200) NOT NULL,
+//	`company` TINYINT(5) UNSIGNED NULL DEFAULT NULL,
+//	`localcurrency` DOUBLE NOT NULL DEFAULT '0',
+//	`rate` DOUBLE NOT NULL DEFAULT '0',
+//	`amount` DOUBLE NOT NULL DEFAULT '0',
+//	`currency` VARCHAR(8) NULL DEFAULT NULL,
+//	`amount_paid` DOUBLE UNSIGNED NULL DEFAULT NULL,
+//	`year` INT(10) UNSIGNED NULL DEFAULT '0',
+//	`month` INT(10) UNSIGNED NULL DEFAULT '0',
+//	`comment` VARCHAR(255) NULL DEFAULT NULL,
+//	`pcode` VARCHAR(45) NULL DEFAULT '',
+//	`clientname` VARCHAR(100) NULL DEFAULT NULL,
+//	`suppliername` VARCHAR(100) NULL DEFAULT NULL,
+//	`receipt` VARCHAR(45) NULL DEFAULT '',
+//	`employee` VARCHAR(45) NULL DEFAULT '',
+//	`status` VARCHAR(45) NOT NULL DEFAULT '',
+//	`cash` VARCHAR(10) NOT NULL,
+//	`pdate` VARCHAR(12) NOT NULL DEFAULT '',
+//	`reconcile` VARCHAR(5) NOT NULL DEFAULT '0',
+//	`attachment` VARCHAR(5) NULL DEFAULT NULL COMMENT 'file attached uri',
+//	PRIMARY KEY (`id`)
+//)
+//COLLATE='latin1_swedish_ci'
+//ENGINE=MyISAM
+//AUTO_INCREMENT=1;  
+ 
+ }
+
+  $data['ek_finance']['table']['group'] = t('ek finance');
+  $data['ek_finance']['table']['base'] = array(
+    'field' => 'id', // This is the identifier field for the view.
+    'title' => t('ek expenses records'),
+    'help' => t('contains main expenses records data.'),
+    'weight' => 1,
+    'database' => 'external_db'
+  );
+  
+
+  //  ID table field.
+  $data['ek_finance']['id'] = array(
+    'title' => t('record id'), 
+    'help' => t('record id.'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );  
+  
+  
+?>

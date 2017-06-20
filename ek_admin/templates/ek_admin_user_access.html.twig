@@ -1,0 +1,40 @@
+{{ items.form }}
+
+<table class='table'>
+    <thead>
+        <tr>
+            <th>{{ 'id'|t }}</th>
+            <th>{{ 'Company name'|t }}</th>
+        </tr>
+    </thead>
+            
+    <tbody id='company_per_user'>
+
+        {% for key, item in items.company %}
+            <tr>
+                <td> {{ key }} </td>
+                <td> {{ item }} </td>
+            </tr>
+        {% endfor %}               
+
+    </tbody>
+    <thead>
+        <tr>
+            <th>{{ 'id'|t }}</th>
+            <th>{{ 'Country name'|t }}</th>
+        </tr>
+    </thead>
+    <tbody id='country_per_user'>
+
+        {% for key, item in items.country %}
+            <tr>
+                <td> {{ key }} </td>
+                <td> {{ item }} </td>
+            </tr>
+        {% endfor %}               
+
+    </tbody>
+    <tfoot>
+
+    </tfoot>
+</table>

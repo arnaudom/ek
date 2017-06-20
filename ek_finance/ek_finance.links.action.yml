@@ -1,0 +1,31 @@
+ek_finance_action_expenses:
+  route_name: ek_finance.manage.list_expense
+  title: 'Expenses'
+  appears_on:
+    - ek_finance.main
+
+ek_finance_action_journal:
+  route_name: ek_finance.extract.general_journal
+  title: 'Journal'
+  appears_on:
+    - ek_finance.main
+    
+ek_finance_action_new_memo_internal:
+  route_name: ek_finance_memo_transactions
+  title: 'Transactions summary'
+  weight: 2
+  appears_on:
+    - ek_finance_manage_list_memo_internal
+
+ek_finance_action_transactions_internal:
+  route_name: ek_finance_manage_internal_memo
+  title: 'New memo'
+  weight: 1
+  appears_on:
+    - ek_finance_manage_list_memo_internal
+    
+ek_finance_action_new_memo_personal:
+  route_name: ek_finance_manage_personal_memo
+  title: 'New memo'
+  appears_on:
+    - ek_finance_manage_list_memo_personal

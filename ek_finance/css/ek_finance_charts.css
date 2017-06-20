@@ -1,0 +1,16 @@
+#container-expenses-chart {
+    display: block;
+    position: relative;
+}
+#container-expenses-chart ul {
+    list-style-type:none;
+    margin:0px;
+    padding:0px;
+}
+
+#select-container {
+    top:5px;
+    right:0;
+    position: absolute;
+}
+

@@ -1,0 +1,36 @@
+uuid: 4237a86e-dce1-4b64-8701-1c4f0083bf5c
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_documents
+    - node
+    - system
+    - user
+  theme:
+    - bartik
+id: quickuploaddocument
+theme: bartik
+region: sidebar_first
+weight: -100
+provider: null
+plugin: quick_upload_block
+settings:
+  id: quick_upload_block
+  label: 'Upload document'
+  provider: ek_documents
+  label_display: visible
+  cache:
+    max_age: 0
+    contexts: {  }
+  visibility:
+    request_path:
+      id: request_path
+      pages: /documents
+      negate: false
+visibility:
+  request_path:
+    id: request_path
+    pages: "/documents\r\n/common_documents"
+    negate: false
+    context_mapping: {  }

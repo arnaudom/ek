@@ -1,0 +1,25 @@
+ek_hr.menu:
+  title: 'Human resources'
+  description: 'Administrate human resources'
+  route_name: ek_hr.main
+  expanded: true
+  hidden: 0
+  weight: 8    
+ 
+ek_hr.menu_parameters:
+  title: 'Edit parameters'
+  description: 'Edit parameters, employees data'
+  route_name: ek_hr.parameters
+  parent: ek_hr.menu
+
+ek_hr.menu_payroll:
+  title: 'Manage payroll'
+  description: 'Edit salaries, advances'
+  route_name: ek_hr.payroll
+  parent: ek_hr.menu
+
+ek_hr.menu_roster:
+  title: 'Roster'
+  description: 'Edit employees roster'
+  route_name: ek_hr.roster
+  parent: ek_hr.menu

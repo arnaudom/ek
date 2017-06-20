@@ -1,0 +1,36 @@
+ek_logistics:
+  version: 1
+  js:
+    js/ek_logistics.js: {}
+  css:
+    theme:
+      css/ek_logistics.css: {}
+      
+ek_logistics_css:
+  version: 1
+  css:
+    theme:
+      css/ek_logistics.css: {}
+
+ek_logistics_html_documents_css:
+  version: 1
+  css:
+    theme:
+      css/ek_logistics_html_documents.css: {}
+      
+ek_logistics_print:
+  version: 1
+  js:
+    js/ek_logistics_print.js: {}
+    
+ek_logistics.dashboard:
+  version: 1
+  css:
+    theme:
+      css/ek_logistics_dashboard.css: {}
+  dependencies:
+    - core/jquery
+    #- core/drupal
+    #- core/drupal.form
+    #- core/jquery.form
+    #- core/drupal.collapse

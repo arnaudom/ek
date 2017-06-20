@@ -1,0 +1,25 @@
+{{ items.form }}
+
+<table>
+    <tr>
+        <td>
+            {{ items.excel }}
+        </td>
+        <td>
+            {{ items.local }}
+        </td>
+    </tr>
+</table>
+
+{% if (items.alert1 or items.alert2 or items.alert3) %}
+    <div class="messages messages--warning" aria-label="Status message" role="contentinfo">
+        <p>{{ items.alert1|raw }}</p>
+        <p>{{ items.alert2|raw }}</p>
+        <p>{{ items.alert3|raw }}</p>
+    </div>
+{% endif %}  
+
+{{ items.table_1|raw }}
+<hr>
+{{ items.table_2|raw }}
+

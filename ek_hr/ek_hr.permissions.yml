@@ -1,0 +1,24 @@
+hr_dashboard:
+  title: 'HR dashboard'
+  description: 'View a dashborad page with summary of HR content'  
+hr_parameters:
+  title: 'HR parameters'
+  description: 'Set paramaters for HR managment'    
+new_employee:
+  title: 'Create new employee'
+  description: 'Create new employee'  
+hr_payroll:
+  title: 'Payroll'
+  description: 'Input payroll data per company' 
+hr_payroll_post:
+  title: 'Payroll post'
+  description: 'Post payroll data and record in accounts'
+view_employees:
+  title: 'View'
+  description: 'Allows user to view employees list.'
+hr_roster_edit:
+  title: 'Edit roster'
+  description: 'Allows user to edit roster.'
+hr_roster_download:
+  title: 'Extract roster'
+  description: 'Allows user to download roster file.'

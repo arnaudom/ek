@@ -1,0 +1,61 @@
+<?php
+
+use Drupal\Core\Database\Database;
+/**
+ * @file
+ * Install, update and uninstall functions for the ek_projects module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function ek_projects_uninstall() {
+  // Clear data out of the cache.
+  \Drupal::cache('data')->deleteAll();
+}
+
+
+/**
+ * Implements hook_schema().
+ * schema installation is not done at install time but wihin the application
+ * in a separate database
+ */
+
+
+/**
+ * Add group in project table for management of sub projects.
+ * New function to merge projects
+
+function ek_projects_update_8001() {
+    
+        $schema = Database::getConnection('external_db','external_db')->schema();
+        $spec = array(
+            'description' => 'Group by main project id',
+            'type' => 'varchar',
+            'length' => 20,
+            'not null' => FALSE,
+            
+        );
+        $schema->addField('ek_project', 'main', $spec);
+ 
+        \Drupal::service('router.builder')->rebuild();
+
+        
+        return t('Projects table updated.');
+}
+*/
+/**
+ * Add new function for administrative check of project access by user
+ * 
+*/
+function ek_projects_update_8002() {
+   \Drupal::service('router.builder')->rebuild(); 
+} 
+
+/**
+ * Add new route for delete confirmation of files
+ * 
+*/
+function ek_projects_update_8003() {
+   \Drupal::service('router.builder')->rebuild(); 
+} 

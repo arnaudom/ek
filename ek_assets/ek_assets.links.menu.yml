@@ -1,0 +1,7 @@
+ek_assets.menu:
+  title: Assets
+  description: 'Manage assets'
+  route_name: ek_assets.list
+  expanded: true
+  hidden: 0
+  weight: 1.5  

@@ -1,0 +1,35 @@
+ek_sales.menu:
+  title: 'Sales management'
+  description: 'manage quotations, purchases and invoices'
+  route_name: ek_sales.main
+  expanded: true
+  hidden: 0
+  weight: 6
+      
+ek_sales.menu.purchases_list:
+  title: 'Purchases'
+  description: 'List of purchases'
+  route_name: ek_sales.purchases.list
+  parent: ek_sales.menu
+  weight: 1
+
+ek_sales.menu.quotations_list:
+  title: 'Quotations'
+  description: 'List of quotations'
+  route_name: ek_sales.quotations.list
+  parent: ek_sales.menu
+  weight: 2
+
+ek_sales.menu.invoices_list:
+  title: 'Invoices'
+  description: 'List of invoices'
+  route_name: ek_sales.invoices.list
+  parent: ek_sales.menu
+  weight: 3
+  
+ek_sales.menu.settings:
+  title: 'Settings'
+  description: 'Parameters'
+  route_name: ek_sales_settings
+  parent: ek_sales.menu
+  weight: 4

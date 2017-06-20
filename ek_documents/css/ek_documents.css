@@ -1,0 +1,270 @@
+.panel-default {
+  border-color: #ddd;
+}
+
+.panel {
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.panel-default > .panel-heading {
+    background-color: #f5f5f5;
+    border-color: #ddd;
+    color: #333;
+}
+.panel-heading {
+    display: block;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    padding: 10px 15px;
+    cursor:pointer
+}
+
+.panel-body {
+  display : block;
+  padding: 10px;
+}
+
+
+*, *:before, *:after {
+    box-sizing: border-box;
+}
+.panel-body:after {
+    clear: both;
+}
+.panel-body:before, .panel-body:after {
+    content: " ";
+    display: table;
+}
+
+
+.badge {
+    background-color: #999;
+    border-radius: 10px;
+    color: #fff;
+    display: inline-block;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+    min-width: 10px;
+    padding: 3px 7px;
+    text-align: center;
+    vertical-align: baseline;
+    white-space: nowrap;
+}
+
+.bar {
+  padding: 3px;
+  height:2em;
+  background-color:#f5f5f5;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.doc {
+    background: url("images/overlay.png") repeat scroll 0 0 transparent;
+    border: 1px solid #FFFFFF;
+    display: block;
+    float: left;
+    font-size: 0.8em;
+    font-family: Arial,Garuda;
+    //color:;
+    //margin-bottom: 10px;
+    margin-left: 15px;
+
+    width: 120px;
+    height:120px;
+    padding: 8px;
+    border-radius:8px;
+  -moz-border-radius:8px; -webkit-border-radius:8px;
+}
+ .doc a {
+    text-decoration:none;
+ }
+ 
+.red {
+color: #FF6666;
+}
+
+.green {
+  color: #00D744;
+}
+
+.blue {
+  color: #2E64FE;
+}
+
+.float-right {
+    float: right;
+    margin-left: 2px;
+}
+
+.float-left {
+    float: left;
+    margin-left: 2px;
+
+}
+
+.largeico {
+    width:45px;
+    margin-top:5px;
+} 
+
+
+.folder-ico {
+  background-image: url(images/folder3.png) ;
+  background-repeat: no-repeat;
+  padding-right: 20px;
+  width: 32px;
+  height:32px;
+
+}
+
+.open-ico {
+  background-image: url(images/open.ico) ;
+  background-repeat: no-repeat;
+  padding-right: 20px;
+  width: 16px;
+  height:16px;
+  cursor:pointer;
+}
+
+.close-ico {
+  background-image: url(images/close.ico) ;
+  background-repeat: no-repeat;
+  padding-right: 20px;
+  width: 16px;
+  height:16px;
+  cursor:pointer;
+}
+
+.list-ico {
+  background-image: url(images/list.ico) ;
+  background-repeat: no-repeat;
+  padding-right: 20px;
+  width: 16px;
+  height:16px;
+  cursor:pointer;
+}
+
+.grid-ico {
+  background-image: url(images/grid.ico) ;
+  background-repeat: no-repeat;
+  padding-right: 20px;
+  width: 16px;
+  height:16px;
+  cursor:pointer;
+}
+
+.handle-ico img {
+  cursor:all-scroll;
+}
+
+.handle-ico div {
+  background-image: url(images/move.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+}
+
+.handle-ico div:hover {
+  background-image: url(images/move-over.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+  cursor:all-scroll;
+}
+
+.trash-ico {
+  background-image: url(images/trash.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+}
+
+.trash-ico:hover {
+  background-image: url(images/trash-over.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+  cursor:pointer;
+}
+.share-ico {
+  background-image: url(images/share.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+}
+
+.shared-ico {
+  background-image: url(images/shared.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+}
+
+.share-ico:hover{
+  background-image: url(images/share-over.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+  cursor:pointer;
+}
+
+.shared-ico:hover{
+  background-image: url(images/share-over.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+  cursor:pointer;
+}
+
+.move-ico {
+  background-image: url(images/plus.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+}
+
+.move-ico:hover {
+  background-image: url(images/plus-over.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+  cursor:pointer;
+}
+
+.remove-ico {
+  background-image: url(images/x.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+}
+
+.remove-ico:hover {
+  background-image: url(images/x-over.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+  cursor:pointer;
+}
+
+.post-ico {
+  background-image: url(images/paper-clip.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+}
+
+.post-ico:hover {
+  background-image: url(images/paper-clip-over.gif) ;
+  background-repeat: no-repeat;
+  width: 16px;
+  height:16px;
+  cursor:pointer;
+}
+.ui-datepicker{
+    z-index:3000 !important;
+}

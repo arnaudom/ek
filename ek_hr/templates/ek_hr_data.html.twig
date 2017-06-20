@@ -1,0 +1,145 @@
+<table class='table'>
+    <tbody>
+        {% if items.hr.0.administrators != '0' %}    
+            <tr>
+                <td class='title'>{{ 'Administrators'|t }} </td>
+                <td colspan='2' class='data'>{{ items.hr.0.administrators }}</td>
+            </tr> 
+        {% endif %}
+        <tr>
+            <td class='title'> {{ 'Company'|t }}</td>
+            <td class='data'>{{ items.hr.0.company }}</td>
+            <td rowspan='8' class='data'>{{ items.hr.0.picture|raw }}</td>
+        </tr>
+        <tr>
+            <td class='title'> {{ 'Status'|t }}</td>
+            <td class='data'> {{ items.hr.0.active }} ( {{ 'Archived'|t }}: {{ items.hr.0.archive }}) </td>
+        </tr>
+        <tr>
+            <td class='title'> {{ 'Name'|t }}</td>
+            <td class='data'> {{ items.hr.0.name }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td class='data'>{{ items.hr.0.given_name }} </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td class='data'>{{ items.hr.0.surname }}</td>
+        </tr>
+        <tr>
+            <td class='title'> {{ 'Contact'|t }}  </td>
+            <td class='data'>{{ items.hr.0.address }}  </td>
+        </tr>    
+        <tr>
+            <td>  </td>
+            <td class='data'>{{ 'Tel'|t }}: {{ items.hr.0.telephone }},   {{ items.hr.0.email }} </td>
+        </tr>    
+        <tr>
+            <td class='title'>{{ 'Employee ID'|t }}</td>
+            <td class='data'>{{ items.hr.0.id }} </td>
+        </tr>
+    </tbody>    
+</table>
+<table>
+    <tbody>
+        <tr>
+            <td class='title'>{{ 'Note'|t }}</td>
+            <td class='data'>{{ items.hr.0.note }} </td>
+        </tr>
+    </tbody>    
+</table>
+<table>
+    <tr>
+        <td class='title'>{{ 'Employee IC'|t }} </td>
+        <td class='data'>{{ items.hr.0.ic_no }} ({{ items.hr.0.ic_type }}) </td>
+    </tr>
+    <tr>
+        <td class='title'>{{ 'Date of birth'|t }}  </td>
+        <td class='data'>{{ items.hr.0.birth }}  </td>
+    </tr>
+    <tr>
+        <td class='title'>{{ 'Sex'|t }}  </td>
+        <td class='data'>{{ items.hr.0.sex }}  </td>
+    </tr> 
+    <tr>
+        <td class='title'>{{ 'Retirement fund No'|t }} </td>
+        <td class='data'>{{ items.hr.0.epf_no }}</td>
+    </tr> 
+    <tr>
+        <td class='title'>{{ 'Social security No'|t }} </td>
+        <td class='data'>{{ items.hr.0.socso_no }}</td>
+    </tr> 
+    <tr>
+        <td class='title'>{{ 'Income tax No'|t }} </td>
+        <td class='data'>{{ items.hr.0.itax_no }} ({{ 'category'|t }}: {{ items.hr.0.itax_c }})</td>
+    </tr> 
+</table>
+<table>
+    <tr>
+        <td class='title'>{{ 'Category'|t }} </td>
+        <td class='data'>{{ items.hr.0.origin }}</td>
+    </tr>
+    <tr>
+        <td class='title'>{{ 'Status'|t }} </td>
+        <td class='data'>{{ items.hr.0.e_status }}</td>
+    </tr>
+    <tr>
+        <td class='title'>{{ 'Location'|t }} </td>
+        <td class='data'>{{ items.hr.0.location }} {% if items.hr.0.location_description %}({{ items.hr.0.location_description }}) {% endif %}</td>
+    </tr>
+    <tr>
+        <td class='title'>{{ 'Service'|t }} </td>
+        <td class='data'>{{ items.hr.0.service }} {{ items.hr.0.service_name }}</td>
+    </tr>
+    <tr>
+        <td class='title'>{{ 'Rank'|t }} </td>
+        <td class='data'>{{ items.hr.0.rank }}</td>
+    </tr>
+    <tr>
+        <td class='title'>{{ 'Start'|t }} </td>
+        <td class='data'>{{ items.hr.0.start }}</td>
+    </tr>
+    <tr>
+        <td class='title'>{{ 'Resign'|t }} </td>
+        <td class='data'>{{ items.hr.0.resign }}</td>
+    </tr>
+    <tr>
+        <td class='title'>{{ 'Annual leaves'|t }} </td>
+        <td class='data'>{{ items.hr.0.aleave }}</td>
+    </tr>
+    <tr>
+        <td class='title'>{{ 'medical leaves'|t }} </td>
+        <td class='data'>{{ items.hr.0.mcleave }}</td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <td class='title'>{{ 'Gross salary'|t }} </td>
+        <td class='data'>{{ items.hr.0.salary }}</td>
+    </tr>   
+    <tr>
+        <td class='title'>{{ 'Average salary'|t }} </td>
+        <td class='data'>{{ items.hr.0.th_salary }}</td>
+    </tr>  
+    <tr>
+        <td class='title'>{{ 'Payment currency'|t }} </td>
+        <td class='data'>{{ items.hr.0.currency }}</td>
+    </tr>
+    <tr>
+        <td class='title'>{{ 'Bank ref.'|t }} </td>
+        <td class='data'>{{ items.hr.0.bank }} {{ 'Account'|t }}: {{ items.hr.0.bank_account }}</td>
+    </tr>    
+    {% if items.hr.0.bank_account_status != 'own' %}    
+        <tr>
+            <td class='title'>{{ 'Payment ref.'|t }} </td>
+            <td class='data'>{{ items.hr.0.thirdp }}</td>
+        </tr> 
+    {% endif %}
+    <tr>
+        <td class='title'>{{ 'Payslip template'|t }} </td>
+        <td class='data'>{{ items.hr.0.default_ps }}</td>
+    </tr> 
+</table>  
+
+

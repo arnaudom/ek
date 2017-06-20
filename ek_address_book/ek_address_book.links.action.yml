@@ -1,0 +1,6 @@
+ek_address_book_create:
+  route_name: ek.newaddressbook
+  title: 'New entry'
+  appears_on:
+    - ek.addressbook
+

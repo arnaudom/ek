@@ -1,0 +1,28 @@
+uuid: 6c33e73d-f66b-4295-b20e-14b078e2a43d
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_documents
+    - system
+  theme:
+    - bartik
+id: filterdocuments
+theme: bartik
+region: sidebar_first
+weight: -13
+provider: null
+plugin: filter_document_block
+settings:
+  id: filter_document_block
+  label: 'Filter documents'
+  provider: ek_documents
+  label_display: '0'
+  cache:
+    max_age: -1
+visibility:
+  request_path:
+    id: request_path
+    pages: "/documents\r\n/shared_documents\r\n/common_documents"
+    negate: false
+    context_mapping: {  }

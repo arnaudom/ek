@@ -1,0 +1,90 @@
+<?php
+use Drupal\Core\Database\Database;
+/**
+ * @file
+ * Install, update and uninstall functions for the ek_products module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function ek_products_uninstall() {
+  // Clear ek_products data out of the cache.
+  \Drupal::cache('data')->deleteAll();
+}
+
+
+/**
+ * Implements hook_schema().
+ * schema installation is not done at install time but wihin the application
+ * in a separate database
+ */
+
+/**
+ * Add format in items table for extended description.
+ */
+function ek_products_update_8001() {
+    
+        $schema = Database::getConnection('external_db','external_db')->schema();
+        $spec = array(
+            'description' => 'format of extended description',
+            'type' => 'varchar',
+            'length' => 20,
+            'not null' => FALSE,     
+        );
+        $schema->addField('ek_items', 'format', $spec);
+        
+        return t('Items table updated.');
+}
+
+/**
+ * Changed routing format for autocomplete action.
+ */
+function ek_products_update_8002() {
+    \Drupal::service('router.builder')->rebuild(); 
+}
+
+/**
+ * Add settings table.
+ * 
+*/
+function ek_products_update_8003() {
+    
+    $schema = Database::getConnection('external_db','external_db')->schema();
+        if (!$schema->tableExists('ek_item_settings')) {
+            
+                $table =  [
+                    'description' => 'Stores items settings.',
+                    'fields' => [
+                      'id' => [
+                        'description' => 'Primary Key: Unique ID.',
+                        'type' => 'int',
+                        'unsigned' => TRUE,
+                        'not null' => TRUE,
+                      ],
+                      'settings' => [
+                        'description' => 'A serialized array containing the settings.',
+                        'type' => 'blob',
+                        'not null' => FALSE,
+                        'size' => 'big',
+                      ],
+                    ],
+                    'primary key' => ['id'],
+                    
+                  ];
+            
+            $schema->createTable('ek_item_settings', $table);
+            
+            Database::getConnection('external_db', 'external_db')
+                ->insert('ek_item_settings')
+                ->fields(array(
+                  'id' => 0,
+                  'settings' => '',
+                ))
+                ->execute(); 
+            
+            \Drupal::service('router.builder')->rebuild();
+            return t('Items settings table created.');
+        }
+
+}

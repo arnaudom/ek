@@ -1,0 +1,15 @@
+#help {
+    cursor: pointer;
+    background-color: #A9D0F5 ;
+    padding-left: 10px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    text-shadow: 0 1px 0 #fff;
+}
+
+#help_content {
+    background-color: #CEE3F6 ;
+    padding: 15px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+}

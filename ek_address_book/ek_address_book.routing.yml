@@ -1,0 +1,159 @@
+ek_address_book_install:
+  path: '/ek_address_book/install'
+  defaults:
+    _controller: '\Drupal\ek_address_book\Controller\InstallController::install'
+  requirements:
+    _permission: 'access administration pages'
+
+ek_address_book_majour:
+  path: '/ek_address_book/migrate'
+  defaults:
+    _controller: '\Drupal\ek_address_book\Controller\SettingsController::migrate'
+  requirements:
+    _permission: 'access administration pages'
+
+ek_address_book.admin:
+  path: '/address_book/admin'
+  defaults:
+    _title: 'Address book administration'
+    _controller: '\Drupal\ek_address_book\Controller\AdminAddressBookController::admin'
+  requirements:
+    _permission: 'admin_address_book'
+
+ek_address_book.export:
+  path: '/address_book/export'
+  defaults:
+    _title: 'Address export'
+    _controller: '\Drupal\ek_address_book\Controller\AdminAddressBookController::export'
+  requirements:
+    _permission: 'admin_address_book'
+
+ek_address_book.import:
+  path: '/address_book/import'
+  defaults:
+    _title: 'Address import'
+    _controller: '\Drupal\ek_address_book\Controller\AdminAddressBookController::import'
+  requirements:
+    _permission: 'admin_address_book'
+    
+ek_address_book.search:
+  path: '/address_book'
+  defaults:
+    _title: 'Address book'
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::searchaddressbook'
+  requirements:
+    _permission: 'view_address_book'
+
+ek_address_book.view:
+  path: '/address_book/{id}'
+  defaults:
+    _title: 'Address book view'
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::viewaddressbook'
+  requirements:
+    _permission: 'view_address_book'
+    id: \d*
+
+ek_address_book.image-modal:
+  path: '/address_book/modal/{js}/{id}'
+  defaults:
+    _title: 'Name card'
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::modal'
+  requirements:
+    _permission: 'view_address_book'
+    js: 'nojs|ajax'
+    id: \d*
+
+ek_address_book.list:
+  path: '/address_list'
+  defaults:
+    _title: 'Address book company list'
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::listaddressbook'
+  requirements:
+    _permission: 'view_address_book'
+
+ek_address_book.contacts:
+  path: '/address_book_contacts'
+  defaults:
+    _title: 'Address book contact list'
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::contactsaddressbook'
+  requirements:
+    _permission: 'view_address_book'
+    
+   
+ek_address_book.new:
+  path: '/new_contact'
+  defaults:
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::newaddressbook'
+  requirements:
+    _permission: 'edit_address_book'
+    
+ek_address_book.newcard:
+  path: '/new_contact_card/{id}'
+  defaults:
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::newaddressbookcard'
+  requirements:
+    _permission: 'edit_address_book'
+    id: \d*
+    
+ek_address_book.edit:
+  path: '/edit_contact/{id}'
+  defaults:
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::newaddressbook'
+  requirements:
+    _permission: 'edit_address_book'
+    id: \d*
+    
+ek_address_book.clone:
+  path: '/clone_contact/{id}'
+  defaults:
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::cloneaddressbook'
+  requirements:
+    _permission: 'edit_address_book'
+    id: \d*
+    
+ek_address_book.delete:
+  path: '/delete_contact/{id}'
+  defaults:
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::deleteaddressbook'
+  requirements:
+    _permission: 'delete_address_book'
+    id: \d*
+    
+ek.look_up_contact_ajax:
+  path: '/look_up_contact_ajax/{type}'
+  defaults:
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::ajaxlookupcontact'
+    type: %
+  requirements:
+    _permission: 'view_address_book'
+
+ek.look_up_email_ajax:
+  path: 'look_up_email_ajax/{type}'
+  defaults:
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::ajaxlookupemail'
+    type: %
+  requirements:
+    _permission: 'view_address_book'
+        
+ek.built_sn_ajax:
+  path: '/built_sn_ajax'
+  defaults:
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::ajaxsnbuilt'
+  requirements:
+    _permission: 'edit_address_book'
+    
+ek_address_book.pdf:
+  path: '/address_book/name_card_pdf/{id}/{cid}'
+  defaults:
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::pdfaddressbook'
+  requirements:
+    _permission: 'view_address_book'
+    id: \d*
+    cid: \d* 
+    
+ek_address_book_tag_activity:
+  path: '/ek_address_book/tag_activity'
+  defaults:
+    _controller: '\Drupal\ek_address_book\Controller\AddressBookController::ajaxactivity'
+  requirements:
+    _permission: 'edit_address_book'

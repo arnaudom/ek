@@ -1,0 +1,43 @@
+ek_address_book_css:
+  version: VERSION
+  css:
+    theme:
+      css/ek_address_book.css: {}
+
+ek_address_book.script.sn:
+  version: VERSION
+  js:
+    js/ek_address_book_sn.js: {}
+  dependencies:
+    - core/jquery
+
+
+ek_address_book.email_autocomplete:
+  version: VERSION
+  js:
+    js/ek_address_book_email_autocomplete.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.ui.autocomplete
+
+ek_address_book.email_autocomplete_user:
+  version: VERSION
+  js:
+    js/ek_address_book_email_autocomplete_user.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.ui.autocomplete
+    
+ek_address_book.dialog:
+  version: VERSION
+  js:
+    js/ek_address_book.js: {}
+  css:
+    theme:
+      css/ek_address_book.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/jquery.once
+    - core/drupal.ajax

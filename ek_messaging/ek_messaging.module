@@ -1,0 +1,148 @@
+<?php
+    ///////////////////////////////////////////////////
+    //                  COPYRIGHT                    //
+    //                                               //
+    // DEVELOPPED BY ARREA LTD                       //
+    // all rights reserved                           //
+    // Please read and agree with software           //
+    // application license                           //
+    ///////////////////////////////////////////////////
+    
+use Drupal\Core\Database\Database;   
+   
+   
+/**
+ * Implementation hook_theme().
+ */
+function ek_messaging_theme() {
+  return array(
+
+    // to read message
+    'ek_messaging_read' => array
+    (
+      'template' => 'ek_messaging_read',
+      'variables' => array('items' => array()),
+    ), 
+    // mail body
+    'ek_messaging_mail' => array
+    (
+      'template' => 'ek_messaging_mail',
+      'variables' => array('items' => array()),
+    ),       
+      
+  );     
+}   
+   
+/**
+ * Implements hook_file_download().
+ *
+ * edit the file_download function in order to control access of inline files
+*/
+function ek_messaging_file_download($uri) {
+    if (strpos($uri,'/inline-images/')) {
+        return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($uri));
+    }
+    
+}
+/** TODO
+ * Implementation menu_links_discovered_alter().
+ * add number of unread messages
+
+function ek_messaging_menu_links_discovered_alter(array &$links) {
+
+        $query = Database::getConnection('external_db', 'external_db')->select('ek_messaging', 'm');        $user = '%,' . \Drupal::currentUser()->id() . ',%';       
+        $data = $query
+              ->fields('m', array(count('id') ) )
+              ->condition('m.status', $user , 'not like')
+              ->condition('m.inbox', $user , 'like')
+              ->execute()
+              ->fetchField();  
+              
+         $links['ek_messaging_main']['title'] = t('Messages (@m unread)', array('@m' => $data));
+
+        //return $links;
+}
+ */ 
+
+ 
+ 
+/*
+* REGISTER A MESSAGE
+* used by dependent modules to register a message
+*/
+function ek_message_register($data) {
+
+$stamp=strtotime("now");
+    
+    $fields = array (
+      'stamp' => $stamp,
+      'from_uid' => $data['uid'],
+      '`to`' => $data['to'],
+      'to_group' => $data['to_group'],
+      'type' => $data['type'],
+      'status' => $data['status'],
+      'inbox' => $data['inbox'],
+      'archive' => '',
+      'subject' => $data['subject'],
+      'priority' => $data['priority']
+
+      );
+  
+    $result= Database::getConnection('external_db', 'external_db')
+            ->insert('ek_messaging')->fields($fields)->execute();
+
+    $fields = array (
+          'id' => $result,
+          'text' => unserialize($data['body']),
+          'format' => isset($data['format']) ? $data['format'] : 'basic_html',
+      );  
+
+    if ($result) {
+    $body = Database::getConnection('external_db', 'external_db')
+            ->insert('ek_messaging_text')->fields($fields)->execute();
+    }
+    
+      return $result;
+
+    
+
+
+}
+
+/**
+ * Implementation hook_mail().
+ */
+function ek_messaging_mail($key, &$message, $params) {
+
+    $theme = theme_get_setting('logo');
+    global $base_url;
+    $params['options']['logo'] = $base_url . $theme['url'];
+    $params['options']['site'] = \Drupal::config('system.site')->get('name');
+    $params['options']['origin'] = \Drupal::currentUser()->getUsername();
+    $params['options']['stamp'] = date('F j, Y, g:i a');
+    $priority = array('3' => t('low'), '2' => t('normal'), '1' => t('high'));
+    $color = array('3' => '#9FF781', '2' => '#81DAF5' , '1' => '#F78181');
+    $params['options']['priority'] = $priority[$params['priority']];
+    $params['options']['color'] = $color[$params['priority']];
+    switch($key) {
+      case 'ek_message':
+          
+        //filter body for images / links
+        if(preg_match("/src=\"([^\"]+)\"/", $params['body'], $body)){
+           
+            $params['body'] = str_replace('src="/', 'src="' . $base_url, $params['body']);
+            
+        }
+       
+        $render = [
+            '#markup' => $params['body'],
+        ];
+       
+        $message['From'] = $params['from'];
+        $message['subject'] = $params['subject'];
+        $message['body'][] = \Drupal::service('renderer')->render($render);
+        $message['options'] = $params['options'];
+        break;
+
+    }
+}

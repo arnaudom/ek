@@ -1,0 +1,60 @@
+<?php
+
+use Drupal\Core\Database\Database;
+
+/**
+ * @file
+ * Install, update and uninstall functions for the ek_hr module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function ek_hr_uninstall() {
+  // Clear data out of the cache.
+  \Drupal::cache('data')->deleteAll();
+}
+
+/**
+ * Implements hook_schema().
+ * schema installation is not done at install time but wihin the application
+ * in a separate database
+ */
+
+/**
+ * Add HR autocomplete route.
+ * 
+*/
+function ek_hr_update_8001() {
+    
+    \Drupal::service('router.builder')->rebuild();
+    return t('HR routes updated.');
+}
+
+/**
+ * Add note field in workforce table.
+ * 
+*/
+function ek_hr_update_8002() {
+    
+        $schema = Database::getConnection('external_db','external_db')->schema();
+        $spec = array(
+            'description' => 'Information note',
+            'type' => 'text',
+            'not null' => FALSE,
+            
+        );
+        $schema->addField('ek_hr_workforce', 'note', $spec);
+        
+        return t('Workforce table updated.');
+}
+
+/**
+ * Change route path.
+ * 
+*/
+function ek_hr_update_8003() {
+    
+    \Drupal::service('router.builder')->rebuild();
+    return t('HR routes updated.');
+}

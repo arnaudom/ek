@@ -1,0 +1,256 @@
+.pointer {
+   cursor: pointer; 
+}
+
+.tip-module-ek-finance {
+    background-color: #cee3f6 !important;
+}
+
+.reddot {
+  background-image: url(../art/reddot.png) ;
+  background-repeat: no-repeat;
+  width: 10px;
+  height:10px;
+}
+
+.orangedot {
+  background-image: url(../art/orangedot.png) ;
+  background-repeat: no-repeat;
+  width: 10px;
+  height: 10px;
+}
+
+.greendot {
+  background-image: url(../art/greendot.png) ;
+  background-repeat: no-repeat;
+  width: 10px;
+  height: 10px;
+}
+
+.right {
+  text-align:right;
+}
+.floatleft {
+  float : left;
+}
+
+.floatright {
+  float : right;
+}
+
+.table {
+  display: table;
+  width: 100%;
+}
+
+.row {
+  display : table-row;
+  height:auto;
+  
+}
+
+.header_tb {  
+  display : table-cell;
+}
+
+.cell {  
+  display : table-cell;
+  vertical-align: middle;
+}
+
+.cell50 {  
+  display :inline-block;
+  width: 50px;
+}
+
+.cell100 {  
+  display :inline-block;
+  width: 100px;
+}
+
+.cell150 {  
+  display :inline-block;
+  width: 150px;
+}
+
+.cell200 {  
+  display :inline-block;
+  width: 200px;
+}
+
+.cell300 {  
+  display :inline-block;
+  width: 300px;
+}
+
+.cellcenter {
+  padding: 2px;
+  text-align: center;
+}
+
+.grey {
+  background-color : #E0ECF8 !important;
+}
+
+#accounts_list .form-item, .form-actions {
+  margin-bottom: 0em !important;
+  margin-top: 0em !important;
+}
+
+.row .form-item, .form-actions {
+  margin-bottom: 0em !important;
+  margin-top: 0em !important;
+}
+
+.cellborder {  
+  border-width: thin ;
+  border-spacing: 1px;
+  border-style: solid;
+  border-color: #A4A4A4;
+  border-collapse: collapse;
+  background-color: #CEE3F6;
+  padding: 2px;
+  text-align: center;
+}
+
+.cellborderbottom {  
+  border-width:  0 0 thin 0 ;
+  border-spacing: 1px;
+  border-style: solid;
+  border-color: #A4A4A4;
+  border-collapse: collapse;
+
+
+}
+
+.amount {
+  text-align:right;
+}
+
+.current {
+  background-color:#F2F5A9;
+}
+
+.delete {
+    background-color: #FF9999;
+    color: #FFFFFF;
+}
+
+.record {
+    background-color: #64FE2E;
+    color: #000;
+}
+
+hr {
+  -moz-border-bottom-colors: none;
+  -moz-border-left-colors: none;
+  -moz-border-right-colors: none;
+  -moz-border-top-colors: none;
+  border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
+  border-image: none;
+  border-right: 0 none;
+  border-style: solid none none;
+  border-width: 1px 0 0;
+  margin-bottom: 2px;
+  margin-top: 2px;
+  height: 0;
+}
+
+.button--record:hover {
+    background-color: #FFF;
+    color: #FFF !important;
+    background-image: linear-gradient(to bottom, #FF6666, #981010) !important;
+    border-color: #FF6666 #981010 #981010 !important;
+}
+
+.red {
+  color: #FF6666;
+}
+
+.green {
+  color: #00D744;
+}
+
+input[type="file"], input.file {
+  color: #fff !important;
+  //background-color: #0071b8;
+  width:100px;
+}
+
+.journal-exchange {
+  background-color : #FFF !important;
+  font-size: 0.8em !important;
+}
+
+.journal-total-exchange {
+  background-color : #CEE3F6 !important;
+}
+
+.journal-total {
+  background-color : #E0ECF8 !important;
+  border-width: thin ;
+	border-spacing: 1px;
+	border-style: solid;
+	border-color: #A4A4A4;
+	border-collapse: collapse;
+	background-color: #CEE3F6;
+}
+
+.journal-closing {
+  font-weight: bold;
+}
+
+.journal-reference {
+  background-color : #A9D0F5 !important;
+  font-size: 1.5em !important;
+  padding-left: 10px!important;
+}
+
+.panel-default {
+    border-color: #DDDDDD;
+}
+.panel {
+    background-color: #FFFFFF;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.panel-default > .panel-heading {
+    background-color: #A9BCF5;
+    border-color: #A9BCF5;
+    color: #333333;
+}
+.panel-heading {
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    padding: 5px 10px;
+}
+
+.panel-body {
+    padding: 8px;
+}
+
+.cash-total {
+  background-color : #E0ECF8 !important;
+  border-width: thin ;
+	border-spacing: 1px;
+	border-style: solid;
+	border-color: #A4A4A4;
+	border-collapse: collapse;
+	background-color: #CEE3F6;
+	
+
+}
+
+.verticalText {
+    -webkit-transform: rotate(-20deg); 
+    -moz-transform: rotate(-20deg);
+    -ms-transform: rotate(-20deg);
+    -o-transform: rotate(-20deg);
+    transform: rotate(-20deg);
+    writing-mode:bt-rl;
+    white-space:nowrap;
+    display:block;
+    padding:1px;
+    width:20px;
+}

@@ -1,0 +1,295 @@
+<?php
+
+
+class PDF extends FPDF
+{
+
+//multicell maxline------------------------------------------------------
+function MultiCell($w,$h,$txt,$border=0,$align='J',$fill=0,$maxline=0)
+    {
+        //Output text with automatic or explicit line breaks, maximum of $maxlines
+        $cw=&$this->CurrentFont['cw'];
+        if($w==0)
+            $w=$this->w-$this->rMargin-$this->x;
+        $wmax=($w-2*$this->cMargin)*1000/$this->FontSize;
+        $s=str_replace("\r",'',$txt);
+        $nb=strlen($s);
+        if($nb>0 and $s[$nb-1]=="\n")
+            $nb--;
+        $b=0;
+        if($border)
+        {
+            if($border==1)
+            {
+                $border='LTRB';
+                $b='LRT';
+                $b2='LR';
+            }
+            else
+            {
+                $b2='';
+                if(is_int(strpos($border,'L')))
+                    $b2.='L';
+                if(is_int(strpos($border,'R')))
+                    $b2.='R';
+                $b=is_int(strpos($border,'T')) ? $b2.'T' : $b2;
+            }
+        }
+        $sep=-1;
+        $i=0;
+        $j=0;
+        $l=0;
+        $ns=0;
+        $nl=1;
+        while($i<$nb)
+        {
+            //Get next character
+            $c=$s[$i];
+            if($c=="\n")
+            {
+                //Explicit line break
+                if($this->ws>0)
+                {
+                    $this->ws=0;
+                    $this->_out('0 Tw');
+                }
+                $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
+                $i++;
+                $sep=-1;
+                $j=$i;
+                $l=0;
+                $ns=0;
+                $nl++;
+                if($border and $nl==2)
+                    $b=$b2;
+                if ( $maxline  && $nl > $maxline ) 
+                    return substr($s,$i);
+                continue;
+            }
+            if($c==' ')
+            {
+                $sep=$i;
+                $ls=$l;
+                $ns++;
+            }
+            $l+=$cw[$c];
+            if($l>$wmax)
+            {
+                //Automatic line break
+                if($sep==-1)
+                {
+                    if($i==$j)
+                        $i++;
+                    if($this->ws>0)
+                    {
+                        $this->ws=0;
+                        $this->_out('0 Tw');
+                    }
+                    $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
+                }
+                else
+                {
+                    if($align=='J')
+                    {
+                        $this->ws=($ns>1) ? ($wmax-$ls)/1000*$this->FontSize/($ns-1) : 0;
+                        $this->_out(sprintf('%.3f Tw',$this->ws*$this->k));
+                    }
+                    $this->Cell($w,$h,substr($s,$j,$sep-$j),$b,2,$align,$fill);
+                    $i=$sep+1;
+                }
+                $sep=-1;
+                $j=$i;
+                $l=0;
+                $ns=0;
+                $nl++;
+                if($border and $nl==2)
+                    $b=$b2;
+                if ( $maxline  && $nl > $maxline ) 
+                    return substr($s,$i);
+            }
+            else
+                $i++;
+        }
+        //Last chunk
+        if($this->ws>0)
+        {
+            $this->ws=0;
+            $this->_out('0 Tw');
+        }
+        if($border and is_int(strpos($border,'B')))
+            $b.='B';
+        $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
+        $this->x=$this->lMargin;
+        return '';
+    }
+//
+// Page header
+//
+
+function Header()
+{
+/* */  
+    //Logo
+    if ($this->company->logo != '') {
+  
+    $logo = drupal_realpath($this->company->logo);
+    if(file_exists($logo)) {
+        $info = getimagesize($logo);
+        $h = $info[1]*80/$info[0];
+        $this->Image($logo,20,10,$h);
+    }
+    
+    
+    }
+    //Arial bold 15
+    $this->Ln(15);
+    $this->SetFont('Arial','',12);
+    //Move to the right
+    $this->Cell(110);
+    $this->Cell(50,7,$this->company->name,0,1);
+        
+    if ($this->company->reg_number <> '') {
+        $this->SetFont('Arial','',7);
+        $this->Cell(110);
+        $this->Cell(8,4,"(" . t("Reg.").$this->company->reg_number . ")",0,1);
+    }
+    $this->SetFont('Arial','',8);
+    $this->Cell(110);    
+    $this->Cell(60,5, $this->company->address1,0,1);
+    if ($this->company->address2 != '') {
+        $this->Cell(110);    
+        $this->Cell(60,4, $this->company->address2,0,1);
+    }
+    $next = '';
+    $pace = '';
+    if ($this->company->postcode != '') {   
+        $next .= $this->company->postcode;
+        $pace = ' ';
+    }
+    if ($this->company->city != '') {   
+        $next .= $pace . $this->company->city;
+    }    
+    $this->Cell(110);
+    $this->Cell(50,5, $next ,0,1);
+    if ($this->company->country != '') {   
+        $this->Cell(110);
+        $this->Cell(50,5, $this->company->country ,0,1);
+    }    
+
+    $next = '';
+    $pace = '';
+    if ($this->company->telephone != '') {   
+        $next .= t("Tel:"). $this->company->telephone;
+        $pace = ', ';
+    }
+    if ($this->company->fax != '') {
+        $next .= $pace . t("Fax:"). $this->company->fax;
+    }
+    $this->Cell(110);
+    $this->Cell(5,4,$next,0,1);
+    //Line break
+    $this->Ln(8);
+    
+ 
+    
+}
+
+function setHeaderData($company){ 
+$this->company = $company;
+} 
+
+//Page footer
+function Footer()
+{
+/**/ 
+    //Position at 1.5 cm from bottom
+    $this->SetY(-15);
+    //Arial italic 8
+    $this->SetFont('Arial','I',8);
+    //Page number
+    $this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
+   
+}
+  
+}
+
+
+$pdf=new PDF();
+$pdf->SetTitle($fileName);
+$pdf->setHeaderData($company); 
+$pdf->AliasNbPages();
+$pdf->AddPage('P','A4');
+
+
+$pdf->SetFont('Arial','B',12);
+$pdf->SetTextColor(187, 208, 211);
+$pdf->Cell(75,5,t('PAYMENT VOUCHER'),0,1);
+$pdf->SetTextColor(0);
+$pdf->Ln(3);
+
+$pdf->SetFont('Arial','',8);
+    $pdf->Cell(75,5,t('Voucher No'),0,0);
+    $pdf->Cell(100,5,$line->id . ' - ' . $journal->id . ' - ' . $journal->count,0,1);
+    $pdf->Cell(75,5,t('Date'),0,0);
+    $pdf->Cell(100,5,$line->pdate,0,1);
+    $pdf->Cell(75,5,t('From account'),0,0);
+    $pdf->Cell(100,5,$bank_account,0,1);  
+    $pdf->Cell(75,5,t("Supplier ref"),0,0);
+    $pdf->Cell(100,5,$suppliername,0,1);       
+    $pdf->Cell(75,5,t("Client ref"),0,0);
+    $pdf->Cell(100,5,$clientname,0,1);   
+    $pdf->Cell(75,5,t('Amount') . ' - ' . $line->currency,0,0);
+    $pdf->Cell(100,5,$line->localcurrency . ' ' . $line->currency,0,1);
+    if($line->tax > 0) {
+      $pdf->Cell(75,5,t('include tax') ,0,0);
+      $pdf->Cell(100,5,number_format($line->tax,2) . ' ' . $line->currency,0,1);  
+    }
+    $pdf->Cell(75,5,t('Object'),0,0);
+    $pdf->Cell(100,5, $type ,0,1);    
+    $pdf->Cell(75,5,t('Comment') ,0,0);
+$pdf->SetFont('Arial','',8);
+    $pdf->MultiCell(100,5,$line->comment,0,'J');  
+
+$pdf->Ln(10);
+
+//add receipt image or link if any
+    if($line->attachment) {
+            $parts = explode('/', $line->attachment);
+            $parts = array_reverse($parts);
+            $pdf->Cell(75, 5, t('Attachment') . ': ', 0, 0);
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->SetTextColor(0, 128, 255);
+        if ($info = getimagesize($line->attachment)) {
+            $insert = TRUE;
+            $link = $pdf->AddLink();
+            $pdf->SetLink($link, 1, 2);
+            $pdf->Write(5, $parts[0], $link);
+        } else {
+
+            $link = file_create_url($line->attachment);
+            $pdf->Write(5, $parts[0], $link);
+
+        }
+    }
+$pdf->SetTextColor(100, 100, 100);       
+$pdf->Ln(20);
+    
+    $pdf->Cell(40,3,t("Prepared by"),1,0);
+    $pdf->Cell(40,3,t("Verified by"),1,0);
+    $pdf->Cell(40,3,t("Approved by"),1,0);
+    $pdf->Cell(40,3,t("Received by"),1,1);
+    $pdf->Cell(40,10, $userName ,1,0);
+    $pdf->Cell(40,10,"",1,0);
+    $pdf->Cell(40,10,"",1,0);
+    $pdf->Cell(40,10,"",1,1);    
+
+if (isset($insert)) {
+    $pdf->AddPage('P','A4');
+    $pdf->Ln(10);
+    $h = $info[1] ;
+    $w = $info[0] ;
+    $r = 150/$w;
+    $pdf->Image($line->attachment, 20, 80, 150, $h*$r);    
+}
+
+

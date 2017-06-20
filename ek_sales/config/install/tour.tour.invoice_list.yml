@@ -1,0 +1,163 @@
+id: ek_sales.invoice_list
+module: ek_sales
+label: 'List invoices tour'
+langcode: en
+routes:
+  - route_name: ek_sales.invoices.list
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'List of invoices guide'
+    body: 'This is an guided tour to display list of invoices.'
+    weight: 1
+  
+  item1:
+    id: edit-filters
+    plugin: text
+    label: 'Filter'
+    body: 'You can filter the list with different criteria: 1) date creation range of the invoices, 2) client and 3) status (Paid or not paid)'
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: edit-filters
+
+  item2:
+    id: edit-from
+    plugin: text
+    label: 'Dates'
+    body: 'Dates: select date from calendar.'
+    weight: 3
+    location: bottom
+    attributes:
+      data-id: edit-from
+      
+  item3:
+    id: edit-client
+    plugin: text
+    label: 'Clients'
+    body: 'Clients: select client from list.'
+    weight: 4
+    location: bottom
+    attributes:
+      data-id: edit-client
+      
+  item4:
+    id: edit-status
+    plugin: text
+    label: 'Status'
+    body: 'Status: select Paid or Not paid.'
+    weight: 5
+    location: bottom
+    attributes:
+      data-id: edit-status
+      
+  item5:
+    id: edit-submit
+    plugin: text
+    label: 'Apply button'
+    body: 'click on button to search and filter.'
+    weight: 6
+    location: bottom
+    attributes:
+      data-id: edit-submit     
+      
+  item6:
+    id: edit-reset
+    plugin: text
+    label: 'Reset button'
+    body: 'click reset button if filter is active and you want to clear it.'
+    weight: 7
+    location: bottom
+    attributes:
+      data-id: edit-reset      
+
+  item7:
+    id: umber
+    plugin: text
+    label: 'Invoice number'
+    body: 'Will display the invoice unique ref. Number. If clicked, will display document content in HTML format.'
+    weight: 8
+    location: bottom
+    attributes:
+      data-id: number
+      
+  item8:
+    id: reference
+    plugin: text
+    label: 'Invoice references'
+    body: 'Will display the client name and if available the case file reference number.'
+    weight: 9
+    location: bottom
+    attributes:
+      data-id: reference
+      
+  item9:
+    id: issuer
+    plugin: text
+    label: 'The issuer entity'
+    body: 'The company that has issued the invoice.'
+    weight: 10
+    location: bottom
+    attributes:
+      data-id: issuer      
+
+  item10:
+    id: date
+    plugin: text
+    label: 'Date'
+    body: 'The date the invoice was created.'
+    weight: 11
+    location: bottom
+    attributes:
+      data-id: date   
+      
+  item11:
+    id: due
+    plugin: text
+    label: 'Date'
+    body: 'The payment due date based on due days recorded. Red dot indicates the due date is close or exceeded (default: less than 7 days), orange dot indicates the due date is closed (default: more than 7 days), green dot indicated the due date is far (default: more than 30 days) .'
+    weight: 12
+    location: bottom
+    attributes:
+      data-id: due 
+      
+  item12:
+    id: value
+    plugin: text
+    label: 'value'
+    body: 'The invoice net value and taxes if any.'
+    weight: 13
+    location: bottom
+    attributes:
+      data-id: value 
+
+  item13:
+    id: paid
+    plugin: text
+    label: 'Payment date'
+    body: 'The date of payment if status is paid or partially paid.'
+    weight: 14
+    location: bottom
+    attributes:
+      data-id: paid  
+      
+  item14:
+    id: status
+    plugin: text
+    label: 'Status'
+    body: 'The current status of the invoice: unpaid, partially paid or paid. If link is clicked, you can view payment details and jounral details if available.'
+    weight: 15
+    location: bottom
+    attributes:
+      data-id: status     
+      
+  item15:
+    id: operations
+    plugin: text
+    label: 'Operations'
+    body: 'You can 1) edit the invoice if not paid, 2) record a payment received, 3) set an alert for notification, 4) Set a task for routine or reminder, 5) print and share, 6) download in excel format, 7) delete the invoice if not paid or 8) Clone it: re-use the invoice data as template.'
+    weight: 16
+    location: bottom
+    attributes:
+      data-id: operations                     

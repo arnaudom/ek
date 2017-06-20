@@ -1,0 +1,67 @@
+{#
+/**
+ * @file
+ * Theme implementation of cross transactions 
+ *
+ * This template is used to display list of internal
+ * transactions per companies
+ *
+ * Available variables:
+ *   - baseCurrency : system base currency
+ *   - companies : array list of all companies (id => name)
+ *   - company_access : array list of all companies a user has access to (id => name)
+ *   - transactions :
+ *   - sumCredit : total credit amount
+ *   - sumDebit : array debit amount 
+ */
+#}
+<section>
+    <a href='../internal-memo-transactions'>{{ 'back'|t }}</a>
+</section>
+<section>
+    <table class=''>
+        {% for col,name in companies %}
+            {% if col != coid %}
+                
+                    <thead>
+                        <tr>
+                            <th>{{ baseCurrency }}</th>
+                            <th ><h3>{{ name }}</h3></th>
+                            <th >{{ 'date'|t }}</th>
+                            <th>{{ 'credit'|t }}</th>
+                            <th>{{ 'debit'|t }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class=''>
+                        {#loop data #}
+                        {% for data in transactions[name] %}
+                            <tr class=''>
+                                <td colspan='2'>
+                                    <a href='../../finance_memo/print/{{ data.id }}'>{{ data.serial }}</a>
+                                    <br/>
+                                    {{ data.mission }}
+                                </td>
+                                <td>{{ data.date }}</td>
+
+                                {% if data.type == 'credit' %}
+                                        <td class='amount'>{{ data.value_base| number_format(2) }}</td>
+                                        <td></td>
+                                    {% else %}
+                                        <td></td>  
+                                        <td class='amount'>{{ data.value_base| number_format(2) }}</td>                           
+                                        {% endif %}
+                            <tr>
+
+
+                        {% endfor %}
+                        <tr>
+                            <td colspan='3'><h3>{{ 'Total'|t }}</h3></td>
+                            <td class='cash-total amount'>{{ sumCredit[name]| number_format(2) }}</td>
+                            <td class='cash-total amount'>{{ sumDebit[name]| number_format(2) }}</td>
+                    </tbody>
+                
+                
+            {% endif %}
+        {% endfor %}  
+    </table>
+</section>

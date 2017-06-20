@@ -1,0 +1,92 @@
+ek_assets_install:
+  path: '/ek_assets/install'
+  defaults:
+    _controller: '\Drupal\ek_assets\Controller\InstallController::install'
+  requirements:
+    _permission: 'access administration pages'
+
+ek_assets_majour:
+  path: '/ek_assets/migrate'
+  defaults:
+    _controller: '\Drupal\ek_assets\Controller\InstallController::migrate'
+  requirements:
+    _permission: 'access administration pages'
+    
+ek_assets.list:
+  path: '/assets'
+  defaults:
+    _title: 'Assets'
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetslist'
+  requirements:
+    _permission: 'view_assets'
+
+ek_assets.view:
+  path: '/assets/{id}'
+  defaults:
+    _title: 'Assets'
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsview'
+  requirements:
+    _permission: 'view_assets'
+    id: \d*
+
+ek_assets.new:
+  path: '/assets/new'
+  defaults:
+    _title: 'New asset'
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsnew'
+  requirements:
+    _permission: 'edit_assets'
+    
+ek_assets.edit:
+  path: '/assets/edit/{id}'
+  defaults:
+    _title: 'Edit assets'
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsedit'
+  requirements:
+    _permission: 'edit_assets'
+    id: \d*
+    
+ek_assets.delete:
+  path: '/assets/delete/{id}'
+  defaults:
+    _title: 'Delete assets'
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsdelete'
+  requirements:
+    _permission: 'delete_assets'
+    id: \d*
+    
+ek_assets.excel:
+  path: '/assets/export/{param}'
+  defaults:
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsexcel'
+  requirements:
+    _permission: 'view_assets'
+    
+ek_assets.print:
+  path: '/assets/pdf/{id}'
+  defaults:
+    _title: 'Print assets'
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsprint'
+  requirements:
+    _permission: 'view_assets'
+    id: \d*
+    
+ek_assets.set_amortization:
+  path: '/assets/amortization/{id}'
+  defaults:
+    _title: 'Amortization'
+    _form: '\Drupal\ek_assets\Form\AmortizationSchedule'
+  requirements:
+    _permission: 'amortize_assets'
+    id: \d*
+    
+    
+ek_assets.record_amortization:
+  path: '/assets/amortization_record/{id}/{ref}'
+  defaults:
+    _title: 'Amortization record'
+    _form: '\Drupal\ek_assets\Form\AmortizationRecord'
+  requirements:
+    _permission: 'amortize_assets'
+    id: \d*
+    ref: \d*

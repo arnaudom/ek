@@ -1,0 +1,33 @@
+uuid: b04a68f5-e893-48ec-ae02-2d2fe30434c7
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_projects
+    - node
+    - system
+    - user
+  theme:
+    - bartik
+id: fullcalendarprojects
+theme: bartik
+region: sidebar_first
+weight: null
+provider: null
+plugin: fullcalendar_block
+settings:
+  id: fullcalendar_block
+  label: 'Full Calendar projects'
+  provider: ek_projects
+  label_display: '0'
+  cache:
+    max_age: 0
+    contexts: {  }
+visibility:
+  request_path:
+    id: request_path
+    pages: /projects/project
+    negate: false
+    context_mapping: {  }
+
+

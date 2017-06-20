@@ -1,0 +1,161 @@
+ek_hr.task.list:
+  route_name: ek_hr.parameters
+  base_route: ek_hr.parameters
+  title: 'List'
+  weight: 1
+  id: 'tour1'
+
+ek_hr.task.new_employee:
+  route_name: ek_hr.new-employee
+  base_route: ek_hr.parameters
+  title: 'New employee'
+  weight: 2
+
+ek_hr.task.categories:
+  route_name: ek_hr.parameters-category
+  base_route: ek_hr.parameters
+  title: 'Categories'
+  weight: 3
+
+ek_hr.task.main_param:
+  route_name: ek_hr.parameters-main
+  base_route: ek_hr.parameters
+  title: 'Main parameters'
+  weight: 4
+  
+ek_hr.task.ad:
+  route_name: ek_hr.parameters-ad
+  base_route: ek_hr.parameters
+  title: 'Allowances'
+  weight: 5
+
+
+#ek_hr.task.location:
+ek_hr.parameters-organization:
+  route_name: ek_hr.parameters-organization-location
+  title: 'Organization'
+  base_route: ek_hr.parameters
+  weight: 7
+
+ek_hr.task.location:
+  route_name: ek_hr.parameters-organization-location
+  title: 'Locations'
+  #base_route: ek_hr.parameters
+  parent_id: ek_hr.parameters-organization
+  weight: 8
+
+ek_hr.task.service:
+  route_name: ek_hr.parameters-organization-service
+  title: 'Services'
+  #base_route: ek_hr.parameters
+  parent_id: ek_hr.parameters-organization
+  weight: 9
+
+ek_hr.task.rank:
+  route_name: ek_hr.parameters-organization-rank
+  title: 'Ranks'
+  #base_route: ek_hr.parameters
+  parent_id: ek_hr.parameters-organization
+  weight: 10
+
+ek_hr.task.accounts:
+  title: 'Accounts'
+  route_name: ek_hr.parameters-accounts
+  base_route: ek_hr.parameters
+  weight: 11
+
+ek_hr.task.payslip:
+  title: 'Manage payslips'
+  route_name: ek_hr.parameters-payslip
+  base_route: ek_hr.parameters
+  weight: 12
+
+ek_hr.task.forms:
+  title: 'Forms'
+  route_name: ek_hr.parameters-form
+  base_route: ek_hr.parameters
+  weight: 13
+
+ek_hr.task.funds:
+  title: 'Funds'
+  route_name: ek_hr.parameters-fund
+  base_route: ek_hr.parameters
+  weight: 14
+  
+ek_hr.task.data_employee:
+  route_name: ek_hr.employee.view
+  base_route: ek_hr.employee.view
+  title: 'Data'
+  weight: 1
+   
+ek_hr.task.doc_employee:
+  route_name: ek_hr.employee.doc
+  base_route: ek_hr.employee.view
+  title: 'Attachments'
+  weight: 2
+        
+ek_hr.task.edit_employee:
+  route_name: ek_hr.employee.edit
+  base_route: ek_hr.employee.view
+  title: 'Edit'
+  weight: 3
+
+ek_hr.task.history_employee:
+  route_name: ek_hr.employee.history
+  base_route: ek_hr.employee.view
+  title: 'History'
+  weight: 4
+
+ek_hr.payroll:
+  route_name: ek_hr.payroll
+  base_route: ek_hr.payroll
+  title: 'Record'
+  weight: 1
+  
+ek_hr.advance:
+  route_name: ek_hr.advance
+  base_route: ek_hr.payroll
+  title: 'Advance'
+  weight: 2
+  
+ek_hr.current-payroll:
+  route_name: ek_hr.current-payroll
+  base_route: ek_hr.payroll
+  title: 'Current payroll'
+  weight: 3
+  
+ek_hr.print-payslip:
+  route_name: ek_hr.print-payslip
+  base_route: ek_hr.payroll
+  title: 'Payslips'
+  weight: 4
+
+ek_hr.print-forms:
+  route_name: ek_hr.print-forms
+  base_route: ek_hr.payroll
+  title: 'Forms'
+  weight: 5
+  
+ek_hr.post-data:
+  route_name: ek_hr.post-data
+  base_route: ek_hr.payroll
+  title: 'Post data'
+  weight: 6
+  
+ek_hr.task.roster:
+  route_name: ek_hr.roster
+  base_route: ek_hr.roster
+  title: 'Edit Roster'
+  weight: 1
+
+#ek_hr.task.roster-excel:
+ # route_name: ek_hr.roster_extract
+  #base_route: ek_hr.roster
+  #title: 'Extract roster'
+  #weight: 2
+    
+ek_hr.task.ph:
+  route_name: ek_hr.roster_ph
+  base_route: ek_hr.roster
+  title: 'Public Holidays'
+  weight: 3

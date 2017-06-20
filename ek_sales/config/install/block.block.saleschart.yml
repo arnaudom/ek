@@ -1,0 +1,37 @@
+uuid: 75ccf79b-c29c-4141-ab00-dec7eae0b123
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_sales
+    - system
+    - user
+  theme:
+    - bartik
+id: saleschartblock
+theme: bartik
+region: content
+weight: -10
+provider: null
+plugin: ssales_charts_block
+settings:
+  id: ssales_charts_block
+  label: 'Sales chart block'
+  provider: ek_sales
+  label_display: '0'
+  cache:
+    max_age: 0
+    contexts: {  }
+visibility:
+  request_path:
+    id: request_path
+    pages: /sales_management
+    negate: false
+    context_mapping: {  }
+  user_role:
+    id: user_role
+    roles:
+      authenticated: authenticated
+    negate: false
+    context_mapping:
+      user: '@user.current_user_context:current_user'

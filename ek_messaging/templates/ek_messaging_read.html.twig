@@ -1,0 +1,66 @@
+<div id="line{{ items.id }}">
+    <div class="table">
+        <div class='row'>
+            <div class="cell">
+                <span class='badge'>{{ 'From'|t }} : </span> 
+            </div>
+            <div class="cell">
+                <h3>{{ items.from }}</h3>
+            </div>
+        </div>
+        <div class='row'>    
+            <div class="cell">
+                <span class='badge'>{{ 'Received'|t }} : </span>
+            </div>
+            <div class="cell">
+                {{ items.time }}
+            </div>        
+        </div>
+        <div class='row'>      
+            <div class="cell">
+                <span class='badge'>{{ 'Subject'|t }} : </span>
+            </div>
+            <div class="cell">
+                <i class="fa fa-circle {{ items.color }}" aria-hidden="true"></i> {{ items.subject }}
+            </div>        
+        </div>
+
+        <div class='row'>
+
+            <div class="cell">
+                <span class='badge'>{{ 'Message'|t }} :</span>
+            </div>
+            <div class="cell">
+
+            </div>
+
+        </div>
+
+    </div>
+    <br/>
+    <div class="table">
+        <div class='row'>
+            <div class="cell message">
+                {{ items.text|raw|nl2br }}
+            </div>
+        </div>
+    </div>
+     <br/>        
+</div>
+            
+<hr>
+
+<table>
+    <tbody>
+        <tr>
+            <td><span class='fa fa-reply'></span> {{ items.reply|raw }}</td>
+            <td><span class='fa fa-paper-plane-o'></span> {{ items.send|raw }}</td>
+            <td><span class='fa fa-inbox'></span> {{ items.inbox|raw }}</td>
+            <td><span class='fa fa-folder'></span> {{ items.archive|raw }}</td>
+            <td><span class='fa fa-times red'></span> {{ items.delete|raw }}</td>
+        </tr>
+
+
+    </tbody>
+
+</table>

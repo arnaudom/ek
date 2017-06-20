@@ -1,0 +1,66 @@
+{#
+* data structure report
+*  id : table id
+*  date : report creation date
+*  serial : unique reference
+*  pcode : case reference
+*  description : short description or tags
+*  status : active/closed
+*  type : report/briefing/training
+*  assign : report writer
+*  owner : report generator and editor
+*  edit : last edit stamp
+*  write : link to write form
+*  export : link to export document
+#}
+
+<h2> {{ items.type|capitalize }} {{ items.serial }} </h2>
+
+<section class="report">
+    
+    <table>
+        <thead>
+            <tr>
+                <th>{{ items.write }}</th>
+                <th>{{ items.export }}</th>
+            </tr>
+        </thead>
+        <tbody>            
+            <tr>
+                <td>{{ 'Created'|t }}:</td><td>{{ items.date }}</td>
+            </tr>
+            <tr>
+                <td>{{ 'Last edit'|t }}:</td><td>{{ items.edit }}</td>
+            </tr> 
+            <tr>
+                <td>{{ 'Report writer'|t }}:</td><td>{{ items.assign }}</td>
+            </tr>
+{% if items.permission == 1 %}
+            <tr>
+                <td>{{ 'Report editor'|t }}:</td><td>{{ items.owner }}</td>
+            </tr>
+{% endif %}
+            <tr>
+                <td>{{ 'Description'|t }}:</td><td>{{ items.description }}</td>
+            </tr> 
+{% if items.permission == 1 %}            
+            <tr>
+                <td>{{ 'Project'|t }}:</td><td>{{ items.pcode }}</td>
+            </tr>
+{% endif %}            
+        </tbody>
+        <tbody>
+            <tr>
+                <td colspan='2'>{{ items.report|raw|nl2br }}</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>{{ items.write }}</th>
+                <th>{{ items.export }}</th>
+            </tr>
+        </foot>        
+    </table>
+
+                    
+</section>

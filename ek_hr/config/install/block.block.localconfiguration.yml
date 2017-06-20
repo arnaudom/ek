@@ -1,0 +1,36 @@
+uuid: dfe6ba6a-8e24-4003-899a-11ce037d21b1
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_hr
+    - system
+    - user
+  theme:
+    - bartik
+id: localpayrollconfigurationstatus
+theme: bartik
+region: content
+weight: 3
+provider: null
+plugin: hr_payroll_local_block
+settings:
+  id: hr_payroll_local_block
+  label: 'Local payroll configuration status'
+  provider: ek_hr
+  label_display: '0'
+visibility:
+  request_path:
+    id: request_path
+    pages: /human-resources/dashboard
+    negate: false
+    context_mapping: {  }
+  user_role:
+    id: user_role
+    roles:
+      authenticated: authenticated
+    negate: false
+    context_mapping:
+      user: '@user.current_user_context:current_user'
+
+

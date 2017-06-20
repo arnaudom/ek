@@ -1,0 +1,99 @@
+ek_sales_css:
+  version: 1
+  css:
+    theme:
+      css/ek_sales.css: {}
+
+ek_sales_html_documents_css:
+  version: 1
+  css:
+    theme:
+      css/ek_sales_html_documents.css: {}
+      
+ek_sales.dashboard:
+  version: 1
+  css:
+    theme:
+      css/ek_sales_dashboard.css: {}
+  dependencies:
+    - core/jquery
+    
+ek_sales_print:
+  version: 1
+  js:
+    js/ek_sales_print.js: {}
+  dependencies:
+    - core/jquery
+
+ek_sales.invoice:
+  version: 1
+  css:
+    theme:
+      css/ek_sales.css: {}
+  js:
+    js/ek_sales_invoice.js: {}
+  dependencies:
+    - core/jquery
+        
+ek_sales.purchase:
+  version: 1
+  css:
+    theme:
+      css/ek_sales.css: {}
+  js:
+    js/ek_sales_purchase.js: {}
+  dependencies:
+    - core/jquery
+        
+ek_sales.quotation:
+  version: 1
+  css:
+    theme:
+      css/ek_sales.css: {}
+  js:
+    js/ek_sales_quotation.js: {}
+  dependencies:
+    - core/jquery
+    
+ek_sales.check_aid:
+  version: 1
+  js:
+    js/ek_sales_check_aid.js: {}
+  dependencies:
+    - core/jquery
+    
+ek_task:
+  version: 1
+  js:
+    js/updater.js: {}
+  css:
+    theme:
+      css/ek_sales.css: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.ui.autocomplete
+    
+ek_sales_docs_updater:
+  version: 1
+  js:
+    js/ek_sales_docs.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupal.form
+    - core/jquery.form
+    - core/drupalSettings
+    - core/drupal.ajax
+    - core/drupal.dialog
+    - core/backbone
+    
+ek_sales_charts:
+  version: 1
+  css:
+    theme:
+      css/ek_sales_charts.css: {}
+  js:
+    js/ek_sales_charts.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.once

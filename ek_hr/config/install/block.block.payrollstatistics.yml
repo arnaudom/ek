@@ -1,0 +1,38 @@
+uuid: 17b7e7e4-f449-41f4-a235-5302eb22edd6
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_hr
+    - system
+  theme:
+    - bartik
+_core:
+  default_config_hash: '-glFWZ_s6fGAdyy5k8kPV-V5EDFRHF5WQOoek2f4VVU'
+id: payrollstatistics
+theme: bartik
+region: content
+weight: -1
+provider: null
+plugin: hr_payroll_stat_block
+settings:
+  id: hr_payroll_stat_block
+  label: 'Payroll statistics'
+  provider: ek_hr
+  label_display: '0'
+  cache:
+    max_age: 0
+    contexts: {  }
+  visibility:
+    request_path:
+      id: request_path
+      pages: /human-resources/dashboard
+      negate: false
+visibility:
+  request_path:
+    id: request_path
+    pages: /human-resources/dashboard
+    negate: false
+    context_mapping: {  }
+
+

@@ -1,0 +1,75 @@
+<?php
+
+    ///////////////////////////////////////////////////
+    //                  COPYRIGHT                    //
+    //                                               //
+    // DEVELOPPED BY ARREA LTD                       //
+    // all rights reserved                           //
+    // Please read and agree with software           //
+    // application license                           //
+    ///////////////////////////////////////////////////
+    
+use Drupal\Core\Database\Database;    
+
+/**
+ * Implements hook_file_download().
+ *
+ * edit the file_download function in order to control access of items images
+
+function ek_logistics_file_download($uri) {
+ if( strpos($uri , 'admin/company' )  ) { 
+
+  $finfo = new finfo(FILEINFO_MIME_TYPE);
+  return array('Content-Type' => $finfo->file($uri) ); 
+
+
+ }
+
+}
+*/
+/**
+ * Implementation hook_theme().
+ */
+function ek_logistics_theme() {
+  return array(
+    // for the dashboard
+    'ek_logistics_dashboard' => array
+    (
+      'template' => 'ek_logistics_dashboard',
+      'variables' => array('items' => array()),
+    ),
+    'iframe' => array
+    (
+      'template' => 'iframe',
+      'variables' => array('items' => array()),
+    ),        
+  );
+  
+}
+
+/*
+ * Adjust stock quantity
+ * @param Char $itemcode
+ * @param double $value
+ * @param action -/+
+ */
+
+function ek_logistics_stock_adjust($itemcode, $value, $action) {
+    
+    if ($action == '-') {
+        $query = 'UPDATE {ek_item_packing} SET units = units - :u WHERE itemcode = :i';
+        
+    }
+    
+    if ($action == '+') {
+        $query = 'UPDATE {ek_item_packing} SET units = units - :u WHERE itemcode = :i';
+    }
+    
+    $a = array(':u' => $value, ':i' => $itemcode );
+        $data = Database::getConnection('external_db', 'external_db')
+              ->query($query, $a );
+        
+        if($data) {
+            return TRUE;
+        }
+}

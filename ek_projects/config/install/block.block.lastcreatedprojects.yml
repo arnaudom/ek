@@ -1,0 +1,37 @@
+uuid: 9434e8dd-ad8e-4d91-8800-fb4f7324b103
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_projects
+    - system
+  theme:
+    - bartik
+_core:
+  default_config_hash: 1xPtUIW_XcgWZBM0ai4DKAiuHv5l8jSlvCbEVVKyVmo
+id: lastcreatedprojects
+theme: bartik
+region: content
+weight: -4
+provider: null
+plugin: last_projects_block
+settings:
+  id: last_projects_block
+  label: 'Last created projects'
+  provider: ek_projects
+  label_display: '0'
+  cache:
+    max_age: 0
+    contexts: {  }
+  visibility:
+    request_path:
+      id: request_path
+      pages: /projects/project
+      negate: false
+visibility:
+  request_path:
+    id: request_path
+    pages: /projects/project
+    negate: false
+    context_mapping: {  }
+

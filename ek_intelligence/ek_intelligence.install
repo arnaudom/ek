@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the ek_intelligence module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function ek_intelligence_uninstall() {
+  // Clear data out of the cache.
+  \Drupal::cache('data')->deleteAll();
+}
+
+/**
+ * Implements hook_schema().
+ * schema installation is not done at install time but wihin the application
+ * in a separate database
+ */

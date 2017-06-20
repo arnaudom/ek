@@ -1,0 +1,17 @@
+ek_assets.view:
+  route_name: ek_assets.view
+  base_route: ek_assets.view
+  title: 'Data'
+  weight: 1
+  
+ek_assets.edit:
+  route_name: ek_assets.edit
+  base_route: ek_assets.view
+  title: 'Edit'
+  weight: 3
+  
+ek_assets.delete:
+  route_name: ek_assets.delete
+  base_route: ek_assets.view
+  title: 'Delete'
+  weight: 5

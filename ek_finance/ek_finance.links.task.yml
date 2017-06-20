@@ -1,0 +1,154 @@
+ek_finance.task.journal_list:
+  route_name: ek_finance.extract.general_journal
+  base_route: ek_finance.extract.general_journal
+  title: 'Journal'
+  weight: 1
+
+ek_finance.task.journal_entry:
+  route_name: ek_finance.manage.journal_entry
+  base_route: ek_finance.extract.general_journal
+  title: 'Journal entry'
+  weight: 2
+  
+ek_finance.task.ledger:
+  route_name: ek_finance.extract.ledger_balance
+  base_route: ek_finance.extract.general_journal
+  title: 'Ledger'
+  weight: 3
+  
+ek_finance.task.trial_balance:
+  route_name: ek_finance.extract.trial_balance
+  base_route: ek_finance.extract.general_journal
+  title: 'Trial balance'
+  weight: 4
+
+ek_finance.task.cashflow-statement:
+  route_name: ek_finance.cashflow_statement
+  base_route: ek_finance.extract.general_journal
+  title: 'Cash flow'
+  weight: 5
+  
+ek_finance.task.reports:
+  route_name: ek_finance.extract.balance_sheet
+  base_route: ek_finance.extract.general_journal
+  title: 'Reports'
+  weight: 6
+  
+#sub links of reports
+ek_finance.task.balance_sheet:
+  route_name: ek_finance.extract.balance_sheet
+  parent_id: ek_finance.task.reports
+  title: 'Balance sheet'
+  weight: 1
+
+ek_finance.task.profit_loss:
+  route_name: ek_finance.extract.profit_loss
+  parent_id: ek_finance.task.reports
+  title: 'Profit & loss'
+  weight: 2
+  
+ek_finance.task.chart_accounts:
+  route_name: ek_finance.admin.charts_accounts
+  base_route: ek_finance.extract.general_journal
+  title: 'Chart of accounts'
+  weight: 6
+
+#expenses 
+ek_finance.task.expenses_list:
+  route_name: ek_finance.manage.list_expense
+  base_route: ek_finance.manage.list_expense
+  title: 'Expenses list'
+  weight: 1
+  
+ek_finance.task.expenses_record:
+  route_name: ek_finance.manage.record_expense
+  base_route: ek_finance.manage.list_expense
+  title: 'Record'
+  weight: 2
+  
+#memos
+ek_finance_task_memo_list:
+  route_name: ek_finance_manage_list_memo_internal
+  base_route: ek_finance_manage_list_memo_internal
+  title: 'Internal memos list'
+  weight: 1
+
+ek_finance_task_memo_list_personal:
+  route_name: ek_finance_manage_list_memo_personal
+  base_route: ek_finance_manage_list_memo_internal
+  title: 'Personal memos list'
+  weight: 2
+
+
+#cash
+ek_finance.task.cash_balance:
+  route_name: ek_finance.manage.cash_balance
+  base_route: ek_finance.manage.cash_balance
+  title: 'Cash'
+  weight: 1
+  
+ek_finance.task.cash_manage:
+  route_name: ek_finance.manage.cash_manage
+  base_route: ek_finance.manage.cash_balance
+  title: 'Manage'
+  weight: 2
+
+ek_finance.task.currencies_manage:
+  route_name: ek_finance.currencies
+  base_route: ek_finance.manage.cash_balance
+  title: 'Currencies'
+  weight: 3
+  
+#bank
+ek_finance.task.manage.bank_list:
+  route_name: ek_finance.manage.bank_list
+  base_route: ek_finance.manage.bank_list
+  title: 'Banks'
+  weight: 1
+  
+ek_finance.task.manage.bank_accounts_list:
+  route_name: ek_finance.manage.bank_accounts_list
+  base_route: ek_finance.manage.bank_list
+  title: 'Bank accounts'
+  weight: 2
+ 
+#reco
+ek_finance.task.manage_reconciliation:
+  route_name: ek_finance.manage.reconciliation
+  base_route: ek_finance.manage.reconciliation
+  title: 'Reconcile'
+  weight: 1
+  
+ek_finance.task.reconciliation_reports:
+  route_name: ek_finance.manage.reconciliation_reports
+  base_route: ek_finance.manage.reconciliation
+  title: 'Reports'
+  weight: 2
+
+#reporting
+ek_finance.task.reporting:
+  route_name: ek_finance_reporting
+  base_route: ek_finance_reporing
+  title: 'Monthly reporting'
+  weight: 1
+  
+ek_finance.task.budgeting:
+  route_name: ek_finance_budgeting
+  base_route: ek_finance_reporing
+  title: 'Budget'
+  weight: 2
+  
+#sales module
+  
+ek_finance.task.invoice.ledger:
+  route_name: ek_finance.invoice.ledger
+  base_route: ek_sales.invoices.list
+  title: 'Ledger'
+  weight: 4
+  
+  
+ek_finance.task.purchase.ledger:
+  route_name: ek_finance.purchase.ledger
+  base_route: ek_sales.purchases.list
+  title: 'Ledger'
+  weight: 4

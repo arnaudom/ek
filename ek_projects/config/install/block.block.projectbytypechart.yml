@@ -1,0 +1,28 @@
+uuid: 54386415-2984-4a15-a83e-62b7dce75c29
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_projects
+    - system
+  theme:
+    - bartik
+id: projectsbytypechart
+theme: bartik
+region: content
+weight: 1
+provider: null
+plugin: project_type_chart_block
+settings:
+  id: project_type_chart_block
+  label: 'Projects by type chart'
+  provider: ek_projects
+  label_display: '0'
+  cache:
+    max_age: -1
+visibility:
+  request_path:
+    id: request_path
+    pages: /projects/project
+    negate: false
+    context_mapping: {  }

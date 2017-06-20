@@ -1,0 +1,152 @@
+<?php
+
+/**
+ * @file
+ * Contains \Drupal\ek_sales\Form\Settings.
+ */
+
+namespace Drupal\ek_sales\Form;
+
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Database\Database;
+use Drupal\ek_sales\SalesSettings;
+use Drupal\ek_admin\Access\AccessCheck;
+/**
+ * Provides a sales settings form.
+ */
+class Settings extends FormBase {
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFormId() {
+    return 'ek_edit_sales_settings_form';
+  }
+
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+
+
+  //
+  // add global settings used by accounts.
+ 
+  if ( $form_state->get('step') == '' ) {
+    $form_state->set('step', 1);  
+  } 
+  
+  
+  $company = AccessCheck::CompanyListByUid();
+  $form['coid'] = array(
+    '#type' => 'select',
+    '#size' => 1,
+    '#options' => $company,
+    '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : NULL,
+    '#title' => t('company'),
+    '#disabled' => ($form_state->getValue('coid')) ? TRUE : FALSE,
+    '#required' => TRUE, 
+    
+    ); 
+
+  if (($form_state->getValue('coid')) == '' ) {
+  $form['next'] = array(
+    '#type' => 'submit',
+    '#value' => t('Next'). ' >>',
+    '#states' => array(
+        // Hide data fieldset when class is empty.
+        'invisible' => array(
+           "select[name='coid']" => array('value' => ''),
+        ),
+      ),    
+  );
+  } 
+ 
+  if ( $form_state->get('step') == 2 ) {
+  
+  $form_state->set('step', 3);
+  $settings = new SalesSettings($form_state->getValue('coid'));  
+
+  $form['coid'] = array(
+    '#type' => 'hidden',
+    '#value' => $form_state->getValue('coid'),
+  );  
+     
+  $form['shortdue'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => ($settings->get('shortdue')) ? $settings->get('shortdue') : 7,
+    '#title' => t('Short due alert (days)'),
+    '#required' => TRUE, 
+  );   
+
+  $form['longdue'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => ($settings->get('longdue')) ? $settings->get('longdue') : 30,
+    '#title' => t('Long due alert (days)'),
+    '#required' => TRUE, 
+  );
+  
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
+  
+  }
+
+  return $form;
+  }
+  
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+  if ($form_state->get('step') == 1) {
+    $form_state->set('step', 2);
+    $form_state->setRebuild();
+  
+  }
+  
+  if ($form_state->get('step') == 3) {
+  }
+  
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+   
+    if ($form_state->get('step') == 3) {  
+   
+    //verify coid exist first
+      $query ='SELECT coid from {ek_sales_settings} WHERE coid=:c';
+      $coid = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $form_state->getValue('coid') ))->fetchField();
+
+      if(!$coid ) { 
+        Database::getConnection('external_db', 'external_db')->insert('ek_sales_settings')->fields(array('coid' => $form_state->getValue('coid')))->execute();
+      }
+    
+ 
+
+     $settings = new SalesSettings($form_state->getValue('coid'));
+      
+      $settings->set('shortdue', $form_state->getValue('shortdue'));
+      $settings->set('longdue', $form_state->getValue('longdue'));
+      
+      
+      $save = $settings->save();
+      
+       if ($save)  drupal_set_message(t('The settings are recorded'), 'status');
+      
+      }
+  }
+  
+
+
+
+}

@@ -1,0 +1,715 @@
+<?php
+    ///////////////////////////////////////////////////
+    //                  COPYRIGHT                    //
+    //                                               //
+    // DEVELOPPED BY ARREA LTD                       //
+    // all rights reserved                           //
+    // Please read and agree with software           //
+    // application license                           //
+    ///////////////////////////////////////////////////
+
+/**
+ * @file
+ *  module .
+ */
+
+
+/**
+ * Implements hook_file_download().
+ *
+ * edit the file_download function in order to control access of items images
+*/
+function ek_products_file_download($uri) {
+ if( strpos($uri , 'products/images' )  ) { 
+
+  $finfo = new finfo(FILEINFO_MIME_TYPE);
+  return array('Content-Type' => $finfo->file($uri) ); 
+
+
+ }
+
+}
+
+/**
+ * Implementation hook_theme().
+ */
+function ek_products_theme() {
+  return array(
+
+    // for the lookup item form
+    'ek_products_search_form' => array
+    (
+      'template' => 'ek_products_search_form',
+      'variables' => array('items' => array()),
+    ), 
+    
+    // for the item display
+    'ek_products_card' => array
+    (
+      'template' => 'ek_products_card',
+      'variables' => array('items' => array()),
+    ),   
+
+    // for the item form edit
+    'ek_products_form' => array
+    (
+      'template' => 'ek_products_form',
+      'variables' => array('items' => array(), 'fields' => array()),
+    ), 
+        
+  );     
+}
+
+/**
+ * Preprocess variables for items.
+ *
+ * @param array $variables
+ *  An associative array containing:
+ *  - items: 
+ */
+ 
+function template_preprocess_ek_products_search_form(&$variables) {
+
+
+}
+
+function template_preprocess_ek_products_card(&$variables) {                                 
+
+  
+}
+
+/**
+ * Preprocess variables for  views.
+ *
+ * @param array $variables
+ *  An associative array containing:
+ *  - items: 
+ */
+
+
+function template_preprocess_ek_products_form(&$variables) {
+
+//$variables['search_link'] = l(t('New seach'), 'item_search');
+
+
+}
+
+
+/**
+ * Implements hook_views_data().
+ */
+function ek_products_views_data() {
+
+
+  $data['ek_items']['table']['group'] = t('ek items');
+  $data['ek_items']['table']['base'] = array(
+    'field' => 'id', // This is the identifier field for the view.
+    'title' => t('ek products & services'),
+    'help' => t('ek products & services contains main items data.'),
+    'weight' => -10,
+    'database' => 'external_db',
+  );
+
+  $data['ek_items']['table']['join'] = array(
+    // Index this array by the table name to which this table refers.
+    // 'left_field' is the primary key in the referenced table.
+    // 'field' is the foreign key in this table.
+    'ek_item_prices' => array(
+      'left_field' => 'itemcode',
+      'field' => 'itemcode',
+    ),
+    'ek_item_barcodes' => array(
+      'left_field' => 'itemcode',
+      'field' => 'itemcode',
+    ),    
+    'ek_item_packing' => array(
+      'left_field' => 'itemcode',
+      'field' => 'itemcode',
+    ), 
+    'ek_item_images' => array(
+      'left_field' => 'itemcode',
+      'field' => 'itemcode',
+    ),    
+    'ek_item_price_history' => array(
+      'left_field' => 'itemcode',
+      'field' => 'itemcode',
+    ),      
+  );
+
+  //  ID table field.
+  $data['ek_items']['id'] = array(
+    'title' => t('item id'), 
+    'help' => t('item id'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+
+  $data['ek_items']['itemcode'] = array(
+    'title' => t('main item code'), 
+    'help' => t('item code'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+
+  $data['ek_items']['coid'] = array(
+    'title' => t('a company id ref'), 
+    'help' => t('company id'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+    'relationship' => array(
+      'base' => 'ek_company', // The name of the table to join with
+      'field' => 'id', // The name of the field to join with
+      'id' => 'standard',
+      'label' => t('Company ref'),
+    ),       
+  );
+
+
+  $data['ek_items']['type'] = array(
+    'title' => t('item type'), 
+    'help' => t('item type'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+  $data['ek_items']['description1'] = array(
+    'title' => t('item description'), 
+    'help' => t('item description'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+  $data['ek_items']['description2'] = array(
+    'title' => t('item other description'), 
+    'help' => t('item other description'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+  $data['ek_items']['supplier_code'] = array(
+    'title' => t('item code from supplier'), 
+    'help' => t('item code from supplier'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+
+$data['ek_items']['stop'] = array(
+    'title' => t('stop status'),
+    'help' => t('yes/no field'),
+    'field' => array('id' => 'boolean',),
+    'filter' => array('id' => 'boolean',
+    'label' => t('Stopped'),
+    'type' => 'yes-no',
+    // use boolean_field = 1 instead of boolean_field <> 0 in WHERE statement.
+    'use_equal' => TRUE, ),
+    'sort' => array('id' => 'standard',),
+  );
+
+  $data['ek_items']['collection'] = array(
+    'title' => t('item collection'), 
+    'help' => t('item collection'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+  $data['ek_items']['department'] = array(
+    'title' => t('item department'), 
+    'help' => t('item department'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+  $data['ek_items']['family'] = array(
+    'title' => t('item family'), 
+    'help' => t('item family'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+  $data['ek_items']['size'] = array(
+    'title' => t('item size'), 
+    'help' => t('item size'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+  $data['ek_items']['supplier'] = array(
+    'title' => t('item supplier ref from address book'), 
+    'help' => t('item supplier ref from address book'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',), 
+    'relationship' => array(
+      'base' => 'ek_address_book', // The name of the table to join with
+      'field' => 'id', // The name of the field to join with
+      'id' => 'standard',
+      'label' => t('Supplier ref'),
+    ),   
+  );
+
+
+//TABLE `ek_item_packing` 
+  $data['ek_item_packing']['table']['group'] = t('ek items packing');
+  $data['ek_item_packing']['table']['base'] = array(
+    'field' => 'id', // This is the identifier field for the view.
+    'title' => t('ek products & services items packing'),
+    'help' => t('contains items packing'),
+    'weight' => -10,
+    'database' => 'external_db',
+
+  );
+  $data['ek_item_packing']['table']['join'] = array(
+    'ek_items' => array(
+      'left_field' => 'itemcode',
+      'field' => 'itemcode',
+    ),
+  );
+  //  ID table field.
+  $data['ek_item_packing']['id'] = array(
+    'title' => t('packing id'), 
+    'help' => t('packing id'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+
+  $data['ek_item_packing']['itemcode'] = array(
+    'title' => t('main item code'), 
+    'help' => t('item code ref.'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),  
+    'relationship' => array(
+      'base' => 'ek_items', // The name of the table to join with
+      'field' => 'itemcode', // The name of the field to join with
+      'id' => 'standard',
+      'label' => t('main item ref'),
+    ),      
+  );
+
+  $data['ek_item_packing']['units'] = array(
+    'title' => t('item units'), 
+    'help' => t('item units'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+  $data['ek_item_packing']['unit_measure'] = array(
+    'title' => t('item units measure'), 
+    'help' => t('item units measure'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+  $data['ek_item_packing']['item_size'] = array(
+    'title' => t('item size'), 
+    'help' => t('item size'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+  $data['ek_item_packing']['pack_size'] = array(
+    'title' => t('item pack size'), 
+    'help' => t('item pack size'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+  $data['ek_item_packing']['qty_pack'] = array(
+    'title' => t('item quantity per pack '), 
+    'help' => t('item quantity per pack'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+  
+  $data['ek_items']['logistic_cost'] = array(
+    'title' => t('item logistic cost'), 
+    'help' => t('item logistic cost'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+  
+  $data['ek_item_packing']['c20'] = array(
+    'title' => t('item quantity per 20 container '), 
+    'help' => t('item quantity per 20 container'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );  
+
+  $data['ek_item_packing']['c40'] = array(
+    'title' => t('item quantity per 40 container '), 
+    'help' => t('item quantity per 40 container'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  ); 
+
+  $data['ek_item_packing']['min_order'] = array(
+    'title' => t('item quantity min. order '), 
+    'help' => t('item quantity min. order'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  ); 
+
+//TABLE `ek_item_prices` 
+  $data['ek_item_prices']['table']['group'] = t('ek items prices');
+  $data['ek_item_prices']['table']['base'] = array(
+    'field' => 'id', // This is the identifier field for the view.
+    'title' => t('ek products & services items prices'),
+    'help' => t('contains items prices'),
+    'weight' => -10,
+    'database' => 'external_db',
+
+  );
+  $data['ek_item_prices']['table']['join'] = array(
+    'ek_items' => array(
+      'left_field' => 'itemcode',
+      'field' => 'itemcode',
+    ),
+  );
+  //  ID table field.
+  $data['ek_item_prices']['id'] = array(
+    'title' => t('prices id'), 
+    'help' => t('prices id'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+
+  $data['ek_item_prices']['itemcode'] = array(
+    'title' => t('main item code'), 
+    'help' => t('item code ref.'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),  
+    'relationship' => array(
+      'base' => 'ek_items', // The name of the table to join with
+      'field' => 'itemcode', // The name of the field to join with
+      'id' => 'standard',
+      'label' => t('main item ref'),
+    ),      
+  );
+
+  $data['ek_item_prices']['purchase_price'] = array(
+    'title' => t('purchase price'), 
+    'help' => t('purchase price'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+
+  $data['ek_item_prices']['currency'] = array(
+    'title' => t('price currency'), 
+    'help' => t('price currency'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+  $data['ek_item_prices']['date_purchase'] = array(
+    'title' => t('date purchase'), 
+    'help' => t('date purchase'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+
+  $data['ek_item_prices']['selling_price'] = array(
+    'title' => t('selling price'), 
+    'help' => t('selling price'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+
+  $data['ek_item_prices']['promo_price'] = array(
+    'title' => t('promotion price'), 
+    'help' => t('promotion price'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+
+  $data['ek_item_prices']['discount_price'] = array(
+    'title' => t('discount price'), 
+    'help' => t('discount price'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+
+  $data['ek_item_prices']['exp_selling_price'] = array(
+    'title' => t('export selling price'), 
+    'help' => t('xport selling price'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+  
+  $data['ek_item_prices']['exp_promo_price'] = array(
+    'title' => t('export promotion price'), 
+    'help' => t('xport promotion price'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+    
+  $data['ek_item_prices']['exp_discount_price'] = array(
+    'title' => t('export discount price'), 
+    'help' => t('xport discount price'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );  
+  
+  $data['ek_item_prices']['loc_currency'] = array(
+    'title' => t('local currency'), 
+    'help' => t('local currency'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+  
+  $data['ek_item_prices']['exp_currency'] = array(
+    'title' => t('export currency'), 
+    'help' => t('export currency'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );  
+  
+  
+//TABLE `ek_item_barcodes` (
+  $data['ek_item_barcodes']['table']['group'] = t('ek items barcodes');
+  $data['ek_item_barcodes']['table']['base'] = array(
+    'field' => 'id', // This is the identifier field for the view.
+    'title' => t('ek products & services items barcodes'),
+    'help' => t('contains items barcodes'),
+    'weight' => -10,
+    'database' => 'external_db',    
+  );
+  
+  $data['ek_item_barcodes']['table']['join'] = array(
+    'ek_items' => array(
+      'left_field' => 'itemcode',
+      'field' => 'itemcode',
+    ),
+  );
+  //  ID table field.
+  $data['ek_item_barcodes']['id'] = array(
+    'title' => t('barcode id'), 
+    'help' => t('barcode id'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+
+  $data['ek_item_barcodes']['itemcode'] = array(
+    'title' => t('main item code'), 
+    'help' => t('item code ref.'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),  
+    'relationship' => array(
+      'base' => 'ek_items', // The name of the table to join with
+      'field' => 'itemcode', // The name of the field to join with
+      'id' => 'standard',
+      'label' => t('main item ref'),
+    ),      
+  );
+
+  $data['ek_item_barcodes']['barcode'] = array(
+    'title' => t('barcodes'), 
+    'help' => t('barcodes'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );
+  
+  $data['ek_item_barcodes']['encode'] = array(
+    'title' => t('barcode encoding standard'), 
+    'help' => t('barcode encoding standard'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );  
+
+
+//TABLE `ek_item_images` 
+
+  $data['ek_item_images']['table']['group'] = t('ek items images');
+  $data['ek_item_images']['table']['base'] = array(
+    'field' => 'id', // This is the identifier field for the view.
+    'title' => t('ek products & services items images'),
+    'help' => t('contains items images'),
+    'weight' => -10,
+    'database' => 'external_db',    
+  );
+  
+  $data['ek_item_images']['table']['join'] = array(
+    'ek_items' => array(
+      'left_field' => 'itemcode',
+      'field' => 'itemcode',
+    ),
+  );
+  //  ID table field.
+  $data['ek_item_images']['id'] = array(
+    'title' => t('barcode id'), 
+    'help' => t('barcode id'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+
+  $data['ek_item_images']['itemcode'] = array(
+    'title' => t('main item code'), 
+    'help' => t('item code ref.'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),  
+    'relationship' => array(
+      'base' => 'ek_items', // The name of the table to join with
+      'field' => 'itemcode', // The name of the field to join with
+      'id' => 'standard',
+      'label' => t('main item ref'),
+    ),      
+  );
+
+  $data['ek_item_images']['image'] = array(
+    'title' => t('image uri'), 
+    'help' => t('image uri.'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+     
+  );
+
+
+//TABLE `ek_item_price_history` 
+  $data['ek_item_price_history']['table']['group'] = t('ek items price history');
+  $data['ek_item_price_history']['table']['base'] = array(
+    'field' => 'id', // This is the identifier field for the view.
+    'title' => t('ek products & services items price history'),
+    'help' => t('contains items price history'),
+    'weight' => -10,
+    'database' => 'external_db',    
+  );
+  
+  $data['ek_item_price_history']['table']['join'] = array(
+    'ek_items' => array(
+      'left_field' => 'itemcode',
+      'field' => 'itemcode',
+    ),
+  );
+  //  ID table field.
+  $data['ek_item_price_history']['id'] = array(
+    'title' => t('barcode id'), 
+    'help' => t('barcode id'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+
+  $data['ek_item_price_history']['itemcode'] = array(
+    'title' => t('main item code'), 
+    'help' => t('item code ref.'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),  
+    'relationship' => array(
+      'base' => 'ek_items', // The name of the table to join with
+      'field' => 'itemcode', // The name of the field to join with
+      'id' => 'standard',
+      'label' => t('main item ref'),
+    ),      
+  );
+
+$data['ek_item_price_history']['date'] = array(
+    'title' => t('date history'),
+    'help' => t('timestamp field'),
+    'field' => array('id' => 'date',),
+    'sort' => array('id' => 'date',),
+    'filter' => array('id' => 'date',),
+  );
+
+  $data['ek_item_price_history']['price'] = array(
+    'title' => t('history price'), 
+    'help' => t('history price'), 
+    'field' => array('id' => 'numeric', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'numeric',),
+  );
+
+  $data['ek_item_price_history']['currency'] = array(
+    'title' => t('history currency ref'), 
+    'help' => t('history currency ref'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );  
+
+  $data['ek_item_price_history']['type'] = array(
+    'title' => t('history price type'), 
+    'help' => t('history price type'), 
+    'field' => array('id' => 'standard', ),
+    'sort' => array('id' => 'standard',),
+    'filter' => array('id' => 'string',),
+    'argument' => array('id' => 'string',),    
+  );  
+  
+
+
+ return $data;
+}
+
+?>

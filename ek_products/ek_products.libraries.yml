@@ -1,0 +1,26 @@
+ek_products_css:
+  version: VERSION
+  css:
+    theme:
+      css/ek_products.css: {}
+  
+
+ek_products_card:
+  version: VERSION
+  css:
+    theme:
+      css/ek_products.css: {}
+  js:
+    js/ek_products_images.js: {}
+    js/ek_products.js: {}   
+    
+ek_products.autocomplete:
+  version: VERSION
+  css:
+    theme:
+      css/ek_products.css: {}
+  js:
+    js/ek_products_autocomplete.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal

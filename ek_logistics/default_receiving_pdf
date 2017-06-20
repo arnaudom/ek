@@ -1,0 +1,424 @@
+<?php
+
+class PDF extends FPDF
+{
+//multicell maxline------------------------------------------------------
+function MultiCell($w,$h,$txt,$border=0,$align='J',$fill=0,$maxline=0)
+    {
+        //Output text with automatic or explicit line breaks, maximum of $maxlines
+        $cw=&$this->CurrentFont['cw'];
+        if($w==0)
+            $w=$this->w-$this->rMargin-$this->x;
+        $wmax=($w-2*$this->cMargin)*1000/$this->FontSize;
+        $s=str_replace("\r",'',$txt);
+        $nb=strlen($s);
+        if($nb>0 and $s[$nb-1]=="\n")
+            $nb--;
+        $b=0;
+        if($border)
+        {
+            if($border==1)
+            {
+                $border='LTRB';
+                $b='LRT';
+                $b2='LR';
+            }
+            else
+            {
+                $b2='';
+                if(is_int(strpos($border,'L')))
+                    $b2.='L';
+                if(is_int(strpos($border,'R')))
+                    $b2.='R';
+                $b=is_int(strpos($border,'T')) ? $b2.'T' : $b2;
+            }
+        }
+        $sep=-1;
+        $i=0;
+        $j=0;
+        $l=0;
+        $ns=0;
+        $nl=1;
+        while($i<$nb)
+        {
+            //Get next character
+            $c=$s[$i];
+            if($c=="\n")
+            {
+                //Explicit line break
+                if($this->ws>0)
+                {
+                    $this->ws=0;
+                    $this->_out('0 Tw');
+                }
+                $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
+                $i++;
+                $sep=-1;
+                $j=$i;
+                $l=0;
+                $ns=0;
+                $nl++;
+                if($border and $nl==2)
+                    $b=$b2;
+                if ( $maxline  && $nl > $maxline ) 
+                    return substr($s,$i);
+                continue;
+            }
+            if($c==' ')
+            {
+                $sep=$i;
+                $ls=$l;
+                $ns++;
+            }
+            $l+=$cw[$c];
+            if($l>$wmax)
+            {
+                //Automatic line break
+                if($sep==-1)
+                {
+                    if($i==$j)
+                        $i++;
+                    if($this->ws>0)
+                    {
+                        $this->ws=0;
+                        $this->_out('0 Tw');
+                    }
+                    $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
+                }
+                else
+                {
+                    if($align=='J')
+                    {
+                        $this->ws=($ns>1) ? ($wmax-$ls)/1000*$this->FontSize/($ns-1) : 0;
+                        $this->_out(sprintf('%.3f Tw',$this->ws*$this->k));
+                    }
+                    $this->Cell($w,$h,substr($s,$j,$sep-$j),$b,2,$align,$fill);
+                    $i=$sep+1;
+                }
+                $sep=-1;
+                $j=$i;
+                $l=0;
+                $ns=0;
+                $nl++;
+                if($border and $nl==2)
+                    $b=$b2;
+                if ( $maxline  && $nl > $maxline ) 
+                    return substr($s,$i);
+            }
+            else
+                $i++;
+        }
+        //Last chunk
+        if($this->ws>0)
+        {
+            $this->ws=0;
+            $this->_out('0 Tw');
+        }
+        if($border and is_int(strpos($border,'B')))
+            $b.='B';
+        $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
+        $this->x=$this->lMargin;
+        return '';
+    }
+//===============================================================================
+//Page header
+function Header()
+{
+    //Logo
+    if ($this->company->logo != '') {
+    
+        $logo = drupal_realpath($this->company->logo);
+        if(file_exists($logo)) {
+            $this->Image($logo,20,10,43);
+        }
+    
+    }
+    
+    $this->SetTextColor(53,53,53);
+    $lm=1;
+    $c1=45;
+    $c2=70;
+    $c3=30;
+    $c4=35;
+
+    $this->Ln(25);
+    $this->SetFont('Arial','',14);
+
+    $this->Cell($c1 + $c3 + $c3);
+    $this->Cell(50,5,$this->company->name,0,1);
+    if($this->company->reg_number) {
+    $this->SetFont('Arial','',8);
+    $this->Cell($c1 + $c3 + $c3);
+    $this->Cell(50,5,'(' . $this->company->reg_number . ')',0,1);
+    }
+    $this->SetFont('Arial','',10);
+    $this->Cell($c1 + $c3 + $c3);    
+    $this->Cell(60,4, $this->company->address1,0,1);
+    $this->Cell($c1 + $c3 + $c3);    
+    $this->Cell(60,4, $this->company->address2,0,1);
+    $this->Cell($c1 + $c3 + $c3);
+    $this->Cell(50,5, $this->company->postcode . ',' .$this->company->country ,0,1);
+    $this->SetFont('Arial','',8);
+    $this->Cell($c1 + $c3 + $c3);
+    if ($this->company->telephone <> '') {
+    $this->Cell(8,3,t("tel:").$this->company->telephone,0,1);
+    }
+    if ($this->company->fax <> '') {
+    $this->Cell($c1 + $c3 + $c3);
+    $this->Cell(8,4,t("fax:").$this->company->fax,0,1);
+    }
+    //Line break
+    $this->Ln(4); 
+}
+
+function setHeaderData($company){ 
+$this->company = $company;
+} 
+
+//Page footer
+  function Footer()
+  {
+    $this->SetTextColor(53,53,53);
+    $this->SetY(-25);
+      if ($this->company->address3 != "") {
+        $c = $this->company->address3;
+        if ($this->company->address4 <> ''){
+            $c .= ", " . $this->company->address4;
+        }
+        if ($this->company->postcode2 <> ''){
+            $c .= ", " . $this->company->postcode2;
+        }
+        if ($this->company->city2 <> ''){
+            $c .= ", " . $this->company->city2;
+        } 
+        if ($this->company->country2 <> ''){
+            $c .= ", " . $this->company->country2;
+        }        
+        $this->Cell(0,3,t('Correspondence address') . ':' ,0,1,'C');
+        $this->SetFont('Arial','I',8);
+        $this->Cell(0,3,$c,0,1,'C');
+        $c = "";
+        if ($this->company->telephone2 <> ''){ $c .= t('Tel') . ': ' . $this->company->telephone2 . " ";}
+        if ($this->company->fax2 <> '') {$c .= t('Fax') . ':' . $this->company->fax2 ;}
+        $this->Cell(0,3, $c ,0,1,'C');
+      }
+
+      //Position at 1.5 cm from bottom
+      $this->SetFont('Arial','I',8);
+      //Page number
+      $this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
+      
+  }
+}
+
+$pdf=new PDF();
+$pdf->setHeaderData($company); 
+$pdf->AliasNbPages();
+$pdf->AddPage('P'.'A4');
+//$pdf->SetAutoPageBreak(1,60);
+
+
+
+// header details
+$pdf->SetFont('Arial','B',20);
+$pdf->SetTextColor(187, 208, 211);
+    $pdf->Cell(104);
+    $pdf->Cell(10,10, $head->type ,0,1);
+    $pdf->Ln(2);
+$pdf->SetTextColor(0, 0, 0);
+$pdf->SetFont('Arial','B',10);
+    $pdf->Cell(104);
+    $pdf->Cell(28,5, t('Receiving No:') ,0,0);  
+$pdf->SetFont('Arial','',10);
+    $pdf->Cell(20,5,$head->serial,0,1);  
+$pdf->SetFont('Arial','B',10);
+    $pdf->Cell(104);
+    $pdf->Cell(28,5, t('Receiving date') . ':'  ,0,0);
+$pdf->SetFont('Arial','',10);
+    $pdf->Cell(80,5,$head->ddate,0,1);
+    
+    
+$pdf->SetFont('Arial','B',9);
+    $pdf->Cell(25,5, t('Received from') . ':' ,0,0);
+$pdf->SetFont('Arial','',10);
+    $pdf->Cell(20,5, $client->name ,0,1);
+    $pdf->Cell(25);
+    $pdf->Cell(20,5, $client->address ,0,1);  
+    $pdf->Cell(25);
+    if(isset( $client->address2 )){
+    $pdf->Cell(20,5, $client->address2 ,0,1);  
+    }
+    $pdf->Cell(25);
+    if(isset($client->city)) {
+        $next = $client->city;
+    }
+    if(isset($client->postcode)) {
+        $next .= ', ' . $client->postcode;
+    }
+    if(isset($client->country)) {
+        $next .= ', ' . $client->country;
+    }    
+    $pdf->Cell(20,5, $next ,0,1); 
+    $pdf->SetFont('Arial','',8);
+    $pdf->Cell(25);      
+    if(isset( $client->telephone )){
+        $next =  t('Tel') . ': ' . $client->telephone . ' ';
+    }        
+    if(isset( $client->fax )){
+        $next .=  t('Fax') . ': ' . $client->fax;
+    } 
+    $pdf->Cell(20,5, $next ,0,1);
+    
+$pdf->SetFont('Arial','B',10);
+$pdf->ln(1);
+$pdf->SetFont('Arial','',9);
+    $pdf->Cell(25,5,'',0,0); 
+    $pdf->Cell(150,5,$head->title,'T',1);
+    $pdf->Cell(25,5,'',0,0); 
+    $pdf->Cell(150,5,$head->po,0,1);    
+
+$pdf->Ln(10);     
+    
+
+//BODY OF receiving
+
+////////////////
+include_once drupal_get_path('module', 'ek_logistics') . "/barcode.inc.php";
+
+	$bar= new BARCODE();
+	if($bar==false){
+		die($bar->error());
+        }
+////////////////
+
+$pdf->SetFont('Arial','B',8);
+    $pdf->Cell(1);
+    $pdf->Cell(8,5,'',1,0);
+    $pdf->Cell(15,5,t('Item code'),1,0);
+    $pdf->Cell(70,5,t('Description'),1,0);
+    $pdf->Cell(50,5,t('Barcode'),1,0);
+    $pdf->Cell(17,5,t('Ref. code'),1,0);
+    //$pdf->Cell(20,5,'',1,0);
+    //$pdf->Cell(20,5,'',1,0);
+    $pdf->Cell(25,5,t('Qties delivered'),1,1);
+    //$pdf->Cell(10,5,'',1,1);
+    
+    $i=1;
+$pdf->SetFont('Arial','',8);
+
+    foreach ($items as $detail) {
+    
+    $pdf->Cell(1);
+    $pdf->Cell(8,6, $i ,1,0);
+    
+    /*
+    $encode=$row3["encode1"];
+    $bdata=$row3["barcode1"];
+    $height="25";
+    $scale="1";
+    $bgcolor="#FFFFFF";
+    $color="#000000";
+    $file=$_SESSION['documentPath']."company/forms/logistics/bar".$i;
+    $type="jpeg";
+    $Genrate="Submit";
+    $bar->setSymblogy($encode);
+    $bar->setHeight($height);
+    $bar->setScale($scale);
+    $bar->setHexColor($color,$bgcolor); 
+    $return = $bar->genBarCode($bdata,$type,$file); 
+    if($return==false) {$bar->error(true);}
+    */
+    $pdf->Cell(15,6, $detail['itemcode'] ,1,0);
+    
+$x= $pdf->GetX();
+$y= $pdf->GetY();
+    
+    $pdf->MultiCell(70,6, $detail['item'] ,1,'J');
+    
+$y2= $pdf->GetY();  
+    
+$pdf->SetXY($x,$y);
+$h=$y2-$y;      
+$h2=$h/2;  
+
+    $pdf->Cell(70);
+    $pdf->Cell(25,$h,$detail['barcode1'],1,0,'L');
+
+
+$x1= $pdf->GetX()+1; 
+$y1= $pdf->GetY()+$h/3-4;
+
+
+    $pdf->Cell(25,$h, $detail['barcode2'] ,1,0,'L');
+    $pdf->Cell(17,$h, $detail['supplier_code'],1,0);
+    $pdf->Cell(15,$h, $detail['quantity'] ,1,0);
+    $pdf->Cell(10,$h,$detail['unit_measure'] ,1,1,'R');
+
+	if($i == 1){
+		$t_quantity = $detail['quantity'];
+	}
+	else{
+		$t_quantity = $t_quantity + $detail['quantity'];
+    }
+    $i++;
+    //check position for a break
+    $here= $pdf->GetY();
+    if ($here >=250) { $pdf->AddPage(P,A4);
+$pdf->SetTextColor(0, 0, 0);
+$pdf->SetFont('Arial','B',8);
+    $pdf->Cell(25,4, t('Delivery date:') ,0,0);
+$pdf->SetFont('Arial','',8);
+    $pdf->Cell(80,4,$head->ddate,0,0);
+$pdf->SetFont('Arial','B',8);
+    $pdf->Cell(25,4,'Report No.:',0,0);  
+$pdf->SetFont('Arial','',8);
+    $pdf->Cell(20,5,$head->serial,0,1);  
+$pdf->SetFont('Arial','B',8);
+    $pdf->Cell(25,4,'To:',0,0);
+$pdf->SetFont('Arial','',8);
+    $pdf->Cell(20,4, $client->name ,0,1);   
+$pdf->SetFont('Arial','B',8);
+    $pdf->Cell(30,5,'',0,0); 
+    $pdf->Cell(150,5,$head->title,0,1);
+    $pdf->Cell(30,5,'',0,0); 
+    $pdf->Cell(300,5,$head->po,0,1);    
+$pdf->Ln(2);       
+    }}
+    $pdf->Cell(1);
+    $pdf->Cell(160,5, t("TOTAL QUANTITIES") . ':',1,0);
+    $pdf->Cell(15,5, $t_quantity ,1,0);
+    $pdf->Cell(10,5, $detail['unit_measure'] ,1,1,'R');
+    
+
+
+// stamps===============================================================
+
+    if ($stamp == "2") {
+      
+        $copy = drupal_get_path('module', 'ek_logistics') . "/art/copy.png";
+        if (file_exists($copy)) {
+          $pdf->Image($copy,50,60,40); 
+        }
+           
+    } elseif ($stamp == "1") {
+        $original = drupal_get_path('module', 'ek_logistics') . "/art/original.png";
+        if (file_exists($original)) {         
+          $pdf->Image($original,50,60,40);    
+        }  
+    }    
+ //SIGNATURE============================================================ 
+    $x= $pdf->GetX(); 
+    $y= $pdf->GetY();
+    $bottom = $y+40 > 268 ? 268: $y+40;
+
+        if($signature == 1) {
+
+            if(isset($company->sign)) {
+            $sign = drupal_realpath($company->sign);
+            $pdf->Image($sign,20,$bottom-20,70);
+            }
+        }
+
+
+        $pdf->SetXY(20,$bottom);
+    $pdf->Cell(60,3,t("Authorized signatory") ,'T',1);

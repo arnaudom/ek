@@ -1,0 +1,153 @@
+ek_products_install:
+  path: '/ek_products/install'
+  defaults:
+    _controller: '\Drupal\ek_products\Controller\InstallController::install'
+  requirements:
+    _permission: 'access administration pages'
+    
+ek_products_update:
+  path: '/ek_products/migrate'
+  defaults:
+    _controller: '\Drupal\ek_products\Controller\InstallController::migrate'
+  requirements:
+    _permission: 'access administration pages'
+    
+ek_products.parameters:
+  path: '/ek_products/parameters'
+  defaults:
+    _title: 'Products and services parameters'
+    _form: '\Drupal\ek_products\Form\SettingsForm'
+  requirements:
+    _permission: 'edit_products'
+    
+ek_products.search:
+  path: '/item_search'
+  defaults:
+    _title: 'Search product or service'
+    _controller: '\Drupal\ek_products\Controller\ProductsController::searchproducts'
+  requirements:
+    _permission: 'view_products'
+
+ek_products.view:
+  path: '/item/{id}'
+  defaults:
+    _title: 'Product and services item'
+    _controller: '\Drupal\ek_products\Controller\ProductsController::viewproducts'
+  requirements:
+    _permission: 'view_products'
+    id: \w*
+    
+ek_products.list:
+  path: '/item_list'
+  defaults:
+    _title: 'Product and services list'
+    _controller: '\Drupal\ek_products\Controller\ProductsController::listproducts'
+  requirements:
+    _permission: 'view_products'
+
+ek_products.excel_items:
+  path: '/item_list/extract/{param}'
+  defaults:
+    _controller: '\Drupal\ek_products\Controller\ProductsController::excelItemsList'
+  requirements:
+    _permission: 'view_products'
+    
+ek_products.create:
+  path: '/new_item'
+  defaults:
+    _title: 'New product or services'
+    _controller: '\Drupal\ek_products\Controller\ProductsController::newproducts'
+  requirements:
+    _permission: 'create_products'
+    
+ek_products.edit:
+  path: '/edit_item/{id}'
+  defaults:
+    _title: 'Edit product or services'
+    _controller: '\Drupal\ek_products\Controller\ProductsController::editproducts'
+  requirements:
+    _permission: 'edit_products'  
+    id: \w*
+    
+ek_products.clone:
+  path: '/clone_item/{id}'
+  defaults:
+    _title: 'Clone product or service'
+    _controller: '\Drupal\ek_products\Controller\ProductsController::cloneproducts'
+  requirements:
+    _permission: 'edit_products'  
+    id: \w*
+    
+ek_products.delete:
+  path: '/delete_item/{id}'
+  defaults:
+    _title: 'Delete product or services'
+    _controller: '\Drupal\ek_products\Controller\ProductsController::deleteproducts'
+  requirements:
+    _permission: 'delete_products'  
+    id: \w*   
+    
+ek.look_up_item_ajax:
+  path: '/look_up_item_ajax/{id}'
+  defaults:
+    _controller: '\Drupal\ek_products\Controller\ProductsController::ajaxlookupitem'
+    id: 0
+  requirements:
+    _permission: 'view_products'
+
+ek_look_up_item_type:
+  path: '/item/tags1/{opt}'
+  defaults:
+    _controller: '\Drupal\ek_products\Controller\ProductsController::tags'
+    opt: 'type'
+  requirements:
+    _permission: 'create_products' 
+
+ek_look_up_item_department:
+  path: '/item/tags2/{opt}'
+  defaults:
+    _controller: '\Drupal\ek_products\Controller\ProductsController::tags'
+    opt: 'department'
+  requirements:
+    _permission: 'create_products' 
+
+ek_look_up_item_family:
+  path: '/item/tags3/{opt}'
+  defaults:
+    _controller: '\Drupal\ek_products\Controller\ProductsController::tags'
+    opt: 'family'
+  requirements:
+    _permission: 'create_products' 
+
+ek_look_up_item_collection:
+  path: '/item/tags4/{opt}'
+  defaults:
+    _controller: '\Drupal\ek_products\Controller\ProductsController::tags'
+    opt: 'collection'
+  requirements:
+    _permission: 'create_products'
+
+ek_look_up_item_color:
+  path: '/item/tags5/{opt}'
+  defaults:
+    _controller: '\Drupal\ek_products\Controller\ProductsController::tags'
+    opt: 'color'
+  requirements:
+    _permission: 'create_products'
+
+ek_look_up_item_measure:
+  path: '/item/tags6/{opt}'
+  defaults:
+    _controller: '\Drupal\ek_products\Controller\ProductsController::tags'
+    opt: 'measure'
+  requirements:
+    _permission: 'create_products'
+       
+ek_item.pdf:
+  path: '/item_card_pdf/{id}'
+  defaults:
+    _controller: '\Drupal\ek_products\Controller\ProductsController::pdfitem'
+  requirements:
+    _permission: 'view_products'
+    id: \w*
+      

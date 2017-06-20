@@ -1,0 +1,25 @@
+ek_admin.menu:
+  title: Administration
+  description: 'Administrate content'
+  route_name: ek_admin.main
+  expanded: true
+  hidden: 0
+  weight: 16
+     
+ek.company_list:
+  title: Companies
+  description: 'List of companies'
+  route_name: ek_admin.company.list
+  parent: ek_admin.menu
+  
+ek.country_list:
+  title: Countries
+  description: 'List of countries'
+  route_name: ek_admin.country.list
+  parent: ek_admin.menu
+
+ek.access-admin:
+  title: Access
+  description: 'Manage user access'
+  route_name: ek_admin.access.company
+  parent: ek_admin.menu

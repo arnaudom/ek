@@ -1,0 +1,10 @@
+ek_address_book.menu:
+  title: 'Address book'
+  description: 'Manage contacts'
+  route_name: ek_address_book.search
+  expanded: true
+  hidden: 0
+  weight: 1
+    
+
+

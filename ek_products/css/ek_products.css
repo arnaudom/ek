@@ -1,0 +1,148 @@
+.table {
+    display: table;
+    width: 100%;
+}
+
+.row {
+    display : table-row;
+    height:auto;
+}
+
+.header_tb {  
+    display : table-cell;
+    padding: 5px 5px 5px 5px;
+}
+
+.cell {  
+    display : table-cell;
+    padding: 1px 1px 1px 1px;
+}
+
+.thumbnail {
+    width : 100px;
+
+}
+
+.panel-default {
+    border-color: #DDDDDD;
+}
+.panel {
+    background-color: #FFFFFF;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    padding : 0 0 0 !important;
+    margin: 0px !important;
+}
+
+.panel-default > .panel-heading {
+    background-color: #A9BCF5;
+    border-color: #A9BCF5;
+    color: #333333;
+}
+.panel-heading {
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    padding: 10px 15px;
+}
+
+.panel-body {
+    padding: 15px;
+}
+
+.closed {
+    display : none;
+}
+
+.text-left {
+    float: left;
+}
+
+.text-right {
+    float: right;
+}
+
+.amount {
+  text-align:right;
+}
+
+.delete {
+    background-color: #FF6666;
+    color: #FFFFFF;
+}
+
+.badge {
+    background-color: #999;
+    border-radius: 5px;
+    color: #fff;
+    display: inline-block;
+    font-size: 10px;
+    font-weight: bold;
+    line-height: 1;
+    min-width: 10px;
+    padding: 5px 9px;
+    text-align: center;
+    vertical-align: baseline;
+    white-space: nowrap;
+}
+
+.open-ico {
+    background-image: url(images/open.ico) ;
+    background-repeat: no-repeat;
+    padding-right: 20px;
+    width: 16px;
+    height:16px;
+    cursor:pointer;
+}
+
+.close-ico {
+    background-image: url(images/close.ico) ;
+    background-repeat: no-repeat;
+    padding-right: 20px;
+    width: 16px;
+    height:16px;
+    cursor:pointer;
+}
+
+/* image grid */
+.grid_container {
+  padding: 5px;  
+  display: table;
+}
+
+ .grid  {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 10px;
+  float: left;
+  color: #fff;
+  margin-right:2px;
+  box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box; 
+
+}
+ .grig  img {
+    max-width: 100%;
+    height: auto;
+    margin: 0 0 10px;
+}
+/* search display */
+.product_thumbnail {
+    
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+    vertical-align: middle;
+    margin-right: 10px;
+    border: solid 1px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+
+#product-search-result {
+   overflow: auto;
+}
+.product_image-link {
+  border-bottom: 0px !important;
+}

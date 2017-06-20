@@ -1,0 +1,34 @@
+ek_documents_display:
+  version: VERSION
+  js:
+    js/jquery.periodicalupdater.js: {}
+    js/ek_documents.js: {}
+  css:
+    theme:
+      css/ek_documents.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupal.form
+    - core/jquery.form
+    - core/drupalSettings
+    - core/drupal.ajax
+    - core/drupal.dialog
+    - core/backbone
+    - core/jquery.once
+    - core/jquery.ui.droppable    
+    - core/jquery.ui.draggable
+
+  
+    
+ek_documents_multiselect:
+  version: VERSION
+  js:
+    js/multiselect/js/jquery.multi-select.js: {}
+    js/multiselect.js: {}
+  css:
+    theme:
+      js/multiselect/css/multi-select.css: {}
+  dependencies:
+    - core/jquery
+ 

@@ -1,0 +1,11 @@
+ek_projects_new_button:
+  route_name: ek_projects_new
+  title: 'New project'
+  appears_on:
+    - ek_projects_main
+    
+ek_projects_search:
+  route_name: ek_projects_search
+  title: 'Filter search'
+  appears_on:
+    - ek_projects_main

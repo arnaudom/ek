@@ -1,0 +1,150 @@
+/* 
+    Created on : Jul 31, 2016, 5:30:48 PM
+    Author     : ARREA
+*/
+
+page_wrapper {
+   border: 1px black;
+}
+
+page {
+   backtop:"10mm" ;
+   backbottom:"10mm";
+   backleft: "20mm";
+   backright: "20mm"; 
+}
+
+page_header {
+    
+}
+
+page_reference {
+    
+}
+
+page_client {
+    
+}
+
+page_comments {
+    
+}
+
+page_items {
+    
+}
+
+page_total {
+    
+}
+
+page_signature {
+    
+}
+
+page_bank {
+    
+}
+
+page_correspondence {
+    
+}
+
+
+table {
+    border: none 0px black;
+    border-spacing: 0;
+    font-family: "Lucida Grande","Lucida Sans Unicode",Verdana,sans-serif;
+    font-size: 0.857em;
+    margin: 10px 0;
+    width: 100%;
+}
+
+tr {
+    //background: rgba(0, 0, 0, 0.063) none repeat scroll 0 0;
+    background: #fff !important;
+    border-bottom: 1px solid #ccc;
+    padding: 0.1em 0.6em;
+}
+
+
+tr td, tr th {
+    border: 1px solid #fff;
+    padding: 4px 9px;
+    text-align: left;
+}
+td, th {
+    padding: 0;
+}
+
+.c10 {
+    width: 10%;
+}
+
+.c20 {
+    width: 20%;
+}
+
+.c30 {
+    width: 30%;
+}
+
+.c40 {
+    width: 40%;
+}
+
+.c50 {
+    width: 50%;
+}
+
+.c60 {
+    width: 60%;
+}
+
+.c70 {
+    width: 70%;
+}
+
+.c80 {
+    width: 80%;
+}
+
+.c90 {
+    width: 90%;
+}
+
+.c100 {
+    width: 100%;
+}
+
+.right {
+    text-align: right;
+}
+
+.left {
+    text-align: left;
+}
+
+.center {
+    text-align: center;
+}
+
+.justify {
+    text-align: justify;
+}
+
+.red {
+    color:#D9230F;
+}
+
+.blue {
+    color: #7896BE;
+}
+
+.green {
+    color: #00D744;
+}
+
+.grey {
+    color: #5a5a5a;
+}

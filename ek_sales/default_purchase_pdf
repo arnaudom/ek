@@ -1,0 +1,343 @@
+<?php
+
+
+class PDF extends FPDF
+{
+
+//
+// Page header
+//
+
+function Header()
+{
+
+//Logo ==========================================================================
+    if ($this->company->logo <> '') {
+    
+      $logo = drupal_realpath($this->company->logo);
+      if(file_exists($logo)) {
+       $this->Image($logo,20,10,43);
+      }
+    
+    }
+
+$this->SetTextColor(53,53,53);
+$lm=1;
+$c1=45;
+$c2=70;
+$c3=30;
+$c4=35;
+
+
+    $this->Ln(25);
+$this->SetFont('Arial','',14);
+
+    $this->Cell($c1 + $c3 + $c3);
+    $this->Cell(50,5,$this->company->name,0,1);
+    if($this->company->reg_number) {
+      $this->SetFont('Arial','',8);
+      $this->Cell($c1 + $c3 + $c3);
+      $this->Cell(50,5,'(' . $this->company->reg_number . ')',0,1);
+    }    
+$this->SetFont('Arial','',10);
+    $this->Cell($c1 + $c3 + $c3);    
+    $this->Cell(60,4, $this->company->address1,0,1);
+    $this->Cell($c1 + $c3 + $c3);    
+    $this->Cell(60,4, $this->company->address2,0,1);
+    $this->Cell($c1 + $c3 + $c3);
+    $this->Cell(50,4, $this->company->postcode . ',' .$this->company->country ,0,1);
+    $this->Cell($c1 + $c3 + $c3);
+    if ($this->company->telephone <> '') {
+    $this->Cell(8,3,t("tel:").$this->company->telephone,0,1);
+    }
+    if ($this->company->fax <> '') {
+    $this->Cell($c1 + $c3 + $c3);
+    $this->Cell(8,4,t("fax:").$this->company->fax,0,1);
+    }
+    //Line break
+    $this->Ln(4);
+    
+   
+    
+}
+
+function setHeaderData($company){ 
+$this->company = $company;
+
+
+} 
+
+//Page footer ================================================================================
+  function Footer()
+  {
+    $this->SetTextColor(53,53,53);
+    $this->SetY(-25);
+      if ($this->company->address3 != "") {
+        $this->Cell(0,3,t('Correspondence address') . ':' ,0,1,'C');
+        $this->SetFont('Arial','I',8);
+        $this->Cell(0,3,$this->company->address3 .' ' . $this->company->address4 .' ' . $this->company->postcode .', ' . $this->company->city2.', ' . $this->company->country2,0,1,'C');
+        $this->Cell(0,3, t('Tel') . ': ' . $this->company->telephone2 .' ' . t('Fax') . ':' . $this->company->fax2 ,0,1,'C');
+      }
+
+      //Position at 1.5 cm from bottom
+      $this->SetFont('Arial','I',8);
+      //Page number
+      $this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
+      
+  }
+  
+}
+
+$lm=1;
+$c1=45;
+$c2=70;
+$c3=30;
+$c4=35;
+$pdf=new PDF();
+$pdf->setHeaderData($company); 
+
+$pdf->AliasNbPages();
+$pdf->AddPage('P','A4');
+$pdf->SetAutoPageBreak(1,$margin);
+$cut = 250;
+
+
+// HIGHLIGHT =====================================================
+$pdf->SetFont('Arial','B',10);     
+    $pdf->Cell($c1 + $c3 + $c3);
+    $pdf->Cell(5,10, $head->date ,0,1); 
+$pdf->SetFont('Arial','B',14);    
+    $pdf->Cell($c1 + $c3 + $c3);
+$pdf->SetTextColor(120, 150, 190);
+    $pdf->Cell(10,10, strtoupper($source) ,0,1);
+$pdf->SetTextColor(53,53,53);
+$pdf->SetFont('Arial','B',12);     
+    $pdf->Cell($c1 + $c3 + $c3);
+    $pdf->Cell(10,10, $head->serial ,0,1); 
+
+// CLIENT ========================================================    
+$pdf->SetFont('Arial','B',10);
+    $pdf->Cell($c1,5, t('To') .':',0,0);
+$pdf->SetFont('Arial','',9);
+    $pdf->Cell($c2,5, $client->name ,0,1);
+    $pdf->Cell($c1);
+    $pdf->Cell($c2,5, $client->address ,0,1);
+    $pdf->Cell($c1);
+    $pdf->Cell($c2,5, $client->address2 ,0,1);  
+    $pdf->Cell($c1);
+    $pdf->Cell($c2,5, $client->postcode . ' ' . $client->city ,0,1);  
+    $pdf->Cell($c1);    
+    $pdf->Cell($c2,5, $client->country ,0,1);  
+$pdf->SetFont('Arial','B',10);     
+    $pdf->Cell($c1,5,t('Attention') . ':',0,0);
+$pdf->SetFont('Arial','',9);    
+    $pdf->Cell($c2,5, $client_card->salutation . " " . $client_card->contact_name ,0,1); 
+$pdf->SetFont('Arial','B',10);
+    $pdf->Cell($c1,5,t('Our ref.') . ':',0,0);
+$pdf->SetFont('Arial','',9); 
+    $pdf->Cell($c2,5, $head->pcode ,0,1);
+
+
+
+$pdf->Ln(2);    
+    
+// COMMENT ========================================================
+    if($head->comment != '') {
+    
+      $pdf->Ln(2);
+      $pdf->Cell($lm);
+      $pdf->SetFont('Arial','U',10);
+      $pdf->Cell($c1,5,t("Comments") . ':' ,0,1,'L');
+      $pdf->SetFont('Arial','I',8);
+      $pdf->Cell($lm);
+      $pdf->MultiCell(180,5,utf8_decode($head->comment),0,'J');
+      
+    }  
+
+
+//BODY OF purchase =================================================
+$lm=1;
+$n=5;
+$c1=110;
+$c2=20;
+$c3=20;
+$c4=25;
+$pdf->Ln(2);  
+$pdf->SetFont('Arial','B',8);
+    $pdf->Cell($lm);
+    $pdf->Cell($n,5,'',1,0);
+    $pdf->Cell($c1,5,t('Description'),1,0);
+    $pdf->Cell($c2,5,t('Unit Price'),1,0);
+    $pdf->Cell($c3,5,t('Quantity'),1,0);
+    $pdf->Cell($c4,5,t('amount in') . " " . $head->currency, 1,1);
+    
+    $i=1;
+$pdf->SetFont('Arial','',8);
+$grandtotal = 0;
+  foreach ($items as $detail) {
+    if(!$detail['item'] == '') {
+    $pdf->Cell($lm);
+
+    if($detail['total'] == 0 && $detail['value'] == 0 && $detail['quantity'] == 0){
+        $pdf->SetFont('Arial','B',9);
+        $pdf->Cell($n,5, $i , 1,0);
+        $i++;
+      } else {
+        $pdf->SetFont('Arial','',8);
+        $pdf->Cell($n,5, '' , 0,0);
+      }  
+          
+      $x= $pdf->GetX();
+      $y= $pdf->GetY();
+          $pdf->MultiCell($c1,5,$detail['item'],1,'J');
+      $y2= $pdf->GetY();    
+      $pdf->SetFont('Arial','',8);
+      $pdf->SetXY($x, $y);
+      $h=$y2-$y;
+      
+      $total = $detail['total'];
+
+      if ($detail['value'] != 0 )  { 
+          $v = number_format($detail['value'] , 2);
+      } else {
+          $v = '';
+      }
+       if ($detail['quantity'] != 0 )  { 
+          $q = $detail['quantity'];
+      } else {
+          $q = '';
+      } 
+       if ($detail['total'] != 0 || $detail['quantity'] <> 0)  { 
+          $t = number_format($detail['total'],2);
+      } else {
+          $t = '';
+      }  
+            
+          $pdf->Cell($c1);
+          $pdf->Cell($c2,$h, $v ,1,0,'R');
+          $pdf->Cell($c3,$h, $q , 1,0,'C');
+          $pdf->Cell($c4,$h, $t ,1,1,'R');
+
+          $grandtotal = round(($grandtotal + $total),2);
+          
+//check position for a break. Add page if bottom is reached====================
+          if ($pdf->GetY() >$cut) { 
+            $pdf->AddPage(P,A4);
+            $lm=1;
+            $c1=45;
+            $c2=70;
+            $c3=30;
+            $c4=35;
+            
+$pdf->SetFont('Arial','B',14);    
+            $pdf->Cell($c1 + $c3 + $c3);
+$pdf->SetTextColor(120, 150, 190);
+            $pdf->Cell(10,10, strtoupper($source) ,0,1);
+$pdf->SetTextColor(53,53,53);
+$pdf->SetFont('Arial','B',12);     
+            $pdf->Cell($c1 + $c3 + $c3);
+            $pdf->Cell(10,10, $head->serial ,0,1); 
+            
+            $lm=1;
+            $n=5;
+            $c1=110;
+            $c2=20;
+            $c3=20;
+            $c4=25;
+            $pdf->Ln(2);  
+            $pdf->SetFont('Arial','B',8);
+                $pdf->Cell($lm);
+                $pdf->Cell($n,5,'',1,0);
+                $pdf->Cell($c1,5,t('Description'),1,0);
+                $pdf->Cell($c2,5,t('Unit Price'),1,0);
+                $pdf->Cell($c3,5,t('Quantity'),1,0);
+                $pdf->Cell($c4,5,t('amount in') . " " . $head->currency, 1,1);
+          }
+    }
+  }
+    
+
+$pdf->Ln(2);      
+$pdf->SetFont('Arial','B',8);
+    $pdf->Cell($lm+$n+$c1);      
+    $pdf->Cell($c2+$c3,5,t('Total') . " " . $head->currency ,1,0);
+    $pdf->Cell($c4,5,number_format($grandtotal,2),1,1,'R'); 
+
+if($head->taxvalue > 0) {
+  if($items['taxable'] > 0) {
+    $pdf->Ln(2); 
+    $pdf->Cell($lm+$n+$c1);        
+    $pdf->Cell($c2+$c3,5,$head->tax . " " . $head->taxvalue . "%" ,1,0);
+    $pdf->Cell($c4,5,number_format($items['taxamount'],2),1,1,'R'); 
+    $pdf->Ln(2); 
+    $pdf->Cell($lm+$n+$c1);    
+    $pdf->Cell($c2+$c3,5,t('total with tax') . " " . $head->currency ,1,0);
+
+    $pdf->Cell($c4,5,number_format($items['taxamount'] + $grandtotal,2),1,1,'R'); 
+  }
+
+}
+
+
+//ADD AMOUNT IN WORDS -----------------------------------------------
+    $resultinwords = new Drupal\ek_sales\NumberToWord();
+    $word = $resultinwords->en($items['taxamount']+$grandtotal);
+    
+$pdf->Ln(2);      
+$pdf->SetFont('Arial','I',8);     
+    $pdf->Cell(180,5, $head->currency . ' ' . $word ,0,1,'R');
+
+
+// stamps ==============================================================
+
+    if ($stamp == "2") {
+      
+        $copy = drupal_get_path('module', 'ek_sales') . "/art/copy.png";
+        if (file_exists($copy)) {
+          $pdf->Image($copy,50,40,40); 
+        }
+           
+    } elseif ($stamp == "1") {
+        $original = drupal_get_path('module', 'ek_sales') . "/art/original.png";
+        if (file_exists($original)) {         
+          $pdf->Image($original,50,40,40);    
+        }  
+    }    
+    
+ //SIGNATURE============================================================ 
+$x= $pdf->GetX(); 
+$y= $pdf->GetY();
+$bottom = $y+40 > 268 ? 268: $y+40;
+
+    if($signature == 1) {
+
+        if(isset($company->sign)) {
+        $sign = drupal_realpath($company->sign);
+        $pdf->Image($sign,20,$bottom-20,70);
+        }
+    }
+    
+    
+    $pdf->SetXY(20,$bottom);
+    $pdf->Cell(60,3,t("Authorized signatory") ,'T',1);
+
+   
+ //Receipt printing =====================================================
+ if ($head->status == 1 && $stamp != 2 && $stamp != 1 ) {
+$pdf->SetXY(10,$y); 
+    $pdf->Cell($lm+$n+$c1);
+    $pdf->SetTextColor(239,58,68);
+    $pdf->SetFont('Arial','B',16);          
+    $pdf->Cell($c2+$c3+$c4,8,t('PAID'),'LTR',1);
+    $pdf->Cell($lm+$n+$c1);  
+    $pdf->SetFont('Arial','',8);          
+    $pdf->Cell($c2,7,t('date') . ':','L',0);
+    $pdf->Cell($c3+$c4,5,$head->pdate,'R',1);
+    $pdf->Cell($lm+$n+$c1);
+    $pdf->Cell($c2,7,'by:','L',0);
+    $pdf->Cell($c3+$c4,5,$company->name,'R',1);
+    $pdf->Cell($lm+$n+$c1);;
+    $pdf->Cell($c2+$c3+$c4,5,'--------------------------','LBR',1, 'R');
+}
+
+?>

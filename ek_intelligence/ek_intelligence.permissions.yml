@@ -1,0 +1,9 @@
+generate_i_report:
+  title: 'Manage reports'
+  description: 'Generate or initiate a report,assign, edit and close' 
+
+write_i_report:
+  title: 'Write or read reports'
+  
+delete_i_report:
+  title: 'Delete reports'

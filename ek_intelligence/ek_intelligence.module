@@ -1,0 +1,48 @@
+<?php
+    ///////////////////////////////////////////////////
+    //                  COPYRIGHT                    //
+    //                                               //
+    // DEVELOPPED BY ARREA LTD                       //
+    // all rights reserved                           //
+    // Please read and agree with software           //
+    // application license                           //
+    ///////////////////////////////////////////////////
+
+
+/**
+ * Implementation hook download.
+ */
+function ek_intelligence_file_download($uri) {
+
+if (strpos($uri,'/inline-images/')) {
+return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($uri));
+}
+}
+
+/**
+ * Implementation hook_mail().
+ */
+function ek_intelligence_mail($key, &$message, $params) {
+
+    switch($key) {
+      case 'notify_message':
+        $message['headers']['From'] = $params['from'];
+        $message['subject'] = $params['subject'];
+        $message['body'][] = $params['body'];
+        break;
+
+    }
+}
+
+/**
+ * Implementation hook_theme().
+ */
+function ek_intelligence_theme() {
+  return array(
+    'ek_ireport_data' => array
+    (
+      'template' => 'ek_ireport_data',
+      'variables' => array('items' => array()),
+    ),      
+  );     
+}

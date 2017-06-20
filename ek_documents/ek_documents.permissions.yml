@@ -1,0 +1,6 @@
+administrate_documents:
+  title: 'Administrate documents parameters' 
+manage_documents:
+  title: 'Access documents management'
+manage_common_documents:
+  title: 'Edit common documents; I.e delete.'

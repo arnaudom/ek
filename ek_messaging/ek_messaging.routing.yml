@@ -1,0 +1,108 @@
+ek_messaging_install:
+  path: '/ek_messaging/install'
+  defaults:
+    _controller: '\Drupal\ek_messaging\Controller\InstallController::install'
+  requirements:
+    _permission: 'access administration pages'
+    
+ek_messaging_settings:
+  path: '/ek_messaging/admin/settings'
+  defaults:
+    _title: 'Settings'
+    _controller: '\Drupal\ek_messaging\Controller\SettingsController::settings'
+  requirements:
+    _permission: 'administrate_messages'
+    
+ek_messaging_main:
+  path: '/messaging/dashboard'
+  defaults:
+    _title: 'Dashboard'
+    _controller: '\Drupal\ek_messaging\Controller\MessageController::dashboard'
+  requirements:
+    _permission: 'messages_dashboard'
+    
+ek_messaging_send:
+  path: '/messaging/send'
+  defaults:
+    _title: 'New message'
+    _controller: '\Drupal\ek_messaging\Controller\MessageController::send'
+  requirements:
+    _permission: 'send_message'
+
+ek_messaging_reply:
+  path: '/messaging/reply/{id}'
+  defaults:
+    _title: 'New message'
+    _controller: '\Drupal\ek_messaging\Controller\MessageController::send'
+  requirements:
+    _permission: 'send_message'
+    id: \d*    
+       
+ek_messaging_read:
+  path: '/messaging/read/{id}'
+  defaults:
+    _title: 'Read message'
+    _controller: '\Drupal\ek_messaging\Controller\MessageController::read'
+  requirements:
+    _permission: 'send_message'
+    id: \d*
+    
+ek_messaging_inbox:
+  path: '/messaging/inbox'
+  defaults:
+    _title: 'Inbox'
+    _controller: '\Drupal\ek_messaging\Controller\MessageController::inbox'
+  requirements:
+    _permission: 'send_message'
+   
+ek_messaging_outbox:
+  path: '/messaging/outbox'
+  defaults:
+    _title: 'Outbox'
+    _controller: '\Drupal\ek_messaging\Controller\MessageController::outbox'
+  requirements:
+    _permission: 'send_message'
+    
+ek_messaging_archives:
+  path: '/messaging/archives'
+  defaults:
+    _title: 'Archives'
+    _controller: '\Drupal\ek_messaging\Controller\MessageController::archives'
+  requirements:
+    _permission: 'send_message'
+    
+ek_messaging_delete:
+  path: '/messaging/delete'
+  defaults:
+    _controller: '\Drupal\ek_messaging\Controller\MessageController::delete'
+  requirements:
+    _permission: 'send_message'
+
+ek_messaging_do_archive:
+  path: '/messaging/archive'
+  defaults:
+    _controller: '\Drupal\ek_messaging\Controller\MessageController::doarchive'
+  requirements:
+    _permission: 'send_message'
+
+ek_messaging_read_delete:
+  path: '/messaging/read/delete'
+  defaults:
+    _controller: '\Drupal\ek_messaging\Controller\MessageController::delete'
+  requirements:
+    _permission: 'send_message'
+
+
+ek_messaging_read_do_archive:
+  path: '/messaging/read/archive'
+  defaults:
+    _controller: '\Drupal\ek_messaging\Controller\MessageController::doarchive'
+  requirements:
+    _permission: 'send_message'
+
+message_autocomplete:
+  path: '/ek_messaging/autocomplete'
+  defaults:
+    _controller: '\Drupal\ek_messaging\Controller\MessageController::autocomplete'
+  requirements:
+    _permission: 'send_message'

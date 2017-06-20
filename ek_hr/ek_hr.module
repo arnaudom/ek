@@ -1,0 +1,200 @@
+<?php
+    ///////////////////////////////////////////////////
+    //                  COPYRIGHT                    //
+    //                                               //
+    // DEVELOPPED BY ARREA LTD                       //
+    // all rights reserved                           //
+    // Please read and agree with software           //
+    // application license                           //
+    ///////////////////////////////////////////////////
+
+use Drupal\Core\Database\Database;
+use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+/**
+ * @file
+ *  module ek_hr.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function ek_hr_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'ek_hr.parameters':
+      $output = '';
+      $output .= '<div id="help">' . t('Parameters settings help') . '</div>';
+      $output .= '<div id="help_content">';
+      $output .= '<p>' . t('This section is the main section for managing parameters for human resources.') . '</p>';
+      $output .= '<h3>' . t('Uses') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt>' . t('List') . '</dt>';
+      $output .= '<dd>' . t('The list will show current employees sorted by company and status. From the list you can access and edit employee data.') . '</dd>';
+      $output .= '<dt>' . t('New employee') . '</dt>';
+      $output .= '<dd>' . t('Go to <a href="@new">New Employee</a> to record a new employee.', array('@new' => \Drupal::url('ek_hr.new-employee'))) . '</dd>';
+      $output .= '<dt>' . t('Categories') . '</dt>';
+      $output .= '<dd>' . t('Categories are classification of employees. You can have 5 different categories like '
+              . 'for ex. "manager", "expatriate", "engineer", "part time", etc... '
+              . 'For each categories you can define specific allowances and deductions parameters <a href="@allo">here</a>. '
+              . 'You need to define categories before allowances.', array('@allo' => \Drupal::url('ek_hr.parameters-ad'))) . '</dd>';
+      $output .= '<dt>' . t('Main parameters') . '</dt>';
+      $output .= '<dd>' . t('Main parameters are settings that are applicable to all categories and employees for a single company. '
+              . 'For ex. the calculation rate of taxes or pension fund name.') . '</dd>';
+      $output .= '<dt>' . t('Allowances') . '</dt>';
+      $output .= '<dd>' . t('Allowance and deductions are parameters for payroll calculation that will apply to an employee base on his/her category.'
+              . ' They are classified in 2 sub sections: fixed and custom. Fixed means that the calculation rate is fixed by convention (for ex. the rate of overtime work)'
+              . 'while custom means that any amount can be recorded in the payroll for a given description.' ) . '</dd>';
+      $output .= '<dt>' . t('Organization') . '</dt>';
+      $output .= '<dd>' . t('In organization you need to define the structure of your payroll organization like "Location", "Services" or "Ranks". '
+              . 'In locations, you can define as many working location as needed like "head office" or "factory"; '
+              . 'In Services, you will define the type of services available in your organization like "marketing", "maintenance department" or "finance"; '
+              . 'In ranks, you can upload a file definition of employees ranks like "General manager", "Senior engineer", "Clerk", etc... '
+              . 'The file structure is defined further <a href="@rank">here</a>. ', array('@rank'  => \Drupal::url('ek_hr.parameters-organization-rank'))) . '</dd>';
+      $output .= '<dt>' . t('Accounts') . '</dt>';
+      $output .= '<dd>' . t('If finance module is enabled, "accounts" parameters will define the mapping of payroll expenses with journal accounts. '
+              . 'You need to define the journal chart structure before updating those parameters.') . '</dd>';     
+      $output .= '<dt>' . t('Payslips') . '</dt>';
+      $output .= '<dd>' . t('You can manage as many payslips templates you need by uploading template files or deleting unused files. '
+              . 'Templates will be selected when printing payslips. '
+              . 'If no custom template is available, the default format is used.') . '</dd>';        
+      $output .= '<dt>' . t('Forms') . '</dt>';
+      $output .= '<dd>' . t('The forms section is where you can manage specific forms needed for HR. I.e tax declaration for employees '
+              . 'or social security submission forms. '
+              . 'The forms are designed separately and uploaded here.') . '</dd>';    
+      $output .= '</dl>';
+      $output .= '</div>';
+      return $output;
+      
+  }
+}
+
+
+/**
+ * Implements hook_file_download().
+ *
+ * edit the file_download function in order to control access of files attached to employees
+*/
+function ek_hr_file_download($uri) {
+
+    $company = AccessCheck::GetCompanyByUser();
+    $access = implode(',',$company);
+
+        if (strpos($uri,'/hr/documents')) {
+          
+        $query = "SELECT administrator,filemime FROM {ek_hr_workforce} a "
+                . "INNER JOIN {ek_hr_documents} b ON a.id = b.employee_id "
+                . "WHERE b.uri=:uri AND FIND_IN_SET(company_id, :c)";
+        $a = array(':uri' => $uri, ':c' => $access);
+        $data = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
+        $admin_array = explode(',', $data->administrator);
+
+             if($data->administrator == '0' 
+                  || in_array( 'administrator', \Drupal::currentUser()->getRoles()) 
+                  || in_array( \Drupal::currentUser()->id(), $admin_array ) 
+               ) { 
+               return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($data->uri));     
+                
+             } else { 
+              return -1;
+             }
+
+        }
+
+        if (strpos($uri,'/hr/pictures')) {
+
+        $query = "SELECT administrator,picture FROM {ek_hr_workforce} WHERE picture=:uri AND FIND_IN_SET(company_id, :c)";
+        $a = array(':uri' => $uri, ':c' => $access);
+        $data = Database::getConnection('external_db', 'external_db')->query($query, $a )->fetchObject();
+        $admin_array = explode(',', $data->administrator);
+
+        
+             if($data->administrator == '0' 
+                  || in_array( 'administrator', \Drupal::currentUser()->getRoles()) 
+                  || in_array( \Drupal::currentUser()->id(), $admin_array ) 
+               ) { 
+                    
+              return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($data->picture));
+                
+             } else { 
+              return -1;
+             }        
+        
+        
+        } elseif (strpos($uri,'/ek_hr/art')) {
+            return array('Content-Type' => 'Image');
+        }
+
+}
+/**
+ * Implementation hook_theme().
+ */
+function ek_hr_theme() {
+  return array(
+    // for the dashboard
+    'ek_hr_dashboard' => array
+    (
+      'template' => 'ek_hr_dashboard',
+      'variables' => array('items' => array()),
+    ), 
+    'ek_hr_search' => array
+    (
+      'template' => 'ek_hr_search',
+      'variables' => array('items' => array()),
+    ), 
+    // for employee data
+    'ek_hr_data' => array
+    (
+      'template' => 'ek_hr_data',
+      'variables' => array('items' => array()),
+    ),     
+    // for employee history
+    'ek_hr_history' => array
+    (
+      'template' => 'ek_hr_history',
+      'variables' => array('items' => array()),
+    ), 
+    'ek_hr_history_pay' => array
+    (
+      'template' => 'ek_hr_history_pay',
+      'variables' => array('items' => array()),
+    ),   
+    'ek_hr_fund' => array
+    (
+      'template' => 'ek_hr_fund',
+      'variables' => array('items' => array()),
+    ),  
+    'hriframe' => array
+    (
+      'template' => 'hriframe',
+      'variables' => array('items' => array()),
+    ),        
+  );     
+}
+
+/**
+ * Preprocess variables .
+ *
+ * @param array $variables
+ *  An associative array containing:
+ *  - items: 
+ */
+
+
+function template_preprocess_ek_hr_dashboard(&$variables) {
+
+
+$items = $variables['items'];
+}
+
+
+/**
+ * Preprocess variables for  views.
+ *
+ * @param array $variables
+ *  An associative array containing:
+ *  - items: 
+ */
+ 
+
+?>

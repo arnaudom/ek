@@ -1,0 +1,57 @@
+administrate_sales:
+  title: 'Sales administation'
+  description: 'Settings and parameters' 
+sales_management:
+  title: 'Sales management'
+  description: 'Sales management, main access.' 
+sales_data:
+  title: 'Sales data'
+  description: 'Sales data compilation per address book account.'
+list_more:
+  title: 'Payment data details'
+  description: 'List more info about payment details in sales document lists.'
+sales_task:
+  title: 'Edit and manage tasks'
+  description: 'Edit tasks for invoices, purchases.'  
+create_purchase:
+  title: 'Create or edit purchase'
+  description: 'Create or edit purchase'    
+list_purchase:
+  title: 'List purchases'
+  description: 'List purchases and reprint.'  
+print_share_purchase:
+  title: 'Share purchases'
+  description: 'Send and share purchases via email.' 
+delete_purchase:
+  title: 'Delete purchases'
+  description: 'Administrate purchases (ie. delete).'
+create_quotation:
+  title: 'Create or edit quotation'
+  description: 'Create or edit quotation.' 
+list_quotation:
+  title: 'List quotations'
+  description: 'List quotations and reprint.'
+print_share_quotation:
+  title: 'Share quotations'
+  description: 'Send and share quotations via email.' 
+delete_quotation:
+  title: 'Delete quotations'
+  description: 'Delete quotations.'  
+create_invoice:
+  title: 'Create or edit invoice'
+  description: 'Create or edit invoice.'
+create_invoice:
+  title: 'Create or edit invoice'
+  description: 'Create or edit invoice.'
+list_invoice:
+  title: 'List invoices'
+  description: 'List invoices and reprint.'
+print_share_invoice:
+  title: 'Share invoices'
+  description: 'Send and share invoices via email.'
+delete_invoice:
+  title: 'Delete invoices'
+  description: 'Administrate invoices (ie. delete).'
+reset_pay:
+  title: 'Reset payment'
+  description: 'Administrate (ie. reset a recorded payment).' 

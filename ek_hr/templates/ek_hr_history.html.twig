@@ -1,0 +1,99 @@
+<table class='table'>
+  <thead>
+    <tr>
+      <td></td>
+      <th class='title'>{{ 'Annual leaves taken'|t }}</th>
+      <th class='title'>{{ 'Medical leaves taken'|t }}</th>
+    </tr>
+  </thead>
+  <tbody>
+
+        {% for key, item in items.leave %}
+        
+          <tr>
+            <td>{{ key }}</td>
+            <td class='title'>{{ item.0 }}</td>
+            <td class='title'>{{ item.1 }}</td>
+          </tr>
+        
+        {% endfor %}
+
+ </tbody>    
+</table>
+
+{{ items.form_leave }}
+
+<hr>
+<table class='table'>
+  <thead>
+    <tr>
+      <td></td>
+      <th class='title' colspan='2'>{{ 'Pension'|t }}</th>
+      <th class='title' colspan='2'>{{ 'Social security'|t }}</th>
+      <th class='title' colspan='2'>{{ 'Other contributions'|t }}</th>
+      <th class='title'>{{ 'Income tax'|t }}</th>
+    </tr>
+    <tr>
+      <td></td>
+      <td class='title' >{{ 'Employee'|t }}</td>
+      <td class='title' >{{ 'Employer'|t }}</td>
+      <td class='title' >{{ 'Employee'|t }}</td>
+      <td class='title' >{{ 'Employer'|t }}</td>    
+      <td class='title' >{{ 'Employee'|t }}</td>
+      <td class='title' >{{ 'Employer'|t }}</td>        
+      <td></td>    
+    </tr>    
+  </thead>    
+<tbody>    
+        {% for key, item in items.contribution %}
+        
+          <tr>
+            <td>{{ key }}</td>
+            <td class='title'>{{ item.0 }}</td>
+            <td class='title'>{{ item.1 }}</td>
+            <td class='title'>{{ item.2 }}</td>
+            <td class='title'>{{ item.3 }}</td>
+            <td class='title'>{{ item.4 }}</td>
+            <td class='title'>{{ item.5 }}</td>
+            <td class='title'>{{ item.6 }}</td>
+          </tr>
+        
+        {% endfor %}
+
+ </tbody>    
+</table>
+
+<hr>
+<table class='table'>
+  <thead>
+    <tr>
+      <td></td>
+      <th class='title'>{{ 'Gross'|t }}</th>
+      <th class='title'>{{ 'Nett'|t }}</th>
+      <th class='title'>{{ 'Basic'|t }}</th>
+      <th class='title'>{{ 'Variable'|t }}</th>
+      <th class='title'>{{ 'Allowances'|t }}</th>
+      <th class='title'>{{ 'Commission'|t }}</th>
+      <th class='title'>{{ 'Deductions'|t }}</th>
+      <td></td>
+    </tr>
+  </thead>    
+<tbody>    
+        {% for key, item in items.salary %}
+        
+          <tr>
+            <td>{{ key }}</td>
+            <td class='title'>{{ item.0 }}</td>
+            <td class='title'>{{ item.1 }}</td>
+            <td class='title'>{{ item.2 }}</td>
+            <td class='title'>{{ item.3 }}</td>
+            <td class='title'>{{ item.4 }}</td>
+            <td class='title'>{{ item.5 }}</td>
+            <td class='title'>{{ item.6 }}</td>
+            <td class='title'>{{ item.7|raw}}</td>
+          </tr>
+        
+        {% endfor %}
+
+ </tbody>    
+</table>

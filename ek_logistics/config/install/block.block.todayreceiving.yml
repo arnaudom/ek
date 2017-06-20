@@ -1,0 +1,29 @@
+uuid: 05881e26-5a40-43cd-9956-86176d9f65a8
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_logistics
+    - system
+  theme:
+    - bartik
+id: todayreceiving
+theme: bartik
+region: content
+weight: -5
+provider: null
+plugin: logistics_today_receiving_block
+settings:
+  id: logistics_today_receiving_block
+  label: 'Today receiving'
+  provider: ek_logistics
+  label_display: '0'
+  cache:
+    max_age: -1
+visibility:
+  request_path:
+    id: request_path
+    pages: /ek_logistics/dashboard
+    negate: false
+    context_mapping: {  }
+

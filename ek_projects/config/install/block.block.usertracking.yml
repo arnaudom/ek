@@ -1,0 +1,26 @@
+uuid: 20af0d28-6ab1-4f06-8606-6be1620a4f2d
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_projects
+    - system
+  theme:
+    - bartik
+id: userinteractionprojects
+theme: bartik
+region: sidebar_first
+weight: -14
+provider: null
+plugin: track_project_block
+settings:
+  id: track_project_block
+  label: 'User interaction projects'
+  provider: ek_projects
+  label_display: '0'
+visibility:
+  request_path:
+    id: request_path
+    pages: '/projects/project/*'
+    negate: false
+    context_mapping: {  }

@@ -1,0 +1,46 @@
+administrate_logistics:
+  title: 'Administrate logistics'
+  description: 'Administrate logistics parameters' 
+
+logistics_dashboard:
+  title: 'Logistics dashboard'
+
+list_delivery:
+  title: 'List deliveries'
+  description: 'View list of deliveries orders and operations' 
+  
+edit_delivery:
+  title: 'Create and edit deliveries'
+
+print_share_delivery:
+  title: 'Print and share'
+  description: 'Output DO in pdf or excel format and share via email'
+
+post_delivery:
+  title: 'Post quantities'
+  description: 'Post quantities delivered into stock record'
+
+delete_delivery:
+  title: 'Delete delivery order'
+
+
+list_receiving:
+  title: 'List receiving'
+  description: 'View list of received stock or return orders and operations' 
+  
+edit_receiving:
+  title: 'Create and edit stock received or returned'
+
+print_share_receiving:
+  title: 'Print and share'
+  description: 'Output receiving or return order in pdf or excel format and share via email'
+
+post_receiving:
+  title: 'Post quantities'
+  description: 'Post quantities received  or returned into stock record'
+
+delete_receiving:
+  title: 'Delete receiving or returning order'
+
+list_stock:
+  title: 'View items stock list'

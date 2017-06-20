@@ -1,0 +1,311 @@
+<?php
+
+/*
+ * Default purchase template in php for html display
+ */
+
+/* custom css attachment via placeholders
+ * added into render array: '#attached' => ['placeholders' => ['@foo' => 'replacement']],
+ */
+$css = [
+    //'@blue' => 'style="color:#7896BE"',
+];
+$copy = '';
+$original = '';
+if ($stamp == "2") {
+      
+        $copy = drupal_get_path('module', 'ek_sales') . "/art/copy.png";
+        if (file_exists($copy)) {
+          $copy = "<IMG src='". file_create_url($copy) ."' alt='copy' class='align-center'/>";
+        }
+           
+} elseif ($stamp == "1") {
+        $original = drupal_get_path('module', 'ek_sales') . "/art/original.png";
+        if (file_exists($original)) {         
+          $original = "<IMG src='". file_create_url($original) ."' alt='original' class='align-center'/>";    
+        }  
+} 
+
+$document = '<page_wrapper>';
+//HEADER data
+    //LOGO
+    $logo = '';
+    if ($company->logo != '') {
+        $path = $company->logo;
+        if(file_exists($path)) {
+           $logo = "<IMG src='". file_create_url($path) ."'/>";
+        }
+    
+    }
+    //COMPANY
+    $header = '<b><h2>' . $company->name . '</h2></b>';
+    
+        if($company->reg_number) {
+            $header .= '<br/><small>(' . $company->reg_number . ')</small>';
+        }
+        
+    $header .= '<br/>' . $company->address1 . '';
+    $header .= '<br/>' . $company->address2 . '';
+    
+        if($company->postcode) {
+            $header .= '<br/>' . $company->postcode . ', ';
+        } else {
+            $header .= '<br/>'; 
+        }
+        if($company->country) {
+            $header .= '' . $company->country . '';
+        }        
+        if($company->telephone) {
+            $header .= '<br/>' . t('Tel') . ':' . $company->telephone . ', ';
+        } else {
+            $header .= '<br/>'; 
+        }
+        if($company->fax) {
+            $header .= '' . t('Fax') . ':' . $company->fax . '';
+        }         
+    $document .= '<page>
+                    <page_header>
+                        <table>
+                            <tr>
+                                <td class="c70 left">' . $logo . '</td>
+                                <td class="c30 left">' . $header . '</td>
+                                
+                            </tr>
+                        </table>
+                    </page_header>';
+ 
+
+//DOCUMENT ref
+
+$ref = '<h2 class="blue">' . t('Purchase') . '</h2>';
+$ref .= '<br/>' . $head->serial;
+$ref .= '<br/>' . t("Purchase date") . ": " . $head->date;
+if($head->due) {
+   $due = date('Y-m-d',strtotime(date("Y-m-d", strtotime($head->date) ) . "+". $head->due . ' ' . t("days") )); 
+   $ref .= '<br/>' . t("Due date") . ": " . $due;
+}
+
+$document .= '<page_reference>
+                        <table>
+                            <tr>
+                                <td class="c70 left"></td>
+                                <td class="c30 left">' . $ref . '</td>
+
+                            </tr>
+                        </table>
+                    </page_reference>';
+
+//CLIENT data
+
+$cl = '<h2 class="">' . strtoupper($client->name) . '</h2>';
+$cl .= '<br/>' . $client->address;
+        if($client->address2) {
+            $cl .= '<br/>' . $client->address2;
+        }
+        if($client->city) {
+            $cl .= '<br/>' . $client->city;
+        }
+        if($client->postcode) {
+            $cl .= ', ' . $client->postcode . ', ';
+        }
+        if($client->country) {
+            $cl .= ', ' . $client->country ;
+        }
+        if($client->telephone) {
+            $cl .= '<br/>' . t('Tel') . ':' . $client->telephone . ', ';
+        } else {
+            $cl .= '<br/>'; 
+        }
+        if($client->fax) {
+            $cl .= '' . t('Fax') . ':' . $client->fax . '';
+        } 
+        
+$cl .= '<br/><h3>' . t("Attention to") . ":" . $client_card->salutation . " " . $client_card->contact_name . '</h3>';
+
+$document .= '<page_client>
+                        <table>
+                            <tr>
+                                <td class="c10 left"></td>
+                                <td class="c50 left">' . $cl . '</td>
+                                <td class="c40 center">' . $copy . $original .'</td>
+                            </tr>
+                        </table>
+                    </page_client>';
+
+//OPEN comments
+
+$document .= '<page_comments>
+                        <table>
+                            <tr>
+                                <td class="c10 left"></td>
+                                <td class="c90 left">' . nl2br($head->comment) . '</td>
+
+                            </tr>
+                        </table>
+                    </page_comments>';
+
+//ITEMS
+
+$list = '';
+$grandtotal = 0;
+$subtotal = 0;
+$i = 1;
+$j = 1;
+foreach ($items as $detail) {
+    if($detail['item'] != '') {
+        $list .= '<tr>';
+        if($detail['total'] == 0 && $detail['value'] == 0  ){
+            $list .= '<td class="c10 center">' . $i . '</td>';
+            $list .= '<td class="c30 left"><b>' . nl2br($detail['item']) . '</b></td>';
+            $i++;
+            $j = 1;
+        } else {
+            $list .= '<td class="c10 center">' . ($i-1) . '.' . $j . '</td>';
+            $list .= '<td class="c30 left">' . nl2br($detail['item']) . '</td>';
+            $j++;
+        }
+
+        
+        $list .= '<td class="c10 center">' . $detail['itemcode'] . '<br/>' . $detail['supplier_code'] . '</td>';
+        if ($detail['value'] != 0 )  { 
+            $list .= '<td class="c10 right">' . number_format($detail['value'] , 2)  . '</td>';
+        } else {
+            $list .= '<td class="c10"></td>';
+        }
+        if ($detail['quantity'] != 0 )  { 
+            $list .= '<td class="c10 center">' . $detail['quantity']  . '</td>';
+        } else {
+            $list .= '<td class="c10"></td>';
+        }
+        if ($detail['total'] != 0 )  { 
+            $list .= '<td class="c20 right">' . number_format($detail['total'] , 2)  . '</td>';
+        } else {
+            $list .= '<td class="c20"></td>';
+        }    
+        $subtotal = round(($subtotal + $detail['total']),2);
+        $grandtotal = round(($grandtotal + $detail['total']),2);
+        $list .= '</tr>';
+    }
+}
+
+if ($head->pcode) {
+   $list .= '<tr>
+                <td></td><td colspan=5><h2>' . t("Our ref.") . ' ' . $head->pcode . '</h2></td>
+           </tr>';
+}
+
+$document .= '<page_items>
+                        <table>
+                            <tr>
+                                <th class="c10 left"></th>
+                                <th class="c30 center">' . t('Description') . '</th>
+                                <th class="c10 center">' . t('Code / ref.') . '</th>
+                                <th class="c10 center">' . t('Unit price') . " " . $head->currency . '</th>
+                                <th class="c10 center">' . t('Quantity') . '</th>
+                                <th class="c10 right">' . t('Amount') . " " . $head->currency . '</th>
+                            </tr>
+                           ' . $list . '
+                        </table>
+                    </page_items>';
+
+
+
+//TOTAL
+$document .= '<page_total>
+                        <table>
+                            <tr>
+                                <td class="c10 left"></td>
+                                <td class="c30 left"><b>' . t('Total') . " " . $head->currency . '</b></td>
+                                <td class="c10 center"></td>
+                                <td class="c10 center"></td>
+                                <td class="c10 center"></td>
+                                <td class="c10 right"><b>' . number_format($grandtotal, 2) . '</b></td>
+                            </tr>';
+
+if($head->taxvalue > 0) {
+  $document .= '<tr>
+                    <td class="c10 left"></td>
+                    <td class="c30 left"><b>' . $head->tax . " " . $head->taxvalue . "%"  . '</b></td>
+                    <td class="c10 center"></td>
+                    <td class="c10 center"></td>
+                    <td class="c10 center"></td>
+                    <td class="c10 right"><b>' . number_format($items['taxamount'],2) . '</b></td>
+                </tr>
+                <tr>
+                    <td class="c10 left"></td>
+                    <td class="c30 left"><b>' . t('Total with tax') . " " . $head->currency . '</b></td>
+                    <td class="c10 center"></td>
+                    <td class="c10 center"></td>
+                    <td class="c10 center"></td>
+                    <td class="c10 right"><b>' . number_format($items['taxamount'] + $grandtotal,2) . '</b></td>
+                </tr>';  
+}
+$resultinwords = new Drupal\ek_sales\NumberToWord();
+$word = $resultinwords->en($items['taxamount']+$grandtotal);
+$document .= '</table>
+            <div class="right">' . $word . '</div>
+            </page_total>';
+
+//RECEIPT
+$receipt = '';
+if ($head->status == 1 && $stamp != 2 && $stamp != 1 ) {
+ $receipt = '<div class="red">' . t('RECEIVED') . '</div>';
+ $receipt .= '<div class="red">' . t('Date') . ': ' . $head->pay_date . '</div>';
+ $receipt .= '<div class="red">' . $company->name . '</div>';
+}
+
+//SIGNATURE
+$sign = '';
+if ($signature == "1") {
+    if(isset($company->sign)) {  
+        $path = $company->sign;
+        if(file_exists($path)) {
+           $sign = "<IMG src='". file_create_url($path) ."'/>";
+        }
+    }       
+}
+$document .= '<page_signature>
+                <table>
+                    <tr>
+                        <td class="c10 left"></td>
+                        <td class="c60 left">'. $sign .'</td>
+                        <td class="c30 left">'. $receipt .'</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>______________________________<td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>'. t("Authorized signatory") .'<td>
+                        <td></td>
+                    </tr>
+                </table>
+                </page_signature>';
+$document .= '<hr>';
+
+
+//CORRESPONDENCE
+if ($company->address3 != "") {
+    
+    $correspondence = '<p class="grey">' . t('Correspondence address') . ':' . '';
+    $correspondence .= $company->address3 . ' ' 
+                        . $company->address4 
+                        . ' ' . $company->postcode2 
+                        .', ' . $company->city2 
+                        .', ' . $company->country2;
+    $correspondence .= '<br/>' . t('Tel') . ': ' . $company->telephone2 .' ' . t('Fax') . ':' . $company->fax2;
+    $correspondence .= '</p>';
+    
+    $document .= '<page_correspondence>
+                <table>
+                    <tr>
+                        <td class="c100 center">'. $correspondence .'</td>
+                    </tr>
+                </table>
+            </page_correspondence>';
+
+}
+
+$document .= '</page></page_wrapper>';

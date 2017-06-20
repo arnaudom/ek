@@ -1,0 +1,13 @@
+administrate_messages:
+  title: 'Administrate messages'
+  description: 'Administrate messages parameters' 
+
+messages_dashboard:
+  title: 'Messages dashboard'
+
+send_message:
+  title: 'Send messages'
+  
+delete_message:
+  title: 'Delete messages'
+

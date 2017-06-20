@@ -1,0 +1,137 @@
+.reddot {
+  background-image: url(../art/reddot.png) ;
+  background-repeat: no-repeat;
+  width: 10px;
+  height:10px;
+  float: left;
+  padding: 1px 5px 5px 1px;
+  margin-top:5px;  
+}
+
+.orangedot {
+  background-image: url(../art/orangedot.png) ;
+  background-repeat: no-repeat;
+  width: 10px;
+  height: 10px;
+  float: left;
+  padding: 1px 5px 5px 1px;
+  margin-top:5px;  
+}
+.yellowdot {
+  background-image: url(../art/yellowdot.png) ;
+  background-repeat: no-repeat;
+  width: 10px;
+  height: 10px;
+  float: left;
+  padding: 1px 5px 5px 1px;
+  margin-top:5px;  
+}
+
+.greendot {
+  background-image: url(../art/greendot.png) ;
+  background-repeat: no-repeat;
+  width: 10px;
+  height: 10px;
+  float: left;
+  padding: 1px 5px 5px 1px;
+  margin-top:5px;  
+}
+
+.bluedot {
+  background-image: url(../art/bluedot.png) ;
+  background-repeat: no-repeat;
+  width: 10px;
+  height: 10px;
+  float: left;
+  padding: 1px 5px 5px 1px;
+  margin-top:5px;
+}
+.right {
+  text-align:right;
+}
+
+.table {
+  display: table;
+  width: 100%;
+  font-family: 'nunito' ,sans-serif;
+}
+
+.row {
+  display : table-row;
+  height:auto;
+}
+
+.header_tb {  
+  display : table-cell;
+}
+
+.cell {  
+  display : table-cell;
+}
+
+.message {  
+    padding: 15px;
+    font-size: 1.2em;
+}
+
+.amount {
+  text-align:right;
+}
+
+.current {
+  background-color:#F2F5A9;
+}
+
+.red {
+  color: #FF6666;
+}
+
+.green {
+  color: #00D744;
+}
+
+.blue {
+  color: #2E64FE;
+}
+
+.orange {
+    color: #FF8000;
+}
+
+hr {
+  -moz-border-bottom-colors: none;
+  -moz-border-left-colors: none;
+  -moz-border-right-colors: none;
+  -moz-border-top-colors: none;
+  border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
+  border-image: none;
+  border-right: 0 none;
+  border-style: solid none none;
+  border-width: 1px 0 0;
+  margin-bottom: 2px;
+  margin-top: 2px;
+  height: 0;
+}
+
+.read {
+    font-weight: bold;
+}
+
+.badge {
+    background-color: #08c;
+    border-radius: 5px;
+    color: #fff;
+    display: inline-block;
+    font-size: 1.1em;
+    font-weight: bold;
+    line-height: 1;
+    min-width: 10px;
+    padding: 5px 9px;
+    text-align: center;
+    vertical-align: baseline;
+    white-space: nowrap;
+}
+
+.tip-module-ek-messaging{
+  background-color: #CEE3F6 !important;
+}

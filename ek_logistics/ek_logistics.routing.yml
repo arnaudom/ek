@@ -1,0 +1,228 @@
+ek_logistics_majour:
+  path: '/ek_logistics/migrate'
+  defaults:
+    _controller: '\Drupal\ek_logistics\Controller\SettingsController::migrate'
+  requirements:
+    _permission: 'access administration pages'
+
+ek_logistics_install:
+  path: '/ek_logistics/install'
+  defaults:
+    _controller: '\Drupal\ek_logistics\Controller\InstallController::install'
+  requirements:
+    _permission: 'access administration pages'
+    
+ek_logistics_settings:
+  path: '/ek_logistics/admin/settings'
+  defaults:
+    _title: 'Settings'
+    _controller: '\Drupal\ek_logistics\Controller\SettingsController::settings'
+  requirements:
+    _permission: 'administrate_logistics'
+    
+ek_logistics_main:
+  path: '/ek_logistics/dashboard'
+  defaults:
+    _title: 'Dashboard'
+    _controller: '\Drupal\ek_logistics\Controller\LogisticsController::dashboard'
+  requirements:
+    _permission: 'logistics_dashboard'
+    
+#delivery
+ek_logistics_list_delivery:
+  path: '/logistics/list-delivery'
+  defaults:
+    _title: 'Delivieries list'
+    _controller: '\Drupal\ek_logistics\Controller\DeliveryController::listdata'
+  requirements:
+    _permission: 'list_delivery'
+
+ek_logistics_delivery_edit:
+  path: '/logistics/edit-delivery/{id}'
+  defaults:
+    _title: 'Edit delivery'
+    _controller: '\Drupal\ek_logistics\Controller\DeliveryController::edit'
+    id: 0
+  requirements:
+    _permission: 'edit_delivery'
+    id: \d*
+
+ek_logistics_delivery_clone:
+  path: '/logistics/clone-delivery/{id}'
+  defaults:
+    _title: 'Edit delivery'
+    _controller: '\Drupal\ek_logistics\Controller\DeliveryController::cloneit'
+  requirements:
+    _permission: 'edit_delivery'
+    id: \d* 
+        
+ek_logistics_delivery_upload:
+  path: '/logistics/upload-delivery'
+  defaults:
+    _title: 'Upload'
+    _controller: '\Drupal\ek_logistics\Controller\DeliveryController::upload'
+  requirements:
+    _permission: 'edit_delivery'
+    
+ek_logistics.delivery.print_html:
+  path: '/delivery/html/{id}'
+  defaults:
+    _title: 'View'
+    _controller: '\Drupal\ek_logistics\Controller\DeliveryController::Html'
+  requirements:
+    _permission: 'print_share_delivery'
+    id: \d*
+    
+ek_logistics_delivery_print_share:
+  path: '/logistics/print-delivery/{id}'
+  defaults:
+    _title: 'Print and mail'
+    _controller: '\Drupal\ek_logistics\Controller\DeliveryController::printshare'
+  requirements:
+    _permission: 'print_share_delivery'
+    id: \d*
+
+ek_logistics_delivery_excel:
+  path: '/logistics/delivery/excel/{param}'
+  defaults:
+    _controller: '\Drupal\ek_logistics\Controller\DeliveryController::excel'
+  requirements:
+    _permission: 'print_share_delivery'
+    
+ek_logistics_delivery_pdf:
+  path: '/logistics/delivery/pdf/{param}'
+  defaults:
+    _controller: '\Drupal\ek_logistics\Controller\DeliveryController::pdf'
+  requirements:
+    _permission: 'print_share_delivery'
+
+ek_logistics_delivery_post:
+  path: '/logistics/delivery-post/{id}'
+  defaults:
+    _controller: '\Drupal\ek_logistics\Controller\DeliveryController::post'
+    _title: 'Post quantities'    
+  requirements:
+    _permission: 'post_delivery'
+    id: \d*   
+        
+ek_logistics_delivery_delete:
+  path: '/logistics/delete-delivery/{id}'
+  defaults:
+    _title: 'Delete'
+    _controller: '\Drupal\ek_logistics\Controller\DeliveryController::delete'
+  requirements:
+    _permission: 'delete_delivery'
+    id: \d*  
+   
+    
+#receiving   
+ek_logistics_list_receiving:
+  path: '/logistics/list-receiving'
+  defaults:
+    _title: 'Receiving list'
+    _controller: '\Drupal\ek_logistics\Controller\ReceivingController::listdata'
+  requirements:
+    _permission: 'list_receiving'
+
+ek_logistics_receiving_edit:
+  path: '/logistics/edit-receiving/{id}'
+  defaults:
+    _title: 'Edit receiving'
+    _controller: '\Drupal\ek_logistics\Controller\ReceivingController::edit'
+    id: 0
+  requirements:
+    _permission: 'edit_receiving'
+    id: \d*
+
+ek_logistics_receiving_clone:
+  path: '/logistics/clone-receiving/{id}'
+  defaults:
+    _title: 'Edit receiving'
+    _controller: '\Drupal\ek_logistics\Controller\ReceivingController::cloneit'
+  requirements:
+    _permission: 'edit_receiving'
+    id: \d* 
+  
+ek_logistics.receiving.print_html:
+  path: '/receiving/html/{id}'
+  defaults:
+    _title: 'View'
+    _controller: '\Drupal\ek_logistics\Controller\ReceivingController::Html'
+  requirements:
+    _permission: 'print_share_receiving'
+    id: \d*
+    
+ek_logistics_receiving_print_share:
+  path: '/logistics/print-receiving/{id}'
+  defaults:
+    _title: 'Print and mail'
+    _controller: '\Drupal\ek_logistics\Controller\ReceivingController::printshare'
+  requirements:
+    _permission: 'print_share_receiving'
+    id: \d*
+    
+ek_logistics_receiving_excel:
+  path: '/logistics/receiving/excel/{param}'
+  defaults:
+    _controller: '\Drupal\ek_logistics\Controller\ReceivingController::excel'
+  requirements:
+    _permission: 'print_share_receiving'
+    
+ek_logistics_receiving_pdf:
+  path: '/logistics/receiving/pdf/{param}'
+  defaults:
+    _controller: '\Drupal\ek_logistics\Controller\ReceivingController::pdf'
+  requirements:
+    _permission: 'print_share_receiving'
+
+ek_logistics_receiving_post:
+  path: '/logistics/receiving-post/{id}'
+  defaults:
+    _controller: '\Drupal\ek_logistics\Controller\ReceivingController::post'
+    _title: 'Post quantities'    
+  requirements:
+    _permission: 'post_receiving'
+    id: \d*  
+
+ek_logistics_receiving_delete:
+  path: '/logistics/delete-receiving/{id}'
+  defaults:
+    _title: 'Delete'
+    _controller: '\Drupal\ek_logistics\Controller\ReceivingController::delete'
+  requirements:
+    _permission: 'delete_receiving'
+    id: \d*   
+        
+#returning  
+ek_logistics_list_returning:
+  path: '/logistics/list-returning'
+  defaults:
+    _title: 'Returning list'
+    _controller: '\Drupal\ek_logistics\Controller\ReceivingController::listdata'
+  requirements:
+    _permission: 'list_receiving'
+    
+ek_logistics_returning_edit:
+  path: '/logistics/edit-returning/{id}'
+  defaults:
+    _title: 'Edit return order'
+    _controller: '\Drupal\ek_logistics\Controller\ReceivingController::edit'
+    id: 0
+  requirements:
+    _permission: 'edit_receiving'
+    id: \d*
+    
+ek_logistics_list_stock:
+  path: '/logistics/list-stock'
+  defaults:
+    _title: 'Stock list'
+    _controller: '\Drupal\ek_logistics\Controller\LogisticsController::listStock'
+  requirements:
+    _permission: 'list_stock'
+    
+ek_logistics_excel_stock:
+  path: '/logistics/extract/{param}'
+  defaults:
+    _controller: '\Drupal\ek_logistics\Controller\LogisticsController::excelItemsStock'
+  requirements:
+    _permission: 'list_stock'

@@ -1,0 +1,248 @@
+<?php
+
+    ///////////////////////////////////////////////////
+    //                  COPYRIGHT                    //
+    //                                               //
+    // DEVELOPPED BY ARREA LTD                       //
+    // all rights reserved                           //
+    // Please read and agree with software           //
+    // application license                           //
+    ///////////////////////////////////////////////////
+
+
+use Drupal\Core\Database\Database;
+/**
+ * @file
+ *  module ek_documents.
+ */
+ 
+ 
+ 
+/**
+ * Implementation hook_theme().
+ */
+function ek_documents_theme() {
+  return array(
+      // my docs
+    'ek_documents_my' => array
+    (
+      'template' => 'ek_documents_my',
+      'variables' => array('items' => array()),
+    ),
+    // shared docs
+    'ek_documents_shared' => array
+    (
+      'template' => 'ek_documents_shared',
+      'variables' => array('items' => array()),
+    ),  
+    // common docs
+    'ek_documents_common' => array
+    (
+      'template' => 'ek_documents_common',
+      'variables' => array('items' => array()),
+    ),     
+  );     
+}
+
+/**
+ * Implements hook_file_download().
+ */
+/* edit the file_download function in order to control access of shared files
+* by users if they belong to shared group or shared user
+*/
+function ek_documents_file_download($uri) {
+
+if (strpos($uri,'/documents/users/')) {
+$finfo = new finfo(FILEINFO_MIME_TYPE);
+$mime = $finfo->file($uri);
+$query = "SELECT * FROM {ek_documents}  WHERE uri = :uri";
+$a = array(':uri' => $uri);
+    
+$file = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
+$uid = \Drupal::currentUser()->id();          
+    
+    if ($file->id && $uid) {
+    $now = time();
+    
+    $name = \Drupal::currentUser()->getUsername();   
+    
+     
+       if ($uid == $file->uid || $file->uid == '0') {
+        //file belongs to user or common area, ok
+            //////////////////////////
+            //    WATCHDOG          //
+            //////////////////////////
+            $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
+            $log = t("User @u has downloaded document @d (file id @i)", $a);
+            \Drupal::logger('ek_documents')->notice( $log );                
+            return array('Content-Type' => $mime);
+             
+        
+        } 
+          else { 
+    
+          if ($file->share == '2') {
+          //share all...
+                
+                
+                $info = file_load($fid);
+                //////////////////////////
+                //    WATCHDOG          //
+                //////////////////////////
+                $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
+                $log = t("User @u has downloaded document @d (file id @i)", $a);
+                \Drupal::logger('ek_documents')->notice( $log );  
+                
+                return array('Content-Type' => $mime); 
+                
+          }
+        
+          elseif ($file->share == '1' )  {
+            //verify access granted by owner
+            $share_uid = explode(',', $file->share_uid);
+            
+            if (in_array($uid , $share_uid ) && $file->expire <= $now) {
+                //////////////////////////
+                //    WATCHDOG          //
+                //////////////////////////
+                $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
+                $log = t("1- User @u has downloaded document @d (file id @i)", $a);
+                \Drupal::logger('ek_documents')->notice( $log );  
+                
+                return array('Content-Type' => $mime);
+            
+            }
+        
+        
+          }  else {
+                //////////////////////////
+                //    WATCHDOG          //
+                //////////////////////////
+                $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
+                $log = t("User @u tried to downlaod document @d but it is not shared or expired (file id @i)", $a);
+                 \Drupal::logger('ek_documents')->notice( $log );  
+
+                return -1;          
+          }
+      
+      } //if not owner
+
+    }//if fid
+  
+}
+}
+
+
+
+/**
+ * manage messaging.
+ * $key =type of message, $to = array of uid, $message
+ */
+function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL) {
+
+
+
+  $users = implode(',' , $to);
+  $query = "SELECT name,mail from {users_field_data} WHERE (FIND_IN_SET (uid, :uid )) ";
+  $list = db_query($query, array(':uid' => $users ));
+  $param = array();
+  $site_config = \Drupal::config('system.site');
+  $params['from'] =  Drupal::currentUser()->getEmail() ;
+  $theme = theme_get_setting('logo');
+  $params['options']['logo'] = $GLOBALS['base_url'] . '/' . $theme['url'];
+  $params['options']['site'] = $site_config->get('name');
+  $params['options']['stamp'] = date('F j, Y, g:i a');
+  $url = "<a href='". file_create_url($uri) ."'>". $filename ."</a>";
+    
+    while ($l = $list->fetchObject()) {
+    
+      switch($key) {
+        case 'share' :
+        default:
+        $params['subject'] = t("Document shared");
+        $render = [
+            '#markup' => t('Dear @n , @u shared with you a document', array('@n' => $l->name, '@u' => Drupal::currentUser()->getUsername() ))   ,
+        ];
+        //$message = ['#markup' => $message];
+        $params['body'] = \Drupal::service('renderer')->render($render);
+        $params['options']['message'] = \Drupal::service('renderer')->render($message);
+        $params['options']['url'] = $url;
+        $template = 'key_document_share';
+        break;
+      
+      }
+        if ($target_user = user_load_by_mail($l->mail)) {
+            $target_langcode = $target_user->getPreferredLangcode();
+        } else {
+            $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
+        }
+         $send = \Drupal::service('plugin.manager.mail')->mail(
+                'ek_documents',
+                $template,
+                $l->mail ,
+                $target_langcode,
+                $params,
+                $params['from'],
+                TRUE
+              );   
+    
+    }
+  
+    //send an email copy to me
+    $params['subject'] = t("My document shared (copy)");
+    $my_mail = \Drupal::currentUser()->getEmail();
+    if ($target_user = user_load_by_mail($my_mail)) {
+            $target_langcode = $target_user->getPreferredLangcode();
+        } else {
+            $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
+        }
+    $send = \Drupal::service('plugin.manager.mail')->mail(
+                'ek_documents',
+                $template,
+                $my_mail ,
+                $target_langcode,
+                $params,
+                $params['from'],
+                TRUE
+              );
+
+
+      if($mode == 'internal message') {  
+      //add copy in internal messaging
+         
+          ek_message_register( array(
+          'uid' => \Drupal::currentUser()->id(),
+          'to' => $users,
+          'to_group' => 0,
+          'type' => 2,
+          'status' => '',
+          'inbox' => $users,
+          'archive' => '',
+          'subject' => $params['subject'],
+          'body' => serialize($params['body']),
+          'priority' => 2,
+          )
+          );
+
+      }
+
+}
+
+
+/**
+ * Implementation hook_mail().
+ */
+function ek_documents_mail($key, &$message, $params) {
+
+
+    switch($key) {
+      case 'key_document_share':
+
+        $message['headers']['From'] = $params['from'];
+        $message['subject'] = $params['subject'];        
+        $message['body'][] = $params['body'];
+        $message['options'] = $params['options'];
+        break;
+
+    }
+}

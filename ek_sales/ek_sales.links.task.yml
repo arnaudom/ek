@@ -1,0 +1,77 @@
+ek_sales_settings:
+  route_name: ek_sales_settings
+  base_route: ek_sales_settings
+  title: 'Global'
+  weight: 1
+  
+ek_sales_settings_forms:
+  route_name: ek_sales_settings_forms
+  base_route: ek_sales_settings
+  title: 'Forms'
+  weight: 2
+  
+ek_sales_settings_quotations:
+  route_name: ek_sales.quotations.settings
+  base_route: ek_sales_settings
+  title: 'Quotations'
+  weight: 3
+
+ek_sales.purchase.task.list:
+  route_name: ek_sales.purchases.list
+  base_route: ek_sales.purchases.list
+  title: 'Purchases list'
+  weight: 1
+  
+ek_sales.purchase.task.new:
+  route_name: ek_sales.purchases.create
+  base_route: ek_sales.purchases.list
+  title: 'New purchase'
+  weight: 2
+  
+ek_sales.purchase.task.aging:
+  route_name: ek_sales.purchases.aging
+  base_route: ek_sales.purchases.list
+  title: 'Aging'
+  weight: 3
+  
+ek_sales.purchase.task.tasks_list:
+  route_name: ek_sales.purchases.tasks_list
+  base_route: ek_sales.purchases.list
+  title: 'Tasks'
+  weight: 4
+  
+ek_sales.quotation.task.list:
+  route_name: ek_sales.quotations.list
+  base_route: ek_sales.quotations.list
+  title: 'Quotations list'
+  weight: 1
+  
+ek_sales.quotation.task.new:
+  route_name: ek_sales.quotations.create
+  base_route: ek_sales.quotations.list
+  title: 'New Quotation'
+  weight: 2
+  
+ek_sales.invoice.task.list:
+  route_name: ek_sales.invoices.list
+  base_route: ek_sales.invoices.list
+  title: 'Invoices list'
+  weight: 1
+  
+ek_sales.invoice.task.new:
+  route_name: ek_sales.invoices.create
+  base_route: ek_sales.invoices.list
+  title: 'New invoice'
+  weight: 2
+  
+ek_sales.invoice.task.aging:
+  route_name: ek_sales.invoices.aging
+  base_route: ek_sales.invoices.list
+  title: 'Aging'
+  weight: 3
+  
+ek_sales.invoice.task.tasks_list:
+  route_name: ek_sales.invoices.tasks_list
+  base_route: ek_sales.invoices.list
+  title: 'Tasks'
+  weight: 4

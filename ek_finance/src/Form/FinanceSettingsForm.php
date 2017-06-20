@@ -1,0 +1,265 @@
+<?php
+
+/**
+ * @file
+ * Contains \Drupal\ek_finance\Form\FinanceSettingsForm.
+ */
+
+namespace Drupal\ek_finance\Form;
+
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\ek_finance\FinanceSettings;
+use Drupal\ek_finance\CurrencyData;
+use Drupal\ek_finance\AidList;
+/**
+ * Provides a company settings form for global finance parameters.
+ */
+class FinanceSettingsForm extends FormBase {
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFormId() {
+    return 'ek_edit_finance_settings_form';
+  }
+
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+
+
+  //
+  // add global settings used by accounts.
+  //
+  $settings = new FinanceSettings(); 
+  
+    $form['baseCurrency'] = array(
+        '#type' => 'select',
+        '#size' => 1,
+        '#required' => TRUE,
+        '#disabled' => $settings->get('baseCurrency') ? TRUE : FALSE,
+        '#options' => CurrencyData::listcurrency(1),
+        '#default_value' => $settings->get('baseCurrency'),
+        '#title' => t('Base currency'),
+        '#description' => t('rate @r', array('@r' => CurrencyData::rate($settings->get('baseCurrency')))),
+      ); 
+    
+    $form['companyMemo'] = array(
+        '#type' => 'select',
+        '#size' => 1,
+        '#required' => TRUE,
+        '#options' => array(0 => t('no'), 1=> t('yes')),
+        '#default_value' => $settings->get('companyMemo'),
+        '#title' => t('Memos companies'),
+        '#description' => t('Restrict selection of companies in memo (I.e: claim from)'),
+      );
+    
+    $form['authorizeMemo'] = array(
+        '#type' => 'select',
+        '#size' => 1,
+        '#required' => TRUE,
+        '#options' => array(0 => t('no'), 1=> t('yes')),
+        '#default_value' => $settings->get('authorizeMemo'),
+        '#title' => t('Authorize Memos'),
+        '#description' => t('Request authorization for personal memos'),
+      );       
+  
+    $form['budgetUnit'] = array(
+        '#type' => 'select',
+        '#size' => 1,
+        '#required' => TRUE,
+        '#options' => array(1 => '1', 2 => "'000", 3 => "'000,000" ),
+        '#default_value' => $settings->get('budgetUnit'),
+        '#title' => t('Budgets'),
+        '#description' => t('Computation unit'),
+      ); 
+    
+    $form['chart'] = array(
+      '#type' => 'details',
+      '#title' => $this->t('Chart of accounts structure'),
+      '#open' => TRUE,
+      '#attributes' => '',
+      '#prefix' => "",
+    ); 
+    $chart = $settings->get('chart');
+    $perm = in_array( 'administrator', \Drupal::currentUser()->getRoles()) ? 0 : 1;
+    
+    $form['chart']['assets'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#required' => TRUE,
+      '#default_value' => ($chart['assets'] != NULL) ? $chart['assets'] : 1,
+      '#title' => t('Assets class'),
+      '#disabled' => ($chart['assets'] != NULL && $perm) ? TRUE : FALSE,
+    );
+    $form['chart']['liabilities'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#required' => TRUE,
+      '#default_value' => ($chart['liabilities'] != NULL) ? $chart['liabilities'] : 2,
+      '#title' => t('Liabilities class'),
+      '#disabled' => ($chart['liabilities'] != NULL && $perm) ? TRUE : FALSE,
+    );
+    $form['chart']['equity'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#required' => TRUE,
+      '#default_value' => ($chart['equity'] != NULL) ? $chart['equity'] : 3,
+      '#title' => t('Equity class'),
+      '#disabled' => ($chart['equity'] != NULL && $perm) ? TRUE : FALSE,
+    );    
+    $form['chart']['income'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#required' => TRUE,
+      '#default_value' => ($chart['income'] != NULL) ? $chart['income'] : 4,
+      '#title' => t('Income class'),
+      '#disabled' => ($chart['income'] != NULL && $perm) ? TRUE : FALSE,
+    );    
+    $form['chart']['cos'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#required' => TRUE,
+      '#default_value' => ($chart['cos'] != NULL) ? $chart['cos'] : 5,
+      '#title' => t('Cost of sales class'),
+      '#disabled' => ($chart['cos'] != NULL && $perm) ? TRUE : FALSE,
+    );      
+    $form['chart']['expenses'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#required' => TRUE,
+      '#default_value' => ($chart['expenses'] != NULL) ? $chart['expenses'] : 6,
+      '#title' => t('Expenses class'),
+      '#disabled' => ($chart['expenses'] != NULL && $perm) ? TRUE : FALSE,
+    );    
+
+    $form['chart']['other_liabilities'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#required' => TRUE,
+      '#default_value' => ($chart['other_liabilities'] != NULL) ? $chart['other_liabilities'] : 7,
+      '#title' => t('Other liabilities class'),
+      '#disabled' => ($chart['other_liabilities'] != NULL && $perm) ? TRUE : FALSE,
+    ); 
+    $form['chart']['other_income'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#required' => TRUE,
+      '#default_value' => ($chart['other_income'] != NULL) ? $chart['other_income'] : 8,
+      '#title' => t('Other income class'),
+      '#disabled' => ($chart['other_income'] != NULL && $perm) ? TRUE : FALSE,
+    );  
+    $form['chart']['other_expenses'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#required' => TRUE,
+      '#default_value' => ($chart['other_expenses'] != NULL) ? $chart['other_expenses'] : 9,
+      '#title' => t('Other expenses class'),
+      '#disabled' => ($chart['other_expenses'] != NULL && $perm) ? TRUE : FALSE,
+    );     
+
+    $form['recordProvision'] = array(
+        '#type' => 'select',
+        '#size' => 1,
+        '#required' => TRUE,
+        '#options' => array(0 => t('no'), 1=> t('yes')),
+        '#default_value' => $settings->get('recordProvision'),
+        '#title' => t('Provision record'),
+        '#description' => t('Allow record of provisions in expense'),
+      );
+
+    $form['listPurchases'] = array(
+        '#type' => 'select',
+        '#size' => 1,
+        '#required' => TRUE,
+        '#options' => array(0 => t('no'), 1=> t('yes')),
+        '#default_value' => $settings->get('listPurchases'),
+        '#title' => t('Display purchases in expenses list'),
+        '#description' => t('Allow view of purchases when listing expenses'),
+      );    
+    
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
+
+  return $form;
+  }
+  
+
+  /**
+   * {@inheritdoc}
+   */  
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+      
+      $chart = [
+          $form_state->getValue('assets'),
+          $form_state->getValue('liabilities'),
+          $form_state->getValue('equity'),
+          $form_state->getValue('income'),
+          $form_state->getValue('cos'),
+          $form_state->getValue('expenses'),
+          $form_state->getValue('other_liabilities'),
+          $form_state->getValue('other_income'),
+          $form_state->getValue('other_expenses')
+      ];
+      
+      
+      foreach($chart as $k => $v){
+          if(!is_numeric($v) || $v > 9 || $v == 0){
+              $form_state->setErrorByName("chart][", $this->t('All chart values should be a numeric value from 1 to 9.'));
+          }
+         
+      }
+      
+      asort($chart);
+        
+      $a = array_diff([1,2,3,4,5,6,7,8,9],$chart );
+      
+      if(!empty($a)){
+          $a = implode(',', $a);
+          $form_state->setErrorByName("chart][", $this->t('The chart structure is not complete. Missing class @a', ['@a' => $a]));
+      }
+
+  
+      
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+  
+ 
+  
+  $settings = new FinanceSettings();
+  
+  $settings->set('baseCurrency', $form_state->getValue('baseCurrency'));
+  $settings->set('authorizeMemo', $form_state->getValue('authorizeMemo'));
+  $settings->set('companyMemo', $form_state->getValue('companyMemo'));
+  $settings->set('budgetUnit', $form_state->getValue('budgetUnit'));
+  $chart = [
+          'assets' => $form_state->getValue('assets'),
+          'liabilities' => $form_state->getValue('liabilities'),
+          'equity' => $form_state->getValue('equity'),
+          'income' => $form_state->getValue('income'),
+          'cos' => $form_state->getValue('cos'),
+          'expenses' => $form_state->getValue('expenses'),
+          'other_liabilities' => $form_state->getValue('other_liabilities'),
+          'other_income' => $form_state->getValue('other_income'),
+          'other_expenses' => $form_state->getValue('other_expenses')
+      ];
+  $settings->set('chart', $chart);
+  $settings->set('recordProvision', $form_state->getValue('recordProvision'));
+  $settings->set('listPurchases', $form_state->getValue('listPurchases'));
+  $save = $settings->save();
+  
+   if ($save)  drupal_set_message(t('The settings are recorded'), 'status');
+  
+
+  }
+  
+} 

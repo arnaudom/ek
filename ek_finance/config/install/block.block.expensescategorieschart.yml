@@ -1,0 +1,31 @@
+uuid: 8f1b4a8e-ecbe-426a-b000-b24cf5bf1c8c
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_finance
+    - node
+    - system
+    - user
+  theme:
+    - bartik
+id: expensespercategorychartblock
+theme: bartik
+region: content
+weight: null
+provider: null
+plugin: expenses_categories_charts_block
+settings:
+  id: expenses_categories_charts_block
+  label: 'Expenses per category chart block'
+  provider: ek_finance
+  label_display: '0'
+  cache:
+    max_age: 0
+    contexts: {  }
+visibility:
+  request_path:
+    id: request_path
+    pages: /finance
+    negate: false
+    context_mapping: {  }

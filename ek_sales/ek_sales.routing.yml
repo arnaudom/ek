@@ -1,0 +1,429 @@
+ek_sales_install:
+  path: '/ek_sales/install'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\InstallController::install'
+  requirements:
+    _permission: 'access administration pages'
+    
+ek_sales_majour:
+  path: '/ek_sales/migrate'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\InstallController::migrate'
+  requirements:
+    _permission: 'access administration pages'
+    
+ek_sales_settings:
+  path: '/ek_sales/admin/settings'
+  defaults:
+    _title: 'Global settings'
+    _controller: '\Drupal\ek_sales\Controller\SettingsController::settings'
+  requirements:
+    _permission: 'administrate_sales'
+
+ek_sales_settings_forms:
+  path: '/ek_sales/admin/settings-forms'
+  defaults:
+    _title: 'Forms'
+    _controller: '\Drupal\ek_sales\Controller\SettingsController::settingsForms'
+  requirements:
+    _permission: 'administrate_sales'
+    
+ek_sales.main:
+  path: '/sales_management'
+  defaults:
+    _title: 'Sales management'
+    _controller: '\Drupal\ek_sales\Controller\SalesController::ManageSales'
+  requirements:
+    _permission: 'sales_management'
+
+ek_sales.data:
+  path: '/sales/data/{abid}'
+  defaults:
+    _title: 'Sales data'
+    _controller: '\Drupal\ek_sales\Controller\SalesController::DataSales'
+  requirements:
+    _permission: 'sales_data'
+    abid: \d*
+
+ek_sales_documents_load:
+  path: 'ek_sales/load_documents'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\SalesController::load'
+  requirements:
+    _permission: 'sales_data'
+
+ek_sales_modal:
+  path: 'ek_sales/documents/modal/{param}'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\SalesController::modal'
+  requirements:
+    _permission: 'sales_data'
+    
+ek_sales_delete_file:
+  path: 'ek_sales/delete_file/{id}'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\SalesController::deletefile'
+  requirements:
+    _permission: 'sales_data'
+    id: \d*
+    
+ek_sales_user_autocomplete:
+  path: '/ek_sales/autocomplete/user'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\SalesController::userautocomplete'
+  requirements:
+    _permission: 'sales_task'
+
+
+ek_sales.modal_more:
+  path: '/ek_sales/more/modal/{param}'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\SalesController::modal'
+  requirements:
+    _permission: 'list_more'
+    
+ek_sales.reset_payment:
+  path: '/reset/{doc}/{id}'
+  defaults:
+    _title: 'Reset payment'
+    _controller: '\Drupal\ek_sales\Controller\SalesController::ResetPayment'
+  requirements:
+    _permission: 'reset_pay'
+    id: \d* 
+    
+#purchases
+ek_sales.purchases.list:
+  path: '/purchases/list'
+  defaults:
+    _title: 'Purchases list'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::ListPurchases'
+  requirements:
+    _permission: 'list_purchase'
+
+ek_sales.purchases.aging:
+  path: '/purchases/aging'
+  defaults:
+    _title: 'Purchases aging report'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::AgingPurchases'
+  requirements:
+    _permission: 'list_purchase'
+    
+ek_sales.purchases.create:
+  path: '/purchases/new'
+  defaults:
+    _title: 'New purchase'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::NewPurchases'
+  requirements:
+    _permission: 'create_purchase'
+
+ek_sales.purchases.clone:
+  path: '/purchases/clone/{id}'
+  defaults:
+    _title: 'New purchase'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::ClonePurchases'
+  requirements:
+    _permission: 'create_purchase'
+    id: \d*
+       
+ek_sales.purchases.edit:
+  path: '/purchases/edit/{id}'
+  defaults:
+    _title: 'Edit purchase'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::EditPurchases'
+  requirements:
+    _permission: 'create_purchase'
+    id: \d*
+
+ek_sales.purchases.pay:
+  path: '/purchases/pay/{id}'
+  defaults:
+    _title: 'Purchase payment'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::PayPurchases'
+  requirements:
+    _permission: 'create_purchase'
+    id: \d*
+
+ek_sales.purchases.alert:
+  path: '/purchases/alert/{id}'
+  defaults:
+    _title: 'Set purchase alert'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::alertPurchases'
+  requirements:
+    _permission: 'create_purchase'
+    id: \d*
+
+ek_sales.purchases.task:
+  path: '/purchases/task/{id}'
+  defaults:
+    _title: 'Set purchase task or reminder'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::TaskPurchases'
+  requirements:
+    _permission: 'create_purchase'
+    id: \d*
+
+ek_sales.purchases.tasks_list:
+  path: '/purchases/tasks_list'
+  defaults:
+    _title: 'Purchases tasks list'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::ListTaskPurchases'
+  requirements:
+    _permission: 'create_purchase'
+
+ek_sales.purchases.print_html:
+  path: '/purchases/html/{id}'
+  defaults:
+    _title: 'View'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::Html'
+  requirements:
+    _permission: 'print_share_purchase'
+    id: \d*    
+
+ek_sales.purchases.print_excel:
+  path: '/purchases/excel/{id}'
+  defaults:
+    _title: 'Export in excel format'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::Excel'
+  requirements:
+    _permission: 'print_share_purchase'
+    id: \d* 
+    
+ek_sales.purchases.print_share:
+  path: '/purchases/print/{id}'
+  defaults:
+    _title: 'Print and mail'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::PrintSharePurchases'
+  requirements:
+    _permission: 'print_share_purchase'
+    id: \d*
+
+ek_sales.purchases.print_share_pdf:
+  path: '/purchases/print/pdf/{param}'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::PdfPurchases'  
+  requirements:
+    _permission: 'print_share_purchase'
+    #param: \w*
+
+ek_sales.purchases.excel:
+  path: '/purchases/export/{param}'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::ExportExcel'
+  requirements:
+    _permission: 'list_purchase'
+    
+ek_sales.purchases.delete:
+  path: '/purchases/delete/{id}'
+  defaults:
+    _title: 'Delete'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::DeletePurchases'
+  requirements:
+    _permission: 'delete_purchase'
+    id: \d*  
+
+
+#quotations   
+ek_sales.quotations.settings:
+  path: '/quotations/settings'
+  defaults:
+    _title: 'Quotations settings'
+    _controller: '\Drupal\ek_sales\Controller\QuotationsController::SettingsQuotations'
+  requirements:
+    _permission: 'administrate_sales'
+    
+ek_sales.quotations.list:
+  path: '/quotations/list'
+  defaults:
+    _title: 'Quotations list'
+    _controller: '\Drupal\ek_sales\Controller\QuotationsController::ListQuotations'
+  requirements:
+    _permission: 'list_quotation'
+    
+ek_sales.quotations.create:
+  path: '/quotations/new'
+  defaults:
+    _title: 'New quotations'
+    _controller: '\Drupal\ek_sales\Controller\QuotationsController::NewQuotations'
+  requirements:
+    _permission: 'create_quotation'
+
+ek_sales.quotations.edit:
+  path: '/quotations/edit/{id}'
+  defaults:
+    _title: 'Edit quotation'
+    _controller: '\Drupal\ek_sales\Controller\QuotationsController::EditQuotation'
+  requirements:
+    _permission: 'create_quotation'
+    id: \d*    
+
+ek_sales.quotations.invoice:
+  path: '/quotations/invoice/{id}'
+  defaults:
+    _title: 'Generate invoice'
+    _controller: '\Drupal\ek_sales\Controller\QuotationsController::InvoiceQuotation'
+  requirements:
+    _permission: 'create_quotation'
+    id: \d* 
+    
+ek_sales.quotations.print_share:
+  path: '/quotations/print/{id}'
+  defaults:
+    _title: 'Print and mail'
+    _controller: '\Drupal\ek_sales\Controller\QuotationsController::PrintShareQuotations'
+  requirements:
+    _permission: 'print_share_quotation'
+    id: \d*
+
+ek_sales.quotations.print_share_pdf:
+  path: '/quotations/print/pdf/{param}'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\QuotationsController::PdfQuotations'  
+  requirements:
+    _permission: 'print_share_quotation'
+    #param: \w*
+    
+ek_sales.quotations.delete:
+  path: '/quotations/delete/{id}'
+  defaults:
+    _title: 'Delete'
+    _controller: '\Drupal\ek_sales\Controller\QuotationsController::DeleteQuotations'
+  requirements:
+    _permission: 'delete_quotation'
+    id: \d*     
+    
+#invoice
+ek_sales.invoices.list:
+  path: '/invoices/list'
+  defaults:
+    _title: 'Invoices list'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::ListInvoices'
+  requirements:
+    _permission: 'list_invoice'
+
+ek_sales.invoices.aging:
+  path: '/invoices/aging'
+  defaults:
+    _title: 'Invoices aging report'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::AgingInvoices'
+  requirements:
+    _permission: 'list_invoice'
+    
+ek_sales.invoices.create:
+  path: '/invoices/new'
+  defaults:
+    _title: 'New invoices'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::NewInvoices'
+  requirements:
+    _permission: 'create_invoice'
+    
+ek_sales.invoices.clone:
+  path: '/invoices/clone/{id}'
+  defaults:
+    _title: 'New invoices'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::CloneInvoices'
+  requirements:
+    _permission: 'create_invoice'
+    id: \d*  
+
+ek_sales.invoices.do:
+  path: '/invoices/do/{id}'
+  defaults:
+    _title: 'New invoices'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::DoInvoices'
+  requirements:
+    _permission: 'create_invoice'
+    id: \d*
+        
+ek_sales.invoices.edit:
+  path: '/invoices/edit/{id}'
+  defaults:
+    _title: 'Edit invoice'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::EditInvoice'
+  requirements:
+    _permission: 'create_invoice'
+    id: \d*  
+
+ek_sales.invoices.pay:
+  path: '/invoices/pay/{id}'
+  defaults:
+    _title: 'Invoice receipt'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::PayInvoice'
+  requirements:
+    _permission: 'create_invoice'
+    id: \d*
+    
+ek_sales.invoices.alert:
+  path: '/invoices/alert/{id}'
+  defaults:
+    _title: 'Set invoices alert'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::AlertInvoices'
+  requirements:
+    _permission: 'create_invoice'
+    id: \d*
+
+ek_sales.invoices.task:
+  path: '/invoices/task/{id}'
+  defaults:
+    _title: 'Set invoice task or reminder'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::TaskInvoices'
+  requirements:
+    _permission: 'create_invoice'
+    id: \d*
+
+ek_sales.invoices.tasks_list:
+  path: '/invoices/tasks_list'
+  defaults:
+    _title: 'Invoices tasks list'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::ListTaskInvoices'
+  requirements:
+    _permission: 'create_invoice'
+
+ek_sales.invoices.print_html:
+  path: '/invoices/html/{id}'
+  defaults:
+    _title: 'View'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::Html'
+  requirements:
+    _permission: 'print_share_invoice'
+    id: \d*    
+
+ek_sales.invoices.print_excel:
+  path: '/invoices/excel/{id}'
+  defaults:
+    _title: 'Export in excel format'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::Excel'
+  requirements:
+    _permission: 'print_share_invoice'
+    id: \d* 
+    
+ek_sales.invoices.print_share:
+  path: '/invoices/print/{id}'
+  defaults:
+    _title: 'Print and mail'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::PrintShareInvoices'
+  requirements:
+    _permission: 'print_share_invoice'
+    id: \d*
+
+ek_sales.invoices.print_share_pdf:
+  path: '/invoices/print/pdf/{param}'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::PdfInvoices'  
+  requirements:
+    _permission: 'print_share_invoice'
+    #param: \w*
+
+ek_sales.invoices.excel:
+  path: '/invoices/export/{param}'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::ExportExcel'
+  requirements:
+    _permission: 'list_invoice'
+    
+ek_sales.invoices.delete:
+  path: '/invoices/delete/{id}'
+  defaults:
+    _title: 'Delete'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::DeleteInvoices'
+  requirements:
+    _permission: 'delete_invoice'
+    id: \d*

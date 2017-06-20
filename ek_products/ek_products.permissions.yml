@@ -1,0 +1,12 @@
+view_products:
+  title: 'View'
+  description: 'Allows user to view products and services.'  
+create_products:
+  title: 'Create'
+  description: 'Allows user to create products and services.'    
+edit_products:
+  title: 'Edit'
+  description: 'Allows user to edit products and services.'  
+delete_products:
+  title: 'Delete'
+  description: 'Allows user to delete products and services.' 

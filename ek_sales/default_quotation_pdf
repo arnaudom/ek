@@ -1,0 +1,285 @@
+<?php
+
+
+class PDF extends FPDF
+{
+
+//===============================================================================
+//Page header
+function Header()
+{
+    //Logo
+    if ($this->company->logo <> '') {
+    
+        $logo = drupal_realpath($this->company->logo);
+        if(file_exists($logo)) {
+            $this->Image($logo,20,10,43);
+        }
+    
+    }
+    //Arial bold 15
+    $this->Ln(25);
+    $this->SetFont('Arial','',12);
+    //Move to the right
+    $this->Cell(110);
+    $this->Cell(50,5,$this->company->name,0,1);
+    $this->SetFont('Arial','',8);
+    $this->Cell(110);    
+    $this->Cell(60,4, $this->company->address1,0,1);
+    $this->Cell(110);    
+    $this->Cell(60,4, $this->company->address2,0,1);
+    $this->Cell(110);
+    $this->Cell(50,4, $this->company->postcode . ',' .$this->company->city ,0,1);
+    $this->Cell(110);
+    $this->Cell(50,4, $this->company->country ,0,1);
+    $this->Cell(110);
+    if ($this->company->telephone <> '') {
+    $this->Cell(8,3,t("tel:").$this->company->telephone,0,1);
+    }
+    if ($this->company->fax <> '') {
+    $this->Cell(110);
+    $this->Cell(8,4,t("fax:").$this->company->fax,0,1);
+    }
+    //Line break
+    $this->Ln(8);
+    
+   
+    
+}
+
+function setHeaderData($company){ 
+  $this->company = $company;
+} 
+
+//Page footer
+function Footer()
+{
+
+    //Position at 1.5 cm from bottom
+    $this->SetY(-15);
+    //Arial italic 8
+    $this->SetFont('Arial','I',8);
+    //Page number
+    $this->Cell(0,10,'Page ' . $this->PageNo().'/{nb}',0,0,'C');
+
+} 
+  
+}    
+
+
+$pdf=new PDF();
+$pdf->setHeaderData($company); 
+$pdf->AliasNbPages();
+$pdf->AddPage('P','A4');
+$pdf->SetAutoPageBreak(1); 
+$cut = 230;
+    
+// header details
+$pdf->SetFont('Arial','B',25);
+$pdf->SetTextColor(187, 208, 211);
+    $pdf->Cell(110);
+    $pdf->Cell(10,10, t('QUOTATION') ,0,1);
+    $pdf->Ln(2);
+$pdf->SetTextColor(0, 0, 0);
+$pdf->SetFont('Arial','B',10);
+    $pdf->Cell(25,5, t('Date') .':' ,0,0);
+    
+$pdf->SetFont('Arial','',10);
+    $pdf->Cell(80,5, $head->date ,0,0);
+$pdf->SetFont('Arial','B',10);
+    $pdf->Cell(25,5,'Quotation No.:',0,0);  
+$pdf->SetFont('Arial','',10);
+    $pdf->Cell(20,5, $items['reference'] ,0,1);  
+    
+$pdf->SetFont('Arial','B',10);
+    $pdf->Cell(25,5,'To:',0,0);
+$pdf->SetFont('Arial','',10);
+    $pdf->Cell(20,5, $client->name ,0,1);
+    $pdf->Cell(25);
+    $pdf->Cell(20,5, $client->address ,0,1);
+    $pdf->Cell(25);
+    $pdf->Cell(20,5, $client->address2 ,0,1);  
+    $pdf->Cell(25);
+    $pdf->Cell(20,5, $client->postcode . ' ' . $client->city ,0,1);  
+    $pdf->Cell(25);    
+    $pdf->Cell(20,5, $client->country ,0,1);  
+    $pdf->Cell(25,5, t('Attention') .':',0,0);
+    $pdf->Cell(20,5,$client_card->salutation . " " . $client_card->contact_name,0,1); 
+$pdf->SetFont('Arial','B',10);
+    $pdf->Cell(35,5, t('Our reference') .':',0,0);
+$pdf->SetFont('Arial','',10); 
+    $pdf->Cell(20,5, $head->pcode ,0,1);
+$pdf->SetFont('Arial','B',10);
+    $pdf->Cell(35,5,'',0,0);
+$pdf->SetFont('Arial','',10); 
+    $pdf->MultiCell(150,5, $head->title ,0);  
+$pdf->Ln(2);    
+    
+//Background color
+$pdf->SetFillColor(187, 208, 211);
+$pdf->SetFont('Arial','B',14); 
+    $pdf->Cell(185,5, '' ,1,1,'C','1');
+$pdf->SetFont('Arial','',8); 
+    //$pdf->Cell(185,5,$quotation['Comment'],0,1,'C');  
+    $pdf->MultiCell(150,5, $head->comment ,0);
+$pdf->Ln(2);    
+
+
+//BODY OF QUOTATION
+
+$pdf->SetFont('Arial','B',8);
+    $pdf->Cell(5,5,'',1,0);
+    $pdf->Cell(110,5, t('Description') ,1,0,'C','1');      
+    $pdf->Cell(20,5, $items['column_name4'] ,1,0,'C','1');
+    $pdf->Cell(20,5, $items['column_name5'] ,1,0,'C','1');
+    $pdf->Cell(30,5, $items['column_name6'] ,1,1,'C','1');
+    
+    $i=1;
+$pdf->SetFont('Arial','',8);
+
+// items ///////////////////////
+$grandtotal = 0;
+  foreach ($items['lines'] as $detail) {
+      if($detail['item'] <> '') {
+          // column 0    
+              $pdf->Cell(5,5, $i ,1,0);
+          // column 1
+              
+          $x= $pdf->GetX();
+          $y= $pdf->GetY();
+              $pdf->MultiCell(110,5, $detail['item'], 1,'J');
+          $y2= $pdf->GetY();    
+          $pdf->SetFont('Arial','',8);
+          $pdf->SetXY($x , $y);
+          $h=$y2-$y;
+
+      // column 4
+          $pdf->Cell(110);
+          if ($detail['unit']>0) {
+          $pdf->Cell(20,$h,$detail['unit'],1,0,'C');
+          $pdf->Cell(20,$h, number_format($detail['value'],2) ,1,0, 'R');
+          $pdf->Cell(30,$h,number_format($detail['total'] , 2) , 1, 1,'R');
+          } else {
+          $pdf->Cell(20,$h,'',1,0);
+          $pdf->Cell(20,$h,'',1,0);
+          $pdf->Cell(30,$h,'',1,1,'R');
+          }
+      // line 2 
+          $pdf->Cell(5);
+          $pdf->SetFont('Arial','B',8);
+          $pdf->Cell(25,5, $items['column_name2'] ,1,0,'L','1');
+          $pdf->SetFont('Arial','',8);    
+          $pdf->Cell(50,5,"$detail[column_2]",1,0);
+          $pdf->SetFont('Arial','B',8);
+          $pdf->Cell(25,5, $items['column_name3'] ,1,0,'L','1');
+          $pdf->SetFont('Arial','',8);    
+          $pdf->Cell(50,5,"$detail[column_3]",1,1);
+         
+          
+          $i++;
+          $grandtotal = round(($grandtotal + $detail['total']),2);
+          //check position for a break
+          $here= $pdf->GetY();
+          if ($here >$cut) { 
+          $pdf->AddPage(P,A4);
+      $pdf->SetFont('Arial','B',25);
+      $pdf->SetTextColor(187, 208, 211);
+          $pdf->Cell(110);
+          $pdf->Cell(10,10, t('QUOTATION') , 0,1);
+          $pdf->Ln(2);
+      $pdf->SetTextColor(0, 0, 0);
+          $pdf->Cell(25,5,'',0,0);
+      $pdf->SetFont('Arial','',10);
+          $pdf->Cell(80,5,'',0,0);
+      $pdf->SetFont('Arial','B',10);
+          $pdf->Cell(25,5, t('Quotation No.:') , 0,0);  
+      $pdf->SetFont('Arial','',10);
+
+          $pdf->Cell(20,5, $items['reference'] ,0,1);
+          $pdf->Ln(3);
+      $pdf->SetFont('Arial','',8);    
+          $pdf->Cell(10);
+          $pdf->Cell(5,5,'../..',1,0);
+      $pdf->SetFont('Arial','B',10);
+          $pdf->Cell(100,5, t('Description') , 1,0);
+          $pdf->Cell(20,5, $items['column_name4'] ,1,0,'C','1');
+          $pdf->Cell(20,5, $items['column_name5'] ,1,0,'C','1');
+          $pdf->Cell(30,5, $items['column_name6'] ,1,1,'C','1');
+      $pdf->SetFont('Arial','',8); 
+          }    
+      }
+    }
+    
+//insert incoterm=================================
+$freight = 0;
+if ($items['incoterm_name'] != "" ){
+
+    $freight=round($grandtotal*$items['incoterm_rate']/100,2); 
+	
+    $pdf->Ln(2);      
+    $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(115);      
+        $pdf->Cell(40,5, $items['incoterm_name'] ,1,0);
+        $pdf->Cell(30,5,number_format($freight, 2),1,1,'R'); 
+      
+	} 
+$tax = 0;
+if ($items['tax_name'] != "" ){
+	
+    $tax=round( ($grandtotal + $freight )*$items['tax_rate']/100,2); 
+	
+    $pdf->Ln(2);      
+    $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(115);      
+        $pdf->Cell(40,5, $items['tax_name'] ,1,0);
+        $pdf->Cell(30,5,number_format($tax, 2),1,1,'R'); 
+      
+      
+	} 	
+
+$pdf->Ln(2);      
+$pdf->SetFont('Arial','B',10);
+    $pdf->Cell(115);      
+    $pdf->Cell(40,5,t('TOTAL') . ' ' . $head->currency . ' : ',1,0);
+    $total = $grandtotal+$tax+$freight;
+    $pdf->Cell(30,5,number_format($total,2),1,1,'R'); 
+
+  
+//ADD AMOUNT IN WORDS -----------------------------------------------
+    $resultinwords = new Drupal\ek_sales\NumberToWord();
+    $word = $resultinwords->en($items['taxamount']+$grandtotal);
+$pdf->Ln(2);      
+$pdf->SetFont('Arial','I',8);     
+    $pdf->Cell(185,5,$head->currency . ' ' . $word,0,1,'R');
+
+
+     if ($stamp == "2") {
+      
+        $copy = drupal_get_path('module', 'ek_sales') . "/art/copy.png";
+        if (file_exists($copy)) {
+          $pdf->Image($copy,130,90,50); 
+        }
+           
+    } elseif ($stamp == "1") {
+        $original = drupal_get_path('module', 'ek_sales') . "/art/original.png";
+        if (file_exists($original)) {         
+          $pdf->Image($original,130,90,50);    
+        }  
+    }     
+ //SIGNATURE============================================================ 
+    if($signature == 1) {
+      $pdf->Cell(100);
+        if(isset($company->sign)) {
+        $sign = drupal_get_path($company->sign);
+        $pdf->Image($sign,20,210,70);
+        }
+    }
+
+$x= $pdf->GetX(); 
+$pdf->SetXY(20,234);
+    //$y= $pdf->GetY(); $y = $y-29;
+    $pdf->Cell(60,3, t('Authorized signatory'),'T',1);
+    
+
+
+?>

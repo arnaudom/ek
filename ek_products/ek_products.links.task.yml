@@ -1,0 +1,47 @@
+ek_products.search:
+  route_name: ek_products.search
+  base_route: ek_products.search
+  title: 'Search'
+  weight: 1
+  
+ek_products.list:
+  route_name: ek_products.list
+  base_route: ek_products.search
+  title: 'Items list'
+  weight: 2
+  
+ek_products.new:
+  route_name: ek_products.create
+  base_route: ek_products.search
+  title: 'Create'
+  weight: 4
+  
+ek_products.parameters:
+  route_name: ek_products.parameters
+  base_route: ek_products.search
+  title: 'Parameters'
+  weight: 5
+  
+ek_products.view:
+  route_name: ek_products.view
+  base_route: ek_products.view
+  title: 'View'
+  weight: 1
+
+ek_products.edit:
+  route_name: ek_products.edit
+  base_route: ek_products.view
+  title: 'Edit'
+  weight: 2
+
+ek_products.clone:
+  route_name: ek_products.clone
+  base_route: ek_products.view
+  title: 'Clone'
+  weight: 3
+ 
+ek_products.delete:
+  route_name: ek_products.delete
+  base_route: ek_products.view
+  title: 'Delete'
+  weight: 3

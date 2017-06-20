@@ -1,0 +1,29 @@
+ek_projects_users_tab:
+  route_name: ek_projects.settings.users
+  base_route: ek_projects.settings.users
+  title: Users sections access
+  weight: 1
+  
+ek_projects_transfer_tab:
+  route_name: ek_projects.transfer
+  base_route: ek_projects.settings.users
+  title: Transfer projects
+  weight: 2
+  
+ek_projects_merge_tab:
+  route_name: ek_projects.merge
+  base_route: ek_projects.settings.users
+  title: Merge projects
+  weight: 3
+  
+ek_projects_admin_access:
+  route_name: ek_projects.settings.access_admin
+  base_route: ek_projects.settings.users
+  title: Access control
+  weight: 4
+  
+ek_projects_serial_tab:
+  route_name: ek_projects.settings.serial
+  base_route: ek_projects.settings.users
+  title: Serial format
+  weight: 5

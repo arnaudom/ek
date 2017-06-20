@@ -1,0 +1,5 @@
+services:
+  ek_admin_event_user:
+    class: Drupal\ek_admin\EventSubscriber\NewUserSubscriber
+    tags:
+      - {name: event_subscriber }

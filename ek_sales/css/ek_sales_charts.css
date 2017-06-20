@@ -1,0 +1,15 @@
+#container-sales-chart {
+    display: block;
+    position: relative;
+}
+#container-sales-chart ul {
+    list-style-type:none;
+    margin:0px;
+    padding:0px;
+}
+
+#select-container {
+    top:5px;
+    right:0;
+    position: absolute;
+}

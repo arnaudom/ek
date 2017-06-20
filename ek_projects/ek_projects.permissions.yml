@@ -1,0 +1,17 @@
+admin_projects:
+  title: 'Admin project'
+  description: 'Administrate projects parameters.'  
+projects_dashboard:
+  title: 'Projects dashboard'
+  description: 'Projects dashboard' 
+create_projects:
+  title: 'create project'
+  description: 'Create and edit projects.'  
+filter_projects:
+  title: 'filter project'
+  description: 'Use filter for projects.' 
+view_project:
+  title: 'view project'
+  description: 'view project'  
+delete_project_task:
+  title: 'delete project task'

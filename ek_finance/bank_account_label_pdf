@@ -1,0 +1,69 @@
+<?php
+
+
+$pdf=new FPDF();
+$pdf->SetTitle($fileName);
+$pdf->AliasNbPages();
+$pdf->AddPage('P','A4');
+$pdf->SetMargins(10,10);
+
+
+$pdf->SetDrawColor(128, 128, 128);     
+
+//DISPLAY DATA simple
+
+//left right corners
+    $pdf->Cell(5,3,"","LT",0);
+    $pdf->Cell(100,3,"",0,0); 
+    $pdf->Cell(5,3,"","RT",1);
+    
+$pdf->SetFont('Arial','',10);   
+    
+    $pdf->Cell(9,5,"",0,0);    
+    $pdf->Cell(100,5, $bank->name ,0,0);
+    $pdf->Cell(5,5,"",0,1);    
+$pdf->SetFont('Arial','',8); 
+    $pdf->Cell(9,5,"",0,0);    
+    $pdf->Cell(100,5, $bank->address1 ,0,0);
+    $pdf->Cell(1,5,"",0,1);   
+    
+    $pdf->Cell(9,5,"",0,0);    
+    $pdf->Cell(100,5, $bank->address2,0,0);
+    $pdf->Cell(1,5,"",0,1); 
+    
+    $pdf->Cell(9,5,"",0,0);       
+    $pdf->Cell(100,5, $bank->postcode . ' ' .  $bank->country ,0,0);         
+    $pdf->Cell(1,5,"",0,1);   
+         
+    $pdf->ln(2);  
+
+$pdf->SetFont('Arial','',10); 
+    $pdf->Cell(9,5,"",0,0);       
+    $pdf->Cell(30,5, t('account') ,0,0); 
+    $pdf->Cell(70,5, $bank->account_ref ,0,0); 
+    $pdf->Cell(1,5,"",0,1);    
+
+    $pdf->Cell(9,5,"",0,0);
+    $pdf->Cell(30,5, t('beneficiary') ,0,0); 
+    $pdf->Cell(70,5, $bank->company ,0,0);            
+    $pdf->Cell(1,5,"",0,1);
+    
+    $pdf->Cell(9,5,"",0,0);
+    $pdf->Cell(30,5, t('currency') ,0,0); 
+    $pdf->Cell(70,5, $bank->currency ,0,0);         
+    $pdf->Cell(1,5,"",0,1); 
+
+    $pdf->Cell(9,5,"",0,0);
+    $pdf->Cell(30,5, t('swift') ,0,0); 
+    $pdf->Cell(70,5, $bank->swift ,0,0);            
+    $pdf->Cell(1,5,"",0,1);    
+    
+//left right corners
+    $pdf->Cell(5,3,"","LB",0);
+    $pdf->Cell(100,3,"",0,0); 
+    $pdf->Cell(5,3,"","RB",1);
+
+
+
+
+

@@ -1,0 +1,39 @@
+{#
+/**
+ * @file
+ * Default theme implementation for rendering dashboard widget.
+ *
+ *
+ * Available items:
+ *   - title.
+ *   - content.
+ *   - footer.
+
+ *
+ * @see template_preprocess_ek_projects_dashboard()
+ *
+ * @ingroup themeable
+ */
+#}
+
+
+      <div class="widget">
+        
+        <div class="widget-title"><a href='#s0'  onclick="jQuery('#{{ items.id }}').toggle('fast');">
+          <h4 class="">{{ items.title }}</h4></a>
+        </div>
+        
+        <div class="widget-content"  style='' id="{{ items.id }}">
+       
+        
+          <div>{{ items.content|raw }}</div>
+        
+        
+        </div>
+        
+        <div class="widget-footer">
+              {{ items.footer }} 
+        </div>
+      
+      </div>
+

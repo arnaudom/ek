@@ -1,0 +1,19 @@
+.widget {
+    width: 49%;
+    float: left;
+    margin-right:2px;
+    
+}
+
+
+.widget-content {
+    background-color: #fff;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    height: 300px;
+    overflow: auto;
+    border: solid 1px #ccc;
+    border-radius: 0.3em;
+    
+}

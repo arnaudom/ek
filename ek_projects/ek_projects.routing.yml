@@ -1,0 +1,221 @@
+ek_projects.install:
+  path: 'ek_project/install'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\InstallController::install'
+  requirements:
+    _permission: 'access administration pages'
+    
+ek_projects.majour:
+  path: 'ek_project/migrate'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\InstallController::migrate'
+  requirements:
+    _permission: 'access administration pages'
+
+ek_projects.settings.users:
+  path: 'projects/settings/users'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectSettingsController::users'
+  requirements:
+    _permission: 'admin_projects'
+
+ek_projects.settings.access_admin:
+  path: 'projects/settings/access_admin'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectSettingsController::access_admin'
+  requirements:
+    _permission: 'admin_projects'
+    
+ek_projects.transfer:
+  path: 'projects/settings/transfer'
+  defaults:
+    _title: 'Transfer projects'
+    _form: '\Drupal\ek_projects\Form\Transfer'
+  requirements:
+    _permission: 'admin_projects'
+
+ek_projects.merge:
+  path: 'projects/settings/merge'
+  defaults:
+    _title: 'Merge projects'
+    _form: '\Drupal\ek_projects\Form\Merge'
+  requirements:
+    _permission: 'admin_projects'
+    
+ek_projects.settings.serial:
+  path: 'projects/settings/serial'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectSettingsController::serial'
+  requirements:
+    _permission: 'admin_projects'
+    
+ek_projects_main:
+  path: 'projects/project'
+  defaults:
+    _title: 'Projects dashboard'
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::dashboard'
+  requirements:
+    _permission: 'projects_dashboard'
+
+ek_projects_view:
+  path: 'projects/project/{id}'
+  defaults:
+    _title: 'Project'
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::view'
+  requirements:
+    _permission: 'view_project'
+    id: \d*
+
+ek_projects_search:
+  path: 'projects/search'
+  defaults:
+    _title: 'Filtered search'
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::search'
+  requirements:
+    _permission: 'view_project'
+
+ek_projects_excel_list:
+  path: 'projects/excel_list/{param}'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::list_excel'
+  requirements:
+    _permission: 'view_project'
+
+ek_projects_new:
+  path: 'projects/project/new'
+  defaults:
+    _title: 'New project'
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::newproject'
+  requirements:
+    _permission: 'create_projects'
+    
+ek_projects_edit:
+  path: 'projects/project/{id}/edit'
+  defaults:
+    _title: 'Project edition'
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::edit'
+  requirements:
+    _permission: 'create_projects'
+    id: \d*
+
+ek_projects_types:
+  path: 'projects/types'
+  defaults:
+    _title: 'Project types'
+    _form: '\Drupal\ek_projects\Form\EditTypes'
+  requirements:
+    _permission: 'admin_projects'
+    id: \d*
+    
+    
+ek_projects_periodicalupdater:
+  path: 'ek_project/periodicalupdater'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::periodicalupdater'
+  requirements:
+    _permission: 'view_project'
+
+ek_projects_notify_me:
+  path: 'ek_project/edit_notify'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::edit_notify_me'
+  requirements:
+    _permission: 'view_project'
+
+ek_projects_archive:
+  path: 'ek_project/edit_archive/{id}'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::edit_archive'
+  requirements:
+    _permission: 'view_project'
+    id: \d*
+    
+ek_projects_tracker:
+  path: 'ek_project/tracker'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::tracker'
+  requirements:
+    _permission: 'view_project'
+       
+ek_projects_modal:
+  path: 'ek_project/project/modal/{param}'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::modal'
+  requirements:
+    _permission: 'create_projects'
+    
+ek_projects_delete_file:
+  path: 'ek_project/delete_file/{id}'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::deletefile'
+  requirements:
+    _permission: 'create_projects'
+    id: \d*
+    
+ek_projects_delete_confirm_file:
+  path: 'projects/project/delete_file_confirmed/{id}'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::deleteConfirmed'
+  requirements:
+    _permission: 'create_projects'
+    id: \d*
+    
+ek_look_up_projects:
+  path: '/look_up_main_projects/{level}/{status}'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::lookupProject'
+    level: all
+    status: 0
+  requirements:
+    _permission: 'filter_projects'
+    level: 'all|main|sub'
+    status: '0|1|2|3|4'
+    
+ek_projects_task:
+  path: '/projects/task/{pid}/{id}'
+  defaults:
+    _title: 'Set project task'
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::TaskProject'
+  requirements:
+    _permission: 'create_projects'
+    pid: \d*
+    id: \d*
+    
+ek_projects_task_list:
+  path: '/projects/task/list/{pcode}'
+  defaults:
+    _title: 'List tasks'
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::TaskList'
+  requirements:
+    _permission: 'view_project'
+
+ek_projects_task_delete:
+  path: '/projects/task/delete/{id}'
+  defaults:
+    _title: 'Delete task'
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::DeleteTask'
+  requirements:
+    _permission: 'delete_project_task'
+    id: \d*
+    
+ek_projects_user_autocomplete:
+  path: '/ek_projects/autocomplete/user'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::userautocomplete'
+  requirements:
+    _permission: 'create_projects'
+    
+ek_projects_calendar:
+  path: '/projects/calendar'
+  defaults:
+    _title: 'Calendar'
+    _controller: '\Drupal\ek_projects\Controller\CalendarController::calendar'
+  requirements:
+    _permission: 'projects_dashboard'
+
+ek_projects_calendar_view:
+  path: '/projects/calendar/view/{id}'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\CalendarController::view'
+  requirements:
+    _permission: 'projects_dashboard'

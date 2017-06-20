@@ -1,0 +1,284 @@
+<?php
+
+
+
+/*
+ * Default memo template in php for html display
+ */
+
+
+$copy = '';
+$original = '';
+if ($stamp == "2") {
+      
+        $copy = drupal_get_path('module', 'ek_finance') . "/art/copy.png";
+        if (file_exists($copy)) {
+          $copy = "<IMG src='". file_create_url($copy) ."' alt='copy' class='align-center'/>";
+        }
+           
+} elseif ($stamp == "1") {
+        $original = drupal_get_path('module', 'ek_finance') . "/art/original.png";
+        if (file_exists($original)) {         
+          $original = "<IMG src='". file_create_url($original) ."' alt='original' class='align-center'/>";    
+        }  
+} 
+
+
+
+$document = '<page_wrapper>';
+
+
+
+
+//HEADER data
+
+    //Entity from
+    $from_entity = '<b><h2>' . $company->name . '</h2></b>';
+    
+        if($company->reg_number) {
+            $from_entity .= '<br/><small>(' . $company->reg_number . ')</small>';
+        }
+        
+    $from_entity .= '<br/>' . $company->address1 . '';
+    $from_entity .= '<br/>' . $company->address2 . '';
+    
+        if($company->postcode) {
+            $from_entity .= '<br/>' . $company->postcode . ', ';
+        } else {
+            $from_entity .= '<br/>'; 
+        }
+        if($company->country) {
+            $from_entity .= '' . $company->country . '';
+        }        
+        if($company->telephone) {
+            $from_entity .= '<br/>' . t('Tel') . ':' . $company->telephone . ', ';
+        } else {
+            $from_entity .= '<br/>'; 
+        }
+        if($company->fax) {
+            $from_entity .= '' . t('Fax') . ':' . $company->fax . '';
+        }    
+        if($company->contact) {
+        $from_entity .= '<br/>' . t('Contact') . ': ' . $company->contact . '';
+        }
+
+    //Entity to
+    $to_entity = '<b><h2>' . $company_to->name . '</h2></b>';
+    
+        if($company->reg_number) {
+            $to_entity .= '<br/><small>(' . $company_to->reg_number . ')</small>';
+        }
+        
+    $to_entity .= '<br/>' . $company_to->address1 . '';
+    $to_entity .= '<br/>' . $company_to->address2 . '';
+    
+        if($company_to->postcode) {
+            $to_entity .= '<br/>' . $company_to->postcode . ', ';
+        } else {
+            $to_entity .= '<br/>'; 
+        }
+        if($company_to->country) {
+            $to_entity .= '' . $company_to->country . '';
+        }        
+        if($company_to->telephone) {
+            $to_entity .= '<br/>' . t('Tel') . ':' . $company_to->telephone . ', ';
+        } else {
+            $to_entity .= '<br/>'; 
+        }
+        if($company_to->fax) {
+            $to_entity .= '' . t('Fax') . ':' . $company_to->fax . '';
+        }         
+        if($company_to->contact) {
+            $to_entity .= '<br/>' . t('Contact') . ': ' . $company_to->contact . '';
+        }        
+        
+        //TITLE
+
+
+    $document .= '<page>
+        
+                    <page_header>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td class="c100 center"><h2 class="blue">' . strtoupper($title) . '</h2></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table>
+                            <tr>
+                                <td class="c50 left"><h2>' . t('From') . '</h2></td>
+                                <td class="c50 left"><h2>' . t('To') . '</h2></td>
+                                
+                            </tr>
+                            <tr>
+                                <td class="c50 left">' . $from_entity . '</td>
+                                <td class="c50 left">' . $to_entity . '</td>
+                                
+                            </tr>
+                        </table>
+                    </page_header>';
+ 
+
+//DOCUMENT ref
+$paid = '';
+if ($head->status > 1) {
+    $paid =  t('paid') ;
+}
+
+$document .= '<page_reference>
+                        <table>
+                            <tr>
+                                <td class="c30 left">' . t("Document ref") . ':</td>
+                                <td class="c30 left">' . $head->serial . '</td>
+                                <td class="c40 center"></td>
+
+                            </tr>
+                            <tr>
+                                <td class="c30 left"></td>
+                                <td class="c30 left">' . $head->mission . '</td>
+                                <td class="c40 center"></td>
+                            </tr>
+                            <tr>
+                                <td class="c30 left">' . t("Project reference") . ':</td>
+                                <td class="c30 left">' . $client->name . '</td>
+                                <td class="c40 left"><h1 class="red"><strong>' . strtoupper($paid) . '</strong></h1></td>
+                            </tr>
+                            <tr>
+                                <td class="c30 left"></td>
+                                <td class="c30 left">' . $head->pcode . '</td>
+                                <td class="c40 center"></td>
+                            </tr>
+                            <tr>
+                                <td class="c30 left">' . t('Document created on') . ':</td>
+                                <td class="c40 left">' . $head->date . '</td>
+                                <td class="c40 center"></td>
+                            </tr>  
+                        </table>
+                    </page_reference>';
+
+
+
+$document .= '<page_stamp>
+                        <table>
+                            <tr>
+                                <td class="c10 left"></td>
+                                <td class="c50 left"></td>
+                                <td class="c40 center">' . $copy . $original .'</td>
+                            </tr>
+                        </table>
+                    </page_stamp>';
+
+//OPEN comments
+
+$document .= '<page_comments>
+                        <table>
+                            <tr>
+                                <td class="c10 left"></td>
+                                <td class="c90 left">' . nl2br($head->comment) . '</td>
+
+                            </tr>
+                        </table>
+                    </page_comments>';
+
+//ITEMS
+
+$list = '';
+$grandtotal = 0;
+$subtotal = 0;
+$i = 1;
+$j = 1;
+
+while ($l = $lines->fetchObject()) {
+
+    $grandtotal = $grandtotal + $l->amount;
+    
+    $list .= '<tr>';
+    $list .= '<td class="c20 left">' . $l->aid . ' ' . $l->aname . '</td>';
+    $list .= '<td class="c40 left">' . $l->description . '</td>';
+    $list .= '<td class="c20 right">' . number_format($l->amount, 2) . '</td>';
+    $list .= '<td class="c10 left">' . $head->currency . '</td>';
+    $list .= '<td class="c10 center">' . $l->receipt . '</td></tr>';
+    
+}
+
+
+$document .= '<page_items>
+                        <table>
+                            <tr>
+                                <th class="c20 center">' . t('Category') . '</th>
+                                <th class="c40 center">' . t('Description') . '</th>
+                                <th class="c20 center">' . t('Amount') . '</th>
+                                <th class="c10 center">' . t('Currency') . " " . $head->currency .  '</th>
+                                <th class="c10 center">' . t('Receipt') . '</th>
+                            </tr>
+                           ' . $list . '
+                        </table>
+                    </page_items>';
+
+
+
+//TOTAL
+$document .= '<page_total>
+                        <table>
+                            <tr>
+                                <td class="c20 left"><b>' . t('Total') . ':</b></td>
+                                <td class="c40 center"></td>
+                                <td class="c20 right"><b>' . number_format($grandtotal, 2) . '</b></td>
+                                <td class="c10 left">' . $head->currency . ' </td>
+                                <td class="c10 right"></td>
+                            </tr>';
+
+
+
+$document .= '</table></page_total>';
+            
+
+
+//SIGNATURE
+$sign = '';
+if ($signature == "1") {
+    if(isset($company->sign)) {  
+        $path = $company->sign;
+        if(file_exists($path)) {
+           $sign = "<IMG src='". file_create_url($path) ."'/>";
+        }
+    }       
+}
+$document .= '<page_signature>
+                <table>
+                    <tr>
+                        <td class="c10 left"></td>
+                        <td class="c60 left">'. $sign .'</td>
+                        <td class="c30 left">'. $receipt .'</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>______________________________<td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>'. t("Authorized signatory") .'<td>
+                        <td></td>
+                    </tr>
+                </table>
+                </page_signature>';
+$document .= '<hr>';
+
+//ATTACHMENTS
+$files = '<ul>';
+
+while ($d = $documents->fetchObject()) {
+    
+    if (file_exists($d->uri)) {
+        $parts = explode('/', $d->uri);
+        $parts = array_reverse($parts);
+        
+        $files .= "<li><a target='_blank' href='". file_create_url($d->uri) ."'>" . $parts[0] . "</a></li>";
+    }
+}
+$files .= '</ul>';
+$document .= '<h2>' . t('Attachments') . ':</h2>' . $files;
+
+$document .= '</page></page_wrapper>';

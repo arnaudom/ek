@@ -1,0 +1,125 @@
+<section class="filter">
+
+{{ items.filter_trial }}
+
+</section>
+
+{{ items.excel|raw }}
+
+
+<section class="journal">
+
+      <table style='text-align: left; width: 95%;' id='table1' class='' >
+      
+        <thead class=''>
+            <tr class='' style='font-weight: bold;'>
+              <th >{{ 'Account'|t }}</th>
+              <th class='font82'>
+                <div style='display:block;' class='cursor'  onclick=\"jQuery('.base').toggle();jQuery('#desc-bar').toggleClass('closed');jQuery('#desc-bar').toggleClass('opened');\">
+                <div id='desc-bar' class='opened' ></div><div style='display:inline;'>{{ items.data.baseCurrency }}</div>
+                </div>
+              </th>
+              <th align=center>{{ 'Debit'|t }}</th>
+              <th align=center>{{ 'Credit'|t }}</th>
+              <th align=center>{{ 'Net'|t }}</th>
+              <th align=center>{{ 'Year to date Debit'|t }}</th>
+              <th align=center>{{ 'Year to date Credit'|t }}</th>
+                     
+              </tr></thead>
+         <tbody class=''>
+
+          {#total#}
+              <tr class='journal-total ' >
+                  <td colspan='2'>{{ 'TOTAL balance'|t }}</td>
+                  <td class='right cellborder'>{{ items.data.total.transaction_debit | number_format(2) }}</td>
+                  <td class='right cellborder'>{{ items.data.total.transaction_credit | number_format(2) }}</td>
+                  <td class='right cellborder {% if  items.data.total.error1 == "1"  %} red {% endif %}'>{{ items.data.total.total_net | number_format(2) }}</td>
+                  <td class='right cellborder {% if  items.data.total.error2 == "1"  %} red {% endif %}'>{{ items.data.total.transaction_ytd_debit | number_format(2) }}</td>
+                  <td class='right cellborder {% if  items.data.total.error2 == "1"  %} red {% endif %}'>{{ items.data.total.transaction_ytd_credit | number_format(2) }}</td>
+                  
+                  </tr>
+
+                  <tr class='journal-total'>
+                  <td colspan='2'>{{ 'TOTAL balance'|t }} {{ items.data.baseCurrency }}</td>
+                  <td class='right cellborder'>{{ items.data.total.transaction_debit_base | number_format(2) }}</td>
+                  <td class='right cellborder'>{{ items.data.total.transaction_credit_base | number_format(2) }}</td>
+                  <td class='right cellborder {% if  items.data.total.error1 == "1"  %} red {% endif %}'>{{ items.data.total.total_net_base | number_format(2) }}</td>
+                  <td class='right cellborder {% if  items.data.total.error2 == "1"  %} red {% endif %}'>{{ items.data.total.transaction_ytd_debit_base | number_format(2) }}</td>
+                  <td class='right cellborder {% if  items.data.total.error2 == "1"  %} red {% endif %}'>{{ items.data.total.transaction_ytd_credit_base | number_format(2) }}</td>
+                  
+                  </tr>
+                 
+          {% if  items.data.total.error1 == "1"  %}
+
+                  <tr class=''>
+                  <td colspan='2'>{{ 'Discrpancy'|t }}</td>
+                  <td class='right red'>{{ (items.data.total.transaction_debit - items.data.total.transaction_credit) | number_format(2) }}</td>
+                  <td></td>
+                  <td></td>
+                  <td class='right red'>{{ (items.data.total.transaction_debit_base - items.data.total.transaction_credit_base) | number_format(2) }}</td>
+                  <td></td>
+                  </tr>
+   
+          {% endif %}   
+                   
+          {# loop rows per account #}
+          {% for key,row in items.data.transactions %}
+          
+              <tr class='{% if row.active == 0 %}red{% else %} {% endif %}'>
+                  <td  class='' colspan='2' ><b>{{ row.aid|raw }} - {{ row.aname }}</b></td>
+                  <td class='right'>{{ row.transaction_debit.0 | number_format(2) }}</td>
+                  <td class='right'>{{ row.transaction_credit.0 | number_format(2) }}</td>
+                  <td class='right'>{{ (row.transaction_credit.0-row.transaction_debit.0) | number_format(2) }}</td>
+                  <td class='right'>{{ row.transaction_ytd_debit.0 | number_format(2) }}</td>
+                  <td class='right'>{{ row.transaction_ytd_credit.0 | number_format(2) }}</td>
+                  
+              </tr>
+              <tr class='journal-exchange {% if row.active == 0 %}red{% else %} {% endif %}'>
+                  <td colspan='2'><span>{{ 'Exchange'|t }}</span> {{ items.data.baseCurrency }}</td>
+                  <td class='right'>{{ row.transaction_debit.1 | number_format(2) }}</td>
+                  <td class='right'>{{ row.transaction_credit.1 | number_format(2) }}</td>
+                  <td class='right'>{{ (row.transaction_credit.1-row.transaction_debit.1) | number_format(2) }}</td>
+                  <td class='right'>{{ row.transaction_ytd_debit.1 | number_format(2) }}</td>
+                  <td class='right'>{{ row.transaction_ytd_credit.1 | number_format(2) }}</td>
+                  
+               </tr>  
+                  
+          {% endfor %}
+          
+          {#total#}
+              <tr class='journal-total ' >
+                  <td colspan='2'>{{ 'TOTAL balance'|t }}</td>
+                  <td class='right cellborder'>{{ items.data.total.transaction_debit | number_format(2) }}</td>
+                  <td class='right cellborder'>{{ items.data.total.transaction_credit | number_format(2) }}</td>
+                  <td class='right cellborder {% if  items.data.total.error1 == "1"  %} red {% endif %}'>{{ items.data.total.total_net | number_format(2) }}</td>
+                  <td class='right cellborder {% if  items.data.total.error2 == "1"  %} red {% endif %}'>{{ items.data.total.transaction_ytd_debit | number_format(2) }}</td>
+                  <td class='right cellborder {% if  items.data.total.error2 == "1"  %} red {% endif %}'>{{ items.data.total.transaction_ytd_credit | number_format(2) }}</td>
+                  
+                  </tr>
+
+                  <tr class='journal-total'>
+                  <td colspan='2'>{{ 'TOTAL balance'|t }} {{ items.data.baseCurrency }}</td>
+                  <td class='right cellborder'>{{ items.data.total.transaction_debit_base | number_format(2) }}</td>
+                  <td class='right cellborder'>{{ items.data.total.transaction_credit_base | number_format(2) }}</td>
+                  <td class='right cellborder {% if  items.data.total.error1 == "1"  %} red {% endif %}'>{{ items.data.total.total_net_base | number_format(2) }}</td>
+                  <td class='right cellborder {% if  items.data.total.error2 == "1"  %} red {% endif %}'>{{ items.data.total.transaction_ytd_debit_base | number_format(2) }}</td>
+                  <td class='right cellborder {% if  items.data.total.error2 == "1"  %} red {% endif %}'>{{ items.data.total.transaction_ytd_credit_base | number_format(2) }}</td>
+                  
+                  </tr>
+                 
+          {% if  items.data.total.error1 == "1"  %}
+
+                  <tr class=''>
+                  <td colspan='2'>{{ 'Discrpancy'|t }}</td>
+                  <td class='right red'>{{ (items.data.total.transaction_debit - items.data.total.transaction_credit) | number_format(2) }}</td>
+                  <td></td>
+                  <td></td>
+                  <td class='right red'>{{ (items.data.total.transaction_debit_base - items.data.total.transaction_credit_base) | number_format(2) }}</td>
+                  <td></td>
+                  </tr>
+   
+          {% endif %}          
+         </tbody>
+         </table>
+
+</section>

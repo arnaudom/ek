@@ -1,0 +1,15 @@
+view_assets:
+  title: 'View assets'
+  description: 'Allows user to list and view assets.'  
+  
+edit_assets:
+  title: 'Edit assets'
+  description: 'Allows user to create and edit assets.' 
+  
+delete_assets:
+  title: 'Delete assets'
+  description: 'Allows user to delete assets.'
+  
+amortize_assets:
+  title: 'Manage assets amortization'
+  description: 'Allows user to set and control amortization schedule.' 

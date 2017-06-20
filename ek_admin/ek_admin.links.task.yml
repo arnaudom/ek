@@ -1,0 +1,29 @@
+ek_admin.company.list:
+  route_name: ek_admin.company.list
+  base_route: ek_admin.company.list
+  title: Companies list
+  weight: 1
+  
+ek_admin.company.new:
+  route_name: ek_admin.company.new
+  base_route: ek_admin.company.list
+  title: New company
+  weight: 2
+  
+ek_admin.company.tab:
+  route_name: ek_admin.access.company
+  base_route: ek_admin.access.company
+  title: Companies access
+  weight: 1
+  
+ek_admin.country.tab:
+  route_name: ek_admin.access.country
+  base_route: ek_admin.access.company
+  title: Countries access
+  weight: 2
+
+ek_admin.useraccess.tab:
+  route_name: ek_admin.access.byuser
+  base_route: ek_admin.access.company
+  title: Access by user
+  weight: 3

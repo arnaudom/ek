@@ -1,0 +1,631 @@
+ek_finance_install:
+  path: '/ek_finance/install'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\InstallController::install'
+  requirements:
+    _permission: 'access administration pages'
+
+ek_finance_majour:
+  path: '/ek_finance/migrate'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\InstallController::migrate'
+  requirements:
+    _permission: 'access administration pages'
+
+ek_finance.admin.settings:
+  path: '/finance/admin/settings'
+  defaults:
+    _title: 'Settings'
+    _controller: '\Drupal\ek_finance\Controller\SettingsController::settings'
+  requirements:
+    _permission: 'administrate_finance' 
+    
+ek_finance.main:
+  path: '/finance'
+  defaults:
+    _title: 'Finance dashboad'
+    _controller: '\Drupal\ek_finance\Controller\FinanceController::dashboard'
+  requirements:
+    _permission: 'finance_dashboard'
+
+ek_finance_modal:
+  path: 'finance/modal/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\FinanceController::modal'
+  requirements:
+    _permission: 'view_finance_balances'
+    
+ek_finance.admin.charts_accounts:
+  path: '/finance/admin/accounts-chart'
+  defaults:
+    _title: 'Chart of accounts'
+    _controller: '\Drupal\ek_finance\Controller\AccountsChartController::chartaccounts'
+  requirements:
+    _permission: 'administrate_finance'
+    
+ek_finance.admin.charts_accounts_download:
+  path: '/finance/admin/accounts-chart-download/{coid}'
+  defaults:
+    _title: 'Chart of accounts'
+    _controller: '\Drupal\ek_finance\Controller\AccountsChartController::pdf'
+  requirements:
+    _permission: 'administrate_finance'
+    coid: \d*
+    
+ek_finance.admin.modal_charts_accounts:
+  path: '/finance/admin/modal/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\AccountsChartController::modal'
+  requirements:
+    _permission: 'administrate_finance'  
+
+    
+ek_finance.admin.new_year:
+  path: '/finance/admin/new-year'
+  defaults:
+    _title: 'New year'
+    _controller: '\Drupal\ek_finance\Controller\YearNewController::newyear'
+  requirements:
+    _permission: 'post_new_year'
+
+ek_finance.extract.general_journal:
+  path: '/finance/general-journal'
+  defaults:
+    _title: 'Journal'
+    _controller: '\Drupal\ek_finance\Controller\JournalController::journal'
+  requirements:
+    _permission: 'view_finance_balances'
+
+ek_finance.aid_history:
+  path: '/finance/account-history/{param}'
+  defaults:
+    _title: 'Account history'
+    _controller: '\Drupal\ek_finance\Controller\JournalController::history'
+  requirements:
+    _permission: 'view_finance_balances'
+    
+ek_finance.extract.ledger_balance:
+  path: '/finance/ledger-balance'
+  defaults:
+    _title: 'Ledger balance'
+    _controller: '\Drupal\ek_finance\Controller\BalanceLedgerController::ledgerbalance'
+  requirements:
+    _permission: 'view_finance_balances'
+    
+ek_finance.cashflow_statement:
+  path: '/finance/cashflow_statement'
+  defaults:
+    _title: 'Cash flow analysis'
+    _controller: '\Drupal\ek_finance\Controller\ReportController::cashflow'
+  requirements:
+    _permission: 'view_finance_balances'
+   
+ek_finance.extract.cashflow_statement:
+  path: '/finance/cashflow_statement/excel/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\ReportController::excelcashflow'
+  requirements:
+    _permission: 'view_finance_balances'
+    
+ek_finance.extract.trial_balance:
+  path: '/finance/trial-balance'
+  defaults:
+    _title: 'Trial balance'
+    _controller: '\Drupal\ek_finance\Controller\BalanceTrialController::trialbalance'
+  requirements:
+    _permission: 'view_finance_balances'
+
+ek_finance.extract.excel-journal:
+  path: '/finance/general-journal/excel/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\JournalController::exceljournal'
+  requirements:
+    _permission: 'view_finance_balances'
+    
+ek_finance.extract.excel-ledger:
+  path: '/finance/ledger-balance/excel/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\BalanceLedgerController::excelledger'
+  requirements:
+    _permission: 'view_finance_balances'
+
+ek_finance.extract.excel-trial:
+  path: '/finance/trial-balance/excel/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\BalanceTrialController::exceltrial'
+  requirements:
+    _permission: 'view_finance_balances'
+  
+# management reporting
+ek_finance_reporting:
+  path: '/finance/reporting'
+  defaults:
+    _title: 'Monthly reporting'
+    _controller: '\Drupal\ek_finance\Controller\ReportController::reporting'
+  requirements:
+    _permission: 'view_finance_reporting'
+    
+ek_finance_reporting_excel:
+  path: '/finance/reporting-excel/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\ReportController::excelreporting'
+  requirements:
+    _permission: 'view_finance_reporting'
+
+ek_finance_budgeting:
+  path: '/finance/budgeting'
+  defaults:
+    _title: 'Monthly budget'
+    _controller: '\Drupal\ek_finance\Controller\ReportController::budgeting'
+  requirements:
+    _permission: 'view_finance_reporting'
+
+ek_finance_budgeting_update:
+  path: '/finance/budgeting/update'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\ReportController::updatebudget'
+  requirements:
+    _permission: 'update_finance_budget'
+
+ek_finance_budgeting_excel:
+  path: '/finance/budgeting-excel/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\ReportController::excelbudgeting'
+  requirements:
+    _permission: 'view_finance_reporting'
+
+ek_finance.invoice.ledger:
+  path: '/finance/sales-ledger/invoice'
+  defaults:
+    _title: 'Sales ledger'      
+    _controller: '\Drupal\ek_finance\Controller\BalanceLedgerController::sales'
+  requirements:
+    _permission: 'view_finance_sales_ledger'
+
+
+ek_finance.purchase.ledger:
+  path: '/finance/sales-ledger/purchase'
+  defaults:
+    _title: 'Purchases ledger'      
+    _controller: '\Drupal\ek_finance\Controller\BalanceLedgerController::sales'
+  requirements:
+    _permission: 'view_finance_sales_ledger'
+    
+#accounts reports       
+ek_finance.extract.profit_loss:
+  path: '/finance/report/profit-loss'
+  defaults:
+    _title: 'Profit & Loss'
+    _controller: '\Drupal\ek_finance\Controller\ReportController::profitloss'
+  requirements:
+    _permission: 'view_finance_balances' 
+
+ek_finance_extract.profit_loss_pdf:
+  path: '/finance/report/profit-loss/pdf/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\ReportController::pdfprofitloss'
+  requirements:
+    _permission: 'view_finance_balances'
+    
+ek_finance.extract.balance_sheet:
+  path: '/finance/report/balance-sheet'
+  defaults:
+    _title: 'Balance Sheet'
+    _controller: '\Drupal\ek_finance\Controller\ReportController::balancesheet'
+  requirements:
+    _permission: 'view_finance_balances' 
+    
+ek_finance_extract.balance_sheet_pdf:
+  path: '/finance/report/balance-sheet/pdf/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\ReportController::pdfbalancesheet'
+  requirements:
+    _permission: 'view_finance_balances'
+
+ek_finance.manage.reconciliation:
+  path: '/finance/reconciliation'
+  defaults:
+    _title: 'Reconciliation'
+    _controller: '\Drupal\ek_finance\Controller\ReconciliationController::reconciliation'
+  requirements:
+    _permission: 'reconcile'  
+    
+ek_finance.manage.reconciliation_reports:
+  path: '/finance/reconciliation-reports'
+  defaults:
+    _title: 'Reconciliation reports'
+    _controller: '\Drupal\ek_finance\Controller\ReconciliationController::reportsreconciliation'
+  requirements:
+    _permission: 'reconcile'   
+
+ek_finance_reconciliation.pdf:
+  path: '/finance/reconciliation-report/3/{id}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\ReconciliationController::pdfreconciliation'
+  requirements:
+    _permission: 'reconcile'
+    id: \d* 
+
+ek_finance_reconciliation_excel:
+  path: '/finance/reconciliation-excel/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\ReconciliationController::excelreco'
+  requirements:
+    _permission: 'reconcile'
+    
+ek_finance.manage.journal_entry:
+  path: '/finance/journal-entry'
+  defaults:
+    _title: 'Journal entry'
+    _controller: '\Drupal\ek_finance\Controller\JournalEntryController::entryjournal'
+  requirements:
+    _permission: 'edit_journal'
+    
+ek_finance.manage.journal_edit:
+  path: '/finance/journal-edit/{id}'
+  defaults:
+    _title: 'Journal entry edit'
+    _controller: '\Drupal\ek_finance\Controller\JournalEntryController::editjournal'
+  requirements:
+    _permission: 'edit_journal'
+    id: \d*
+    
+#Expenses---------------------------------------------------  
+ek_finance.manage.record_expense:
+  path: '/finance/expenses/{id}'
+  defaults:
+    _title: 'Record expenses'
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::recordexpenses'
+    id: NULL
+  requirements:
+    _permission: 'manage_expenses'    
+    
+ek_finance.manage.list_expense:
+  path: '/finance/expenses-list'
+  defaults:
+    _title: 'List expenses'
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::listexpenses'
+  requirements:
+    _permission: 'manage_expenses'      
+
+ek_finance.manage.list_raw_expense:
+  path: '/finance/expenses-list-raw'
+  defaults:
+    _title: 'List expenses'
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::listexpensesraw'
+  requirements:
+    _permission: 'manage_expenses'
+    
+ek_finance.manage.excel_expense:
+  path: '/finance/expenses-excel/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::excelexpenses'
+  requirements:
+    _permission: 'manage_expenses'
+
+ek_finance.manage.modal_expense:
+  path: '/finance/expenses-list/modal/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::modal'
+  requirements:
+    _permission: 'manage_expenses'  
+   
+ek_finance.manage.edit_expense:
+  path: '/finance/expenses-edit/{id}'
+  defaults:
+    _title: 'Edit expenses'
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::editexpenses'
+  requirements:
+    _permission: 'edit_expenses'  
+    id: \d*  
+
+ek_finance.manage.clone_expense:
+  path: '/finance/expenses-clone/{id}'
+  defaults:
+    _title: 'Record expenses'
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::cloneexpenses'
+  requirements:
+    _permission: 'manage_expenses'  
+    id: \d* 
+        
+ek_finance.manage.delete_expense:
+  path: '/finance/expenses-delete/{id}'
+  defaults:
+    _title: 'Delete expense'
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::deleteexpenses'
+  requirements:
+    _permission: 'delete_expenses'  
+    id: \d*
+
+ 
+#cash-bank---------------------------------------------- 
+ek_finance.currencies:
+  path: '/finance/currencies'
+  defaults:
+    _title: 'Currencies'
+    _controller: '\Drupal\ek_finance\Controller\CashController::currencies'
+  requirements:
+    _permission: 'manage_currency'
+       
+ek_finance.manage.cash_balance:
+  path: '/finance/cash-balance'
+  defaults:
+    _title: 'Cash balance'
+    _controller: '\Drupal\ek_finance\Controller\CashController::cashbalance'
+  requirements:
+    _permission: 'edit_cash'    
+
+ek_finance.extract.excel-cash:
+  path: '/finance/cash-excel/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\CashController::excelcash'
+  requirements:
+    _permission: 'edit_cash'
+    
+ek_finance.manage.cash_manage:
+  path: '/finance/cash-manage'
+  defaults:
+    _title: 'Manage cash'
+    _controller: '\Drupal\ek_finance\Controller\CashController::cashmanage'
+  requirements:
+    _permission: 'edit_cash'     
+
+ek_finance.manage.bank_statement:
+  path: '/finance/bank-statement-balance/{id}'
+  defaults:
+    _title: 'Bank statements'
+    _controller: '\Drupal\ek_finance\Controller\BankController::statement'
+  requirements:
+    _permission: 'bank_statements'
+    id: \d*
+
+ek_finance.manage.bank_list:
+  path: '/finance/bank-list'
+  defaults:
+    _title: 'Banks references'
+    _controller: '\Drupal\ek_finance\Controller\BankController::banklist'
+  requirements:
+    _permission: 'list_bank' 
+
+ek_finance.manage.bank_label:
+  path: '/finance/bank-label/{type}/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\BankController::banklabel'
+  requirements:
+    _permission: 'list_bank' 
+    type: \d*      
+
+ek_finance.manage.bank_accounts_list:
+  path: '/finance/bank-accounts-list'
+  defaults:
+    _title: 'Banks references'
+    _controller: '\Drupal\ek_finance\Controller\BankController::bankaccountslist'
+  requirements:
+    _permission: 'list_bank' 
+
+ek_finance.manage.bank_accounts_label:
+  path: '/finance/bank-accounts-label/{type}/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\BankController::bankaccountslabel'
+  requirements:
+    _permission: 'list_bank' 
+    type: \d* 
+    
+           
+ek_finance.manage.bank_manage:
+  path: '/finance/bank-manage/{id}'
+  defaults:
+    _title: 'Manage bank references'
+    _controller: '\Drupal\ek_finance\Controller\BankController::bank'
+    id: NULL
+  requirements:
+    _permission: 'edit_bank' 
+    
+ek_finance.manage.bank_accounts_manage:
+  path: '/finance/bank-account-manage/{id}'
+  defaults:
+    _title: 'Manage bank accounts'
+    _controller: '\Drupal\ek_finance\Controller\BankController::bankaccount'
+    id: NULL
+  requirements:
+    _permission: 'edit_bank'
+
+ek_finance.manage.bank_delete:
+  path: '/finance/bank-delete/{id}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\BankController::deletebank'
+  requirements:
+    _permission: 'delete_bank' 
+    id: \d*    
+
+ek_finance.manage.bank_account_delete:
+  path: '/finance/bank-account-delete/{id}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\BankController::deletebankaccount'
+  requirements:
+    _permission: 'delete_bank' 
+    id: \d*   
+    
+           
+#memos
+ek_finance_manage_internal_memo:
+  path: '/finance/internal-memo/{id}'
+  defaults:
+    _title: 'Edit internal memo'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::createinternalmemo'
+    id: NULL
+  requirements:
+    _permission: 'edit_internal_memos'    
+
+ek_finance_memo_transactions:
+  path: '/finance/internal-memo-transactions/{id}'
+  defaults:
+    _title: 'Internal transactions'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::transactions'
+    id: NULL
+  requirements:
+    _permission: 'edit_internal_memos'  
+    
+ek_finance_manage_personal_memo:
+  path: '/finance/claim-memo/{id}'
+  defaults:
+    _title: 'Edit personal claim'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::createpersonalmemo'
+    id: NULL
+  requirements:
+    _permission: 'edit_claim_memos' 
+    
+       
+ek_finance_manage_list_memo_internal:
+  path: '/finance/list-memo/internal'
+  defaults:
+    _title: 'List expenses memos'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::listmemoInternal'
+  requirements:
+    _permission: 'list_memos' 
+
+ek_finance_manage_list_memo_personal:
+  path: '/finance/list-memo/personal'
+  defaults:
+    _title: 'List claim memos'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::listmemoPersonal'
+  requirements:
+    _permission: 'list_memos'
+     
+   
+ek_finance_manage_pay_memo:
+  path: '/finance_memo/pay/{id}'
+  defaults:
+    _title: 'Pay a memo'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::paymemo'
+  requirements:
+    _permission: 'pay_memos'  
+    id: \d*
+
+ek_finance_manage_receive_memo:
+  path: '/finance_memo/receive/{id}'
+  defaults:
+    _title: 'Receive memo payment'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::receivememo'
+  requirements:
+    _permission: 'receive_memos'    
+    id: \d*
+
+ek_finance_manage_print_memo:
+  path: '/finance_memo/print/{id}'
+  defaults:
+    _title: 'Print memo'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::printmemo'
+  requirements:
+    _permission: 'print_memos'    
+    id: \d*
+    
+ek_finance_manage_print_memo_range:
+  path: '/finance_memo/print_range/{category}'
+  defaults:
+    _title: 'Print memo range'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::printmemorange'
+  requirements:
+    _permission: 'print_memos'    
+    category: internal|personal
+
+ek_finance_manage_print_memo_pdf:
+  path: '/finance/memo/print/pdf/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::printmemopdf'
+  requirements:
+    _permission: 'print_memos'    
+
+ek_finance_manage_print_html:
+  path: '/finance/memo/html/{id}'
+  defaults:
+    _title: 'View'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::Html'
+  requirements:
+    _permission: 'print_memos'
+    id: \d*   
+       
+ek_finance_manage_delete_memo:
+  path: '/finance/memo/delete/{id}'
+  defaults:
+    _title: 'Delete memo'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::deletememo'
+  requirements:
+    _permission: 'delete_memos'    
+    id: \d*    
+       
+ek_finance_manage_memo_attach:
+  path: '/finance/memo/attach/{id}'
+  defaults:
+    _title: 'Attach file to memo'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::attachmemo'
+  requirements:
+    _permission: 'attach_file_memos'    
+    id: \d* 
+    
+ek_finance_manage_modal_memo:
+  path: '/finance/memo/modal/{id}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::modal'
+  requirements:
+    _permission: 'list_memos'
+    id: \d*
+    
+#voucher---------------------------------------------
+ek_finance_voucher.pdf:
+  path: '/finance/voucher/{type}/{id}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::pdfvoucher'
+  requirements:
+    _permission: 'manage_expenses'
+    type: 1|2 #1 = expense, 2 = cash 
+    id: \d* 
+    
+     
+ek_finance_payroll.record:   
+  path: '/finance/record-payroll/{param}'
+  defaults:
+    _title: 'Record payroll'
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::payrollrecord'
+  requirements:
+    _permission: 'hr_payroll_post'   
+
+#tax---------------------------------------------
+ek_finance_tax:
+  path: '/finance/tax-report'
+  defaults:
+    _title: 'Taxes report'
+    _controller: '\Drupal\ek_finance\Controller\TaxController::report'
+  requirements:
+    _permission: 'manage_expenses'
+
+ek_finance_tax_excel:
+  path: '/finance/tax-report-excel/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\TaxController::exceltax'
+  requirements:
+    _permission: 'manage_expenses'    
+      
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

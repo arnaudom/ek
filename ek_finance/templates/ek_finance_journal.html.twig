@@ -1,0 +1,107 @@
+<section class="filter">
+
+{{ items.filter_journal }}
+
+</section>
+
+{{ items.excel|raw }}
+<br/>
+<section class="journal">
+{% for key, item in items.data %}
+      <div class="panel panel-default">
+        
+        <div class="panel-heading"><a href='#-{{ key }}'  onclick="jQuery('#-{{ key }}').toggle('fast');">
+          <h4 class="panel-title">{{ key|capitalize }}</h4></a>
+          
+        </div>
+        
+        <div class="panel-body" style='display:none;' id="-{{ key }}">
+
+          <table>
+            <header>
+              <tr>
+                <th colspan='2' >{% trans %} Entry {% endtrans %}</th>
+                <th colspan='2' >{% trans %} Account {% endtrans %}</th>
+                <th>{% trans %} Debit {% endtrans %}</th>
+                <th>{% trans %} Credit {% endtrans %}</th>
+              </tr>
+            </header>
+
+            <tbody>
+            
+              {% for rows in item %}
+                
+                   <tr><td colspan='6' class='journal-reference'>{{ rows.reference }} - {{ rows.reference_detail }}</td></tr>
+                   
+                <tr><td colspan='6' >{{ rows.date }}</td></tr>
+                
+                {% for transaction in rows.transactions %}
+                
+                  {% if transaction.type == 'debit' %}
+                 
+                    <tr class="{% if transaction.exchange == 1 %}journal-exchange{% else %} {% endif %}">
+                        <td>
+                        {% if key == 'general' or key == 'payment' %}
+                            <a href='journal-edit/{{ transaction.id }}'>{{ 'edit'|t }}</a>
+                         {% elseif key == 'expense' %}
+                            <a href='expenses-edit/{{ rows.reference }}'>{{ 'edit'|t }}
+                         {% endif %}   
+                        </td>
+                      <td>{{ transaction.id }} - {{ transaction.count }}</td>
+                      <td>{{ transaction.aname|raw }}</td>
+                      
+                        {% if transaction.exchange == 1 %}
+                          <td>{% trans %} exchange {% endtrans %}</td>
+                        {% else %}
+                          <td></td>
+                        {% endif %}
+                      <td class='right'>{{ transaction.value | number_format(2) }}</td>  
+                      <td></td>
+                    </tr>
+                  {% else %}
+                   
+                    <tr class="{% if transaction.exchange == 1 %}journal-exchange{% else %} {% endif %}">
+                      <td></td>
+                      <td>{{ transaction.id }} - {{ transaction.count }}</td>
+                      <td>{{ transaction.aname|raw }}</td>
+                      
+                        {% if transaction.exchange == 1 %}
+                          <td>{% trans %} exchange {% endtrans %}</td>
+                        {% else %}
+                          <td></td>
+                        {% endif %}
+                      <td></td>  
+                      <td class='right'>{{ transaction.value | number_format(2) }}</td>
+                    </tr>                  
+                  
+                  {% endif %}
+                
+                {% endfor %} {#transaction in rows.transactions#}
+             
+              {#total#}
+              {% if rows.basecurrency != rows.currency %}
+              <tr class='journal-total-exchange'>
+                <td colspan='4'>{% trans %} Total  {% endtrans %} {{ rows.currency }}</td>
+                <td class='right'>{{ rows.total_debit  | number_format(2)}}</td>
+                <td class='right'>{{ rows.total_credit | number_format(2)}}</td>
+              </tr>
+              {% endif %}
+              <tr class=''>
+                <td colspan='4'>{% trans %} Total  {% endtrans %} {{ rows.basecurrency }}</td>
+                <td class='right journal-total'>{{ (rows.total_debit + rows.total_debit_base) | number_format(2) }}</td>
+                <td class='right journal-total'>{{ (rows.total_credit + rows.total_credit_base) | number_format(2) }}</td>
+              </tr>  
+              </tbody>  
+              
+              
+            
+            
+            
+                
+              {% endfor %} {#rows in item#}
+          </table>
+        </div>
+      </div>
+      <hr>
+{% endfor %}
+</section>

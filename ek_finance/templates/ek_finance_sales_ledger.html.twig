@@ -1,0 +1,166 @@
+<section class="filter">
+
+    {{ items.form }}
+
+</section>
+{% if items.excel %}
+    {{ items.excel|raw }}
+{% endif %}
+<a href='#'><div class='toggle_exchange' style='float:right'>[-]</div></a>
+
+<section class="journal">
+ <pre>{#dump(rows)#}</pre>   
+    {# loop 1 table by account id displayed #}
+    {% for rows in items.data %}
+
+            {% set ledger = rows.journal.ledger.0 %}
+
+            <table style='text-align: left; width: 90%;' id='' class='' >
+                <thead class=''>
+                    <tr class='' style='font-weight: bold;'>
+                        <td style="width: 10%;">
+                            <div>
+                                <div id='' class='' ></div>
+                                <div style='display:inline;'>{{ rows.journal.baseCurrency }}</div>
+                            </div>
+                        </td>
+                        <th style="width: 15%;">{{ 'Entry'|t }}</th>
+                        <th align=center  style="width: 34%;">{{ 'Description'|t }}</th>
+                        <th></th>
+                        <th style="width: 18%;" align=center>{{ 'Debit'|t }}</th>
+                        <th style="width: 18%;" align=center>{{ 'Credit'|t }}</th>
+                        <th style="width: 5%;" title="{{ 'reconciled'|t }}">{{ 'Status'|t }}</th>
+                    </tr>
+                </thead>
+                {# account description #}
+                <tbody>
+                    <tr class=''>
+                        <td colspan='7'><b><a href="{{  path('ek_address_book.view', {'id': rows.client_id }) }}">{{ rows.client_name }}</a></b></td>  
+
+                    </tr>
+                    <tr class=''>
+                        <td colspan='7'>
+                            <span id=''>{{ 'opening'|t }} </span>
+                            {{ ledger.line.total.balance_open | number_format(2) }}
+                            ( {{ ledger.line.total.balance_open_base | number_format(2) }} {{ items.data.baseCurrency }} )
+                        </td>
+                    </tr>
+
+                    {# loop rows of journal entry per account #}
+                    {% for key,row in ledger.line %}
+
+
+                        {% if  key != "total"  %} 
+
+                            <tr class="{% if row.exchange == 1 %}journal-exchange{% else %} {% endif %}">
+                                <td>{{ row.date }}</td>
+                                <td>{{ row.id  }} - {{ row.count  }}</td>
+                                <td>
+                                    <span title='{{ row.comment }}'>{{ row.aid }}</span> 
+                                    {% if  row.source == "invoice" and row.exchange != 1 %} 
+                                        <a class='' title='{{ row.source }}' href="{{  path('ek_sales.invoices.print_html', {'id': row.reference }) }}">{{ row.aname }}</a>
+                                    {% elseif  row.source == "purchase" and row.exchange != 1  %} 
+                                        <a class='' title='{{ row.source }}' href="{{  path('ek_sales.purchases.print_html', {'id': row.reference }) }}">{{ row.aname }}</a>
+                                    {% else %}
+                                        {{ row.aname }}
+                                    {% endif %}
+
+                                </td>
+                                {% if row.exchange == 1 %}
+                                    {% set flag_exchange = 1 %}
+                                    <td  class=''>{{ 'exchange'|t }}</td>
+                                {% else %} <td class='' >{{ row.currency }}</td>
+                                {% endif %}
+
+                                {#align values on left or right column based on Dt/Ct#}
+                                {% if row.type == "debit" %}
+                                    <td  class='right'>{{  row.value| number_format(2)  }}</td><td></td>
+
+                                {% else %}
+                                    <td  ></td><td class='right'>{{  row.value| number_format(2)  }}</td>
+                                    {% endif %}
+                                    {#indicate reconciliation status#}                      
+                                    {% if row.reconcile == "1" %}  
+                                    <td  class='center'>{{ 'Y' }}</td>
+
+                                {% else %}
+                                    <td class='center'>{{ 'N' }}</td>
+                                {% endif %}                      
+                            </tr> 
+
+                        {% elseif key == 'total' %}                
+                            {#total#}
+                            <tr class=''>
+                                <td colspan='4'>
+                                    <span id=''>{{ 'Total period'|t }}</span>
+                                </td>
+                                <td class='journal-total right' >{{  row.sum_debit | number_format(2) }}</td>
+                                <td class='journal-total right'>{{  row.sum_credit | number_format(2) }}</td><td></td>
+                            </tr>
+
+                            {% if flag_exchange == 1 %}
+                                <tr class=''>
+                                    <td colspan='4'>
+                                        <span id=''>{% trans %} Total {% endtrans %} </span>
+                                        {{ items.data.baseCurrency }}
+                                    </td>
+                                    <td class='right'>
+                                        {{  (row.sum_debit+row.sum_debit_exchange) | number_format(2) }}
+                                    </td>
+                                    <td class='right'>
+                                        {{  (row.sum_credit+row.sum_credit_exchange) | number_format(2) }}
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            {% endif %}
+
+
+                            {% if row.account == "-" %}
+                                {#debtor account#}
+
+                                <tr class='journal-closing'>
+                                    <td colspan='4'><span id=''>{{ 'Closing'|t }}</span></td>
+                                    <td  class='right journal-total'>{{  row.closing | number_format(2) }}</td><td ></td> <td></td>
+                                </tr>
+
+                                {% if flag_exchange == 1 %}
+                                    <tr class='journal-closing'>
+                                        <td colspan='4'><span id=''>{{ 'Closing'|t }}</span> {{ items.data.baseCurrency }} </td>
+                                        <td  class='right journal-total'>{{  row.closing_exchange | number_format(2) }}</td><td ></td> <td></td>
+                                    </tr>
+                                {% endif %}
+
+                            {% else %}
+                                {#creditor account#}
+
+                                <tr class='journal-closing'>
+                                    <td colspan='4'><span id=''>{{ 'Closing'|t }}</span></td>
+                                    <td ></td>
+                                    <td class='right journal-total'>{{  row.closing | number_format(2) }}</td> <td></td>
+                                </tr>
+
+                                {% if flag_exchange == 1 %}
+                                    <tr class='journal-closing'>
+                                        <td colspan='4'><span id=''> {{ 'Closing'|t }}</span> {{ items.data.baseCurrency }} </td>
+                                        <td ></td><td  class='right journal-total'>{{  row.closing_exchange | number_format(2) }}</td> <td></td>
+                                    </tr>             
+                                {% endif %}
+
+
+                            {% endif %}             
+
+
+                        {% endif %}{#total#}
+
+
+                    {% endfor %} {#line in lines#}              
+
+
+
+
+                </tbody>
+            </table>
+        
+    {% endfor %} {#rows#}            
+
+</section>

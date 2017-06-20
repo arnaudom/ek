@@ -1,0 +1,212 @@
+ek_admin_install:
+  path: '/ek_admin/install'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\InstallController::install'
+  requirements:
+    _permission: 'access administration pages'
+
+ek_admin_majour:
+  path: '/ek_admin/migrate'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\InstallController::migrate'
+  requirements:
+    _permission: 'access administration pages'
+
+ek_admin_merge:
+  path: '/ek_admin/merge'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\InstallController::merge'
+  requirements:
+    _permission: 'access administration pages'
+    
+ek_admin_ex_database:
+  path: '/ek_admin/install-external-database'
+  defaults:
+    _form: '\Drupal\ek_admin\Form\SiteSettingsForm'
+  requirements:
+    _permission: 'administrate'
+
+ek_admin_backup_database:
+  path: '/ek_admin/backup/{coid}'
+  defaults:
+    _form: '\Drupal\ek_admin\Form\BackupCoid'
+  requirements:
+    _permission: 'administrate'
+    coid: \d*
+    
+ek_admin_cron_tasks:
+  path: '/cron/task/{key}'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::run_task_cron'
+  requirements:
+    _access: 'TRUE'
+    
+ek_admin_cron_backup:
+  path: '/cron/backup/{key}'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::run_backup_cron'
+  requirements:
+    _access: 'TRUE'
+    
+ek_admin.main:
+  path: '/ek_admin'
+  defaults:
+    #_title: 'Administration'
+    _controller: '\Drupal\ek_admin\Controller\AdminController::Admin'
+  requirements:
+    #_access: 'TRUE'
+    _permission: 'administrate'
+
+ek_admin.settings:
+  path: '/ek_admin/settings'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::AdminSettings'
+  requirements:
+    #_access: 'TRUE'
+    _permission: 'access administration pages'
+    
+    
+ek_admin.default:
+  path: '/ek'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::isDefault'
+  requirements:
+    _access: 'TRUE'
+    
+ek_admin.company.list:
+  path: '/ek_admin/company'
+  defaults:
+    _title: 'Manage companies'
+    _controller: '\Drupal\ek_admin\Controller\AdminController::ListCompany'
+  requirements:
+    _permission: 'company_list'
+
+ek_admin.company.docs:
+  path: '/ek_admin/company_documents/{id}'
+  defaults:
+    _title: 'Manage companies documents'
+    _controller: '\Drupal\ek_admin\Controller\AdminController::CompanyDocuments'
+  requirements:
+    _permission: 'company_documents'
+    id: \d*
+
+ek_admin_documents_load:
+  path: 'ek_admin/load_documents'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::load'
+  requirements:
+    _permission: 'company_documents'
+
+ek_admin_modal:
+  path: 'ek_admin/documents/modal/{param}'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::modal'
+  requirements:
+    _permission: 'company_documents'
+    
+ek_admin_delete_file:
+  path: 'ek_admin/delete_file/{id}'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::deletefile'
+  requirements:
+    _permission: 'company_documents'
+    id: \d*
+        
+ek_admin.company.new:
+  path: '/ek_admin/company/new/0'
+  defaults:
+    _title: 'Manage companies'
+    _controller: '\Drupal\ek_admin\Controller\AdminController::AdminCompanyNew'
+  requirements:
+    _permission: 'administrate'
+    
+ek_admin.company.edit:
+  path: '/ek_admin/company/edit/{id}'
+  defaults:
+    _title: 'Manage companies'
+    _controller: '\Drupal\ek_admin\Controller\AdminController::AdminCompanyEdit'
+  requirements:
+    _permission: 'administrate'
+    id: \d*
+
+ek_admin.company_settings.edit:
+  path: '/ek_admin/company/edit-settings/{id}'
+  defaults:
+    _title: 'Manage companies settings'
+    _controller: '\Drupal\ek_admin\Controller\AdminController::AdminCompanyEditSettings'
+  requirements:
+    _permission: 'administrate_finance'
+    id: \d*
+    
+    
+ek_admin.built_csn_ajax:
+  path: '/built_csn_ajax'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::ajaxcsnbuilt'
+  requirements:
+    _permission: 'administrate'
+    
+ek_admin_company.pdf:
+  path: '/company_pdf/{id}'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::pdfcompany'
+  requirements:
+    _permission: 'company_extract'
+    id: \d*
+    
+ek_admin_company.excel:
+  path: '/company_list_excel'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::excelcompany'
+  requirements:
+    _permission: 'company_extract'
+    
+    
+ek_admin.country.list:
+  path: '/ek_admin/country'
+  defaults:
+    _title: 'Manage countries'
+    _controller: '\Drupal\ek_admin\Controller\AdminController::AdminCountry'
+  requirements:
+    _permission: 'administrate'
+
+    
+ek_admin.access:
+  path: '/ek_admin/access'
+  defaults:
+    _title: 'Manage access'
+    _controller: '\Drupal\ek_admin\Controller\AdminController::Access'
+  requirements:
+    _permission: 'administrate'
+
+ek_admin.access.company:
+  path: '/ek_admin/access_company'
+  defaults:
+    _title: 'Edit company access'
+    _controller: '\Drupal\ek_admin\Controller\AdminController::AccessCompany'
+  requirements:
+    _permission: 'administrate'
+    
+ek_admin.access.country:
+  path: '/ek_admin/access_country'
+  defaults:
+    _title: 'Edit country access'
+    _controller: '\Drupal\ek_admin\Controller\AdminController::AccessCountry'
+  requirements:
+    _permission: 'administrate'
+
+ek_admin.access.byuser:
+  path: '/ek_admin/access_user'
+  defaults:
+    _title: 'View access by user'
+    _controller: '\Drupal\ek_admin\Controller\AdminController::AccessByUser'
+  requirements:
+    _permission: 'administrate'
+    
+ek_admin.user_autocomplete:
+  path: '/ek_admin/user/autocomplete'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::userAutocomplete'
+  requirements:
+    _permission: 'access_user_autocomplete'
+    

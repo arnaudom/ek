@@ -1,0 +1,13 @@
+ek_intelligence_css:
+  version: VERSION
+  css:
+    theme:
+      css/ek_intelligence.css: {}
+
+ek_intelligence.datepicker:
+  version: VERSION
+  js:
+    js/ek_intelligence_date.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.ui.datepicker

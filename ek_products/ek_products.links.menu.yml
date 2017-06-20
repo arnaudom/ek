@@ -1,0 +1,9 @@
+ek_products.menu:
+  title: Products and services
+  description: 'Manage products and services'
+  route_name: ek_products.search
+  expanded: true
+  hidden: 0
+  weight: 2    
+
+

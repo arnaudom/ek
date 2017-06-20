@@ -1,0 +1,13 @@
+ek_projects_menu:
+  title: 'Project management'
+  description: 'View and edit projects'
+  route_name: 'ek_projects_main'
+  expanded: true
+  weight: 12
+  
+ek_projects_settings:
+  title: 'Settings'
+  description: 'Settings'
+  route_name: ek_projects.settings.users
+  parent: ek_projects_menu
+  weight: 4

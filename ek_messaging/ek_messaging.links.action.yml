@@ -1,0 +1,7 @@
+ek_messaging_action_send:
+  route_name: ek_messaging_send
+  title: 'new message'
+  appears_on:
+    - ek_messaging_inbox
+    - ek_messaging_outbox
+    - ek_messaging_archives

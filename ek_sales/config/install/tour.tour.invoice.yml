@@ -1,0 +1,248 @@
+# This file defines the tour for our example page. There should be one tour
+# file for each tour that you create. These tour files should be placed in a
+# module's 'config' folder and named using the pattern
+# 'tour.tour.{tour-id}.yml'.
+#
+# Each tour file has two parts: 1) The tour properties, and 2) the tip
+# definitions.
+#
+#
+# TOUR PROPERTIES
+#
+# The tour properties define information that applies to the tour as a whole.
+# Properties that you can define for your tours include the following:
+#
+#   id:         Each tour should have a unique ID. This id is used in the
+#               filename and appears as an ID in the HTML.
+#   module:     The machine name of the module containing your tour.
+#   label:      A human readable name for the tour.
+#   status:     A boolean, defining whether the tour is enabled.
+#   langcode:   A two-letter language code defining the language of your tour.
+#   routes:     An array of routes for which the tour is active. Specify these
+#               as an array with route_name and optional route_params (also an
+#               array). Route names are found in each module's routing.yml file.
+#
+#
+# TIP DEFINITIONS
+#
+# Here, you define each tip that you want to appear in your tour. Each of
+# the tips have properties that must be defined, including the following:
+#
+#   id:         Each tip needs a unique ID. This appears as an ID in the HTML.
+#   plugin:     The Tour API uses plugins for defining different types of
+#               tips. The 'text' plugin (for making text tooltips) is provided
+#               in core, but developers can define additional plugins for tips
+#               containing images, video, or other interactions.
+#   label:      The lable for the tip. This will be rendered in an h3 element.
+#   body:       The body of the tip. HTML markup is allowed.
+#   weight:     Tips within a tour are ordered by weight, beginning with the
+#               lowest number. Negative values are acceptable.
+#   location:   Defines the location of the tip, relative to its target.
+#               Acceptable values include: top, bottom, left, & right. If the
+#               location is not defined, the default value (bottom) will be
+#               used.
+#   attributes: Attributes provdied to the tip for various purposes. Use the
+#               following attributes to control the placement of the tip:
+#
+#                 data-id:      Places this tip on the DOM element containing
+#                               this ID.
+#                 data-class:   Places this tip on the DOM element containing
+#                               this class.
+#
+#               If you omit both the .data-id and .data-class, the tip will be
+#               shown as modal instead of being targeted to an element.
+#
+id: ek_sales.invoice_create
+module: ek_sales
+label: 'Create invoice tour'
+langcode: en
+routes:
+  - route_name: ek_sales.invoices.create
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Create or Edit invoice guide'
+    body: 'This is an guided tour to create and edit an invoice.'
+    weight: 1
+  first-item:
+    id: first-item
+    plugin: text
+    label: 'Invoice header'
+    body: 'You must first select an header for you invoice. Header is defined by a company name. You can select any company to which you have access to. Selecting a company will in turn define other parameters like available bank accounts or credit accounts.'
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: edit-head
+  second-item:
+    id: second-item
+    plugin: text
+    label: 'Allocation'
+    body: 'In a multi companies configuration type, you can allocate the invoice to a different company of the group. This is used when a company invoice on behalf of another and you want to keep track of internal transactions or generate reports per business unit.'
+    weight: 3
+    location: top
+    attributes:
+      data-id: edit-allocation
+  third-item:
+    id: third-item
+    plugin: text
+    label: 'Client'
+    body: 'Select a client in the list. Clients are managed by the address book module.'
+    weight: 4
+    location: bottom
+    attributes:
+      data-id: edit-client
+  fourth-item:
+    id: fourth-item
+    plugin: text
+    label: 'Date'
+    body: 'The date of issueing. By default, current date is set. A calendar is automatically opened when clicking on the date.'
+    weight: 5
+    location: left
+    attributes:
+      data-id: edit-from
+
+  item4:
+    id: item4
+    plugin: text
+    label: 'Title'
+    body: 'The title that will appear on the invoice print-out'
+    weight: 6
+    attributes:
+      data-id: edit-title
+
+  item5:
+    id: item5
+    plugin: text
+    label: 'Case reference'
+    body: 'If project management module is available, the invoice can be referred to a specific project to be selected from list. The document will then be displayed in the project page.'
+    weight: 7
+    attributes:
+      data-id: edit-pcode
+      
+  item6:
+    id: item6
+    plugin: text
+    label: 'Currency'
+    body: 'The currency to be used for invoice. If finance module is available, the currency can only be selected among active currencies. To manage currencies, go to finance module. The exchange rate is calculated from the base currency settings (see next). '
+    weight: 8
+    attributes:
+      data-id: edit-currency
+      
+  item7:
+    id: item7
+    plugin: text
+    label: 'Exchange rate'
+    body: 'If base currency is selected, the exchange rate must be 1. Otherwise, the rate is pulled from the managed currencies table. However, when creating the invoice the rate can be amended manually. The rate should be the actual rate of the current invoice date for best accounting processing.'
+    weight: 9
+    attributes:
+      data-id: edit-fx-rate
+      
+  item8:
+    id: item8
+    plugin: text
+    label: 'Account payment'
+    body: 'If finance module is available, the bank reference for payment can be selected. It will be used in the invoice print-out. To manage bank accounts, go to finance module'
+    weight: 10
+    attributes:
+      data-id: edit-bank-account
+      
+  item9:
+    id: item9
+    plugin: text
+    label: 'Sales tax'
+    body: 'Sales tax is optional. You can define any label for tax and input the tax percentage as required. For example, to compute a sales tax of 10%, input "10" in the percent field. Each subsequent item invoiced can be assigned the tax or removed from tax calculation.'
+    weight: 11
+    attributes:
+      data-id: edit-tax
+      
+  item10:
+    id: item10
+    plugin: text
+    label: 'Terms'
+    body: 'Terms can simply set by days. Invoice payable on receipt do not need any days. If invoice is payable for example after 30 days from date issued, select "due days" and input "30" in the next box. The system will calculate and display the calendar date for reference.'
+    weight: 12
+    attributes:
+      data-id: edit-terms
+
+  item11:
+    id: item11
+    plugin: text
+    label: 'Comments'
+    body: 'Comments can be any text used for internal reference or to be used in the invoice print-out.'
+    weight: 13
+    attributes:
+      data-id: edit-comment
+      
+  item12:
+    id: item12
+    plugin: text
+    label: 'Add item'
+    body: 'To add items to the invoice, click the "add item" button. Each click will generate a line to input an item to be invoiced.'
+    weight: 14
+    attributes:
+      data-id: edit-add
+      
+  item13:
+    id: item13
+    plugin: text
+    label: 'Item description'
+    body: 'You can type any description for your product or service, or select a description generated by autocomplete entry. Autocomplete items are available only if the products module is available.'
+    weight: 15
+    attributes:
+      data-id: tour-item1
+
+  item14:
+    id: item14
+    plugin: text
+    label: 'Item Account'
+    body: 'If finance module is available, the credited account can be selected for each item invoiced.'
+    weight: 16
+    attributes:
+      data-id: tour-item2
+
+  item15:
+    id: item15
+    plugin: text
+    label: 'Item units'
+    body: 'Input the number of unit invoiced by item'
+    weight: 17
+    attributes:
+      data-id: tour-item3
+      
+  item16:
+    id: item16
+    plugin: text
+    label: 'Item unit value'
+    body: 'Input the value of 1 unit'
+    weight: 18
+    attributes:
+      data-id: tour-item4
+      
+  item17:
+    id: item17
+    plugin: text
+    label: 'Delete'
+    body: 'In edit mode, the delete box will delete the item line upon recording the document if it is selected for a specific item.'
+    weight: 19
+    attributes:
+      data-id: tour-item5
+      
+  item18:
+    id: item18
+    plugin: text
+    label: 'Tax'
+    body: 'If tax percentage is not null, the tax box is used to include or exclude item form total tax computation.'
+    weight: 20
+    attributes:
+      data-id: tour-item6
+      
+  item19:
+    id: item19
+    plugin: text
+    label: 'Line total'
+    body: 'The line total is calculted based on the number of unit(s) x the unit value for each item. Tax value is calculated separately.'
+    weight: 21
+    location: left
+    attributes:
+      data-id: tour-item7

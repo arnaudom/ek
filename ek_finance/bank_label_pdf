@@ -1,0 +1,68 @@
+<?php
+
+
+$pdf=new FPDF();
+$pdf->SetTitle($fileName);
+$pdf->AliasNbPages();
+$pdf->AddPage('P','A4');
+$pdf->SetMargins(10,10);
+
+
+$pdf->SetDrawColor(128, 128, 128);     
+
+//DISPLAY DATA simple
+
+//left right corners
+    $pdf->Cell(5,3,"","LT",0);
+    $pdf->Cell(100,3,"",0,0); 
+    $pdf->Cell(5,3,"","RT",1);
+    
+$pdf->SetFont('Arial','',8);   
+    
+    $pdf->Cell(5,5,"",0,0);    
+    $pdf->Cell(100,5, $bank->name ,0,0);
+    $pdf->Cell(5,5,"",0,1);    
+    
+    $pdf->Cell(9,5,"",0,0);    
+    $pdf->Cell(100,5, $bank->address1 ,0,0);
+    $pdf->Cell(1,5,"",0,1);   
+    
+    $pdf->Cell(9,5,"",0,0);    
+    $pdf->Cell(100,5, $bank->address2,0,0);
+    $pdf->Cell(1,5,"",0,1); 
+    
+    $pdf->Cell(9,5,"",0,0);       
+    $pdf->Cell(100,5, $bank->postcode . ' ' .  $bank->country ,0,0);         
+    $pdf->Cell(1,5,"",0,1);   
+         
+    $pdf->ln(2);  
+
+    $pdf->Cell(9,5,"",0,0);       
+    $pdf->Cell(100,5, t('contact') . ': ' . $bank->contact ,0,0);         
+    $pdf->Cell(1,5,"",0,1);  
+
+    $pdf->Cell(9,5,"",0,0);       
+    $pdf->Cell(100,5, t('email') . ': ' . $bank->email ,0,0);         
+    $pdf->Cell(1,5,"",0,1);
+    
+if ($line["telephone"] || $line["fax"]) {
+$pdf->SetFont('Arial','',7);
+    $pdf->Cell(9,3,"",0,0);       
+    $pdf->Cell(100,3,t("tel.") . " " . $bank->telephone . t('fax.') . ' ' . $bank->fax,0,0); 
+    $pdf->Cell(1,3,"",0,1);
+$pdf->SetFont('Arial','',8);  
+}
+
+    $pdf->Cell(9,5,"",0,0);       
+    $pdf->Cell(100,5, t('swift') . ': ' . $bank->swift ,0,0);         
+    $pdf->Cell(1,5,"",0,1);    
+    
+//left right corners
+    $pdf->Cell(5,3,"","LB",0);
+    $pdf->Cell(100,3,"",0,0); 
+    $pdf->Cell(5,3,"","RB",1);
+
+
+
+
+

@@ -1,0 +1,33 @@
+ek_messaging:
+  version: VERSION
+  js:
+    js/updater.js: {}
+  css:
+    theme:
+      css/ek_messaging.css: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.ui.autocomplete
+      
+ek_messaging_css:
+  version: VERSION
+  css:
+    theme:
+      css/ek_messaging.css: {}
+
+ek_messaging.datepicker:
+  version: VERSION
+  js:
+    js/ek_messaging_date.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.ui.datepicker
+    
+ek_messaging.dashboard:
+  version: VERSION
+  css:
+    theme:
+      css/ek_messaging_dashboard.css: {}
+  dependencies:
+    - core/jquery
+

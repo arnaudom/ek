@@ -1,0 +1,37 @@
+uuid: f1a46f1b-b68c-42d3-b900-b2a15792bdb1
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_sales
+    - system
+    - user
+  theme:
+    - bartik
+id: saleshistorychartblock
+theme: bartik
+region: content
+weight: -9
+provider: null
+plugin: sales_history_charts_block
+settings:
+  id: sales_history_charts_block
+  label: 'Sales history chart block'
+  provider: ek_sales
+  label_display: '0'
+  cache:
+    max_age: 0
+    contexts: {  }
+visibility:
+  request_path:
+    id: request_path
+    pages: /sales_management
+    negate: false
+    context_mapping: {  }
+  user_role:
+    id: user_role
+    roles:
+      authenticated: authenticated
+    negate: false
+    context_mapping:
+      user: '@user.current_user_context:current_user'

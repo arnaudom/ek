@@ -1,0 +1,72 @@
+{#
+/**
+ * @file
+ * Theme implementation of cross transactions 
+ *
+ * This template is used to display summary of internal
+ * transactions between companies
+ *
+ * Available variables:
+ *   - baseCurrency : system base currency
+ *   - companies : array list of all companies (id => name)
+ *   - company_access : array list of all companies a user has access to (id => name)
+ *   - sum : array of total transactions between companies (key => value)
+ *       key structure "coid1-coid2" where coid 1 or 2 are id of companies
+ *   - due : array of total amount due between companies (key => value)
+ *       key structure "coid1-coid2" where coid 1 or 2 are id of companies *
+ */
+#}
+
+{{ form }}
+<br/>
+<section class="">
+
+<table class='table'>
+    <thead>
+        <tr>
+            <th>{{ baseCurrency }}</th>
+
+  
+  {% for col,name in companies %}
+            <td >
+                <div class='verticalText'>{{ name }}</div>
+            </td>
+  {% endfor %}  
+        </tr>
+    </thead>
+    <tbody class=''>    
+  {% for row,name in company_access %}
+    
+        <tr>
+            <td title='{{ 'detail transactions'|t }}'>
+                <a href='internal-memo-transactions/{{ row }}'><h3>{{ name }}</h3></a>
+            </td>
+            
+            {% for cell,hname in companies %}
+                {% if row != cell %}
+                    
+                    {% set k = '_' ~ cell ~ '-' ~ row %}
+                    
+                    <td class='amount' onmouseover='jQuery(this).toggleClass("cash-total");' onmouseout='jQuery(this).toggleClass("cash-total");'>
+
+                       <span title='{{ 'open status memo to'|t }} {{ hname }}'> B: </span>{{ due[k] |number_format(2) }}
+                        <br/>
+                       <span title='{{ 'total for the period'|t }}'> T: </span>{{ sum[k] | number_format(2) }}
+
+                    </td>
+                
+                {% else %}    
+                    <td> - </td>
+                {% endif %}
+                
+            {% endfor %}
+
+    
+    
+        </tr> 
+ {% endfor %} 
+  
+
+    </tbody></table>
+
+</section>

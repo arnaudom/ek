@@ -1,0 +1,12 @@
+view_address_book:
+  title: 'View address book'
+  description: 'Allows user to view adress book data.'  
+edit_address_book:
+  title: 'Edit address book'
+  description: 'Allows user to edit adress book data.'    
+delete_address_book:
+  title: 'Delete address book'
+  description: 'Allows user to delete adress book entry.'  
+admin_address_book:
+  title: 'Address book Administration'
+  description: 'Export and import data into address book' 

@@ -1,0 +1,76 @@
+<?php
+/**
+* @file
+* Contains \Drupal\ek\Controller\EkController.
+*/
+namespace Drupal\ek_finance\Controller;
+use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Form\FormBuilderInterface;
+use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Database\Database;
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
+use Drupal\ek_admin\CompanySettings;
+
+/**
+* Controller routines for ek module routes.
+*/
+class YearNewController extends ControllerBase {
+
+/**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandler
+   */
+  protected $moduleHandler;
+  /**
+   * The form builder service.
+   *
+   * @var \Drupal\Core\Form\FormBuilderInterface
+   */
+  protected $formBuilder;
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('form_builder'),
+      $container->get('module_handler')
+    );
+  }
+
+  /**
+   * Constructs a  object.
+   *
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   The form builder service.
+   */
+  public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    $this->formBuilder = $form_builder;
+    $this->moduleHandler = $module_handler;    
+  }
+
+/**
+   *  
+   *
+*/
+  public function newyear(Request $request) {
+  
+   $build['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\PostNewYear');
+   
+   return $build;
+  }
+
+
+
+
+
+
+
+
+
+} //class

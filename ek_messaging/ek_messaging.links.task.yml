@@ -1,0 +1,17 @@
+ek_messaging_task_inbox:
+  route_name: ek_messaging_inbox
+  base_route: ek_messaging_inbox
+  title: 'Inbox'
+  weight: 1
+  
+ek_messaging_task_outbox:
+  route_name: ek_messaging_outbox
+  base_route: ek_messaging_inbox
+  title: 'Outbox'
+  weight: 2
+  
+ek_messaging_task_archives:
+  route_name: ek_messaging_archives
+  base_route: ek_messaging_inbox
+  title: 'Archives'
+  weight: 3

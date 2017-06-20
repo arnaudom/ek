@@ -1,0 +1,42 @@
+ek_logistics_main:
+  title: 'Logistics'
+  description: 'Administrate logistics and stocks'
+  route_name: ek_logistics_main
+  expanded: true
+  hidden: 0
+  weight: 10
+    
+ek_logistics_receiving_list:
+  title: 'Stock receiving'
+  description: 'List of receiving documents, view and edit'
+  route_name: ek_logistics_list_receiving
+  parent: ek_logistics_main
+  weight: 1
+  
+ek_logistics_delivery_list:
+  title: 'Delivery orders'
+  description: 'List of delivery orders, view and edit'
+  route_name: ek_logistics_list_delivery
+  parent: ek_logistics_main
+  weight: 2
+  
+ek_logistics_returning_list:
+  title: 'Returning orders'
+  description: 'List of returning orders, view and edit'
+  route_name: ek_logistics_list_returning
+  parent: ek_logistics_main
+  weight: 3
+  
+ek_logistics_menu_stock:
+  title: 'Stock'
+  description: 'Stock list by item'
+  route_name: ek_logistics_list_stock
+  parent: ek_logistics_main
+  weight: 4
+  
+ek_logistics_menu_settings:
+  title: 'Settings'
+  description: 'Parameters'
+  route_name: ek_logistics_settings
+  parent: ek_logistics_main
+  weight: 5

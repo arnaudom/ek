@@ -1,0 +1,13 @@
+#loading {
+    display: none;
+}
+#calendar {
+    padding: 10px;
+}
+#calendar_block {
+    font-size: 0.7em;
+
+}
+.fc-header-title h2 {
+    color: #000 !important;
+}

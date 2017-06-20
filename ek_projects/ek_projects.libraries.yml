@@ -1,0 +1,107 @@
+ek_projects_css:
+  version: VERSION
+  css:
+    theme:
+      css/ek_projects.css: {}
+
+ek_projects.datepicker:
+  version: VERSION
+  js:
+    js/ek_projects_date.js: {weight: -20}
+  dependencies:
+    - core/jquery
+    - core/jquery.ui.datepicker
+    
+ek_projects_updater:
+  version: VERSION 
+  js:
+    js/periodic/jquery.periodic.js: {}
+    js/updater.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/drupal.ajax
+    #- core/drupal.dialog
+    #- core/backbone
+
+    
+ek_projects_view:
+  version: 1
+  css:
+    theme:
+      css/ek_projects.css: {}  
+  js:
+    js/ek_projects_view.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupal.form
+    - core/jquery.form
+    - core/drupalSettings
+    - core/drupal.ajax
+
+    
+ek_projects_autocomplete:
+  version: VERSION  
+  js:
+    js/autocomplete.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.ui.autocomplete
+
+ek_projects_multiselect:
+  version: VERSION
+  js:
+    js/multiselect/js/jquery.multi-select.js: {}
+    js/multiselect.js: {}
+  css:
+    theme:
+      js/multiselect/css/multi-select.css: {}
+  dependencies:
+    - core/jquery
+    
+ek_projects.dashboard:
+  version: VERSION
+  css:
+    theme:
+      css/ek_projects_dashboard.css: {}
+  dependencies:
+    - core/jquery
+ 
+ek_projects.calendar:
+  version: VERSION
+  css:
+    theme:
+      css/ek_calendar.css: {} 
+      js/cal/fullcalendar/fullcalendar.css: {} 
+      js/jquery.qtip/jquery.qtip.css: {}
+  js:
+    js/cal/fullcalendar/lib/moment.min.js: {}
+    js/cal/fullcalendar/fullcalendar.js: {}
+    js/jquery.qtip/jquery.qtip.min.js: {}
+    
+    js/cal/calendar_script.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/drupal.ajax
+    - core/drupal.dialog
+    - core/jquery.ui.datepicker
+
+ek_projects_charts:
+  js:
+    js/ek_projects_charts.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.once
+    
+ek_projects_settings:
+  css:
+    theme:
+      css/ek_projects.css: {}
+  js:
+    js/ek_projects_settings.js: {}
+  dependencies:
+    - core/jquery    

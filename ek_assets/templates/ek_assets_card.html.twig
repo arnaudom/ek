@@ -1,0 +1,83 @@
+<section class="assets_card">
+
+  <div class="assets_card-data">
+      <div class="text-right"><a href="pdf/{{ items.id }}" target="_blank">{{ 'Print in Pdf'|t }}</a></div>
+      <table class=''>
+          <tr>
+              <td rowspan ='3' class="text-center">{{ items.qr_code|raw }}</td>
+              <td width="30%"><strong><h3>{{ 'ID'|t }}:</h3></strong></td>
+              <td><h3>{{ items.id }}</h3></td>
+              
+          </tr>
+          <tr>
+              <td><strong>{{ 'Registered under'|t }}:</strong></td>
+              <td>{{ items.company_name }}</td>
+              
+          </tr>
+          <tr>
+              <td><strong>{{ 'Asset name'|t }}:</strong></td>
+              <td>{{ items.asset_name }}</td>
+              
+          </tr>          
+          <tr>
+              <td><strong>{{ 'Asset brand'|t }}:</strong></td>
+              <td>{{ items.asset_brand }}</td>
+              <td rowspan ='3' class="text-center">{{ items.picture|raw}}</td>
+          </tr>
+          <tr>
+              <td><strong>{{ 'Asset reference'|t }}:</strong></td>
+              <td>{{ items.asset_reference }}</td>
+              
+          </tr>
+          <tr>
+              <td><strong>{{ 'Asset quantity'|t }}:</strong></td>
+              <td >{{ items.unit }}</td>
+              
+          </tr>          
+          <tr>
+              <td><strong>{{ 'Description'|t }}:</strong></td>
+              <td colspan=''>{{ items.asset_comment }}</td>
+              <td>{{ items.doc|raw }}</td>
+          </tr>
+
+          <tr>
+              <td><strong>{{ 'Asset category'|t }}:</strong></td>
+              <td colspan='2'>{{ items.aid }} {{ items.aname }}</td>
+          </tr>
+          <tr>
+              <td><strong>{{ 'Asset value'|t }}:</strong></td>
+              <td colspan='2'>{{ items.asset_value }} {{ items.currency }}</td>
+          </tr>
+          <tr>
+              <td><strong>{{ 'Purchase date'|t }}:</strong></td>
+              <td colspan='2'>{{ items.date_purchase }}</td>
+          </tr>
+           <tr>
+              <td><strong>{{ 'Amortization rate'|t }}:</strong></td>
+              <td colspan='2'>{{ items.amort_rate }}</td>
+          </tr>
+          <tr>
+              <td><strong>{{ 'Amortization value'|t }}:</strong></td>
+              <td colspan='2'>{{ items.amort_value }}</td>
+          </tr>
+          <tr>
+              <td><strong>{{ 'Amortization per year'|t }}:</strong></td>
+              <td colspan='2'>{{ items.amort_yearly }}</td>
+          </tr>
+          <tr>
+              <td><strong>{{ 'Amortization status'|t }}:</strong></td>
+              <td colspan='2'>{{ items.amort_status }}</td>
+          </tr>
+          {% if items.eid %}
+          <tr>
+              <td><strong>{{ 'Allocated'|t }}:</strong></td>
+              <td colspan='2'><a href="{{ items.eurl }}">{{ items.eid }} | {{ items.employee }}</a></td>
+          </tr>
+          {% endif %}
+      </table>
+    
+  </div>      
+          
+
+
+</section>

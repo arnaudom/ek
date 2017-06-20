@@ -1,0 +1,47 @@
+<?php
+
+use Drupal\Core\Database\Database;
+
+/**
+ * @file
+ * Install, update and uninstall functions for the ek_assets module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function ek_assets_uninstall() {
+  // Clear data out of the cache.
+  \Drupal::cache('data')->deleteAll();
+}
+
+/**
+ * Implements hook_schema().
+ * schema installation is not done at install time but wihin the application
+ * in a separate database
+ */
+
+
+
+
+/**
+ * Add HR link in assets table.
+ * 
+*/
+function ek_assets_update_8001() {
+    
+        $schema = Database::getConnection('external_db','external_db')->schema();
+        $spec = array(
+            'description' => 'HR link',
+            'type' => 'varchar',
+            'length' => 15,
+            'not null' => FALSE,
+            
+        );
+        $schema->addField('ek_assets', 'eid', $spec);
+ 
+        \Drupal::service('router.builder')->rebuild();
+
+        
+        return t('Assets table updated.');
+}

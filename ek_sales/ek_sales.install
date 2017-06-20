@@ -1,0 +1,55 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the ek_sales module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function ek_sales_uninstall() {
+  // Clear ek_messaging data out of the cache.
+  \Drupal::cache('data')->deleteAll();
+}
+
+
+/**
+ * Implements hook_schema().
+ * schema installation is not done at install time but wihin the application
+ * in a separate database
+ */
+
+
+/**
+ * Add new function for displaying invoice in browser and downloading
+ * in excel format
+ */
+function ek_sales_update_8001() {
+   \Drupal::service('router.builder')->rebuild(); 
+}
+
+/**
+ * Add new function for displaying purchases in browser and downloading
+ * in excel format
+ */
+function ek_sales_update_8002() {
+   \Drupal::service('router.builder')->rebuild(); 
+}
+
+
+/**
+ * Add new function for extracting purchases list
+ * in excel format
+ */
+function ek_sales_update_8003() {
+   \Drupal::service('router.builder')->rebuild(); 
+}
+
+/**
+ * Add aging report for invoices and purchases
+ * 
+ */
+function ek_sales_update_8004() {
+   \Drupal::service('router.builder')->rebuild(); 
+}
