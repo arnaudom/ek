@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\ek\Controller\EkController.
+ * Contains \Drupal\ek\Controller\ExpensesManageController
  */
 
 namespace Drupal\ek_finance\Controller;
@@ -82,9 +82,17 @@ class ExpensesManageController extends ControllerBase {
 
         return $build;
     }
+    
     /**
-     *  get the expenses data
-     *
+     * get the expenses data
+     * @param array $session_filter 
+     *  filter options defined in filter form
+     * @param string $sort
+     *  field to sort query result
+     * @param string $order
+     *  field to order query result
+     * @param array $setting
+     *  finance settings
      */
     private function pullExpensesData($session_filter = NULL, $sort = NULL, $order = NULL, $settings) {
         
@@ -989,15 +997,21 @@ class ExpensesManageController extends ControllerBase {
     }
 
     /**
-     * Return contact names in pdf file.
+     * Return expense voucher in pdf file.
+     * @param int $type
+     *  print type (1)
+     * @param int $id
+     *  expense id
      * 
      */
-    public function pdfvoucher(Request $request, $type, $id) {
+    public function pdfvoucher($type, $id) {
         $markup = array();
         include_once drupal_get_path('module', 'ek_finance') . '/pdf.inc';
         return $markup;
     }
 
+  
+    
     /*
      * Return  form to record expenses after payroll posting if hr module enabled
      */
