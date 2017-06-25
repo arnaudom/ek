@@ -14,3 +14,6 @@ There are various modules already written for Drupal 8 which are:
 - report drafting
 - finance (accounts, reporting, journal)
 
+Some user manuals can be view <a href="http://arrea-systems.com/ek_manuals" target="_blank">here</a>.
+
+An online demo is available <a href="http://ek.demo.arrea-systems.com/" target="_blank">here</a> with extended configuration and custom blocks.
