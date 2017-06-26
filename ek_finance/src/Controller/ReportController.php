@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\ek\Controller\EkController.
+ * Contains \Drupal\ek_finance\Controller\ReportController.
  */
 
 namespace Drupal\ek_finance\Controller;
@@ -17,7 +17,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_admin\CompanySettings;
-
 
 /**
  * Controller routines for ek module routes.
@@ -52,6 +51,8 @@ class ReportController extends ControllerBase {
      *
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
+     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+     *   The module handler service
      */
     public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->formBuilder = $form_builder;
@@ -60,7 +61,10 @@ class ReportController extends ControllerBase {
     }
 
     /**
-     *  Generate a monthly management report 
+     *  Generate a monthly management report filter by company and year
+     * 
+     * @return array
+     *  Render Html
      *
      */
     public function reporting(Request $request) {
@@ -70,7 +74,7 @@ class ReportController extends ControllerBase {
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
-        
+
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterReporting');
 
         if (isset($_SESSION['repfilter']['filter']) && $_SESSION['repfilter']['filter'] == 1) {
@@ -122,7 +126,12 @@ class ReportController extends ControllerBase {
     }
 
     /**
-     *  Generate a monthly management report in excel format
+     *  Generate a monthly management report in excel format 
+     *  filter by company and year
+     * 
+     * @return Object
+     *  PhpExcel object download
+     *  or markup if error
      *
      */
     public function excelreporting(Request $request, $param) {
@@ -137,6 +146,8 @@ class ReportController extends ControllerBase {
 
     /**
      *  Manage budget data
+     *  @return array
+     *      Render Html
      *
      */
     public function budgeting(Request $request) {
@@ -194,7 +205,9 @@ class ReportController extends ControllerBase {
 
     /**
      *  Callback function for budget editing
-     *  param = array (reference, value)    
+     *  param = array (reference, value)
+     * 
+     *  @return json response    
      *
      */
     public function updatebudget(Request $request) {
@@ -214,11 +227,17 @@ class ReportController extends ControllerBase {
     }
 
     /**
-     *  @return file Generate a monthly management report in excel format
+     *  file Generate a monthly management report in excel format
      *  @param array $param
+     *      serialized array
+     *      Keys: coid (int company id), year (string YYYY), baseCurrency (string code) 
+     *  @return Object
+     *      PhpExcel object download
+     *      or markup if error
+     *  
      */
     public function excelbudgeting($param) {
-        $markup = array();    
+        $markup = array();
         if (!class_exists('PHPExcel')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
@@ -232,7 +251,10 @@ class ReportController extends ControllerBase {
     }
 
     /**
-     *  
+     *  profit & loss report for current year and company
+     * 
+     * @return array
+     *  render Html
      *
      */
     public function profitloss(Request $request) {
@@ -291,6 +313,14 @@ class ReportController extends ControllerBase {
 
     /**
      *  Generate a PL report in pdf format
+     * 
+     * @param array
+     *  serialized array
+     *  Keys: coid (int company id), year (string YYY)
+     *  month (int), baseCurrency (string code)
+     *  summary (bool)
+     * @return Object
+     *  Fpdf object download
      *
      */
     public function pdfprofitloss(Request $request, $param) {
@@ -298,7 +328,7 @@ class ReportController extends ControllerBase {
         //base on document generated      
         $type = 4;
         $markup = array();
-        $params =  unserialize($param);
+        $params = unserialize($param);
         //The chart structure is as follow
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 
         // 'other_liabilities', 'other_income', 'other_expenses'
@@ -309,12 +339,13 @@ class ReportController extends ControllerBase {
 
         include_once drupal_get_path('module', 'ek_finance') . '/pdf.inc';
         return $markup;
-        
     }
 
     /**
-     *  Generate a balance sheet report
-     *
+     * Generate a balance sheet report
+     * 
+     * @return array
+     *  render Html
      */
     public function balancesheet(Request $request) {
 
@@ -371,8 +402,14 @@ class ReportController extends ControllerBase {
     }
 
     /**
-     *  Generate a BS report in pdf format
-     *
+     * Generate a BS report in pdf format
+     * @param array
+     *  serialized array
+     *  Keys: coid (int company id), year (string YYY)
+     *  month (int), baseCurrency (string code)
+     *  summary (bool)
+     * @return Object
+     *  Fpdf object download
      */
     public function pdfbalancesheet(Request $request, $param) {
 
@@ -380,7 +417,7 @@ class ReportController extends ControllerBase {
         //base on document generated
         $type = 5;
         $markup = array();
-        $params =  unserialize($param);
+        $params = unserialize($param);
         //The chart structure is as follow
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 
         // 'other_liabilities', 'other_income', 'other_expenses'
@@ -391,14 +428,16 @@ class ReportController extends ControllerBase {
         include_once drupal_get_path('module', 'ek_finance') . '/pdf.inc';
         return $markup;
     }
-    
 
     /**
      *  Generate a cash analysis report
+     * 
+     * @return array
+     *  render Html
      *
      */
     public function cashflow() {
-        
+
         $items = array();
         $amortization = NULL;
         //The chart structure is as follow
@@ -406,7 +445,7 @@ class ReportController extends ControllerBase {
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterCashflow');
-        if($this->moduleHandler->moduleExists('ek_assets')) {
+        if ($this->moduleHandler->moduleExists('ek_assets')) {
             $amortization = TRUE;
         }
 
@@ -429,7 +468,6 @@ class ReportController extends ControllerBase {
             $items['excel'] = array(
                 '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
             );
-
         }
 
 
@@ -440,15 +478,21 @@ class ReportController extends ControllerBase {
                 'library' => array('ek_finance/ek_finance.cashflow'),
             ),
         );
-        
     }
-    
+
     /**
-     *  @return file Generate aa cash analysis report in excel format
-     *  @param array $param
+     * Generate aa cash analysis report in excel format
+     * @param array $param
+     *   serialized array
+     *  Keys: coid (int company if), amortization (bool)
+     * 
+     * @return Object
+     *  PhpExcel object download
+     *  or markup if error 
+     *  
      */
     public function excelcashflow($param) {
-        $markup = array();    
+        $markup = array();
         if (!class_exists('PHPExcel')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
@@ -456,13 +500,10 @@ class ReportController extends ControllerBase {
             $settings = new FinanceSettings();
             $items['baseCurrency'] = $settings->get('baseCurrency');
             $extract = unserialize($param);
-            $coid = $extract['coid']; 
+            $coid = $extract['coid'];
             include_once drupal_get_path('module', 'ek_finance') . '/excel_cash_statement.inc';
         }
         return ['#markup' => $markup];
     }
 
-
 }
-
-//class

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\ek\Controller\EkController.
+ * Contains \Drupal\ek_finance\Controller\ReconciliationController.
  */
 
 namespace Drupal\ek_finance\Controller;
@@ -16,7 +16,6 @@ use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Drupal\ek_admin\src\Access\AccessCheck;
 use Drupal\ek_finance\Journal;
 
 /**
@@ -54,12 +53,14 @@ class ReconciliationController extends ControllerBase {
     }
 
     /**
-     * Constructs a  object.
+     * Constructs a ReconciliationController object.
      *
      * @param \Drupal\Core\Database\Connection $database
      *   A database connection.
      * @param \Drupal\Core\Form\FormBuilderInterface $data_builder
      *   The form builder service.
+     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+     *   The module handler service
      */
     public function __construct(Connection $database, FormBuilderInterface $data_builder, ModuleHandler $module_handler) {
         $this->database = $database;
@@ -68,7 +69,10 @@ class ReconciliationController extends ControllerBase {
     }
 
     /**
-     *  do reconciliation
+     *  do reconciliation betwee internal account and external data
+     * 
+     * @return array
+     *  Form
      *
      */
     public function reconciliation(Request $request) {
@@ -79,7 +83,10 @@ class ReconciliationController extends ControllerBase {
     }
 
     /**
-     *  display list of reports
+     *  display list of reconciliationreports
+     * 
+     * @return array
+     *  render Html
      *
      */
     public function reportsreconciliation(Request $request) {
@@ -111,7 +118,7 @@ class ReconciliationController extends ControllerBase {
                     'data' => $this->t('Attachment'),
                     'field' => 'aid',
                     'class' => array(RESPONSIVE_PRIORITY_LOW),
-                ),                
+                ),
             );
 
 
@@ -146,10 +153,9 @@ class ReconciliationController extends ControllerBase {
                     $attachment = 'upload';
                     $param = 'upload-' . $r->id . '-statement';
                     $modal_route = Url::fromRoute('ek_finance.manage.modal_expense', ['param' => $param])->toString();
-                    $attachment = t('<a href="@url" class="@c"  data-accepts=@a  >upload</a>', 
-                                array('@url' => $modal_route, '@c' => 'use-ajax red', '@a' => "application/vnd.drupal-modal",));
+                    $attachment = t('<a href="@url" class="@c"  data-accepts=@a  >upload</a>', array('@url' => $modal_route, '@c' => 'use-ajax red', '@a' => "application/vnd.drupal-modal",));
                 }
-                
+
                 $options[$r->id] = array(
                     'id' => ['data' => ['#markup' => $report]],
                     'company' => $company_name,
@@ -176,8 +182,14 @@ class ReconciliationController extends ControllerBase {
     }
 
     /**
-     *  @return file pdf report
-     *  @param id
+     * Extract reconciliation report in pdf format
+     * 
+     * @param int id
+     *      id of document record
+     * @return Object or markup
+     *      Fpdf object downaload
+     *      or markup if error
+     *  
      */
     public function pdfreconciliation(Request $request, $id) {
         $type = 3;
@@ -187,12 +199,18 @@ class ReconciliationController extends ControllerBase {
     }
 
     /**
-     *  @return file extract in excel format reconciliation table
-     *  @param array coid, account, date
+     * Extract in excel format reconciliation table
+     * @param array $param
+     *  serialized array
+     *  keys: coid, account, date
+     * @return Object
+     *  PhpExcel object download
+     *  or markup if error
+     * 
      */
     public function excelreco($param) {
-        
-        $markup = array();    
+
+        $markup = array();
         if (!class_exists('PHPExcel')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
@@ -202,100 +220,104 @@ class ReconciliationController extends ControllerBase {
             //extract needed data
             $data['date'] = $param['date'];
             $data['company'] = Database::getConnection('external_db', 'external_db')
-                        ->query('SELECT name FROM {ek_company} WHERE id=:id', [':id' => $param['coid']])
-                        ->fetchField();        
+                    ->query('SELECT name FROM {ek_company} WHERE id=:id', [':id' => $param['coid']])
+                    ->fetchField();
 
             $query = "SELECT id,date from {ek_journal} WHERE aid=:aid and coid=:coid "
                     . "AND date<=:date2 and reconcile=0 and exchange=0 order by date";
-              $a = array(
+            $a = array(
                 ':aid' => $param['account'],
                 ':coid' => $param['coid'],
-                ':date2' => $param['date'] 
-                );
+                ':date2' => $param['date']
+            );
 
-              $result = Database::getConnection('external_db', 'external_db')->query($query,$a);    
-
-
-              $query = "SELECT * from {ek_accounts} WHERE aid=:account and coid=:coid";
-              $a = array(':account' => $param['account'],':coid' => $param['coid']);
-              $account = Database::getConnection('external_db', 'external_db')
-                      ->query($query,$a)->fetchObject();
+            $result = Database::getConnection('external_db', 'external_db')->query($query, $a);
 
 
-              if ($account->balance_date == '') $account->balance_date = 0; //todo input alert for opening balance         
-              $data['aname'] = $account->aname;
-              $data['aid'] = $account->aid;
+            $query = "SELECT * from {ek_accounts} WHERE aid=:account and coid=:coid";
+            $a = array(':account' => $param['account'], ':coid' => $param['coid']);
+            $account = Database::getConnection('external_db', 'external_db')
+                            ->query($query, $a)->fetchObject();
+
+
+            if ($account->balance_date == '')
+                $account->balance_date = 0; //todo input alert for opening balance         
+            $data['aname'] = $account->aname;
+            $data['aid'] = $account->aid;
 
             // sum transaction currency
-                  $query = "SELECT sum(value) from {ek_journal} "
-                          . "WHERE exchange=:exc and type=:type "
-                          . "AND aid=:aid and coid=:coid "
-                          . "AND ( (date>=:dateopen and reconcile=:reco) OR reconcile=:reco2 )";
-                  $a = array(
-                    ':exc' => 0,
-                    ':type' => 'credit',
-                    ':aid' => $param['account'],
-                    ':coid' => $param['coid'],
-                    ':dateopen' => $account->balance_date,
-                    ':reco'=> 1 , 
-                    ':reco2' => date('Y')
-                    );
+            $query = "SELECT sum(value) from {ek_journal} "
+                    . "WHERE exchange=:exc and type=:type "
+                    . "AND aid=:aid and coid=:coid "
+                    . "AND ( (date>=:dateopen and reconcile=:reco) OR reconcile=:reco2 )";
+            $a = array(
+                ':exc' => 0,
+                ':type' => 'credit',
+                ':aid' => $param['account'],
+                ':coid' => $param['coid'],
+                ':dateopen' => $account->balance_date,
+                ':reco' => 1,
+                ':reco2' => date('Y')
+            );
 
-                  $credit = Database::getConnection('external_db', 'external_db')->query($query,$a)->fetchField();
-                  $a = array(
-                    ':exc' => 0,
-                    ':type' => 'debit',
-                    ':aid' => $param['account'],
-                    ':coid' => $param['coid'],
-                    ':dateopen' => $account->balance_date,
-                    ':reco'=> 1 , 
-                    ':reco2' => date('Y')
-                    );
-                  $query = "SELECT sum(value) FROM {ek_journal} "
-                          . "WHERE exchange=:exc and type=:type AND aid=:aid "
-                          . "AND coid=:coid and ( (date>=:dateopen and reconcile=:reco) or reconcile=:reco2 )";
+            $credit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+            $a = array(
+                ':exc' => 0,
+                ':type' => 'debit',
+                ':aid' => $param['account'],
+                ':coid' => $param['coid'],
+                ':dateopen' => $account->balance_date,
+                ':reco' => 1,
+                ':reco2' => date('Y')
+            );
+            $query = "SELECT sum(value) FROM {ek_journal} "
+                    . "WHERE exchange=:exc and type=:type AND aid=:aid "
+                    . "AND coid=:coid and ( (date>=:dateopen and reconcile=:reco) or reconcile=:reco2 )";
 
-                  $debit = Database::getConnection('external_db', 'external_db')->query($query,$a)->fetchField();
+            $debit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
 
-                  if ($debit == NULL) $debit = 0;
-                  if ($credit == NULL) $credit = 0;
-                  $balance = $account->balance + $credit - $debit;
-                  if ($balance < 0 ) {$ab='dt';} else {$ab='ct';}  
+            if ($debit == NULL)
+                $debit = 0;
+            if ($credit == NULL)
+                $credit = 0;
+            $balance = $account->balance + $credit - $debit;
+            if ($balance < 0) {
+                $ab = 'dt';
+            } else {
+                $ab = 'ct';
+            }
 
-                  $data['openchart'] = $account->balance;
-                  $data['opencredit'] = round($credit,2);
-                  $data['opendebit'] = round($debit,2);            
-                  $data['openbalance'] = $balance;
+            $data['openchart'] = $account->balance;
+            $data['opencredit'] = round($credit, 2);
+            $data['opendebit'] = round($debit, 2);
+            $data['openbalance'] = $balance;
 
 
-                // top bar displaying the total
-                  $data["debits"] = round($debit,2);
-                  $data["credits"] = round($credit,2);             
-                  $data['balance'] = abs(round($balance,2)) . " (" . $ab . ")";
-                  $data["statement"] = abs(round($balance,2)); 
-                  $data['rows'] = array();
-                  $i=0;
-                while($r = $result->fetchObject()) {
+            // top bar displaying the total
+            $data["debits"] = round($debit, 2);
+            $data["credits"] = round($credit, 2);
+            $data['balance'] = abs(round($balance, 2)) . " (" . $ab . ")";
+            $data["statement"] = abs(round($balance, 2));
+            $data['rows'] = array();
+            $i = 0;
+            while ($r = $result->fetchObject()) {
 
-                      $j = Journal::journalEntryDetails($r->id);
-                        $row = array();
-                        $row['id'] = $r->id;
-                        $row['journal_id'] = $r->id;
-                        $row['type'] = $j['type'];
-                        $row['date'] = $j['date'];
-                        $row['comment'] = $j['reference'] . " - " . $j['comment'];
-                        $row['value'] = $j['value'];
+                $j = Journal::journalEntryDetails($r->id);
+                $row = array();
+                $row['id'] = $r->id;
+                $row['journal_id'] = $r->id;
+                $row['type'] = $j['type'];
+                $row['date'] = $j['date'];
+                $row['comment'] = $j['reference'] . " - " . $j['comment'];
+                $row['value'] = $j['value'];
 
-                        $data['rows'][$i] = $row;
-                     $i++;  
-
-                    }//while         
+                $data['rows'][$i] = $row;
+                $i++;
+            }//while         
 
             include_once drupal_get_path('module', 'ek_finance') . '/excel_reconciliation.inc';
         }
         return ['#markup' => $markup];
     }
-    
-}
 
-//class
+}

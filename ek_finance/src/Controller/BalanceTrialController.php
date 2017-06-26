@@ -55,7 +55,7 @@ class BalanceTrialController extends ControllerBase {
     }
 
     /**
-     * Constructs a  object.
+     * Constructs a BalanceTrialController object.
      *
      * @param \Drupal\Core\Database\Connection $database
      *   A database connection.

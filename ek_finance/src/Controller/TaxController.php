@@ -48,10 +48,12 @@ class TaxController extends ControllerBase {
     }
 
     /**
-     * Constructs a  object.
+     * Constructs a TaxController object.
      *
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
+     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+     *   The module handler service
      */
     public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->formBuilder = $form_builder;
@@ -60,6 +62,8 @@ class TaxController extends ControllerBase {
 
     /**
      *  retrieve tax collected and paid per company and period 
+     * @return array
+     *  render Html
      *
      */
     public function report(Request $request) {
@@ -155,7 +159,18 @@ class TaxController extends ControllerBase {
 
     /**
      *  @return file extract tax collected and paid in excel format
+     * 
      *  @param array $param
+     *      serialized array
+     *      Keys:   'coid' (int company id), 'from' (string date),
+     *              'to' (string date),'baseCurrency' (string code),
+     *              'stax1' (int account number), 'stax2' (int account number),
+     *              'staxc' (int account number),'staxd' (int account number),
+     *              'wtaxc' => (int account number), 'wtaxd' (int account number)
+     * 
+     *  @return Object
+     *      PhpExcel object download
+     *      or markup if error
      */
     public function exceltax($param) {
         $markup = array();    

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\ek\Controller\EkController.
+ * Contains \Drupal\ek_finance\Controller\MemoExpensesController.
  */
 
 namespace Drupal\ek_finance\Controller;
@@ -400,7 +400,7 @@ class MemoExpensesController extends ControllerBase {
             if ($r->post == 0 && $r->status == '2') {
 
 
-                /* this is done a psyment stage
+                /* this is done a payment stage
                  * todo : remove route
 
                   $links['pay'] = array(

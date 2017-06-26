@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\ek\Controller\EkController.
+ * Contains \Drupal\ek_finance\Controller\JournalEntryController.
  */
 
 namespace Drupal\ek_finance\Controller;
@@ -38,7 +38,7 @@ class JournalEntryController extends ControllerBase {
     }
 
     /**
-     * Constructs a  object.
+     * Constructs a JournalEntryController object.
      *
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
@@ -49,6 +49,8 @@ class JournalEntryController extends ControllerBase {
 
     /**
      *  display form to record journal entry
+     *  @return array
+     *  form
      *
      */
     public function entryjournal(Request $request) {
@@ -59,7 +61,9 @@ class JournalEntryController extends ControllerBase {
 
     /**
      *  display form to edit journal entry
-     *  @id = id of journal entry
+     * 
+     *  @param int $id
+     *      id of journal entry
      *
      */
     public function editjournal($id) {

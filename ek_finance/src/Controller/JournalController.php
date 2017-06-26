@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\ek\Controller\EkController.
+ * Contains \Drupal\ek_finance\Controller\JournalController.
  */
 
 namespace Drupal\ek_finance\Controller;
@@ -18,7 +18,6 @@ use Drupal\Component\Utility\SafeMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Drupal\ek_admin\src\Access\AccessCheck;
 use Drupal\ek_finance\Journal;
 
 /**
@@ -56,12 +55,14 @@ class JournalController extends ControllerBase {
     }
 
     /**
-     * Constructs a  object.
+     * Constructs a JournalController object.
      *
      * @param \Drupal\Core\Database\Connection $database
      *   A database connection.
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
+     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+     *   The module handler service
      */
     public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
@@ -70,7 +71,10 @@ class JournalController extends ControllerBase {
     }
 
     /**
-     *  Display journal entries
+     *  Display journal entries filter by date and company
+     * 
+     * @return array
+     *  render Html
      *
      */
     public function journal(Request $request) {
@@ -125,7 +129,13 @@ class JournalController extends ControllerBase {
     }
 
     /**
-     * @return file journal in excel format
+     * Extract journal in excel format filter by date and company
+     * 
+     * @param array $param
+     *  serialized array
+     *  keys : date1 (string), date2 (string), company (int, company id) 
+     * @return Object
+     *  PhpExcel object download
      *
      */
     public function exceljournal($param = NULL) {
@@ -141,13 +151,15 @@ class JournalController extends ControllerBase {
     }
 
     /**
-     * @return account history
-     * @param
-     * param = array()
-      aid = account id
-     * coid = company id
-     * from = from date
-     * to = to date
+     * Extract transaction history of given account and period
+     * 
+     * @param array $param
+     *  aid = account id
+     *  coid = company id
+     *  from = from date
+     *  to = to date
+     * @return array
+     *  render Html
      *
      */
     public function history($param) {
