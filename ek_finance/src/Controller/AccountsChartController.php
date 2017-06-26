@@ -1,8 +1,10 @@
 <?php
+
 /**
 * @file
-* Contains \Drupal\ek\Controller\EkController.
+* Contains \Drupal\ek_finance\Controller\AccountsChartController.
 */
+
 namespace Drupal\ek_finance\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\user\UserInterface;
@@ -14,6 +16,7 @@ use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+
 /**
 * Controller routines for ek module routes.
 */
@@ -35,7 +38,7 @@ class AccountsChartController extends ControllerBase {
   }
 
   /**
-   * Constructs a  object.
+   * Constructs a AccountsChartController object.
    *
    * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
    *   The form builder service.
@@ -59,7 +62,8 @@ class AccountsChartController extends ControllerBase {
 
 /**
    * Download chart per company in pdf format
-   * @param coid : company id
+   * @param int $coid
+   *    company id
 */
   public function pdf($coid) {
   
@@ -82,6 +86,7 @@ class AccountsChartController extends ControllerBase {
 
   /**
    * AJAX callback handler.
+   * @param string $param
    */
   public function modal($param) {
     return $this->dialog(TRUE, $param);
@@ -89,6 +94,7 @@ class AccountsChartController extends ControllerBase {
 
   /**
    * AJAX callback handler.
+   * @param string $param
    */
   public function nonModal($param) {
     return $this->dialog(FALSE, $param);
@@ -100,6 +106,7 @@ class AccountsChartController extends ControllerBase {
    *
    * @param bool $is_modal
    *   (optional) TRUE if modal, FALSE if plain dialog. Defaults to FALSE.
+   * @param string $param
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
    *   An ajax response object.
@@ -125,10 +132,4 @@ class AccountsChartController extends ControllerBase {
   }
 
 
-
-
-
-
-
-
-} //class
+} 
