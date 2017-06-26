@@ -1,7 +1,8 @@
 <?php
+
 /**
 * @file
-* Contains \Drupal\ek\Controller\EkController.
+* Contains \Drupal\ek_finance\Controller\CashController.
 */
 namespace Drupal\ek_finance\Controller;
 use Drupal\Core\Controller\ControllerBase;
@@ -12,11 +13,11 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-
 use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_finance\Journal;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\AidList;
+
 /**
 * Controller routines for ek module routes.
 */
@@ -51,12 +52,14 @@ class CashController extends ControllerBase {
   }
 
   /**
-   * Constructs a  object.
+   * Constructs a CashController object.
    *
    * @param \Drupal\Core\Database\Connection $database
    *   A database connection.
    * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
    *   The form builder service.
+     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+     *   The module handler service
    */
   public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
     $this->database = $database;
@@ -65,8 +68,10 @@ class CashController extends ControllerBase {
   }
 
 /**
-   *  manage currencies, set active and default exchange rate
-   *
+ *  manage currencies, set active and default exchange rate
+ *
+ *  @return array
+ *      form  
 */
   public function currencies(Request $request) {
   
@@ -75,8 +80,10 @@ class CashController extends ControllerBase {
   }
 
 /**
-   *  extract balance per account type
-   *
+ *  extract balance per account type and company
+ *  
+ *  @return array
+ *      render Html
 */
   public function cashbalance(Request $request) {
   
@@ -132,8 +139,16 @@ class CashController extends ControllerBase {
   }
 
 /**
-   *  @return excel file for download
-   *
+ * export cash balance in excel format 
+ * 
+ * @param array $param
+ *  serialized array of keys
+ *  type (bool, 0 company, 1 user), account (coid or uid), from (date string), 
+ *  to (date string),currency (code string), baseCurrency (code string),
+ *  aid (chart accounts account int value)
+ * @return Object
+ *  Fpdf download object
+ *
 */
   public function excelcash($param) {
   
@@ -157,8 +172,16 @@ class CashController extends ControllerBase {
   }
 
 /**
-   *  extract data
-   * @return array
+ * extract cash data filtered
+ * 
+ * @param array $filter
+ * array of keys
+ *  type (bool, 0 company, 1 user), account (coid or uid),from (date string), to (date string),
+ *  currency (code string), baseCurrency (code string),
+ *  aid (chart accounts account int value)
+ * 
+ * @return array
+ *  extracted data
 */
   private function extract($filter) {
    
@@ -548,8 +571,11 @@ class CashController extends ControllerBase {
   }
   
 /**
-   *  debit or credit an account type
-   *
+ *  debit or credit an account type
+ * 
+ *  @return array
+ *      form
+ *
 */
   public function cashmanage(Request $request) {
   
@@ -560,7 +586,4 @@ class CashController extends ControllerBase {
 
 
 
-
-
-
-} //class
+}

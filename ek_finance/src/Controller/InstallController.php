@@ -1,11 +1,11 @@
 <?php
+
 /**
-* @file
-* Contains \Drupal\ek\Controller\
-*/
+ * @file
+ * Contains \Drupal\ek_finance\Controller\InstallController
+ */
 
 namespace Drupal\ek_finance\Controller;
-
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
@@ -15,78 +15,76 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-
 /**
-* Controller routines for ek module routes.
-*/
+ * Controller routines for ek module routes.
+ */
 class InstallController extends ControllerBase {
+    /* The module handler.
+     *
+     * @var \Drupal\Core\Extension\ModuleHandler
+     */
 
-   /* The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandler
-   */
-  protected $moduleHandler;
-  /**
-   * The database service.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-  /**
-   * The form builder service.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('database'),
-      $container->get('form_builder'),
-      $container->get('module_handler')
-    );
-  }
+    protected $moduleHandler;
 
-  /**
-   * Constructs  object.
-   *
-   * @param \Drupal\Core\Database\Connection $database
-   *   A database connection.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-   *   The form builder service.
-   */
-  public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
-    $this->database = $database;
-    $this->formBuilder = $form_builder;
-    $this->moduleHandler = $module_handler;
-  }
+    /**
+     * The database service.
+     *
+     * @var \Drupal\Core\Database\Connection
+     */
+    protected $database;
 
+    /**
+     * The form builder service.
+     *
+     * @var \Drupal\Core\Form\FormBuilderInterface
+     */
+    protected $formBuilder;
 
-/**
-   * data update upon migration
-   *
-*/
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
+        );
+    }
 
- public function migrate() {
-   include_once drupal_get_path('module', 'ek_finance') . '/' . 'migrate.php';
-    return  array('#markup' => $markup) ;
- 
- }
- 
-/**
-   * install required tables in a separate database
-   *
-*/
+    /**
+     * Constructs  object.
+     *
+     * @param \Drupal\Core\Database\Connection $database
+     *   A database connection.
+     * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+     *   The form builder service.
+     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+     *   The module handler service
+     */
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+        $this->database = $database;
+        $this->formBuilder = $form_builder;
+        $this->moduleHandler = $module_handler;
+    }
 
- public function install() {
-/**/ 
-  $query = "CREATE TABLE IF NOT EXISTS `ek_finance` (
+    /**
+     * used by administrator to migrate data from older versions
+     * @return array
+     * render Html
+     */
+    public function migrate() {
+        include_once drupal_get_path('module', 'ek_finance') . '/' . 'migrate.php';
+        return array('#markup' => $markup);
+    }
+
+    /**
+     * install required data tables in a separate database
+     * @return array
+     * render Html
+     */
+    public function install() {
+        /**/
+        $query = "CREATE TABLE IF NOT EXISTS `ek_finance` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
 	`settings` TEXT NULL COMMENT 'settings object',
 	PRIMARY KEY (`id`)
@@ -95,22 +93,21 @@ class InstallController extends ControllerBase {
         COLLATE='utf8_general_ci'
         ENGINE=InnoDB
         AUTO_INCREMENT=1";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) {
-        $markup = 'Finance settings table installed <br/>';
-    }
 
-try {
-      $query = "INSERT INTO `ek_finance` (`id`, `settings`) VALUES
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup = 'Finance settings table installed <br/>';
+        }
+
+        try {
+            $query = "INSERT INTO `ek_finance` (`id`, `settings`) VALUES
           (1, '')";
-      $db = Database::getConnection('external_db', 'external_db')->query($query);  
+            $db = Database::getConnection('external_db', 'external_db')->query($query);
+        } catch (Exception $e) {
+            $markup .= '<br/><b>Caught exception for settings: ' . $e->getMessage() . "</b>\n";
+        }
 
-} catch (Exception $e) {
-        $markup .= '<br/><b>Caught exception for settings: '.  $e->getMessage() . "</b>\n";
-}
-
-  $query = "CREATE TABLE IF NOT EXISTS `ek_accounts` (
+        $query = "CREATE TABLE IF NOT EXISTS `ek_accounts` (
         `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
         `aid` INT(10) UNSIGNED NULL DEFAULT NULL COMMENT 'account id',
         `aname` VARCHAR(50) NULL DEFAULT '255' COMMENT 'account name',
@@ -128,14 +125,14 @@ try {
     COLLATE='utf8_unicode_ci'
     ENGINE=InnoDB
     AUTO_INCREMENT=1";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) {
-        $markup .= 'Finance accounts chart table installed <br/>';
-    }
-    
-  
-  $query = "CREATE TABLE IF NOT EXISTS `ek_bank` (
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Finance accounts chart table installed <br/>';
+        }
+
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_bank` (
         `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
         `name` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'bank name' COLLATE 'utf8_unicode_ci',
         `address1` VARCHAR(255) NULL DEFAULT '' COMMENT 'address line 1' COLLATE 'utf8_unicode_ci',
@@ -156,13 +153,13 @@ try {
       COLLATE='utf8_unicode_ci'
       ENGINE=InnoDB
       AUTO_INCREMENT=1";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) {
-        $markup .= 'Finance bank table installed <br/>'; 
-    }
-    
-      $query = "CREATE TABLE IF NOT EXISTS `ek_bank_accounts` (
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Finance bank table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_bank_accounts` (
           `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
           `account_ref` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'account No reference',
           `currency` VARCHAR(5) NULL DEFAULT NULL COMMENT 'currency of account',
@@ -174,13 +171,13 @@ try {
         COLLATE='utf8_unicode_ci'
         ENGINE=InnoDB
         AUTO_INCREMENT=1";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) {
-        $markup .= 'Finance bank accounts table installed <br/>';
-    }
-    
-      $query = "CREATE TABLE IF NOT EXISTS `ek_bank_transactions` (
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Finance bank accounts table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_bank_transactions` (
           `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
           `account_ref` VARCHAR(45) NOT NULL COMMENT 'account No reference from bank accounts table' COLLATE 'utf8_unicode_ci',
           `date_transaction` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'date of transaction record' COLLATE 'utf8_unicode_ci',
@@ -195,13 +192,13 @@ try {
         COLLATE='utf8_unicode_ci'
         ENGINE=InnoDB
         AUTO_INCREMENT=3";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) {
-        $markup .= 'Finance bank transactions table installed <br/>'; 
-    }
-    
-      $query = "CREATE TABLE IF NOT EXISTS `ek_cash` (
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Finance bank transactions table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_cash` (
           `id` INT(11) NOT NULL AUTO_INCREMENT,
           `date` VARCHAR(20) NOT NULL DEFAULT '0000-00-00' COMMENT 'transaction record',
           `pay_date` VARCHAR(20) NOT NULL DEFAULT '0000-00-00' COMMENT 'transaction date',
@@ -220,15 +217,15 @@ try {
         COLLATE='utf8_unicode_ci'
         ENGINE=InnoDB
         AUTO_INCREMENT=1";
-    
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) {
-        $markup .= 'Finance cash transactions table installed <br/>';
-    }
-    
 
-      $query = "CREATE TABLE IF NOT EXISTS `ek_currency` (
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Finance cash transactions table installed <br/>';
+        }
+
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_currency` (
           `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
           `currency` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'currency code',
           `name` VARCHAR(50) NULL DEFAULT NULL COMMENT 'currency name',
@@ -240,14 +237,14 @@ try {
         COLLATE='utf8_unicode_ci'
         ENGINE=InnoDB
         AUTO_INCREMENT=1";
-            
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) {
-        $markup .= 'Finance currencies transactions table installed <br/>'; 
-    }
-    
-    try {
-      $query = "
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Finance currencies transactions table installed <br/>';
+        }
+
+        try {
+            $query = "
         INSERT INTO `ek_currency` (`id`, `currency`, `name`, `rate`, `active`, `date`) VALUES
           (1, 'BIF', 'Franc Burundi', 0, NULL, ''),
           (2, 'XAF', 'Franc CFA', 0, NULL, ''),
@@ -308,14 +305,15 @@ try {
           (58, 'VND', 'Dong Vietnam', 0, NULL, ''),
           (59, 'IDR', 'Roupia Indonesia', 0, NULL, '')
         ";
-      
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Finance currencies data updated <br/>';     
-    } catch (Exception $e) {
-        $markup .= '<br/><b>Caught exception for currencies: '.  $e->getMessage() . "</b>\n";
-    }
-    
-      $query = "CREATE TABLE IF NOT EXISTS `ek_expenses` (
+
+            $db = Database::getConnection('external_db', 'external_db')->query($query);
+            if ($db)
+                $markup .= 'Finance currencies data updated <br/>';
+        } catch (Exception $e) {
+            $markup .= '<br/><b>Caught exception for currencies: ' . $e->getMessage() . "</b>\n";
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_expenses` (
           `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
           `class` VARCHAR(200) NOT NULL COMMENT 'Class of account' COLLATE 'utf8_unicode_ci',
           `type` VARCHAR(200) NOT NULL COMMENT 'account id from chart' COLLATE 'utf8_unicode_ci',
@@ -345,13 +343,13 @@ try {
         COLLATE='utf8_unicode_ci'
         ENGINE=InnoDB
         AUTO_INCREMENT=1";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) {
-        $markup .= 'Finance expenses table installed <br/>';
-    }
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_expenses_memo` (
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Finance expenses table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_expenses_memo` (
           `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
           `serial` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'memo serial No',
           `category` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '1=internal 2 = purchase, 3=claim,4=advance,5=perso',
@@ -382,9 +380,9 @@ try {
         ENGINE=InnoDB
         AUTO_INCREMENT=1";
 
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
 
-    $query = "CREATE TABLE IF NOT EXISTS `ek_expenses_memo_list` (
+        $query = "CREATE TABLE IF NOT EXISTS `ek_expenses_memo_list` (
           `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
           `serial` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'main table serial ref',
           `aid` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'aid reference from ek_accounts',
@@ -398,14 +396,14 @@ try {
         COLLATE='utf8_general_ci'
         ENGINE=InnoDB
         AUTO_INCREMENT=1";
-    
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) {
-        $markup .= 'Finance expenses memo tables installed <br/>';
-    }
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_expenses_memo_documents` (
+
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Finance expenses memo tables installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_expenses_memo_documents` (
           `id` INT(10) NOT NULL AUTO_INCREMENT,
           `serial` VARCHAR(100) NOT NULL DEFAULT '0' COMMENT 'memo serial reference',
           `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'uri of file',
@@ -416,14 +414,14 @@ try {
         COLLATE='utf8_general_ci'
         ENGINE=InnoDB
         AUTO_INCREMENT=1";
-            
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) {
-        $markup .= 'Finance expenses memo documents table installed <br/>'; 
-    }
-    
 
-    $query = "CREATE TABLE IF NOT EXISTS `ek_journal` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Finance expenses memo documents table installed <br/>';
+        }
+
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_journal` (
           `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
           `aid` VARCHAR(10) NOT NULL DEFAULT '0' COMMENT 'account id',
           `count` INT(10) UNSIGNED NULL DEFAULT NULL COMMENT 'Increment count by coid',
@@ -442,14 +440,14 @@ try {
         COLLATE='utf8_general_ci'
         ENGINE=InnoDB
         AUTO_INCREMENT=1";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) {
-        $markup .= 'Finance journal table installed <br/>';
-    }
-    
-    
-      $query = "CREATE TABLE IF NOT EXISTS `ek_journal_reco_history` (
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Finance journal table installed <br/>';
+        }
+
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_journal_reco_history` (
           `id` INT(11) NOT NULL AUTO_INCREMENT,
           `date` DATE NOT NULL COMMENT 'date of reconciliation',
           `type` VARCHAR(3) NOT NULL COMMENT 'typ of reconciliation' COLLATE 'utf8_unicode_ci',
@@ -462,22 +460,19 @@ try {
         COLLATE='utf8_general_ci'
         ENGINE=InnoDB
         AUTO_INCREMENT=1;";
-      
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) {
-        $markup .= 'Finance reconciliation reports table installed <br/>'; 
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Finance reconciliation reports table installed <br/>';
+        }
+
+        $link = Url::fromRoute('ek_admin.main', array(), array())->toString();
+        $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
+
+        return array(
+            '#title' => t('Installation of Ek_finance module'),
+            '#markup' => $markup
+                );
     }
-    
-    $link =  Url::fromRoute('ek_admin.main', array(), array())->toString();
-    $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
-    
-    return  array(
-      '#title'=> t('Installation of Ek_finance module'),
-      '#markup' => $markup
-      ) ;
- 
- }
 
-
-   
-} //class
+}

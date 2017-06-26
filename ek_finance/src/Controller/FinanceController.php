@@ -1,7 +1,8 @@
 <?php
+
 /**
 * @file
-* Contains \Drupal\ek\Controller\EkController.
+* Contains \Drupal\ek_finance\Controller\FinanceController.
 */
 namespace Drupal\ek_finance\Controller;
 use Drupal\Core\Controller\ControllerBase;
@@ -20,8 +21,8 @@ class FinanceController extends ControllerBase {
 
 
 /**
-   *  
-   *
+* Dashboard content
+*   @return array
 */
   public function dashboard(Request $request) {
   
@@ -33,9 +34,9 @@ class FinanceController extends ControllerBase {
 
 /**
  * General modal display to view data
- * -> use for account history
-   * AJAX callback handler for AjaxTestDialogForm.
-   */
+
+ * AJAX callback handler for AjaxTestDialogForm.
+ */
   public function modal($param) {
     return $this->dialog(TRUE, $param);
   }
@@ -50,10 +51,14 @@ class FinanceController extends ControllerBase {
 
   /**
    * Util to render dialog in ajax callback.
+   *  -> use for account (journal) history display
    *
    * @param bool $is_modal
    *   (optional) TRUE if modal, FALSE if plain dialog. Defaults to FALSE.
-   *
+   * 
+   * @param array $param
+   *    serialized array of keys => values
+   * 
    * @return \Drupal\Core\Ajax\AjaxResponse
    *   An ajax response object.
    */
@@ -93,8 +98,4 @@ class FinanceController extends ControllerBase {
     }
 
 
-
-
-
-
-} //class
+}
