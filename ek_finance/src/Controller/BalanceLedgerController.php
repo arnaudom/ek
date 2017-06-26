@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\ek\Controller\EkController.
+ * Contains \Drupal\ek_finance\Controller\BalanceLedgerController.
  */
 
 namespace Drupal\ek_finance\Controller;
@@ -17,7 +17,6 @@ use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Drupal\ek_admin\src\Access\AccessCheck;
 use Drupal\ek_finance\Journal;
 use Drupal\Core\Routing\RouteMatchInterface;
 
@@ -62,6 +61,8 @@ class BalanceLedgerController extends ControllerBase {
      *   A database connection.
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
+     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+     *   The module handler service
      */
     public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
@@ -70,7 +71,10 @@ class BalanceLedgerController extends ControllerBase {
     }
 
     /**
-     *  
+     *  Finance ledger by account and date
+     * 
+     *  @return array
+     *      rendered Html
      *
      */
     public function ledgerbalance(Request $request) {
@@ -106,8 +110,21 @@ class BalanceLedgerController extends ControllerBase {
     }
 
     /**
-     * @return ledger in excel format
-     *
+     * Finance ledger by account and date in excel format
+     * 
+     * @param array $param
+     *  array of exctration filters
+     *  for 'accounts'
+     *  int coid, int aid1, int aid2, string date1, 
+     *  string date2, string type (accounts)
+     * 
+     *  for 'sales'
+     *  int coid, array references (array of client's id),
+     *  int source1 ('purchase|invoice'), int source2 ('payment|receipt'), 
+     *  string date1, string date2,string type ('sales')
+     * 
+     * @return Object
+     *  PhpExcel object
      */
     public function excelledger($param = NULL) {
 
@@ -244,5 +261,3 @@ class BalanceLedgerController extends ControllerBase {
     }
 
 }
-
-//class

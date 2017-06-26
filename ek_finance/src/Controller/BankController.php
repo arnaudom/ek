@@ -50,6 +50,8 @@ class BankController extends ControllerBase {
      *
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
+     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+     *   The module handler service
      */
     public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->formBuilder = $form_builder;
@@ -57,7 +59,11 @@ class BankController extends ControllerBase {
     }
 
     /**
-     * list of banks references  
+     * list of banks references 
+     * filtered by company access
+     * 
+     * @retrun array
+     *  renderer Html
      *
      */
     public function banklist(Request $request) {
@@ -128,7 +134,13 @@ class BankController extends ControllerBase {
 
     /**
      * print a label  
-     *
+     * 
+     * @param array
+     *  key: type (output type)
+     *  key: param (array 'id' => value)
+     * 
+     * @return Object
+     *  Fpdf render object
      */
     public function banklabel($type, $param) {
 
@@ -139,7 +151,13 @@ class BankController extends ControllerBase {
     }
 
     /**
-     *  
+     *  output statement per bank account
+     * 
+     * @param int $id
+     *  account id
+     * 
+     * @return array
+     *  render Html
      *
      */
     public function statement($id = NULL) {
@@ -230,8 +248,13 @@ class BankController extends ControllerBase {
     }
 
     /**
-     *  bank entity
+     *  create or edit bank 
      *  linked to company - coid
+     * 
+     *  @param int $id
+     *      bank id
+     *  @return array
+     *      form
      */
     public function bank(Request $request, $id) {
 
@@ -239,13 +262,26 @@ class BankController extends ControllerBase {
         return $build;
     }
 
+    /**
+     *  delete bank 
+     *  linked to company - coid
+     * 
+     *  @param int $id
+     *      bank id
+     *  @return array
+     *      form
+     */
     public function deletebank(Request $request, $id) {
-        
+        //ToDo
+        return array('#markup' => t('Under construction'));
     }
 
     /**
      * list of bank accounts references  
-     *
+     * filtered by company access
+     * 
+     * @retrun array
+     *  renderer Html
      */
     public function bankaccountslist(Request $request) {
         
@@ -279,10 +315,10 @@ class BankController extends ControllerBase {
         $company = AccessCheck::GetCompanyByUser();
         $company = implode(',', $company);
         $query = "SELECT a.id, a.account_ref,currency,aid, b.name as bank, c.name as co 
-      FROM {ek_bank_accounts} a
-      LEFT JOIN {ek_bank} b
-      ON a.bid = b.id
-      LEFT JOIN {ek_company} c ON b.coid = c.id WHERE FIND_IN_SET(coid, :c )  ORDER by a.id";
+            FROM {ek_bank_accounts} a
+            LEFT JOIN {ek_bank} b
+            ON a.bid = b.id
+            LEFT JOIN {ek_company} c ON b.coid = c.id WHERE FIND_IN_SET(coid, :c )  ORDER by a.id";
         $list = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $company));
         $row = 0;
         while ($l = $list->fetchObject()) {
@@ -331,8 +367,13 @@ class BankController extends ControllerBase {
     }
 
     /**
-     * list of bank accounts label  
-     *
+     * bank accounts label  
+     * @param array
+     *  key: type (output type)
+     *  key: param (array 'id' => value)
+     * 
+     * @return Object
+     *  Fpdf render object
      */
     public function bankaccountslabel($type, $param) {
 
@@ -343,8 +384,13 @@ class BankController extends ControllerBase {
     }
 
     /**
-     *  bank accounts
-     *  linked to bank entity
+     *  reate or edit bank accounts
+     *  linked to bank id
+     * 
+     *  @param int $id
+     *      account id
+     *  @return array
+     *      form
      */
     public function bankaccount(Request $request, $id) {
 
@@ -352,8 +398,16 @@ class BankController extends ControllerBase {
         return $build;
     }
 
+    /**
+     *  delete bank account
+     * 
+     *  @param int $id
+     *      account id
+     *  @return array
+     *      form
+     */
     public function deletebankaccount(Request $request, $id) {
-
+        //ToDo
         return array('#markup' => t('Under construction'));
     }
 

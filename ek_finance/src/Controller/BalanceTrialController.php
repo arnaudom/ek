@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\ek\Controller\EkController.
+ * Contains \Drupal\ek_finance\Controller\BalanceTrialController.
  */
 
 namespace Drupal\ek_finance\Controller;
@@ -18,7 +18,6 @@ use Drupal\Component\Utility\SafeMarkup;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_admin\src\Access\AccessCheck;
 use Drupal\ek_finance\Journal;
 
 /**
@@ -62,6 +61,8 @@ class BalanceTrialController extends ControllerBase {
      *   A database connection.
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
+     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+     *   The module handler service
      */
     public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
@@ -70,7 +71,10 @@ class BalanceTrialController extends ControllerBase {
     }
 
     /**
-     *  
+     *  Finance trial balance by account and date
+     * 
+     *  @return array
+     *      rendered Html
      *
      */
     public function trialbalance(Request $request) {
@@ -105,8 +109,13 @@ class BalanceTrialController extends ControllerBase {
     }
 
     /**
-     * @Return trial balance in excel format
-     *
+     * Trial balance in excel format
+     * 
+     * @param array
+     *  serialized array with keys
+     *  coid (int), year (int), month (int), active (bool), null (bool)
+     * @return Object
+     *  PhpExcel object
      */
     public function exceltrial($param = NULL) {
         $markup = array();    
@@ -119,5 +128,3 @@ class BalanceTrialController extends ControllerBase {
     }
 
 }
-
-//class
