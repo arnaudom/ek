@@ -59,10 +59,11 @@ class FilterPurchase extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
   
   $to = Database::getConnection('external_db', 'external_db')
-          ->query("SELECT SQL_CACHE date from {ek_purchase} order by date DESC limit 1")
+          ->query("SELECT date from {ek_purchase} order by date DESC limit 1")
           ->fetchObject();
   $from = Database::getConnection('external_db', 'external_db')
-          ->query("SELECT SQL_CACHE date from {ek_purchase} WHERE status <> 1 order by date limit 1")->fetchObject();
+          ->query("SELECT date from {ek_purchase} WHERE status <> 1 order by date limit 1")
+          ->fetchObject();
   //$date1= date('Y-m-d', strtotime($data2." -30 days")) ;
   $s = array(0 => t('Not paid'), 1 => t('Paid'), 3 => t('Any'));
   $filter_title = t('Filter');

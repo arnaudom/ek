@@ -538,9 +538,20 @@ class ExpensesManageController extends ControllerBase {
                     'basecurrency' => ['data' => ['#markup' => $evalue]],
                     'receipt' => ['data' => ['#markup' => $receipt]],
                 );
-
+                //to prevent edition of expense with reconciled
+                //journal entry, sum all reco flags for common source date and ref.
+                //if not equal to 0, at least 1 entry is reconciled 
+                $query = Database::getConnection('external_db', 'external_db')
+                          ->select('ek_journal');
+                $query->addExpression('SUM(reconcile)', 'reconcile');
+                $query->condition('coid', $r->coid, '=');
+                $query->condition('date', $r->date, '=');
+                $query->condition('source', $r->source, '=');
+                $query->condition('reference', $r->reference, '=');
+                $reconcile_flag = $query->execute()->fetchObject()->reconcile;
+                
                 if (strpos($r->source, 'xpense')) {
-                    if ($r->reconcile == 0) {
+                    if ($reconcile_flag == 0) {
                         $links['edit'] = array(
                             'title' => $this->t('Edit'),
                             'url' => Url::fromRoute('ek_finance.manage.edit_expense', ['id' => $r->reference]),

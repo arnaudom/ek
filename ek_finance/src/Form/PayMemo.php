@@ -405,12 +405,12 @@ class PayMemo extends FormBase {
                 ->fetchObject();
         $max_pay = $data->value - $data->amount_paid;
         
-        if ($this_pay > $data->value) {
-            $form_state->setErrorByName("amount", $this->t('Payment exceeds memo amount.') . $this_pay . ' > ' . $data->value);
+        if (($this_pay - $data->value) > 0.000001) {
+            $form_state->setErrorByName("amount", $this->t('Payment exceeds memo amount.') . ": " . number_format($this_pay,6) . ' > ' . number_format($data->value,6));
         }
 
-        if (( ( $max_pay - $this_pay ) < 0)) {
-            $form_state->setErrorByName("amount", $this->t('Partial payment exceeds memo amount.') . $this_pay . ' > ' . $max_pay);
+        if (( ( $this_pay - $max_pay ) > 0.000001)) {
+            $form_state->setErrorByName("amount", $this->t('Partial payment exceeds memo amount.') . ": " . number_format($this_pay,6) . ' > ' . number_format($data->value,6));
         }
     }
 

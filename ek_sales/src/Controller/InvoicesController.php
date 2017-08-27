@@ -138,7 +138,7 @@ class InvoicesController extends ControllerBase {
         $or1->condition('head', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');
 
-        if (isset($_SESSION['ifilter']['filter'])) {
+        if (isset($_SESSION['ifilter']) && $_SESSION['ifilter']['filter'] == 1) {
 
             if ($_SESSION['ifilter']['keyword'] == '') {
                 //search via options fields
@@ -154,15 +154,20 @@ class InvoicesController extends ControllerBase {
                 $build['excel'] = array(
                     '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
                 );
-
-                if ($_SESSION['ifilter']['status'] == 0) {
-                    $status2 = 2;
-                } else {
-                    $status2 = 1;
-                }
+                
                 $or2 = db_or();
-                $or2->condition('i.status', $_SESSION['ifilter']['status'], '=');
-                $or2->condition('i.status', $status2, '=');
+                if ($_SESSION['ifilter']['status'] == 3) {
+                    //any status
+                    $or2->condition('i.status', $_SESSION['ifilter']['status'], '<');
+                } elseif ($_SESSION['ifilter']['status'] == 0) {
+                    //unpaid
+                    $or2->condition('i.status', 0, '=');
+                    $or2->condition('i.status', 2, '=');
+                } else {
+                    //paid
+                    $or2->condition('i.status', 1, '=');
+                }                
+
 
                 $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
                     'amount', 'amountreceived', 'pcode', 'taxvalue', 'pay_date', 'alert');
@@ -431,15 +436,18 @@ class InvoicesController extends ControllerBase {
                 $baseCurrency = $settings->get('baseCurrency');
             }
 
-            if ($options['status'] == 0) {
-                $status2 = 2;
-            } else {
-                $status2 = 1;
-            }
             $or = db_or();
-            $or->condition('i.status', $options['status'], '=');
-            $or->condition('i.status', $status2, '=');
-
+            if ($options['status'] == 3) {
+                //any status
+                $or->condition('i.status', $options['status'], '<');
+            } elseif ($options['status'] == 0) {
+                //unpaid
+                $or->condition('i.status', 0, '=');
+                $or->condition('i.status', 2, '=');
+            } else {
+                //paid
+                $or->condition('i.status', 1, '=');
+            }  
 
             $or1 = db_or();
             $or1->condition('head', $access, 'IN');

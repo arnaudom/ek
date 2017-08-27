@@ -75,7 +75,7 @@ Switch ($source) {
                     ->query($query, array(':id' => $head->pcode))
                     ->fetchObject();
             $plink =  Url::fromRoute('ek_projects_view', array('id' => $p->id), [])->toString(); 
-
+            $head->pcode_raw = $head->pcode;
             $head->pcode =  "<a title='" . $p->pname . "' href='". $plink ."'>" . $head->pcode . "</a>";   
         } else {
             $head->pcode = "";

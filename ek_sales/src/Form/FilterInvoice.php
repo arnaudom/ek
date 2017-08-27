@@ -59,16 +59,21 @@ class FilterInvoice extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
   
   $to = Database::getConnection('external_db', 'external_db')
-          ->query("SELECT SQL_CACHE date from {ek_invoice} order by date DESC limit 1")
+          ->query("SELECT date from {ek_invoice} order by date DESC limit 1")
           ->fetchObject();
   $from = Database::getConnection('external_db', 'external_db')
-          ->query("SELECT SQL_CACHE date from {ek_invoice} order by date limit 1")
+          ->query("SELECT date from {ek_invoice} WHERE status <> 1 order by date limit 1")
           ->fetchObject();
   
+  $s = array(0 => t('Not paid'), 1 => t('Paid'), 3 => t('Any'));
+  $filter_title = t('Filter');
+  if(isset($_SESSION['ifilter']['status'])) {
+      $filter_title .= ' (' . $s[$_SESSION['ifilter']['status']] . ')'; 
+  }
 
     $form['filters'] = array(
       '#type' => 'details',
-      '#title' => $this->t('Filter'),
+      '#title' => $filter_title,
       '#open' => isset($_SESSION['ifilter']['filter'] ) ? FALSE : TRUE,
       //'#attributes' => array('class' => array('container-inline')),
     ); 
@@ -164,7 +169,7 @@ class FilterInvoice extends FormBase {
   
     $form['filters']['status'] = array(
       '#type' => 'select',
-      '#options' => array(0 => t('Not paid'), 1 => t('Paid')),
+      '#options' => array(0 => t('Not paid'), 1 => t('Paid'), 3 => t('Any')),
       '#default_value' => isset($_SESSION['ifilter']['status']) ? $_SESSION['ifilter']['status'] : '0' ,
       '#suffix' => '</div>',
       '#states' => array(

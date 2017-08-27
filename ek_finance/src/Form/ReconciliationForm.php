@@ -19,6 +19,8 @@ use Drupal\ek_finance\Journal;
 use Drupal\ek_finance\CurrencyData;
 use Drupal\ek_finance\BankData;
 use Drupal\ek_admin\CompanySettings;
+use Drupal\ek_finance\FinanceSettings;
+
 
 /**
  * Provides a form to filter and record reconciliation data.
@@ -196,15 +198,29 @@ class ReconciliationForm extends FormBase {
   $account = Database::getConnection('external_db', 'external_db')->query($query,$a)->fetchObject();
 
     
-  if ($account->balance_date == '') $account->balance_date = 0; //todo input alert for opening balance 
+  if ($account->balance_date == '') {
+      $account->balance_date = 0; //todo input alert for opening balance
+  }
     
       // sum transaction currency
+      // remove filter with 'exchange' flag for case where journal has records
+      // with internal currency transfers - applies to base currency
+
+      $settings = new FinanceSettings(); 
+      $baseCurrency = $settings->get('baseCurrency');
+     
+      if($baseCurrency == $account_currency) {
+          $exchange = '%';
+      } else {
+          $exchange = 0;
+      }
+  
       $query = "SELECT sum(value) from {ek_journal} "
-              . "WHERE exchange=:exc and type=:type "
+              . "WHERE exchange like :exc and type=:type "
               . "AND aid=:aid and coid=:coid "
               . "AND ( (date>=:dateopen and reconcile=:reco) OR reconcile=:reco2 )";
       $a = array(
-        ':exc' => 0,
+        ':exc' => $exchange,
         ':type' => 'credit',
         ':aid' => $form_state->getValue('account'),
         ':coid' => $form_state->getValue('coid'),
@@ -215,7 +231,7 @@ class ReconciliationForm extends FormBase {
      
       $credit = Database::getConnection('external_db', 'external_db')->query($query,$a)->fetchField();
       $a = array(
-        ':exc' => 0,
+        ':exc' => $exchange,
         ':type' => 'debit',
         ':aid' => $form_state->getValue('account'),
         ':coid' => $form_state->getValue('coid'),
@@ -224,7 +240,8 @@ class ReconciliationForm extends FormBase {
         ':reco2' => date('Y')
         );
       $query = "SELECT sum(value) from {ek_journal} "
-              . "where exchange=:exc and type=:type and aid=:aid and coid=:coid "
+              . "WHERE exchange like :exc and type=:type "
+              . "and aid=:aid and coid=:coid "
               . "and ( (date>=:dateopen and reconcile=:reco) or reconcile=:reco2 )";
       
       $debit = Database::getConnection('external_db', 'external_db')->query($query,$a)->fetchField();
