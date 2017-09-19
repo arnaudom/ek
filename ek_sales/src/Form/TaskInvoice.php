@@ -63,8 +63,8 @@ class TaskInvoice extends FormBase {
   $access = AccessCheck::GetCompanyByUser();
   
   $query = Database::getConnection('external_db', 'external_db')
-          ->select('ek_invoice', 'i');
-  $query->leftJoin('ek_invoice_tasks', 't', 'i.serial=t.serial');    
+          ->select('ek_sales_invoice', 'i');
+  $query->leftJoin('ek_sales_invoice_tasks', 't', 'i.serial=t.serial');    
   $or1 = db_or();
         $or1->condition('head', $access , 'IN');
         $or1->condition('allocation', $access  , 'IN');
@@ -312,7 +312,7 @@ if($data) {
   
       if($form_state->getValue('delete') == 1) {
             $update = Database::getConnection('external_db', 'external_db')
-                ->delete('ek_invoice_tasks')
+                ->delete('ek_sales_invoice_tasks')
                 ->condition('id', $form_state->getValue('for_id'))
                 ->execute(); 
             
@@ -342,13 +342,13 @@ if($data) {
         if($form_state->getValue('for_id') != NULL) {
             
          $update = Database::getConnection('external_db', 'external_db')
-                ->update('ek_invoice_tasks')->fields($fields)
+                ->update('ek_sales_invoice_tasks')->fields($fields)
                 ->condition('id', $form_state->getValue('for_id'))
                 ->execute();           
         } else {
          
          $update = Database::getConnection('external_db', 'external_db')
-                ->insert('ek_invoice_tasks')->fields($fields)
+                ->insert('ek_sales_invoice_tasks')->fields($fields)
                 ->execute();            
         }
 

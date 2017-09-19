@@ -40,7 +40,7 @@ ek_products.view:
 ek_products.list:
   path: '/item_list'
   defaults:
-    _title: 'Product and services list'
+    _title: 'Products and services list'
     _controller: '\Drupal\ek_products\Controller\ProductsController::listproducts'
   requirements:
     _permission: 'view_products'

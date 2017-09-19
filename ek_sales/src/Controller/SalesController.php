@@ -186,8 +186,8 @@ class SalesController extends ControllerBase {
             //statistics finance
             $settings = new FinanceSettings();
             $items['baseCurrency'] = $settings->get('baseCurrency');
-            $query = "SELECT sum(totalbase) FROM {ek_invoice_details} d "
-                    . "INNER JOIN {ek_invoice} i ON d.serial=i.serial "
+            $query = "SELECT sum(totalbase) FROM {ek_sales_invoice_details} d "
+                    . "INNER JOIN {ek_sales_invoice} i ON d.serial=i.serial "
                     . "WHERE i.client=:abid ";
             $a = array(
                 ':abid' => $abid,
@@ -196,7 +196,7 @@ class SalesController extends ControllerBase {
                     ->query($query, $a)
                     ->fetchField();
 
-            $query = "SELECT date,pay_date FROM {ek_invoice} "
+            $query = "SELECT date,pay_date FROM {ek_sales_invoice} "
                     . "WHERE client = :abid and status=:s";
 
             $data = Database::getConnection('external_db', 'external_db')
@@ -355,7 +355,7 @@ class SalesController extends ControllerBase {
                 $settings = new FinanceSettings();
                 $baseCurrency = $settings->get('baseCurrency');
                 $query = 'SELECT currency,amount,amountreceived,pay_date,amountbase,balancebase,taxvalue '
-                        . 'FROM {ek_invoice} WHERE id=:id';
+                        . 'FROM {ek_sales_invoice} WHERE id=:id';
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchObject();
@@ -388,7 +388,7 @@ class SalesController extends ControllerBase {
                 $settings = new FinanceSettings();
                 $baseCurrency = $settings->get('baseCurrency');
                 $query = 'SELECT currency,amount,amountpaid,pdate,amountbc,balancebc,taxvalue '
-                        . 'FROM {ek_purchase} WHERE id=:id';
+                        . 'FROM {ek_sales_purchase} WHERE id=:id';
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchObject();

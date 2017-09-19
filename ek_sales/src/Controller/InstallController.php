@@ -10,13 +10,9 @@ namespace Drupal\ek_sales\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
-use Drupal\user\UserInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 
@@ -88,7 +84,7 @@ class InstallController extends ControllerBase {
 /**/ 
     $markup = '';
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_purchase` (
+    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_purchase` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '',
 	`head` TINYINT(3) UNSIGNED NULL DEFAULT NULL,
@@ -98,6 +94,7 @@ class InstallController extends ControllerBase {
 	`currency` VARCHAR(45) NOT NULL DEFAULT '',
 	`date` VARCHAR(15) NOT NULL DEFAULT '0000-00-00',
 	`title` VARCHAR(150) NOT NULL,
+        `type` TINYINT(4) NOT NULL DEFAULT '1' COMMENT 'type 1 purchase, 4 debit note',
 	`pcode` VARCHAR(45) NULL DEFAULT '',
 	`comment` TEXT NULL,
 	`client` VARCHAR(45) NOT NULL DEFAULT '',
@@ -123,7 +120,7 @@ class InstallController extends ControllerBase {
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'purchases table created <br/>'; 
     
-    $query = "CREATE TABLE IF NOT EXISTS  `ek_purchase_details` (
+    $query = "CREATE TABLE IF NOT EXISTS  `ek_sales_purchase_details` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '',
 	`item` TEXT NOT NULL,
@@ -142,7 +139,7 @@ class InstallController extends ControllerBase {
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'purchases details table created <br/>';    
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_purchase_tasks` (
+    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_purchase_tasks` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(50) NULL DEFAULT NULL COMMENT 'serial reference of invoice',
 	`event` VARCHAR(50) NOT NULL COMMENT 'event name',
@@ -168,7 +165,7 @@ class InstallController extends ControllerBase {
     if($db) $markup .= 'purchases tasks table created <br/>'; 
     
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_quotation` (
+    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_quotation` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '',
 	`header` TINYINT(3) UNSIGNED NULL DEFAULT NULL,
@@ -194,7 +191,7 @@ class InstallController extends ControllerBase {
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'quotations table created <br/>';  
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_quotation_details` (
+    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_quotation_details` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '',
 	`itemid` TEXT NULL,
@@ -216,7 +213,7 @@ class InstallController extends ControllerBase {
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'quotations details table created <br/>';      
    
-    $query = "CREATE TABLE `ek_quotation_settings` (
+    $query = "CREATE TABLE `ek_sales_quotation_settings` (
 	`id` SMALLINT(10) NOT NULL AUTO_INCREMENT,
 	`field` VARCHAR(10) NOT NULL DEFAULT '0',
 	`name` VARCHAR(255) NOT NULL DEFAULT '0',
@@ -228,7 +225,7 @@ class InstallController extends ControllerBase {
 
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     
-    $query = "INSERT INTO `ek_quotation_settings` (`id`, `field`, `name`, `active`) VALUES
+    $query = "INSERT INTO `ek_sales_quotation_settings` (`id`, `field`, `name`, `active`) VALUES
 	(1, 'column_1', 'item', 1),
 	(2, 'column_2', 'column_2', 1),
 	(3, 'column_3', 'column_3', 1),
@@ -239,7 +236,7 @@ class InstallController extends ControllerBase {
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'quotations settings table created <br/>';     
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_invoice` (
+    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_invoice` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'unique serial number' COLLATE 'utf8_unicode_ci',
 	`do_no` VARCHAR(50) NULL DEFAULT NULL COMMENT 'deliveri order ref' COLLATE 'utf8_unicode_ci',
@@ -250,10 +247,11 @@ class InstallController extends ControllerBase {
 	`currency` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'currency' COLLATE 'utf8_unicode_ci',
 	`date` VARCHAR(45) NOT NULL DEFAULT '0000-00-00' COMMENT 'invoice date',
 	`title` VARCHAR(150) NOT NULL COMMENT 'title on the printed doc' COLLATE 'utf8_unicode_ci',
+        `type` TINYINT(4) NOT NULL DEFAULT '1' COMMENT 'type 1 invoice, 2 commercial, 4 credit note',
 	`pcode` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'project reference' COLLATE 'utf8_unicode_ci',
 	`comment` TEXT NOT NULL COMMENT 'comment on printed doc' COLLATE 'utf8_unicode_ci',
 	`client` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'client id' COLLATE 'utf8_unicode_ci',
-	`amountreceived` DOUBLE NOT NULL DEFAULT '0',
+	`amountreceived` DOUBLE NOT NULL DEFAULT'0' COMMENT 'amount paid with tax' ,
 	`pay_date` VARCHAR(15) NULL DEFAULT NULL COMMENT 'date payment',
 	`class` VARCHAR(45) NULL DEFAULT '',
 	`amountbase` DOUBLE NOT NULL DEFAULT '0' COMMENT 'base corrency',
@@ -275,7 +273,7 @@ class InstallController extends ControllerBase {
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'invoices table created <br/>';      
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_invoice_details` (
+    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_invoice_details` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'main invoice table ref' COLLATE 'utf8_unicode_ci',
 	`item` TEXT NULL COMMENT 'item' COLLATE 'utf8_unicode_ci',
@@ -297,7 +295,7 @@ class InstallController extends ControllerBase {
     if($db) $markup .= 'invoices details table created <br/>'; 
     
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_invoice_tasks` (
+    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_invoice_tasks` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(50) NULL DEFAULT NULL COMMENT 'serial reference of invoice',
 	`event` VARCHAR(50) NOT NULL COMMENT 'event name',

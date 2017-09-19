@@ -5,15 +5,16 @@ use Drupal\ek_finance\Journal;
     $items['data'] = array();
     $journal = new Journal();
     
-    
-            if ($p['entity'] == 'purchase') {
+  
+            if ($p['source1'] == 'purchase') {
                 $entity = 'purchase';
                 $source2 = 'payment';
+                $source3 = 'purchase dn';
                 $book = 2;
                 if ($p['client'] == '%') {
                     $clients = Database::getConnection('external_db', 'external_db')
                             ->query("SELECT DISTINCT ab.id FROM {ek_address_book} ab "
-                                    . "INNER JOIN {ek_purchase} p ON p.client = ab.id order by name")
+                                    . "INNER JOIN {ek_sales_purchase} p ON p.client = ab.id order by name")
                             ->fetchAllCol();
                 } else {
                     $clients = [0 => $p['client']];
@@ -21,11 +22,12 @@ use Drupal\ek_finance\Journal;
             } else {
                 $entity = 'invoice';
                 $source2 = 'receipt';
+                $source3 = 'invoice cn';
                 $book = 1;
                 if ($p['client'] == '%') {
                     $clients = Database::getConnection('external_db', 'external_db')
                             ->query("SELECT DISTINCT ab.id FROM {ek_address_book} ab "
-                                    . "INNER JOIN {ek_invoice} i ON i.client = ab.id order by name")
+                                    . "INNER JOIN {ek_sales_invoice} i ON i.client = ab.id order by name")
                             ->fetchCol();
                 } else {
                     $clients = [0 => $p['client']];
@@ -57,6 +59,7 @@ use Drupal\ek_finance\Journal;
                         'references' => $ids,
                         'source1' => $entity,
                         'source2' => $source2,
+                        'source3' => $source3,
                         'date1' => $p['date1'],
                         'date2' => $p['date2'],
                     ];

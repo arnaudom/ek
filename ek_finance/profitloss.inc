@@ -15,17 +15,32 @@ $settings = new CompanySettings($coid);
  * Ie a fiscal year of 2014-06 means the year is ending 30/06/14
  * and has started on 1/07/13
  */
-/*
-$daysInMonth = cal_days_in_month(CAL_GREGORIAN, $settings->get('fiscal_month'), $year);
-//$from = date('Y-m-d', strtotime($settings->get('fiscal_year') . '-' . $settings->get('fiscal_month') . '-' . $daysInMonth . ' - 1 year + 1 day'));
-$from = date('Y-m-d', strtotime($year . '-' . $settings->get('fiscal_month') . '-' . $daysInMonth . ' - 1 year + 1 day'));
-$to = $year . '-' . $month . '-' . cal_days_in_month(CAL_GREGORIAN, $month, $year);
-$stop_date = date('Y-m-d', strtotime($to . ' + 1 day'));
-*/
+
 $dates = $journal->getFiscalDates($coid, $year, $month);
-$from = $dates['from'];
 $to = $dates['to'];
 $stop_date = $dates['stop_date'];
+
+
+if($dates['archive'] == TRUE) {
+    $from = $dates['from'];
+   
+    //extract data from archive tables
+    $table_accounts = "ek_accounts_" . $year . "_" . $coid;
+    $table_journal = "ek_journal_" . $year . "_" . $coid;
+    
+    $alert = "<div class='messages messages--warning'>" .
+                t('Archive data') .
+             "</div>";
+} else {
+    $from = $dates['fiscal_start'];
+    //extract data from current tables
+    $table_accounts = "ek_accounts";
+    $table_journal = "ek_journal";
+    
+    $alert = "<div>" .
+                t('Fiscal year'). ' : ' . $dates['fiscal_year'] .
+             "</div>";
+}
 
 ////////////////////// REVENUE /////////////////////////////
 //header account
@@ -39,7 +54,7 @@ $table_1 = "<table style= border=0 cellpadding=1 cellspacing=0 class=''>
         
 
 
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE (aid like :aid1 or aid like :aid2) "
         . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
 $a = array( ':aid1' => $chart['income'] . '%',
@@ -54,7 +69,7 @@ $table_1 .= style('header',$rh->aid, $rh->aname );
 
 
 
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE (aid like :aid1 or aid like :aid2) "
         . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
 $a = array(
@@ -78,7 +93,7 @@ $aid = substr($r->aid, 0 , 2);
 $total_detail = 0;
 $total_detail_l = 0;
 
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE aid like :aid AND atype=:type AND coid=:coid order by aid";
 $a = array(':aid'=> $aid . '%' ,':type' => 'detail', ':coid' => $coid);
 $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
@@ -91,8 +106,9 @@ $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
                 'type' => 'debit',
                 'coid' => $coid,
                 'from' => $from,
-                'to' => $to
-                 )
+                'to' => $to,
+                'archive' => $dates['archive']
+                 ) 
                 );
     
         $c = $journal->transactions(
@@ -101,7 +117,8 @@ $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
                 'type' => 'credit',
                 'coid' => $coid,
                 'from'=> $from,
-                'to'=> $to
+                'to'=> $to,
+                'archive' => $dates['archive']
                  )
                 );    
     $b = $c[0]-$d[0];
@@ -142,7 +159,7 @@ $table_2 = "<table style= border=0 cellpadding=1 cellspacing=0 class=''>
     <tbody class=''>"; 
 
 
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE aid like :aid AND atype=:type AND astatus=:status AND coid=:coid order by aid";
 $a = array(
             ':aid' => $chart['cos'] . '%', 
@@ -154,7 +171,7 @@ $rh = Database::getConnection('external_db', 'external_db')->query($q,$a)->fetch
 $table_2 .= style('header',$rh->aid,$rh->aname );
 
 
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE aid like :aid AND atype=:type AND astatus=:status AND coid=:coid order by aid";
 $a = array(
             ':aid' => $chart['cos'] . '%', 
@@ -175,7 +192,7 @@ $aid = substr($r->aid,0,2);
 $total_detail = 0;
 $total_detail_l = 0;
 
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE aid like :aid AND atype=:type AND coid=:coid order by aid";
 $a = array(':aid' => $aid . '%', ':type' => 'detail', ':coid' => $coid);
 $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
@@ -188,7 +205,8 @@ $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
                 'type' => 'debit',
                 'coid' => $coid,
                 'from' => $from,
-                'to' => $to
+                'to' => $to,
+                'archive' => $dates['archive']
                  )
                 );
     
@@ -198,7 +216,8 @@ $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
                 'type' => 'credit',
                 'coid' => $coid,
                 'from' => $from,
-                'to' => $to
+                'to' => $to,
+                'archive' => $dates['archive']
                  )
                 );    
         
@@ -243,7 +262,7 @@ $table_3 = "<table style= border=0 cellpadding=1 cellspacing=0 class=''>
     <tbody class=''>"; 
 
 
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE (aid like :aid1 or aid like :aid2) "
         . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
 $a = array(
@@ -258,7 +277,7 @@ $rh =  Database::getConnection('external_db', 'external_db')->query($q,$a)->fetc
 $table_3 .= style('header', $rh->aid,$rh->aname );
 
 
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE (aid like :aid1 or aid like :aid2) "
         . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
 $a = array(
@@ -281,7 +300,7 @@ $aid = substr($r->aid,0,2);
 $total_detail = 0;
 $total_detail_l = 0;
 
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE aid like :aid AND atype=:type AND coid=:coid order by aid";
 $a = array(':aid'=> $aid . '%',':type'=>'detail',':coid'=>$coid);
 
@@ -295,7 +314,8 @@ $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
                 'type' => 'debit',
                 'coid' => $coid,
                 'from' => $from,
-                'to' => $to
+                'to' => $to,
+                'archive' => $dates['archive']
                  )
                 );
     
@@ -305,7 +325,8 @@ $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
                 'type' => 'credit',
                 'coid' => $coid,
                 'from' => $from,
-                'to'=> $to
+                'to'=> $to,
+                'archive' => $dates['archive']
                  )
                 );    
         
@@ -349,7 +370,11 @@ $table_4 .= style('netasset' , t('Profit (loss)') , ' ' ,$result,$result_l, $c);
 $table_4 .= '</tbody></table>';
 
 
-
+if (isset($alert)) {
+    $table_5 = $alert;
+} else {
+    $table_5 = "";
+}
 
 
 

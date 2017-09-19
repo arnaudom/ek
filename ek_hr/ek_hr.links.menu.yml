@@ -4,7 +4,7 @@ ek_hr.menu:
   route_name: ek_hr.main
   expanded: true
   hidden: 0
-  weight: 8    
+  weight: 10    
  
 ek_hr.menu_parameters:
   title: 'Edit parameters'

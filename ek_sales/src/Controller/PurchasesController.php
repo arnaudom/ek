@@ -120,7 +120,7 @@ class PurchasesController extends ControllerBase {
          */
 
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
-        $query = Database::getConnection('external_db', 'external_db')->select('ek_purchase', 'p');
+        $query = Database::getConnection('external_db', 'external_db')->select('ek_sales_purchase', 'p');
         $or1 = db_or();
         $or1->condition('head', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');
@@ -159,7 +159,7 @@ class PurchasesController extends ControllerBase {
 
                 $data = $query
                         ->fields('p', array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                            'amount', 'amountpaid', 'pcode', 'taxvalue', 'pdate', 'alert', 'alert_who', 'uri'))
+                            'amount', 'amountpaid', 'pcode', 'taxvalue', 'pdate', 'alert', 'alert_who', 'uri', 'type'))
                         ->condition($or1)
                         ->condition($or2)
                         ->condition('p.client', $_SESSION['pfilter']['client'], 'like')
@@ -178,7 +178,7 @@ class PurchasesController extends ControllerBase {
                     $or2->condition('p.serial', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
                     $or2->condition('p.pcode', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
                     $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                            'amount', 'amountpaid', 'pcode', 'taxvalue', 'pdate', 'alert', 'alert_who', 'uri');
+                            'amount', 'amountpaid', 'pcode', 'taxvalue', 'pdate', 'alert', 'alert_who', 'uri', 'type');
                     $data = $query
                             ->fields('p', $f)
                             ->condition($or1)
@@ -193,7 +193,7 @@ class PurchasesController extends ControllerBase {
         } else {
 
             $from = Database::getConnection('external_db', 'external_db')
-                            ->query("SELECT SQL_CACHE date from {ek_purchase} order by date limit 1")->fetchField();
+                            ->query("SELECT SQL_CACHE date from {ek_sales_purchase} order by date limit 1")->fetchField();
 
             $param = serialize(array(
                 'coid' => '%',
@@ -213,7 +213,7 @@ class PurchasesController extends ControllerBase {
 
             $data = $query
                     ->fields('p', array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                        'amount', 'amountpaid', 'pcode', 'taxvalue', 'pdate', 'alert', 'alert_who', 'uri'))
+                        'amount', 'amountpaid', 'pcode', 'taxvalue', 'pdate', 'alert', 'alert_who', 'uri', 'type'))
                     ->condition($or1)
                     ->condition($or2)
                     ->condition('p.client', '%', 'like')
@@ -250,7 +250,11 @@ class PurchasesController extends ControllerBase {
             if ($r->head <> $r->allocation) {
                 $co = $co . "<br/>" . t('for') . ": " . $companies[$r->allocation];
             }
-            $number = "<a title='" . t('view') . "' href='"
+            $doctype = '';
+            if($r->type == 4) {
+                $doctype = 'green';
+            }
+            $number = "<a class='". $doctype ."' title='" . t('view') . "' href='"
                     . Url::fromRoute('ek_sales.purchases.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
             if ($r->pcode <> 'n/a') {
@@ -294,8 +298,13 @@ class PurchasesController extends ControllerBase {
                 $weight = 0;
             }
             $duetitle = t('past due') . ' ' . -1 * $long . ' ' . t('day(s)');
-            $value = $r->currency . ' ' . number_format($r->amount, 2);
-            $query = 'SELECT sum(total) from {ek_purchase_details} WHERE serial=:s and opt=:o';
+            if($r->type < 4) {
+                $value = $r->currency . ' ' . number_format($r->amount, 2);
+            } else {
+                $value = $r->currency . ' (' . number_format($r->amount, 2) . ')';
+            }
+            
+            $query = 'SELECT sum(total) from {ek_sales_purchase_details} WHERE serial=:s and opt=:o';
             $taxable = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':s' => $r->serial, ':o' => 1))
                     ->fetchField();
@@ -339,11 +348,20 @@ class PurchasesController extends ControllerBase {
                 );
             }
             if ($r->status != 1) {
-                $links['pay'] = array(
-                    'title' => $this->t('Pay'),
-                    'url' => Url::fromRoute('ek_sales.purchases.pay', ['id' => $r->id]),
-                    'weight' => $weight,
-                );
+                if($r->type < 3) {
+                    $links['pay'] = array(
+                        'title' => $this->t('Receive'),
+                        'url' => Url::fromRoute('ek_sales.purchases.pay', ['id' => $r->id]),
+                        'weight' => $weight,
+                    );
+                } elseif($r->type == 4) {
+                    $links['pay'] = array(
+                        'title' => $this->t('Assign debit note'),
+                        'url' => Url::fromRoute('ek_sales.purchases.assign.dn', ['id' => $r->id]),
+                        'weight' => $weight,
+                    );                    
+                }                
+
             }
             if ($r->alert == 1)
                 $alert = t('on');
@@ -428,7 +446,7 @@ class PurchasesController extends ControllerBase {
 
 
             $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_purchase', 'p');
+                    ->select('ek_sales_purchase', 'p');
             $fields = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
                 'amount', 'amountpaid', 'amountbc', 'balancebc', 'pcode', 'taxvalue');
 
@@ -536,7 +554,7 @@ class PurchasesController extends ControllerBase {
                     $basevalue = $r->amountbc;
                 }
 
-                $query = 'SELECT sum(total) from {ek_purchase_details} WHERE serial=:s and opt=:o';
+                $query = 'SELECT sum(total) from {ek_sales_purchase_details} WHERE serial=:s and opt=:o';
                 $taxable = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':s' => $r->serial, ':o' => 1))
                         ->fetchField();
@@ -790,7 +808,7 @@ class PurchasesController extends ControllerBase {
             $or1->condition('allocation', $access, 'IN');
 
             $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_purchase', 'p');
+                    ->select('ek_sales_purchase', 'p');
             $query->leftJoin('ek_address_book', 'b', 'p.client=b.id');
             $query->leftJoin('ek_company', 'c', 'p.head=c.id');
 
@@ -861,6 +879,19 @@ class PurchasesController extends ControllerBase {
 
     /**
      * @retun
+     *  Debit note assignment form for recording payment
+     * @param $id = id of Debdit note
+     *
+     */
+    public function AssignDebitNote($id) {
+        $build['assign_debit_note'] = $this->formBuilder
+                ->getForm('Drupal\ek_sales\Form\AssignNote','DT', $id);
+
+        return $build;
+    }
+    
+    /**
+     * @retun
      *  Form for setting a cron alert
      * @param $id = id of purchase
      *
@@ -902,23 +933,23 @@ class PurchasesController extends ControllerBase {
             switch ($_SESSION['taskfilter']['type']) {
 
                 case 0:
-                    $query = "SELECT * FROM {ek_purchase_tasks} order by id";
+                    $query = "SELECT * FROM {ek_sales_purchase_tasks} order by id";
                     $a = [];
                     break;
                 case 1:
-                    $query = "SELECT * FROM {ek_purchase_tasks} WHERE completion_rate >=:v order by id ";
+                    $query = "SELECT * FROM {ek_sales_purchase_tasks} WHERE completion_rate >=:v order by id ";
                     $a = [':v' => '100'];
                     break;
                 case 2:
-                    $query = "SELECT * FROM {ek_purchase_tasks} WHERE completion_rate<:v or completion_rate = :n order by id";
+                    $query = "SELECT * FROM {ek_sales_purchase_tasks} WHERE completion_rate<:v or completion_rate = :n order by id";
                     $a = [':v' => 100, ':n' => ''];
                     break;
                 case 3:
-                    $query = "SELECT * FROM {ek_purchase_tasks} WHERE uid=:v order by id";
+                    $query = "SELECT * FROM {ek_sales_purchase_tasks} WHERE uid=:v order by id";
                     $a = [':v' => \Drupal::currentUser()->id()];
                     break;
                 case 4:
-                    $query = "SELECT * FROM {ek_purchase_tasks} WHERE end < :v order by id";
+                    $query = "SELECT * FROM {ek_sales_purchase_tasks} WHERE end < :v order by id";
                     $a = [':v' => $stamp];
                     break;
             }
@@ -959,7 +990,7 @@ class PurchasesController extends ControllerBase {
                     }
                 }
 
-                $query = "SELECT id FROM {ek_purchase} WHERE serial=:s";
+                $query = "SELECT id FROM {ek_sales_purchase} WHERE serial=:s";
                 $id = Database::getConnection('external_db', 'external_db')
                                 ->query($query, [':s' => $r->serial])->fetchField();
                 $url = Url::fromRoute('ek_sales.purchases.task', ['id' => $id])->toString();
@@ -1048,7 +1079,7 @@ class PurchasesController extends ControllerBase {
     public function PrintSharePurchases($id) {
 
         //filter access to document
-        $query = "SELECT `head`, `allocation` FROM {ek_purchase} WHERE id=:id";
+        $query = "SELECT `head`, `allocation` FROM {ek_sales_purchase} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, [':id' => $id])
                 ->fetchObject();
@@ -1122,7 +1153,7 @@ class PurchasesController extends ControllerBase {
     public function Html($id) {
 
         //filter access to document
-        $query = "SELECT `head`, `allocation` FROM {ek_purchase} WHERE id=:id";
+        $query = "SELECT `head`, `allocation` FROM {ek_sales_purchase} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, [':id' => $id])
                 ->fetchObject();
@@ -1186,7 +1217,7 @@ class PurchasesController extends ControllerBase {
      */
     public function Excel($id) {
         //filter access to document
-        $query = "SELECT `head`, `allocation` FROM {ek_purchase} WHERE id=:id";
+        $query = "SELECT `head`, `allocation` FROM {ek_sales_purchase} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, [':id' => $id])
                 ->fetchObject();

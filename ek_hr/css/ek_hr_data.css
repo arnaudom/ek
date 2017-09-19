@@ -1,10 +1,15 @@
 .title {
-width: 25%;
-
+    width: 25%;
 }
 
 .data {
-color: #2E64FE;
-font-size: 1.1em;
-background-color: #FFF;
+    color: #2E64FE;
+    font-size: 1.1em;
+    background-color: #FFF;
+}
+
+.data-avatar {
+    border-radius: 50%;
+    width: 128px;
+    box-shadow: 0 0 1px rgba(0,0,0,0.11),0 1px 2px rgba(0,0,0,0.22);
 }

@@ -43,6 +43,7 @@ class NewInvoice extends FormBase {
    *   The module handler.
    */
   public function __construct(ModuleHandler $module_handler) {
+    
     $this->moduleHandler = $module_handler;
     if($this->moduleHandler->moduleExists('ek_finance')) {
         $this->settings = new FinanceSettings();
@@ -69,125 +70,145 @@ class NewInvoice extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $clone = NULL) {
-  
-  if(isset($id) && $id != NULL  ) {
- 
-  //edit existing invoice
-  
-  If($clone != 'delivery') {
-    $query = "SELECT * from {ek_invoice} where id=:id";
-    $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
-    $query = "SELECT * FROM {ek_invoice_details} where serial=:id ORDER BY id";
-    $detail = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $data->serial));
-    $fx_rate =  round($data->amount/$data->amountbase, 4);
-    $form_state->set('fx_rate', $fx_rate);
-    if($fx_rate != '1') {
-        $form_state->set('fx_rate_require', TRUE);
-    } else {
-        $form_state->set('fx_rate_require', FALSE);
-    }
-  
-  } elseif($clone == 'delivery' && $this->moduleHandler->moduleExists('ek_logistics')) {
-  //convert delivery order into invoice with new serial No
-
-    $query = "SELECT * from {ek_logi_delivery} where id=:id";
-    $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
-    $query = "SELECT * FROM {ek_logi_delivery_details} where serial=:id";
-    $detail = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $data->serial));
-
-  
-  }
- 
-
-  If($clone != 'clone' && $clone != 'delivery') {
-      $form['edit_invoice'] = array(
-        '#type' => 'item',
-        '#markup' => t('Invoice ref. @p', array('@p' => $data->serial)),    
-      );  
-     
-     $form['serial'] = array(
-        '#type' => 'hidden',
-        '#value' => $data->serial,
-
-      ); 
-  } elseif ($clone == 'clone') {
-  //duplicate existing invoice with new serial No
       
-      $form['clone_invoice'] = array(
-        '#type' => 'item',
-        '#markup' => t('Template invoice based on ref. @p . A new invoice will be generated.', array('@p' => $data->serial)),    
-      );    
-      
-      $data->date = date('Y-m-d');
-
-      $form['new_invoice'] = array(
-        '#type' => 'hidden',
-        '#value' => 1,
-      );
-      
-  } elseif($clone == 'delivery') {
-  //convert delivery order into invoice with new serial No
-     $form['clone_invoice'] = array(
-        '#type' => 'item',
-        '#markup' => t('Convert delivery order ref. @p .', array('@p' => $data->serial)),    
-      ); 
-
-     $form['do'] = array(
-        '#type' => 'hidden',
-        '#value' => $data->serial,
-      );   
-     
-     $form['new_invoice'] = array(
-        '#type' => 'hidden',
-        '#value' => 1,
-     );      
-    
-    $data->date = $data->ddate;
-    $data->comment = $data->serial;
-     
-  }
-
- 
-        
-  $n = 0;
-  $form_state->set('current_items', 0);
-  if(!$form_state->get('num_items'))  {
-      $form_state->set('num_items', 0);
-  }
-  
-  if(!$form_state->getValue('head')) {
-      $form_state->setValue('head', $data->head);
-  }
-  if(!$form_state->getValue('currency')) {
-      $form_state->setValue('currency', $data->currency);
-  }
-
-    if($this->moduleHandler->moduleExists('ek_finance')) {
-      $chart = $this->settings->get('chart');
-      $AidOptions = AidList::listaid($data->head, array($chart['income'],$chart['other_income']), 1 );
-      $baseCurrency = $this->settings->get('baseCurrency');
-      if($baseCurrency <> $data->currency) { $requireFx = TRUE;} else { $requireFx = FALSE;}
-    
-    }  
-  
-  
-  
-  } else {
-  //new
-      $form['new_invoice'] = array(
-      '#type' => 'hidden',
-      '#value' => 1,
+    $url = Url::fromRoute('ek_sales.invoices.list', array(), array())->toString();
+    $form['back'] = array(
+      '#type' => 'item',
+      '#markup' => t('<a href="@url" >List</a>', array('@url' => $url ) ) ,
 
     );
+      
+  
+    if(isset($id) && $id != NULL  ) {
 
-  $grandtotal = 0;
-  $taxable = 0;
-  $n = 0;
-  $AidOptions = array();
-  $form_state->set('fx_rate_require', FALSE);
-  $detail = NULL;
-  $data = NULL;
-  }
+    //edit existing invoice
+
+    If($clone != 'delivery') {
+      $query = "SELECT * from {ek_sales_invoice} where id=:id";
+      $data = Database::getConnection('external_db', 'external_db')
+              ->query($query, array(':id' => $id))
+              ->fetchObject();
+      $query = "SELECT * FROM {ek_sales_invoice_details} where serial=:id ORDER BY id";
+      $detail = Database::getConnection('external_db', 'external_db')
+              ->query($query, array(':id' => $data->serial));
+      $fx_rate =  round($data->amount/$data->amountbase, 4);
+      $form_state->set('fx_rate', $fx_rate);
+      if($fx_rate != '1') {
+          $form_state->set('fx_rate_require', TRUE);
+      } else {
+          $form_state->set('fx_rate_require', FALSE);
+      }
+      
+      $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'),'4' => t('Credit note'));
+
+    } elseif($clone == 'delivery' && $this->moduleHandler->moduleExists('ek_logistics')) {
+    //convert delivery order into invoice with new serial No
+
+      $query = "SELECT * from {ek_logi_delivery} where id=:id";
+      $data = Database::getConnection('external_db', 'external_db')
+              ->query($query, array(':id' => $id))
+              ->fetchObject();
+      $query = "SELECT * FROM {ek_logi_delivery_details} where serial=:id";
+      $detail = Database::getConnection('external_db', 'external_db')
+              ->query($query, array(':id' => $data->serial));
+
+      $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'));
+    }
+
+
+    If($clone != 'clone' && $clone != 'delivery') {
+        
+        $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'), '4' => t('Credit note'));
+        $form['edit_invoice'] = array(
+          '#type' => 'item',
+          '#markup' => t('Invoice ref. @p', array('@p' => $data->serial)),    
+        );  
+
+       $form['serial'] = array(
+          '#type' => 'hidden',
+          '#value' => $data->serial,
+
+        ); 
+    } elseif ($clone == 'clone') {
+    //duplicate existing invoice with new serial No
+        $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'), '4' => t('Credit note'));
+        $form['clone_invoice'] = array(
+          '#type' => 'item',
+          '#markup' => t('Template invoice based on ref. @p . A new invoice will be generated.', array('@p' => $data->serial)),    
+        );    
+
+        $data->date = date('Y-m-d');
+
+        $form['new_invoice'] = array(
+          '#type' => 'hidden',
+          '#value' => 1,
+        );
+
+    } elseif($clone == 'delivery') {
+    //convert delivery order into invoice with new serial No
+       $options = array('1' => t('Invoice'), '2' => t('Commercial invoice')); 
+       
+       $form['clone_invoice'] = array(
+          '#type' => 'item',
+          '#markup' => t('Convert delivery order ref. @p .', array('@p' => $data->serial)),    
+        ); 
+
+       $form['do'] = array(
+          '#type' => 'hidden',
+          '#value' => $data->serial,
+        );   
+
+       $form['new_invoice'] = array(
+          '#type' => 'hidden',
+          '#value' => 1,
+       );      
+
+      $data->date = $data->ddate;
+      $data->comment = $data->serial;
+
+    }
+
+
+
+    $n = 0;
+    $form_state->set('current_items', 0);
+    if(!$form_state->get('num_items'))  {
+        $form_state->set('num_items', 0);
+    }
+
+    if(!$form_state->getValue('head')) {
+        $form_state->setValue('head', $data->head);
+    }
+    if(!$form_state->getValue('currency')) {
+        $form_state->setValue('currency', $data->currency);
+    }
+
+      if($this->moduleHandler->moduleExists('ek_finance')) {
+        $chart = $this->settings->get('chart');
+        $AidOptions = AidList::listaid($data->head, array($chart['income'],$chart['other_income']), 1 );
+        $baseCurrency = $this->settings->get('baseCurrency');
+        if($baseCurrency <> $data->currency) { $requireFx = TRUE;} else { $requireFx = FALSE;}
+
+      }  
+
+
+
+    } else {
+    //new
+        $form['new_invoice'] = array(
+            '#type' => 'hidden',
+            '#value' => 1,
+        );
+
+        $grandtotal = 0;
+        $taxable = 0;
+        $n = 0;
+        $AidOptions = array();
+        $form_state->set('fx_rate_require', FALSE);
+        $detail = NULL;
+        $data = NULL;
+        $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'), '4' => t('Credit note'));
+    }
     
 
  
@@ -203,8 +224,8 @@ class NewInvoice extends FormBase {
                 '#markup' => $alert,
             );          
         }
-  }
-
+  } 
+    
     $form['options'] = array(
       '#type' => 'details',
       '#title' => $this->t('Options'),
@@ -296,13 +317,13 @@ class NewInvoice extends FormBase {
       '#suffix' => '</div>',
     );     
 
-    $options = array(t('Invoice'), t('Commercial invoice'), t('Credit note'), t('Debit note'));
+    
     $form['options']['title'] = array(
       '#type' => 'select',
       '#size' => 1,
-      '#options' => array_combine($options,$options),
+      '#options' => $options,
       '#required' => TRUE,
-      '#default_value' => isset($data->title) ? $data->title : 0,
+      '#default_value' => isset($data->type) ? $data->type : 1,
       '#title' => t('Title'),
       '#prefix' => "<div class='cell'>",
       '#suffix' => '</div></div></div>',
@@ -1030,21 +1051,43 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+      
+      $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'), '4' => t('Credit note'));
 
       if ($form_state->getValue('new_invoice') == 1 ) {
-      //create new serial No
-      $iid = Database::getConnection('external_db', 'external_db')->query("SELECT count(id) from {ek_invoice}")->fetchField();
-      $iid++;
-      $short = Database::getConnection('external_db', 'external_db')->query("SELECT short from {ek_company} where id=:id", array(':id' => $form_state->getValue('head')))->fetchField();
-      $date = substr($form_state->getValue('date'), 2,5);
-      $sup = Database::getConnection('external_db', 'external_db')->query("SELECT shortname from {ek_address_book} where id=:id", array(':id' => $form_state->getValue('client')))->fetchField();      
-      $serial = ucwords(str_replace('-', '', $short)) . "-I-" . $date . "-" .  ucwords(str_replace('-', '',$sup )) . "-" . $iid ;
+        //create new serial No
+          
+        switch ($form_state->getValue('title')) {
+            case '4':
+                $type = "-CN-";
+                break;
+            default:
+                $type = "-I-";
+                break;
+        }
+        $iid = Database::getConnection('external_db', 'external_db')
+                ->query("SELECT count(id) from {ek_sales_invoice}")
+                ->fetchField();
+        $iid++;
+        $short = Database::getConnection('external_db', 'external_db')
+                ->query("SELECT short from {ek_company} where id=:id", array(':id' => $form_state->getValue('head')))
+                ->fetchField();
+        $date = substr($form_state->getValue('date'), 2,5);
+        $sup = Database::getConnection('external_db', 'external_db')
+                ->query("SELECT shortname from {ek_address_book} where id=:id", array(':id' => $form_state->getValue('client')))
+                ->fetchField();      
+        $serial = ucwords(str_replace('-', '', $short)) . $type . $date . "-" .  ucwords(str_replace('-', '',$sup )) . "-" . $iid ;
       
       } else {
       //edit
       $serial = $form_state->getValue('serial');
-      $delete = Database::getConnection('external_db', 'external_db')->delete('ek_invoice_details')->condition('serial', $serial)->execute();
-      $iid = Database::getConnection('external_db', 'external_db')->query('SELECT id from {ek_invoice} where serial=:s', array(':s' => $serial))->fetchField();
+      $delete = Database::getConnection('external_db', 'external_db')
+              ->delete('ek_sales_invoice_details')
+              ->condition('serial', $serial)
+              ->execute();
+      $iid = Database::getConnection('external_db', 'external_db')
+              ->query('SELECT id from {ek_sales_invoice} where serial=:s', array(':s' => $serial))
+              ->fetchField();
       }
   
   $fx_rate = round($form_state->getValue('fx_rate'),4);
@@ -1126,7 +1169,8 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
                   'aid' => $account
                   );
       
-    $insert = Database::getConnection('external_db', 'external_db')->insert('ek_invoice_details')
+    $insert = Database::getConnection('external_db', 'external_db')
+      ->insert('ek_sales_invoice_details')
       ->fields($fields)
       ->execute();  
     
@@ -1164,7 +1208,8 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
         $amountbc = $sum;
     } 
     
-      $fields1 = array (
+    
+    $fields1 = array (
                 'serial' => $serial,
                 'head' => $form_state->getValue('head'),
                 'allocation' => $form_state->getValue('allocation'),
@@ -1172,7 +1217,8 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
                 'amount' => $sum,
                 'currency' => $form_state->getValue('currency'),
                 'date' => $form_state->getValue('date'),
-                'title' => $form_state->getValue('title'),
+                'title' => $options[$form_state->getValue('title')],
+                'type' => $form_state->getValue('title'),
                 'pcode' => $pcode,
                 'comment' => Xss::filter($form_state->getValue('comment')),
                 'client' => $form_state->getValue('client'),
@@ -1189,13 +1235,13 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
                 );
                     
   if ($form_state->getValue('new_invoice') && $form_state->getValue('new_invoice') == 1 ) {
-  $insert = Database::getConnection('external_db', 'external_db')->insert('ek_invoice')
+  $insert = Database::getConnection('external_db', 'external_db')->insert('ek_sales_invoice')
     ->fields($fields1)
     ->execute(); 
   $reference = $insert;
   
   } else {
-  $update = Database::getConnection('external_db', 'external_db')->update('ek_invoice')
+  $update = Database::getConnection('external_db', 'external_db')->update('ek_sales_invoice')
     ->fields($fields1)
     ->condition('serial' , $serial)
     ->execute();
@@ -1216,14 +1262,21 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
     }
     //
     // Record the accounting journal
+    // Credit  notes are not recorded in journal, only once assigned to sales
+    // (a CN is deduction of receivable) 
     //
-    if($this->moduleHandler->moduleExists('ek_finance')) {
-    
+    if($form_state->getValue('title') < 4 
+            && $this->moduleHandler->moduleExists('ek_finance')) {
+        
         //
         // delete first
         //          
         if ( !$form_state->getValue('new_invoice') == 1 ) {
-          $delete = Database::getConnection('external_db', 'external_db')->delete('ek_journal')->condition('reference', $iid)->condition('source', 'invoice')->execute();
+          $delete = Database::getConnection('external_db', 'external_db')
+                  ->delete('ek_journal')
+                  ->condition('reference', $iid)
+                  ->condition('source', 'invoice')
+                  ->execute();
         }
         
         
@@ -1273,7 +1326,7 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
   
   Cache::invalidateTags(['project_page_view']);
   if (isset($insert) || isset($update) )  {
-      drupal_set_message(t('The invoice is recorded. Ref. @r', array('@r' => $serial)), 'status');
+      drupal_set_message(t('The @doc is recorded. Ref. @r', array('@r' => $serial, '@doc' => $options[$form_state->getValue('title')])), 'status');
   }
         switch($form_state->getValue('redirect')) {
             case 0 :

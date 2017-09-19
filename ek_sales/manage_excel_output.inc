@@ -26,7 +26,7 @@ $output_format = $param[6];
 */
 
 $head = Database::getConnection('external_db', 'external_db')
-        ->query("SELECT * from {ek_". $source. "} where id=:id", array(':id' => $id))->fetchObject();
+        ->query("SELECT * FROM {ek_sales_". $source. "} WHERE id=:id", array(':id' => $id))->fetchObject();
 
 
 Switch ($source) {
@@ -35,7 +35,7 @@ Switch ($source) {
     case 'purchase':
     
     $lines = Database::getConnection('external_db', 'external_db')
-            ->query("SELECT * from {ek_". $source. "_details} where serial=:s ORDER BY id", array(':s' => $head->serial));
+            ->query("SELECT * FROM {ek_sales_". $source. "_details} WHERE serial=:s ORDER BY id", array(':s' => $head->serial));
 
     $items = array();
     $taxline = 0;
@@ -44,7 +44,7 @@ Switch ($source) {
         $data = array();
         if ($line->itemdetail != '') {
         
-        $query = "SELECT * from {ek_items} where id=:id";
+        $query = "SELECT * FROM {ek_items} WHERE id=:id";
         $thisitem = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $line->itemdetail))
                 ->fetchObject();
@@ -97,25 +97,25 @@ Switch ($source) {
     $items['taxable'] = $taxline;
     $items['taxamount'] = $taxline * $head->taxvalue / 100;
 
-    $query = "SELECT * from {ek_company} where id=:id";
+    $query = "SELECT * FROM {ek_company} WHERE id=:id";
     $company = Database::getConnection('external_db', 'external_db')
             ->query($query, array(':id' => $head->head))
             ->fetchObject();
 
-    $query = "SELECT * from {ek_address_book} where id=:id";
+    $query = "SELECT * FROM {ek_address_book} WHERE id=:id";
     $client = Database::getConnection('external_db', 'external_db')
             ->query($query, array(':id' => $head->client))
             ->fetchObject();
 
     if($contact != '') {
     //selected contact from list
-    $query = "SELECT * from {ek_address_book_contacts} where id=:id ";
+    $query = "SELECT * FROM {ek_address_book_contacts} WHERE id=:id ";
     $client_card = Database::getConnection('external_db', 'external_db')
             ->query($query, array(':id' => $contact))
             ->fetchObject();    
     } else {
     //default contact
-    $query = "SELECT * from {ek_address_book_contacts} where abid=:id and main=:m";
+    $query = "SELECT * FROM {ek_address_book_contacts} WHERE abid=:id and main=:m";
     $client_card = Database::getConnection('external_db', 'external_db')
             ->query($query, array(':id' => $client->id, ':m' => 1))
             ->fetchObject();
@@ -123,7 +123,7 @@ Switch ($source) {
 
     if($source == 'invoice') {
         //collect bank data
-        $query = "SELECT * from {ek_bank_accounts} ba "
+        $query = "SELECT * FROM {ek_bank_accounts} ba "
                 . "LEFT JOIN {ek_bank} b "
                 . "ON ba.bid=b.id "
                 . "WHERE ba.id=:id ";
@@ -136,10 +136,10 @@ Switch ($source) {
     case 'quotation':
     
     //use last revision
-    $query = "SELECT DISTINCT revision FROM {ek_quotation_details} WHERE serial=:s order by revision DESC";
+    $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision DESC";
     $revision = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $head->serial))->fetchField();  
     $lines = Database::getConnection('external_db', 'external_db')
-            ->query("SELECT * from {ek_". $source. "_details} WHERE serial=:s and revision=:r ORDER BY id", array(':s' => $head->serial, ':r' => $revision));
+            ->query("SELECT * FROM {ek_sales_". $source. "_details} WHERE serial=:s and revision=:r ORDER BY id", array(':s' => $head->serial, ':r' => $revision));
 
     $items = array();
     $taxline = 0;
@@ -214,7 +214,7 @@ Switch ($source) {
     $items['tax_rate'] = $tax[1];
     
     
-    $query = "SELECT * from {ek_quotation_settings} ";
+    $query = "SELECT * from {ek_sales_quotation_settings} ";
     $data = Database::getConnection('external_db', 'external_db')->query($query);
     $i = 1;
     While ($r = $data->fetchObject()) {
@@ -240,7 +240,7 @@ Switch ($source) {
     }
     
     //change quotation status
-    Database::getConnection('external_db', 'external_db')->update('ek_quotation')
+    Database::getConnection('external_db', 'external_db')->update('ek_sales_quotation')
     ->fields(array('status' => 1))
     ->condition('id',$id)
     ->execute();

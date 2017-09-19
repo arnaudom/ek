@@ -57,10 +57,10 @@ class ResetPay extends FormBase {
 
         switch ($doc) {
             case 'invoice':
-                $query = "SELECT head,status,serial from {ek_invoice} where id=:id";
+                $query = "SELECT head,status,serial from {ek_sales_invoice} where id=:id";
                 break;
             case 'purchase' :
-                $query = "SELECT head,status,serial from {ek_purchase} where id=:id";
+                $query = "SELECT head,status,serial from {ek_sales_purchase} where id=:id";
                 break;
         }
 
@@ -159,7 +159,7 @@ class ResetPay extends FormBase {
 
         switch ($form_state->getValue('for_doc')) {
             case 'invoice':
-                $query = "SELECT amountbase from {ek_invoice} where id=:id";
+                $query = "SELECT amountbase from {ek_sales_invoice} where id=:id";
                 $ab = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $form_state->getValue('for_id')))
                         ->fetchField();
@@ -172,7 +172,7 @@ class ResetPay extends FormBase {
                 ];
 
                 $update = Database::getConnection('external_db', 'external_db')
-                        ->update('ek_invoice')
+                        ->update('ek_sales_invoice')
                         ->condition('id', $form_state->getValue('for_id'))
                         ->fields($fields)
                         ->execute();
@@ -189,7 +189,7 @@ class ResetPay extends FormBase {
                 break;
                 
             case 'purchase' :
-                $query = "SELECT amountbc from {ek_purchase} where id=:id";
+                $query = "SELECT amountbc from {ek_sales_purchase} where id=:id";
                 $ab = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $form_state->getValue('for_id')))
                         ->fetchField();
@@ -202,7 +202,7 @@ class ResetPay extends FormBase {
                 ];
 
                 $update = Database::getConnection('external_db', 'external_db')
-                        ->update('ek_purchase')
+                        ->update('ek_sales_purchase')
                         ->condition('id', $form_state->getValue('for_id'))
                         ->fields($fields)
                         ->execute();

@@ -64,7 +64,7 @@ class EditCompanyForm extends FormBase {
 
         $form['for_id'] = array(
           '#type' => 'hidden',
-          '#default_value' =>$id,
+          '#default_value' => $id,
 
         ); 
         
@@ -388,6 +388,7 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
         }
     
 }
+if(!$this->moduleHandler->moduleExists('ek_finance')) {
           $form['f']['accounts_year'] = array(
               '#type' => 'textfield',
               '#size' => 6,
@@ -405,7 +406,27 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
               '#attributes' => array('placeholder'=>t('month. ex.12')),
               '#description' => t('financial month'),
             );
+} else {
+    $settings = new \Drupal\ek_admin\CompanySettings($id);
+            $form['f']['accounts_year'] = array(
+              '#type' => 'textfield',
+              '#size' => 6,
+              '#disabled' => TRUE,
+              '#maxlength' => 4,
+              '#default_value' => $settings->get('fiscal_year'),
+              '#description' => t('financial year'),
+            );
 
+            $form['f']['accounts_month'] = array(
+              '#type' => 'textfield',
+              '#size' => 6,
+              '#disabled' => TRUE,
+              '#maxlength' => 2,
+              '#default_value' => $settings->get('fiscal_month'),
+              '#description' => t('financial month'),
+            );
+          
+}
           $form['f']['itax_no'] = array(
               '#type' => 'textfield',
               '#size' => 20,

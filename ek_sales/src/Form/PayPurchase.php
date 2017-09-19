@@ -61,7 +61,7 @@ class PayPurchase extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
 
         $data = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT * from {ek_purchase} where id=:id", array(':id' => $id))
+                ->query("SELECT * from {ek_sales_purchase} where id=:id", array(':id' => $id))
                 ->fetchObject();
 
         $form['edit_purchase'] = array(
@@ -126,7 +126,7 @@ class PayPurchase extends FormBase {
         }
 
         if ($data->taxvalue > 0) {
-            $query = "SELECT sum(quantity*value) from {ek_purchase_details} WHERE serial=:s and opt=:o";
+            $query = "SELECT sum(quantity*value) from {ek_sales_purchase_details} WHERE serial=:s and opt=:o";
             $details = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $data->serial, ':o' => 1))->fetchField();
             $amount = $data->amount + ($details * $data->taxvalue / 100) - $data->amountpaid;
             $title = t('amount with taxes (@c)', array('@c' => $data->currency));
@@ -177,7 +177,7 @@ class PayPurchase extends FormBase {
     public function fx_rate(array &$form, FormStateInterface $form_state) {
         /* if selected bank account is not in the purchase currency, provide a choice for exchange rate
          */
-        $query = "SELECT currency from {ek_purchase} where id=:id";
+        $query = "SELECT currency from {ek_sales_purchase} where id=:id";
         $currency = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form['for_id']['#value']))
                 ->fetchField();
@@ -235,7 +235,7 @@ class PayPurchase extends FormBase {
      */
     public function credit_amount(array &$form, FormStateInterface $form_state) {
 
-        $query = "SELECT currency from {ek_purchase} where id=:id";
+        $query = "SELECT currency from {ek_sales_purchase} where id=:id";
         $currency = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form['for_id']['#value']))
                 ->fetchField();
@@ -291,12 +291,12 @@ class PayPurchase extends FormBase {
         }
 
         //verify amount paid does not exceed amount due orpartially paid
-        $query = "SELECT * from {ek_purchase} where id=:id";
+        $query = "SELECT * from {ek_sales_purchase} where id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form_state->getValue('for_id')))
                 ->fetchObject();
         $this_pay = str_replace(",", "", $form_state->getValue('amount'));
-        $query = "SELECT sum(quantity*value) from {ek_purchase_details} WHERE serial=:s and opt=:o";
+        $query = "SELECT sum(quantity*value) from {ek_sales_purchase_details} WHERE serial=:s and opt=:o";
         $details = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':s' => $data->serial, ':o' => 1))
                 ->fetchField();
@@ -336,12 +336,12 @@ class PayPurchase extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $query = "SELECT * from {ek_purchase} where id=:id";
+        $query = "SELECT * from {ek_sales_purchase} where id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form_state->getValue('for_id')))
                 ->fetchObject();
         $this_pay = str_replace(",", "", $form_state->getValue('amount'));
-        $query = "SELECT sum(quantity*value) from {ek_purchase_details} WHERE serial=:s and opt=:o";
+        $query = "SELECT sum(quantity*value) from {ek_sales_purchase_details} WHERE serial=:s and opt=:o";
         $details = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':s' => $data->serial, ':o' => 1))
                 ->fetchField();
@@ -409,7 +409,10 @@ class PayPurchase extends FormBase {
             'pdate' => $form_state->getValue('date'),
         );
 
-        $update = Database::getConnection('external_db', 'external_db')->update('ek_purchase')->fields($fields)->condition('id', $form_state->getValue('for_id'))->execute();
+        $update = Database::getConnection('external_db', 'external_db')
+                ->update('ek_sales_purchase')->fields($fields)
+                ->condition('id', $form_state->getValue('for_id'))
+                ->execute();
 
         if ($update) {
                 if ($this->moduleHandler->moduleExists('ek_projects')) {

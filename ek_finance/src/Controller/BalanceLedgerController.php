@@ -176,12 +176,13 @@ class BalanceLedgerController extends ControllerBase {
                 $entity = 'purchase';
                 $book = 2;
                 $source2 = 'payment';
+                $source3 = 'purchase dn';
                 $link = 'ek_sales.purchases.print_html';
 
                 if ($_SESSION['salesledger']['client'] == '%') {
                     $clients = Database::getConnection('external_db', 'external_db')
                             ->query("SELECT DISTINCT ab.id FROM {ek_address_book} ab "
-                                    . "INNER JOIN {ek_purchase} p ON p.client = ab.id order by name")
+                                    . "INNER JOIN {ek_sales_purchase} p ON p.client = ab.id order by name")
                             ->fetchCol();
                 } else {
                     $clients = [0 => $_SESSION['salesledger']['client']];
@@ -190,12 +191,13 @@ class BalanceLedgerController extends ControllerBase {
                 $entity = 'invoice';
                 $book = 1;
                 $source2 = 'receipt';
+                $source3 = 'invoice cn';
                 $link = 'ek_sales.invoices.print_html';
 
                 if ($_SESSION['salesledger']['client'] == '%') {
                     $clients = Database::getConnection('external_db', 'external_db')
                             ->query("SELECT DISTINCT ab.id FROM {ek_address_book} ab "
-                                    . "INNER JOIN {ek_invoice} i ON i.client = ab.id order by name")
+                                    . "INNER JOIN {ek_sales_invoice} i ON i.client = ab.id order by name")
                             ->fetchCol();
                 } else {
                     $clients = [0 => $_SESSION['salesledger']['client']];
@@ -207,7 +209,7 @@ class BalanceLedgerController extends ControllerBase {
             foreach ($clients as  $clientId) {
                 //select the documents ids related to the selected client
                 $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_' .$entity, 's');
+                        ->select('ek_sales_' .$entity, 's');
 
                 $result = $query->fields('s', array('id'))
                         ->condition('s.client', $clientId, '=')
@@ -216,17 +218,18 @@ class BalanceLedgerController extends ControllerBase {
 
                 $ids = $result->fetchCol();
                 $row = [];
-               
+            
                 $row['client_id'] = $clientId;
                 $row['client_name'] = $items['book'][$clientId];
 
                 if (!empty($ids)) {
-
+ 
                     $param = [
                         'coid' => $_SESSION['salesledger']['coid'],
                         'references' => $ids,
                         'source1' => $entity,
                         'source2' => $source2,
+                        'source3' => $source3,
                         'date1' => $_SESSION['salesledger']['from'],
                         'date2' => $_SESSION['salesledger']['to'],
                     ];

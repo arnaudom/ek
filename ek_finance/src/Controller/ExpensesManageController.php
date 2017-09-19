@@ -113,7 +113,7 @@ class ExpensesManageController extends ControllerBase {
             if ($settings->get('listPurchases') == 1 && $this->moduleHandler->moduleExists('ek_projects')) {
                 //query data with purchases
                 $query->leftjoin('ek_expenses', 'e', 'e.id=j.reference');
-                $query->leftjoin('ek_purchase', 'p', 'p.id=j.reference');
+                $query->leftjoin('ek_sales_purchase', 'p', 'p.id=j.reference');
                 $or = db_or();
                 $or->condition('aid', $chart['expenses'] . '%', 'like');
                 $or->condition('aid', $chart['cos'] . '%', 'like');
@@ -167,7 +167,7 @@ class ExpensesManageController extends ControllerBase {
                         ->select('ek_journal', 'j');
 
                 $query->leftjoin('ek_expenses', 'e', 'e.id=j.reference');
-                $query->leftjoin('ek_purchase', 'p', 'p.id=j.reference');
+                $query->leftjoin('ek_sales_purchase', 'p', 'p.id=j.reference');
                 $or = db_or();
                 $or->condition('e.id', $keyword1, 'like');
                 $or->condition('e.comment', $keyword1, 'like');
@@ -221,7 +221,7 @@ class ExpensesManageController extends ControllerBase {
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
                 $query->leftjoin('ek_expenses', 'e', 'e.id=j.reference');
-                $query->leftjoin('ek_purchase', 'p', 'p.id=j.reference');
+                $query->leftjoin('ek_sales_purchase', 'p', 'p.id=j.reference');
                 $query->fields('j', array('id', 'aid', 'date', 'value', 'exchange', 'currency', 'reconcile', 'reference', 'coid', 'source'))
                         ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment'))
                         ->fields('p', array('id', 'taxvalue', 'title', 'pcode', 'client', 'uri', 'status'));

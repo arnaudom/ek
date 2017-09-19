@@ -25,7 +25,7 @@ $mode = $param[6];
 */
 
 $head = Database::getConnection('external_db', 'external_db')
-        ->query("SELECT * from {ek_". $source. "} where id=:id", array(':id' => $id))->fetchObject();
+        ->query("SELECT * from {ek_sales". $source. "} where id=:id", array(':id' => $id))->fetchObject();
 
 
 Switch ($source) {
@@ -34,7 +34,7 @@ Switch ($source) {
     case 'purchase':
     
     $lines = Database::getConnection('external_db', 'external_db')
-            ->query("SELECT * from {ek_". $source. "_details} where serial=:s ORDER BY id", array(':s' => $head->serial));
+            ->query("SELECT * from {ek_sales". $source. "_details} where serial=:s ORDER BY id", array(':s' => $head->serial));
 
     $items = array();
     $taxline = 0;
@@ -135,10 +135,10 @@ Switch ($source) {
     case 'quotation':
     
     //use last revision
-    $query = "SELECT DISTINCT revision FROM {ek_quotation_details} WHERE serial=:s order by revision DESC";
+    $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision DESC";
     $revision = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $head->serial))->fetchField();  
     $lines = Database::getConnection('external_db', 'external_db')
-            ->query("SELECT * from {ek_". $source. "_details} WHERE serial=:s and revision=:r ORDER BY id", array(':s' => $head->serial, ':r' => $revision));
+            ->query("SELECT * from {ek_sales". $source. "_details} WHERE serial=:s and revision=:r ORDER BY id", array(':s' => $head->serial, ':r' => $revision));
 
     $items = array();
     $taxline = 0;
@@ -213,7 +213,7 @@ Switch ($source) {
     $items['tax_rate'] = $tax[1];
     
     
-    $query = "SELECT * from {ek_quotation_settings} ";
+    $query = "SELECT * from {ek_sales_quotation_settings} ";
     $data = Database::getConnection('external_db', 'external_db')->query($query);
     $i = 1;
     While ($r = $data->fetchObject()) {
@@ -239,7 +239,7 @@ Switch ($source) {
     }
     
     //change quotation status
-    Database::getConnection('external_db', 'external_db')->update('ek_quotation')
+    Database::getConnection('external_db', 'external_db')->update('ek_sales_quotation')
     ->fields(array('status' => 1))
     ->condition('id',$id)
     ->execute();

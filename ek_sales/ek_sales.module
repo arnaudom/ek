@@ -57,8 +57,8 @@ function ek_sales_theme() {
  */
  function ek_sales_views_data() {
      
-    $data['ek_invoice']['table']['group'] = t('ek invoices');
-    $data['ek_invoice']['table']['base'] = array(
+    $data['ek_sales_invoice']['table']['group'] = t('ek invoices');
+    $data['ek_sales_invoice']['table']['base'] = array(
     'field' => 'id', // This is the identifier field for the view.
     'title' => t('ek sales invoices'),
     'help' => t('Sales invoices data'),
@@ -66,14 +66,14 @@ function ek_sales_theme() {
     'weight' => -11,
     );  
 
-    $data['ek_invoice']['id'] = array(
+    $data['ek_sales_invoice']['id'] = array(
         'title' => t('Invoice unique id'),
         'help' => t('Invoice unique id'),
         'field' => array('id' => 'numeric',),
         'sort' => array('id' => 'standard',),
         'filter' => array('id' => 'numeric',),
     );
-    $data['ek_invoice']['serial'] = array(
+    $data['ek_sales_invoice']['serial'] = array(
         'title' => t('Serial number'),
         'help' => t('Serial number'),
         'field' => array('id' => 'standard',),
@@ -81,7 +81,7 @@ function ek_sales_theme() {
         'filter' => array('id' => 'string',),
         'argument' => array('id' => 'string',),
     );
-    $data['ek_invoice']['do_no'] = array(
+    $data['ek_sales_invoice']['do_no'] = array(
         'title' => t('Delivery order ref. number'),
         'help' => t('Delivery order ref. number'),
         'field' => array('id' => 'standard',),
@@ -89,7 +89,7 @@ function ek_sales_theme() {
         'filter' => array('id' => 'string',),
         'argument' => array('id' => 'string',),
     );
-    $data['ek_invoice']['head'] = array(
+    $data['ek_sales_invoice']['head'] = array(
         'title' => t('Header reference'),
         'help' => t('Header name'),
         'field' => array('id' => 'standard', ),
@@ -103,7 +103,7 @@ function ek_sales_theme() {
             'type' => 'INNER',
           ),   
     );
-    $data['ek_invoice']['allocation'] = array(
+    $data['ek_sales_invoice']['allocation'] = array(
         'title' => t('Allocation id reference'),
         'help' => t('Allocation id reference'),
         'field' => array('id' => 'numeric',),
@@ -116,14 +116,14 @@ function ek_sales_theme() {
             'label' => t('Company ref'),
           ),
     );
-    $data['ek_invoice']['status'] = array(
+    $data['ek_sales_invoice']['status'] = array(
         'title' => t('Payment status'),
         'help' => t('Payment status: 0 = unpaid, 1 = paid, 2 = partially paid'),
         'field' => array('id' => 'numeric',),
         'sort' => array('id' => 'standard',),
         'filter' => array('id' => 'numeric',),
     );
-    $data['ek_invoice']['client'] = array(
+    $data['ek_sales_invoice']['client'] = array(
         'title' => t('Client'), 
         'help' => t('Client from address book'), 
         'field' => array('id' => 'standard', ),
@@ -138,7 +138,7 @@ function ek_sales_theme() {
   
     );
     if(\Drupal::moduleHandler()->moduleExists('ek_logistics')) {
-        $data['ek_invoice']['do_no'] = array(
+        $data['ek_sales_invoice']['do_no'] = array(
             'title' => t('Delivery order ref. number'),
             'help' => t('Delivery order ref. number'),
             'field' => array('id' => 'standard',),
@@ -155,7 +155,7 @@ function ek_sales_theme() {
         );
     }
     if(\Drupal::moduleHandler()->moduleExists('ek_projects')) {
-        $data['ek_invoice']['pcode'] = array(
+        $data['ek_sales_invoice']['pcode'] = array(
             'title' => t('Project code reference'),
             'help' => t('Project code reference'),
             'field' => array('id' => 'standard',),
@@ -171,14 +171,14 @@ function ek_sales_theme() {
             ),        
         );
     }
-    $data['ek_invoice']['amount'] = array(
+    $data['ek_sales_invoice']['amount'] = array(
         'title' => t('Total value in local currency'),
         'help' => t('Total value in local currency'),
         'field' => array('id' => 'numeric',),
         'sort' => array('id' => 'standard',),
         'filter' => array('id' => 'numeric',),
     );
-    $data['ek_invoice']['currency'] = array(
+    $data['ek_sales_invoice']['currency'] = array(
         'title' => t('Local currency'),
         'help' => t('Local currency'),
         'field' => array('id' => 'standard',),
@@ -186,21 +186,21 @@ function ek_sales_theme() {
         'filter' => array('id' => 'string',),
         'argument' => array('id' => 'string',),
     );
-    $data['ek_invoice']['amountbase'] = array(
+    $data['ek_sales_invoice']['amountbase'] = array(
         'title' => t('Total value in base currency'),
         'help' => t('Total value in base currency'),
         'field' => array('id' => 'numeric',),
         'sort' => array('id' => 'standard',),
         'filter' => array('id' => 'numeric',),
     );
-    $data['ek_invoice']['amountreceived'] = array(
+    $data['ek_sales_invoice']['amountreceived'] = array(
         'title' => t('Total value paid'),
         'help' => t('Total value paid'),
         'field' => array('id' => 'numeric',),
         'sort' => array('id' => 'standard',),
         'filter' => array('id' => 'numeric',),
     );
-    $data['ek_invoice']['date'] = array(
+    $data['ek_sales_invoice']['date'] = array(
         'title' => t('Document date'),
         'help' => t('Document date'),
         'field' => array('id' => 'standard',),
@@ -208,14 +208,14 @@ function ek_sales_theme() {
         'filter' => array('id' => 'string',),
         'argument' => array('id' => 'string',),
     );
-    $data['ek_invoice']['amountreceived'] = array(
+    $data['ek_sales_invoice']['amountreceived'] = array(
         'title' => t('Total value paid'),
         'help' => t('Total value paid'),
         'field' => array('id' => 'numeric',),
         'sort' => array('id' => 'standard',),
         'filter' => array('id' => 'numeric',),
     );
-    $data['ek_invoice']['due'] = array(
+    $data['ek_sales_invoice']['due'] = array(
         'title' => t('Invoice due terms in days'),
         'help' => t('Invoice due terms in days'),
         'field' => array('id' => 'standard',),
@@ -223,7 +223,7 @@ function ek_sales_theme() {
         'filter' => array('id' => 'string',),
         'argument' => array('id' => 'string',),
     );
-    $data['ek_invoice']['title'] = array(
+    $data['ek_sales_invoice']['title'] = array(
         'title' => t('Document title'),
         'help' => t('Document title'),
         'field' => array('id' => 'standard',),
@@ -231,7 +231,7 @@ function ek_sales_theme() {
         'filter' => array('id' => 'string',),
         'argument' => array('id' => 'string',),
     );
-    $data['ek_invoice']['comment'] = array(
+    $data['ek_sales_invoice']['comment'] = array(
         'title' => t('Document open comments'),
         'help' => t('Document open comments'),
         'field' => array('id' => 'standard',),
@@ -244,9 +244,9 @@ function ek_sales_theme() {
     /*
      * Table invoice details
      */
-    $data['ek_invoice_details']['table']['group'] = t('ek invoiced items details');
+    $data['ek_sales_invoice_details']['table']['group'] = t('ek invoiced items details');
 
-    $data['ek_invoice_details']['table']['base'] = array(
+    $data['ek_sales_invoice_details']['table']['base'] = array(
         'field' => 'id', // This is the identifier field for the view.
         'title' => t('ek invoiced items details'),
         'help' => t('ek invoiced items details'),
@@ -254,18 +254,18 @@ function ek_sales_theme() {
         'database' => 'external_db',
     );
 
-    $data['ek_invoice_details']['table']['join'] = array(
+    $data['ek_sales_invoice_details']['table']['join'] = array(
         // Index this array by the table name to which this table refers.
         // 'left_field' is the primary key in the referenced table.
         // 'field' is the foreign key in this table.
-        'ek_invoice' => array(
+        'ek_sales_invoice' => array(
           'left_field' => 'serial',
           'field' => 'serial',
           'database' => 'external_db',
         ),
     ); 
     
-    $data['ek_invoice_details']['item'] = array(
+    $data['ek_sales_invoice_details']['item'] = array(
         'title' => t('Item description or code'),
         'help' => t('Item description or cod'),
         'field' => array('id' => 'standard',),
@@ -273,7 +273,7 @@ function ek_sales_theme() {
         'filter' => array('id' => 'string',),
         'argument' => array('id' => 'string',),
     );
-     $data['ek_invoice_details']['itemdetail'] = array(
+     $data['ek_sales_invoice_details']['itemdetail'] = array(
         'title' => t('Extended item description'),
         'help' => t('Extended item description'),
         'field' => array('id' => 'standard',),
@@ -281,28 +281,28 @@ function ek_sales_theme() {
         'filter' => array('id' => 'string',),
         'argument' => array('id' => 'string',),
     );   
-    $data['ek_invoice_details']['value'] = array(
+    $data['ek_sales_invoice_details']['value'] = array(
         'title' => t('Item unit value'),
         'help' => t('Item unit value'),
         'field' => array('id' => 'numeric',),
         'sort' => array('id' => 'standard',),
         'filter' => array('id' => 'numeric',),
     );    
-    $data['ek_invoice_details']['quantity'] = array(
+    $data['ek_sales_invoice_details']['quantity'] = array(
         'title' => t('Item quantity'),
         'help' => t('Item quantity'),
         'field' => array('id' => 'numeric',),
         'sort' => array('id' => 'standard',),
         'filter' => array('id' => 'numeric',),
     );    
-    $data['ek_invoice_details']['total'] = array(
+    $data['ek_sales_invoice_details']['total'] = array(
         'title' => t('Item total invoiced value (unit value x quantity in local currency)'),
         'help' => t('Item total invoiced value (unit value x quantity in local currency)'),
         'field' => array('id' => 'numeric',),
         'sort' => array('id' => 'standard',),
         'filter' => array('id' => 'numeric',),
     ); 
-    $data['ek_invoice_details']['totalbase'] = array(
+    $data['ek_sales_invoice_details']['totalbase'] = array(
         'title' => t('Item total invoiced value (in base currency)'),
         'help' => t('Item total invoiced value (in base currency)'),
         'field' => array('id' => 'numeric',),

@@ -55,13 +55,13 @@ class AlertPurchase extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-        $query = "SELECT serial,alert,alert_who from {ek_purchase} where id=:id";
+        $query = "SELECT serial,alert,alert_who from {ek_sales_purchase} where id=:id";
         $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
 
 
         $access = AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_purchase', 'p');
+                ->select('ek_sales_purchase', 'p');
         $or1 = db_or();
         $or1->condition('head', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');
@@ -196,7 +196,7 @@ class AlertPurchase extends FormBase {
         );
 
         $update = Database::getConnection('external_db', 'external_db')
-                ->update('ek_purchase')->fields($fields)
+                ->update('ek_sales_purchase')->fields($fields)
                 ->condition('id', $form_state->getValue('for_id'))
                 ->execute();
 

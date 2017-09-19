@@ -218,7 +218,7 @@ class ReconciliationForm extends FormBase {
       $query = "SELECT sum(value) from {ek_journal} "
               . "WHERE exchange like :exc and type=:type "
               . "AND aid=:aid and coid=:coid "
-              . "AND ( (date>=:dateopen and reconcile=:reco) OR reconcile=:reco2 )";
+              . "AND ( date>=:dateopen and (reconcile=:reco or reconcile=:reco2 ) )";
       $a = array(
         ':exc' => $exchange,
         ':type' => 'credit',
@@ -242,8 +242,8 @@ class ReconciliationForm extends FormBase {
       $query = "SELECT sum(value) from {ek_journal} "
               . "WHERE exchange like :exc and type=:type "
               . "and aid=:aid and coid=:coid "
-              . "and ( (date>=:dateopen and reconcile=:reco) or reconcile=:reco2 )";
-      
+              . "and ( date>=:dateopen and (reconcile=:reco or reconcile=:reco2 ))";
+     
       $debit = Database::getConnection('external_db', 'external_db')->query($query,$a)->fetchField();
     
       if ($debit == NULL) $debit = 0;
@@ -283,7 +283,10 @@ class ReconciliationForm extends FormBase {
         '#required' => FALSE,
         '#size' => 15,
         '#default_value' =>  number_format($debit,2),
-        '#attributes' => array('title' => t('total debits'),'readonly' => 'readonly' , 'class' => array('amount')),
+        '#attributes' => array('title' => t('total debits') . " " . t('from') . " " . $account->balance_date,
+                                'readonly' => 'readonly' , 
+                                'class' => array('amount')
+                                ),
         '#prefix' => '<div class="table "><div class="row "><div class="cell cell150">',
         '#suffix' => '</div>',
         
@@ -297,7 +300,10 @@ class ReconciliationForm extends FormBase {
         '#required' => FALSE,
         '#size' => 15,
         '#default_value' =>  number_format($credit,2),
-        '#attributes' => array('title' => t('total credits'),'readonly' => 'readonly' , 'class' => array('amount')),
+        '#attributes' => array('title' => t('total credits') . " " . t('from') . " " . $account->balance_date,
+                                'readonly' => 'readonly' ,
+                                'class' => array('amount')
+                                ),
         '#prefix' => '<div class="cell cell150">',
         '#suffix' => '</div>',
       ); 
@@ -317,7 +323,10 @@ class ReconciliationForm extends FormBase {
         '#required' => TRUE,
         '#size' => 15,
         '#default_value' => abs(round($balance,2)),
-        '#attributes' => array('title' => t('statement value'), 'class' => array('calculate amount')),
+        '#attributes' => array( 'title' => t('statement value'), 
+                                'class' => array('calculate amount'),
+                                  
+                               ),
         '#prefix' => '<div class="cell cell150">',
         '#suffix' => '</div>',
       ); 

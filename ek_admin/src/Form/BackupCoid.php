@@ -429,14 +429,14 @@ class BackupCoid extends FormBase {
             //invoice
             ////////////////////
 
-            $table = 'ek_invoice';
+            $table = 'ek_sales_invoice';
             
             $file .= " #--------------------------------------------------------" . $lineEnd;
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
             
             $fields = $table .".`id`,`serial`,`do_no`,`head`,`allocation`,`status`,`amount`, "
-                    . "`currency`, `date`, `title`, `pcode`, `comment`,`client`,"
+                    . "`currency`, `date`, `title`, `type`, `pcode`, `comment`,`client`,"
                     . "`amountreceived`,`pay_date`,`class`,`amountbase`,`balancebase`,`terms`,"
                     . "`due`,`bank`,`tax`,`taxvalue`,`reconcile`,`alert`,`alert_who`,`balance_post`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE head=:c ';
@@ -456,7 +456,7 @@ class BackupCoid extends FormBase {
             
             $fields = $table .".`id`," . $table .".`serial`,`item`,`itemdetail`,`value`,`quantity`,`total`, "
                     . "`totalbase`, `opt`, `aid`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_invoice} b ON '
+            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_sales_invoice} b ON '
                     . ''. $table .'.serial = b.serial WHERE head=:c ORDER by ' . $table . '.id';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
@@ -474,7 +474,7 @@ class BackupCoid extends FormBase {
             
             $fields = $table .".`id`," . $table .".`serial`,`event`,`uid`,`task`,`weight`,`start`, "
                     . "`end`, `completion_rate`,`notify`,`notify_who`,`notify_when`,`note`,`color`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_invoice} b ON '
+            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_sales_invoice} b ON '
                     . ''. $table .'.serial = b.serial WHERE head=:c ORDER by ' . $table . '.id';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
@@ -484,14 +484,14 @@ class BackupCoid extends FormBase {
             //purchase
             ////////////////////
 
-            $table = 'ek_purchase';
+            $table = 'ek_sales_purchase';
             
             $file .= " #--------------------------------------------------------" . $lineEnd;
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
             
             $fields = $table .".`id`,`serial`,`head`,`allocation`,`status`,`amount`, "
-                    . "`currency`, `date`, `title`, `pcode`, `comment`,`client`,"
+                    . "`currency`, `date`, `title`, `type`, `pcode`, `comment`,`client`,"
                     . "`amountpaid`,`amountbc`,`balancebc`,`bank`,`tax`,`taxvalue`,"
                     . "`terms`,`due`,`pdate`,`pay_ref`,`reconcile`,`alert`,`alert_who`,`uri`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE head=:c ';
@@ -503,7 +503,7 @@ class BackupCoid extends FormBase {
             //purchase details
             ////////////////////
 
-            $table = 'ek_purchase_details';
+            $table = 'ek_sales_purchase_details';
             
             $file .= " #--------------------------------------------------------" . $lineEnd;
             $file .= " # Table  " . $table . $lineEnd;
@@ -511,7 +511,7 @@ class BackupCoid extends FormBase {
             
             $fields = $table .".`id`," . $table .".`serial`,`item`,`itemdetail`,`value`,`quantity`,`total`, "
                     . "`opt`, `aid`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_purchase} b ON '
+            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_sales_purchase} b ON '
                     . ''. $table .'.serial = b.serial WHERE head=:c ORDER by ' . $table . '.id';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
@@ -520,7 +520,7 @@ class BackupCoid extends FormBase {
             //purchase tasks
             ////////////////////
 
-            $table = 'ek_purchase_tasks';
+            $table = 'ek_sales_purchase_tasks';
             
             $file .= " #--------------------------------------------------------" . $lineEnd;
             $file .= " # Table  " . $table . $lineEnd;
@@ -528,7 +528,7 @@ class BackupCoid extends FormBase {
             
             $fields = $table .".`id`," . $table .".`serial`,`event`,`uid`,`task`,`weight`,`start`, "
                     . "`end`, `completion_rate`,`notify`,`notify_who`,`notify_when`,`note`,`color`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_purchase} b ON '
+            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_sales_purchase} b ON '
                     . ''. $table .'.serial = b.serial WHERE head=:c ORDER by ' . $table . '.id';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
@@ -538,7 +538,7 @@ class BackupCoid extends FormBase {
             //quotation
             ////////////////////
   
-            $table = 'ek_quotation';
+            $table = 'ek_sales_quotation';
             
             $file .= " #--------------------------------------------------------" . $lineEnd;
             $file .= " # Table  " . $table . $lineEnd;
@@ -556,7 +556,7 @@ class BackupCoid extends FormBase {
             //quotation details
             ////////////////////
 
-            $table = 'ek_quotation_details';
+            $table = 'ek_sales_quotation_details';
             
             $file .= " #--------------------------------------------------------" . $lineEnd;
             $file .= " # Table  " . $table . $lineEnd;
@@ -564,7 +564,7 @@ class BackupCoid extends FormBase {
             
             $fields = $table .".`id`," . $table .".`serial`,`itemid`,`itemdetails`,`margin`,`unit`,`value`, "
                     . "`total`, `revision`,`opt`,`column_2`,`column_3`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_quotation} b ON '
+            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_sales_quotation} b ON '
                     . ''. $table .'.serial = b.serial WHERE header=:c ORDER by ' . $table . '.id';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);     
@@ -573,7 +573,7 @@ class BackupCoid extends FormBase {
             //quotation settings
             ////////////////////
  
-            $table = 'ek_quotation_settings';
+            $table = 'ek_sales_quotation_settings';
             
             $file .= " #--------------------------------------------------------" . $lineEnd;
             $file .= " # Table  " . $table . $lineEnd;
@@ -588,17 +588,17 @@ class BackupCoid extends FormBase {
             //sales docs
             ////////////////
            
-            $query = "SELECT distinct client FROM {ek_invoice} WHERE head=:c";
+            $query = "SELECT distinct client FROM {ek_sales_invoice} WHERE head=:c";
             $abid1 = Database::getConnection('external_db', 'external_db')
                     ->query($query, [':c' => $coid])
                     ->fetchCol();
         
-            $query = "SELECT distinct client FROM {ek_purchase} WHERE head=:c";
+            $query = "SELECT distinct client FROM {ek_sales_purchase} WHERE head=:c";
             $abid2 = Database::getConnection('external_db', 'external_db')
                     ->query($query, [':c' => $coid])
                     ->fetchCol();
 
-            $query = "SELECT distinct client FROM {ek_quotation} WHERE header=:c";
+            $query = "SELECT distinct client FROM {ek_sales_quotation} WHERE header=:c";
             $abid3 = Database::getConnection('external_db', 'external_db')
                     ->query($query, [':c' => $coid])
                     ->fetchCol();

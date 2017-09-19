@@ -56,8 +56,9 @@ class DeleteInvoice extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
   
-  $query = "SELECT status,serial from {ek_invoice} where id=:id";
-  $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
+  $query = "SELECT status,serial,title from {ek_sales_invoice} where id=:id";
+  $data = Database::getConnection('external_db', 'external_db')
+          ->query($query, array(':id' => $id))->fetchObject();
 
   
     $form['edit_invoice'] = array(
@@ -81,7 +82,7 @@ class DeleteInvoice extends FormBase {
           
         $form['alert'] = array(
           '#type' => 'item',
-          '#markup' => t('Are you sure you want to delete this invoice ?'),
+          '#markup' => t('Are you sure you want to delete this @doc ?', ['@doc' => $data->title]),
 
         );   
       
@@ -94,7 +95,7 @@ class DeleteInvoice extends FormBase {
 
         $form['alert'] = array(
           '#type' => 'item',
-          '#markup' => t('This invoice cannot be deleted because it has been fully or partially paid'),
+          '#markup' => t('This @doc cannot be deleted because it has been fully or partially paid', ['@doc' => $data->title]),
 
         );  
 
@@ -117,11 +118,11 @@ class DeleteInvoice extends FormBase {
   
   
   $delete = Database::getConnection('external_db', 'external_db')
-          ->delete('ek_invoice')
+          ->delete('ek_sales_invoice')
           ->condition('id', $form_state->getValue('for_id'))
           ->execute();
   $delete = Database::getConnection('external_db', 'external_db')
-          ->delete('ek_invoice_details')
+          ->delete('ek_sales_invoice_details')
           ->condition('serial', $form_state->getValue('serial'))
           ->execute();
   

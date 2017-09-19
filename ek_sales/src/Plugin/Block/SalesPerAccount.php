@@ -46,7 +46,7 @@ class SalesPerAccount extends BlockBase {
         $years = array(date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3 );
         $content = '';  
 
-        $query = "SELECT sum(amountbase) as total,name FROM {ek_invoice} i "
+        $query = "SELECT sum(amountbase) as total,name FROM {ek_sales_invoice} i "
                 . "INNER JOIN {ek_address_book} b ON i.client=b.id WHERE "
                 . "date like :d GROUP BY b.name order by total DESC ";
 

@@ -168,7 +168,7 @@ while ($line = $data->fetchObject()) { //loop acc. classe
 
             if ($coid != 'all') {
                 $query = "SELECT sum(value) "
-                        . "FROM {ek_journal} j INNER JOIN ek_purchase p ON j.reference=p.id "
+                        . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
                         . "WHERE aid = :a AND j.source = :s AND type=:t "
                         . "AND j.date >=:d1 AND j.date <=:d2 AND allocation = :c";
 
@@ -184,7 +184,7 @@ while ($line = $data->fetchObject()) { //loop acc. classe
 
             if ($coid == 'all') {
                 $query = "SELECT sum(value) "
-                        . "FROM {ek_journal} j INNER JOIN ek_purchase p ON j.reference=p.id "
+                        . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
                         . "WHERE aid = :a AND j.source = :s AND type=:t "
                         . "AND j.date >=:d1 AND j.date <=:d2";
 
@@ -285,7 +285,7 @@ while ($line = $data->fetchObject()) { //loop acc. classe
 
             if ($coid != 'all') {
                 $query = "SELECT sum(value) "
-                        . "FROM {ek_journal} j INNER JOIN ek_purchase p ON j.reference=p.id "
+                        . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
                         . "WHERE aid like :t AND j.source = :s AND type=:t2 "
                         . "AND j.date >=:d1 AND j.date <=:d2 AND allocation = :c";
 
@@ -302,7 +302,7 @@ while ($line = $data->fetchObject()) { //loop acc. classe
             if ($coid == 'all') {
 
                 $query = "SELECT sum(value) "
-                        . "FROM {ek_journal} j INNER JOIN ek_purchase p ON j.reference=p.id "
+                        . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
                         . "WHERE aid like :t AND j.source = :s AND type=:t2 "
                         . "AND j.date >=:d1 AND j.date <=:d2";
                 $a = array(
@@ -364,7 +364,7 @@ for ($m = 1; $m <= 12; $m++) {
 
     if ($coid != 'all') {
         $query = "SELECT sum(value) "
-                . "FROM {ek_journal} j INNER JOIN ek_purchase p ON j.reference=p.id "
+                . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
                 . "WHERE j.source = :s  AND allocation=:c AND type=:t "
                 . "AND j.date >=:d1 AND j.date <=:d2 AND ( aid like :a1 or aid like :a2 or aid like :a3 )";
 
@@ -382,7 +382,7 @@ for ($m = 1; $m <= 12; $m++) {
 
     if ($coid == 'all') {
         $query = "SELECT sum(value) "
-                . "FROM {ek_journal} j INNER JOIN ek_purchase p ON j.reference=p.id "
+                . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
                 . "WHERE j.source = :s  AND type=:t "
                 . "AND j.date >=:d1 AND j.date <=:d2 AND ( aid like :a1 or aid like :a2 or aid like :a3 )";
         $a = array(
@@ -912,7 +912,7 @@ while ($line = $data->fetchObject()) {
             if ($coid != 'all') {
 
                 $query = "select sum(value) FROM ek_journal j "
-                        . "INNER JOIN ek_invoice i ON i.id=j.reference "
+                        . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
                         . "WHERE aid =:a AND j.source = :s "
                         . "AND j.date >=:d1 AND j.date <= :d2 AND allocation = :c "
                         . "AND type= :t";
@@ -929,7 +929,7 @@ while ($line = $data->fetchObject()) {
 
             if ($coid == 'all') {
                 $query = "select sum(value) FROM ek_journal j "
-                        . "INNER JOIN ek_invoice i ON i.id=j.reference "
+                        . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
                         . "WHERE aid =:a AND j.source = :s "
                         . "AND j.date >=:d1 AND j.date <= :d2 "
                         . "AND type= :t";
@@ -986,7 +986,7 @@ while ($line = $data->fetchObject()) {
 
         if ($coid != 'all') {
             $query = "select sum(value) FROM ek_journal j "
-                    . "INNER JOIN ek_invoice i ON i.id=j.reference "
+                    . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
                     . "WHERE aid like :t AND j.source = :s "
                     . "AND j.date >=:d1 AND j.date <= :d2 AND allocation = :c "
                     . "AND type= :t2";
@@ -1004,7 +1004,7 @@ while ($line = $data->fetchObject()) {
         if ($coid == 'all') {
 
             $query = "select sum(value) FROM ek_journal j "
-                    . "INNER JOIN ek_invoice i ON i.id=j.reference "
+                    . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
                     . "WHERE aid like :t AND j.source = :s "
                     . "AND j.date >=:d1 AND j.date <= :d2 "
                     . "AND type= :t2";
@@ -1068,7 +1068,7 @@ for ($m = 1; $m <= 12; $m++) {
     if ($coid != 'all') {
 
         $query = "select sum(value) FROM ek_journal j "
-                . "INNER JOIN ek_invoice i ON i.id=j.reference "
+                . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
                 . "WHERE j.source = :s "
                 . "AND j.date >=:d1 AND j.date <= :d2 AND allocation = :c "
                 . "AND type= :t AND (aid like :a1 or aid like :a2) ";
@@ -1086,7 +1086,7 @@ for ($m = 1; $m <= 12; $m++) {
 
     if ($coid == 'all') {
         $query = "select sum(value) FROM ek_journal j "
-                . "INNER JOIN ek_invoice i ON i.id=j.reference "
+                . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
                 . "WHERE j.source = :s "
                 . "AND j.date >=:d1 AND j.date <= :d2 AND allocation = :c "
                 . "AND type= :t AND (aid like :a1 or aid like :a2)";
@@ -1335,7 +1335,7 @@ for ($m = 1; $m <= 12; $m++) {
 
     // Get the sum of payments not received  
     if ($coid <> 'all') {
-        $query = "SELECT sum(amountbase) FROM {ek_invoice} "
+        $query = "SELECT sum(amountbase) FROM {ek_sales_invoice} "
                 . "WHERE date>=:d1 and date<=:d2 AND allocation=:c AND status=:s";
         $a = array(
             ':d1' => $date1,
@@ -1345,7 +1345,7 @@ for ($m = 1; $m <= 12; $m++) {
         );
     }
     if ($coid == 'all') {
-        $query = "SELECT sum(amountbase) FROM {ek_invoice} "
+        $query = "SELECT sum(amountbase) FROM {ek_sales_invoice} "
                 . "WHERE date>=:d1 and date<=:d2 AND status=:s";
         $a = array(
             ':d1' => $date1,
@@ -1398,7 +1398,7 @@ for ($m = 1; $m <= 12; $m++) {
     }
 
     if ($coid <> 'all') {
-        $query = "SELECT sum(balancebase) FROM {ek_invoice} "
+        $query = "SELECT sum(balancebase) FROM {ek_sales_invoice} "
                 . "WHERE date>=:d1 and date<=:d2 AND allocation=:c AND status=:s";
         $a = array(
             ':d1' => $date1,
@@ -1408,7 +1408,7 @@ for ($m = 1; $m <= 12; $m++) {
         );
     }
     if ($coid == 'all') {
-        $query = "SELECT sum(balancebase) FROM {ek_invoice} "
+        $query = "SELECT sum(balancebase) FROM {ek_sales_invoice} "
                 . "WHERE date>=:d1 and date<=:d2 AND status=:s";
         $a = array(
             ':d1' => $date1,

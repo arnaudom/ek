@@ -173,6 +173,7 @@ if ($type == 7) {
     $userName =  \Drupal::currentUser()->getUsername();
 
 }
+
 include_once drupal_get_path('module', 'ek_finance') . '/' .$template;
 
   header('Cache-Control: private');

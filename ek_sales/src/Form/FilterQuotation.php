@@ -56,8 +56,12 @@ class FilterQuotation extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
 
-        $to = Database::getConnection('external_db', 'external_db')->query("SELECT SQL_CACHE date from {ek_quotation} order by date DESC limit 1")->fetchObject();
-        $from = Database::getConnection('external_db', 'external_db')->query("SELECT SQL_CACHE date from {ek_quotation} order by date limit 1")->fetchObject();
+        $to = Database::getConnection('external_db', 'external_db')
+                ->query("SELECT date FROM {ek_sales_quotation} order by date DESC limit 1")
+                ->fetchObject();
+        $from = Database::getConnection('external_db', 'external_db')
+                ->query("SELECT date FROM {ek_sales_quotation} order by date limit 1")
+                ->fetchObject();
         //$date1= date('Y-m-d', strtotime($data2." -30 days")) ;
 
         $form['filters'] = array(

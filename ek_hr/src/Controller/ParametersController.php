@@ -213,11 +213,14 @@ class ParametersController extends ControllerBase {
             $origin = $category->HrCat[$data['hr'][0]->company_id];
             $data['hr'][0]->origin = $origin[$data['hr'][0]->origin];
             if ($data['hr'][0]->picture) {
+                $data['hr'][0]->pictureUrl = file_create_url($data['hr'][0]->picture);
                 $data['hr'][0]->picture = "<img class='thumbnail' src='"
                         . file_create_url($data['hr'][0]->picture) . "'>";
+                
             } else {
                 $pic = '../../' . drupal_get_path('module', 'ek_hr') . '/art/default.jpeg';
                 $data['hr'][0]->picture = "<img class='thumbnail' src='" . $pic . "'>";
+                $data['hr'][0]->pictureUrl = $pic;
             }
 
             if ($data['hr'][0]->administrator != '0') {

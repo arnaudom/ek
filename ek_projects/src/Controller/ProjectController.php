@@ -830,7 +830,7 @@ class ProjectController extends ControllerBase {
                      * extact PO list
                      */
                     //NOTE: PO are not filtered by COID access here. TODO?
-                    $query = "SELECT id,serial,status,currency,date,due,amount,amountbc FROM {ek_purchase} "
+                    $query = "SELECT id,serial,status,currency,date,due,amount,amountbc FROM {ek_sales_purchase} "
                             . "WHERE pcode=:p order by id";
                     $pos = Database::getConnection('external_db', 'external_db')->query($query, array(':p' => $pcode));
                     $po_list = array();
@@ -882,7 +882,8 @@ class ProjectController extends ControllerBase {
                     /*
                      * extact Quote list
                      */
-                    $query = "SELECT id,serial,status,currency,date,amount from {ek_quotation}  WHERE pcode=:p order by id";
+                    $query = "SELECT id,serial,status,currency,date,amount from {ek_sales_quotation} "
+                            . "WHERE pcode=:p order by id";
                     $quotes = Database::getConnection('external_db', 'external_db')->query($query, array(':p' => $pcode));
                     $quote_list = array();
                     $i = 0;
@@ -911,7 +912,8 @@ class ProjectController extends ControllerBase {
                     /*
                      * extact Invoice list
                      */
-                    $query = "SELECT id,serial,head,status,currency,date,due,amount,amountbase FROM {ek_invoice} "
+                    $query = "SELECT id,serial,head,status,currency,date,due,amount,amountbase "
+                            . "FROM {ek_sales_invoice} "
                             . "WHERE pcode=:p order by id";
                     $invoices = Database::getConnection('external_db', 'external_db')
                             ->query($query, array(':p' => $pcode));

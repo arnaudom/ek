@@ -5,10 +5,29 @@ use Drupal\ek_finance\Journal;
 $journal = new Journal();
 $period = $params['year'] . '-' . $params['month'] . 
         '-' . cal_days_in_month(CAL_GREGORIAN,$params['month'] ,$params['year']);
-$daysInMonth = cal_days_in_month(CAL_GREGORIAN, $fiscalMonth , $fiscalYear );
-$from = date('Y-m-d', strtotime($fiscalYear . '-' . $fiscalMonth . '-' . $daysInMonth . ' - 1 year + 1 day'));
-$to = $params['year'] .'-' . $params['month'] . '-' . cal_days_in_month(CAL_GREGORIAN, $params['month'] , $params['year']);
-$stop_date = date('Y-m-d', strtotime($to . ' + 1 day'));
+$dates = $journal->getFiscalDates($params['coid'], $params['year'], $params['month']);
+$to = $dates['to'];
+$stop_date = $dates['stop_date'];
+
+
+
+if($dates['archive'] == TRUE) {
+    $from = $dates['from'];
+    
+    //extract data from archive tables
+    $table_accounts = "ek_accounts_" . $params['year'] . "_" . $params['coid'];
+    $table_journal = "ek_journal_" . $params['year'] . "_" . $params['coid'];
+    
+    $alert = t('Archive data');
+} else {
+    $from = $dates['fiscal_start'];
+    //extract data from current tables
+    $table_accounts = "ek_accounts";
+    $table_journal = "ek_journal";
+    
+    $alert = t('Fiscal year'). ' : ' . $dates['fiscal_year'];
+}
+
 
 class PDF extends FPDF
 {
@@ -220,9 +239,8 @@ $pdf->SetFont('Arial','',16);
     $pdf->Cell(60,5, t("Profit & loss") ,'B');
 $pdf->SetFont('Arial','',8);
 $pdf->SetTextColor(0,0,0);
-
-
-    $pdf->Cell(100,5, t('As of') . ": " . $period ,'0',1,'R');
+$pdf->Cell(100,5, t('As of') . ": " . $period ,'0',1,'R');
+$pdf->Cell(160,4, '('. $alert . ')' ,'0',1,'R');
 $pdf->Ln(5);
 
 //header
@@ -240,7 +258,7 @@ $pdf->SetFont('Arial','',10);
 
 ////////////////////// REVENUE /////////////////////////////
 //header account
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE (aid like :aid1 or aid like :aid2) "
         . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
 $a = array( ':aid1' => $chart['income'] . '%',
@@ -261,7 +279,7 @@ $pdf->SetTextColor(88,88,88);
 //-----------------------------//    
 
 
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE (aid like :aid1 or aid like :aid2) "
         . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
 $a = array(
@@ -271,7 +289,8 @@ $a = array(
             ':status' => 1, 
             ':coid' => $params['coid']
         );
-$result = Database::getConnection('external_db', 'external_db')->query($q,$a);
+$result = Database::getConnection('external_db', 'external_db')
+        ->query($q,$a);
 
 
 while ($r=$result->fetchObject()) {
@@ -287,10 +306,11 @@ if($params['summary'] == 0){
 $aid = substr($r->aid,0,2);
 $total_detail=0;
 $total_detail_l=0;
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE aid like :aid AND atype=:type AND coid=:coid order by aid";
 $a = array(':aid'=> $aid . '%' ,':type' => 'detail', ':coid' => $params['coid']);
-$result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
+$result2 = Database::getConnection('external_db', 'external_db')
+        ->query($q,$a);
 
     while ($r2=$result2->fetchAssoc()) {
     
@@ -300,7 +320,8 @@ $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
                 'type' => 'debit',
                 'coid' => $params['coid'] ,
                 'from' => $from ,
-                'to' => $to
+                'to' => $to,
+                'archive' => $dates['archive']
                  )
                 );
     
@@ -310,7 +331,8 @@ $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
                 'type' => 'credit',
                 'coid' => $params['coid'],
                 'from' => $from,
-                'to' => $to
+                'to' => $to,
+                'archive' => $dates['archive']
                  )
                 );    
     $b = $c[0]-$d[0];
@@ -368,14 +390,16 @@ $pdf->Ln(3);
 
 ////////////////////// COS /////////////////////////////
 //header account
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE aid like :aid AND atype=:type AND astatus=:status AND coid=:coid order by aid";
 $a = array(
             ':aid' => $chart['cos'] . '%', 
             ':type' => 'header',
             ':status' => 1, 
             ':coid' => $params['coid']);
-$rh = Database::getConnection('external_db', 'external_db')->query($q,$a)->fetchObject();
+$rh = Database::getConnection('external_db', 'external_db')
+        ->query($q,$a)
+        ->fetchObject();
 
 
 //Head-----------------------------//
@@ -386,7 +410,7 @@ $pdf->SetTextColor(0,61,121);
 $pdf->SetTextColor(88,88,88);
 //-----------------------------//  
 
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE aid like :aid AND atype=:type AND astatus=:status AND coid=:coid order by aid";
 $a = array(
             ':aid' => $chart['cos'] . '%', 
@@ -394,7 +418,8 @@ $a = array(
             ':status' => 1, 
             ':coid' => $params['coid']);
 
-$result = Database::getConnection('external_db', 'external_db')->query($q,$a);
+$result = Database::getConnection('external_db', 'external_db')
+        ->query($q,$a);
 
 
 while ($r=$result->fetchAssoc()) {
@@ -409,10 +434,11 @@ while ($r=$result->fetchAssoc()) {
 $aid = substr($r['aid'],0,2);;
 $total_detail=0;
 $total_detail_l=0;
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE aid like :aid AND atype=:type AND coid=:coid order by aid";
 $a = array(':aid' => $aid . '%', ':type' => 'detail', ':coid' => $params['coid']);
-$result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
+$result2 = Database::getConnection('external_db', 'external_db')
+        ->query($q,$a);
 
     while ($r2 = $result2->fetchAssoc()) {
     
@@ -422,7 +448,8 @@ $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
                 'type'=> 'debit',
                 'coid' => $params['coid'] ,
                 'from' => $from ,
-                'to' => $to
+                'to' => $to,
+                'archive' => $dates['archive']
                  )
                 );
 
@@ -432,7 +459,8 @@ $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
                 'type' => 'credit',
                 'coid' => $params['coid'],
                 'from' => $from,
-                'to' => $to
+                'to' => $to,
+                'archive' => $dates['archive']
                  )
                 );    
 
@@ -495,7 +523,7 @@ $pdf->Ln(2);
 
 ////////////////////// CHARGES /////////////////////////////
 //header account
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE (aid like :aid1 or aid like :aid2) "
         . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
 $a = array(
@@ -505,7 +533,8 @@ $a = array(
             ':status' => 1,
             ':coid' => $params['coid']);
 
-$rh =  Database::getConnection('external_db', 'external_db')->query($q,$a)->fetchObject();
+$rh =  Database::getConnection('external_db', 'external_db')
+        ->query($q,$a)->fetchObject();
 
 
 //Head-----------------------------//
@@ -517,7 +546,7 @@ $pdf->SetTextColor(88,88,88);
 //-----------------------------//    
 
 
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE (aid like :aid1 or aid like :aid2) "
         . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
 $a = array(
@@ -527,7 +556,8 @@ $a = array(
             ':status' => 1, 
             ':coid' => $params['coid']);
 
-$result = Database::getConnection('external_db', 'external_db')->query($q,$a);
+$result = Database::getConnection('external_db', 'external_db')
+        ->query($q,$a);
 
 
 while ($r = $result->fetchAssoc()) {
@@ -542,11 +572,12 @@ while ($r = $result->fetchAssoc()) {
 $aid =substr($r['aid'],0,2);
 $total_detail=0;
 $total_detail_l=0;
-$q = "SELECT aid,aname FROM {ek_accounts} "
+$q = "SELECT aid,aname FROM {$table_accounts} "
         . "WHERE aid like :aid AND atype=:type AND coid=:coid order by aid";
 $a = array(':aid'=> $aid . '%',':type'=>'detail',':coid'=>$params['coid']);
 
-$result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
+$result2 = Database::getConnection('external_db', 'external_db')
+        ->query($q,$a);
 
     while ($r2=$result2->fetchAssoc()) {
     
@@ -556,7 +587,8 @@ $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
                 'type' => 'debit',
                 'coid' => $params['coid'] ,
                 'from' => $from ,
-                'to' => $to
+                'to' => $to,
+                'archive' => $dates['archive']
                  )
                 );
     
@@ -566,7 +598,8 @@ $result2 = Database::getConnection('external_db', 'external_db')->query($q,$a);
                 'type' => 'credit',
                 'coid' => $params['coid'],
                 'from' => $from,
-                'to'=> $to
+                'to'=> $to,
+                'archive' => $dates['archive']
                  )
                 );    
     $b = $c[0]-$d[0];

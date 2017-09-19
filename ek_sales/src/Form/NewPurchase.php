@@ -67,13 +67,20 @@ class NewPurchase extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $clone = NULL) {
+        
+        $url = Url::fromRoute('ek_sales.purchases.list', array(), array())->toString();
+        $form['back'] = array(
+            '#type' => 'item',
+            '#markup' => t('<a href="@url" >List</a>', array('@url' => $url ) ) ,
+
+        );
 
         if (isset($id) && !$id == NULL) {
             //edit
             $data = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT * from {ek_purchase} where id=:id", array(':id' => $id))->fetchObject();
+                    ->query("SELECT * from {ek_sales_purchase} where id=:id", array(':id' => $id))->fetchObject();
             $detail = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT * from {ek_purchase_details} where serial=:s", array(':s' => $data->serial));
+                    ->query("SELECT * from {ek_sales_purchase_details} where serial=:s", array(':s' => $data->serial));
 
             If ($clone != 'clone') {
                 $form['edit_purchase'] = array(
@@ -124,6 +131,7 @@ class NewPurchase extends FormBase {
             $taxable = 0;
             $n = 0;
             $AidOptions = array();
+            
         }
 
 
@@ -230,21 +238,21 @@ class NewPurchase extends FormBase {
             '#suffix' => '</div>',
         );
 
+        $options = array('1' => t('Purchase'), '4' => t('Debit note'));
 
         $form['options']['title'] = array(
-            '#type' => 'textfield',
-            '#size' => 50,
-            '#maxlength' => 255,
-            '#required' => TRUE,
-            '#default_value' => isset($data->title) ? $data->title : NULL,
-            '#title' => t('description'),
-            '#prefix' => "<div class='cell'>",
-            '#suffix' => '</div></div></div>',
+          '#type' => 'select',
+          '#size' => 1,
+          '#options' => $options,
+          '#required' => TRUE,
+          '#default_value' => isset($data->type) ? $data->type : 1,
+          '#title' => t('Title'),
+          '#prefix' => "<div class='cell'>",
+          '#suffix' => '</div></div></div>',
         );
-
+        
         if ($this->moduleHandler->moduleExists('ek_projects')) {
 
-            
             $form['options']['pcode'] = array(
                 '#type' => 'select',
                 '#size' => 1,
@@ -863,11 +871,21 @@ class NewPurchase extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
+        
+        $options = array('1' => t('Purchase'), '4' => t('Debit note'));
 
         if ($form_state->getValue('new_purchase') == 1) {
             //create new serial No
+            switch ($form_state->getValue('title')) {
+            case '4':
+                $type = "-DN-";
+                break;
+            default:
+                $type = "-PO-";
+                break;
+            }
             $poid = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT count(id) from {ek_purchase}")
+                    ->query("SELECT count(id) from {ek_sales_purchase}")
                     ->fetchField();
             $poid++;
             $short = Database::getConnection('external_db', 'external_db')
@@ -877,16 +895,16 @@ class NewPurchase extends FormBase {
             $sup = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT shortname from {ek_address_book} where id=:id", array(':id' => $form_state->getValue('supplier')))
                     ->fetchField();
-            $serial = ucwords(str_replace('-', '', $short)) . "-PO-" . $date . "-" . ucwords(str_replace('-', '', $sup)) . "-" . $poid;
+            $serial = ucwords(str_replace('-', '', $short)) . $type . $date . "-" . ucwords(str_replace('-', '', $sup)) . "-" . $poid;
         } else {
             //edit
             $serial = $form_state->getValue('serial');
             $delete = Database::getConnection('external_db', 'external_db')
-                    ->delete('ek_purchase_details')
+                    ->delete('ek_sales_purchase_details')
                     ->condition('serial', $form_state->getValue('serial'))
                     ->execute();
             $poid = Database::getConnection('external_db', 'external_db')
-                    ->query('SELECT id from {ek_purchase} where serial=:s', array(':s' => $serial))
+                    ->query('SELECT id from {ek_sales_purchase} where serial=:s', array(':s' => $serial))
                     ->fetchField();
         }
 
@@ -945,7 +963,7 @@ class NewPurchase extends FormBase {
                     'aid' => $account
                 );
 
-                $insert = Database::getConnection('external_db', 'external_db')->insert('ek_purchase_details')
+                $insert = Database::getConnection('external_db', 'external_db')->insert('ek_sales_purchase_details')
                         ->fields($fields)
                         ->execute();
             }//if not delete
@@ -995,7 +1013,8 @@ class NewPurchase extends FormBase {
             'amount' => $sum,
             'currency' => $form_state->getValue('currency'),
             'date' => $form_state->getValue('date'),
-            'title' => $form_state->getValue('title'),
+            'title' => $options[$form_state->getValue('title')],
+            'type' => $form_state->getValue('title'),
             'pcode' => $pcode,
             'comment' => Xss::filter($form_state->getValue('comment')),
             'client' => $form_state->getValue('supplier'),
@@ -1015,12 +1034,12 @@ class NewPurchase extends FormBase {
         );
 
         if ($form_state->getValue('new_purchase') == 1) {
-            $insert = Database::getConnection('external_db', 'external_db')->insert('ek_purchase')
+            $insert = Database::getConnection('external_db', 'external_db')->insert('ek_sales_purchase')
                     ->fields($fields1)
                     ->execute();
             $reference = $insert;
         } else {
-            $update = Database::getConnection('external_db', 'external_db')->update('ek_purchase')
+            $update = Database::getConnection('external_db', 'external_db')->update('ek_sales_purchase')
                     ->fields($fields1)
                     ->condition('serial', $serial)
                     ->execute();
@@ -1041,7 +1060,7 @@ class NewPurchase extends FormBase {
 
             if ($form_state->getValue('new_purchase') != 1) {
                 //delete previous file if any
-                $query = 'SELECT uri from {ek_purchase} WHERE serial = :s';
+                $query = 'SELECT uri from {ek_sales_purchase} WHERE serial = :s';
                 $uri = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':s' => $serial))
                         ->fetchField();
@@ -1064,22 +1083,30 @@ class NewPurchase extends FormBase {
                 );
 
                 $update = Database::getConnection('external_db', 'external_db')
-                                ->update('ek_purchase')
+                                ->update('ek_sales_purchase')
                                 ->condition('id', $reference)
                                 ->fields($fields)->execute();
             
         }
 
-        //
-        // Record the accounting journal
-        
-        if ($this->moduleHandler->moduleExists('ek_finance')) {
+       
+
+    // Record the accounting journal
+    // Debit  notes are not recorded in journal, only once assigned to purchase
+    // (a DN is deduction of payable) 
+    //
+    if($form_state->getValue('title') < 4         
+        && $this->moduleHandler->moduleExists('ek_finance')) {
 
             /*
              * delete first
              */
             if (!$form_state->getValue('new_purchase') == 1) {
-                $delete = Database::getConnection('external_db', 'external_db')->delete('ek_journal')->condition('reference', $poid)->condition('source', 'purchase')->execute();
+                $delete = Database::getConnection('external_db', 'external_db')
+                        ->delete('ek_journal')
+                        ->condition('reference', $poid)
+                        ->condition('source', 'purchase')
+                        ->execute();
             }
 
 

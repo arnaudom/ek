@@ -11,6 +11,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\AidList;
@@ -65,12 +66,19 @@ class ReceiveInvoice extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
 
         $data = Database::getConnection('external_db', 'external_db')
-                        ->query("SELECT * from {ek_invoice} where id=:id", array(':id' => $id))->fetchObject();
+                        ->query("SELECT * from {ek_sales_invoice} where id=:id", array(':id' => $id))->fetchObject();
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $baseCurrency = $this->settings->get('baseCurrency');
         }
 
+        $url = Url::fromRoute('ek_sales.invoices.list', array(), array())->toString();
+        $form['back'] = array(
+          '#type' => 'item',
+          '#markup' => t('<a href="@url" >List</a>', array('@url' => $url ) ) ,
+
+        );
+        
         $form['edit_invoice'] = array(
             '#type' => 'item',
             '#markup' => t('Invoice ref. @p', array('@p' => $data->serial)),
@@ -132,11 +140,12 @@ class ReceiveInvoice extends FormBase {
         }
 
         if ($data->taxvalue > 0) {
-            $query = "SELECT sum(quantity*value) from {ek_invoice_details} WHERE serial=:s and opt=:o";
+            $query = "SELECT sum(quantity*value) from {ek_sales_invoice_details} WHERE serial=:s and opt=:o";
             $details = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':s' => $data->serial, ':o' => 1))
                     ->fetchField();
-            $amount = $data->amount + ($details * $data->taxvalue / 100) - $data->amountreceived;
+            $amount = ($details * (1+($data->taxvalue / 100)) - $data->amountreceived) ;
+            
             $title = t('Amount with taxes (@c)', array('@c' => $data->currency));
         } else {
             $amount = $data->amount - $data->amountreceived;
@@ -310,7 +319,7 @@ class ReceiveInvoice extends FormBase {
      */
     public function debit_fx_rate(array &$form, FormStateInterface $form_state) {
 
-        $query = "SELECT currency from {ek_invoice} where id=:id";
+        $query = "SELECT currency from {ek_sales_invoice} where id=:id";
         $currency = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form_state->getValue('for_id')))
                 ->fetchField();
@@ -359,7 +368,7 @@ class ReceiveInvoice extends FormBase {
      */
     public function credit_amount(array &$form, FormStateInterface $form_state) {
 
-        $query = "SELECT currency from {ek_invoice} where id=:id";
+        $query = "SELECT currency from {ek_sales_invoice} where id=:id";
         $currency = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form['for_id']['#value']))
                 ->fetchField();
@@ -411,18 +420,19 @@ class ReceiveInvoice extends FormBase {
             }
         }
         //verify amount paid does not exceed amount due or partially paid
-        $query = "SELECT * from {ek_invoice} where id=:id";
+        $query = "SELECT * from {ek_sales_invoice} where id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form_state->getValue('for_id')))
                 ->fetchObject();
         $this_pay = str_replace(",", "", $form_state->getValue('amount'));
-        $query = "SELECT sum(quantity*value) from {ek_invoice_details} WHERE serial=:s and opt=:o";
+        $query = "SELECT sum(quantity*value) from {ek_sales_invoice_details} WHERE serial=:s and opt=:o";
         $details = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':s' => $data->serial, ':o' => 1))
                 ->fetchField();
         //max payment is calculated from recorded total amount +
         //optional taxes applied per item line
-        $max_pay = round($data->amount + ($details * $data->taxvalue / 100), 2);
+        //$max_pay = round($data->amount + ($details * $data->taxvalue / 100), 2);
+        $max_pay = ($details * (1+($data->taxvalue / 100)) - $data->amountreceived) ;
         //store data
         $form_state->set('max_pay', $max_pay);
         $form_state->set('details', $details);
@@ -460,7 +470,7 @@ class ReceiveInvoice extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $query = "SELECT * from {ek_invoice} where id=:id";
+        $query = "SELECT * from {ek_sales_invoice} where id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form_state->getValue('for_id')))
                 ->fetchObject();
@@ -494,7 +504,7 @@ class ReceiveInvoice extends FormBase {
         }
 
         $amountpaid = $data->amountreceived + $this_pay;
-        if ($amountpaid == $max_pay || $form_state->getValue('close') == 1) {
+        if ($this_pay == $max_pay || $form_state->getValue('close') == 1) {
             $paid = 1; //full payment
             $short = str_replace(",", "", $form_state->getValue('short'));
             if ($short > 0 && $this->moduleHandler->moduleExists('ek_finance')) {
@@ -522,10 +532,10 @@ class ReceiveInvoice extends FormBase {
             $paid = 2; // partial payment (can't edit anymore)
         }
 
-        //$balancebase = round($data->balancebase - ($this_pay / (1 + $data->taxvalue / 100) / $rate), 2);
+        
         //the balance base recorded is without tax
-        $balancebase = round($data->balancebase - ($this_pay / $rate), 2);
-
+        //$balancebase = round($data->balancebase - ($this_pay / $rate), 2);
+        $balancebase = round($data->balancebase - ($this_pay / (1 + $data->taxvalue / 100) / $rate), 2);
         $fields = array(
             'status' => $paid,
             'amountreceived' => $amountpaid,
@@ -534,7 +544,7 @@ class ReceiveInvoice extends FormBase {
         );
 
         $update = Database::getConnection('external_db', 'external_db')
-                ->update('ek_invoice')->fields($fields)
+                ->update('ek_sales_invoice')->fields($fields)
                 ->condition('id', $form_state->getValue('for_id'))
                 ->execute();
 

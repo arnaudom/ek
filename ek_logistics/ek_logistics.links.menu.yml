@@ -4,7 +4,7 @@ ek_logistics_main:
   route_name: ek_logistics_main
   expanded: true
   hidden: 0
-  weight: 10
+  weight: 8
     
 ek_logistics_receiving_list:
   title: 'Stock receiving'

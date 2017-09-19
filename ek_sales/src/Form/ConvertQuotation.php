@@ -67,9 +67,9 @@ class ConvertQuotation extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
 
 
-        $query = "SELECT * from {ek_quotation} where id=:id";
+        $query = "SELECT * from {ek_sales_quotation} where id=:id";
         $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
-        $query = "SELECT * from {ek_quotation_details} where serial=:id";
+        $query = "SELECT * from {ek_sales_quotation_details} where serial=:id";
         $detail = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $data->serial));
 
         $form['edit_invoice'] = array(
@@ -286,7 +286,7 @@ class ConvertQuotation extends FormBase {
 
             /*
               if(isset($data->amountbase) ){
-              $query = "SELECT sum(quantity*value) from {ek_invoice_details} WHERE serial=:s and opt=:o";
+              $query = "SELECT sum(quantity*value) from {ek_sales_invoice_details} WHERE serial=:s and opt=:o";
               $details = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $data->serial, ':o' => 1))->fetchField();
               $amount = $data->amount+($details *$data->taxvalue/100);
               $value =  round($amount/$data->amountbase, 4);
@@ -921,11 +921,14 @@ class ConvertQuotation extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
         //create new serial No
-        $iid = Database::getConnection('external_db', 'external_db')->query("SELECT count(id) from {ek_invoice}")->fetchField();
+        $iid = Database::getConnection('external_db', 'external_db')
+                ->query("SELECT count(id) from {ek_sales_invoice}")->fetchField();
         $iid++;
-        $short = Database::getConnection('external_db', 'external_db')->query("SELECT short from {ek_company} where id=:id", array(':id' => $form_state->getValue('head')))->fetchField();
+        $short = Database::getConnection('external_db', 'external_db')
+                ->query("SELECT short from {ek_company} where id=:id", array(':id' => $form_state->getValue('head')))->fetchField();
         $date = substr($form_state->getValue('date'), 2, 5);
-        $sup = Database::getConnection('external_db', 'external_db')->query("SELECT shortname from {ek_address_book} where id=:id", array(':id' => $form_state->getValue('client')))->fetchField();
+        $sup = Database::getConnection('external_db', 'external_db')
+                ->query("SELECT shortname from {ek_address_book} where id=:id", array(':id' => $form_state->getValue('client')))->fetchField();
         $serial = ucwords($short) . "-QI-" . $date . "-" . ucwords($sup) . "-" . $iid;
 
 //input used to update values set by user
@@ -1003,7 +1006,7 @@ class ConvertQuotation extends FormBase {
                     'aid' => $account
                 );
 
-                $insert = Database::getConnection('external_db', 'external_db')->insert('ek_invoice_details')
+                $insert = Database::getConnection('external_db', 'external_db')->insert('ek_sales_invoice_details')
                         ->fields($fields)
                         ->execute();
             }//if not delete
@@ -1030,7 +1033,7 @@ class ConvertQuotation extends FormBase {
                 'aid' => $form_state->getValue('account_incoterm')
             );
 
-            $insert = Database::getConnection('external_db', 'external_db')->insert('ek_invoice_details')
+            $insert = Database::getConnection('external_db', 'external_db')->insert('ek_sales_invoice_details')
                     ->fields($fields)
                     ->execute();
         }
@@ -1086,7 +1089,7 @@ class ConvertQuotation extends FormBase {
             'reconcile' => 0,
         );
 
-        $insert = Database::getConnection('external_db', 'external_db')->insert('ek_invoice')
+        $insert = Database::getConnection('external_db', 'external_db')->insert('ek_sales_invoice')
                 ->fields($fields1)
                 ->execute();
 
@@ -1155,7 +1158,7 @@ class ConvertQuotation extends FormBase {
             );
         } //if finance  
         //change quotation status
-        Database::getConnection('external_db', 'external_db')->update('ek_quotation')
+        Database::getConnection('external_db', 'external_db')->update('ek_sales_quotation')
                 ->fields(array('status' => 2))
                 ->condition('serial', $form_state->getValue('quotation_serial'))
                 ->execute();

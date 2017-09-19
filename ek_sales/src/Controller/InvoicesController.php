@@ -133,7 +133,7 @@ class InvoicesController extends ControllerBase {
 
         $access = AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_invoice', 'i');
+                ->select('ek_sales_invoice', 'i');
         $or1 = db_or();
         $or1->condition('head', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');
@@ -170,7 +170,7 @@ class InvoicesController extends ControllerBase {
 
 
                 $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                    'amount', 'amountreceived', 'pcode', 'taxvalue', 'pay_date', 'alert');
+                    'amount', 'amountreceived', 'pcode', 'taxvalue', 'pay_date', 'alert', 'type');
                 $data = $query
                         ->fields('i', $f)
                         ->condition($or1)
@@ -190,7 +190,7 @@ class InvoicesController extends ControllerBase {
                 $or2->condition('i.serial', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
                 $or2->condition('i.pcode', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
                 $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                    'amount', 'amountreceived', 'pcode', 'taxvalue', 'pay_date', 'alert');
+                    'amount', 'amountreceived', 'pcode', 'taxvalue', 'pay_date', 'alert', 'type');
                 $data = $query
                         ->fields('i', $f)
                         ->condition($or1)
@@ -205,13 +205,13 @@ class InvoicesController extends ControllerBase {
             //no filter
 
             $from = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT SQL_CACHE date from {ek_invoice} order by date limit 1")
+                    ->query("SELECT SQL_CACHE date from {ek_sales_invoice} order by date limit 1")
                     ->fetchField();
             $or2 = db_or();
             $or2->condition('i.status', 0, '=');
             $or2->condition('i.status', 2, '=');
             $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                'amount', 'amountreceived', 'pcode', 'taxvalue', 'pay_date', 'alert');
+                'amount', 'amountreceived', 'pcode', 'taxvalue', 'pay_date', 'alert', 'type');
             $data = $query
                     ->fields('i', $f)
                     ->condition($or1)
@@ -249,7 +249,11 @@ class InvoicesController extends ControllerBase {
             if ($r->head <> $r->allocation) {
                 $co = $co . "<br/>" . t('for') . ": " . $companies[$r->allocation];
             }
-            $number = "<a title='" . t('view') . "' href='"
+            $doctype = '';
+            if($r->type == 4) {
+                $doctype = 'red';
+            }
+            $number = "<a class='". $doctype ."' title='" . t('view') . "' href='"
                     . Url::fromRoute('ek_sales.invoices.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
 
@@ -286,16 +290,23 @@ class InvoicesController extends ControllerBase {
                 }
                 $duetitle = t('past due') . ' ' . -1 * $long . ' ' . t('day(s)');
             }
-
-            $value = $r->currency . ' ' . number_format($r->amount, 2);
-            $query = 'SELECT sum(total) from {ek_invoice_details} WHERE serial=:s and opt=:o';
+            if($r->type < 4) {
+                $value = $r->currency . ' ' . number_format($r->amount, 2);
+            } else {
+                $value = $r->currency . ' (' . number_format($r->amount, 2) . ')';
+            }
+            $query = 'SELECT sum(total) from {ek_sales_invoice_details} WHERE serial=:s and opt=:o';
             $taxable = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':s' => $r->serial, ':o' => 1))
                     ->fetchField();
             $tax = $taxable * $r->taxvalue / 100;
 
             if ($tax > 0) {
-                $value .= '<br/>' . t('tax:') . " " . $r->currency . " " . number_format($tax, 2);
+                if($r->type < 4) {
+                    $value .= '<br/>' . t('tax:') . " " . $r->currency . " " . number_format($tax, 2);
+                } else {
+                    $value .= '<br/>' . t('tax:') . " " . $r->currency . " (" . number_format($tax, 2) . ')';
+                }
             }
 
             if ($r->status == 0)
@@ -334,11 +345,19 @@ class InvoicesController extends ControllerBase {
             }
 
             if ($r->status != 1) {
-                $links['pay'] = array(
-                    'title' => $this->t('Receive'),
-                    'url' => Url::fromRoute('ek_sales.invoices.pay', ['id' => $r->id]),
-                    'weight' => $weight,
-                );
+                if($r->type < 3) {
+                    $links['pay'] = array(
+                        'title' => $this->t('Receive'),
+                        'url' => Url::fromRoute('ek_sales.invoices.pay', ['id' => $r->id]),
+                        'weight' => $weight,
+                    );
+                } elseif($r->type == 4) {
+                    $links['pay'] = array(
+                        'title' => $this->t('Assign credit note'),
+                        'url' => Url::fromRoute('ek_sales.invoices.assign.cn', ['id' => $r->id]),
+                        'weight' => $weight,
+                    );                    
+                }
             }
 
             if ($r->alert == 1)
@@ -454,7 +473,7 @@ class InvoicesController extends ControllerBase {
             $or1->condition('allocation', $access, 'IN');
 
             $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_invoice', 'i');
+                    ->select('ek_sales_invoice', 'i');
             $query->leftJoin('ek_address_book', 'b', 'i.client=b.id');
             $query->leftJoin('ek_company', 'c', 'i.head=c.id');
 
@@ -488,7 +507,7 @@ class InvoicesController extends ControllerBase {
 
 
             $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_invoice', 'i');
+                    ->select('ek_sales_invoice', 'i');
             $fields = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
                 'amount', 'amountreceived', 'amountbase', 'balancebase', 'pcode', 'taxvalue');
 
@@ -600,7 +619,7 @@ class InvoicesController extends ControllerBase {
                 }
 
                 if ($r->taxvalue != 0) {
-                    $query = 'SELECT sum(total) from {ek_invoice_details} WHERE serial=:s and opt=:o';
+                    $query = 'SELECT sum(total) from {ek_sales_invoice_details} WHERE serial=:s and opt=:o';
                     $taxable = Database::getConnection('external_db', 'external_db')
                             ->query($query, array(':s' => $r->serial, ':o' => 1))
                             ->fetchField();
@@ -865,7 +884,7 @@ class InvoicesController extends ControllerBase {
 
     /**
      * @retun
-     *  Invoice form for rcording payment
+     *  Invoice form for recording payment
      * @param $id = id of invoice
      *
      */
@@ -876,6 +895,19 @@ class InvoicesController extends ControllerBase {
         return $build;
     }
 
+    /**
+     * @retun
+     *  Credit note assignment form for recording payment
+     * @param $id = id of credit note
+     *
+     */
+    public function AssignCreditNote($id) {
+        $build['assign_credit_note'] = $this->formBuilder
+                ->getForm('Drupal\ek_sales\Form\AssignNote','CT', $id);
+
+        return $build;
+    }
+    
     /**
      * @retun
      *  Form for setting a cron alert
@@ -920,23 +952,23 @@ class InvoicesController extends ControllerBase {
             switch ($_SESSION['taskfilter']['type']) {
 
                 case 0:
-                    $query = "SELECT * FROM {ek_invoice_tasks} order by id";
+                    $query = "SELECT * FROM {ek_sales_invoice_tasks} order by id";
                     $a = [];
                     break;
                 case 1:
-                    $query = "SELECT * FROM {ek_invoice_tasks} WHERE completion_rate >=:v order by id ";
+                    $query = "SELECT * FROM {ek_sales_invoice_tasks} WHERE completion_rate >=:v order by id ";
                     $a = [':v' => '100'];
                     break;
                 case 2:
-                    $query = "SELECT * FROM {ek_invoice_tasks} WHERE completion_rate<:v or completion_rate = :n order by id";
+                    $query = "SELECT * FROM {ek_sales_invoice_tasks} WHERE completion_rate<:v or completion_rate = :n order by id";
                     $a = [':v' => 100, ':n' => ''];
                     break;
                 case 3:
-                    $query = "SELECT * FROM {ek_invoice_tasks} WHERE uid=:v order by id";
+                    $query = "SELECT * FROM {ek_sales_invoice_tasks} WHERE uid=:v order by id";
                     $a = [':v' => \Drupal::currentUser()->id()];
                     break;
                 case 4:
-                    $query = "SELECT * FROM {ek_invoice_tasks} WHERE end < :v order by id";
+                    $query = "SELECT * FROM {ek_sales_invoice_tasks} WHERE end < :v order by id";
                     $a = [':v' => $stamp];
                     break;
             }
@@ -977,7 +1009,7 @@ class InvoicesController extends ControllerBase {
                     }
                 }
 
-                $query = "SELECT id FROM {ek_invoice} WHERE serial=:s";
+                $query = "SELECT id FROM {ek_sales_invoice} WHERE serial=:s";
                 $id = Database::getConnection('external_db', 'external_db')
                                 ->query($query, [':s' => $r->serial])->fetchField();
                 $url = Url::fromRoute('ek_sales.invoices.task', ['id' => $id])->toString();
@@ -1066,7 +1098,7 @@ class InvoicesController extends ControllerBase {
     public function PrintShareInvoices($id) {
 
         //filter access to document
-        $query = "SELECT `head`, `allocation` FROM {ek_invoice} WHERE id=:id";
+        $query = "SELECT `head`, `allocation` FROM {ek_sales_invoice} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, [':id' => $id])
                 ->fetchObject();
@@ -1140,7 +1172,7 @@ class InvoicesController extends ControllerBase {
     public function Html($id) {
 
         //filter access to document
-        $query = "SELECT `head`, `allocation` FROM {ek_invoice} WHERE id=:id";
+        $query = "SELECT `head`, `allocation` FROM {ek_sales_invoice} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, [':id' => $id])
                 ->fetchObject();
@@ -1204,7 +1236,7 @@ class InvoicesController extends ControllerBase {
      */
     public function Excel($id) {
         //filter access to document
-        $query = "SELECT `head`, `allocation` FROM {ek_invoice} WHERE id=:id";
+        $query = "SELECT `head`, `allocation` FROM {ek_sales_invoice} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, [':id' => $id])
                 ->fetchObject();

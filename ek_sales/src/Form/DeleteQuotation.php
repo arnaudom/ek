@@ -54,7 +54,7 @@ class DeleteQuotation extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
 
-        $query = "SELECT status,serial from {ek_quotation} where id=:id";
+        $query = "SELECT status,serial from {ek_sales_quotation} where id=:id";
         $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
 
 
@@ -107,8 +107,8 @@ class DeleteQuotation extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
 
-        $delete = Database::getConnection('external_db', 'external_db')->delete('ek_quotation')->condition('id', $form_state->getValue('for_id'))->execute();
-        $delete = Database::getConnection('external_db', 'external_db')->delete('ek_quotation_details')->condition('serial', $form_state->getValue('serial'))->execute();
+        $delete = Database::getConnection('external_db', 'external_db')->delete('ek_sales_quotation')->condition('id', $form_state->getValue('for_id'))->execute();
+        $delete = Database::getConnection('external_db', 'external_db')->delete('ek_sales_quotation_details')->condition('serial', $form_state->getValue('serial'))->execute();
 
 
         if ($delete) {

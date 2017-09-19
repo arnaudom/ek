@@ -59,10 +59,10 @@ class FilterInvoice extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
   
   $to = Database::getConnection('external_db', 'external_db')
-          ->query("SELECT date from {ek_invoice} order by date DESC limit 1")
+          ->query("SELECT date from {ek_sales_invoice} order by date DESC limit 1")
           ->fetchObject();
   $from = Database::getConnection('external_db', 'external_db')
-          ->query("SELECT date from {ek_invoice} WHERE status <> 1 order by date limit 1")
+          ->query("SELECT date from {ek_sales_invoice} WHERE status <> 1 order by date limit 1")
           ->fetchObject();
   
   $s = array(0 => t('Not paid'), 1 => t('Paid'), 3 => t('Any'));

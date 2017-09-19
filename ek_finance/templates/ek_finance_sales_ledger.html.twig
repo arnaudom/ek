@@ -57,9 +57,9 @@
                                 <td>{{ row.id  }} - {{ row.count  }}</td>
                                 <td>
                                     <span title='{{ row.comment }}'>{{ row.aid }}</span> 
-                                    {% if  row.source == "invoice" and row.exchange != 1 %} 
+                                    {% if  (row.source == "invoice" or row.source == "invoice cn") and row.exchange != 1 %} 
                                         <a class='' title='{{ row.source }}' href="{{  path('ek_sales.invoices.print_html', {'id': row.reference }) }}">{{ row.aname }}</a>
-                                    {% elseif  row.source == "purchase" and row.exchange != 1  %} 
+                                    {% elseif  (row.source == "purchase" or row.source == "purchase dn") and row.exchange != 1  %} 
                                         <a class='' title='{{ row.source }}' href="{{  path('ek_sales.purchases.print_html', {'id': row.reference }) }}">{{ row.aname }}</a>
                                     {% else %}
                                         {{ row.aname }}

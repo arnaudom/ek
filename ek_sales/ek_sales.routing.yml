@@ -143,6 +143,15 @@ ek_sales.purchases.pay:
     _permission: 'create_purchase'
     id: \d*
 
+ek_sales.purchases.assign.dn:
+  path: '/invoices/debit-note/{id}'
+  defaults:
+    _title: 'Assign debit to purchases'
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::AssignDebitNote'
+  requirements:
+    _permission: 'create_invoice'
+    id: \d*
+
 ek_sales.purchases.alert:
   path: '/purchases/alert/{id}'
   defaults:
@@ -347,6 +356,15 @@ ek_sales.invoices.pay:
   defaults:
     _title: 'Invoice receipt'
     _controller: '\Drupal\ek_sales\Controller\InvoicesController::PayInvoice'
+  requirements:
+    _permission: 'create_invoice'
+    id: \d*
+
+ek_sales.invoices.assign.cn:
+  path: '/invoices/credit-note/{id}'
+  defaults:
+    _title: 'Assign credit to sales'
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::AssignCreditNote'
   requirements:
     _permission: 'create_invoice'
     id: \d*

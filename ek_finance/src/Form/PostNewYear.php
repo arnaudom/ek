@@ -284,6 +284,27 @@ class PostNewYear extends FormBase {
     $from = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth . ' - 1 year + 1 day'));
     $to = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth . ' + 1 day'));
     $earning = $journal->current_earning($form_state->getValue('coid') , $from , $to);
+
+    /* clone current tables as archives
+     * name archive = table + fiscal year + coid     
+     */
+        $name = "_" . $settings->get('fiscal_year') . '_' . $form_state->getValue('coid');
+        $ek_accounts = "ek_accounts" . $name;
+        $ek_journal = "ek_journal" . $name;
+
+        $query = "CREATE TABLE " . $ek_accounts . " LIKE {ek_accounts}";
+        Database::getConnection('external_db', 'external_db')
+                        ->query($query);
+        $query = "INSERT INTO " . $ek_accounts . " SELECT * FROM {ek_accounts} WHERE coid=:coid";
+        Database::getConnection('external_db', 'external_db')
+                        ->query($query,[':coid' => $form_state->getValue('coid')]);
+        $query = "CREATE TABLE " . $ek_journal . " LIKE {ek_journal}";
+        Database::getConnection('external_db', 'external_db')
+                        ->query($query);
+        $query = "INSERT INTO " . $ek_journal . " SELECT * FROM {ek_journal} WHERE coid=:coid";
+        Database::getConnection('external_db', 'external_db')
+                        ->query($query,[':coid' => $form_state->getValue('coid')]);    
+    
     $display = '';
     $rows = '';
     $report = array($form_state->getValue('coid'), $fiscal_year);
@@ -353,6 +374,8 @@ class PostNewYear extends FormBase {
     //update the new fiscal year
     $settings->set('fiscal_year' , $fiscal_year+1 );
     $settings->save();
+    
+    $form_state->setRedirect('ek_finance.extract.balance_sheet') ;
   
  }
 

@@ -53,7 +53,7 @@ class DeletePurchase extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-        $query = "SELECT status,serial from {ek_purchase} where id=:id";
+        $query = "SELECT status,serial from {ek_sales_purchase} where id=:id";
         $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
 
 
@@ -109,11 +109,11 @@ class DeletePurchase extends FormBase {
 
 
         $delete = Database::getConnection('external_db', 'external_db')
-                ->delete('ek_purchase')
+                ->delete('ek_sales_purchase')
                 ->condition('id', $form_state->getValue('for_id'))
                 ->execute();
         $delete = Database::getConnection('external_db', 'external_db')
-                ->delete('ek_purchase_details')
+                ->delete('ek_sales_purchase_details')
                 ->condition('serial', $form_state->getValue('serial'))
                 ->execute();
 

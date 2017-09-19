@@ -102,7 +102,7 @@ class FilterSales extends FormBase {
             $supplier = array('%' => t('All'));
             $supplier += Database::getConnection('external_db', 'external_db')
                     ->query("SELECT DISTINCT ab.id,name FROM {ek_address_book} ab "
-                            . "INNER JOIN {ek_purchase} p ON p.client = ab.id order by name")
+                            . "INNER JOIN {ek_sales_purchase} p ON p.client = ab.id order by name")
                     ->fetchAllKeyed();
 
 
@@ -119,7 +119,7 @@ class FilterSales extends FormBase {
             $client = array('%' => t('All'));
             $client += Database::getConnection('external_db', 'external_db')
                     ->query("SELECT DISTINCT ab.id,name FROM {ek_address_book} ab "
-                            . "INNER JOIN {ek_invoice} i ON i.client = ab.id order by name")
+                            . "INNER JOIN {ek_sales_invoice} i ON i.client = ab.id order by name")
                     ->fetchAllKeyed();
 
 

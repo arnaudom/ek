@@ -20,6 +20,7 @@ use Drupal\ek_finance\FinanceSettings;
 
 /**
  * Provides an company settings form.
+ * Includes finance parameters
  */
 class EditCompanySettings extends FormBase {
 
@@ -178,6 +179,7 @@ class EditCompanySettings extends FormBase {
             $form['fiscal_year'] = array(
               '#type' => 'select',
               '#size' => 1,
+              '#disabled' => isset( $fiscal_year ) ? TRUE : FALSE,
               '#options' => array_combine($options,$options),
               '#default_value' => isset( $fiscal_year ) ? $fiscal_year : $year,
               '#title' => t('Fiscal year'),

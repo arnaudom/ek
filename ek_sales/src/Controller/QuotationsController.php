@@ -121,7 +121,7 @@ class QuotationsController extends ControllerBase {
 
         $access = AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_quotation', 'q');
+                ->select('ek_sales_quotation', 'q');
         $or1 = db_or();
         $or1->condition('header', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');
@@ -144,7 +144,7 @@ class QuotationsController extends ControllerBase {
 
 
             $from = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT SQL_CACHE date from {ek_quotation} order by date limit 1")
+                    ->query("SELECT date from {ek_sales_quotation} order by date limit 1")
                     ->fetchField();
             $data = $query
                     ->fields('q')
@@ -214,7 +214,7 @@ class QuotationsController extends ControllerBase {
             //quotations are recorded by revision No. Each revision is kept in history
             //only last revision is displayed
 
-            $query = "SELECT DISTINCT revision FROM {ek_quotation_details} WHERE serial=:s order by revision";
+            $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision";
             $revisions = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':s' => $r->serial));
 
@@ -226,7 +226,7 @@ class QuotationsController extends ControllerBase {
                 $last = $revs->revision;
             }
 
-            $query = 'SELECT sum(total) from {ek_quotation_details} WHERE serial=:s and revision=:r';
+            $query = 'SELECT sum(total) from {ek_sales_quotation_details} WHERE serial=:s and revision=:r';
             $taxable = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':s' => $r->serial, ':r' => $last))
                     ->fetchField();
@@ -329,7 +329,7 @@ class QuotationsController extends ControllerBase {
     public function PrintShareQuotations($id) {
         
         //filter access to document
-        $query = "SELECT `header`, `allocation` FROM {ek_quotation} WHERE id=:id";
+        $query = "SELECT `header`, `allocation` FROM {ek_sales_quotation} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                   ->query($query, [':id' => $id])
                   ->fetchObject();

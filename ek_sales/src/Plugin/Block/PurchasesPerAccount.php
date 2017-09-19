@@ -45,7 +45,7 @@ class PurchasesPerAccount extends BlockBase {
         $months = array('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12');
         $years = array(date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3 );
         $content = '';            
-        $query = "SELECT sum(amountbc) as total,name FROM {ek_purchase} i "
+        $query = "SELECT sum(amountbc) as total,name FROM {ek_sales_purchase} i "
                     . "INNER JOIN {ek_address_book} b ON i.client=b.id WHERE "
                     . "date like :d GROUP BY b.name order by total DESC ";
         

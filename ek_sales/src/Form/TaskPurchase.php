@@ -62,8 +62,8 @@ class TaskPurchase extends FormBase {
         $access = AccessCheck::GetCompanyByUser();
 
         $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_purchase', 'p');
-        $query->leftJoin('ek_purchase_tasks', 't', 'p.serial=t.serial');
+                ->select('ek_sales_purchase', 'p');
+        $query->leftJoin('ek_sales_purchase_tasks', 't', 'p.serial=t.serial');
         $or1 = db_or();
         $or1->condition('p.head', $access, 'IN');
         $or1->condition('p.allocation', $access, 'IN');
@@ -297,7 +297,7 @@ class TaskPurchase extends FormBase {
 
         if ($form_state->getValue('delete') == 1) {
             $update = Database::getConnection('external_db', 'external_db')
-                    ->delete('ek_purchase_tasks')
+                    ->delete('ek_sales_purchase_tasks')
                     ->condition('id', $form_state->getValue('for_id'))
                     ->execute();
         } else {
@@ -325,13 +325,13 @@ class TaskPurchase extends FormBase {
             if ($form_state->getValue('for_id') != NULL) {
 
                 $update = Database::getConnection('external_db', 'external_db')
-                        ->update('ek_purchase_tasks')->fields($fields)
+                        ->update('ek_sales_purchase_tasks')->fields($fields)
                         ->condition('id', $form_state->getValue('for_id'))
                         ->execute();
             } else {
 
                 $update = Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_purchase_tasks')->fields($fields)
+                        ->insert('ek_sales_purchase_tasks')->fields($fields)
                         ->execute();
             }
         }

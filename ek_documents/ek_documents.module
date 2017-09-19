@@ -52,84 +52,88 @@ function ek_documents_theme() {
 */
 function ek_documents_file_download($uri) {
 
-if (strpos($uri,'/documents/users/')) {
-$finfo = new finfo(FILEINFO_MIME_TYPE);
-$mime = $finfo->file($uri);
-$query = "SELECT * FROM {ek_documents}  WHERE uri = :uri";
-$a = array(':uri' => $uri);
-    
-$file = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
-$uid = \Drupal::currentUser()->id();          
-    
-    if ($file->id && $uid) {
-    $now = time();
-    
-    $name = \Drupal::currentUser()->getUsername();   
-    
-     
-       if ($uid == $file->uid || $file->uid == '0') {
-        //file belongs to user or common area, ok
-            //////////////////////////
-            //    WATCHDOG          //
-            //////////////////////////
-            $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
-            $log = t("User @u has downloaded document @d (file id @i)", $a);
-            \Drupal::logger('ek_documents')->notice( $log );                
-            return array('Content-Type' => $mime);
-             
-        
-        } 
-          else { 
-    
-          if ($file->share == '2') {
-          //share all...
-                
-                
-                $info = file_load($fid);
-                //////////////////////////
-                //    WATCHDOG          //
-                //////////////////////////
-                $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
-                $log = t("User @u has downloaded document @d (file id @i)", $a);
-                \Drupal::logger('ek_documents')->notice( $log );  
-                
-                return array('Content-Type' => $mime); 
-                
-          }
-        
-          elseif ($file->share == '1' )  {
-            //verify access granted by owner
-            $share_uid = explode(',', $file->share_uid);
-            
-            if (in_array($uid , $share_uid ) && $file->expire <= $now) {
-                //////////////////////////
-                //    WATCHDOG          //
-                //////////////////////////
-                $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
-                $log = t("1- User @u has downloaded document @d (file id @i)", $a);
-                \Drupal::logger('ek_documents')->notice( $log );  
-                
-                return array('Content-Type' => $mime);
-            
-            }
-        
-        
-          }  else {
-                //////////////////////////
-                //    WATCHDOG          //
-                //////////////////////////
-                $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
-                $log = t("User @u tried to downlaod document @d but it is not shared or expired (file id @i)", $a);
-                 \Drupal::logger('ek_documents')->notice( $log );  
+    if (strpos($uri,'/documents/users/')) {
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($uri);
+        $query = "SELECT * FROM {ek_documents}  WHERE uri = :uri";
+        $a = array(':uri' => $uri);
 
-                return -1;          
-          }
-      
-      } //if not owner
+        $file = Database::getConnection('external_db', 'external_db')
+                ->query($query, $a)
+                ->fetchObject();
+        $uid = \Drupal::currentUser()->id();
+        $name = \Drupal::currentUser()->getUsername();
+        $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
 
-    }//if fid
-  
-}
+            if ($file->id && $uid) {
+
+                $now = time();
+                $name = \Drupal::currentUser()->getUsername();   
+
+
+                if ($uid == $file->uid || $file->uid == '0') {
+                //file belongs to user or common area, ok
+                    //////////////////////////
+                    //    WATCHDOG          //
+                    //////////////////////////
+                    $log = t("User @u has downloaded document @d (file id @i)", $a);
+                    \Drupal::logger('ek_documents')->notice( $log );                
+                    return array('Content-Type' => $mime);
+
+
+                } else { 
+
+                    if ($file->share == '2') {
+                    //share all...
+
+
+                          $info = file_load($fid);
+                          //////////////////////////
+                          //    WATCHDOG          //
+                          //////////////////////////
+                          $log = t("User @u has downloaded document @d (file id @i)", $a);
+                          \Drupal::logger('ek_documents')->notice( $log );  
+                          return array('Content-Type' => $mime); 
+
+                    }
+
+                    elseif ($file->share == '1' )  {
+                      //verify access granted by owner
+                      $share_uid = explode(',', $file->share_uid);
+
+                          if (in_array($uid , $share_uid ) && ($file->expire >= $now || $file->expire == 0) ) {
+                              //////////////////////////
+                              //    WATCHDOG          //
+                              //////////////////////////
+                              $log = t("1- User @u has downloaded document @d (file id @i)", $a);
+                              \Drupal::logger('ek_documents')->notice( $log );  
+                              return array('Content-Type' => $mime);
+
+
+                          }  else {
+                              //////////////////////////
+                              //    WATCHDOG          //
+                              //////////////////////////
+                              $log = t("User @u tried to downlaod document @d but it is not shared with this user or expired (file id @i)", $a);
+                               \Drupal::logger('ek_documents')->notice( $log );  
+                              return -1;          
+                          }
+
+
+                    }  else {
+                          //////////////////////////
+                          //    WATCHDOG          //
+                          //////////////////////////
+                          $log = t("User @u tried to downlaod document @d but it is not shared (file id @i)", $a);
+                           \Drupal::logger('ek_documents')->notice( $log );  
+                          return -1;          
+                    }
+
+                } //if not owner
+
+            }//if fid
+
+    }
 }
 
 
@@ -165,7 +169,8 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
         ];
         //$message = ['#markup' => $message];
         $params['body'] = \Drupal::service('renderer')->render($render);
-        $params['options']['message'] = \Drupal::service('renderer')->render($message);
+        $render = ['#markup' => $message];
+        $params['options']['message'] = \Drupal::service('renderer')->render($render);
         $params['options']['url'] = $url;
         $template = 'key_document_share';
         break;

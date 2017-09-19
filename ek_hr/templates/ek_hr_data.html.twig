@@ -9,7 +9,8 @@
         <tr>
             <td class='title'> {{ 'Company'|t }}</td>
             <td class='data'>{{ items.hr.0.company }}</td>
-            <td rowspan='8' class='data'>{{ items.hr.0.picture|raw }}</td>
+            <!--<td rowspan='8' class='data'>{{ items.hr.0.picture|raw }}</td>-->
+            <td rowspan='8' class='data'><img class="data-avatar" alt="Pofile image" src="{{ items.hr.0.pictureUrl }}"/></td>
         </tr>
         <tr>
             <td class='title'> {{ 'Status'|t }}</td>

@@ -364,7 +364,7 @@ $l = 10;
        $ref = $journal->reference($d->source, $d->reference);
        
        //check if payment received
-       $query = "SELECT status, pay_date FROM {ek_invoice} "
+       $query = "SELECT status, pay_date FROM {ek_sales_invoice} "
                . "WHERE id=:id AND head=:h";
        $a = array(':id' => $d->reference, ':h' => $param['coid'] );
        $invoice = Database::getConnection('external_db', 'external_db')

@@ -299,6 +299,7 @@ class ReportController extends ControllerBase {
             $items['table_2'] = $table_2; //cos
             $items['table_3'] = $table_3; //charges
             $items['table_4'] = $table_4; //result
+            $items['table_5'] = $table_5; //info
         }
 
 
@@ -356,7 +357,7 @@ class ReportController extends ControllerBase {
         $chart = $this->settings->get('chart');
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterBalance');
 
-        if ($_SESSION['bsfilter']['filter'] == 1) {
+        if (isset($_SESSION['bsfilter']['filter']) && $_SESSION['bsfilter']['filter'] == 1) {
 
             $coid = $_SESSION['bsfilter']['coid'];
             $year = $_SESSION['bsfilter']['year'];
@@ -380,10 +381,16 @@ class ReportController extends ControllerBase {
             $items['pdf'] = array(
                 '#markup' => "<a href='" . $pdf . "' target='_blank'>" . t('Export') . "</a>",
             );
-            $post = Url::fromRoute('ek_finance.admin.new_year', array(), array())->toString();
-            $items['post'] = array(
-                '#markup' => "<a href='" . $post . "' >" . t('Start new year') . "</a>",
-            );
+
+            if (strtotime(date("Y-m-d")) > strtotime($dates["fiscal_year"]) && $dates['archive'] == FALSE ) {
+                $post = Url::fromRoute('ek_finance.admin.new_year', array(), array())->toString();
+                $items['post'] = array(
+                    '#markup' => "<a href='" . $post . "' >" . t('Start new year') . "</a>",
+                );
+            } else {
+                $items['post'] = '';
+            }
+            
             $items['table_1'] = $table_1;
             $items['table_2'] = $table_2;
             $items['table_3'] = $table_3;

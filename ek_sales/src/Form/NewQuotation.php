@@ -65,19 +65,19 @@ class NewQuotation extends FormBase {
 
 
         $settings = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT * from {ek_quotation_settings} ")
+                ->query("SELECT * FROM {ek_sales_quotation_settings} ")
                 ->fetchAll();
         $revision = NULL;
 
         if (isset($id) && !$id == NULL) {
             //edit
             $data = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT * from {ek_quotation} where id=:id", array(':id' => $id))
+                    ->query("SELECT * FROM {ek_sales_quotation} where id=:id", array(':id' => $id))
                     ->fetchObject();
             $detail = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT * from {ek_quotation_details} where serial=:id ORDER BY id", array(':id' => $data->serial));
+                    ->query("SELECT * FROM {ek_sales_quotation_details} where serial=:id ORDER BY id", array(':id' => $data->serial));
 
-            $query = "SELECT DISTINCT revision FROM {ek_quotation_details} WHERE serial=:s order by revision DESC";
+            $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision DESC";
             $revision = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $data->serial))->fetchField();
 
             $form['edit_quotation'] = array(
@@ -914,26 +914,37 @@ class NewQuotation extends FormBase {
 
         if ($form_state->getValue('new_quotation') && $form_state->getValue('new_quotation') == 1) {
             //create new serial No
-            $quid = Database::getConnection('external_db', 'external_db')->query("SELECT count(id) from {ek_quotation}")->fetchField();
+            $quid = Database::getConnection('external_db', 'external_db')
+                    ->query("SELECT count(id) from {ek_sales_quotation}")
+                    ->fetchField();
             $quid++;
-            $short = Database::getConnection('external_db', 'external_db')->query("SELECT short from {ek_company} where id=:id", array(':id' => $form_state->getValue('head')))->fetchField();
+            $short = Database::getConnection('external_db', 'external_db')
+                    ->query("SELECT short from {ek_company} where id=:id", array(':id' => $form_state->getValue('head')))
+                    ->fetchField();
             $date = substr($form_state->getValue('date'), 2, 5);
-            $sup = Database::getConnection('external_db', 'external_db')->query("SELECT shortname from {ek_address_book} where id=:id", array(':id' => $form_state->getValue('client')))->fetchField();
+            $sup = Database::getConnection('external_db', 'external_db')
+                    ->query("SELECT shortname from {ek_address_book} where id=:id", array(':id' => $form_state->getValue('client')))
+                    ->fetchField();
             $serial = ucwords($short) . "-QU-" . $date . "-" . ucwords($sup) . "-" . $quid;
             $revision = 0;
         } else {
             //edit
             $serial = $form_state->getValue('serial');
             // if new revision, keep current and insert new data, else delete current
-            $query = "SELECT DISTINCT revision FROM {ek_quotation_details} WHERE serial=:s order by revision DESC";
+            $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision DESC";
             $revision = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $serial))->fetchField();
 
             if ($form_state->getValue('revision') == 'new') {
                 $revision++;
             } else {
                 //keep current revision and change data only
-                $delete = Database::getConnection('external_db', 'external_db')->delete('ek_quotation_details')->condition('serial', $serial)->execute();
-                $quid = Database::getConnection('external_db', 'external_db')->query('SELECT id from {ek_quotation} where serial=:s', array(':s' => $serial))->fetchField();
+                $delete = Database::getConnection('external_db', 'external_db')
+                        ->delete('ek_sales_quotation_details')
+                        ->condition('serial', $serial)
+                        ->execute();
+                $quid = Database::getConnection('external_db', 'external_db')
+                        ->query('SELECT id from {ek_sales_quotation} where serial=:s', array(':s' => $serial))
+                        ->fetchField();
             }
         }
 
@@ -986,7 +997,7 @@ class NewQuotation extends FormBase {
                     'column_3' => $form_state->getValue("column_3$n"),
                 );
 
-                $insert = Database::getConnection('external_db', 'external_db')->insert('ek_quotation_details')
+                $insert = Database::getConnection('external_db', 'external_db')->insert('ek_sales_quotation_details')
                         ->fields($fields)
                         ->execute();
             }//if not delete
@@ -1029,12 +1040,14 @@ class NewQuotation extends FormBase {
         );
 
         if ($form_state->getValue('new_quotation') && $form_state->getValue('new_quotation') == 1) {
-            $insert = Database::getConnection('external_db', 'external_db')->insert('ek_quotation')
+            $insert = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_sales_quotation')
                     ->fields($fields1)
                     ->execute();
             $reference = $insert;
         } else {
-            $update = Database::getConnection('external_db', 'external_db')->update('ek_quotation')
+            $update = Database::getConnection('external_db', 'external_db')
+                    ->update('ek_sales_quotation')
                     ->fields($fields1)
                     ->condition('serial', $serial)
                     ->execute();
