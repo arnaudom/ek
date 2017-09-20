@@ -9,6 +9,7 @@ namespace Drupal\ek_finance\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_finance\CurrencyData;
 use Drupal\ek_finance\AidList;
@@ -48,6 +49,16 @@ class FinanceSettingsForm extends FormBase {
         '#title' => t('Base currency'),
         '#description' => t('rate @r', array('@r' => CurrencyData::rate($settings->get('baseCurrency')))),
       ); 
+    if(empty(CurrencyData::listcurrency(1))) {
+        
+        $url = Url::fromRoute('ek_finance.currencies', [], [])->toString();
+        $alert = t('You need to <a href="@url">activate</a> at list 1 currency', ['@url' => $url]);
+        $form['activate_alert'] = array(
+            '#type' => 'item',
+            '#markup' => "<div class='messages messages--warning'>" . $alert . '</div>',
+            
+        );
+    }
     
     $form['companyMemo'] = array(
         '#type' => 'select',
