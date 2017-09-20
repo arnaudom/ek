@@ -23,7 +23,7 @@ ek_finance.admin.settings:
 ek_finance.main:
   path: '/finance'
   defaults:
-    _title: 'Finance dashboad'
+    _title: 'Finance dashboard'
     _controller: '\Drupal\ek_finance\Controller\FinanceController::dashboard'
   requirements:
     _permission: 'finance_dashboard'
