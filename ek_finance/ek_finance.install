@@ -78,3 +78,54 @@ function ek_finance_update_8004() {
         
 
 }
+
+
+/**
+ * Add trail to journal entries; 
+ *
+ */
+function ek_finance_update_8005() {
+    
+$schema = Database::getConnection('external_db','external_db')->schema();
+        if (!$schema->tableExists('ek_journal_trail')) {
+            
+                $table =  [
+                    'description' => 'Stores user history per journal entry.',
+                    'fields' => [
+                      'id' => [
+                        'description' => 'Primary Key: Unique ID.',
+                        'type' => 'serial',
+                        'unsigned' => TRUE,
+                        'not null' => TRUE,
+                      ],
+                      'jid' => [
+                        'description' => 'Journal primary ID.',
+                        'type' => 'int',
+                        'unsigned' => TRUE,
+                        'not null' => TRUE,
+                      ],                        
+                      'username' => [
+                        'description' => 'User name.',
+                        'type' => 'varchar',
+                        'length' => 255,
+                        'not null' => FALSE,
+                      ],
+                      'action' => [
+                        'description' => '1 save, 2 edit, 3 delete',
+                        'type' => 'int',
+                        'size' => 'small',
+                        'not null' => FALSE,
+                      ],                        
+                    ],
+                    'primary key' => ['id'],
+                    
+                  ];
+            
+            $schema->createTable('ek_journal_trail', $table);
+        
+             return t('New table created');
+        }
+       
+        
+
+}

@@ -819,7 +819,21 @@ class Journal {
                 ->execute();
         if (!$insert) {
             drupal_set_message(t('Error journal record (@aid)', array('@aid' => $aid)), 'error');
+            $insert =  NULL;
+        } else {
+            //Track user input history for backup and safety procedures
+            //Todo implement tracking on delete data (sales doc delete, journal delete)
+            $fields = array(
+                'jid' => $insert,
+                'username' => \Drupal::currentUser()->getUsername(),
+                'action' => 1,
+            );
+            Database::getConnection('external_db', 'external_db')
+                ->insert('ek_journal_trail')
+                ->fields($fields)
+                ->execute();
         }
+        
         return $insert;
     }
 

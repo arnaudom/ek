@@ -466,6 +466,22 @@ class InstallController extends ControllerBase {
             $markup .= 'Finance reconciliation reports table installed <br/>';
         }
 
+        $query = "CREATE TABLE IF NOT EXISTS `ek_journal_trail` (
+            `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Primary Key: Unique ID.',
+            `jid` INT(10) UNSIGNED NOT NULL COMMENT 'Journal primary ID.',
+            `username` VARCHAR(255) NULL DEFAULT NULL COMMENT 'User name.',
+            `action` SMALLINT(6) NULL DEFAULT NULL COMMENT '1 save, 2 edit, 3 delete',
+            PRIMARY KEY (`id`)
+        )
+        COMMENT='Stores user history per journal entry.'
+        COLLATE='utf8mb4_general_ci'
+        ENGINE=InnoDB
+        ;";
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Finance journal trail installed<br/>';
+        }
+
         $link = Url::fromRoute('ek_admin.main', array(), array())->toString();
         $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
 
