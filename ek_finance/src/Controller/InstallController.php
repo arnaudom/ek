@@ -471,6 +471,7 @@ class InstallController extends ControllerBase {
             `jid` INT(10) UNSIGNED NOT NULL COMMENT 'Journal primary ID.',
             `username` VARCHAR(255) NULL DEFAULT NULL COMMENT 'User name.',
             `action` SMALLINT(6) NULL DEFAULT NULL COMMENT '1 save, 2 edit, 3 delete',
+            `timestamp` INT(11) NOT NULL DEFAULT '0' COMMENT 'Unix timestamp of when event occurred.',
             PRIMARY KEY (`id`)
         )
         COMMENT='Stores user history per journal entry.'

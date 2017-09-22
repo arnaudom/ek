@@ -115,7 +115,14 @@ $schema = Database::getConnection('external_db','external_db')->schema();
                         'type' => 'int',
                         'size' => 'small',
                         'not null' => FALSE,
-                      ],                        
+                      ],   
+                      'timestamp' => [
+                        'description' => 'Unix timestamp of when event occurred.',
+                        'type' => 'int',
+                        'unsigned' => TRUE,
+                        'not null' => TRUE,
+                        'default' => 0
+                      ], 
                     ],
                     'primary key' => ['id'],
                     
