@@ -1052,15 +1052,20 @@ class Journal {
                 $row['currency'] = $ref[1];
                 $row['date'] = $date->date;
 
-                $query = "select id,count,aid,exchange,coid,type,value,reconcile,source,reference "
-                        . "from {ek_journal} where reference=:r and source like :s and date=:date ";
+                $query = "SELECT j.id,count,aid,exchange,coid,type,value,reconcile,source,reference, "
+                        . "username,action,timestamp "
+                        . "FROM {ek_journal} j "
+                        . "LEFT join {ek_journal_trail} t "
+                        . "ON j.id = t.jid "
+                        . "WHERE reference=:r and source like :s and date=:date ";
                 $c = array(
                     ':r' => $line->reference,
                     ':s' => $source . '%',
                     ':date' => $date->date,
                 );
 
-                $e = Database::getConnection('external_db', 'external_db')->query($query, $c);
+                $e = Database::getConnection('external_db', 'external_db')
+                        ->query($query, $c);
 
                 $transactions = array();
 
@@ -1110,6 +1115,11 @@ class Journal {
                         }
                     }
                     $transaction['value'] = $entry->value;
+                    /**/
+                    $transaction['trail'] = [
+                                            'username' => $entry->username, 
+                                            'time' => date('Y-m-d  g:i a', $entry->timestamp),
+                                            'action' => $entry->action];
 
                     $transactions[] = $transaction;
                 }//loop transactions              

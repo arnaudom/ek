@@ -47,7 +47,8 @@
                             <a href='expenses-edit/{{ rows.reference }}'>{{ 'edit'|t }}
                          {% endif %}   
                         </td>
-                      <td>{{ transaction.id }} - {{ transaction.count }}</td>
+                        <td title="{{ transaction.trail.username }} - {{ transaction.trail.time }}">
+                            {{ transaction.id }} - {{ transaction.count }}</td>
                       <td>{{ transaction.aname|raw }}</td>
                       
                         {% if transaction.exchange == 1 %}
@@ -62,7 +63,8 @@
                    
                     <tr class="{% if transaction.exchange == 1 %}journal-exchange{% else %} {% endif %}">
                       <td></td>
-                      <td>{{ transaction.id }} - {{ transaction.count }}</td>
+                      <td title="{{ transaction.trail.username }} - {{ transaction.trail.time }}">
+                          {{ transaction.id }} - {{ transaction.count }}</td>
                       <td>{{ transaction.aname|raw }}</td>
                       
                         {% if transaction.exchange == 1 %}

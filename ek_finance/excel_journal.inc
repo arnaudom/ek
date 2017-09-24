@@ -17,12 +17,12 @@ use Drupal\ek_finance\FinanceSettings;
 $objPHPExcel = new PHPExcel(); 
 $objPHPExcel->setActiveSheetIndex(0);
 $objPHPExcel->getProperties()->setCreator("Ek")
-							 ->setLastModifiedBy('')
-							 ->setTitle("Journal")
-							 ->setSubject("computer generated")
-							 ->setDescription("Journal extraction by period")
-							 ->setKeywords("office 2007 openxml php")
-							 ->setCategory("file");
+                                ->setLastModifiedBy('')
+                                ->setTitle("Journal")
+                                ->setSubject("computer generated")
+                                ->setDescription("Journal extraction by period")
+                                ->setKeywords("office 2007 openxml php")
+                                ->setCategory("file");
 
 $columns=Array ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ');
 
@@ -43,6 +43,11 @@ $FontBoldCenter = array(
 				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
 			),
 		);
+$greyfont = array(
+    'font' => array(
+        'color' => array('rgb' => '6E6E6E'),
+    ),
+);
 
 foreach($folders as $folder) {
 
@@ -75,7 +80,10 @@ $objPHPExcel->getActiveSheet($sheet)->getColumnDimension('A')->setWidth(15);
 $objPHPExcel->getActiveSheet($sheet)->getColumnDimension('B')->setWidth(50);
 $objPHPExcel->getActiveSheet($sheet)->getColumnDimension('C')->setWidth(20);
 $objPHPExcel->getActiveSheet($sheet)->getColumnDimension('D')->setWidth(20);
-$objPHPExcel->getActiveSheet($sheet)->setBreak( 'D1' , PHPExcel_Worksheet::BREAK_COLUMN );
+$objPHPExcel->getActiveSheet($sheet)->getColumnDimension('E')->setWidth(25);
+$objPHPExcel->getActiveSheet($sheet)->getStyle('E')->getFont()->setSize(9);
+$objPHPExcel->getActiveSheet()->getStyle('E')->applyFromArray($greyfont);
+$objPHPExcel->getActiveSheet($sheet)->setBreak( 'E1' , PHPExcel_Worksheet::BREAK_COLUMN );
 $objPHPExcel->getActiveSheet($sheet)->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
 $objPHPExcel->getActiveSheet($sheet)->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
 $objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT); 
@@ -121,11 +129,12 @@ $c = 0;
       $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $row['date'] );
       $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getFont()->setBold(true); 
 
-                       
+                  
       $l+=1;      
           foreach($row['transactions'] as $t => $line)                 
           {
-$c = 0;                                  
+              
+            $c = 0;                                  
                     $cell=$columns[$c].$l;
                     $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $line['id'] . " - " . $line['count']);                    
                     $c+=1;
@@ -141,15 +150,19 @@ $c = 0;
                     $cell=$columns[$c].$l;              
                       $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($line['value'],2) );
                       $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1); 
-                    
+                    $c+=2;
+                    $cell=$columns[$c].$l;
+                      $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $line['trail']['username'] . ' - ' . $line['trail']['time'] );  
                     } else  {
                     $c+=2;
                     $cell=$columns[$c].$l;               
                       $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($line['value'],2));
                       $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-
+                    $c++;
+                    $cell=$columns[$c].$l;
+                      $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $line['trail']['username'] . ' - ' . $line['trail']['time'] );
                     } 
-                    $l+=1;
+            $l+=1;
           } //for each transactions
                
                //total               
