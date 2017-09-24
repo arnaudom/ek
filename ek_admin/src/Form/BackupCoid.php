@@ -405,7 +405,49 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ORDER by id';
             
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);              
- 
+           
+            ////////////////////////
+            //journal trail
+            ////////////////////////
+
+            $table = 'ek_journal_trail';
+            
+            $file .= " #--------------------------------------------------------" . $lineEnd;
+            $file .= " # Table  " . $table . $lineEnd;
+            $file .= " #--------------------------------------------------------" . $lineEnd;
+            
+            $fields = "" . $table . ".id,`jid`,`username`,`action`,`timestamp`";
+            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' '
+                    . 'LEFT join {ek_journal} ON ek_journal.id = ' . $table . '.jid '
+                    . 'WHERE coid=:c ORDER by ' . $table . '.id ';
+            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd); 
+            
+            /* check if there are archive tables 
+             * to do this we arbitrary browse 20 years back
+             */
+            $year = date('Y');
+            for($past = 1; $past <= 20; $past++) {
+                $y = $year - $past;
+                $archive = "ek_journal_" . $y . "_" . $coid;
+                $query = "SHOW TABLES LIKE '" . $archive . "'";
+                $table = Database::getConnection('external_db', 'external_db')
+                            ->query($query)->fetchField();
+                
+                if($table == $archive) {
+                    $file .= " #--------------------------------------------------------" . $lineEnd;
+                    $file .= " # Table  " . $table . $lineEnd;
+                    $file .= " #--------------------------------------------------------" . $lineEnd;
+
+                    $fields = $table .".`id`,`aid`,`count`,`exchange`,`coid`,`type`,`source`,`reference`, "
+                            . "`date`, `value`, `reconcile`, `currency`, `comment`";
+                    $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ORDER by ' . $table . '.id';
+
+                    $file .= self::querydb($coid, $table, $fields, $query, $lineEnd); 
+                }
+            }
+            
+           
             ////////////////////
             //budget
             ////////////////////
@@ -448,7 +490,7 @@ class BackupCoid extends FormBase {
             //invoice details
             ////////////////////
 
-            $table = 'ek_invoice_details';
+            $table = 'ek_sales_invoice_details';
             
             $file .= " #--------------------------------------------------------" . $lineEnd;
             $file .= " # Table  " . $table . $lineEnd;
@@ -466,7 +508,7 @@ class BackupCoid extends FormBase {
             //invoice tasks
             ////////////////////
 
-            $table = 'ek_invoice_tasks';
+            $table = 'ek_sales_invoice_tasks';
             
             $file .= " #--------------------------------------------------------" . $lineEnd;
             $file .= " # Table  " . $table . $lineEnd;
