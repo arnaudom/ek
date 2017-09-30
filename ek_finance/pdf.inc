@@ -4,51 +4,64 @@ use Drupal\ek_finance\FinanceSettings;
 
 //expense payment voucher
 if ($type == 1) {
-
-    $suppliername = t('n/a');
-    $clientname = t('n/a');
-
-    $query = "SELECT * from {ek_expenses} where id=:id";
-    $a = array(':id' => $id);
-    $line = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
-
-    $query = "SELECT * FROM {ek_journal} WHERE reference=:id AND source=:s AND type=:t";
-    $a = array(':id' => $id, ':s' => 'expense', ':t' => 'debit');
-    $journal = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
     
-    if($line->clientname != 'n/a'){
-        $clientname = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $line->clientname))
-                ->fetchField();
-    }
-    if($line->suppliername != 'n/a'){
-        $suppliername = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $line->suppliername))
-                ->fetchField();
-    }
-    $type = $line->type . "-" . Database::getConnection('external_db', 'external_db')
-            ->query("SELECT aname from {ek_accounts} WHERE aid=:aid and coid=:c", array(':aid' => $line->type, ':c' => $line->company ) )
-            ->fetchField();
-
-    if($line->cash <> 'Y') {
-      $bank_account = Database::getConnection('external_db', 'external_db')
-              ->query("SELECT account_ref from {ek_bank_accounts} WHERE id=:id", array(':id' => $line->cash))
-              ->fetchField();
+    if(is_int($id)) {
+        $selection = [$id];
+        $fileName = t('voucher') . '_' . $id;
     } else {
-      $bank_account = t('cash');
+        $selection = unserialize($id);
+        $fileName = t('voucher') . '_' . t('range');
+
     }
-
-    $company = Database::getConnection('external_db', 'external_db')
-            ->query("SELECT * from {ek_company} where id=:id", array(':id' => $line->company))
-            ->fetchObject();
-
+    $data = [];    
     $settings = new FinanceSettings(); 
     $baseCurrency = $settings->get('baseCurrency'); 
-
     $template = 'default_voucher_pdf';
-    $fileName = t('voucher') . '_' . $line->id;
     $userName =  \Drupal::currentUser()->getUsername();
+  
+    foreach ($selection as $key => $id) {
+     
+        $data[$id]['suppliername'] = t('n/a');
+        $data[$id]['clientname'] = t('n/a');
 
+        $query = "SELECT * from {ek_expenses} where id=:id";
+        $a = array(':id' => $id);
+        $data[$id]['line'] = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
+
+        $query = "SELECT * FROM {ek_journal} WHERE reference=:id AND source=:s AND type=:t";
+        $a = array(':id' => $id, ':s' => 'expense', ':t' => 'debit');
+        $data[$id]['journal'] = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
+
+        if($line->clientname != 'n/a'){
+            $data[$id]['clientname'] = Database::getConnection('external_db', 'external_db')
+                    ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $data[$id]['line']->clientname))
+                    ->fetchField();
+        }
+        if($line->suppliername != 'n/a'){
+            $data[$id]['suppliername'] = Database::getConnection('external_db', 'external_db')
+                    ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $data[$id]['line']->suppliername))
+                    ->fetchField();
+        }
+        $data[$id]['type'] = $data[$id]['line']->type . "-" . Database::getConnection('external_db', 'external_db')
+                ->query("SELECT aname from {ek_accounts} WHERE aid=:aid and coid=:c", 
+                        array(':aid' => $data[$id]['line']->type, ':c' => $data[$id]['line']->company ) )
+                ->fetchField();
+
+        if($line->cash <> 'Y') {
+          $data[$id]['bank_account'] = Database::getConnection('external_db', 'external_db')
+                  ->query("SELECT account_ref from {ek_bank_accounts} WHERE id=:id", array(':id' => $data[$id]['line']->cash))
+                  ->fetchField();
+        } else {
+          $data[$id]['bank_account'] = t('cash');
+        }
+
+        $data[$id]['company'] = Database::getConnection('external_db', 'external_db')
+                ->query("SELECT * from {ek_company} where id=:id", array(':id' => $data[$id]['line']->company))
+                ->fetchObject();        
+        
+        
+    }
+    
 }
 
 //cash voucher

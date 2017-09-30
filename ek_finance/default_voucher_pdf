@@ -215,81 +215,84 @@ function Footer()
 
 
 $pdf=new PDF();
-$pdf->SetTitle($fileName);
-$pdf->setHeaderData($company); 
-$pdf->AliasNbPages();
-$pdf->AddPage('P','A4');
 
-
-$pdf->SetFont('Arial','B',12);
-$pdf->SetTextColor(187, 208, 211);
-$pdf->Cell(75,5,t('PAYMENT VOUCHER'),0,1);
-$pdf->SetTextColor(0);
-$pdf->Ln(3);
-
-$pdf->SetFont('Arial','',8);
-    $pdf->Cell(75,5,t('Voucher No'),0,0);
-    $pdf->Cell(100,5,$line->id . ' - ' . $journal->id . ' - ' . $journal->count,0,1);
-    $pdf->Cell(75,5,t('Date'),0,0);
-    $pdf->Cell(100,5,$line->pdate,0,1);
-    $pdf->Cell(75,5,t('From account'),0,0);
-    $pdf->Cell(100,5,$bank_account,0,1);  
-    $pdf->Cell(75,5,t("Supplier ref"),0,0);
-    $pdf->Cell(100,5,$suppliername,0,1);       
-    $pdf->Cell(75,5,t("Client ref"),0,0);
-    $pdf->Cell(100,5,$clientname,0,1);   
-    $pdf->Cell(75,5,t('Amount') . ' - ' . $line->currency,0,0);
-    $pdf->Cell(100,5,$line->localcurrency . ' ' . $line->currency,0,1);
-    if($line->tax > 0) {
-      $pdf->Cell(75,5,t('include tax') ,0,0);
-      $pdf->Cell(100,5,number_format($line->tax,2) . ' ' . $line->currency,0,1);  
-    }
-    $pdf->Cell(75,5,t('Object'),0,0);
-    $pdf->Cell(100,5, $type ,0,1);    
-    $pdf->Cell(75,5,t('Comment') ,0,0);
-$pdf->SetFont('Arial','',8);
-    $pdf->MultiCell(100,5,$line->comment,0,'J');  
-
-$pdf->Ln(10);
-
-//add receipt image or link if any
-    if($line->attachment) {
-            $parts = explode('/', $line->attachment);
-            $parts = array_reverse($parts);
-            $pdf->Cell(75, 5, t('Attachment') . ': ', 0, 0);
-            $pdf->SetFont('Arial', '', 8);
-            $pdf->SetTextColor(0, 128, 255);
-        if ($info = getimagesize($line->attachment)) {
-            $insert = TRUE;
-            $link = $pdf->AddLink();
-            $pdf->SetLink($link, 1, 2);
-            $pdf->Write(5, $parts[0], $link);
-        } else {
-
-            $link = file_create_url($line->attachment);
-            $pdf->Write(5, $parts[0], $link);
-
-        }
-    }
-$pdf->SetTextColor(100, 100, 100);       
-$pdf->Ln(20);
+Foreach($data as $id => $arr) {
     
-    $pdf->Cell(40,3,t("Prepared by"),1,0);
-    $pdf->Cell(40,3,t("Verified by"),1,0);
-    $pdf->Cell(40,3,t("Approved by"),1,0);
-    $pdf->Cell(40,3,t("Received by"),1,1);
-    $pdf->Cell(40,10, $userName ,1,0);
-    $pdf->Cell(40,10,"",1,0);
-    $pdf->Cell(40,10,"",1,0);
-    $pdf->Cell(40,10,"",1,1);    
+    
+        $pdf->SetTitle($fileName);
+        $pdf->setHeaderData($arr['company']); 
+        $pdf->AliasNbPages();
+        $pdf->AddPage('P','A4');
 
-if (isset($insert)) {
-    $pdf->AddPage('P','A4');
-    $pdf->Ln(10);
-    $h = $info[1] ;
-    $w = $info[0] ;
-    $r = 150/$w;
-    $pdf->Image($line->attachment, 20, 80, 150, $h*$r);    
+        $pdf->SetFont('Arial','B',12);
+        $pdf->SetTextColor(187, 208, 211);
+        $pdf->Cell(75,5,t('PAYMENT VOUCHER'),0,1);
+        $pdf->SetTextColor(0);
+        $pdf->Ln(3);
+
+        $pdf->SetFont('Arial','',8);
+            $pdf->Cell(75,5,t('Voucher No'),0,0);
+            $pdf->Cell(100,5,$arr['line']->id . ' - ' . $arr['journal']->id . ' - ' . $arr['journal']->count,0,1);
+            $pdf->Cell(75,5,t('Date'),0,0);
+            $pdf->Cell(100,5,$arr['line']->pdate,0,1);
+            $pdf->Cell(75,5,t('From account'),0,0);
+            $pdf->Cell(100,5,$arr['bank_account'],0,1);  
+            $pdf->Cell(75,5,t("Supplier ref"),0,0);
+            $pdf->Cell(100,5,$arr['suppliername'],0,1);       
+            $pdf->Cell(75,5,t("Client ref"),0,0);
+            $pdf->Cell(100,5,$arr['clientname'],0,1);   
+            $pdf->Cell(75,5,t('Amount') . ' - ' . $arr['line->currency'],0,0);
+            $pdf->Cell(100,5,$arr['line']->localcurrency . ' ' . $arr['line']->currency,0,1);
+            if($line->tax > 0) {
+              $pdf->Cell(75,5,t('include tax') ,0,0);
+              $pdf->Cell(100,5,number_format($arr['line']->tax,2) . ' ' . $arr['line']->currency,0,1);  
+            }
+            $pdf->Cell(75,5,t('Object'),0,0);
+            $pdf->Cell(100,5, $arr['type'] ,0,1);    
+            $pdf->Cell(75,5,t('Comment') ,0,0);
+        $pdf->SetFont('Arial','',8);
+            $pdf->MultiCell(100,5,$arr['line']->comment,0,'J');  
+
+        $pdf->Ln(10);
+
+        //add receipt image or link if any
+            if($arr['line']->attachment) {
+                    $parts = explode('/', $arr['line']->attachment);
+                    $parts = array_reverse($parts);
+                    $pdf->Cell(75, 5, t('Attachment') . ': ', 0, 0);
+                    $pdf->SetFont('Arial', '', 8);
+                    $pdf->SetTextColor(0, 128, 255);
+                if ($info = getimagesize($line->attachment)) {
+                    $insert = TRUE;
+                    $link = $pdf->AddLink();
+                    $pdf->SetLink($link, 1, 2);
+                    $pdf->Write(5, $parts[0], $link);
+                } else {
+
+                    $link = file_create_url($arr['line']->attachment);
+                    $pdf->Write(5, $parts[0], $link);
+
+                }
+            }
+        $pdf->SetTextColor(100, 100, 100);       
+        $pdf->Ln(20);
+
+            $pdf->Cell(40,3,t("Prepared by"),1,0);
+            $pdf->Cell(40,3,t("Verified by"),1,0);
+            $pdf->Cell(40,3,t("Approved by"),1,0);
+            $pdf->Cell(40,3,t("Received by"),1,1);
+            $pdf->Cell(40,10, $userName ,1,0);
+            $pdf->Cell(40,10,"",1,0);
+            $pdf->Cell(40,10,"",1,0);
+            $pdf->Cell(40,10,"",1,1);    
+
+        if (isset($insert)) {
+            $pdf->AddPage('P','A4');
+            $pdf->Ln(10);
+            $h = $info[1] ;
+            $w = $info[0] ;
+            $r = 150/$w;
+            $pdf->Image($arr['line']->attachment, 20, 80, 150, $h*$r);    
+        }
 }
-
 

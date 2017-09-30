@@ -579,7 +579,6 @@ ek_finance_voucher.pdf:
   requirements:
     _permission: 'manage_expenses'
     type: 1|2 #1 = expense, 2 = cash 
-    id: \d* 
 
      
 ek_finance_payroll.record:   

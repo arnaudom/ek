@@ -372,6 +372,8 @@ class ExpensesManageController extends ControllerBase {
                     ->query($query)
                     ->fetchAllKeyed();
             $i = 0;
+            $filteredIds = [];
+            
             while ($r = $data->fetchObject()) {
                 $links = array();
                 $i++;
@@ -493,6 +495,9 @@ class ExpensesManageController extends ControllerBase {
                     $url = Url::fromRoute('ek_finance_voucher.pdf', ['type' => 1, 'id' => $r->reference])->toString();
                     $voucher = '<a href="' . $url . '" target="_blank"  title="' . t('voucher')
                             . ' - ' . $r->e_id . ' ' . $r->comment . '">' . $r->e_id . '</a>';
+                    //save array for print range
+                    array_push($filteredIds, $r->e_id);
+                    
                 } elseif ($r->source == 'purchase') {
                     $ref = '';
                     $receipt = '';
@@ -526,6 +531,7 @@ class ExpensesManageController extends ControllerBase {
                     $url = Url::fromRoute('ek_sales.purchases.print_share', ['id' => $r->p_id])->toString();
                     $voucher = '<a href="' . $url . '" target="_blank"  title="' . t('purchase')
                             . ' - ' . $r->p_id . ' ' . $r->title . '">' . $r->p_id . '</a>';
+                    
                 }
 
                 $options[$i] = array(
@@ -633,6 +639,15 @@ class ExpensesManageController extends ControllerBase {
             }
         }
 
+        if(count($filteredIds) > 1 && count($filteredIds) < 26) {
+
+            $s = serialize($filteredIds);
+            $url = Url::fromRoute('ek_finance_voucher.pdf', array('type' => 1, 'id' => $s), array())->toString();
+            $build['print_range'] = array(
+                    '#markup' => "<p><a href='" . $url . "' target='_blank'>" . t('Print range') . "</a></p>",
+                );
+        }
+        
         $build['expenses_table'] = array(
             '#type' => 'table',
             '#header' => $header,
@@ -888,7 +903,7 @@ class ExpensesManageController extends ControllerBase {
                 );
             }
         }
-
+        
         $build['expenses_table'] = array(
             '#type' => 'table',
             '#header' => $header,
@@ -1009,8 +1024,8 @@ class ExpensesManageController extends ControllerBase {
      * Return expense voucher in pdf file.
      * @param int $type
      *  print type (1)
-     * @param int $id
-     *  expense id
+     * @param int|array $id
+     *  expense id single or array
      * 
      */
     public function pdfvoucher($type, $id) {
@@ -1018,6 +1033,7 @@ class ExpensesManageController extends ControllerBase {
         include_once drupal_get_path('module', 'ek_finance') . '/pdf.inc';
         return $markup;
     }
+
 
     /*
      * Record expenses after payroll posting if hr module enabled
