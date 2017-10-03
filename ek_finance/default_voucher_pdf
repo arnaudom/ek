@@ -241,7 +241,7 @@ Foreach($data as $id => $arr) {
             $pdf->Cell(100,5,$arr['suppliername'],0,1);       
             $pdf->Cell(75,5,t("Client ref"),0,0);
             $pdf->Cell(100,5,$arr['clientname'],0,1);   
-            $pdf->Cell(75,5,t('Amount') . ' - ' . $arr['line->currency'],0,0);
+            $pdf->Cell(75,5,t('Amount') . ' - ' . $arr['line']->currency,0,0);
             $pdf->Cell(100,5,$arr['line']->localcurrency . ' ' . $arr['line']->currency,0,1);
             if($line->tax > 0) {
               $pdf->Cell(75,5,t('include tax') ,0,0);
