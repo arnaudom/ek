@@ -472,7 +472,7 @@ $table_2 .= "
 ///////////////////////
 //P&L /////////////////
 $profitloss = array();
-
+$sum_pl = 0;
 $table_3 = "
 <table style= border=0 cellpadding=1 cellspacing=0 class=''>
     <thead class='' >
