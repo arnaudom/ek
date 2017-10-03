@@ -350,7 +350,7 @@ class PurchasesController extends ControllerBase {
             if ($r->status != 1) {
                 if($r->type < 3) {
                     $links['pay'] = array(
-                        'title' => $this->t('Receive'),
+                        'title' => $this->t('Pay'),
                         'url' => Url::fromRoute('ek_sales.purchases.pay', ['id' => $r->id]),
                         'weight' => $weight,
                     );
