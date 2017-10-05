@@ -419,32 +419,37 @@ class ReceiveInvoice extends FormBase {
                 $form_state->setErrorByName("fx_rate", $this->t('the base exchange rate value input is wrong'));
             }
         }
+        
         //verify amount paid does not exceed amount due or partially paid
+        $this_pay = str_replace(",", "", $form_state->getValue('amount'));
+        
         $query = "SELECT * from {ek_sales_invoice} where id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
+            $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form_state->getValue('for_id')))
                 ->fetchObject();
-        $this_pay = str_replace(",", "", $form_state->getValue('amount'));
-        $query = "SELECT sum(quantity*value) from {ek_sales_invoice_details} WHERE serial=:s and opt=:o";
-        $details = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':s' => $data->serial, ':o' => 1))
-                ->fetchField();
-        //max payment is calculated from recorded total amount +
-        //optional taxes applied per item line
-        //$max_pay = round($data->amount + ($details * $data->taxvalue / 100), 2);
-        $max_pay = ($details * (1+($data->taxvalue / 100)) - $data->amountreceived) ;
-        //store data
-        $form_state->set('max_pay', $max_pay);
-        $form_state->set('details', $details);
-        if ($this_pay > $max_pay) {
-            $form_state->setErrorByName('amount', $this->t('payment exceeds invoice amount'));
-        }
-        //validate against partial payments      
-        if ($this->moduleHandler->moduleExists('ek_finance')) {
+            $query = "SELECT sum(quantity*value) FROM {ek_sales_invoice_details} WHERE serial=:s ";
+            $details = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':s' => $data->serial))
+                    ->fetchField();
+            //max payment is calculated from recorded total amount +
+            //optional taxes applied per item line
+            //$max_pay = round($data->amount + ($details * $data->taxvalue / 100), 2);
+            $max_pay = ($details * (1+($data->taxvalue / 100)) - $data->amountreceived) ;
+            //store data
+            $form_state->set('max_pay', $max_pay);
+            $form_state->set('details', $details);   
+            
+        if (!$this->moduleHandler->moduleExists('ek_finance')) {
+      
+            if ($this_pay > $max_pay) {
+                $form_state->setErrorByName('amount', $this->t('payment exceeds invoice amount (@a, @b)', ['@a' => $this_pay, '@b' => $max_pay]));
+            }            
+            
+        } else {
+          
             //check from journal
             $companysettings = new CompanySettings($data->head);
             $assetacc = $companysettings->get('asset_account', $data->currency);
-            //$journal = new Journal();
 
             $a = array(
                 'source_dt' => 'invoice',
@@ -453,15 +458,13 @@ class ReceiveInvoice extends FormBase {
                 'account' => $assetacc,
             );
             $value = round($this->journal->checktransactioncredit($a), 4);
-            if (round($value + $this_pay, 4) > 0) {
-                $a = ['@a' => $value, '@b' => $this_pay, '@c' => $assetacc];
-                $form_state->setErrorByName('amount', $this->t('this payment exceeds receivable balance amount in journal (@a, @b, @c).', $a));
-            }
-        } else {
-
-            if (($this_pay + $data->amountpaid) > $max_pay) {
-                $form_state->setErrorByName('amount', $this->t('payment exceeds invoiced amount'));
-            }
+            $form_state->set('max_pay', abs($value));
+            
+                if (round($value + $this_pay, 4) > 0) {
+                    $a = ['@a' => $value, '@b' => $this_pay, '@c' => $assetacc];
+                    $form_state->setErrorByName('amount', $this->t('this payment exceeds receivable balance amount in journal (@a, @b, @c).', $a));
+                }            
+                      
         }
     }
 
@@ -568,6 +571,7 @@ class ReceiveInvoice extends FormBase {
             }
             $form_state->setRedirect('ek_sales.invoices.list');
         }
+
     }
 
 }
