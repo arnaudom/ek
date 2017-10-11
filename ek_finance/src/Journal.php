@@ -1731,7 +1731,7 @@ class Journal {
         $coid = $data['coid'];
         $d1 = $data['from'];
 
-        if($data['archive'] == TRUE) {
+        if(isset($data['archive']) && $data['archive'] == TRUE) {
         //extract data from archive tables
             $year = date('Y', strtotime($data['from'] . ' - 1 day'));
             $table_accounts = "ek_accounts_" . $year . "_" . $coid;

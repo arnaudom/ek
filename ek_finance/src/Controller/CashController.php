@@ -199,6 +199,7 @@ class CashController extends ControllerBase {
             
         } else {
         //user cash transactions
+            $account_list = [];
             $account1 = $filter['account'];
             $account2 = db_query('SELECT name from {users_field_data} WHERE uid=:u', array(':u' => $filter['account']))
                             ->fetchfield();
@@ -556,7 +557,7 @@ class CashController extends ControllerBase {
             
             //group and sort data by date for display
             $items['data'] = array();
-
+            $b = [];
             foreach($data as $k => $v) {
               $b[$k] = strtolower($v['date']);
             }
