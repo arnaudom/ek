@@ -551,16 +551,23 @@ class DocumentsEditController extends ControllerBase {
     }
 
     /**
-     * return folders autocomplete
+     * return folders name autocomplete
+     * @param request
+     * @return Json response
      */
-    public function lookupfolders() {
-
-        $query = 'SELECT DISTINCT folder from {ek_documents} WHERE uid=:uid order by folder';
-        $data = Database::getConnection('external_db', 'external_db')->query($query, array(':uid' => \Drupal::currentUser()->id()))->fetchCol();
+    public function lookupfolders(Request $request) {
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_documents'); 
+        $data = $query
+              ->fields('ek_documents', array('folder'))
+              ->distinct()
+              ->condition('uid', \Drupal::currentUser()->id())
+              ->condition('folder', $request->query->get('q') . '%', 'LIKE')
+              ->execute()
+              ->fetchCol();
 
         return new JsonResponse($data);
     }
 
 }
-
-//class
