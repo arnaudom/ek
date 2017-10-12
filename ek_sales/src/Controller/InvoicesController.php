@@ -13,9 +13,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Url;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\OpenModalDialogCommand;
-use Drupal\Core\Ajax\OpenDialogCommand;
+use Drupal\Component\Serialization\Json;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -154,7 +152,7 @@ class InvoicesController extends ControllerBase {
                 $build['excel'] = array(
                     '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
                 );
-                
+
                 $or2 = db_or();
                 if ($_SESSION['ifilter']['status'] == 3) {
                     //any status
@@ -166,7 +164,7 @@ class InvoicesController extends ControllerBase {
                 } else {
                     //paid
                     $or2->condition('i.status', 1, '=');
-                }                
+                }
 
 
                 $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
@@ -250,10 +248,10 @@ class InvoicesController extends ControllerBase {
                 $co = $co . "<br/>" . t('for') . ": " . $companies[$r->allocation];
             }
             $doctype = '';
-            if($r->type == 4) {
+            if ($r->type == 4) {
                 $doctype = 'red';
             }
-            $number = "<a class='". $doctype ."' title='" . t('view') . "' href='"
+            $number = "<a class='" . $doctype . "' title='" . t('view') . "' href='"
                     . Url::fromRoute('ek_sales.invoices.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
 
@@ -290,7 +288,7 @@ class InvoicesController extends ControllerBase {
                 }
                 $duetitle = t('past due') . ' ' . -1 * $long . ' ' . t('day(s)');
             }
-            if($r->type < 4) {
+            if ($r->type < 4) {
                 $value = $r->currency . ' ' . number_format($r->amount, 2);
             } else {
                 $value = $r->currency . ' (' . number_format($r->amount, 2) . ')';
@@ -302,7 +300,7 @@ class InvoicesController extends ControllerBase {
             $tax = $taxable * $r->taxvalue / 100;
 
             if ($tax > 0) {
-                if($r->type < 4) {
+                if ($r->type < 4) {
                     $value .= '<br/>' . t('tax:') . " " . $r->currency . " " . number_format($tax, 2);
                 } else {
                     $value .= '<br/>' . t('tax:') . " " . $r->currency . " (" . number_format($tax, 2) . ')';
@@ -338,6 +336,19 @@ class InvoicesController extends ControllerBase {
             $links = array();
 
             if ($r->status == 0) {
+
+                if (\Drupal::currentUser()->hasPermission('create_invoice')) {
+                    $param = 'quick_edit|' . $r->id . '|invoice';
+                    $links['qedit'] = array(
+                        'title' => $this->t('Quick edit'),
+                        'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
+                        'attributes' => [
+                            'class' => ['use-ajax'],
+                            'data-dialog-type' => 'modal',
+                            'data-dialog-options' => Json::encode(['width' => 700,]),
+                        ],
+                    );
+                }
                 $links['edit'] = array(
                     'title' => $this->t('Edit'),
                     'url' => Url::fromRoute('ek_sales.invoices.edit', ['id' => $r->id]),
@@ -345,18 +356,18 @@ class InvoicesController extends ControllerBase {
             }
 
             if ($r->status != 1) {
-                if($r->type < 3) {
+                if ($r->type < 3) {
                     $links['pay'] = array(
                         'title' => $this->t('Receive'),
                         'url' => Url::fromRoute('ek_sales.invoices.pay', ['id' => $r->id]),
                         'weight' => $weight,
                     );
-                } elseif($r->type == 4) {
+                } elseif ($r->type == 4) {
                     $links['pay'] = array(
                         'title' => $this->t('Assign credit note'),
                         'url' => Url::fromRoute('ek_sales.invoices.assign.cn', ['id' => $r->id]),
                         'weight' => $weight,
-                    );                    
+                    );
                 }
             }
 
@@ -466,7 +477,7 @@ class InvoicesController extends ControllerBase {
             } else {
                 //paid
                 $or->condition('i.status', 1, '=');
-            }  
+            }
 
             $or1 = db_or();
             $or1->condition('head', $access, 'IN');
@@ -903,11 +914,11 @@ class InvoicesController extends ControllerBase {
      */
     public function AssignCreditNote($id) {
         $build['assign_credit_note'] = $this->formBuilder
-                ->getForm('Drupal\ek_sales\Form\AssignNote','CT', $id);
+                ->getForm('Drupal\ek_sales\Form\AssignNote', 'CT', $id);
 
         return $build;
     }
-    
+
     /**
      * @retun
      *  Form for setting a cron alert

@@ -13,6 +13,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Component\Serialization\Json;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -342,6 +343,18 @@ class PurchasesController extends ControllerBase {
             $links = array();
 
             if ($r->status == 0) {
+                if (\Drupal::currentUser()->hasPermission('create_purchase')) {
+                    $param = 'quick_edit|' . $r->id . '|purchase';
+                    $links['qedit'] = array(
+                        'title' => $this->t('Quick edit'),
+                        'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
+                        'attributes' => [
+                            'class' => ['use-ajax'],
+                            'data-dialog-type' => 'modal',
+                            'data-dialog-options' => Json::encode(['width' => 700,]),
+                        ],
+                    );
+                }                
                 $links['edit'] = array(
                     'title' => $this->t('Edit'),
                     'url' => Url::fromRoute('ek_sales.purchases.edit', ['id' => $r->id]),
