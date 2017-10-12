@@ -305,6 +305,10 @@ class BankController extends ControllerBase {
                 'data' => $this->t('Currency'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
             ),
+            'status' => array(
+                'data' => $this->t('Status'),
+                'class' => array(RESPONSIVE_PRIORITY_LOW),
+            ),
             'aid' => array(
                 'data' => $this->t('Accounting'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
@@ -314,13 +318,14 @@ class BankController extends ControllerBase {
 
         $company = AccessCheck::GetCompanyByUser();
         $company = implode(',', $company);
-        $query = "SELECT a.id, a.account_ref,currency,aid, b.name as bank, c.name as co 
+        $query = "SELECT a.id, a.account_ref, a.active,currency,aid, b.name as bank, c.name as co
             FROM {ek_bank_accounts} a
             LEFT JOIN {ek_bank} b
             ON a.bid = b.id
             LEFT JOIN {ek_company} c ON b.coid = c.id WHERE FIND_IN_SET(coid, :c )  ORDER by a.id";
         $list = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $company));
         $row = 0;
+        $status = ['0' => t('inactive'), '1' => t('active')];
         while ($l = $list->fetchObject()) {
 
             $row++;
@@ -328,6 +333,7 @@ class BankController extends ControllerBase {
                 'account_ref' => $l->account_ref,
                 'bid' => $l->bank . ' - ' . $l->co,
                 'currency' => $l->currency,
+                'status' => $status[$l->active],
                 'aid' => $l->aid
             );
 

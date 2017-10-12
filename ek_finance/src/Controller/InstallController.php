@@ -165,6 +165,7 @@ class InstallController extends ControllerBase {
           `currency` VARCHAR(5) NULL DEFAULT NULL COMMENT 'currency of account',
           `bid` TINYINT(3) UNSIGNED NULL DEFAULT NULL COMMENT 'bank id reference from bank table',
           `aid` INT(5) NULL DEFAULT NULL COMMENT 'account id from chart',
+          `active` SMALLINT(1) NULL DEFAULT '1' COMMENT 'Active status',
           PRIMARY KEY (`id`)
         )
         COMMENT='list of bank acounts'

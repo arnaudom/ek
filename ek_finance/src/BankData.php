@@ -28,19 +28,25 @@ use Drupal\ek_admin\Access\AccessCheck;
    * @param $currency = currency code i.e. 'USD'
    * 
    */ 
-  public static function listbankaccountsbyaid($coid = NULL, $currency = NULL) {
-  
-  if($currency  == NULL) {
-    $query = "SELECT ek_bank_accounts.id, account_ref, name, coid, currency from {ek_bank_accounts} INNER JOIN {ek_bank} ON ek_bank_accounts.bid=ek_bank.id WHERE coid=:c and aid<>:a order by name";
-    $a = array(':c'=> $coid, ':a' =>'');
-    
-    } else {
-    $query = "SELECT ek_bank_accounts.id, account_ref, name, coid, currency from {ek_bank_accounts} INNER JOIN {ek_bank} ON ek_bank_accounts.bid=ek_bank.id WHERE coid=:c and aid<>:a and currency=:y order by name";
-    $a = array(':c'=> $coid, ':a' =>'', ':y' => $currency);    
+  public static function listbankaccountsbyaid($coid = NULL, $currency = NULL, $active = 1) {
+   
+    $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_bank_accounts', 'a');
+    $query->leftJoin('ek_bank', 'b', 'a.bid = b.id');
+    $query->fields('a', ['id','account_ref', 'currency']);
+    $query->fields('b', ['coid', 'name']);
+    $query->condition('coid', $coid, '=');
+    $query->condition('aid', "", '<>');
+    $query->condition('active', $active, '=');  
+ 
+    if($currency != NULL) {
+      
+        $query->condition('currency', $currency, '=');    
     
     }
     
-    $data = Database::getConnection('external_db', 'external_db')->query($query,$a);
+    $data = $query->execute();
+    
     $options = array();
     While ($r = $data->fetchObject()) {
       $company = Database::getConnection('external_db', 'external_db')
@@ -48,7 +54,7 @@ use Drupal\ek_admin\Access\AccessCheck;
         ->fetchField();
       $options[$r->id] = "[" . $r->currency . "], " . $company . " - " . $r->account_ref . " " . $r->name; 
     }
-    
+   
     return $options;
   
   }

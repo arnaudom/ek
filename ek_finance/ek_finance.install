@@ -133,6 +133,11 @@ function ek_finance_update_8005() {
              return t('New table created');
         }
        
+
+
+}
+
+
 /**
  * Add multiple PV print in pdf 
  * route rebuild
@@ -143,6 +148,23 @@ function ek_finance_update_8005() {
             return t('New route built');
 
 
-    }        
-
-}
+    }   
+    
+/**
+ * Add active field in bank account
+ */
+    function ek_finance_update_8007() {
+    
+        $schema = Database::getConnection('external_db','external_db')->schema();
+        $spec = array(
+            'description' => 'Active status',
+            'type' => 'int',
+            'size' => 'small',
+            'not null' => FALSE,
+            'default' => 1
+            
+        );
+        $schema->addField('ek_bank_accounts', 'active', $spec);
+        
+        return t('Bank account table updated');
+    }

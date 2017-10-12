@@ -132,6 +132,15 @@ class BankAccountForm extends FormBase {
       '#suffix' => '</div>'
       );    
 
+      $form['active'] = array(
+      '#type' => 'select',
+      '#size' => 1,
+      '#options' => ['0' => t('inactive'), '1' => t('active')],
+      '#required' => TRUE,
+      '#default_value' => isset($data->active) ? $data->active : NULL,
+      '#title' => t('Active'),
+      );
+
       $form["account_ref"] = array(
       '#type' => 'textfield',
       '#size' => 40,
@@ -255,6 +264,7 @@ if($form_state->getValue('bid') != NULL) {
                 'currency' => $form_state->getValue('currency'),
                 'bid' => $form_state->getValue('bid'),
                 'aid' => $form_state->getValue('aid'),
+                'active' => $form_state->getValue('active')
                 );
 
 
