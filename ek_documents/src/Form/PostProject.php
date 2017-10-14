@@ -53,7 +53,7 @@ class PostProject extends FormBase {
             '#default_value' => NULL,
             '#attributes' => array('placeholder' => t('Ex. 123')),
             '#title' => t('Project'),
-            '#autocomplete_route_name' => 'ek_look_up_main_projects',
+            '#autocomplete_route_name' => 'ek_look_up_projects',
         );
 
         $folder = array('ap' => t('action plan'), 'com' => t('communication'), 'fi' => t('finance'),);

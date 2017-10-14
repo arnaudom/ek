@@ -1,0 +1,130 @@
+{#
+/**
+ * @file
+ * Default theme implementation for rendering document view
+ * in list format in document page
+ *
+ *
+ * Available items:
+ *   id (int) file id
+ *   fid (int) not used
+ *   uid (int)
+ *   filename (sting)
+ *   doc_name (string) name without extension
+ *   doc_name_short (string) name 12 char without extension
+ *   extension (string)
+ *   icon_path_small (string) path to small icon img
+ *   icon_path (string) path to icon img
+ *   uri (sting)system path
+ *   url (string)full path
+ *   type (bol)
+ *   comment (string)
+ *   timestamp (int) unix
+ *   date (string) Y-m-d
+ *   date_full (string) D, j M. Y
+ *   size (int) in bytes
+ *   share (bol)
+ *   share_uid (string) comma separated uid
+ *   share_gid (string) comma separated gid (not used)
+ *   expire (int) unix time or 0
+ *
+ *
+ * 
+ *
+ * @ingroup themeable
+ */
+#}
+
+{% for key, item in items %}
+    {% set i = 0 %}
+    {% for folder, docs in item %}
+
+        {% set i = i + 1 %}
+
+        <div id="{{ folder }}" class='drop-folder panel panel-default'>
+            <div class='panel-heading'  onclick="jQuery('#mdoc_{{ i }}').toggle('fast');">
+                <h4 class='panel-title text-primary'>
+                    <span class="folder-ico" aria-hidden="true"></span>&nbsp;
+                    {{ folder }}
+                    <small class='badge float-right' >{{ docs|length }} {{'document(s)'|t }}</small>
+                </h4>
+
+            </div>
+
+            <div id="{{ folder }}" class='drop-folder panel-body'>
+                <div class='inner' id='mdoc_{{ i }}' >
+                    <table class='table responsive-enabled'>
+                        <thead>                                                    
+                            <tr>
+                                <th class="priority-low"></th>
+                                <th style='width:50%;'>{{ 'Document'|t }}</th>
+                                <th class="priority-low"  style='width:15%;'>{{ 'Date'|t }}</th>
+                                <th class="priority-low"  style='width:10%;'>{{ 'Size'|t }}</th>
+                                <th class=""></th>
+                                <th class="priority-low"></th>
+                                {% if modules.project == '1' %}
+                                    <th class="priority-low"></th>
+                                {% endif %}        
+                            </tr>
+                        </thead>
+                        <tbody class="doc_content">
+
+                            {% for doc in docs %}
+
+
+                                <tr class='move'id="div-{{ doc.id }}">
+                                    <td class='priority-low handle-ico'><IMG class='smallico' src="{{ doc.icon_path_small }}" ></td>
+                                    <td title="{{ doc.filename }}"><a target='_blank' href="{{ doc.url }}">{{ doc.doc_name }}</a></td>
+                                    <td class="priority-low"><h5>{{ doc.date_full }}</h5></td>
+                                    <td class='priority-low'><h5>{{ doc.size }} Kb</h5></td>
+
+                                    {% if doc.content == 'myDocs' %}    
+                                        {% if doc.share_uid != '0' %}
+                                            <td class="" style="text-align: center;" title="{{ 'Shared'|t }}">
+                                                <a href='documents/share/{{ doc.id }}' class='use-ajax shared-ico'></a></td>
+                                            {% else %}
+                                            <td class="" style="text-align: center;" title="{{ 'Not shared'|t }}">
+                                                <a href='documents/share/{{ doc.id }}' class='use-ajax share-ico'></a></td>
+                                            {% endif %}
+
+                                        <td class="priority-low" style="text-align: center;" title="{{ 'Delete'|t }}">
+                                            <a href='documents/delete/{{ doc.id }}' class='use-ajax trash-ico'></a></td>
+
+                                        {% if modules.project == '1' %}
+                                            <td class="priority-low" style="text-align: center;" title="{{ 'Post'|t }}">
+                                                <a href='documents/project/{{ doc.id }}' class='use-ajax post-ico'></i></a></td>
+                                                {% endif %} 
+                                    </tr>
+
+                                {% elseif doc.content == 'sharedDocs' %}              
+                                <td class="priority-medium" style="text-align: center;"  title="{{ 'move to my documents folder.'|t }}">
+                                    <a href='documents/move/{{ doc.id }}' class='use-ajax move-ico'></a>
+                                </td> 
+                                <td class="priority-low" style="text-align: center;" class='' title="{{ 'remove from shared list'|t }}">
+                                    <a href='documents/remove/{{ doc.id }}' class='use-ajax remove-ico'></a>
+                                </td>
+                                <td class="priority-low"></td>
+                                </tr>
+                            {% else %}
+                                {% if doc.manage == '1' %} 
+                                    <td class="priority-medium" style="text-align: center;" title="{{ 'Delete'|t }}">
+                                        <a href='documents/delete/{{ doc.id }}' class='use-ajax trash-ico'></a></td>
+                                    {% else %}
+                                    <td/>  
+                                {% endif %}
+                                <td class="priority-low"></td>
+                                <td class="priority-low"></td>
+                                </tr>
+                            {% endif %}
+
+
+                        {% endfor %}{# doc in folder  #}
+
+                        </tbody>  
+                    </table>      
+                </div>{# folder inner #}
+            </div>
+        </div>
+    {% endfor %}
+
+{% endfor %}

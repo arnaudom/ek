@@ -1,5 +1,5 @@
 .panel-default {
-  border-color: #ddd;
+    border-color: #ddd;
 }
 
 .panel {
@@ -23,8 +23,8 @@
 }
 
 .panel-body {
-  display : block;
-  padding: 10px;
+    display : block;
+    padding: 10px;
 }
 
 
@@ -56,11 +56,9 @@
 }
 
 .bar {
-  padding: 3px;
-  height:2em;
-  background-color:#f5f5f5;
-  width: 100%;
-  margin-bottom: 10px;
+    
+    height:2em;
+    
 }
 
 .doc {
@@ -70,30 +68,39 @@
     float: left;
     font-size: 0.8em;
     font-family: Arial,Garuda;
-    //color:;
-    //margin-bottom: 10px;
     margin-left: 15px;
-
     width: 120px;
     height:120px;
     padding: 8px;
     border-radius:8px;
-  -moz-border-radius:8px; -webkit-border-radius:8px;
+    -moz-border-radius:8px; -webkit-border-radius:8px;
 }
- .doc a {
-    text-decoration:none;
- }
- 
+
+.doc_menu {
+    padding-bottom: 5px;
+}
+
+.doc_content {
+    padding-top: 5px;
+}
+.doc a {
+    text-decoration:none !important;
+    border-bottom: 0px;
+}
+.doc_content a {
+    text-decoration:none !important;
+    border-bottom: 0px;
+}
 .red {
-color: #FF6666;
+    color: #FF6666;
 }
 
 .green {
-  color: #00D744;
+    color: #00D744;
 }
 
 .blue {
-  color: #2E64FE;
+    color: #2E64FE;
 }
 
 .float-right {
@@ -112,159 +119,188 @@ color: #FF6666;
     margin-top:5px;
 } 
 
+.top-ico:before {
+    content: "\f0aa"; 
+    font-family: FontAwesome;
+    font-size:1.8em;
+    color: #419ff1;
+    float:right;
+}
 
-.folder-ico {
-  background-image: url(images/folder3.png) ;
-  background-repeat: no-repeat;
-  padding-right: 20px;
-  width: 32px;
-  height:32px;
-
+.folder-ico:before {
+    content: "\f114"; 
+    font-family: FontAwesome;
+    font-size:1.5em;
+    color: #fff;
+    padding-right: 5px;
 }
 
 .open-ico {
-  background-image: url(images/open.ico) ;
-  background-repeat: no-repeat;
-  padding-right: 20px;
-  width: 16px;
-  height:16px;
-  cursor:pointer;
+     //position:relative; 
 }
-
+.open-ico:before {
+    content: "\f2d0"; 
+    font-family: FontAwesome;
+    font-size:1.5em;
+    padding-left: 5px;
+    color: #419ff1;
+    cursor:pointer;
+}
 .close-ico {
-  background-image: url(images/close.ico) ;
-  background-repeat: no-repeat;
-  padding-right: 20px;
-  width: 16px;
-  height:16px;
-  cursor:pointer;
+     //position:relative; 
+}
+.close-ico:before {
+    content: "\f2d1"; 
+    font-family: FontAwesome;
+    padding-left: 5px;
+    font-size:1.5em;
+    color: #446E9B;
+    cursor:pointer;
 }
 
 .list-ico {
-  background-image: url(images/list.ico) ;
-  background-repeat: no-repeat;
-  padding-right: 20px;
-  width: 16px;
-  height:16px;
-  cursor:pointer;
+     //position:relative;
 }
-
+.list-ico:before {
+    content: "\f03a"; 
+    font-family: FontAwesome;
+    padding-left: 5px;
+    font-size:1.5em;
+    color: #446E9B;
+    cursor:pointer;
+}
 .grid-ico {
-  background-image: url(images/grid.ico) ;
-  background-repeat: no-repeat;
-  padding-right: 20px;
-  width: 16px;
-  height:16px;
-  cursor:pointer;
+    //position:relative;
+}
+.grid-ico:before {
+    content: "\f009"; 
+    font-family: FontAwesome;
+    padding-left: 5px;
+    font-size:1.5em;
+    color: #446E9B;
+    cursor:pointer;
 }
 
-.handle-ico img {
-  cursor:all-scroll;
-}
 
 .handle-ico div {
-  background-image: url(images/move.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
+    position:relative; 
+}
+.handle-ico div:before {
+    content: "\f047"; 
+    font-family: FontAwesome;
+    left:-5px;
+    top:-10px;
+    font-size:1.2em;
+    color: #333;
 }
 
+.handle-ico img:hover {
+    cursor:all-scroll;
+}
 .handle-ico div:hover {
-  background-image: url(images/move-over.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
-  cursor:all-scroll;
+    cursor:all-scroll;
 }
-
 .trash-ico {
-  background-image: url(images/trash.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
+    position:relative;
+}    
+.trash-ico:before {
+    content: "\f014"; 
+    font-family: FontAwesome;
+    left:-5px;
+    top:0;
+    font-size:1.5em;
+    padding-left: 3px;
 }
 
 .trash-ico:hover {
-  background-image: url(images/trash-over.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
-  cursor:pointer;
-}
-.share-ico {
-  background-image: url(images/share.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
+    color: #E91E63;
+    cursor:pointer;
 }
 
-.shared-ico {
-  background-image: url(images/shared.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
+.share-ico {
+    position:relative;
+}
+.share-ico:before {
+    content: "\f1e0"; 
+    font-family: FontAwesome;
+    left:-5px;
+    top:0;
+    font-size:1.5em;
+    padding-left: 3px;
 }
 
 .share-ico:hover{
-  background-image: url(images/share-over.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
-  cursor:pointer;
+    color: #DF691A;
+    cursor:pointer;
+}
+
+.shared-ico {
+    position:relative;
+}
+.shared-ico:before{
+    content: "\f1e0"; 
+    font-family: FontAwesome;
+    left:-5px;
+    top:0;
+    font-size:1.5em;
+    padding-left: 3px;
+    color: #00D744;
 }
 
 .shared-ico:hover{
-  background-image: url(images/share-over.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
-  cursor:pointer;
+    color: #DF691A !important;
+    cursor:pointer;
 }
-
-.move-ico {
-  background-image: url(images/plus.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
-}
-
-.move-ico:hover {
-  background-image: url(images/plus-over.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
-  cursor:pointer;
-}
-
-.remove-ico {
-  background-image: url(images/x.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
-}
-
-.remove-ico:hover {
-  background-image: url(images/x-over.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
-  cursor:pointer;
-}
-
 .post-ico {
-  background-image: url(images/paper-clip.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
+    position:relative;
+}
+.post-ico:before {
+    content: "\f0c6"; 
+    font-family: FontAwesome;
+    left:-5px;
+    top:0;
+    font-size:1.5em;
+    padding-left: 3px;
 }
 
 .post-ico:hover {
-  background-image: url(images/paper-clip-over.gif) ;
-  background-repeat: no-repeat;
-  width: 16px;
-  height:16px;
-  cursor:pointer;
+    color: #DF691A;
+    cursor:pointer;
 }
+
+.move-ico {
+    position:relative;
+}
+.move-ico:before {
+    content: "\f0fe"; 
+    font-family: FontAwesome;
+    left:-5px;
+    top:0;
+    font-size:1.5em;
+    padding-left: 3px;
+}
+
+.move-ico:hover {
+    color: #DF691A;
+    cursor:pointer;
+}
+.remove-ico {
+    position:relative;
+}
+.remove-ico:before {
+    content: "\f00d"; 
+    font-family: FontAwesome;
+    left:-5px;
+    top:0;
+    font-size:1.5em;
+    padding-left: 3px;
+}
+
+.remove-ico:hover {
+    color: #E91E63;
+    cursor:pointer;
+}
+
 .ui-datepicker{
     z-index:3000 !important;
 }

@@ -3,6 +3,7 @@
 namespace Drupal\ek_documents;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\Core\Database\Database;
+
 /*
 */
 /**
@@ -79,25 +80,47 @@ use Drupal\Core\Database\Database;
     
     $list = Database::getConnection('external_db', 'external_db')->query($query, $a);
     
-             while ($l=$list->fetchObject()) {
+             while ($l = $list->fetchObject()) {
+                 
+                $extension = explode(".", $l->filename);
+                $doc_name = $extension[0];
+                $doc_short_name = substr($extension[0], 0, 12) . "...";
+                $extension = array_pop($extension);
+
+                $icon_path = drupal_get_path('module', 'ek_documents') . '/art/' . $extension . ".png";
+                $icon_path_small = drupal_get_path('module', 'ek_documents') . '/art/ico/' . $extension . ".png";
             
-            $thisarray = array('id' => $l->id,
+                if (!file_exists($icon_path)) {
+                    $icon_path = drupal_get_path('module', 'ek_documents') . '/art/no.png';
+                } 
+                if(!file_exists($icon_path_small)){
+                    $icon_path_small = drupal_get_path('module', 'ek_documents') . '/art/ico/no.png';
+                }
+                               
+                $thisarray = array('id' => $l->id,
                                 'fid' => $l->fid, //reserved for option usage of file_managed table
                                 'uid' => $l->uid,
                                 'filename' => $l->filename,
+                                'doc_name' => $doc_name,
+                                'doc_name_short' => $doc_short_name, 
+                                'extension' => array_pop($extension),
+                                'icon_path' => $icon_path,
+                                'icon_path_small' => $icon_path_small,
                                 'uri' => $l->uri,
                                 'url' => file_create_url($l->uri),
                                 'type' => $l->type,
                                 'comment' => $l->comment,
                                 'timestamp' => $l->date,
                                 'date' => date("Y-m-d", $l->date),
-                                'size' => $l->size,
+                                'date_full' => date('D, j M. Y', $l->date),
+                                'size' => round($l->size/1000,2),
                                 'share' => $l->share,
                                 'share_uid' => $l->share_uid,
                                 'share_gid' => $l->share_gid,
-                                'expire' => $l->expire
+                                'expire' => $l->expire,
+                                'content' => 'myDocs'
                                 );
-            array_push($folderarrays, $thisarray);
+                array_push($folderarrays, $thisarray);
             }
             
             array_push($my, array($f->folder => $folderarrays));
@@ -164,25 +187,45 @@ use Drupal\Core\Database\Database;
     
     $list = Database::getConnection('external_db', 'external_db')->query($query, $a);
     
-             while ($l=$list->fetchObject()) {
-            
-            $thisarray = array('id' => $l->id,
-                                'fid' => $l->fid, //reserved for option usage of file_managed table
-                                'uid' => $l->uid,
-                                'filename' => $l->filename,
-                                'uri' => $l->uri,
-                                'url' => file_create_url($l->uri),
-                                'type' => $l->type,
-                                'comment' => $l->comment,
-                                'timestamp' => $l->date,
-                                'date' => date("Y-m-d", $l->date),
-                                'size' => $l->size,
-                                'share' => $l->share,
-                                'share_uid' => $l->share_uid,
-                                'share_gid' => $l->share_gid,
-                                'expire' => $l->expire
-                                );
-            array_push($folderarrays, $thisarray);
+            while ($l=$list->fetchObject()) {
+                $extension = explode(".", $l->filename);
+                $doc_name = $extension[0];
+                $doc_short_name = substr($extension[0], 0, 12) . "...";
+                $extension = array_pop($extension);
+                    $icon_path = drupal_get_path('module', 'ek_documents') . '/art/' . $extension . ".png";
+                    $icon_path_small = drupal_get_path('module', 'ek_documents') . '/art/ico/' . $extension . ".png";
+
+                    if (!file_exists($icon_path)) {
+                        $icon_path = drupal_get_path('module', 'ek_documents') . '/art/no.png';
+                    } 
+                    if(!file_exists($icon_path_small)){
+                        $icon_path_small = drupal_get_path('module', 'ek_documents') . '/art/ico/no.png';
+                    }
+
+                $thisarray = array('id' => $l->id,
+                                    'fid' => $l->fid, //reserved for option usage of file_managed table
+                                    'uid' => $l->uid,
+                                    'filename' => $l->filename,
+                                    'doc_name' => $doc_name,
+                                    'doc_name_short' => $doc_short_name, 
+                                    'extension' => array_pop($extension),
+                                    'icon_path' => $icon_path,
+                                    'icon_path_small' => $icon_path_small,
+                                    'uri' => $l->uri,
+                                    'url' => file_create_url($l->uri),
+                                    'type' => $l->type,
+                                    'comment' => $l->comment,
+                                    'timestamp' => $l->date,
+                                    'date' => date("Y-m-d", $l->date),
+                                    'date_full' => date('D, j M. Y', $l->date),
+                                    'size' => round($l->size/1000,2),
+                                    'share' => $l->share,
+                                    'share_uid' => $l->share_uid,
+                                    'share_gid' => $l->share_gid,
+                                    'expire' => $l->expire,
+                                    'content' => 'sharedDocs'
+                                    );
+                array_push($folderarrays, $thisarray);
             }
             
             if(!empty($folderarrays)) {
@@ -246,26 +289,52 @@ use Drupal\Core\Database\Database;
 
     
     $list = Database::getConnection('external_db', 'external_db')->query($query, $a);
+    if(\Drupal::currentUser()->hasPermission('manage_common_documents')){ 
+        $manage = 1;
+    }
     
-             while ($l=$list->fetchObject()) {
+            while ($l=$list->fetchObject()) {
             
-            $thisarray = array('id' => $l->id,
-                                'fid' => $l->fid, //reserved for option usage of file_managed table
-                                'uid' => $l->uid,
-                                'filename' => $l->filename,
-                                'uri' => $l->uri,
-                                'url' => file_create_url($l->uri),
-                                'type' => $l->type,
-                                'comment' => $l->comment,
-                                'timestamp' => $l->date,
-                                'date' => date("Y-m-d", $l->date),
-                                'size' => $l->size,
-                                'share' => $l->share,
-                                'share_uid' => $l->share_uid,
-                                'share_gid' => $l->share_gid,
-                                'expire' => $l->expire
-                                );
-            array_push($folderarrays, $thisarray);
+                $extension = explode(".", $l->filename);
+                $doc_name = $extension[0];
+                $doc_short_name = substr($extension[0], 0, 12) . "...";
+                $extension = array_pop($extension);
+                $icon_path = drupal_get_path('module', 'ek_documents') . '/art/' . $extension . ".png";
+                $icon_path_small = drupal_get_path('module', 'ek_documents') . '/art/ico/' . $extension . ".png";
+
+                if (!file_exists($icon_path)) {
+                    $icon_path = drupal_get_path('module', 'ek_documents') . '/art/no.png';
+                } 
+                if(!file_exists($icon_path_small)){
+                    $icon_path_small = drupal_get_path('module', 'ek_documents') . '/art/ico/no.png';
+                }
+
+
+                $thisarray = array('id' => $l->id,
+                                    'fid' => $l->fid, //reserved for option usage of file_managed table
+                                    'uid' => $l->uid,
+                                    'filename' => $l->filename,
+                                    'doc_name' => $doc_name,
+                                    'doc_name_short' => $doc_short_name, 
+                                    'extension' => array_pop($extension),
+                                    'icon_path' => $icon_path,
+                                    'icon_path_small' => $icon_path_small,
+                                    'uri' => $l->uri,
+                                    'url' => file_create_url($l->uri),
+                                    'type' => $l->type,
+                                    'comment' => $l->comment,
+                                    'timestamp' => $l->date,
+                                    'date' => date("Y-m-d", $l->date),
+                                    'date_full' => date('D, j M. Y', $l->date),
+                                    'size' => round($l->size/1000,2),
+                                    'share' => $l->share,
+                                    'share_uid' => $l->share_uid,
+                                    'share_gid' => $l->share_gid,
+                                    'expire' => $l->expire,
+                                    'content' => 'commonDocs',
+                                    'manage' => $manage
+                                    );
+                array_push($folderarrays, $thisarray);
             }
             
             array_push($common, array($f->folder => $folderarrays));

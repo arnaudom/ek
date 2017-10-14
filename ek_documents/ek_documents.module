@@ -23,7 +23,19 @@ use Drupal\Core\Database\Database;
  */
 function ek_documents_theme() {
   return array(
-      // my docs
+    //block view render formatting
+    'ek_documents_block_view' => array
+    (
+      'template' => 'ek_documents_block_view',
+      'variables' => array('items' => array(), 'modules' => array()),
+    ),
+    //list view render formatting
+    'ek_documents_list_view' => array
+    (
+      'template' => 'ek_documents_list_view',
+      'variables' => array('items' => array(), 'modules' => array()),
+    ),        
+    // my docs
     'ek_documents_my' => array
     (
       'template' => 'ek_documents_my',

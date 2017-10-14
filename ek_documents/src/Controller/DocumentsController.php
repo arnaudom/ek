@@ -77,25 +77,13 @@ class DocumentsController extends ControllerBase {
  public function documents(Request $request) {
  
  $items = array();
- $items['bar'] = "
- <div class='bar'>
-    <div class='float-right'>
-    <div id='expand' class='open-ico'></div>
-   </div>
-   <div class='float-right' id='gridview'>
-    <div class='grid-ico'></div>
-   </div>
-   <div class='float-right' id='listview'>
-    <div class='list-ico'></div>
-   </div>
- </div>";
  
      return array(
       '#theme' => 'ek_documents_my',
       '#items' => $items,
       '#attached' => array(
         'drupalSettings' => array('ek_documents' => 'myDocs' ),        
-        'library' => array('ek_documents/ek_documents_display'),
+        'library' => array('ek_documents/ek_documents_display','ek_admin/ek_admin_css' ),
         
       ),
     );
@@ -111,24 +99,12 @@ class DocumentsController extends ControllerBase {
  public function documentsshared(Request $request) {
 
  $items = array();
- $items['bar'] = "
- <div class='bar'>
-   <div class='float-right'>
-    <div id='expand' class='open-ico'></div>
-   </div>
-   <div class='float-right' id='gridview'>
-    <div class='grid-ico'></div>
-   </div>
-   <div class='float-right' id='listview'>
-    <div class='list-ico'></div>
-   </div>
- </div>"; 
      return array(
       '#theme' => 'ek_documents_shared',
       '#items' => $items,
       '#attached' => array(
         'drupalSettings' => array('ek_documents' => 'sharedDocs'),
-        'library' => array('ek_documents/ek_documents_display'),
+        'library' => array('ek_documents/ek_documents_display','ek_admin/ek_admin_css'),
         
       ),
     ); 
@@ -144,24 +120,12 @@ class DocumentsController extends ControllerBase {
  public function documentscommon(Request $request) {
 
  $items = array();
- $items['bar'] = "
- <div class='bar'>
-   <div class='float-right'>
-    <div id='expand' class='open-ico'></div>
-   </div>
-   <div class='float-right' id='gridview'>
-    <div class='grid-ico'></div>
-   </div>
-   <div class='float-right' id='listview'>
-    <div class='list-ico'></div>
-   </div>
- </div>"; 
      return array(
       '#theme' => 'ek_documents_common',
       '#items' => $items,
       '#attached' => array(
         'drupalSettings' => array('ek_documents' => 'commonDocs'),
-        'library' => array('ek_documents/ek_documents_display'),
+        'library' => array('ek_documents/ek_documents_display','ek_admin/ek_admin_css'),
         
       ),
     ); 

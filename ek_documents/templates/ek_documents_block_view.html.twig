@@ -1,0 +1,168 @@
+{#
+/**
+ * @file
+ * Default theme implementation for rendering document view
+ * in blocks format in document page
+ *
+ *
+ * Available items:
+ *   id (int) file id
+ *   fid (int) not used
+ *   uid (int)
+ *   filename (sting)
+ *   doc_name (string) name without extension
+ *   doc_name_short (string) name 12 char without extension
+ *   extension (string)
+ *   icon_path_small (string) path to small icon img
+ *   icon_path (string) path to icon img
+ *   uri (sting)system path
+ *   url (string)full path
+ *   type (bol)
+ *   comment (string)
+ *   timestamp (int) unix
+ *   date (string) Y-m-d
+ *   date_full (string) D, j M. Y
+ *   size (int) in bytes
+ *   share (bol)
+ *   share_uid (string) comma separated uid
+ *   share_gid (string) comma separated gid (not used)
+ *   expire (int) unix time or 0
+ *
+ *
+ * 
+ *
+ * @ingroup themeable
+ */
+#}
+{% for key, item in items %}
+    {% set i = 0 %}
+    {% for folder, docs in item %}
+
+        {% set i = i + 1 %}
+
+        <div id="{{ folder }}" class='drop-folder panel panel-default'>
+            <div class='panel-heading'  onclick="jQuery('#mdoc_{{ i }}').toggle('fast');">
+                <h4 class='panel-title text-primary'>
+                    <span class="folder-ico" aria-hidden="true"></span>&nbsp;
+                    {{ folder }}
+                    <small class='badge float-right' >{{ docs|length }} {{'document(s)'|t }}</small>
+                </h4>
+
+            </div>
+
+            <div id="{{ folder }}" class='drop-folder panel-body'>
+                <div class='inner' id='mdoc_{{ i }}' >
+
+                    {% for doc in docs %}
+                        {% if doc.content == 'myDocs' %}
+
+                            <div id="div-{{ doc.id }}" class="move">
+                                <div class='doc'>
+                                    <div class="doc_menu">
+                                        <div class='float-left handle-ico'>
+                                            <div class='' title="{{ 'drag'|t }}"></div>
+                                        </div>                                   
+                                        <a href='documents/delete/{{ doc.id }}' class='use-ajax'>
+                                            <div class='float-right' >
+                                                <div id="doc_{{ doc.id }}" class='trash-ico' title="{{ 'delete'|t }}"></div>
+                                            </div>
+                                        </a>
+                                        {% if modules.project == '1' %}
+                                            <a href='documents/project/{{ doc.id }}' class='use-ajax'>
+                                                <div class='float-right' >
+                                                    <div id="doc_{{ doc.id }}" class='post-ico' title="{{ 'post to project'|t }}"></div>
+                                                </div>
+                                            </a>
+                                        {% endif %}
+
+
+                                        {% if doc.share_uid != '0' %}
+                                            {% set ico = 'shared-ico' %}
+                                        {% else %}
+                                            {% set ico = 'share-ico' %}
+                                        {% endif %}
+
+                                        <a href='documents/share/{{ doc.id }}' class='use-ajax'>
+                                            <div class='float-right'>
+                                                <div id='' class="{{ ico }}" title="{{ 'share'|t }}"></div>
+                                            </div>
+                                        </a>
+
+                                    </div>    
+                                    <div class="doc_content">
+                                        <a target='_blank' href="{{ doc.url }}">
+                                            <IMG class='largeico'  src="{{ doc.icon_path }}">               
+                                            <div title="{{ doc.date_full }}, {{ doc.filename }}">
+                                                {{ doc.doc_name_short }} ({{ doc.size }} Kb)
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% elseif doc.content == 'sharedDocs' %} 
+                            <div id="div-{{ doc.id }}" class="move">
+                                <div class='doc'>
+                                    <div class="doc_menu">
+                                        <a href='documents/remove/{{ doc.id }}' class='use-ajax'>
+                                            <div class='float-right'>
+                                                <div id='' class='remove-ico' title="{{ 'remove from list'|t }}"></div>
+                                            </div>
+                                        </a>
+                                        <a href='documents/move/{{ doc.id }}' class='use-ajax'>
+                                            <div class='float-right' >
+                                                <div id="doc_{{ doc.id }}" class='move-ico' title="{{ 'move to my documents|t' }}"></div>
+                                            </div>
+                                        </a>  
+                                    </div>
+                                    <div class="doc_content">
+                                        <a target='_blank' href="{{ doc.url }}">
+                                            <IMG class='largeico'  src="{{ doc.icon_path }}">                
+                                            <div title="{{ doc.date_full }}, {{ doc.filename }}">
+                                                {{ doc.doc_name_short }} ({{ doc.size }} Kb)
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% else %}
+
+                            <div id="div-{{ doc.id }}" class='move'>
+                                <div class='doc'> 
+                                    <div class="doc_menu">
+                                        <div class='float-left handle-ico' >
+                                            <div class='' title="{{ 'drag'|t }}"></div>
+                                        </div>
+                                        {% if doc.manage == '1' %} 
+                                            <a href='documents/delete/{{ doc.id }}' class='use-ajax'>
+                                                <div class='float-right' >
+                                                    <div id="doc_{{ doc.id }}" class='trash-ico' title="{{ 'delete'|t }}"></div>
+                                                </div>
+                                            </a>
+
+                                        {% endif %}
+                                    </div>
+                                    <div class="doc_content">
+                                        <a target='_blank' href="{{ doc.url }}">
+                                            <IMG class='largeico'  src="{{ doc.icon_path }}">             
+                                            <div title="{{ doc.date_full }}, {{ doc.filename }}">
+                                                {{ doc.doc_name_short }} ({{ doc.size }} Kb)
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div> 
+                            </div>
+
+                        {% endif %}
+
+
+
+                    {% endfor %}{# doc in folder  #}
+
+                </div>  {# folder inner  #}
+            </div>  {# folder body #}    
+        </div>{# folder #}
+    {% endfor %}
+
+{% endfor %}
