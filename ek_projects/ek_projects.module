@@ -1,6 +1,6 @@
 <?php
 
-///////////////////////////////////////////////////
+    ///////////////////////////////////////////////////
     //                  COPYRIGHT                    //
     //                                               //
     // DEVELOPPED BY ARREA LTD                       //
@@ -43,7 +43,13 @@ function ek_projects_theme() {
     (
       'template' => 'ek_projects_view',
       'variables' => array('items' => array()),
-    ),  
+    ), 
+    //template for attached docs in project page  
+    'ek_projects_doc_view' => array
+    (
+      'template' => 'ek_projects_doc_view',
+      'variables' => array('items' => array()),
+    ),       
     // for the project calendar block
     'calendar_block' => array
     (

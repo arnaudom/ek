@@ -1307,78 +1307,99 @@ class ProjectController extends ControllerBase {
             //build list of documents
             $t = '';
             $i = 0;
+            $items = [];
             if (isset($list)) {
                 while ($l = $list->fetchObject()) {
                     $i++;
+                    
+                    /* default values */
+                    $items[$i]['fid'] = 1; //default file status on
+                    $items[$i]['delete'] = 1; //default delete action is on
+                    $items[$i]['email'] = 1; //default email action is on
+                    $items[$i]['extranet'] = 0;//default extranet action is of
+                    $items[$i]['icon'] = 'file';//default icon 
+                    $items[$i]['file_url'] = ''; //default
+                    $items[$i]['access_url'] = 0; //default access management if off
+                    
+                    $items[$i]['uri'] = $l->uri;
+                    
                     $extension = explode(".", $l->filename);
                     $extension = array_pop($extension);
-                    $image = drupal_get_path('module', 'ek_projects') . '/art/icons/' . $extension . ".png";
-
-                    $uri = $l->uri;
-
-                    if (file_exists($image)) {
-                        $image = "<IMG src='../../" . $image . "'>";
-                    } else {
-                        //$image = '';
-                        $image = "<IMG src='../../modules/ek_projects/art/icons/file.png'>";
-                    }
-
+                    
+                    $items[$i]['icon_path'] = drupal_get_path('module', 'ek_projects') . '/art/icons/';
+                    
+                    if (file_exists(drupal_get_path('module', 'ek_projects') . '/art/icons/' . $extension . ".png")) {
+                        $items[$i]['icon'] = strtolower($extension);
+                    } 
 
                     //filename formating
                     if (strlen($l->filename) > 30) {
-                        $doc_name = substr($l->filename, 0, 30) . " ... ";
+                        $items[$i]['doc_name'] = substr($l->filename, 0, 30) . " ... ";
                     } else {
-                        $doc_name = $l->filename;
+                        $items[$i]['doc_name'] = $l->filename;
                     }
-
-
+                    
+                    
                     if ($l->fid == '0') { //file was deleted
-                        $del_button = '[-]';
-                        $doc = $doc_name;
-                        $mail_button = '';
-                        $extranet_button = '<td/>';
+                        $items[$i]['fid'] = 0;
+                        $items[$i]['delete'] = 0;
+                        $items[$i]['email'] = 0;
+                        $items[$i]['extranet'] = 0;
+                        $items[$i]['comment'] = $l->comment . " " . date('Y-m-d', $l->uri);
+                        
                     } else {
-                        if (file_exists(file_uri_target($uri))) {
+                        if (!file_exists($l->uri)) {
                             //file not on server (archived?) TODO ERROR file path not detected
-                            $del_button = '';
-                            $l->comment = t('Document not available. Please contact administrator');
-                            $doc = $doc_name;
-                            $mail_button = '';
-                            $extranet_button = '<td/>';
+                            $items[$i]['fid'] = 2;
+                            $items[$i]['delete'] = 0;
+                            $items[$i]['email'] = 0;
+                            $items[$i]['extranet'] = 0;
+                            $items[$i]['comment'] = t('Document not available. Please contact administrator');
                         } else {
                             //file exist
                             if (ProjectData::validate_file_access($l->id)) {
                                 $route = Url::fromRoute('ek_projects_delete_file', ['id' => $l->id])->toString();
-                                $del_button = "<a id='d$i' href=" . $route . " class='use-ajax red' title='" . t('delete the file') . "'>[x]</a>";
-                                $doc = "<a href='" . file_create_url($uri) . "' target='_blank' >" . $doc_name . "</a>";
+                                $items[$i]['delete_url'] = $route;
+                                $items[$i]['file_url'] = file_create_url($l->uri);
 
                                 $param_mail = 'mail|' . $l->id . '|project_documents';
                                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_mail])->toString();
-                                $mail_button = t('<a href="@url" class="@c" title="' . t('share by email') . '" >[ mail ]</a>', array('@url' => $link, '@c' => 'use-ajax blue '));
-
-                                //add extranet
+                                $items[$i]['mail_url'] = $link;
+                                $items[$i]['delete'] = 1;
+                                $items[$i]['email'] = 1;
+                                $items[$i]['comment'] = $l->comment;
+                                $items[$i]['date'] = date('Y-m-d', $l->date);
+                                $items[$i]['size'] = round($l->size / 1000, 0) . " Kb";
+                                
+                             //add extranet
+                                
                                 if ($this->moduleHandler->moduleExists('ek_extranet')) {
-                                    $extranet_button = '';
+                                    
                                     $query = "SELECT id,content FROM {ek_extranet_pages} WHERE pcode=:p";
                                     $ext = Database::getConnection('external_db', 'external_db')
                                             ->query($query, [':p' => $l->pcode])
                                             ->fetchObject();
                                     if ($ext && $ext->id > 0) {
+                                        $items[$i]['extranet'] = 1;
                                         $c = unserialize($ext->content);
                                         $route = Url::fromRoute('ek_extranet_file', ['id' => $l->id, 'pcode' => $l->pcode], array())->toString();
+                                        $items[$i]['extranet_url'] = $route;
                                         if (isset($c['document'][$l->id]) && $c['document'][$l->id] == 1) {
-                                            $extranet_button = "<td><a title='" . t('Shared; click to unshare') . "' href='" . $route . "' class='use-ajax green extranet-btn'>[" . t('extranet') . ' ->]</a></td>';
+                                            $items[$i]['extranet_share'] = 1;                                         
                                         } else {
-                                            $extranet_button = "<td><a title='" . t('Not shared; click to share') . "' href='" . $route . "'  class='use-ajax red extranet-btn'>[x " . t('extranet') . ']</a></td>';
+                                            $items[$i]['extranet_share'] = 0;
                                         }
-                                    }
+                                    } 
                                 }
-                            } else {
-                                //not edit access.
-                                $del_button = '[x]';
-                                $doc = $doc_name;
-                                $mail_button = '';
-                                $extranet_button = '<td/>';
+                                
+                                
+                                
+                            } else {  
+                                //file exist but access not authorized
+                                $items[$i]['delete'] = 0;
+                                $items[$i]['email'] = 0;
+                                $items[$i]['fid'] = 0;
+                                $items[$i]['comment'] = t('Restricted access');
                             }
                         }
                     }
@@ -1387,28 +1408,20 @@ class ProjectController extends ControllerBase {
                     //$owner = ProjectData::file_owner($l->id);
                     // use project owner instead
 
-                    if ($l->owner == \Drupal::currentUser()->id() && $l->fid != '0') {
-
+                    if (($l->owner == \Drupal::currentUser()->id() 
+                            || \Drupal::currentUser()->hasPermission('admin_projects')) && $l->fid != '0') {
                         $param_access = 'access|' . $l->id . '|project_doc';
                         $link = Url::fromRoute('ek_projects_modal', ['param' => $param_access])->toString();
-                        $share_button = t('<a href="@url" class="@c" title="' . t('manage access by users') . '" >[ access ]</a>', array('@url' => $link, '@c' => 'use-ajax red '));
-                    } else {
-                        $share_button = '';
-                    }
+                        $items[$i]['access_url'] = $link;
+                    } 
 
-                    $t .= "<tr>
-                    <td title='" . $l->filename . ' | ' . date('Y-m-d', $l->date) . ", " . round($l->size / 1000, 0) . " Kb'>" . $image . " " . $doc . "</td>
-                    <td>" . $l->comment . "</td>
-                    <td>" . $del_button . "</td>
-                    <td>" . $share_button . "</td>
-                    <td>" . $mail_button . "</td>
-                    " . $extranet_button . "
-                    </tr>
-                
-                ";
+
                 }
+
+                $render = ['#theme' => 'ek_projects_doc_view', '#items' => $items];
+                $data =  \Drupal::service('renderer')->render($render);               
             }
-            return new JsonResponse(array('data' => $t));
+            return new JsonResponse(array('data' => $data));
         } else {
             // no access
             return new JsonResponse(array('data' => NULL));
