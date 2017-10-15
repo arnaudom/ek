@@ -1029,7 +1029,7 @@ class InvoicesController extends ControllerBase {
                 $data['list'][] = [
                     'serial' => $r->serial,
                     'username' => $username,
-                    'task' => $r->task,
+                    'task' => ['data' => ['#markup' => $r->task ], 'style' => ['background-color:' . $r->color]],
                     'period' => date('Y-m-d', $r->start) . ' -> ' . date('Y-m-d', $r->end),
                     'expired' => $expired,
                     'rate' => $r->completion_rate . ' %',
