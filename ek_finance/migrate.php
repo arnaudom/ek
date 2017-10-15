@@ -5,6 +5,47 @@ use Drupal\Core\Database\Database;
 $markup = '';
 
 
+
+$query = "select m.id,m.date,uri from ek_expenses_memo_documents d
+left join ek_expenses_memo m
+on d.serial=m.serial
+where entity_to = 1
+and
+category = 5
+and m.id<221";
+
+$data = Database::getConnection('external_db', 'external_db')->query($query);
+
+$path = "R:\Database tables backups\Expenses\receipts";
+while ($d = $data->fetchObject()) {
+if (file_exists($path . "\\" . $d->uri)) {
+    $markup .= $d->uri . "<br/>";
+}
+
+}
+/*
+$query = "select id,aid,coid from {ek_expenses_memo_list} l INNER JOIN {ek_expenses_memo} m on l.serial=m.serial WHERE id<356";
+$data = Database::getConnection('external_db', 'external_db')->query($query);
+
+  while ($d = $data->fetchObject()) {
+
+    $query = "select aid from {ek_account} WHERE coid='" . $d['coid'] . "' AND aname LIKE '". $d['aid'] ."'";
+    $aid = Database::getConnection('external_db', 'external_db')->query($query)->fetchObject();
+
+    if($aid) {
+    $query = "update {ek_expenses_memo_list} set aid='" . $aid ."' where id='" . $d['id'] . "'";
+    
+    $markup .= $d['aid'] . ' ' . $aid . ' ' . $d['id'] . '<br/>';
+    //Database::getConnection('external_db', 'external_db')->query($query);
+
+
+    } else {
+        $markup .= 'Not found ' .  $d['aid'] . ' ' . $d['coid'] . ' ' . $d['id'] . '<br/>';
+    }
+  
+  
+    }
+
 $query = "SELECT id,value FROM {ek_journal} order by id";
 $data =Database::getConnection('external_db', 'external_db')->query($query);
 while ($d = $data->fetchObject()) {
@@ -12,7 +53,7 @@ while ($d = $data->fetchObject()) {
     $query = "update {ek_journal} set value=:n  WHERE id=:id";
             Database::getConnection('external_db', 'external_db')->query($query, [':n' => $newvalue, ':id' => $d->id]);
 }
-/*
+
 $query = "SELECT id FROM {ek_company} order by id";
 $data =Database::getConnection('external_db', 'external_db')->query($query);
 while ($d = $data->fetchObject()) {
