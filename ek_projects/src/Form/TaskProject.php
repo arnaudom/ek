@@ -169,20 +169,20 @@ if($data->pcode) {
             '#options' => $rate,
             '#required' => TRUE,
             '#default_value' => isset($data->completion_rate) ? $data->completion_rate : 0,
-            '#title' => t('Completion rate'),
+            '#title' => $this->t('Completion rate'),
           );        
     }
     
     if($id && $perm){
       $form['delete'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Delete this task'),
+      '#title' => $this->t('Delete this task'),
        );       
     }
     
     $form['event'] = array(
       '#type' => 'textfield',
-      '#title' => t('Event name'),
+      '#title' => $this->t('Event name'),
       '#size' => 25,
       '#maxlength' => 100,
       '#default_value' => isset($data->event) ? $data->event : NULL,
@@ -198,13 +198,13 @@ if($data->pcode) {
         '#options' => $user,
         '#required' => TRUE,
         '#default_value' => isset($data->uid) ? $data->uid : NULL,
-        '#title' => t('Assigned to'),
+        '#title' => $this->t('Assigned to'),
         '#disabled' => isset($read['uid']) ? $read['uid'] : FALSE,
       );
     
     $form['task'] = array(
       '#type' => 'textfield',
-      '#title' => t('Task description'),
+      '#title' => $this->t('Task description'),
       '#size' => 25,
       '#required' => TRUE,
       '#maxlength' => 150,
@@ -219,7 +219,7 @@ if($data->pcode) {
       '#required' => TRUE,
       '#default_value' => isset($data->start) ? date('Y-m-d', $data->start) : date('Y-m-d'),
       //'#attributes' => array('class' => array($read['class'], 'date'), 'readonly' => $read['start']),
-      '#title' => t('Starting'),
+      '#title' => $this->t('Starting'),
       '#prefix' => "<div class='container-inline'>",
 
     ); 
@@ -230,7 +230,7 @@ if($data->pcode) {
       '#size' => 12,
       '#default_value' => isset($data->end) ? date('Y-m-d', $data->end) : NULL,
       //'#attributes' => array('class' => array($read['class'], 'date'), 'readonly' => $read['end']),
-      '#title' => t('ending'),
+      '#title' => $this->t('ending'),
       '#suffix' => '</div>',
       '#attached' => array(
           'library' => array(
@@ -240,6 +240,11 @@ if($data->pcode) {
 
     );
 
+    $form['color'] = array(
+      '#type' => 'color',
+      '#title' => $this->t('Color'),
+      '#default_value' => isset($data->color) ? $data->color : '#80ff80',
+      );
     
     if(isset($data->notify_who) && $data->notify_who != NULL){
         $who = explode(',', $data->notify_who);
@@ -260,7 +265,7 @@ if($data->pcode) {
 
     $form['notify_who'] = array(
       '#type' => 'textarea',
-      '#title' => t('Notification recipients'),
+      '#title' => $this->t('Notification recipients'),
       '#rows' => 2,
       '#id' => 'edit-email',
       '#attributes' => array('placeholder' => t('enter users names separated by comma (autocomplete enabled).')),
@@ -287,7 +292,7 @@ if($data->pcode) {
     
     $form['notify'] = array(
       '#type' => 'select',
-      '#title' => t('Notification period'),
+      '#title' => $this->t('Notification period'),
       '#options' => $notify,
       '#default_value' => isset($data->notify) ? $data->notify : NULL,
       '#disabled' => isset($read['notify']) ? $read['notify'] : FALSE,
@@ -315,7 +320,7 @@ if($data->pcode) {
       );     
     $form['actions']['cancel'] = array(
       '#type' => 'button',
-      '#value' => t('cancel'),
+      '#value' => $this->t('cancel'),
       '#ajax' => array(
         'callback' => array($this, 'cancel'), 
       ),
@@ -442,6 +447,7 @@ if($data->pcode) {
                  'end' => strtotime($form_state->getValue('end')),
                  'notify' => $form_state->getValue('notify'),
                  'notify_who' => $notify_who,
+                 'color' => $form_state->getValue('color'),
                );
 
                if($form_state->getValue('for_id') != NULL) {
