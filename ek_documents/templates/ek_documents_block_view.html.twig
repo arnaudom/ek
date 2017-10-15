@@ -34,11 +34,12 @@
  * @ingroup themeable
  */
 #}
+{% set i = 0 %}
 {% for key, item in items %}
-    {% set i = 0 %}
+    
     {% for folder, docs in item %}
 
-        {% set i = i + 1 %}
+        {% set i = i+1 %}
 
         <div id="{{ folder }}" class='drop-folder panel panel-default'>
             <div class='panel-heading'  onclick="jQuery('#mdoc_{{ i }}').toggle('fast');">
