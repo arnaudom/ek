@@ -57,11 +57,21 @@
                         {% if doc.content == 'myDocs' %}
 
                             <div id="div-{{ doc.id }}" class="move">
-                                <div class='doc'>
+                                <div class="doc_canvas">
+                                    <div class='float-left handle-ico'>
+                                        <div class='' title="{{ 'drag'|t }}"></div>
+                                    </div> 
                                     <div class="doc_menu">
-                                        <div class='float-left handle-ico'>
-                                            <div class='' title="{{ 'drag'|t }}"></div>
-                                        </div>                                   
+
+                                        <div class="doc_content">
+                                            <a target='_blank' href="{{ doc.url }}">
+                                                <IMG class='largeico'  src="{{ doc.icon_path }}">               
+                                                <div title="{{ doc.date_full }}, {{ doc.filename }}">
+                                                    {{ doc.doc_name_short }} ({{ doc.size }} Kb)
+                                                </div>
+                                            </a>
+                                        </div>
+
                                         <a href='documents/delete/{{ doc.id }}' class='use-ajax'>
                                             <div class='float-right' >
                                                 <div id="doc_{{ doc.id }}" class='trash-ico' title="{{ 'delete'|t }}"></div>
@@ -86,24 +96,26 @@
                                             <div class='float-right'>
                                                 <div id='' class="{{ ico }}" title="{{ 'share'|t }}"></div>
                                             </div>
-                                        </a>
+                                        </a>                                                
 
-                                    </div>    
-                                    <div class="doc_content">
-                                        <a target='_blank' href="{{ doc.url }}">
-                                            <IMG class='largeico'  src="{{ doc.icon_path }}">               
-                                            <div title="{{ doc.date_full }}, {{ doc.filename }}">
-                                                {{ doc.doc_name_short }} ({{ doc.size }} Kb)
-                                            </div>
-                                        </a>
                                     </div>
+
                                 </div>
                             </div>
 
                         {% elseif doc.content == 'sharedDocs' %} 
                             <div id="div-{{ doc.id }}" class="move">
-                                <div class='doc'>
+                                <div class="doc_canvas">
                                     <div class="doc_menu">
+
+                                        <div class="doc_content">
+                                            <a target='_blank' href="{{ doc.url }}">
+                                                <IMG class='largeico'  src="{{ doc.icon_path }}">               
+                                                <div title="{{ doc.date_full }}, {{ doc.filename }}">
+                                                    {{ doc.doc_name_short }} ({{ doc.size }} Kb)
+                                                </div>
+                                            </a>
+                                        </div>
                                         <a href='documents/remove/{{ doc.id }}' class='use-ajax'>
                                             <div class='float-right'>
                                                 <div id='' class='remove-ico' title="{{ 'remove from list'|t }}"></div>
@@ -113,27 +125,30 @@
                                             <div class='float-right' >
                                                 <div id="doc_{{ doc.id }}" class='move-ico' title="{{ 'move to my documents|t' }}"></div>
                                             </div>
-                                        </a>  
-                                    </div>
-                                    <div class="doc_content">
-                                        <a target='_blank' href="{{ doc.url }}">
-                                            <IMG class='largeico'  src="{{ doc.icon_path }}">                
-                                            <div title="{{ doc.date_full }}, {{ doc.filename }}">
-                                                {{ doc.doc_name_short }} ({{ doc.size }} Kb)
-                                            </div>
-                                        </a>
+                                        </a>           
                                     </div>
                                 </div>
                             </div>
 
+
                         {% else %}
 
                             <div id="div-{{ doc.id }}" class='move'>
-                                <div class='doc'> 
+                                <div class='doc_canvas'>
+                                    <div class='float-left handle-ico'>
+                                        <div class='' title="{{ 'drag'|t }}"></div>
+                                    </div>
                                     <div class="doc_menu">
-                                        <div class='float-left handle-ico' >
-                                            <div class='' title="{{ 'drag'|t }}"></div>
-                                        </div>
+
+                                        <div class="doc_content">
+                                            <a target='_blank' href="{{ doc.url }}">
+                                                <IMG class='largeico'  src="{{ doc.icon_path }}">             
+                                                <div title="{{ doc.date_full }}, {{ doc.filename }}">
+                                                    {{ doc.doc_name_short }} ({{ doc.size }} Kb)
+                                                </div>
+                                            </a>
+                                        </div> 
+                                                
                                         {% if doc.manage == '1' %} 
                                             <a href='documents/delete/{{ doc.id }}' class='use-ajax'>
                                                 <div class='float-right' >
@@ -142,27 +157,21 @@
                                             </a>
 
                                         {% endif %}
+
                                     </div>
-                                    <div class="doc_content">
-                                        <a target='_blank' href="{{ doc.url }}">
-                                            <IMG class='largeico'  src="{{ doc.icon_path }}">             
-                                            <div title="{{ doc.date_full }}, {{ doc.filename }}">
-                                                {{ doc.doc_name_short }} ({{ doc.size }} Kb)
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div> 
-                            </div>
+                                </div>   
+                            </div> 
+                        </div>
 
-                        {% endif %}
+                    {% endif %}
 
 
 
-                    {% endfor %}{# doc in folder  #}
+                {% endfor %}{# doc in folder  #}
 
-                </div>  {# folder inner  #}
-            </div>  {# folder body #}    
-        </div>{# folder #}
-    {% endfor %}
+            </div>  {# folder inner  #}
+        </div>  {# folder body #}    
+    </div>{# folder #}
+{% endfor %}
 
 {% endfor %}

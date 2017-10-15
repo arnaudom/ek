@@ -1888,7 +1888,7 @@ class ProjectController extends ControllerBase {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_project_tasks', 't');
         $query->join('ek_project', 'p', 'p.pcode=t.pcode');
-        $data = $query->fields('t', array('id', 'event', 'task', 'start', 'end', 'uid', 'gid', 'completion_rate'))
+        $data = $query->fields('t', array('id', 'event', 'task', 'start', 'end', 'uid', 'gid', 'completion_rate','color'))
                 ->fields('p', array('id'))
                 ->condition('t.pcode', $pcode, '=')
                 ->extend('Drupal\Core\Database\Query\TableSortExtender')
@@ -1913,8 +1913,8 @@ class ProjectController extends ControllerBase {
             }
 
             $options[$r->id] = array(
-                'event' => array('data' => $r->event),
-                'task' => array('data' => $r->task),
+                'event' => array('data' => ['#markup' => $r->event]),
+                'task' => ['data' => ['#markup' => $r->task ], 'style' => ['background-color:' . $r->color]],
                 'period' => ['data' => ['#markup' => $period]],
                 'user' => $name,
                 'status' => ['data' => ['#markup' => $status]],

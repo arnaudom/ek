@@ -98,13 +98,13 @@ class TaskPurchase extends FormBase {
             if ($data->id) {
                 $form['delete'] = array(
                     '#type' => 'checkbox',
-                    '#title' => t('Delete this task'),
+                    '#title' => $this->t('Delete this task'),
                 );
             }
 
             $form['event'] = array(
                 '#type' => 'textfield',
-                '#title' => t('Event name'),
+                '#title' => $this->t('Event name'),
                 '#size' => 25,
                 '#maxlength' => 100,
                 '#default_value' => $data->event,
@@ -119,13 +119,13 @@ class TaskPurchase extends FormBase {
                 '#options' => $user,
                 '#required' => TRUE,
                 '#default_value' => isset($data->uid) ? $data->uid : NULL,
-                '#title' => t('Assigned to'),
+                '#title' => $this->t('Assigned to'),
                     //'#attributes' => array('style' => array('width:200px;white-space:nowrap')),
             );
 
             $form['task'] = array(
                 '#type' => 'textfield',
-                '#title' => t('Task description'),
+                '#title' => $this->t('Task description'),
                 '#size' => 25,
                 '#maxlength' => 150,
                 '#default_value' => isset($data->task) ? $data->task : NULL,
@@ -138,7 +138,7 @@ class TaskPurchase extends FormBase {
                 '#size' => 12,
                 '#required' => TRUE,
                 '#default_value' => isset($data->start) ? date('Y-m-d', $data->start) : date('Y-m-d'),
-                '#title' => t('Starting'),
+                '#title' => $this->t('Starting'),
                 '#prefix' => "<div class='container-inline'>",
             );
 
@@ -148,10 +148,16 @@ class TaskPurchase extends FormBase {
                 '#id' => 'edit-to',
                 '#size' => 12,
                 '#default_value' => isset($data->end) ? date('Y-m-d', $data->end) : NULL,
-                '#title' => t('ending'),
+                '#title' => $this->t('ending'),
                 '#suffix' => '</div>',
             );
 
+            $form['color'] = array(
+                '#type' => 'color',
+                '#title' => $this->t('Color'),
+                '#default_value' => isset($data->color) ? $data->color : '#80ff80',
+            );
+            
             $notify = array(
                 '0' => t('Never'),
                 '1' => t('Weekly'),
@@ -164,7 +170,7 @@ class TaskPurchase extends FormBase {
 
             $form['notify'] = array(
                 '#type' => 'select',
-                '#title' => t('Notification period'),
+                '#title' => $this->t('Notification period'),
                 '#options' => $notify,
                 '#default_value' => $data->notify,
             );
@@ -188,7 +194,7 @@ class TaskPurchase extends FormBase {
 
             $form['notify_who'] = array(
                 '#type' => 'textarea',
-                '#title' => t('Notification recipients'),
+                '#title' => $this->t('Notification recipients'),
                 '#rows' => 2,
                 '#attributes' => array('placeholder' => t('enter users names separated by comma (autocomplete enabled).')),
                 '#default_value' => $list,
@@ -214,7 +220,7 @@ class TaskPurchase extends FormBase {
 
                 $form['rate'] = array(
                     '#type' => 'select',
-                    '#title' => t('Completion (%)'),
+                    '#title' => $this->t('Completion (%)'),
                     '#options' => $rate,
                     '#default_value' => $data->completion_rate,
                 );
@@ -320,6 +326,7 @@ class TaskPurchase extends FormBase {
                 'completion_rate' => $form_state->getValue('rate'),
                 'notify' => $form_state->getValue('notify'),
                 'notify_who' => $notify_who,
+                'color' => $form_state->getValue('color'),
             );
 
             if ($form_state->getValue('for_id') != NULL) {
