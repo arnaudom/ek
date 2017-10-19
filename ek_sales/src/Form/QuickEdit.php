@@ -85,6 +85,10 @@ class QuickEdit extends FormBase {
                 '#value' => $doc,
             );
 
+            $form['id'] = array(
+                '#type' => 'hidden',
+                '#value' => $id,
+            );
 
             $company = AccessCheck::CompanyListByUid();
             $form['options']['ref'] = array(
@@ -192,9 +196,14 @@ class QuickEdit extends FormBase {
                 
                 $options['bank'] = \Drupal\ek_finance\BankData::listbankaccountsbyaid($form_state->getValue('head'));
                 
-                $form['options']['currency'] = array(
+                $form['options']['_currency'] = array(
                     '#type' => 'item',
                     '#markup' => t('Currency') . " : <strong>" . $data->currency . "</strong>",
+                );
+                
+                $form['options']['currency'] = array(
+                    '#type' => 'hidden',
+                    '#value' => $data->currency,
                 );
                 /**/
                 $form['options']['bank_account'] = array(
@@ -358,7 +367,20 @@ class QuickEdit extends FormBase {
                 ->condition('serial', $serial)
                 ->execute();
 
-
+        
+        if ($this->moduleHandler->moduleExists('ek_finance') && $doc == 'invoice') {
+            //if coid changed, need to update the currency assets debit account in journal
+            $coSettings = new \Drupal\ek_admin\CompanySettings($form_state->getValue('head'));
+            $asset = $coSettings->get('asset_account', $form_state->getValue('currency'));
+                $update = Database::getConnection('external_db', 'external_db')
+                        ->update("ek_journal")
+                        ->fields(['aid' => $asset])
+                        ->condition('source', 'invoice')
+                        ->condition('type', 'debit')
+                        ->condition('reference', $form_state->getValue('id'))
+                        ->execute();
+            
+        }
 
 
         Cache::invalidateTags(['project_page_view']);
