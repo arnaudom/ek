@@ -8,7 +8,6 @@
 namespace Drupal\ek_admin\Form;
 
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Flood\FloodInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Locale\CountryManagerInterface;
@@ -20,173 +19,204 @@ use Drupal\Core\Database\Database;
  */
 class EditCountryForm extends FormBase {
 
-  
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'ek_edit_country_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form,  FormStateInterface $form_state, $id = NULL) {
-  
-  
-    $query = "SELECT * from {ek_country} order by name";
-    $data = Database::getConnection('external_db', 'external_db')->query($query);
-
-          $form['1'] = array(
-                '#type' => 'details', 
-                '#title' => t('Active'), 
-                '#collapsible' => TRUE, 
-                '#collapsed' => FALSE,
-                '#prefix' => "<div class='table'>",
-            
-           );
- 
-          $form['0'] = array(
-                '#type' => 'details', 
-                '#title' => t('Non Active'), 
-                '#collapsible' => TRUE, 
-                '#collapsed' => TRUE,
-                '#prefix' => "<div class='table'>",
-            
-           );  
-
-    while($r = $data->fetchAssoc()) {
-    
-    $id = $r['id'];
-    
-      if ($r['status'] == 1) { 
-      
-          $form['1']['id'.$id] = array(
-                '#type' => 'hidden', 
-                '#value' => $r['id'] , 
-            
-           );           
-      
-          $form['1']['name'.$id] = array(
-                '#type' => 'item', 
-                '#markup' =>  $r['name'] , 
-                '#prefix' => "<div class='row'><div class='cell'>",
-                '#suffix' => "</div>",            
-           );
-
-          $form['1']['entity'.$id] = array(
-              '#type' => 'textfield',
-              '#size' => 30,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['entity']) ? $r['entity'] : NULL,
-              '#attributes' => array('placeholder'=>t('entity')),
-              '#prefix' => "<div class='cell'>",
-              '#suffix' => " </div>",
-
-          );   
-          
-          $form['1']['status'.$id] = array(
-              '#type' => 'checkbox',
-              '#default_value' => 1,
-              '#prefix' => "<div class='cell'>",
-              '#suffix' => "</div></div>",
-              '#title' => t('active'),
-
-          );              
-      
-      } else {
-      
-          $form['0']['id'.$id] = array(
-                '#type' => 'hidden', 
-                '#value' => $r['id'] , 
-            
-           );           
-      
-          $form['0']['name'.$id] = array(
-                '#type' => 'item', 
-                '#markup' =>  $r['name'] , 
-                '#prefix' => "<div class='row'><div class='cell'>",
-                '#suffix' => "</div>",            
-            
-           );
-
-          $form['0']['entity'.$id] = array(
-              '#type' => 'textfield',
-              '#size' => 30,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['entity']) ? $r['entity'] : NULL,
-              '#attributes' => array('placeholder'=>t('entity')),
-              '#prefix' => "<div class='cell'>",
-              '#suffix' => "</div>",
-
-          );   
-          
-          $form['0']['status'.$id] = array(
-              '#type' => 'checkbox',
-              '#default_value' => 0,
-              '#suffix' => "</div>",
-              '#prefix' => "<div class='cell'>",
-              '#suffix' => "</div></div>",
-              '#title' => t('select to activate'),
-
-          );       
-      
-      }
-    
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('country_manager')
+        );
     }
-    
-          $form['1']['close'] = array(
-                '#type' => 'item', 
-                '#markup' =>  '' , 
-                '#suffix' => "</div>",            
-           );
-           
-          $form['0']['close'] = array(
-                '#type' => 'item', 
-                '#markup' =>  '' , 
-                '#suffix' => "</div>",            
-           );
-    $form['actions'] = array('#type' => 'actions');
-    $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
 
+    /**
+     * Constructs a  object.
+     *
+     * @param \Drupal\Core\Locale\CountryManagerInterface $country_manager
+     *   The country manager.
+     */
+    public function __construct(CountryManagerInterface $country_manager) {
+        $this->countryManager = $country_manager;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+
+    public function getFormId() {
+        return 'ek_edit_country_form';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+
+
+        $query = "SELECT * from {ek_country} order by name";
+        $data = Database::getConnection('external_db', 'external_db')->query($query);
+        
+        $header1 = [
+            'name' => $this->t('Name'),
+            'entity' => $this->t('Entity'),
+            'active' => $this->t('Status') . " (" . $this->t('uncheck to desactivate') . ")", 
+        ];
+        
+        $header2 = [
+            'name' => $this->t('Name'),
+            'entity' => $this->t('Entity'),
+            'active' => $this->t('Status') . " (" . $this->t('select to activate') . ")", 
+        ];
+        
+        $form['active'] = array(
+            '#type' => 'table',
+            '#header' => $header1,
+            '#caption' => ['#markup' => '<h2>' . $this->t('active') . '</h2>'],
+        );
+        
+        $form['non_active'] = array(
+            '#type' => 'table',
+            '#header' => $header2,
+            '#caption' => ['#markup' => '<h2>' . $this->t('non active') . '</h2>'],
+        );
+        
+        $options = [];
+
+        while ($r = $data->fetchAssoc()) {
+
+            $id = $r['id'];
+
+            if ($r['status'] == 1) {
+
+                $form['active'][$id]['name'] = array(
+                    '#type' => 'item',
+                    '#markup' => $r['name'],
+                    
+                );
+
+                $form['active'][$id]['entity'] = array(
+                    '#type' => 'textfield',
+                    '#size' => 30,
+                    '#maxlength' => 255,
+                    '#default_value' => isset($r['entity']) ? $r['entity'] : NULL,
+                    
+                );
+
+                $form['active'][$id]['status'] = array(
+                    '#type' => 'checkbox',
+                    '#default_value' => 1,
+                    
+                );
+            } else {
+
+                $form['non_active'][$id]['name'] = array(
+                    '#type' => 'item',
+                    '#markup' => $r['name'],
+                    
+                );
+
+                $form['non_active'][$id]['entity'] = array(
+                    '#type' => 'textfield',
+                    '#size' => 30,
+                    '#maxlength' => 255,
+                    '#default_value' => isset($r['entity']) ? $r['entity'] : NULL,
+                    
+                );
+
+                $form['non_active'][$id]['status'] = array(
+                    '#type' => 'checkbox',
+                    '#default_value' => 0,
+                    '#description' => '',
+                );
+            }
+        }
+
+        $form['#tree'] = TRUE;
+        
+        
+        $countries = $this->countryManager->getList();
+        
+        $form['new_country'] = [
+        '#type' => 'select',
+        '#title' => $this->t('New country'),
+        '#empty_value' => '',
+        '#options' => $countries,
+        '#description' => $this->t('Add a country for the site.'),
+      ];
+        
+        
+        $form['actions'] = array('#type' => 'actions');
+        $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
+
+
+
+        return $form;
+    }
+
+    /**
+     * {@inheritdoc}
+     * 
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state) {
+        
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state) {
 
         
-        return $form;    
-  }
+        foreach($form_state->getValue('active') as $key => $data) {
+            
+            $fields = [
+                'entity' => $data['entity'],
+                'status' => $data['status'],
+                    ] ;
+            
+            $update = Database::getConnection('external_db', 'external_db')
+                    ->update('ek_country')
+                    ->condition('id', $key)
+                    ->fields($fields)
+                    ->execute();
+            
+        }
+        foreach($form_state->getValue('non_active') as $key => $data) {
+            
+            $fields = [
+                'entity' => $data['entity'],
+                'status' => $data['status'],
+                    ] ;
+            
+            $update = Database::getConnection('external_db', 'external_db')
+                    ->update('ek_country')
+                    ->condition('id', $key)
+                    ->fields($fields)
+                    ->execute();
+            
+        }
+        
+        
+        if(!null == $form_state->getValue('new_country')) {
+            $newCountry = $form_state->getValue('new_country');
+            $countries = $this->countryManager->getList();
+            $countryName = (string) $countries[$newCountry];
+            
+            $query = "SELECT id FROM {ek_country} WHERE code=:code";
+            $data = Database::getConnection('external_db', 'external_db')
+                    ->query($query, [':code' => $newCountry])
+                    ->fetchField();
+                    if($data) {
+                       drupal_set_message(t('New selected country already exists'), 'warning'); 
+                    } else {
+                        $insert = Database::getConnection('external_db', 'external_db')
+                            ->insert('ek_country')
+                            ->fields(['access' => '', 'status' => 1, 'entity' => '', 'code' => $newCountry, 'name' => $countryName])
+                            ->execute();
+                    }
+        }
 
-  /**
-   * {@inheritdoc}
-   * 
-   */
-  public function validateForm(array &$form,  FormStateInterface $form_state) {
-  
-  
-  }
- 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form,  FormStateInterface $form_state) {
-  
-    $query = "SELECT * from {ek_country} order by name";
-    $data = Database::getConnection('external_db', 'external_db')->query($query);
-
-    while($r = $data->fetchAssoc()) {
-    
-        $entity = 'entity'.$r['id'];
-        $status = 'status'.$r['id'];
-
-          $update = Database::getConnection('external_db', 'external_db')->update('ek_country')
-                   ->condition('id', $r['id'])
-                   ->fields(array('entity' => $form_state->getValue($entity) , 'status' => $form_state->getValue($status)) )
-                   ->execute(); 
-    
+        drupal_set_message(t('Country data updated'), 'status');
+        $form_state->setRedirect('ek_admin.country.list');
     }
 
-    drupal_set_message(t('Country data updated'), 'status');
-          $form_state->setRedirect('ek_admin.country.list');
- 
-  }
-  
-  
 }
