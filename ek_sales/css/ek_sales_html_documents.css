@@ -77,6 +77,10 @@ td, th {
     padding: 0;
 }
 
+.bline {
+    border-bottom: 1px solid #888;
+}
+
 .c10 {
     width: 10%;
 }
@@ -136,15 +140,34 @@ td, th {
 .red {
     color:#D9230F;
 }
-
+.red_background {
+    background:#EB6864;
+    color: #fff;
+    font-weight: bold;
+}
 .blue {
     color: #7896BE;
 }
 
+.blue_background {
+    background: #7896BE;
+    color: #fff;
+    font-weight: bold;
+}
 .green {
     color: #00D744;
 }
-
+.green_background {
+    background: #8ee53f;
+    color: #fff;
+    font-weight: bold;
+}
 .grey {
     color: #5a5a5a;
+}
+
+.grey_background {
+    background:#9b9b9b;
+    color: #fff;
+    font-weight: bold;
 }

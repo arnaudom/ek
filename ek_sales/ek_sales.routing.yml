@@ -282,6 +282,15 @@ ek_sales.quotations.print_share:
     _permission: 'print_share_quotation'
     id: \d*
 
+ek_sales.quotations.print_html:
+  path: '/quotations/html/{id}'
+  defaults:
+    _title: 'View'
+    _controller: '\Drupal\ek_sales\Controller\QuotationsController::Html'
+  requirements:
+    _permission: 'print_share_quotation'
+    id: \d*  
+    
 ek_sales.quotations.print_share_pdf:
   path: '/quotations/print/pdf/{param}'
   defaults:

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Default invoice template in php for html display
+ * Default quotation template in php for html display
  */
 
 /* custom css attachment via placeholders
@@ -77,13 +77,10 @@ $document = '<page_wrapper>';
 
 //DOCUMENT ref
 
-$ref = '<h2 class="blue">' . strtoupper($head->title) . '</h2>';
-$ref .= '<br/>' . $head->serial;
-$ref .= '<br/>' . t("Billing date") . ": " . $head->date;
-if($head->due) {
-   $due = date('Y-m-d',strtotime(date("Y-m-d", strtotime($head->date) ) . "+". $head->due . ' ' . t("days") )); 
-   $ref .= '<br/>' . t("Due date") . ": " . $due;
-}
+$ref = '<h2 class="blue">' . strtoupper(t('Quotation')) . '</h2>';
+$ref .= '<br/>' . $items['reference'];
+$ref .= '<br/>' . t("Date") . ": " . $head->date;
+
 
 $document .= '<page_reference>
                         <table>
@@ -122,26 +119,36 @@ $cl .= '<br/>' . $client->address;
         
 $cl .= '<br/><h3>' . t("Attention to") . ":" . $client_card->salutation . " " . $client_card->contact_name . '</h3>';
 
+$pcode = '';
+if ($head->pcode) {
+   $pcode = "<tr>
+                <td class='c10'></td>
+                <td class='c90 left'>" . t('Our ref.') . " " .  $project_link . "</td>
+           </tr>";
+}
 $document .= '<page_client>
                         <table>
                             <tr>
-                                <td class="c10 left"></td>
+                                <td class="c10"></td>
                                 <td class="c50 left">' . $cl . '</td>
                                 <td class="c40 center">' . $copy . $original .'</td>
                             </tr>
                         </table>
                     </page_client>';
 
-//OPEN comments
 
+
+
+//OPEN comments
 $document .= '<page_comments>
                         <table>
                             <tr>
                                 <td class="c10 left"></td>
                                 <td class="c90 left">' . nl2br($head->comment) . '</td>
 
-                            </tr>
-                        </table>
+                            </tr>' 
+                            . $pcode . 
+                        '</table>
                     </page_comments>';
 
 //ITEMS
@@ -151,7 +158,7 @@ $grandtotal = 0;
 $subtotal = 0;
 $i = 1;
 $j = 1;
-foreach ($items as $detail) {
+foreach ($items['lines'] as $detail) { 
     if($detail['item'] != '') {
         $list .= '<tr>';
         if($detail['total'] == 0 && $detail['value'] == 0  ){
@@ -167,14 +174,14 @@ foreach ($items as $detail) {
         }
 
         
-        $list .= '<td class="c10 center">' . $detail['itemcode'] . '<br/>' . $detail['supplier_code'] . '</td>';
+        
         if ($detail['value'] != 0 )  { 
             $list .= '<td class="c10 right">' . number_format($detail['value'] , 2)  . '</td>';
         } else {
             $list .= '<td class="c10"></td>';
         }
-        if ($detail['quantity'] != 0 )  { 
-            $list .= '<td class="c10 center">' . $detail['quantity']  . '</td>';
+        if ($detail['unit'] != 0 )  { 
+            $list .= '<td class="c10 center">' . $detail['unit']  . '</td>';
         } else {
             $list .= '<td class="c10"></td>';
         }
@@ -186,21 +193,32 @@ foreach ($items as $detail) {
         $subtotal = round(($subtotal + $detail['total']),2);
         $grandtotal = round(($grandtotal + $detail['total']),2);
         $list .= '</tr>';
+        
+        if($items['column_active2']) {
+            $list .= '<tr><td class="c10 center grey_background bline">' . $items['column_name2']  . ':</td>';
+            $list .= '<td class="c30 bline">' . $detail['column_2']  . '</td>';
+            
+            if($items['column_active3']) {
+                $list .= '<td class="c10 center grey_background bline">' . $items['column_name3']  . ':</td>';
+                $list .= '<td class="c10 bline">' . $detail['column_3']  . '</td></tr>';
+            } else {
+                $list .= '<td class="c10 bline"></td><td class="c10 bline"></td></tr>';
+            }
+        } elseif($items['column_active3']) {
+            $list .= '<tr><td class="c10 center grey_background bline">' . $items['column_name3']  . ':</td>';
+            $list .= '<td class="c30 bline">' . $detail['column_3']  . '</td>';
+        }
+            
     }
 }
 
-if ($head->pcode) {
-   $list .= '<tr>
-                <td></td><td colspan=5>' . t("Our ref.") . ' ' . $project_link . '</td>
-           </tr>';
-}
 
 $document .= '<page_items>
                         <table>
                             <tr>
                                 <th class="c10 left"></th>
                                 <th class="c30 center">' . t('Description') . '</th>
-                                <th class="c10 center">' . t('Code / ref.') . '</th>
+                                
                                 <th class="c10 center">' . t('Unit price') . " " . $head->currency . '</th>
                                 <th class="c10 center">' . t('Quantity') . '</th>
                                 <th class="c10 right">' . t('Amount') . " " . $head->currency . '</th>
@@ -217,7 +235,7 @@ $document .= '<page_total>
                             <tr>
                                 <td class="c10 left"></td>
                                 <td class="c30 left"><b>' . t('Total') . " " . $head->currency . '</b></td>
-                                <td class="c10 center"></td>
+                                
                                 <td class="c10 center"></td>
                                 <td class="c10 center"></td>
                                 <td class="c10 right"><b>' . number_format($grandtotal, 2) . '</b></td>
@@ -227,7 +245,7 @@ if($head->taxvalue > 0) {
   $document .= '<tr>
                     <td class="c10 left"></td>
                     <td class="c30 left"><b>' . $head->tax . " " . $head->taxvalue . "%"  . '</b></td>
-                    <td class="c10 center"></td>
+                    
                     <td class="c10 center"></td>
                     <td class="c10 center"></td>
                     <td class="c10 right"><b>' . number_format($items['taxamount'],2) . '</b></td>
@@ -235,7 +253,7 @@ if($head->taxvalue > 0) {
                 <tr>
                     <td class="c10 left"></td>
                     <td class="c30 left"><b>' . t('Total with tax') . " " . $head->currency . '</b></td>
-                    <td class="c10 center"></td>
+                    
                     <td class="c10 center"></td>
                     <td class="c10 center"></td>
                     <td class="c10 right"><b>' . number_format($items['taxamount'] + $grandtotal,2) . '</b></td>
@@ -247,13 +265,7 @@ $document .= '</table>
             <div class="right">' . $word . '</div>
             </page_total>';
 
-//RECEIPT
-$receipt = '';
-if ($head->status == 1 && $stamp != 2 && $stamp != 1 ) {
- $receipt = '<div class="red">' . t('RECEIVED') . '</div>';
- $receipt .= '<div class="red">' . t('Date') . ': ' . $head->pay_date . '</div>';
- $receipt .= '<div class="red">' . $company->name . '</div>';
-}
+
 
 //SIGNATURE
 $sign = '';
@@ -285,28 +297,6 @@ $document .= '<page_signature>
                 </table>
                 </page_signature>';
 $document .= '<hr>';
-//BANK
-$document .= '<page_bank>
-                <table>
-                    <tr>
-                        <td class="c50 left">'. t("Payment information") .'</td>
-                        <td class="c50 left"></td>
-                        
-                    </tr>
-                    <tr>
-                        <td>' . t("Bank") . ': ' . $company->bank->name . '</td>
-                        <td>' . t("Beneficiary") . ': ' . $company->name . '</td>
-                    </tr>
-                    <tr>
-                        <td>' . t("Address") . ': ' . $company->bank->address1 . '<br/>' .  $company->bank->address2 . '</td>
-                        <td>' . t("Account") . ': ' . $company->bank->account_ref . '</td>
-                    </tr>                    
-                    <tr>
-                        <td>' . $company->bank->postcode . ', ' .  $company->country . '</td>
-                        <td>' . t("Swift") . ': ' . $company->bank->swift . '</td>
-                    </tr>
-                </table>
-                </page_bank>';
 
 //CORRESPONDENCE
 if ($company->address3 != "") {

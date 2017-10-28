@@ -18,30 +18,42 @@ function Header()
     
     }
     //Arial bold 15
+
+    $this->SetTextColor(53,53,53);
+    $lm=1;
+    $c1=45;
+    $c2=70;
+    $c3=30;
+    $c4=35;
+    
     $this->Ln(25);
-    $this->SetFont('Arial','',12);
-    //Move to the right
-    $this->Cell(110);
+    $this->SetFont('Arial','',14);
+
+    $this->Cell($c1 + $c3 + $c3);
     $this->Cell(50,5,$this->company->name,0,1);
+    if($this->company->reg_number) {
     $this->SetFont('Arial','',8);
-    $this->Cell(110);    
+    $this->Cell($c1 + $c3 + $c3);
+    $this->Cell(50,5,'(' . $this->company->reg_number . ')',0,1);
+    }
+    $this->SetFont('Arial','',10);
+    $this->Cell($c1 + $c3 + $c3);    
     $this->Cell(60,4, $this->company->address1,0,1);
-    $this->Cell(110);    
+    $this->Cell($c1 + $c3 + $c3);    
     $this->Cell(60,4, $this->company->address2,0,1);
-    $this->Cell(110);
-    $this->Cell(50,4, $this->company->postcode . ',' .$this->company->city ,0,1);
-    $this->Cell(110);
-    $this->Cell(50,4, $this->company->country ,0,1);
-    $this->Cell(110);
+    $this->Cell($c1 + $c3 + $c3);
+    $this->Cell(50,5, $this->company->postcode . ',' .$this->company->country ,0,1);
+    $this->SetFont('Arial','',8);
+    $this->Cell($c1 + $c3 + $c3);
     if ($this->company->telephone <> '') {
     $this->Cell(8,3,t("tel:").$this->company->telephone,0,1);
     }
     if ($this->company->fax <> '') {
-    $this->Cell(110);
+    $this->Cell($c1 + $c3 + $c3);
     $this->Cell(8,4,t("fax:").$this->company->fax,0,1);
     }
     //Line break
-    $this->Ln(8);
+    $this->Ln(4);
     
    
     
@@ -54,13 +66,35 @@ function setHeaderData($company){
 //Page footer
 function Footer()
 {
+    $this->SetTextColor(53,53,53);
+    $this->SetY(-25);
+      if ($this->company->address3 != "") {
+        $c = $this->company->address3;
+        if ($this->company->address4 <> ''){
+            $c .= ", " . $this->company->address4;
+        }
+        if ($this->company->postcode2 <> ''){
+            $c .= ", " . $this->company->postcode2;
+        }
+        if ($this->company->city2 <> ''){
+            $c .= ", " . $this->company->city2;
+        } 
+        if ($this->company->country2 <> ''){
+            $c .= ", " . $this->company->country2;
+        }        
+        $this->Cell(0,3,t('Correspondence address') . ':' ,0,1,'C');
+        $this->SetFont('Arial','I',8);
+        $this->Cell(0,3,$c,0,1,'C');
+        $c = "";
+        if ($this->company->telephone2 <> ''){ $c .= t('Tel') . ': ' . $this->company->telephone2 . " ";}
+        if ($this->company->fax2 <> '') {$c .= t('Fax') . ':' . $this->company->fax2 ;}
+        $this->Cell(0,3, $c ,0,1,'C');
+      }
 
-    //Position at 1.5 cm from bottom
-    $this->SetY(-15);
-    //Arial italic 8
-    $this->SetFont('Arial','I',8);
-    //Page number
-    $this->Cell(0,10,'Page ' . $this->PageNo().'/{nb}',0,0,'C');
+      //Position at 1.5 cm from bottom
+      $this->SetFont('Arial','I',8);
+      //Page number
+      $this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
 
 } 
   
@@ -73,66 +107,82 @@ $pdf->AliasNbPages();
 $pdf->AddPage('P','A4');
 $pdf->SetAutoPageBreak(1); 
 $cut = 230;
+$lm=1;
+$c1=45;
+$c2=70;
+$c3=30;
+$c4=35;
     
 // header details
-$pdf->SetFont('Arial','B',25);
-$pdf->SetTextColor(187, 208, 211);
-    $pdf->Cell(110);
-    $pdf->Cell(10,10, t('QUOTATION') ,0,1);
+$pdf->SetFont('Arial','B',14);
+$pdf->SetTextColor(120, 150, 190);
+$pdf->Cell($c1 + $c3 + $c3);
+    $pdf->Cell(50,10, t('QUOTATION') ,0,1);
     $pdf->Ln(2);
 $pdf->SetTextColor(0, 0, 0);
-$pdf->SetFont('Arial','B',10);
-    $pdf->Cell(25,5, t('Date') .':' ,0,0);
+$pdf->Cell($c1 + $c3 + $c3);
+$pdf->SetTextColor(53,53,53);
+$pdf->SetFont('Arial','B',8); 
+    $pdf->Cell(25,5,$items['reference'],0,1);  
+$pdf->Cell($c1 + $c3 + $c3);
+$pdf->SetFont('Arial','',10);
+    $pdf->Cell(25,5, t('Date') .': ' . $head->date ,0,1);
     
-$pdf->SetFont('Arial','',10);
-    $pdf->Cell(80,5, $head->date ,0,0);
-$pdf->SetFont('Arial','B',10);
-    $pdf->Cell(25,5,'Quotation No.:',0,0);  
-$pdf->SetFont('Arial','',10);
-    $pdf->Cell(20,5, $items['reference'] ,0,1);  
     
-$pdf->SetFont('Arial','B',10);
-    $pdf->Cell(25,5,'To:',0,0);
+// CLIENT ======================================================== 
+    $pdf->Ln(1);
+$pdf->SetFont('Arial','U',12);
+    $pdf->Cell($lm);
+    $pdf->Cell($c1,5,t("Addressed to") . ":",0,1,'L');
 $pdf->SetFont('Arial','',10);
-    $pdf->Cell(20,5, $client->name ,0,1);
-    $pdf->Cell(25);
-    $pdf->Cell(20,5, $client->address ,0,1);
-    $pdf->Cell(25);
-    $pdf->Cell(20,5, $client->address2 ,0,1);  
-    $pdf->Cell(25);
-    $pdf->Cell(20,5, $client->postcode . ' ' . $client->city ,0,1);  
-    $pdf->Cell(25);    
-    $pdf->Cell(20,5, $client->country ,0,1);  
-    $pdf->Cell(25,5, t('Attention') .':',0,0);
-    $pdf->Cell(20,5,$client_card->salutation . " " . $client_card->contact_name,0,1); 
-$pdf->SetFont('Arial','B',10);
-    $pdf->Cell(35,5, t('Our reference') .':',0,0);
+    $pdf->Cell($lm);
+    $pdf->Cell($c1,5,utf8_decode( $client->name ),0,1);
+    
+          
+    $pdf->Cell($lm);
+$pdf->SetFont('Arial','',10);    
+    $pdf->Cell($c1,5, $client->address ,0,1);
+    
+if ( $client->address2 != '') { 
+
+$pdf->SetFont('Arial','',10);
+    $pdf->Cell($lm);   
+    $pdf->Cell($c1,5, $client->address2 ,0,0);
+    $pdf->Cell($c2);      
+    $pdf->Cell($c3,5,"",0,0,'L');    
+    $pdf->Cell($c4,5,"",0,1,'L');
+}
+$pdf->Cell($lm);
+    $pdf->Cell($c1,5, $client->city . " " . $client->postcode .' ' . $client->country ,0,1); 
+       
+$pdf->Ln(2);      
+$pdf->SetFont('Arial','U',10);
+$pdf->Cell($lm);
+    $pdf->Cell($c1,5, t('Our reference') .':',0,0);
 $pdf->SetFont('Arial','',10); 
-    $pdf->Cell(20,5, $head->pcode ,0,1);
+    $pdf->Cell($c2,5, $head->pcode ,0,1);
 $pdf->SetFont('Arial','B',10);
-    $pdf->Cell(35,5,'',0,0);
-$pdf->SetFont('Arial','',10); 
-    $pdf->MultiCell(150,5, $head->title ,0);  
-$pdf->Ln(2);    
-    
-//Background color
-$pdf->SetFillColor(187, 208, 211);
-$pdf->SetFont('Arial','B',14); 
-    $pdf->Cell(185,5, '' ,1,1,'C','1');
-$pdf->SetFont('Arial','',8); 
-    //$pdf->Cell(185,5,$quotation['Comment'],0,1,'C');  
-    $pdf->MultiCell(150,5, $head->comment ,0);
-$pdf->Ln(2);    
+$pdf->Ln(2);
+// COMMENT ========================================================
+    if($head->comment != '') {
+      $pdf->Cell($lm);
+      $pdf->SetFont('Arial','U',10);
+      $pdf->Cell($c1,5,t("Comments") . ':' ,0,1,'L');
+      $pdf->SetFont('Arial','I',8);
+      $pdf->Cell($lm);
+      $pdf->MultiCell(180,5,utf8_decode($head->comment),0,'J');
+      $pdf->Ln(2);
+    }
 
 
 //BODY OF QUOTATION
-
+$pdf->SetFillColor(203, 215, 231);
 $pdf->SetFont('Arial','B',8);
     $pdf->Cell(5,5,'',1,0);
     $pdf->Cell(110,5, t('Description') ,1,0,'C','1');      
     $pdf->Cell(20,5, $items['column_name4'] ,1,0,'C','1');
     $pdf->Cell(20,5, $items['column_name5'] ,1,0,'C','1');
-    $pdf->Cell(30,5, $items['column_name6'] ,1,1,'C','1');
+    $pdf->Cell(30,5, $items['column_name6'] . " " . $head->currency ,1,1,'C','1');
     
     $i=1;
 $pdf->SetFont('Arial','',8);
@@ -165,16 +215,25 @@ $grandtotal = 0;
           $pdf->Cell(30,$h,'',1,1,'R');
           }
       // line 2 
+        if($items['column_active2']) {  
           $pdf->Cell(5);
           $pdf->SetFont('Arial','B',8);
+          $c = ($items['column_active3'] == 1) ? 50 : 85;
           $pdf->Cell(25,5, $items['column_name2'] ,1,0,'L','1');
-          $pdf->SetFont('Arial','',8);    
-          $pdf->Cell(50,5,"$detail[column_2]",1,0);
-          $pdf->SetFont('Arial','B',8);
-          $pdf->Cell(25,5, $items['column_name3'] ,1,0,'L','1');
-          $pdf->SetFont('Arial','',8);    
-          $pdf->Cell(50,5,"$detail[column_3]",1,1);
-         
+          $pdf->Cell($c,5, $detail['column_2'],1,0);
+          
+          if($items['column_active3']) {
+            $pdf->Cell(25,5, $items['column_name3'] ,1,0,'L','1');
+            $pdf->Cell(50,5, $detail['column_3'],1,1);
+          } else {
+            $pdf->Cell(50,5, "",0,1);  
+          }
+        } elseif($items['column_active3']) {
+            $pdf->Cell(5);
+            $pdf->SetFont('Arial','B',8);
+            $pdf->Cell(25,5, $items['column_name3'] ,1,0,'L','1');
+            $pdf->Cell(85,5, $detail['column_3'],1,1);
+        }
           
           $i++;
           $grandtotal = round(($grandtotal + $detail['total']),2);
@@ -183,7 +242,7 @@ $grandtotal = 0;
           if ($here >$cut) { 
           $pdf->AddPage(P,A4);
       $pdf->SetFont('Arial','B',25);
-      $pdf->SetTextColor(187, 208, 211);
+      $pdf->SetTextColor(120, 150, 190);
           $pdf->Cell(110);
           $pdf->Cell(10,10, t('QUOTATION') , 0,1);
           $pdf->Ln(2);
@@ -204,7 +263,7 @@ $grandtotal = 0;
           $pdf->Cell(100,5, t('Description') , 1,0);
           $pdf->Cell(20,5, $items['column_name4'] ,1,0,'C','1');
           $pdf->Cell(20,5, $items['column_name5'] ,1,0,'C','1');
-          $pdf->Cell(30,5, $items['column_name6'] ,1,1,'C','1');
+          $pdf->Cell(30,5, $items['column_name6'] . " " . $head->currency ,1,1,'C','1');
       $pdf->SetFont('Arial','',8); 
           }    
       }
@@ -212,7 +271,7 @@ $grandtotal = 0;
     
 //insert incoterm=================================
 $freight = 0;
-if ($items['incoterm_name'] != "" ){
+if ($items['incoterm_name'] != "" && $items['incoterm_name'] != "na"){
 
     $freight=round($grandtotal*$items['incoterm_rate']/100,2); 
 	
@@ -229,7 +288,7 @@ if ($items['tax_name'] != "" ){
     $tax=round( ($grandtotal + $freight )*$items['tax_rate']/100,2); 
 	
     $pdf->Ln(2);      
-    $pdf->SetFont('Arial','B',10);
+    $pdf->SetFont('Arial','B',8);
         $pdf->Cell(115);      
         $pdf->Cell(40,5, $items['tax_name'] ,1,0);
         $pdf->Cell(30,5,number_format($tax, 2),1,1,'R'); 
@@ -238,9 +297,9 @@ if ($items['tax_name'] != "" ){
 	} 	
 
 $pdf->Ln(2);      
-$pdf->SetFont('Arial','B',10);
+$pdf->SetFont('Arial','B',8);
     $pdf->Cell(115);      
-    $pdf->Cell(40,5,t('TOTAL') . ' ' . $head->currency . ' : ',1,0);
+    $pdf->Cell(40,5,t('Total') . ' ' . $head->currency . ' : ',1,0);
     $total = $grandtotal+$tax+$freight;
     $pdf->Cell(30,5,number_format($total,2),1,1,'R'); 
 

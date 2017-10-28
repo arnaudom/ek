@@ -10,7 +10,6 @@ namespace Drupal\ek_sales\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Url;
@@ -79,27 +78,27 @@ class QuotationsController extends ControllerBase {
 
     public function ListQuotations(Request $request) {
 
-        $build['filter_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterQuotation');
+        $build['filter_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterQuotation');
         $header = array(
-            'reference' => array(
-                'data' => $this->t('Reference'),
-                'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+            'number' => array(
+                'data' => $this->t('Number'),
+                
             ),
             'revision' => array(
                 'data' => $this->t('Revision'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
             ),
+             'reference' => array(
+                'data' => $this->t('Reference'),
+                'class' => array(RESPONSIVE_PRIORITY_LOW),
+            ),           
             'issuer' => array(
                 'data' => $this->t('Issued by'),
-                'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                'class' => array(RESPONSIVE_PRIORITY_LOW),
             ),
             'date' => array(
                 'data' => $this->t('Date'),
                 'sort' => 'desc',
-            ),
-            'client' => array(
-                'data' => $this->t('Client'),
-                'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
             ),
             'value' => array(
                 'data' => $this->t('Value'),
@@ -170,16 +169,20 @@ class QuotationsController extends ControllerBase {
         
         while ($r = $data->fetchObject()) {
 
-            $query = "SELECT name from {ek_address_book} where id=:id";
+            $number = "<a title='" . t('view') . "' href='"
+                    . Url::fromRoute('ek_sales.quotations.print_html', ['id' => $r->id], [])->toString() . "'>"
+                    . $r->serial . "</a>";
+            
             $client_name = $abook[$r->client];
             $client_part = substr($client_name, 0, 15);
             $link = Url::fromRoute('ek_address_book.view', array('id' => $r->client))->toString();
-            $client = "<a title='" . t('client') . ": " . $client_name . "' href='" . $link . "'>" . $client_part . "</a>";
+            $reference = "<a title='" . t('client') . ": " . $client_name . "' href='" . $link . "'>" . $client_part . "</a>";
             $query = "SELECT name from {ek_company} where id=:id";
             $co = $companies[$r->header];
             if($r->header <> $r->allocation) {
                 $co = $co . "<br/>" . t('for') . ": " . $companies[$r->allocation];
             }
+            
             if ($r->pcode <> 'n/a') {
                 if ($this->moduleHandler->moduleExists('ek_projects')) {
                     $pid = Database::getConnection('external_db', 'external_db')
@@ -187,12 +190,10 @@ class QuotationsController extends ControllerBase {
                             ->fetchField();
                     $link = Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
                     $pcode_parts = explode('-', $r->pcode);
-                    $reference = $r->serial . "<br/><a title='" . 
+                    $reference .= "<br/><a title='" . 
                             t('project') . ": " . $r->pcode . "' href='" . $link . "'>" . $pcode_parts[4] . "</a>";
                 }
-            } else {
-                $reference = $r->serial;
-            }
+            } 
 
             $value = $r->currency . ' ' . number_format($r->amount, 2);
 
@@ -241,13 +242,13 @@ class QuotationsController extends ControllerBase {
                 $status = t('invoiced');
 
             $options[$r->id] = array(
-                'reference' => ['data' => ['#markup' => $reference]],
+                'number' => ['data' => ['#markup' => $number]],
                 'revision' => $last,
+                'reference' => ['data' => ['#markup' => $reference]],
                 'issuer' => array('data' => ['#markup' => $co], 'title' => $r->title),
-                'date' => $r->date,
-                'client' => ['data' => ['#markup' => $client]],
+                'date' => ['data' => ['#markup' => $r->date]],
                 'value' => ['data' => ['#markup' => $value]],
-                'status' => $status,
+                'status' => ['data' => ['#markup' => $status]],
             );
 
             $links = array();
@@ -385,6 +386,71 @@ class QuotationsController extends ControllerBase {
         return new Response($markup);
     }
 
+    
+
+    /**
+     * @retun
+     *  a display of quotation in html format
+     * 
+     * @param 
+     *  INT $id document id
+     */
+    public function Html($id) {
+
+        //filter access to document
+        $query = "SELECT `header`, `allocation` FROM {ek_sales_quotation} WHERE id=:id";
+        $data = Database::getConnection('external_db', 'external_db')
+                ->query($query, [':id' => $id])
+                ->fetchObject();
+        $access = AccessCheck::GetCompanyByUser();
+        if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
+            $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'quotation', 'html');
+            $document = '';
+
+            if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
+                
+                $id = explode('_', $_SESSION['printfilter']['for_id']);
+                $doc_id = $id[0];
+                $param = serialize(
+                        array(
+                            $id[0], //id
+                            $id[1], //source
+                            $_SESSION['printfilter']['signature'],
+                            $_SESSION['printfilter']['stamp'],
+                            $_SESSION['printfilter']['template'],
+                            $_SESSION['printfilter']['contact'],
+                        )
+                );
+
+                $format = 'html';
+                include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
+
+                $build['excel'] = [
+                    '#markup' =>  "<a class='button button-action' href='"
+                    . Url::fromRoute('ek_sales.quotations.print_share', ['id' => $doc_id], [])->toString() . "' >"
+                    . t('Pdf') . "</a>"
+                        ,
+                ];
+
+                $build['invoice'] = [
+                    '#markup' => $document,
+                    '#attached' => array(
+                        'library' => array('ek_sales/ek_sales_html_documents_css'),
+                        'placeholders' => $css,
+                    ),
+                ];
+            }
+            return array($build);
+        } else {
+            $url = Url::fromRoute('ek_sales.quotations.list')->toString();
+            $message = t('Access denied') . '<br/>' . t("<a href=\"@c\">List</a>", ['@c' => $url]);
+            return [
+                '#markup' => $message,
+            ];
+        }
+    }    
+    
+    
     public function DeleteQuotations(Request $request, $id) {
 
         $build['delete_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\DeleteQuotation', $id);

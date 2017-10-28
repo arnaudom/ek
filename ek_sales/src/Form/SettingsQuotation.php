@@ -11,6 +11,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Component\Utility\Xss;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -53,7 +54,7 @@ class SettingsQuotation extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-        $query = "SELECT * from {ek_quotation_settings} ";
+        $query = "SELECT * from {ek_sales_quotation_settings} ";
         $data = Database::getConnection('external_db', 'external_db')->query($query);
 
         $form['setting']['#tree'] = TRUE;
@@ -110,8 +111,8 @@ class SettingsQuotation extends FormBase {
         foreach ($form_state->getValue('setting') as $key => $fields) {
 
             Database::getConnection('external_db', 'external_db')
-                    ->update('ek_quotation_settings')
-                    ->condition('id', $key)
+                    ->update('ek_sales_quotation_settings')
+                    ->condition('id', Xss::filter($key))
                     ->fields($fields)
                     ->execute();
         }

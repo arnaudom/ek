@@ -25,8 +25,13 @@ $mode = $param[6];
 */
 
 $head = Database::getConnection('external_db', 'external_db')
-        ->query("SELECT * FROM {ek_sales_". $source. "} WHERE id=:id", array(':id' => $id))->fetchObject();
+        ->query("SELECT * FROM {ek_sales_". $source. "} WHERE id=:id", array(':id' => $id))
+        ->fetchObject();
 
+      
+if ($head->pcode) {
+        $project_link = \Drupal\ek_projects\ProjectData::geturl($head->pcode);
+}
 
 Switch ($source) {
 
@@ -36,11 +41,22 @@ Switch ($source) {
     $lines = Database::getConnection('external_db', 'external_db')
             ->query("SELECT * FROM {ek_sales_". $source. "_details} WHERE serial=:s ORDER BY id", array(':s' => $head->serial));
 
-    $items = array();
+    $items = array();                 
     $taxline = 0;
 
       While ($line = $lines->fetchObject()) {
         $data = array();
+        $data['description2'] = '';
+        $data['itemid'] = '';
+        $data['itemcode'] = '';
+        $data['type'] = '';
+        $data['supplier_code'] = '';
+        $data['collection'] = '';
+        $data['department'] = '';
+        $data['family'] = '';
+        $data['size'] = '';
+        $data['color'] = ''; 
+        
         if ($line->itemdetail != '') {
         
         $query = "SELECT * FROM {ek_items} WHERE id=:id";
@@ -63,16 +79,7 @@ Switch ($source) {
 
               } else {
                 $data['item']= $line->item;
-                $data['description2'] = '';
-                $data['itemid'] = '';
-                $data['itemcode'] = '';
-                $data['type'] = '';
-                $data['supplier_code'] = '';
-                $data['collection'] = '';
-                $data['department'] = '';
-                $data['family'] = '';
-                $data['size'] = '';
-                $data['color'] = '';        
+      
               }
           
         } else {
@@ -136,18 +143,32 @@ Switch ($source) {
     
     //use last revision
     $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision DESC";
-    $revision = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $head->serial))->fetchField();  
+    $revision = Database::getConnection('external_db', 'external_db')
+            ->query($query, array(':s' => $head->serial))
+            ->fetchField();  
     $lines = Database::getConnection('external_db', 'external_db')
-            ->query("SELECT * from {ek_sales_". $source. "_details} WHERE serial=:s and revision=:r ORDER BY id", array(':s' => $head->serial, ':r' => $revision));
+            ->query("SELECT * from {ek_sales_". $source. "_details} WHERE serial=:s and revision=:r ORDER BY id", 
+                    array(':s' => $head->serial, ':r' => $revision));
 
     $items = array();
     $taxline = 0;
 
       While ($line = $lines->fetchObject()) {
         $data = array();
+        $data['description2'] = '';
+        $data['itemid'] = '';
+        $data['itemcode'] = '';
+        $data['type'] = '';
+        $data['supplier_code'] = '';
+        $data['collection'] = '';
+        $data['department'] = '';
+        $data['family'] = '';
+        $data['size'] = '';
+        $data['color'] = ''; 
+        
         if ($line->itemid != NULL && ItemData::item_bycode($line->itemid) ) {
         //item exist
-        
+       
         $query = "SELECT * from {ek_items} where itemcode=:id";
         $thisitem = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $line->itemid))
@@ -167,21 +188,12 @@ Switch ($source) {
                 $data['color'] = $thisitem->color;
 
               } else {
-                $data['item']= $line->item;
-                $data['description2'] = '';
-                $data['itemid'] = '';
-                $data['itemcode'] = '';
-                $data['type'] = '';
-                $data['supplier_code'] = '';
-                $data['collection'] = '';
-                $data['department'] = '';
-                $data['family'] = '';
-                $data['size'] = '';
-                $data['color'] = '';        
+                $data['item']= $line->item . " " . $line->itemdetails;
+       
               }
           
           } else {
-            $data['item']= $line->itemdetails;
+            $data['item']= $line->itemid . " " . $line->itemdetails;
           }
 
         $data['unit'] = $line->unit;
@@ -191,13 +203,12 @@ Switch ($source) {
         $data['column_2'] = $line->column_2;
         $data['column_3'] = $line->column_3;
 
-
-          $taxline+=$data['total'];
-
+        $taxline+=$data['total'];
 
         $items['lines'][] = $data;
 
       }
+
      
     $items['taxable'] = $taxline;
     $items['revision'] = $revision;
@@ -217,32 +228,43 @@ Switch ($source) {
     $data = Database::getConnection('external_db', 'external_db')->query($query);
     $i = 1;
     While ($r = $data->fetchObject()) {
-    $items['column_name'.$i] = $r->name;
-    $items['column_active'.$i] = $r->active;
-    $i++;
+        $items['column_name'.$i] = $r->name;
+        $items['column_active'.$i] = $r->active;
+        $i++;
     }
     
     $query = "SELECT * from {ek_company} where id=:id";
-    $company = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $head->header))->fetchObject();
+    $company = Database::getConnection('external_db', 'external_db')
+            ->query($query, array(':id' => $head->header))
+            ->fetchObject();
 
     $query = "SELECT * from {ek_address_book} where id=:id";
-    $client = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $head->client))->fetchObject();
+    $client = Database::getConnection('external_db', 'external_db')
+            ->query($query, array(':id' => $head->client))
+            ->fetchObject();
 
     if($contact != '') {
     //selected contact from list
-    $query = "SELECT * from {ek_address_book_contacts} where id=:id ";
-    $client_card = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $contact))->fetchObject();    
+        $query = "SELECT * from {ek_address_book_contacts} where id=:id ";
+        $client_card = Database::getConnection('external_db', 'external_db')
+            ->query($query, array(':id' => $contact))
+            ->fetchObject();    
     } else {
     //default contact
-    $query = "SELECT * from {ek_address_book_contacts} where abid=:id and main=:m";
-    $client_card = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $client->id, ':m' => 1))->fetchObject();
+        $query = "SELECT * from {ek_address_book_contacts} where abid=:id and main=:m";
+        $client_card = Database::getConnection('external_db', 'external_db')
+                ->query($query, array(':id' => $client->id, ':m' => 1))
+                ->fetchObject();
     }
     
     //change quotation status
-    Database::getConnection('external_db', 'external_db')->update('ek_sales_quotation')
-    ->fields(array('status' => 1))
-    ->condition('id',$id)
-    ->execute();
+    if($format != 'html') {
+        Database::getConnection('external_db', 'external_db')
+            ->update('ek_sales_quotation')
+            ->fields(array('status' => 1))
+            ->condition('id',$id)
+            ->execute();
+    }
     
     break;
 

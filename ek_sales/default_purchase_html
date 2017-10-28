@@ -160,7 +160,8 @@ foreach ($items as $detail) {
             $i++;
             $j = 1;
         } else {
-            $list .= '<td class="c10 center">' . ($i-1) . '.' . $j . '</td>';
+            $l = ($i > 1)? ($i-1): "1";
+            $list .= '<td class="c10 center">' . $l . '.' . $j . '</td>';
             $list .= '<td class="c30 left">' . nl2br($detail['item']) . '</td>';
             $j++;
         }
@@ -190,7 +191,7 @@ foreach ($items as $detail) {
 
 if ($head->pcode) {
    $list .= '<tr>
-                <td></td><td colspan=5><h2>' . t("Our ref.") . ' ' . $head->pcode . '</h2></td>
+                <td></td><td colspan=5>' . t("Our ref.") . ' ' . $project_link . '</td>
            </tr>';
 }
 
