@@ -70,7 +70,11 @@ class DocAccessEdit extends FormBase {
       '#multiple' => TRUE, 
       '#size' => 8,
       '#default_value' => $default_users,
-      
+      '#attributes' => array('class' => ['form-select-multiple']),  
+      '#attached' => array(
+                'drupalSettings' => array('left' => t('Restricted'), 'right' => t('Allowed')),
+                'library' => array('ek_admin/ek_admin_multi-select'),
+        ),
       );
 
    

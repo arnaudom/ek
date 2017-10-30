@@ -7,10 +7,11 @@
       jQuery('#sales_docs').html('<IMG src="../../modules/ek_sales/css/images/loading.gif">');
       jQuery.ajax({
         dataType: "json",
-        url: "../../ek_sales/load_documents",
+        url: drupalSettings.path.baseUrl + 'ek_sales/load_documents',
         data: {abid: settings.abid },
-        success: function (data) { 
-            jQuery('#sales_docs').html(data.list);
+        async: false,
+        success: function (remoteData) { 
+            jQuery('#sales_docs').html(remoteData.data);
             addajax();
         }
         });

@@ -7,146 +7,152 @@
 *        )
 #}
 
-<a title='{{'address book'|t}}' href='{{ items.link }}'><h2> {{ items.name }} </h2> </a>
+<a title='{{'address book'|t}}' href='{{ items.abidlink }}'><h2>{{ items.abidname }}</h2></a>
 
-<section class="documents">
-    
-<div class="panel panel-default">
-
-  <div class="panel-heading"><a href='#sec1'  onclick="jQuery('#sec1').toggle('fast');">
-    <h4 class="panel-title">{{ 'Documents attached'|t }}</h4></a>
-  </div>
-  <div class="panel-body"  style='' id="sec1">
-          <table class='table'>
-            <tbody id='sales_docs'>
-            </tbody>
-            <tfoot>
+{% if items.data != NULL %}
+    <section class="comment">
+        <table class='table'>
+            <tbody>
                 <tr>
-                    <td colspan='5'>{{ items.form }}</td>
+                    <td class='tlabel' >{{ 'Comments'|t }} 
+                        <br/><span class='field_edit'>{{ items.edit_comment|raw }}</span></td>
+                    <td class='comment_text'>{{ items.comment|nl2br }}</td>
                 </tr>
-            </tfoot>
-          </table>
-  </div>
-</section>
-<section class="comment">
-    <table class='table'>
-      <tbody>
-        <tr>
-          <td class='tlabel' >{{ 'Comments'|t }} 
-              <br/><span class='field_edit'>{{ items.edit_comment|raw }}</span></td>
-          <td class='comment_text'>{{ items.comment|nl2br }}</td>
-        </tr>
 
-      </tbody>
-    </table>
-</section>    
-        
-<section class="cases">
-    
-<div class="panel panel-default">
-
-  <div class="panel-heading"><a href='#'  onclick="jQuery('#sec2').toggle('fast');">
-    <h4 class="panel-title">{{ 'Projects'|t }}</h4></a>
-  </div>
-  <div class="panel-body"  style='' id="sec2">
-          <table class='table'>
-            <tbody id='sales_projects'>
-                
-                {% for key, item in items.projects %}
-                <tr>
-                    <td> {{ item.link|raw }} </td>
-                    <td> {{ item.country }} </td>
-                    <td> {{ item.date }} </td>
-                    <td> {{ item.pname }} </td>
-                    <td> {{ item.status }} </td>
-                </tr>
-                {% endfor %}               
-                
             </tbody>
-            <tfoot>
+        </table>
+    </section> 
+    <section class="documents">
 
-            </tfoot>
-          </table>
-  </div>
-</section>
+        <div class="panel panel-default">
 
-<section class="reports">
-    
-<div class="panel panel-default">
+            <div class="panel-heading"><a href='#sec1'  onclick="jQuery('#sec1').toggle('fast');">
+                    <h4 class="panel-title">{{ 'Documents attached'|t }}</h4></a>
+            </div>
+            <div class="text-right">
+                <a href='#'  onclick="jQuery('.hide').toggle('fast');">{{ 'toggle deleted files'|t }}</a>
+            </div>
+            <div class="panel-body"  style='' id="sec1">
+                <table class='table'>
+                    <tbody id='sales_docs'>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan='5'>{{ items.form }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+    </section>
 
-  <div class="panel-heading"><a href='#'  onclick="jQuery('#sec3').toggle('fast');">
-    <h4 class="panel-title">{{ 'Reports'|t }}</h4></a>
-  </div>
-  <div class="panel-body"  style='' id="sec3">
-          <table class='table'>
-            <tbody id='sales_reports'>
-                
-                {% for key, item in items.reports %}
-                <tr>
-                    <td title='{{ 'reference'|t }}' > {{ item.serial|raw }} </td>
-                    <td title='{{ 'last edit'|t }}' > {{ item.edit }} </td>
-                </tr>
-                {% endfor %}               
-                
-            </tbody>
-            <tfoot>
 
-            </tfoot>
-          </table>
-  </div>
-</section>
-                
-<section class="statistics">    
-<div class="panel panel-default">
+    <section class="cases">
 
-  <div class="panel-heading"><a href='#'  onclick="jQuery('#sec4').toggle('fast');">
-    <h4 class="panel-title">{{ 'Statistics'|t }}</h4></a>
-  </div>
-  <div class="panel-body"  style='' id="sec4">
-          <table class='table'>
-            <tbody id='sales_statistics'>
-                <tr>
-                    <td>
-                        <h3>{{ 'Projects by status'|t }}</h3><br/>
-                    {% set category = items.category_statistics %} 
-                    
-                        <span>{{ 'Open'|t }}</span> : <em>{{ category.open }}</em><br/>
-                        <span>{{ 'Awarded'|t }}</span> : <em>{{ category.awarded }}</em><br/>
-                        <span>{{ 'Completed'|t }}</span> : <em>{{ category.completed }}</em><br/>
-                        <span>{{ 'Closed'|t }}</span> : <em>{{ category.closed }}</em><br/>
-                        <hr>
-                        <span>{{ 'Total'|t }}</span> : <em>{{ category.total }}</em>
-                    
-                    </td> 
-                    <td>
-                        <h3>{{ 'Projects by year'|t }}</h3><br/>
-                    {% for year, item in items.category_year_statistics %} 
-                        {{ year }}
-                        {% for key,value in item %}
-                            | {{ key }} : <em>{{ value }}</em>
-                        {% endfor %}
-                        <br/>
-                    {% endfor %}    
-                    </td>
-               </tr> 
-               <tr>
-                   <td>
-                       <h3>{{ 'Sales'|t }}</h3><br/>
-                       {{ 'Total income'|t }} : {{ items.income|number_format }} {{ items.baseCurrency }}
-                   </td>
-                   <td>
-                       <h3>{{ 'Payment performances'|t }}</h3><br/>
-                       <span>{{ 'Higher payment terms'|t }}</span> : <em>{{ items.payment_performance.max }} {{ 'days'|t }}</em><br/>
-                       <span>{{ 'Lowest payment terms'|t }}</span> : <em>{{ items.payment_performance.min }} {{ 'days'|t }}</em><br/>
-                       <span>{{ 'Average payment terms'|t }}</span> : <em>{{ items.payment_performance.avg }} {{ 'days'|t }}</em><br/>
-                   </td>
-                      
-               </tr>
-            </tbody>
-            <tfoot>
+        <div class="panel panel-default">
 
-            </tfoot>
-          </table>
-  </div>
-                    
-</section>
+            <div class="panel-heading"><a href='#'  onclick="jQuery('#sec2').toggle('fast');">
+                    <h4 class="panel-title">{{ 'Projects'|t }}</h4></a>
+            </div>
+            <div class="panel-body"  style='' id="sec2">
+                <table class='table'>
+                    <tbody id='sales_projects'>
+
+                        {% for key, item in items.projects %}
+                            <tr>
+                                <td> {{ item.link|raw }} </td>
+                                <td> {{ item.country }} </td>
+                                <td> {{ item.date }} </td>
+                                <td> {{ item.pname }} </td>
+                                <td> {{ item.status }} </td>
+                            </tr>
+                        {% endfor %}               
+
+                    </tbody>
+                    <tfoot>
+
+                    </tfoot>
+                </table>
+            </div>
+    </section>
+
+    <section class="reports">
+
+        <div class="panel panel-default">
+
+            <div class="panel-heading"><a href='#'  onclick="jQuery('#sec3').toggle('fast');">
+                    <h4 class="panel-title">{{ 'Reports'|t }}</h4></a>
+            </div>
+            <div class="panel-body"  style='' id="sec3">
+                <table class='table'>
+                    <tbody id='sales_reports'>
+
+                        {% for key, item in items.reports %}
+                            <tr>
+                                <td title='{{ 'reference'|t }}' > {{ item.serial|raw }} </td>
+                                <td title='{{ 'last edit'|t }}' > {{ item.edit }} </td>
+                            </tr>
+                        {% endfor %}               
+
+                    </tbody>
+                    <tfoot>
+
+                    </tfoot>
+                </table>
+            </div>
+    </section>
+
+    <section class="statistics">    
+        <div class="panel panel-default">
+
+            <div class="panel-heading"><a href='#'  onclick="jQuery('#sec4').toggle('fast');">
+                    <h4 class="panel-title">{{ 'Statistics'|t }}</h4></a>
+            </div>
+            <div class="panel-body"  style='' id="sec4">
+                <table class='table'>
+                    <tbody id='sales_statistics'>
+                        <tr>
+                            <td>
+                                <h3>{{ 'Projects by status'|t }}</h3><br/>
+                                {% set category = items.category_statistics %} 
+
+                                <span>{{ 'Open'|t }}</span> : <em>{{ category.open }}</em><br/>
+                                <span>{{ 'Awarded'|t }}</span> : <em>{{ category.awarded }}</em><br/>
+                                <span>{{ 'Completed'|t }}</span> : <em>{{ category.completed }}</em><br/>
+                                <span>{{ 'Closed'|t }}</span> : <em>{{ category.closed }}</em><br/>
+                                <hr>
+                                <span>{{ 'Total'|t }}</span> : <em>{{ category.total }}</em>
+
+                            </td> 
+                            <td>
+                                <h3>{{ 'Projects by year'|t }}</h3><br/>
+                                {% for year, item in items.category_year_statistics %} 
+                                    {{ year }}
+                                    {% for key,value in item %}
+                                        | {{ key }} : <em>{{ value }}</em>
+                                    {% endfor %}
+                                    <br/>
+                                {% endfor %}    
+                            </td>
+                        </tr> 
+                        <tr>
+                            <td>
+                                <h3>{{ 'Sales'|t }}</h3><br/>
+                                {{ 'Total income'|t }} : {{ items.income|number_format }} {{ items.baseCurrency }}
+                            </td>
+                            <td>
+                                <h3>{{ 'Payment performances'|t }}</h3><br/>
+                                <span>{{ 'Higher payment terms'|t }}</span> : <em>{{ items.payment_performance.max }} {{ 'days'|t }}</em><br/>
+                                <span>{{ 'Lowest payment terms'|t }}</span> : <em>{{ items.payment_performance.min }} {{ 'days'|t }}</em><br/>
+                                <span>{{ 'Average payment terms'|t }}</span> : <em>{{ items.payment_performance.avg }} {{ 'days'|t }}</em><br/>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                    <tfoot>
+
+                    </tfoot>
+                </table>
+            </div>
+
+    </section>
+{% endif %}

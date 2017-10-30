@@ -85,135 +85,148 @@ class SalesController extends ControllerBase {
     /**
      * Return sales data page
      * data by address book entry
-     *
+     * @param abid
+     *  id of address book
      */
     public function DataSales(Request $request, $abid) {
 
         $items = array();
-        $query = "SELECT name,c.comment from {ek_address_book} a LEFT JOIN {ek_address_book_comment} c "
-                . "ON a.id=c.abid where id=:id";
-        $ab = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $abid))
-                ->fetchObject();
-        $items['name'] = $ab->name;
-        $items['link'] = Url::fromRoute('ek_address_book.view', array('id' => $abid))->toString();
 
-        //upload form for documents
-        $items['form'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\UploadForm', $abid);
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book', 'book');
+        $query->fields('book', ['name']);
+        $query->leftJoin('ek_address_book_comment', 'c', 'book.id = c.abid');
+        $query->fields('c', ['comment']);
+        $query->condition('id', $abid);
+        $ab = $query->execute()->fetchObject();
+        
+        if($ab) {
+            $items['data'] = 1;
+            $items['abidname'] = $ab->name;
+            $items['abidlink'] = Url::fromRoute('ek_address_book.view', array('id' => $abid))->toString();
 
-        //comments
-        $items['comment'] = html_entity_decode($ab->comment, ENT_QUOTES, "utf-8");
-        $param_edit = 'comment|' . $abid . '|address_book|50%';
-        $link = Url::fromRoute('ek_sales_modal', ['param' => $param_edit])->toString();
-        $items['edit_comment'] = t('<a href="@url" class="@c"  >[ edit ]</a>', array('@url' => $link, '@c' => 'use-ajax red '));
+            //upload form for documents
+            $items['form'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\UploadForm', $abid);
+
+            //comments
+            $items['comment'] = html_entity_decode($ab->comment, ENT_QUOTES, "utf-8");
+            $param_edit = 'comment|' . $abid . '|address_book|50%';
+            $link = Url::fromRoute('ek_sales_modal', ['param' => $param_edit])->toString();
+            $items['edit_comment'] = t('<a href="@url" class="@c"  >[ edit ]</a>', array('@url' => $link, '@c' => 'use-ajax red '));
 
 
-        //projects linked
-        if ($this->moduleHandler->moduleExists('ek_projects')) {
-            $query = "SELECT p.id,p.status,date,pcode,pname,level,priority,cid,last_modified,c.name
-                FROM {ek_project} p
-                INNER JOIN {ek_country} c
-                ON p.cid=c.id
-                 WHERE client_id= :abid
-                 order by date";
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':abid' => $abid));
-            $items['projects'] = array();
-            while ($d = $data->fetchObject()) {
-
-                $items['projects'][] = array(
-                    'link' => ProjectData::geturl($d->id),
-                    'pcode' => $d->pcode,
-                    'pname' => $d->pname,
-                    'date' => $d->date,
-                    'last_modified' => date('Y-m-d', $d->last_modified),
-                    'country' => $d->name,
-                    'status' => $d->status,
-                    'level' => $d->level,
-                    'priority' => $d->priority,
-                );
-            }
-        }
-        //reports
-        if ($this->moduleHandler->moduleExists('ek_intelligence')) {
-            $query = "SELECT id,serial,edit FROM {ek_ireports} WHERE abid=:c";
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':c' => $abid));
-            $items['reports'] = array();
-            while ($d = $data->fetchObject()) {
-                $link = Url::fromRoute('ek_intelligence.read', ['id' => $d->id])->toString();
-                $items['reports'][] = array(
-                    'serial' => '<a href="' . $link . '">' . $d->serial . '</a>',
-                    'edit' => date('Y-m-d', $d->edit),
-                );
-            }
-        }
-
-        if ($this->moduleHandler->moduleExists('ek_projects')) {
-            //statistics cases
-            $query = "SELECT count(pcode) as sum, status FROM {ek_project}"
-                    . " WHERE client_id=:abid group by status";
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':abid' => $abid));
-            $total = 0;
-            $items['category_statistics'] = array();
-            while ($d = $data->fetchObject()) {
-                $total += $d->sum;
-                $items['category_statistics'][$d->status] = $d->sum;
-            }
-            $items['category_statistics']['total'] = $total;
-
-            $items['category_year_statistics'] = array();
-            $query = "SELECT id,type FROM {ek_project_type}";
-            $type = Database::getConnection('external_db', 'external_db')
-                            ->query($query)->fetchAllKeyed();
-
-            for ($y = date('Y') - 4; $y <= date('Y'); $y++) {
-                $total = 0;
-                $query = "SELECT count(pcode) as sum, category FROM {ek_project} WHERE "
-                        . "client_id=:abid ANd date like :d group by category";
-
+            //projects linked
+            if ($this->moduleHandler->moduleExists('ek_projects')) {
+                $query = "SELECT p.id,p.status,date,pcode,pname,level,priority,cid,last_modified,c.name
+                    FROM {ek_project} p
+                    INNER JOIN {ek_country} c
+                    ON p.cid=c.id
+                     WHERE client_id= :abid
+                     order by date";
                 $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':abid' => $abid, ':d' => $y . '%'));
-
-                $items['category_year_statistics'][$y] = array();
+                        ->query($query, array(':abid' => $abid));
+                $items['projects'] = array();
                 while ($d = $data->fetchObject()) {
-                    $items['category_year_statistics'][$y][$type[$d->category]] = $d->sum;
+
+                    $items['projects'][] = array(
+                        'link' => ProjectData::geturl($d->id),
+                        'pcode' => $d->pcode,
+                        'pname' => $d->pname,
+                        'date' => $d->date,
+                        'last_modified' => date('Y-m-d', $d->last_modified),
+                        'country' => $d->name,
+                        'status' => $d->status,
+                        'level' => $d->level,
+                        'priority' => $d->priority,
+                    );
                 }
             }
-        }
-        if ($this->moduleHandler->moduleExists('ek_finance')) {
-            //statistics finance
-            $settings = new FinanceSettings();
-            $items['baseCurrency'] = $settings->get('baseCurrency');
-            $query = "SELECT sum(totalbase) FROM {ek_sales_invoice_details} d "
-                    . "INNER JOIN {ek_sales_invoice} i ON d.serial=i.serial "
-                    . "WHERE i.client=:abid ";
-            $a = array(
-                ':abid' => $abid,
-            );
-            $items['total_income'] = Database::getConnection('external_db', 'external_db')
-                    ->query($query, $a)
-                    ->fetchField();
-
-            $query = "SELECT date,pay_date FROM {ek_sales_invoice} "
-                    . "WHERE client = :abid and status=:s";
-
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':abid' => $abid, ':s' => 1));
-
-            $af = array();
-
-            while ($d = $data->fetchObject()) {
-                $long = round((strtotime($d->pay_date) - strtotime($d->date)) / (24 * 60 * 60), 0);
-                array_push($af, $long);
+            //reports
+            if ($this->moduleHandler->moduleExists('ek_intelligence')) {
+                $query = "SELECT id,serial,edit FROM {ek_ireports} WHERE abid=:c";
+                $data = Database::getConnection('external_db', 'external_db')
+                        ->query($query, array(':c' => $abid));
+                $items['reports'] = array();
+                while ($d = $data->fetchObject()) {
+                    $link = Url::fromRoute('ek_intelligence.read', ['id' => $d->id])->toString();
+                    $items['reports'][] = array(
+                        'serial' => '<a href="' . $link . '">' . $d->serial . '</a>',
+                        'edit' => date('Y-m-d', $d->edit),
+                    );
+                }
             }
-            $items['payment_performance'] = array(
-                'max' => max($af),
-                'min' => min($af),
-                'avg' => round((array_sum($af) / count($af)), 1)
-            );
+
+            if ($this->moduleHandler->moduleExists('ek_projects')) {
+                //statistics cases
+                $query = "SELECT count(pcode) as sum, status FROM {ek_project}"
+                        . " WHERE client_id=:abid group by status";
+                $data = Database::getConnection('external_db', 'external_db')
+                        ->query($query, array(':abid' => $abid));
+                $total = 0;
+                $items['category_statistics'] = array();
+                while ($d = $data->fetchObject()) {
+                    $total += $d->sum;
+                    $items['category_statistics'][$d->status] = $d->sum;
+                }
+                $items['category_statistics']['total'] = $total;
+
+                $items['category_year_statistics'] = array();
+                $query = "SELECT id,type FROM {ek_project_type}";
+                $type = Database::getConnection('external_db', 'external_db')
+                                ->query($query)->fetchAllKeyed();
+
+                for ($y = date('Y') - 4; $y <= date('Y'); $y++) {
+                    $total = 0;
+                    $query = "SELECT count(pcode) as sum, category FROM {ek_project} WHERE "
+                            . "client_id=:abid ANd date like :d group by category";
+
+                    $data = Database::getConnection('external_db', 'external_db')
+                            ->query($query, array(':abid' => $abid, ':d' => $y . '%'));
+
+                    $items['category_year_statistics'][$y] = array();
+                    while ($d = $data->fetchObject()) {
+                        $items['category_year_statistics'][$y][$type[$d->category]] = $d->sum;
+                    }
+                }
+            }
+            if ($this->moduleHandler->moduleExists('ek_finance')) {
+                //statistics finance
+                $settings = new FinanceSettings();
+                $items['baseCurrency'] = $settings->get('baseCurrency');
+                $query = "SELECT sum(totalbase) FROM {ek_sales_invoice_details} d "
+                        . "INNER JOIN {ek_sales_invoice} i ON d.serial=i.serial "
+                        . "WHERE i.client=:abid ";
+                $a = array(
+                    ':abid' => $abid,
+                );
+                $items['total_income'] = Database::getConnection('external_db', 'external_db')
+                        ->query($query, $a)
+                        ->fetchField();
+
+                $query = "SELECT date,pay_date FROM {ek_sales_invoice} "
+                        . "WHERE client = :abid and status=:s";
+
+                $data = Database::getConnection('external_db', 'external_db')
+                        ->query($query, array(':abid' => $abid, ':s' => 1));
+
+                $af = array();
+
+                while ($d = $data->fetchObject()) {
+                    $long = round((strtotime($d->pay_date) - strtotime($d->date)) / (24 * 60 * 60), 0);
+                    array_push($af, $long);
+                }
+                $items['payment_performance'] = array(
+                    'max' => max($af),
+                    'min' => min($af),
+                    'avg' => round((array_sum($af) / count($af)), 1)
+                );
+            }
+        } else {
+            $items['abidname'] = t('No data');
+            $items['abidlink'] = Url::fromRoute('ek_address_book.search')->toString();
+            $items['data'] = NULL;
         }
+        
 
         return array(
             '#items' => $items,
@@ -221,7 +234,7 @@ class SalesController extends ControllerBase {
             '#theme' => 'ek_sales_data',
             '#attached' => array(
                 'drupalSettings' => array('abid' => $abid),
-                'library' => array('ek_sales/ek_sales_docs_updater'),
+                'library' => array('ek_sales/ek_sales_docs_updater', 'ek_admin/ek_admin_css'),
             ),
         );
     }
@@ -232,79 +245,99 @@ class SalesController extends ControllerBase {
      */
     public function load(Request $request) {
 
-        $query = "SELECT * FROM {ek_sales_documents} WHERE abid = :c order by id";
-        $list = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':c' => $request->get('abid')));
 
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_documents', 'd');
+        $query->fields('d');
+        $query->condition('abid', $request->get('abid'), '=');
+        $query->orderBy('id', 'ASC');
+        $list = $query->execute();
 
         //build list of documents
         $t = '';
         $i = 0;
+        $items = [];
         if (isset($list)) {
             while ($l = $list->fetchObject()) {
                 $i++;
+                /* default values */
+                    $items[$i]['fid'] = 1; //default file status on
+                    $items[$i]['delete'] = 1; //default delete action is on
+                    $items[$i]['icon'] = 'file';//default icon 
+                    $items[$i]['file_url'] = ''; //default
+                    $items[$i]['access_url'] = 0; //default access management if off
+                    
+                    
                 $share = explode(',', $l->share);
                 $deny = explode(',', $l->deny);
 
-                if ($l->share == '0' || ( in_array(\Drupal::currentUser()->id(), $share) && !in_array(\Drupal::currentUser()->id(), $deny) )) {
+                if ($l->share == '0' || ( in_array(\Drupal::currentUser()->id(), $share) 
+                        && !in_array(\Drupal::currentUser()->id(), $deny) )) {
+
+                    
+                    $items[$i]['uri'] = $l->uri;
 
                     $extension = explode(".", $l->filename);
                     $extension = array_pop($extension);
-                    $image = 'modules/ek_sales/art/icons/' . $extension . ".png";
-                    $uri = $l->uri;
+                    
+                    $items[$i]['icon_path'] = drupal_get_path('module', 'ek_sales') . '/art/icons/';
+                    
+                    if (file_exists(drupal_get_path('module', 'ek_sales') . '/art/icons/' . $extension . ".png")) {
+                        $items[$i]['icon'] = strtolower($extension);
+                    } 
 
-                    if (file_exists($image)) {
-                        $image = "<IMG src='../../$image'>";
+                    //filename formating
+                    if (strlen($l->filename) > 30) {
+                        $items[$i]['doc_name'] = substr($l->filename, 0, 30) . " ... ";
                     } else {
-                        $image = "<IMG src='../../modules/ek_sales/art/icons/file.png'>";
+                        $items[$i]['doc_name'] = $l->filename;
                     }
 
                     if ($l->fid == '0') { //file was deleted
-                        $del_button = '[-]';
-                        $doc = $l->filename;
-                        $mail_button = '';
+                        $items[$i]['fid'] = 0;
+                        $items[$i]['delete'] = 0;
+                        $items[$i]['email'] = 0;
+                        $items[$i]['extranet'] = 0;
+                        $items[$i]['comment'] = $l->comment . " " . date('Y-m-d', $l->uri);
                     } else {
-                        if (file_exists(file_uri_target($uri))) {
+                        if (!file_exists($l->uri)) {
                             //file not on server (archived?) TODO ERROR file path not detected
-                            $del_button = '';
-                            $l->comment = t('Document not available. Please contact administrator');
-                            $doc = $l->filename;
-                            $mail_button = '';
+                            $items[$i]['fid'] = 2;
+                            $items[$i]['delete'] = 0;
+                            $items[$i]['email'] = 0;
+                            $items[$i]['extranet'] = 0;
+                            $items[$i]['comment'] = t('Document not available. Please contact administrator');
                         } else {
                             //file exist
-
                             $route = Url::fromRoute('ek_sales_delete_file', array('id' => $l->id))->toString();
-                            $del_button = "<a id='d$i' href='" . $route . "' class='use-ajax red' title='" . t('delete the file') . "'>[x]</a>";
-                            $doc = "<a href='" . file_create_url($uri) . "' target='_blank' >" . $l->filename . "</a>";
+                            $items[$i]['delete_url'] = $route;
+                            $items[$i]['file_url'] = file_create_url($l->uri);
+                            $items[$i]['delete'] = 1;
+                            $items[$i]['comment'] = $l->comment;
+                            $items[$i]['date'] = date('Y-m-d', $l->date);
+                            $items[$i]['size'] = round($l->size / 1000, 0) . " Kb";
+                            
                         }
                     }
 
 
                     if ($l->fid != '0') {
-
+                        //add access link for non deleted files
                         $param_access = 'access|' . $l->id . '|sales_doc';
                         $link = Url::fromRoute('ek_sales_modal', ['param' => $param_access])->toString();
-                        $share_button = t('<a href="@url" class="@c"  >[ access ]</a>', array('@url' => $link, '@c' => 'use-ajax red '));
-                    } else {
-                        $share_button = '';
-                    }
-                    if ($l->fid != '0') {
-                        //show only non deleted files. keep option to display deleted one( remove condition above)
-                        $t .= "<tr id='sd" . $l->id . "'>
-                          <td>" . $image . " " . $doc . "</td>
-                          <td>" . date('Y-m-d', $l->date) . "</td>
-                          <td>" . $l->comment . "</td>
-                          <td>" . $del_button . "</td>
-                          <td>" . $share_button . "</td>
-
-                      </tr>
-                      
-                      ";
-                    }
-                } //in array
+                        $items[$i]['access_url'] = $link;
+                    } 
+                    
+ 
+                } //built list of accessible files by user
             }
+            
+             
         }
-        return new JsonResponse(array('list' => $t));
+        
+        $render = ['#theme' => 'ek_sales_doc_view', '#items' => $items];
+        $data =  \Drupal::service('renderer')->render($render);
+        return new JsonResponse(array('data' => $data));
     }
 
     /**

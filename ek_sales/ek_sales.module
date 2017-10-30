@@ -42,7 +42,13 @@ function ek_sales_theme() {
     (
       'template' => 'ek_sales_data',
       'variables' => array('items' => array()),
-    ), 
+    ),
+    //template for attached docs in sales data page  
+    'ek_sales_doc_view' => array
+    (
+      'template' => 'ek_sales_doc_view',
+      'variables' => array('items' => array()),
+    ),       
     'iframe' => array
     (
       'template' => 'iframe',
