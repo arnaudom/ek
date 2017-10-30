@@ -54,12 +54,12 @@ class ShareForm extends FormBase {
                 '#options' => $users,
                 '#multiple' => TRUE,
                 '#size' => 3,
-                '#id' => 'form-multiselect',
+                '#attributes' => array('class' => ['form-select-multiple']),
                 '#default_value' => $default,
                 '#description' => t('Select in left column users to share document with'),
                 '#attached' => array(
                     'drupalSettings' => array('left' => t('not shared'), 'right' => t('shared')),
-                    'library' => array('ek_documents/ek_documents_multiselect'),
+                    'library' => array('ek_admin/ek_admin_multi-select'),
                 ),
             );
 
