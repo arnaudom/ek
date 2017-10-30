@@ -46,5 +46,17 @@ ek_admin_charts:
     https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js: { type: external }
   dependencies:
     - core/jquery
+       
+#multi-select formatting used in modules
+ek_admin_multi-select:
+  version: 0.9.12
+  js:
+    js/multi-select/js/jquery.multi-select.js: {}
+    js/multi-select.js: {}
+  css:
+    theme:
+      js/multi-select/css/multi-select.css: {}
+  dependencies:
+    - core/jquery
     
 
