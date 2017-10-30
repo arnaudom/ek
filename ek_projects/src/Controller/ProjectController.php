@@ -1422,6 +1422,7 @@ class ProjectController extends ControllerBase {
                 $data =  \Drupal::service('renderer')->render($render);               
             }
             return new JsonResponse(array('data' => $data));
+            
         } else {
             // no access
             return new JsonResponse(array('data' => NULL));

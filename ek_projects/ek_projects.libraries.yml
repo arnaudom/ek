@@ -50,16 +50,6 @@ ek_projects_autocomplete:
     - core/jquery
     - core/jquery.ui.autocomplete
 
-ek_projects_multiselect:
-  version: VERSION
-  js:
-    js/multiselect/js/jquery.multi-select.js: {}
-    js/multiselect.js: {}
-  css:
-    theme:
-      js/multiselect/css/multi-select.css: {}
-  dependencies:
-    - core/jquery
     
 ek_projects.dashboard:
   version: VERSION

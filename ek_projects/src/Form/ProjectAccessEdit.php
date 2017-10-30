@@ -83,7 +83,7 @@ class ProjectAccessEdit extends FormBase {
             '#attributes' => array('class' => ['form-select-multiple']),
             '#attached' => array(
                 'drupalSettings' => array('left' => t('Restricted'), 'right' => t('Allowed')),
-                'library' => array('ek_projects/ek_projects_multiselect'),
+                'library' => array('ek_admin/ek_admin_multi-select'),
             ),
         );
 
