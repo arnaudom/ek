@@ -169,7 +169,7 @@ while ($line = $data->fetchObject()) { //loop acc. classe
             if ($coid != 'all') {
                 $query = "SELECT sum(value) "
                         . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
-                        . "WHERE aid = :a AND j.source = :s AND type=:t "
+                        . "WHERE aid = :a AND j.source = :s AND j.type=:t "
                         . "AND j.date >=:d1 AND j.date <=:d2 AND allocation = :c";
 
                 $a = array(
@@ -185,7 +185,7 @@ while ($line = $data->fetchObject()) { //loop acc. classe
             if ($coid == 'all') {
                 $query = "SELECT sum(value) "
                         . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
-                        . "WHERE aid = :a AND j.source = :s AND type=:t "
+                        . "WHERE aid = :a AND j.source = :s AND j.type=:t "
                         . "AND j.date >=:d1 AND j.date <=:d2";
 
                 $a = array(
@@ -286,7 +286,7 @@ while ($line = $data->fetchObject()) { //loop acc. classe
             if ($coid != 'all') {
                 $query = "SELECT sum(value) "
                         . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
-                        . "WHERE aid like :t AND j.source = :s AND type=:t2 "
+                        . "WHERE aid like :t AND j.source = :s AND j.type=:t2 "
                         . "AND j.date >=:d1 AND j.date <=:d2 AND allocation = :c";
 
                 $a = array(
@@ -303,7 +303,7 @@ while ($line = $data->fetchObject()) { //loop acc. classe
 
                 $query = "SELECT sum(value) "
                         . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
-                        . "WHERE aid like :t AND j.source = :s AND type=:t2 "
+                        . "WHERE aid like :t AND j.source = :s AND j.type=:t2 "
                         . "AND j.date >=:d1 AND j.date <=:d2";
                 $a = array(
                     ':d1' => $date1,
@@ -365,7 +365,7 @@ for ($m = 1; $m <= 12; $m++) {
     if ($coid != 'all') {
         $query = "SELECT sum(value) "
                 . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
-                . "WHERE j.source = :s  AND allocation=:c AND type=:t "
+                . "WHERE j.source = :s  AND allocation=:c AND j.type=:t "
                 . "AND j.date >=:d1 AND j.date <=:d2 AND ( aid like :a1 or aid like :a2 or aid like :a3 )";
 
         $a = array(
@@ -383,7 +383,7 @@ for ($m = 1; $m <= 12; $m++) {
     if ($coid == 'all') {
         $query = "SELECT sum(value) "
                 . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
-                . "WHERE j.source = :s  AND type=:t "
+                . "WHERE j.source = :s  AND j.type=:t "
                 . "AND j.date >=:d1 AND j.date <=:d2 AND ( aid like :a1 or aid like :a2 or aid like :a3 )";
         $a = array(
             ':d1' => $date1,
@@ -915,7 +915,7 @@ while ($line = $data->fetchObject()) {
                         . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
                         . "WHERE aid =:a AND j.source = :s "
                         . "AND j.date >=:d1 AND j.date <= :d2 AND allocation = :c "
-                        . "AND type= :t";
+                        . "AND j.type= :t";
 
                 $a = array(
                     ':d1' => $date1,
@@ -932,7 +932,7 @@ while ($line = $data->fetchObject()) {
                         . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
                         . "WHERE aid =:a AND j.source = :s "
                         . "AND j.date >=:d1 AND j.date <= :d2 "
-                        . "AND type= :t";
+                        . "AND j.type= :t";
                 $a = array(
                     ':d1' => $date1,
                     ':d2' => $date2,
@@ -989,7 +989,7 @@ while ($line = $data->fetchObject()) {
                     . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
                     . "WHERE aid like :t AND j.source = :s "
                     . "AND j.date >=:d1 AND j.date <= :d2 AND allocation = :c "
-                    . "AND type= :t2";
+                    . "AND j.type= :t2";
 
             $a = array(
                 ':d1' => $date1,
@@ -1007,7 +1007,7 @@ while ($line = $data->fetchObject()) {
                     . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
                     . "WHERE aid like :t AND j.source = :s "
                     . "AND j.date >=:d1 AND j.date <= :d2 "
-                    . "AND type= :t2";
+                    . "AND j.type= :t2";
 
             $a = array(
                 ':d1' => $date1,
@@ -1071,7 +1071,7 @@ for ($m = 1; $m <= 12; $m++) {
                 . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
                 . "WHERE j.source = :s "
                 . "AND j.date >=:d1 AND j.date <= :d2 AND allocation = :c "
-                . "AND type= :t AND (aid like :a1 or aid like :a2) ";
+                . "AND j.type= :t AND (aid like :a1 or aid like :a2) ";
 
         $a = array(
             ':d1' => $date1,
@@ -1089,7 +1089,7 @@ for ($m = 1; $m <= 12; $m++) {
                 . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
                 . "WHERE j.source = :s "
                 . "AND j.date >=:d1 AND j.date <= :d2 AND allocation = :c "
-                . "AND type= :t AND (aid like :a1 or aid like :a2)";
+                . "AND j.type= :t AND (aid like :a1 or aid like :a2)";
         $a = array(
             ':d1' => $date1,
             ':d2' => $date2,
@@ -1516,14 +1516,10 @@ $fileName = 'reporting_' . str_replace(' ', '_', $company_name) . '-' . $year . 
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Cache-Control: max-age=0');
-//header('Content-Type: application/vnd.ms-excel');
+
 header("Content-Disposition: attachment;filename=$fileName");
 header('Cache-Control: max-age=0');
 $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-//$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+
 $objWriter->save('php://output');
 exit;
-
-
-// end generate report
-

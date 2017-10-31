@@ -70,6 +70,7 @@ class RecordExpense extends FormBase {
         $chart = $settings->get('chart');
         $check = [];
         $tax = [];
+        $credit = NULL;
         if(empty($chart)) {
           $alert =   "<div id='fx' class='messages messages--warning'>" . t('You did not set the accounts chart structure. Go to <a href="@url">settings</a>.' ,
                     array('@url' => Url::fromRoute('ek_finance.admin.settings', array(), array())->toString())). "</div>";
@@ -148,12 +149,12 @@ class RecordExpense extends FormBase {
                         ->query($query, $a)
                         ->fetchField();
                 if($expense->cash == 'Y'){
-                    $bank = $expense->currency . '-' . $jCredit;
+                    $credit = $expense->currency . '-' . $jCredit;
                 } else {
-                    $bank = 'P';
+                    $credit = 'P';
                 }
             } else {
-                $bank = $expense->cash;
+                $credit = $expense->cash;
             }
 
             //list of accounts chart is defined in the general finance settings
@@ -261,7 +262,8 @@ class RecordExpense extends FormBase {
         );
 
     //bank account
-        if ($form_state->getValue('coid') || $form_state->get('coid')) {
+        if ( ($form_state->getValue('coid') || $form_state->get('coid'))
+                && ( $form_state->getValue('currency') || $form_state->get('currency')) ) {
 
             $coid = $form_state->getValue('coid') ? $form_state->getValue('coid') : $form_state->get('coid');
             $currency = $form_state->getValue('currency') ? $form_state->getValue('currency') : $form_state->get('currency');
@@ -289,7 +291,7 @@ class RecordExpense extends FormBase {
             $options[(string) t('bank')] = BankData::listbankaccountsbyaid($coid, $currency);
             
             //provision option
-            if($recordProvision == '1' || $expense->cash == 'P') {
+            if($recordProvision == '1' || $credit == 'P') {
                 $options[(string) t('provision')] = ['P' => t('record as provision')];
             }
             $form['credit']['bank_account']['#options'] = $options;
@@ -304,7 +306,7 @@ class RecordExpense extends FormBase {
                 '#size' => 1,
                 '#options' => $form_state->get('bank_opt'),
                 '#required' => TRUE,
-                '#default_value' => isset($bank) ? $bank : NULL,
+                '#default_value' => isset($credit) ? $credit : NULL,
                 '#title' => t('account payment'),
                 '#prefix' => "<div id='credit' class='cell'>",
                 '#suffix' => '</div>',
@@ -426,19 +428,7 @@ class RecordExpense extends FormBase {
         );
 
         if ($this->moduleHandler->moduleExists('ek_projects')) {
-            /*
-            $pcode = ProjectData::listprojects(0);
-            $form['reference']['pcode'] = array(
-                '#type' => 'select',
-                '#size' => 1,
-                '#options' => $pcode,
-                '#required' => TRUE,
-                '#default_value' => isset($expense->pcode) ? $expense->pcode : NULL,
-                '#title' => t('Project'),
-                '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
-            );
-            
-             */
+
             if(isset($expense->pcode) && $expense->pcode != 'n/a') {
                 $thisPcode = t('code') . ' ' . $expense->pcode;
             } else {
@@ -459,7 +449,7 @@ class RecordExpense extends FormBase {
         } // project
 
     //provision type entry options
-        if($recordProvision == '1' || $expense->cash == 'P') {
+        if($recordProvision == '1' || $credit == 'P') {
             $form['provision'] = array(
                 '#type' => 'details',
                 '#title' => t('Provision'),

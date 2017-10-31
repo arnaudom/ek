@@ -39,20 +39,26 @@ class ProjectMessagesBlock extends BlockBase {
         if(\Drupal::moduleHandler()->moduleExists('ek_messaging')) {
             
             $path = \Drupal::service('path.current')->getPath();
+            $id = array_pop(explode('/',$path));
+            $query = "SELECT pcode FROM {ek_project} WHERE id=:id";
+            $pcode = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $id))->fetchField();
+           
             $query = "SELECT m.id,`subject`,`stamp`,`from_uid`,`to`,`text` "
                     . "FROM {ek_messaging} m "
                     . "INNER JOIN {ek_messaging_text} t ON m.id=t.id "
                     . "WHERE text like :text order by m.id";
-            
+        
             $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':text' => '%' . $path . '%'));
+                    ->query($query, array(':text' => '%' . $pcode . '%'));
                       
             $list = '<ul>';
 
             while ($d = $data->fetchObject()) {
 
                 $to = explode(',', $d->to);
-                if(in_array(\Drupal::currentUser()->id(), $to)) {
+                if(in_array(\Drupal::currentUser()->id(), $to) 
+                        || $d->from_uid == \Drupal::currentUser()->id()) {
                     
                     $from = User::load($d->from_uid);
                     $link = Url::fromRoute('ek_messaging_read', array('id' => $d->id))->toString();

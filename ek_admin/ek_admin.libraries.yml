@@ -58,5 +58,15 @@ ek_admin_multi-select:
       js/multi-select/css/multi-select.css: {}
   dependencies:
     - core/jquery
-    
+
+ek_admin_chosen:
+  version: 1.8.2
+  js:
+    js/chosen/chosen.jquery.min.js: {}
+    js/multi-chosen.js: {}
+  css:
+    theme:
+      js/chosen/chosen.min.css: {}
+  dependencies:
+    - core/jquery
 

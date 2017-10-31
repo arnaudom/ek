@@ -3,9 +3,9 @@ use Drupal\Core\Database\Database;
 use Drupal\ek_finance\FinanceSettings;
 
 //expense payment voucher
-if ($type == 1) {
+if ($type == 1) { 
     
-    if(is_int($id)) {
+    if(is_numeric($id)) {
         $selection = [$id];
         $fileName = t('voucher') . '_' . $id;
     } else {

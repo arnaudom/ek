@@ -209,4 +209,3 @@ ek_admin.user_autocomplete:
     _controller: '\Drupal\ek_admin\Controller\AdminController::userAutocomplete'
   requirements:
     _permission: 'access_user_autocomplete'
-    

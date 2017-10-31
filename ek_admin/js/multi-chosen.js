@@ -2,10 +2,9 @@
 
   Drupal.behaviors.ek_ad_documents = {
     attach: function (context, settings) {
-        $('.form-select-multiple').multiSelect({
-            selectableHeader: settings.left,
-            selectionHeader: settings.right,
-        });        
+
+        $('.form-select-chosen').chosen();
+        
     }//attach
   };
 
