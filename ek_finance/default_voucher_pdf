@@ -268,10 +268,10 @@ Foreach($data as $id => $arr) {
                     $pdf->SetLink($link, 1, 2);
                     $pdf->Write(5, $parts[0], $link);
                 } else {
-
-                    $link = file_create_url($arr['line']->attachment);
-                    $pdf->Write(5, $parts[0], $link);
-
+                    
+                        $link = file_create_url($arr['line']->attachment);
+                        $pdf->Write(5, $parts[0], $link);
+                    
                 }
             }
         $pdf->SetTextColor(100, 100, 100);       

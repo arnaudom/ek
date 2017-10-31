@@ -360,7 +360,8 @@ class ExpensesManageController extends ControllerBase {
         );
 
         $options = array();
-
+        $filteredIds = [];
+        
         if (isset($_SESSION['efilter'])) {
 
             $data = $this->pullExpensesData($_SESSION['efilter'], $sort, $order, $settings);
@@ -372,7 +373,7 @@ class ExpensesManageController extends ControllerBase {
                     ->query($query)
                     ->fetchAllKeyed();
             $i = 0;
-            $filteredIds = [];
+            
             
             while ($r = $data->fetchObject()) {
                 $links = array();
@@ -639,7 +640,7 @@ class ExpensesManageController extends ControllerBase {
             }
         }
 
-        if(count($filteredIds) > 1 && count($filteredIds) < 26) {
+        if(count($filteredIds) > 1 && count($filteredIds) < 51) {
 
             $s = serialize($filteredIds);
             $url = Url::fromRoute('ek_finance_voucher.pdf', array('type' => 1, 'id' => $s), array())->toString();
