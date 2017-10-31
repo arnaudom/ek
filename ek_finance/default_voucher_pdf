@@ -243,7 +243,7 @@ Foreach($data as $id => $arr) {
             $pdf->Cell(100,5,$arr['clientname'],0,1);   
             $pdf->Cell(75,5,t('Amount') . ' - ' . $arr['line']->currency,0,0);
             $pdf->Cell(100,5,$arr['line']->localcurrency . ' ' . $arr['line']->currency,0,1);
-            if($line->tax > 0) {
+            if($arr['line']->tax > 0) {
               $pdf->Cell(75,5,t('include tax') ,0,0);
               $pdf->Cell(100,5,number_format($arr['line']->tax,2) . ' ' . $arr['line']->currency,0,1);  
             }
@@ -262,7 +262,7 @@ Foreach($data as $id => $arr) {
                     $pdf->Cell(75, 5, t('Attachment') . ': ', 0, 0);
                     $pdf->SetFont('Arial', '', 8);
                     $pdf->SetTextColor(0, 128, 255);
-                if ($info = getimagesize($line->attachment)) {
+                if ($info = getimagesize($arr['line']->attachment)) {
                     $insert = TRUE;
                     $link = $pdf->AddLink();
                     $pdf->SetLink($link, 1, 2);

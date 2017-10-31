@@ -32,12 +32,12 @@ if ($type == 1) {
         $a = array(':id' => $id, ':s' => 'expense', ':t' => 'debit');
         $data[$id]['journal'] = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
 
-        if($line->clientname != 'n/a'){
+        if($data[$id]['line']->clientname != 'n/a'){
             $data[$id]['clientname'] = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $data[$id]['line']->clientname))
                     ->fetchField();
         }
-        if($line->suppliername != 'n/a'){
+        if($data[$id]['line']->suppliername != 'n/a'){
             $data[$id]['suppliername'] = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $data[$id]['line']->suppliername))
                     ->fetchField();
@@ -47,7 +47,7 @@ if ($type == 1) {
                         array(':aid' => $data[$id]['line']->type, ':c' => $data[$id]['line']->company ) )
                 ->fetchField();
 
-        if($line->cash <> 'Y') {
+        if($data[$id]['line']->cash <> 'Y') {
           $data[$id]['bank_account'] = Database::getConnection('external_db', 'external_db')
                   ->query("SELECT account_ref from {ek_bank_accounts} WHERE id=:id", array(':id' => $data[$id]['line']->cash))
                   ->fetchField();
