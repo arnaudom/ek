@@ -28,9 +28,10 @@ $head = Database::getConnection('external_db', 'external_db')
         ->query("SELECT * FROM {ek_sales_". $source. "} WHERE id=:id", array(':id' => $id))
         ->fetchObject();
 
-      
-if ($head->pcode) {
-        $project_link = \Drupal\ek_projects\ProjectData::geturl($head->pcode);
+if(\Drupal::moduleHandler()->moduleExists('ek_projects')) {      
+    if ($head->pcode) {
+            $project_link = \Drupal\ek_projects\ProjectData::geturl($head->pcode);
+    }
 }
 
 Switch ($source) {
