@@ -217,6 +217,7 @@ class Message extends FormBase {
       'subject' => t('You have a new message'),
       'body' => "<a href='". $link ."'>" . t('read') . "</a>",
       'from' => $currentuserMail,
+      'priority' => $form_state->getValue('priority'),
     ];  
   }
   
@@ -245,8 +246,8 @@ class Message extends FormBase {
  
 
     
-    if($error <> '') {
-      drupal_set_message(t('Error sending email to @m'), array('@m' => $error));
+    if($error != '') {
+      drupal_set_message(t('Error sending email to @m', array('@m' => $error)), 'error');
     } else {
       drupal_set_message(t('Message @id sent', ['@id' => $m]), 'status');
 
