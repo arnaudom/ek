@@ -154,7 +154,7 @@ function ek_documents_file_download($uri) {
  * manage messaging.
  * $key =type of message, $to = array of uid, $message
  */
-function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL) {
+function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL, $priority = NULL) {
 
 
 
@@ -184,6 +184,7 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
         $render = ['#markup' => $message];
         $params['options']['message'] = \Drupal::service('renderer')->render($render);
         $params['options']['url'] = $url;
+        $params['options']['priority'] = $priority;
         $template = 'key_document_share';
         break;
       
@@ -237,7 +238,7 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
           'archive' => '',
           'subject' => $params['subject'],
           'body' => serialize($params['body']),
-          'priority' => 2,
+          'priority' => $priority,
           )
           );
 

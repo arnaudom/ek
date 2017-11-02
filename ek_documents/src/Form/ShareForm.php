@@ -54,12 +54,12 @@ class ShareForm extends FormBase {
                 '#options' => $users,
                 '#multiple' => TRUE,
                 '#size' => 3,
-                '#attributes' => array('class' => ['form-select-chosen'], 'style' => array('width:300px;')),
+                '#attributes' => array('class' => ['form-select-multiple'], 'style' => array('width:300px;')),
                 '#default_value' => $default,
                 '#description' => t('Select in left column users to share document with'),
                 '#attached' => array(
                     'drupalSettings' => array('left' => t('not shared'), 'right' => t('shared')),
-                    'library' => array('ek_admin/ek_admin_chosen'),
+                    'library' => array('ek_admin/ek_admin_multi-select'),
                 ),
             );
 
@@ -74,6 +74,27 @@ class ShareForm extends FormBase {
                 '#attributes' => array('title' => t('Send notification')),
                 '#title' => t('Send notification'),
             );
+
+            if (\Drupal::moduleHandler()->moduleExists('ek_messaging')) {
+                $priority = array('3' => t('low'), '2' => t('normal'), '1' => t('high'));
+                $form['priority'] = array(
+                    '#type' => 'select',
+                    '#options' => $priority,
+                    '#default_value' => 2,
+                    '#description' => t('priority'),
+                    '#states' => array(
+                        'invisible' => array(
+                            "input[name='notify']" => array('checked' => FALSE),
+                        ),
+                    ),
+                );
+            } else {
+                $form['priority'] = array(
+                        '#type' => 'hidden',
+                        '#value' => 2,
+                    );
+            }
+
 
             $form['expire'] = array(
                 '#type' => 'date',
@@ -113,16 +134,15 @@ class ShareForm extends FormBase {
 
 
         return $form;
-
     }
-        
+
     /**
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
         
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -180,20 +200,24 @@ class ShareForm extends FormBase {
                 } else {
                     $mode = FALSE;
                 }
-                
-                ek_documents_message('share', $form_state->getValue('users'), $message, $data->uri, $data->filename, $mode
+
+                ek_documents_message(
+                        'share', 
+                        $form_state->getValue('users'), 
+                        $message, $data->uri, 
+                        $data->filename, 
+                        $mode,
+                        $form_state->getValue('priority')
                 );
             }
 
 
-            $form_state->set('message', t('success') . '. ' . $d );
+            $form_state->set('message', t('success') . '. ' . $d);
             $form_state->setRebuild();
-            
         } else {
             $form_state->set('message', t('failed') . '. ' . $d);
             $form_state->setRebuild();
         }
-
     }
 
 }
