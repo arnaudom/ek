@@ -496,6 +496,7 @@ class ProjectController extends ControllerBase {
             $data['user'] = db_query($query, array(':uid' => $data['project'][0]->owner))->fetchAll();
             $param_edit = 'followers|' . $id;
             $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
+            $data['followers'][0] = new \stdClass;
             $data['followers'][0]->url = $link;
             $data['followers'][0]->list = ( '<a href="' . $link . '" class="use-ajax blue" >' . t('Followers') . '</a>');
 
@@ -1532,7 +1533,7 @@ class ProjectController extends ControllerBase {
 
         $response = new Response('', 204);//default return response
         
-        $query = "SELECT filename,uri,d.deny, p.id from {ek_project_documents} d "
+        $query = "SELECT d.pcode,filename,uri,d.deny, p.id from {ek_project_documents} d "
                 . "LEFT JOIN {ek_project} p "
                 . "ON d.pcode = p.pcode WHERE d.id=:f";
         
