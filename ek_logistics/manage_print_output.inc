@@ -24,6 +24,7 @@ $template = $param[4];
 $contact = $param[5];
 $mode = $param[6];
 
+
 /*
  * data
  */
@@ -32,10 +33,10 @@ $head = Database::getConnection('external_db', 'external_db')
         ->query("SELECT * from {ek_" . $source . "} where id=:id", array(':id' => $id))
         ->fetchObject();
 
-if ($head->type == 'RR') {
+if (isset($head->type) && $head->type == 'RR') {
     $head->type = t('RECEIVING REPORT');
     $tpl = 'receiving';
-} elseif ($head->type == 'RT') {
+} elseif (isset($head->type) && $head->type == 'RT') {
     $head->type = t('RETURNING REPORT');
     $tpl = 'returning';
 } else {
@@ -68,20 +69,28 @@ Switch ($source) {
                 $data['supplier_code'] = $thisitem->supplier_code;
 
                 $query = "SELECT * from {ek_item_barcodes} where itemcode=:id order by id";
-                $barcodes = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $line->itemcode));
+                $barcodes = Database::getConnection('external_db', 'external_db')
+                        ->query($query, array(':id' => $line->itemcode));
                 $i = 0;
                 while ($b = $barcodes->fetchObject()) {
                     $i++;
                     $data['barcode' . $i] = $b->barcode;
                     $data['encode' . $i] = $b->encode;
                 }
-
+                $data['currency'] = $line->currency;
                 $data['quantity'] = $line->quantity;
-                $data['value'] = $line->value;
-                $data['total'] = round(($line->quantity * $line->price), 2);
+                if($source == 'logi_delivery') {
+                    $data['value'] = $line->value;
+                    $data['total'] = round(($line->quantity * $line->value), 2);
+                } else {
+                    $data['total'] = $line->amount;
+                    $data['value'] = round(($line->amonunt / $line->quantity), 2);
+                }
 
                 $query = "SELECT * FROM {ek_item_packing} where itemcode=:id";
-                $thisitem = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $line->itemcode))->fetchObject();
+                $thisitem = Database::getConnection('external_db', 'external_db')
+                        ->query($query, array(':id' => $line->itemcode))
+                        ->fetchObject();
 
                 $data['unit_measure'] = $thisitem->unit_measure;
 

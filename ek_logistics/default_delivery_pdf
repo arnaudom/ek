@@ -396,12 +396,12 @@ $pdf->Ln(2);
     $pdf->Cell(165,5, t("TOTAL QUANTITIES") . ':',1,0);
     $pdf->Cell(15,5, $t_quantity ,1,0);
     $pdf->Cell(10,5, $detail['unit_measure'] ,1,1,'R');
-    if($ordered > 0) {
+    if($head->ordered_quantity > 0) {
 	$pdf->Cell(1);
         $pdf->Cell(165,5, t("Ordered") . ":",1,0);
-        $pdf->Cell(15,5, $head->ordered ,1,0);
+        $pdf->Cell(15,5, $head->ordered_quantity ,1,0);
         $pdf->Cell(10,5, $detail['unit_measure'] ,1,1,'R');	
-        $ratio = ($t_quantity/$head->ordered)*100;
+        $ratio = ($t_quantity/$head->ordered_quantity)*100;
         $ratio = number_format($ratio,2) . " %";
         $pdf->Cell(1);
         $pdf->Cell(165,5, t("Rate") . ":",1,0);
