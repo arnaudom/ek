@@ -82,7 +82,7 @@ ek_projects_excel_list:
     _permission: 'view_project'
 
 ek_projects_new:
-  path: 'projects/project/new'
+  path: 'projects/new'
   defaults:
     _title: 'New project'
     _controller: '\Drupal\ek_projects\Controller\ProjectController::newproject'
