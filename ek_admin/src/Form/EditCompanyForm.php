@@ -69,7 +69,9 @@ class EditCompanyForm extends FormBase {
         ); 
         
         $query = "SELECT * from {ek_company} WHERE id=:id";
-        $r = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id ) )->fetchAssoc();
+        $r = Database::getConnection('external_db', 'external_db')
+                ->query($query, array(':id' => $id ) )
+                ->fetchAssoc();
         
         } else {
 
@@ -367,23 +369,25 @@ class EditCompanyForm extends FormBase {
            );
 if($this->moduleHandler->moduleExists('ek_finance')) {
         //choice to load standard account or use othe company accunts
-        if (!isset($id) ) {
-        //new company
-        $option = [0 => t('Default standard')];
-        $t = t('Copy from') . ":";
-        $option[$t] = Database::getConnection('external_db','external_db')
-                ->query("SELECT id,name from {ek_company} order by name")
-                ->fetchAllKeyed();
- 
-        $form['f']['use_chart'] = array(
-          '#type' => 'select',
-          '#title' => t('Select chart of accounts'), 
-          '#options' => $option,
-          '#default_value' => NULL,
-          '#required' => TRUE,
-          '#description' => t('chart selection from other company will be copied into new entity'),
+     
+    
+        if (!isset($id)) {
+            //new company
+            $option = [0 => t('Default standard')];
+            $t = t('Copy from') . ":";
+            $option[$t] = Database::getConnection('external_db','external_db')
+                    ->query("SELECT id,name from {ek_company} order by name")
+                    ->fetchAllKeyed();
 
-        );
+            $form['f']['use_chart'] = array(
+              '#type' => 'select',
+              '#title' => t('Select chart of accounts'), 
+              '#options' => $option,
+              '#default_value' => NULL,
+              '#required' => TRUE,
+              '#description' => t('chart selection from other company will be copied into new entity'),
+
+            );
             
         }
     

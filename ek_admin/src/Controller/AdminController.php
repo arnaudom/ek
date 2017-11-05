@@ -727,11 +727,19 @@ class AdminController extends ControllerBase {
      * @return Form
      */
     public function AdminCompanyEdit($id) {
-
-        $form_builder = $this->formBuilder();
-        $response = $form_builder->getForm('Drupal\ek_admin\Form\EditCompanyForm', $id);
-        $query = "SELECT name from {ek_company} where id=:id";
-        $company = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
+        $access = AccessCheck::GetCompanyAccess($id);
+        if(in_array(\Drupal::currentUser()->id(), $access[$id])) {
+            $form_builder = $this->formBuilder();
+            $response = $form_builder->getForm('Drupal\ek_admin\Form\EditCompanyForm', $id);
+            $query = "SELECT name from {ek_company} where id=:id";
+            $company = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $id))
+                    ->fetchField();
+         } else {
+            $response = ['#markup' => t('Access denied')];
+            $company = $id;
+        }
+        
         return array(
             '#theme' => 'ek_admin_company_form',
             '#items' => $response,
@@ -748,11 +756,19 @@ class AdminController extends ControllerBase {
      * @return Form
      */
     public function AdminCompanyEditSettings($id) {
+        $access = AccessCheck::GetCompanyAccess($id);
+        if(in_array(\Drupal::currentUser()->id(), $access[$id])) {
+            $form_builder = $this->formBuilder();
+            $response = $form_builder->getForm('Drupal\ek_admin\Form\EditCompanySettings', $id);
+            $query = "SELECT name from {ek_company} where id=:id";
+            $company = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $id))
+                    ->fetchField();            
+        } else {
+            $response = ['#markup' => t('Access denied')];
+            $company = $id;
+        }
 
-        $form_builder = $this->formBuilder();
-        $response = $form_builder->getForm('Drupal\ek_admin\Form\EditCompanySettings', $id);
-        $query = "SELECT name from {ek_company} where id=:id";
-        $company = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
         return array(
             '#theme' => 'ek_admin_company_form',
             '#items' => $response,
