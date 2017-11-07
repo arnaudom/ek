@@ -136,7 +136,14 @@ ek_projects_tracker:
     _controller: '\Drupal\ek_projects\Controller\ProjectController::tracker'
   requirements:
     _permission: 'view_project'
-       
+
+ek_projects_documents_dragdrop:
+  path: '/projects/dragdrop'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::DragDrop'
+  requirements:
+    _permission: 'view_project'
+    
 ek_projects_modal:
   path: 'ek_project/project/modal/{param}'
   defaults:

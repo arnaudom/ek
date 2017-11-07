@@ -68,3 +68,11 @@ function ek_projects_update_8003() {
 function ek_projects_update_8004() {
    \Drupal::service('router.builder')->rebuild(); 
 }
+
+/**
+ * Add drag and drop route
+ * 
+*/
+function ek_projects_update_8005() {
+   \Drupal::service('router.builder')->rebuild(); 
+}

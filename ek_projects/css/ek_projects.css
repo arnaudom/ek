@@ -1,5 +1,5 @@
 .tip-module-ek-projects{
-  background-color: #CEE3F6 !important;;
+  background-color: #CEE3F6 !important;
 }
 
 .panel-default {
@@ -17,7 +17,10 @@
 
 .panel-body {
 }
-
+.panel-title {
+    //color: #446E9B;
+    font-family: sans-serif;
+}
 .table {
     display: table;
     width: 100%;
@@ -119,6 +122,12 @@
 .ui-menu{
     z-index:3000 !important;  
 }
+
+.project-name {
+    color: #424242;
+    font-family: sans-serif;
+}
+
 #tracker {
     height:12em; 
 
@@ -141,23 +150,34 @@
 
 
 .open-ico {
-    background-image: url(images/open.ico) ;
-    background-repeat: no-repeat;
-    padding-right: 20px;
-    width: 16px;
-    height:16px;
+      
+}
+.open-ico:before {
+    content: "\f2d0"; 
+    font-family: FontAwesome;
+    font-size:1.5em;
+    padding-left: 5px;
+    color: #419ff1;
     cursor:pointer;
 }
-
 .close-ico {
-    background-image: url(images/close.ico) ;
-    background-repeat: no-repeat;
-    padding-right: 20px;
-    width: 16px;
-    height:16px;
+      
+}
+.close-ico:before {
+    content: "\f2d1"; 
+    font-family: FontAwesome;
+    padding-left: 5px;
+    font-size:1.5em;
+    color: #446E9B;
     cursor:pointer;
 }
-
+.top-ico:before {
+    content: "\f0aa"; 
+    font-family: FontAwesome;
+    font-size:1.8em;
+    color: #446E9B;
+    float:right;
+}
 
 .btn {
   -webkit-user-select:none;
@@ -191,11 +211,66 @@
 
 .edit {
   background-color:#FF8000;
-  border-color:#bd362f;
   color:#FFFFFF;  
 }
 
 ._edit {
   background-color:#A4A4A4;
   color:#FFFFFF;  
+}
+
+.ico:before {
+  font-family: FontAwesome;
+  font-size:1.3em;
+  color: #446E9B;
+  width: 1.4em;
+  text-align: center;
+  display: inline-block;
+  text-rendering: auto;
+}
+
+.pencil:before {
+  content: "\f040";
+  color:#FFFFFF;
+}
+
+.pencil-edit:before {
+  content: "\f040";
+  color:#FF8000;
+}
+.users:before {
+  content: "\f0c0"; 
+}
+
+.address-card:before {
+  content: "\f2bc"; 
+}
+
+.exchange:before {
+  content: "\f0ec"; 
+}
+
+.user-circle:before {
+  content: "\f2be"; 
+}
+
+.envelope:before {
+  content: "\f003"; 
+}
+
+.lock:before {
+  content: "\f023"; 
+}
+
+.tasks:before {
+  content: "\f0ae"; 
+}
+
+.square:before {
+  content: "\f096";
+  color:#FFFFFF; 
+}
+.check-square:before {
+  content: "\f046";
+  color:#FFFFFF; 
 }

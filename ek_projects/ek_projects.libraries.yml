@@ -40,6 +40,8 @@ ek_projects_view:
     - core/jquery.form
     - core/drupalSettings
     - core/drupal.ajax
+    - core/jquery.ui.droppable    
+    - core/jquery.ui.draggable    
 
     
 ek_projects_autocomplete:

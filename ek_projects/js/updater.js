@@ -29,6 +29,7 @@
                 tbeep.play();
                 update_fields(drupalSettings.ek_projects.id);
                 update_documents(drupalSettings.ek_projects.id);
+                adddragdrop();
                 for (i = 0; i < 3; i++) {
                     jQuery("#" + activity.field).fadeTo('slow', 0.5).fadeTo('slow', 1.0);
                     jQuery(".tracklist").fadeTo('slow', 0.5).fadeTo('slow', 1.0);

@@ -4,11 +4,11 @@
         <table class='table'>
             <tbody>
                 <tr>
-                    <td id='project-name'><h2>{{ items.project.0.pname }}</h2><span class='field_edit'>{{ items.project.0.edit_pname|raw }}</span></td>
+                    <td id='project-name'><h2 class="project-name">{{ items.project.0.pname }}<span class='field_edit'>{{ items.project.0.edit_pname|raw }}</span></h2></td>
                     <td>
                         <span id='project-edit'>{{ items.project.0.edit_mode|raw }}</span>
                         <span id='project-notify'>{{ items.project.0.keep_notify|raw }}</span>
-                        &nbsp;<a href="{{ items.followers.0.url }}" class="use-ajax blue"><i class="fa fa-users" aria-hidden="true"></i></a>
+                        &nbsp;<a href="{{ items.followers.0.url }}" class="use-ajax ico users"></a>
                     </td>
                 </tr>
                 <tr>
@@ -18,7 +18,7 @@
                 <tr>
                     <td id='project-type'>{{ items.type }}</td>
                     <td id='project-client'>
-                        <i class="fa fa-address-card-o fa-fw" aria-hidden="true"></i>&nbsp;{{ items.client.0.url|raw }} 
+                        <span class="ico address-card"></span>&nbsp;{{ items.client.0.url|raw }} 
                         <span class='field_edit'>{{ items.project.0.edit_client_id|raw }}</span>
                     </td>
                 </tr>
@@ -29,21 +29,21 @@
                 <tr>
                     <td id='project-extranet'>
                         {% if items.project.0.extranet %}
-                            <i class='fa fa-exchange fa-fw'></i>&nbsp;{{ items.project.0.extranet }} 
+                            <span class='ico exchange'></span>&nbsp;{{ items.project.0.extranet }} 
                         {% endif %} </td>
                     <td id='project-owner'>
-                        <i class="fa fa-user-circle-o fa-fw" aria-hidden="true"></i>&nbsp;{{ 'Owner'|t }}: {{ items.user.0.name }}
+                        <span class="ico user-circle"></span>&nbsp;{{ 'Owner'|t }}: {{ items.user.0.name }}
                         <span class='field_edit'>{{ items.project.0.edit_owner|raw }}</span>
                     </td>
                 </tr> 
 
                 <tr>
-                    <td id='project-notification'><i class='fa fa-envelope-o fa-fw'></i>&nbsp;{{ items.project.0.notification }}</td>
+                    <td id='project-notification'><span class='ico envelope'></span>&nbsp;{{ items.project.0.notification }}</td>
                     <td id='project-access'> 
-                        {% if items.project.0.access %}  <i class='fa fa-lock fa-fw'></i>&nbsp;{{ items.project.0.access }} {% endif %} </td>
+                        {% if items.project.0.access %}  <span class='ico lock'></span>&nbsp;{{ items.project.0.access }} {% endif %} </td>
                 </tr>
                 <tr>
-                    <td id='project-task'><i class='fa fa-tasks fa-fw'></i>&nbsp;{{ items.project.0.new_project_task }}</td>
+                    <td id='project-task'><span class='ico tasks'></span>&nbsp;{{ items.project.0.new_project_task }}</td>
                     <td id='status_container' class='{{ items.project.0.status }}'>
                         <a href="{{ items.project.0.edit_statusUrl }}" class="use-ajax blue">{{ 'Status'|t }}</a>: 
                         <span id='status'>{{ items.project.0.status }}</span> 
@@ -196,7 +196,7 @@
         </div>      
     {% endif %}  
     {% if items.section_3 %} 
-        <div class="panel panel-default">
+        <div class="drop-folder panel panel-default">
 
             <div class="panel-heading" id='ps3'><a href='#s3'  onclick="jQuery('#s3').toggle('fast');">
                     <h4 class="panel-title">{{ 'Communication'|t }}</h4></a>
@@ -325,7 +325,7 @@
         </div>  
     {% endif %}  
     {% if items.section_5 %}       
-        <div class="panel panel-default">
+        <div class="drop-folder panel panel-default">
 
             <div class="panel-heading" id='ps5'><a href='#s5'  onclick="jQuery('#s5').toggle('fast');">
                     <h4 class="panel-title">{{ 'Finance'|t }}</h4></a>
@@ -531,4 +531,4 @@
     <hr>
 
 </section>
-                 
+<div><p onclick="jQuery('html, body').animate({ scrollTop: 0 }, 'slow');" class="top-ico"></p></div>                 

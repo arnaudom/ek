@@ -294,13 +294,12 @@ class ProjectController extends ControllerBase {
         Cache::invalidateTags(['project_view_block']);
 
 
-        $edit_icon = "&nbsp<img src='../../" . drupal_get_path('module', 'ek_projects') . "/art/edit.png' />";
-        //$edit_icon = "[/]";
+        $edit_icon = "&nbsp<span class='ico pencil-edit'></span>";
+        
         if (!ProjectData::validate_access($id)) {
             return $items['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\AccessRequest', $id);
         } else {
-
-            //$items['filter_project'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\Filter'); 
+ 
             $items['data'] = array();
 
             $pcode = Database::getConnection('external_db', 'external_db')
@@ -322,10 +321,12 @@ class ProjectController extends ControllerBase {
              */
 
             $query = "SELECT * from {ek_project} WHERE id=:id";
-            $data['project'] = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchAll();
+            $data['project'] = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $id))->fetchAll();
 
             $query = "SELECT type from {ek_project_type} WHERE id=:id";
-            $data['type'] = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $data['project'][0]->category))->fetchField();
+            $data['type'] = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $data['project'][0]->category))->fetchField();
 
             $code = str_replace('/', '-', $pcode);
             $code = explode("-", $code);
@@ -348,7 +349,7 @@ class ProjectController extends ControllerBase {
              */
             if ($data['project'][0]->editor == 0 || $data['project'][0]->editor == \Drupal::currentUser()->id()) {
                 $data['project'][0]->edit_mode = '<button class="btn _edit" id="edit_mode"><span >' . t('edit mode') . '</span>'
-                        . ' <i class="fa fa-pencil"></i></button>';
+                        . ' <span class="ico pencil"></span></button>';
             }
 
             /*
@@ -358,16 +359,16 @@ class ProjectController extends ControllerBase {
             if (in_array(\Drupal::currentUser()->id(), $notify)) {
                 $val = 'follow';
                 $cl = 'follow';
-                $cl2 = "fa-check-square-o";
+                $cl2 = "check-square";
                 
             } else {
                 $cl = '_follow';
-                $cl2 = 'fa-square-o';
+                $cl2 = 'square';
             }
 
             $data['project'][0]->keep_notify = '<button class="btn ' 
                     . $cl . '" id="edit_notify" /> ' . t('follow') . ' '
-                    . '<i  id="edit_notify_i" class="fa '. $cl2 .'" aria-hidden="true"></i>'
+                    . '<span  id="edit_notify_i" class="ico '. $cl2 .'"></span>'
                     . '</button>';
 
 
@@ -1314,6 +1315,7 @@ class ProjectController extends ControllerBase {
                     $i++;
                     
                     /* default values */
+                    $items[$i]['id'] = $l->id; //db id
                     $items[$i]['fid'] = 1; //default file status on
                     $items[$i]['delete'] = 1; //default delete action is on
                     $items[$i]['email'] = 1; //default email action is on
@@ -1490,6 +1492,57 @@ class ProjectController extends ControllerBase {
         return new JsonResponse(array('data' => $t1.$t2, 'field' => $first));
     }
 
+    /**
+     * ajax drag & drop
+     * move document from 1 section to another
+     *
+     */
+    public function DragDrop(Request $request) {
+
+        $from = explode("-", $request->get('from'));
+        switch($request->get('to')) {
+            case 's1' :
+            case 'ps1' :
+                $folder = 'ap';            
+            case 's3' :
+            case 'ps3' :
+                $folder = 'com';
+                break;
+            case 's5' :
+            case 'ps5' :
+                $folder = 'fi';
+                break;
+        }
+        $fields = array('folder' => $folder);
+        $move = Database::getConnection('external_db', 'external_db')
+                ->update('ek_project_documents')
+                ->condition('id', $from[1])
+                ->fields($fields)
+                ->execute();
+        if($move){
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project_documents', 'd');        
+
+            $data = $query
+                  ->fields('d', array('pcode', 'filename'))
+                  ->condition('d.id', $from[1] , '=')
+                  ->execute()
+                  ->fetchObject();
+            $fields = array(
+                        'pcode' => $data->pcode,
+                        'uid' => \Drupal::currentUser()->id(),
+                        'stamp' => time(),
+                        'action' => 'move' . ' ' . $data->filename
+                );
+                Database::getConnection('external_db', 'external_db')
+                        ->insert('ek_project_tracker')
+                        ->fields($fields)->execute();
+        }
+        
+        return new Response('', 204);
+    }
+    
+    
     /**
      * delete a file from project 
      * Return ajax delete confirmation alert

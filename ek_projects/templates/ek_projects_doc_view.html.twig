@@ -5,6 +5,7 @@
  *
  *
  * Available items:
+ *   id (db id)
  *   fid (bol) file status
  *   uri (string)
  *   extension (sting)
@@ -34,7 +35,7 @@
 {% for key, item in items %}
 
     {% if item.fid == 1 %}
-        <tr>
+        <tr id="tr-{{ item.id }}" class="move">
             <td title='{{ item.doc_name }} |  {{ item.date }} , {{ item.size }}'>
                 <IMG src='../../{{ item.icon_path }}{{item.icon}}.png'/> 
                 <a href="{{ item.file_url }}" target='_blank' >{{ item.doc_name }}</a>

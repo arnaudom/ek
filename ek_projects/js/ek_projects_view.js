@@ -13,10 +13,10 @@
                 success: function (data) {
                     if (data.action == 1) {
                         jQuery('#edit_notify').toggleClass("_follow follow");
-                        jQuery('#edit_notify_i').toggleClass("fa-square-o fa-check-square-o ");
+                        jQuery('#edit_notify_i').toggleClass("square check-square");
                     } else {
                         jQuery('#edit_notify').toggleClass("follow _follow");
-                        jQuery('#edit_notify_i').toggleClass("fa-check-square-o fa-square-o");
+                        jQuery('#edit_notify_i').toggleClass("check-square square");
                     }
 
                 }
@@ -149,5 +149,45 @@ function addajax() {
         Drupal.ajax(element_settings);
     });
 
+
+}
+
+/*
+ * drag drop
+ */
+
+function adddragdrop() {
+
+    /**/
+    jQuery("#s3,#ps3,#s5,#ps5").droppable({
+        activeClass: "ui-state-default",
+        hoverClass: "ui-state-hover",
+        accept: ":not(.ui-sortable-helper), .move",
+        activeClass: "",
+                drop: function (event, ui) {
+                    jQuery.ajax({
+                        type: "POST",
+                        url: drupalSettings.path.baseUrl + "projects/dragdrop",
+                        data: {from: (ui.draggable).attr("id"), to: this.id},
+                        async: false
+                    });
+                    status = 1;
+
+                }
+    })
+
+
+    jQuery(".move").draggable({
+        cursor: "move",
+        cursorAt: {left: 0, top: 0},
+        //revert:true,
+        handle: "a",
+        helper: "clone",
+        stop: function (event, ui) {
+            if (status == 1) {
+               
+            }
+        }
+    });
 
 }
