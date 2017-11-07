@@ -75,3 +75,11 @@ ek_sales.invoice.task.tasks_list:
   base_route: ek_sales.invoices.list
   title: 'Tasks'
   weight: 4
+
+
+#add tab to address book
+ek_sales.ab_data:
+  route_name: ek_sales.data
+  base_route: ek_address_book.view
+  title: 'Sales'
+  weight: 4

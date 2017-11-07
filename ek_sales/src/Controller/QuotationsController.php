@@ -174,9 +174,7 @@ class QuotationsController extends ControllerBase {
                     . $r->serial . "</a>";
             
             $client_name = $abook[$r->client];
-            $client_part = substr($client_name, 0, 15);
-            $link = Url::fromRoute('ek_address_book.view', array('id' => $r->client))->toString();
-            $reference = "<a title='" . t('client') . ": " . $client_name . "' href='" . $link . "'>" . $client_part . "</a>";
+            $reference = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
             $query = "SELECT name from {ek_company} where id=:id";
             $co = $companies[$r->header];
             if($r->header <> $r->allocation) {
@@ -185,13 +183,7 @@ class QuotationsController extends ControllerBase {
             
             if ($r->pcode <> 'n/a') {
                 if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $pid = Database::getConnection('external_db', 'external_db')
-                            ->query('SELECT id from {ek_project} WHERE pcode=:p', array(':p' => $r->pcode))
-                            ->fetchField();
-                    $link = Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
-                    $pcode_parts = explode('-', $r->pcode);
-                    $reference .= "<br/><a title='" . 
-                            t('project') . ": " . $r->pcode . "' href='" . $link . "'>" . $pcode_parts[4] . "</a>";
+                    $reference .= "<br/>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, NULL, NULL, TRUE);
                 }
             } 
 

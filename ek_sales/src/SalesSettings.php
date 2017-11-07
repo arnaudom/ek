@@ -25,10 +25,14 @@ use Drupal\Core\Database\Database;
 
   public function __construct($coid = NULL) {
     
-    if($coid == NULL) $coid = 1;
+    if($coid == NULL) {
+        $coid = 1;
+    }
     $this->coid = $coid;
     $query = "SELECT * from {ek_sales_settings} WHERE coid=:coid";
-    $data = Database::getConnection('external_db', 'external_db')->query($query, array(':coid' => $this->coid))->fetchObject();
+    $data = Database::getConnection('external_db', 'external_db')
+            ->query($query, array(':coid' => $this->coid))
+            ->fetchObject();
     
     $this->settings = unserialize($data->settings);
   }

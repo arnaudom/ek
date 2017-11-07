@@ -298,8 +298,7 @@ class AssignNote extends FormBase {
         }
         
         $client_name = AddressBookData::getname($data->client); 
-        $link = Url::fromRoute('ek_address_book.view', array('id' => $data->client))->toString();
-        $markup .= t('Client') . ": " . "<a target='_blank' href='" . $link . "'>" . $client_name . "</a>";
+        $markup .= t('Client') . ': ' . AddressBookData::geturl($data->client);
         $form['note_details']['#description'] = '';
         if($form_state->getValue('amount') > $balance) {
             $form['note_details']['#description'] = "<br/><div class='red'>" . t('This credit is higher than the invoice balance.') . '</div>';

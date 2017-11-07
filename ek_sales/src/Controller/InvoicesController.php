@@ -239,9 +239,7 @@ class InvoicesController extends ControllerBase {
             $settings = new SalesSettings($r->head);
 
             $client_name = $abook[$r->client];
-            $client_part = substr($client_name, 0, 8);
-            $link = Url::fromRoute('ek_address_book.view', array('id' => $r->client))->toString();
-            $client = "<a title='" . t('client') . ": " . $client_name . "' href='" . $link . "'>" . $client_part . "</a>";
+            $client = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
             //$query = "SELECT name from {ek_company} where id=:id";
             $co = $companies[$r->head];
             if ($r->head <> $r->allocation) {
@@ -257,13 +255,7 @@ class InvoicesController extends ControllerBase {
 
             if ($r->pcode <> 'n/a') {
                 if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $pid = Database::getConnection('external_db', 'external_db')
-                            ->query('SELECT id from {ek_project} WHERE pcode=:p', array(':p' => $r->pcode))
-                            ->fetchField();
-                    $link = Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
-                    $pcode_parts = explode('-', $r->pcode);
-                    $reference = $client . "<br/><a title='"
-                            . t('project') . ": " . $r->pcode . "' href='" . $link . "'>" . $pcode_parts[4] . "</a>";
+                    $reference = $client . "<br/>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, NULL, NULL, TRUE);
                 } else {
                     $reference = $client;
                 }
@@ -595,9 +587,7 @@ class InvoicesController extends ControllerBase {
                 $age = round((strtotime($today) - strtotime($due)) / (24 * 60 * 60), 0);
 
                 $client_name = $abook[$r->client];
-                $client_part = substr($client_name, 0, 8);
-                $link = Url::fromRoute('ek_address_book.view', array('id' => $r->client))->toString();
-                $client = "<a title='" . t('client') . ": " . $client_name . "' href='" . $link . "'>" . $client_part . "</a>";
+                $client = \Drupal\ek_address_book\AddressBookData::geturl($r->client);
                 $co = $companies[$r->head];
                 $number = "<a title='" . t('view') . "' href='"
                         . Url::fromRoute('ek_sales.invoices.print_html', ['id' => $r->id], [])->toString() . "'>"
@@ -605,13 +595,7 @@ class InvoicesController extends ControllerBase {
 
                 if ($r->pcode <> 'n/a') {
                     if ($this->moduleHandler->moduleExists('ek_projects')) {
-                        $pid = Database::getConnection('external_db', 'external_db')
-                                ->query('SELECT id from {ek_project} WHERE pcode=:p', array(':p' => $r->pcode))
-                                ->fetchField();
-                        $link = Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
-                        $pcode_parts = explode('-', $r->pcode);
-                        $reference = $client . "<br/><a title='"
-                                . t('project') . ": " . $r->pcode . "' href='" . $link . "'>" . $pcode_parts[4] . "</a>";
+                        $reference = $client . "<br/>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, NULL, NULL, TRUE);
                     } else {
                         $reference = $client;
                     }

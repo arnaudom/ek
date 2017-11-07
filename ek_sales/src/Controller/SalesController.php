@@ -103,7 +103,7 @@ class SalesController extends ControllerBase {
         if($ab) {
             $items['data'] = 1;
             $items['abidname'] = $ab->name;
-            $items['abidlink'] = Url::fromRoute('ek_address_book.view', array('id' => $abid))->toString();
+            $items['abidlink'] = Url::fromRoute('ek_address_book.view', array('abid' => $abid))->toString();
 
             //upload form for documents
             $items['form'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\UploadForm', $abid);
