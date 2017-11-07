@@ -552,6 +552,12 @@ $i = 0;
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+      
+    if($form_state->get('step') == 1) {
+        if($form_state->getValue('date') > date('Y-m-d')) {
+            $form_state->setErrorByName("date",  $this->t('Future date not allowed') ); 
+        }
+    }
   
     if($form_state->get('step') == 2) {
     
