@@ -49,27 +49,27 @@ class NewAddressBookForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+    public function buildForm(array $form, FormStateInterface $form_state, $abid = NULL) {
 
-        if (isset($id)) {
+        if (isset($abid)) {
 
             $form['for_id'] = array(
                 '#type' => 'hidden',
-                '#default_value' => $id,
+                '#default_value' => $abid,
             );
 
             $query = "SELECT * from {ek_address_book} WHERE id=:id";
-            $r = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchAssoc();
+            $r = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid))->fetchAssoc();
 
             $query = "SELECT count(id) from {ek_address_book_contacts} WHERE abid=:id";
-            $rc = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
+            $rc = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid))->fetchField();
         }
 
         $form['name'] = array(
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
-            '#description' => isset($id) ? t('Organization name') : '',
+            '#description' => isset($abid) ? t('Organization name') : '',
             '#required' => true,
             '#default_value' => isset($r['name']) ? $r['name'] : null,
             '#attributes' => array('placeholder' => t('Organization name')),
@@ -83,7 +83,7 @@ class NewAddressBookForm extends FormBase {
         $form['shortname'] = array(
             '#type' => 'textfield',
             '#id' => 'short_name',
-            '#description' => isset($id) ? t('Short name') : '',
+            '#description' => isset($abid) ? t('Short name') : '',
             '#size' => 10,
             '#maxlength' => 5,
             '#required' => true,
@@ -94,7 +94,7 @@ class NewAddressBookForm extends FormBase {
         $form['address'] = array(
             '#type' => 'textfield',
             '#size' => 60,
-            '#description' => isset($id) ? t('Address line 1') : '',
+            '#description' => isset($abid) ? t('Address line 1') : '',
             '#maxlength' => 255,
             '#default_value' => isset($r['address']) ? $r['address'] : null,
             '#attributes' => array('placeholder' => t('Address line 1')),
@@ -103,7 +103,7 @@ class NewAddressBookForm extends FormBase {
         $form['address2'] = array(
             '#type' => 'textfield',
             '#size' => 60,
-            '#description' => isset($id) ? t('Address line 2') : '',
+            '#description' => isset($abid) ? t('Address line 2') : '',
             '#maxlength' => 255,
             '#default_value' => isset($r['address2']) ? $r['address2'] : null,
             '#attributes' => array('placeholder' => t('Address line 2')),
@@ -112,7 +112,7 @@ class NewAddressBookForm extends FormBase {
         $form['postcode'] = array(
             '#type' => 'textfield',
             '#size' => 12,
-            '#description' => isset($id) ? t('Postcode') : '',
+            '#description' => isset($abid) ? t('Postcode') : '',
             '#maxlength' => 20,
             '#default_value' => isset($r['postcode']) ? $r['postcode'] : null,
             '#attributes' => array('placeholder' => t('Postcode')),
@@ -120,7 +120,7 @@ class NewAddressBookForm extends FormBase {
 
         $form['city'] = array(
             '#type' => 'textfield',
-            '#description' => isset($id) ? t('City') : '',
+            '#description' => isset($abid) ? t('City') : '',
             '#size' => 30,
             '#maxlength' => 100,
             '#default_value' => isset($r['city']) ? $r['city'] : null,
@@ -140,7 +140,7 @@ class NewAddressBookForm extends FormBase {
         $form['telephone'] = array(
             '#type' => 'textfield',
             '#size' => 30,
-            '#description' => isset($id) ? t('Telephone') : '',
+            '#description' => isset($abid) ? t('Telephone') : '',
             '#maxlength' => 30,
             '#default_value' => isset($r['telephone']) ? $r['telephone'] : null,
             '#attributes' => array('placeholder' => t('Telephone')),
@@ -149,7 +149,7 @@ class NewAddressBookForm extends FormBase {
         $form['fax'] = array(
             '#type' => 'textfield',
             '#size' => 30,
-            '#description' => isset($id) ? t('Fax No.') : '',
+            '#description' => isset($abid) ? t('Fax No.') : '',
             '#maxlength' => 30,
             '#default_value' => isset($r['fax']) ? $r['fax'] : null,
             '#attributes' => array('placeholder' => t('Fax No.')),
@@ -158,7 +158,7 @@ class NewAddressBookForm extends FormBase {
         $form['website'] = array(
             '#type' => 'textfield',
             '#size' => 30,
-            '#description' => isset($id) ? t('Web site') : '',
+            '#description' => isset($abid) ? t('Web site') : '',
             '#maxlength' => 100,
             '#default_value' => isset($r['website']) ? $r['website'] : null,
             '#attributes' => array('placeholder' => t('Web site')),
@@ -193,7 +193,7 @@ class NewAddressBookForm extends FormBase {
             '#type' => 'textfield',
             '#default_value' => isset($r['activity']) ? $r['activity'] : null,
             '#attributes' => array('placeholder' => t('Activity or segment tag')),
-            '#description' => isset($id) ? t('Activity or segment tag'): '',
+            '#description' => isset($abid) ? t('Activity or segment tag'): '',
             '#required' => TRUE,
             '#autocomplete_route_name' => 'ek_address_book_tag_activity',
         );
@@ -220,7 +220,7 @@ class NewAddressBookForm extends FormBase {
 
             //namecard exist
             $query = "SELECT * from {ek_address_book_contacts} WHERE abid=:id order by id";
-            $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id));
+            $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid));
 
             while ($rc = $data->fetchAssoc()) {
 
@@ -719,7 +719,7 @@ class NewAddressBookForm extends FormBase {
 
         if (isset($insert) || isset($update))
             drupal_set_message(t('The address book entry is recorded'), 'status');
-        $form_state->setRedirect('ek_address_book.view', array('id' => $id));
+        $form_state->setRedirect('ek_address_book.view', array('abid' => $id));
     }
 
 }

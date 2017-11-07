@@ -71,10 +71,10 @@ class AddressBookController extends ControllerBase {
      * Return lookup address form page and display address book data.
      *
      */
-    public function viewaddressbook(Request $request, $id = NULL) {
+    public function viewaddressbook(Request $request, $abid = NULL) {
 
         //if no id, get the search form
-        if ($id == NULL || $id == 0) {
+        if ($abid == NULL || $abid == 0) {
             
         } else {
             //return the data
@@ -85,12 +85,12 @@ class AddressBookController extends ControllerBase {
             $query->fields('a');
             $query->leftJoin('ek_address_book_comment', 'b', 'a.id = b.abid');
             $query->fields('b');
-            $query->condition('id', $id, '=');
+            $query->condition('id', $abid, '=');
 
             $r = $query->execute()->fetchAssoc();
 
             $url_search = Url::fromRoute('ek_address_book.search', array(), array())->toString();
-            $url_add = Url::fromRoute('ek_address_book.newcard', array('id' => $r['id']), array())->toString();
+            $url_add = Url::fromRoute('ek_address_book.newcard', array('abid' => $r['id']), array())->toString();
 
             if ($this->moduleHandler->moduleExists('ek_sales')) {
                 $url_sales = Url::fromRoute('ek_sales.data', array('abid' => $r['id']), array())->toString();
@@ -114,10 +114,10 @@ class AddressBookController extends ControllerBase {
             }
             $into = ($r['type'] == '1') ? t('supplier') : t('client');
             if ($clone == TRUE) {
-                $url_clone = Url::fromRoute('ek_address_book.clone', array('id' => $r['id']), array())->toString();
+                $url_clone = Url::fromRoute('ek_address_book.clone', array('abid' => $r['id']), array())->toString();
                 $items['clone'] = t('<a href="@url" title="@i">Clone</a>', array('@url' => $url_clone, '@i' => $into));
             } else {
-                $url_clone = Url::fromRoute('ek_address_book.view', array('id' => $check->id), array())->toString();
+                $url_clone = Url::fromRoute('ek_address_book.view', array('abid' => $check->id), array())->toString();
                 $items['clone'] = t('<a href="@url" title="@i"><-></a>', array('@url' => $url_clone, '@i' => $into));
             }
             $items['stamp'] = date('Y-m-d', $r['stamp']);
@@ -155,7 +155,7 @@ class AddressBookController extends ControllerBase {
             $items['contacts'] = array();
 
             $query = "SELECT * FROM {ek_address_book_contacts} WHERE abid=:id ORDER BY main DESC";
-            $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id));
+            $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid));
 
 
             while ($r = $data->fetchAssoc()) {
@@ -187,7 +187,7 @@ class AddressBookController extends ControllerBase {
                 $contact['link'] = $r['link'];
                 $contact['comment'] = $r['comment'];
 
-                $url_pdf = Url::fromRoute('ek_address_book.pdf', array('id' => $id, 'cid' => $r['id']), array())->toString();
+                $url_pdf = Url::fromRoute('ek_address_book.pdf', array('abid' => $abid, 'cid' => $r['id']), array())->toString();
                 $contact['pdf'] = t('<a href="@url" target="_blank">Pdf</a>', array('@url' => $url_pdf));
 
                 array_push($items['contacts'], $contact);
@@ -251,11 +251,11 @@ class AddressBookController extends ControllerBase {
      * @param
      *  id: main address book id
      */
-    public function newaddressbook(Request $request, $id = NULL) {
+    public function newaddressbook(Request $request, $abid = NULL) {
 
 
         $form_builder = $this->formBuilder();
-        $response = $form_builder->getForm('Drupal\ek_address_book\Form\NewAddressBookForm', $id);
+        $response = $form_builder->getForm('Drupal\ek_address_book\Form\NewAddressBookForm', $abid);
 
         return array(
             '#theme' => 'ek_address_book_form',

@@ -70,14 +70,14 @@ class SearchAddressBookForm extends FormBase {
         while ($d = $data->fetchObject()) {
 
             $id = $d->id;
-            $url = Url::fromRoute('ek_address_book.view', array('id' => $id), array())->toString();
+            $url = Url::fromRoute('ek_address_book.view', array('abid' => $id), array())->toString();
             $list .= '<li><a href=' . $url . ' >' . $d->name . ' (' . $type[$d->type] . ') </a></li>';
             $i++;
         }
 
         if ($i == 1) {
             //there is only one entry. redirect to it
-            $form_state->setRedirect('ek_address_book.view', array('id' => $id));
+            $form_state->setRedirect('ek_address_book.view', array('abid' => $id));
         } elseif ($i == 0) {
             //there is no entry found
             drupal_set_message(t('Contact not found'), 'warning');

@@ -54,6 +54,3 @@ ek_address_book.edit:
   title: 'Edit'
   weight: 3
   
-#ek_address_book.sales_data:
-#  class: \Drupal\Core\Menu\LocalTaskDefault
-#  deriver: 'Drupal\ek_address_book\Plugin\Derivative\DynamicLocalTasks'

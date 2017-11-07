@@ -307,7 +307,7 @@ class NewAddressBookCardForm extends FormBase {
             drupal_set_message(t('The address book card is recorded'), 'status');
         }
 
-        $form_state->setRedirect('ek_address_book.view', array('id' => $form_state->getValue('for_id')));
+        $form_state->setRedirect('ek_address_book.view', array('abid' => $form_state->getValue('for_id')));
     }
 
 }

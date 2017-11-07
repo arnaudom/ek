@@ -111,3 +111,58 @@ hr {
   margin-top: 2px;
   height: 0;
 }
+
+
+.ico:before {
+  font-family: FontAwesome;
+  font-size:1.3em;
+  color: #446E9B;
+  width: 1.4em;
+  text-align: center;
+  display: inline-block;
+  text-rendering: auto;
+}
+
+.search:before {
+  content: "\f002";
+}
+.pencil:before {
+  content: "\f044";
+}
+.map-marker:before {
+  content: "\f041";
+}
+.phone:before {
+  content: "\f095";
+}
+.users:before {
+  content: "\f0c0";
+}
+.plus:before {
+  content: "\f067";
+}
+
+.user:before {
+  content: "\f2be"; 
+}
+.briefcase:before {
+  content: "\f0b1"; 
+}
+.tag:before {
+  content: "\f02b"; 
+}
+.mobile:before {
+  content: "\f10b";
+}
+.envelope:before {
+  content: "\f003"; 
+}
+.link:before {
+  content: "\f0c1"; 
+}
+.comment:before {
+  content: "\f075"; 
+}
+.file-pdf:before {
+  content: "\f1c1"; 
+}

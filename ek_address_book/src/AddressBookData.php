@@ -82,17 +82,31 @@ use Drupal\Core\Url;
   }
  
    /**
-   * @return 
-   * linked name from id
-   * \Drupal\ek_address_book\AddressBookData::geturl($id);
+   * @param int id
+   *  address book id
+   * @param array option
+   *  formatting options
+   * i.e. ['short' => 8] for 8 characters display
+   * @return html string
+   *    linked name from id
+   *    \Drupal\ek_address_book\AddressBookData::geturl($id, $option);
    * 
    */ 
-  public static function geturl($id = NULL) { 
+  public static function geturl($id = NULL, $option = NULL) { 
  
     $query = "SELECT name from {ek_address_book} where id=:id";
-    $add = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
-    $link =  Url::fromRoute('ek_address_book.view', array('id' => $id))->toString();
-    return "<a title='" . t('address book') . "' href='". $link ."'>" . $add . "</a>";
+    
+    $name = Database::getConnection('external_db', 'external_db')
+            ->query($query, array(':id' => $id))
+            ->fetchField();
+    $fullname = $name;
+    if(isset($option['short'])) {
+         $name = substr($name , 0, $option['short']);
+    }
+     
+    $link =  Url::fromRoute('ek_address_book.view', array('abid' => $id))->toString();
+    
+    return "<a title='" . $fullname . "' href='". $link ."'>" . $name . "</a>";
  
  }
  

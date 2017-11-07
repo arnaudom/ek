@@ -45,23 +45,23 @@ ek_address_book.search:
     _permission: 'view_address_book'
 
 ek_address_book.view:
-  path: '/address_book/{id}'
+  path: '/address_book/{abid}'
   defaults:
     _title: 'Address book view'
     _controller: '\Drupal\ek_address_book\Controller\AddressBookController::viewaddressbook'
   requirements:
     _permission: 'view_address_book'
-    id: \d*
+    abid: \d*
 
 ek_address_book.image-modal:
-  path: '/address_book/modal/{js}/{id}'
+  path: '/address_book/modal/{js}/{abid}'
   defaults:
     _title: 'Name card'
     _controller: '\Drupal\ek_address_book\Controller\AddressBookController::modal'
   requirements:
     _permission: 'view_address_book'
     js: 'nojs|ajax'
-    id: \d*
+    abid: \d*
 
 ek_address_book.list:
   path: '/address_list'
@@ -88,36 +88,36 @@ ek_address_book.new:
     _permission: 'edit_address_book'
     
 ek_address_book.newcard:
-  path: '/new_contact_card/{id}'
+  path: '/new_contact_card/{abid}'
   defaults:
     _controller: '\Drupal\ek_address_book\Controller\AddressBookController::newaddressbookcard'
   requirements:
     _permission: 'edit_address_book'
-    id: \d*
+    abid: \d*
     
 ek_address_book.edit:
-  path: '/edit_contact/{id}'
+  path: '/edit_contact/{abid}'
   defaults:
     _controller: '\Drupal\ek_address_book\Controller\AddressBookController::newaddressbook'
   requirements:
     _permission: 'edit_address_book'
-    id: \d*
+    abid: \d*
     
 ek_address_book.clone:
-  path: '/clone_contact/{id}'
+  path: '/clone_contact/{abid}'
   defaults:
     _controller: '\Drupal\ek_address_book\Controller\AddressBookController::cloneaddressbook'
   requirements:
     _permission: 'edit_address_book'
-    id: \d*
+    abid: \d*
     
 ek_address_book.delete:
-  path: '/delete_contact/{id}'
+  path: '/delete_contact/{abid}'
   defaults:
     _controller: '\Drupal\ek_address_book\Controller\AddressBookController::deleteaddressbook'
   requirements:
     _permission: 'delete_address_book'
-    id: \d*
+    abid: \d*
     
 ek.look_up_contact_ajax:
   path: '/look_up_contact_ajax/{type}'
@@ -143,12 +143,12 @@ ek.built_sn_ajax:
     _permission: 'edit_address_book'
     
 ek_address_book.pdf:
-  path: '/address_book/name_card_pdf/{id}/{cid}'
+  path: '/address_book/name_card_pdf/{abid}/{cid}'
   defaults:
     _controller: '\Drupal\ek_address_book\Controller\AddressBookController::pdfaddressbook'
   requirements:
     _permission: 'view_address_book'
-    id: \d*
+    abid: \d*
     cid: \d* 
     
 ek_address_book_tag_activity:
