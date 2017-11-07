@@ -459,26 +459,17 @@ class ExpensesManageController extends ControllerBase {
                             ->fetchField();
 
                     if ($r->clientname != 0) {
-                        $url = Url::fromRoute('ek_address_book.view', array('id' => $r->clientname), array())->toString();
-                        $ref = $ref . "<a href='" . $url . "' title='" . t('client') . ": " . $clientname . "'>" .
-                                substr($clientname, 0, 6) . '</a><br/>';
+                        $url = \Drupal\ek_address_book\AddressBookData::geturl($r->clientname,['short' => 8]);
+                        $ref = $ref . $url . '<br/>';
                     }
                     if ($r->suppliername != 0) {
-                        $url = Url::fromRoute('ek_address_book.view', array('id' => $r->suppliername), array())->toString();
-                        $ref = $ref . "<a href='" . $url . "'  title='" . t('supplier') . ": " . $suppliername . "'>" .
-                                substr($suppliername, 0, 6) . '</a><br/>';
+                        $url = \Drupal\ek_address_book\AddressBookData::geturl($r->suppliername,['short' => 8]);
+                        $ref = $ref . $url . '<br/>';
                     }
+                    
                     if ($r->pcode <> 'n/a') {
                         if ($this->moduleHandler->moduleExists('ek_projects')) {
-                            $pcode = str_replace('/', '-', $r->pcode);
-                            $query = "SELECT id from {ek_project} WHERE pcode=:p";
-                            $pid = Database::getConnection('external_db', 'external_db')
-                                    ->query($query, array(':p' => $pcode))
-                                    ->fetchField();
-                            $pparts = array_reverse(explode('-', $pcode));
-                            $url = Url::fromRoute('ek_projects_view', array('id' => $pid), array())->toString();
-
-                            $ref .= "<a title='" . t('project') . ' ' . $pcode . "' href='" . $url . "'>" . $pparts[0] . "</a>";
+                            $ref .= \Drupal\ek_projects\ProjectData::geturl($r->pcode, NULL, NULL, TRUE);
                         }
                     }
 
@@ -504,25 +495,13 @@ class ExpensesManageController extends ControllerBase {
                     $receipt = '';
 
                     if ($r->client != '0') {
-                        $clientname = Database::getConnection('external_db', 'external_db')
-                                ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $r->client))
-                                ->fetchField();
 
-                        $url = Url::fromRoute('ek_address_book.view', array('id' => $r->client), array())->toString();
-                        $ref = $ref . "<a href='" . $url . "' title='" . t('client') . ": " . $clientname . "'>" .
-                                substr($clientname, 0, 6) . '</a><br/>';
+                        $url = \Drupal\ek_address_book\AddressBookData::geturl($r->client,['short' => 8]);
+                        $ref = $ref . $url . '<br/>';
                     }
                     if ($r->p_pcode <> 'n/a') {
                         if ($this->moduleHandler->moduleExists('ek_projects')) {
-                            $pcode = str_replace('/', '-', $r->p_pcode);
-                            $query = "SELECT id from {ek_project} WHERE pcode=:p";
-                            $pid = Database::getConnection('external_db', 'external_db')
-                                    ->query($query, array(':p' => $pcode))
-                                    ->fetchField();
-                            $pparts = array_reverse(explode('-', $pcode));
-                            $url = Url::fromRoute('ek_projects_view', array('id' => $pid), array())->toString();
-
-                            $ref .= "<a title='" . t('project') . ' ' . $pcode . "' href='" . $url . "'>" . $pparts[0] . "</a>";
+                            $ref .= \Drupal\ek_projects\ProjectData::geturl($r->p_pcode, NULL, NULL, TRUE);
                         }
                     }
                     if ($r->uri != '') {
@@ -824,34 +803,18 @@ class ExpensesManageController extends ControllerBase {
 
                 $ref = '';
                 $receipt = '';
-                $clientname = Database::getConnection('external_db', 'external_db')
-                        ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $r->clientname))
-                        ->fetchField();
-                $suppliername = Database::getConnection('external_db', 'external_db')
-                        ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $r->suppliername))
-                        ->fetchField();
 
                 if ($r->clientname != 0) {
-                    $url = Url::fromRoute('ek_address_book.view', array('id' => $r->clientname), array())->toString();
-                    $ref = $ref . "<a href='" . $url . "' title='" . t('client') . ": " . $clientname . "'>" .
-                            substr($clientname, 0, 6) . '</a><br/>';
+                    $url = \Drupal\ek_address_book\AddressBookData::geturl($r->clientname,['short' => 8]);
+                    $ref = $ref . $url . '<br/>';
                 }
                 if ($r->suppliername != 0) {
-                    $url = Url::fromRoute('ek_address_book.view', array('id' => $r->suppliername), array())->toString();
-                    $ref = $ref . "<a href='" . $url . "'  title='" . t('supplier') . ": " . $suppliername . "'>" .
-                            substr($suppliername, 0, 6) . '</a><br/>';
+                    $url = \Drupal\ek_address_book\AddressBookData::geturl($r->suppliername,['short' => 8]);
+                    $ref = $ref . $url . '<br/>';
                 }
                 if ($r->pcode <> 'n/a') {
                     if ($this->moduleHandler->moduleExists('ek_projects')) {
-                        $pcode = str_replace('/', '-', $r->pcode);
-                        $query = "SELECT id from {ek_project} WHERE pcode=:p";
-                        $pid = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':p' => $pcode))
-                                ->fetchField();
-                        $pparts = array_reverse(explode('-', $pcode));
-                        $url = Url::fromRoute('ek_projects_view', array('id' => $pid), array())->toString();
-
-                        $ref .= "<a title='" . t('project') . ' ' . $pcode . "' href='" . $url . "'>" . $pparts[0] . "</a>";
+                        $ref .= \Drupal\ek_projects\ProjectData::geturl($r->pcode, FALSE, FALSE, TRUE);
                     }
                 }
 

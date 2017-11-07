@@ -67,16 +67,8 @@ Switch ($source) {
                         . "WHERE serial=:id", array(':id' => $head->serial));
             
         
-        if(isset($head->pcode) && $head->pcode != 'n/a') {
-
-            $query = "SELECT id,pname FROM {ek_project} WHERE pcode=:id";
-
-            $p = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $head->pcode))
-                    ->fetchObject();
-            $plink =  Url::fromRoute('ek_projects_view', array('id' => $p->id), [])->toString(); 
-            $head->pcode_raw = $head->pcode;
-            $head->pcode =  "<a title='" . $p->pname . "' href='". $plink ."'>" . $head->pcode . "</a>";   
+        if(isset($head->pcode) && $head->pcode != 'n/a') { 
+            $head->pcode = \Drupal\ek_projects\ProjectData::geturl($head->pcode);
         } else {
             $head->pcode = "";
         }
