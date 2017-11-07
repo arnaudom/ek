@@ -294,7 +294,7 @@ class DocumentsEditController extends ControllerBase {
             self::remove($id);
         } 
         
-        //LogicException: The controller must return a response (null given)
+        
         return new Response('', 204);
     }
 
@@ -315,10 +315,13 @@ class DocumentsEditController extends ControllerBase {
 
         $from = explode("-", $request->get('from'));
         $fields = array('folder' => $request->get('to'));
-        $result = Database::getConnection('external_db', 'external_db')->update('ek_documents')
+        $result = Database::getConnection('external_db', 'external_db')
+                ->update('ek_documents')
                 ->condition('id', $from[1])
                 ->fields($fields)
                 ->execute();
+        
+        return new Response('', 204);
     }
 
     /**
