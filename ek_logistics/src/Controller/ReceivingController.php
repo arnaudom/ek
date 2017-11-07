@@ -178,12 +178,7 @@ class ReceivingController extends ControllerBase {
         while ($r = $data->fetchObject()) {
 
             $settings = new LogisticsSettings($r->head);
-            $query = "SELECT name from {ek_address_book} where id=:id";
-            $client = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $r->supplier))
-                    ->fetchField();
-            $link = Url::fromRoute('ek_address_book.view', array('id' => $r->supplier))->toString();
-            $client = "<a title='" . t('client') . "' href='" . $link . "'>" . $client . "</a>";
+            $client = \Drupal\ek_address_book\AddressBookData::geturl($r->supplier,['short' => 8]);
             $query = "SELECT name from {ek_company} where id=:id";
             $co = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':id' => $r->head))
@@ -194,9 +189,7 @@ class ReceivingController extends ControllerBase {
             
             if ($r->pcode <> 'n/a') {
                 if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $pid = Database::getConnection('external_db', 'external_db')->query('SELECT id from {ek_project} WHERE pcode=:p', array(':p' => $r->pcode))->fetchField();
-                    $link = Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
-                    $reference = $client . "<br/><a title='" . t('project') . "' href='" . $link . "'>" . $r->pcode . "</a>";
+                    $reference = $client . "<br/>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode);
                 } else {
                     $reference = $client;
                 }

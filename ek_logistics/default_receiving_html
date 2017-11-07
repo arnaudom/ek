@@ -173,9 +173,9 @@ foreach ($items as $detail) {
     }
 }
 
-if ($head->pcode && $head->pcode != 'n/a') {
+if (isset($project_link)) {
    $list .= '<tr>
-                <td></td><td colspan=5><h2>' . t("Our ref.") . ' ' . $head->pcode . '</h2></td>
+                <td></td><td colspan=5>' . t("Our ref.") . ' ' . $project_link . '</td>
            </tr>';
 }
 

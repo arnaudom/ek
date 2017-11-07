@@ -39,7 +39,8 @@ class ProjectMessagesBlock extends BlockBase {
         if(\Drupal::moduleHandler()->moduleExists('ek_messaging')) {
             
             $path = \Drupal::service('path.current')->getPath();
-            $id = array_pop(explode('/',$path));
+            $parts = explode('/',$path);
+            $id = array_pop($parts);
             $query = "SELECT pcode FROM {ek_project} WHERE id=:id";
             $pcode = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':id' => $id))->fetchField();

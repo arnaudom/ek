@@ -44,6 +44,11 @@ if (isset($head->type) && $head->type == 'RR') {
     $tpl = 'delivery';
 }
 
+if(\Drupal::moduleHandler()->moduleExists('ek_projects')) {      
+    if ($head->pcode) {
+            $project_link = \Drupal\ek_projects\ProjectData::geturl($head->pcode);
+    }
+}
 Switch ($source) {
 
     case 'logi_delivery':
