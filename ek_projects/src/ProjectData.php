@@ -139,13 +139,16 @@ use Drupal\ek_admin\Access\AccessCheck;
         return $list;
     }
     /*
-     * @return 
+     * @param mix id 
+     *  project id or project serial code
+     * @param bolean ext
+     *  flag to open link in new window
+     * @param bolean short
+     *  return only last part of serial code (number)
+     * @return html link
      *  a project code view url from id or serial
      *  generate internal/external link to the project
-     * @param mix $id 
-     *  project id or project serial code
-     * @param bolean $ext
-     *  flag to open link in new window
+     * 
      */
 
     public static function geturl($id, $ext = NULL, $base = NULL, $short = NULL) { 
@@ -155,7 +158,10 @@ use Drupal\ek_admin\Access\AccessCheck;
         } else {
             $query = "SELECT id,pcode,pname from {ek_project} where pcode=:id";
         }
-        $p = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
+        $p = Database::getConnection('external_db', 'external_db')
+                ->query($query, array(':id' => $id))
+                ->fetchObject();
+        
         if($ext == TRUE) {
            $link =  Url::fromRoute('ek_projects_view', array('id' => $p->id), ['absolute' => TRUE])->toString();
         } else {
@@ -167,6 +173,7 @@ use Drupal\ek_admin\Access\AccessCheck;
         }
 
         if($short != NULL) {
+            $r->pcode = str_replace('/', '-', $r->pcode);//old format
             $parts = explode('-', $p->pcode);
             $code = array_reverse($parts);
             $pcode = $code[0];
