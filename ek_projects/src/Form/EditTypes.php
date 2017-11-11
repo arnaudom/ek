@@ -12,6 +12,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
@@ -111,7 +112,7 @@ class EditTypes extends FormBase {
                 '#id' => 'group-' . $id,
                 '#type' => 'textfield',
                 '#size' => 15,
-                '#maxlength' => 255,
+                '#maxlength' => 45,
                 '#default_value' => $r->gp,
                 '#attributes' => array('placeholder' => t('group'), 'title' => t('A group tag')),
                 '#required' => TRUE,
@@ -120,7 +121,7 @@ class EditTypes extends FormBase {
                 '#id' => 'type-' . $id,
                 '#type' => 'textfield',
                 '#size' => 25,
-                '#maxlength' => 255,
+                '#maxlength' => 45,
                 '#default_value' => $r->type,
                 '#attributes' => array('placeholder' => t('project type name')),
                 '#required' => TRUE,
@@ -139,7 +140,7 @@ class EditTypes extends FormBase {
                 '#id' => 'short-' . $id,
                 '#type' => 'textfield',
                 '#size' => 15,
-                '#maxlength' => 255,
+                '#maxlength' => 5,
                 '#default_value' => $r->short,
                 '#required' => TRUE,
                 '#attributes' => array('class' => array('short name')),
@@ -187,7 +188,7 @@ class EditTypes extends FormBase {
             '#id' => 'newgroup',
             '#type' => 'textfield',
             '#size' => 15,
-            '#maxlength' => 255,
+            '#maxlength' => 45,
             '#default_value' => '',
             '#attributes' => array('placeholder' => t('Group'), 'title' => t('A grouping tag')),
         );
@@ -195,7 +196,7 @@ class EditTypes extends FormBase {
             '#id' => 'newtype',
             '#type' => 'textfield',
             '#size' => 25,
-            '#maxlength' => 255,
+            '#maxlength' => 45,
             '#default_value' => '',
             '#attributes' => array('placeholder' => t('New type'), 'title' => t('Main category reference')),
         );
@@ -213,9 +214,9 @@ class EditTypes extends FormBase {
             '#id' => 'newshort',
             '#type' => 'textfield',
             '#size' => 15,
-            '#maxlength' => 255,
+            '#maxlength' => 5,
             '#default_value' => '',
-            '#attributes' => array('class' => array('Short name'), 'title' => t('Used to build case ref. Should no be more than 3 letters')),
+            '#attributes' => array('class' => array('Short name'), 'title' => t('Used to build case ref. Should no be more than 5 letters')),
         );
 
         $form['del'] = array(
@@ -280,6 +281,8 @@ class EditTypes extends FormBase {
                 $form_state->setErrorByName('newtype', $this->t('You need to enter a type'));
             }
         }
+        
+        
     }
 
     /**
@@ -321,15 +324,21 @@ class EditTypes extends FormBase {
 
                     if ($count > 0) { //In use only update description
                         $fields = array(
-                            'comment' => SafeMarkup::checkPlain($value['comment']),
-                            'gp' => SafeMarkup::checkPlain($value['group']),
+                            'comment' => Xss::filter($value['comment']),
+                            'gp' => Xss::filter($value['group']),
                         );
-                    } else { //not in use can update all data               
+                    } else { //not in use can update all data  
+                        
+                        //check if field is less than 6 char
+                        $short = Xss::filter($value['short']);
+                        if(count_chars($short,3) > 5) {
+                            $short = substr($short,0,5);
+                        }
                         $fields = array(
-                            'type' => SafeMarkup::checkPlain($value['type']),
-                            'gp' => SafeMarkup::checkPlain($value['group']),
-                            'comment' => SafeMarkup::checkPlain($value['comment']),
-                            'short' => SafeMarkup::checkPlain($value['short'])
+                            'type' => Xss::filter($value['type']),
+                            'gp' => Xss::filter($value['group']),
+                            'comment' => Xss::filter($value['comment']),
+                            'short' => $short
                         );
                     }
 
@@ -342,12 +351,18 @@ class EditTypes extends FormBase {
                 }
             } else {
                 if ($value['type'] != '') {
-
+                    $short = Xss::filter($value['short']);
+                        if($short == '') {
+                            $short = substr(Xss::filter($value['type']),0,5);
+                        }
+                        if(count_chars($short,3) > 5) {
+                            $short = substr($short,0,5);
+                        }
                     $fields = array(
-                        'type' => SafeMarkup::checkPlain($value['type']),
-                        'gp' => SafeMarkup::checkPlain($value['group']),
-                        'comment' => SafeMarkup::checkPlain($value['comment']),
-                        'short' => SafeMarkup::checkPlain($value['short'])
+                        'type' => Xss::filter($value['type']),
+                        'gp' => Xss::filter($value['group']),
+                        'comment' => Xss::filter($value['comment']),
+                        'short' => $short
                     );
 
                     Database::getConnection('external_db', 'external_db')
