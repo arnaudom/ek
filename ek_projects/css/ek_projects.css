@@ -228,6 +228,13 @@
   display: inline-block;
   text-rendering: auto;
 }
+.show-ico:before {
+  content: "\f06e";
+}
+.hide-ico:before {
+  content: "\f070";
+  color:#000;
+}
 
 .pencil:before {
   content: "\f040";

@@ -23,12 +23,10 @@
             });
         });
         
-        
-        
     });
 
 
-    /* toggle the editio mode for all fields
+    /* toggle the edition mode for all fields
      * 
      */
     jQuery(function () {
@@ -59,6 +57,19 @@
         });
     });
 
+    /* delete files toggle
+     * 
+     */
+    jQuery(function () {
+        jQuery('.hideFile').click(function () {
+            if (jQuery('.hideFile').hasClass('show-ico'))
+                jQuery('.hide').hide('fast');
+            if (jQuery('.hideFile').hasClass('hide-ico'))
+                jQuery('.hide').show('fast');
+            jQuery('.hideFile').toggleClass('show-ico hide-ico');
+
+        });
+    });
 
 
 })(jQuery, Drupal, drupalSettings);
