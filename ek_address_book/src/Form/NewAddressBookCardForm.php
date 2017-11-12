@@ -25,7 +25,7 @@ class NewAddressBookCardForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+    public function buildForm(array $form, FormStateInterface $form_state, $abid = NULL) {
 
 
         $form['back'] = array(
@@ -34,11 +34,11 @@ class NewAddressBookCardForm extends FormBase {
         );
 
 
-        if (isset($id)) {
+        if (isset($abid)) {
 
             $form['for_id'] = array(
                 '#type' => 'hidden',
-                '#default_value' => $id,
+                '#default_value' => $abid,
             );
         }
 
@@ -291,7 +291,8 @@ class NewAddressBookCardForm extends FormBase {
                         'stamp' => strtotime("now"),
                     );
 
-                    $insert = Database::getConnection('external_db', 'external_db')->insert('ek_address_book_contacts')->fields($fields)->execute();
+                    $insert = Database::getConnection('external_db', 'external_db')
+                            ->insert('ek_address_book_contacts')->fields($fields)->execute();
                 } else {
 
                     drupal_set_message(t('Empty contact No. @i not recorded.', array('@i' => $i + 1)), 'warning');

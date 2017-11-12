@@ -207,12 +207,12 @@ class AddressBookController extends ControllerBase {
     /**
      * AJAX callback handler 
      */
-    public function modal($js = 'nojs', $id = NULL) {
+    public function modal($js = 'nojs', $abid = NULL) {
         if ($js == 'ajax') {
             $options = array('width' => '30%');
             $query = "SELECT card from {ek_address_book_contacts} where id=:id";
             $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $id))
+                    ->query($query, array(':id' => $abid))
                     ->fetchField();
             $image = "<img  src=" . file_create_url($data) . ">";
             $content = array(
@@ -278,7 +278,7 @@ class AddressBookController extends ControllerBase {
         $r = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $abid))
                 ->fetchObject();
-dpm($abid);
+
         //check the entry has not been cloned already
         // there should be only 3 types per name
         $clone = TRUE;
@@ -374,11 +374,11 @@ dpm($abid);
      * Return add name card form page.
      *
      */
-    public function newaddressbookcard(Request $request, $id = NULL) {
+    public function newaddressbookcard(Request $request, $abid = NULL) {
 
 
         $form_builder = $this->formBuilder();
-        $response = $form_builder->getForm('Drupal\ek_address_book\Form\NewAddressBookCardForm', $id);
+        $response = $form_builder->getForm('Drupal\ek_address_book\Form\NewAddressBookCardForm', $abid);
 
         return $response;
     }
@@ -387,11 +387,11 @@ dpm($abid);
      * Return the delete organization form page.
      *
      */
-    public function deleteaddressbook(Request $request, $id = NULL) {
+    public function deleteaddressbook(Request $request, $abid = NULL) {
 
         $form_builder = $this->formBuilder();
         $form_builder->setRequest($request);
-        $response = $form_builder->getForm('Drupal\ek_address_book\Form\DelAddressBookForm', $id);
+        $response = $form_builder->getForm('Drupal\ek_address_book\Form\DelAddressBookForm', $abid);
 
         return $response;
     }
@@ -528,7 +528,7 @@ dpm($abid);
      * Return contact names in pdf file.
      * @return pdf document
      */
-    public function pdfaddressbook(Request $request, $id, $cid) {
+    public function pdfaddressbook(Request $request, $abid, $cid) {
         $markup = array();
         include_once drupal_get_path('module', 'ek_address_book') . '/contact_pdf.inc';
         return $markup;
