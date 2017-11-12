@@ -272,13 +272,13 @@ class AddressBookController extends ControllerBase {
      * When an entity is both a client and supplier the entry can be cloned
      * * under different type
      */
-    public function cloneaddressbook(Request $request, $id = NULL) {
+    public function cloneaddressbook(Request $request, $abid = NULL) {
 
         $query = "SELECT * from {ek_address_book} WHERE id=:id";
         $r = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $id))
+                ->query($query, array(':id' => $abid))
                 ->fetchObject();
-
+dpm($abid);
         //check the entry has not been cloned already
         // there should be only 3 types per name
         $clone = TRUE;
