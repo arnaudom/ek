@@ -279,7 +279,7 @@ class NewProject extends FormBase {
             $count = Database::getConnection('external_db', 'external_db')->query($query)->fetchField();
             
             $ref = $count + $s['increment'];
-            $main = '';
+            $main = NULL;
 
             //client
             $query = 'SELECT shortname from {ek_address_book} WHERE id=:id';
