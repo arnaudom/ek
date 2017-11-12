@@ -1,37 +1,34 @@
-uuid: 9434e8dd-ad8e-4d91-8800-fb4f7324b103
+uuid: 0f248695-c7a5-44bb-8175-78d53f9e39d6
 langcode: en
 status: true
 dependencies:
   module:
     - ek_projects
     - system
+    - user
   theme:
     - bartik
-_core:
-  default_config_hash: 1xPtUIW_XcgWZBM0ai4DKAiuHv5l8jSlvCbEVVKyVmo
 id: lastcreatedprojects
 theme: bartik
 region: content
-weight: -4
+weight: 4
 provider: null
-plugin: last_projects_block
+plugin: ek_project_last_projects_block
 settings:
-  id: last_projects_block
+  id: ek_project_last_projects_block
   label: 'Last created projects'
   provider: ek_projects
   label_display: '0'
-  cache:
-    max_age: 0
-    contexts: {  }
-  visibility:
-    request_path:
-      id: request_path
-      pages: /projects/project
-      negate: false
 visibility:
   request_path:
     id: request_path
     pages: /projects/project
     negate: false
     context_mapping: {  }
-
+  user_role:
+    id: user_role
+    roles:
+      authenticated: authenticated
+    negate: false
+    context_mapping:
+      user: '@user.current_user_context:current_user'

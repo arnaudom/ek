@@ -1,4 +1,4 @@
-uuid: 1e6bcd18-2c64-4dc2-ac00-ffc4111d17e9
+uuid: 37fe58ee-357b-41ff-9568-3fb5435c0e9f
 langcode: en
 status: true
 dependencies:
@@ -11,25 +11,24 @@ dependencies:
 id: searchprojects
 theme: bartik
 region: content
-weight: 0
+weight: 4
 provider: null
-plugin: search_projects_block
+plugin: ek_project_search_block
 settings:
-  id: search_projects_block
+  id: ek_project_search_block
   label: 'Search projects'
   provider: ek_projects
   label_display: '0'
-  cache:
-    max_age: 0
-    contexts: {  }
-  visibility:
-    request_path:
-      id: request_path
-      pages: /projects/project
-      negate: false
 visibility:
   request_path:
     id: request_path
     pages: /projects/project
     negate: false
     context_mapping: {  }
+  user_role:
+    id: user_role
+    roles:
+      authenticated: authenticated
+    negate: false
+    context_mapping:
+      user: '@user.current_user_context:current_user'
