@@ -109,10 +109,31 @@ class InstallController extends ControllerBase {
         COLLATE='utf8_general_ci'
         ENGINE=InnoDB
         ";
-    
+
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup = 'items table created <br/>';
+      
+    $query = "CREATE TABLE `ek_item_settings` (
+        `id` INT(10) UNSIGNED NOT NULL COMMENT 'Primary Key: Unique ID.',
+        `settings` LONGBLOB NULL COMMENT 'A serialized array containing the settings.',
+        PRIMARY KEY (`id`)
+        )
+        COMMENT='Stores items settings.'
+        COLLATE='utf8mb4_general_ci'
+        ENGINE=InnoDB";
+
+    $db = Database::getConnection('external_db', 'external_db')->query($query);
     
+    Database::getConnection('external_db', 'external_db')
+                ->insert('ek_item_settings')
+                ->fields(array(
+                  'id' => 0,
+                  'settings' => '',
+                ))
+                ->execute();
+    
+    if($db) $markup .= 'items settings table created <br/>';
+        
     $query = "CREATE TABLE IF NOT EXISTS `ek_item_barcodes` (
 	`id` INT(10) NOT NULL AUTO_INCREMENT,
 	`itemcode` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'code in main table',
