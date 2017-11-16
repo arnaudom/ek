@@ -377,7 +377,7 @@ class AssignNote extends FormBase {
         $form_state->set('max_receivable', $balance);
 //        $form_state->set('sum_received', $details);
      
-        if ($this_cn > $balance) {
+        if (round($this_cn,5) > round($balance,5)) {
             $form_state->setErrorByName('amount', $this->t('Note value exceeds document amount'));
         }
         
