@@ -229,28 +229,28 @@ use Drupal\Core\Database\Database;
    * Return a price type by code and value
    * reverse check price type
    *
-   * @param  code = item code
-   * @param  value = the value of the item
+   * @param  (string) code = item code
+   * @param  (double) value = the value of the item
+   * @return int or false
   */   
  public static function item_sell_price_type($code, $value) { 
  
-  $query = "SELECT selling_price,promo_price,discount_price from {ek_item_prices} where itemcode=:code ";
-        $prices = Database::getConnection('external_db', 'external_db')
-          ->query($query, array(':code' => $code))
-          ->fetchObject(); 
-          $type = 0;
-          
-          if($value == $prices->selling_price)  {
-            $type = 1;
-          }
-          if($value == $prices->promo_price) {
-            $type = 2;
-          }
-          if($value == $prices->discount_price) {
-            $type = 3;
-          }
-   
-    return $type;
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_item_prices')
+            ->fields('ek_item_prices')
+            ->condition('itemcode', $code);
+     
+        $data = $query->execute()->fetchObject();
+
+        $prices = [$data->selling_price => 1 , $data->promo_price => 2, $data->discount_price => 3,
+            $data->exp_selling_price => 4, $data->exp_promo_price => 5, $data->exp_discount_price => 6];
+        
+        if(isset($prices[$value])) {
+            return $prices[$value];
+        } else {
+            return FALSE;
+        }
+        
  
  }
      

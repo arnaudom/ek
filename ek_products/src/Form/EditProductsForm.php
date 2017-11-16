@@ -463,7 +463,7 @@ class EditProductsForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
-            '#default_value' => isset($rs['promo_price']) ? $rs['promo_price'] : 0,
+            '#default_value' => isset($rs['promo_price']) ? $rs['exp_promo_price'] : 0,
             '#attributes' => array('placeholder' => t('promotion price'), 'class' => array('amount')),
             '#title' => $this->settings->get('exp_promo_price_label'),
         );
