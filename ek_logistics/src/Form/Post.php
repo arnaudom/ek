@@ -156,9 +156,9 @@ $i++;
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
   
-    $list = $form_state->getValue('q');
+    $list = $form_state->getValue('q'); 
     foreach ( $list as $key => $data) {
-   
+
       if( !is_numeric( $data['quantity'] ) ) {
             $form_state->setErrorByName("item", $this->t('Item @n quantity is wrong', array('@n'=> $data['itemcode'] )) );
       }
@@ -172,11 +172,12 @@ $i++;
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-
-    if( $form_state->getValue('table') == 'delivery' && \Drupal::currentUser()->hasPermission('post_delivery')) {
-      $list = $form_state->getValue('q');
-     
-
+    
+    $list = $form_state->getValue('q');
+    
+    if( $form_state->getValue('table') == 'delivery' 
+            && \Drupal::currentUser()->hasPermission('post_delivery')) {
+          
      foreach ( $list as $key => $data) { 
    
       $query = 'UPDATE {ek_item_packing} SET units = units - :u WHERE itemcode = :i';
@@ -198,10 +199,12 @@ $i++;
    
     } 
 
-    elseif($form_state->getValue('table') == 'receiving' && \Drupal::currentUser()->hasPermission('post_receiving')) {
+    elseif($form_state->getValue('table') == 'receiving' 
+            && \Drupal::currentUser()->hasPermission('post_receiving')) {
 
-
-      $type = Database::getConnection('external_db', 'external_db')->query('SELECT type FROM {ek_logi_receiving} WHERE id=:id', array(':id' => $form_state->getValue('for_id') ) )->fetchField();
+      $type = Database::getConnection('external_db', 'external_db')
+              ->query('SELECT type FROM {ek_logi_receiving} WHERE id=:id', array(':id' => $form_state->getValue('for_id') ) )
+              ->fetchField();
          
          foreach ( $list as $key => $data) { 
          

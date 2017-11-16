@@ -321,13 +321,14 @@ class Delivery extends FormBase {
                 $c = $form_state->get('current_items') + 1;
                 $form_state->set('current_items', $c);
                 $form_state->setValue("itemid$n", $d->itemcode);
-                
-                if(NULL == $form_state->getValue("value$n")) { 
+               
+                if(NULL === $form_state->getValue("value$n")) { 
                     if ($this->moduleHandler->moduleExists('ek_products') 
                             && $name = ItemData::item_bycode($d->itemcode)) { 
                         //item exist in database
                         $url = ItemData::geturl_bycode($d->itemcode, TRUE);
                         $t = ItemData::item_sell_price_type($d->itemcode, $d->value);
+   
                         if($t) {
                             //The item is listed in DB and price is selected from list (DB)
                             $form_state->setValue("price_type-$n", $t);
@@ -354,10 +355,11 @@ class Delivery extends FormBase {
                    if ($this->moduleHandler->moduleExists('ek_products') 
                            && $name = ItemData::item_bycode($form_state->getValue("itemid$n"))) { 
                         //item exist in database
-                       if($form_state->getValue("price_type-$n") != 0) {
+                       if($form_state->getValue("price_type-$n") != '0') {
                         $v = ItemData::item_sell_price($form_state->getValue("itemid$n"), $form_state->getValue("price_type-$n"));
                         $form_state->setValue("value$n", $v);
                         $disabled = TRUE;
+                    
                        } else {
                            $disabled = FALSE;
                        }
@@ -480,7 +482,7 @@ class Delivery extends FormBase {
                     $item = ItemData::item_sell_price($thisitemid, $form_state->getValue("price_type-" . $i));
                     $form_state->setValue("value" . $i, $item);
                     $form_state->set("price_type-" . $i, $form_state->getValue("price_type-" . $i));
-                    //$form_state->setRebuild();
+
                     $disabled = TRUE;
                 } else {
                     $disabled = FALSE;
