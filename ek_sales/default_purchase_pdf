@@ -109,7 +109,7 @@ $pdf->SetFont('Arial','B',10);
 $pdf->SetFont('Arial','B',14);    
     $pdf->Cell($c1 + $c3 + $c3);
 $pdf->SetTextColor(120, 150, 190);
-    $pdf->Cell(10,10, strtoupper($source) ,0,1);
+    $pdf->Cell(10,10, strtoupper($head->title) ,0,1);
 $pdf->SetTextColor(53,53,53);
 $pdf->SetFont('Arial','B',12);     
     $pdf->Cell($c1 + $c3 + $c3);

@@ -77,7 +77,7 @@ $document = '<page_wrapper>';
 
 //DOCUMENT ref
 
-$ref = '<h2 class="blue">' . t('Purchase') . '</h2>';
+$ref = '<h2 class="blue">' . strtoupper($head->title) . '</h2>';
 $ref .= '<br/>' . $head->serial;
 $ref .= '<br/>' . t("Purchase date") . ": " . $head->date;
 if($head->due) {

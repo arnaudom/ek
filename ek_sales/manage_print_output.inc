@@ -137,7 +137,7 @@ Switch ($source) {
         $bank = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $head->bank))->fetchObject();
         $company->bank = $bank;//used in footer
     }
-    
+       
     break;
     
     case 'quotation':
