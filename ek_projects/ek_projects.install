@@ -25,25 +25,25 @@ function ek_projects_uninstall() {
 /**
  * Add group in project table for management of sub projects.
  * New function to merge projects
-
+*/
 function ek_projects_update_8001() {
     
         $schema = Database::getConnection('external_db','external_db')->schema();
-        $spec = array(
-            'description' => 'Group by main project id',
-            'type' => 'varchar',
-            'length' => 20,
-            'not null' => FALSE,
-            
-        );
-        $schema->addField('ek_project', 'main', $spec);
+        if(!$schema->fieldExists('ek_project', 'main')) {
+            $spec = array(
+                'description' => 'Group by main project id',
+                'type' => 'varchar',
+                'length' => 20,
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_project', 'main', $spec);
+        }
  
         \Drupal::service('router.builder')->rebuild();
-
-        
         return t('Projects table updated.');
 }
-*/
+
 /**
  * Add new function for administrative check of project access by user
  * 

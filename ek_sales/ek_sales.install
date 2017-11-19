@@ -62,28 +62,47 @@ function ek_sales_update_8004() {
  * 
  */
 function ek_sales_update_8005() {
-    
-   $query = "RENAME TABLE `ek_invoice` TO `ek_sales_invoice`";
-   Database::getConnection('external_db', 'external_db')->query($query);
-   $query = "RENAME TABLE `ek_purchase` TO `ek_sales_purchase`";
-   Database::getConnection('external_db', 'external_db')->query($query);
-   $query = "RENAME TABLE `ek_quotation` TO `ek_sales_quotation`";
-   Database::getConnection('external_db', 'external_db')->query($query);
-   $query = "RENAME TABLE `ek_invoice_details` TO `ek_sales_invoice_details`";
-   Database::getConnection('external_db', 'external_db')->query($query);
-   $query = "RENAME TABLE `ek_purchase_details` TO `ek_sales_purchase_details`";
-   Database::getConnection('external_db', 'external_db')->query($query);
-   $query = "RENAME TABLE `ek_quotation_details` TO `ek_sales_quotation_details`";
-   Database::getConnection('external_db', 'external_db')->query($query);   
-   $query = "RENAME TABLE `ek_quotation_settings` TO `ek_sales_quotation_settings`";
-   Database::getConnection('external_db', 'external_db')->query($query);    
-   $query = "RENAME TABLE `ek_invoice_tasks` TO `ek_sales_invoice_tasks`";
-   Database::getConnection('external_db', 'external_db')->query($query);
-   $query = "RENAME TABLE `ek_purchase_tasks` TO `ek_sales_purchase_tasks`";
-   Database::getConnection('external_db', 'external_db')->query($query);
    
    $schema = Database::getConnection('external_db','external_db')->schema();
    
+   if (!$schema->tableExists('ek_sales_invoice')) {
+    $query = "RENAME TABLE `ek_invoice` TO `ek_sales_invoice`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+   }
+   if (!$schema->tableExists('ek_sales_purchase')) {
+    $query = "RENAME TABLE `ek_purchase` TO `ek_sales_purchase`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+   }
+   if (!$schema->tableExists('ek_sales_quotation')) {
+    $query = "RENAME TABLE `ek_quotation` TO `ek_sales_quotation`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+   }
+   if (!$schema->tableExists('ek_sales_invoice_details')) {
+    $query = "RENAME TABLE `ek_invoice_details` TO `ek_sales_invoice_details`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+   }
+   if (!$schema->tableExists('ek_sales_purchase_details')) {
+    $query = "RENAME TABLE `ek_purchase_details` TO `ek_sales_purchase_details`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+   }
+   if (!$schema->tableExists('ek_sales_quotation_details')) {
+    $query = "RENAME TABLE `ek_quotation_details` TO `ek_sales_quotation_details`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+   }
+   if (!$schema->tableExists('ek_sales_quotation_settings')) {
+    $query = "RENAME TABLE `ek_quotation_settings` TO `ek_sales_quotation_settings`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+   }
+   if (!$schema->tableExists('ek_sales_invoice_tasks')) {
+    $query = "RENAME TABLE `ek_invoice_tasks` TO `ek_sales_invoice_tasks`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+   }
+   if (!$schema->tableExists('ek_sales_purchase_tasks')) {
+    $query = "RENAME TABLE `ek_purchase_tasks` TO `ek_sales_purchase_tasks`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+   }
+   
+   if(!$schema->fieldExists('ek_sales_invoice', 'type')) {
         $spec = array(
             'description' => 'type 1 invoice, 2 commercial, 4 credit note',
             'type' => 'int',
@@ -93,7 +112,7 @@ function ek_sales_update_8005() {
             
         );
         $schema->addField('ek_sales_invoice', 'type', $spec);
- 
+   
         \Drupal::service('router.builder')->rebuild();
         
         
@@ -120,9 +139,9 @@ function ek_sales_update_8005() {
             ->fields(['type' => 4])
             ->condition('title', t('Credit note'))
             ->execute();
+    } 
         
-        
-        
+     if(!$schema->fieldExists('ek_sales_purchase', 'type')) {   
         $spec = array(
             'description' => 'type 1 purchase, 4 debit note',
             'type' => 'int',
@@ -137,12 +156,11 @@ function ek_sales_update_8005() {
             ->update('ek_sales_purchase')
             ->fields(['type' => 1])
             ->execute();     
+     }
+           
+    \Drupal::service('router.builder')->rebuild();
         
-        
-        
-        \Drupal::service('router.builder')->rebuild();
-        
-        return t('Sales tables updated.'); 
+    return t('Sales tables updated.'); 
     
     
     

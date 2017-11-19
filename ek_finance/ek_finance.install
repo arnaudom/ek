@@ -26,14 +26,16 @@ function ek_finance_uninstall() {
 function ek_finance_update_8001() {
     
         $schema = Database::getConnection('external_db','external_db')->schema();
-        $spec = array(
-            'description' => 'Increment count by coid',
-            'type' => 'int',
-            'not null' => FALSE,
-            'unsigned' => TRUE,
-            
-        );
-        $schema->addField('ek_journal', 'count', $spec);
+        if(!$schema->fieldExists('ek_journal', 'count')) {
+            $spec = array(
+                'description' => 'Increment count by coid',
+                'type' => 'int',
+                'not null' => FALSE,
+                'unsigned' => TRUE,
+
+            );
+            $schema->addField('ek_journal', 'count', $spec);
+        }
         
         return t('Table updated') . ". " . t('Run migration') . ".";
 }
@@ -54,14 +56,16 @@ function ek_finance_update_8002() {
 function ek_finance_update_8003() {
     
         $schema = Database::getConnection('external_db','external_db')->schema();
-        $spec = array(
-            'description' => 'File attachment',
-            'type' => 'varchar',
-            'length' => 255,
-            'not null' => FALSE,
-            
-        );
-        $schema->addField('ek_journal_reco_history', 'uri', $spec);
+        if(!$schema->fieldExists('ek_journal_reco_history', 'uri')) {
+            $spec = array(
+                'description' => 'File attachment',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_journal_reco_history', 'uri', $spec);
+        }
         
 
 }
@@ -156,15 +160,17 @@ function ek_finance_update_8005() {
     function ek_finance_update_8007() {
     
         $schema = Database::getConnection('external_db','external_db')->schema();
-        $spec = array(
-            'description' => 'Active status',
-            'type' => 'int',
-            'size' => 'small',
-            'not null' => FALSE,
-            'default' => 1
-            
-        );
-        $schema->addField('ek_bank_accounts', 'active', $spec);
+        if(!$schema->fieldExists('ek_bank_accounts', 'active')) {
+            $spec = array(
+                'description' => 'Active status',
+                'type' => 'int',
+                'size' => 'small',
+                'not null' => FALSE,
+                'default' => 1
+
+            );
+            $schema->addField('ek_bank_accounts', 'active', $spec);
+        }
         
         return t('Bank account table updated');
     }

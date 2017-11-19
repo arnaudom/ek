@@ -38,13 +38,15 @@ function ek_hr_update_8001() {
 function ek_hr_update_8002() {
     
         $schema = Database::getConnection('external_db','external_db')->schema();
-        $spec = array(
-            'description' => 'Information note',
-            'type' => 'text',
-            'not null' => FALSE,
-            
-        );
-        $schema->addField('ek_hr_workforce', 'note', $spec);
+        if(!$schema->fieldExists('ek_hr_workforce', 'note')) {
+            $spec = array(
+                'description' => 'Information note',
+                'type' => 'text',
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_hr_workforce', 'note', $spec);
+        }
         
         return t('Workforce table updated.');
 }

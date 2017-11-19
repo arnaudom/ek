@@ -31,17 +31,17 @@ function ek_assets_uninstall() {
 function ek_assets_update_8001() {
     
         $schema = Database::getConnection('external_db','external_db')->schema();
-        $spec = array(
-            'description' => 'HR link',
-            'type' => 'varchar',
-            'length' => 15,
-            'not null' => FALSE,
-            
-        );
-        $schema->addField('ek_assets', 'eid', $spec);
+        if(!$schema->fieldExists('ek_assets', 'eid')) {
+            $spec = array(
+                'description' => 'HR link',
+                'type' => 'varchar',
+                'length' => 15,
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_assets', 'eid', $spec);
+        }
  
         \Drupal::service('router.builder')->rebuild();
-
-        
         return t('Assets table updated.');
 }
