@@ -68,7 +68,7 @@ class ChartAccounts extends FormBase {
     $form_state->setValue('step', 1);
   
   } 
-  
+ 
   $settings = new FinanceSettings(); 
   $baseCurrency = $settings->get('baseCurrency');   
   $company = AccessCheck::CompanyListByUid();
@@ -121,15 +121,27 @@ class ChartAccounts extends FormBase {
 
     ); 
     
+  
   if( $form_state->getValue('coid') ) {
-      $form['download'] = array(
-            '#title' => $this->t('Download'),
+      /**/
+      $form['pdf'] = array(
+            '#title' => $this->t('Pdf'),
             '#type' => 'link',
             '#url' => Url::fromRoute('ek_finance.admin.charts_accounts_download', ['coid' => $form_state->getValue('coid')]),
             '#attributes' => ['target' => '_blank'],
+            '#prefix' => "<br/><div>",
+            '#suffix' => ' </div>',
           );
-
-  } 
+      $form['excel'] = array(
+            '#title' => $this->t('Excel'),
+            '#type' => 'link',
+            '#url' => Url::fromRoute('ek_finance.admin.charts_accounts_excel_export', ['coid' => $form_state->getValue('coid')]),
+            '#attributes' => ['target' => '_blank'],
+            '#prefix' => "<div>",
+            '#suffix' => ' </div>',
+          );
+  }   
+ 
       
   if($form_state->getValue('step') == 2)  {
   
@@ -340,7 +352,7 @@ class ChartAccounts extends FormBase {
    */
   public function get_class(array &$form, FormStateInterface $form_state) {
 
-    return  [$form['class'] , $form['download']];
+    return  [$form['class'] , $form['pdf'], $form['excel']];
   
   }
 

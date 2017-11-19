@@ -1,0 +1,35 @@
+uuid: d5e699db-07dd-4d61-a05f-d33dc84013bd
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_finance
+    - system
+    - user
+  theme:
+    - bartik
+id: importexcelbudget
+theme: bartik
+region: sidebar_first
+weight: -18
+provider: null
+plugin: import_excel_budget_block
+settings:
+  id: import_excel_budget_block
+  label: 'Import Excel budget'
+  provider: ek_finance
+  label_display: '0'
+visibility:
+  request_path:
+    id: request_path
+    pages: /finance/budgeting
+    negate: false
+    context_mapping: {  }
+  user_role:
+    id: user_role
+    roles:
+      authenticated: authenticated
+    negate: false
+    context_mapping:
+      user: '@user.current_user_context:current_user'
+

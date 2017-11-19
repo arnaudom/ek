@@ -168,3 +168,15 @@ function ek_finance_update_8005() {
         
         return t('Bank account table updated');
     }
+
+/**
+ * Add routes for excel export - chart of accounts
+ * route rebuild
+ */
+    function ek_finance_update_8008() {
+
+            \Drupal::service('router.builder')->rebuild(); 
+            return t('New route built');
+
+
+    }

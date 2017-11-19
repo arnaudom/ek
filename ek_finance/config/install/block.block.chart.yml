@@ -1,0 +1,35 @@
+uuid: fd83a32c-3b71-4e0b-9c9a-f0a0dca1c28e
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_finance
+    - system
+    - user
+  theme:
+    - bartik
+id: importexcelchartofaccounts
+theme: bartik
+region: sidebar_first
+weight: -18
+provider: null
+plugin: import_excel_chart_block
+settings:
+  id: import_excel_chart_block
+  label: 'Import Excel chart of accounts'
+  provider: ek_finance
+  label_display: visible
+visibility:
+  request_path:
+    id: request_path
+    pages: /finance/admin/accounts-chart
+    negate: false
+    context_mapping: {  }
+  user_role:
+    id: user_role
+    roles:
+      authenticated: authenticated
+    negate: false
+    context_mapping:
+      user: '@user.current_user_context:current_user'
+

@@ -52,6 +52,14 @@ ek_finance.admin.charts_accounts_download:
     _permission: 'administrate_finance'
     coid: \d*
     
+ek_finance.admin.charts_accounts_excel_export:
+  path: '/finance/admin/accounts-chart-export/{coid}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\AccountsChartController::exportExcel'
+  requirements:
+    _permission: 'administrate_finance'
+    coid: \d*
+         
 ek_finance.admin.modal_charts_accounts:
   path: '/finance/admin/modal/{param}'
   defaults:

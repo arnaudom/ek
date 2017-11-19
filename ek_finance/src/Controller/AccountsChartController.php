@@ -16,6 +16,7 @@ use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\ek_finance\FinanceSettings;
 
 /**
 * Controller routines for ek module routes.
@@ -84,6 +85,39 @@ class AccountsChartController extends ControllerBase {
   
   }
 
+ /**
+   * Export chart per company in excel format
+   * @param int $coid
+   *    company id
+*/
+  public function exportExcel($coid) {
+  
+        $markup = array();
+        
+        if (!class_exists('PHPExcel')) {
+            $markup = t('Excel library not available, please contact administrator.');
+        } else {
+        $settings = new FinanceSettings(); 
+        $baseCurrency = $settings->get('baseCurrency');
+        $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_accounts');
+        $query->fields('ek_accounts');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'asc');
+        $data = $query->execute();
+        $company = Database::getConnection('external_db', 'external_db')
+                ->query('SELECT name FROM {ek_company} WHERE id=:id', [':id' => $coid])
+                ->fetchField();
+        
+        include_once drupal_get_path('module', 'ek_finance') . '/excel_chart';
+        }
+        
+        return $markup;
+  
+  
+  }
+
+  
   /**
    * AJAX callback handler.
    * @param string $param
