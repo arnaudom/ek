@@ -1,13 +1,55 @@
 {
-  "name": "drupal/ek_admin",
-  "type": "drupal-module",
-  "description": "Provides main functionality running EK management tools suite",
+    "name": "drupal/ek_admin",
+    "type": "drupal-module",
+    "description": "Provides main functionality running EK management tools suite",
+    "license": "GPL-2.0+",
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "jquery/multi-select",
+                "version": "0.9.12",
+                "dist": {
+                    "url": "https://github.com/lou/multi-select/archive/master.zip",
+                    "type": "zip"
+                },
+                "type": "drupal-library"
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "jquery/chosen",
+                "version": "1.8",
+                "dist": {
+                    "url": "https://github.com/harvesthq/chosen-package/archive/master.zip",
+                    "type": "zip"
+                },
+                "type": "drupal-library"
+            }
+        }, 
+        {
+            "type": "package",
+            "package": {
+                "name": "jquery/tagEditor",
+                "version": "1.0",
+                "dist": {
+                    "url": "https://github.com/Pixabay/jQuery-tagEditor/archive/master.zip",
+                    "type": "zip"
+                },
+                "type": "drupal-library"
+            }
+        }  
+    ],
+    "require": {
+        "phpoffice/phpexcel": "1.8.*",
+        "setasign/fpdf": "1.8.*",
+        "tecnickcom/tcpdf": "6.2.*",
+        "jquery/multi-select" : "0.9.12",
+        "jquery/chosen" : "1.8",
+        "jquery/tagEditor" : "1.0"
+    }
 
-  "license": "GPL-2.0+",
-  "require": {
-    "phpoffice/phpexcel": "1.8.*",
-    "setasign/fpdf": "1.8.*",
-    "tecnickcom/tcpdf": "6.2.*"
-  }
+
 
 }

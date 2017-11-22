@@ -419,8 +419,11 @@ class ExpensesManageController extends ControllerBase {
                     $total = $total + $evalue;
 
                     if ($r->tax > 0) {
-                        $value = number_format($value, 2) . " " . $currency . "<br/>(" . t('Tax') . ' ' . number_format($stax_deduct_aid_value[0], 2) . ")";
-                        $evalue = number_format($evalue, 2) . " " . $baseCurrency . "<br/>(" . t('Tax') . ' ' . number_format($stax_deduct_aid_value[0] + $stax_deduct_aid_value[1], 2) . ')';
+                        $value = number_format($value, 2) . " " . $currency 
+                                . "<br/>(" . t('Tax') . ' ' . number_format($stax_deduct_aid_value[0], 2) . ")";
+                        $evalue = number_format($evalue, 2) . " " . $baseCurrency 
+                                . "<br/>(" . t('Tax') . ' ' . number_format($stax_deduct_aid_value[0] + $stax_deduct_aid_value[1], 2) . ')';
+                        
                     } else {
                         $value = number_format($value, 2) . " " . $currency;
                         $evalue = number_format($evalue, 2) . " " . $baseCurrency;

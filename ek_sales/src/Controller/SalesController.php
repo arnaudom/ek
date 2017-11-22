@@ -21,7 +21,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\ek_projects\ProjectData;
-use Drupal\ek_finance\FinanceSettings;
+
 use Drupal\ek_finance\Journal;
 
 
@@ -89,12 +89,13 @@ class SalesController extends ControllerBase {
      *  id of address book
      */
     public function DataSales(Request $request, $abid) {
-
+        
+        $theme = 'ek_sales_data';
         $items = array();
 
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'book');
-        $query->fields('book', ['name']);
+        $query->fields('book', ['name','type']);
         $query->leftJoin('ek_address_book_comment', 'c', 'book.id = c.abid');
         $query->fields('c', ['comment']);
         $query->condition('id', $abid);
@@ -103,16 +104,16 @@ class SalesController extends ControllerBase {
         if($ab) {
             $items['data'] = 1;
             $items['abidname'] = $ab->name;
-            $items['abidlink'] = Url::fromRoute('ek_address_book.view', array('abid' => $abid))->toString();
-
+            
+            $items['abidlink'] = ['#markup' => \Drupal\ek_address_book\AddressBookData::geturl($abid)];
             //upload form for documents
             $items['form'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\UploadForm', $abid);
 
             //comments
             $items['comment'] = html_entity_decode($ab->comment, ENT_QUOTES, "utf-8");
             $param_edit = 'comment|' . $abid . '|address_book|50%';
-            $link = Url::fromRoute('ek_sales_modal', ['param' => $param_edit])->toString();
-            $items['edit_comment'] = t('<a href="@url" class="@c"  >[ edit ]</a>', array('@url' => $link, '@c' => 'use-ajax red '));
+            $items['url_comment'] = Url::fromRoute('ek_sales_modal', ['param' => $param_edit])->toString();
+            $items['edit_comment'] = t('<a href="@url" class="@c"  >[ edit ]</a>', array('@url' => $items['url_comment'], '@c' => 'use-ajax red '));
 
 
             //projects linked
@@ -129,7 +130,7 @@ class SalesController extends ControllerBase {
                 while ($d = $data->fetchObject()) {
 
                     $items['projects'][] = array(
-                        'link' => ProjectData::geturl($d->id),
+                        'link' => \Drupal\ek_projects\ProjectData::geturl($d->id),
                         'pcode' => $d->pcode,
                         'pname' => $d->pname,
                         'date' => $d->date,
@@ -150,6 +151,7 @@ class SalesController extends ControllerBase {
                 while ($d = $data->fetchObject()) {
                     $link = Url::fromRoute('ek_intelligence.read', ['id' => $d->id])->toString();
                     $items['reports'][] = array(
+                        'link' => $link,
                         'serial' => '<a href="' . $link . '">' . $d->serial . '</a>',
                         'edit' => date('Y-m-d', $d->edit),
                     );
@@ -165,17 +167,57 @@ class SalesController extends ControllerBase {
                 $total = 0;
                 $items['category_statistics'] = array();
                 while ($d = $data->fetchObject()) {
+                    if($d->sum == NULL) {
+                        $d->sum = '0';
+                    }
                     $total += $d->sum;
-                    $items['category_statistics'][$d->status] = $d->sum;
+                    $items['category_statistics'][$d->status] = (int)$d->sum;
                 }
                 $items['category_statistics']['total'] = $total;
+                
+                if ($this->moduleHandler->moduleExists('charts')) {
+                    $theme = 'ek_sales_data_charts';
+                    $chartSettings = \Drupal::service('charts.settings')->getChartsSettings();
+
+                    $options = [];
+                    $options['type'] = 'donut';
+                    $options['title'] = t('Projects');
+                    
+                    $options['xaxis_title'] = $items['baseCurrency'];
+                    
+                    $options['title_position'] = 'in';
+                    $categories = [t('open'),t('awarded'),t('completed'),t('closed')];
+                   
+                    $seriesData = [
+                      [
+                       "data" => [ $items['category_statistics']['open'],$items['category_statistics']['awarded'],$items['category_statistics']['completed'],$items['category_statistics']['closed'] ],
+                       "colors" => [$chartSettings['colors'][0],$chartSettings['colors'][1],$chartSettings['colors'][2],$chartSettings['colors'][3]]  
+                      ]
+                    ];
+                    
+                
+                    $element = [
+                      '#theme' => 'charts_api',
+                      '#library' => $chartSettings['library'],
+                      '#categories' => $categories,
+                      '#seriesData' => $seriesData,
+                      '#options' => $options,
+                    ];                
+
+                    $items['project_status_chart'] =  \Drupal::service('renderer')->render($element); 
+                }
+                                
+                
+                
+                
+                
 
                 $items['category_year_statistics'] = array();
                 $query = "SELECT id,type FROM {ek_project_type}";
                 $type = Database::getConnection('external_db', 'external_db')
                                 ->query($query)->fetchAllKeyed();
 
-                for ($y = date('Y') - 4; $y <= date('Y'); $y++) {
+                for ($y = date('Y') - 6; $y <= date('Y'); $y++) {
                     $total = 0;
                     $query = "SELECT count(pcode) as sum, category FROM {ek_project} WHERE "
                             . "client_id=:abid ANd date like :d group by category";
@@ -190,24 +232,149 @@ class SalesController extends ControllerBase {
                 }
             }
             if ($this->moduleHandler->moduleExists('ek_finance')) {
-                //statistics finance
-                $settings = new FinanceSettings();
+                //statistics sales
+                $settings = new \Drupal\ek_finance\FinanceSettings();
                 $items['baseCurrency'] = $settings->get('baseCurrency');
-                $query = "SELECT sum(totalbase) FROM {ek_sales_invoice_details} d "
+            }   
+            
+            //sales data
+            if($ab->type == '1') {
+                $source = 'invoice';
+                $query = "SELECT sum(totalbase) as total FROM {ek_sales_invoice_details} d "
                         . "INNER JOIN {ek_sales_invoice} i ON d.serial=i.serial "
-                        . "WHERE i.client=:abid ";
+                        . "WHERE i.client=:abid";
+                
+                $query2 = "SELECT amountbase as amount FROM {ek_sales_invoice} i "
+                        . "WHERE i.client=:abid";
+                
+                $query3 = "SELECT sum(amountbase) as sum FROM {ek_sales_invoice} WHERE "
+                            . "client=:abid AND date like :d";
+                
+                $query4 = "SELECT date,pay_date FROM {ek_sales_invoice} "
+                        . "WHERE client = :abid and status=:s";
+            } else {
+                $source = 'purchase';
+                $query = "SELECT sum(amountbc) as total FROM {ek_sales_purchase} "
+                        . "WHERE client=:abid";
+                
+                $query2 = "SELECT amountbc as amount FROM {ek_sales_purchase} "
+                        . "WHERE client=:abid";
+                
+                $query3 = "SELECT sum(amountbc) as sum FROM {ek_sales_purchase} WHERE "
+                            . "client=:abid AND date like :d";
+                
+                $query4 = "SELECT date,pdate FROM {ek_sales_purchase} "
+                        . "WHERE client = :abid and status=:s";
+            }
+            
+
                 $a = array(
                     ':abid' => $abid,
                 );
                 $items['total_income'] = Database::getConnection('external_db', 'external_db')
                         ->query($query, $a)
                         ->fetchField();
+                
+                
+                $data = Database::getConnection('external_db', 'external_db')
+                        ->query($query2, $a);
+                
+                $inv = array();
+                while ($d = $data->fetchObject()) {;
+                    array_push($inv, $d->amount);
+                }
+                $items['invoices'] = array(
+                    'max' => (int)max($inv),
+                    'min' => (int)min($inv),
+                    'avg' => round((array_sum($inv) / count($inv)), 1)
+                );   
+                
+                $items['sales_year'] = array();
+                for ($y = date('Y') - 6; $y <= date('Y'); $y++) {
+                    $total = 0;
+                    
+                    $data = Database::getConnection('external_db', 'external_db')
+                            ->query($query3, array(':abid' => $abid, ':d' => $y . '%'));
 
-                $query = "SELECT date,pay_date FROM {ek_sales_invoice} "
+                    
+                    while ($d = $data->fetchObject()) {
+                        $items['sales_year'][$y] = $d->sum;
+                    }
+                }
+                
+                if (isset($chartSettings)) {
+                    
+                    $options = [];
+                    $options['type'] = 'bar';
+                    $options['title'] = ($ab->type == 1) ? t('Sales structure') : t('Purchases structure');
+                    $options['yaxis_title'] = t($source);
+                    $options['yaxis_min'] = '';
+                    $options['yaxis_max'] = '';
+                    $options['xaxis_title'] = $items['baseCurrency'];
+                    $options['legend_position'] = 'bottom';
+                    $options['title_position'] = 'in';
+                    $categories = [];
+                    $seriesData = [
+                      ["name" => t('Highest'), "color" => $chartSettings['colors'][0], "type" => "bar", "data" => [$items['invoices']['max']]],
+                      ["name" => t('Lowest'), "color" => $chartSettings['colors'][1], "type" => "bar", "data" => [$items['invoices']['min']]],
+                      ["name" => t('Average'), "color" => $chartSettings['colors'][2], "type" => "bar", "data" => [$items['invoices']['avg']]]
+                    ];
+
+                    $element = [
+                      '#theme' => 'charts_api',
+                      '#library' => $chartSettings['library'],
+                      '#categories' => $categories,
+                      '#seriesData' => $seriesData,
+                      '#options' => $options,
+                    ];                
+
+                    $items['invoices_chart'] =  \Drupal::service('renderer')->render($element); 
+                    
+                    
+                    $options = [];
+                    $options['type'] = 'line';
+                    $options['title'] = ($ab->type == 1) ? t('Sales per year') : t('Purchases per year');
+                    $options['yaxis_title'] = $items['baseCurrency'];
+                    $options['yaxis_min'] = '';
+                    $options['yaxis_max'] = '';
+                    $options['xaxis_title'] = t('Years');
+                    $options['legend_position'] = 'bottom';
+                    $options['title_position'] = 'in';
+                    $categories = [date('Y') - 6, date('Y') - 5, date('Y') - 4, date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y')];
+                    $seriesData = [
+                      [ "name" => t('Transactions') . " " . $items['baseCurrency'],
+                        "type" => 'line',
+                        "data" => [
+                          (int)$items['sales_year'][date('Y') - 6],
+                          (int)$items['sales_year'][date('Y') - 5],
+                          (int)$items['sales_year'][date('Y') - 4],
+                          (int)$items['sales_year'][date('Y') - 3],
+                          (int)$items['sales_year'][date('Y') - 2],
+                          (int)$items['sales_year'][date('Y') - 1],
+                          (int)$items['sales_year'][date('Y')]
+                          ],
+                       "color" => $chartSettings['colors'][0],
+                      ],
+                      ];
+
+                    $element = [
+                      '#theme' => 'charts_api',
+                      '#library' => $chartSettings['library'],
+                      '#categories' => $categories,
+                      '#seriesData' => $seriesData,
+                      '#options' => $options,
+                    ];                
+
+                    $items['sales_year_chart'] =  \Drupal::service('renderer')->render($element);                     
+                    
+                }
+                
+                //Payment performance
+                $query4 = "SELECT date,pay_date FROM {ek_sales_invoice} "
                         . "WHERE client = :abid and status=:s";
 
                 $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':abid' => $abid, ':s' => 1));
+                        ->query($query4, array(':abid' => $abid, ':s' => 1));
 
                 $af = array();
 
@@ -216,25 +383,56 @@ class SalesController extends ControllerBase {
                     array_push($af, $long);
                 }
                 $items['payment_performance'] = array(
-                    'max' => max($af),
-                    'min' => min($af),
+                    'max' => (int)max($af),
+                    'min' => (int)min($af),
                     'avg' => round((array_sum($af) / count($af)), 1)
                 );
+                             
+                if (isset($chartSettings)) { 
+                    $options = [];
+                    $options['type'] = 'bar';
+                    $options['title'] = t('Payments performance');
+                    $options['yaxis_title'] = t('terms');
+                    $options['yaxis_min'] = '';
+                    $options['yaxis_max'] = '';
+                    $options['xaxis_title'] = '';
+
+                    $categories = ['days'];
+                    $seriesData = [
+                      ["name" => t('Highest'), "color" => $chartSettings['colors'][0], "type" => "bar", "data" => [$items['payment_performance']['max']]],
+                      ["name" => t('Lowest'), "color" => $chartSettings['colors'][1], "type" => "bar", "data" => [$items['payment_performance']['min']]],
+                      ["name" => t('Average'), "color" => $chartSettings['colors'][2], "type" => "bar", "data" => [$items['payment_performance']['avg']]]
+                    ];
+
+                    $element = [
+                      '#theme' => 'charts_api',
+                      '#library' => $chartSettings['library'],
+                      '#categories' => $categories,
+                      '#seriesData' => $seriesData,
+                      '#options' => $options,
+                    ];                
+
+                    $items['payment_performance_chart'] =  \Drupal::service('renderer')->render($element);      
+                 
+                         
+                
             }
         } else {
             $items['abidname'] = t('No data');
             $items['abidlink'] = Url::fromRoute('ek_address_book.search')->toString();
             $items['data'] = NULL;
         }
-        
 
         return array(
             '#items' => $items,
             '#title' => t('Sales data'),
-            '#theme' => 'ek_sales_data',
+            '#theme' => $theme,
             '#attached' => array(
                 'drupalSettings' => array('abid' => $abid),
-                'library' => array('ek_sales/ek_sales_docs_updater', 'ek_admin/ek_admin_css'),
+                'library' => array(
+                    'ek_sales/ek_sales_docs_updater', 
+                    'ek_sales/ek_sales_css','ek_admin/ek_admin_css'),
+                
             ),
         );
     }

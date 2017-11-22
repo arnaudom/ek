@@ -173,7 +173,7 @@ use Drupal\ek_admin\Access\AccessCheck;
         }
 
         if($short != NULL) {
-            $r->pcode = str_replace('/', '-', $r->pcode);//old format
+            $p->pcode = str_replace('/', '-', $p->pcode);//old format
             $parts = explode('-', $p->pcode);
             $code = array_reverse($parts);
             $pcode = $code[0];

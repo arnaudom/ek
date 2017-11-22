@@ -1,7 +1,5 @@
 (function ($, Drupal, drupalSettings) {
 
-
-
     Drupal.behaviors.charts = {
         attach: function (context, settings) {
 

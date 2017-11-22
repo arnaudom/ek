@@ -128,7 +128,7 @@ $row4[] = array(
       'data' => array(
         array ('data' => $form['type'], ),
         array('data' => $form['category'],),
-        array('data' => $form['activity'],),
+        array('data' => $form['tags'],),
       ),
       'class' => array('') ,
     );
@@ -146,7 +146,7 @@ unset($form['name'],
   $form['website'],
   $form['type'],
   $form['category'],
-  $form['activity']
+  $form['tags']
 );
 
     

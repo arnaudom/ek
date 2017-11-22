@@ -671,7 +671,7 @@ class ProjectController extends ControllerBase {
 //the param to pass to modal follow the structure action|pcode|query|type
 // action is used by modal to select form, other params are passed to the form
                 $data['communication'][0] = (object) array();
-                $param_upload = 'upload|' . $pcode . '|doc|com';
+                $param_upload = 'upload|' . $pcode . '|doc|com|';
                 
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_upload])->toString();
                 $data['communication'][0]->uploadUrl = $link;
@@ -1131,7 +1131,7 @@ class ProjectController extends ControllerBase {
                  */
                 //the param to pass to modal follow the structure action|pcode|query|type
                 // action is used by modal to select form, other params are passed to the form
-                $param_upload = 'upload|' . $pcode . '|doc|fi';
+                $param_upload = 'upload|' . $pcode . '|doc|fi|';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_upload])->toString();
                 $data['finance'][0]->uploadUrl = $link;
                 $data['finance'][0]->upload = t('<a href="@url" class="@c" >upload new file</a>', array('@url' => $link, '@c' => 'use-ajax red '));

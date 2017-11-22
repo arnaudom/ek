@@ -1,10 +1,7 @@
 {#
-* data structure for case per year
-* [year] => Array
-*        (
-*            [category 1] => quantity
-*            [category 2] => quantity
-*        )
+* data
+*
+
 #}
 
 <a title='{{'address book'|t}}' href='{{ items.abidlink }}'><h2>{{ items.abidname }}</h2></a>
@@ -137,7 +134,7 @@
                         <tr>
                             <td>
                                 <h3>{{ 'Sales'|t }}</h3><br/>
-                                {{ 'Total income'|t }} : {{ items.income|number_format }} {{ items.baseCurrency }}
+                                {{ 'Total income'|t }} : {{ items.total_income|number_format }} {{ items.baseCurrency }}
                             </td>
                             <td>
                                 <h3>{{ 'Payment performances'|t }}</h3><br/>

@@ -14,6 +14,8 @@
  *  module sales.
  */
 
+use Drupal\charts\Charts\ModuleSelector;
+
 /**
  * Implementation hook download.
  */
@@ -30,6 +32,14 @@ function ek_sales_file_download($uri) {
  * Implementation hook_theme().
  */
 function ek_sales_theme() {
+  //variables charts api  
+  $vars = [
+    'library' => '',
+    'categories' => '',
+    'seriesData' => '',
+    'options' => '',
+  ];
+    
   return array(
       // for the dashboard
     'ek_sales_dashboard' => array
@@ -43,6 +53,11 @@ function ek_sales_theme() {
       'template' => 'ek_sales_data',
       'variables' => array('items' => array()),
     ),
+    'ek_sales_data_charts' => array
+    (
+      'template' => 'ek_sales_data_charts',
+      'variables' => array('items' => array()),
+    ),      
     //template for attached docs in sales data page  
     'ek_sales_doc_view' => array
     (
@@ -53,11 +68,32 @@ function ek_sales_theme() {
     (
       'template' => 'iframe',
       'variables' => array('items' => array()),
-    ),        
+    ),
+    //charts from charts api
+    'charts_api' => [
+      'template' => 'charts_api',
+      'variables' => $vars,
+    ],
   );     
 }
 
+/**
+ * Implements template_preprocess_page
+ *
+ * @param $variables
+ */
+function template_preprocess_charts_api(&$variables) {
   
+  $id = md5(mt_rand(5, 10));
+  $moduleSelector = new ModuleSelector(
+          $variables['library'], 
+          $variables['categories'], 
+          $variables['seriesData'], 
+          $variables['options'], 
+          [], $variables, 'xyz'
+          );
+}
+
 /**
  * Implements hook_views_data().
  */

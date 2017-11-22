@@ -1,3 +1,27 @@
+.panel-default {
+    border-color: #DDDDDD;
+}
+.panel {
+    background-color: #FFFFFF;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.panel-default > .panel-heading {
+    background-color: #A9BCF5;
+    border-color: #A9BCF5;
+    color: #333333;
+}
+.panel-heading {
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    padding: 10px 15px;
+}
+
+.panel-body {
+    padding: 15px;
+}
+
 .reddot {
   background-image: url(../art/reddot.png) ;
   background-repeat: no-repeat;
@@ -23,6 +47,14 @@
   text-align:right;
 }
 
+.text-left {
+    float: left;
+}
+
+.text-right {
+    float: right;
+}
+
 .table {
   display: table;
   width: 100%;
@@ -39,8 +71,24 @@
 
 .cell {  
   display : table-cell;
+  vertical-align: top;
+  
+}
+.cellcenter > div {
+    margin-left:auto;
+    margin-right:auto;
 }
 
+.cell20 {
+    width: 20%;
+}
+
+.cell30 {
+    width: 30%;
+}
+.cell50 {
+    width: 30%;
+}
 .cellborder {  
   border-width: thin ;
 	border-spacing: 1px;

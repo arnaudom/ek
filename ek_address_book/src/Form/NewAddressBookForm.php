@@ -12,6 +12,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Locale\CountryManagerInterface;
 use Drupal\Core\StreamWrapper\PrivateStream;
+use Drupal\Component\Utility\Xss;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -189,13 +190,17 @@ class NewAddressBookForm extends FormBase {
         );
 
 
-        $form['activity'] = array(
+        $form['tags'] = array(
             '#type' => 'textfield',
             '#default_value' => isset($r['activity']) ? $r['activity'] : null,
-            '#attributes' => array('placeholder' => t('Activity or segment tag')),
-            '#description' => isset($abid) ? t('Activity or segment tag'): '',
+            '#attributes' => array('class' => ['form-select-tag'], 'style' => array('width:200px;')),
+            '#description' => t('Tags'),
             '#required' => TRUE,
-            '#autocomplete_route_name' => 'ek_address_book_tag_activity',
+            '#maxlength' => 200,
+            '#attached' => array(
+                        'library' => array('ek_admin/ek_admin_tageditor'),
+                        'drupalSettings' => array('auto_complete' => 'ek_address_book/tag_activity' ), 
+                    ),
         );
 
 
@@ -526,8 +531,6 @@ class NewAddressBookForm extends FormBase {
     public function validateForm(array &$form, FormStateInterface $form_state) {
         parent::validateForm($form, $form_state);
 
-
-
         for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
             if ($form_state->getValue('contact_name' . $i) <> '') {
                 // Handle file uploads.
@@ -570,17 +573,17 @@ class NewAddressBookForm extends FormBase {
         $fields = array(
             'name' => $form_state->getValue('name'),
             'shortname' => str_replace('/', '|', $form_state->getValue('shortname')),
-            'address' => $form_state->getValue('address'),
-            'address2' => $form_state->getValue('address2'),
+            'address' => Xss::filter($form_state->getValue('address')),
+            'address2' => Xss::filter($form_state->getValue('address2')),
             'city' => $form_state->getValue('city'),
-            'postcode' => $form_state->getValue('postcode'),
+            'postcode' => Xss::filter($form_state->getValue('postcode')),
             'country' => $form_state->getValue('country'),
             'telephone' => $form_state->getValue('telephone'),
             'fax' => $form_state->getValue('fax'),
             'website' => $form_state->getValue('website'),
             'type' => $form_state->getValue('type'),
             'category' => $form_state->getValue('category'),
-            'activity' => $form_state->getValue('activity'),
+            'activity' => Xss::filter($form_state->getValue('tags')),
             'stamp' => strtotime("now"),
         );
 

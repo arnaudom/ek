@@ -398,6 +398,7 @@ class AddressBookController extends ControllerBase {
 
     /**
      * Util to return contact name callback.
+     * @param (string) $type type of contact 1 client, 2 supplier, 3 other
      * @return \Symfony\Component\HttpFoundation\JsonResponse;
      *   An Json response object.
      */
@@ -405,22 +406,35 @@ class AddressBookController extends ControllerBase {
 
         $text = $request->query->get('q');
         $name = array();
-        if ($type == '%') {
-            $query = "SELECT distinct name FROM {ek_address_book} a "
-                    . "LEFT JOIN {ek_address_book_contacts} c "
-                    . " ON a.id=c.abid WHERE "
-                    . " name like :t1 OR shortname like :t2 OR contact_name like :t3";
-            $a = array(':t1' => "$text%", ':t2' => "$text%", ':t3' => "%$text%");
-            $name = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchCol();
-        } else {
-            $query = "SELECT distinct name FROM {ek_address_book} a "
-                    . "LEFT JOIN {ek_address_book_contacts} c "
-                    . " ON a.id=c.abid where type=:t AND (name like :t1 OR shortname like :t2 Or contact_name like :t3)";
-            $a = array(':t' => $type, ':t1' => "$text%", ':t2' => "$text%", ':t3' => "%$text%");
-            $name = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchCol();
+        if(strpos('%', $text)>= 0) {
+            $text = str_replace('%', '', $text);
         }
+        
+        if(strlen($text) < 2) {
+            return new JsonResponse($name);
+        }
+        
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book', 'ab');
+        $query->fields('ab', ['name'])->distinct();
+        
+        $query->leftJoin('ek_address_book_contacts', 'bc', 'ab.id = bc.abid');
 
-        return new JsonResponse($name);
+        $or = db_or();
+        $or->condition('name', $text . "%", 'like');
+        $or->condition('shortname', $text . "%", 'like');
+        $or->condition('contact_name', $text . "%", 'like');
+        $or->condition('contact_name', $text . "%", 'like');
+        $or->condition('activity', "%" . $text . "%", 'like');;
+        $query->condition($or);
+        
+        if ($type != '%') {
+            $query->condition('type', $type, '=');
+        } 
+        $name = $query->execute();
+        
+        return new JsonResponse($name->fetchCol());
     }
 
     /**
