@@ -13,6 +13,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Locale\CountryManagerInterface;
 use Drupal\Core\StreamWrapper\PrivateStream;
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Cache\Cache;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -198,12 +199,38 @@ class NewAddressBookForm extends FormBase {
             '#required' => TRUE,
             '#maxlength' => 200,
             '#attached' => array(
-                        'library' => array('ek_admin/ek_admin_tageditor'),
-                        'drupalSettings' => array('auto_complete' => 'ek_address_book/tag_activity' ), 
-                    ),
+                'library' => array('ek_admin/ek_admin_tageditor'),
+                'drupalSettings' => array('auto_complete' => 'ek_address_book/tag_activity'),
+            ),
         );
 
-
+        //current logo if any
+        if ($r['logo'] <> '') {
+            $logo = "<a href='" . file_create_url($r['logo']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['logo']) . "></a>";
+            $form['delete_logo'] = array(
+                '#type' => 'checkbox',
+                '#title' => t('delete logo'),
+                '#attributes' => array('onclick' => "jQuery('#logo ').toggleClass( 'delete');"),
+                '#prefix' => "<div class='container-inline'>",
+            );
+            $form["currentlogo"] = array(
+                '#markup' => "<p id='logo'style='padding:2px;'>" . $logo . "</p>",
+                '#suffix' => '</div>',
+            );
+            //use to delete if upload new when submit   
+            $form["logo_uri"] = array(
+                    '#type' => "hidden",
+                    '#value' => $r['logo'],
+            );
+        } else {
+            $form['delete_logo'] = NULL;
+            $form["currentlogo"] = NULL;
+        }
+        $form['logo'] = array(
+            '#type' => 'file',
+            '#title' => t('Upload logo'),
+            '#maxlength' => 200,
+        );
 
 // insert the name cards
         $i = 0;
@@ -531,6 +558,27 @@ class NewAddressBookForm extends FormBase {
     public function validateForm(array &$form, FormStateInterface $form_state) {
         parent::validateForm($form, $form_state);
 
+        // Check for a new uploaded logo.
+            $field = "logo";
+            $validators = array('file_validate_is_image' => array());
+            $file = file_save_upload($field , $validators, FALSE, 0);
+
+                if (isset($file ) ) {
+                    $res = file_validate_image_resolution($file, '400x400','300x300','100x100');
+                      // File upload was attempted.
+                      if ($file) {
+                        // Put the temporary file in form_values so we can save it on submit.
+                        $form_state->setValue($field, $file) ;
+                      }
+                      else {
+                        // File upload failed.
+                       $form_state->setErrorByName($field, $this->t('Logo could not be uploaded'));
+                      }
+                } else {
+                  $form_state->setValue($field, 0);
+                  
+                }
+                
         for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
             if ($form_state->getValue('contact_name' . $i) <> '') {
                 // Handle file uploads.
@@ -569,18 +617,20 @@ class NewAddressBookForm extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
+        
+        
 
         $fields = array(
             'name' => $form_state->getValue('name'),
             'shortname' => str_replace('/', '|', $form_state->getValue('shortname')),
             'address' => Xss::filter($form_state->getValue('address')),
             'address2' => Xss::filter($form_state->getValue('address2')),
-            'city' => $form_state->getValue('city'),
+            'city' => Xss::filter($form_state->getValue('city')),
             'postcode' => Xss::filter($form_state->getValue('postcode')),
             'country' => $form_state->getValue('country'),
-            'telephone' => $form_state->getValue('telephone'),
-            'fax' => $form_state->getValue('fax'),
-            'website' => $form_state->getValue('website'),
+            'telephone' => Xss::filter($form_state->getValue('telephone')),
+            'fax' => Xss::filter($form_state->getValue('fax')),
+            'website' => Xss::filter($form_state->getValue('website')),
             'type' => $form_state->getValue('type'),
             'category' => $form_state->getValue('category'),
             'activity' => Xss::filter($form_state->getValue('tags')),
@@ -610,7 +660,42 @@ class NewAddressBookForm extends FormBase {
 
             $id = $form_state->getValue('for_id');
         }
+//logo
+            //first delete current if requested
+            $del = FALSE;
+            if ($form_state->getValue('delete_logo') == 1) {
 
+                file_unmanaged_delete($form_state->getValue('logo_uri'));
+                drupal_set_message(t("Old logo deleted"), 'status');
+                $logo = '';
+                $del = TRUE;
+            } else {
+                $logo = $form_state->getValue('logo_uri');
+            }
+            
+            //second, upload if any image is available
+            if (!$form_state->getValue('logo') == 0) {
+                if ($file = $form_state->getValue('logo')) {
+
+                  $dir = "private://address_book/cards/" . $id;
+                  file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                  $logo = file_unmanaged_copy($file->getFileUri(), $dir);
+                  
+                  drupal_set_message(t("New logo uploaded"), 'status');
+                  
+                  //remove old if any
+                  if(!isset($del) && $form_state->getValue('logo_uri') != '') {
+                      file_unmanaged_delete($form_state->getValue('logo_uri'));
+                  }
+                }
+             }
+             
+             Database::getConnection('external_db', 'external_db')->update('ek_address_book')
+                    ->condition('id', $id)
+                    ->fields(['logo' => $logo])
+                    ->execute();
+             
+             
 //update contact card
         if ($form_state->getValue('cards') >= 0) {
             //update cards
@@ -720,9 +805,12 @@ class NewAddressBookForm extends FormBase {
 
 
 
-        if (isset($insert) || isset($update))
+        if (isset($insert) || isset($update)) {
             drupal_set_message(t('The address book entry is recorded'), 'status');
-        $form_state->setRedirect('ek_address_book.view', array('abid' => $id));
+            Cache::invalidateTags(['address_book_card']);
+
+            $form_state->setRedirect('ek_address_book.view', array('abid' => $id));
+        }
     }
 
 }

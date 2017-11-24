@@ -132,7 +132,14 @@ $row4[] = array(
       ),
       'class' => array('') ,
     );
-    
+$row5[] = array(  
+      'data' => array(
+        array ('data' => $form['logo'], ),
+        array('data' => $form['currentlogo'],),
+        array('data' => $form['delete_logo'],),
+      ),
+      'class' => array('') ,
+    );    
 unset($form['name'], 
   $form['shortname'], 
   $form['status'], 
@@ -146,7 +153,10 @@ unset($form['name'],
   $form['website'],
   $form['type'],
   $form['category'],
-  $form['tags']
+  $form['tags'],
+  $form['currentlogo'],
+  $form['delete_logo'],
+  $form['logo']      
 );
 
     
@@ -177,6 +187,11 @@ $variables['form'][] =  array(
   '#rows' => $row4,
   );
 
+$variables['form'][] =  array(
+  '#theme' => 'table',
+  '#header' => '',
+  '#rows' => $row5,
+  );
 }
 
 function template_preprocess_ek_address_book_card_form(&$variables) {

@@ -30,7 +30,7 @@ tr {
 }
 
 .thumbnail {
-    width : 200px;
+    width : 50px;
 
 }
 
@@ -111,7 +111,30 @@ hr {
   margin-top: 2px;
   height: 0;
 }
+/* search display */
+.abook_thumbnail {
+    
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+    vertical-align: middle;
+    margin-right: 10px;
+    border: solid 1px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+}
 
+.abook_default_image {
+    content:url("../art/default.jpg");
+}
+
+#abook-search-result {
+   overflow: auto;
+   padding-top: 5px;
+}
+.abook_image-link {
+  border-bottom: 0px !important;
+}
 
 .ico:before {
   font-family: FontAwesome;

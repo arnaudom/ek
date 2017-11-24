@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\Core\Database\Database;
+
 /**
  * @file
  * Install, update and uninstall functions for the ek_address_book module.
@@ -18,3 +20,24 @@ function ek_address_book_uninstall() {
  * schema installation is not done at install time but wihin the application
  * in a separate database
  */
+
+/**
+ * add field in address book for logo
+ * 
+ */
+function ek_address_book_update_8001() {
+ $schema = Database::getConnection('external_db','external_db')->schema();
+        if(!$schema->fieldExists('ek_address_book', 'logo')) {
+            $spec = array(
+                'description' => 'contact logo',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_address_book', 'logo', $spec);
+        }
+        
+        return t('Table updated');
+        
+}

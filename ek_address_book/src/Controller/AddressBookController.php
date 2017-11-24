@@ -54,9 +54,7 @@ class AddressBookController extends ControllerBase {
 
         $form_builder = $this->formBuilder();
         $response = $form_builder->getForm('Drupal\ek_address_book\Form\SearchAddressBookForm');
-        /*
-          return $response;
-         */
+        
         return array(
             '#theme' => 'ek_address_book_search_form',
             '#items' => $response,
@@ -148,6 +146,15 @@ class AddressBookController extends ControllerBase {
                 $items['comment'] = $r['comment'];
             }
 
+            if ($r['logo']) {
+                $items['logo_url'] = file_create_url($r['logo']);
+                $items['logo_img'] = "<img class='thumbnail' src='"
+                        . file_create_url($r['logo']) . "'>";
+                
+            } else {
+                $items['logo_url'] = '';
+                $items['logo_img'] = '';
+            }
 
             $s = array(0 => t('inactive'), 1 => t('active'));
             $items['status'] = $s[$r['status']];
@@ -200,6 +207,10 @@ class AddressBookController extends ControllerBase {
                 '#attached' => array(
                     'library' => array('ek_address_book/ek_address_book.dialog', 'ek_admin/ek_admin_css'),
                 ),
+                '#cache' => [
+                    'tags' => ['address_book_card'],
+                    'contexts' => [],
+                ],
             );
         }
     }
@@ -315,6 +326,7 @@ class AddressBookController extends ControllerBase {
                 'activity' => $r->activity,
                 'status' => 1,
                 'stamp' => strtotime("now"),
+                'logo' => $r->logo,
             );
 
             $newid = Database::getConnection('external_db', 'external_db')
@@ -405,19 +417,20 @@ class AddressBookController extends ControllerBase {
     public function ajaxlookupcontact(Request $request, $type) {
 
         $text = $request->query->get('q');
+        $option = $request->query->get('option');
         $name = array();
         if(strpos('%', $text)>= 0) {
             $text = str_replace('%', '', $text);
         }
         
-        if(strlen($text) < 2) {
-            return new JsonResponse($name);
-        }
+        //if(strlen($text) < 2) {
+            //return new JsonResponse($name);
+        //}
         
-        
+        $types = array(1 => t('client'), 2 => t('supplier'), 3 => t('other'));
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'ab');
-        $query->fields('ab', ['name'])->distinct();
+        $query->fields('ab', ['id', 'name', 'type','logo'])->distinct();
         
         $query->leftJoin('ek_address_book_contacts', 'bc', 'ab.id = bc.abid');
 
@@ -429,12 +442,38 @@ class AddressBookController extends ControllerBase {
         $or->condition('activity', "%" . $text . "%", 'like');;
         $query->condition($or);
         
-        if ($type != '%') {
+        if ($type != '0') {
             $query->condition('type', $type, '=');
         } 
-        $name = $query->execute();
+        $data = $query->execute();
+      
+        if($option == 'image') {
+                $result = [];
+                while($r = $data->fetchObject()){
+                    $line = [];
+
+                    if ($r->logo) {
+                             $pic = "<img class='abook_thumbnail'' src='"
+                            . file_create_url($r->logo) . "'>";
+                    } else {
+                            $default = file_create_url(drupal_get_path('module', 'ek_address_book') . '/art/default.jpg');
+                            $pic = "<img  class='abook_thumbnail' src='"
+                            . $default . "'>";
+                    }
+                        $line['picture'] = isset($pic) ? $pic : '';
+                        $line['type'] = $types[$r->type];
+                        $line['name'] = $r->name;
+                        $line['id'] = $r->id;
+
+                        $result[] = $line;
+                }
+                
+            } else {
+                $Obj = $data->fetchObject();
+                $result = [$Obj->name];
+            }
         
-        return new JsonResponse($name->fetchCol());
+        return new JsonResponse($result);
     }
 
     /**

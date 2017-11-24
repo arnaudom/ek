@@ -41,3 +41,15 @@ ek_address_book.dialog:
     - core/drupalSettings
     - core/jquery.once
     - core/drupal.ajax
+    
+    
+ek_address_book.search:
+  version: VERSION
+  css:
+    theme:
+      css/ek_address_book.css: {}
+  js:
+    js/ek_address_book_autocomplete.js: {}
+  dependencies:
+    - core/jquery
+
