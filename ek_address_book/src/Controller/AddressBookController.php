@@ -184,11 +184,10 @@ class AddressBookController extends ControllerBase {
                     $contact['card'] = array(
                         '#type' => 'markup',
                         '#markup' => $markup,
-                        '#attached' => array('library' => array(array('system', 'drupal.ajax'),),),
                     );
                 } else {
                     $pic = '../modules/ek_address_book/art/nocard.png';
-                    $contact['card'] = "<img class='thumbnail' src='$pic' />";
+                    $contact['card'] = "<img class='thumbnail' src='$pic'/>";
                 }
                 $contact['department'] = ucwords($r['department']);
                 $contact['link'] = $r['link'];
@@ -567,14 +566,29 @@ class AddressBookController extends ControllerBase {
      */
     public function ajaxactivity(Request $request) {
 
-        $text = $request->query->get('term') . '%';
-        $query = "SELECT Distinct activity from {ek_address_book} where activity like :text";
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':text' => $text))
-                ->fetchCol();
+        $text = $request->query->get('term');
+        $result = [];
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book', 'ab');
+        $query->fields('ab', ['activity'])->distinct();
 
-
-        return new JsonResponse($data);
+        $or = db_or();
+        $or->condition('activity', $text . "%", 'like');
+        $or->condition('activity', "%," . $text . "%", 'like');
+        $query->condition($or);
+        
+        $data = $query->execute();
+       
+        while($string = $data->fetchObject()) {
+            $parts = explode(",", $string->activity);
+            foreach($parts as $key => $word) {
+                if(stristr ($word, $request->query->get('term'))) {
+                    $result[] = $word;
+                }
+            }
+        }
+        
+        return new JsonResponse($result);
     }
 
     /**
