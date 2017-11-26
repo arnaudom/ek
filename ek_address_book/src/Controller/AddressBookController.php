@@ -332,11 +332,15 @@ class AddressBookController extends ControllerBase {
                             ->insert('ek_address_book')
                             ->fields($fields)->execute();
             //copy contacts
-            $query = "SELECT * from {ek_address_book_contacts} WHERE abid=:id";
-            $result = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $id));
-
-            while ($r = $result->fetchObject()) {
+             $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_address_book_contacts', 'c');        
+      
+            $data = $query
+                ->fields('c')
+                ->condition('c.abid', $abid , '=')
+                ->execute();
+            
+            while ($r = $data->fetchObject()) {
 
                 $fields = array(
                     'abid' => $newid,
