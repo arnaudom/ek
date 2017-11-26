@@ -10,6 +10,7 @@ namespace Drupal\ek_finance\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
+use Drupal\Core\Url;
 use Drupal\ek_finance\FinanceSettings;
 
 /**
@@ -29,7 +30,17 @@ class Currencies extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form,  FormStateInterface $form_state, $id = NULL) {
-  
+    
+    $param = serialize(['id' => 'currency']);
+    $url = Url::fromRoute('ek_finance_modal',array('param' => $param));
+    
+    $form['add'] = array(
+                '#type' => 'link', 
+                '#title' => $this->t('New currency'),
+                '#attributes' => ['class' => ['button','use-ajax']],
+                '#url' => $url,     
+           );
+    
     $settings = new FinanceSettings(); 
     $baseCurrency = $settings->get('baseCurrency'); 
 
@@ -40,7 +51,7 @@ class Currencies extends FormBase {
                 '#type' => 'details', 
                 '#title' => t('Active'), 
                 '#collapsible' => TRUE, 
-                '#collapsed' => FALSE,
+                '#open' => TRUE,
                 '#prefix' => "<div class='table'>",
             
            );
@@ -49,7 +60,7 @@ class Currencies extends FormBase {
                 '#type' => 'details', 
                 '#title' => t('Non Active'), 
                 '#collapsible' => TRUE, 
-                '#collapsed' => TRUE,
+                '#open' => FALSE,
                 '#prefix' => "<div class='table'>",
             
            );  
@@ -174,9 +185,8 @@ class Currencies extends FormBase {
     $form['actions'] = array('#type' => 'actions');
     $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
 
-    $form['#attached']['library'][] = 'ek_finance/ek_finance_css';
-
-        
+    $form['#attached']['library'][] = 'ek_finance/ek_finance.dialog';
+    
         return $form;    
   }
 
