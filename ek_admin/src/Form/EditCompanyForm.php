@@ -462,7 +462,7 @@ if(!$this->moduleHandler->moduleExists('ek_finance')) {
               '#type' => 'textfield',
               '#size' => 20,
               '#maxlength' => 255,
-              '#default_value' => isset($r['adoc_no']) ? $r['adoc_no'] :null,
+              '#default_value' => isset($r['vat_no']) ? $r['vat_no'] :null,
               '#attributes' => array('placeholder'=>t('vat ref. no.')),
               '#description' => t('vat ref. no.'),
             ); 
