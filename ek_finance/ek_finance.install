@@ -1,6 +1,7 @@
 <?php
 
 use Drupal\Core\Database\Database;
+
 /**
  * @file
  * Install, update and uninstall functions for the ek_finance module.
@@ -10,8 +11,8 @@ use Drupal\Core\Database\Database;
  * Implements hook_uninstall().
  */
 function ek_finance_uninstall() {
-  // Clear data out of the cache.
-  \Drupal::cache('data')->deleteAll();
+    // Clear data out of the cache.
+    \Drupal::cache('data')->deleteAll();
 }
 
 /**
@@ -24,50 +25,45 @@ function ek_finance_uninstall() {
  * Add field in journal table
  */
 function ek_finance_update_8001() {
-    
-        $schema = Database::getConnection('external_db','external_db')->schema();
-        if(!$schema->fieldExists('ek_journal', 'count')) {
-            $spec = array(
-                'description' => 'Increment count by coid',
-                'type' => 'int',
-                'not null' => FALSE,
-                'unsigned' => TRUE,
 
-            );
-            $schema->addField('ek_journal', 'count', $spec);
-        }
-        
-        return t('Table updated') . ". " . t('Run migration') . ".";
+    $schema = Database::getConnection('external_db', 'external_db')->schema();
+    if (!$schema->fieldExists('ek_journal', 'count')) {
+        $spec = array(
+            'description' => 'Increment count by coid',
+            'type' => 'int',
+            'not null' => FALSE,
+            'unsigned' => TRUE,
+        );
+        $schema->addField('ek_journal', 'count', $spec);
+    }
+
+    return t('Table updated') . ". " . t('Run migration') . ".";
 }
 
 /**
  * Add route to memo file upload
  */
 function ek_finance_update_8002() {
-    
-        \Drupal::service('router.builder')->rebuild(); 
-        return t('New route built');
-        
+
+    \Drupal::service('router.builder')->rebuild();
+    return t('New route built');
 }
 
 /**
  * Add field in reconciliation report table for attachment
  */
 function ek_finance_update_8003() {
-    
-        $schema = Database::getConnection('external_db','external_db')->schema();
-        if(!$schema->fieldExists('ek_journal_reco_history', 'uri')) {
-            $spec = array(
-                'description' => 'File attachment',
-                'type' => 'varchar',
-                'length' => 255,
-                'not null' => FALSE,
 
-            );
-            $schema->addField('ek_journal_reco_history', 'uri', $spec);
-        }
-        
-
+    $schema = Database::getConnection('external_db', 'external_db')->schema();
+    if (!$schema->fieldExists('ek_journal_reco_history', 'uri')) {
+        $spec = array(
+            'description' => 'File attachment',
+            'type' => 'varchar',
+            'length' => 255,
+            'not null' => FALSE,
+        );
+        $schema->addField('ek_journal_reco_history', 'uri', $spec);
+    }
 }
 
 /**
@@ -76,113 +72,1023 @@ function ek_finance_update_8003() {
  * route rebuild
  */
 function ek_finance_update_8004() {
-    
-        \Drupal::service('router.builder')->rebuild(); 
-        return t('New route built');
-        
 
+    \Drupal::service('router.builder')->rebuild();
+    return t('New route built');
 }
-
 
 /**
  * Add trail to journal entries; 
  *
  */
 function ek_finance_update_8005() {
-    
-    $schema = Database::getConnection('external_db','external_db')->schema();
-        if (!$schema->tableExists('ek_journal_trail')) {
-            
-                $table =  [
-                    'description' => 'Stores user history per journal entry.',
-                    'fields' => [
-                      'id' => [
-                        'description' => 'Primary Key: Unique ID.',
-                        'type' => 'serial',
-                        'unsigned' => TRUE,
-                        'not null' => TRUE,
-                      ],
-                      'jid' => [
-                        'description' => 'Journal primary ID.',
-                        'type' => 'int',
-                        'unsigned' => TRUE,
-                        'not null' => TRUE,
-                      ],                        
-                      'username' => [
-                        'description' => 'User name.',
-                        'type' => 'varchar',
-                        'length' => 255,
-                        'not null' => FALSE,
-                      ],
-                      'action' => [
-                        'description' => '1 save, 2 edit, 3 delete',
-                        'type' => 'int',
-                        'size' => 'small',
-                        'not null' => FALSE,
-                      ],   
-                      'timestamp' => [
-                        'description' => 'Unix timestamp of when event occurred.',
-                        'type' => 'int',
-                        'unsigned' => TRUE,
-                        'not null' => TRUE,
-                        'default' => 0
-                      ], 
-                    ],
-                    'primary key' => ['id'],
-                    
-                  ];
-            
-            $schema->createTable('ek_journal_trail', $table);
-        
-             return t('New table created');
-        }
-       
 
+    $schema = Database::getConnection('external_db', 'external_db')->schema();
+    if (!$schema->tableExists('ek_journal_trail')) {
 
+        $table = [
+            'description' => 'Stores user history per journal entry.',
+            'fields' => [
+                'id' => [
+                    'description' => 'Primary Key: Unique ID.',
+                    'type' => 'serial',
+                    'unsigned' => TRUE,
+                    'not null' => TRUE,
+                ],
+                'jid' => [
+                    'description' => 'Journal primary ID.',
+                    'type' => 'int',
+                    'unsigned' => TRUE,
+                    'not null' => TRUE,
+                ],
+                'username' => [
+                    'description' => 'User name.',
+                    'type' => 'varchar',
+                    'length' => 255,
+                    'not null' => FALSE,
+                ],
+                'action' => [
+                    'description' => '1 save, 2 edit, 3 delete',
+                    'type' => 'int',
+                    'size' => 'small',
+                    'not null' => FALSE,
+                ],
+                'timestamp' => [
+                    'description' => 'Unix timestamp of when event occurred.',
+                    'type' => 'int',
+                    'unsigned' => TRUE,
+                    'not null' => TRUE,
+                    'default' => 0
+                ],
+            ],
+            'primary key' => ['id'],
+        ];
+
+        $schema->createTable('ek_journal_trail', $table);
+
+        return t('New table created');
+    }
 }
-
 
 /**
  * Add multiple PV print in pdf 
  * route rebuild
  */
-    function ek_finance_update_8006() {
+function ek_finance_update_8006() {
 
-            \Drupal::service('router.builder')->rebuild(); 
-            return t('New route built');
+    \Drupal::service('router.builder')->rebuild();
+    return t('New route built');
+}
 
-
-    }   
-    
 /**
  * Add active field in bank account
  */
-    function ek_finance_update_8007() {
-    
-        $schema = Database::getConnection('external_db','external_db')->schema();
-        if(!$schema->fieldExists('ek_bank_accounts', 'active')) {
-            $spec = array(
-                'description' => 'Active status',
-                'type' => 'int',
-                'size' => 'small',
-                'not null' => FALSE,
-                'default' => 1
+function ek_finance_update_8007() {
 
-            );
-            $schema->addField('ek_bank_accounts', 'active', $spec);
-        }
-        
-        return t('Bank account table updated');
+    $schema = Database::getConnection('external_db', 'external_db')->schema();
+    if (!$schema->fieldExists('ek_bank_accounts', 'active')) {
+        $spec = array(
+            'description' => 'Active status',
+            'type' => 'int',
+            'size' => 'small',
+            'not null' => FALSE,
+            'default' => 1
+        );
+        $schema->addField('ek_bank_accounts', 'active', $spec);
     }
+
+    return t('Bank account table updated');
+}
 
 /**
  * Add routes for excel export - chart of accounts
  * route rebuild
  */
-    function ek_finance_update_8008() {
+function ek_finance_update_8008() {
 
-            \Drupal::service('router.builder')->rebuild(); 
-            return t('New route built');
+    \Drupal::service('router.builder')->rebuild();
+    return t('New route built');
+}
 
+/**
+ * Update currencies list
+ * 
+ */
+function ek_finance_update_8009() {
 
+    $list = [ [
+            'name' => 'United Arab Emirates dirham',
+            'country' => 'United Arab Emirates',
+            'currency' => 'AED',
+        ],
+        [
+            'name' => 'Afghan Afghani',
+            'country' => 'Afghanistan',
+            'currency' => 'AFN',
+        ],
+        [
+            'name' => 'Albanian Lek',
+            'country' => 'Albania',
+            'currency' => 'ALL',
+        ],
+        [
+            'name' => 'Armenian Dram',
+            'country' => 'Armenia',
+            'currency' => 'AMD',
+        ],
+        [
+            'name' => 'Netherlands Antillian Guilder',
+            'country' => 'Netherlands Antilles',
+            'currency' => 'ANG',
+        ],
+        [
+            'name' => 'Angolan Kwanza',
+            'country' => 'Angola',
+            'currency' => 'AOA',
+        ],
+        [
+            'name' => 'Argentine Peso',
+            'country' => 'Argentina',
+            'currency' => 'ARS',
+        ],
+        [
+            'name' => 'Australian Dollar',
+            'country' => 'Australia',
+            'currency' => 'AUD',
+        ],
+        [
+            'name' => 'Aruban Guilder',
+            'country' => 'Aruba',
+            'currency' => 'AWG',
+        ],
+        [
+            'name' => 'Azerbaijanian Manat',
+            'country' => 'Azerbaijan',
+            'currency' => 'AZN',
+        ],
+        [
+            'name' => 'Bosnia-Herzegovina Convertible Marks',
+            'country' => 'Bosnia and Herzegovina',
+            'currency' => 'BAM',
+        ],
+        [
+            'name' => 'Barbados Dollar',
+            'country' => 'Barbados',
+            'currency' => 'BBD',
+        ],
+        [
+            'name' => 'Bangladeshi Taka',
+            'country' => 'Bangladesh',
+            'currency' => 'BDT',
+        ],
+        [
+            'name' => 'Bulgarian Lev',
+            'country' => 'Bulgaria',
+            'currency' => 'BGN',
+        ],
+        [
+            'name' => 'Bahraini Dinar',
+            'country' => 'Bahrain',
+            'currency' => 'BHD',
+        ],
+        [
+            'name' => 'Burundian Franc',
+            'country' => 'Burundi',
+            'currency' => 'BIF',
+        ],
+        [
+            'name' => 'Bermudian Dollar',
+            'country' => 'Bermuda',
+            'currency' => 'BMD',
+        ],
+        [
+            'name' => 'Brunei Dollar',
+            'country' => 'Brunei',
+            'currency' => 'BND',
+        ],
+        [
+            'name' => 'Bolivian Boliviano',
+            'country' => 'Bolivia',
+            'currency' => 'BOB',
+        ],
+        [
+            'name' => 'Bolivian Mvdol',
+            'country' => 'Bolivia',
+            'currency' => 'BOV',
+        ],
+        [
+            'name' => 'Brazilian Real',
+            'country' => 'Brazil',
+            'currency' => 'BRL',
+        ],
+        [
+            'name' => 'Bahamian Dollar',
+            'country' => 'Bahamas',
+            'currency' => 'BSD',
+        ],
+        [
+            'name' => 'Bhutan Ngultrum',
+            'country' => 'Bhutan',
+            'currency' => 'BTN',
+        ],
+        [
+            'name' => 'Botswana Pula',
+            'country' => 'Botswana',
+            'currency' => 'BWP',
+        ],
+        [
+            'name' => 'Belarussian Ruble',
+            'country' => 'Belarus',
+            'currency' => 'BYR',
+        ],
+        [
+            'name' => 'Belize Dollar',
+            'country' => 'Belize',
+            'currency' => 'BZD',
+        ],
+        [
+            'name' => 'Canadian Dollar',
+            'country' => 'Canada',
+            'currency' => 'CAD',
+        ],
+        [
+            'name' => 'Franc Congolais',
+            'country' => 'Democratic Republic of Congo',
+            'currency' => 'CDF',
+        ],
+        [
+            'name' => 'Swiss WIR Euro',
+            'country' => 'Switzerland',
+            'currency' => 'CHE',
+        ],
+        [
+            'name' => 'Swiss Franc',
+            'country' => 'Switzerland',
+            'currency' => 'CHF',
+        ],
+        [
+            'name' => 'Swiss WIR Franc',
+            'country' => 'Switzerland',
+            'currency' => 'CHW',
+        ],
+        [
+            'name' => 'Chiliean Unidades de formento',
+            'country' => 'Chile',
+            'currency' => 'CLF',
+        ],
+        [
+            'name' => 'Chilean Peso',
+            'country' => 'Chile',
+            'currency' => 'CLP',
+        ],
+        [
+            'name' => 'Chinese Yuan Renminbi',
+            'country' => 'Mainland China',
+            'currency' => 'CNY',
+        ],
+        [
+            'name' => 'Colombian Peso',
+            'country' => 'Colombia',
+            'currency' => 'COP',
+        ],
+        [
+            'name' => 'Colombian Unidad de Valor Real',
+            'country' => 'Colombia',
+            'currency' => 'COU',
+        ],
+        [
+            'name' => 'Costa Rican Colon',
+            'country' => 'Costa Rica',
+            'currency' => 'CRC',
+        ],
+        [
+            'name' => 'Cuban Peso',
+            'country' => 'Cuba',
+            'currency' => 'CUP',
+        ],
+        [
+            'name' => 'Cape Verde Escudo',
+            'country' => 'Cape Verde',
+            'currency' => 'CVE',
+        ],
+        [
+            'name' => 'Cyprus Pound',
+            'country' => 'Cyprus',
+            'currency' => 'CYP',
+        ],
+        [
+            'name' => 'Czech Koruna',
+            'country' => 'Czech Republic',
+            'currency' => 'CZK',
+        ],
+        [
+            'name' => 'Djibouti Franc',
+            'country' => 'Djibouti',
+            'currency' => 'DJF',
+        ],
+        [
+            'name' => 'Danish Krone',
+            'country' => 'Denmark',
+            'currency' => 'DKK',
+        ],
+        [
+            'name' => 'Dominican Peso',
+            'country' => 'Dominican Republic',
+            'currency' => 'DOP',
+        ],
+        [
+            'name' => 'Algerian Dinar',
+            'country' => 'Algeria',
+            'currency' => 'DZD',
+        ],
+        [
+            'name' => 'Estonian Kroon',
+            'country' => 'Estonia',
+            'currency' => 'EEK',
+        ],
+        [
+            'name' => 'Egyptian Pound',
+            'country' => 'Egypt',
+            'currency' => 'EGP',
+        ],
+        [
+            'name' => 'Eritrean Nakfa',
+            'country' => 'Eritrea',
+            'currency' => 'ERN',
+        ],
+        [
+            'name' => 'Ethiopian Birr',
+            'country' => 'Ethiopia',
+            'currency' => 'ETB',
+        ],
+        [
+            'name' => 'European Union Euro',
+            'country' => 'European Union',
+            'currency' => 'EUR',
+        ],
+        [
+            'name' => 'Fiji Dollar',
+            'country' => 'Fiji',
+            'currency' => 'FJD',
+        ],
+        [
+            'name' => 'Falkland Islands Pound',
+            'country' => 'Falkland Islands',
+            'currency' => 'FKP',
+        ],
+        [
+            'name' => 'United Kingdom Pound Sterling',
+            'country' => 'United Kingdom',
+            'currency' => 'GBP',
+        ],
+        [
+            'name' => 'Georgian Lari',
+            'country' => 'Georgia',
+            'currency' => 'GEL',
+        ],
+        [
+            'name' => 'Ghanean Cedi',
+            'country' => 'Ghana',
+            'currency' => 'GHS',
+        ],
+        [
+            'name' => 'Gibraltar pound',
+            'country' => 'Gibraltar',
+            'currency' => 'GIP',
+        ],
+        [
+            'name' => 'Gambia Dalasi',
+            'country' => 'Gambia',
+            'currency' => 'GMD',
+        ],
+        [
+            'name' => 'Guinea Franc',
+            'country' => 'Guinea',
+            'currency' => 'GNF',
+        ],
+        [
+            'name' => 'Guatemala Quetzal',
+            'country' => 'Guatemala',
+            'currency' => 'GTQ',
+        ],
+        [
+            'name' => 'Guyana Dollar',
+            'country' => 'Guyana',
+            'currency' => 'GYD',
+        ],
+        [
+            'name' => 'Hong Kong Dollar',
+            'country' => 'Hong Kong SAR',
+            'currency' => 'HKD',
+        ],
+        [
+            'name' => 'Honduran Lempira',
+            'country' => 'Honduras',
+            'currency' => 'HNL',
+        ],
+        [
+            'name' => 'Croatian Kuna',
+            'country' => 'Croatia',
+            'currency' => 'HRK',
+        ],
+        [
+            'name' => 'Haiti Gourde',
+            'country' => 'Haiti',
+            'currency' => 'HTG',
+        ],
+        [
+            'name' => 'Hungarian Forint',
+            'country' => 'Hungary',
+            'currency' => 'HUF',
+        ],
+        [
+            'name' => 'Indonesia Rupiah',
+            'country' => 'Indonesia',
+            'currency' => 'IDR',
+        ],
+        [
+            'name' => 'New Israeli Shekel',
+            'country' => 'Israel',
+            'currency' => 'ILS',
+        ],
+        [
+            'name' => 'Indian Rupee',
+            'country' => 'India',
+            'currency' => 'INR',
+        ],
+        [
+            'name' => 'Iraqi Dinar',
+            'country' => 'Iraq',
+            'currency' => 'IQD',
+        ],
+        [
+            'name' => 'Iranian Rial',
+            'country' => 'Iran',
+            'currency' => 'IRR',
+        ],
+        [
+            'name' => 'Iceland Krona',
+            'country' => 'Iceland',
+            'currency' => 'ISK',
+        ],
+        [
+            'name' => 'Jamaican Dollar',
+            'country' => 'Jamaica',
+            'currency' => 'JMD',
+        ],
+        [
+            'name' => 'Jordanian Dinar',
+            'country' => 'Jordan',
+            'currency' => 'JOD',
+        ],
+        [
+            'name' => 'Japanese yen',
+            'country' => 'Japan',
+            'currency' => 'JPY',
+        ],
+        [
+            'name' => 'Kenyan Shilling',
+            'country' => 'Kenya',
+            'currency' => 'KES',
+        ],
+        [
+            'name' => 'Kyrgyzstan Som',
+            'country' => 'Kyrgyzstan',
+            'currency' => 'KGS',
+        ],
+        [
+            'name' => 'Cambodian Riel',
+            'country' => 'Cambodia',
+            'currency' => 'KHR',
+        ],
+        [
+            'name' => 'Comoro Franc',
+            'country' => 'Comoros',
+            'currency' => 'KMF',
+        ],
+        [
+            'name' => 'North Korean Won',
+            'country' => 'North Korea',
+            'currency' => 'KPW',
+        ],
+        [
+            'name' => 'South Korean Won',
+            'country' => 'South Korea',
+            'currency' => 'KRW',
+        ],
+        [
+            'name' => 'Kuwaiti Dinar',
+            'country' => 'Kuwait',
+            'currency' => 'KWD',
+        ],
+        [
+            'name' => 'Cayman Islands Dollar',
+            'country' => 'Cayman Islands',
+            'currency' => 'KYD',
+        ],
+        [
+            'name' => 'Kazakhstan Tenge',
+            'country' => 'Kazakhstan',
+            'currency' => 'KZT',
+        ],
+        [
+            'name' => 'Laos Kip',
+            'country' => 'Laos',
+            'currency' => 'LAK',
+        ],
+        [
+            'name' => 'Lebanese Pound',
+            'country' => 'Lebanon',
+            'currency' => 'LBP',
+        ],
+        [
+            'name' => 'Sri Lanka Rupee',
+            'country' => 'Sri Lanka',
+            'currency' => 'LKR',
+        ],
+        [
+            'name' => 'Liberian Dollar',
+            'country' => 'Liberia',
+            'currency' => 'LRD',
+        ],
+        [
+            'name' => 'Lesotho Loti',
+            'country' => 'Lesotho',
+            'currency' => 'LSL',
+        ],
+        [
+            'name' => 'Lithuanian Litas',
+            'country' => 'Lithuania',
+            'currency' => 'LTL',
+        ],
+        [
+            'name' => 'Latvian Lats',
+            'country' => 'Latvia',
+            'currency' => 'LVL',
+        ],
+        [
+            'name' => 'Libyan Dinar',
+            'country' => 'Libya',
+            'currency' => 'LYD',
+        ],
+        [
+            'name' => 'Moroccan Dirham',
+            'country' => 'Morocco, Western Sahara',
+            'currency' => 'MAD',
+        ],
+        [
+            'name' => 'Moldovan Leu',
+            'country' => 'Moldova',
+            'currency' => 'MDL',
+        ],
+        [
+            'name' => 'Malagasy Ariary',
+            'country' => 'Madagascar',
+            'currency' => 'MGA',
+        ],
+        [
+            'name' => 'Macedonian Denar',
+            'country' => 'Macedonia',
+            'currency' => 'MKD',
+        ],
+        [
+            'name' => 'Myanmar Kyat',
+            'country' => 'Myanmar',
+            'currency' => 'MMK',
+        ],
+        [
+            'name' => 'Mongolian Tugrik',
+            'country' => 'Mongolia',
+            'currency' => 'MNT',
+        ],
+        [
+            'name' => 'Macau Pataca',
+            'country' => 'Macau SAR',
+            'currency' => 'MOP',
+        ],
+        [
+            'name' => 'Mauritanian Ouguiya',
+            'country' => 'Mauritania',
+            'currency' => 'MRO',
+        ],
+        [
+            'name' => 'Maltese Lira',
+            'country' => 'Malta',
+            'currency' => 'MTL',
+        ],
+        [
+            'name' => 'Mauritius Rupee',
+            'country' => 'Mauritius',
+            'currency' => 'MUR',
+        ],
+        [
+            'name' => 'Maldives Rufiyaa',
+            'country' => 'Maldives',
+            'currency' => 'MVR',
+        ],
+        [
+            'name' => 'Malawian Kwacha',
+            'country' => 'Malawi',
+            'currency' => 'MWK',
+        ],
+        [
+            'name' => 'Mexican Peso',
+            'country' => 'Mexico',
+            'currency' => 'MXN',
+        ],
+        [
+            'name' => 'Mexican Unidad de Inversion',
+            'country' => 'Mexico',
+            'currency' => 'MXV',
+        ],
+        [
+            'name' => 'Malaysian Ringgit',
+            'country' => 'Malaysia',
+            'currency' => 'MYR',
+        ],
+        [
+            'name' => 'Mozambican Metical',
+            'country' => 'Mozambique',
+            'currency' => 'MZN',
+        ],
+        [
+            'name' => 'Namibian Dollar',
+            'country' => 'Namibia',
+            'currency' => 'NAD',
+        ],
+        [
+            'name' => 'Nigerian Naira',
+            'country' => 'Nigeria',
+            'currency' => 'NGN',
+        ],
+        [
+            'name' => 'Nicaraguan Cordoba Oro',
+            'country' => 'Nicaragua',
+            'currency' => 'NIO',
+        ],
+        [
+            'name' => 'Norwegian Krone',
+            'country' => 'Norway',
+            'currency' => 'NOK',
+        ],
+        [
+            'name' => 'Nepalese Rupee',
+            'country' => 'Nepal',
+            'currency' => 'NPR',
+        ],
+        [
+            'name' => 'New Zealand Dollar',
+            'country' => 'New Zealand',
+            'currency' => 'NZD',
+        ],
+        [
+            'name' => 'Rial Omani',
+            'country' => 'Oman',
+            'currency' => 'OMR',
+        ],
+        [
+            'name' => 'Panamanian Balboa',
+            'country' => 'Panama',
+            'currency' => 'PAB',
+        ],
+        [
+            'name' => 'Peruvian Nuevo Sol',
+            'country' => 'Peru',
+            'currency' => 'PEN',
+        ],
+        [
+            'name' => 'Papua New Guinean Kina',
+            'country' => 'Papua New Guinea',
+            'currency' => 'PGK',
+        ],
+        [
+            'name' => 'Philippine Peso',
+            'country' => 'Philippines',
+            'currency' => 'PHP',
+        ],
+        [
+            'name' => 'Pakistan Rupee',
+            'country' => 'Pakistan',
+            'currency' => 'PKR',
+        ],
+        [
+            'name' => 'Polish Zloty',
+            'country' => 'Poland',
+            'currency' => 'PLN',
+        ],
+        [
+            'name' => 'Paraguayan Guarani',
+            'country' => 'Paraguay',
+            'currency' => 'PYG',
+        ],
+        [
+            'name' => 'Qatari Rial',
+            'country' => 'Qatar',
+            'currency' => 'QAR',
+        ],
+        [
+            'name' => 'Romanian New Leu',
+            'country' => 'Romania',
+            'currency' => 'RON',
+        ],
+        [
+            'name' => 'Serbian Dinar',
+            'country' => 'Serbia',
+            'currency' => 'RSD',
+        ],
+        [
+            'name' => 'Russian Ruble',
+            'country' => 'Russia',
+            'currency' => 'RUB',
+        ],
+        [
+            'name' => 'Rwandan Franc',
+            'country' => 'Rwanda',
+            'currency' => 'RWF',
+        ],
+        [
+            'name' => 'Saudi Riyal',
+            'country' => 'Saudi Arabia',
+            'currency' => 'SAR',
+        ],
+        [
+            'name' => 'Solomon Islands Dollar',
+            'country' => 'Solomon Islands',
+            'currency' => 'SBD',
+        ],
+        [
+            'name' => 'Seychelles Rupee',
+            'country' => 'Seychelles',
+            'currency' => 'SCR',
+        ],
+        [
+            'name' => 'Sudanese Pound',
+            'country' => 'Sudan',
+            'currency' => 'SDG',
+        ],
+        [
+            'name' => 'Swedish Krona',
+            'country' => 'Sweden',
+            'currency' => 'SEK',
+        ],
+        [
+            'name' => 'Singapore Dollar',
+            'country' => 'Singapore',
+            'currency' => 'SGD',
+        ],
+        [
+            'name' => 'Saint Helena Pound',
+            'country' => 'Saint Helena',
+            'currency' => 'SHP',
+        ],
+        [
+            'name' => 'Slovak Koruna',
+            'country' => 'Slovakia',
+            'currency' => 'SKK',
+        ],
+        [
+            'name' => 'Sierra Leonean Leone',
+            'country' => 'Sierra Leone',
+            'currency' => 'SLL',
+        ],
+        [
+            'name' => 'Somali Shilling',
+            'country' => 'Somalia',
+            'currency' => 'SOS',
+        ],
+        [
+            'name' => 'Surinam Dollar',
+            'country' => 'Suriname',
+            'currency' => 'SRD',
+        ],
+        [
+            'name' => 'São Tomean Dobra',
+            'country' => 'São Tomé and Príncipe',
+            'currency' => 'STD',
+        ],
+        [
+            'name' => 'Syrian Pound',
+            'country' => 'Syria',
+            'currency' => 'SYP',
+        ],
+        [
+            'name' => 'Swazi Lilangeni',
+            'country' => 'Swaziland',
+            'currency' => 'SZL',
+        ],
+        [
+            'name' => 'Thai Baht',
+            'country' => 'Thailand',
+            'currency' => 'THB',
+        ],
+        [
+            'name' => 'Tajikistan Somoni',
+            'country' => 'Tajikistan',
+            'currency' => 'TJS',
+        ],
+        [
+            'name' => 'Turkmenistan Manat',
+            'country' => 'Turkmenistan',
+            'currency' => 'TMM',
+        ],
+        [
+            'name' => 'Tunisian Dinar',
+            'country' => 'Tunisia',
+            'currency' => 'TND',
+        ],
+        [
+            'name' => 'Tongan Pa\'anga (TOP)',
+            'country' => 'Tonga',
+            'currency' => 'TOP',
+        ],
+        [
+            'name' => 'Turkish Lira',
+            'country' => 'Turkey',
+            'currency' => 'TRY',
+        ],
+        [
+            'name' => 'Trinidad and Tobago Dollar',
+            'country' => 'Trinidad and Tobago',
+            'currency' => 'TTD',
+        ],
+        [
+            'name' => 'Taiwanese Dollar',
+            'country' => 'Taiwan',
+            'currency' => 'TWD',
+        ],
+        [
+            'name' => 'Tanzanian Shilling',
+            'country' => 'Tanzania',
+            'currency' => 'TZS',
+        ],
+        [
+            'name' => 'Ukrainian Hryvnia',
+            'country' => 'Ukraine',
+            'currency' => 'UAH',
+        ],
+        [
+            'name' => 'Uganda Shilling',
+            'country' => 'Uganda',
+            'currency' => 'UGX',
+        ],
+        [
+            'name' => 'US Dollar',
+            'country' => 'United States',
+            'currency' => 'USD',
+        ],
+        [
+            'name' => 'US dollar next day',
+            'country' => 'United States',
+            'currency' => 'USN',
+        ],
+        [
+            'name' => 'US dollar same day',
+            'country' => 'United States',
+            'currency' => 'USS',
+        ],
+        [
+            'name' => 'Peso Uruguayo',
+            'country' => 'Uruguay',
+            'currency' => 'UYU',
+        ],
+        [
+            'name' => 'Uzbekistan Som',
+            'country' => 'Uzbekistan',
+            'currency' => 'UZS',
+        ],
+        [
+            'name' => 'Venezuelan bolivar',
+            'country' => 'Venezuela',
+            'currency' => 'VEB',
+        ],
+        [
+            'name' => 'Vietnamese dong',
+            'country' => 'Vietnam',
+            'currency' => 'VND',
+        ],
+        [
+            'name' => 'Vanuatu Vatu',
+            'country' => 'Vanuatu',
+            'currency' => 'VUV',
+        ],
+        [
+            'name' => 'Samoan Tala',
+            'country' => 'Samoa',
+            'currency' => 'WST',
+        ],
+        [
+            'name' => 'CFA Franc BEAC',
+            'country' => 'Cameroon, Central African Republic, Congo, Chad, Equatorial Guinea, Gabon',
+            'currency' => 'XAF',
+        ],
+        [
+            'name' => 'Silver',
+            'country' => '',
+            'currency' => 'XAG',
+        ],
+        [
+            'name' => 'Gold',
+            'country' => '',
+            'currency' => 'XAU',
+        ],
+        [
+            'name' => 'European Composite Unit',
+            'country' => '',
+            'currency' => 'XBA',
+        ],
+        [
+            'name' => 'European Monetary Unit',
+            'country' => '',
+            'currency' => 'XBB',
+        ],
+        [
+            'name' => 'European Unit of Account 9',
+            'country' => '',
+            'currency' => 'XBC',
+        ],
+        [
+            'name' => 'European Unit of Account 17',
+            'country' => '',
+            'currency' => 'XBD',
+        ],
+        [
+            'name' => 'East Caribbean Dollar',
+            'country' => 'Anguilla, Antigua and Barbuda, Dominica, Grenada, Montserrat, Saint Kitts and Nevis, Saint Lucia, Saint Vincent and the Grenadines',
+            'currency' => 'XCD',
+        ],
+        [
+            'name' => 'IMF Special Drawing Rights',
+            'country' => 'International Monetary Fund',
+            'currency' => 'XDR',
+        ],
+        [
+            'name' => 'BIS Gold franc',
+            'country' => 'Bank for International Settlements',
+            'currency' => 'XFO',
+        ],
+        [
+            'name' => 'UIC franc',
+            'country' => 'International Union of Railways',
+            'currency' => 'XFU',
+        ],
+        [
+            'name' => 'CFA Franc BCEAO',
+            'country' => 'Benin, Burkina Faso, Ivory Coast, Guinea-Bissau, Mali, Niger, Senegal, Togo',
+            'currency' => 'XOF',
+        ],
+        [
+            'name' => 'Palladium',
+            'country' => '',
+            'currency' => 'XPD',
+        ],
+        [
+            'name' => 'CFP franc',
+            'country' => 'French Polynesia, New Caledonia, Wallis and Futuna',
+            'currency' => 'XPF',
+        ],
+        [
+            'name' => 'Platinum',
+            'country' => '',
+            'currency' => 'XPT',
+        ],
+        [
+            'name' => 'Yemeni Rial',
+            'country' => 'Yemen',
+            'currency' => 'YER',
+        ],
+        [
+            'name' => 'South African Rand',
+            'country' => 'South Africa',
+            'currency' => 'ZAR',
+        ],
+        [
+            'name' => 'Zambia Kwacha',
+            'country' => 'Zambia',
+            'currency' => 'ZMK',
+        ],
+        [
+            'name' => 'Zimbabwe Dollar',
+            'country' => 'Zimbabwe',
+            'currency' => 'ZWD',
+        ],
+    ];
+    $date = date('Y-m-d');
+    $count = 0;
+    foreach ($list as $key => $currency) {
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_currency', 'c');
+        $data = $query
+                        ->fields('c', ['id'])
+                        ->condition('c.currency', $currency['currency'], '=')
+                        ->execute()->fetchObject();
+
+        if ($data->id == NULL) {
+            Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_currency')
+                    ->fields(['currency' => $currency['currency'], 'name' => $currency['name'], 'rate' => 0, 'active' => 0, 'date' => $date])
+                    ->execute();
+            $count++;
+        }
     }
+    return $count . " currencies updated";
+}
