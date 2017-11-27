@@ -11,6 +11,11 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Url;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\CloseDialogCommand;
+use Drupal\Core\Ajax\RedirectCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
 
 /**
  * Provides a form to create a new currency.
@@ -29,6 +34,11 @@ class NewCurrencyForm extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
 
+        $form['alert'] = array(
+            '#type' => 'item',
+            '#prefix' => "<div id='alert'></div>",
+        );
+        
         $form['code'] = array(
             '#type' => 'textfield',
             '#title' => t('Currency code'),
@@ -68,19 +78,23 @@ class NewCurrencyForm extends FormBase {
             '#type' => 'submit',
             '#value' => t('Record'),
             '#attributes' => array('class' => array('button--record')),
-            
+            '#ajax' => [
+                'callback' => [$this, 'saveForm'],
+            ]
         );
 
         return $form;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
+    public function saveForm(array &$form, FormStateInterface $form_state) {
 
+        $error = 0;
+        $response = new AjaxResponse();
         if (strlen($form_state->getValue('code')) < 3) {
-            $form_state->setErrorByName('code', $this->t('Error: code invalid'));
+            $error = 1;
+            $command = new ReplaceCommand('#alert', "<div class='messages messages--error'>" . $this->t('Error: code invalid') . "</div>");
+            return $response->addCommand($command);
+       
             
         } else {
             $query = Database::getConnection('external_db', 'external_db')
@@ -91,22 +105,22 @@ class NewCurrencyForm extends FormBase {
                         ->execute()->fetchField();
 
             if ($data) {
-                $form_state->setErrorByName('code', $this->t('Error: code exists'));
+                $error = 1;
+                $command = new ReplaceCommand('#alert', "<div class='messages messages--error'>" . $this->t('Error: code exists') . "</div>");
+                return $response->addCommand($command);
+               
               
             }
         }
 
         if (!is_numeric($form_state->getValue('rate'))) {
-            $form_state->setErrorByName('rate', $this->t('Error: rate exists'));
+            $error = 1;
+            $command = new ReplaceCommand('#alert', "<div class='messages messages--error'>" . $this->t('Error: rate invalid') . "</div>");
+            return $response->addCommand($command);
+            
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
+        
+        if($error != 1) {
             $name = Xss::filter($form_state->getValue('name'));
 
             $fields = array(
@@ -120,12 +134,37 @@ class NewCurrencyForm extends FormBase {
                     ->insert('ek_currency')
                     ->fields($fields)->execute();
             
-            
-            if (isset($insert)) {
+           
+          if (isset($insert)) {
                 drupal_set_message(t('Currency @c recorded', ['@c' => strtoupper($form_state->getValue('code'))]), 'status');
-                $form_state->setRedirect('ek_finance.currencies');
-            }
+                $response = new AjaxResponse();
+                $url = Url::fromRoute('ek_finance.currencies')->toString();
+                $response->addCommand(new RedirectCommand($url));
+                $response->addCommand(new CloseDialogCommand());
+                return $response;
+                
+          }
+        }
+
+    }
+    
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state) {
+
+
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state) {
+     
         
     }
+    
+
 
 }
