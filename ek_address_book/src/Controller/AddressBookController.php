@@ -13,6 +13,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -347,13 +348,13 @@ class AddressBookController extends ControllerBase {
                     'contact_name' => $r->contact_name,
                     'salutation' => $r->salutation,
                     'title' => $r->title,
-                    'telephone' => $r->ctelephone,
-                    'mobilephone' => $r->cmobilephone,
+                    'telephone' => $r->telephone,
+                    'mobilephone' => $r->mobilephone,
                     'email' => $r->email,
                     'card' => $r->card,
                     'department' => $r->department,
                     'link' => $r->link,
-                    'comment' => $r->ccomment,
+                    'comment' => $r->comment,
                     'main' => $r->main,
                     'stamp' => strtotime("now"),
                 );
@@ -368,19 +369,12 @@ class AddressBookController extends ControllerBase {
                         ->insert('ek_address_book_comment')
                         ->fields(['abid' => $newid])->execute();
 
-            $form_builder = $this->formBuilder();
-            $response = $form_builder->getForm('Drupal\ek_address_book\Form\NewAddressBookForm', $newid);
-
-            return array(
-                '#theme' => 'ek_address_book_form',
-                '#items' => $response,
-                '#title' => t('Edit cloned address book'),
-                '#attached' => array(
-                    'library' => array('ek_address_book/ek_address_book_css'),
-                ),
-            );
+            $url = Url::fromRoute('ek_address_book.edit', ['abid' => $newid])->toString();
+            return new RedirectResponse($url);
+             
         } else {
             //cannot clone this entry  
+            
             return array('#markup' => t('This entry cannot be cloned.'));
         }
     }
