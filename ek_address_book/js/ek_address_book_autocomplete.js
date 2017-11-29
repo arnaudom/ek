@@ -10,8 +10,8 @@
 
         jQuery.ajax({
           dataType: "json",
-          url: drupalSettings.path.baseUrl + "look_up_contact_ajax/0" ,
-          data: { option: "image", q: term },
+          url: drupalSettings.path.baseUrl + "look_up_contact_ajax" ,
+          data: { option: "image", term: term },
           success: function (data) { 
               var content = '';
               var i = 0;

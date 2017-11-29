@@ -407,74 +407,93 @@ class AddressBookController extends ControllerBase {
 
     /**
      * Util to return contact name callback.
-     * @param (string) $type type of contact 1 client, 2 supplier, 3 other
+     * @param (string) $type type of contact % default, 1 client, 2 supplier, 3 other, 4 cards
      * @return \Symfony\Component\HttpFoundation\JsonResponse;
      *   An Json response object.
      */
     public function ajaxlookupcontact(Request $request, $type) {
 
-        $text = $request->query->get('q');
+        $text = (null !==$request->query->get('q')) ? $request->query->get('q') : $request->query->get('term');
         $option = $request->query->get('option');
         $name = array();
         if(strpos('%', $text)>= 0) {
             $text = str_replace('%', '', $text);
         }
-        
-        //if(strlen($text) < 2) {
-            //return new JsonResponse($name);
-        //}
-        
-        $types = array(1 => t('client'), 2 => t('supplier'), 3 => t('other'));
-        $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_address_book', 'ab');
-        $query->fields('ab', ['id', 'name', 'type','logo'])->distinct();
-        
-        $query->leftJoin('ek_address_book_contacts', 'bc', 'ab.id = bc.abid');
+       
 
-        $or = db_or();
-        $or->condition('name', $text . "%", 'like');
-        $or->condition('shortname', $text . "%", 'like');
-        $or->condition('contact_name', $text . "%", 'like');
-        $or->condition('contact_name', $text . "%", 'like');
-        $or->condition('activity', "%" . $text . "%", 'like');;
-        $query->condition($or);
-        
-        if ($type != '0') {
-            $query->condition('type', $type, '=');
-        } 
-        $data = $query->execute();
-      
-        if($option == 'image') {
-                $result = [];
-                while($r = $data->fetchObject()){
-                    $line = [];
+        if($type < 4 || $type == '%') {
+            
+            //pull company names
+            $types = array(1 => t('client'), 2 => t('supplier'), 3 => t('other'));
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_address_book', 'ab');
+            $query->fields('ab', ['id', 'name', 'type','logo'])->distinct();
 
-                    if ($r->logo) {
-                             $pic = "<img class='abook_thumbnail'' src='"
-                            . file_create_url($r->logo) . "'>";
-                    } else {
-                            $default = file_create_url(drupal_get_path('module', 'ek_address_book') . '/art/default.jpg');
-                            $pic = "<img  class='abook_thumbnail' src='"
-                            . $default . "'>";
+            $query->leftJoin('ek_address_book_contacts', 'bc', 'ab.id = bc.abid');
+
+            $or = db_or();
+            $or->condition('name', $text . "%", 'like');
+            $or->condition('shortname', $text . "%", 'like');
+            $or->condition('contact_name', $text . "%", 'like');
+            $or->condition('contact_name', $text . "%", 'like');
+            $or->condition('activity', "%" . $text . "%", 'like');
+            $query->condition($or);
+
+            if ($type != '%') {
+                $query->condition('type', $type, '=');
+            } 
+            $data = $query->execute();
+            $result = [];
+            if($option == 'image') {
+                    
+                    while($r = $data->fetchObject()){
+                        $line = [];
+
+                        if ($r->logo) {
+                                 $pic = "<img class='abook_thumbnail'' src='"
+                                . file_create_url($r->logo) . "'>";
+                        } else {
+                                $default = file_create_url(drupal_get_path('module', 'ek_address_book') . '/art/default.jpg');
+                                $pic = "<img  class='abook_thumbnail' src='"
+                                . $default . "'>";
+                        }
+                            $line['picture'] = isset($pic) ? $pic : '';
+                            $line['type'] = $types[$r->type];
+                            $line['name'] = $r->name;
+                            $line['id'] = $r->id;
+
+                            $result[] = $line;
                     }
-                        $line['picture'] = isset($pic) ? $pic : '';
-                        $line['type'] = $types[$r->type];
-                        $line['name'] = $r->name;
-                        $line['id'] = $r->id;
 
-                        $result[] = $line;
+                } else {
+                    while($r = $data->fetchObject()){
+                        $result[] = $r->name;
+                    }
                 }
-                
-            } else {
-                $Obj = $data->fetchObject();
-                $result = [$Obj->name];
-            }
+        } else {
+            //pull name cards
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_address_book_contacts', 'abc');
+            $query->fields('abc', ['id', 'contact_name', 'salutation','abid'])->distinct();
+            $or = db_or();
+            $or->condition('contact_name', $text . "%", 'like');
+            $or->condition('contact_name', "%" . $text . "%", 'like');
+            $query->condition($or);
+
+            $data = $query->execute();
+                while($r = $data->fetchObject()){
+                        $result[] = $r->contact_name;
+                }
+            
+            
+        }
         
         return new JsonResponse($result);
     }
 
     /**
      * Util to return contact email callback.
+     * @param (string) $type type of contact %: ek address book & users, user: users table, book: Ek address book
      * @return \Symfony\Component\HttpFoundation\JsonResponse;
      *   An Json response object.
      */

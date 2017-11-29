@@ -42,8 +42,26 @@ class NewAddressBookCardForm extends FormBase {
             );
         }
 
+        /*pull names from other cards*/
+        $form['copy'] = array(
+            '#type' => 'details',
+            '#title' => $this->t('Copy existing card'),
+            '#collapsible' => TRUE,
+            '#open' => TRUE,
+        );
 
-
+        $form['copy']['names'] = array(
+            '#type' => 'textfield',
+            '#title' => $this->t('Enter names to copy'),
+            '#attributes' => array('class' => ['form-select-tag']),
+            '#attached' => array(
+                'library' => array('ek_admin/ek_admin_tageditor'),
+                'drupalSettings' => array('auto_complete' => '/look_up_contact_ajax/4'),
+            ),
+        );
+        
+        
+        
         $vocabulary = \Drupal::entityManager()->getStorage('taxonomy_term')->loadTree('salutation', 0, 1);
         if ($vocabulary) {
             $checklist_vocab_array = array();
@@ -61,7 +79,7 @@ class NewAddressBookCardForm extends FormBase {
 
         $form[$i] = array(
             '#type' => 'details',
-            '#title' => t('New contact card'),
+            '#title' => $this->t('New contact card'),
             '#collapsible' => TRUE,
             '#open' => TRUE,
         );
@@ -75,7 +93,7 @@ class NewAddressBookCardForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
-            '#attributes' => array('placeholder' => t('Contact name')),
+            '#attributes' => array('placeholder' => $this->t('Contact name')),
         );
 
 
@@ -96,7 +114,7 @@ class NewAddressBookCardForm extends FormBase {
             '#size' => 60,
             '#maxlength' => 255,
             '#required' => FALSE,
-            '#attributes' => array('placeholder' => t('Title or function')),
+            '#attributes' => array('placeholder' => $this->t('Title or function')),
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -109,7 +127,7 @@ class NewAddressBookCardForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 30,
-            '#attributes' => array('placeholder' => t('Telephone')),
+            '#attributes' => array('placeholder' => $this->t('Telephone')),
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -122,7 +140,7 @@ class NewAddressBookCardForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 30,
-            '#attributes' => array('placeholder' => t('Mobile phone')),
+            '#attributes' => array('placeholder' => $this->t('Mobile phone')),
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -215,27 +233,59 @@ class NewAddressBookCardForm extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
         parent::validateForm($form, $form_state);
-
-        for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
-            if ($form_state->getValue('contact_name' . $i) <> '') {
-
-                // Handle file uploads.
-                //$validators = array('file_validate_extensions' => array('ico png gif jpg jpeg apng svg'));
-                $validators = array('file_validate_is_image' => array());
-                $field = "image" . $i;
-                // Check for a new uploaded logo.
-                $file = file_save_upload($field, $validators, FALSE, 0);
-                if (isset($file)) {
-                    // File upload was attempted.
-                    if ($file) {
-                        // Put the temporary file in form_values so we can save it on submit.
-                        $form_state->setValue($field, $file);
-                    } else {
-                        // File upload failed.
-                        $form_state->setErrorByName($field, $this->t('Card No. @i could not be uploaded', array('@i' => $i + 1)));
-                    }
+        
+        //validate copies
+        if($form_state->getValue('names')) {
+            $parts = explode(",", $form_state->getValue('names'));
+            $invalid = [];
+            $ids = [];
+            foreach($parts as $key => $name) {
+                
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_address_book_contacts', 'abc');
+                $query->fields('abc', ['id']);
+                $query->condition('contact_name', $name, '=');
+                $data = $query->execute()->fetchObject();
+                
+                if(!$data->id) {
+                    $invalid[] = $name;
                 } else {
-                    $form_state->setValue($field, 0);
+                    $ids[] = $data->id;
+                }
+                
+            }
+            if(!empty($ids)) {
+                $form_state->set('ids', $ids);
+            }
+            
+            if(!empty($invalid)) {
+                $form_state->setErrorByName('names', $this->t('Unknown name(s) to copy: @n', array('@n' => implode(',',$invalid))));
+            }
+            
+        }
+
+        if($form_state->getValue('contact_name0')) {
+            for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
+                if ($form_state->getValue('contact_name' . $i) <> '') {
+
+                    // Handle file uploads.
+                    //$validators = array('file_validate_extensions' => array('ico png gif jpg jpeg apng svg'));
+                    $validators = array('file_validate_is_image' => array());
+                    $field = "image" . $i;
+                    // Check for a new uploaded logo.
+                    $file = file_save_upload($field, $validators, FALSE, 0);
+                    if (isset($file)) {
+                        // File upload was attempted.
+                        if ($file) {
+                            // Put the temporary file in form_values so we can save it on submit.
+                            $form_state->setValue($field, $file);
+                        } else {
+                            // File upload failed.
+                            $form_state->setErrorByName($field, $this->t('Card No. @i could not be uploaded', array('@i' => $i + 1)));
+                        }
+                    } else {
+                        $form_state->setValue($field, 0);
+                    }
                 }
             }
         }
@@ -246,14 +296,43 @@ class NewAddressBookCardForm extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
+        //copy cards
+        if ($form_state->get('ids')) {
+            foreach($form_state->get('ids') as $key => $id) {
+                
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_address_book_contacts', 'abc');
+                $query->fields('abc');
+                $query->condition('id', $id, '=');
+                $data = $query->execute()->fetchObject();
+                
+                $fields = array(
+                        'abid' => $form_state->getValue('for_id'),
+                        'contact_name' => $data->contact_name,
+                        'salutation' => $data->salutation,
+                        'title' => $data->title,
+                        'telephone' => $data->telephone,
+                        'mobilephone' => $data->cmobilephone,
+                        'email' => $data->email,
+                        'card' => $data->card,
+                        'department' => $data->department,
+                        'link' => $data->link,
+                        'comment' => $data->comment,
+                        'main' => 0,
+                        'stamp' => strtotime("now"),
+                    );
 
+                    $insert = Database::getConnection('external_db', 'external_db')
+                            ->insert('ek_address_book_contacts')->fields($fields)->execute();
+                
+                
+            }
+        }
 
     //update contact card
-        if ($form_state->getValue('cards') >= 0) {
+        if ($form_state->getValue('contact_name0')) {
             //update cards
-
             for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
-
 
                 //verify  the name input and proceed only if not empty
                 if ($form_state->getValue('contact_name' . $i) != '') {
@@ -269,11 +348,7 @@ class NewAddressBookCardForm extends FormBase {
                         file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
                         $filename = file_unmanaged_copy($file->getFileUri(), $dir);
                     }
-
-
-
                     //end upload//
-
 
                     $fields = array(
                         'abid' => $form_state->getValue('for_id'),
@@ -294,12 +369,10 @@ class NewAddressBookCardForm extends FormBase {
                     $insert = Database::getConnection('external_db', 'external_db')
                             ->insert('ek_address_book_contacts')->fields($fields)->execute();
                 } else {
-
                     drupal_set_message(t('Empty contact No. @i not recorded.', array('@i' => $i + 1)), 'warning');
                 }
             }
         } else {
-
             drupal_set_message(t('No contact card available'), 'warning');
         }
 
@@ -308,7 +381,7 @@ class NewAddressBookCardForm extends FormBase {
             drupal_set_message(t('The address book card is recorded'), 'status');
         }
 
-        $form_state->setRedirect('ek_address_book.view', array('abid' => $form_state->getValue('for_id')));
+       $form_state->setRedirect('ek_address_book.view', array('abid' => $form_state->getValue('for_id')));
     }
 
 }
