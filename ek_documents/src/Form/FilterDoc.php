@@ -29,8 +29,10 @@ class FilterDoc extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state) {
 
         $open = FALSE;
+        $title = $this->t('Filter');
         if (isset($_SESSION['documentfilter']['filter']) && $_SESSION['documentfilter']['filter'] == 1) {
             $open = TRUE;
+            $title = ['#markup' => "<strong>" . $this->t('Filter on') . "</strong>"];
         }
         if (isset($_SESSION['documentfilter']['to'])) {
             $to = $_SESSION['documentfilter']['to'];
@@ -40,8 +42,9 @@ class FilterDoc extends FormBase {
 
         $form['filters'] = array(
             '#type' => 'details',
-            '#title' => $this->t('Filter'),
+            '#title' => $title,
             '#open' => $open,
+            
         );
 
 
@@ -62,10 +65,7 @@ class FilterDoc extends FormBase {
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['documentfilter']['from']) ? $_SESSION['documentfilter']['from'] : NULL,
-            //'#attributes' => array('placeholder' => 'YYYY-mm-dd'),
-            '#prefix' => "<div class=''><div class='row'><div class='cell'>",
-            '#suffix' => '</div>',
-            '#title' => t('from'),
+            '#title' => $this->t('from'),
             '#states' => array(
                 'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
                 ),
@@ -76,10 +76,7 @@ class FilterDoc extends FormBase {
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => $to,
-            //'#attributes' => array('placeholder' => 'YYYY-mm-dd'),
-            '#title' => t('to'),
-            '#prefix' => "<div class='cell'>",
-            '#suffix' => '</div></div></div>',
+            '#title' => $this->t('to'),
             '#states' => array(
                 'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
                 ),
