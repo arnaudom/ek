@@ -56,7 +56,7 @@ class NewAddressBookCardForm extends FormBase {
             '#attributes' => array('class' => ['form-select-tag']),
             '#attached' => array(
                 'library' => array('ek_admin/ek_admin_tageditor'),
-                'drupalSettings' => array('auto_complete' => '/look_up_contact_ajax/4'),
+                'drupalSettings' => array('auto_complete' => 'look_up_contact_ajax/4'),
             ),
         );
         
