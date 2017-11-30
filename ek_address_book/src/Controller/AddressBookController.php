@@ -380,7 +380,8 @@ class AddressBookController extends ControllerBase {
     }
 
     /**
-     * Return add name card form page.
+     * @param int $abid address book main table ID
+     * @return add name card form page object.
      *
      */
     public function newaddressbookcard(Request $request, $abid = NULL) {
@@ -393,14 +394,119 @@ class AddressBookController extends ControllerBase {
     }
 
     /**
-     * Return the delete organization form page.
+     * @param int $abid address book main table ID
+     * @return array the delete organization form page object.
      *
      */
-    public function deleteaddressbook(Request $request, $abid = NULL) {
+    public function deleteaddressbook($abid = NULL) {
 
-        $form_builder = $this->formBuilder();
-        $form_builder->setRequest($request);
-        $response = $form_builder->getForm('Drupal\ek_address_book\Form\DelAddressBookForm', $abid);
+        //filter usage of address book entry before deletion
+        //finance
+        $usage = [];
+        if ($this->moduleHandler->moduleExists('ek_finance')) {
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_expenses', 't');
+            $query->fields('t', ['id']);
+            $query->addExpression('count(id)', 'ids');
+            $or = db_or();
+            $or->condition('clientname', $abid, '=');
+            $or->condition('suppliername', $abid, '=');
+            $query->condition($or)->groupBy('t.id');
+            $data = $query->execute();
+            
+            if($data->fetchObject()->ids > 0){
+               $usage[] = t('finance'); 
+            }
+                
+        }
+        if ($this->moduleHandler->moduleExists('ek_products')) {
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_items', 't');
+            $query->fields('t', ['id']);
+            $query->addExpression('count(id)', 'ids');
+            $query->condition('supplier', $abid, '=');
+            $query->groupBy('t.id');
+            $data = $query->execute();
+            
+            if($data->fetchObject()->ids > 0){
+               $usage[] = t('products & services'); 
+            }
+        }
+        if ($this->moduleHandler->moduleExists('ek_logistics')) {
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_logi_delivery', 't');
+            $query->fields('t', ['id']);
+            $query->addExpression('count(id)', 'ids');
+            $query->condition('client', $abid, '=');
+            $query->groupBy('t.id');
+            $data = $query->execute();
+
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_logi_receiving', 't');
+            $query->fields('t', ['id']);
+            $query->addExpression('count(id)', 'ids');
+            $query->condition('supplier', $abid, '=');
+            $query->groupBy('t.id');
+            $data2 = $query->execute();
+            
+            if($data->fetchObject()->ids > 0 || $data2->fetchObject()->ids > 0){
+               $usage[] = t('logistics'); 
+            }
+        }
+        if ($this->moduleHandler->moduleExists('ek_sales')) {
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_sales_invoice', 't');
+            $query->fields('t', ['id']);
+            $query->addExpression('count(id)', 'ids');
+            $query->condition('client', $abid, '=');
+            $query->groupBy('t.id');
+            $data = $query->execute();
+
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_sales_purchase', 't');
+            $query->fields('t', ['id']);
+            $query->addExpression('count(id)', 'ids');
+            $query->condition('client', $abid, '=');
+            $query->groupBy('t.id');
+            $data2 = $query->execute();
+
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_sales_quotation', 't');
+            $query->fields('t', ['id']);
+            $query->addExpression('count(id)', 'ids');
+            $query->condition('client', $abid, '=');
+            $query->groupBy('t.id');
+            $data3 = $query->execute();    
+            
+            if($data->fetchObject()->ids > 0 || $data2->fetchObject()->ids > 0
+                    || $data3->fetchObject()->ids > 0){
+               $usage[] = t('sales'); 
+            }
+        }        
+        if ($this->moduleHandler->moduleExists('ek_projects')) {
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_project', 't');
+            $query->fields('t', ['id']);
+            $query->addExpression('count(id)', 'ids');
+            $query->condition('client_id', $abid, '=');
+            $query->groupBy('t.id');
+            $data = $query->execute();
+            
+            if($data->fetchObject()->ids > 0){
+               $usage[] = t('projects'); 
+            }
+        }
+        
+        if(!empty($usage)) {
+            $modules = implode(', ', $usage);
+            $response = ['#markup' => t('This address book cannot be deleted. It is used in following module(s): @m',
+                        ['@m' => $modules]),
+                ];
+        } else {
+        
+            $form_builder = $this->formBuilder();
+            $response = $form_builder->getForm('Drupal\ek_address_book\Form\DeleteAddressBook', $abid);
+        }
 
         return $response;
     }

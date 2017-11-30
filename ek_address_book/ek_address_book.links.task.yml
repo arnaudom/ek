@@ -54,3 +54,9 @@ ek_address_book.edit:
   title: 'Edit'
   weight: 3
   
+ek_address_book.delete:
+  route_name: ek_address_book.delete
+  base_route: ek_address_book.view
+  title: 'Delete'
+  weight: 3
+  

@@ -114,6 +114,7 @@ ek_address_book.clone:
 ek_address_book.delete:
   path: '/delete_contact/{abid}'
   defaults:
+    _title: 'Delete address book'
     _controller: '\Drupal\ek_address_book\Controller\AddressBookController::deleteaddressbook'
   requirements:
     _permission: 'delete_address_book'
