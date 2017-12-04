@@ -1351,7 +1351,7 @@ class ProjectController extends ControllerBase {
                         $items[$i]['comment'] = $l->comment . " " . date('Y-m-d', $l->uri);
                         
                     } else {
-                        if (!file_exists($l->uri)) {
+                        if (!file_exists($l->uri)) { 
                             //file not on server (archived?) TODO ERROR file path not detected
                             $items[$i]['fid'] = 2;
                             $items[$i]['delete'] = 0;

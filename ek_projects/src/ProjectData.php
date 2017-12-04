@@ -257,12 +257,25 @@ use Drupal\ek_admin\Access\AccessCheck;
 
     public static function validate_file_access($id) { 
  
-
-    $query = "SELECT cid,d.share,d.deny,owner FROM {ek_project_documents} d INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE d.id=:f";
-    $data = Database::getConnection('external_db', 'external_db')->query($query, array(':f' => $id))->fetchObject();
+    $query = "SELECT settings from {ek_project_settings} WHERE coid=:c";
+            $settings = Database::getConnection('external_db', 'external_db')
+                        ->query($query, [':c' => 0])->fetchField();
+            $s = unserialize($settings);
+            
+    $query = "SELECT p.id,cid,d.share,d.deny,owner FROM {ek_project_documents} d "
+            . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE d.id=:f";
+    $data = Database::getConnection('external_db', 'external_db')->query($query, array(':f' => $id))
+            ->fetchObject();
+    
+    //if settings are set to block all at page level, and page is blocked, return False
+    if($s['access_level'] == 1 && !self::validate_access($data->id)){
+        return FALSE;
+    }
+        
 
     $query = "SELECT access FROM {ek_country} WHERE id=:id";
-    $access = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $data->cid))->fetchField();
+    $access = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $data->cid))
+            ->fetchField();
     $access = explode(',', unserialize($access));
     
     $uid = \Drupal::currentUser()->id();

@@ -28,6 +28,18 @@ class SettingsUsers extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
+        
+        $query = "SELECT settings from {ek_project_settings} WHERE coid=:c";
+            $settings = Database::getConnection('external_db', 'external_db')
+                        ->query($query, [':c' => 0])->fetchField();
+            $s = unserialize($settings);
+            
+        $form['access_level'] = array(
+                '#type' => 'checkbox',
+                '#title' => t('Block file access level at page level'),
+                '#default_value' => ($s['access_level'] == 1) ? 1 : 0,
+
+        );
 
         $users = db_query('SELECT uid,name,status FROM {users_field_data} WHERE uid>:u order by name', array(':u' => 0));
 
@@ -134,6 +146,18 @@ class SettingsUsers extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
+        
+        $query = "SELECT settings from {ek_project_settings} WHERE coid=:c";
+            $settings = Database::getConnection('external_db', 'external_db')
+                        ->query($query, [':c' => 0])->fetchField();
+            $s = unserialize($settings);
+            
+        $s['access_level'] = $form_state->getValue('access_level'); 
+        Database::getConnection('external_db', 'external_db')
+          ->update('ek_project_settings')
+          ->condition('coid', 0)
+          ->fields(['settings' => serialize($s)])
+          ->execute();
         
         $n = 0;
         $i = 0;
