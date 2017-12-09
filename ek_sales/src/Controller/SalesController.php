@@ -583,7 +583,7 @@ class SalesController extends ControllerBase {
             case 'invoice':
                 $id = $param[1];
                 $options = array('width' => '30%',);
-                $settings = new FinanceSettings();
+                $settings = new \Drupal\ek_finance\FinanceSettings();
                 $baseCurrency = $settings->get('baseCurrency');
                 $query = 'SELECT currency,amount,amountreceived,pay_date,amountbase,balancebase,taxvalue '
                         . 'FROM {ek_sales_invoice} WHERE id=:id';
@@ -616,7 +616,7 @@ class SalesController extends ControllerBase {
             case 'purchase':
                 $id = $param[1];
                 $options = array('width' => '30%',);
-                $settings = new FinanceSettings();
+                $settings = new \Drupal\ek_finance\FinanceSettings();
                 $baseCurrency = $settings->get('baseCurrency');
                 $query = 'SELECT currency,amount,amountpaid,pdate,amountbc,balancebc,taxvalue '
                         . 'FROM {ek_sales_purchase} WHERE id=:id';
