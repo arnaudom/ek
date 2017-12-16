@@ -36,6 +36,8 @@ class PostNewYear extends FormBase {
    */
   public function __construct(ModuleHandler $module_handler) {
     $this->moduleHandler = $module_handler;
+    $this->finance_settings = new FinanceSettings(); 
+    $this->chart = $this->finance_settings->get('chart');
   }
 
   /**
@@ -143,10 +145,33 @@ class PostNewYear extends FormBase {
             //display detail of posted data
                 $journal = new Journal();
                 $settings = new CompanySettings($form_state->getValue('coid'));
-                $finance = new FinanceSettings();
+                //$finance = new FinanceSettings();
                 $fiscal_year = $settings->get('fiscal_year') ;
                 $fiscal_month = $settings->get('fiscal_month');
-
+                
+                //determine range of balance sheet items
+                //other assets
+                $other_assets_min = $this->chart['other_assets'] * 10000;
+                $other_assets_max = $other_assets_min + 9999;
+                
+                //assets
+                $assets_min = $this->chart['assets'] * 10000;
+                $assets_max = $assets_min + 9999;
+                
+                //liabilities
+                $liabilities_min = $this->chart['liabilities'] * 10000;
+                $liabilities_max = $liabilities_min + 9999;
+                
+                //other liabilities
+                $other_liabilities_min = $this->chart['liabilities'] * 10000;
+                $other_liabilities_max = $other_liabilities_min + 9999;
+                
+                //equity
+                $equity_min = $this->chart['equity'] * 10000;
+                $equity_max = $equity_min + 9999;
+                $earnings_account = $equity_min + 9001;//default
+                $reserve_account = $equity_min + 8001;//default
+                
                 $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $fiscal_month , $fiscal_year );
                 $from = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth . ' - 1 year + 1 day'));
                 $to = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth . ' + 1 day'));
@@ -160,13 +185,18 @@ class PostNewYear extends FormBase {
                 
                 while ($r=$result->fetchAssoc()) {
         
-                    if($r['aid'] < '40000') {
-                        if ($r['aid']=='39001') {
+                    if( ($r['aid'] >= $other_assets_min && $r['aid'] <= $other_assets_max)
+                        || ($r['aid'] >= $assets_min && $r['aid'] <= $assets_max)
+                        || ($r['aid'] >= $liabilities_min && $r['aid'] <= $liabilities_max)    
+                        || ($r['aid'] >= $other_liabilities_min && $r['aid'] <= $other_liabilities_max) 
+                        || ($r['aid'] >= $equity_min && $r['aid'] <= $equity_max)   
+                            ) {
+                        if ($r['aid'] == $earnings_account) {
 
-                        $r['balance_base']=$earning[1];
-                        $r['balance']=$earning[0];
+                        $r['balance_base'] = $earning[1];
+                        $r['balance'] = $earning[0];
 
-                        } elseif ($r['aid']=='38001') { 
+                        } elseif ($r['aid'] == $reserve_account) { 
 
                         $b[1] = $r['balance_base']+$earning[1];
                         $b[0] = $r['balance']+$earning[0];
@@ -208,12 +238,12 @@ class PostNewYear extends FormBase {
                                     <th colspan='3' align=center>Next</th>
                                   </tr>
                                   <tr>
-                                    <th >" . t('Account') . "</th>
-                                    <th >" . t('Previous opening') . "</th>
-                                    <th >" . $finance->get('baseCurrency') . "</th>
+                                    <th>" . t('Account') . "</th>
+                                    <th>" . t('Previous opening') . "</th>
+                                    <th>" . $this->finance_settings->get('baseCurrency') . "</th>
                                     <th>" . t('Local currency') . "</th>
                                     <th>" . t('New opening') . "</th>
-                                    <th>" . $finance->get('baseCurrency') . "</th>
+                                    <th>" . $this->finance_settings->get('baseCurrency') . "</th>
                                     <th>" . t('Local currency') . "</th>
                                   </tr>
                                 </thead>
@@ -312,16 +342,38 @@ class PostNewYear extends FormBase {
     $a = array(':coid' => $form_state->getValue('coid'));
     $result =  Database::getConnection('external_db', 'external_db')
                     ->query($q,$a);
+    
+    //determine range of balance sheet items
+    //other assets
+    $other_assets_min = $this->chart['other_assets'] * 10000;
+    $other_assets_max = $other_assets_min + 9999;
+
+    //assets
+    $assets_min = $this->chart['assets'] * 10000;
+    $assets_max = $assets_min + 9999;
+
+    //liabilities
+    $liabilities_min = $this->chart['liabilities'] * 10000;
+    $liabilities_max = $liabilities_min + 9999;
+
+    //other liabilities
+    $other_liabilities_min = $this->chart['liabilities'] * 10000;
+    $other_liabilities_max = $other_liabilities_min + 9999;
+
+    //equity
+    $equity_min = $this->chart['equity'] * 10000;
+    $equity_max = $equity_min + 9999;
+    $earnings_account = $equity_min + 9001;//default
+    $reserve_account = $equity_min + 8001;//default
 
     while ($r=$result->fetchAssoc()) {
-
         
-            if ($r['aid']=='39001') {
+            if ($r['aid'] == $earnings_account) {
 
-            $r['balance_base']=$earning[1];
-            $r['balance']=$earning[0];
+            $r['balance_base'] = $earning[1];
+            $r['balance'] = $earning[0];
 
-            } elseif ($r['aid']=='38001') { 
+            } elseif ($r['aid'] == $reserve_account) { 
 
             $b[1] = $r['balance_base']+$earning[1];
             $b[0] = $r['balance']+$earning[0];
@@ -339,7 +391,12 @@ class PostNewYear extends FormBase {
                         );
             }
 
-          if($r['aid'] < '40000') {
+          if( ($r['aid'] >= $other_assets_min && $r['aid'] <= $other_assets_max)
+                        || ($r['aid'] >= $assets_min && $r['aid'] <= $assets_max)
+                        || ($r['aid'] >= $liabilities_min && $r['aid'] <= $liabilities_max)    
+                        || ($r['aid'] >= $other_liabilities_min && $r['aid'] <= $other_liabilities_max) 
+                        || ($r['aid'] >= $equity_min && $r['aid'] <= $equity_max)   
+                            ) {
               //balance sheet closing balance are reported to following year opening
               $fields = array('balance_date' => $to , 'balance' => $b[0], 'balance_base' => $b[1] );
               array_push($report,array($r['aid'],$r['balance'],$r['balance_base'],$b[0],$b[1]));

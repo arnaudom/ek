@@ -123,7 +123,7 @@ class JournalController extends ControllerBase {
             '#theme' => 'ek_finance_journal',
             '#items' => $items,
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance'),
+                'library' => array('ek_finance/ek_finance', 'ek_finance/ek_finance.dialog'),
             ),
         );
     }

@@ -2,7 +2,6 @@
 
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\Journal;
 use Drupal\ek_admin\CompanySettings;
@@ -52,40 +51,38 @@ if($dates['archive'] == TRUE) {
 //header account
 $table_1 = "<table style= border=0 cellpadding=1 cellspacing=0 class=''>
     <thead class='' >
-      <th colspan='2'>" . t('ASSETS') . " </th>
+      <th colspan='2'>" . t('Assets') . " </th>
       <th >" . t('Base currency') . " (" . $baseCurrency . ") </th>
       <th >" . t('Multi currency') . " </th>
     </thead>
     <tbody class=''>";
 
-
-
-$q = "SELECT aid,aname FROM {$table_accounts} WHERE aid like :aid AND atype=:type "
-        . "AND astatus=:status AND coid=:coid order by aid";
-$a = array(
-    ':aid' => $chart['assets'] . '%',
-    ':type' => 'header',
-    ':status' => 1,
-    ':coid' => $coid
-);
-$rh = Database::getConnection('external_db', 'external_db')
-        ->query($q, $a)
-        ->fetchObject();
+// Other assets
+$total_class0 = 0;
+$total_class0_base = 0;
+    
+$query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+$query->fields($t, ['aid','aname']);
+$query->condition('aid', $chart['other_assets'] . '%', 'like');
+$query->condition('atype', 'header', '=');
+$query->condition('astatus', '1', '=');
+$query->condition('coid', $coid, '=');
+$query->orderBy('aid', 'ASC');
+$data = $query->execute();
+$rh = $data->fetchObject();
 
 $table_1 .= style('header', $rh->aid, $rh->aname);
 
-$q = "SELECT aid,aname FROM {$table_accounts} "
-        . "WHERE aid like :aid AND atype=:type AND astatus=:status AND coid=:coid order by aid";
-$a = array(
-    ':aid' => $chart['assets'] . '%',
-    ':type' => 'class',
-    ':status' => 1,
-    ':coid' => $coid
-);
-$result = Database::getConnection('external_db', 'external_db')
-        ->query($q, $a);
-
-
+$query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+$query->fields($t, ['aid','aname']);
+$query->condition('aid', $chart['other_assets'] . '%', 'like');
+$query->condition('atype', 'class', '=');
+$query->condition('astatus', '1', '=');
+$query->condition('coid', $coid, '=');
+$query->orderBy('aid', 'ASC');
+$result = $query->execute();
 
 while ($r = $result->fetchObject()) {
 
@@ -97,11 +94,93 @@ while ($r = $result->fetchObject()) {
     $total_detail = 0;
     $total_detail_base = 0;
 
-    $q = "SELECT aid,aname FROM {$table_accounts} "
-            . "WHERE aid like :aid AND atype=:type AND coid=:coid order by aid";
-    $a = array(':aid' => $aid . '%', ':type' => 'detail', ':coid' => $coid);
-    $result2 = Database::getConnection('external_db', 'external_db')
-            ->query($q, $a);
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+    $query->fields($t, ['aid','aname']);
+    $query->condition('aid', $aid . '%', 'like');
+    $query->condition('atype', 'detail', '=');
+    $query->condition('coid', $coid, '=');
+    $query->orderBy('aid', 'ASC');
+    $result2 = $query->execute();
+  
+    while ($r2 = $result2->fetchObject()) {
+
+        $b = $journal->opening(
+                array(
+                    'aid' => $r2->aid,
+                    'coid' => $coid,
+                    'from' => $stop_date,
+                    'archive' => $dates['archive']
+                )
+        );
+        //opening returns an array with key 0 = multicurrency and key 1 = base currency 
+        $b0 = $b[0] * -1;
+        $b1 = $b[1] * -1;
+        if (($b0 != 0 || $b1 != 0) && $summary == 0) {
+
+            $param = 'aid=' . $r2->aid . '&from=' . $from . '&to=' . $to . '&company=' . $coid;
+            $table_1 .= style('detail', $r2->aid, $r2->aname, $b1, $b0, '', $from, $to, $coid, $dates['archive']);
+        }
+        $total_detail += $b0;
+        $total_detail_base += $b1;
+    }
+
+
+
+    $table_1 .= style('subtotal', $r->aid, $r->aname, $total_detail_base, $total_detail);
+
+    $total_class0+=$total_detail;
+    $total_class0_base+=$total_detail_base;
+}
+
+
+$table_1 .= style('total', $rh->aid, $rh->aname, $total_class0_base, $total_class0);
+
+// assets
+$total_class1 = 0;
+$total_class1_base = 0;
+
+$query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+$query->fields($t, ['aid','aname']);
+$query->condition('aid', $chart['assets'] . '%', 'like');
+$query->condition('atype', 'header', '=');
+$query->condition('astatus', '1', '=');
+$query->condition('coid', $coid, '=');
+$query->orderBy('aid', 'ASC');
+$data = $query->execute();
+$rh = $data->fetchObject();
+
+$table_1 .= style('header', $rh->aid, $rh->aname);
+
+$query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+$query->fields($t, ['aid','aname']);
+$query->condition('aid', $chart['assets'] . '%', 'like');
+$query->condition('atype', 'class', '=');
+$query->condition('astatus', '1', '=');
+$query->condition('coid', $coid, '=');
+$query->orderBy('aid', 'ASC');
+$result = $query->execute();
+
+while ($r = $result->fetchObject()) {
+
+    if ($summary == 0) {
+        $table_1 .= style('class', $r->aid, $r->aname);
+    }
+
+    $aid = substr($r->aid, 0, 2);
+    $total_detail = 0;
+    $total_detail_base = 0;
+    
+    $query = Database::getConnection('external_db', 'external_db')
+                        ->select($table_accounts, 't');
+    $query->fields($t, ['aid','aname']);
+    $query->condition('aid', $aid . '%', 'like');
+    $query->condition('atype', 'detail', '=');
+    $query->condition('coid', $coid, '=');
+    $query->orderBy('aid', 'ASC');
+    $result2 = $query->execute();
 
     while ($r2 = $result2->fetchObject()) {
 
@@ -135,48 +214,45 @@ while ($r = $result->fetchObject()) {
 
 
 $table_1 .= style('total', $rh->aid, $rh->aname, $total_class1_base, $total_class1);
-
+$table_1 .= style('grandtotal', '', t('Assets'), $total_class0_base + $total_class1_base, $total_class0 + $total_class1);
 $table_1 .= '</tbody></table>';
 
 ////////////////////// LIABILITIES /////////////////////////////
 //header account
 $table_2 = "<table style= border=0 cellpadding=1 cellspacing=0 class=''>
     <thead class='' >
-      <th colspan='2'>" . t('LIABILITIES') . " </th>
+      <th colspan='2'>" . t('Liabilities') . " </th>
       <th >" . t('Base currency') . " (" . $baseCurrency . ") </th>
       <th >" . t('Multi currency') . " </th>
     </thead>
     <tbody class=''>";
 
+//liabilities
+$total_class2 = 0;
+$total_class2_base = 0;
 
-$q = "SELECT aid,aname FROM {$table_accounts} "
-        . "WHERE (aid like :aid1 or aid like :aid2) "
-        . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
-$a = array(
-    ':aid1' => $chart['liabilities'] . '%',
-    ':aid2' => $chart['other_liabilities'] . '%',
-    ':type' => 'header',
-    ':status' => 1,
-    ':coid' => $coid);
-$rh = Database::getConnection('external_db', 'external_db')->query($q, $a)->fetchObject();
-
+$query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+$query->fields($t, ['aid','aname']);
+$query->condition('aid', $chart['liabilities'] . '%', 'like');
+$query->condition('atype', 'header', '=');
+$query->condition('astatus', '1', '=');
+$query->condition('coid', $coid, '=');
+$query->orderBy('aid', 'ASC');
+$data = $query->execute();
+$rh = $data->fetchObject();
 
 $table_2 .= style('header', $rh->aid, $rh->aname);
 
-
-$q = "SELECT aid,aname FROM {$table_accounts} "
-        . "WHERE (aid like :aid1 or aid like :aid2) "
-        . "AND atype=:type AND astatus=:status AND coid=:coid order by aid";
-$a = array(
-    ':aid1' => $chart['liabilities'] . '%',
-    ':aid2' => $chart['other_liabilities'] . '%',
-    ':type' => 'class',
-    ':status' => 1,
-    ':coid' => $coid
-);
-
-$result = Database::getConnection('external_db', 'external_db')->query($q, $a);
-
+$query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+$query->fields($t, ['aid','aname']);
+$query->condition('aid', $chart['liabilities'] . '%', 'like');
+$query->condition('atype', 'class', '=');
+$query->condition('astatus', '1', '=');
+$query->condition('coid', $coid, '=');
+$query->orderBy('aid', 'ASC');
+$result = $query->execute();
 
 while ($r = $result->fetchObject()) {
 
@@ -187,13 +263,16 @@ while ($r = $result->fetchObject()) {
     $aid = substr($r->aid, 0, 2);
     $total_detail = 0;
     $total_detail_base = 0;
-
-    $q = "SELECT aid,aname FROM {$table_accounts} WHERE aid like :aid AND atype=:type "
-        . "AND coid=:coid order by aid";
-    $a = array(':aid' => $aid . '%', ':type' => 'detail', ':coid' => $coid);
-    $result2 = Database::getConnection('external_db', 'external_db')
-            ->query($q, $a);
-
+    
+    $query = Database::getConnection('external_db', 'external_db')
+                        ->select($table_accounts, 't');
+    $query->fields($t, ['aid','aname']);
+    $query->condition('aid', $aid . '%', 'like');
+    $query->condition('atype', 'detail', '=');
+    $query->condition('coid', $coid, '=');
+    $query->orderBy('aid', 'ASC');
+    $result2 = $query->execute();
+          
     while ($r2 = $result2->fetchObject()) {
 
         $b = $journal->opening(
@@ -225,6 +304,85 @@ while ($r = $result->fetchObject()) {
 
 
 $table_2 .= style('total', $rh->aid, $rh->aname, $total_class2_base, $total_class2);
+
+//other liabilities
+$total_class7 = 0;
+$total_class7_base = 0;
+
+$query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+$query->fields($t, ['aid','aname']);
+$query->condition('aid', $chart['other_liabilities'] . '%', 'like');
+$query->condition('atype', 'header', '=');
+$query->condition('astatus', '1', '=');
+$query->condition('coid', $coid, '=');
+$query->orderBy('aid', 'ASC');
+$data = $query->execute();
+$rh = $data->fetchObject();
+
+$table_2 .= style('header', $rh->aid, $rh->aname);
+
+$query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+$query->fields($t, ['aid','aname']);
+$query->condition('aid', $chart['other_liabilities'] . '%', 'like');
+$query->condition('atype', 'class', '=');
+$query->condition('astatus', '1', '=');
+$query->condition('coid', $coid, '=');
+$query->orderBy('aid', 'ASC');
+$result = $query->execute();
+
+while ($r = $result->fetchObject()) {
+
+    if ($summary == 0) {
+        $table_2 .= style('class', $r->aid, $r->aname);
+    }
+
+    $aid = substr($r->aid, 0, 2);
+    $total_detail = 0;
+    $total_detail_base = 0;
+
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+    $query->fields($t, ['aid','aname']);
+    $query->condition('aid', $aid . '%', 'like');
+    $query->condition('atype', 'detail', '=');
+    $query->condition('coid', $coid, '=');
+    $query->orderBy('aid', 'ASC');
+    $result2 = $query->execute();
+
+    while ($r2 = $result2->fetchObject()) {
+
+        $b = $journal->opening(
+                array(
+                    'aid' => $r2->aid,
+                    'coid' => $coid,
+                    'from' => $stop_date,
+                    'archive' => $dates['archive']
+                )
+        );
+
+
+        if (($b[0] != 0 || $b[1] != 0) && $summary == 0) {
+
+            $param = 'aid=' . $r2->aid . '&from=' . $from . '&to=' . $to . '&company=' . $coid;
+            $row = style('detail', $r2->aid, $r2->aname, $b[1], $b[0], '', $from, $to, $coid, $dates['archive']);
+            $table_2 .= $row;
+        }
+        $total_detail+=$b[0];
+        $total_detail_base+=$b[1];
+    }
+
+
+
+    $table_2 .= style('subtotal', $r->aid, $r->aname, $total_detail_base, $total_detail);
+    $total_class7 += $total_detail;
+    $total_class7_base += $total_detail_base;
+}
+
+
+$table_2 .= style('total', $rh->aid, $rh->aname, $total_class7_base, $total_class7);
+$table_2 .= style('grandtotal', '', t('Liabilities'), $total_class2_base + $total_class7_base, $total_class2 + $total_class7);
 $table_2 .= '</tbody></table>';
 
 
@@ -232,8 +390,8 @@ $table_2 .= '</tbody></table>';
 
 $table_3 = "<table style= border=0 cellpadding=1 cellspacing=0 class=''>
     <tbody class=''>";
-$net_assets = $total_class1 - $total_class2;
-$net_assets_base = $total_class1_base - $total_class2_base;
+$net_assets = $total_class0 + $total_class1 - $total_class2 - $total_class7;
+$net_assets_base = $total_class0_base + $total_class1_base - $total_class2_base - $total_class7_base;
 if ($net_assets_base < 0) {
     $c = 'red';
 } else {
@@ -244,45 +402,45 @@ $table_3 .= '</tbody></table>';
 
 ////////////////////// EQUITY /////////////////////////////
 //header account
+//equity ref. accounts
+$equity_min = $chart['equity'] * 10000;
+$equity_max = $equity_min + 9999;
+$earnings_account = $equity_min + 9001;//default
+$reserve_account = $equity_min + 8001;//default
+
+$total_class3 = 0;
+$total_class3_base = 0;
+    
 $table_4 = "<table style= border=0 cellpadding=1 cellspacing=0 class=''>
     <thead class='' >
-      <th colspan='2'>" . t('EQUITY') . " </th>
+      <th colspan='2'>" . t('Equity') . " </th>
       <th >" . t('Base currency') . " (" . $baseCurrency . ") </th>
       <th >" . t('Multi currency') . " </th>
     </thead>
     <tbody class=''>";
 
-
-$q = "SELECT aid,aname FROM {$table_accounts} "
-        . "WHERE aid like :aid AND atype=:type AND astatus=:status "
-        . "AND coid=:coid order by aid";
-$a = array(
-    ':aid' => $chart['equity'] . '%',
-    ':type' => 'header',
-    ':status' => 1,
-    ':coid' => $coid
-);
-
-$rh = Database::getConnection('external_db', 'external_db')
-                ->query($q, $a)
-                ->fetchObject();
+$query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+$query->fields($t, ['aid','aname']);
+$query->condition('aid', $chart['equity'] . '%', 'like');
+$query->condition('atype', 'header', '=');
+$query->condition('astatus', '1', '=');
+$query->condition('coid', $coid, '=');
+$query->orderBy('aid', 'ASC');
+$data = $query->execute();
+$rh = $data->fetchObject();
 
 $table_4 .= style('header', $rh->aid, $rh->aname);
 
-
-$q = "SELECT aid,aname FROM {$table_accounts} "
-        . "WHERE aid like :aid AND atype=:type AND astatus=:status "
-        . "AND coid=:coid order by aid";
-$a = array(
-    ':aid' => $chart['equity'] . '%',
-    ':type' => 'class',
-    ':status' => 1,
-    ':coid' => $coid
-);
-
-$result = Database::getConnection('external_db', 'external_db')
-                    ->query($q, $a);
-
+$query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+$query->fields($t, ['aid','aname']);
+$query->condition('aid', $chart['equity'] . '%', 'like');
+$query->condition('atype', 'class', '=');
+$query->condition('astatus', '1', '=');
+$query->condition('coid', $coid, '=');
+$query->orderBy('aid', 'ASC');
+$result = $query->execute();
 
 while ($r = $result->fetchObject()) {
 
@@ -294,19 +452,18 @@ while ($r = $result->fetchObject()) {
     $total_detail = 0;
     $total_detail_base = 0;
 
-    $q = "SELECT aid,aname FROM {$table_accounts} WHERE aid like :aid "
-            . "AND atype=:type AND coid=:coid order by aid";
-    $a = array(':aid' => $aid . '%', ':type' => 'detail', ':coid' => $coid);
-
-    $result2 = Database::getConnection('external_db', 'external_db')
-                    ->query($q, $a);
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+    $query->fields($t, ['aid','aname']);
+    $query->condition('aid', $aid . '%', 'like');
+    $query->condition('atype', 'detail', '=');
+    $query->condition('coid', $coid, '=');
+    $query->orderBy('aid', 'ASC');
+    $result2 = $query->execute();
 
     while ($r2 = $result2->fetchObject()) {
 
-        /* TODO : define a variable current year earning account based on chart 
-         * structure
-         */
-        if ($r2->aid == '39001') {
+        if ($r2->aid == $earnings_account) {
             //caculate current year earnings
             $b = $journal->current_earning($coid, $from, $to);
         } else {
@@ -338,7 +495,7 @@ while ($r = $result->fetchObject()) {
 }
 
 
-$table_4 .= style('grandtotal', $rh->aid, $rh->aname, $total_class3_base, $total_class3);
+$table_4 .= style('grandtotal', '', $rh->aname, $total_class3_base, $total_class3);
 $table_4 .= '</tbody></table>';
 
 

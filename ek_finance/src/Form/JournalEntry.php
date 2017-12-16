@@ -86,7 +86,7 @@ class JournalEntry extends FormBase {
 
             $CurrencyOptions = CurrencyData::listcurrency(1);
             $accountOptions = array('0' => '');
-            $accountOptions += AidList::listaid($form_state->getValue('coid'), array(1, 2, 3, 4, 5, 6, 7, 8, 9), 1);
+            $accountOptions += AidList::listaid($form_state->getValue('coid'), array(0,1, 2, 3, 4, 5, 6, 7, 8, 9), 1);
 
 
             $form['currency'] = array(

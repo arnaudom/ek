@@ -6,7 +6,7 @@ use Drupal\Core\Database\Database;
 /*
 */
 /**
- * generate accounts id arrays 
+ * generate id arrays 
  *
  * 
  *  An associative array containing:

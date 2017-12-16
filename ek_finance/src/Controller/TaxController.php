@@ -152,7 +152,7 @@ class TaxController extends ControllerBase {
             '#theme' => 'ek_finance_tax',
             '#items' => $items,
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance_css'),
+                'library' => array('ek_finance/ek_finance_css', 'ek_finance/ek_finance.dialog'),
             ),
         );
     }

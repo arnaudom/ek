@@ -307,7 +307,7 @@ class ReportController extends ControllerBase {
             '#theme' => 'ek_profit_loss',
             '#items' => $items,
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance.reporting'),
+                'library' => array('ek_finance/ek_finance.reporting', 'ek_finance/ek_finance.dialog'),
             ),
         );
     }
@@ -403,7 +403,7 @@ class ReportController extends ControllerBase {
             '#theme' => 'ek_balance_sheet',
             '#items' => $items,
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance.reporting'),
+                'library' => array('ek_finance/ek_finance.reporting', 'ek_finance/ek_finance.dialog'),
             ),
         );
     }
@@ -482,7 +482,7 @@ class ReportController extends ControllerBase {
             '#theme' => 'ek_finance_cashflow',
             '#items' => $items,
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance.cashflow'),
+                'library' => array('ek_finance/ek_finance.cashflow', 'ek_finance/ek_finance.dialog'),
             ),
         );
     }

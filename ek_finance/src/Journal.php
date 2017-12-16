@@ -935,7 +935,7 @@ class Journal {
         $d1 = $data['from'];
         $d2 = $data['to'];
         
-        if($data['archive'] == TRUE) {
+        if(isset($data['archive']) && $data['archive'] == TRUE) {
         //extract data from archive tables
             $year = date('Y', strtotime($data['to'] . ' - 1 day'));
             $table_journal = "ek_journal_" . $year . "_" . $coid;
@@ -1825,6 +1825,10 @@ class Journal {
      * Calculate the current year earnings
      * used in B. Sheet
      * Post new year
+     * @param int $coid company id
+     * @param string $from date YY-mm-dd
+     * @param string $to date YY-mm-dd
+     * @return array value, value with exchange
      */
 
     function current_earning($coid, $from, $to) {
@@ -1832,29 +1836,37 @@ class Journal {
         $settings = new FinanceSettings();
         $chart = $settings->get('chart');
 //REVENUE - class //
-        $q = "SELECT aid,aname FROM {ek_accounts} "
-                . "WHERE (aid like :aid1 or aid like :aid2) AND atype=:type AND astatus=:status AND coid=:coid order by aid";
-        $a = array(
-            ':aid1' => $chart['income'] . '%',
-            ':aid2' => $chart['other_income'] . '%',
-            ':type' => 'class',
-            ':status' => 1,
-            ':coid' => $coid
-        );
-        $result = Database::getConnection('external_db', 'external_db')
-                ->query($q, $a);
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 't');
+        $query->fields($t, ['aid','aname']);
+        $condition = $query->orConditionGroup()
+        ->condition('aid', $chart['income'] . '%', 'like')
+        ->condition('aid', $chart['other_income'] . '%', 'like');
+        $query->condition($condition);
+        $query->condition('astatus', '1', '=');
+        $query->condition('atype', 'class', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $result = $query->execute();
 
+        $total_class4 = 0;
+        $total_class4_l = 0;
 
         while ($r = $result->fetchAssoc()) {
 
             $aid = substr($r['aid'], 0, 2);
             $total_detail = 0;
             $total_detail_l = 0;
-            $q = "SELECT aid,aname FROM {ek_accounts} "
-                    . "WHERE aid like :aid and atype=:type and astatus=:status and coid=:coid order by aid";
-            $a = array(':aid' => $aid . '%', ':type' => 'detail', ':status' => 1, ':coid' => $coid);
-            $result3 = Database::getConnection('external_db', 'external_db')
-                    ->query($q, $a);
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 't');
+            $query->fields($t, ['aid','aname']);
+            $query->condition('aid', $aid . '%', 'like');
+            $query->condition('astatus', '1', '=');
+            $query->condition('atype', 'detail', '=');
+            $query->condition('coid', $coid, '=');
+            $query->orderBy('aid', 'ASC');
+            $result3 = $query->execute();
 
             while ($r3 = $result3->fetchAssoc()) {
 
@@ -1888,27 +1900,34 @@ class Journal {
         }
 
 // COS - class //
-        $q = "SELECT aid,aname FROM {ek_accounts} "
-                . "WHERE aid like :aid and atype=:type and astatus=:status and coid=:coid order by aid";
-        $a = array(
-            ':aid' => $chart['cos'] . '%',
-            ':type' => 'class',
-            ':status' => 1,
-            ':coid' => $coid);
-
-        $result = Database::getConnection('external_db', 'external_db')
-                ->query($q, $a);
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 't');
+        $query->fields($t, ['aid','aname']);
+        $query->condition('aid', $chart['cos'] . '%', 'like');
+        $query->condition('astatus', '1', '=');
+        $query->condition('atype', 'class', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $result = $query->execute();
+        
+        $total_class5 = 0;
+        $total_class5_l = 0;
 
         while ($r = $result->fetchAssoc()) {
 
             $aid = substr($r['aid'], 0, 2);
             $total_detail = 0;
             $total_detail_l = 0;
-            $q = "SELECT aid,aname FROM {ek_accounts} "
-                    . "WHERE aid like :aid and atype=:type and astatus=:status and coid=:coid order by aid";
-            $a = array(':aid' => $aid . '%', ':type' => 'detail', ':status' => 1, ':coid' => $coid);
-            $result3 = Database::getConnection('external_db', 'external_db')
-                    ->query($q, $a);
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 't');
+            $query->fields($t, ['aid','aname']);
+            $query->condition('aid', $aid . '%', 'like');
+            $query->condition('astatus', '1', '=');
+            $query->condition('atype', 'detail', '=');
+            $query->condition('coid', $coid, '=');
+            $query->orderBy('aid', 'ASC');
+            $result3 = $query->execute();
 
             while ($r3 = $result3->fetchAssoc()) {
 
@@ -1942,28 +1961,36 @@ class Journal {
         }
 
 // CHARGES - class //
-        $q = "SELECT aid,aname FROM {ek_accounts} "
-                . "WHERE (aid like :aid1 or aid like :aid2) "
-                . "AND atype=:type and astatus=:status and coid=:coid order by aid";
-        $a = array(
-            ':aid1' => $chart['expenses'] . '%',
-            ':aid2' => $chart['other_expenses'] . '%',
-            ':type' => 'class',
-            ':status' => 1,
-            ':coid' => $coid);
-        $result = Database::getConnection('external_db', 'external_db')
-                ->query($q, $a);
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 't');
+        $query->fields($t, ['aid','aname']);
+        $condition = $query->orConditionGroup()
+        ->condition('aid', $chart['expenses'] . '%', 'like')
+        ->condition('aid', $chart['other_expenses'] . '%', 'like');
+        $query->condition($condition);
+        $query->condition('astatus', '1', '=');
+        $query->condition('atype', 'class', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $result = $query->execute();
+
+        $total_class6 = 0;
+        $total_class6_l = 0;
 
         while ($r = $result->fetchAssoc()) {
 
             $aid = substr($r['aid'], 0, 2);
             $total_detail = 0;
             $total_detail_l = 0;
-            $q = "SELECT aid,aname FROM {ek_accounts} "
-                    . "WHERE aid like :aid and atype=:type and astatus=:status and coid=:coid order by aid";
-            $a = array(':aid' => $aid . '%', ':type' => 'detail', ':status' => 1, ':coid' => $coid);
-            $result3 = Database::getConnection('external_db', 'external_db')
-                    ->query($q, $a);
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 't');
+            $query->fields($t, ['aid','aname']);
+            $query->condition('aid', $aid . '%', 'like');
+            $query->condition('astatus', '1', '=');
+            $query->condition('atype', 'detail', '=');
+            $query->condition('coid', $coid, '=');
+            $query->orderBy('aid', 'ASC');
+            $result3 = $query->execute();
 
             while ($r3 = $result3->fetchAssoc()) {
 

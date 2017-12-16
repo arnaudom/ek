@@ -100,9 +100,18 @@ class FinanceSettingsForm extends FormBase {
     $chart = $settings->get('chart');
     $perm = in_array( 'administrator', \Drupal::currentUser()->getRoles()) ? 0 : 1;
     
+    $form['chart']['zero'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#required' => TRUE,
+      '#default_value' => ($chart['zero'] != NULL) ? $chart['zero'] : 0,
+      '#title' => t('Other assets'),
+      '#disabled' => ($chart['zero'] != NULL && $perm) ? TRUE : FALSE,
+    );   
     $form['chart']['assets'] = array(
       '#type' => 'textfield',
       '#size' => 5,
+      '#maxlength' => 1,
       '#required' => TRUE,
       '#default_value' => ($chart['assets'] != NULL) ? $chart['assets'] : 1,
       '#title' => t('Assets class'),
@@ -172,7 +181,7 @@ class FinanceSettingsForm extends FormBase {
       '#default_value' => ($chart['other_expenses'] != NULL) ? $chart['other_expenses'] : 9,
       '#title' => t('Other expenses class'),
       '#disabled' => ($chart['other_expenses'] != NULL && $perm) ? TRUE : FALSE,
-    );     
+    );
 
     $form['recordProvision'] = array(
         '#type' => 'select',
@@ -215,27 +224,32 @@ class FinanceSettingsForm extends FormBase {
           $form_state->getValue('expenses'),
           $form_state->getValue('other_liabilities'),
           $form_state->getValue('other_income'),
-          $form_state->getValue('other_expenses')
+          $form_state->getValue('other_expenses'),
+          $form_state->getValue('zero')
       ];
       
+      $chain = 0;
       
       foreach($chart as $k => $v){
-          if(!is_numeric($v) || $v > 9 || $v == 0){
-              $form_state->setErrorByName("chart][", $this->t('All chart values should be a numeric value from 1 to 9.'));
+          $chain += $v;
+          if(!is_numeric($v) || $v > 9 ){
+              $form_state->setErrorByName("chart][", $this->t('All chart values should be a numeric value from 0 to 9.'));
           }
          
       }
       
       asort($chart);
         
-      $a = array_diff([1,2,3,4,5,6,7,8,9],$chart );
+      $a = array_diff([0,1,2,3,4,5,6,7,8,9],$chart );
       
       if(!empty($a)){
           $a = implode(',', $a);
           $form_state->setErrorByName("chart][", $this->t('The chart structure is not complete. Missing class @a', ['@a' => $a]));
       }
 
-  
+      if($chain != 45) {
+          $form_state->setErrorByName("chart][", $this->t('The chart structure has duplicate numbers.'));
+      }
       
   }
 
@@ -253,6 +267,7 @@ class FinanceSettingsForm extends FormBase {
   $settings->set('companyMemo', $form_state->getValue('companyMemo'));
   $settings->set('budgetUnit', $form_state->getValue('budgetUnit'));
   $chart = [
+          'other_assets' => $form_state->getValue('zero'),
           'assets' => $form_state->getValue('assets'),
           'liabilities' => $form_state->getValue('liabilities'),
           'equity' => $form_state->getValue('equity'),

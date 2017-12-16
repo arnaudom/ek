@@ -1,4 +1,6 @@
 INSERT INTO `ek_accounts` ( `aid`, `aname`, `atype`, `astatus`, `coid`, `link`, `balance`, `balance_base`, `balance_date`) VALUES
+        ( '00000', 'Other Assets', 'header', 1, 'x', 'null', 0, 0,  '0000-00-00'),
+	( '01000', 'Other Assets', 'class', 1, 'x', 'null', 0, 0,  '0000-00-00'),
 	( 10000, 'Assets', 'header', 1, 'x', 'null', 0, 0,  '0000-00-00'),
 	( 11000, 'Fixed Assets', 'class', 1, 'x', 'null', 0, 0,  '0000-00-00'),
 	( 11300, 'Buildings & Improvements', 'detail', 0, 'x', 'null', 0, 0,  '0000-00-00'),

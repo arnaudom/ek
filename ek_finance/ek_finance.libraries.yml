@@ -79,12 +79,9 @@ ek_finance.dialog:
   dependencies:
     - core/jquery
     - core/drupal
-    - core/drupal.form
-    - core/jquery.form
     - core/drupalSettings
     - core/drupal.ajax
     - core/drupal.dialog
-    - core/backbone
 
 ek_finance.journal_form:
   version: 1

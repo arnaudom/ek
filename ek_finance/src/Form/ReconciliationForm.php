@@ -109,7 +109,7 @@ class ReconciliationForm extends FormBase {
     if($form_state->getValue('coid') ) {
     
     $coid = ($form_state->getValue('coid')) ? $form_state->getValue('coid') : $_SESSION['lfilter']['coid'];
-    $list = AidList::listaid($coid, array(1,2,3,4,5,6,7,8,9), 1 );
+    $list = AidList::listaid($coid, array(0,1,2,3,4,5,6,7,8,9), 1 );
     
     }
 

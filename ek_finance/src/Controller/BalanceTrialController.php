@@ -103,7 +103,7 @@ class BalanceTrialController extends ControllerBase {
             '#theme' => 'ek_finance_trial',
             '#items' => $items,
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance'),
+                'library' => array('ek_finance/ek_finance', 'ek_finance/ek_finance.dialog'),
             ),
         );
     }

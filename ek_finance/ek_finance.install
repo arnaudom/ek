@@ -1092,3 +1092,21 @@ function ek_finance_update_8009() {
     }
     return $count . " currencies updated";
 }
+
+/**
+ * Alter table structure for accounts
+ * 
+ */
+function ek_finance_update_8010() {
+    
+    $spec = array(
+            'description' => 'account id 6 digits',
+            'type' => 'varchar',
+            'length' => 10,
+            'not null' => FALSE,
+        );
+    Database::getConnection('external_db', 'external_db')
+            ->schema()->changeField('ek_accounts', 'aid', 'aid', $spec);
+    
+    return t('Table structure updated');        
+}

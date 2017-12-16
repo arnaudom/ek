@@ -47,7 +47,7 @@ class JournalEdit extends FormBase {
         $baseCurrency = $settings->get('baseCurrency');
         $CurrencyOptions = CurrencyData::listcurrency(1);
         $accountOptions = array('0' => '');
-        $accountOptions += AidList::listaid($param['coid'], array(1, 2, 3, 4, 5, 6, 7, 8, 9), 1);
+        $accountOptions += AidList::listaid($param['coid'], array(0,1, 2, 3, 4, 5, 6, 7, 8, 9), 1);
         $query = "SELECT name from {ek_company} WHERE id=:id";
         $company = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $param['coid']))
