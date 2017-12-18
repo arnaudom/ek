@@ -223,6 +223,10 @@ class QuickEdit extends FormBase {
                     '#type' => 'hidden',
                     '#value' => 0
                 );
+                $form['options']['currency'] = array(
+                    '#type' => 'hidden',
+                    '#value' => $data->currency,
+                );
             }
 
             $form['options']['terms'] = array(
@@ -381,7 +385,22 @@ class QuickEdit extends FormBase {
                         ->execute();
             
         }
-
+        
+        if ($this->moduleHandler->moduleExists('ek_finance') && $doc == 'purchase') {
+            //if coid changed, need to update the currency liability account in journal
+            $coSettings = new \Drupal\ek_admin\CompanySettings($form_state->getValue('head'));
+            $liability = $coSettings->get('liability_account', $form_state->getValue('currency'));
+            
+            /**/
+                $update = Database::getConnection('external_db', 'external_db')
+                        ->update("ek_journal")
+                        ->fields(['aid' => $liability])
+                        ->condition('source', 'purchase')
+                        ->condition('type', 'credit')
+                        ->condition('reference', $form_state->getValue('id'))
+                        ->execute();
+            
+        }
 
         Cache::invalidateTags(['project_page_view']);
         if (isset($update)) {
