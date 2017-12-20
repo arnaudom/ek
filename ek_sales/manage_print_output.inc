@@ -18,7 +18,7 @@ $signature = $param[2];
 $stamp = $param[3];
 $template = $param[4];
 $contact = $param[5];
-$mode = $param[6]; 
+$mode = (isset($param[6])) ? $param[6] : NULL; 
 
 /*
 * data
@@ -29,7 +29,7 @@ $head = Database::getConnection('external_db', 'external_db')
         ->fetchObject();
 
 if(\Drupal::moduleHandler()->moduleExists('ek_projects')) {      
-    if ($head->pcode) {
+    if ($head->pcode && $head->pcode != 'n/a') {
             $project_link = \Drupal\ek_projects\ProjectData::geturl($head->pcode);
     }
 }

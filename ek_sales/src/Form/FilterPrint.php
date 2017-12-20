@@ -54,7 +54,7 @@ class FilterPrint extends FormBase {
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Options'),
-            '#open' => ($_SESSION['printfilter']['filter'] == $id && $format != 'excel') ? FALSE : TRUE,
+            '#open' => (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id && $format != 'excel') ? FALSE : TRUE,
             '#attributes' => array('class' => array('container-inline')),
         );
 
