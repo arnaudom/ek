@@ -76,3 +76,12 @@ function ek_projects_update_8004() {
 function ek_projects_update_8005() {
    \Drupal::service('router.builder')->rebuild(); 
 }
+
+
+/**
+ * Change controller function and path name
+ * 
+*/
+function ek_projects_update_8006() {
+   \Drupal::service('router.builder')->rebuild(); 
+}

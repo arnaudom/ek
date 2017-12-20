@@ -285,10 +285,15 @@ class ProjectController extends ControllerBase {
     }
 
     /**
-     * Return project view 
-     *
+     * Return project page and data
+     * 
+     * @see hook_project_view()
+     * 
+     * @param $id
+     *  The project id
+     * @return array
      */
-    public function view(Request $request, $id) {
+    public function project_view(Request $request, $id) {
 
         $items = array();
         Cache::invalidateTags(['project_view_block']);
@@ -441,24 +446,6 @@ class ProjectController extends ControllerBase {
             /*
              * create a link to create a task
              */
-
-            if ($this->moduleHandler->moduleExists('ek_extranet')) {
-                /*
-                 * create a link for extranet management
-                 */
-                $query = "SELECT * FROM {ek_extranet_pages} WHERE pcode=:s";
-                $ext = Database::getConnection('external_db', 'external_db')
-                        ->query($query, [':s' => $pcode])
-                        ->fetchObject();
-                if ($ext && $ext->id > 0) {
-                    $param_edit = 'extranet|' . $ext->id;
-                    $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                    $data['project'][0]->extranet = t('<a href="@url" class="@c" >Edit extranet page</a>', array('@url' => $link, '@c' => 'use-ajax blue notification'));
-                } else {
-                    $link = Url::fromRoute('ek_extranet.make_page', array('id' => $pcode), array())->toString();
-                    $data['project'][0]->extranet = t('<a href="@url" class="@c" >Create extranet page</a>', array('@url' => $link, '@c' => 'blue notification'));
-                }
-            }
             $param_edit = 'task|' . $id;
             $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
             $data['project'][0]->new_project_task = t('<a href="@url" class="@c" >New task</a>', array('@url' => $link, '@c' => 'use-ajax blue notification'));
@@ -1137,6 +1124,8 @@ class ProjectController extends ControllerBase {
                 $data['finance'][0]->upload = t('<a href="@url" class="@c" >upload new file</a>', array('@url' => $link, '@c' => 'use-ajax red '));
             } //if section_5
 
+            // Let other modules add data to the page.
+            $data = $this->moduleHandler()->invokeAll('project_view', [$data], [$pcode]);
 
             return array(
                 '#theme' => 'ek_projects_view',
@@ -1168,6 +1157,17 @@ class ProjectController extends ControllerBase {
         $sections = ProjectData::validate_section_access(\Drupal::currentUser()->id());
 
         if ($access) {
+        
+        //doc query
+        $querydoc = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project_documents', 'd');
+            $querydoc->fields('d', ['id','fid','filename', 'uri', 'date', 'comment', 'size']);
+            $querydoc->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
+            $querydoc->fields('p', ['pcode', 'owner']);
+            $querydoc->condition('p.id', $id);
+            $querydoc->orderBy('d.date', 'ASC');
+            
+        
 
             switch ($qfield) {
 
@@ -1184,10 +1184,15 @@ class ProjectController extends ControllerBase {
                     $fields['priority'] = $prio[$data->priority];
 
                     if (in_array(1, $sections)) {
-                        $query = 'SELECT * FROM {ek_project_description} d INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE id =:i';
-                        $data = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':i' => $id))
-                                ->fetchObject();
+                        
+                        $queryfield = Database::getConnection('external_db', 'external_db')
+                                    ->select('ek_project_description', 'd');
+                        $queryfield->fields('d');
+                        $queryfield->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
+                        $queryfield->fields('p');
+                        $queryfield->condition('p.id', $id);
+                        $data = $queryfield->execute()->fetchObject();
+                        
                         if ($data) {
                             $fields['submission'] = $data->submission;
                             $fields['deadline'] = $data->deadline;
@@ -1206,9 +1211,13 @@ class ProjectController extends ControllerBase {
                             $fields['task_2'] = $data->task_2;
                             $fields['task_3'] = $data->task_3;
                             if($data->supplieroffer != ''){
-                                $query = "SELECT id,name FROM {ek_address_book} WHERE FIND_IN_SET (id, :s )";
-                                $suppliers = Database::getConnection('external_db', 'external_db')
-                                    ->query($query, array(':s' => $data->supplieroffer));
+                                $array = explode(',',$data->supplieroffer);
+                                $query = Database::getConnection('external_db', 'external_db')
+                                    ->select('ek_address_book', 'ab');
+                                $query->fields('ab',['id', 'name']);
+                                $query->condition('id',$array , 'IN');
+                                $suppliers = $query->execute();
+                                
                                 $fields['suppliers'] = "<ul>";
                                 WHILE($s = $suppliers->fetchObject()){ 
                                     $fields['suppliers'] .= '<li>'.\Drupal\ek_address_book\AddressBookData::geturl($s->id) . '</li>';
@@ -1219,10 +1228,15 @@ class ProjectController extends ControllerBase {
                     }
 
                     if (in_array(5, $sections)) {
-                        $query = 'SELECT * FROM {ek_project_finance} d INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE id =:i';
-                        $data = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':i' => $id))
-                                ->fetchObject();
+                        
+                        $queryfield = Database::getConnection('external_db', 'external_db')
+                                    ->select('ek_project_finance', 'd');
+                        $queryfield->fields('d');
+                        $queryfield->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
+                        $queryfield->fields('p');
+                        $queryfield->condition('p.id', $id);
+                        
+                        $data = $queryfield->execute()->fetchObject();
                         if ($data) {
                             $fields['payment_terms'] = $data->payment_terms;
                             $fields['purchase_value'] = is_numeric($v = $data->purchase_value) ? number_format($v,2) : $v;
@@ -1245,11 +1259,15 @@ class ProjectController extends ControllerBase {
                         }
                     }
                     if (in_array(4, $sections)) {
-                        $query = 'SELECT * FROM {ek_project_shipment} d '
-                                . 'INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE id =:i';
-                        $data = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':i' => $id))
-                                ->fetchObject();
+                        
+                        $queryfield = Database::getConnection('external_db', 'external_db')
+                                    ->select('ek_project_shipment', 'd');
+                        $queryfield->fields('d');
+                        $queryfield->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
+                        $queryfield->fields('p');
+                        $queryfield->condition('p.id', $id);
+                        $data = $queryfield->execute()->fetchObject();
+                        
                         if ($data) {
                             $fields['first_ship'] = $data->first_ship;
                             $fields['second_ship'] = $data->second_ship;
@@ -1268,53 +1286,35 @@ class ProjectController extends ControllerBase {
 
                 case 'com_docs' :
                     if (in_array(3, $sections)) {
-                        $query = "SELECT p.pcode,d.id,fid,filename, uri, d.date,d.comment, owner,size "
-                                . "FROM {ek_project_documents} d "
-                                . "INNER JOIN {ek_project} p "
-                                . "ON d.pcode=p.pcode "
-                                . "WHERE p.id=:id "
-                                . "AND folder=:t order by d.date,d.id";
-                        $a = array(':id' => $id, ':t' => 'com');
-                        $list = Database::getConnection('external_db', 'external_db')->query($query, $a);
+                        $querydoc->condition('folder', 'com');
                     }
                     break;
 
                 case 'fi_docs' :
                     if (in_array(5, $sections)) {
-                        $query = "SELECT p.pcode,d.id,fid,filename, uri, d.date,d.comment, owner,size "
-                                . "FROM {ek_project_documents} d "
-                                . "INNER JOIN {ek_project} p "
-                                . "ON d.pcode=p.pcode "
-                                . "WHERE p.id=:id AND folder=:t order by d.date, d.id";
-                        $a = array(':id' => $id, ':t' => 'fi');
-                        $list = Database::getConnection('external_db', 'external_db')->query($query, $a);
+                        $querydoc->condition('folder', 'fi');
                     }
                     break;
 
                 case 'ap_docs' :
                     if (in_array(2, $sections)) {
-                        $query = "SELECT p.pcode,d.id,fid,filename, uri, d.date,d.comment, owner,size "
-                                . "FROM {ek_project_documents} d "
-                                . "INNER JOIN {ek_project} p "
-                                . "ON d.pcode=p.pcode "
-                                . "WHERE p.id=:id "
-                                . "AND folder=:t order by d.date,d.id";
-                        $a = array(':id' => $id, ':t' => 'ap');
-                        $list = Database::getConnection('external_db', 'external_db')->query($query, $a);
+                        $querydoc->condition('folder', 'ap');
                     }
                     break;
             }
 
-
+            $list = $querydoc->execute();
             //build list of documents
             $t = '';
             $i = 0;
             $items = [];
+            
             if (isset($list)) {
                 while ($l = $list->fetchObject()) {
                     $i++;
                     
                     /* default values */
+                    $items[$i]['pcode'] = $l->pcode; //used in hooks to extend data
                     $items[$i]['id'] = $l->id; //db id
                     $items[$i]['fid'] = 1; //default file status on
                     $items[$i]['delete'] = 1; //default delete action is on
@@ -1374,29 +1374,6 @@ class ProjectController extends ControllerBase {
                                 $items[$i]['date'] = date('Y-m-d', $l->date);
                                 $items[$i]['size'] = round($l->size / 1000, 0) . " Kb";
                                 
-                             //add extranet
-                                
-                                if ($this->moduleHandler->moduleExists('ek_extranet')) {
-                                    
-                                    $query = "SELECT id,content FROM {ek_extranet_pages} WHERE pcode=:p";
-                                    $ext = Database::getConnection('external_db', 'external_db')
-                                            ->query($query, [':p' => $l->pcode])
-                                            ->fetchObject();
-                                    if ($ext && $ext->id > 0) {
-                                        $items[$i]['extranet'] = 1;
-                                        $c = unserialize($ext->content);
-                                        $route = Url::fromRoute('ek_extranet_file', ['id' => $l->id, 'pcode' => $l->pcode], array())->toString();
-                                        $items[$i]['extranet_url'] = $route;
-                                        if (isset($c['document'][$l->id]) && $c['document'][$l->id] == 1) {
-                                            $items[$i]['extranet_share'] = 1;                                         
-                                        } else {
-                                            $items[$i]['extranet_share'] = 0;
-                                        }
-                                    } 
-                                }
-                                
-                                
-                                
                             } else {  
                                 //file exist but access not authorized
                                 $items[$i]['delete'] = 0;
@@ -1410,7 +1387,7 @@ class ProjectController extends ControllerBase {
                     //disable because not using file_managed table (TO implement in project table?)
                     //$owner = ProjectData::file_owner($l->id);
                     // use project owner instead
-
+           
                     if (($l->owner == \Drupal::currentUser()->id() 
                             || \Drupal::currentUser()->hasPermission('admin_projects')) && $l->fid != '0') {
                         $param_access = 'access|' . $l->id . '|project_doc';
@@ -1420,7 +1397,10 @@ class ProjectController extends ControllerBase {
 
 
                 }
-
+                
+                // Let other modules add data to the list.
+                $items = $this->moduleHandler()->invokeAll('project_doc_view', [$items]);
+                
                 $render = ['#theme' => 'ek_projects_doc_view', '#items' => $items];
                 $data =  \Drupal::service('renderer')->render($render);               
             }

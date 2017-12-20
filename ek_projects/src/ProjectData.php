@@ -266,7 +266,7 @@ use Drupal\ek_admin\Access\AccessCheck;
             . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE d.id=:f";
     $data = Database::getConnection('external_db', 'external_db')->query($query, array(':f' => $id))
             ->fetchObject();
-    
+   
     //if settings are set to block all at page level, and page is blocked, return False
     if($s['access_level'] == 1 && !self::validate_access($data->id)){
         return FALSE;

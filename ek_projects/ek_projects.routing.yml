@@ -61,7 +61,7 @@ ek_projects_view:
   path: 'projects/project/{id}'
   defaults:
     _title: 'Project'
-    _controller: '\Drupal\ek_projects\Controller\ProjectController::view'
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::project_view'
   requirements:
     _permission: 'view_project'
     id: \d*
