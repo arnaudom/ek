@@ -52,34 +52,34 @@ ek_admin_charts:
 ek_admin_multi-select:
   version: 0.9.12
   js:
-    ../../libraries/multi-select/js/jquery.multi-select.js: {}
+    /libraries/multi-select/js/jquery.multi-select.js: {}
     js/multi-select.js: {}
   css:
     theme:
-      ../../libraries/multi-select/css/multi-select.css: {}
+      /libraries/multi-select/css/multi-select.css: {}
   dependencies:
     - core/jquery
 
 ek_admin_chosen:
   version: 1.8
   js:
-    ../../libraries/chosen/chosen.jquery.min.js: {}
+    /libraries/chosen/chosen.jquery.min.js: {}
     js/multi-chosen.js: {}
   css:
     theme:
-      ../../libraries/chosen/chosen.min.css: {}
+      /libraries/chosen/chosen.min.css: {}
   dependencies:
     - core/jquery
 
 ek_admin_tageditor:
   version: 1.8
   js:
-    ../../libraries/tagEditor/jquery.tag-editor.min.js: {weight: -2}
-    ../../libraries/tagEditor/jquery.caret.min.js: {weight: -1}
+    /libraries/tagEditor/jquery.tag-editor.min.js: {weight: -2}
+    /libraries/tagEditor/jquery.caret.min.js: {weight: -1}
     js/tageditor.js: {}
   css:
     theme:
-      ../../libraries/tagEditor/jquery.tag-editor.css: {}
+      /libraries/tagEditor/jquery.tag-editor.css: {}
   dependencies:
     - core/jquery
     - core/jquery.ui.autocomplete

@@ -1,9 +1,33 @@
 {
     "name": "drupal/ek_admin",
     "type": "drupal-module",
-    "description": "Provides main functionality running EK management tools suite",
+    "description": "Provides functionalities running EK management tools suite",
     "license": "GPL-2.0+",
     "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "fullcalendar/fullcalendar",
+                "version": "3.8.0",
+                "dist": {
+                    "url": "https://github.com/fullcalendar/fullcalendar/releases/download/v3.8.0/fullcalendar-3.8.0.zip",
+                    "type": "zip"
+                },
+                "type": "drupal-library"
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "qTip2/qTip2",
+                "version": "3.0.3",
+                "dist": {
+                    "url": "https://github.com/qTip2/qTip2/archive/v3.0.3.zip",
+                    "type": "zip"
+                },
+                "type": "drupal-library"
+            }
+        },
         {
             "type": "package",
             "package": {
@@ -47,7 +71,9 @@
         "tecnickcom/tcpdf": "6.2.*",
         "jquery/multi-select" : "0.9.12",
         "jquery/chosen" : "1.8",
-        "jquery/tagEditor" : "1.0"
+        "jquery/tagEditor" : "1.0",
+        "fullcalendar/fullcalendar" : "3.8.0",
+        "qTip2/qTip2" : "3.0.3"
     }
 
 
