@@ -91,40 +91,36 @@ class ProductsController extends ControllerBase {
 
         $term = $request->query->get('q');
         $option = $request->query->get('option');
-
-        if ($id == '0') {
-           
-            $a = array(':t0' => "$term%", ':t1' => "$term%", ':t2' => "$term%", ':t3' => "$term%", ':t4' => "$term%");
-            $query = "SELECT distinct ek_items.id, ek_items.itemcode, description1, barcode,supplier_code,uri FROM {ek_items} "
-                    . "LEFT JOIN {ek_item_barcodes} "
-                    . "ON ek_items.itemcode=ek_item_barcodes.itemcode "
-                    . "LEFT JOIN {ek_item_images} "
-                    . "ON ek_items.itemcode=ek_item_images.itemcode "
-                    . "WHERE ek_items.id like :t0 "
-                    . "OR ek_items.itemcode like :t1 "
-                    . "OR description1 like :t2 "
-                    . "OR barcode like :t3 "
-                    . "OR supplier_code like :t4";
-            $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
-             
-                    
-        } else {
-            /* */
-            $a = array(':c' => $id, ':t0' => "$text%", ':t1' => "$text%", ':t2' => "$text%", ':t3' => "%$text%", ':t4' => "$text%");
-            $query = "SELECT distinct ek_items.id, ek_items.itemcode, description1, barcode,supplier_code "
-                    . "FROM {ek_items} "
-                    . "LEFT JOIN {ek_item_barcodes} "
-                    . "ON ek_items.itemcode=ek_item_barcodes.itemcode "
-                    . "WHERE ek_items.coid =:c "
-                    . "AND (ek_items.id like :t0 "
-                    . "OR ek_items.itemcode like :t1 "
-                    . "OR description1 like :t2 "
-                    . "OR barcode like :t3 "
-                    . "OR supplier_code like :t4)";
-            $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
-             
-            
+        
+        if(strlen($term) < 3) {
+            return new JsonResponse([]);
         }
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_items', 'i');
+        $query->fields('i', ['id', 'itemcode', 'description1', 'supplier_code']);
+        $query->leftJoin('ek_item_barcodes', 'b', 'i.itemcode = b.itemcode');
+        $query->fields('b', ['barcode']);
+        $query->leftJoin('ek_item_images', 'g', 'i.itemcode = g.itemcode');
+        $query->fields('g', ['uri']);
+        $condition = $query->orConditionGroup()
+            ->condition('i.id', $term . "%", 'like')
+            ->condition('i.itemcode', $term . "%", 'like')
+            ->condition('i.description1', $term . "%", 'like')    
+            ->condition('b.barcode', $term . "%", 'like')       
+            ->condition('i.supplier_code', $term . "%", 'like');
+        $query->condition($condition);
+        
+        
+        if ($id != '0') {
+            
+            $query->condition('i.coid', $id);
+                    
+        } 
+         
+        //$query->limit(50);
+        
+        $data = $query->execute(); 
         
         $name = array();
         while ($r = $data->fetchObject()) {

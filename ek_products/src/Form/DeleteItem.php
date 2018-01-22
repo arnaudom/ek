@@ -95,7 +95,7 @@ class DeleteItem extends FormBase {
     } elseif ($this->moduleHandler->moduleExists('ek_sales') || $this->moduleHandler->moduleExists('ek_logistics')) {
       
         if($this->moduleHandler->moduleExists('ek_sales')) {
-          $query = 'SELECT count(id) from {ek_invoice_details} WHERE itemdetail=:id';
+          $query = 'SELECT count(id) from {ek_sales_invoice_details} WHERE itemdetail=:id';
           $invoice = Database::getConnection('external_db', 'external_db')
                   ->query($query, array(':id' => $id))
                   ->fetchField();
@@ -103,7 +103,7 @@ class DeleteItem extends FormBase {
             $del = 0;
             $message = t('this item is used in Invoices module. It cannot be deleted') . '<br>';
           }
-          $query = 'SELECT count(id) from {ek_purchase_details} WHERE itemdetail=:id';
+          $query = 'SELECT count(id) from {ek_sales_purchase_details} WHERE itemdetail=:id';
           $purchase = Database::getConnection('external_db', 'external_db')
                   ->query($query, array(':id' => $id))
                   ->fetchField();        
@@ -111,7 +111,7 @@ class DeleteItem extends FormBase {
             $del = 0;
             $message .= t('this item is used in Purchases module. It cannot be deleted') . '<br>';
           }
-          $query = 'SELECT count(id) from {ek_quotation_details} WHERE itemdetails=:itemcode';
+          $query = 'SELECT count(id) from {ek_sales_quotation_details} WHERE itemdetails=:itemcode';
           $quotation = Database::getConnection('external_db', 'external_db')
                   ->query($query, array(':itemcode' => $data->itemcode))
                   ->fetchField();
