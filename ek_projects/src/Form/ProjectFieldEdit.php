@@ -282,7 +282,7 @@ class ProjectFieldEdit extends FormBase {
                     '#options' => $supplier,
                     '#title' => t('suppliers'),
                     '#default_value' => explode(',', $data),
-                    '#attributes' => array('class' => ['form-select-chosen'], 'style' => array('width:300px;')),
+                    '#attributes' => array('class' => ['form-select-chosen']),
                     '#attached' => array(
                         'library' => array('ek_admin/ek_admin_chosen'),
                     ),

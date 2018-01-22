@@ -145,6 +145,12 @@ class ProjectController extends ControllerBase {
                 } else {
                     $cid = $_SESSION['pjfilter']['cid'];
                 }
+                if(in_array('%', $_SESSION['pjfilter']['supplier'])) {
+                    $_SESSION['pjfilter']['supplier'] = '%';
+                }
+                if(in_array('%', $_SESSION['pjfilter']['client'])) {
+                    $_SESSION['pjfilter']['client'] = '%';
+                }
 
                 $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
                 $query->leftJoin('ek_project_description', 'd', 'd.pcode=p.pcode');
@@ -152,22 +158,39 @@ class ProjectController extends ControllerBase {
                         ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date','archive'))
                         ->condition('cid', $cid, 'like')
                         ->condition('category', $_SESSION['pjfilter']['type'], 'like')
-                        ->condition('status', $_SESSION['pjfilter']['status'], 'like')
-                        ->condition('client_id', $_SESSION['pjfilter']['client'], 'like');
-                if( $_SESSION['pjfilter']['supplier'] != '%') {
-                        $or = db_or();
-                        $or->condition('supplieroffer', $_SESSION['pjfilter']['supplier'] . ',%', 'like');
-                        $or->condition('supplieroffer', '%,' . $_SESSION['pjfilter']['supplier'] . ',%', 'like');
-                        $or->condition('supplieroffer', '%,' . $_SESSION['pjfilter']['supplier'] , 'like');
-                        $or->condition('supplieroffer', $_SESSION['pjfilter']['supplier'] , '=');
-                        $query->condition($or);
-                        
+                        ->condition('status', $_SESSION['pjfilter']['status'], 'like');
+                
+                if($_SESSION['pjfilter']['client'] != '%') {
+                    $query->condition('client_id', $_SESSION['pjfilter']['client'], 'IN');
                 }
                 
+                if( $_SESSION['pjfilter']['date'] == '1') {
+                    $query->condition('date', $_SESSION['pjfilter']['start'], '>=');
+                    $query->condition('date', $_SESSION['pjfilter']['end'], '<=');
+                }                     
+                    
+                if( $_SESSION['pjfilter']['supplier'] != '%') {
+                    //a project can have multiple suppliers
+                    
+                        $or = db_or();
+                        foreach($_SESSION['pjfilter']['supplier'] as $key => $id) {
+                            $or->condition('supplieroffer', $id . ',%', 'like');
+                            $or->condition('supplieroffer', '%,' . $id . ',%', 'like');
+                            $or->condition('supplieroffer', '%,' . $id , 'like');
+                            $or->condition('supplieroffer', $id , '=');
+                        }
+                        
+                        $query->condition($or);
+                        
+                } else {
+                    
+                }
+
+                    
                 $data = $query
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit(20)->orderBy('id', 'ASC')
+                        ->limit(30)->orderBy('id', 'ASC')
                         ->execute();
             }
 
@@ -819,7 +842,7 @@ class ProjectController extends ControllerBase {
                      * extact PO list
                      */
                     //NOTE: PO are not filtered by COID access here. TODO?
-                    $query = "SELECT id,serial,status,currency,date,due,amount,amountbc FROM {ek_sales_purchase} "
+                    $query = "SELECT id,serial,status,head,currency,date,due,amount,amountbc FROM {ek_sales_purchase} "
                             . "WHERE pcode=:p order by id";
                     $pos = Database::getConnection('external_db', 'external_db')->query($query, array(':p' => $pcode));
                     $po_list = array();
@@ -1125,7 +1148,11 @@ class ProjectController extends ControllerBase {
             } //if section_5
 
             // Let other modules add data to the page.
-            $data = $this->moduleHandler()->invokeAll('project_view', [$data], [$pcode]);
+            if($invoke = $this->moduleHandler()->invokeAll('project_view', [$data], [$pcode])){
+                $data = $invoke;
+            }
+            
+            
 
             return array(
                 '#theme' => 'ek_projects_view',
@@ -1399,7 +1426,9 @@ class ProjectController extends ControllerBase {
                 }
                 
                 // Let other modules add data to the list.
-                $items = $this->moduleHandler()->invokeAll('project_doc_view', [$items]);
+                if($invoke = $this->moduleHandler()->invokeAll('project_doc_view', [$items])){
+                    $items = $invoke;
+                }
                 
                 $render = ['#theme' => 'ek_projects_doc_view', '#items' => $items];
                 $data =  \Drupal::service('renderer')->render($render);               
@@ -1658,12 +1687,14 @@ class ProjectController extends ControllerBase {
         switch ($param[0]) {
 
             case 'upload':
+                $title = ucfirst($this->t($param[0]));
                 $id = $param[1] . '|' . $param[2] . '|' . $param[3] . '|' . $param[4];
                 $content['content'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\UploadForm', $id);
                 $options = array('width' => '25%',);
                 break;
 
             case 'task':
+                $title = ucfirst($this->t($param[0]));
                 if ($param[2] == '')
                     $param[2] = 0;
                 $content['content'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\TaskProject', $param[1], $param[2]);
@@ -1672,6 +1703,7 @@ class ProjectController extends ControllerBase {
                 break;
 
             case 'mail':
+                $title = ucfirst($this->t($param[0]));
                 $data = array(
                     $param[1], //doc id
                     $param[2], //tb ref
@@ -1684,6 +1716,7 @@ class ProjectController extends ControllerBase {
                 break;
 
             case 'access' :
+                $title = ucfirst($this->t($param[0]));
                 $id = $param[1];
                 $type = $param[2];
                 $content['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\ProjectAccessEdit', $id, $type);
@@ -1691,24 +1724,28 @@ class ProjectController extends ControllerBase {
                 break;
 
             case 'notification' :
+                $title = ucfirst($this->t($param[0]));
                 $id = $param[1];
                 $content['content'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\Notification', $id);
                 $options = array('width' => '30%',);
                 break;
             case 'field' :
+                $title = ucfirst($this->t($param[0]));
                 $id = $param[2];
                 $field = $param[1];
                 $width = isset($param[3]) ? $param[3] : '30%';
                 $content['content'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\ProjectFieldEdit', $id, $field);
-                $options = array('width' => $width);
+                $options = array('width' => $width, 'height' => '300');
                 break;
             case 'extranet' :
+                $title = ucfirst($this->t($param[0]));
                 $id = $param[1];
                 $width = isset($param[2]) ? $param[2] : '50%';
                 $content['content'] = $this->formBuilder->getForm('Drupal\ek_extranet\Form\Edit', $id);
                 $options = array('width' => $width);
                 break;
             case 'followers' :
+                $title = ucfirst($this->t($param[0]));
                 $id = $param[1];
                 $width = isset($param[2]) ? $param[2] : '30%';
                 
@@ -1737,7 +1774,7 @@ class ProjectController extends ControllerBase {
         }
 
         $response = new AjaxResponse();
-        $title = ucfirst($this->t($param[0]));
+        
         $content['cancel'] = array(
             '#type' => 'link',
             '#title' => 'Cancel',

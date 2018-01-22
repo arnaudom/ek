@@ -389,9 +389,19 @@ use Drupal\ek_admin\Access\AccessCheck;
                 $body[] = t('Invoice : @v' , array('@v' => $param['value']));
                 $params['subject'] = t("Project invoicing update");
                 break;
+            case 'invoice_edit':
+                $body[] = t('Invoice edited for project ref. @p', ['@p' => $param['pcode']]) ;
+                $body[] = t('Invoice : @v' , array('@v' => $param['value']));
+                $params['subject'] = t("Project invoicing update");
+                break;
             case 'purchase_payment':
                 $body[] = t('Purchase paid for project ref. @p', ['@p' => $param['pcode']]) ;
                 $body[] = t('Purchase : @v' , array('@v' => $param['value']));
+                $params['subject'] = t("Project purchase update");
+                break;
+            case 'purchase_edit':
+                $body[] = t('Purchase edited for project ref. @p', ['@p' => $param['pcode']]) ;
+                $body[] = t('Invoice : @v' , array('@v' => $param['value']));
                 $params['subject'] = t("Project purchase update");
                 break;
             case 'new_project':

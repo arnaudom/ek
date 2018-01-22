@@ -62,17 +62,16 @@ ek_projects.dashboard:
     - core/jquery
  
 ek_projects.calendar:
-  version: VERSION
+  version: 1
   css:
     theme:
       css/ek_calendar.css: {} 
-      js/cal/fullcalendar/fullcalendar.css: {} 
-      js/jquery.qtip/jquery.qtip.css: {}
+      /libraries/fullcalendar/fullcalendar.min.css: {} 
+      /libraries/qTip2/dist/jquery.qtip.min.css: {}
   js:
-    js/cal/fullcalendar/lib/moment.min.js: {}
-    js/cal/fullcalendar/fullcalendar.js: {}
-    js/jquery.qtip/jquery.qtip.min.js: {}
-    
+    /libraries/fullcalendar/lib/moment.min.js: {}
+    /libraries/fullcalendar/fullcalendar.min.js: {}
+    /libraries/qTip2/dist/jquery.qtip.min.js: {}
     js/cal/calendar_script.js: {}
   dependencies:
     - core/jquery
