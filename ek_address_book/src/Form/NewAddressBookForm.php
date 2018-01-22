@@ -234,20 +234,13 @@ class NewAddressBookForm extends FormBase {
 
 // insert the name cards
         $i = 0;
-
-
+        $salutation = array('-', t('Mr.'), t('Mrs.'), t('Miss.'));
         $vocabulary = \Drupal::entityManager()->getStorage('taxonomy_term')->loadTree('salutation', 0, 1);
-        if ($vocabulary) {
-            $checklist_vocab_array = array();
+        if ($vocabulary = \Drupal::entityManager()->getStorage('taxonomy_term')->loadTree('salutation', 0, 1)) {
             foreach ($vocabulary as $item) {
-                $key = $item->tid;
-                $value = $item->name;
-                $salutation[$key] = $value;
+                array_push($salutation, $item->name);
             }
-        } else {
-            $salutation = array(t('Mr.'), t('Mrs.'), t('Miss.'));
-        }
-
+        } 
         if (isset($rc) && $rc > 0) {
 
             //namecard exist

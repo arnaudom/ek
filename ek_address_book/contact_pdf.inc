@@ -4,7 +4,7 @@ use Drupal\Core\Database\Database;
 
 
 $query = "SELECT * from {ek_address_book} where id=:id";
-$book_data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
+$book_data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid))->fetchObject();
 $query = "SELECT * from {ek_address_book_contacts} where id=:id";
 $card_data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $cid))->fetchObject();
 
@@ -12,7 +12,7 @@ $pdf = new FPDF();
 $title = t('Contact card');
 $pdf->SetTitle($title);
 $pdf->AliasNbPages();
-$pdf->AddPage(P, A5);
+$pdf->AddPage("P", "A4");
 $pdf->SetMargins(10, 10);
 
 
@@ -67,7 +67,8 @@ $pdf->Cell(5, 3, "", "LB", 0);
 $pdf->Cell(100, 3, "", 0, 0);
 $pdf->Cell(5, 3, "", "RB", 1);
 
-$pdf->Ln(5);
+$pdf->AddPage("P", "A4");
+//$pdf->Ln(5);
 //DISPLAY contact
 //left right corners
 $pdf->Cell(5, 3, "", "LT", 0);
@@ -115,7 +116,7 @@ $pdf->Cell(5, 3, "", "RB", 1);
 
 /**/
 
-$pdf->Ln(10);
+$pdf->Ln(3);
 if (file_exists($card_data->card)) {
         
         $info = getimagesize($card_data->card);
@@ -124,7 +125,7 @@ if (file_exists($card_data->card)) {
         $r = 150/$w;
         $parts = explode('/', $card_data->card);
         $parts = array_reverse($parts);
-        $pdf->Image($card_data->card, 30, 130, 80);
+        $pdf->Image($card_data->card, 10, 60, 80);
     }
 
 if (headers_sent()) {

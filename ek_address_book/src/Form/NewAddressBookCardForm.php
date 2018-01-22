@@ -60,19 +60,13 @@ class NewAddressBookCardForm extends FormBase {
             ),
         );
         
-        
-        
+        $salutation = array('-', t('Mr.'), t('Mrs.'), t('Miss.'));
         $vocabulary = \Drupal::entityManager()->getStorage('taxonomy_term')->loadTree('salutation', 0, 1);
-        if ($vocabulary) {
-            $checklist_vocab_array = array();
+        if ($vocabulary = \Drupal::entityManager()->getStorage('taxonomy_term')->loadTree('salutation', 0, 1)) {
             foreach ($vocabulary as $item) {
-                $key = $item->tid;
-                $value = $item->name;
-                $salutation[$key] = $value;
+                array_push($salutation, $item->name);
             }
-        } else {
-            $salutation = array(t('Mr.'), t('Mrs.'), t('Miss.'));
-        }
+        } 
     // @TODO keep this format for future 'add card option' on single form 
         $i = 0;
 
