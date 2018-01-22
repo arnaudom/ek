@@ -92,7 +92,7 @@ class BackupCoid extends FormBase {
                 '#ajax' => array(
                     'callback' => array($this, 'backup'),
                     'wrapper' => 'message',
-                    'mehtod' => 'replace'
+                    'method' => 'replace'
                 ),
             );
 
