@@ -1150,6 +1150,24 @@ class NewPurchase extends FormBase {
         if (isset($insert) || isset($update)) {
             drupal_set_message(t('The purchase is recorded. Ref @r', array('@r' => $serial)), 'status');
             
+  
+            if ($this->moduleHandler->moduleExists('ek_projects')) {
+                //notify user if invoice is linked to a project
+                if ($pcode && $pcode != 'n/a') {
+                    $pid = Database::getConnection('external_db', 'external_db')
+                            ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])
+                            ->fetchField();
+                    $param = serialize(
+                            array(
+                                'id' => $pid,
+                                'field' => 'purchase_edit',
+                                'value' => $serial,
+                                'pcode' => $pcode
+                            )
+                    );
+                    \Drupal\ek_projects\ProjectData::notify_user($param);
+                }
+            }
             
             switch($form_state->getValue('redirect')) {
             case 0 :

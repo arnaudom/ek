@@ -405,6 +405,24 @@ class QuickEdit extends FormBase {
         Cache::invalidateTags(['project_page_view']);
         if (isset($update)) {
             drupal_set_message(t('The @doc is recorded. Ref. @r', array('@r' => $serial, '@doc' => $doc)), 'status');
+            
+            if ($this->moduleHandler->moduleExists('ek_projects')) {
+                //notify user if invoice is linked to a project
+                if ($pcode && $pcode != 'n/a') {
+                    $pid = Database::getConnection('external_db', 'external_db')
+                            ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])
+                            ->fetchField();
+                    $param = serialize(
+                            array(
+                                'id' => $pid,
+                                'field' => $doc . '_edit',
+                                'value' => $serial,
+                                'pcode' => $pcode
+                            )
+                    );
+                    \Drupal\ek_projects\ProjectData::notify_user($param);
+                }
+            }
         }
 
         $form_state->setRedirect("ek_sales." . $doc . "s.list");

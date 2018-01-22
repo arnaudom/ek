@@ -41,7 +41,6 @@
 
 <h2>{{ items.abidlink }}</h2>
 
-
 {% if items.data != NULL %}
     <section class="comment">
         <table class='table'>
@@ -186,23 +185,28 @@
 
                 <div class="table">
                     <div class="row">
-                        <div class="cell cell50">
+                        <div class="cell cellcenter">
                             <h1>{{ 'Sales'|t }}</h1>
                             {{ 'Total transactions'|t }} : <strong>{{ items.total_income|number_format }} {{ items.baseCurrency }}</strong>
                             <br/><br/>
-                            <div>
+                            
                                 {{ items.sales_year_chart }}
-                            </div>
+                            
                         </div>
-                        <div class="cell cell50 cellcenter">
+                    </div>
+                </div>
+
+                <div class="table">
+                    <div class="row">
+                        <div class="cell cellcenter cell50">
                             {{ items.invoices_chart }}
+                        </div>
+                        <div class="cell cellcenter cell50">
                             {{ items.payment_performance_chart }}
                         </div>
                     </div>
                 </div>
 
-           
-            </div>
 
     </section>
 {% endif %}

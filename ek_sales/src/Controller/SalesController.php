@@ -338,7 +338,7 @@ class SalesController extends ControllerBase {
                     $options['yaxis_min'] = '';
                     $options['yaxis_max'] = '';
                     $options['xaxis_title'] = t('Years');
-                    $options['legend_position'] = 'bottom';
+                    //$options['legend_position'] = 'bottom';
                     $options['title_position'] = 'in';
                     $categories = [date('Y') - 6, date('Y') - 5, date('Y') - 4, date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y')];
                     $seriesData = [
