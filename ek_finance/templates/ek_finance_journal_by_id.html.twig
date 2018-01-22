@@ -1,0 +1,98 @@
+<section class="filter">
+
+    {{ items.filter_journal }}
+
+</section>
+
+
+<br/>
+<section class="journal">
+
+
+
+    <table>     
+        <tr><td colspan='6' class='journal-reference'>{{ items.data.references.company }}</td></tr>
+        <tr><td colspan='6' class='journal-reference'>{{ items.data.references.source|capitalize }} ({{ items.data.references.date }})</td></tr>
+        <tr><td colspan='6' class='journal-reference'>{{ items.data.references.reference }} - {{ items.data.references.reference_detail }}</td></tr>
+
+        <header>
+            <tr>
+                <th colspan='2' >{% trans %} Entry {% endtrans %}</th>
+                <th colspan='2' >{% trans %} Account {% endtrans %}</th>
+                <th>{% trans %} Debit {% endtrans %}</th>
+                <th>{% trans %} Credit {% endtrans %}</th>
+            </tr>
+        </header>
+
+        <tbody>
+
+            {% for row in items.data.transactions %}
+
+                {% if row.type == 'debit' %}
+
+                    <tr class="{% if row.exchange == 1 %}journal-exchange{% else %} {% endif %}">
+                        <td>
+                            {% if row.source == 'general' or row.source == 'payment' %}
+                                <a href='journal-edit/{{ row.id }}'>{{ 'edit'|t }}</a>
+                            {% elseif row.source == 'expense' %}
+                                <a href='expenses-edit/{{ row.reference }}'>{{ 'edit'|t }}
+                                {% endif %}   
+                        </td>
+                        <td title="{{ row.trail.username }} - {{ row.trail.time }}">
+                            {{ row.id }} - {{ row.count }}</td>
+                        <td>{{ row.aname|raw }}</td>
+
+                        {% if row.exchange == 1 %}
+                            <td>{{ 'exchange'|t }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                        <td class='right'>{{ row.value | number_format(2) }}</td>  
+                        <td></td>
+                    </tr>
+                {% else %}
+
+                    <tr class="{% if row.exchange == 1 %}journal-exchange{% else %} {% endif %}">
+                        <td></td>
+                        <td title="{{ row.trail.username }} - {{ row.trail.time }}">
+                            {{ row.id }} - {{ row.count }}</td>
+                        <td>{{ row.aname|raw }}</td>
+
+                        {% if row.exchange == 1 %}
+                            <td>{{ 'exchange'|t }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                        <td></td>  
+                        <td class='right'>{{ row.value | number_format(2) }}</td>
+                    </tr>                  
+
+                {% endif %}
+
+            {% endfor %} {#rows in item#} 
+
+            {#total#}
+            {% if items.data.basecurrency != items.data.references.currency %}
+                <tr class='journal-total-exchange'>
+                    <td colspan='4'>{{ 'Total'|t  }} {{ row.currency }}</td>
+                    <td class='right'>{{ items.data.total_debit  | number_format(2)}}</td>
+                    <td class='right'>{{ items.data.total_credit | number_format(2)}}</td>
+                </tr>
+            {% endif %}
+            <tr class=''>
+                <td colspan='4'>{{ 'Total'|t  }} {{ items.data.basecurrency }}</td>
+                <td class='right journal-total'>{{ (items.data.total_debit + items.data.total_debit_base) | number_format(2) }}</td>
+                <td class='right journal-total'>{{ (items.data.total_credit + items.data.total_credit_base) | number_format(2) }}</td>
+            </tr>  
+        </tbody>  
+
+
+
+
+
+
+
+    </table>
+
+
+</section>

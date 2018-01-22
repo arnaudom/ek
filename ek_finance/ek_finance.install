@@ -1110,3 +1110,13 @@ function ek_finance_update_8010() {
     
     return t('Table structure updated');        
 }
+
+/**
+ * Add generic ajax call route 
+ * route rebuild
+ */
+function ek_finance_update_8011() {
+
+    \Drupal::service('router.builder')->rebuild();
+    return t('New route built');
+}

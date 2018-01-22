@@ -72,7 +72,7 @@ class FilterMemo extends FormBase {
     $form['filters'] = array(
       '#type' => 'details',
       '#title' => $this->t('Filter'),
-      '#open' => ($_SESSION['memfilter']['filter'] == 1) ? FALSE : TRUE,
+      '#open' => isset($_SESSION['memfilter']['filter']) ? FALSE : TRUE,
     );  
   
   $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();

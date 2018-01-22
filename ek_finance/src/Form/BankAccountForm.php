@@ -238,13 +238,31 @@ if($form_state->getValue('bid') != NULL) {
   public function validateForm(array &$form, FormStateInterface $form_state) {
   
     if($form_state->get('step') == 1){
-    $form_state->set('step', 2);
-    $form_state->set('id', $form_state->getValue('id') );
-    $form_state->setRebuild();
+        $form_state->set('step', 2);
+        $form_state->set('id', $form_state->getValue('id') );
+        $form_state->setRebuild();
     } 
     
     if($form_state->get('step') == 3) {
-    
+        //check duplicate
+        if($form_state->getValue('id') == '0'){
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_bank_accounts', 'b');
+            $query->fields('b', ['id']);
+            $query->condition('account_ref', trim($form_state->getValue('account_ref')));
+            $query->condition('currency', $form_state->getValue('currency'));
+            $query->condition('bid', $form_state->getValue('bid'));
+            $data = $query->execute()->fetchField();
+
+                if($data){
+                    $banks = BankData::listBank();
+                    $form_state->setErrorByName("account_ref", $this->t('Duplicated account: @ref, @cur, @bid',
+                            ['@ref' =>$form_state->getValue('account_ref'), 
+                                '@cur' => $form_state->getValue('currency'), 
+                                '@bid' => $banks[$form_state->getValue('bid')]]));
+                }
+        }
+        
     }
   
   }
@@ -260,7 +278,7 @@ if($form_state->getValue('bid') != NULL) {
     if($form_state->get('step') == 3){
       
             $fields = array (
-                'account_ref' => Xss::filter($form_state->getValue('account_ref')),
+                'account_ref' => Xss::filter(trim($form_state->getValue('account_ref'))),
                 'currency' => $form_state->getValue('currency'),
                 'bid' => $form_state->getValue('bid'),
                 'aid' => $form_state->getValue('aid'),
@@ -274,7 +292,8 @@ if($form_state->getValue('bid') != NULL) {
           drupal_set_message(t('Bank account data recorded'), 'status');
         } else {
           //update existing
-              $update = Database::getConnection('external_db', 'external_db')->update('ek_bank_accounts')
+              $update = Database::getConnection('external_db', 'external_db')
+                ->update('ek_bank_accounts')
                 ->condition('id', $form_state->getValue('id'))
                 ->fields($fields)
                 ->execute();   

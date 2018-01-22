@@ -19,6 +19,14 @@ ek_finance.admin.settings:
     _controller: '\Drupal\ek_finance\Controller\SettingsController::settings'
   requirements:
     _permission: 'administrate_finance' 
+
+#generic ajax call
+ek_finance.ajax_call:
+  path: '/finance/ajax/{type}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\FinanceController::ajaxCall'
+  requirements:
+    _user_is_logged_in: 'TRUE' 
     
 ek_finance.main:
   path: '/finance'

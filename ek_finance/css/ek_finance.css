@@ -163,6 +163,21 @@ hr {
     border-color: #FF6666 #981010 #981010 !important;
 }
 
+
+.button--add:hover {
+    background-color: #FFF;
+    color: #FFF !important;
+    background-image: linear-gradient(to bottom, #A9F5A9, #298A08) !important;
+    border-color: #A9F5A9 #298A08 #298A08 !important;
+}
+
+.button--remove:hover {
+    background-color: #FFF;
+    color: #FFF !important;
+    background-image: linear-gradient(to bottom, #F7BE81, #DF7401) !important;
+    border-color: #F7BE81 #DF7401 #DF7401 !important;
+}
+
 .red {
   color: #FF6666;
 }

@@ -218,27 +218,27 @@ $pdf->SetFont('Arial','B',10);
 $pdf->SetFont('Arial','',10);    
     $pdf->Cell($col2_width,5, $aid . ' ' . $aname ,0,1);
 $pdf->SetFont('Arial','B',10);    
-    $pdf->Cell($col1_width,5,"Credits",0,0);
+    $pdf->Cell($col1_width,5,t("Credits"),0,0);
 $pdf->SetFont('Arial','',10);    
     $pdf->Cell($col2_width,5,number_format($data[0][0],2),0,1);
 $pdf->SetFont('Arial','B',10); 
-    $pdf->Cell($col1_width,5,"Debits",0,0);
+    $pdf->Cell($col1_width,5,t("Debits"),0,0);
 $pdf->SetFont('Arial','',10);       
     $pdf->Cell($col2_width,5,number_format($data[0][1],2),0,1);
 $pdf->SetFont('Arial','B',10);    
-    $pdf->Cell($col1_width,5,"Opening balance:",0,0);
+    $pdf->Cell($col1_width,5,t("Opening balance") . ":",0,0);
 $pdf->SetFont('Arial','',10);      
     $pdf->Cell($col2_width,5,number_format(abs($data[0][2]),2),0,1);
 $pdf->SetFont('Arial','B',10);     
-    $pdf->Cell($col1_width,5,"Reconcilied balance:",0,0);
+    $pdf->Cell($col1_width,5,t("Reconciled balance") . ":",0,0);
 $pdf->SetFont('Arial','',10);      
     $pdf->Cell($col2_width,5,number_format($data[0][3],2),0,1); 
 $pdf->SetFont('Arial','B',10);       
-    $pdf->Cell($col1_width,5,"Difference:",0,0);
+    $pdf->Cell($col1_width,5,t("Difference") . ":",0,0);
 $pdf->SetFont('Arial','',10);       
     $pdf->Cell($col2_width,5,number_format($data[0][4],2),0,1);  
 $pdf->SetFont('Arial','B',10);     
-    $pdf->Cell($col1_width,5,"Date of reconcliation:",0,0);
+    $pdf->Cell($col1_width,5,t("Date of reconcliation") .":",0,0);
 $pdf->SetFont('Arial','',10);        
     $pdf->Cell($col2_width,5,$data[0][5],0,1);  
 $pdf->Ln(5);     
@@ -246,7 +246,7 @@ $pdf->SetFont('Arial','B',11);
     $pdf->Cell($col1_width,5, t('RECONCILIATION DETAILS') ,0,1);
 $pdf->SetFont('Arial','B',10);  
 
-    $pdf->Cell($col1_width,5, t('Transaction') ,1,0);
+    $pdf->Cell($col1_width,5, t('Transactions') ,1,0);
     $pdf->Cell($col2_width,5, t('Credits'),1,0);
     $pdf->Cell($col3_width,5, t('Debits') ,1,1);  
 
@@ -284,7 +284,7 @@ for ($x=1;$x<=count($data);$x++) {
     }
 } 
 $pdf->Ln(5); 
-$pdf->SetFont('Arial','B',10); 
+$pdf->SetFont('Arial','B',8); 
     $pdf->Cell($col1_width,5, t("Total"),1,0);
     $pdf->Cell($col2_width,5,$data[1][4]." ".number_format($total_cr,2),1,0,'R');
     $pdf->Cell($col3_width,5,$data[1][4]." ".number_format($total_db,2),1,1,'R');  

@@ -110,7 +110,7 @@ class Journal {
                 ->fetchObject();
 
         return array(
-            'id' => $id,
+            'id' => $result->id,
             'count' => $result->count,
             'aid' => $result->aid,
             'aname' => $result2->aname,
@@ -990,8 +990,103 @@ class Journal {
     }
 
     /*
+     * Collect and return data journal id
+     * 
+     * @param $jid id of the journal entry
+     */
+
+    function data_by_jid($jid) {
+        $details = self::journalEntryDetails($jid);
+        $settings = new FinanceSettings();
+        $baseCurrency = $settings->get('baseCurrency');
+        $account_list = AidList::chartList($details['coid']);
+           
+        //collect all data referring to this entry
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+        $query->fields('j');
+        $query->leftJoin('ek_journal_trail', 't', 'j.id = t.jid');
+        $query->fields('t',['username','action','timestamp']);
+        $query->condition('coid' , $details['coid']);
+        $query->condition('source' , $details['source']);
+        $query->condition('reference' , $details['reference']);
+        $query->condition('date' , $details['date']);
+        $data = $query->execute();
+        $rows = array();  
+        $transactions = array();
+        $references = array();
+        $ref = self::reference($details['source'], $details['reference']);
+        $query = "SELECT name from {ek_company} WHERE id=:id";
+        $name = Database::getConnection('external_db', 'external_db')
+                        ->query($query, [':id' => $details['coid']])->fetchField();
+        $references = [
+           'company' => $name,
+           'source' => $details['source'],
+           'reference' => $details['reference'],
+           'reference_detail' => $ref[0], 
+           'currency' => $ref[1],
+           'date' => $details['date']
+        ];
+                
+        $sum_d = 0; //sum base currency
+        $sum_c = 0;
+        $sum_d2 = 0; //sum currency
+        $sum_c2 = 0;
+            while ($d = $data->fetchobject()) {
+            
+                $row['id'] = $d->id;
+                $row['count'] = $d->count;
+                $row['aid'] = $d->aid;
+                $row['aname'] = $account_list[$d->coid][$d->aid];
+                $row['coid'] = $d->coid;
+                $row['exchange'] = $d->exchange;
+                $row['value'] = $d->value;
+                $row['currency'] = $d->currency;
+                $row['source'] = $d->source;
+                $row['reference'] = $d->reference;
+                $row['type'] = $d->type;
+                $row['reconcile'] = $d->reconcile;                
+                $row['date'] = $d->date;
+                $row['trail'] = [
+                    'username' => $d->username, 
+                    'time' => date('Y-m-d  g:i a', $d->timestamp),
+                    'action' => $d->action
+                        ];
+             
+                if ($d->type == 'debit') {
+                        if ($d->exchange == 0) {
+                            $sum_d = $sum_d += $d->value;
+                        }
+                        if ($d->exchange == 1) {
+                            $sum_d2 = $sum_d2 += $d->value;
+                        }
+                    }
+                    if ($d->type == 'credit') {
+                        if ($d->exchange == 0) {
+                            $sum_c = $sum_c += $d->value;
+                        }
+                        if ($d->exchange == 1) {
+                            $sum_c2 = $sum_c2 += $d->value;
+                        }
+                    }
+                 $transactions[] = $row;
+
+            }
+        
+            return [
+                'references' => $references,
+                'transactions' => $transactions,
+                'total_debit' => $sum_d,
+                'total_debit_base' => $sum_d2,
+                'total_credit' => $sum_c,
+                'total_credit_base' => $sum_c2,
+                'basecurrency' => $baseCurrency
+            ];
+            
+    }
+    /*
      * Collect and return data to be displayed in journal extractions
-     *
+     * 
      * @param $j
      * date1 = from date
      * date2 = to date
@@ -1187,7 +1282,7 @@ class Journal {
 
             case 'purchase':
             case 'payment':
-            case 'purchase cn':
+            case 'purchase dn':
                 $query = "SELECT name from {ek_address_book} INNER JOIN {ek_sales_purchase} "
                     . "ON ek_sales_purchase.client=ek_address_book.id WHERE ek_sales_purchase.id=:id";
                 $comment = Database::getConnection('external_db', 'external_db')
@@ -1195,7 +1290,7 @@ class Journal {
                 $query = "SELECT currency from {ek_sales_purchase} WHERE id=:id";
                 $currency = Database::getConnection('external_db', 'external_db')
                                 ->query($query, array(':id' => $reference))->fetchField();
-                if($source == 'purchase cn'){
+                if($source == 'purchase dn'){
                    $comment .= " (" . t('Debit note') . ")"; 
                 }
                 break;

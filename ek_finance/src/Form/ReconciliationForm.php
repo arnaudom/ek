@@ -183,15 +183,17 @@ class ReconciliationForm extends FormBase {
         '#value' => $account_currency,
       );
   
-  $query = "SELECT id,date FROM {ek_journal} WHERE aid=:aid and coid=:coid and date<=:date2 and reconcile=0 and exchange=0 ORDER BY date";
-  $a = array(
-    ':aid' => $form_state->getValue('account'),
-    ':coid' => $form_state->getValue('coid'),
-    ':date2' => $form_state->getValue('date') 
-    );
-
-  $result = Database::getConnection('external_db', 'external_db')->query($query,$a);    
-    
+  $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_journal', 'j');
+  $query->fields('j');
+  $query->condition('coid', $form_state->getValue('coid'), '=');
+  $query->condition('aid', $form_state->getValue('account'), '=');
+  $query->condition('date', $form_state->getValue('date'), '<=');
+  $query->condition('reconcile', '0', '=');
+  $query->condition('exchange', '0', '=');
+  $query->orderBy("date", 'ASC');
+  $result = $query->execute();
+  
     
   $query = "SELECT * from {ek_accounts} WHERE aid=:account and coid=:coid";
   $a = array(':account' => $form_state->getValue('account'),':coid' => $form_state->getValue('coid'));
@@ -218,15 +220,14 @@ class ReconciliationForm extends FormBase {
       $query = "SELECT sum(value) from {ek_journal} "
               . "WHERE exchange like :exc and type=:type "
               . "AND aid=:aid and coid=:coid "
-              . "AND ( date>=:dateopen and (reconcile=:reco or reconcile=:reco2 ) )";
+              . "AND date>=:dateopen AND reconcile<>:reco";
       $a = array(
         ':exc' => $exchange,
         ':type' => 'credit',
         ':aid' => $form_state->getValue('account'),
         ':coid' => $form_state->getValue('coid'),
         ':dateopen' => $account->balance_date,
-        ':reco'=> 1 , 
-        ':reco2' => date('Y')
+        ':reco'=> 0 
         );
      
       $credit = Database::getConnection('external_db', 'external_db')->query($query,$a)->fetchField();
@@ -236,13 +237,12 @@ class ReconciliationForm extends FormBase {
         ':aid' => $form_state->getValue('account'),
         ':coid' => $form_state->getValue('coid'),
         ':dateopen' => $account->balance_date,
-        ':reco'=> 1 , 
-        ':reco2' => date('Y')
+        ':reco'=> 0 
         );
       $query = "SELECT sum(value) from {ek_journal} "
               . "WHERE exchange like :exc and type=:type "
-              . "and aid=:aid and coid=:coid "
-              . "and ( date>=:dateopen and (reconcile=:reco or reconcile=:reco2 ))";
+              . "AND aid=:aid and coid=:coid "
+              . "AND date>=:dateopen AND reconcile<>:reco";
      
       $debit = Database::getConnection('external_db', 'external_db')->query($query,$a)->fetchField();
     
@@ -373,7 +373,7 @@ $form['items']['#tree'] = TRUE;
 
 $i = 0;
     while($r = $result->fetchObject()) {
-    
+  
       $j = Journal::journalEntryDetails($r->id);
       
       //Fix a bug to retreive exchange value when inter accounts transfer with different currencies

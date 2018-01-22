@@ -497,6 +497,7 @@ class RecordExpense extends FormBase {
             '#submit' => array(array($this, 'addForm')),
             '#prefix' => "<div id='add' class='right'>",
             '#suffix' => '</div>',
+            '#attributes' => array('class' => array('button--add')),
             '#states' => array(
                 // Hide data fieldset when coid is empty.
                 'invisible' => array(
@@ -641,6 +642,7 @@ class RecordExpense extends FormBase {
                     '#submit' => array(array($this, 'removeForm')),
                     '#prefix' => "<p class='right'>",
                     '#suffix' => '</p>',
+                    '#attributes' => array('class' => array('button--remove')),
                 );
             }
         }

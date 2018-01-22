@@ -77,10 +77,10 @@ class JournalEntryController extends ControllerBase {
         if (!in_array($data->coid, $company)) {
             $edit = FALSE;
         }
-        if ($data->reconcile == 1) {
+        if ($data->reconcile == '1') {
             $edit = FALSE; 
         }
-        if ($data->source != 'general' && $data->source != 'payment') {
+        if ( $data->source != 'general' && $data->source != 'general cash' && $data->source != 'payment') {
             $edit = FALSE;
         }
 

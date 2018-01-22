@@ -16,7 +16,8 @@ use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InsertCommand;
-use Drupal\ek_admin\CompanySettings;
+use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\ek_projects\ProjectData;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\AidList;
@@ -66,6 +67,7 @@ class NewMemo extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $category = NULL, $tempSerial = NULL) {
 
+      
   if(isset($id) && $id != NULL  ) {
  
   $chart = $this->settings->get('chart');   
@@ -73,11 +75,19 @@ class NewMemo extends FormBase {
   
   //edit existing memo
 
-  $query = "SELECT * from {ek_expenses_memo} WHERE id=:id";
-  $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
-  $query = "SELECT * from {ek_expenses_memo_list} where serial=:id";
-  $detail = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $data->serial));
- 
+  
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses_memo', 'memo');
+    $query->fields('memo');
+    $query->condition('id', $id);
+    $data = $query->execute()->fetchObject();
+   
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses_memo_list', 'details');
+    $query->fields('details');
+    $query->condition('serial', $data->serial);
+    $detail = $query->execute();
+
 
     $form['edit_memo'] = array(
       '#type' => 'item',
@@ -89,7 +99,11 @@ class NewMemo extends FormBase {
       '#type' => 'hidden',
       '#value' => $data->serial,
     );  
-        
+    $form['id'] = array(
+      '#type' => 'hidden',
+      '#value' => $id,
+    );     
+    
   $n = 0;
   $form_state->set('current_items', 0);
   if(!$form_state->get('num_items'))  $form_state->set('num_items', 0);  
@@ -137,24 +151,36 @@ class NewMemo extends FormBase {
 // 
   $CurrencyOptions = CurrencyData::listcurrency(1); 
   
-  $form['tempSerial'] = array(
-  //used for file uploaded
-      '#type' => 'hidden',
-      '#value' => $tempSerial,
-    );   
+  
+    $form['tempSerial'] = array(
+    //used for file uploaded
+        '#type' => 'hidden',
+        '#default_value' => $tempSerial,
+        '#id' => 'tempSerial'
+      );   
+  
+    $url = Url::fromRoute('ek_finance_manage_list_memo_'. $category, array(), array())->toString();
+    $form['back'] = array(
+      '#type' => 'item',
+      '#markup' => t('<a href="@url" >List</a>', array('@url' => $url ) ) ,
 
+    );
+    
+    
     $form['options'] = array(
       '#type' => 'details',
       '#title' => $this->t('Options'),
-      '#open' => TRUE,
+      '#open' => isset($id) ? FALSE : TRUE,
       '#attributes' => '',
       '#prefix' => "",
     );  
 
   if($category == 'internal') {
-  $type = array(1 => "Internal invoice", 2 => "Purchase", 3 => "Claim", 4 => "Advance"); 
+    $type = array(1 => "Internal invoice", 2 => "Purchase", 3 => "Claim", 4 => "Advance"); 
+    $type_select = NULL;
   } else {
-  $type = array(5 => "Personal claim");
+    $type = array(5 => "Personal claim");
+    $type_select = 5;
   }
   
     $form['options']['category'] = array(
@@ -162,7 +188,7 @@ class NewMemo extends FormBase {
       '#size' => 1,
       '#options' => $type,
       '#required' => TRUE,
-      '#default_value' => isset($data->category) ? $data->category : NULL,
+      '#default_value' => isset($data->category) ? $data->category : $type_select,
       '#title' => t('Memo type'),
 
     ); 
@@ -175,9 +201,13 @@ if ($this->settings->get('companyMemo') == 1){
   if($category != 'internal') {
      
      if(\Drupal::currentUser()->hasPermission('admin_memos')) {
-          $query = "SELECT uid,name from {users_field_data} WHERE status=:s ORDER by name";
-          $entity = db_query($query, [':s' => 1])->fetchAllKeyed();
-
+        $query = Database::getConnection()
+                    ->select('users_field_data', 'users');
+        $query->fields('users', ['uid', 'name']);
+        $query->condition('status', 1);
+        $query->orderBy('name', 'ASC');
+        $entity = $query->execute()->fetchAllKeyed();
+         
      } else {
           $entity = array(
             \Drupal::currentUser()->id() => \Drupal::currentUser()->getUsername()
@@ -349,8 +379,12 @@ if($this->moduleHandler->moduleExists('ek_projects')) {
 //
 
 if ($category == 'personal' && $this->settings->get('authorizeMemo') == 1 ) {
-
-$user_name = db_query('SELECT name FROM {users_field_data} WHERE uid=:u', array(':u' => $auth_user[1]))->fetchField();
+    
+    $query = Database::getConnection()
+                    ->select('users_field_data', 'users');
+        $query->fields('users', ['name']);
+        $query->condition('uid', $auth_user[1]);
+        $user_name = $query->execute()->fetchField();
 
     $form['autho'] = array(
       '#type' => 'details',
@@ -445,7 +479,7 @@ if(isset($detail)) {
 //edition mode
 //list current items
 
-
+$grandtotal = 0;
 
   while ($d = $detail->fetchObject()) {
 
@@ -469,7 +503,7 @@ if(isset($detail)) {
         $form['items']["description$n"] = array(
         '#type' => 'textfield',
         '#size' => 38,
-        '#maxlength' => 255,
+        '#maxlength' => 200,
         '#default_value' => $d->description,
         '#attributes' => array('placeholder'=>t('description')),
         '#prefix' => "<div class='cell'>",
@@ -480,7 +514,7 @@ if(isset($detail)) {
         '#type' => 'textfield',
         '#id' => 'amount'.$n,        
         '#size' => 8,
-        '#maxlength' => 255,
+        '#maxlength' => 30,
         '#default_value' => number_format($d->amount, 2),
         '#attributes' => array('placeholder'=>t('amount'), 'class' => array('amount')),
         '#prefix' => "<div class='cell right'>",
@@ -538,7 +572,7 @@ if(isset($detail)) {
         $form['items']["description$i"] = array(
         '#type' => 'textfield',
         '#size' => 38,
-        '#maxlength' => 255,
+        '#maxlength' => 200,
         '#default_value' => $form_state->getValue("description$i") ? $form_state->getValue("description$i") : NULL,
         '#attributes' => array('placeholder'=>t('description')),
         '#prefix' => "<div class='cell'>",
@@ -550,7 +584,7 @@ if(isset($detail)) {
         '#type' => 'textfield',
         '#id' => 'amount'.$i,        
         '#size' => 8,
-        '#maxlength' => 255,
+        '#maxlength' => 30,
         '#default_value' => $form_state->getValue("amount$i") ? number_format($form_state->getValue("amount$i"),2) : NULL,
         '#attributes' => array('placeholder'=>t('amount'), 'class' => array('amount')),
         '#prefix' => "<div class='cell right'>",
@@ -642,68 +676,38 @@ if(isset($detail)) {
       '#type' => 'file',
       '#title' => t('Select file'),
       '#prefix' => '<div class="container-inline">',
+      
     );
     
     $form['attach']['upload'] = array(
         '#id' => 'upbuttonid',
         '#type' => 'button',
         '#value' =>  t('Attach') ,
-        '#suffix' => '</div>',
+        '#suffix' => '</div>',  
         '#ajax' => array(
           'callback' => array($this, 'uploadFile'), 
-          'wrapper' => 'attachments',
+          'wrapper' => 'new_attachments',
           'effect' => 'fade',
-          'method' => 'append'
+          'method' => 'append',
+          
          ),
-            
     );     
-    $form['attach']['t1'] = array(
-      '#type' => 'item',
-      '#prefix' => "<div class='table' id='attachments'>",
-    );    
     
-      if($id <> '') {
-            $query = 'SELECT d.id,uri FROM {ek_expenses_memo_documents} d INNER JOIN {ek_expenses_memo} m ON d.serial=m.serial WHERE m.id=:id';
-            $docs = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id));
-
-
-            $i=1;
-            while($doc = $docs->fetchObject() ){
-              
-              $name = explode('/', $doc->uri);
-              
-                $form['attach']['row'.$i] = array(
-                  '#type' => 'item',
-                  '#markup' => "<a href='" . file_create_url($doc->uri)  ."' target='_blank'>". array_pop($name) ."</a>",
-                  '#prefix' => "<div class='row' id='row".$i."'><div class='cell'>",
-                  '#suffix' => "</div>",
-                );  
-                
-                if(!$authorizer) {  
-                $form['attach']['del-'.$doc->id] = array(
-                    '#type' => 'button',
-                    '#name' => $i . '-'.$doc->id,
-                    '#value' => t('delete attachment') . ' ' . $i ,
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => "</div></div>",
-                    '#ajax' => array(
-                      'callback' => array($this, 'removeFile'), 
-                      'wrapper' => 'row'.$i,
-                      'effect' => 'fade',
-                      //'method' => 'append'
-                    ),
-                );
-                }
-            $i++;
-            }
-
-    $form['attach']['t2'] = array(
-      '#type' => 'item',
-      '#suffix' => "</div>",
-    );
-  
-      }
-
+        $form['attach']['attach_new'] = array(
+            '#type' => 'container',
+            '#attributes' => array(
+              'id' => 'attachments',
+              'class' => 'table'
+            ),
+        ); 
+        
+        $form['attach']['attach_error'] = array(
+            '#type' => 'container',
+            '#attributes' => array(
+              'id' => 'error',
+            ),
+        ); 
+    
     $form['actions'] = array('#type' => 'actions');
       $form['actions']['record'] = array(
         '#type' => 'submit',
@@ -711,8 +715,10 @@ if(isset($detail)) {
       );              
         
     //$form['#tree'] = TRUE;
-    $form['#attached']['library'][] = 'ek_finance/ek_finance.memo_form';
- 
+     $form['#attached'] = array(
+                'drupalSettings' => array('id' => $id, 'serial' => $tempSerial),
+                'library' => array('ek_finance/ek_finance.memo_form'),
+            );
      
   return $form;
   
@@ -724,23 +730,23 @@ if(isset($detail)) {
    * Callback to Add item to form
   */
   public function addForm(array &$form, FormStateInterface $form_state) {
-  //dvm($form_state->getValue('fx_rate'), 'addform');  
-  if(!$form_state->get('num_items') ) {
-    $form_state->set('num_items', 1);
     
-    } else {
-    $c = $form_state->get('num_items')+1;
-    $form_state->set('num_items', $c);
-    }
-  
-    $chart = $this->settings->get('chart');
-    if($form_state->getValue('category') < 5) {
-      $form_state->set('AidOptions', AidList::listaid($form_state->getValue('entity'), array($chart['expenses'], $chart['other_expenses']), 1 ));
-    } else {
-      $form_state->set('AidOptions', AidList::listaid($form_state->getValue('entity_to'), array($chart['expenses'], $chart['other_expenses']), 1 ));
-    }
-  
-  $form_state->setRebuild();
+    if(!$form_state->get('num_items') ) {
+      $form_state->set('num_items', 1);
+
+      } else {
+      $c = $form_state->get('num_items')+1;
+      $form_state->set('num_items', $c);
+      }
+
+      $chart = $this->settings->get('chart');
+      if($form_state->getValue('category') < 5) {
+        $form_state->set('AidOptions', AidList::listaid($form_state->getValue('entity'), array($chart['expenses'], $chart['other_expenses']), 1 ));
+      } else {
+        $form_state->set('AidOptions', AidList::listaid($form_state->getValue('entity_to'), array($chart['expenses'], $chart['other_expenses']), 1 ));
+      }
+
+    $form_state->setRebuild();
   
   }
 
@@ -749,10 +755,9 @@ if(isset($detail)) {
   */
   public function removeForm(array &$form, FormStateInterface $form_state) {
   
-  $c = $form_state->get('num_items')-1;
-  $form_state->set('num_items', $c);
-  $form_state->setRebuild();
-
+    $c = $form_state->get('num_items')-1;
+    $form_state->set('num_items', $c);
+    $form_state->setRebuild();
 
   }
 
@@ -763,7 +768,6 @@ if(isset($detail)) {
    */  
   public function uploadFile(array &$form, FormStateInterface $form_state) {
   
-     
      //upload
       $extensions = 'png jpg jpeg';
       $validators = array( 'file_validate_extensions' => array($extensions));
@@ -776,8 +780,6 @@ if(isset($detail)) {
           $dest = $dir . '/'  . $file->getFilename();
           $filename = file_unmanaged_copy($file->getFileUri(), $dest);
           
-
-       
         $fields = array(
           'serial' => $form_state->getValue('tempSerial'),
           'uri' => $filename,
@@ -786,52 +788,18 @@ if(isset($detail)) {
         $insert = Database::getConnection('external_db', 'external_db')
                 ->insert('ek_expenses_memo_documents')->fields($fields)->execute();
         
-      }         
-      
-  
-   if($insert) {
-       
-      $img = "<div class='row'>
-                  <div class='cell'>
-                    <a href='" . file_create_url($filename)  ."' target='_blank'>". array_pop(explode('/', $filename)) ."</a>
-                  </div>
-                  <div class='cell'>
-                    
-                  </div>
-                </div>
-                ";
-    $response = new AjaxResponse();
-    return $response->addCommand(new InsertCommand('#attachments', $img));   
+      } else {
+          $msg = "<div aria-label='Error message' class='messages messages--error'>" 
+           . t('Error') . ". " . t('Allowed extensions') . ": " . 'png jpg jpeg'
+            . "</div>";
+          $response = new AjaxResponse();
+            return $response->addCommand(new HtmlCommand('#error', $msg));   
 
-   }
-
-  //upload
-  }  
-
-  /**
-   * Callback for  ajax file remove
-   * 
-   */  
-  public function removeFile(array &$form, FormStateInterface $form_state) {
-  
-  $element = explode('-', $_POST['_triggering_element_name']);
-  $id = '#row' . $element[0];
-    $uri = Database::getConnection('external_db', 'external_db')
-            ->query("SELECT uri from {ek_expenses_memo_documents} where id=:id", array(':id' => $element[1] ) )
-            ->fetchField();
-    file_unmanaged_delete($uri);
+      }
    
-   Database::getConnection('external_db', 'external_db')
-    ->delete('ek_expenses_memo_documents')
-    ->condition( 'id', $element[1] )
-    ->execute();    
-    
-    $msg = "<div class='messages messages--status' aria-label='Status message' role='contentinfo'>
-                " . t('Attachment removed') . ": " . array_pop(explode('/', $uri)) . "
-            </div>";
-    $response = new AjaxResponse();
-    return $response->addCommand(new InsertCommand($id, $msg)); 
   }  
+
+
   
   /**
    * {@inheritdoc}
@@ -844,11 +812,17 @@ if(isset($detail)) {
     
     // validate authorizer
     if ($form_state->getValue('user')) {
-        $query = "SELECT uid from {users_field_data} WHERE name=:n";
-        $uid = db_query($query, array(':n' => $form_state->getValue('user') ))->fetchField();
+        $query = Database::getConnection()
+                    ->select('users_field_data', 'users');
+        $query->fields('users', ['uid']);
+        $query->condition('name', $form_state->getValue('user'));
+        $uid = $query->execute()->fetchField();
 
         if(!$uid || ($uid == \Drupal::currentUser()->id() && $uid != $this->authorizer) ) {
            $form_state->setErrorByName("user", $this->t('Authorizer is not valid or unknowned'));
+        } else {
+            //save data for submission
+            $form_state->setValue('user_uid', $uid);
         }        
 
     
@@ -857,19 +831,15 @@ if(isset($detail)) {
     for ($n=1;$n<=$form_state->get('num_items');$n++) {
     
             if($form_state->getValue("description$n") == '') {
-            $form_state->setErrorByName("description$n", $this->t('Item @n is empty', array('@n'=> $n)) );
+             $form_state->setErrorByName("description$n", $this->t('Item @n is empty', array('@n'=> $n)) );
             }
 
             if($form_state->getValue("amount$n") == '' || !is_numeric($form_state->getValue("amount$n"))) {
-            $form_state->setErrorByName("amount$n",  $this->t('there is no value for item @n', array('@n'=> $n)) );
+             $form_state->setErrorByName("amount$n",  $this->t('there is no value for item @n', array('@n'=> $n)) );
             }            
-            if($this->moduleHandler->moduleExists('ek_finance')) {
 
                 // validate account
-                // TODO
-                
-
-            } // finance            
+                // @TODO          
                 
     }
    
@@ -881,27 +851,39 @@ if(isset($detail)) {
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
       if ($form_state->getValue('new_memo') == 1 ) {
-      //create new serial No
-      $iid = Database::getConnection('external_db', 'external_db')
-              ->query("SELECT count(id) from {ek_expenses_memo}")
-              ->fetchField();
-      $iid++;
-      $short = Database::getConnection('external_db', 'external_db')
-              ->query("SELECT short from {ek_company} where id=:id", array(':id' => $form_state->getValue('entity_to')))
-              ->fetchField();
-      $date = substr($form_state->getValue('date'), 2,5);
-      
-      $serial = ucwords(str_replace('-','',$short) ) . "-EM-" . $date . "-"  . $iid ;
+        //create new serial No
+        
+        $iid = Database::getConnection('external_db', 'external_db')
+                ->query("SELECT count(id) from {ek_expenses_memo}")
+                ->fetchField();
+        $iid++;
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_company', 'co');
+        $query->fields('co', ['short']);
+        $query->condition('id', $form_state->getValue('entity_to'));
+        $short = $query->execute()->fetchField();
+        
+        //$short = Database::getConnection('external_db', 'external_db')
+        //        ->query("SELECT short from {ek_company} where id=:id", array(':id' => $form_state->getValue('entity_to')))
+        //        ->fetchField();
+        $date = substr($form_state->getValue('date'), 2,5);
+        $serial = ucwords(str_replace('-','',$short) ) . "-EM-" . $date . "-"  . $iid ;
       
       } else {
-      //edit
-      $serial = $form_state->getValue('serial');
-      $delete = Database::getConnection('external_db', 'external_db')
-              ->delete('ek_expenses_memo_list')->condition('serial', $serial)
-              ->execute();
-      $iid = Database::getConnection('external_db', 'external_db')
-              ->query('SELECT id from {ek_expenses_memo} where serial=:s', array(':s' => $serial))
-              ->fetchField();
+        //edit
+        $serial = $form_state->getValue('serial');
+        $delete = Database::getConnection('external_db', 'external_db')
+                ->delete('ek_expenses_memo_list')->condition('serial', $serial)
+                ->execute();
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses_memo', 'memo');
+        $query->fields('memo', ['id']);
+        $query->condition('serial', $serial);
+        $iid = $query->execute()->fetchField();
+        //$iid = Database::getConnection('external_db', 'external_db')
+          //      ->query('SELECT id from {ek_expenses_memo} where serial=:s', array(':s' => $serial))
+            //    ->fetchField();
       }
   
   $currencyRate = CurrencyData::rate($form_state->getValue('currency'));
@@ -934,9 +916,10 @@ if(isset($detail)) {
                   'receipt' => Xss::filter($form_state->getValue("receipt$n")),
                   );
       
-    $insert = Database::getConnection('external_db', 'external_db')->insert('ek_expenses_memo_list')
-      ->fields($fields)
-      ->execute();  
+    $insert = Database::getConnection('external_db', 'external_db')
+            ->insert('ek_expenses_memo_list')
+            ->fields($fields)
+            ->execute();  
     
 
     
@@ -951,8 +934,8 @@ if(isset($detail)) {
     }
 
     if ($form_state->getValue('category') == 5 && $this->settings->get('authorizeMemo') == 1 ) {
-        $query = "SELECT uid from {users_field_data} WHERE name=:n";
-        $uid = db_query($query, array(':n' => $form_state->getValue('user') ))->fetchField();
+        
+        $uid = $form_state->getValue('user_uid');
         
         if(!$form_state->getValue('action')) {
           $auth = '1|'. $uid;
@@ -960,7 +943,9 @@ if(isset($detail)) {
           
           switch ( $form_state->getValue('action') ) {
             case 'read' :
-              $auth = Database::getConnection('external_db', 'external_db')->query('SELECT auth from {ek_expenses_memo} where serial=:s', array(':s' => $serial))->fetchField();
+              $auth = Database::getConnection('external_db', 'external_db')
+                    ->query('SELECT auth from {ek_expenses_memo} where serial=:s', array(':s' => $serial))
+                    ->fetchField();
             break;
             
             case 1:
@@ -1005,17 +990,17 @@ if(isset($detail)) {
                 );
                  
   if ($form_state->getValue('new_memo') && $form_state->getValue('new_memo') == 1 ) {
-  $insert = Database::getConnection('external_db', 'external_db')->insert('ek_expenses_memo')
-    ->fields($fields1)
-    ->execute(); 
-  $reference = $insert;
+    $insert = Database::getConnection('external_db', 'external_db')->insert('ek_expenses_memo')
+      ->fields($fields1)
+      ->execute(); 
+    $reference = $insert;
   
   } else {
-  $update = Database::getConnection('external_db', 'external_db')->update('ek_expenses_memo')
-    ->fields($fields1)
-    ->condition('serial' , $serial)
-    ->execute();
-  $reference = $iid; 
+    $update = Database::getConnection('external_db', 'external_db')->update('ek_expenses_memo')
+      ->fields($fields1)
+      ->condition('serial' , $serial)
+      ->execute();
+    $reference = $iid; 
   } 
 
 
@@ -1049,7 +1034,8 @@ if(isset($detail)) {
     $body .= '<br/>' . t('Status') . ': ' . $action[$form_state->getValue('action')];
     $error = [];
     if(\Drupal::currentUser()->id() == $form_state->getValue('entity')){
-    //current user editing
+    //current user is accessing his/her own claim
+        
         $body .= '<br/>' .  t('Authorization action is required. Thank you.');
         $params['body'] = $body;
         if ($target_user = user_load_by_mail($authorizer_mail->mail)) {
@@ -1068,13 +1054,14 @@ if(isset($detail)) {
               );
             
               if($send['result'] == FALSE) {
-                $error[] = $authorizer_mail ;
+                $error[] = $authorizer_mail->mail ;
               }   
     
     } elseif(\Drupal::currentUser()->id() == $uid) {
     //authorizer editing
+        
         $body .= '<br/>' .  t('Authorization has been reviewed. Thank you.');
-        $params .= $body;
+        $params['body'] = $body;
         if ($target_user = user_load_by_mail($entity_mail->mail)) {
             $target_langcode = $target_user->getPreferredLangcode();
         } else {
@@ -1097,8 +1084,8 @@ if(isset($detail)) {
     }
   
     if(!empty($error)) {
-     $error = implode(',', $error);
-     drupal_set_message(t('Error sending notification to :t', array(':t' => $error)), 'error');
+     $errors = implode(',', $error);
+     drupal_set_message(t('Error sending notification to :t', array(':t' => $errors)), 'error');
     } else {
       drupal_set_message(t('Notification message sent'), 'status');
     }  

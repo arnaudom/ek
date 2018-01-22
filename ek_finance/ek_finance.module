@@ -3,7 +3,7 @@
     ///////////////////////////////////////////////////
     //                  COPYRIGHT                    //
     //                                               //
-    // DEVELOPED BY ARREA LTD                       //
+    // DEVELOPED BY ARREA LTD                        //
     // all rights reserved                           //
     // Please read and agree with software           //
     // application license                           //
@@ -59,6 +59,12 @@ function ek_finance_theme() {
     'ek_finance_journal' => array
     (
       'template' => 'ek_finance_journal',
+      'variables' => array('items' => array()),
+    ), 
+    // for the journal items display by id
+    'ek_finance_journal_by_id' => array
+    (
+      'template' => 'ek_finance_journal_by_id',
       'variables' => array('items' => array()),
     ), 
     // for account history
@@ -176,7 +182,8 @@ function ek_finance_theme() {
 function ek_finance_mail($key, &$message, $params) {
 
     $theme = theme_get_setting('logo');
-    $params['options']['logo'] = $GLOBALS['base_url'] . $theme['url'];
+    global $base_url;
+    $params['options']['logo'] = $base_url . $theme['url'];
     $params['options']['site'] = \Drupal::config('system.site')->get('name');
     $params['options']['origin'] = \Drupal::currentUser()->getUsername();
     $params['options']['stamp'] = date('F j, Y, g:i a');

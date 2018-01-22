@@ -377,7 +377,20 @@ class JournalEdit extends FormBase {
         if ($form_state->getValue('delete') == 1) {
             $p = $form_state->getValue("param");
             
-
+            //if source is connected to cash, remove cash entry first
+            if($p['source'] == 'general cash') {
+                $fields = [
+                    'coid' => 'x' . $p['coid'],
+                    'comment' => 'journal deleted'
+                ];
+                
+                Database::getConnection('external_db', 'external_db')
+                        ->update('ek_cash')
+                        ->fields($fields)
+                        ->condition('id', $p['reference'])
+                        ->execute();
+            }
+            
             Database::getConnection('external_db', 'external_db')
                     ->delete('ek_journal')
                     ->condition('coid', $p['coid'])
@@ -387,7 +400,7 @@ class JournalEdit extends FormBase {
                     ->execute();
             
             //count field must be restored for sequence per company
-            //TODO recount starting from deleted row only
+            //@TODO recount starting from deleted row only
                     $n =0;
                     $query = "SELECT id FROM {ek_journal} WHERE coid = :c order by id";
                     $journal = Database::getConnection('external_db', 'external_db')

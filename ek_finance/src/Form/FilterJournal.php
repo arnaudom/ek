@@ -63,8 +63,10 @@ class FilterJournal extends FormBase {
 
       $access = AccessCheck::GetCompanyByUser();
       $company = implode(',',$access);
+      $coids = ['' => t('- Select -')];
       $query = "SELECT id,name from {ek_company} where active=:t AND FIND_IN_SET (id, :c ) order by name";
-      $company = Database::getConnection('external_db', 'external_db')->query($query, array(':t' => 1, ':c' => $company))->fetchAllKeyed();  
+      $coids += Database::getConnection('external_db', 'external_db')
+              ->query($query, array(':t' => 1, ':c' => $company))->fetchAllKeyed(); 
 
     $form['filters'] = array(
       '#type' => 'details',
@@ -72,6 +74,15 @@ class FilterJournal extends FormBase {
       '#open' => TRUE,
       '#attributes' => array('class' => array('container-inline')),
     );  
+    
+            $form['filters']['jid'] = array(
+              '#type' => 'textfield',
+              '#maxlength' => 20,
+              '#size' => 8,
+              '#attributes' => array('placeholder'=>t('Search ID')),
+              '#default_value' => isset($_SESSION['jfilter']['jid']) ? $_SESSION['jfilter']['jid'] : NULL,
+            ); 
+                
             $form['filters']['filter'] = array(
               '#type' => 'hidden',
               '#value' => 'filter',
@@ -82,6 +93,10 @@ class FilterJournal extends FormBase {
               '#size' => 12,
               '#default_value' => isset($_SESSION['jfilter']['from']) ? $_SESSION['jfilter']['from'] : $from,
               '#title' => t('from'),
+              '#states' => array(
+                'invisible' => array(':input[name="jid"]' => array('filled' => TRUE),
+                ),
+              ), 
             ); 
 
             $form['filters']['to'] = array(
@@ -89,16 +104,24 @@ class FilterJournal extends FormBase {
               '#size' => 12,
               '#default_value' => isset($_SESSION['jfilter']['to']) ? $_SESSION['jfilter']['to'] : $to,
               '#title' => t('to'),
+              '#states' => array(
+                'invisible' => array(':input[name="jid"]' => array('filled' => TRUE),
+                ),
+              ), 
             ); 
             
                       
     $form['filters']['coid'] = array(
         '#type' => 'select',
         '#size' => 1,
-        '#options' => $company,
-        '#required' => TRUE,
+        '#options' => $coids,
+        '#required' => FALSE,
         '#title' => t('company'),
-        '#default_value' => isset($_SESSION['jfilter']['coid']) ? $_SESSION['jfilter']['coid'] : NULL,
+        '#default_value' => isset($_SESSION['jfilter']['coid']) ? $_SESSION['jfilter']['coid'] : null,
+        '#states' => array(
+                'invisible' => array(':input[name="jid"]' => array('filled' => TRUE),
+           ),
+        ), 
     );   
 
 
@@ -130,17 +153,30 @@ class FilterJournal extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+      
+      if ($form_state->getValue('jid') != '' && !is_numeric($form_state->getValue('jid'))) {
+        $form_state->setErrorByName('jid', $this->t('@jid must be a number', array('@jid' => $form_state->getValue('jid'))));
+      }
+      if($form_state->getValue('jid') === ''){
+        if($form_state->getValue('coid') === '') {
+            $form_state->setErrorByName('coid', $this->t('Please select a company'));
+        }  
+        if(strtotime($form_state->getValue('to')) < strtotime($form_state->getValue('from'))){
+            $form_state->setErrorByName('to', $this->t('Start date is higher than ending date'));
+        }
+      }
   }
   
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-  
-  $_SESSION['jfilter']['from'] = $form_state->getValue('from');
-  $_SESSION['jfilter']['to'] = $form_state->getValue('to');
-  $_SESSION['jfilter']['coid'] = $form_state->getValue('coid');
-  $_SESSION['jfilter']['filter'] = 1;
+      
+    $_SESSION['jfilter']['jid'] = $form_state->getValue('jid');
+    $_SESSION['jfilter']['from'] = $form_state->getValue('from');
+    $_SESSION['jfilter']['to'] = $form_state->getValue('to');
+    $_SESSION['jfilter']['coid'] = $form_state->getValue('coid');
+    $_SESSION['jfilter']['filter'] = 1;
 
   }
   

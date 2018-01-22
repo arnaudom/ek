@@ -6,6 +6,7 @@
 */
 namespace Drupal\ek_finance\Controller;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Database\Database;
 use Drupal\user\UserInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -131,5 +132,92 @@ class FinanceController extends ControllerBase {
     
     }
 
-
+/**
+   * Util to retrieve data with ajax callback.
+   *  -> use for memo attachments display
+   *  
+   *
+   * @param string $type
+   *   define key of query type
+   * 
+   * @return Symfony\Component\HttpFoundation\JsonResponse
+   *   An json response object.
+   */
+  public function ajaxCall(Request $request, $type = NULL) {
+      
+      switch($type) {
+          case 'memofiles':
+              $memo_id = $request->get('id');
+              $memo_serial = $request->get('serial');
+              $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses_memo_documents', 'doc');
+              $or = db_or();
+                $or->condition('memo.id', $memo_id);
+                $or->condition('doc.serial', $memo_serial);
+                $query->fields('doc', ['id', 'uri']);
+                $query->leftJoin('ek_expenses_memo', 'memo', 'doc.serial = memo.serial');
+                $query->condition($or);
+                $docs = $query->execute();
+                $output = '';
+                While($doc = $docs->fetchObject()) {
+                    $name = explode('/', $doc->uri);
+                    $output .="<div class='row' id='row-". $doc->id ."'>
+                                <div class='cell'>
+                                  <a href='" . file_create_url($doc->uri)  ."' target='_blank'>". array_pop($name) ."</a>
+                                </div>
+                                <div class='cell'>
+                                <a  class='button delButton' id='" . $doc->id ."' name='attachment-" . $doc->id ."'>" . t('delete attachment') . "</a>                                </div>
+                               </div>";
+                }
+                if($output == '') {
+                    $output = "<div class='row'>
+                                <div class='cell'>
+                                  " . t('no attachment'). "
+                                </div>";
+                }
+                
+                 return new JsonResponse(array('list' => $output));
+              break;
+              
+          case 'memofilesdelete':
+              $file_id = $request->get('id');
+              
+              $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses_memo_documents', 'doc');
+              $query->fields('doc', ['serial','id', 'uri']);
+              $query->leftJoin('ek_expenses_memo', 'memo', 'doc.serial = memo.serial');
+              $query->fields('memo', ['category','entity']);
+              $query->condition('doc.id', $file_id);
+               
+              $data = $query->execute()->fetchObject();
+              $del = FALSE;
+              //filter access
+              if($data->category < 5) {
+                  $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
+                  if(in_array($data->entity, $access)) {
+                      $del = TRUE;
+                  }
+              } else {
+                  if(\Drupal::currentUser()->id() == $data->entity) {
+                      $del = TRUE;
+                  }
+              }
+              
+              if($del == TRUE) {
+                file_unmanaged_delete($data->uri);
+              
+                Database::getConnection('external_db', 'external_db')
+                ->delete('ek_expenses_memo_documents')
+                ->condition( 'id', $file_id)
+                ->execute();
+              
+                return new JsonResponse(array('response' => TRUE));
+              } else {
+                return new JsonResponse(array('response' => FALSE));  
+              }
+              break;
+      }
+      
+      
+  }
 }
