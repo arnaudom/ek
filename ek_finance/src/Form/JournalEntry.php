@@ -500,7 +500,7 @@ class JournalEntry extends FormBase {
             }
 
             //filter accounts transfer with different currencies
-            //TODO : add verification with accounts linked to bank
+            //@TODO : add verification with accounts linked to bank
             $companysettings = new CompanySettings($form_state->getValue('coid'));
             $cash1 = $companysettings->get('cash_account', $form_state->getValue('currency'));
             $cash2 = $companysettings->get('cash2_account', $form_state->getValue('currency'));
@@ -561,7 +561,7 @@ class JournalEntry extends FormBase {
                                 'date' => $form_state->getValue('date'),
                                 'value' => $credit,
                                 'currency' => $form_state->getValue('currency'),
-                                'comment' => $form_state->getValue("comment$i"),
+                                'comment' => Xss::filter($form_state->getValue("comment$i")),
                                 'fxRate' => $form_state->getValue('fx_rate')
                             )
                     );

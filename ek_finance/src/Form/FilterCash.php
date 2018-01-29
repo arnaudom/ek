@@ -123,6 +123,7 @@ class FilterCash extends FormBase {
             
             switch($type) {
                 case '1':
+                        $i = 1;
                         $access = AccessCheck::GetCompanyByUser();
                         $company = implode(',', $access);
                         $query = "SELECT DISTINCT uid from {ek_cash} WHERE FIND_IN_SET (coid, :c )";
@@ -134,9 +135,13 @@ class FilterCash extends FormBase {
                         while ($u = $uid->fetchObject()) {
                             $name = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $u->uid))
                                     ->fetchField();
-                            if($name == '') $name = t('Unknown');
+                            if($name == '') {
+                                $name = t('Unknown') . " " . $i;
+                                $i++;
+                            }
                             $list[$u->uid] = $name;
                         }
+                        natcasesort($list);
                     break;
                 case '0':
                     $list = AccessCheck::CompanyListByUid();

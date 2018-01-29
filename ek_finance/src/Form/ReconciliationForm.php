@@ -177,7 +177,7 @@ class ReconciliationForm extends FormBase {
         }
         
     }
-             
+           
   $form['account_currency'] = array(
         '#type' => 'hidden',
         '#value' => $account_currency,
@@ -216,7 +216,7 @@ class ReconciliationForm extends FormBase {
       } else {
           $exchange = 0;
       }
-  
+
       $query = "SELECT sum(value) from {ek_journal} "
               . "WHERE exchange like :exc and type=:type "
               . "AND aid=:aid and coid=:coid "
@@ -687,9 +687,9 @@ $i = 0;
                 $query = "SELECT ba.id,account_ref FROM {ek_bank_accounts} ba INNER JOIN {ek_bank} b ON ba.bid=b.id where aid=:aid and coid=:coid";
                 $a = array(':aid' => $form_state->getValue('account'), ':coid' => $form_state->getValue('coid'));
                 $result = Database::getConnection('external_db', 'external_db')->query($query,$a)->fetchObject();
+                $year = explode("-",$j['date']);
                 
                         if($result) {
-                        $year=explode("-",$j['date']);
                             $fields = array (
                                 'account_ref'=>$result->account_ref,
                                 'date_transaction'=>$j['date'],

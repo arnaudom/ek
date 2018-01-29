@@ -84,7 +84,7 @@ class BalanceLedgerController extends ControllerBase {
         $journal = new Journal();
 
 
-        if ($_SESSION['lfilter']['filter'] == 1) {
+        if (isset($_SESSION['lfilter']['filter']) && $_SESSION['lfilter']['filter'] == 1) {
 
             $param = array(
                 'coid' => $_SESSION['lfilter']['coid'],

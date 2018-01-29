@@ -216,8 +216,11 @@ class ExpensesManageController extends ControllerBase {
 
             //filter by tags
             if ($settings->get('listPurchases') == 1 && $this->moduleHandler->moduleExists('ek_projects')) {
-
+                
                 //query data by tag with purchases
+                if($session_filter['pcode'] == 'na') {
+                    $session_filter['pcode'] = 'n/a';
+                }
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
                 $query->leftjoin('ek_expenses', 'e', 'e.id=j.reference');
@@ -260,6 +263,9 @@ class ExpensesManageController extends ControllerBase {
             }//by tag with purchase               
             else {
                 //query data by tag without purchases
+                if($session_filter['pcode'] == 'na') {
+                    $session_filter['pcode'] = 'n/a';
+                }
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
                 $query->join('ek_expenses', 'e', 'e.id=j.reference');
@@ -615,7 +621,7 @@ class ExpensesManageController extends ControllerBase {
                 }
                 /**/
 
-                $excel = Url::fromRoute('ek_finance.manage.excel_expense', array('param' => $param), array())->toString();
+                $excel = Url::fromRoute('ek_finance.manage.excel_expense', array('param' => $param), [])->toString();
                 $build['excel'] = array(
                     '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
                 );

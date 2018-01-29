@@ -29,7 +29,7 @@ class ImportExcelChartBlock extends BlockBase {
   public function build() {
  
   $items = array();
-  $items['title'] = t("Import chart");
+  $items['#title'] = t("Import chart");
   $items['content'] = \Drupal::formBuilder()->getForm('Drupal\ek_finance\Form\UploadChart');
 
   return $items;

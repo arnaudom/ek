@@ -188,22 +188,24 @@ class FilterExpenses extends FormBase {
                 ),                              
               );
 
-  $option = array('%' => t('Any'));
+  $option = array('%' => t('Any'), 'na' => t('not applicable'));
   $query = "SELECT DISTINCT e.pcode,pname,p.id from {ek_expenses} e LEFT JOIN {ek_project} p ON e.pcode=p.pcode ORDER by p.id DESC";
   $pcodes = Database::getConnection('external_db', 'external_db')
           ->query($query)->fetchAll();
 
           foreach ($pcodes as $p)  { 
-                $pname=substr($p->pname,0,75).'...';
-                $pcode_parts = explode("-" , $p->pcode);
-                $pcode = array_reverse($pcode_parts);
-                if(!isset($pcode[4])) $pcode[4] = '-';
-                if(!isset($pcode[3])) $pcode[3] = '-';
-                if(!isset($pcode[2])) $pcode[2] = '-';
-                if(!isset($pcode[1])) $pcode[1] = '-';
-                $option[$p->pcode] = $pcode[0] . " | "
-                        . $pcode[4] . "-" . $pcode[3] . '-' . $pcode[2] ."-" 
-                        . $pcode[1] . " | ".  $pname ;
+                if($p->pcode != 'n/a' && $p->pcode != ''){
+                  $pname=substr($p->pname,0,75).'...';
+                  $pcode_parts = explode("-" , $p->pcode);
+                  $pcode = array_reverse($pcode_parts);
+                  if(!isset($pcode[4])) $pcode[4] = '-';
+                  if(!isset($pcode[3])) $pcode[3] = '-';
+                  if(!isset($pcode[2])) $pcode[2] = '-';
+                  if(!isset($pcode[1])) $pcode[1] = '-';
+                  $option[$p->pcode] = $pcode[0] . " | "
+                          . $pcode[4] . "-" . $pcode[3] . '-' . $pcode[2] ."-" 
+                          . $pcode[1] . " | ".  $pname ;
+                } 
               }
 
             $form['filters'][3]['pcode'] = array(
