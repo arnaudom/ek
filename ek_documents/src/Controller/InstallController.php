@@ -92,7 +92,7 @@ class InstallController extends ControllerBase {
                 `fid` INT(5) NULL DEFAULT NULL COMMENT 'file managed id',
                 `type` VARCHAR(5) NULL DEFAULT NULL COMMENT 'doc or folder',
                 `filename` VARCHAR(200) NULL DEFAULT NULL COMMENT 'Name of the file with no path components.' COLLATE 'utf8mb4_bin',
-                `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the URI of the file' COLLATE 'utf8mb4_bin',
+                `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the URI of the file' COLLATE 'utf8_bin',
                 `folder` VARCHAR(200) NULL DEFAULT NULL COMMENT 'tag or folder',
                 `comment` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment',
                 `date` VARCHAR(50) NULL DEFAULT '0',
