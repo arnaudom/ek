@@ -189,3 +189,7 @@ hr {
 .file-pdf:before {
   content: "\f1c1"; 
 }
+.namecard:before {
+    content: "\f2bc";
+    font-size:2em;
+}

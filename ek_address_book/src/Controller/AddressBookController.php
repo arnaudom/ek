@@ -187,8 +187,7 @@ class AddressBookController extends ControllerBase {
                         '#markup' => $markup,
                     );
                 } else {
-                    $pic = '../modules/ek_address_book/art/nocard.png';
-                    $contact['card'] = "<img class='thumbnail' src='$pic'/>";
+                    $contact['card'] = "";
                 }
                 $contact['department'] = ucwords($r['department']);
                 $contact['link'] = $r['link'];

@@ -109,10 +109,18 @@
                         </tr>
                         <tr>
                             <td><span class="ico briefcase"></span><span> | </span><span>{{ item.title }}</span></td>
-                            <td rowspan='6' style='text-align:center;width:40%;' >{{ item.card|raw }}</td>
+                            <td rowspan='6' style='text-align:center;width:40%;' >
+                                {% if item.card != '' %}
+                                    {{ item.card|raw }}
+                                {% else %}
+                                    <span class="ico namecard fa-5x"></span>
+                                {% endif %}
+                                
+                                
+                                </td>
                         </tr>
                         <tr>
-                            <td><span class="ico tag"></span><span> | </span><span>{{ item.department }}</span></td>
+                            <td><span> | </span><span>{{ item.department }}</span></td>
 
                         </tr>         
                         <tr>
