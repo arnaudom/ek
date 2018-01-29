@@ -242,7 +242,7 @@ if($head->taxvalue > 0) {
                 </tr>';  
 }
 $resultinwords = new Drupal\ek_sales\NumberToWord();
-$word = $resultinwords->en($items['taxamount']+$grandtotal);
+$word = $resultinwords->en(round($items['taxamount']+$grandtotal,2));
 $document .= '</table>
             <div class="right">' . $word . '</div>
             </page_total>';

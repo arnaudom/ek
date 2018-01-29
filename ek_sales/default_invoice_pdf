@@ -307,7 +307,7 @@ if($head->taxvalue > 0) {
 
 //ADD AMOUNT IN WORDS -----------------------------------------------
     $resultinwords = new Drupal\ek_sales\NumberToWord();
-    $word = $resultinwords->en($items['taxamount']+$grandtotal);
+    $word = $resultinwords->en(round($items['taxamount']+$grandtotal,2));
     
 $pdf->Ln(2);      
 $pdf->SetFont('Arial','I',8);     

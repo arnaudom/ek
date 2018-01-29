@@ -18,7 +18,7 @@ class NumberToWord {
     public function en($x) {
         
         $v = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 30, 40, 50, 60, 70, 80, 90, 100, 1000, 1000000);
-        $w = [0 => '', 1 => t('one'), 2 => t('two'), 3 => t('three'), 4 => t('four'), 5 => t('five'), 6 => t('six'), 
+        $w = [0 => t('zero'), 1 => t('one'), 2 => t('two'), 3 => t('three'), 4 => t('four'), 5 => t('five'), 6 => t('six'), 
             7 => t('seven'), 8 => t('eight'), 9 => t('nine'), 10 => t('ten'), 11 => t('eleven'),
             12 => t('twelve'), 13 => t('thirteen'), 14 => t('fourteen'), 15 => t('fifteen'), 16 => t('sixteen'), 17 => t('seventeen'),
             18 => t('eighteen'),19 => t('nineteen'), 20 => t('twenty'), 30 => t('thirty'), 40 => t('forty'), 50 => t('fifty'),
@@ -53,6 +53,8 @@ class NumberToWord {
                 $cents = " " .  t('point') . " " . $w[$d*10] ;
             }
                     
+        } else {
+            $cents = " " .  t('point') . " " . t('zero') ;
         }
         $x = $newx;    // now, $x is an integer
         $e = strlen($x);
