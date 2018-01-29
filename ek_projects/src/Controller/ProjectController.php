@@ -1148,7 +1148,7 @@ class ProjectController extends ControllerBase {
             } //if section_5
 
             // Let other modules add data to the page.
-            if($invoke = $this->moduleHandler()->invokeAll('project_view', [$data], [$pcode])){
+            if($invoke = $this->moduleHandler()->invokeAll('project_view', [$data], $pcode)){
                 $data = $invoke;
             }
             
@@ -1375,7 +1375,7 @@ class ProjectController extends ControllerBase {
                         $items[$i]['delete'] = 0;
                         $items[$i]['email'] = 0;
                         $items[$i]['extranet'] = 0;
-                        $items[$i]['comment'] = $l->comment . " " . date('Y-m-d', $l->uri);
+                        $items[$i]['comment'] = $l->comment . " " . date('Y-m-d', $l->date);
                         
                     } else {
                         if (!file_exists($l->uri)) { 

@@ -145,7 +145,7 @@ use Drupal\ek_admin\Access\AccessCheck;
      *  flag to open link in new window
      * @param bolean short
      *  return only last part of serial code (number)
-     * @return html link
+     * @return html link or empty string
      *  a project code view url from id or serial
      *  generate internal/external link to the project
      * 
@@ -162,25 +162,30 @@ use Drupal\ek_admin\Access\AccessCheck;
                 ->query($query, array(':id' => $id))
                 ->fetchObject();
         
-        if($ext == TRUE) {
-           $link =  Url::fromRoute('ek_projects_view', array('id' => $p->id), ['absolute' => TRUE])->toString();
-        } else {
-           $link =  Url::fromRoute('ek_projects_view', array('id' => $p->id), [])->toString(); 
-        }
-        
-        if($base != NULL) {
-            $link = $GLOBALS['base_url'] . $link;
-        }
+        if($p){
+            if($ext == TRUE) {
+               $link =  Url::fromRoute('ek_projects_view', array('id' => $p->id), ['absolute' => TRUE])->toString();
+            } else {
+               $link =  Url::fromRoute('ek_projects_view', array('id' => $p->id), [])->toString(); 
+            }
 
-        if($short != NULL) {
-            $p->pcode = str_replace('/', '-', $p->pcode);//old format
-            $parts = explode('-', $p->pcode);
-            $code = array_reverse($parts);
-            $pcode = $code[0];
+            if($base != NULL) {
+                $link = $GLOBALS['base_url'] . $link;
+            }
+
+            if($short != NULL) {
+                $p->pcode = str_replace('/', '-', $p->pcode);//old format
+                $parts = explode('-', $p->pcode);
+                $code = array_reverse($parts);
+                $pcode = $code[0];
+            } else {
+                $pcode = $p->pcode;
+            }
+            return  "<a title='" . $p->pname . "' href='". $link ."'>" . $pcode . "</a>"; 
         } else {
-            $pcode = $p->pcode;
+            return "";
+
         }
-        return  "<a title='" . $p->pname . "' href='". $link ."'>" . $pcode . "</a>";   
     
     }
     
