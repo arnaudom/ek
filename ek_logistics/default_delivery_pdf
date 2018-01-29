@@ -349,14 +349,21 @@ $h=$y2-$y;
 $h2=$h/2;  
 
     $pdf->Cell(60);
-    $pdf->Cell(25,$h,$detail['barcode1'],1,0,'L');
-
+    if(isset($detail['barcode1'])){
+      $pdf->Cell(25,$h,$detail['barcode1'],1,0,'L');
+      } else {
+        $pdf->Cell(25,$h,'',1,0,'L');
+      }
 
 $x1= $pdf->GetX()+1; 
 $y1= $pdf->GetY()+$h/3-4;
 
-
-    $pdf->Cell(25,$h, $detail['barcode2'] ,1,0,'L');
+    if(isset($detail['barcode2'])){
+      $pdf->Cell(25,$h,$detail['barcode2'],1,0,'L');
+      } else {
+        $pdf->Cell(25,$h,'',1,0,'L');
+      }
+    
     $pdf->Cell(17,$h,$detail['supplier_code'],1,0);
     $pdf->Cell(15,$h,$detail['value'],1,0);
     $pdf->Cell(15,$h,$detail['quantity'],1,0);
@@ -400,8 +407,14 @@ $pdf->Ln(2);
 	$pdf->Cell(1);
         $pdf->Cell(165,5, t("Ordered") . ":",1,0);
         $pdf->Cell(15,5, $head->ordered_quantity ,1,0);
-        $pdf->Cell(10,5, $detail['unit_measure'] ,1,1,'R');	
-        $ratio = ($t_quantity/$head->ordered_quantity)*100;
+        $pdf->Cell(10,5, $detail['unit_measure'] ,1,1,'R');
+        if($head->ordered_quantity > 0) {
+          $ratio = ($t_quantity/$head->ordered_quantity)*100;
+          $ratio = number_format($ratio,2) . " %";
+        } else {
+          $ratio = '~';
+        }
+        
         $ratio = number_format($ratio,2) . " %";
         $pdf->Cell(1);
         $pdf->Cell(165,5, t("Rate") . ":",1,0);
