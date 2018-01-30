@@ -11,7 +11,7 @@ dependencies:
 id: searchprojects
 theme: bartik
 region: content
-weight: 0
+weight: 3
 provider: null
 plugin: ek_project_search_block
 settings:
