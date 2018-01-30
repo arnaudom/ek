@@ -608,9 +608,10 @@ if(!$this->moduleHandler->moduleExists('ek_finance')) {
         $file = drupal_get_path('module', 'ek_finance') . '/ek_standard_accounts.sql';  
         $query = file_get_contents($file);
         $acc = Database::getConnection('external_db', 'external_db')->query($query);
+        $balance_date = date('Y') . '-01-01';
         $acc = Database::getConnection('external_db', 'external_db')->update('ek_accounts')
                     ->condition('coid', 'x')
-                    ->fields(array('coid' => $id))
+                    ->fields(array('coid' => $id, 'balance_date' => $balance_date))
                     ->execute();
     } else {
         //copy chart from other account
