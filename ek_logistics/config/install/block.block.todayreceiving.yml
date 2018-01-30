@@ -10,7 +10,7 @@ dependencies:
 id: todayreceiving
 theme: bartik
 region: content
-weight: -5
+weight: 2
 provider: null
 plugin: logistics_today_receiving_block
 settings:
