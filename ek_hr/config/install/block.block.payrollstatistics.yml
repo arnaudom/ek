@@ -12,7 +12,7 @@ _core:
 id: payrollstatistics
 theme: bartik
 region: content
-weight: -1
+weight: 2
 provider: null
 plugin: hr_payroll_stat_block
 settings:
