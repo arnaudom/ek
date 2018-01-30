@@ -11,7 +11,7 @@ dependencies:
 id: salesperaccountblock
 theme: bartik
 region: content
-weight: -8
+weight: 4
 provider: null
 plugin: sales_per_account_block
 settings:

@@ -11,7 +11,7 @@ dependencies:
 id: purchasesperaccountblock
 theme: bartik
 region: content
-weight: -7
+weight: 3
 provider: null
 plugin: Purchases_per_account_block
 settings:
