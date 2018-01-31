@@ -143,9 +143,7 @@ class NewQuotation extends FormBase {
         $form['options'] = array(
             '#type' => 'details',
             '#title' => $this->t('Options'),
-            '#open' => ($form_state->getValue('count') > 2) ? FALSE : TRUE,
-            '#attributes' => '',
-            '#prefix' => "",
+            '#open' => (isset($id)) ? FALSE : TRUE,
         );
 
         $company = AccessCheck::CompanyListByUid();
@@ -214,7 +212,6 @@ class NewQuotation extends FormBase {
 
         $form['options']['date'] = array(
             '#type' => 'date',
-            '#id' => 'edit-from',
             '#size' => 12,
             '#required' => TRUE,
             '#default_value' => isset($data->date) ? $data->date : date('Y-m-d'),
@@ -367,7 +364,6 @@ class NewQuotation extends FormBase {
             '#type' => 'details',
             '#title' => $this->t('Items'),
             '#open' => TRUE,
-            '#attributes' => '',
         );
 
 
@@ -418,7 +414,8 @@ class NewQuotation extends FormBase {
         if (isset($detail)) {
 //edition mode
 //list current items
-
+            $grandtotal = 0;
+            
             while ($d = $detail->fetchObject()) {
 
                 $n++;

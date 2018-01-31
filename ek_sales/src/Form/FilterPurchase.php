@@ -74,7 +74,7 @@ class FilterPurchase extends FormBase {
     $form['filters'] = array(
       '#type' => 'details',
       '#title' => $filter_title,
-      '#open' => ($_SESSION['pfilter']['filter'] == 1 ) ? FALSE : TRUE,
+      '#open' => (isset($_SESSION['pfilter']['filter'])) ? FALSE : TRUE,
       //'#attributes' => array('class' => array('container-inline')),
     );  
             $form['filters']['filter'] = array(

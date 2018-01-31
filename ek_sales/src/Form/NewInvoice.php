@@ -229,9 +229,8 @@ class NewInvoice extends FormBase {
     $form['options'] = array(
       '#type' => 'details',
       '#title' => $this->t('Options'),
-      '#open' => ($form_state->getValue('count') > 2) ? FALSE : TRUE,
-      '#attributes' => '',
-      '#prefix' => "",
+      '#open' => (isset($id)) ? FALSE : TRUE,
+      
     );  
     
     $company = AccessCheck::CompanyListByUid(); 
@@ -308,7 +307,6 @@ class NewInvoice extends FormBase {
     
     $form['options']['date'] = array(
       '#type' => 'date',
-      '#id' => 'edit-from',
       '#size' => 12,
       '#required' => TRUE,
       '#default_value' => isset($data->date) ? $data->date : date('Y-m-d'),
@@ -507,8 +505,7 @@ if( $form_state->getValue('head') )  {
     $form['items'] = array(
       '#type' => 'details',
       '#title' => $this->t('Items'),
-      '#open' => TRUE,
-      '#attributes' => '',
+      '#open' => TRUE, 
     ); 
 
 
@@ -549,7 +546,9 @@ $headerline = "<div class='table' id='invoice_form_items'><div class='row'><div 
 if(isset($detail)) {
 //edition mode
 //list current items
-
+$taxable = 0;
+$grandtotal = 0;
+  
   while ($d = $detail->fetchObject()) {
 
   $n++; 
@@ -1115,6 +1114,7 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
   $line = 0;
   $total = 0;
   $taxable = 0;
+  $sum = 0;
   if($this->moduleHandler->moduleExists('ek_finance')) {
     $journal = new Journal();
     
