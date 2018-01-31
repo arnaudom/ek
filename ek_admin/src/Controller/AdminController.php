@@ -243,10 +243,12 @@ class AdminController extends ControllerBase {
                 }
                 
                 //company
-                $query = "SELECT count(id) FROM {ek_company}";
-                $data = Database::getConnection('external_db', 'external_db')->query($query)->fetchField();
-
-                if ($data < 1) {
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_company', 'c')
+                    ->fields('c', ['id']);
+                $coids = $query->execute()->fetchCol();
+                
+                if (empty($coids)) {
                     $link = Url::fromRoute('ek_admin.company.new', array(), array())->toString();
                     $build['company'] = array(
                         '#markup' => t('You have not created any company yet. Go <a href="@c">here</a> to create one.', array('@c' => $link)) . '<br/>',
@@ -404,6 +406,8 @@ class AdminController extends ControllerBase {
                 return new RedirectResponse(\Drupal::url('ek_admin_install'));
                 exit;
             }
+            
+            \Drupal::moduleHandler()->invokeAll('ek_settings',[$coids]);
         }
 
         return $build;

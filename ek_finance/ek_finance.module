@@ -14,9 +14,32 @@
  *  module ek_finance
  */
 
+use Drupal\Core\Database\Database;
 use Drupal\ek_finance\Journal;
 
-
+/**
+ * Implementation hook_ek_settings().
+ * 
+ */ 
+ function ek_finance_ek_settings($coids) { 
+    //we do not use param coids here as settings are global
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_finance', 'f');
+    $query->fields('f', ['id', 'settings']);
+    $query->condition('id', '1');
+    $data = $query->execute()->fetchObject();
+    $settings = unserialize($data->settings);
+    
+    if(empty($settings)) {
+        $link = \Drupal\Core\Url::fromRoute('ek_finance.admin.settings', array(), array())->toString();
+        $message = t('Missing settings for module @m. Go <a href="@c">here</a> to edit.', ['@c' => $link, '@m' => 'finance']);
+        drupal_set_message($message, 'warning');
+    }
+  
+    return new \Symfony\Component\HttpFoundation\Response('', 204);
+     
+ }
+ 
 /**
  * Implementation hook download.
  */

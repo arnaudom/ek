@@ -113,7 +113,7 @@ class InstallController extends ControllerBase {
     if($db) $markup = 'Users documents table installed <br/>';
     
     $query = "CREATE TABLE `ek_document_settings` (
-                `id` INT(11) NOT NULL AUTO_INCREMENT,
+                `id` INT(11) NOT NULL,
                 `settings` BLOB NULL,
                 INDEX `Index 1` (`id`)
             )

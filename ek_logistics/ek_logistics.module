@@ -9,7 +9,36 @@
     // application license                           //
     ///////////////////////////////////////////////////
     
-use Drupal\Core\Database\Database;    
+use Drupal\Core\Database\Database;   
+
+
+/**
+ * Implementation hook_ek_settings().
+ * 
+ */ 
+ function ek_logistics_ek_settings($coids) {
+   
+    foreach($coids as $key => $id) {
+
+        $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_logi_settings', 'l');
+        $query->fields('l', ['coid', 'settings']);
+        $query->condition('coid', $id);
+        $data = $query->execute()->fetchObject();
+        $settings = unserialize($data->settings);
+
+        if(empty($settings)) {
+            $link = \Drupal\Core\Url::fromRoute('ek_logistics_settings', array(), array())->toString();
+            $message = t('Missing settings for module @m. Go <a href="@c">here</a> to edit.', ['@c' => $link, '@m' => 'logistics']);
+            drupal_set_message($message, 'warning');
+        }        
+        
+    }
+
+  
+    return new \Symfony\Component\HttpFoundation\Response('', 204);
+     
+ }
 
 /**
  * Implements hook_file_download().
@@ -17,16 +46,11 @@ use Drupal\Core\Database\Database;
  * edit the file_download function in order to control access of items images
 
 function ek_logistics_file_download($uri) {
- if( strpos($uri , 'admin/company' )  ) { 
-
-  $finfo = new finfo(FILEINFO_MIME_TYPE);
-  return array('Content-Type' => $finfo->file($uri) ); 
-
-
- }
+ 
 
 }
 */
+
 /**
  * Implementation hook_theme().
  */

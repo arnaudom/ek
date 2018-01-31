@@ -17,7 +17,28 @@ use Drupal\ek_projects\ProjectData;
  *  module ek_projects
  */
 
-
+/**
+ * Implementation hook_ek_settings().
+ * 
+ */ 
+ function ek_projects_ek_settings($coids) { 
+    //we do not use param coids here as settings are global
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project_settings', 'p');
+    $query->fields('p', ['coid', 'settings']);
+    $query->condition('coid', '0');
+    $data = $query->execute()->fetchObject();
+    $settings = unserialize($data->settings);
+    
+    if(empty($settings['code'])) {
+        $link = \Drupal\Core\Url::fromRoute('ek_projects.settings.serial', array(), array())->toString();
+        $message = t('Missing settings for module @m. Go <a href="@c">here</a> to edit.', ['@c' => $link, '@m' => 'projects']);
+        drupal_set_message($message, 'warning');
+    }
+  
+    return new \Symfony\Component\HttpFoundation\Response('', 204);
+     
+ }
 
 
 /**

@@ -15,7 +15,37 @@
  */
 
 use Drupal\charts\Charts\ModuleSelector;
+use Drupal\Core\Database\Database;
 
+
+/**
+ * Implementation hook_ek_settings().
+ * 
+ */ 
+ function ek_sales_ek_settings($coids) {
+   
+    foreach($coids as $key => $id) {
+
+        $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_sales_settings', 'd');
+        $query->fields('d', ['coid', 'settings']);
+        $query->condition('coid', $id);
+        $data = $query->execute()->fetchObject();
+        $settings = unserialize($data->settings);
+
+        if(empty($settings)) {
+            $link = \Drupal\Core\Url::fromRoute('ek_sales_settings', array(), array())->toString();
+            $message = t('Missing settings for module @m. Go <a href="@c">here</a> to edit.', ['@c' => $link, '@m' => 'sales']);
+            drupal_set_message($message, 'warning');
+        }        
+        
+    }
+
+  
+    return new \Symfony\Component\HttpFoundation\Response('', 204);
+     
+ }
+ 
 /**
  * Implementation hook download.
  */
