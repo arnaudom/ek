@@ -256,30 +256,35 @@ class LogisticsController extends ControllerBase {
             $markup = t('Excel library not available, please contact administrator.');
         } else { 
             $extract = unserialize($param);
-            $query = Database::getConnection('external_db', 'external_db')
-                  ->select('ek_items', 'i');
-            $query->leftJoin('ek_item_packing', 'p', 'i.itemcode=p.itemcode');
-            $query->leftJoin('ek_item_prices', 'c', 'i.itemcode=c.itemcode');
-            $query->leftJoin('ek_company', 'y', 'i.coid=y.id');
-            $query->leftJoin('ek_address_book', 'a', 'i.supplier=a.id');
-            $data = $query
-                        ->fields('i')->fields('p')->fields('c')->fields('y', ['name'])
-                        ->fields('a', ['name']) 
-                        ->condition('i.id',$extract , 'IN')
-                        ->orderBy('i.id', 'ASC')
-                        ->execute();
+            
+            if(!empty($extract)){
+                $query = Database::getConnection('external_db', 'external_db')
+                      ->select('ek_items', 'i');
+                $query->leftJoin('ek_item_packing', 'p', 'i.itemcode=p.itemcode');
+                $query->leftJoin('ek_item_prices', 'c', 'i.itemcode=c.itemcode');
+                $query->leftJoin('ek_company', 'y', 'i.coid=y.id');
+                $query->leftJoin('ek_address_book', 'a', 'i.supplier=a.id');
+                $data = $query
+                            ->fields('i')->fields('p')->fields('c')->fields('y', ['name'])
+                            ->fields('a', ['name']) 
+                            ->condition('i.id',$extract , 'IN')
+                            ->orderBy('i.id', 'ASC')
+                            ->execute();
 
-            $query = Database::getConnection('external_db', 'external_db')
-                  ->select('ek_item_barcodes', 'b');
-            $query->join('ek_items', 'i', 'i.itemcode=b.itemcode');
-            $barcode_data = $query
-                        ->fields('b', ['itemcode', 'barcode'])          
-                        ->condition('i.id', $extract, 'IN')
-                        ->orderBy('b.id', 'ASC')
-                        ->execute();
-            $barcode = $barcode_data->fetchAll(\PDO::FETCH_ASSOC);
-            $markup = array();
-            include_once drupal_get_path('module', 'ek_logistics').'/excel_items_stock.inc';
+                $query = Database::getConnection('external_db', 'external_db')
+                      ->select('ek_item_barcodes', 'b');
+                $query->join('ek_items', 'i', 'i.itemcode=b.itemcode');
+                $barcode_data = $query
+                            ->fields('b', ['itemcode', 'barcode'])          
+                            ->condition('i.id', $extract, 'IN')
+                            ->orderBy('b.id', 'ASC')
+                            ->execute();
+                $barcode = $barcode_data->fetchAll(\PDO::FETCH_ASSOC);
+                $markup = array();
+                include_once drupal_get_path('module', 'ek_logistics').'/excel_items_stock.inc';
+            } else {
+               $markup = t('No data available'); 
+            }
         }
     return ['#markup' => $markup];
      
