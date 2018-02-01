@@ -15,7 +15,7 @@ use Drupal\ek_finance\Journal;
                     $clients = Database::getConnection('external_db', 'external_db')
                             ->query("SELECT DISTINCT ab.id FROM {ek_address_book} ab "
                                     . "INNER JOIN {ek_sales_purchase} p ON p.client = ab.id order by name")
-                            ->fetchAllCol();
+                            ->fetchCol();
                 } else {
                     $clients = [0 => $p['client']];
                 }
@@ -39,7 +39,7 @@ use Drupal\ek_finance\Journal;
             foreach ($clients as $clientId) {
                 //select the documents ids related to the selected client
                 $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_' .$entity, 's');
+                        ->select('ek_sales_' .$entity, 's');
 
                 $result = $query->fields('s', array('id'))
                         ->condition('s.client', $clientId, '=')
