@@ -596,6 +596,9 @@ class Journal {
 
                 // tax deduct
                 if ($j['tax'] > 0) {
+                    if(!isset($this->tax)) {
+                        $this->tax = 0;
+                    }
                     $this->tax += $j['tax'];
                 } // tax collect                               
 
@@ -632,6 +635,9 @@ class Journal {
 
                 // tax collect
                 if ($j['tax'] > 0) {
+                    if(!isset($this->tax)) {
+                        $this->tax = 0;
+                    }
                     $this->tax += $j['tax'];
                 }
 
@@ -756,7 +762,7 @@ class Journal {
                 break;
         }
 
-        if ($this->tax > 0) {
+        if (isset($this->tax) && $this->tax > 0) {
             // 1
             self::save($aid, '0', $j['coid'], $entry1, $j['source'], $j['reference'], $j['date'], $this->tax, '0', $j['currency']);
 
@@ -774,6 +780,7 @@ class Journal {
                 self::save($aid2, '1', $j['coid'], $entry2, $j['source'], $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
             }
             $this->tax = 0;
+            return $this->tax;
         } // tax  
     }
 
