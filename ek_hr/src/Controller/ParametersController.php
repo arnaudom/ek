@@ -976,7 +976,7 @@ class ParametersController extends ControllerBase {
     protected function dialog($is_modal = FALSE, $param = NULL) {
 
         $param = explode('|', unserialize($param));
-        $content = '';
+        $content = [];
 
         switch ($param[0]) {
 
