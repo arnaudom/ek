@@ -75,6 +75,8 @@ class CashController extends ControllerBase {
 */
   public function currencies(Request $request) {
   
+    //clear currency session 
+    unset($_SESSION['activeCurrencies']);
     $build['currency'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\Currencies'); 
     return $build;
   }

@@ -93,7 +93,7 @@ class FinanceController extends ControllerBase {
   protected function dialog($is_modal = FALSE, $param = NULL) {
       
       $opt = unserialize($param);
-      $content = '';
+      $content = [];
         switch ($opt['id']) {
             case 'trial':  
             case 'bs':

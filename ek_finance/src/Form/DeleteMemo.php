@@ -11,6 +11,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 
@@ -66,6 +67,14 @@ class DeleteMemo extends FormBase {
       '#markup' => t('Memo ref. @p', array('@p' => $data->serial)),
 
     );   
+    
+    $url = Url::fromRoute('ek_finance_manage_list_memo_'. $data->category, array(), array())->toString();
+    $form['back'] = array(
+      '#type' => 'item',
+      '#markup' => t('<a href="@url" >List</a>', array('@url' => $url ) ) ,
+
+    );
+    
     if($data->status == 0 ) {  
        
     //check authorizations
@@ -145,8 +154,14 @@ class DeleteMemo extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
   
   
-  $delete = Database::getConnection('external_db', 'external_db')->delete('ek_expenses_memo')->condition('id', $form_state->getValue('for_id'))->execute();
-  $delete = Database::getConnection('external_db', 'external_db')->delete('ek_expenses_memo_list')->condition('serial', $form_state->getValue('serial'))->execute();
+  $delete = Database::getConnection('external_db', 'external_db')
+          ->delete('ek_expenses_memo')
+          ->condition('id', $form_state->getValue('for_id'))
+          ->execute();
+  $delete2 = Database::getConnection('external_db', 'external_db')
+          ->delete('ek_expenses_memo_list')
+          ->condition('serial', $form_state->getValue('serial'))
+          ->execute();
 
   $docs = Database::getConnection('external_db', 'external_db')->query("SELECT id,uri from {ek_expenses_memo_documents} where serial=:s", array(':s' => $form_state->getValue('serial') ) );
   
@@ -157,14 +172,14 @@ class DeleteMemo extends FormBase {
       ->execute();
   } 
       
-  
-  if ($delete){
-  if ($form_state->getValue('category') < 5) {
-          $form_state->setRedirect('ek_finance_manage_list_memo_internal' ) ;
-        } else {
-          $form_state->setRedirect('ek_finance_manage_list_memo_personal' ) ;
-        }  
-  }
+
+    if ($delete){
+      if ($form_state->getValue('category') < 5) {
+              $form_state->setRedirect('ek_finance_manage_list_memo_internal' ) ;
+            } else {
+              $form_state->setRedirect('ek_finance_manage_list_memo_personal' ) ;
+            }  
+    }
   
   }
 
