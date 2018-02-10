@@ -757,7 +757,7 @@ class NewPurchase extends FormBase {
 
         if ($aid == '') {
             $form['options']['alert']['#prefix'] = "<div id='alert' class='messages messages--warning'>";
-            $form['options']['alert']['#markup'] = t('Warning, you do not have liability account set for this company and currency. You cannot proceed. Please contact administrator ');
+            $form['options']['alert']['#markup'] = t('Warning, you do not have liability account set for this company and currency. You cannot proceed. Please contact administrator');
             $form['options']['alert']['#description'] = '';
         } else {
             $form['options']['alert']['#prefix'] = "<div id='alert' class=''>";
@@ -820,6 +820,15 @@ class NewPurchase extends FormBase {
     public function validateForm(array &$form, FormStateInterface $form_state) {
 
     //@TODO : filter wrong currency selection
+        if($this->moduleHandler->moduleExists('ek_finance')) {
+       
+            $settings = new CompanySettings($form_state->getValue('head'));
+            $aid = $settings->get('liability_account', $form_state->getValue('currency') );
+            if($aid == '') {
+                $form_state->setErrorByName('currency', t('Warning, you do not have liability account set for this company and currency. You cannot proceed. Please contact administrator'));
+            }
+        }
+    
         if ($form_state->getValue('alert') == '1') {
             $form_state->setErrorByName('currency', $this->t('Currency accounts error'));
         }
@@ -923,7 +932,9 @@ class NewPurchase extends FormBase {
 
                     $item = explode(" ", $form_state->getValue("description$n"));
                     $id = trim($item[0]);
-                    $code = trim($item[1]);
+                    if(isset($item[1])) {
+                        $code = trim($item[1]);
+                    }
                     $description = ItemData::item_description_byid($id, 1);
 
                     if ($description) {

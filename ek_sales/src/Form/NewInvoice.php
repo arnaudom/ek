@@ -895,7 +895,8 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
 
                 $description  = "<div id='fx' class='messages messages--warning'>" 
                     .t('There is no assets account defined for currency. Please contact administrator.'). "</div>"; 
-
+                
+                
               } else {
 
                     $fx_rate= CurrencyData::rate($form_state->getValue('currency'));
@@ -995,6 +996,14 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+      
+    if($this->moduleHandler->moduleExists('ek_finance')) {
+        $settings = new CompanySettings($form_state->getValue('head'));
+        $aid = $settings->get('asset_account', $form_state->getValue('currency') );
+            if($aid == '') {
+                $form_state->setErrorByName('currency', t('There is no assets account defined for currency. Please contact administrator.'));
+            }
+    }
 
     //input used to update values set by user
     $input = $form_state->getUserInput();
@@ -1128,12 +1137,15 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
         $item = explode(" ", $form_state->getValue("description$n"));
 
         $id = trim($item[0]);
-        $code = trim($item[1]);
+        if(isset($item[1])) {
+            $code = trim($item[1]);
+        }
+        
         $description = ItemData::item_description_byid($id, 1); 
         
         if($description) {
-        $item = $description;
-        $itemdetail = $id;
+            $item = $description;
+            $itemdetail = $id;
           } else {
             $item = $form_state->getValue("description$n");
             $itemdetail = '';
@@ -1309,7 +1321,7 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
         
       } //for
       
-        $journal->recordtax(
+        $rec = $journal->recordtax(
                   array(
                   'source' => "invoice",
                   'coid' => $form_state->getValue('head'),
@@ -1321,7 +1333,7 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
                   )      
         
         );      
-   
+        
     }  
   
   Cache::invalidateTags(['project_page_view']);

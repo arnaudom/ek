@@ -564,7 +564,7 @@ class SalesController extends ControllerBase {
     protected function dialog($is_modal = FALSE, $param = NULL) {
 
         $param = explode('|', $param);
-        $content = '';
+        $content = [];
         switch ($param[0]) {
 
             case 'access' :

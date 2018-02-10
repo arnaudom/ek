@@ -237,18 +237,27 @@ class InvoicesController extends ControllerBase {
         while ($r = $data->fetchObject()) {
 
             $settings = new SalesSettings($r->head);
+            $client_name = '';
+            $client = '';
+            $co = '';
+            $duetitle = '';
+            $weight = '';
+            $doctype = '';
 
-            $client_name = $abook[$r->client];
-            $client = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
-            //$query = "SELECT name from {ek_company} where id=:id";
+            if(isset($abook[$r->client])) {
+                $client_name = $abook[$r->client];
+                $client = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
+            }
             $co = $companies[$r->head];
             if ($r->head <> $r->allocation) {
-                $co = $co . "<br/>" . t('for') . ": " . $companies[$r->allocation];
+                $for = isset($companies[$r->allocation]) ? "<br/>" . t('for') . ": " . $companies[$r->allocation] : '';
+                $co = $co . $for;
             }
-            $doctype = '';
+            
             if ($r->type == 4) {
                 $doctype = 'red';
             }
+            
             $number = "<a class='" . $doctype . "' title='" . t('view') . "' href='"
                     . Url::fromRoute('ek_sales.invoices.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
@@ -262,10 +271,9 @@ class InvoicesController extends ControllerBase {
             } else {
                 $reference = $client;
             }
-            $duetitle = '';
+            
             $due = date('Y-m-d', strtotime(date("Y-m-d", strtotime($r->date)) . "+" . $r->due . "days"));
-            $weight = '';
-
+            
             if ($r->status != '1') {
                 $long = round((strtotime($due) - strtotime(date('Y-m-d'))) / (24 * 60 * 60), 0);
                 if ($long > $settings->get('longdue')) {
@@ -299,12 +307,15 @@ class InvoicesController extends ControllerBase {
                 }
             }
 
-            if ($r->status == 0)
+            if ($r->status == 0) {
                 $status = t('unpaid');
-            if ($r->status == 1)
+            }
+            if ($r->status == 1) {
                 $status = t('paid');
-            if ($r->status == 2)
+            }
+            if ($r->status == 2) {
                 $status = t('partially paid');
+            }
 
             //build modal to display extended information
             $param = 'invoice|' . $r->id;

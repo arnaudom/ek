@@ -9,7 +9,7 @@ sales_data:
   description: 'Sales data compilation per address book account.'
 list_more:
   title: 'Payment data details'
-  description: 'List more info about payment details in sales document lists.'
+  description: 'List more info about payment, modal.'
 sales_task:
   title: 'Edit and manage tasks'
   description: 'Edit tasks for invoices, purchases.'  

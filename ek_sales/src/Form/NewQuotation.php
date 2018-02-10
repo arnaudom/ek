@@ -960,7 +960,9 @@ class NewQuotation extends FormBase {
 
                     $item = explode(" ", $form_state->getValue("itemid$n"));
                     $id = trim($item[0]);
-                    $code = trim($item[1]);
+                    if(isset($item[1])) {
+                        $code = trim($item[1]);
+                    }
 
                     $check = ItemData::item_description_bycode($code, 1);
 

@@ -173,12 +173,15 @@ class QuotationsController extends ControllerBase {
                     . Url::fromRoute('ek_sales.quotations.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
             
-            $client_name = $abook[$r->client];
-            $reference = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
-            $query = "SELECT name from {ek_company} where id=:id";
+            if(isset($abook[$r->client])) {
+                $client_name = $abook[$r->client];
+                $reference = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
+            }
+            
             $co = $companies[$r->header];
             if($r->header <> $r->allocation) {
-                $co = $co . "<br/>" . t('for') . ": " . $companies[$r->allocation];
+                $for = isset($companies[$r->allocation]) ? "<br/>" . t('for') . ": " . $companies[$r->allocation] : '';
+                $co = $co . $for;
             }
             
             if ($r->pcode <> 'n/a') {

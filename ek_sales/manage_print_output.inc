@@ -31,6 +31,8 @@ $head = Database::getConnection('external_db', 'external_db')
 if(\Drupal::moduleHandler()->moduleExists('ek_projects')) {      
     if ($head->pcode && $head->pcode != 'n/a') {
             $project_link = \Drupal\ek_projects\ProjectData::geturl($head->pcode);
+    } else {
+        $project_link = '';
     }
 }
 

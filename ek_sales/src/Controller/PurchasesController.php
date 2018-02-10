@@ -240,16 +240,24 @@ class PurchasesController extends ControllerBase {
         while ($r = $data->fetchObject()) {
 
             $settings = new SalesSettings($r->head);
-
-            $query = "SELECT name from {ek_address_book} where id=:id";
-            $supplier_name = $abook[$r->client];
-            $supplier = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
-            $query = "SELECT name from {ek_company} where id=:id";
+            $supplier_name = '';
+            $supplier = '';
+            $co = '';
+            $duetitle = '';
+            $weight = '';
+            $doctype = '';
+            
+            if(isset($abook[$r->client])) {
+                $supplier_name = $abook[$r->client];
+                $supplier = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
+            } 
+            
             $co = $companies[$r->head];
             if ($r->head <> $r->allocation) {
-                $co = $co . "<br/>" . t('for') . ": " . $companies[$r->allocation];
+                $for = isset($companies[$r->allocation]) ? "<br/>" . t('for') . ": " . $companies[$r->allocation] : '';
+                $co = $co . $for;
             }
-            $doctype = '';
+            
             if($r->type == 4) {
                 $doctype = 'green';
             }
@@ -271,7 +279,6 @@ class PurchasesController extends ControllerBase {
             }
 
             $due = date('Y-m-d', strtotime(date("Y-m-d", strtotime($r->date)) . "+" . $r->due . "days"));
-            $weight = '';
             $long = round((strtotime($due) - strtotime(date('Y-m-d'))) / (24 * 60 * 60), 0);
             if ($long > $settings->get('longdue')) {
                 if ($r->status != 1) {
@@ -289,6 +296,7 @@ class PurchasesController extends ControllerBase {
                 }
                 $weight = 0;
             }
+            
             $duetitle = t('past due') . ' ' . -1 * $long . ' ' . t('day(s)');
             if($r->type < 4) {
                 $value = $r->currency . ' ' . number_format($r->amount, 2);
@@ -306,12 +314,15 @@ class PurchasesController extends ControllerBase {
                 $value .= '<br/>' . t('tax:') . " " . $r->currency . " " . number_format($tax, 2);
             }
 
-            if ($r->status == 0)
+            if ($r->status == 0) {
                 $status = t('unpaid');
-            if ($r->status == 1)
+            }
+            if ($r->status == 1) {
                 $status = t('paid') . "<div class='greendot right'></div>";
-            if ($r->status == 2)
+            }
+            if ($r->status == 2) {
                 $status = t('partially paid');
+            }
 
             //build modal to display extended information
             $param = 'purchase|' . $r->id;
