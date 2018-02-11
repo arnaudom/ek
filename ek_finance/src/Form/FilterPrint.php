@@ -30,13 +30,19 @@ class FilterPrint extends FormBase {
         $query = "SELECT serial,category from {ek_$source} WHERE id=:id";
         $doc = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))->fetchObject();
-       
-    if($_SERVER['HTTP_REFERER']){  
+      
+    if($doc->category < 5) {
+        $route = 'ek_finance_manage_list_memo_internal';
+    } else {
+        $route = 'ek_finance_manage_list_memo_personal';
+    }
+    $url = \Drupal\Core\Url::fromRoute($route, array(), array())->toString();
+     
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => '<a href="' . $_SERVER['HTTP_REFERER'] . '" >' . t('Back') . '</a>',
+            '#markup' => t('<a href="@url" >List</a>', array('@url' => $url ) ) ,
         );
-    }
+    
         $form['serial'] = array(
             '#type' => 'item',
             '#markup' => '<h2>' . $doc->serial . '</h2>',

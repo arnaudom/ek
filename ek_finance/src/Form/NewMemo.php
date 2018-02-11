@@ -106,9 +106,13 @@ class NewMemo extends FormBase {
     
   $n = 0;
   $form_state->set('current_items', 0);
-  if(!$form_state->get('num_items'))  $form_state->set('num_items', 0);  
+  if(!$form_state->get('num_items'))  {
+      $form_state->set('num_items', 0); 
+      }
   
-  if(!$form_state->getValue('currency')) $form_state->setValue('currency', $data->currency);
+  if(!$form_state->getValue('currency')) {
+      $form_state->setValue('currency', $data->currency);
+  }
   
   if($category == 'internal') {
       $AidOptions = AidList::listaid($data->entity, array($chart['expenses'], $chart['other_expenses']), 1 );
@@ -171,8 +175,6 @@ class NewMemo extends FormBase {
       '#type' => 'details',
       '#title' => $this->t('Options'),
       '#open' => isset($id) ? FALSE : TRUE,
-      '#attributes' => '',
-      '#prefix' => "",
     );  
 
   if($category == 'internal') {
@@ -380,17 +382,19 @@ if($this->moduleHandler->moduleExists('ek_projects')) {
 
 if ($category == 'personal' && $this->settings->get('authorizeMemo') == 1 ) {
     
-    $query = Database::getConnection()
-                    ->select('users_field_data', 'users');
-        $query->fields('users', ['name']);
-        $query->condition('uid', $auth_user[1]);
-        $user_name = $query->execute()->fetchField();
+    $user_name = '';
+    if(isset($auth_user)) {
+        $query = Database::getConnection()
+                        ->select('users_field_data', 'users');
+            $query->fields('users', ['name']);
+            $query->condition('uid', $auth_user[1]);
+            $user_name = $query->execute()->fetchField();
+    }
 
     $form['autho'] = array(
       '#type' => 'details',
       '#title' => $this->t('Authorization'),
       '#open' => TRUE,
-      '#attributes' => '',
     ); 
     
     $form['autho']['user'] = array(
@@ -443,7 +447,6 @@ if ($category == 'personal' && $this->settings->get('authorizeMemo') == 1 ) {
       '#type' => 'details',
       '#title' => $this->t('Items'),
       '#open' => TRUE,
-      '#attributes' => '',
     ); 
 
 
@@ -451,6 +454,7 @@ if ($category == 'personal' && $this->settings->get('authorizeMemo') == 1 ) {
       '#type' => 'submit' ,
       '#value' => $this->t('Add item'),
       '#submit' =>  array(array($this, 'addForm')) ,
+      //'#limit_validation_errors' => [['category', 'entity', 'entity_to']],
       '#prefix' => "<div id='add'>",
       '#suffix' => '</div>',
     ); 
@@ -603,8 +607,7 @@ $grandtotal = 0;
         );
 
         $form['items']["delete$i"] = array(
-        '#type' => 'item',
-        '#attributes' => '',        
+        '#type' => 'item',        
         '#prefix' => "<div class='cell center'>",
         '#suffix' => '</div></div>',
     
@@ -670,7 +673,6 @@ $grandtotal = 0;
       '#type' => 'details',
       '#title' => $this->t('Attachments'),
       '#open' => TRUE,
-      '#attributes' => '',
     );
     $form['attach']['upload_doc'] = array(
       '#type' => 'file',
@@ -735,8 +737,8 @@ $grandtotal = 0;
       $form_state->set('num_items', 1);
 
       } else {
-      $c = $form_state->get('num_items')+1;
-      $form_state->set('num_items', $c);
+        $c = $form_state->get('num_items')+1;
+        $form_state->set('num_items', $c);
       }
 
       $chart = $this->settings->get('chart');
@@ -826,6 +828,16 @@ $grandtotal = 0;
         }        
 
     
+    }
+   $triggering_element = $form_state->getTriggeringElement();
+    //enforce data input
+    /**/
+    if($triggering_element['#id'] != 'edit-add' && $form_state->getValue('new_memo') == '1' && 
+            !$form_state->get('num_items')) {
+        
+            $form['options']['#open'] = FALSE;
+            $form_state->setErrorByName("add", $this->t('No data'));
+            
     }
     
     for ($n=1;$n<=$form_state->get('num_items');$n++) {

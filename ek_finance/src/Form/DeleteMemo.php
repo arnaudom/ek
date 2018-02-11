@@ -68,7 +68,13 @@ class DeleteMemo extends FormBase {
 
     );   
     
-    $url = Url::fromRoute('ek_finance_manage_list_memo_'. $data->category, array(), array())->toString();
+    if($data->category < 5) {
+        $route = 'ek_finance_manage_list_memo_internal';
+    } else {
+        $route = 'ek_finance_manage_list_memo_personal';
+    }
+    
+    $url = Url::fromRoute($route, array(), array())->toString();
     $form['back'] = array(
       '#type' => 'item',
       '#markup' => t('<a href="@url" >List</a>', array('@url' => $url ) ) ,
