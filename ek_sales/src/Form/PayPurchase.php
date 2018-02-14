@@ -314,7 +314,7 @@ class PayPurchase extends FormBase {
             //$journal = new Journal();
 
             $a = array(
-                'source_dt' => 'expense',
+                'source_dt' => 'payment',
                 'source_ct' => 'purchase',
                 'reference' => $form_state->getValue('for_id'),
                 'account' => $liabacc,
