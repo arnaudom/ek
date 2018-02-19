@@ -1130,10 +1130,11 @@ class Journal {
         while ($line = $data->fetchObject()) {
 
             /* Group the reference by date */
-            $query = "select DISTINCT date from {ek_journal} where reference=:r and source like :s order by date";
+            $query = "select DISTINCT date from {ek_journal} where reference=:r and source like :s and coid=:coid order by date";
             $b = array(
                 ':r' => $line->reference,
                 ':s' => $source . '%',
+                ':coid' => $j['company']
             );
 
             $d = Database::getConnection('external_db', 'external_db')->query($query, $b);
@@ -1159,11 +1160,12 @@ class Journal {
                         . "FROM {ek_journal} j "
                         . "LEFT join {ek_journal_trail} t "
                         . "ON j.id = t.jid "
-                        . "WHERE reference=:r and source like :s and date=:date ";
+                        . "WHERE reference=:r and source like :s and date=:date and coid=:coid";
                 $c = array(
                     ':r' => $line->reference,
                     ':s' => $source . '%',
                     ':date' => $date->date,
+                    ':coid' => $j['company']
                 );
 
                 $e = Database::getConnection('external_db', 'external_db')
