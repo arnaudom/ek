@@ -568,6 +568,11 @@ class JournalEntry extends FormBase {
                 }
             }
 
+            if($journal->credit <> $journal->debit) {
+                $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+                drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+            }
+            
             $url = Url::fromRoute('ek_finance.manage.journal_edit', array('id' => $rec[1]), array())->toString();
             drupal_set_message(t('Data updated. <a href="@url">Edit</a>', ['@url' => $url]), 'status');
         }//step 2

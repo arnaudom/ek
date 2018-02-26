@@ -429,15 +429,20 @@ $i = 0;
 
        );     
 
-       if (strlen($j['comment'])>31) {
+       if(is_array($j['comment'])){
+           $j['comment'] = $j['comment']['#markup'];
+           $markup = "<span>" . $j['reference'] . " - " . $j['comment'] . "</span>";
+       } elseif (!is_array($j['comment']) && strlen($j['comment'])>31) {
          $desc = substr($j['comment'],0,31)."...";
+         $markup = "<span title='".$j['comment']."'>" . $j['reference'] . " - " . $desc . "</span>";
        } else {
-         $desc = $j['comment'];
+         $markup = "<span>" . $j['reference'] . " - " . $j['comment'] . "</span>";
+         
        }
 
         $form['items'][$i]['object'] = array(
          '#type' => 'item',
-         '#markup' => '<span title="'. $j['comment'] .'">' . $j['reference'] . " - " . $desc . '</span>',
+         '#markup' => $markup,
          '#prefix' => "<div class='cell cell300 $back'>",
          '#suffix' => '</div>',
 

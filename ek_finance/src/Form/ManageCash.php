@@ -463,17 +463,11 @@ if($form_state->getValue('transaction') == 6) {
 
 
     $form['date'] = array(
-    '#type' => 'textfield',
+    '#type' => 'date',
     '#title' => t('transaction date'),
-    '#size' => 12,
+    '#size' => 14,
     '#maxlength' => 10,
     '#required' => TRUE,
-    '#attributes' => array('placeholder'=>t('YYYY-mm-dd'), 'class' => array('date')),
-    '#attached' => array(
-        'library' => array(
-          'ek_finance/ek_finance.datepicker',
-        ),
-      ),          
     
     );   
     
@@ -576,16 +570,24 @@ public function fx_rate_3(array &$form, FormStateInterface $form_state) {
   
   $currency = $form_state->getValue('transaction_currency');
   $fx = CurrencyData::rate($currency);
-  $value = round(str_replace(',', '', $form_state->getValue('amount'))/$fx, 2);
-
-  if($fx <> 1) {
-  $form['fx_rate']['#required'] = TRUE;
-  
+  if($fx == 0) {
+      $form['fx_rate']['#required'] = FALSE;
+      $form['fx_rate']['#value'] = 0;
+      $form['fx_rate']['#description'] = t('the exchange must be a number > 0');
+      
   } else {
-    $form['fx_rate']['#required'] = False;
+    $value = round(str_replace(',', '', $form_state->getValue('amount'))/$fx, 2);
+
+    if($fx <> 1) {
+    $form['fx_rate']['#required'] = TRUE;
+
+    } else {
+      $form['fx_rate']['#required'] = FALSE;
+    }
+    $form['fx_rate']['#value'] = $fx;
+    $form['fx_rate']['#description'] = t('converted amount') .': ' . number_format($value, 2);
   }
-  $form['fx_rate']['#value'] = $fx;
-  $form['fx_rate']['#description'] = t('converted amount') .': ' . number_format($value, 2);
+  
     
   return  $form['fx_rate'];
   
@@ -914,6 +916,11 @@ public function fx_rate_3(array &$form, FormStateInterface $form_state) {
         'comment' => $form_state->getValue('comment'),
          )
         ); 
+      
+        if($journal->credit <> $journal->debit) {
+            $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+            drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+        }
        
        }//1
        

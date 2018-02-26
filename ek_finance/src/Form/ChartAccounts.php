@@ -299,8 +299,8 @@ class ChartAccounts extends FormBase {
                 $form['list']['d'][$id]['balance_date'] = array(
                     '#type' => 'date',
                     '#default_value' => $row->balance_date,
-                    '#size' => 12,
-                    '#prefix' => "<div class='cell cell100'>",
+                    '#size' => 14,
+                    '#prefix' => "<div class='cell cell150'>",
                     '#suffix' => '</div>',
                 );
 

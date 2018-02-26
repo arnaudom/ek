@@ -561,6 +561,11 @@ class PayrollRecord extends FormBase {
                 );
             } // if include       
         }
+        
+        if($journal->credit <> $journal->debit) {
+            $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+            drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+        }
 
         if ($expenses_entry == $form_state->getValue('count')) {
             drupal_set_message(t('Expenses recorded'), 'status');

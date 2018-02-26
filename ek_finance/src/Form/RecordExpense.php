@@ -1020,6 +1020,10 @@ class RecordExpense extends FormBase {
             );
         }
 
+        if($journal->credit <> $journal->debit) {
+            $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+            drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+        }
 
         if ($form_state->getValue('edit') != '') {
             drupal_set_message(t('Expenses ref. @id edited', array('@id' => $insert)), 'status');

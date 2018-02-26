@@ -303,12 +303,19 @@ class ReconciliationController extends ControllerBase {
             while ($r = $result->fetchObject()) {
 
                 $j = Journal::journalEntryDetails($r->id);
+                if(is_array($j['comment'])){
+                    //remove the hyperlink tag for excel
+                    preg_match("'>(.*?)</a>'si", $j['comment']['#markup'], $match);
+                    $comment = $j['reference'] . " - " . $match[1];
+                } else {
+                    $comment = $j['reference'] . " - " . $j['comment'];
+                }
                 $row = array();
                 $row['id'] = $r->id;
                 $row['journal_id'] = $r->id;
                 $row['type'] = $j['type'];
                 $row['date'] = $j['date'];
-                $row['comment'] = $j['reference'] . " - " . $j['comment'];
+                $row['comment'] = $comment;
                 $row['value'] = $j['value'];
 
                 $data['rows'][$i] = $row;
