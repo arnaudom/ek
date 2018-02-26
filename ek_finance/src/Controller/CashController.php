@@ -99,10 +99,12 @@ class CashController extends ControllerBase {
           //account is company
             $companysettings = new CompanySettings($_SESSION['cfilter']['account']);
             $aid = $companysettings->get('cash_account', $_SESSION['cfilter']['currency'] );
+            $aid2 = $companysettings->get('cash2_account', $_SESSION['cfilter']['currency'] );
         } else {
             $aid = db_query('SELECT name from {users_field_data} WHERE uid=:u', 
                     array(':u' => $_SESSION['cfilter']['account']))
                             ->fetchfield();
+            $aid2 = '';
         }
         
         $items['settings']['baseCurrency'] = $settings->get('baseCurrency');
@@ -118,6 +120,7 @@ class CashController extends ControllerBase {
                     'currency' => $_SESSION['cfilter']['currency'],
                     'baseCurrency' => $items['settings']['baseCurrency'],
                     'aid' => $aid,
+                    'aid2' => $aid2,
                     ];
 
         $data = $this->extract($filter);
@@ -180,7 +183,7 @@ class CashController extends ControllerBase {
  * array of keys
  *  type (bool, 0 company, 1 user), account (coid or uid),from (date string), to (date string),
  *  currency (code string), baseCurrency (code string),
- *  aid (chart accounts account int value)
+ *  aid, aid2 (chart accounts account int value)
  * 
  * @return array
  *  extracted data
@@ -260,36 +263,40 @@ class CashController extends ControllerBase {
              * Cash movements from journal general entries
             */
             if($filter['type'] == '0') {
-                //$settings = new CompanySettings($data->head);
-                //$aid = $settings->get('cash_account', $data->currency);
-                $query = "SELECT * FROM {ek_journal} "
-                    . "WHERE coid like :c AND source = :s AND aid = :aid AND currency=:cu "
-                    . "AND type = :t AND date >= :p1 AND date <= :p2 AND exchange = :ex";
+                $or = db_or();
+                $or->condition('j.aid', $filter['aid'], '=');
+                $or->condition('j.aid', $filter['aid2'], '=');
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+                $query->fields('j');
+                $query->condition('j.coid', $company,'=')
+                        ->condition('j.source','general', '=')
+                        ->condition('j.currency', $filter['currency'], '=')
+                        ->condition($or)
+                        ->condition('j.date', $filter['from'], '>=')
+                        ->condition('j.date', $filter['to'], '<=')
+                        ->condition('j.type', 'debit', '=')
+                        ->condition('j.exchange', 0);
+         
+                $data4 = $query->execute();
 
-                $a = array(
-                  ':c' => $company , 
-                  ':s' => 'general',
-                  ':aid' => $filter['aid'],
-                  ':cu' => $filter['currency'],
-                  ':t' => 'debit',
-                  ':p1' => $filter['from'],
-                  ':p2' => $filter['to'],
-                  ':ex' => 0,
-                );
-                $data4 = Database::getConnection('external_db', 'external_db')->query($query, $a);
-                
-                $a = array(
-                  ':c' => $company , 
-                  ':s' => 'general',
-                  ':aid' => $filter['aid'],
-                  ':cu' => $filter['currency'],
-                  ':t' => 'credit',
-                  ':p1' => $filter['from'],
-                  ':p2' => $filter['to'],
-                  ':ex' => 0,
-                );
-                $data5 = Database::getConnection('external_db', 'external_db')->query($query, $a);                
-                
+                $or = db_or();
+                $or->condition('j.aid', $filter['aid'], '=');
+                $or->condition('j.aid', $filter['aid2'], '=');
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+                $query->fields('j');
+                $query->condition('j.coid', $company,'=')
+                        ->condition('j.source','general', '=')
+                        ->condition('j.currency', $filter['currency'], '=')
+                        ->condition($or)
+                        ->condition('j.date', $filter['from'], '>=')
+                        ->condition('j.date', $filter['to'], '<=')
+                        ->condition('j.type', 'credit', '=')
+                        ->condition('j.exchange', 0);
+         
+                $data5 = $query->execute();
+
             } 
               
           $data = array();
