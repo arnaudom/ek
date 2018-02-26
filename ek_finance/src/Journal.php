@@ -2,10 +2,8 @@
 
 namespace Drupal\ek_finance;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Url;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Database\Database;
 use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_finance\CurrencyData;
@@ -24,6 +22,8 @@ class Journal {
     public function __contruct() {
 
         $this->tax = 0;
+        $this->debit = 0;
+        $this->credit = 0;
     }
 
     /* calculate start and end dates of fiscal period based on company and given year and month
@@ -93,10 +93,10 @@ class Journal {
 
     public static function journalEntryDetails($id) {
 
-
-        $query = "SELECT * from {ek_journal} where id=:id";
-        $result = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
-
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+        $query->fields('j');
+        $query->condition('id', $id);$result = $query->execute()->fetchObject();
 
         $ref = self::reference($result->source, $result->reference);
         if ($result->comment == '')
@@ -104,16 +104,24 @@ class Journal {
         if ($result->currency == '')
             $result->currency = $ref[1];
 
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 't');
+            $query->fields('t',['aname']);
+            $query->condition('coid', $result->coid, '=')
+                    ->condition('aid', $result->aid);
+            $aname = $query->execute()->fetchField();
+    /*        
         $query = "SELECT aname from {ek_accounts} where aid=:account and coid=:coid";
         $result2 = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':account' => $result->aid, ':coid' => $result->coid))
                 ->fetchObject();
-
+*/
         return array(
             'id' => $result->id,
             'count' => $result->count,
             'aid' => $result->aid,
-            'aname' => $result2->aname,
+            'aname' => $aname,
             'exchange' => $result->exchange,
             'coid' => $result->coid,
             'type' => $result->type,
@@ -220,11 +228,14 @@ class Journal {
                     $account_aid = $data[1];
                 } else {
                     // bank account
-                    $query = "SELECT currency,aid from {ek_bank_accounts} where id=:id ";
-                    $data = Database::getConnection('external_db', 'external_db')
-                                    ->query($query, array(':id' => $j['aid']))->fetchAssoc();
-                    $account_currency = $data['currency'];
-                    $account_aid = $data['aid'];
+                    $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_bank_accounts', 'b');
+                        $query->fields('b', ['currency', 'aid']);
+                        $query->condition('id', $j['aid']);
+                    $Obj = $query->execute()->fetchObject();
+                    $account_currency = $Obj->currency;
+                    $account_aid = $Obj->aid;
+                    
                 }
 
                 /*
@@ -379,10 +390,18 @@ class Journal {
                     $account_aid = $data[1];
                 } else {
                     // bank account
+                    $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_bank_accounts', 'b');
+                        $query->fields('b', ['currency', 'aid']);
+                        $query->condition('id', $j['aid']);
+                    $Obj = $query->execute()->fetchObject();
+                    $account_currency = $Obj->currency;
+                    $account_aid = $Obj->aid;
+                    /*
                     $query = "SELECT currency,aid from {ek_bank_accounts} where id=:id ";
                     $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $j['aid']))->fetchAssoc();
                     $account_currency = $data['currency'];
-                    $account_aid = $data['aid'];
+                    $account_aid = $data['aid'];*/
                 }
 
                 /*
@@ -519,10 +538,18 @@ class Journal {
                         $aid = $account[1];
                         $account_currency = $account[0];
                     } else {
+                        $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_bank_accounts', 'b');
+                        $query->fields('b', ['currency','aid']);
+                        $query->condition('id', $j['bank']);
+                        $Obj = $query->execute()->fetchObject();
+                        $aid = $Obj->aid;
+                        $account_currency = $Obj->currency;
+                        /*
                         $query = "SELECT currency,aid from {ek_bank_accounts} where id=:id ";
                         $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $j['bank']))->fetchAssoc();
                         $account_currency = $data['currency'];
-                        $aid = $data['aid'];
+                        $aid = $data['aid'];*/
                     }
                 }
 
@@ -800,11 +827,13 @@ class Journal {
      * comment string
      */
 
-    static private function save($aid, $exchange, $coid, $type, $source, $ref, $date, $value, $reco, $currency = NULL, $comment = NULL) {
+    private function save($aid, $exchange, $coid, $type, $source, $ref, $date, $value, $reco, $currency = NULL, $comment = NULL) {
 
         $query = "SELECT count('id') FROM {ek_journal} WHERE coid = :c";
         $count = Database::getConnection('external_db', 'external_db')
                         ->query($query, [':c' => $coid])->fetchField();
+        
+        
         $count++;
         $fields = array(
             'count' => $count,
@@ -839,7 +868,13 @@ class Journal {
             Database::getConnection('external_db', 'external_db')
                 ->insert('ek_journal_trail')
                 ->fields($fields)
-                ->execute();
+                ->execute();            
+        }
+        
+        if($type == 'credit'){
+            $this->credit += $value;
+        } else {
+            $this->debit += $value;
         }
         
         return $insert;
@@ -850,29 +885,31 @@ class Journal {
      * return value debit >= credit
      */
 
-    public function checktransactiondebit($j) {
+    public function checkTransactionDebit($j) {
 
-
-        $a = array(
-            ':sdt' => $j['source_dt'],
-            ':r' => $j['reference'],
-            ':t' => 'debit',
-            ':a' => $j['account'],
-            ':e' => 0,
-        );
-
-        $query = "SELECT sum(value) from {ek_journal} WHERE source=:sdt and reference=:r and type=:t and aid=:a and exchange=:e";
-        $debit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-
-        $a = array(
-            ':sct' => $j['source_ct'],
-            ':r' => $j['reference'],
-            ':t' => 'credit',
-            ':a' => $j['account'],
-            ':e' => 0,
-        );
-        $query = "SELECT sum(value) from {ek_journal} WHERE source=:sct and reference=:r and type=:t and aid=:a and exchange=:e";
-        $credit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'j');
+        $query->addExpression('SUM(value)', 'sumValue');
+        $query->condition('j.source', $j['source_dt'], '=')
+                ->condition('j.reference', $j['reference'], '=')
+                ->condition('j.type', 'debit', '=')
+                ->condition('j.aid', $j['account'], '=')
+                ->condition('j.exchange', 0, '=');
+        
+        $Obj = $query->execute();
+        $debit = $Obj->fetchObject()->sumValue;
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'j');
+        $query->addExpression('SUM(value)', 'sumValue');
+        $query->condition('j.source', $j['source_ct'], '=')
+                ->condition('j.reference', $j['reference'], '=')
+                ->condition('j.type', 'credit', '=')
+                ->condition('j.aid', $j['account'], '=')
+                ->condition('j.exchange', 0, '=');
+        
+        $Obj = $query->execute();
+        $credit = $Obj->fetchObject()->sumValue;  
 
         return $debit - $credit;
     }
@@ -883,30 +920,31 @@ class Journal {
      * 
      */
 
-    public function checktransactioncredit($j) {
+    public function checkTransactionCredit($j) {
 
-
-        $a = array(
-            ':sdt' => $j['source_dt'],
-            ':r' => $j['reference'],
-            ':t' => 'debit',
-            ':a' => $j['account'],
-            ':e' => 0,
-        );
-
-        $query = "SELECT sum(value) from {ek_journal} WHERE source=:sdt and reference=:r and type=:t and aid=:a and exchange=:e";
-        $debit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-
-        $a = array(
-            ':sct' => $j['source_ct'],
-            ':r' => $j['reference'],
-            ':t' => 'credit',
-            ':a' => $j['account'],
-            ':e' => 0,
-        );
-
-        $query = "SELECT sum(value) from {ek_journal} WHERE source=:sct and reference=:r and type=:t and aid=:a and exchange=:e";
-        $credit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'j');
+        $query->addExpression('SUM(value)', 'sumValue');
+        $query->condition('j.source', $j['source_dt'], '=')
+                ->condition('j.reference', $j['reference'], '=')
+                ->condition('j.type', 'debit', '=')
+                ->condition('j.aid', $j['account'], '=')
+                ->condition('j.exchange', 0, '=');
+        
+        $Obj = $query->execute();
+        $debit = $Obj->fetchObject()->sumValue;
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'j');
+        $query->addExpression('SUM(value)', 'sumValue');
+        $query->condition('j.source', $j['source_ct'], '=')
+                ->condition('j.reference', $j['reference'], '=')
+                ->condition('j.type', 'credit', '=')
+                ->condition('j.aid', $j['account'], '=')
+                ->condition('j.exchange', 0, '=');
+        
+        $Obj = $query->execute();
+        $credit = $Obj->fetchObject()->sumValue;  
 
         return $credit - $debit;
     }
@@ -952,20 +990,40 @@ class Journal {
 
         //get to total transaction up to d1
         // sum transaction currency
-        $query = "SELECT sum(value) from {$table_journal} "
-                . "WHERE exchange=:exc and type=:type and aid=:aid and coid=:coid and date>=:date1 and date<=:date2";
-        $a = array(':exc' => 0, ':type' => $type, ':aid' => $account, ':coid' => $coid, ':date1' => $d1, ':date2' => $d2);
-        $t = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-        if ($t == '')
-            $t = 0;
-
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table_journal, 'j');
+        $query->addExpression('SUM(value)', 'sumValue');
+        $query->condition('j.coid', $coid, '=')
+                ->condition('j.type', $type, '=')
+                ->condition('j.aid', $account, '=')
+                ->condition('j.exchange', 0, '=')
+                ->condition('date', $d1, '>=')
+                ->condition('date', $d2, '<=');
+        
+        $Obj = $query->execute();
+        $transactions = $Obj->fetchObject()->sumValue; 
+        if (!$transactions) {
+            $transactions = 0;
+        }
+                
         // sum transaction exchange
-        $query = "SELECT sum(value) from {$table_journal} "
-                . "WHERE exchange=:exc and type=:type and aid=:aid and coid=:coid and date>=:date1 and date<=:date2";
-        $a = array(':exc' => 1, ':type' => $type, ':aid' => $account, ':coid' => $coid, ':date1' => $d1, ':date2' => $d2);
-        $t_exc = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table_journal, 'j');
+        $query->addExpression('SUM(value)', 'sumValue');
+        $query->condition('j.coid', $coid, '=')
+                ->condition('j.type', $type, '=')
+                ->condition('j.aid', $account, '=')
+                ->condition('j.exchange', 1, '=')
+                ->condition('date', $d1, '>=')
+                ->condition('date', $d2, '<=');
+        
+        $Obj = $query->execute();
+        $transaction_exc = $Obj->fetchObject()->sumValue; 
+        if (!$transaction_exc) {
+            $transaction_exc = 0;
+        }
 
-        return array(round($t, 2), round($t + $t_exc, 2));
+        return array(round($transactions, 2), round($transactions + $transaction_exc, 2));
     }
 
     /*
@@ -982,7 +1040,7 @@ class Journal {
      * @return the value of gain or loss. 
      */
 
-    private function exchangeGL($currency, $value, $rate, $current_rate = NULL) {
+    private static function exchangeGL($currency, $value, $rate, $current_rate = NULL) {
         //exchange gain loss
         if ($current_rate == NULL) {
             $current_rate = CurrencyData::rate($currency);
@@ -995,7 +1053,36 @@ class Journal {
             return 0;
         }
     }
+/*
+     * calculate a total value per account between 2 dates
+     *
+     * $param $table query table (current journal or archive)
+     * @param $exchange = exchange flag 0 or 1
+     * @param $type = the transaction type, debit or credit
+     * @param $aid = the account No
+     * @param $coid = the company id
+     * @param $date_start = start date (>=)
+     * @param $date_end = end date (<)     * 
+     * @return double value
+     */
 
+    private static function sumAccount($table, $exchange, $type, $aid, $coid, $date_start, $date_end) {
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table, 'j');
+        $query->addExpression('SUM(value)', 'sumValue');
+        $query->condition('j.exchange', $exchange, '=')
+                ->condition('j.type', $type, '=')
+                ->condition('j.aid', $aid, '=')
+                ->condition('j.coid', $coid, '=')
+                ->condition('j.date', $date_start, '>=')
+                ->condition('j.date', $date_end, '<=');
+        
+             
+        $Obj = $query->execute();
+        return $Obj->fetchObject()->sumValue;
+    }
+    
     /*
      * Collect and return data journal id
      * 
@@ -1116,28 +1203,32 @@ class Journal {
         }
 
         /* Group the journal entry by main reference to transactions */
-        $query = "select distinct reference,source from {ek_journal} WHERE "
-                . "date >=:d1 and date<=:d2 and coid=:coid and source like :s order by reference ";
-        $a = array(
-            ':d1' => $j['date1'],
-            ':d2' => $j['date2'],
-            ':coid' => $j['company'],
-            ':s' => $j['source'] . '%',
-        );
-
-        $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
+        $source = $j['source'] . '%';
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'j');
+            $query->distinct();
+            $query->fields('j',['reference', 'source']);
+            $query->condition('date',$j['date1'], '>=')
+                ->condition('date',$j['date2'], '<=')  
+                ->condition('coid',$j['company'])
+                ->condition('source', $source, 'like' );
+            $query->orderBy('reference');
+        $data = $query->execute();
+        
 
         while ($line = $data->fetchObject()) {
 
             /* Group the reference by date */
-            $query = "select DISTINCT date from {ek_journal} where reference=:r and source like :s and coid=:coid order by date";
-            $b = array(
-                ':r' => $line->reference,
-                ':s' => $source . '%',
-                ':coid' => $j['company']
-            );
-
-            $d = Database::getConnection('external_db', 'external_db')->query($query, $b);
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'j');
+            $query->distinct();
+            $query->fields('j',['date']);
+            $query->condition('source', $source, 'like' )
+                    ->condition('reference', $line->reference)
+                    ->condition('coid',$j['company']);
+            $query->orderBy('date');
+            $d = $query->execute();
+            
             $row = array();
 
             while ($date = $d->fetchObject()) {
@@ -1154,33 +1245,22 @@ class Journal {
                 $row['reference_detail'] = $ref[0];
                 $row['currency'] = $ref[1];
                 $row['date'] = $date->date;
-
-                $query = "SELECT j.id,count,aid,exchange,coid,type,value,reconcile,source,reference, "
-                        . "username,action,timestamp "
-                        . "FROM {ek_journal} j "
-                        . "LEFT join {ek_journal_trail} t "
-                        . "ON j.id = t.jid "
-                        . "WHERE reference=:r and source like :s and date=:date and coid=:coid";
-                $c = array(
-                    ':r' => $line->reference,
-                    ':s' => $source . '%',
-                    ':date' => $date->date,
-                    ':coid' => $j['company']
-                );
-
-                $e = Database::getConnection('external_db', 'external_db')
-                        ->query($query, $c);
+                
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+                    $query->fields('j',['id','count','aid', 'exchange','coid','type','value','reconcile','source','reference']);
+                    $query->leftJoin('ek_journal_trail', 't', 't.jid = j.id');
+                    $query->fields('t',['username','action','timestamp']);
+                    $query->condition('reference', $line->reference)
+                            ->condition('source', $source,'like')
+                            ->condition('date', $date->date)
+                            ->condition('coid',$j['company']);
+                    $e = $query->execute();
 
                 $transactions = array();
 
                 while ($entry = $e->fetchObject()) {
-                    /* To remove
-                      $query = "SELECT aname from {ek_accounts} where coid=:coid and aid=:aid";
-                      $aname = Database::getConnection('external_db', 'external_db')
-                      ->query($query, array(':coid' => $j['company'], ':aid'=> $entry->aid) )
-                      ->fetchField();
-
-                     */
+                    
                     $aname = $account_list[$j['company']][$entry->aid];
                     if ($entry->exchange == 0 && $format == 'html') {
                         //build an history link
@@ -1256,25 +1336,30 @@ class Journal {
 
             case 'expense':
             case 'expense amortization':
-                $query = "SELECT comment from {ek_expenses} WHERE id=:id";
-                $comment = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':id' => $reference))->fetchField();
-                $query = "SELECT currency from {ek_expenses} WHERE id=:id";
-                $currency = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':id' => $reference))->fetchField();
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses', 't');
+                $query->fields('t',['comment','currency']);
+                $query->condition('id', $reference, '=');
+                $data = $query->execute()->fetchObject();
+                $comment = $data->comment;
+                $currency = $data->currency;
+                
                 break;
             case 'invoice':
-            case 'invoice cn':    
-                $query = "SELECT name from {ek_address_book} INNER JOIN {ek_sales_invoice} "
-                    . "ON ek_sales_invoice.client=ek_address_book.id WHERE ek_sales_invoice.id=:id";
-                $comment = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':id' => $reference))->fetchField();
-                $query = "SELECT currency from {ek_sales_invoice} WHERE id=:id";
-                $currency = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':id' => $reference))->fetchField();
+            case 'invoice cn':
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice', 't');
+                $query->fields('t',['client','currency']);
+                $query->condition('id', $reference, '=');
+                $data = $query->execute()->fetchObject();
+                $name = \Drupal\ek_address_book\AddressBookData::getname($data->client);
+                $option = ['target' => 'blank', 'title' => $name, 'name' => $name ];
                 if($source == 'invoice cn'){
-                   $comment .= " (" . t('Credit note') . ")"; 
-                }
+                   $option['string'] = t('Credit note');
+                } 
+                $comment = \Drupal\ek_sales\SalesData::DocumentHtml('invoice',$reference,$option);
+                $currency = $data->currency;
+               
                 break;
             case 'pos sale':
                 $comment = t('POS sale');
@@ -1292,53 +1377,74 @@ class Journal {
             case 'purchase':
             case 'payment':
             case 'purchase dn':
-                $query = "SELECT name from {ek_address_book} INNER JOIN {ek_sales_purchase} "
-                    . "ON ek_sales_purchase.client=ek_address_book.id WHERE ek_sales_purchase.id=:id";
-                $comment = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':id' => $reference))->fetchField();
-                $query = "SELECT currency from {ek_sales_purchase} WHERE id=:id";
-                $currency = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':id' => $reference))->fetchField();
-                if($source == 'purchase dn'){
-                   $comment .= " (" . t('Debit note') . ")"; 
-                }
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_purchase', 't');
+                $query->fields('t',['client','currency']);
+                $query->condition('id', $reference, '=');
+                $data = $query->execute()->fetchObject();
+                $name = \Drupal\ek_address_book\AddressBookData::getname($data->client);
+                $option = ['target' => 'blank', 'title' => $name, 'name' => $name ];
+                if($source == 'purchase cn'){
+                   $option['string'] = t('Debit note');
+                } 
+                $comment = \Drupal\ek_sales\SalesData::DocumentHtml('purchase',$reference,$option);
+                $currency = $data->currency;
                 break;
             case 'receipt':
-                $query = "SELECT name from {ek_address_book} INNER JOIN {ek_sales_invoice} "
-                    . "ON ek_sales_invoice.client=ek_address_book.id WHERE ek_sales_invoice.id=:id";
-                $comment = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':id' => $reference))->fetchField();
-                $query = "SELECT currency from {ek_sales_invoice} WHERE id=:id";
-                $currency = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':id' => $reference))->fetchField();
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice', 't');
+                $query->fields('t',['client','currency']);
+                $query->condition('id', $reference, '=');
+                $data = $query->execute()->fetchObject();
+                $name = \Drupal\ek_address_book\AddressBookData::getname($data->client);
+                $option = ['target' => 'blank', 'title' => $name, 'name' => $name ];
+                $comment = \Drupal\ek_sales\SalesData::DocumentHtml('invoice',$reference,$option);
+                $currency = $data->currency;
                 break;
             case 'receipt pos':
                 $comment = t('POS receipt');
                 break;
             case 'payroll':
             case 'expense payroll':
-                $query = "SELECT comment from {ek_expenses} WHERE id=:id";
-                $comment = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':id' => $reference))->fetchField();
-                $query = "SELECT currency from {ek_expenses} WHERE id=:id";
-                $currency = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $reference))->fetchField();
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses', 't');
+                $query->fields('t',['comment','currency']);
+                $query->condition('id', $reference, '=');
+                $data = $query->execute()->fetchObject();
+                $url = Url::fromRoute('ek_finance_voucher.pdf', ['type' => 1, 'id' => $reference])->toString();
+                    $voucher = '<a href="' . $url . '" target="_blank"  title="' . t('voucher')
+                            . ' - ' . $reference  . '">' . $data->comment . '</a>';
+                $comment = ['#markup' => $voucher];
+                $currency = $data->currency;
 
                 break;
             case 'general':
-                $query = "SELECT comment,currency from {ek_journal} where source like :s and reference=:r";
-                $r = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':s' => 'general', ':r' => $reference))->fetchAssoc();
-                $comment = $r['comment'];
-                $currency = $r['currency'];
+                
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 't');
+                $query->fields('t',['comment','currency']);
+                $query->condition('reference', $reference, '=');
+                $query->condition('source', 'general', '=');
+                $data = $query->execute()->fetchObject();
+                $comment = $data->comment;
+                $currency = $data->currency;
                 break;
 
             case 'general cash':
-                $query = "SELECT comment,currency from {ek_journal} where source=:s and reference=:r";
-                $r = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':s' => 'general cash', ':r' => $reference))->fetchAssoc();
-                $comment = $r['comment'];
-                $currency = $r['currency'];
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 't');
+                $query->fields('t',['comment','currency']);
+                $query->condition('reference', $reference, '=');
+                $query->condition('source', 'general cash', '=');
+                $data = $query->execute()->fetchObject();
+                $comment = $data->comment;
+                $currency = $data->currency;
+                
                 break;
+            
+            default:
+                $comment = '';
+                $currency = '';
         }
 
         return array($comment, $currency);
@@ -1358,16 +1464,33 @@ class Journal {
 
         //get array of all chart of accounts structure per coid
         //(to reduce queries call rates)
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 't');
+            $query->fields('t',['aid','aname']);
+            $query->condition('coid', $l['coid'], '=');
+            $chart = $query->execute()->fetchAllKeyed();
+        /*        
         $query = "SELECT aid,aname FROM {ek_accounts} WHERE coid=:coid";
         $chart = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':coid' => $l['coid']))
-                ->fetchAllKeyed();
+                ->fetchAllKeyed();*/
 
         //list the accounts in journal within the range selected
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 't');
+            $query->fields('t',['aid']); 
+            $query->distinct();
+            $query->condition('coid', $l['coid'], '=');
+            $query->condition('aid', $l['aid1'], '>=');
+            $query->condition('aid', $l['aid2'], '<=');
+            $query->orderBy('aid', 'ASC');
+        $result = $query->execute();    
+        
+        /*
         $query = "SELECT distinct aid from {ek_accounts} where coid=:coid and aid>=:aid1 and aid<=:aid2 ORDER BY aid";
         $a = array(':coid' => $l['coid'], ':aid1' => $l['aid1'], ':aid2' => $l['aid2']);
         $result = Database::getConnection('external_db', 'external_db')->query($query, $a);
-
+*/
 
         $settings = new FinanceSettings();
         $baseCurrency = $settings->get('baseCurrency');
@@ -1382,36 +1505,93 @@ class Journal {
             $data['ref'] = ['aid' => $r->aid, 'aname' => $aname];
             //calculate opening balances and get range data per account and date selected
             // opening balance both currency and exchange
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 't');
+            $query->fields('t',['balance', 'balance_base', 'balance_date']); 
+            $query->condition('coid', $l['coid'], '=');
+            $query->condition('aid',$r->aid, '=');
+            $obj =  $query->execute()->fetchObject();
+            $system_balance_date = $obj->balance_date;
+            /*
             $query = "SELECT balance as b,balance_base as bb, balance_date as bd from {ek_accounts} where aid=:aid and coid=:coid ";
             $a = array(':aid' => $r->aid, ':coid' => $l['coid']);
             $balance = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchAssoc();
             $system_balance_date = $balance['bd'];
-
+            */
 
             // sum transaction currency - CREDIT 
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'j');
+            $query->addExpression('SUM(value)', 'sumValue');
+            $query->condition('j.exchange', 0, '=')
+                    ->condition('j.type', 'credit', '=')
+                    ->condition('j.aid', $r->aid, '=')
+                    ->condition('j.coid', $l['coid'], '=')
+                    ->condition('j.date', $l['date1'], '<')
+                    ->condition('j.date', $system_balance_date, '>');
+            $Obj = $query->execute();
+            $credit = $Obj->fetchObject()->sumValue;
+        /*
             $query = "SELECT sum(value) FROM {ek_journal} where exchange=:exc and type=:type and aid=:aid and coid=:coid and date<:date1 and date>:bd";
             $a = array(':exc' => 0, ':type' => 'credit', ':aid' => $r->aid, ':coid' => $l['coid'], ':date1' => $l['date1'], ':bd' => $system_balance_date);
             $credit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-
+        */
             // sum transaction exchange - CREDIT
-            $query = "SELECT sum(value) from {ek_journal} where exchange=:exc and type=:type and aid=:aid and coid=:coid and date<:date1 and date>:bd";
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'j');
+            $query->addExpression('SUM(value)', 'sumValue');
+            $query->condition('j.exchange', 1, '=')
+                    ->condition('j.type', 'credit', '=')
+                    ->condition('j.aid', $r->aid, '=')
+                    ->condition('j.coid', $l['coid'], '=')
+                    ->condition('j.date', $l['date1'], '<')
+                    ->condition('j.date', $system_balance_date, '>');
+            $Obj = $query->execute();
+            $credit_exc = $Obj->fetchObject()->sumValue;
+            
+            
+           /* $query = "SELECT sum(value) from {ek_journal} where exchange=:exc and type=:type and aid=:aid and coid=:coid and date<:date1 and date>:bd";
             $a = array(':exc' => 1, ':type' => 'credit', ':aid' => $r->aid, ':coid' => $l['coid'], ':date1' => $l['date1'], ':bd' => $system_balance_date);
-            $credit_exc = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+            $credit_exc = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();*/
 
             // sum transaction currency - DEBIT
-            $query = "SELECT sum(value) from {ek_journal} where exchange=:exc and type=:type and aid=:aid and coid=:coid and date<:date1 and date>:bd";
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'j');
+            $query->addExpression('SUM(value)', 'sumValue');
+            $query->condition('j.exchange', 0, '=')
+                    ->condition('j.type', 'debit', '=')
+                    ->condition('j.aid', $r->aid, '=')
+                    ->condition('j.coid', $l['coid'], '=')
+                    ->condition('j.date', $l['date1'], '<')
+                    ->condition('j.date', $system_balance_date, '>');
+            $Obj = $query->execute();
+            $debit = $Obj->fetchObject()->sumValue;
+            
+            /*$query = "SELECT sum(value) from {ek_journal} where exchange=:exc and type=:type and aid=:aid and coid=:coid and date<:date1 and date>:bd";
             $a = array(':exc' => 0, ':type' => 'debit', ':aid' => $r->aid, ':coid' => $l['coid'], ':date1' => $l['date1'], ':bd' => $system_balance_date);
-            $debit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+            $debit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();*/
 
             // sum transaction exchange - DEBIT
-            $query = "SELECT sum(value) from {ek_journal} where exchange=:exc and type=:type and aid=:aid and coid=:coid and date<:date1 and date>:bd";
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'j');
+            $query->addExpression('SUM(value)', 'sumValue');
+            $query->condition('j.exchange', 1, '=')
+                    ->condition('j.type', 'debit', '=')
+                    ->condition('j.aid', $r->aid, '=')
+                    ->condition('j.coid', $l['coid'], '=')
+                    ->condition('j.date', $l['date1'], '<')
+                    ->condition('j.date', $system_balance_date, '>');
+            $Obj = $query->execute();
+            $debit_exc = $Obj->fetchObject()->sumValue;
+            
+            /*$query = "SELECT sum(value) from {ek_journal} where exchange=:exc and type=:type and aid=:aid and coid=:coid and date<:date1 and date>:bd";
             $a = array(':exc' => 1, ':type' => 'debit', ':aid' => $r->aid, ':coid' => $l['coid'], ':date1' => $l['date1'], ':bd' => $system_balance_date);
-            $debit_exc = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+            $debit_exc = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();*/
 
             // balance in local currency (opening + credit - debit during period preceding 'from date'
-            $balance_open = $balance['b'] + $credit - $debit;
+            $balance_open = $obj->balance + $credit - $debit;
             // balance in base currency (opening + credit & exchange - debit & exchange during period preceding 'from date'
-            $balance_open_base = $balance['bb'] + ($credit + $credit_exc) - ($debit + $debit_exc);
+            $balance_open_base = $obj->balance_base + ($credit + $credit_exc) - ($debit + $debit_exc);
             $sum_d_base = 0; //sum base currency
             $sum_c_base = 0;
             $sum_d_loc = 0; //sum currency
@@ -1420,11 +1600,21 @@ class Journal {
 
 
             // calculate transactions per account and range
-            $query = "SELECT id,type,exchange,value,date,reference FROM {ek_journal} "
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'j');
+            $query->fields('j', ['id', 'type','exchange','value','date','reference']);
+            $query->condition('j.aid', $r->aid, '=')
+                    ->condition('j.date', $l['date1'], '>=')
+                    ->condition('j.date', $l['date2'], '<=')
+                    ->condition('j.coid', $l['coid'], '=');
+            $query->orderBy('date')->orderBy('reference')->orderBy('id');
+            $ledger = $query->execute();
+            
+            /*$query = "SELECT id,type,exchange,value,date,reference FROM {ek_journal} "
                     . "WHERE aid=:aid AND date>=:d1 AND date<=:d2 AND coid=:coid "
                     . "ORDER BY date,reference,id";
             $a = array(':aid' => $r->aid, ':d1' => $l['date1'], ':d2' => $l['date2'], ':coid' => $l['coid']);
-            $ledger = Database::getConnection('external_db', 'external_db')->query($query, $a);
+            $ledger = Database::getConnection('external_db', 'external_db')->query($query, $a);*/
 
             $rows = array();
 
@@ -1672,9 +1862,19 @@ class Journal {
 
         if ($t['active'] == 0)
             $t['active'] = '%';
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_accounts', 't');
+        $list = $query->fields('t')
+                ->condition('atype', 'detail', '=')
+                ->condition('astatus', $t['active'], 'like')
+                ->condition('coid', $t['coid'], '=')
+                ->orderBy('aid', 'ASC')
+                ->execute();
+        /*
         $query = "SELECT * from ek_accounts where atype=:atype and astatus like :active and coid=:coid  order by aid";
         $a = array(':atype' => 'detail', ':active' => $t['active'], ':coid' => $t['coid']);
-        $list = Database::getConnection('external_db', 'external_db')->query($query, $a);
+        $list = Database::getConnection('external_db', 'external_db')->query($query, $a);*/
 
         $data = array();
         $total_td = 0;
@@ -1695,8 +1895,14 @@ class Journal {
         $d2 = $t['year'] . '-' . $t['month'] . '-' . cal_days_in_month(CAL_GREGORIAN, $t['month'], $t['year']);
         $data['baseCurrency'] = $settings->get('baseCurrency');
         $data['coid'] = $t['coid'];
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_company', 't');
+                $query->fields('t', ['name']);
+                $query->condition('id', $t['coid']);
+        $company = $query->execute()->fetchField();
+        /*
         $company = Database::getConnection('external_db', 'external_db')
-                        ->query('SELECT name from {ek_company} WHERE id=:id', array(':id' => $t['coid']))->fetchField();
+                        ->query('SELECT name from {ek_company} WHERE id=:id', array(':id' => $t['coid']))->fetchField();*/
         $data['company'] = $company;
         $data['year'] = $t['year'];
         $data['month'] = $t['month'];
@@ -1845,82 +2051,39 @@ class Journal {
             $table_journal = "ek_journal";
         }
 
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table_accounts, 't');
+        $data = $query->fields('t')
+                ->condition('aid', $account, '=')
+                ->condition('coid', $coid, '=')
+                ->orderBy('aid', 'ASC')
+                ->execute();
+        $result = $data->fetchObject();
+        /*
         $query = "SELECT * FROM {$table_accounts} WHERE aid=:account AND coid=:coid";
         $r = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':account' => $account, ':coid' => $coid))
                 ->fetchAssoc();
-
+        */
 
         //get to total transaction up to d1
         // sum transaction currency
-        $query = "SELECT sum(value) as c FROM {$table_journal} "
-                . "WHERE exchange=:exc AND type=:type AND aid=:aid "
-                . "AND coid=:coid AND date<:date1 AND date>=:dateopen";
-        $a = array(
-                    ':exc' => 0, 
-                    ':type' => 'credit', 
-                    ':aid' => $account, 
-                    ':coid' => $coid, 
-                    ':date1' => $d1, 
-                    ':dateopen' => $r['balance_date']
-                );
-        $credit = Database::getConnection('external_db', 'external_db')
-                ->query($query, $a)
-                ->fetchAssoc();
-
+        
+        $credit = self::sumAccount($table_journal,0,'credit',$account,$coid,$result->balance_date,$d1);
+        
         // sum transaction currency
-        $query = "SELECT sum(value) as d FROM {$table_journal} "
-                . "WHERE exchange=:exc AND type=:type AND aid=:aid "
-                . "AND coid=:coid ANd date<:date1 and date>=:dateopen";
-        $a = array(
-                    ':exc' => 0, 
-                    ':type' => 'debit', 
-                    ':aid' => $account, 
-                    ':coid' => $coid, 
-                    ':date1' => $d1, 
-                    ':dateopen' => $r['balance_date']
-                   );
-        $debit = Database::getConnection('external_db', 'external_db')
-                ->query($query, $a)
-                ->fetchAssoc();
-
+        $debit = self::sumAccount($table_journal,0,'debit',$account,$coid,$result->balance_date,$d1);
+        
         // sum transaction exchange
-        $query = "SELECT sum(value) as c_exc FROM {$table_journal} "
-                . "WHERE exchange=:exc and type=:type AND aid=:aid "
-                . "AND coid=:coid and date<:date1 and date>=:dateopen";
-        $a = array(
-                    ':exc' => 1, 
-                    ':type' => 'credit', 
-                    ':aid' => $account, 
-                    ':coid' => $coid, 
-                    ':date1' => $d1, 
-                    ':dateopen' => $r['balance_date']
-                );
-        $credit_exc = Database::getConnection('external_db', 'external_db')
-                ->query($query, $a)
-                ->fetchAssoc();
-
+        $credit_exc = self::sumAccount($table_journal,1,'credit',$account,$coid,$result->balance_date,$d1);
+        
         // sum transaction exchange
-        $query = "SELECT sum(value) as d_exc FROM {$table_journal} "
-                . "WHERE exchange=:exc AND type=:type AND aid=:aid "
-                . "AND coid=:coid and date<:date1 and date>=:dateopen";
-        $a = array(
-                    ':exc' => 1, 
-                    ':type' => 'debit', 
-                    ':aid' => $account, 
-                    ':coid' => $coid, 
-                    ':date1' => $d1, 
-                    ':dateopen' => $r['balance_date']
-                );
-        $debit_exc = Database::getConnection('external_db', 'external_db')
-                ->query($query, $a)
-                ->fetchAssoc();
+        $debit_exc = self::sumAccount($table_journal,1,'debit',$account,$coid,$result->balance_date,$d1);
 
         //calculate value in local currency
-        $balance = $r['balance'] + $credit['c'] - $debit['d'];
-
+        $balance = $result->balance + $credit - $debit;
         //calculate value in base currency
-        $balance_base = $r['balance_base'] + ($credit['c'] + $credit_exc['c_exc']) - ($debit['d'] + $debit_exc['d_exc']);
+        $balance_base = $result->balance_base + ($credit + $credit_exc) - ($debit + $debit_exc);
 
         return array($balance, $balance_base);
     }
@@ -1942,7 +2105,7 @@ class Journal {
 //REVENUE - class //
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_accounts', 't');
-        $query->fields($t, ['aid','aname']);
+        $query->fields('t', ['aid','aname']);
         $condition = $query->orConditionGroup()
         ->condition('aid', $chart['income'] . '%', 'like')
         ->condition('aid', $chart['other_income'] . '%', 'like');
@@ -1964,7 +2127,7 @@ class Journal {
             
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_accounts', 't');
-            $query->fields($t, ['aid','aname']);
+            $query->fields('t', ['aid','aname']);
             $query->condition('aid', $aid . '%', 'like');
             $query->condition('astatus', '1', '=');
             $query->condition('atype', 'detail', '=');
@@ -2006,7 +2169,7 @@ class Journal {
 // COS - class //
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_accounts', 't');
-        $query->fields($t, ['aid','aname']);
+        $query->fields('t', ['aid','aname']);
         $query->condition('aid', $chart['cos'] . '%', 'like');
         $query->condition('astatus', '1', '=');
         $query->condition('atype', 'class', '=');
@@ -2025,7 +2188,7 @@ class Journal {
             
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_accounts', 't');
-            $query->fields($t, ['aid','aname']);
+            $query->fields('t', ['aid','aname']);
             $query->condition('aid', $aid . '%', 'like');
             $query->condition('astatus', '1', '=');
             $query->condition('atype', 'detail', '=');
@@ -2067,7 +2230,7 @@ class Journal {
 // CHARGES - class //
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_accounts', 't');
-        $query->fields($t, ['aid','aname']);
+        $query->fields('t', ['aid','aname']);
         $condition = $query->orConditionGroup()
         ->condition('aid', $chart['expenses'] . '%', 'like')
         ->condition('aid', $chart['other_expenses'] . '%', 'like');
@@ -2088,7 +2251,7 @@ class Journal {
             $total_detail_l = 0;
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_accounts', 't');
-            $query->fields($t, ['aid','aname']);
+            $query->fields('t', ['aid','aname']);
             $query->condition('aid', $aid . '%', 'like');
             $query->condition('astatus', '1', '=');
             $query->condition('atype', 'detail', '=');
