@@ -136,7 +136,7 @@ class InvoicesController extends ControllerBase {
         $or1->condition('head', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');
 
-        if (isset($_SESSION['ifilter']) && $_SESSION['ifilter']['filter'] == 1) {
+        if (isset($_SESSION['ifilter']['filter']) && $_SESSION['ifilter']['filter'] == 1) {
 
             if ($_SESSION['ifilter']['keyword'] == '') {
                 //search via options fields

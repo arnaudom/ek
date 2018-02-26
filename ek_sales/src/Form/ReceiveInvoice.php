@@ -206,7 +206,11 @@ class ReceiveInvoice extends FormBase {
         }
 
         //calculate short payments
-        $balance = $form_state->getValue('balance') - str_replace(',', '', $form_state->getValue('amount'));
+        if(!NULL == $form_state->getValue('amount')) {
+            $balance = $form_state->getValue('balance') - str_replace(',', '', $form_state->getValue('amount'));
+        } else {
+            $balance = 0;
+        }
 
         $form['short'] = array(
             '#type' => 'textfield',
@@ -457,7 +461,7 @@ class ReceiveInvoice extends FormBase {
                 'reference' => $form_state->getValue('for_id'),
                 'account' => $assetacc,
             );
-            $value = round($this->journal->checktransactioncredit($a), 4);
+            $value = round($this->journal->checkTransactionCredit($a), 4);
             $form_state->set('max_pay', abs($value));
             
                 if (round($value + $this_pay, 4) > 0) {
@@ -504,6 +508,11 @@ class ReceiveInvoice extends FormBase {
                         'fxRate2' => $form_state->getValue('debit_fx_rate'),
                     )
             );
+            
+            if($this->journal->credit <> $this->journal->debit) {
+                $msg = 'debit: ' . $this->journal->debit . ' <> ' . 'credit: ' . $this->journal->credit;
+                drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+            } 
         }
 
         $amountpaid = $data->amountreceived + $this_pay;

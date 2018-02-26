@@ -37,6 +37,7 @@ class PayPurchase extends FormBase {
      */
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
+        $this->journal = new Journal();
     }
 
     /**
@@ -119,7 +120,7 @@ class PayPurchase extends FormBase {
                 '#default_value' => NULL,
                 '#title' => t('account payment'),
                 '#ajax' => array(
-                    'callback' => '\Drupal\ek_sales\Form\PayPurchase::fx_rate',
+                    'callback' => [$this, 'fx_rate' ],
                     'wrapper' => 'fx',
                 ),
             );
@@ -320,7 +321,7 @@ class PayPurchase extends FormBase {
                 'account' => $liabacc,
             );
 
-            if ((Journal::checktransactiondebit($a) + $this_pay) > 0) {
+            if (($this->journal->checkTransactionDebit($a) + $this_pay) > 0) {
                 $form_state->setErrorByName("amount", $this->t('this payment exceeds purchase balance amount in journal'));
             }
         } else {
@@ -377,7 +378,7 @@ class PayPurchase extends FormBase {
                 $fx = 1;
             }
 
-            Journal::record(
+            $this->journal->record(
                     array(
                         'source' => "payment",
                         'coid' => $data->head,
@@ -392,6 +393,12 @@ class PayPurchase extends FormBase {
                         'fxRate' => $fx,
                     )
             );
+            
+            if($this->journal->credit <> $this->journal->debit) {
+                $msg = 'debit: ' . $this->journal->debit . ' <> ' . 'credit: ' . $this->journal->credit;
+                drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+            }            
+            
         }
 
         $amountpaid = $data->amountpaid + $this_pay;

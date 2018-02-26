@@ -1332,7 +1332,12 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
                   'type' => 'stax_collect_aid',  
                   )      
         
-        );      
+        );   
+        
+        if($journal->credit <> $journal->debit) {
+            $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+            drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+        }
         
     }  
   

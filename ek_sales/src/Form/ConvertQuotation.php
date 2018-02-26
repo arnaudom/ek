@@ -411,7 +411,6 @@ class ConvertQuotation extends FormBase {
             '#type' => 'details',
             '#title' => $this->t('Items'),
             '#open' => TRUE,
-            '#attributes' => '',
         );
 
 
@@ -938,6 +937,7 @@ class ConvertQuotation extends FormBase {
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             // used to calculate currency gain/loss from rate at invoice record time
             $baseCurrency = $this->settings->get('baseCurrency');
+            $currencyRate = 1;
             if ($baseCurrency <> $form_state->getValue('currency')) {
 
                 if ($fx_rate <> '' && is_numeric($fx_rate)) {
@@ -1156,6 +1156,12 @@ class ConvertQuotation extends FormBase {
                         'type' => 'stax_collect_aid',
                     )
             );
+            
+            if($journal->credit <> $journal->debit) {
+                $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+                drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+            }
+            
         } //if finance  
         //change quotation status
         Database::getConnection('external_db', 'external_db')->update('ek_sales_quotation')
