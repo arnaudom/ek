@@ -430,7 +430,11 @@ class AmortizationRecord extends FormBase {
                 );
           }
                    
-       
+            if($journal->credit <> $journal->debit) {
+                $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+                drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+            }
+            
           $status = 0;
           $schedule = unserialize($form_state->getValue('amort_record'));
           $ct_ref = $form_state->getValue('for_ref')+1;
