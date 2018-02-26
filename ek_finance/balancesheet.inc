@@ -63,7 +63,7 @@ $total_class0_base = 0;
     
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['other_assets'] . '%', 'like');
 $query->condition('atype', 'header', '=');
 $query->condition('astatus', '1', '=');
@@ -76,7 +76,7 @@ $table_1 .= style('header', $rh->aid, $rh->aname);
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['other_assets'] . '%', 'like');
 $query->condition('atype', 'class', '=');
 $query->condition('astatus', '1', '=');
@@ -96,7 +96,7 @@ while ($r = $result->fetchObject()) {
 
     $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-    $query->fields($t, ['aid','aname']);
+    $query->fields('t', ['aid','aname']);
     $query->condition('aid', $aid . '%', 'like');
     $query->condition('atype', 'detail', '=');
     $query->condition('coid', $coid, '=');
@@ -142,7 +142,7 @@ $total_class1_base = 0;
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['assets'] . '%', 'like');
 $query->condition('atype', 'header', '=');
 $query->condition('astatus', '1', '=');
@@ -155,7 +155,7 @@ $table_1 .= style('header', $rh->aid, $rh->aname);
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['assets'] . '%', 'like');
 $query->condition('atype', 'class', '=');
 $query->condition('astatus', '1', '=');
@@ -175,7 +175,7 @@ while ($r = $result->fetchObject()) {
     
     $query = Database::getConnection('external_db', 'external_db')
                         ->select($table_accounts, 't');
-    $query->fields($t, ['aid','aname']);
+    $query->fields('t', ['aid','aname']);
     $query->condition('aid', $aid . '%', 'like');
     $query->condition('atype', 'detail', '=');
     $query->condition('coid', $coid, '=');
@@ -233,7 +233,7 @@ $total_class2_base = 0;
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['liabilities'] . '%', 'like');
 $query->condition('atype', 'header', '=');
 $query->condition('astatus', '1', '=');
@@ -246,7 +246,7 @@ $table_2 .= style('header', $rh->aid, $rh->aname);
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['liabilities'] . '%', 'like');
 $query->condition('atype', 'class', '=');
 $query->condition('astatus', '1', '=');
@@ -266,7 +266,7 @@ while ($r = $result->fetchObject()) {
     
     $query = Database::getConnection('external_db', 'external_db')
                         ->select($table_accounts, 't');
-    $query->fields($t, ['aid','aname']);
+    $query->fields('t', ['aid','aname']);
     $query->condition('aid', $aid . '%', 'like');
     $query->condition('atype', 'detail', '=');
     $query->condition('coid', $coid, '=');
@@ -311,7 +311,7 @@ $total_class7_base = 0;
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['other_liabilities'] . '%', 'like');
 $query->condition('atype', 'header', '=');
 $query->condition('astatus', '1', '=');
@@ -324,7 +324,7 @@ $table_2 .= style('header', $rh->aid, $rh->aname);
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['other_liabilities'] . '%', 'like');
 $query->condition('atype', 'class', '=');
 $query->condition('astatus', '1', '=');
@@ -344,7 +344,7 @@ while ($r = $result->fetchObject()) {
 
     $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-    $query->fields($t, ['aid','aname']);
+    $query->fields('t', ['aid','aname']);
     $query->condition('aid', $aid . '%', 'like');
     $query->condition('atype', 'detail', '=');
     $query->condition('coid', $coid, '=');
@@ -421,7 +421,7 @@ $table_4 = "<table style= border=0 cellpadding=1 cellspacing=0 class=''>
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['equity'] . '%', 'like');
 $query->condition('atype', 'header', '=');
 $query->condition('astatus', '1', '=');
@@ -434,7 +434,7 @@ $table_4 .= style('header', $rh->aid, $rh->aname);
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['equity'] . '%', 'like');
 $query->condition('atype', 'class', '=');
 $query->condition('astatus', '1', '=');
@@ -454,7 +454,7 @@ while ($r = $result->fetchObject()) {
 
     $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-    $query->fields($t, ['aid','aname']);
+    $query->fields('t', ['aid','aname']);
     $query->condition('aid', $aid . '%', 'like');
     $query->condition('atype', 'detail', '=');
     $query->condition('coid', $coid, '=');
