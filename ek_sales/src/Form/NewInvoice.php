@@ -1336,14 +1336,14 @@ if($this->moduleHandler->moduleExists('ek_finance')) {
         
         if($journal->credit <> $journal->debit) {
             $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
-            drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+            \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
         }
         
     }  
   
   Cache::invalidateTags(['project_page_view']);
   if (isset($insert) || isset($update) )  {
-      drupal_set_message(t('The @doc is recorded. Ref. @r', array('@r' => $serial, '@doc' => $options[$form_state->getValue('title')])), 'status');
+      \Drupal::messenger()->addStatus(t('The @doc is recorded. Ref. @r', ['@r' => $serial, '@doc' => $options[$form_state->getValue('title')]]));
   
             if ($this->moduleHandler->moduleExists('ek_projects')) {
                 //notify user if invoice is linked to a project

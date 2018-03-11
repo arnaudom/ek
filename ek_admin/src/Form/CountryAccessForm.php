@@ -140,7 +140,7 @@ class CountryAccessForm extends FormBase {
                 ->fields(array('access' => $selected))
                 ->execute();
         if ($update) {
-            drupal_set_message(t('Data updated'));
+            \Drupal::messenger()->addStatus(t('Data updated'));
         }
 
         //////////////////////////

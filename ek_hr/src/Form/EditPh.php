@@ -273,7 +273,7 @@ class EditPh extends FormBase {
                                 ->condition('id', $key)
                                 ->execute();
 
-                        drupal_set_message(t('Public Holiday \'@l\' deleted', array('@l' => $value['description'])), 'warning');
+                        \Drupal::messenger()->addWarning(t('Public Holiday \'@l\' deleted', ['@l' => $value['description']]));
                     } elseif ($value['description'] != NULL && $value['date'] != NULL) {
 
                         $fields = array(
@@ -299,14 +299,15 @@ class EditPh extends FormBase {
                             ->insert('ek_hr_workforce_ph')
                             ->fields($fields)
                             ->execute();
-
-                    drupal_set_message(t('Public Holiday \'@l\' is created', array('@l' => $value['description'])), 'status');
+                    
+                    \Drupal::messenger()->addStatus(t('Public Holiday \'@l\' is created', ['@l' => $value['description']]));
                 }
             }
 
 
-            if ($update)
-                drupal_set_message(t('Data updated'), 'status');
+            if ($update){
+                \Drupal::messenger()->addStatus(t('Data updated'));
+            }
         }//step 3
     }
 

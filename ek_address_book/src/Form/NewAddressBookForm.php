@@ -659,7 +659,7 @@ class NewAddressBookForm extends FormBase {
             if ($form_state->getValue('delete_logo') == 1) {
 
                 file_unmanaged_delete($form_state->getValue('logo_uri'));
-                drupal_set_message(t("Old logo deleted"), 'status');
+                \Drupal::messenger()->addStatus(t("Old logo deleted"));
                 $logo = '';
                 $del = TRUE;
             } else {
@@ -673,8 +673,7 @@ class NewAddressBookForm extends FormBase {
                   $dir = "private://address_book/cards/" . $id;
                   file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
                   $logo = file_unmanaged_copy($file->getFileUri(), $dir);
-                  
-                  drupal_set_message(t("New logo uploaded"), 'status');
+                  \Drupal::messenger()->addStatus(t("New logo uploaded"));
                   
                   //remove old if any
                   if(!isset($del) && $form_state->getValue('logo_uri') != '') {
@@ -714,7 +713,7 @@ class NewAddressBookForm extends FormBase {
                             ->delete('ek_address_book_contacts')
                             ->condition('id', $form_state->getValue('id' . $i))
                             ->execute();
-                    drupal_set_message(t('Deleted card for @i', array('@i' => $form_state->getValue('contact_name' . $i))), 'warning');
+                    \Drupal::messenger()->addWarning(t('Deleted card for @i', ['@i' => $form_state->getValue('contact_name' . $i)]));
                     $a = array('@c' => $form_state->getValue('contact_name' . $i));
                     $log = 'The name card file ' . $a . ' was deleted.';
                     \Drupal::logger('ek_address_book')->notice($log);
@@ -736,7 +735,7 @@ class NewAddressBookForm extends FormBase {
                                 //delete existing file
                                 $pic = drupal_realpath($old_file);
                                 unlink($pic);
-                                drupal_set_message(t("Card image deleted for card @i", array('@i' => $i + 1)), 'warning');
+                                \Drupal::messenger()->addWarning(t("Card image deleted for card @i", ['@i' => $i + 1]));
                                 $filename = '';
                             }
                         }
@@ -786,20 +785,18 @@ class NewAddressBookForm extends FormBase {
                                     ->execute();
                         }
                     } else {
-
-                        drupal_set_message(t('Empty contact No. @i not recorded.', array('@i' => $i + 1)), 'warning');
+                        //\Drupal::messenger()->addWarning(t('Empty contact No. @i not recorded.', array('@i' => $i + 1)));
                     }
                 }
             } //loop
         } else {
-
-            drupal_set_message(t('No contact card available'), 'warning');
+            \Drupal::messenger()->addWarning(t('No contact card available'));
         }
 
 
 
         if (isset($insert) || isset($update)) {
-            drupal_set_message(t('The address book entry is recorded'), 'status');
+            \Drupal::messenger()->addStatus(t('The address book entry is recorded'));
             Cache::invalidateTags(['address_book_card']);
 
             $form_state->setRedirect('ek_address_book.view', array('abid' => $id));

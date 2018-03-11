@@ -198,7 +198,7 @@ class Settings extends FormBase {
             $save = $settings->save();
 
             if ($save) {
-                drupal_set_message(t('The settings are recorded'), 'status');
+                \Drupal::messenger()->addStatus(t('The settings are recorded'));
             }
 
             //
@@ -211,7 +211,7 @@ class Settings extends FormBase {
                 $dest = $dir;
                 $filename = file_unmanaged_copy($form_state->get('new_pdf_form')
                                 ->getFileUri(), $dest, FILE_EXISTS_REPLACE);
-                drupal_set_message(t("New pdf form uploaded"), 'status');
+                \Drupal::messenger()->addStatus(t("New pdf form uploaded"));
             }
 
             if ($form_state->get('new_xls_form')) {
@@ -221,7 +221,7 @@ class Settings extends FormBase {
                 $dest = $dir;
                 $filename = file_unmanaged_copy($form_state->get('new_xls_form')
                                 ->getFileUri(), $dest, FILE_EXISTS_REPLACE);
-                drupal_set_message(t("New excel form uploaded"), 'status');
+                \Drupal::messenger()->addStatus(t("New excel form uploaded"));
             }
 
             //
@@ -230,14 +230,14 @@ class Settings extends FormBase {
             foreach ($form_state->getValue('pdf') as $key => $value) {
                 if ($value != 0 || $value != '') {
                     unlink('private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/' . $value);
-                    drupal_set_message(t("Template @t deleted", array('@t' => $value)), 'status');
+                    \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
                 }
             }
 
             foreach ($form_state->getValue('xls') as $key => $value) {
                 if ($value != 0 || $value != '') {
                     unlink('private://logistics/templates/' . $form_state->getValue('coid') . '/xls/' . $value);
-                    drupal_set_message(t("Template @t deleted", array('@t' => $value)), 'status');
+                    \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
                 }
             }
         }//step 3

@@ -1055,7 +1055,7 @@ class NewQuotation extends FormBase {
 
         Cache::invalidateTags(['project_page_view']);
         if (isset($insert) || isset($update))
-            drupal_set_message(t('The quotation is recorded'), 'status');
+            \Drupal::messenger()->addStatus(t('The quotation is recorded'));
         $form_state->setRedirect('ek_sales.quotations.list');
     }
 

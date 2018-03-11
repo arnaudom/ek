@@ -854,7 +854,7 @@ class Journal {
                 ->fields($fields)
                 ->execute();
         if (!$insert) {
-            drupal_set_message(t('Error journal record (@aid)', array('@aid' => $aid)), 'error');
+            \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $aid]));
             $insert =  NULL;
         } else {
             //Track user input history for backup and audit procedures

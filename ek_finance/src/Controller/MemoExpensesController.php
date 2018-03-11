@@ -87,7 +87,7 @@ class MemoExpensesController extends ControllerBase {
 
         while ($l = $list->fetchObject()) {
 
-            if ((time() - $l->doc_date) > 172800) {
+            if ((time() - $l->doc_date) > 60) {
                 unset($l->uri);
                 Database::getConnection('external_db', 'external_db')->delete('ek_expenses_memo_documents')
                         ->condition('id', $l->id)
@@ -102,7 +102,7 @@ class MemoExpensesController extends ControllerBase {
                 ->fetchField();
         if (\Drupal::currentUser()->hasPermission('admin_memos') || in_array($coid, $access)) {
 
-            $tempSerial = 'temp' . mt_rand();
+            $tempSerial = 'temp' .  hash('crc32b', \Drupal::currentUser()->getUsername());
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewMemo', $id, 'internal', $tempSerial);
         } elseif ($id == NULL) {
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewMemo', $id, 'personal', $tempSerial);
@@ -132,14 +132,14 @@ class MemoExpensesController extends ControllerBase {
 
         while ($l = $list->fetchObject()) {
 
-            if ((time() - $l->doc_date) > 172800) {
+            if ((time() - $l->doc_date) > 60) {
                 unset($l->uri);
                 Database::getConnection('external_db', 'external_db')->delete('ek_expenses_memo_documents')
                         ->condition('id', $l->id)
                         ->execute();
             }
         }
-        $tempSerial = 'temp' . mt_rand();
+        $tempSerial = 'temp' .  hash('crc32b', \Drupal::currentUser()->getUsername());
 
         // filter edition access 
         $uid = Database::getConnection('external_db', 'external_db')
@@ -190,7 +190,7 @@ class MemoExpensesController extends ControllerBase {
 
 
         if ($m1 || $m2) {
-            $tempSerial = 'temp' . mt_rand();
+            $tempSerial = 'temp' .  hash('crc32b', \Drupal::currentUser()->getUsername());
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\AttachFileMemo', $id, $tempSerial);
         } else {
             throw new AccessDeniedHttpException();

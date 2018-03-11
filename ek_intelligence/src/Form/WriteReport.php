@@ -326,7 +326,7 @@ class WriteReport extends FormBase {
   
 
     if($result) {
-        drupal_set_message(t('Report updated'), 'status');
+        \Drupal::messenger()->addStatus(t('Report updated'));
         $form_state->setRedirect('ek_intelligence.report' ) ;
     }
  }

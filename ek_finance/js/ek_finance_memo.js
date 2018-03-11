@@ -13,7 +13,7 @@
                 });
             
             
-            //init attachmenn display
+            //init attachment display
             attachments(settings.id, settings.serial);
             
             jQuery('.amount').on('change', function () {

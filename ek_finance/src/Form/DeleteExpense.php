@@ -193,7 +193,8 @@ class DeleteExpense extends FormBase {
                             ->fields(['amort_record' => serialize($schedule), 'amort_status' => 0])
                             ->execute();
                         $url = Url::fromRoute('ek_assets.set_amortization', ['id' => $r->id])->toString();
-                        drupal_set_message(t('An amortization record was updated for asset id <a href=@url>@id</a>', ['@url' => $url, '@id' => $r->id]), 'warning');
+                        \Drupal::messenger()->addWarning(t('An amortization record was updated for asset id <a href=@url>@id</a>',['@url' => $url, '@id' => $r->id]));
+                       
                         
                     }
                 }
@@ -204,7 +205,8 @@ class DeleteExpense extends FormBase {
   }
   
     if ($delete){
-        drupal_set_message(t('The entry was deleted'), 'status');
+        \Drupal::messenger()->addStatus(t('The entry has been deleted'));
+        
         $form_state->setRedirect("ek_finance.manage.list_expense" );  
     }
   

@@ -93,10 +93,9 @@ class UploadChart extends FormBase {
             $coid = $form_state->getValue('coid');
             
             include_once drupal_get_path('module', 'ek_finance') . '/excel_import_chart.inc';
-
-            drupal_set_message(t('imported @n rows from file @f', ['@n' => $row, '@f' => $filename]));
+            \Drupal::messenger()->addStatus(t('imported @n rows from file @f', ['@n' => $row, '@f' => $filename]));
         } else {
-            drupal_set_message(t('error copying file'));
+            \Drupal::messenger()->addError(t('error copying file'));
         }
 
         

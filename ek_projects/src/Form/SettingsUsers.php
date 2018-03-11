@@ -195,7 +195,7 @@ class SettingsUsers extends FormBase {
             
         }
         
-        drupal_set_message(t("Updated @n, inserted @i user(s)", ['@n' => $n, '@i' => $i]), 'status');
+        \Drupal::messenger()->addStatus(t("Updated @n, inserted @i user(s)", ['@n' => $n, '@i' => $i]));
 
     }
 

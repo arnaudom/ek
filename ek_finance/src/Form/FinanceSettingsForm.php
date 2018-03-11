@@ -283,7 +283,9 @@ class FinanceSettingsForm extends FormBase {
   $settings->set('listPurchases', $form_state->getValue('listPurchases'));
   $save = $settings->save();
   
-   if ($save)  drupal_set_message(t('The settings are recorded'), 'status');
+   if ($save){
+       \Drupal::messenger()->addStatus(t('The settings are recorded'));
+   }
   
 
   }

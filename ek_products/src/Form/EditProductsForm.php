@@ -953,9 +953,10 @@ class EditProductsForm extends FormBase {
         }
 
 
-        if (isset($insert) || isset($update))
-            drupal_set_message(t('The item is recorded'), 'status');
-        $form_state->setRedirect('ek_products.view', array('id' => $id));
+        if (isset($insert) || isset($update)){
+            \Drupal::messenger()->addStatus(t('The item is recorded'));
+            $form_state->setRedirect('ek_products.view', array('id' => $id));
+        }
     }
 
 }

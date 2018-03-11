@@ -194,7 +194,7 @@ $i++;
         ->condition('id', $form_state->getValue('for_id'))
         ->execute();
     
-       drupal_set_message(t('Quantities delivered have been posted to stock balance.'), 'status');
+       \Drupal::messenger()->addStatus(t('Quantities delivered have been posted to stock balance.'));
        $form_state->setRedirect("ek_logistics_list_delivery" );  
    
     } 
@@ -221,7 +221,7 @@ $i++;
         ->condition('id', $form_state->getValue('for_id'))
         ->execute();      
       
-      drupal_set_message(t('Quantities received have been posted to stock balance.'), 'status');
+        \Drupal::messenger()->addStatus(t('Quantities received have been posted to stock balance.'));
       
       if ($delete && $type == 'RR'){
           $form_state->setRedirect("ek_logistics_list_receiving" );  
@@ -231,7 +231,7 @@ $i++;
    
    
    } else {
-    drupal_set_message(t('You do not have enough privileges to post quantities. Please contact administrator.'), 'warning');
+       \Drupal::messenger()->addWarning(t('You do not have enough privileges to post quantities. Please contact administrator.'));
            
    }
   

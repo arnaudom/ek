@@ -89,7 +89,7 @@ class DeleteAddressBook extends FormBase {
                 ->execute();
         
         if ($delete) {
-            drupal_set_message(t('The address book entry has been deleted'), 'status');
+            \Drupal::messenger()->addStatus(t('The address book entry has been deleted'));
             $form_state->setRedirect("ek_address_book.search");
         }
     }

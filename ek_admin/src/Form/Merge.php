@@ -168,18 +168,17 @@ class Merge extends FormBase {
                         ->query($query);
                 
                 if($merge) {
-                    drupal_set_message(t('Data have been merged with target table @tb.', 
-                        ['@tb' => $table]), 'status');
+                    \Drupal::messenger()->addStatus(t('Data have been merged with target table @tb.',['@tb' => $table]));
                 }
                 
                 if ($markup != '') {
-                    drupal_set_message($markup, 'error');
+                    \Drupal::messenger()->addError($markup);
                 }
                 
             } else {
-                drupal_set_message(t('Error while trying to read the source file. '
-                                . 'Please check if table name of source file matches the target table name (@tb).', 
-                                ['@tb' => $table]), 'error');
+                $e = 'Error while trying to read the source file. '
+                      . 'Please check if table name of source file matches the target table name (@tb).';
+                \Drupal::messenger()->addError(t($e,['@tb' => $table]));
             }
         }
     }

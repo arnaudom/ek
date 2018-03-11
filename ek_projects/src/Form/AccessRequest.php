@@ -122,7 +122,7 @@ class AccessRequest extends FormBase {
   );
   
     if($send['result'] == TRUE) {
-      drupal_set_message(t('The request has been sent'), 'status');
+        \Drupal::messenger()->addStatus(t('The request has been sent'));
           $form_state->setRedirect('ek_projects_main') ;
     }
 

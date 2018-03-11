@@ -452,7 +452,7 @@ class EditForm extends FormBase {
                             ->query($query, array(':id' => $form_state->getValue('for_id')))->fetchField();
             $pic = drupal_realpath($filename);
             unlink($pic);
-            drupal_set_message(t("Asset image deleted"), 'warning');
+            \Drupal::messenger()->addWarning(t("Asset image deleted"));
             Database::getConnection('external_db', 'external_db')
                     ->update('ek_assets')
                     ->fields(array('asset_pic' => ''))
@@ -471,7 +471,7 @@ class EditForm extends FormBase {
                     ->update('ek_assets')
                     ->fields(array('asset_doc' => ''))
                     ->condition('id', $form_state->getValue('for_id'))->execute();
-            drupal_set_message(t("Attachment deleted"), 'warning');
+            \Drupal::messenger()->addWarning(t("Attachment deleted"));
         }
 
         if ($form_state->getValue('asset_pic') != 0) {
@@ -480,8 +480,8 @@ class EditForm extends FormBase {
                 $dir = "private://assets/" . $form_state->getValue('coid');
                 file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
                 $picture = file_unmanaged_copy($file->getFileUri(), $dir);
-
-                drupal_set_message(t("Picture uploaded"), 'status');
+                
+                \Drupal::messenger()->addStatus(t("Picture uploaded"));
                 $fields['asset_pic'] = $picture;
             
             }
@@ -493,8 +493,8 @@ class EditForm extends FormBase {
                 $dir = "private://assets/" . $form_state->getValue('coid');
                 file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
                 $doc = file_unmanaged_copy($file->getFileUri(), $dir);
-
-                drupal_set_message(t("Attachment uploaded"), 'status');
+                
+                \Drupal::messenger()->addStatus(t("Attachment uploaded"));
                 $fields['asset_doc'] = $doc;
             }
         }
@@ -520,8 +520,7 @@ class EditForm extends FormBase {
                     ->execute();
             $ref = $form_state->getValue('for_id');
         }
-
-        drupal_set_message(t('Asset recorded'), 'status');
+        \Drupal::messenger()->addStatus(t('Asset recorded'));
 
         switch ($form_state->getValue('redirect')) {
             case 0 :

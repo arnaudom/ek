@@ -140,7 +140,7 @@ class Delete extends FormBase {
             ->execute();
     
     if ($delete){
-    drupal_set_message(t('The record has been deleted'), 'status');
+        \Drupal::messenger()->addStatus(t('The record has been deleted'));
          $form_state->setRedirect("ek_logistics_list_delivery" );  
     }  
   
@@ -160,17 +160,17 @@ class Delete extends FormBase {
             ->execute();
     
             if ($delete && $type == 'RR'){
-            drupal_set_message(t('The record has been deleted'), 'status');
+                \Drupal::messenger()->addStatus(t('The record has been deleted'));
                  $form_state->setRedirect("ek_logistics_list_receiving" );  
             }    
 
             if ($delete && $type == 'RT'){
-            drupal_set_message(t('The record has been deleted'), 'status');
+                \Drupal::messenger()->addStatus(t('The record has been deleted'));
                  $form_state->setRedirect("ek_logistics_list_returning" );  
             } 
       
         } else {
-         drupal_set_message(t('You do not have enough privileges to delete this record. Please contact administrator.'), 'warning');
+            \Drupal::messenger()->addWarning(t('You do not have enough privileges to delete this record. Please contact administrator.'));
 
         }
 

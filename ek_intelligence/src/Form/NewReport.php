@@ -246,9 +246,9 @@ if($this->moduleHandler->moduleExists('ek_address_book')) {
             }
         
             if($error != '') {
-                drupal_set_message(t('Error sending email to @m'), array('@m' => $error));
+                \Drupal::messenger()->addError(t('Error sending email to @m', ['@m' => $error]));
             } else {
-                drupal_set_message(t('Message sent'), 'status');
+                \Drupal::messenger()->addStatus(t('Message sent'));
             }            
         }   
 

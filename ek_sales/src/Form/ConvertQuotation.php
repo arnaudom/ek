@@ -1159,7 +1159,7 @@ class ConvertQuotation extends FormBase {
             
             if($journal->credit <> $journal->debit) {
                 $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
-                drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+                \Drupal::messenger()->addErrors(t('Error journal record (@aid)', ['@aid' => $msg]));
             }
             
         } //if finance  
@@ -1170,7 +1170,7 @@ class ConvertQuotation extends FormBase {
                 ->execute();
 
         if (isset($insert)) {
-            drupal_set_message(t('The invoice @r is recorded', array('@r' => $serial)), 'status');
+            \Drupal::messenger()->addStatus(t('The invoice @r is recorded', ['@r' => $serial]));
             $form_state->setRedirect('ek_sales.invoices.list');
         }
     }

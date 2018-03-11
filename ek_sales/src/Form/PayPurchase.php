@@ -396,7 +396,7 @@ class PayPurchase extends FormBase {
             
             if($this->journal->credit <> $this->journal->debit) {
                 $msg = 'debit: ' . $this->journal->debit . ' <> ' . 'credit: ' . $this->journal->credit;
-                drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+                \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }            
             
         }

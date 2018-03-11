@@ -128,7 +128,7 @@ class SettingsForm extends FormBase {
   $save = $settings->save();
   
    if ($save) { 
-       drupal_set_message(t('The settings are recorded'), 'status');
+       \Drupal::messenger()->addStatus(t('The settings are recorded'));
    }
   
 

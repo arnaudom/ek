@@ -1078,7 +1078,7 @@ class NewPurchase extends FormBase {
                     $query = "SELECT * FROM {file_managed} WHERE uri=:u";
                     $sysfile = db_query($query, [':u' => $uri])->fetchObject();
                     file_delete($sysfile->fid);
-                    drupal_set_message(t('Previous attachment has been deleted.'), 'warning');
+                    \Drupal::messenger()->addWarning(t('Previous attachment has been deleted.'));
                 }
             }
            
@@ -1156,13 +1156,13 @@ class NewPurchase extends FormBase {
             
             if($journal->credit <> $journal->debit) {
                 $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
-                drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+                \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }
         }
 
         Cache::invalidateTags(['project_page_view']);
         if (isset($insert) || isset($update)) {
-            drupal_set_message(t('The purchase is recorded. Ref @r', array('@r' => $serial)), 'status');
+            \Drupal::messenger()->addStatus(t('The purchase is recorded. Ref @r', ['@r' => $serial]));
             
   
             if ($this->moduleHandler->moduleExists('ek_projects')) {

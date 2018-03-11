@@ -57,9 +57,9 @@ class InboxSubscriber implements EventSubscriberInterface {
                             if ($data > 0) {
                                 $h = Url::fromRoute('ek_messaging_inbox')->toString();
                                 if ($data > 1) {
-                                    drupal_set_message(t('There are @c unread messages in your <a href=@h>inbox</a>', array('@c' => $data, '@h' => $h)));
+                                    \Drupal::messenger()->addStatus(t('There are @c unread messages in your <a href=@h>inbox</a>', ['@c' => $data, '@h' => $h]));
                                 } else {
-                                    drupal_set_message(t('There is 1 unread message in your <a href=@h>inbox</a>', array('@h' => $h)));
+                                    \Drupal::messenger()->addStatus(t('There is 1 unread message in your <a href=@h>inbox</a>', ['@h' => $h]));
                                 }
                             }
                         }

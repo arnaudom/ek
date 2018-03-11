@@ -711,8 +711,8 @@ class Roster extends FormBase {
                             ->execute();
                 }
             }
-
-            drupal_set_message(t('Roster recorded'), 'status');
+            
+            \Drupal::messenger()->addStatus(t('Roster recorded'));
         }
     }
 

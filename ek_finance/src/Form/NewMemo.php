@@ -67,7 +67,7 @@ class NewMemo extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $category = NULL, $tempSerial = NULL) {
 
-      
+
   if(isset($id) && $id != NULL  ) {
  
   $chart = $this->settings->get('chart');   
@@ -790,6 +790,15 @@ $grandtotal = 0;
         $insert = Database::getConnection('external_db', 'external_db')
                 ->insert('ek_expenses_memo_documents')->fields($fields)->execute();
         
+        $response = new AjaxResponse();
+        if($insert) {
+            return $response->addCommand(new HtmlCommand('#error', ""));   
+        } else {
+            $msg = "<div aria-label='Error message' class='messages messages--error'>" 
+           . t('Error') . "</div>";
+            return $response->addCommand(new HtmlCommand('#error', $msg));  
+        }
+        
       } else {
           $msg = "<div aria-label='Error message' class='messages messages--error'>" 
            . t('Error') . ". " . t('Allowed extensions') . ": " . 'png jpg jpeg'
@@ -1017,7 +1026,9 @@ $grandtotal = 0;
 
 
   
-  if (isset($insert) || isset($update) )  drupal_set_message(t('The memo is recorded'), 'status');
+  if (isset($insert) || isset($update) ){
+      \Drupal::messenger()->addStatus(t('The memo is recorded'));
+  }
   
     //update the documents table
     Database::getConnection('external_db', 'external_db')->update('ek_expenses_memo_documents')
@@ -1097,9 +1108,9 @@ $grandtotal = 0;
   
     if(!empty($error)) {
      $errors = implode(',', $error);
-     drupal_set_message(t('Error sending notification to :t', array(':t' => $errors)), 'error');
+     \Drupal::messenger()->addError(t('Error sending notification to :t', [':t' => $errors]));
     } else {
-      drupal_set_message(t('Notification message sent'), 'status');
+        \Drupal::messenger()->addStatus(t('Notification message sent'));
     }  
   
   }//notification

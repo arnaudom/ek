@@ -136,7 +136,7 @@ class NewCurrencyForm extends FormBase {
             
            
           if (isset($insert)) {
-                drupal_set_message(t('Currency @c recorded', ['@c' => strtoupper($form_state->getValue('code'))]), 'status');
+                \Drupal::messenger()->addStatus(t('Currency @c recorded', ['@c' => strtoupper($form_state->getValue('code'))]));
                 $response = new AjaxResponse();
                 $url = Url::fromRoute('ek_finance.currencies')->toString();
                 $response->addCommand(new RedirectCommand($url));

@@ -197,7 +197,8 @@ class SerialFormat extends FormBase {
           ->condition('coid', 0)
           ->fields(['settings' => serialize($elements)])
           ->execute();
-        drupal_set_message(t('Settings updated'), 'status');
+        
+        \Drupal::messenger()->addStatus(t('Settings updated'));
     }
 
 }

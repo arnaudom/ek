@@ -147,7 +147,7 @@ class DeleteForm extends FormBase {
           ->execute();
 
     if ($delete){
-    drupal_set_message(t('The report data have been deleted'), 'status');
+        \Drupal::messenger()->addStatus(t('The report data have been deleted'));
          $form_state->setRedirect("ek_intelligence.report" );  
     }
   

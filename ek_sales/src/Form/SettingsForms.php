@@ -217,7 +217,7 @@ class SettingsForms extends FormBase {
             $dest = $dir;
             $filename = file_unmanaged_copy($form_state->get('new_purchase')
                             ->getFileUri(), $dest, FILE_EXISTS_REPLACE);
-            drupal_set_message(t("New purchase file uploaded"), 'status');
+            \Drupal::messenger()->addStatus(t("New purchase file uploaded"));
         }
 
         if ($form_state->get('new_quotation')) {
@@ -227,7 +227,7 @@ class SettingsForms extends FormBase {
             $dest = $dir;
             $filename = file_unmanaged_copy($form_state->get('new_quotation')
                             ->getFileUri(), $dest, FILE_EXISTS_REPLACE);
-            drupal_set_message(t("New quotation file uploaded"), 'status');
+            \Drupal::messenger()->addStatus(t("New quotation file uploaded"));
         }
 
         if ($form_state->get('new_invoice')) {
@@ -237,7 +237,7 @@ class SettingsForms extends FormBase {
             $dest = $dir;
             $filename = file_unmanaged_copy($form_state->get('new_invoice')
                             ->getFileUri(), $dest, FILE_EXISTS_REPLACE);
-            drupal_set_message(t("New invoice file uploaded"), 'status');
+            \Drupal::messenger()->addStatus(t("New invoice file uploaded"));
         }
 
 
@@ -245,7 +245,7 @@ class SettingsForms extends FormBase {
 
             if ($value != 0 || $value != '') {
                 unlink("private://sales/templates/purchase/" . $value);
-                drupal_set_message(t("Template @t deleted", array('@t' => $value)), 'status');
+                \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
             }
         }
 
@@ -253,7 +253,7 @@ class SettingsForms extends FormBase {
 
             if ($value != 0 || $value != '') {
                 unlink("private://sales/templates/quotation/" . $value);
-                drupal_set_message(t("Template @t deleted", array('@t' => $value)), 'status');
+                \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
             }
         }
 
@@ -261,7 +261,7 @@ class SettingsForms extends FormBase {
 
             if ($value != 0 || $value != '') {
                 unlink("private://sales/templates/invoice/" . $value);
-                drupal_set_message(t("Template @t deleted", array('@t' => $value)), 'status');
+                \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
             }
         }
     }

@@ -198,10 +198,8 @@ class Merge extends FormBase {
                         ->update('ek_project')
                         ->fields(array('level' => 'Sub project', 'main' => $data->id))
                         ->condition('pcode', $p1[1])->execute();
-
-            drupal_set_message(t('@n project merged under @u', ['@n' => $p1[1], '@u' => $p2[1]]), 
-                        'status');
-
+            
+            \Drupal::messenger()->addStatus(t('@n project merged under @u', ['@n' => $p1[1], '@u' => $p2[1]]));
             
         }//step 3
     }

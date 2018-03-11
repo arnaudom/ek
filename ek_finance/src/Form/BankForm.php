@@ -311,9 +311,9 @@ $countries = $this->countryManager->getList();
                 ->fields($fields)
                 ->execute();   
               
-        }   
-    
-        drupal_set_message(t('Bank data recorded'), 'status'); 
+        }
+        
+        \Drupal::messenger()->addStatus(t('Bank data recorded'));
 
     }
 

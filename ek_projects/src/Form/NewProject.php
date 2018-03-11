@@ -382,8 +382,8 @@ class NewProject extends FormBase {
             //create document folder
             $dir = "private://projects/documents/" . $ref;
             file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-
-            drupal_set_message(t('New project created with ref @r', array('@r' => $pcode)), 'status');
+            
+            \Drupal::messenger()->addStatus(t('New project created with ref @r', ['@r' => $pcode]));
             Cache::invalidateTags(['project_last_block']);
             
             //notify users

@@ -289,7 +289,7 @@ if($form_state->getValue('bid') != NULL) {
         if ( $form_state->getValue('id') == 0)  {
           $insert = Database::getConnection('external_db', 'external_db')
                   ->insert('ek_bank_accounts')->fields($fields)->execute();
-          drupal_set_message(t('Bank account data recorded'), 'status');
+          \Drupal::messenger()->addStatus(t('Bank account data recorded'));
         } else {
           //update existing
               $update = Database::getConnection('external_db', 'external_db')
@@ -297,7 +297,7 @@ if($form_state->getValue('bid') != NULL) {
                 ->condition('id', $form_state->getValue('id'))
                 ->fields($fields)
                 ->execute();   
-          drupal_set_message(t('Bank account data updated'), 'status');     
+              \Drupal::messenger()->addStatus(t('Bank account data updated'));
         }   
     
         $form_state->setRedirect('ek_finance.manage.bank_accounts_list');

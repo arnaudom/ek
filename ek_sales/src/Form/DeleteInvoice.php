@@ -136,7 +136,7 @@ class DeleteInvoice extends FormBase {
   }
   
   if ($delete){
-  drupal_set_message(t('The invoice was deleted'), 'status');
+      \Drupal::messenger()->addStatus(t('The invoice has been deleted'));
        $form_state->setRedirect("ek_sales.invoices.list" );  
   }
   

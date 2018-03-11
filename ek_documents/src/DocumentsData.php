@@ -252,6 +252,7 @@ use Drupal\Core\Database\Database;
   
   $uid = 0;
   $common = array();
+  $manage = 0;
     
   $query = "SELECT DISTINCT folder FROM {ek_documents} WHERE uid=:uid order by folder";
   $a=array(':uid' => $uid);

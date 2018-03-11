@@ -534,12 +534,18 @@ class RecordExpense extends FormBase {
                 '#suffix' => '</div>',
             );
 
+            if($form_state->getValue("pdate1")) {
+                $rowDate = $form_state->getValue("pdate1");
+            } else {
+                $rowDate = $rowDate = date('Y-m-d');
+            }
+            
             $form['debit']["pdate$i"] = array(
                 '#type' => 'date',
                 '#id' => "edit-from$i",
                 '#size' => 12,
                 '#required' => TRUE,
-                '#default_value' => ($form_state->get("pdate$i")) ? $form_state->get("pdate$i") : date('Y-m-d'),
+                '#default_value' => ($form_state->get("pdate$i")) ? $form_state->get("pdate$i") : $rowDate,
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
                 
@@ -1022,13 +1028,13 @@ class RecordExpense extends FormBase {
 
         if($journal->credit <> $journal->debit) {
             $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
-            drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+            \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
         }
 
         if ($form_state->getValue('edit') != '') {
-            drupal_set_message(t('Expenses ref. @id edited', array('@id' => $insert)), 'status');
+            \Drupal::messenger()->addStatus(t('Expenses ref. @id edited', ['@id' => $insert]));
         } else {
-            drupal_set_message(t('Expenses recorded ref. @id', array('@id' => $insert)), 'status');
+            \Drupal::messenger()->addStatus(t('Expenses recorded ref. @id', ['@id' => $insert]));
         }
 
         $form_state->setRedirect('ek_finance.manage.list_expense');

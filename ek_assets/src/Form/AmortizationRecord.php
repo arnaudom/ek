@@ -432,7 +432,7 @@ class AmortizationRecord extends FormBase {
                    
             if($journal->credit <> $journal->debit) {
                 $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
-                drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+                \Drupal::messenger()->addError(t('Error journal record (@aid)', array('@aid' => $msg)));
             }
             
           $status = 0;
@@ -451,7 +451,7 @@ class AmortizationRecord extends FormBase {
                     ->execute();
           
           $url = Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString();
-          drupal_set_message(t('Data updated. <a href="@url">Go to expenses</a>.', ['@url' => $url]), 'status');
+          \Drupal::messenger()->addStatus(t('Data updated. <a href="@url">Go to expenses</a>.', ['@url' => $url]));
           
           $form_state->setRedirect('ek_assets.set_amortization', ['id' => $form_state->getValue('for_id')]) ;
 

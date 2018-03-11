@@ -206,7 +206,7 @@ class EditCountryForm extends FormBase {
                     ->query($query, [':code' => $newCountry])
                     ->fetchField();
                     if($data) {
-                       drupal_set_message(t('New selected country already exists'), 'warning'); 
+                        \Drupal::messenger()->addWarning(t('New selected country already exists'));
                     } else {
                         $insert = Database::getConnection('external_db', 'external_db')
                             ->insert('ek_country')
@@ -215,7 +215,7 @@ class EditCountryForm extends FormBase {
                     }
         }
 
-        drupal_set_message(t('Country data updated'), 'status');
+        \Drupal::messenger()->addStatus(t('Country data updated'));
         $form_state->setRedirect('ek_admin.country.list');
     }
 

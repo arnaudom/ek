@@ -183,10 +183,10 @@ class ImportAddressBook extends FormBase {
                             }
                         } while ($data = fgetcsv($handle, 0, $delimiter, $enclose));
 
-
-                        drupal_set_message(t('Inserted @x row(s)', ['@x' => $values]), 'status');
+                        \Drupal::messenger()->addStatus(t('Inserted @x row(s)', ['@x' => $values]));
+                        
                         if ($error != '') {
-                            drupal_set_message(t('Error with row(s) @r', ['@r' => $error]), 'error');
+                            \Drupal::messenger()->addError(t('Error with row(s) @r', ['@r' => $error]));
                         }
                     } else {
                         //insert only
@@ -234,9 +234,10 @@ class ImportAddressBook extends FormBase {
                             }
                         } while ($data = fgetcsv($handle, 0, $delimiter, $enclose));
 
-                        drupal_set_message(t('Inserted @x row(s)', ['@x' => $values]), 'status');
+                        \Drupal::messenger()->addStatus(t('Inserted @x row(s)', ['@x' => $values]));
+                        
                         if ($error != '') {
-                            drupal_set_message(t('Error with row(s) @r', ['@r' => $error]), 'error');
+                            \Drupal::messenger()->addError(t('Error with row(s) @r', ['@r' => $error]));
                         }
                     }
 
@@ -297,12 +298,12 @@ class ImportAddressBook extends FormBase {
                             }
                         } while ($data = fgetcsv($handle, 0, $delimiter, $enclose));
 
-                        drupal_set_message(t('Inserted @x row(s)', ['@x' => $values]), 'status');
+                        \Drupal::messenger()->addStatus(t('Inserted @x row(s)', ['@x' => $values]));
                         if ($error != '') {
-                            drupal_set_message(t('Error with row(s) @r', ['@r' => $error]), 'error');
+                            \Drupal::messenger()->addError(t('Error with row(s) @r', ['@r' => $error]));
                         }
                         if ($abid != '') {
-                            drupal_set_message(t('Following contacts are not linked to any entity: @r', ['@r' => $abid]), 'error');
+                            \Drupal::messenger()->addError(t('Following contacts are not linked to any entity: @r', ['@r' => $abid]));
                         }
                     } else {
                         //insert only
@@ -351,13 +352,12 @@ class ImportAddressBook extends FormBase {
                                 }
                             }
                         } while ($data = fgetcsv($handle, 0, $delimiter, $enclose));
-
-                        drupal_set_message(t('Inserted @x row(s)', ['@x' => $values]), 'status');
+                            \Drupal::messenger()->addStatus(t('Inserted @x row(s)', ['@x' => $values]));
                         if ($error != '') {
-                            drupal_set_message(t('Error with row(s) @r', ['@r' => $error]), 'error');
+                            \Drupal::messenger()->addError(t('Error with row(s) @r', ['@r' => $error]));
                         }
                         if ($abid != '') {
-                            drupal_set_message(t('Following contacts are not linked to any entity: @r', ['@r' => $abid]), 'error');
+                            \Drupal::messenger()->addError(t('Following contacts are not linked to any entity: @r', ['@r' => $abid]));
                         }
                     }
 

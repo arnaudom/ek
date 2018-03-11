@@ -212,10 +212,9 @@ class Transfer extends FormBase {
             }
             
             if($i > 0) {
-                drupal_set_message(t('@n project(s) transferred to @u', ['@n' => $i, '@u' => $form_state->getValue('tousername')]), 
-                        'status');
+                \Drupal::messenger()->addStatus(t('@n project(s) transferred to @u', ['@n' => $i, '@u' => $form_state->getValue('tousername')]));
             } else {
-                drupal_set_message(t('No project to transfer'), 'warning');
+                \Drupal::messenger()->addWarning(t('No project to transfer'));
             }
             
         }//step 3

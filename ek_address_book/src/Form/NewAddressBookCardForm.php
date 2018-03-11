@@ -363,16 +363,16 @@ class NewAddressBookCardForm extends FormBase {
                     $insert = Database::getConnection('external_db', 'external_db')
                             ->insert('ek_address_book_contacts')->fields($fields)->execute();
                 } else {
-                    drupal_set_message(t('Empty contact No. @i not recorded.', array('@i' => $i + 1)), 'warning');
+                    //\Drupal::messenger()->addWarning(t('Empty contact No. @i not recorded.', ['@i' => $i + 1]));
                 }
             }
         } else {
-            drupal_set_message(t('No contact card available'), 'warning');
+            \Drupal::messenger()->addWarning(t('No contact card available'));
         }
 
 
         if (isset($insert)) {
-            drupal_set_message(t('The address book card is recorded'), 'status');
+            \Drupal::messenger()->addStatus(t('The address book card is recorded'));
         }
 
        $form_state->setRedirect('ek_address_book.view', array('abid' => $form_state->getValue('for_id')));

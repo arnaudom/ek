@@ -206,7 +206,7 @@ class SettingsForm extends FormBase {
         $settings->set('library', $form_state->getValue('library'));
         $settings->save();
         
-        drupal_set_message(t('Data updated'), 'status');
+        \Drupal::messenger()->addStatus(t('Data updated'));
     }
 
 }

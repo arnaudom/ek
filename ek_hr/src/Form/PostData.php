@@ -214,7 +214,7 @@ where ek_hr_workforce_pay.month <> '' and company_id=:c";
 
                 if ($form_state->getValue('finance') == '1') {
 
-                    drupal_set_message(t('Posting recorded; redirecting to finance record.'), 'status');
+                    \Drupal::messenger()->addStatus(t('Posting recorded; redirecting to finance record.'));
                     //redirect to expenses form for payroll
                     //Get data as parameters
                     
@@ -256,12 +256,11 @@ where ek_hr_workforce_pay.month <> '' and company_id=:c";
                     $_SESSION['pay'] = $options;
                     $form_state->setRedirect('ek_finance_payroll.record', array('param' => $param));
                 } else {
-
-                    drupal_set_message(t('Posting recorded'), 'status');
+                    \Drupal::messenger()->addStatus(t('Posting recorded'));
                 }
             } //if move
             else {
-                drupal_set_message(t('Error while trying to post data.'), 'error');
+                \Drupal::messenger()->addError(t('Error while trying to post data.'));
             }
         }//step 2
     }

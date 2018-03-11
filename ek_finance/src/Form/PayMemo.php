@@ -558,9 +558,7 @@ class PayMemo extends FormBase {
 
         if ($update) {
             $url = Url::fromRoute('ek_finance.manage.edit_expense', ['id' => $insert])->toString();
-            
-            drupal_set_message(t('Payment recorded for @id. Go to <a href="@url">expense</a> '
-                    . 'if you need to edit record.', array('@id' => $data->serial, '@url' => $url)), 'status');
+            \Drupal::messenger()->addStatus(t('Payment recorded for @id. Go to <a href="@url">expense</a> if you need to edit record.', ['@id' => $data->serial, '@url' => $url]));
             if ($data->category < 5) {
                 $form_state->setRedirect('ek_finance_manage_list_memo_internal');
             } else {

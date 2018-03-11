@@ -48,13 +48,12 @@ class NewUserSubscriber implements EventSubscriberInterface {
         }
        
           if ($users >= $maxusers) {
-            drupal_set_message(t('Maximum quota of @u users has been reached. You may contact vendor for support.', array('@u' => $maxusers)), 'warning');
+            \Drupal::messenger()->addWarning(t('Maximum quota of @u users has been reached. You may contact vendor for support.', ['@u' => $maxusers]));
             $event->setResponse(new RedirectResponse('<front>'));
             
           } else {
             if(\Drupal::currentUser()->isAuthenticated()){
-                drupal_set_message(t('Your maximum number of users is @u and you have currently @n users registered.', 
-                        array('@u' => $maxusers, '@n' => $users)), 'status'); 
+                \Drupal::messenger()->addStatus(t('Your maximum number of users is @u and you have currently @n users registered.', ['@u' => $maxusers, '@n' => $users]));
             }
           }
       
@@ -96,13 +95,12 @@ class NewUserSubscriber implements EventSubscriberInterface {
         }
        
           if ($coids >= $maxcoid) {
-            drupal_set_message(t('Maximum quota of @u companies has been reached. You may contact vendor for support.', array('@u' => $maxcoid)), 'warning');
+            \Drupal::messenger()->addWarning(t('Maximum quota of @u companies has been reached. You may contact vendor for support.',['@u' => $maxcoid]));
             $goto = Url::fromRoute('ek_admin.company.list', [], [])->toString();
             $event->setResponse(new RedirectResponse($goto));
             
           } else {
-            drupal_set_message(t('Your maximum number of companies is @u and you currently have @n registered.', 
-                    array('@u' => $maxcoid, '@n' => $coids)), 'status'); 
+            \Drupal::messenger()->addStatus(t('Your maximum number of companies is @u and you currently have @n registered.',['@u' => $maxcoid, '@n' => $coids]));
           }
       
     }

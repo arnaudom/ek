@@ -324,7 +324,7 @@ $i = 0;
           ->condition('id', $form_state->getValue('for_id'))->execute();
   
   if ($update){
-  drupal_set_message(t('Receipt recorded for @id', array('@id' => $memo->serial)), 'status');
+      \Drupal::messenger()->addStatus(t('Receipt recorded for @id', ['@id' => $memo->serial]));
         if ($memo->category < 5) {
           $form_state->setRedirect('ek_finance_manage_list_memo_internal' ) ;
         } else {

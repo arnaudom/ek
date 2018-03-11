@@ -424,7 +424,7 @@ class CashController extends ControllerBase {
                     $thisrow['type'] = $account_list[$row['coid']][$row['aid']];         
                     $thisrow['amount'] = $row['value'];
                     $thisrow['currency'] = $row['currency'];                
-                    $thisrow['basecurrency'] = $row['value'];
+                    $thisrow['basecurrency'] = $row['value'] + $exchange;
                     $thisrow['date'] = $row['date'];
                     $thisrow['comment'] = $comment;
                     $data[] = $thisrow;                  

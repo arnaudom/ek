@@ -413,8 +413,8 @@ class JournalEdit extends FormBase {
                                 ->query($query, [':n' => $n, ':id' => $j->id]);
 
                     }
-             
-            drupal_set_message(t('Data deleted. Go to <a href="@url">journal</a>', ['@url' => $url]), 'status');
+            
+                    \Drupal::messenger()->addStatus(t('Data deleted. Go to <a href="@url">journal</a>', ['@url' => $url]));
             
             
             
@@ -446,7 +446,8 @@ class JournalEdit extends FormBase {
                         ->condition('id', $form_state->getValue("ctid$i"))
                         ->execute();
             }
-            drupal_set_message(t('Data edited. Go to <a href="@url">journal</a>', ['@url' => $url]), 'status');
+            
+            \Drupal::messenger()->addStatus(t('Data edited. Go to <a href="@url">journal</a>', ['@url' => $url]));
         }
         
     }

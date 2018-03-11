@@ -497,7 +497,7 @@ class EditCompanySettings extends FormBase {
                     }
                 }
                 
-                drupal_set_message(t('Chart structure saved'), 'status');
+                \Drupal::messenger()->addStatus(t('Chart structure saved'));
                 
         } else {
             $settings = new CompanySettings($form_state->getValue('coid'));
@@ -530,7 +530,7 @@ class EditCompanySettings extends FormBase {
 
             $settings->save();
             $h = Url::fromRoute('ek_admin.company.list')->toString();
-            drupal_set_message(t('Settings saved. Go back to <a href="@h">list</a>', ['@h' => $h]), 'status');
+            \Drupal::messenger()->addStatus(t('Settings saved. Go back to <a href="@h">list</a>', ['@h' => $h]));
         }
     }
 

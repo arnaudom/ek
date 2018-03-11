@@ -404,7 +404,7 @@ class QuickEdit extends FormBase {
 
         Cache::invalidateTags(['project_page_view']);
         if (isset($update)) {
-            drupal_set_message(t('The @doc is recorded. Ref. @r', array('@r' => $serial, '@doc' => $doc)), 'status');
+            \Drupal::messenger()->addStatus(t('The @doc is recorded. Ref. @r', ['@r' => $serial, '@doc' => $doc]));
             
             if ($this->moduleHandler->moduleExists('ek_projects')) {
                 //notify user if invoice is linked to a project

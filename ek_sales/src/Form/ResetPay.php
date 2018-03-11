@@ -219,7 +219,7 @@ class ResetPay extends FormBase {
         }
 
         if ($update && $delete) {
-            drupal_set_message(t('The @doc has been reset', ['@doc' => $form_state->getValue('for_doc')]), 'status');
+            \Drupal::messenger()->addStatus(t('The @doc has been reset', ['@doc' => $form_state->getValue('for_doc')]));
             switch ($form_state->getValue('for_doc')) {
                 case 'invoice':
                     $form_state->setRedirect("ek_sales.invoices.list");
@@ -229,7 +229,7 @@ class ResetPay extends FormBase {
                     break;
             }
         } else {
-            drupal_set_message(t('Error while trying to reset payment.'), 'error');
+            \Drupal::messenger()->addError(t('Error while trying to reset payment.'));
         }
     }
 

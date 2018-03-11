@@ -649,7 +649,7 @@ if(!$this->moduleHandler->moduleExists('ek_finance')) {
     $filename = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
     $pic = drupal_realpath($filename);
     unlink($pic);
-    drupal_set_message(t("Logo image deleted"), 'warning');
+    \Drupal::messenger()->addWarning(t("Logo image deleted"));
     Database::getConnection('external_db', 'external_db')->update('ek_company')->fields(array('logo' =>'' ))->condition('id', $id)->execute();
     }
 
@@ -660,7 +660,7 @@ if(!$this->moduleHandler->moduleExists('ek_finance')) {
     $pic = drupal_realpath($filename);
     unlink($pic);
     Database::getConnection('external_db', 'external_db')->update('ek_company')->fields(array('sign' =>'' ))->condition('id', $id)->execute();
-    drupal_set_message(t("Signature image deleted"), 'warning');
+    \Drupal::messenger()->addWarning(t("Signature image deleted"));
     
     }
 
@@ -670,8 +670,11 @@ if(!$this->moduleHandler->moduleExists('ek_finance')) {
           $dir = "private://admin/company" . $id . "/images"   ;
           file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
           $logo = file_unmanaged_copy($file->getFileUri(), $dir);
-          Database::getConnection('external_db', 'external_db')->update('ek_company')->fields(array('logo' => $logo))->condition('id', $id)->execute();
-          drupal_set_message(t("New logo image uploaded"), 'status');
+          Database::getConnection('external_db', 'external_db')
+                  ->update('ek_company')
+                  ->fields(array('logo' => $logo))
+                  ->condition('id', $id)->execute();
+          \Drupal::messenger()->addStatus(t("New logo image uploaded"));
         }
       }
 
@@ -681,8 +684,11 @@ if(!$this->moduleHandler->moduleExists('ek_finance')) {
           $dir = "private://admin/company" . $id . "/images"   ;
           file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
           $sign = file_unmanaged_copy($file->getFileUri(), $dir);
-          Database::getConnection('external_db', 'external_db')->update('ek_company')->fields(array('sign' => $sign))->condition('id', $id)->execute();
-          drupal_set_message(t("New signature image uploaded"), 'status');
+          Database::getConnection('external_db', 'external_db')
+                  ->update('ek_company')
+                  ->fields(array('sign' => $sign))
+                  ->condition('id', $id)->execute();
+          \Drupal::messenger()->addStatus(t("New signature image uploaded"));
         }
       }
 
@@ -704,7 +710,7 @@ if(!$this->moduleHandler->moduleExists('ek_finance')) {
   }
   
   if (isset($insert) || isset($update) ) {  
-    drupal_set_message(t('The company is recorded'), 'status');         
+    \Drupal::messenger()->addStatus(t("The company is recorded"));
     $form_state->setRedirect('ek_admin.company.list');
     
     }

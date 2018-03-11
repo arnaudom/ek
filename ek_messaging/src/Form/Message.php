@@ -247,9 +247,9 @@ class Message extends FormBase {
 
     
     if($error != '') {
-      drupal_set_message(t('Error sending email to @m', array('@m' => $error)), 'error');
+        \Drupal::messenger()->addError(t('Error sending email to @m', ['@m' => $error]));
     } else {
-      drupal_set_message(t('Message @id sent', ['@id' => $m]), 'status');
+        \Drupal::messenger()->addStatus(t('Message @id sent', ['@id' => $m]));
 
       
     }

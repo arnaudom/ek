@@ -719,7 +719,7 @@ class EditEmployee extends FormBase {
             if ($form_state->getValue('image_delete') == 1) {
 
                 file_unmanaged_delete($form_state->getValue('uri'));
-                drupal_set_message(t("Old picture deleted"), 'status');
+                \Drupal::messenger()->addStatus(t("Old picture deleted"));
                 $image = '';
                 $del = TRUE;
             } else {
@@ -734,7 +734,7 @@ class EditEmployee extends FormBase {
                   file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
                   $image = file_unmanaged_copy($file->getFileUri(), $dir);
                   
-                  drupal_set_message(t("New Picture uploaded"), 'status');
+                  \Drupal::messenger()->addStatus(t("New Picture uploaded"));
                   
                   //remove old if any
                   if(!isset($del) && $form_state->getValue('uri') != '') {
@@ -807,8 +807,8 @@ class EditEmployee extends FormBase {
                         ->insert('ek_hr_workforce')
                         ->fields($fields)
                         ->execute();
-
-                drupal_set_message(t("Profile created"), 'status');
+                
+                \Drupal::messenger()->addStatus(t("Profile created"));
             } else {
                 //update
                 $db = Database::getConnection('external_db', 'external_db')
@@ -816,8 +816,8 @@ class EditEmployee extends FormBase {
                         ->fields($fields)
                         ->condition('id', $form_state->getValue('for_id'))
                         ->execute();
-
-                drupal_set_message(t("Data updated"), 'status');
+                
+                \Drupal::messenger()->addStatus(t("Data updated"));
             }
             Cache::invalidateTags(['project_view_block']);
         }//step 2

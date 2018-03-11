@@ -304,14 +304,13 @@ class EditTypes extends FormBase {
                             ->fetchField();
 
                     if ($count > 0) {
-                        drupal_set_message(t('Project type \'@l\' cannot be deleted because it is used.', array('@l' => $value['type'])), 'warning');
+                        \Drupal::messenger()->addWarning(t('Project type \'@l\' cannot be deleted because it is used.', ['@l' => $value['type']]));
                     } else {
                         Database::getConnection('external_db', 'external_db')
                                 ->delete('ek_project_type')
                                 ->condition('id', $key)
                                 ->execute();
-
-                        drupal_set_message(t('Project type \'@l\'  deleted', array('@l' => $value['type'])), 'warning');
+                        \Drupal::messenger()->addWarning(t('Project type \'@l\' deleted', ['@l' => $value['type']]));
                     }
                 } else {
 
@@ -369,14 +368,12 @@ class EditTypes extends FormBase {
                             ->insert('ek_project_type')
                             ->fields($fields)
                             ->execute();
-
-                    drupal_set_message(t('Project type \'@l\' is created', array('@l' => $value['type'])), 'status');
+                    \Drupal::messenger()->addStatus(t('Project type \'@l\' is created', ['@l' => $value['type']]));
                 }
             }
         }
 
-
-        drupal_set_message(t('Data updated'), 'status');
+        \Drupal::messenger()->addStatus(t('Data updated'));
     }
 
 }

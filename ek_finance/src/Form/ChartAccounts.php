@@ -439,7 +439,7 @@ class ChartAccounts extends FormBase {
                         ->execute();
             }
 
-            drupal_set_message(t('Data updated'), 'status');
+           \Drupal::messenger()->addStatus(t('Data updated'));
         }//step 2
     }
 

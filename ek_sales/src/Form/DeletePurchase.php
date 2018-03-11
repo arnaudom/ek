@@ -126,7 +126,7 @@ class DeletePurchase extends FormBase {
         }
 
         if ($delete) {
-            drupal_set_message(t('The purchase was deleted'), 'status');
+            \Drupal::messenger()->addStatus(t('The purchase has been deleted'));
             $form_state->setRedirect("ek_sales.purchases.list");
         }
     }

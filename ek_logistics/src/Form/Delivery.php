@@ -774,7 +774,7 @@ class Delivery extends FormBase {
 
 
         if (isset($insert) || isset($update))
-            drupal_set_message(t('The delivery is recorded. Ref. @r', array('@r' => $serial)), 'status');
+            \Drupal::messenger()->addStatus(t('The delivery is recorded. Ref. @r', ['@r' => $serial]));
             Cache::invalidateTags(['logistics_delivery_block']);
             $form_state->setRedirect('ek_logistics_list_delivery');
     }

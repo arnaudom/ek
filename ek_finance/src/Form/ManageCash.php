@@ -919,7 +919,7 @@ public function fx_rate_3(array &$form, FormStateInterface $form_state) {
       
         if($journal->credit <> $journal->debit) {
             $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
-            drupal_set_message(t('Error journal record (@aid)', array('@aid' => $msg)), 'error');
+            \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
         }
        
        }//1
@@ -1076,7 +1076,7 @@ public function fx_rate_3(array &$form, FormStateInterface $form_state) {
                   ->execute(); 
       }// 6
     
-  drupal_set_message(t('Data updated'), 'status');
+    \Drupal::messenger()->addStatus(t('Data updated'));
 
   }//step 2
 

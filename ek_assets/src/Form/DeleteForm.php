@@ -157,12 +157,12 @@ class DeleteForm extends FormBase {
   if($form_state->getValue('asset_pic') != '') {
     $uri = 'private://assets/' . $form_state->getValue('asset_pic');
     file_unmanaged_delete($uri);
-    drupal_set_message(t('The asset image is deleted'), 'status');
+    \Drupal::messenger()->addStatus(t('The asset image is deleted'));
   }
   if($form_state->getValue('asset_doc') != '') {
     $uri = 'private://assets/' . $form_state->getValue('asset_doc');
     file_unmanaged_delete($uri);
-    drupal_set_message(t('The asset attachment is deleted'), 'status');
+    \Drupal::messenger()->addStatus(t('The asset attachment is deleted'));
   }  
 
     $delete2 = Database::getConnection('external_db', 'external_db')
@@ -171,7 +171,7 @@ class DeleteForm extends FormBase {
           ->execute();
     
     if ($delete){
-    drupal_set_message(t('The asset data have been deleted'), 'status');
+        \Drupal::messenger()->addStatus(t('The asset data have been deleted'));
          $form_state->setRedirect("ek_assets.list" );  
     }
   

@@ -188,8 +188,7 @@ class SiteSettingsForm extends FormBase {
     drupal_rewrite_settings($settings);
     chmod($settings_file, 0655);
     
-     
-    drupal_set_message(t('External data connection done. Please verify the default settings file is set back to read only. Starting tables installation.'), 'status');         
+    \Drupal::messenger()->addStatus(t('External data connection done. Please verify the default settings file is set back to read only. Starting tables installation.'));
     $form_state->setRedirect('ek_admin_install');
 
   }

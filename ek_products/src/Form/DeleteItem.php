@@ -213,7 +213,7 @@ class DeleteItem extends FormBase {
      }
 
     if ($delete){
-    drupal_set_message(t('The item has been deleted'), 'status');
+        \Drupal::messenger()->addStatus(t('The item has been deleted'));
          $form_state->setRedirect("ek_products.list" );  
     }
   

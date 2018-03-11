@@ -116,8 +116,8 @@ class SettingsQuotation extends FormBase {
                     ->fields($fields)
                     ->execute();
         }
-
-        drupal_set_message(t('Settings recorded'), 'status');
+        
+        \Drupal::messenger()->addStatus(t('Settings recorded'));
     }
 
 }

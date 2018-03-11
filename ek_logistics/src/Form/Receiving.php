@@ -604,7 +604,7 @@ class receiving extends FormBase {
 
 
         if (isset($insert) || isset($update)) {
-            drupal_set_message(t('The receiving is recorded. Ref. @r', array('@r' => $serial)), 'status');
+            \Drupal::messenger()->addStatus(t('The receiving is recorded. Ref. @r', ['@r' => $serial]));
             Cache::invalidateTags(['logistics_receiving_block']);
         }
 

@@ -305,14 +305,13 @@ class EditLocation extends FormBase {
                                 ->fetchField();
 
                         if ($count > 0) {
-                            drupal_set_message(t('Location \'@l\' cannot be deleted because it is used.', array('@l' => $value['name'])), 'warning');
+                            \Drupal::messenger()->addWarning(t('Location \'@l\' cannot be deleted because it is used.', ['@l' => $value['name']]));
                         } else {
                             Database::getConnection('external_db', 'external_db')
                                     ->delete('ek_hr_location')
                                     ->condition('id', $key)
                                     ->execute();
-
-                            drupal_set_message(t('Location \'@l\'  deleted', array('@l' => $value['name'])), 'warning');
+                            \Drupal::messenger()->addWarning(t('Location \'@l\'  deleted', ['@l' => $value['name']]));
                         }
                     } else {
 
@@ -362,14 +361,13 @@ class EditLocation extends FormBase {
                                 ->insert('ek_hr_location')
                                 ->fields($fields)
                                 ->execute();
-
-                        drupal_set_message(t('Location \'@l\' is created', array('@l' => $value['name'])), 'status');
+                        
+                        \Drupal::messenger()->addStatus(t('Location \'@l\' is created', ['@l' => $value['name']]));
                     }
                 }
             }
 
-
-            drupal_set_message(t('Data updated'), 'status');
+            \Drupal::messenger()->addStatus(t('Data updated'));
         }//step 3
     }
 

@@ -272,14 +272,13 @@ class EditService extends FormBase {
                                 ->fetchField();
 
                         if ($count > 0) {
-                            drupal_set_message(t('Service \'@l\' cannot be deleted because it is used.', array('@l' => $value['name'])), 'warning');
+                            \Drupal::messenger()->addWarning(t('Service \'@l\' cannot be deleted because it is used.', ['@l' => $value['name']]));
                         } else {
                             Database::getConnection('external_db', 'external_db')
                                     ->delete('ek_hr_location')
                                     ->condition('id', $key)
                                     ->execute();
-
-                            drupal_set_message(t('Service \'@l\' was deleted', array('@l' => $value['name'])), 'warning');
+                            \Drupal::messenger()->addWarning(t('Service \'@l\' has been deleted', ['@l' => $value['name']]));
                         }
                     } else {
 
@@ -311,13 +310,12 @@ class EditService extends FormBase {
                                 ->fields($fields)
                                 ->execute();
 
-                        drupal_set_message(t('Service \'@l\' is created', array('@l' => $value['name'])), 'status');
+                        \Drupal::messenger()->addStatus(t('Service \'@l\' is created', ['@l' => $value['name']]));
                     }
                 }
             }
-
-
-            drupal_set_message(t('Data updated'), 'status');
+            
+            \Drupal::messenger()->addStatus(t('Data updated'));
         }//step 3
     }
 

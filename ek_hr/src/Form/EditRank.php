@@ -192,11 +192,11 @@ class EditRank extends FormBase {
             file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
             $dest = $dir . '/ranks.txt';
             $filename = file_unmanaged_copy($form_state->get('new_upload')->getFileUri(), $dest , FILE_EXISTS_REPLACE);
-            drupal_set_message(t("New file uploaded"), 'status');
+            \Drupal::messenger()->addStatus(t("New file uploaded"));
 
   
     } else {
-    drupal_set_message(t("No file uploaded"), 'warning');
+        \Drupal::messenger()->addWarning(t("No file uploaded"));
     
     }
   

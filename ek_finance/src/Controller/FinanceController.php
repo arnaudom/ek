@@ -150,13 +150,19 @@ class FinanceController extends ControllerBase {
               $memo_id = $request->get('id');
               $memo_serial = $request->get('serial');
               $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_expenses_memo_documents', 'doc');
-              $or = db_or();
-                $or->condition('memo.id', $memo_id);
-                $or->condition('doc.serial', $memo_serial);
-                $query->fields('doc', ['id', 'uri']);
-                $query->leftJoin('ek_expenses_memo', 'memo', 'doc.serial = memo.serial');
-                $query->condition($or);
+                      ->select('ek_expenses_memo_documents', 'doc');
+              
+              if(!null == $memo_id) {
+                $or = db_or();
+                  $or->condition('memo.id', $memo_id);
+                  $or->condition('doc.serial', $memo_serial);
+                  $query->fields('doc', ['id', 'uri']);
+                  $query->leftJoin('ek_expenses_memo', 'memo', 'doc.serial = memo.serial');
+                  $query->condition($or);
+              } else {
+                  $query->fields('doc', ['id', 'uri']);
+                  $query->condition('doc.serial', $memo_serial);
+              }
                 $docs = $query->execute();
                 $output = '';
                 While($doc = $docs->fetchObject()) {

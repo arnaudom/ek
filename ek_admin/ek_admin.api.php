@@ -30,7 +30,7 @@ function hook_ek_settings($coids) {
     $settings = unserialize($data->settings);
     
     if(empty($settings)) {
-        drupal_set_message('Missing settings for module', 'warning');
+        \Drupal::messenger()->addWarning('Missing settings for module');
     }
     return new \Symfony\Component\HttpFoundation\Response('', 204);
 }

@@ -471,7 +471,9 @@ $headerline = "<div class='table'><div class='row'><div class='cell'>" . t("Desc
             }
           }
    
-     if( $category->save() ) drupal_set_message(t('Settings saved'), 'status');    
+     if( $category->save()){
+         \Drupal::messenger()->addStatus(t('Settings saved'));
+     }
     
     }//step 2
 

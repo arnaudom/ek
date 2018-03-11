@@ -224,9 +224,9 @@ class Currencies extends FormBase {
     
 
     }
-
-    drupal_set_message(t('Currency data updated'), 'status');
-          //$form_state->setRedirect('ek_admin.country.list');
+    
+    \Drupal::messenger()->addStatus(t('Currency data updated'));
+          
  
   }
   

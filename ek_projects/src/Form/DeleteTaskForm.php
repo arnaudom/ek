@@ -162,7 +162,7 @@ class DeleteTaskForm extends FormBase {
                     )
             );
             ProjectData::notify_user($param);
-            drupal_set_message(t('The task has been deleted'), 'status');
+            \Drupal::messenger()->addStatus(t('The task has been deleted'));
             $form_state->setRedirect('ek_projects_view', array('id' => $pid));
         }
     }
