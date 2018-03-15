@@ -122,7 +122,8 @@ function ek_projects_file_download($uri) {
     //filter uri for document type and source type
     //if extranet type, hook_ in use is extranet hook
     if( strpos($uri , '/projects/documents/') 
-            &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , '/extranet?')) { 
+            &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , '/extranet?')
+            &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , 'extranet-file/')) { 
            
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     $mime = $finfo->file($uri);
