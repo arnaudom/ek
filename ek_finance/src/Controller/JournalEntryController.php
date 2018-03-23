@@ -73,14 +73,16 @@ class JournalEntryController extends ControllerBase {
         $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))->fetchObject();
         $edit = TRUE;
-
-        if (!in_array($data->coid, $company)) {
+        if(!$data) {
             $edit = FALSE;
         }
-        if ($data->reconcile == '1') {
+        elseif (!in_array($data->coid, $company)) {
+            $edit = FALSE;
+        }
+        elseif ($data->reconcile == '1') {
             $edit = FALSE; 
         }
-        if ( $data->source != 'general' && $data->source != 'general cash' && $data->source != 'payment') {
+        elseif ( $data->source != 'general' && $data->source != 'general cash' && $data->source != 'payment') {
             $edit = FALSE;
         }
 

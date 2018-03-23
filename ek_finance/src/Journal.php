@@ -19,11 +19,11 @@ use Drupal\ek_finance\AidList;
  */
 class Journal {
 
-    public function __contruct() {
+    public function __construct() {
 
-        $this->tax = 0;
-        $this->debit = 0;
-        $this->credit = 0;
+        (double) $this->tax = 0;
+        (double) $this->debit = 0;
+        (double) $this->credit = 0; 
     }
 
     /* calculate start and end dates of fiscal period based on company and given year and month
@@ -871,10 +871,11 @@ class Journal {
                 ->execute();            
         }
         
+        
         if($type == 'credit'){
-            $this->credit += $value;
+            $this->credit = $this->credit + $value;
         } else {
-            $this->debit += $value;
+            $this->debit = $this->debit + $value; 
         }
         
         return $insert;
