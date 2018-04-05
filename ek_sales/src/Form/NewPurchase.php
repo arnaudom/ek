@@ -15,6 +15,7 @@ use Drupal\Core\Url;
 use Drupal\Core\Cache\Cache;
 use Drupal\Component\Utility\Xss;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_projects\ProjectData;
 use Drupal\ek_admin\Access\AccessCheck;
@@ -28,7 +29,13 @@ use Drupal\ek_products\ItemData;
  * Provides a form to create and edit purchases.
  */
 class NewPurchase extends FormBase {
-
+    
+    /**
+     * The file storage service.
+     *
+     * @var \Drupal\Core\Entity\EntityStorageInterface
+     */
+    protected $fileStorage;
     /**
      * The module handler.
      *
@@ -40,8 +47,9 @@ class NewPurchase extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler,EntityStorageInterface $file_storage) {
         $this->moduleHandler = $module_handler;
+        $this->fileStorage = $file_storage;
         if($this->moduleHandler->moduleExists('ek_finance')) {
             $this->settings = new FinanceSettings();
         }
@@ -52,7 +60,8 @@ class NewPurchase extends FormBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler')
+                $container->get('module_handler'),
+                $container->get('entity.manager')->getStorage('file')
         );
     }
 
@@ -703,12 +712,14 @@ class NewPurchase extends FormBase {
             );
         }
 
-        $form['file']['upload_doc'] = array(
-            '#type' => 'file',
-            '#title' => isset($data->uri) ? t('Attach a new file') : t('Attach a file'),
-            '#description' => isset($data->uri) ? t('Current file will be deleted') : NULL,
-        );
-
+        $form['file']['upload_doc'] = [
+            '#title' => isset($data->uri) ? $this->t('Attach a new file') : $this->t('Attach a file'),
+            '#type' => 'managed_file',
+            '#upload_validators' => [
+              'file_validate_extensions' => ['png jpg jpeg doc docx xls xlsx odt ods odp pdf rar rtf tiff zip'],
+              ],
+      
+        ];
 
         $redirect = array(0 => t('view list'), 1 => t('print'), 2 => t('record payment'));
 
@@ -1058,14 +1069,9 @@ class NewPurchase extends FormBase {
         //
         // Update attachment
         // File are recorded in file_managed and purchase table
-        
-        $extensions = 'png jpg jpeg doc docx xls xlsx odt ods odp pdf rar rtf tiff zip';
-        $validators = array('file_validate_extensions' => array($extensions));
-        $dir = "private://sales/purchase/" . $reference . "";
-        file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-        $file = file_save_upload("upload_doc", $validators, $dir , 0 , FILE_EXISTS_RENAME);
 
-        if ($file) {
+        $fid = $form_state->getValue(['upload_doc', 0]);
+        if ($fid) {
 
             if ($form_state->getValue('new_purchase') != 1) {
                 //delete previous file if any
@@ -1082,13 +1088,17 @@ class NewPurchase extends FormBase {
                 }
             }
            
-                $file->setPermanent();
-                $file->save();
-                $uri = $file->getFileUri();
-                $filename = $file->getFileName();
-
+                $file = $this->fileStorage->load($fid);
+        
+                $dir = "private://sales/purchase/" . $reference . "";
+                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                
+                $move = file_copy($file, $dir, FILE_EXISTS_RENAME);
+                $move->setPermanent();
+                $move->save();
+                
                 $fields = array(
-                    'uri' => $uri,
+                    'uri' =>$move->getFileUri(),
                 );
 
                 $update = Database::getConnection('external_db', 'external_db')
