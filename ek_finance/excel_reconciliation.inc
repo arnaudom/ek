@@ -130,7 +130,7 @@ $i=8;
   $date = date('Y-m-d h:i:s');
   $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", $date);
   
- $fileName = "Reconciliation_" . $data['aid'];
+ $fileName = "Reconciliation_" . $data['aid'] . '.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Cache-Control: max-age=0');

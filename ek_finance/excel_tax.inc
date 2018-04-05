@@ -187,8 +187,16 @@ $l = 10;
            }
        }
        
+       if(is_array($ref[0])){
+            //remove the hyperlink tag for excel
+            preg_match("'>(.*?)</a>'si", $ref[0]['#markup'], $match);
+            $comment = $match[1];
+        } else {
+            $comment = $ref[0];
+        }
+
        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $d->date );
-       $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $d->source . " " . $d->reference . " | " . $ref[0] );
+       $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $d->source . " " . $d->reference . " | " . $comment);
 
         
         if($d->type == 'debit') {
@@ -395,9 +403,16 @@ $l = 10;
                $total_value_dt = $total_value_dt + $d->value;
            }
        }
-       
+      
+       if(is_array($ref[0])){
+            //remove the hyperlink tag for excel
+            preg_match("'>(.*?)</a>'si", $ref[0]['#markup'], $match);
+            $comment = $match[1];
+        } else {
+            $comment = $ref[0];
+        }
        $objPHPExcel->setActiveSheetIndex(1)->setCellValue("A$l", $d->date );
-       $objPHPExcel->setActiveSheetIndex(1)->setCellValue("B$l", $d->source . " " . $d->reference . " | " . $ref[0] );
+       $objPHPExcel->setActiveSheetIndex(1)->setCellValue("B$l", $d->source . " " . $d->reference . " | " . $comment);
 
         
         if($d->type == 'credit') {

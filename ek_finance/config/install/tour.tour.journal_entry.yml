@@ -1,0 +1,202 @@
+# This file defines the tour for our example page. There should be one tour
+# file for each tour that you create. These tour files should be placed in a
+# module's 'config' folder and named using the pattern
+# 'tour.tour.{tour-id}.yml'.
+#
+# Each tour file has two parts: 1) The tour properties, and 2) the tip
+# definitions.
+#
+#
+# TOUR PROPERTIES
+#
+# The tour properties define information that applies to the tour as a whole.
+# Properties that you can define for your tours include the following:
+#
+#   id:         Each tour should have a unique ID. This id is used in the
+#               filename and appears as an ID in the HTML.
+#   module:     The machine name of the module containing your tour.
+#   label:      A human readable name for the tour.
+#   status:     A boolean, defining whether the tour is enabled.
+#   langcode:   A two-letter language code defining the language of your tour.
+#   routes:     An array of routes for which the tour is active. Specify these
+#               as an array with route_name and optional route_params (also an
+#               array). Route names are found in each module's routing.yml file.
+#
+#
+# TIP DEFINITIONS
+#
+# Here, you define each tip that you want to appear in your tour. Each of
+# the tips have properties that must be defined, including the following:
+#
+#   id:         Each tip needs a unique ID. This appears as an ID in the HTML.
+#   plugin:     The Tour API uses plugins for defining different types of
+#               tips. The 'text' plugin (for making text tooltips) is provided
+#               in core, but developers can define additional plugins for tips
+#               containing images, video, or other interactions.
+#   label:      The lable for the tip. This will be rendered in an h3 element.
+#   body:       The body of the tip. HTML markup is allowed.
+#   weight:     Tips within a tour are ordered by weight, beginning with the
+#               lowest number. Negative values are acceptable.
+#   location:   Defines the location of the tip, relative to its target.
+#               Acceptable values include: top, bottom, left, & right. If the
+#               location is not defined, the default value (bottom) will be
+#               used.
+#   attributes: Attributes provdied to the tip for various purposes. Use the
+#               following attributes to control the placement of the tip:
+#
+#                 data-id:      Places this tip on the DOM element containing
+#                               this ID.
+#                 data-class:   Places this tip on the DOM element containing
+#                               this class.
+#
+#               If you omit both the .data-id and .data-class, the tip will be
+#               shown as modal instead of being targeted to an element.
+#
+id: ek_finance.journal_entry
+module: ek_finance
+label: 'General journal entry tour'
+langcode: en
+routes:
+  - route_name: ek_finance.manage.journal_entry
+  - route_name: ek_finance.manage.journal_edit
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'How to record a general journal entry'
+    body: 'This is an guided tour to record a general journal entry.'
+    weight: 1
+  item0:
+    id: item0
+    plugin: text
+    label: 'Company'
+    body: 'You first need to select the company for which the journal entry is recorded.'
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: edit-coid
+  item1:
+    id: item1
+    plugin: text
+    label: 'Currency'
+    body: 'If multiple currencies are activated, select the currency of the transaction.'
+    weight: 3
+    location: bottom
+    attributes:
+      data-id: edit-currency
+  item2:
+    id: item2
+    plugin: text
+    label: 'Exchange rate with base currency'
+    body: 'Default rate for selected currency is displayed. You can change it here. If base currency is selected, the rate is 1'
+    weight: 4
+    location: bottom
+    attributes:
+      data-id: edit-fx-rate
+
+  item4:
+    id: item4
+    plugin: text
+    label: 'Date'
+    body: 'Select the date of transaction.'
+    weight: 6
+    attributes:
+      data-id: edit-date
+
+  item5:
+    id: item5
+    plugin: text
+    label: 'Description'
+    body: 'Enter or edit the desired description of item.'
+    weight: 7
+    attributes:
+      data-id: edit-description1
+      
+  item6:
+    id: item6
+    plugin: text
+    label: 'Debit account'
+    body: 'Select a debit account. Debit account represents the transaction / payment use. For instance payment for a phone bill will debit an expense account.'
+    weight: 8
+    attributes:
+      data-id: edit-d-account1
+      
+  item7:
+    id: item7
+    plugin: text
+    label: 'Debit value'
+    body: 'The value of the debit. Debit value total must always be equal to credit value total per transaction.'
+    weight: 9
+    attributes:
+      data-id: debit1
+      
+  item8:
+    id: item8
+    plugin: text
+    label: 'The value of the credit. Credit value total must always be equal to debit value total per transaction.'
+    body: 'click to record.'
+    weight: 10
+    attributes:
+      data-id: credit1
+      
+  item9:
+    id: item9
+    plugin: text
+    label: 'Credit account'
+    body: 'Select a credit account. Credit account represents the transaction / payment source. For instance payment for an expense will credit an aset account like bank.'
+    weight: 11
+    attributes:
+      data-id: edit-c-account1
+      
+  item10:
+    id: item10
+    plugin: text
+    label: 'Comment'
+    body: 'You can add a comment on the transaction record for future references in journal details.'
+    weight: 11
+    attributes:
+      data-id: edit-comment1
+      
+  item11:
+    id: item11
+    plugin: text
+    label: 'Total debit'
+    body: 'This is the total of debit column. If not equal to total credit the total is displayed in red. In this case transaction cannot be recorded. If both columns are equal, the display is green.'
+    weight: 12
+    attributes:
+      data-id: totald  
+      
+  item12:
+    id: item12
+    plugin: text
+    label: 'Total credit'
+    body: 'This is the total of credit column. If not equal to total debit the total is displayed in red. In this case transaction cannot be recorded. If both columns are equal, the display is green.'
+    weight: 13
+    attributes:
+      data-id: totalc
+      
+  item13:
+    id: item13
+    plugin: text
+    label: 'Add line'
+    body: 'You can add lines to the journal entry by clicking on this button. If multi lines entry, you can also remove the last line with "remove" button.'
+    weight: 14
+    attributes:
+      data-id: edit-add 
+
+  item14:
+    id: item14
+    plugin: text
+    label: 'Save'
+    body: 'Click on "save" button to record the transaction. Remember: total debit and total credit must be equal otherwhise the transaction cannot be saved.'
+    weight: 15
+    attributes:
+      data-id: edit-submit
+
+  item15:
+    id: item15
+    plugin: text
+    label: 'Thank you'
+    body: 'You can review this tutorial anytime when using this form. For further tutorials please visit:<br><a href="https://arrea-systems.com/ek_manuals">online manuals</a>.'
+    weight: 15
+    

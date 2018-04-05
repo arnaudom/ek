@@ -16,6 +16,7 @@ use Drupal\Core\Cache\Cache;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\CurrencyData;
 use Drupal\ek_hr\HrSettings;
@@ -24,7 +25,14 @@ use Drupal\ek_hr\HrSettings;
  * Provides a form to create or edit employee
  */
 class EditEmployee extends FormBase {
-
+    
+    /**
+     * The file storage service.
+     *
+     * @var \Drupal\Core\Entity\EntityStorageInterface
+     */
+    protected $fileStorage;
+    
     /**
      * The module handler.
      *
@@ -36,8 +44,9 @@ class EditEmployee extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler, EntityStorageInterface $file_storage) {
         $this->moduleHandler = $module_handler;
+        $this->fileStorage = $file_storage;
     }
 
     /**
@@ -45,7 +54,8 @@ class EditEmployee extends FormBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler')
+                $container->get('module_handler'),
+                $container->get('entity.manager')->getStorage('file')
         );
     }
 
@@ -138,13 +148,19 @@ class EditEmployee extends FormBase {
                 
             }
 
-            $form['image'] = array(
-                '#type' => 'file',
-                '#title' => t('image'),
-                '#description' => t('Employee picture (image type allowed: png, jpg, gif)'),
-                '#suffix' => '</div>',
-            );
 
+            $form['image'] = [
+              '#title' => $this->t('Image'),
+              '#type' => 'managed_file',
+              '#description' => t('Employee picture (image type allowed: png, jpg, gif)'),
+              '#suffix' => '</div>',
+              '#upload_validators' => [
+                'file_validate_extensions' => ['png jpeg jpg gif'],
+                'file_validate_image_resolution' => ['400x400'],
+                'file_validate_size' => [500000],
+              ],
+
+            ];
 
             /* current image if any */
             if (isset($r->picture)) {
@@ -684,12 +700,12 @@ class EditEmployee extends FormBase {
             }
             
             // Check for a new uploaded picture.
-            $field = "image";
+            /*$field = "image";
             $validators = array('file_validate_is_image' => array());
             $file = file_save_upload($field , $validators, FALSE, 0);
 
-                if (isset($file ) ) {
-                    $res = file_validate_image_resolution($file, '400x400','300x300','100x100');
+                if (isset($file)) {
+                    $res = file_validate_image_resolution($file, '400x400','100x100');
                       // File upload was attempted.
                       if ($file) {
                         // Put the temporary file in form_values so we can save it on submit.
@@ -702,7 +718,7 @@ class EditEmployee extends FormBase {
                 } else {
                   $form_state->setValue($field, 0);
                   
-                }
+                }*/
             }
     }
 
@@ -727,22 +743,21 @@ class EditEmployee extends FormBase {
             }
             
             //second, upload if any image is available
-            if (!$form_state->getValue('image') == 0) {
-                if ($file = $form_state->getValue('image')) {
-
-                  $dir = "private://hr/pictures/" . $form_state->getValue('coid');
-                  file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                  $image = file_unmanaged_copy($file->getFileUri(), $dir);
-                  
-                  \Drupal::messenger()->addStatus(t("New Picture uploaded"));
-                  
-                  //remove old if any
-                  if(!isset($del) && $form_state->getValue('uri') != '') {
+            $fid = $form_state->getValue(['image', 0]);
+                if (!empty($fid)) {
+                    $file = $this->fileStorage->load($fid);
+                    $name = $file->getFileName();
+                    $dir = "private://hr/pictures/" . $form_state->getValue('coid');
+                    file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                    $image = file_unmanaged_copy($file->getFileUri(), $dir);
+                    
+                    \Drupal::messenger()->addStatus(t("New Picture uploaded"));
+                    //remove old if any
+                    if(!$del && $form_state->getValue('uri') != '') {
                       file_unmanaged_delete($form_state->getValue('uri'));
-                  }
-                }
-             }
+                    }
             
+                }         
            
             /**/
             $admin = array();

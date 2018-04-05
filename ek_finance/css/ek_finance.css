@@ -3,7 +3,9 @@
 }
 
 .tip-module-ek-finance {
-    background-color: #cee3f6 !important;
+    background-color: rgba(38, 38, 114, 0.9) !important;
+    color: #FFF !important;
+    font-family: 'Nunito', sans-serif, Arial !important;
 }
 
 .reddot {
@@ -186,7 +188,7 @@ hr {
   color: #00D744;
 }
 
-input[type="file"], input.file {
+.file_input {
   color: #fff !important;
   //background-color: #0071b8;
   width:100px;

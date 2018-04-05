@@ -14,6 +14,7 @@ use Drupal\Core\Locale\CountryManagerInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_projects\ProjectData;
@@ -28,7 +29,14 @@ use Drupal\ek_address_book\AddressBookData;
  * Provides a form to record an expense entry.
  */
 class RecordExpense extends FormBase {
-
+    
+    /**
+     * The file storage service.
+     *
+     * @var \Drupal\Core\Entity\EntityStorageInterface
+     */
+    protected $fileStorage;
+    
     /**
      * The module handler.
      *
@@ -40,8 +48,9 @@ class RecordExpense extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler,EntityStorageInterface $file_storage) {
         $this->moduleHandler = $module_handler;
+        $this->fileStorage = $file_storage;
     }
 
     /**
@@ -49,7 +58,8 @@ class RecordExpense extends FormBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler')
+                $container->get('module_handler'),
+                $container->get('entity.manager')->getStorage('file')
         );
     }
 
@@ -551,38 +561,7 @@ class RecordExpense extends FormBase {
                 
             );
 
-            if(isset($expense->attachment)) {
-                //editing current entry
-                $form['uri' . $i] = array(
-                    '#type' => 'hidden',
-                    '#value' => $expense->attachment,
-
-                );
-                $fname = array_reverse(explode('/', $expense->attachment));
-                $form['debit']['attachment' . $i] = array(
-                    '#type' => 'file',
-                    '#description' => $fname[0],
-                    '#maxlength' => 40,
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                );
-                /*
-                $form['debit']['file' . $i] = array(
-                    '#type' => 'item',
-                    '#markup' => "<span title='". $fname[0] . "'>" . t('attachment') . "</span>",
-
-                ); 
-                 * 
-                 */              
-            } else {
-                $form['debit']['attachment' . $i] = array(
-                    '#type' => 'file',
-                    '#title' => t(''),
-                    '#maxlength' => 40,
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                );
-            }
+            ///////////////////
 
             $form['debit']["value$i"] = array(
                 '#type' => 'textfield',
@@ -619,17 +598,46 @@ class RecordExpense extends FormBase {
                     ),
                 );
             }
+            
+            if($expense->attachment) {
+                //editing current entry
+                $form['uri' . $i] = array(
+                    '#type' => 'hidden',
+                    '#value' => $expense->attachment,
 
+                );
+                $fname = array_reverse(explode('/', $expense->attachment));
+                $form['debit']['attachment' . $i] = array(
+                    '#type' => 'file',
+                    '#description' => $fname[0],
+                    '#maxlength' => 100,
+                    '#prefix' => "<div class='cell'>",
+                    '#suffix' => '</div>',
+                );
+                          
+            } else {
+                $form['debit']['attachment' . $i] = array(
+                    '#type' => 'file',
+                    '#title' => t(''),
+                    '#maxlength' => 100,
+                    '#attributes' => ['class' => ['file_input']],
+                    '#prefix' => "<div class='cell'>",
+                    '#suffix' => '</div>',
+                );
+            }
+            
             $form['debit']["comment$i"] = array(
                 '#type' => 'textfield',
                 '#id' => 'value' . $i,
-                '#size' => 30,
+                '#size' => 25,
                 '#maxlength' => 255,
                 '#default_value' => ($form_state->get("comment$i")) ? $form_state->get("comment$i") : NULL,
                 '#attributes' => array('placeholder' => t('comment'),),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div></div>',
             );
+            
+
         }//loop added debits
 
 
@@ -715,9 +723,8 @@ class RecordExpense extends FormBase {
     public function thistax(array &$form, FormStateInterface $form_state) {
 
         $element = $_POST['_triggering_element_name'];
-
-        if ($form_state->getValue($element) == 1) {
-            $i = str_replace('tax', '', $_POST['_triggering_element_name']);
+        $i = str_replace('tax', '', $_POST['_triggering_element_name']);
+        if ($form_state->getValue($element) == 1) {  
             $value = str_replace(",", "", $form_state->getValue("value$i"));
             $form['debit']["tv$i"]['#markup'] = "(" . $form_state->getValue('currency') . "  " . round($value * $form_state->get('stax_rate') / 100, 2) . ")";
         } else {

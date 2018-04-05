@@ -1128,11 +1128,27 @@ class Journal {
         $sum_d2 = 0; //sum currency
         $sum_c2 = 0;
             while ($d = $data->fetchobject()) {
+                
+                if ($d->exchange == 0 ) {
+                        //build an history link
+                        $param = serialize(
+                                array(
+                                    'id' => 'journal',
+                                    'from' => $details['date1'],
+                                    'to' => $details['date2'],
+                                    'coid' => $details['company'],
+                                    'aid' => $d->aid
+                        ));
+                        $history = Url::fromRoute('ek_finance_modal', array('param' => $param), array())->toString();
+                        $aid = "<a class='use-ajax' href='" . $history . "' >" . $d->aid . "</a>";
+                    } else {
+                        $aid = $d->aid;
+                    }
             
                 $row['id'] = $d->id;
                 $row['count'] = $d->count;
                 $row['aid'] = $d->aid;
-                $row['aname'] = $account_list[$d->coid][$d->aid];
+                $row['aname'] = $aid . " - " . $account_list[$d->coid][$d->aid];
                 $row['coid'] = $d->coid;
                 $row['exchange'] = $d->exchange;
                 $row['value'] = $d->value;

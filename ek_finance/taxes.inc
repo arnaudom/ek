@@ -94,10 +94,19 @@ $total_base_dt = 0;
                $total_value_dt = $total_value_dt + $d->value;
            }
        }
+       
+        if (is_array($ref[0])) {
+            $markup = $ref[0]['#markup'];
+        } elseif (!is_array($ref[0]) && strlen($ref[0]) > 31) {
+            $markup = substr($ref[0], 0, 31) . "...";
+        } else {
+            $markup = $ref[0];
+        }
+        
        $table_1 .= " 
                     <tr class='$class'>
                         <td>" . $d->date . "</td>
-                        <td>" . $d->source . " " . $d->reference . " | " . $ref[0]. "</td>";
+                        <td>" . $d->source . " " . $d->reference . " | " . $markup. "</td>";
         
         if($d->type == 'debit') {
             $table_1 .= "<td class='right'>" . number_format($d->value,2) . "</td><td></td></tr>";
@@ -240,10 +249,19 @@ $total_base_dt = 0;
                $total_value_dt = $total_value_dt + $d->value;
            }
        }
+       
+        if (is_array($ref[0])) {
+            $markup = $ref[0]['#markup'];
+        } elseif (!is_array($ref[0]) && strlen($ref[0]) > 31) {
+            $markup = substr($ref[0], 0, 31) . "...";
+        } else {
+            $markup = $ref[0];
+        }
+        
        $table_2 .= " 
                     <tr class='$class'>
                         <td>" . $d->date . "</td>
-                        <td>" . $d->source . " " . $d->reference . " | " . $ref[0]. "</td>";
+                        <td>" . $d->source . " " . $d->reference . " | " . $markup . "</td>";
         
         if($d->type == 'credit') {
             $table_2 .= "<td class='right'>" . number_format($d->value,2) . "</td><td>" . $status . "</td><td></td></tr>";
