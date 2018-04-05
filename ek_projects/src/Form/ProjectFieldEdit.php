@@ -265,9 +265,9 @@ class ProjectFieldEdit extends FormBase {
                   ),
                 );
                 break;
-            case 'supplieroffer':
+            case 'supplier_offer':
 
-                $query = "SELECT supplieroffer FROM {ek_project_description} d "
+                $query = "SELECT supplier_offer FROM {ek_project_description} d "
                     . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
@@ -541,10 +541,10 @@ class ProjectFieldEdit extends FormBase {
                 $value = '';
                 break;
 
-            case 'supplieroffer':
+            case 'supplier_offer':
                 
                 $fields = array(
-                    'supplieroffer' => implode(',', $form_state->getValue('value'))
+                    'supplier_offer' => implode(',', $form_state->getValue('value'))
                 );
                 $update = Database::getConnection('external_db', 'external_db')
                         ->update('ek_project_description')
@@ -653,13 +653,12 @@ class ProjectFieldEdit extends FormBase {
 
         if ($update) {
 
-            $f = explode('_', $form_state->getValue('field'));
-
+            $action = 'edit' . ' ' . str_replace('_', " ", $form_state->getValue('field'));
             $fields = array(
                 'pcode' => $form_state->getValue('pcode'),
                 'uid' => \Drupal::currentUser()->id(),
                 'stamp' => time(),
-                'action' => 'edit' . ' ' . $f[0] . ' ' . $f[1]
+                'action' => $action
             );
             Database::getConnection('external_db', 'external_db')
                     ->insert('ek_project_tracker')

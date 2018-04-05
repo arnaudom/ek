@@ -91,13 +91,13 @@ class AccessAdmin extends FormBase {
               );
 
   $suppliers = array('%' => t('Any'));
-  $query = "SELECT supplieroffer from {ek_project_description} "
-          . "WHERE supplieroffer <> :s";
+  $query = "SELECT supplier_offer from {ek_project_description} "
+          . "WHERE supplier_offer <> :s";
   $data = Database::getConnection('external_db', 'external_db')
           ->query($query, [':s' => '']);
   $l = '';
   While($s = $data->fetchObject()) {
-      $l .= $s->supplieroffer . ',';
+      $l .= $s->supplier_offer . ',';
   }
   $list  = array_unique(explode(',', $l));
   foreach($list as $key => $value) {

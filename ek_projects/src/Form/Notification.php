@@ -117,11 +117,13 @@ class Notification extends FormBase {
             '#type' => 'submit',
             '#value' => $this->t('Send note'),
             '#attributes' => array('class' => array('use-ajax-submit')),
+            '#attached' => array(
+                'library' => array(
+                    'core/jquery.form',
+                ),
+            ),
         );
-
-
-
-
+//, 'core/jquery.form', 'core/drupal.form', 'core/drupal.ajax'];
 
         return $form;
     }
@@ -131,8 +133,11 @@ class Notification extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
 
-        if ($form_state->getValue('email') == '' && $form_state->getValue('status') == 1) {
-            $form_state->setErrorByName('email', $this->t('there is no receipient'));
+        if ($form_state->getValue('email') == '') {
+            $form_state->set('alert', t('there is no receipient'));
+            $form_state->setRebuild();
+            //$form_state->setErrorByName('email', $this->t('there is no receipient'));
+            
         } else {
             $users = explode(',', $form_state->getValue('email'));
             $error = '';
@@ -151,11 +156,11 @@ class Notification extends FormBase {
             }
 
             if ($error <> '') {
-                $form_state->setErrorByName("email", t('Invalid user(s)') . ': ' . $error);
-                $form_state->set('alert', t('Invalid user(s)') . ': ' . $error);
+                //$form_state->setErrorByName("email", t('Invalid user(s)') . ': ' . $error);
+                $form_state->set('alert', t('Invalid user(s)') . ': ' . rtrim($error, ','));
                 $form_state->setRebuild();
             } else {
-                $form_state->setValue('notify_who', $notify_who);
+                $form_state->setValue('notify_who', rtrim($notify_who,','));
             }
         }
     }
@@ -259,7 +264,7 @@ class Notification extends FormBase {
 
         if ($error <> '') {
             //$form_state->setErrorByName("email",  $this->t('error sending message to: @e', array('@e' => $error)));
-            $form_state->set('alert', t('Error sending to') . ': ' . $error);
+            $form_state->set('alert', t('Error sending to') . ': ' . rtrim($error, ','));
         } else {
             $form_state->set('alert', t('Message sent'));
         }

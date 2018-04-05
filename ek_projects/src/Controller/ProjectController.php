@@ -174,10 +174,10 @@ class ProjectController extends ControllerBase {
                     
                         $or = db_or();
                         foreach($_SESSION['pjfilter']['supplier'] as $key => $id) {
-                            $or->condition('supplieroffer', $id . ',%', 'like');
-                            $or->condition('supplieroffer', '%,' . $id . ',%', 'like');
-                            $or->condition('supplieroffer', '%,' . $id , 'like');
-                            $or->condition('supplieroffer', $id , '=');
+                            $or->condition('supplier_offer', $id . ',%', 'like');
+                            $or->condition('supplier_offer', '%,' . $id . ',%', 'like');
+                            $or->condition('supplier_offer', '%,' . $id , 'like');
+                            $or->condition('supplier_offer', $id , '=');
                         }
                         
                         $query->condition($or);
@@ -529,10 +529,10 @@ class ProjectController extends ControllerBase {
                  */
                 
                 $data['suppliers'] = '';
-                if($data['description'][0]->supplieroffer){
+                if($data['description'][0]->supplier_offer){
                     $query = "SELECT id,name FROM {ek_address_book} WHERE FIND_IN_SET (id, :s )";
                     $suppliers = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':s' => $data['description'][0]->supplieroffer));
+                        ->query($query, array(':s' => $data['description'][0]->supplier_offer));
                    
                     WHILE($s = $suppliers->fetchObject()){
                         
@@ -542,14 +542,14 @@ class ProjectController extends ControllerBase {
                         ];
                         ;
                     }
-                    $data['description'][0]->supplieroffer = $data['suppliers'];
+                    $data['description'][0]->supplier_offer = $data['suppliers'];
                 }
                 /*
                  * create a link to edit suppliers
                  */
-                $param_edit = 'field|supplieroffer|' . $id;
+                $param_edit = 'field|supplier_offer|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_supplieroffer = ( '<a title="' . t('edit supplier') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_supplier_offer = ( '<a title="' . t('edit supplier') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
                 /*
                  * create a link to edit date submission
                  */
@@ -1237,8 +1237,8 @@ class ProjectController extends ControllerBase {
                             $fields['task_1'] = $data->task_1;
                             $fields['task_2'] = $data->task_2;
                             $fields['task_3'] = $data->task_3;
-                            if($data->supplieroffer != ''){
-                                $array = explode(',',$data->supplieroffer);
+                            if($data->supplier_offer != ''){
+                                $array = explode(',',$data->supplier_offer);
                                 $query = Database::getConnection('external_db', 'external_db')
                                     ->select('ek_address_book', 'ab');
                                 $query->fields('ab',['id', 'name']);
@@ -1397,7 +1397,7 @@ class ProjectController extends ControllerBase {
                                 $items[$i]['mail_url'] = $link;
                                 $items[$i]['delete'] = 1;
                                 $items[$i]['email'] = 1;
-                                $items[$i]['comment'] = $l->comment;
+                                $items[$i]['comment'] = ['#markup' => $l->comment];
                                 $items[$i]['date'] = date('Y-m-d', $l->date);
                                 $items[$i]['size'] = round($l->size / 1000, 0) . " Kb";
                                 

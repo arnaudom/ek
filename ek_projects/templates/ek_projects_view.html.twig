@@ -155,11 +155,11 @@
                     <table class='table'>
                         <tbody>
                             <tr>
-                                <td class='tlabel'  width="20%">{{ 'Suppliers'|t }} <span class='field_edit'>{{ items.description.0.edit_supplieroffer|raw }}</span></td>
+                                <td class='tlabel'  width="20%">{{ 'Suppliers'|t }} <span class='field_edit'>{{ items.description.0.edit_supplier_offer|raw }}</span></td>
                                 <td id='suppliers'>
                                     {% if items.description.0.supplieroffer %} 
                                     <ul>
-                                        {% for key, item in items.description.0.supplieroffer %}
+                                        {% for key, item in items.description.0.supplier_offer %}
                                             <li>{{ item.url|raw }}</li>
                                         {% endfor %} 
                                     </ul>
