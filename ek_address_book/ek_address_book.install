@@ -44,3 +44,12 @@ function ek_address_book_update_8001() {
         return t('Table updated');
         
 }
+
+/**
+ * modify permission to data access
+ * 
+ */
+function ek_address_book_update_8002() {
+    \Drupal::service('router.builder')->rebuild();
+    return t('Permission: check and edit permission to allow user to view autocomplete address book data.');
+}

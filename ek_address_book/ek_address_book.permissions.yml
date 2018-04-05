@@ -1,6 +1,9 @@
 view_address_book:
   title: 'View address book'
-  description: 'Allows user to view adress book data.'  
+  description: 'Allows user to view adress book data.'
+view_address_book_user_contact:
+  title: 'Allow autocomplete for contacts'
+  description: 'Allows user to access autocomplete data in forms.'
 edit_address_book:
   title: 'Edit address book'
   description: 'Allows user to edit adress book data.'    
