@@ -20,14 +20,18 @@
             <td class='title'> {{ 'Name'|t }}</td>
             <td class='data'> {{ items.hr.0.name }}</td>
         </tr>
+        {% if items.hr.0.given_name %} 
         <tr>
             <td></td>
             <td class='data'>{{ items.hr.0.given_name }} </td>
         </tr>
+        {% endif %}
+        {% if items.hr.0.surname %}
         <tr>
             <td></td>
             <td class='data'>{{ items.hr.0.surname }}</td>
         </tr>
+        {% endif %}
         <tr>
             <td class='title'> {{ 'Contact'|t }}  </td>
             <td class='data'>{{ items.hr.0.address }}  </td>

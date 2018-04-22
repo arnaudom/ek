@@ -73,12 +73,13 @@ class EditEmployee extends FormBase {
 
 
         if ($form_state->get('step') == '') {
-
             $form_state->set('step', 1);
         }
 
         if (isset($id) && !$id == NULL) {
 
+            $form_state->set('step', 2);
+            
             $form['for_id'] = array(
                 '#type' => 'hidden',
                 '#default_value' => $id,
@@ -87,8 +88,8 @@ class EditEmployee extends FormBase {
             $query = "SELECT * from {ek_hr_workforce} WHERE id=:id";
             $a = array(':id' => $id);
             $r = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
-            $form_state->setValue('coid', $r->company_id);
-            $folder = '../';
+            $form_state->set('coid', $r->company_id);
+            
         } else {
 
             $form['new'] = array(
@@ -96,33 +97,47 @@ class EditEmployee extends FormBase {
                 '#default_value' => 1,
             );
         }
+        
         $company = AccessCheck::CompanyListByUid();
-        $form['coid'] = array(
-            '#type' => 'select',
-            '#size' => 1,
-            '#options' => $company,
-            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : NULL,
-            '#title' => t('company'),
-            '#disabled' => $form_state->getValue('coid') ? TRUE : FALSE,
-            '#required' => TRUE,
-        );
-
-        if ($form_state->getValue('coid') == '') {
-            $form['next'] = array(
-                '#type' => 'submit',
-                '#value' => t('Next >>'),
-                '#states' => array(
-                    // Hide data fieldset when class is empty.
-                    'invisible' => array(
-                        "select[name='coid']" => array('value' => ''),
-                    ),
-                ),
+        
+        if($form_state->get('step') == '1') {
+            $form['coid'] = array(
+                '#type' => 'select',
+                '#size' => 1,
+                '#options' => $company,
+                '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : NULL,
+                '#title' => t('company'),
+                '#disabled' => $form_state->getValue('coid') ? TRUE : FALSE,
+                '#required' => TRUE,
             );
+
+            if ($form_state->getValue('coid') == '') {
+                $form['next'] = array(
+                    '#type' => 'submit',
+                    '#value' => t('Next >>'),
+                    '#states' => array(
+                        // Hide data fieldset when class is empty.
+                        'invisible' => array(
+                            "select[name='coid']" => array('value' => ''),
+                        ),
+                    ),
+                );
+            }
         }
 
-        if ($form_state->getValue('coid')) {
+        if ($form_state->get('step') == '2') {
+            
+            $form['coid'] = array(
+                '#type' => 'hidden',
+                '#value' => $form_state->get('coid')
+                
+            );
 
-            $form_state->set('step', 2);
+            $form['company'] = array(
+                '#type' => 'item',
+                '#markup' => '<h1>' . $company[$form_state->get('coid')] . '</h1>',
+                
+            );            
 
             $form['active'] = array(
                 '#type' => 'select',
@@ -145,22 +160,26 @@ class EditEmployee extends FormBase {
                     '#required' => TRUE,
                 );
             } else {
-                
+                $form['archive'] = array(
+                    '#type' => 'hidden',
+                    '#value' =>'no',
+                );
             }
 
+            
+                $form['image'] = [
+                  '#title' => $this->t('Image'),
+                  '#type' => 'managed_file',
+                  '#description' => t('Employee picture (image type allowed: png, jpg, gif)'),
+                  //'#suffix' => '</div>',
+                  '#upload_validators' => [
+                    'file_validate_extensions' => ['png jpeg jpg gif'],
+                    'file_validate_image_resolution' => ['400x400'],
+                    'file_validate_size' => [500000],
+                  ],
 
-            $form['image'] = [
-              '#title' => $this->t('Image'),
-              '#type' => 'managed_file',
-              '#description' => t('Employee picture (image type allowed: png, jpg, gif)'),
-              '#suffix' => '</div>',
-              '#upload_validators' => [
-                'file_validate_extensions' => ['png jpeg jpg gif'],
-                'file_validate_image_resolution' => ['400x400'],
-                'file_validate_size' => [500000],
-              ],
-
-            ];
+                ];
+            
 
             /* current image if any */
             if (isset($r->picture)) {
@@ -376,9 +395,9 @@ class EditEmployee extends FormBase {
 
             //$origin = array(0 => '');
             $origin = [];
-            $category = NEW HrSettings($form_state->getValue('coid'));
-            if (!empty($category->HrCat[$form_state->getValue('coid')])) {
-                $origin += $category->HrCat[$form_state->getValue('coid')];
+            $category = NEW HrSettings($form_state->get('coid'));
+            if (!empty($category->HrCat[$form_state->get('coid')])) {
+                $origin += $category->HrCat[$form_state->get('coid')];
             }
 
             $form[3]['origin'] = array(
@@ -403,7 +422,7 @@ class EditEmployee extends FormBase {
             );
 
             $query = "SELECT location from {ek_hr_location} WHERE coid=:id order by location";
-            $a = array(':id' => $form_state->getValue('coid'));
+            $a = array(':id' => $form_state->get('coid'));
             $loc = array();
             $loc[0] = '';
             $loc = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchCol();
@@ -418,7 +437,7 @@ class EditEmployee extends FormBase {
             );
 
             $query = "SELECT sid,service_name,ek_company.name from {ek_hr_service} INNER JOIN {ek_company} ON ek_company.id=ek_hr_service.coid WHERE ek_company.id=:id order by service_name";
-            $a = array(':id' => $form_state->getValue('coid'));
+            $a = array(':id' => $form_state->get('coid'));
             $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
             $service = array();
             $service[0] = '';
@@ -437,7 +456,7 @@ class EditEmployee extends FormBase {
                 '#suffix' => '</div>',
             );
 
-            $dir = "private://hr/data/" . $form_state->getValue('coid') . "/ranks/ranks.txt";
+            $dir = "private://hr/data/" . $form_state->get('coid') . "/ranks/ranks.txt";
             if (file_exists($dir)) {
                 $ranks = file_get_contents($dir);
                 $ranks = str_replace("\r\n", "", $ranks);
@@ -638,18 +657,11 @@ class EditEmployee extends FormBase {
             );
 
 
-
-
-
-            $form['actions'] = array(
+          $form['actions'] = array(
                 '#type' => 'actions',
                 '#attributes' => array('class' => array('container-inline')),
             );
-
-
-
-
-            $form['actions']['submit'] = array(
+          $form['actions']['submit'] = array(
                 '#type' => 'submit',
                 '#value' => $this->t('Save'),
                 '#suffix' => ''
@@ -666,10 +678,18 @@ class EditEmployee extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
 
+        $triggering_element = $form_state->getTriggeringElement();
+        //don't validate form on tpm image submit
+        if($triggering_element['#name'] != 'image_upload_button' 
+                && $triggering_element['#name'] != 'image_remove_button') {
+            
         if ($form_state->get('step') == 1) {
-            $form_state->setValue('coid', $form_state->getValue('coid'));
+                                       
+            $form_state->set('step', 2);
+            $form_state->set('coid', $form_state->getValue('coid'));
             $form_state->setRebuild();
-        } else {
+            
+        } elseif ($form_state->get('step') == 2) {
 
             //check name
             if ($form_state->getValue('new') == 1) {
@@ -699,27 +719,10 @@ class EditEmployee extends FormBase {
                 $form_state->setErrorByName("mcleave", $this->t('incorrect value for medical leaves'));
             }
             
-            // Check for a new uploaded picture.
-            /*$field = "image";
-            $validators = array('file_validate_is_image' => array());
-            $file = file_save_upload($field , $validators, FALSE, 0);
-
-                if (isset($file)) {
-                    $res = file_validate_image_resolution($file, '400x400','100x100');
-                      // File upload was attempted.
-                      if ($file) {
-                        // Put the temporary file in form_values so we can save it on submit.
-                        $form_state->setValue($field, $file) ;
-                      }
-                      else {
-                        // File upload failed.
-                       $form_state->setErrorByName($field, $this->t('Image could not be uploaded'));
-                      }
-                } else {
-                  $form_state->setValue($field, 0);
-                  
-                }*/
-            }
+            }            
+ 
+        }
+        
     }
 
     /**
@@ -823,7 +826,10 @@ class EditEmployee extends FormBase {
                         ->fields($fields)
                         ->execute();
                 
-                \Drupal::messenger()->addStatus(t("Profile created"));
+                
+                $url = \Drupal\Core\Url::fromRoute('ek_hr.employee.view', array('id' => $db), array())->toString();
+                \Drupal::messenger()->addStatus(t('Data updated. <a href="@url">View</a>', ['@url' => $url]));
+                
             } else {
                 //update
                 $db = Database::getConnection('external_db', 'external_db')
@@ -832,9 +838,10 @@ class EditEmployee extends FormBase {
                         ->condition('id', $form_state->getValue('for_id'))
                         ->execute();
                 
-                \Drupal::messenger()->addStatus(t("Data updated"));
+                $url = \Drupal::messenger()->addStatus(t("Data updated"));
+                $form_state->setRedirect('ek_hr.employee.view',['id' => $form_state->getValue('for_id')]);
             }
-            Cache::invalidateTags(['project_view_block']);
+            Cache::invalidateTags(['payroll_stat_block']);
         }//step 2
     }
 

@@ -171,6 +171,11 @@ class ParametersController extends ControllerBase {
                 );
             }//loop 
 
+            $param = serialize(['coid' => $coid, 'status' => $status]);
+            $excel = Url::fromRoute('ek_hr.parameters-excel', array('param' => $param), array())->toString();
+            $build['excel'] = array(
+                '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+            );
 
             $build['hr_table'] = array(
                 '#type' => 'table',
@@ -194,6 +199,40 @@ class ParametersController extends ControllerBase {
         Return $build;
     }
 
+    /**
+     * Extract list of employees with filter
+     * Excel
+     */
+    public function extraList($param = NULL) {
+
+        $markup = array();    
+        if (!class_exists('PHPExcel')) {
+            $markup = t('Excel library not available, please contact administrator.');
+        } else {
+            $param = unserialize($param);
+
+            $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
+            $company = implode(',', $access);
+            $or = db_or();
+            $or->condition('company_id', $access, 'IN');
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_hr_workforce', 'w');
+            
+            $data = $query
+                    ->fields('w')
+                    ->condition('company_id', $access, 'IN')
+                    ->condition('w.active', $param['status'], '=')
+                    ->condition('w.company_id', $param['coid'], '=')
+                    ->execute();
+            
+            
+            include_once drupal_get_path('module', 'ek_hr') . '/excel_employee_list.inc';
+        }
+        
+        return ['#markup' => $markup];
+        
+    }
+    
     /**
      * Return employee data
      *

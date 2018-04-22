@@ -27,7 +27,14 @@ ek_hr.parameters:
     _controller: '\Drupal\ek_hr\Controller\ParametersController::parameters'
   requirements:
     _permission: 'hr_parameters'
-
+    
+ek_hr.parameters-excel:
+  path: '/human-resources/parameters-extract/{param}'
+  defaults:
+    _controller: '\Drupal\ek_hr\Controller\ParametersController::extraList'
+  requirements:
+    _permission: 'hr_parameters'
+    
 ek_hr.parameters-category:
   path: '/human-resources/parameters-category'
   defaults:

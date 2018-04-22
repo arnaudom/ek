@@ -72,6 +72,9 @@ class PayrollStatBlock extends BlockBase {
     '#attached' => array(
       'library' => array('ek_hr/ek_hr.dashboard'),
       ),
+   '#cache' => [
+                'tags' => ['payroll_stat_block'],
+            ],  
     );
   
   }
