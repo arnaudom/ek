@@ -65,7 +65,7 @@ $document = '<page_wrapper>';
     //Entity to
     $to_entity = '<b><h2>' . $company_to->name . '</h2></b>';
     
-        if($company->reg_number) {
+        if($company_to->reg_number) {
             $to_entity .= '<br/><small>(' . $company_to->reg_number . ')</small>';
         }
         

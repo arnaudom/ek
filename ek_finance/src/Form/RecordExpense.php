@@ -78,6 +78,16 @@ class RecordExpense extends FormBase {
         $settings = new FinanceSettings(); 
         $recordProvision = $settings->get('recordProvision');
         $chart = $settings->get('chart');
+        if(NULL !== $settings->get('expenseAttachmentFormat')) {
+            $ext_format = $settings->get('expenseAttachmentFormat');
+        } else {
+            $ext_format = 'png jpg jpeg doc docx xls xlsx odt ods odp pdf rar rtf zip';
+        }
+        if(NULL !== $settings->get('expenseAttachmentSize')) {
+            $ext_size = $settings->get('expenseAttachmentSize') * 1000000;
+        } else {
+            $ext_size = '500000';
+        }
         $check = [];
         $tax = [];
         $credit = NULL;
@@ -366,7 +376,7 @@ class RecordExpense extends FormBase {
             '#open' => TRUE,
             '#attributes' => array('class' => array('container-inline')),
         );
-
+/*
         $user = array('not applicable' => 'not applicable');
         $user += db_query('SELECT uid,name from {users_field_data} WHERE uid > :u AND status =:s' , array(':u' => 1, ':s' => 1))
                 ->fetchAllKeyed();
@@ -380,7 +390,22 @@ class RecordExpense extends FormBase {
             '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
             '#prefix' => "<div  class='container-inline'>",
         );
-
+ * 
+ */
+        if(!NULL == $expense->employee && $expense->employee != 'n/a') {
+            $user = \Drupal\user\Entity\User::load($expense->employee);
+             if($user) {$userName = $user->getUsername();}
+        }
+        $form['user_acc']['user'] = array(
+            '#type' => 'textfield',
+            '#size' => 30,
+            '#default_value' => isset($userName) ? $userName : NULL,
+            '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
+            '#title' => t('user account'),
+            '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
+            '#prefix' => "<div  class='container-inline'>",
+        );
+        
         $form['user_acc']['paid'] = array(
             '#type' => 'select',
             '#size' => 1,
@@ -389,8 +414,8 @@ class RecordExpense extends FormBase {
             '#suffix' => '</div>',
             '#states' => array(
                 'invisible' => array(
-                    "select[name='user']" => array(
-                        array('value' => 'not applicable'),
+                    "input[name='user']" => array(
+                        //array('value' => 'not applicable'),
                         array('value' => '')
                     ),
                 ),
@@ -598,7 +623,7 @@ class RecordExpense extends FormBase {
                     ),
                 );
             }
-            
+            /*
             if($expense->attachment) {
                 //editing current entry
                 $form['uri' . $i] = array(
@@ -614,8 +639,9 @@ class RecordExpense extends FormBase {
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div>',
                 );
-                          
-            } else {
+                */          
+            //} else {
+                /*
                 $form['debit']['attachment' . $i] = array(
                     '#type' => 'file',
                     '#title' => t(''),
@@ -624,7 +650,19 @@ class RecordExpense extends FormBase {
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div>',
                 );
-            }
+                 */              
+            //}
+             
+            $form['debit']['attachment' . $i] = [
+                    '#type' => 'managed_file',
+                    '#upload_validators' => [
+                        'file_validate_extensions' => [$ext_format],
+                        'file_validate_size' => [$ext_size],
+                    ],
+                    '#attributes' => ['class' => ['file_input']],
+                    '#prefix' => "<div class='cell'>",
+                    '#suffix' => '</div>',
+            ]; 
             
             $form['debit']["comment$i"] = array(
                 '#type' => 'textfield',
@@ -636,13 +674,30 @@ class RecordExpense extends FormBase {
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div></div>',
             );
+             
             
+            if($expense->attachment && $i == 1) {
+                //editing current entry
+                $form['uri' . $i] = [
+                    '#type' => 'hidden',
+                    '#value' => $expense->attachment,
+
+                ];
+                $fname = array_reverse(explode('/', $expense->attachment));
+                $markup = "<a href='" . file_create_url($expense->attachment) . "' target='_blank'>" . $fname[0] . "</a>";
+                $form['debit']["currenFile$i"] = [
+                    '#type' => 'item',
+                    '#markup' => $markup,
+                    '#prefix' => "<div class='row'><div class='cell'>",
+                    '#suffix' => '</div></div>',
+                ];
+            }    
 
         }//loop added debits
 
 
-        $form['debit']['/table'] = array(
-            '#markup' => "</div >",
+        $form['debit']['_table'] = array(
+            '#markup' => "</div>",
         );
 
 
@@ -652,7 +707,7 @@ class RecordExpense extends FormBase {
                 $form['debit']['remove'] = array(
                     '#type' => 'submit',
                     '#value' => $this->t('remove last item'),
-                    //'#limit_validation_errors' => array(),
+                    '#limit_validation_errors' => array(['coid'], ['currency'], ['bank_account']),
                     '#submit' => array(array($this, 'removeForm')),
                     '#prefix' => "<p class='right'>",
                     '#suffix' => '</p>',
@@ -805,7 +860,17 @@ class RecordExpense extends FormBase {
         }
 
 
-        if ($form_state->getValue('user') <> 'not applicable') {
+        if ($form_state->getValue('user') <> '') {
+            
+            $query = "SELECT uid FROM {users_field_data} WHERE name = :n";
+            $data = db_query($query, [':n' => $form_state->getValue('user')])
+                    ->fetchField();
+            if ($data) {
+                $form_state->setValue('uid', $data);
+            } else {
+                $form_state->setErrorByName('user', $this->t('Unknown user'));
+            }
+            
             if ($form_state->getValue('paid') == '0') {
                 $form_state->setErrorByName("paid", $this->t('You need to indicate the payment status. Select yes if paid from cash advance given to employee or no if the employee advanced the payment (to be refund in cash later).'));
             }
@@ -941,12 +1006,13 @@ class RecordExpense extends FormBase {
             }
 
             //upload
+            /*
             $extensions = 'png gif jpg jpeg bmp txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip';
             $validators = array('file_validate_extensions' => array($extensions));
             $field = "attachment$n";
             $receipt = 'no';
-            $form_state->setValue($field, '');
-
+            //$form_state->setValue($field, '');
+dpm($form_state->getValue([$field, 0]));
             $file = file_save_upload($field, $validators, FALSE, 0);
 
             if ($file) {
@@ -963,7 +1029,29 @@ class RecordExpense extends FormBase {
             } elseif($form_state->getValue('uri' . $n) != '') {
                 $form_state->setValue($field, $form_state->getValue('uri' . $n));
             } 
-            //upload      
+            //upload
+             */
+            $receipt = 'no';
+            $attach = "attachment$n";
+            $fid = $form_state->getValue([$attach, 0]);
+            if (!empty($fid)) {
+                $receipt = 'yes';
+                if($form_state->getValue('uri' . $n) != '') {
+                    //if edit and existing, delete current attach.
+                    file_unmanaged_delete( $form_state->getValue('uri' . $n));
+                }
+                $file = $this->fileStorage->load($fid);   
+                $name = $file->getFileName();
+
+                $dir = "private://finance/receipt/" . $form_state->getValue('coid');
+                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                $load_attachment = file_unmanaged_copy($file->getFileUri(), $dir);
+            } elseif($form_state->getValue('uri' . $n) != '') {
+                $receipt = 'yes';
+                $load_attachment = $form_state->getValue('uri' . $n);
+            } else {
+                $load_attachment = ''; 
+            }
 
             if ($form_state->getValue('paid') == '0') {
                 $status = 'paid';
@@ -971,8 +1059,11 @@ class RecordExpense extends FormBase {
                 $status = $form_state->getValue('paid');
             }
 
-            if ($form_state->getValue('user') == 'not applicable')
-                $form_state->setValue('user', 'n/a');
+            if ($form_state->getValue('uid') == '') {
+                $uid = 'n/a';
+            } else {
+                $uid = $form_state->getValue('uid');
+            }
 
             $fields = array(
                 'class' => $class,
@@ -992,12 +1083,12 @@ class RecordExpense extends FormBase {
                 'clientname' => $form_state->getValue('client'),
                 'suppliername' => $form_state->getValue('supplier'),
                 'receipt' => $receipt,
-                'employee' => $form_state->getValue('user'),
+                'employee' => $uid,
                 'status' => $status,
                 'cash' => $cash,
                 'pdate' => $pdate,
                 'reconcile' => '0',
-                'attachment' => $form_state->getValue($field),
+                'attachment' => $load_attachment,
             );
 
             if ($form_state->getValue('edit') != '') {

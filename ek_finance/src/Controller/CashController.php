@@ -189,8 +189,8 @@ class CashController extends ControllerBase {
  *  extracted data
 */
   private function extract($filter) {
-   
       
+        $journal = new Journal();
         if($filter['type'] == '0') {
         //company cash transactions    
             $account1 = 0;
@@ -263,6 +263,7 @@ class CashController extends ControllerBase {
              * Cash movements from journal general entries
             */
             if($filter['type'] == '0') {
+                
                 $or = db_or();
                 $or->condition('j.aid', $filter['aid'], '=');
                 $or->condition('j.aid', $filter['aid2'], '=');
@@ -271,30 +272,44 @@ class CashController extends ControllerBase {
                 $query->fields('j');
                 $query->condition('j.coid', $company,'=')
                         ->condition('j.source','general', '=')
-                        ->condition('j.currency', $filter['currency'], '=')
+                        //->condition('j.currency', $filter['currency'], '=')
                         ->condition($or)
                         ->condition('j.date', $filter['from'], '>=')
                         ->condition('j.date', $filter['to'], '<=')
                         ->condition('j.type', 'debit', '=')
                         ->condition('j.exchange', 0);
+                
+                if($filter['baseCurrency'] != $filter['currency']) {
+                    $query->condition('j.currency', $filter['currency'], '=');
+                } else {
+                    //$query->condition('j.currency', $filter['currency'], '<>');
+                }
          
                 $data4 = $query->execute();
 
                 $or = db_or();
                 $or->condition('j.aid', $filter['aid'], '=');
                 $or->condition('j.aid', $filter['aid2'], '=');
+                
+
                 $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal', 'j');
                 $query->fields('j');
                 $query->condition('j.coid', $company,'=')
                         ->condition('j.source','general', '=')
-                        ->condition('j.currency', $filter['currency'], '=')
+                        //->condition('j.currency', $filter['currency'], '=')
                         ->condition($or)
                         ->condition('j.date', $filter['from'], '>=')
                         ->condition('j.date', $filter['to'], '<=')
                         ->condition('j.type', 'credit', '=')
                         ->condition('j.exchange', 0);
-         
+
+                if($filter['baseCurrency'] != $filter['currency']) {   
+                    $query->condition('j.currency', $filter['currency'], '=');
+                } else { 
+                    
+                }
+                
                 $data5 = $query->execute();
 
             } 
@@ -368,7 +383,6 @@ class CashController extends ControllerBase {
                 $comment = str_replace("'","",$comment); 
                 $month = explode("-", $row['pdate']);  
                 $url = Url::fromRoute('ek_finance_voucher.pdf', ['type' => 1, 'id' => $row['id']] )->toString();
-
                 $voucher = '<a href="'. $url .'" target="_blank"  title="'. t('voucher') .'">'. $row['id'] .'</a>';
                 $total_debit_amount += $row['localcurrency'];
                 $total_debit_base += $row['amount']; 
@@ -414,14 +428,24 @@ class CashController extends ControllerBase {
                             ->fetchField();
 
                 }
-                    $total_credit_amount += $row['value'];
+                    if($filter['baseCurrency'] == $filter['currency']){
+                        $total_credit_amount += $row['value'] + $exchange; 
+                    } else {
+                        $total_credit_amount += $row['value'];
+                    }
                     $total_credit_base += $row['value'] + $exchange; 
 
                     $thisrow['voucher'] = $row['id']; 
                     $thisrow['class'] = "general credit $month[1]";         
                     $thisrow['id'] = $row['id'];
                     $thisrow['op'] = 'credit';        
-                    $thisrow['type'] = $account_list[$row['coid']][$row['aid']];         
+                    $thisrow['type'] = $account_list[$row['coid']][$row['aid']];
+                    if($filter['baseCurrency'] == $filter['currency']){
+                        $thisrow['amount'] = $thisrow['amount'] + $exchange;
+                        $thisrow['currency'] = $filter['currency'];
+                    } else {
+                        $thisrow['currency'] = $row['currency']; 
+                    }
                     $thisrow['amount'] = $row['value'];
                     $thisrow['currency'] = $row['currency'];                
                     $thisrow['basecurrency'] = $row['value'] + $exchange;
@@ -457,7 +481,12 @@ class CashController extends ControllerBase {
                             ->fetchField();
 
                 }
-                    $total_debit_amount += $row['value'];
+                    
+                    if($filter['baseCurrency'] == $filter['currency']){
+                        $total_debit_amount += $row['value'] + $exchange; 
+                    } else {
+                        $total_debit_amount += $row['value'];
+                    }
                     $total_debit_base += $row['value'] + $exchange; 
 
                     $thisrow['voucher'] = $row['id']; 
@@ -466,7 +495,12 @@ class CashController extends ControllerBase {
                     $thisrow['op'] = 'debit';        
                     $thisrow['type'] = $account_list[$row['coid']][$row['aid']];         
                     $thisrow['amount'] = $row['value'];
-                    $thisrow['currency'] = $row['currency'];                
+                    if($filter['baseCurrency'] == $filter['currency']){
+                        $thisrow['amount'] = $thisrow['amount'] + $exchange;
+                        $thisrow['currency'] = $filter['currency'];
+                    } else {
+                        $thisrow['currency'] = $row['currency']; 
+                    }
                     $thisrow['basecurrency'] = $row['value'] + $exchange;
                     $thisrow['date'] = $row['date'];
                     $thisrow['comment'] = $comment;
@@ -536,21 +570,36 @@ class CashController extends ControllerBase {
              //journal 
              //Warning: debit and credit are alternate for user point of view
              //filter only general record to avoid double values
-             $journal = new Journal();
+             
              $history = unserialize( $journal->history(serialize(
                     ['aid' => $filter['aid'],
                      'source' => 'general',
-                    'coid' => $company,
-                    'from' => $year[0].'-01-01',
-                    'to' => date('Y-m-d', strtotime('-1 day', strtotime($filter['from'])))
+                     'coid' => $company,
+                     'from' => $year[0].'-01-01',
+                     'to' => date('Y-m-d', strtotime('-1 day', strtotime($filter['from'])))
                      ]
                      )));
-            
+        
+            if($filter['currency'] == $filter['baseCurrency']) {
+                $open_credit += $history['total_debit_exchange'];
+                $open_credit_base += $history['total_debit_exchange'];
+            } else {
+                $open_credit += $history['total_debit'];
+                $open_credit_base += $history['total_debit_exchange'];
+            }
+            if($filter['currency'] == $filter['baseCurrency']) {
+                $open_debit += $history['total_credit_exchange'];
+                $open_debit_base += $history['total_credit_exchange'];
+            } else {
+                $open_debit += $history['total_credit'];
+                $open_debit_base += $history['total_credit_exchange'];
+            }
+            /*
              $open_credit += $history['total_debit'];
              $open_credit_base += $history['total_debit_exchange'];
              $open_debit += $history['total_credit'];
              $open_debit_base += $history['total_credit_exchange'];
-
+             */
 
             $items['total'] = array();
             $items['total']['year'] = $year[0];
@@ -563,7 +612,7 @@ class CashController extends ControllerBase {
             $items['total']['base'] = $total_credit_base - $total_debit_base;
             $items['total']['balance'] = $total_credit_amount + $open_credit - $total_debit_amount - $open_debit;
             $items['total']['balance_base'] = $total_credit_base +$open_credit_base - $total_debit_base - $open_debit_base;
-            
+        
             //group and sort data by date for display
             $items['data'] = array();
             $b = [];

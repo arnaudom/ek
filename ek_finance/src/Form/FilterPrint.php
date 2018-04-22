@@ -85,12 +85,14 @@ class FilterPrint extends FormBase {
         // provide selector for templates
         //
   $list = array(0 => 'default');
+    if(file_exists('private://finance/templates/' . $source . '/')) {
         $handle = opendir('private://finance/templates/' . $source . '/');
         while ($file = readdir($handle)) {
             if ($file != '.' AND $file != '..') {
                 $list[$file] = $file;
             }
         }
+    }
 
         $form['filters']['template'] = array(
             '#type' => 'select',

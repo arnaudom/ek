@@ -17,7 +17,7 @@ $param = unserialize($param);
         $signature = $param[2];
         $stamp = $param[3];
         $template = $param[4];
-        $mode = $param[5]; 
+        $mode = isset($param[5]) ? $param[5] : NULL; 
     } else {
         $source = $param[0];
         $category = $_SESSION['memrgfilter']['category'];

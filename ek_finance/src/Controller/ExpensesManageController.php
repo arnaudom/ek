@@ -487,7 +487,6 @@ class ExpensesManageController extends ControllerBase {
                         $edit = 'upload-' . $r->e_id . '-expense';
                     } else {
                         $param = 'upload-' . $r->e_id . '-expense';
-
                         $modal_route = Url::fromRoute('ek_finance.manage.modal_expense', ['param' => $param])->toString();
                         $receipt = t('<a href="@url" class="@c"  data-accepts=@a  >upload</a>', array('@url' => $modal_route, '@c' => 'use-ajax red', '@a' => "application/vnd.drupal-modal",));
                     }

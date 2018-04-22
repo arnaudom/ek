@@ -11,6 +11,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\StreamWrapper\TemporaryStream;
+use Drupal\ek_finance\FinanceSettings;
 
 /**
  * Provides a form to upload finance forms.
@@ -22,6 +23,9 @@ class UploadForm extends FormBase {
      */
     public function getFormId() {
         return 'ek_finance_upload';
+    }
+    public function __construct() {
+        $this->settings = new FinanceSettings(); 
     }
 
     /**
@@ -39,25 +43,29 @@ class UploadForm extends FormBase {
             '#type' => 'hidden',
             '#default_value' => $id,
         );
+        $ref = explode('-', $id);
+        if($ref[1] == 'expense' && $this->settings->get('expenseAttachmentSize')) {
+           $form['info1'] = array(
+            '#type' => 'item',
+            '#markup' => t('Max. file size') . ": " . $this->settings->get('expenseAttachmentSize') . 'Mb',
+            ); 
+            $form['info2'] = array(
+            '#type' => 'item',
+            '#markup' => t('File type') . ": " . $this->settings->get('expenseAttachmentFormat') ,
+            ); 
+        } else {
+            $form['info2'] = array(
+            '#type' => 'item',
+            '#markup' => t('File type') . ": " . 'png jpg jpeg pdf',
+            ); 
+        }
 
         $form['actions'] = array('#type' => 'actions');
         $form['actions']['upload'] = array(
             '#id' => 'upbuttonid',
             '#type' => 'submit',
             '#value' => t('Upload'),
-            '#ajax' => array(
-                'callback' => array($this, 'saveFile'),
-                'wrapper' => 'doc_upload_message',
-                'method' => 'replace',
-            ),
-        );
-
-
-        $form['doc_upload_message'] = array(
-            '#type' => 'item',
-            '#markup' => '',
-            '#prefix' => '<div id="doc_upload_message" class="red" >',
-            '#suffix' => '</div>',
+            
         );
 
 
@@ -77,26 +85,30 @@ class UploadForm extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         
-    }
-
-    /**
-     * Callback to save file
-     */
-    public function saveFile(array &$form, FormStateInterface $form_state) {
         $ref = explode('-', $form_state->getValue('for_id'));
 
         switch ($ref[1]) {
 
             case 'expense' :
 
+                if(NULL !== $this->settings->get('expenseAttachmentFormat')) {
+                    $extensions = $this->settings->get('expenseAttachmentFormat');
+                } else {
+                    $extensions = 'png jpg jpeg doc docx xls xlsx odt ods odp pdf rar rtf zip';
+                }
+                if(NULL !== $this->settings->get('expenseAttachmentSize')) {
+                    $ext_size = $this->settings->get('expenseAttachmentSize') * 1000000;
+                } else {
+                    $ext_size = '500000';
+                }
                 // verify if current attachment exist
                 $att = Database::getConnection('external_db', 'external_db')
                         ->query("SELECT company, attachment from {ek_expenses} WHERE id=:id", array(':id' => $ref[0]))
                         ->fetchObject();
 
                 //upload
-                $extensions = 'png gif jpg jpeg bmp txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip';
-                $validators = array('file_validate_extensions' => array($extensions));
+                
+                $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [$ext_size]);
                 $file = file_save_upload("upload_doc", $validators, NULL, 0, FILE_EXISTS_RENAME);
                 
                 if ($file) {
@@ -123,6 +135,8 @@ class UploadForm extends FormBase {
                             ->condition('id', $ref[0])
                             ->execute();
                 }
+                
+                $redirect = 'ek_finance.manage.list_expense';
 
                 break;
 
@@ -158,18 +172,19 @@ class UploadForm extends FormBase {
                             ->execute();
                 }
 
-
+                $redirect = 'ek_finance.manage.reconciliation_reports';
                 break;
         }
 
 
         if ($insert) {
-            $form['doc_upload_message']['#markup'] = t('file uploaded @f', array('@f' => $file->getFilename()));
+            \Drupal::messenger()->addStatus(t('file uploaded @f', array('@f' => $file->getFilename())));
         } else {
-            $form['doc_upload_message']['#markup'] = t('error copying file');
+            \Drupal::messenger()->addError(t('error copying file'));
         }
 
-        return $form['doc_upload_message'];
+        $form_state->setRedirect($redirect);        
     }
+
 
 }

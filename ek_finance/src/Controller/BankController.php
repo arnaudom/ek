@@ -291,6 +291,7 @@ class BankController extends ControllerBase {
             '#markup' => "<a href='" . $new . "' >" . t('new') . "</a>",
         );
 
+        $build['filter'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterCompany');
 
         $header = array(
             'account_ref' => array(
@@ -323,7 +324,24 @@ class BankController extends ControllerBase {
             LEFT JOIN {ek_bank} b
             ON a.bid = b.id
             LEFT JOIN {ek_company} c ON b.coid = c.id WHERE FIND_IN_SET(coid, :c )  ORDER by a.id";
-        $list = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $company));
+        
+        
+        //$list = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $company));
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_bank_accounts', 'ba');
+            $query->fields('ba', ['id','account_ref','active','currency','aid']);
+            $query->leftJoin('ek_bank', 'b', 'ba.id = b.id');
+            $query->addField('b', 'name', 'bank');
+            $query->leftJoin('ek_company', 'c', 'c.id = b.coid');
+            $query->addField('c', 'name', 'co');
+            if(isset($_SESSION['coidfilter']['coid'])) {
+                $query->condition('coid', $_SESSION['coidfilter']['coid'], '=');
+            } else {
+                $query->condition('coid', $company, 'IN');  
+            }
+            $list = $query->execute();
+        
         $row = 0;
         $status = ['0' => t('inactive'), '1' => t('active')];
         while ($l = $list->fetchObject()) {

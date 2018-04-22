@@ -447,7 +447,7 @@ class InstallController extends ControllerBase {
           `rate` DOUBLE NOT NULL DEFAULT '0' COMMENT 'exchange rate',
           `amount` DOUBLE NOT NULL DEFAULT '0' COMMENT 'amount base currency',
           `currency` VARCHAR(5) NULL DEFAULT NULL COMMENT 'currency code' COLLATE 'utf8_unicode_ci',
-          `amount_paid` DOUBLE UNSIGNED NULL DEFAULT NULL COMMENT 'paid amount value',
+          `amount_paid` DOUBLE NULL DEFAULT NULL COMMENT 'paid amount value',
           `tax` DOUBLE NULL DEFAULT NULL COMMENT 'tax value if any',
           `year` VARCHAR(10) NULL NULL DEFAULT '0' COMMENT 'transaction year',
           `month` INT(10) UNSIGNED NULL DEFAULT '0' COMMENT 'transaction month',

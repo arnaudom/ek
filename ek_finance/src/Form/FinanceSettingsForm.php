@@ -89,6 +89,28 @@ class FinanceSettingsForm extends FormBase {
         '#title' => t('Budgets'),
         '#description' => t('Computation unit'),
       ); 
+
+  
+    $form['expenseAttachmentFormat'] = array(
+        '#type' => 'textfield',
+        '#size' => 100,
+        '#required' => TRUE,
+        '#default_value' => (NULL !== $settings->get('expenseAttachmentFormat')) ? $settings->get('expenseAttachmentFormat') : 'png gif jpg jpeg bmp txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip',
+        '#title' => t('Files attachment format for expenses'),
+        '#description' => t('Extensions list'),
+      ); 
+  
+    $form['expenseAttachmentSize'] = array(
+        '#type' => 'number',
+        '#min' => 0.5,
+        '#max' => 5,
+        '#step' => 0.5,
+        '#size' => 10,
+        '#required' => TRUE,
+        '#default_value' => (NULL !== $settings->get('expenseAttachmentSize')) ? $settings->get('expenseAttachmentSize') : '1',
+        '#title' => t('Files attachment size for expenses'),
+        '#description' => t('In Mb'),
+      );    
     
     $form['chart'] = array(
       '#type' => 'details',
@@ -251,6 +273,9 @@ class FinanceSettingsForm extends FormBase {
           $form_state->setErrorByName("chart][", $this->t('The chart structure has duplicate numbers.'));
       }
       
+      if($form_state->getValue('expenseAttachmentSize') > 5) {
+          $form_state->setErrorByName("expenseAttachmentSize", $this->t('Size should be below 5Mb.'));
+      }      
   }
 
   /**
@@ -281,6 +306,8 @@ class FinanceSettingsForm extends FormBase {
   $settings->set('chart', $chart);
   $settings->set('recordProvision', $form_state->getValue('recordProvision'));
   $settings->set('listPurchases', $form_state->getValue('listPurchases'));
+  $settings->set('expenseAttachmentFormat', $form_state->getValue('expenseAttachmentFormat'));
+  $settings->set('expenseAttachmentSize', $form_state->getValue('expenseAttachmentSize'));
   $save = $settings->save();
   
    if ($save){
