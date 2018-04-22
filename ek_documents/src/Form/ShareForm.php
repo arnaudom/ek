@@ -13,6 +13,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Component\Utility\Xss;
 use DateTime;
 use Drupal\ek_documents\DocumentsData;
+use Drupal\ek_documents\Settings;
 
 /**
  * Provides a form to share documents.
@@ -35,12 +36,36 @@ class ShareForm extends FormBase {
         //confirm the file is owned by current user to avoid access via direct link
         if (DocumentsData::validate_owner($id)) {
 
+            $settings = new Settings();
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_documents', 'd');
+            $query->fields('d', ['uid', 'filename', 'share', 'share_uid', 'share_gid', 'expire']);
+            $query->condition('id', $id);
+            $data = $query->execute()->fetchObject();
+            
+            /*
             $query = 'SELECT uid, filename,share,share_uid, share_gid,expire FROM {ek_documents} WHERE id=:id';
             $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
-
+            */
+            
+            $users = [];
+            foreach (\Drupal\user\Entity\User::loadMultiple() as $account) {
+                if($account->isActive() && $account->id() != $data->uid ) {
+                    if($settings->get('filter_permission') == '1' && $account->hasPermission('manage_documents')) {
+                        $users[$account->id()] = $account->getUserName();
+                    } elseif ($settings->get('filter_permission') == '0') {
+                        $roles = $account->getRoles();
+                        $users[$account->id()] = $account->getUserName() . " [" . $roles[1] . "]";
+                    }
+                    
+                }
+            }
+            /*
+            $users = \Drupal\user\Entity\User::loadMultiple();
             $users = db_query('SELECT uid,name FROM {users_field_data} WHERE uid<>:u AND uid<>0 AND status <> :s order by name'
                     , array(':u' => $data->uid, ':s' => 0))->fetchAllKeyed();
-
+                    */
             $default = explode(',', $data->share_uid);
 
 

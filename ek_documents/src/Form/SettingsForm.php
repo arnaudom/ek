@@ -52,7 +52,16 @@ class SettingsForm extends FormBase {
         '#title' => t('Filter special characters in file name'),
         '#description' => t('Restrict upload'),
       );
-    
+
+    $form['filter_permission'] = array(
+        '#type' => 'select',
+        '#size' => 1,
+        '#required' => TRUE,
+        '#options' => array(0 => t('no'), 1 => t('yes')),
+        '#default_value' => $settings->get('filter_permission'),
+        '#title' => t('Restrict share to user with module permission'),
+        '#description' => 'Access documents management',
+      );
 
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
@@ -77,6 +86,7 @@ class SettingsForm extends FormBase {
   
   $settings->set('file_extensions', $form_state->getValue('file_extensions'));
   $settings->set('filter_char', $form_state->getValue('filter_char'));
+  $settings->set('filter_permission', $form_state->getValue('filter_permission'));
  
   $save = $settings->save();
   
