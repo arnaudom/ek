@@ -33,19 +33,45 @@ class ProjectAccessEdit extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $type = NULL) {
 
         if ($type == 'project') {
-            $query = "SELECT share,deny,cid,pcode,owner FROM {ek_project} WHERE id=:id";
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project', 'p');
+            $query->fields('p', ['share', 'deny','cid','pcode','owner']);
+            $query->condition('id', $id);
+            
+            /*
+            $query = "SELECT share,deny,cid,pcode,owner FROM {ek_project} WHERE id=:id";*/
         } else {
             //select data from documents
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project_documents', 'd');
+            $query->fields('d', ['share', 'deny', 'pcode']);
+            $query->leftJoin('ek_project', 'p', 'p.pcode = d.pcode');
+            $query->fields('p', ['cid', 'owner']);
+            $query->condition('d.id', $id);
+            
+            
+            /*
             $query = "SELECT d.share,d.deny,cid,d.pcode,owner FROM {ek_project_documents} d "
                     . "INNER JOIN {ek_project} p ON d.pcode=p.pcode "
-                    . "WHERE d.id=:id";
+                    . "WHERE d.id=:id";*/
         }
+        $data = $query->execute()->fetchObject();
+        /*
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $id))
-                ->fetchObject();
+                ->fetchObject();*/
+        /*
         $users = db_query('SELECT uid,name FROM {users_field_data} WHERE uid<>:u '
                 . 'AND uid <> 0 AND status <> :s order by name', array(':u' => $data->owner, ':s' => 0))
-                ->fetchAllKeyed();
+                ->fetchAllKeyed();*/
+        
+        $users = [];
+            foreach (\Drupal\user\Entity\User::loadMultiple() as $account) {
+                if($account->isActive() && $account->id() != $data->owner && $account->hasPermission('view_project')) {                 
+                        $roles = $account->getRoles();
+                        $users[$account->id()] = $account->getUserName() . " [" . $roles[1] . "]";
+                    }
+            }
 
         if (\Drupal::currentUser()->id() == $data->owner) {
             $disabled = FALSE;

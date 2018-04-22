@@ -406,7 +406,7 @@ use Drupal\ek_admin\Access\AccessCheck;
                 break;
             case 'purchase_edit':
                 $body[] = t('Purchase edited for project ref. @p', ['@p' => $param['pcode']]) ;
-                $body[] = t('Invoice : @v' , array('@v' => $param['value']));
+                $body[] = t('Purchase : @v' , array('@v' => $param['value']));
                 $params['subject'] = t("Project purchase update");
                 break;
             case 'new_project':
