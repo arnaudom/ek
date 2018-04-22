@@ -47,7 +47,7 @@ class NumberToWord {
         $u = substr($cents, 1, 1);
         if ($cents > 0) {
             
-            if($w[$u] > 0){
+            if($u > 0){
                 $cents = " " .  t('point') . " " . $w[$d] . " " . $w[$u];
             } else {
                 $cents = " " .  t('point') . " " . $w[$d*10] ;
