@@ -64,7 +64,7 @@ function ek_hr_update_8003() {
 
 /**
  * New route path.
- * Exployeea extraction
+ * Exployees extraction
  * 
 */
 function ek_hr_update_8004() {
