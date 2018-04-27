@@ -216,7 +216,11 @@
                             </td>
                             <td></td>
                             <td></td>
-                            <td></td>
+                            <td style="text-align: center;">
+                                {% if items.project.0.extranet %}
+                                    {{ 'Extranet'|t }}
+                                {% endif %}
+                            </td>
                         </tr>
                     </tbody>         
                     <tbody id='project_com_docs'>
@@ -517,7 +521,11 @@
                             </td>
                             <td></td>
                             <td></td>
-                            <td></td>
+                            <td style="text-align: center;">
+                                {% if items.project.0.extranet %}
+                                    {{ 'Extranet'|t }}
+                                {% endif %}
+                            </td>
                         </tr>
                     </tbody>
                     <tbody id='project_fi_docs'>

@@ -281,3 +281,17 @@
   content: "\f046";
   color:#FFFFFF; 
 }
+
+.extranet-btn-green:before {
+  font-family: FontAwesome;
+  font-size:1.3em;
+  color: #00D744;
+  content: "\f205";
+}
+
+.extranet-btn-red:before {
+  font-family: FontAwesome;
+  font-size:1.3em;
+  color: #FF6666;
+  content: "\f204";
+}

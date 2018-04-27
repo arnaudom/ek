@@ -66,11 +66,11 @@
 
                 {% if item.extranet_share == 1 %}
 
-                    <td style="text-align: center;"><a href="{{ item.extranet_url }}" class='use-ajax green extranet-btn' title="{{'Extranet shared; click to unshare'|t }}">
-                            <i class="fa fa-lg fa-share-square-o" aria-hidden="true"></i></a></td>
+                    <td style="text-align: center;"><a href="{{ item.extranet_url }}" class='use-ajax' title="{{'Extranet shared; click to unshare'|t }}">
+                            <span id="{{ item.elementId }}" class="extranet-btn-green" aria-hidden="true"></span></a></td>
                         {% else %}
-                    <td style="text-align: center;"><a href="{{ item.extranet_url }}" class='use-ajax red extranet-btn' title="{{'Extranet not shared; click to share'|t }}">
-                            <i class="fa fa-lg fa-share-square-o" aria-hidden="true"></i></a></td>
+                    <td style="text-align: center;"><a href="{{ item.extranet_url }}" class='use-ajax' title="{{'Extranet not shared; click to share'|t }}">
+                            <span id="{{ item.elementId }}" class="extranet-btn-red" aria-hidden="true"></span></a></td>
                         {% endif %}
 
             {% else %}
