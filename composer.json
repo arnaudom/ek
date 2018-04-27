@@ -1,12 +1,13 @@
 {
-    "name": "arreasystem/ek-dev",
+    "name": "arreasystem/ek",
     "description": "EK management tools suite : company data digitization",
     "type": "drupal-module",
     "license": "GPL-2.0+",
     "authors": [
         {
             "name": "arrea system",
-            "email": "system@arrea.com"
+            "email": "system@arrea.com",
+            "homepage": "http://ek.arrea-system.com",
         }
     ],
     "minimum-stability": "dev",
