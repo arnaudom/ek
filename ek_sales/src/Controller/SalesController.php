@@ -647,7 +647,7 @@ class SalesController extends ControllerBase {
                 
             case 'quick_edit':
                 $param[0] = str_replace("_", " ", $param[0]) . " " . $param[2];
-                $options = array('width' => '30%',);
+                $options = array('width' => '50%',);
                 $content = $this->formBuilder->getForm('Drupal\ek_sales\Form\QuickEdit', $param[1], $param[2]);
                 break;
                 
