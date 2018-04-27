@@ -528,19 +528,19 @@ class ProjectController extends ControllerBase {
                  * suppliers
                  */
                 
-                $data['suppliers'] = '';
+                $data['suppliers'] = [];
                 if($data['description'][0]->supplier_offer){
                     $query = "SELECT id,name FROM {ek_address_book} WHERE FIND_IN_SET (id, :s )";
                     $suppliers = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':s' => $data['description'][0]->supplier_offer));
                    
                     WHILE($s = $suppliers->fetchObject()){
-                        
+                        /**/
                         $data['suppliers'][] = [
                             'name' => $s->name,
                             'url' => \Drupal\ek_address_book\AddressBookData::geturl($s->id),
                         ];
-                        ;
+                        
                     }
                     $data['description'][0]->supplier_offer = $data['suppliers'];
                 }
@@ -1633,8 +1633,10 @@ class ProjectController extends ControllerBase {
                     }
                     
                 }
-
-
+                
+                
+                $this->moduleHandler()->invokeAll('project_doc_delete', [['pcode' => $p->pcode ,'id' => $id]]);
+                        
                 $log = $p->pcode . '|' . \Drupal::currentUser()->id() . '|delete|' . $p->filename;
                 \Drupal::logger('ek_projects')->notice($log);
 
