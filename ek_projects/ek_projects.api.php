@@ -47,6 +47,40 @@ function hook_project_doc_view($items) {
     return $items;
     
 }
+
+/**
+ * Update tables data references when a file is removed from project
+ * @param array $items
+ *   $items['pcode'] i.e. project code
+ *   $items['id'] i.e file id.
+ * @see \Drupal\ek_projects\Controller\ProjectController::deleteConfirmed()
+ * 
+ */
+function hook_project_doc_delete($items) {
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_extranet_pages', 'e');
+            $query->fields('e', ['content']);
+            $query->condition('pcode', $items['pcode']);
+       $data = $query->execute()->fetchObject();
+       
+       $content = unserialize($data->content);
+       $new = [];
+       foreach ($content['document'] as $docId => $status) {
+           if($docId != $items['id']) {
+               $new['document'][$docId] = $status;
+           }
+       }
+       
+       $update = Database::getConnection('external_db', 'external_db')
+                ->update('ek_extranet_pages')
+                ->condition('pcode', $items['pcode'])
+                ->fields(['content' => serialize($new)] )
+                ->execute();
+       
+       // HTTP 204 is "No content", meaning "I did what you asked and we're done."
+        return new Response('', 204);
+    
+}
 /**
  * @} End of "addtogroup hooks".
  */
