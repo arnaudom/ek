@@ -123,7 +123,7 @@ class ExpensesManageController extends ControllerBase {
 
                 $data = $query
                         ->fields('j', array('id', 'aid', 'date', 'value', 'source', 'exchange', 'currency', 'reconcile', 'reference', 'coid', 'source'))
-                        ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment'))
+                        ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment', 'allocation'))
                         ->fields('p', array('id', 'taxvalue', 'title', 'pcode', 'client', 'uri', 'status'))
                         ->condition($or)
                         ->condition($or2)
@@ -144,7 +144,7 @@ class ExpensesManageController extends ControllerBase {
 
                 $data = $query
                         ->fields('j', array('id', 'aid', 'date', 'value', 'source', 'exchange', 'currency', 'reconcile', 'reference', 'coid', 'source'))
-                        ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment'))
+                        ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment', 'allocation'))
                         ->condition($or)
                         ->condition('j.source', 'expense%', 'like')
                         ->condition('date', date('Y-m') . "-01", '>=')
@@ -179,7 +179,7 @@ class ExpensesManageController extends ControllerBase {
 
                 $data = $query
                         ->fields('j', array('id', 'aid', 'date', 'value', 'exchange', 'currency', 'reconcile', 'reference', 'coid', 'source'))
-                        ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment'))
+                        ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment', 'allocation'))
                         ->fields('p', array('id', 'taxvalue', 'title', 'pcode', 'client', 'uri', 'status'))
                         ->condition('coid', $access, 'IN')
                         ->condition($or)
@@ -202,7 +202,7 @@ class ExpensesManageController extends ControllerBase {
 
                 $data = $query
                         ->fields('j', array('id', 'aid', 'date', 'value', 'exchange', 'currency', 'reconcile', 'reference', 'coid', 'source'))
-                        ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment'))
+                        ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment', 'allocation'))
                         ->condition('coid', $access, 'IN')
                         ->condition($or)
                         ->condition('j.source', 'expense%', 'like')
@@ -221,12 +221,15 @@ class ExpensesManageController extends ControllerBase {
                 if($session_filter['pcode'] == 'na') {
                     $session_filter['pcode'] = 'n/a';
                 }
+                if($session_filter['allocation'] == '0') {
+                    $session_filter['allocation'] = '%';
+                }
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
                 $query->leftjoin('ek_expenses', 'e', 'e.id=j.reference');
                 $query->leftjoin('ek_sales_purchase', 'p', 'p.id=j.reference');
                 $query->fields('j', array('id', 'aid', 'date', 'value', 'exchange', 'currency', 'reconcile', 'reference', 'coid', 'source'))
-                        ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment'))
+                        ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment', 'allocation'))
                         ->fields('p', array('id', 'taxvalue', 'title', 'pcode', 'client', 'uri', 'status'));
                 $or = db_or();
                 $or->condition('aid', $chart['expenses'] . '%', 'like');
@@ -252,6 +255,7 @@ class ExpensesManageController extends ControllerBase {
                         ->condition('j.date', $session_filter['from'], '>=')
                         ->condition('j.date', $session_filter['to'], '<=')
                         ->condition('coid', $session_filter['coid'], '=')
+                        ->condition('e.allocation', $session_filter['allocation'], 'like')
                         ->condition($or4)
                         ->condition('j.type', 'debit', '=')
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
@@ -266,11 +270,14 @@ class ExpensesManageController extends ControllerBase {
                 if($session_filter['pcode'] == 'na') {
                     $session_filter['pcode'] = 'n/a';
                 }
+                if($session_filter['allocation'] == '0') {
+                    $session_filter['allocation'] = '%';
+                }
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
                 $query->join('ek_expenses', 'e', 'e.id=j.reference');
                 $query->fields('j', array('id', 'aid', 'date', 'value', 'exchange', 'currency', 'reconcile', 'reference', 'coid', 'source'))
-                        ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment'));
+                        ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment', 'allocation'));
 
                 if ($session_filter['aid'] == '%') {
                     $or = db_or();
@@ -290,6 +297,7 @@ class ExpensesManageController extends ControllerBase {
                         ->condition('date', $session_filter['from'], '>=')
                         ->condition('date', $session_filter['to'], '<=')
                         ->condition('coid', $session_filter['coid'], '=')
+                        ->condition('e.allocation', $session_filter['allocation'], 'like')
                         ->condition($or)
                         ->condition('j.source', 'expense%', 'like')
                         ->condition('j.type', 'debit', '=')
@@ -392,6 +400,8 @@ class ExpensesManageController extends ControllerBase {
                 $currency = $r->currency;
                 $ecurrency = '';
                 $edit = '';
+                $ref = [];
+                $receipt = '';
 
                 //type expense
                 if (strpos($r->source, 'xpense')) {
@@ -458,8 +468,6 @@ class ExpensesManageController extends ControllerBase {
 
                 //type expense
                 if (strpos($r->source, 'xpense')) {
-                    $ref = '';
-                    $receipt = '';
                     $clientname = Database::getConnection('external_db', 'external_db')
                             ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $r->clientname))
                             ->fetchField();
@@ -469,16 +477,16 @@ class ExpensesManageController extends ControllerBase {
 
                     if ($r->clientname != 0) {
                         $url = \Drupal\ek_address_book\AddressBookData::geturl($r->clientname,['short' => 8]);
-                        $ref = $ref . $url . '<br/>';
+                        $ref['client'] = ['#markup' => $url];
                     }
                     if ($r->suppliername != 0) {
                         $url = \Drupal\ek_address_book\AddressBookData::geturl($r->suppliername,['short' => 8]);
-                        $ref = $ref . $url . '<br/>';
+                        $ref['supplier'] = ['#markup' => $url];
                     }
                     
                     if ($r->pcode <> 'n/a') {
                         if ($this->moduleHandler->moduleExists('ek_projects')) {
-                            $ref .= \Drupal\ek_projects\ProjectData::geturl($r->pcode, NULL, NULL, TRUE);
+                            $ref['project'] = ['#markup' => \Drupal\ek_projects\ProjectData::geturl($r->pcode, NULL, NULL, TRUE)];
                         }
                     }
 
@@ -494,22 +502,19 @@ class ExpensesManageController extends ControllerBase {
                     //voucher
                     $url = Url::fromRoute('ek_finance_voucher.pdf', ['type' => 1, 'id' => $r->reference])->toString();
                     $voucher = '<a href="' . $url . '" target="_blank"  title="' . t('voucher')
-                            . ' - ' . $r->e_id . ' ' . $r->comment . '">' . $r->e_id . '</a>';
+                            . ' - ' . $r->e_id . ' ' . strip_tags($r->comment) . '">' . $r->e_id . '</a>';
                     //save array for print range
                     array_push($filteredIds, $r->e_id);
                     
                 } elseif ($r->source == 'purchase') {
-                    $ref = '';
-                    $receipt = '';
-
+                    
                     if ($r->client != '0') {
-
                         $url = \Drupal\ek_address_book\AddressBookData::geturl($r->client,['short' => 8]);
-                        $ref = $ref . $url . '<br/>';
+                        $ref['client'] = ['#markup' => $url];
                     }
                     if ($r->p_pcode <> 'n/a') {
                         if ($this->moduleHandler->moduleExists('ek_projects')) {
-                            $ref .= \Drupal\ek_projects\ProjectData::geturl($r->p_pcode, NULL, NULL, TRUE);
+                            $ref['project'] = ['#markup' => \Drupal\ek_projects\ProjectData::geturl($r->p_pcode, NULL, NULL, TRUE)];
                         }
                     }
                     if ($r->uri != '') {
@@ -525,8 +530,8 @@ class ExpensesManageController extends ControllerBase {
                 $options[$i] = array(
                     'id' => ['data' => ['#markup' => $voucher]],
                     'type' => array('data' => $aid . " " . $aname),
-                    'reference' => ['data' => ['#markup' => $ref]],
-                    'company' => $company_array[$r->coid],
+                    'reference' => ['data' => ['#theme' => 'item_list', '#list_type' => 'ul', '#items' => $ref]],
+                    'company' => ['data' => ['#markup' => $company_array[$r->coid]], 'title' => ['#markup' => $company_array[$r->allocation]]],
                     'date' => $date,
                     'value' => ['data' => ['#markup' => $value]],
                     'basecurrency' => ['data' => ['#markup' => $evalue]],
@@ -545,7 +550,18 @@ class ExpensesManageController extends ControllerBase {
                 $reconcile_flag = $query->execute()->fetchObject()->reconcile;
                 
                 if (strpos($r->source, 'xpense')) {
-                    if ($reconcile_flag == 0) {
+                    
+                    $links['qedit'] = array(
+                        'title' => $this->t('Quick edit'),
+                        'url' => Url::fromRoute('ek_finance.manage.modal_expense', ['param' => 'quick_edit-' . $r->e_id . '-expense']),
+                        'attributes' => [
+                            'class' => ['use-ajax'],
+                            'data-dialog-type' => 'modal',
+                        ],
+                    );
+                    
+                    if ($reconcile_flag == 0 && !strpos($r->source, 'payroll')) {
+                        //lock edit on reconciled and payroll data
                         $links['edit'] = array(
                             'title' => $this->t('Edit'),
                             'url' => Url::fromRoute('ek_finance.manage.edit_expense', ['id' => $r->reference]),
@@ -574,8 +590,6 @@ class ExpensesManageController extends ControllerBase {
                         'url' => Url::fromRoute('ek_sales.purchases.clone', ['id' => $r->p_id]),
                     );
                 }
-
-
 
 
                 $options[$i]['operations']['data'] = array(
@@ -831,7 +845,6 @@ class ExpensesManageController extends ControllerBase {
                     $edit = 'upload-' . $r->e_id . '-expense';
                 } else {
                     $param = 'upload-' . $r->e_id . '-expense';
-
                     $modal_route = Url::fromRoute('ek_finance.manage.modal_expense', ['param' => $param])->toString();
                     $receipt = t('<a href="@url" class="@c"  data-accepts=@a  >upload</a>', array('@url' => $modal_route, '@c' => 'use-ajax red', '@a' => "application/vnd.drupal-modal",));
                 }
@@ -928,15 +941,22 @@ class ExpensesManageController extends ControllerBase {
             case 'upload':
                 $id = $param[1] . '-' . $param[2];
                 $content = $this->formBuilder->getForm('Drupal\ek_finance\Form\UploadForm', $id);
+                $options = array( 'width' => '30%', );
+                $title = $this->t('Upload');
+                break;
+            case 'quick_edit' :
+              $content = $this->formBuilder->getForm('Drupal\ek_finance\Form\QuickEdit', $param[1]); 
+              $options = array( 'width' => '50%', );
+              $title = $this->t('Edit');
                 break;
         }
 
         $response = new AjaxResponse();
-        $title = $this->t($param[0]);
+        
         $content['#attached']['library'][] = 'core/drupal.dialog.ajax';
 
         if ($is_modal) {
-            $dialog = new OpenModalDialogCommand($title, $content);
+            $dialog = new OpenModalDialogCommand($title, $content,$options);
             $response->addCommand($dialog);
         } else {
             $selector = '#ajax-dialog-wrapper-1';

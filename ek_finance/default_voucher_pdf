@@ -251,7 +251,7 @@ Foreach($data as $id => $arr) {
             $pdf->Cell(100,5, $arr['type'] ,0,1);    
             $pdf->Cell(75,5,t('Comment') ,0,0);
         $pdf->SetFont('Arial','',8);
-            $pdf->MultiCell(100,5,$arr['line']->comment,0,'J');  
+            $pdf->MultiCell(100,5,strip_tags($arr['line']->comment),0,'J');  
 
         $pdf->Ln(10);
 

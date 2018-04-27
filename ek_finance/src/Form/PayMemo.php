@@ -461,10 +461,13 @@ class PayMemo extends FormBase {
         $rate2 = CurrencyData::rate($currency2);
         $this_pay = 0;
 
+        /* reset allocation field to coid
         $query = "SELECT country from {ek_company} WHERE id=:id";
         $allocation = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $data->entity_to))
                 ->fetchField();
+         */
+        $allocation = $data->entity_to;
         /*changed expense client field from strin to id - to remove
         $query = "SELECT name from {ek_address_book} WHERE id=:id";
         $client = Database::getConnection('external_db', 'external_db')

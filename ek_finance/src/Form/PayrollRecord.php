@@ -409,10 +409,12 @@ class PayrollRecord extends FormBase {
 
                 $class = substr($form_state->getValue("account-" . $n), 0, 2);
                 $query = "SELECT country from {ek_company} WHERE id=:id";
+                /*reset allocation field to coid
                 $allocation = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $form_state->getValue('coid')))
                         ->fetchField();
-
+                */
+                $allocation = $form_state->getValue('coid');
                 $date = explode("-", $form_state->getValue("pdate-" . $n));
                 $value = str_replace(',', '', $form_state->getValue("nett-" . $n));
 

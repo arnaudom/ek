@@ -108,14 +108,30 @@ class FilterExpenses extends FormBase {
             '#title' => t('class'),
             '#default_value' => isset($_SESSION['efilter']['aid']) ? $_SESSION['efilter']['aid'] : NULL ,
             '#attributes' => array('style' => array('width:200px;')),
-            '#prefix' => "<div id='add'  class='row'>",
-            '#suffix' => '</div></div></div>',  
+            '#prefix' => "<div id='add'  class='cell'>",
+            '#suffix' => '</div>',  
               '#states' => array(
                 'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
                 ),
               ),      
             ); 
-        
+
+            $allocation_options = ['0' => t('Any')];
+            $allocation_options += $coid;
+            $form['filters'][1]["allocation"] = array(
+            '#type' => 'select',
+            '#size' => 1,
+            '#options' => $allocation_options,
+            '#default_value' => isset($_SESSION['efilter']['allocation']) ? $_SESSION['efilter']['allocation'] : 0,
+            '#title' => t('Allocation'),
+            '#attributes' => array('style' => array('width:200px;')),
+            '#prefix' => "<div class='cell'>",
+            '#suffix' => '</div></div></div>',  
+              '#states' => array(
+                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                ),
+              ),      
+            );        
             $form['filters'][2]['from'] = array(
               '#type' => 'date',
               '#size' => 12,
@@ -301,6 +317,7 @@ class FilterExpenses extends FormBase {
   $_SESSION['efilter']['from'] = $form_state->getValue('from');
   $_SESSION['efilter']['to'] = $form_state->getValue('to');
   $_SESSION['efilter']['coid'] = $form_state->getValue('coid');
+  $_SESSION['efilter']['allocation'] = $form_state->getValue('allocation');
   $_SESSION['efilter']['aid'] = $form_state->getValue('aid');
   $_SESSION['efilter']['supplier'] = $form_state->getValue('supplier');
   $_SESSION['efilter']['client'] = $form_state->getValue('client');

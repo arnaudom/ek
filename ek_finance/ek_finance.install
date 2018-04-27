@@ -1120,3 +1120,25 @@ function ek_finance_update_8011() {
     \Drupal::service('router.builder')->rebuild();
     return t('New route built');
 }
+
+/**
+ * Implement allocation field in expenses
+ * Update database field with default value
+ */
+function ek_finance_update_8012() {
+
+    $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_expenses', 'e');
+    $query->fields('e', ['id','company']);
+    $data = $query->execute();
+    
+    while ($row = $data->fetchObject()) {
+        Database::getConnection('external_db', 'external_db')
+                        ->update('ek_expenses')
+                        ->condition('id', $row->id)
+                        ->fields(['allocation' => $row->company])
+                        ->execute();
+    }
+        
+    return t('Table expenses updated');
+}

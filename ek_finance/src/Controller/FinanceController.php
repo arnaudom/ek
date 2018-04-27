@@ -110,10 +110,9 @@ class FinanceController extends ControllerBase {
                 break;
             case 'currency' :
               $content = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewCurrencyForm'); 
-              $options = array( 'width' => '30%', );
+              $options = array( 'width' => '50%', );
               $title = $this->t('new currency');
                 break;
-
         }
       
     $response = new AjaxResponse();

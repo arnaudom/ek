@@ -159,6 +159,7 @@ class RecordExpense extends FormBase {
             $form_state->set('step', 2);
 
             $form_state->set('coid', $expense->company);
+            
 
             $form_state->set('currency', $expense->currency);
 
@@ -257,7 +258,37 @@ class RecordExpense extends FormBase {
             ),
         );
 
-
+        $add = isset($expense->allocation) ? $company[$expense->allocation] : "";
+        $form['allocation'] = array(
+            '#type' => 'details',
+            '#title' => t('Allocation') . " " . $add,
+            '#group' => '1',
+            '#open' => FALSE,
+            '#weight' => -11,
+            
+        );
+        $form['allocation']["change_location"] = array(
+            '#type' => 'checkbox',
+            '#default_value' => ($expense->allocation) ? TRUE : NULL,
+            '#title' => t('assign to other entity'),
+            '#prefix' => "<div class='container-inline'>",
+             );
+        
+        $form['allocation']['location'] = array(
+            '#type' => 'select',
+            '#size' => 1,
+            '#options' => $company,
+            '#default_value' => ($expense->allocation) ? $expense->allocation : NULL,
+            '#title' => t('allocation'),
+            '#required' => FALSE,
+            '#suffix' => "</div>",
+            '#states' => array(
+                'invisible' => array(
+                    "input[name='change_location']" => array('checked' => FALSE),
+                ),
+            ),
+        );        
+        
         $form['credit'] = array(
             '#type' => 'details',
             '#title' => t('Credit'),
@@ -265,7 +296,7 @@ class RecordExpense extends FormBase {
             '#open' => TRUE,
             '#weight' => -10,
         );
-
+        
         $form['credit']['currency'] = array(
             '#type' => 'select',
             '#size' => 1,
@@ -962,11 +993,18 @@ class RecordExpense extends FormBase {
                         ->execute();
         }
         
+        /*
         $query = "SELECT country from {ek_company} WHERE id=:id";
         $allocation = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form_state->getValue('coid')))
                 ->fetchField();
-
+                */
+        if($form_state->getValue('change_location') == 1) {
+            $allocation = $form_state->getValue('location');
+        } else {
+            $allocation = $form_state->getValue('coid');
+        }
+        
         for ($n = 1; $n <= $form_state->get('num_items'); $n++) {
 
             $class = substr($form_state->getValue("account$n"), 0, 2);
@@ -1012,7 +1050,7 @@ class RecordExpense extends FormBase {
             $field = "attachment$n";
             $receipt = 'no';
             //$form_state->setValue($field, '');
-dpm($form_state->getValue([$field, 0]));
+
             $file = file_save_upload($field, $validators, FALSE, 0);
 
             if ($file) {
@@ -1078,7 +1116,7 @@ dpm($form_state->getValue([$field, 0]));
                 'tax' => $tax,
                 'year' => $date[0],
                 'month' => $date[1],
-                'comment' => $form_state->getValue("comment$n"),
+                'comment' => \Drupal\Component\Utility\Xss::filter($form_state->getValue("comment$n"), ['em','b', 'strong']),
                 'pcode' => $form_state->getValue('pcode'),
                 'clientname' => $form_state->getValue('client'),
                 'suppliername' => $form_state->getValue('supplier'),
