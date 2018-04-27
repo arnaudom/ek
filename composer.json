@@ -7,7 +7,7 @@
         {
             "name": "arrea system",
             "email": "system@arrea.com",
-            "homepage": "http://ek.arrea-system.com",
+            "homepage": "http://ek.arrea-system.com"
         }
     ],
     "minimum-stability": "dev",
