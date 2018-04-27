@@ -1,0 +1,23 @@
+{
+    "name": "arreasystem/ek",
+    "description": "EK management tools suite : company data digitization",
+    "type": "drupal-module",
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "arrea system",
+            "email": "system@arrea.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    
+    "require": {
+        "php": ">=5.3.0",
+    },
+    
+     "extra": {
+        "installer-paths": {
+            "modules/EK/{$name}": ["type:drupal-module"]
+        }
+    }
+}
