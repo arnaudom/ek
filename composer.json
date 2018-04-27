@@ -5,9 +5,9 @@
     "license": "GPL-2.0+",
     "authors": [
         {
-            "name": "arrea system",
-            "email": "system@arrea.com",
-            "homepage": "http://ek.arrea-system.com"
+            "name": "arrea systems",
+            "email": "systems@arrea.com",
+            "homepage": "http://ek.arrea-systems.com"
         }
     ],
     "minimum-stability": "dev",
