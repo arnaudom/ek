@@ -376,11 +376,18 @@ class QuickEdit extends FormBase {
             //if coid changed, need to update the currency assets debit account in journal
             $coSettings = new \Drupal\ek_admin\CompanySettings($form_state->getValue('head'));
             $asset = $coSettings->get('asset_account', $form_state->getValue('currency'));
-                $update = Database::getConnection('external_db', 'external_db')
+                $update1 = Database::getConnection('external_db', 'external_db')
                         ->update("ek_journal")
                         ->fields(['aid' => $asset])
                         ->condition('source', 'invoice')
                         ->condition('type', 'debit')
+                        ->condition('reference', $form_state->getValue('id'))
+                        ->execute();
+                //Edit invoice header in journal
+                $update2 = Database::getConnection('external_db', 'external_db')
+                        ->update("ek_journal")
+                        ->fields(['coid' => $form_state->getValue('head')])
+                        ->condition('source', 'invoice')
                         ->condition('reference', $form_state->getValue('id'))
                         ->execute();
             
@@ -391,12 +398,18 @@ class QuickEdit extends FormBase {
             $coSettings = new \Drupal\ek_admin\CompanySettings($form_state->getValue('head'));
             $liability = $coSettings->get('liability_account', $form_state->getValue('currency'));
             
-            /**/
-                $update = Database::getConnection('external_db', 'external_db')
+                $update1 = Database::getConnection('external_db', 'external_db')
                         ->update("ek_journal")
                         ->fields(['aid' => $liability])
                         ->condition('source', 'purchase')
                         ->condition('type', 'credit')
+                        ->condition('reference', $form_state->getValue('id'))
+                        ->execute();
+                //Edit purchase header in journal
+                $update2 = Database::getConnection('external_db', 'external_db')
+                        ->update("ek_journal")
+                        ->fields(['coid' => $form_state->getValue('head')])
+                        ->condition('source', 'purchase')
                         ->condition('reference', $form_state->getValue('id'))
                         ->execute();
             
