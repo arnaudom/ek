@@ -26,3 +26,12 @@ function ek_admin_uninstall() {
 function ek_admin_update_8001() {
    \Drupal::cache('data')->deleteAll();
 } 
+/**
+ * Change route permission
+ * 
+*/
+function ek_admin_update_8002() {
+    \Drupal::service('router.builder')->rebuild();
+    \Drupal::cache('data')->deleteAll();
+    return t('Edit permission settings');  
+}

@@ -24,14 +24,14 @@ ek_admin_ex_database:
   defaults:
     _form: '\Drupal\ek_admin\Form\SiteSettingsForm'
   requirements:
-    _permission: 'administrate'
+    _permission: 'administrate_settings'
 
 ek_admin_backup_database:
   path: '/ek_admin/backup/{coid}'
   defaults:
     _form: '\Drupal\ek_admin\Form\BackupCoid'
   requirements:
-    _permission: 'administrate'
+    _permission: 'administrate_settings'
     coid: \d*
     
 ek_admin_cron_tasks:
@@ -63,7 +63,7 @@ ek_admin.settings:
     _controller: '\Drupal\ek_admin\Controller\AdminController::AdminSettings'
   requirements:
     #_access: 'TRUE'
-    _permission: 'access administration pages'
+    _permission: 'administrate_settings'
     
     
 ek_admin.default:
@@ -118,7 +118,7 @@ ek_admin.company.new:
     _title: 'Manage companies'
     _controller: '\Drupal\ek_admin\Controller\AdminController::AdminCompanyNew'
   requirements:
-    _permission: 'administrate'
+    _permission: 'administrate_settings'
     
 ek_admin.company.edit:
   path: '/ek_admin/company/edit/{id}'
@@ -126,7 +126,7 @@ ek_admin.company.edit:
     _title: 'Manage companies'
     _controller: '\Drupal\ek_admin\Controller\AdminController::AdminCompanyEdit'
   requirements:
-    _permission: 'administrate'
+    _permission: 'administrate_settings'
     id: \d*
 
 ek_admin.company_settings.edit:
@@ -177,7 +177,7 @@ ek_admin.access:
     _title: 'Manage access'
     _controller: '\Drupal\ek_admin\Controller\AdminController::Access'
   requirements:
-    _permission: 'administrate'
+    _permission: 'administrate_settings'
 
 ek_admin.access.company:
   path: '/ek_admin/access_company'
@@ -185,7 +185,7 @@ ek_admin.access.company:
     _title: 'Edit company access'
     _controller: '\Drupal\ek_admin\Controller\AdminController::AccessCompany'
   requirements:
-    _permission: 'administrate'
+    _permission: 'administrate_settingse'
     
 ek_admin.access.country:
   path: '/ek_admin/access_country'
@@ -193,7 +193,7 @@ ek_admin.access.country:
     _title: 'Edit country access'
     _controller: '\Drupal\ek_admin\Controller\AdminController::AccessCountry'
   requirements:
-    _permission: 'administrate'
+    _permission: 'administrate_settings'
 
 ek_admin.access.byuser:
   path: '/ek_admin/access_user'
@@ -201,7 +201,7 @@ ek_admin.access.byuser:
     _title: 'View access by user'
     _controller: '\Drupal\ek_admin\Controller\AdminController::AccessByUser'
   requirements:
-    _permission: 'administrate'
+    _permission: 'administrate_settings'
     
 ek_admin.user_autocomplete:
   path: '/ek_admin/user/autocomplete'

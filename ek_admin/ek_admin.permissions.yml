@@ -1,6 +1,9 @@
 administrate:
-  title: 'Administrate data'
-  description: 'Allows user to administrate data.'  
+  title: 'Administrate menu'
+  description: 'Allows user to administrate data (menu access).'
+administrate_settings:
+  title: 'Administrate settings'
+  description: 'Allows user to set global parameters and access.'  
 company_list:
   title: 'View company list'
   description: 'Allows user to view company list.'   
