@@ -256,22 +256,23 @@ Foreach($data as $id => $arr) {
         $pdf->Ln(10);
 
         //add receipt image or link if any
+            $insert = FALSE;
             if($arr['line']->attachment) {
                     $parts = explode('/', $arr['line']->attachment);
                     $parts = array_reverse($parts);
                     $pdf->Cell(75, 5, t('Attachment') . ': ', 0, 0);
                     $pdf->SetFont('Arial', '', 8);
                     $pdf->SetTextColor(0, 128, 255);
-                if ($info = getimagesize($arr['line']->attachment)) {
+                    
+                if (is_array(getimagesize($arr['line']->attachment))) {
+                    $info = getimagesize($arr['line']->attachment);
                     $insert = TRUE;
                     $link = $pdf->AddLink();
                     $pdf->SetLink($link, 1, 2);
                     $pdf->Write(5, $parts[0], $link);
                 } else {
-                    
                         $link = file_create_url($arr['line']->attachment);
                         $pdf->Write(5, $parts[0], $link);
-                    
                 }
             }
         $pdf->SetTextColor(100, 100, 100);       
@@ -286,13 +287,14 @@ Foreach($data as $id => $arr) {
             $pdf->Cell(40,10,"",1,0);
             $pdf->Cell(40,10,"",1,1);    
 
-        if (isset($insert)) {
+        if ($insert == TRUE) {
             $pdf->AddPage('P','A4');
             $pdf->Ln(10);
             $h = $info[1] ;
             $w = $info[0] ;
-            $r = 150/$w;
-            $pdf->Image($arr['line']->attachment, 20, 80, 150, $h*$r);    
+            $r = 140/$w;
+            $pdf->Image($arr['line']->attachment, 20, 60, 140, $h*$r);  
+            
         }
 }
 
