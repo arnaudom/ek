@@ -950,6 +950,20 @@ class RecordExpense extends FormBase {
             if ($form_state->getValue("account$n") == '') {
                 $form_state->setErrorByName("account$n", $this->t('debit account @n is not selected', array('@n' => $n)));
             }
+            
+            //filter account when allocation is different from accounts entity.
+            //this has an impact on analytical report
+            if(!NULL == $form_state->getValue("location") && $form_state->getValue("location") != $form_state->getValue("coid")){
+                $query = Database::getConnection('external_db', 'external_db')
+                     ->select('ek_accounts', 'a')
+                     ->fields('a', ['id'])
+                     ->condition('coid', $form_state->getValue("location"))
+                     ->condition('aid', $form_state->getValue("account$n"));
+                $aid = $query->execute()->fetchField();
+                if($aid == NULL) {
+                    $form_state->setErrorByName("account$n", $this->t('debit account @n does not exist in allocation company', array('@n' => $n)));
+                }
+            }
 
             if ($form_state->getValue("value$n") == '') {
                 $form_state->setErrorByName("value$n", $this->t('there is no amount for debit @n', array('@n' => $n)));

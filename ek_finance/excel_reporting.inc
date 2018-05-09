@@ -7,6 +7,7 @@ use Drupal\ek_admin\Access\AccessCheck;
 $param = unserialize($param);
 $coid = $param['coid'];
 $year = $param['year'];
+$view = $param['view'];
 $baseCurrency = $param['baseCurrency'];
 $company = AccessCheck::GetCompanyByUser();
 $company = implode(',', $company);
@@ -14,6 +15,9 @@ $query = "SELECT name from {ek_company} WHERE id=:id";
 $company_name = Database::getConnection('external_db', 'external_db')
         ->query($query, array(':id' => $coid))
         ->fetchField();
+$grandtotal_column_purchases = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0];
+$grandtotal_column_expenses = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0];
+$grandtotal_column_income = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0];
 
 
 // Create new PHPExcel object
@@ -29,7 +33,7 @@ $objPHPExcel->getProperties()->setCreator("Ek")
 $objPHPExcel->getActiveSheet()->setTitle(substr($company_name, 0, 25));
 
 $columns = Array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ');
-$l = 1;
+$l = 2;
 $bluefont = array(
     'font' => array(
         'color' => array('rgb' => '013ADF'),
@@ -42,31 +46,39 @@ $greyfont = array(
     ),
 );
 
+if($view['S'] == 'allocation') {
+    $text = (string)t('Allocated values');
+} else {
+    $text = (string)t('Actual values');
+}
 $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(45);
 $objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(18);
 
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("A1", $text);
+$objPHPExcel->getActiveSheet()->mergeCells('A1:N1');
+$objPHPExcel->getActiveSheet()->getStyle('A1:N1')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 /*
- * Income
+ * Purchases
  */
 $objPHPExcel->setActiveSheetIndex(0)
-        ->setCellValue("A1", (string) t("Purchases @c @y @m", array('@c' => $company_name, '@y' => $year, '@m' => $baseCurrency)))
-        ->setCellValue('B1', 'JAN')
-        ->setCellValue('C1', 'FEB')
-        ->setCellValue('D1', 'MAR')
-        ->setCellValue('E1', 'APR')
-        ->setCellValue('F1', 'MAY')
-        ->setCellValue('G1', 'JUN')
-        ->setCellValue('H1', 'JUL')
-        ->setCellValue('I1', 'AUG')
-        ->setCellValue('J1', 'SEP')
-        ->setCellValue('K1', 'OCT')
-        ->setCellValue('L1', 'NOV')
-        ->setCellValue('M1', 'DEC')
-        ->setCellValue('N1', 'TOTAL');
+        ->setCellValue("A$l", (string) t("Purchases @c @y @m", array('@c' => $company_name, '@y' => $year, '@m' => $baseCurrency)))
+        ->setCellValue("B$l", 'JAN')
+        ->setCellValue("C$l", 'FEB')
+        ->setCellValue("D$l", 'MAR')
+        ->setCellValue("E$l", 'APR')
+        ->setCellValue("F$l", 'MAY')
+        ->setCellValue("G$l", 'JUN')
+        ->setCellValue("H$l", 'JUL')
+        ->setCellValue("I$l", 'AUG')
+        ->setCellValue("J$l", 'SEP')
+        ->setCellValue("K$l", 'OCT')
+        ->setCellValue("L$l", 'NOV')
+        ->setCellValue("M$l", 'DEC')
+        ->setCellValue("N$l", 'TOTAL');
 
-$objPHPExcel->getActiveSheet()->getStyle("A1:N1")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-$objPHPExcel->getActiveSheet()->getStyle("A1:N1")->getFill()->getStartColor()->setRGB('ff9933');
-$objPHPExcel->getActiveSheet()->getStyle("A1:N1")->applyFromArray(
+$objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->getFill()->getStartColor()->setRGB('ff9933');
+$objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
         array(
             'font' => array(
                 'bold' => true
@@ -83,70 +95,54 @@ $objPHPExcel->getActiveSheet()->getStyle("A1:N1")->applyFromArray(
 );
 
 // Get the class 
-if ($coid <> 'all') {
-    $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
-            . "WHERE atype=:t AND ( aid like :a1 or aid like :a2 or aid like :a3 ) "
-            . "AND astatus=:s AND coid=:c order by aid";
-    $a = array(
-        ':t' => 'class',
-        ':a1' => $chart['cos'] . '%',
-        ':a2' => $chart['expenses'] . '%',
-        ':a3' => $chart['other_expenses'] . '%',
-        ':s' => 1,
-        ':c' => $coid
-    );
+// build accounts array structures for expenses
+$query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a');
+    $query->fields('a', ['aid', 'aname']);
+    $or = db_or();
+    $or->condition('aid', $chart['cos'] . '%', 'like');
+    $or->condition('aid', $chart['expenses'] . '%', 'like');
+    $or->condition('aid', $chart['other_expenses'] . '%', 'like');
+    
+    $query->condition($or);
+    $query->condition('atype', 'class');
+    $query->condition('astatus', '1');
+    
+if ($coid != 'all') {
+    $query->condition('coid', $coid);
 }
-if ($coid == 'all') {
-    $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
-            . "WHERE atype=:t and ( aid like :a1 or aid like :a2 or aid like :a3 ) "
-            . "AND astatus=:s order by aid";
-    $a = array(
-        ':t' => 'class',
-        ':a1' => $chart['cos'] . '%',
-        ':a2' => $chart['expenses'] . '%',
-        ':a3' => $chart['other_expenses'] . '%',
-        ':s' => 1,
-    );
-}
+$query->orderBy('aid');
+$accounts_exp_class = $query->execute()->fetchAllKeyed();
 
-$data = Database::getConnection('external_db', 'external_db')->query($query, $a);
+
 $thisclass = [];
 
-
-while ($line = $data->fetchObject()) { //loop acc. classe
-    $class = substr($line->aid, 0, 2);
+foreach($accounts_exp_class as $key => $name) {
+    $class = substr($key, 0, 2);
     //$l++;
     $c = 0;
     $row = "A" . $l . ":M" . $l;
     $flag = 0;
     $thisclass[$class] = [];
-    $thisclass[$class]['name'] = $line->aid . " " . $line->aname;
+    $thisclass[$class]['name'] = $key . " " . $name;
     // Get the account type
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a');
+        $query->fields('a', ['aid', 'aname']);
+        $query->condition('aid', $class . '%', 'like');
+        $query->condition('atype', 'detail');
+        $query->condition('astatus', '1');
+        
     if ($coid != 'all') {
-
-        $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
-                . "WHERE aid like :cl AND atype=:t AND astatus=:s AND coid=:c ORDER by aid";
-        $a = array(
-            ':cl' => $class . '%',
-            ':t' => 'detail',
-            ':s' => 1,
-            ':c' => $coid
-        );
+        $query->condition('coid', $coid);
     }
 
-    if ($coid == 'all') {
-        $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
-                . "WHERE aid like :cl AND atype=:t AND astatus=:s  ORDER by aid";
-        $a = array(
-            ':cl' => $class . '%',
-            ':t' => 'detail',
-            ':s' => 1,
-        );
-    }
-
-    $data2 = Database::getConnection('external_db', 'external_db')->query($query, $a);
-    $sum_amount = 0;
-
+    $query->orderBy('aid');
+    $data2 = $query->execute();
+    $sum_row_amount = 0;
+    $flag = 0;
+    $table_0_detail = '';
+    $subtotal_column_purchases = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0];
 
     while ($d2 = $data2->fetchObject()) { //loop aid within acc. class
         $thisline = [];
@@ -166,59 +162,41 @@ while ($line = $data->fetchObject()) { //loop acc. classe
             // The reporting consider purchases value from allocation of purchase 
             // NOT from the actual purchasing entity. This is to compare revenue & expenses fron analytical point of view
 
-            if ($coid != 'all') {
-                $query = "SELECT sum(value) "
-                        . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
-                        . "WHERE aid = :a AND j.source = :s AND j.type=:t "
-                        . "AND j.date >=:d1 AND j.date <=:d2 AND allocation = :c";
-
-                $a = array(
-                    ':d1' => $date1,
-                    ':d2' => $date2,
-                    ':a' => $d2->aid,
-                    ':c' => $coid,
-                    ':s' => 'purchase',
-                    ':t' => 'debit'
-                );
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+                $query->leftJoin('ek_sales_purchase', 'p', 'p.id = j.reference');    
+                $query->addExpression('SUM(value)', 'sumValue');
+                $query->condition('aid', $d2->aid);
+                $query->condition('j.date', $date1, '>=');
+                $query->condition('j.date', $date2, '<=');
+                $query->condition('source', 'purchase', '=');
+                $query->condition('j.type', 'debit');
+                
+            if ($coid != 'all') {           
+                $query->condition($view['S'], $coid);
             }
 
-            if ($coid == 'all') {
-                $query = "SELECT sum(value) "
-                        . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
-                        . "WHERE aid = :a AND j.source = :s AND j.type=:t "
-                        . "AND j.date >=:d1 AND j.date <=:d2";
-
-                $a = array(
-                    ':d1' => $date1,
-                    ':d2' => $date2,
-                    ':a' => $d2->aid,
-                    ':s' => 'purchase',
-                    ':t' => 'debit'
-                );
-            }
-
-            $sum_d2 = Database::getConnection('external_db', 'external_db')
-                            ->query($query, $a)->fetchField();
+            $Obj = $query->execute();
+            $sum_d2 = $Obj->fetchObject()->sumValue; 
 
             $cell = $columns[$m] . $l;
             if ($sum_d2 == "") {
                 $amount = 0;
-                
             } else {
                 $amount = round($sum_d2, 2);
-                
             }
             $thisline[$m] = $amount;
-            $sum_amount = $sum_amount + $amount;
+            $sum_row_amount = $sum_row_amount + $sum_d2;
+            $subtotal_column_purchases[$m] += $sum_d2;
             
         } //for loop months
 
-        $thisline[13] = $sum_amount;
-        if ($sum_amount <> 0) {
+        $thisline[13] = $sum_row_amount;
+        if ($sum_row_amount <> 0) {
             $flag++;
             $thisclass[$class]['lines'][] = $thisline;
         }
-        $sum_amount = 0;
+        $sum_row_amount = 0;
     } //loop aid
     // Display if line has data
 
@@ -258,7 +236,7 @@ while ($line = $data->fetchObject()) { //loop acc. classe
                         $cell = $columns[13] . $l;
                         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
                         $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $value[13]);
+                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
                     
                 }
             }//if line not empty     
@@ -275,46 +253,8 @@ while ($line = $data->fetchObject()) { //loop acc. classe
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Sub total'));
 
         for ($m = 1; $m <= 12; $m++) {
-            if ($m < 10) {
-                $date1 = $year . "-0" . $m . "-01";
-                $date2 = $year . "-0" . $m . "-31";
-            } else {
-                $date1 = $year . "-" . $m . "-01";
-                $date2 = $year . "-" . $m . "-31";
-            }
 
-            if ($coid != 'all') {
-                $query = "SELECT sum(value) "
-                        . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
-                        . "WHERE aid like :t AND j.source = :s AND j.type=:t2 "
-                        . "AND j.date >=:d1 AND j.date <=:d2 AND allocation = :c";
-
-                $a = array(
-                    ':d1' => $date1,
-                    ':d2' => $date2,
-                    ':t' => $class . '%',
-                    ':c' => $coid,
-                    ':s' => 'purchase',
-                    ':t2' => 'debit'
-                );
-            }
-
-            if ($coid == 'all') {
-
-                $query = "SELECT sum(value) "
-                        . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
-                        . "WHERE aid like :t AND j.source = :s AND j.type=:t2 "
-                        . "AND j.date >=:d1 AND j.date <=:d2";
-                $a = array(
-                    ':d1' => $date1,
-                    ':d2' => $date2,
-                    ':t' => $class . '%',
-                    ':s' => 'purchase',
-                    ':t2' => 'debit'
-                );
-            }
-
-            $total_class = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+            $total_class = $subtotal_column_purchases[$m];
             $cell = $columns[$m] . $l;
             if ($total_class == "") {
                 $amount = 0;
@@ -323,8 +263,8 @@ while ($line = $data->fetchObject()) { //loop acc. classe
                 $amount = round($total_class, 2);
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
             }
-
-            $sum_amount = $sum_amount + $amount;
+            $grandtotal_column_purchases[$m] += $subtotal_column_purchases[$m];
+            $sum_row_amount = $sum_row_amount + $amount;
 
             // insert line
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
@@ -335,8 +275,8 @@ while ($line = $data->fetchObject()) { //loop acc. classe
         $cell = $columns[$m] . $l;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($sum_amount, 2));
-        $sum_amount = 0;
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
+        $sum_row_amount = 0;
     }//if flag 1
 } //while loop acc. classes
 
@@ -354,59 +294,17 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Grand tota
 $grand_total_purchases = array();
 
 for ($m = 1; $m <= 12; $m++) {
-    if ($m < 10) {
-        $date1 = $year . "-0" . $m . "-01";
-        $date2 = $year . "-0" . $m . "-31";
-    } else {
-        $date1 = $year . "-" . $m . "-01";
-        $date2 = $year . "-" . $m . "-31";
-    }
-
-    if ($coid != 'all') {
-        $query = "SELECT sum(value) "
-                . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
-                . "WHERE j.source = :s  AND allocation=:c AND j.type=:t "
-                . "AND j.date >=:d1 AND j.date <=:d2 AND ( aid like :a1 or aid like :a2 or aid like :a3 )";
-
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':c' => $coid,
-            ':s' => 'purchase',
-            ':t' => 'debit',
-            ':a1' => $chart['cos'] . '%',
-            ':a2' => $chart['expenses'] . '%',
-            ':a3' => $chart['other_expenses'] . '%',
-        );
-    }
-
-    if ($coid == 'all') {
-        $query = "SELECT sum(value) "
-                . "FROM {ek_journal} j INNER JOIN ek_sales_purchase p ON j.reference=p.id "
-                . "WHERE j.source = :s  AND j.type=:t "
-                . "AND j.date >=:d1 AND j.date <=:d2 AND ( aid like :a1 or aid like :a2 or aid like :a3 )";
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':s' => 'purchase',
-            ':t' => 'debit',
-            ':a1' => $chart['cos'] . '%',
-            ':a2' => $chart['expenses'] . '%',
-            ':a3' => $chart['other_expenses'] . '%',
-        );
-    }
-
-    $grand_total = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+    
     $cell = $columns[$m] . $l;
-    if ($grand_total == "") {
+    if ($grandtotal_column_purchases[$m] == "") {
         $amount = 0;
         //$objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = round($grand_total, 2);
+        $amount = round($grandtotal_column_purchases[$m], 2);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
 
-    $sum_amount = $sum_amount + $amount;
+    $sum_row_amount = $sum_row_amount + $amount;
 
     //insert line
 
@@ -415,7 +313,7 @@ for ($m = 1; $m <= 12; $m++) {
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
 
    
-    $grand_total_purchases[$m] = $grand_total; 
+    $grand_total_purchases[$m] = $amount; 
 }  //for loop month
 
 $cell = $columns[$m] . $l;
@@ -425,14 +323,18 @@ $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCod
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('ff9933');
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_amount);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
 $sum_amount = 0;
 
 $l++;
 
 /*
  * Expenses
+ * journal data linked to expense table. The reporting consider purchase value from allocation of expense 
+ * NOT from the actual spending entity. This is to compare revenue & expenses from analytical point of view
+ * Note: if aid of main busineess entity does not exist in allocated business entity, the data is not displayed
  */
+
 $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue("A$l", (string) t("Expenses @c @y @m", array('@c' => $company_name, '@y' => $year, '@m' => $baseCurrency)))
         ->setCellValue("B$l", 'JAN')
@@ -467,43 +369,11 @@ $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
         )
 );
 
-if ($coid <> 'all') {
 
-    $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
-            . "WHERE atype=:t "
-            . "and ( aid like :a1 or aid like :a2 or aid like :a3 ) "
-            . "AND astatus=:s "
-            . "AND coid=:c order by aid";
-    $a = array(
-        ':t' => 'class',
-        ':a1' => $chart['cos'] . '%',
-        ':a2' => $chart['expenses'] . '%',
-        ':a3' => $chart['other_expenses'] . '%',
-        ':s' => 1,
-        ':c' => $coid
-    );
-}
+foreach($accounts_exp_class as $key => $name) {
+    
+    $class = substr($key, 0, 2);
 
-if ($coid == 'all') {
-    $query = "SELECT SQL_CACHE aid,aname "
-            . "FROM {ek_accounts} "
-            . "WHERE atype=:t and "
-            . "( aid like :a1 or aid like :a2 or aid like :a3 ) "
-            . "AND astatus=:s order by aid";
-    $a = array(
-        ':t' => 'class',
-        ':a1' => $chart['cos'] . '%',
-        ':a2' => $chart['expenses'] . '%',
-        ':a3' => $chart['other_expenses'] . '%',
-        ':s' => 1,
-    );
-}
-$data = Database::getConnection('external_db', 'external_db')->query($query, $a);
-
-
-while ($line = $data->fetchObject()) {
-
-    $class = substr($line->aid, 0, 2);
     // insert lines data
     $c = 0;
     $l++;
@@ -512,42 +382,28 @@ while ($line = $data->fetchObject()) {
     $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('d2bbc2');
     // insert line
     $cell = $columns[$c] . $l;
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $line->aid . ' ' . $line->aname);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $key . ' ' . $name);
 
-
-
-    // Get the account type
-    if ($coid <> 'all') {
-
-        $query = "SELECT SQL_CACHE aid,aname "
-                . "FROM {ek_accounts} "
-                . "WHERE aid like :cl "
-                . "AND atype=:t AND astatus=:s AND coid=:c ORDER by aid";
-        $a = array(
-            ':cl' => $class . '%',
-            ':t' => 'detail',
-            ':s' => 1,
-            ':c' => $coid
-        );
+// Get the account type detail
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a');
+        $query->fields('a', ['aid', 'aname']);
+        $query->condition('aid', $class . '%', 'like');
+        $query->condition('atype', 'detail');
+        $query->condition('astatus', '1');
+        
+    if ($coid != 'all') {
+        $query->condition('coid', $coid);
     }
-
-    if ($coid == 'all') {
-        $query = "SELECT SQL_CACHE aid,aname "
-                . "FROM {ek_accounts} "
-                . "WHERE aid like :cl "
-                . "AND atype=:t AND astatus=:s  ORDER by aid";
-        $a = array(
-            ':cl' => $class . '%',
-            ':t' => 'detail',
-            ':s' => 1,
-        );
-    }
-
-    $data2 = Database::getConnection('external_db', 'external_db')->query($query, $a);
+    
+    $query->orderBy('aid');
+    $data2 = $query->execute();
+    $flag = 0;
+    $subtotal_column_expenses = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0]; //used to comine sub total per column
 
     while ($d2 = $data2->fetchObject()) {
 
-        $sum_amount = 0;
+        $sum_row_amount = 0;
         $l++;
         $cell = $columns[$c] . $l;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
@@ -562,38 +418,25 @@ while ($line = $data->fetchObject()) {
                 $date1 = $year . "-" . $m . "-01";
                 $date2 = $year . "-" . $m . "-31";
             }
-            // Get the type sum  
-            if ($coid != 'all') {
-
-                $query = "SELECT sum(value) FROM {ek_journal} "
-                        . "WHERE date>=:d1 AND date<=:d2 AND source <> :s "
-                        . "AND type=:t AND aid like :aid AND coid=:c";
-                $a = array(
-                    ':d1' => $date1,
-                    ':d2' => $date2,
-                    ':aid' => $d2->aid,
-                    ':t' => 'debit',
-                    ':c' => $coid,
-                    ':s' => 'purchase'
-                );
+            // Get the type sum detail
+            //by allocation
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+                $query->leftJoin('ek_expenses', 'e', 'e.id = j.reference');    
+                $query->addExpression('SUM(value)', 'sumValue');
+                $query->condition('aid', $d2->aid);
+                $query->condition('date', $date1, '>=');
+                $query->condition('date', $date2, '<=');
+                $query->condition('source', 'purchase', '!=');
+                $query->condition('j.type', 'debit');
+                
+                
+            if ($coid != 'all') {           
+                $query->condition($view['E'], $coid);
             }
 
-            if ($coid == 'all') {
-
-                $query = "SELECT sum(value) FROM {ek_journal} "
-                        . "WHERE date>=:d1 AND date<=:d2 AND type=:t AND source <> :s "
-                        . "AND aid like :aid AND FIND_IN_SET(coid, :c ) ";
-                $a = array(
-                    ':d1' => $date1,
-                    ':d2' => $date2,
-                    ':aid' => $d2->aid,
-                    ':t' => 'debit',
-                    ':c' => $company,
-                    ':s' => 'purchase'
-                );
-            }
-
-            $sum_d2 = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+            $Obj = $query->execute();
+            $sum_d2 = $Obj->fetchObject()->sumValue; 
 
             $cell = $columns[$m] . $l;
             if ($sum_d2 == "") {
@@ -604,7 +447,8 @@ while ($line = $data->fetchObject()) {
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
             }
 
-            $sum_amount = $sum_amount + $sum_d2;
+            $sum_row_amount = $sum_row_amount + $sum_d2;
+            $subtotal_column_expenses[$m] += $sum_d2;
 
             // insert line
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
@@ -613,11 +457,12 @@ while ($line = $data->fetchObject()) {
         // total line
         $cell = $columns[$m] . $l;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_amount);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $sum_amount = 0;
     } //while aid
-    //
+
+    
     // Get the class sum - subtotal
     $l++;
     $cell = $columns[0] . $l;
@@ -630,56 +475,18 @@ while ($line = $data->fetchObject()) {
 
 
     for ($m = 1; $m <= 12; $m++) {
-        if ($m < 10) {
-            $date1 = $year . "-0" . $m . "-01";
-            $date2 = $year . "-0" . $m . "-31";
-        } else {
-            $date1 = $year . "-" . $m . "-01";
-            $date2 = $year . "-" . $m . "-31";
-        }
-
-        if ($coid != 'all') {
-
-            $query = "SELECT sum(value) FROM {ek_journal} "
-                    . "WHERE date>=:d1 AND date<=:d2 AND type=:t AND source <> :s "
-                    . "AND aid like :aid AND coid=:c";
-            $a = array(
-                ':d1' => $date1,
-                ':d2' => $date2,
-                ':aid' => $class . '%',
-                ':t' => 'debit',
-                ':c' => $coid,
-                ':s' => 'purchase'
-            );
-        }
-        if ($coid == 'all') {
-
-            $query = "SELECT sum(value) FROM {ek_journal} "
-                    . "WHERE date>=:d1 AND date<=:d2 AND source <> :s "
-                    . "AND type=:t AND aid like :aid AND FIND_IN_SET(coid, :c ) ";
-            $a = array(
-                ':d1' => $date1,
-                ':d2' => $date2,
-                ':aid' => $class . '%',
-                ':t' => 'debit',
-                ':c' => $company,
-                ':s' => 'purchase'
-            );
-        }
-
-        $total_class = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
 
         $cell = $columns[$m] . $l;
-        if ($total_class == "") {
+        if ($subtotal_column_expenses[$m] == "") {
             $amount = 0;
             $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
         } else {
-            $amount = round($total_class, 2);
+            $amount = round($subtotal_column_expenses[$m], 2);
             $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
         }
 
-        $sum_amount = $sum_amount + $amount;
-
+        $sum_row_amount = $sum_row_amount + $amount;
+        $grandtotal_column_expenses[$m] += $subtotal_column_expenses[$m];
         // insert line
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
@@ -692,79 +499,34 @@ while ($line = $data->fetchObject()) {
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_amount);
-    $sum_amount = 0;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
+    $sum_row_amount = 0;
     $c++;
 } //while class 
 
 
 /*
- * Grand total expenese
+ * Grand total expenses
  */
 
 $cell = $columns[0] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Grand total') . ' ' . (string) t('expenses'));
 
-$sum_amount = 0;
-$grand_total_expenses = array();
+$sum_row_amount = 0;
+$grand_total_expenses = [];
 
 for ($m = 1; $m <= 12; $m++) {
-    if ($m < 10) {
-        $date1 = $year . "-0" . $m . "-01";
-        $date2 = $year . "-0" . $m . "-31";
-    } else {
-        $date1 = $year . "-" . $m . "-01";
-        $date2 = $year . "-" . $m . "-31";
-    }
-
-    if ($coid != 'all') {
-
-        $query = "SELECT sum(value) FROM {ek_journal} "
-                . "WHERE date>=:d1 AND date<=:d2 AND type=:t AND coid=:c AND source <> :s "
-                . "AND (aid like :a1 OR aid like :a2 OR aid like :a3)";
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':t' => 'debit',
-            ':c' => $coid,
-            ':a1' => $chart['cos'] . '%',
-            ':a2' => $chart['expenses'] . '%',
-            ':a3' => $chart['other_expenses'] . '%',
-            ':s' => 'purchase'
-        );
-    }
-
-    if ($coid == 'all') {
-
-        $query = "SELECT sum(value) FROM {ek_journal} "
-                . "WHERE date>=:d1 AND date<=:d2 AND source <> :s "
-                . "AND type=:t AND FIND_IN_SET(coid, :c ) "
-                . "AND (aid like :a1 OR aid like :a2 OR aid like :a3)";
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':t' => 'debit',
-            ':c' => $company,
-            ':a1' => $chart['cos'] . '%',
-            ':a2' => $chart['expenses'] . '%',
-            ':a3' => $chart['other_expenses'] . '%',
-            ':s' => 'purchase'
-        );
-    }
-
-
-    $grand_total = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
 
     $cell = $columns[$m] . $l;
-    if ($grand_total == "") {
+    if ($grandtotal_column_expenses[$m] == "") {
         $amount = 0;
     } else {
-        $amount = $grand_total;
+        $amount = $grandtotal_column_expenses[$m];
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
 
-    $sum_amount = $sum_amount + $amount;
+    $sum_row_amount = $sum_row_amount + $amount;
 
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
@@ -781,14 +543,17 @@ $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('ed95b0');
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
 $sum_amount = number_format($sum_amount, 2);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_amount);
-$sum_amount = 0;
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
+$sum_row_amount = 0;
 
 
 $l++;
 
 /*
  * Income
+ * journal data linked to sales table. The reporting consider sales value from allocation of sales 
+ * NOT from the actual invoicing entity. This is to compare revenue & expenses from analytical point of view
+ * Note: if aid of main busineess entity does not exist in allocated business entity, the data is not displayed
  */
 $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue("A$l", (string) t("Income @c @y @m", array('@c' => $company_name, '@y' => $year, '@m' => $baseCurrency)))
@@ -824,69 +589,51 @@ $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
         )
 );
 
-// Get the class 
-if ($coid <> 'all') {
-    $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
-            . "WHERE atype=:t and (aid like :a1 or aid like :a2) "
-            . "AND astatus=:s AND coid=:c order by aid";
-    $a = array(
-        ':t' => 'class',
-        ':a1' => $chart['income'] . '%',
-        ':a2' => $chart['other_income'] . '%',
-        ':s' => 1,
-        ':c' => $coid
-    );
-}
-if ($coid == 'all') {
-    $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
-            . "WHERE atype=:t and (aid like :a1 or aid like :a2) "
-            . "AND astatus=:s order by aid";
-    $a = array(
-        ':t' => 'class',
-        ':a1' => $chart['income'] . '%',
-        ':a2' => $chart['other_income'] . '%',
-        ':s' => 1,
-    );
-}
+// Get the class array structure
+$query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a');
+    $query->fields('a', ['aid', 'aname']);
+    $or = db_or();
+    $or->condition('aid', $chart['income'] . '%', 'like');
+    $or->condition('aid', $chart['other_income'] . '%', 'like');
+    $query->condition($or);
+    $query->condition('atype', 'class');
+    $query->condition('astatus', '1');
 
-$data = Database::getConnection('external_db', 'external_db')->query($query, $a);
+if ($coid != 'all') {
+    $query->condition('coid', $coid);
+}  
 
-while ($line = $data->fetchObject()) {
-    $class = substr($line->aid, 0, 2);
+$query->orderBy('aid');
+$accounts_income_class = $query->execute()->fetchAllKeyed();
+
+foreach($accounts_income_class as $key => $name) {
+    $class = substr($key, 0, 2);
     $l++;
     $c = 0;
     $row = "A" . $l . ":M" . $l;
     $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
     $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('d1d5f8');
     $cell = $columns[$c] . $l;
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $line->aid . " " . $line->aname);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $key . " " . $name);
 
 
-    // Get the account type
+    // Get the account type detail
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a');
+        $query->fields('a', ['aid', 'aname']);
+        $query->condition('aid', $class . '%', 'like');
+        $query->condition('atype', 'detail');
+        $query->condition('astatus', '1');
+        
     if ($coid != 'all') {
-
-        $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
-                . "WHERE aid like :cl AND atype=:t AND astatus=:s AND coid=:c ORDER by aid";
-        $a = array(
-            ':cl' => $class . '%',
-            ':t' => 'detail',
-            ':s' => 1,
-            ':c' => $coid
-        );
+        $query->condition('coid', $coid);
     }
-
-    if ($coid == 'all') {
-        $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
-                . "WHERE aid like :cl AND atype=:t AND astatus=:s  ORDER by aid";
-        $a = array(
-            ':cl' => $class . '%',
-            ':t' => 'detail',
-            ':s' => 1,
-        );
-    }
-
-    $data2 = Database::getConnection('external_db', 'external_db')->query($query, $a);
-    $sum_amount = 0;
+ 
+    $query->orderBy('aid');
+    $data2 = $query->execute();
+    $sum_row_amount = 0;
+    $subtotal_column_income = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0];
     while ($d2 = $data2->fetchObject()) {
 
         $l++;
@@ -904,44 +651,25 @@ while ($line = $data->fetchObject()) {
                 $date2 = $year . "-" . $m . "-31";
             }
 
-            // Get the type sum               
-            // select invoices by date in usd
-            // The reporting consider invoicing value from allocation of invoice 
-            // NOT from the actual invoicing entity. This is to compare revenue & expenses fron analytical point of view
+            //get the sum detail
+            //by allocation
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+                $query->leftJoin('ek_sales_invoice', 'i', 'i.id = j.reference');    
+                $query->addExpression('SUM(value)', 'sumValue');
+                $query->condition('aid', $d2->aid);
+                $query->condition('j.date', $date1, '>=');
+                $query->condition('j.date', $date2, '<=');
+                $query->condition('source', 'invoice', '=');
+                $query->condition('j.type', 'credit');
+                
+                
+            if ($coid != 'all') {           
+                $query->condition($view['S'], $coid);
+            }            
 
-            if ($coid != 'all') {
-
-                $query = "select sum(value) FROM ek_journal j "
-                        . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
-                        . "WHERE aid =:a AND j.source = :s "
-                        . "AND j.date >=:d1 AND j.date <= :d2 AND allocation = :c "
-                        . "AND j.type= :t";
-
-                $a = array(
-                    ':d1' => $date1,
-                    ':d2' => $date2,
-                    ':a' => $d2->aid,
-                    ':c' => $coid,
-                    ':s' => 'invoice',
-                    ':t' => 'credit'
-                );
-            }
-
-            if ($coid == 'all') {
-                $query = "select sum(value) FROM ek_journal j "
-                        . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
-                        . "WHERE aid =:a AND j.source = :s "
-                        . "AND j.date >=:d1 AND j.date <= :d2 "
-                        . "AND j.type= :t";
-                $a = array(
-                    ':d1' => $date1,
-                    ':d2' => $date2,
-                    ':a' => $d2->aid,
-                    ':s' => 'invoice',
-                    ':t' => 'credit'
-                );
-            }
-            $sum_d2 = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+            $Obj = $query->execute();
+            $sum_d2 = $Obj->fetchObject()->sumValue; 
 
             $cell = $columns[$m] . $l;
             if ($sum_d2 == "") {
@@ -952,7 +680,8 @@ while ($line = $data->fetchObject()) {
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
             }
 
-            $sum_amount = $sum_amount + $amount;
+            $sum_row_amount = $sum_row_amount + $amount;
+            $subtotal_column_income[$m] += $sum_d2;
             // insert line
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
             $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
@@ -961,10 +690,11 @@ while ($line = $data->fetchObject()) {
         $cell = $columns[$m] . $l;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_amount);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
 
-        $sum_amount = 0;
-    } //while aid
+        $sum_row_amount = 0;
+    } 
+    
     // Get the class sum - subtotal
     $l++;
     $cell = $columns[0] . $l;
@@ -976,60 +706,18 @@ while ($line = $data->fetchObject()) {
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Sub total'));
 
     for ($m = 1; $m <= 12; $m++) {
-        if ($m < 10) {
-            $date1 = $year . "-0" . $m . "-01";
-            $date2 = $year . "-0" . $m . "-31";
-        } else {
-            $date1 = $year . "-" . $m . "-01";
-            $date2 = $year . "-" . $m . "-31";
-        }
-
-        if ($coid != 'all') {
-            $query = "select sum(value) FROM ek_journal j "
-                    . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
-                    . "WHERE aid like :t AND j.source = :s "
-                    . "AND j.date >=:d1 AND j.date <= :d2 AND allocation = :c "
-                    . "AND j.type= :t2";
-
-            $a = array(
-                ':d1' => $date1,
-                ':d2' => $date2,
-                ':t' => $class . '%',
-                ':c' => $coid,
-                ':t2' => 'credit',
-                ':s' => 'invoice'
-            );
-        }
-
-        if ($coid == 'all') {
-
-            $query = "select sum(value) FROM ek_journal j "
-                    . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
-                    . "WHERE aid like :t AND j.source = :s "
-                    . "AND j.date >=:d1 AND j.date <= :d2 "
-                    . "AND j.type= :t2";
-
-            $a = array(
-                ':d1' => $date1,
-                ':d2' => $date2,
-                ':t' => $class . '%',
-                ':t2' => 'credit',
-                ':s' => 'invoice'
-            );
-        }
-
-        $total_class = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+        
         $cell = $columns[$m] . $l;
-        if ($total_class == "") {
+        if ($subtotal_column_income[$m] == "") {
             $amount = 0;
             $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
         } else {
-            $amount = round($total_class, 2);
+            $amount = round($subtotal_column_income[$m], 2);
             $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
         }
 
-        $sum_amount = $sum_amount + $amount;
-
+        $sum_row_amount = $sum_row_amount + $amount;
+        $grandtotal_column_income[$m] += $subtotal_column_income[$m];
         // insert line
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
@@ -1039,9 +727,9 @@ while ($line = $data->fetchObject()) {
     $cell = $columns[$m] . $l;
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($sum_amount, 2));
-    $sum_amount = 0;
-} //while aid
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
+    $sum_row_amount = 0;
+} 
 
 
 
@@ -1049,80 +737,34 @@ while ($line = $data->fetchObject()) {
  * Grand total income
  */
 
-//$l=$l+2;
+
 $cell = $columns[0] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Grand total') . ' ' . t('income'));
 
-$grand_total_revenue = array();
+$grand_total_revenue = [];
 
 for ($m = 1; $m <= 12; $m++) {
-    if ($m < 10) {
-        $date1 = $year . "-0" . $m . "-01";
-        $date2 = $year . "-0" . $m . "-31";
-    } else {
-        $date1 = $year . "-" . $m . "-01";
-        $date2 = $year . "-" . $m . "-31";
-    }
-
-    if ($coid != 'all') {
-
-        $query = "select sum(value) FROM ek_journal j "
-                . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
-                . "WHERE j.source = :s "
-                . "AND j.date >=:d1 AND j.date <= :d2 AND allocation = :c "
-                . "AND j.type= :t AND (aid like :a1 or aid like :a2) ";
-
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':c' => $coid,
-            ':s' => 'invoice',
-            ':t' => 'credit',
-            ':a1' => $chart['income'] . '%',
-            ':a2' => $chart['other_income'] . '%',
-        );
-    }
-
-    if ($coid == 'all') {
-        $query = "select sum(value) FROM ek_journal j "
-                . "INNER JOIN ek_sales_invoice i ON i.id=j.reference "
-                . "WHERE j.source = :s "
-                . "AND j.date >=:d1 AND j.date <= :d2 AND allocation = :c "
-                . "AND j.type= :t AND (aid like :a1 or aid like :a2)";
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':s' => 'invoice',
-            ':t' => 'credit',
-            ':a1' => $chart['income'] . '%',
-            ':a2' => $chart['other_income'] . '%',
-        );
-    }
-
-    $grand_total = Database::getConnection('external_db', 'external_db')
-            ->query($query, $a)->fetchField();
     
     $cell = $columns[$m] . $l;
-    if ($grand_total == "") {
+    if ($grandtotal_column_income[$m] == "") {
         $amount = 0;
         //$objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = round($grand_total, 2);
+        $amount = round($grandtotal_column_income[$m], 2);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
 
-    $sum_amount = $sum_amount + $amount;
+    $sum_row_amount = $sum_row_amount + $amount;
 
     //insert line
     
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
-
-
-    //$grand_total_revenue[$m] = $line5["sum(valueusd)"]+$amount_i[$m];//includes internal transactions   
-    $grand_total_revenue[$m] = $grand_total; //exclude internal transactions  
+  
+    $grand_total_revenue[$m] = $amount; //exclude internal transactions  
+    
 }  //for loop month
 
 $cell = $columns[$m] . $l;
@@ -1132,85 +774,16 @@ $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCod
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('a9b1f8');
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_amount);
-$sum_amount = 0;
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
+$sum_row_amount = 0;
 
 
 
 /*
- * Internal Revenue
+ * Balances
+ * PL
  */
-
-
-$l++;
-$cell = $columns[0] . $l;
-//$objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Internal transfers'));
-
-
-for ($m = 1; $m <= 12; $m++) {
-    if ($m < 10) {
-        $date1 = $year . "-0" . $m . "-01";
-        $date2 = $year . "-0" . $m . "-31";
-    } else {
-        $date1 = $year . "-" . $m . "-01";
-        $date2 = $year . "-" . $m . "-31";
-    }
-    // Get the type sum  
-    if ($coid != 'all') {
-
-        $query = "SELECT sum(amount_paid_base) from {ek_expenses_memo} "
-                . "WHERE date>=:d1 AND date<=:d2 AND entity=:c and category <> :cat and status > :s";
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':s' => 0,
-            ':cat' => 5,
-            ':c' => $coid
-        );
-    }
-
-    if ($coid == 'all') {
-        $query = "SELECT sum(amount_paid_base) from {ek_expenses_memo} "
-                . "WHERE date>=:d1 AND date<=:d2 AND FIND_IN_SET(entity, :c ) and category <> :cat and status > :s";
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':s' => 0,
-            ':cat' => 5,
-            ':c' => $company
-        );
-    }
-
-    $line4 = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-    $cell = $columns[$m] . $l;
-    if ($line4 == "") {
-        $amount_i[$m] = 0;
-        $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
-    } else {
-        $amount_i[$m] = round($line4, 2);
-        $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
-    }
-    $sum_amount = $sum_amount + $amount_i[$m];
-
-    // insert line
-    
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount_i[$m]);
-}
-
-$cell = $columns[$m] . $l;
-$objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-$objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_amount);
-$thissum_i[$m] = $sum_amount;
-$sum_amount = 0;
-
-
-
-///////////////////////
-//P&L /////////////////
-$profitloss = array();
+$profitloss = [];
 $l+=2;
 
 $objPHPExcel->setActiveSheetIndex(0)
@@ -1278,11 +851,10 @@ if ($sum_pl < 0) {
 //$thispl=number_format($sum_pl,2);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_pl);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
 $sum_pl = 0;
 
-///////////////////////////////////
-//P&L with Iinternal transfer//////     
+/*
 $l++;
 $cell = $columns[0] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
@@ -1313,11 +885,13 @@ if ($sum_pl < 0) {
 //$thispl=number_format($sum_pl,2);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_pl);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
+*/
 
-/////////////////////////////  
-//Invoice not yet received from unpaid invoices 
-
+/*
+ * Balances
+ * INYR
+ */
 $l++;
 $cell = $columns[0] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
@@ -1333,29 +907,23 @@ for ($m = 1; $m <= 12; $m++) {
         $date2 = $year . "-" . $m . "-31";
     }
 
-    // Get the sum of payments not received  
-    if ($coid <> 'all') {
-        $query = "SELECT sum(amountbase) FROM {ek_sales_invoice} "
-                . "WHERE date>=:d1 and date<=:d2 AND allocation=:c AND status=:s";
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':s' => 0,
-            ':c' => $coid
-        );
+    // Get the sum of payments not received 
+    //TODO get data from journal
+    
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice', 'i');
+        $query->addExpression('SUM(amountbase)', 'sumValue');
+        $query->condition('date', $date1, '>=');
+        $query->condition('date', $date2, '<=');
+        $query->condition('status', '0');
+        
+    if ($coid != 'all') {
+        $query->condition($view['S'], $coid);
     }
-    if ($coid == 'all') {
-        $query = "SELECT sum(amountbase) FROM {ek_sales_invoice} "
-                . "WHERE date>=:d1 and date<=:d2 AND status=:s";
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':s' => 0,
-        );
-    }
-
-    $not_received = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-
+    
+    $Obj = $query->execute();
+    $not_received = $Obj->fetchObject()->sumValue; 
+    
     $cell = $columns[$m] . $l;
     if ($not_received == "") {
         $amount = 0;
@@ -1375,13 +943,15 @@ for ($m = 1; $m <= 12; $m++) {
 $cell = $columns[$m] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_nyr);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
 $sum_amount = 0;
 $sum_nyr = 0;
 
 
-////////////////////////////////////////////////  
-//Invoice not yet received from paid invoices 
+/*
+ * Balances
+ * short payments
+ */
 $l++;
 $cell = $columns[0] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
@@ -1397,28 +967,20 @@ for ($m = 1; $m <= 12; $m++) {
         $date2 = $year . "-" . $m . "-31";
     }
 
-    if ($coid <> 'all') {
-        $query = "SELECT sum(balancebase) FROM {ek_sales_invoice} "
-                . "WHERE date>=:d1 and date<=:d2 AND allocation=:c AND status=:s";
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':s' => 1,
-            ':c' => $coid
-        );
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice', 'i');
+        $query->addExpression('SUM(balancebase)', 'sumValue');
+        $query->condition('date', $date1, '>=');
+        $query->condition('date', $date2, '<=');
+        $query->condition('status', '1');
+        
+    if ($coid != 'all') {
+        $query->condition($view['S'], $coid);
     }
-    if ($coid == 'all') {
-        $query = "SELECT sum(balancebase) FROM {ek_sales_invoice} "
-                . "WHERE date>=:d1 and date<=:d2 AND status=:s";
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':s' => 1,
-        );
-    }
-
-    $not_paid = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-
+    
+    $Obj = $query->execute();
+    $not_paid = $Obj->fetchObject()->sumValue; 
+    $cell = $columns[$m] . $l;
     if ($not_paid == "") {
         $amount = 0;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
@@ -1438,12 +1000,14 @@ for ($m = 1; $m <= 12; $m++) {
 $cell = $columns[$m] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_np);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
 $sum_amount = 0;
 $sum_np = 0;
 
-//////////////////////////////// 
-//Expenses not yet paid  
+/*
+ * Balances
+ * ENYP
+ */   
 $l++;
 $cell = $columns[0] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
@@ -1459,30 +1023,20 @@ for ($m = 1; $m <= 12; $m++) {
         $date2 = $year . "-" . $m . "-31";
     }
 
+$query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses', 'e');
+        $query->addExpression('SUM(amount)', 'sumValue');
+        $query->condition('pdate', $date1, '>=');
+        $query->condition('pdate', $date2, '<=');
+        $query->condition('cash', 'p');
+        
+        if ($coid != 'all') {
+            $query->condition($view['E'], $coid);
+        }
 
-    if ($coid <> 'all') {
-
-        $query = "SELECT sum(amount) FROM {ek_expenses} "
-                . "WHERE pdate>=:d1 AND pdate<=:d2 AND company=:c AND status=:s";
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':s' => 'no',
-            ':c' => $coid
-        );
-    }
-    if ($coid == 'all') {
-        $query = "SELECT sum(amount) FROM {ek_expenses} "
-                . "WHERE pdate>=:d1 AND pdate<=:d2 AND status=:s";
-        $a = array(
-            ':d1' => $date1,
-            ':d2' => $date2,
-            ':s' => 'no',
-        );
-    }
-
-    $not_paid = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-
+        $Obj = $query->execute();
+        $not_paid = $Obj->fetchObject()->sumValue; 
+        
     $cell = $columns[$m] . $l;
     if ($not_paid == "") {
         $amount = 0;
@@ -1503,10 +1057,113 @@ for ($m = 1; $m <= 12; $m++) {
 $cell = $columns[$m] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_np);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
 $sum_amount = 0;
 $sum_np = 0;
 
+/*
+ * Internal Revenue
+ */
+
+$l++;
+$cell = $columns[0] . $l;
+//$objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Internal transfers received'));
+
+
+for ($m = 1; $m <= 12; $m++) {
+    if ($m < 10) {
+        $date1 = $year . "-0" . $m . "-01";
+        $date2 = $year . "-0" . $m . "-31";
+    } else {
+        $date1 = $year . "-" . $m . "-01";
+        $date2 = $year . "-" . $m . "-31";
+    }
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses_memo', 'm');
+                $query->addExpression('SUM(amount_paid_base)', 'sumValue');
+                $query->condition('date', $date1, '>=');
+                $query->condition('date', $date2, '<=');
+                $query->condition('category', 5, '<>');
+                $query->condition('status', 0, '>');
+                $query->condition('entity', $coid);
+                
+    
+        $Obj = $query->execute();
+        $sumValue = $Obj->fetchObject()->sumValue; 
+        
+    $cell = $columns[$m] . $l;
+    if ($sumValue == "") {
+        $amount_i[$m] = 0;
+        $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
+    } else {
+        $amount_i[$m] = round($sumValue, 2);
+        $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
+    }
+    $sum_row_amount = $sum_row_amount + $amount_i[$m];
+
+    // insert line
+    
+    $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount_i[$m]);
+}
+
+$cell = $columns[$m] . $l;
+$objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
+$objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
+//$thissum_i[$m] = $sum_row_amount;
+$sum_row_amount = 0;
+
+$l++;
+$cell = $columns[0] . $l;
+
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Internal transfers paid'));
+
+
+for ($m = 1; $m <= 12; $m++) {
+    if ($m < 10) {
+        $date1 = $year . "-0" . $m . "-01";
+        $date2 = $year . "-0" . $m . "-31";
+    } else {
+        $date1 = $year . "-" . $m . "-01";
+        $date2 = $year . "-" . $m . "-31";
+    }
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses_memo', 'm');
+                $query->addExpression('SUM(amount_paid_base)', 'sumValue');
+                $query->condition('date', $date1, '>=');
+                $query->condition('date', $date2, '<=');
+                $query->condition('category', 5, '<>');
+                $query->condition('status', 0, '>');
+                $query->condition('entity_to', $coid);
+                
+    
+        $Obj = $query->execute();
+        $sumValue = $Obj->fetchObject()->sumValue; 
+        
+    $cell = $columns[$m] . $l;
+    if ($sumValue == "") {
+        $amount_i[$m] = 0;
+        $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
+    } else {
+        $amount_i[$m] = round($sumValue, 2);
+        $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
+    }
+    $sum_row_amount = $sum_row_amount + $amount_i[$m];
+
+    // insert line
+    
+    $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount_i[$m]);
+}
+
+$cell = $columns[$m] . $l;
+$objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
+$objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
+//$thissum_i[$m] = $sum_row_amount;
+$sum_row_amount = 0;
 
 $date = date('Y-m-d h:i:s');
 $l+=2;
@@ -1520,6 +1177,6 @@ header('Cache-Control: max-age=0');
 header("Content-Disposition: attachment;filename=$fileName");
 header('Cache-Control: max-age=0');
 $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-
+$objWriter->setPreCalculateFormulas(true);
 $objWriter->save('php://output');
 exit;

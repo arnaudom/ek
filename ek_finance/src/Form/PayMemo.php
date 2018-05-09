@@ -419,6 +419,8 @@ class PayMemo extends FormBase {
    */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
+        $journal = new Journal();
+        
         $query = "SELECT * from {ek_expenses_memo} where id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form_state->getValue('for_id')))
@@ -513,7 +515,7 @@ class PayMemo extends FormBase {
                     ->fields($fields)
                     ->execute();
 
-            Journal::record(
+            $journal->record(
                     array(
                         'source' => "expense",
                         'coid' => $data->entity_to,

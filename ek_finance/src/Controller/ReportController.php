@@ -75,12 +75,20 @@ class ReportController extends ControllerBase {
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
 
-        $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterReporting');
+        $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterReporting', 'report');
 
         if (isset($_SESSION['repfilter']['filter']) && $_SESSION['repfilter']['filter'] == 1) {
 
             $coid = $_SESSION['repfilter']['coid'];
             $year = $_SESSION['repfilter']['year'];
+            $viewS = 'allocation';
+            $viewE = 'allocation';
+            if($_SESSION['repfilter']['view'] == '1') {
+                $viewS = 'head';
+                $viewE = 'company';
+                
+            }
+                
             $settings = new FinanceSettings();
             $baseCurrency = $settings->get('baseCurrency');
             if ($settings->get('budgetUnit') == 2) {
@@ -100,7 +108,8 @@ class ReportController extends ControllerBase {
                     array(
                         'coid' => $coid,
                         'year' => $year,
-                        'baseCurrency' => $baseCurrency
+                        'baseCurrency' => $baseCurrency,
+                        'view' => ['E' => $viewE, 'S' => $viewS]
                     )
             );
             $excel = Url::fromRoute('ek_finance_reporting_excel', array('param' => $param), array())->toString();
@@ -108,21 +117,27 @@ class ReportController extends ControllerBase {
                 '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
             );
 
-
-            $items['purchases'] = $table_0;
-            $items['expenses'] = $table_1;
-            $items['income'] = $table_2;
-            $items['total'] = $table_3;
+            $items['year'] = $year;
+            $items['baseCurrency'] = $baseCurrency;
+            $items['budgetUnit'] = $budgetUnit;
+            $items['purchases'] = $purchases;
+            $items['expenses'] = $expenses;
+            $items['income'] = $income;
+            $items['internal_received'] = $internal_received;
+            $items['internal_paid'] = $internal_paid;
+            $items['balances'] = $balances;
+            
+            return array(
+                '#theme' => 'ek_finance_reporting',
+                '#items' => $items,
+                '#attached' => array(
+                    'library' => array('ek_finance/ek_finance.reporting'),
+                ),
+            );
+        } else {
+            return $items['form'];
         }
 
-
-        return array(
-            '#theme' => 'ek_finance_reporting',
-            '#items' => $items,
-            '#attached' => array(
-                'library' => array('ek_finance/ek_finance.reporting'),
-            ),
-        );
     }
 
     /**

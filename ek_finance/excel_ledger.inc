@@ -117,6 +117,12 @@ $l=4;
           foreach($lines['line'] as $key => $row ) {
           
             if($key <> 'total') {
+              if (is_array($row['comment'])) {
+                    $row['comment'] = $row['comment']['#markup'];
+                    //remove the hyperlink tag for excel
+                    preg_match("'>(.*?)</a>'si", $row['comment'], $match);
+                    $row['comment'] = $match[1];
+                } 
               $c=0; 
               $l++;
               $cell=$columns[$c].$l;                
@@ -126,7 +132,7 @@ $l=4;
               $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['id'] . " - " . $row['count']);               
               $c++;
               $cell=$columns[$c].$l;
-              $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['reference'] . ' ' .$row['comment']);                 
+              $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['reference'] . ' ' . $row['comment']);                 
               $c++;
               $cell=$columns[$c].$l;
                           

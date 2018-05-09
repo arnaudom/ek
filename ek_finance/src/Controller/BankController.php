@@ -331,7 +331,7 @@ class BankController extends ControllerBase {
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_bank_accounts', 'ba');
             $query->fields('ba', ['id','account_ref','active','currency','aid']);
-            $query->leftJoin('ek_bank', 'b', 'ba.id = b.id');
+            $query->leftJoin('ek_bank', 'b', 'ba.bid = b.id');
             $query->addField('b', 'name', 'bank');
             $query->leftJoin('ek_company', 'c', 'c.id = b.coid');
             $query->addField('c', 'name', 'co');

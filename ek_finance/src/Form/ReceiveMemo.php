@@ -255,7 +255,7 @@ $i = 0;
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
   
-      
+   $journal = new Journal();   
    
    $query = "SELECT * from {ek_expenses_memo} where id=:id";
    $memo = Database::getConnection('external_db', 'external_db')
@@ -283,7 +283,7 @@ $i = 0;
       } 
    
 
-        Journal::record(
+        $journal->record(
             array( 
             'aid'=> $form_state->getValue('aid'),
             'coid' => $memo->entity,
@@ -298,7 +298,7 @@ $i = 0;
              )
             );
                
-        Journal::record(
+        $journal->record(
             array( 
             'aid'=> $aid,
             'coid' => $memo->entity,

@@ -56,7 +56,7 @@ class FilterReporting extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state, $option = NULL) {
   
     $year = date('Y');
 
@@ -96,8 +96,20 @@ class FilterReporting extends FormBase {
         '#default_value' => isset($_SESSION['repfilter']['coid']) ? $_SESSION['repfilter']['coid'] : NULL,
 
     );   
+    if($option == 'report') {
+        $form['filters']['view'] = array(
+            '#type' => 'select',
+            '#size' => 1,
+            '#options' => ['1' => t('Actual'), '2' => t('Allocated')],
+            '#required' => TRUE,
+            '#title' => '',
+            '#default_value' => isset($_SESSION['repfilter']['view']) ? $_SESSION['repfilter']['view'] : NULL,
 
-
+        );  
+    } else {
+        $form['filters']['view'] = ['#type' => 'hidden' , '#value' => ''];
+    } 
+    
     $form['filters']['actions'] = array(
       '#type' => 'actions',
       '#attributes' => array('class' => array('container-inline')),
@@ -139,6 +151,7 @@ class FilterReporting extends FormBase {
   
   $_SESSION['repfilter']['year'] = $form_state->getValue('year');
   $_SESSION['repfilter']['coid'] = $form_state->getValue('coid');
+  $_SESSION['repfilter']['view'] = $form_state->getValue('view');
   $_SESSION['repfilter']['filter'] = 1;
 
   }

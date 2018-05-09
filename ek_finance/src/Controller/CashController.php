@@ -212,7 +212,7 @@ class CashController extends ControllerBase {
             $items['filter']['type'] = 1;
             $items['filter']['username'] = $account2;
         }
-            
+      
             /*
              * Cash movements in cash table
              */
@@ -247,13 +247,13 @@ class CashController extends ControllerBase {
             $query = "SELECT id,company,type,localcurrency,currency,amount,pdate,comment FROM {ek_expenses} "
                     . "WHERE company like :c AND cash=:y AND status=:s AND currency = :cu "
                     . "AND employee=:e AND pdate >= :p1 AND pdate <= :p2";
-
+      
               $a = array(
                 ':c' => $company , 
                 ':y' => 'Y',
                 ':s' => 'paid',
                 ':cu' => $filter['currency'],
-                ':e' => $account2,
+                ':e' => $account1,
                 ':p1' => $filter['from'],
                 ':p2' => $filter['to'],
               );
