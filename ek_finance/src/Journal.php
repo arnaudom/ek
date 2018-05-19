@@ -1276,7 +1276,7 @@ class Journal {
                 $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal', 'j');
                     $query->fields('j',['id','count','aid', 'exchange','coid','type','value','reconcile','source','reference']);
-                    $query->leftJoin('ek_journal_trail', 't', 't.jid = j.id');
+                    $query->innerJoin('ek_journal_trail', 't', 't.jid = j.id');
                     $query->fields('t',['username','action','timestamp']);
                     $query->condition('reference', $line->reference)
                             ->condition('source', $source,'like')
@@ -2509,6 +2509,79 @@ class Journal {
         return $return;
     }
 
+    /*
+     * Delete journal rows
+     * @param source = entry source
+     * @param reference = the source reference
+     * @param coid = company id
+     * @return array of deleted ids
+     */
+    function delete($source = NULL, $reference = NULL, $coid = NULL) {
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+        $query->fields('j', ['id']);
+        $query->condition('source', $source, 'like');
+        $query->condition('reference', $reference, '=');
+        $query->condition('coid', $coid);
+        $query->orderBy('id', 'ASC');
+        $Obj = $query->execute();
+        $i=0;
+        $journalId = [];
+         while($r = $Obj->fetchObject()){
+             $i++;
+             $journalId[$i] = $r->id;
+             Database::getConnection('external_db', 'external_db')
+                        ->delete('ek_journal_trail')
+                        ->condition('jid', $r->id)
+                        ->execute();
+
+             Database::getConnection('external_db', 'external_db')
+                        ->delete('ek_journal')
+                        ->condition('id', $r->id)
+                        ->execute();
+         }
+        
+         return  $journalId;
+        
+    }
+    /*
+     * Reset count row per company (after delete)
+     * @param coid = company id
+     * @param id = the journal id deleted
+     * @return 
+     */
+
+    function resetCount($coid = NULL, $id = NULL) {
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+            $query->addExpression('Count(id)', 'count');
+            $query->condition('coid', $coid, '=');
+            $query->condition('id', $id, '<');
+            
+            $Obj = $query->execute();
+            $count = $Obj->fetchObject()->count; 
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+            $query->fields('j', ['id']);
+            $query->condition('coid', $coid, '=');
+            $query->condition('id', $id, '>');
+            $query->orderBy('id', 'ASC');
+            $Obj = $query->execute();
+            while ($j = $Obj->fetchObject()) {
+                $count++;
+                Database::getConnection('external_db', 'external_db')
+                            ->update('ek_journal')
+                            ->condition('id', $j->id)
+                            ->fields(['count' => $count])
+                            ->execute();
+
+            }
+            
+            $return = [];
+    }    
+    
 }
 
 //class

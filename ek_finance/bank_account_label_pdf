@@ -20,7 +20,7 @@ $pdf->SetDrawColor(128, 128, 128);
 $pdf->SetFont('Arial','',10);   
     
     $pdf->Cell(9,5,"",0,0);    
-    $pdf->Cell(100,5, $bank->name ,0,0);
+    $pdf->MultiCell(100,5, $bank->name ,0,'L');
     $pdf->Cell(5,5,"",0,1);    
 $pdf->SetFont('Arial','',8); 
     $pdf->Cell(9,5,"",0,0);    
@@ -43,9 +43,14 @@ $pdf->SetFont('Arial','',10);
     $pdf->Cell(70,5, $bank->account_ref ,0,0); 
     $pdf->Cell(1,5,"",0,1);    
 
+    if(!NULL == $bank->beneficiary) {
+        $text = $bank->beneficiary;
+    } else {
+        $text = $bank->company;
+    }
     $pdf->Cell(9,5,"",0,0);
     $pdf->Cell(30,5, t('beneficiary') ,0,0); 
-    $pdf->Cell(70,5, $bank->company ,0,0);            
+    $pdf->MultiCell(70,5, $text ,0,'L');            
     $pdf->Cell(1,5,"",0,1);
     
     $pdf->Cell(9,5,"",0,0);

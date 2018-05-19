@@ -86,8 +86,13 @@ class DeleteExpense extends FormBase {
         $form['for_id'] = array(
           '#type' => 'hidden',
           '#value' => $id,
-
         );
+
+        $form['coid'] = array(
+          '#type' => 'hidden',
+          '#value' => $data->company,
+        );
+        
         $form['attachment'] = array(
         '#type' => 'hidden',
         '#value' => $data->attachment,
@@ -162,13 +167,14 @@ class DeleteExpense extends FormBase {
       file_unmanaged_delete($form_state->getValue('attachment'));
   }
   
-  if($this->moduleHandler->moduleExists('ek_finance')) {
+  //if($this->moduleHandler->moduleExists('ek_finance')) {
+
+    $journal = new \Drupal\ek_finance\Journal();
+    $journalId = $journal->delete('expense%', $form_state->getValue('for_id'),$form_state->getValue('coid'));
+    //count field sequence must be restored 
+    $journal->resetCount($form_state->getValue('coid'), $journalId[1]);
   
-    $query = "DELETE from {ek_journal} WHERE source like :s AND reference=:r ";
-    $a = array(':s' => 'expense%', ':r' => $form_state->getValue('for_id'));
-    $delete = Database::getConnection('external_db', 'external_db')->query($query, $a);
-  
-  }
+  //}
   
   if($this->moduleHandler->moduleExists('ek_assets')) {
       

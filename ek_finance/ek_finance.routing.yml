@@ -468,7 +468,7 @@ ek_finance_manage_internal_memo:
   path: '/finance/internal-memo/{id}'
   defaults:
     _title: 'Edit internal memo'
-    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::createinternalmemo'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::createInternalMemo'
     id: NULL
   requirements:
     _permission: 'edit_internal_memos'    
@@ -486,7 +486,7 @@ ek_finance_manage_personal_memo:
   path: '/finance/claim-memo/{id}'
   defaults:
     _title: 'Edit personal claim'
-    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::createpersonalmemo'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::createPersonalMemo'
     id: NULL
   requirements:
     _permission: 'edit_claim_memos' 
@@ -496,7 +496,7 @@ ek_finance_manage_list_memo_internal:
   path: '/finance/list-memo/internal'
   defaults:
     _title: 'List expenses memos'
-    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::listmemoInternal'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::listMemoInternal'
   requirements:
     _permission: 'list_memos' 
 
@@ -504,25 +504,33 @@ ek_finance_manage_list_memo_personal:
   path: '/finance/list-memo/personal'
   defaults:
     _title: 'List claim memos'
-    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::listmemoPersonal'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::listMemoPersonal'
   requirements:
     _permission: 'list_memos'
      
-   
 ek_finance_manage_pay_memo:
   path: '/finance_memo/pay/{id}'
   defaults:
     _title: 'Pay a memo'
-    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::paymemo'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::payMemo'
   requirements:
     _permission: 'pay_memos'  
     id: \d*
-
+    
+ek_finance_manage_reset_pay_memo:
+  path: '/finance_memo/reset-pay/{id}'
+  defaults:
+    _title: 'Reset payment'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::resetPay'
+  requirements:
+    _permission: 'pay_memos'  
+    id: \d*
+    
 ek_finance_manage_receive_memo:
   path: '/finance_memo/receive/{id}'
   defaults:
     _title: 'Receive memo payment'
-    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::receivememo'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::receiveMemo'
   requirements:
     _permission: 'receive_memos'    
     id: \d*
@@ -531,7 +539,7 @@ ek_finance_manage_print_memo:
   path: '/finance_memo/print/{id}'
   defaults:
     _title: 'Print memo'
-    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::printmemo'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::printMemo'
   requirements:
     _permission: 'print_memos'    
     id: \d*
@@ -540,7 +548,7 @@ ek_finance_manage_print_memo_range:
   path: '/finance_memo/print_range/{category}'
   defaults:
     _title: 'Print memo range'
-    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::printmemorange'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::printMemoRange'
   requirements:
     _permission: 'print_memos'    
     category: internal|personal
@@ -548,7 +556,7 @@ ek_finance_manage_print_memo_range:
 ek_finance_manage_print_memo_pdf:
   path: '/finance/memo/print/pdf/{param}'
   defaults:
-    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::printmemopdf'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::printMemoPdf'
   requirements:
     _permission: 'print_memos'    
 
@@ -565,7 +573,7 @@ ek_finance_manage_delete_memo:
   path: '/finance/memo/delete/{id}'
   defaults:
     _title: 'Delete memo'
-    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::deletememo'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::deleteMemo'
   requirements:
     _permission: 'delete_memos'    
     id: \d*    
@@ -574,7 +582,7 @@ ek_finance_manage_memo_attach:
   path: '/finance/memo/attach/{id}'
   defaults:
     _title: 'Attach file to memo'
-    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::attachmemo'
+    _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::attachMemo'
   requirements:
     _permission: 'attach_file_memos'    
     id: \d* 

@@ -170,7 +170,7 @@ if ($type == 7) {
     $params = unserialize($param);
     $a = array(':id' => $params['id']);
     $query = "SELECT a.account_ref, a.currency,b.name,b.address1,b.address2,b.postcode,b.country,"
-            . "b.swift, c.name as company "
+            . "b.swift, c.name as company, beneficiary "
             . "from {ek_bank_accounts} a LEFT JOIN {ek_bank} b "
             . "ON b.id=a.bid "
             . "LEFT JOIN {ek_company} c "

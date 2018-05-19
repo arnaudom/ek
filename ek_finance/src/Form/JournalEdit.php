@@ -391,30 +391,14 @@ class JournalEdit extends FormBase {
                         ->execute();
             }
             
-            Database::getConnection('external_db', 'external_db')
-                    ->delete('ek_journal')
-                    ->condition('coid', $p['coid'])
-                    ->condition('source', $p['source'])
-                    ->condition('reference', $p['reference'])
-                    ->condition('date', $p['date'])
-                    ->execute();
             
-            //count field must be restored for sequence per company
-            //@TODO recount starting from deleted row only
-                    $n =0;
-                    $query = "SELECT id FROM {ek_journal} WHERE coid = :c order by id";
-                    $journal = Database::getConnection('external_db', 'external_db')
-                            ->query($query, [':c' => $p['coid'] ]);
+            $journal = new Journal();
+            $journalId = $journal->delete($p['source'], $p['reference'], $p['coid']);
+            //count field sequence must be restored
+            $journal->resetCount($p['coid'], $journalId[1]);
 
-                    while ($j = $journal->fetchObject()) {
-                        $n++;
-                        $query = "update {ek_journal} set count=:n  WHERE id=:id";
-                        Database::getConnection('external_db', 'external_db')
-                                ->query($query, [':n' => $n, ':id' => $j->id]);
-
-                    }
-            
-                    \Drupal::messenger()->addStatus(t('Data deleted. Go to <a href="@url">journal</a>', ['@url' => $url]));
+          
+            \Drupal::messenger()->addStatus(t('Data deleted. Go to <a href="@url">journal</a>', ['@url' => $url]));
             
             
             
