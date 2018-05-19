@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\yourmodule\Plugin\Block\ProjectMessagesBlock.
+ * Contains \Drupal\ek_projects\Plugin\Block\ProjectMessagesBlock.
  */
 
 namespace Drupal\ek_projects\Plugin\Block;

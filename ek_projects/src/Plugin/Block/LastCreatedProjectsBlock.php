@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\yourmodule\Plugin\Block\LastCreatedProjectsBlock.
+ * Contains \Drupal\ek_projects\Plugin\Block\LastCreatedProjectsBlock.
  */
 
 namespace Drupal\ek_projects\Plugin\Block;

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\yourmodule\Plugin\Block\TrackBlock.
+ * Contains \Drupal\ek_projects\Plugin\Block\TrackBlock.
  */
 
 namespace Drupal\ek_projects\Plugin\Block;

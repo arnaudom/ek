@@ -1,8 +1,10 @@
 <?php
+
 /**
  * @file
- * Contains \Drupal\yourmodule\Plugin\Block\SearchBlock.
+ * Contains \Drupal\ek_projects\Plugin\Block\SearchBlock.
  */
+ 
 namespace Drupal\ek_projects\Plugin\Block;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Block\BlockBase;
