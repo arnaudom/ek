@@ -53,10 +53,14 @@ class DeletePurchase extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-        $query = "SELECT status,serial from {ek_sales_purchase} where id=:id";
-        $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                      ->select('ek_sales_purchase', 'p');
+              $query->fields('p', ['status','serial', 'title', 'head']);
+              $query->condition('id', $id, '=');
 
-
+        $data = $query->execute()->fetchObject();
+        
         $form['edit_purchase'] = array(
             '#type' => 'item',
             '#markup' => t('Purchase ref. @p', array('@p' => $data->serial)),
@@ -70,7 +74,12 @@ class DeletePurchase extends FormBase {
                 '#type' => 'hidden',
                 '#value' => $id,
             );
-
+        
+            $form['coid'] = array(
+              '#type' => 'hidden',
+              '#value' => $data->head,
+            );
+            
             $form['serial'] = array(
                 '#type' => 'hidden',
                 '#value' => $data->serial,
@@ -118,11 +127,10 @@ class DeletePurchase extends FormBase {
                 ->execute();
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-            $delete = Database::getConnection('external_db', 'external_db')
-                    ->delete('ek_journal')
-                    ->condition('reference', $form_state->getValue('for_id'))
-                    ->condition('source', 'purchase')
-                    ->execute();
+            $journal = new \Drupal\ek_finance\Journal();
+            $journalId = $journal->delete('purchase', $form_state->getValue('for_id'),$form_state->getValue('coid'));
+            //count field sequence must be restored 
+            $journal->resetCount($form_state->getValue('coid'), $journalId[1]);
         }
 
         if ($delete) {
