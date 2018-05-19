@@ -587,8 +587,8 @@ class MemoExpensesController extends ControllerBase {
         while ($r = $data->fetchObject()) {
             $links = array();
             $row++;
-            $entity = $companies[$r->entity];
-            $entity_to = $userData[$r->entity_to];
+            $entity = $userData[$r->entity];
+            $entity_to = $companies[$r->entity_to];
             $query = "SELECT count(id) FROM {ek_expenses_memo_documents} WHERE serial=:s";
             $attach = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $r->serial))->fetchField();
 
