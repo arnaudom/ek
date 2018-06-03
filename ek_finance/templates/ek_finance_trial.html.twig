@@ -52,7 +52,7 @@
           {% if  items.data.total.error1 == "1"  %}
 
                   <tr class=''>
-                  <td colspan='2'>{{ 'Discrpancy'|t }}</td>
+                  <td colspan='2'>{{ 'Discerpancy'|t }}</td>
                   <td class='right red'>{{ (items.data.total.transaction_debit - items.data.total.transaction_credit) | number_format(2) }}</td>
                   <td></td>
                   <td></td>
@@ -110,7 +110,7 @@
           {% if  items.data.total.error1 == "1"  %}
 
                   <tr class=''>
-                  <td colspan='2'>{{ 'Discrpancy'|t }}</td>
+                  <td colspan='2'>{{ 'Discrepancy'|t }}</td>
                   <td class='right red'>{{ (items.data.total.transaction_debit - items.data.total.transaction_credit) | number_format(2) }}</td>
                   <td></td>
                   <td></td>
@@ -123,3 +123,55 @@
          </table>
 
 </section>
+{% if  items.error  %}         
+    
+    <a class='left' href='#table2' onclick="jQuery('#help').toggle('slow');">{{ 'Errors'|t }} <i class="far fa-question-circle"></i></a>
+    <div class='left' id='help' style='display:none;'>
+        {{ 'Unbalanced transactions'|t }}
+        <table style='text-align: left; width: 95%;' id='table2'>
+            <thead>
+            <tr>
+                <td>{{ 'id'|t }}</td>
+                <td>{{ 'account'|t }}</td>
+                <td>{{ 'type'|t }} </td>
+                <td>{{ 'value'|t }}</td>
+                <td>{{ 'record'|t }}</td>
+                <td>{{ 'date'|t }}</td>
+                <td>{{ 'comment'|t }}</td>
+            </tr>                
+            </thead>
+            <tbody>
+        {% for row in items.error.reference %}
+            <tr>
+                <td>{{ row.id }}</td>
+                <td>{{ row.aid }} {{ row.aname }}</td>
+                <td>{{ row.type }} </td>
+                <td>{{ row.value }}</td>
+                <td>{{ row.source }} ({{ row.reference }})</td>
+                <td>{{ row.date }}</td>
+                <td>{{ row.comment }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+            
+        {{ 'Unactive account found in journal'|t }}
+        <table style='text-align: left; width: 95%;' id='table2'>
+            <thead>
+            <tr>
+                <td>{{ 'account'|t }}</td>
+                <td>{{ 'status'|t }} </td>
+            </tr>                
+            </thead>
+            <tbody>
+        {% for row in items.error.account %}
+            <tr>
+                <td>{{ row.aid }}</td>
+                <td>{{ row.status }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>            
+    </div>
+
+{% endif %}

@@ -98,6 +98,16 @@ class BalanceTrialController extends ControllerBase {
             $excel = Url::fromRoute('ek_finance.extract.excel-trial', array('param' => serialize($param)), array())->toString();
 
             $items['excel'] = "<a href='" . $excel . "' >" . t('Excel') . "</a>";
+            
+            if($items['data']['total']['error1'] == '1') {
+                //try to identify balances errors
+                $start = $_SESSION['tfilter']['year'] . '-01-01';
+                $dates = $journal->getFiscalDates($_SESSION['tfilter']['coid'], $_SESSION['tfilter']['year'], $_SESSION['tfilter']['month']);
+                $items['error'] = $journal->traceError(['coid' => $_SESSION['tfilter']['coid'], 'from' => $start, 'to' => $dates['to']]);
+
+            }
+            
+            
         }
         return array(
             '#theme' => 'ek_finance_trial',

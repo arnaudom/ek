@@ -11,8 +11,8 @@ $period = $params['year'] . '-' . $params['month'] .
 $dates = $journal->getFiscalDates($params['coid'], $params['year'], $params['month']);
 $to = $dates['to'];
 $stop_date = $dates['stop_date'];
-
-
+//remove 1 day from stop date as we generate closing amount from opening of next period
+$stop_date = date('Y-m-d', strtotime($dates['stop_date'] . ' - 1 day'));
 
 if($dates['archive'] == TRUE) {
     $from = $dates['from'];
@@ -790,6 +790,11 @@ $net_assets_l = $total_class0_l + $total_class1_l - $total_class2_l- $total_clas
 $pdf->Ln(5);
 ////////////////////// EQUITY /////////////////////////////
 //header account
+//equity ref. accounts
+$equity_min = $chart['equity'] * 10000;
+$equity_max = $equity_min + 9999;
+$earnings_account = $equity_min + 9001;//default
+$reserve_account = $equity_min + 8001;//default
 
 $total_class3 = 0;
 $total_class3_l = 0;
@@ -848,10 +853,33 @@ $total_detail_l=0;
 
     while ($r2=$result2->fetchAssoc()) {
     
-    if ($r2['aid']=='39001') {
+    if ($r2['aid']== $earnings_account) {
     //calculate current year earnings
     $b = $journal->current_earning($params['coid'],$from,$to);
+                //add other entries on the account from journal transactions
+            $dt = $journal->transactions(
+                array( 
+                'aid' => $earnings_account,
+                'type' => 'debit',
+                'coid' => $params['coid'],
+                'from' => $from,
+                'to' => $to,
+                'archive' => $dates['archive']
+                 ) 
+                );
     
+            $ct = $journal->transactions(
+                array( 
+                'aid' => $earnings_account,
+                'type' => 'credit',
+                'coid' => $params['coid'],
+                'from'=> $from,
+                'to'=> $to,
+                'archive' => $dates['archive']
+                 )
+                );    
+            $b[0] = $b[0] + $ct[0]-$dt[0];
+            $b[1] = $b[1] + $ct[1]-$dt[1];
     } else {
     //look up for balance
         $b = $journal->opening(

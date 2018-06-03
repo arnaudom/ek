@@ -46,9 +46,7 @@ class Journal {
          * if we are in July 2017, the start date is 01/07/17
          */
         $company = new CompanySettings($coid);
-        $archive = FALSE;
-
-        
+        $archive = FALSE;       
         $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $company->get('fiscal_month'), $company->get('fiscal_year'));
         $start_fiscal = date('Y-m-d', strtotime($company->get('fiscal_year') . '-' 
                 . $company->get('fiscal_month') . '-' . $daysInMonth . ' - 1 year + 1 day'));
@@ -59,7 +57,8 @@ class Journal {
         $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $end_request = date('Y-m-d', strtotime($year . '-' 
                 . $month . '-' . $daysInMonth ));
-        $n = 12 - date('n', strtotime($end_fiscal)) + date('n', strtotime($end_request));
+        
+        $n = 11 - date('n', strtotime($end_fiscal)) + date('n', strtotime($end_request));
         // start request is calculated relative to end request minus number $n of months
         // for a fiscal year
         $start_request = date('Y-m', strtotime($end_request .' - ' . $n . ' months' )) . '-01';
@@ -111,12 +110,7 @@ class Journal {
             $query->condition('coid', $result->coid, '=')
                     ->condition('aid', $result->aid);
             $aname = $query->execute()->fetchField();
-    /*        
-        $query = "SELECT aname from {ek_accounts} where aid=:account and coid=:coid";
-        $result2 = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':account' => $result->aid, ':coid' => $result->coid))
-                ->fetchObject();
-*/
+
         return array(
             'id' => $result->id,
             'count' => $result->count,
@@ -892,6 +886,86 @@ class Journal {
     }
 
     /*
+     * Identify journal errors by coid and period
+     * @return array
+     * @param  array param
+     * coid int company id
+     * from : date string
+     * to : date string
+     */
+    public function traceError($param) {
+        
+        //verify if each journal references as equal debit and credit
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+        $query->fields('j', ['id','reference']);
+        $query->distinct();
+        $query->condition('date', $param['to'] , '<=');
+        $query->condition('date', $param['from'] , '>=');
+        $query->condition('j.coid', $param['coid'], '=');
+        $data = $query->execute();
+        $error = [];
+        while ($j = $data->fetchObject()){
+
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_journal', 'j');
+                $query->addExpression('SUM(value)', 'sumValue');
+                $query->condition('j.coid', $param['coid'], '=')
+                        ->condition('j.type', 'credit', '=')
+                        ->condition('j.reference', $j->reference, '=')
+                        ->condition('date', $param['from'], '>=')
+                        ->condition('date', $param['to'], '<=');
+                $Obj = $query->execute();
+                $ct = $Obj->fetchObject()->sumValue;
+
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_journal', 'j');
+                $query->addExpression('SUM(value)', 'sumValue');
+                $query->condition('j.coid', $param['coid'], '=')
+                        ->condition('j.type', 'debit', '=')
+                        ->condition('j.reference', $j->reference, '=')
+                        ->condition('date', $param['from'], '>=')
+                        ->condition('date', $param['to'], '<=');
+                $Obj = $query->execute();
+                $dt = $Obj->fetchObject()->sumValue;
+
+                if(round($dt,2) != round($ct,2)) {
+                    $error['reference'][] = self::journalEntryDetails($j->id);
+
+                }
+
+
+        }
+        
+        //verify if account used in journal is active
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+        $query->fields('j', ['aid']);
+        $query->distinct();
+        $query->condition('date', $param['to'] , '<=');
+        $query->condition('date', $param['from'] , '>=');
+        $query->condition('j.coid', $param['coid'], '=');
+        $data = $query->execute();
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a');
+        $query->fields('a', ['aid','astatus']);
+        $query->condition('coid', $param['coid'], '=');
+        $accounts = $query->execute()->fetchAllKeyed();
+        
+        while ($j = $data->fetchObject()){
+            if($accounts[$j->aid] == '0') {
+                $error['account'][] = ['aid' => $j->aid, 'status' => 'disabled'];
+            } elseif($accounts[$j->aid] == NULL) {
+                $error['account'][] = ['aid' => $j->aid, 'status' => 'unknown'];
+            }
+        }
+        
+        
+        
+        return $error;
+    }
+    /*
      * @return INT validate a transaction debit against a credit
      * return value debit >= credit
      */
@@ -1276,7 +1350,8 @@ class Journal {
                 $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal', 'j');
                     $query->fields('j',['id','count','aid', 'exchange','coid','type','value','reconcile','source','reference']);
-                    $query->innerJoin('ek_journal_trail', 't', 't.jid = j.id');
+                    $query->leftJoin('ek_journal_trail', 't', 't.jid = j.id');
+                    
                     $query->fields('t',['username','action','timestamp']);
                     $query->condition('reference', $line->reference)
                             ->condition('source', $source,'like')

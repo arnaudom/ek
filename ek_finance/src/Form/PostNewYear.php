@@ -197,9 +197,15 @@ class PostNewYear extends FormBase {
                         $r['balance'] = $earning[0];
 
                         } elseif ($r['aid'] == $reserve_account) { 
-
-                        $b[1] = $r['balance_base']+$earning[1];
-                        $b[0] = $r['balance']+$earning[0];
+                            $e = $journal->opening(
+                                    array( 
+                                    'aid' => $r['aid'],
+                                    'coid'=> $form_state->getValue('coid'),
+                                    'from'=> $to
+                                     )
+                                    );
+                            $b[1] = $e[1] + $earning[1];
+                            $b[0] = $e[0] + $earning[0];
 
                         } 
 
@@ -375,8 +381,15 @@ class PostNewYear extends FormBase {
 
             } elseif ($r['aid'] == $reserve_account) { 
 
-            $b[1] = $r['balance_base']+$earning[1];
-            $b[0] = $r['balance']+$earning[0];
+                $e = $journal->opening(
+                    array( 
+                    'aid' => $r['aid'],
+                    'coid'=> $form_state->getValue('coid'),
+                    'from'=> $to
+                     )
+                    );
+                $b[1] = $e[1] + $earning[1];
+                $b[0] = $e[0] + $earning[0];
 
             } 
 

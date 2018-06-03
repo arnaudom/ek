@@ -4,87 +4,71 @@ tr td {
 
 }
 
-
 .right {
     text-align: right !important;
 }
 
 .left {
     text-align: left !important;
-
 }
 
-.header_th {
-    background-color: #C0C0C0;
-    color: #4f4f4f;
-}
-
-.classe {
+.head {
+    background-color: #848484;
+    color: #FFF;
     font-weight: bold;
-    background-color: #C0C0C0 ;
-    border-top: 1px solid #848484 !important;
+}
+
+.head_row {
+    padding-left: 10px !important;
+}
+.classe {
+    background-color: #C0C0C0;
+    border-top: 1px solid #FFF !important;
+}
+
+.classe_row {
+    padding-left: 20px !important;
 }
 
 .detail {
     text-shadow: 0 1px 0 #fff ;
     background-color: #CEE3F6 ;
 }
-.detail_aid {
-    background-color: #CEE3F6 ;
-}
-
-.detail span {
-    margin-left: 1em;
-}
-
-.data1  {
-    font-size : 0.9em;
-}
-.data2  {
-    font-size : 0.9em;
-}
-.data3  {
-    font-size : 0.9em;
+.detail_row {
+    padding-left: 25px !important;
 }
 
 .subtotal {
-    font-weight: bold;
-    background-color: #CEE3F6;
-    border-top: 1px solid #848484 !important;
+    background-color: #C0C0C0;
+    border-top: 1px solid #000 !important;
 }
 
 .total {
-    font-size : 1.1em;
     font-weight: bold;
-    background-color: #cee3f6 ;
+    background-color: #848484;
+    color: #FFF;
 }
 
 .grandtotal {
-    //font-size : 1.1em;
     font-weight: bold;
     border-top: 1px solid #848484 !important;
-    background-color: #757575 ;
-    color:#FFF;
+    background-color: #82b1ff ;
 }
-
+.grandtotal td {
+    padding: 5px !important;
+}
 .grandtotal:hover {
-    //font-size : 1.1em;
-    font-weight: bold;
-    border-top: 1px solid #848484 !important;
-    background-color: #82b1ff;
-    color: #000;
+   font-size : 1.1em;
 }
 
-.c1:hover {
-    background-color: #82b1ff;
-}
 .netasset {
     font-size : 1.2em;
     font-weight: bold;
-    border-top: 1px solid #848484 !important;
-    //background-color: #81DAF5 ;
+    border: 1px solid #848484 !important;
     border: 1px solid;
-    padding: 5px 1px 5px 1px;
+}
+.netasset td {
+    padding: 5px !important;
 }
 
 .red {

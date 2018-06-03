@@ -269,7 +269,7 @@ class RecordExpense extends FormBase {
         );
         $form['allocation']["change_location"] = array(
             '#type' => 'checkbox',
-            '#default_value' => ($expense->allocation) ? TRUE : NULL,
+            '#default_value' => isset($expense->allocation) ? TRUE : NULL,
             '#title' => t('assign to other entity'),
             '#prefix' => "<div class='container-inline'>",
              );
@@ -278,7 +278,7 @@ class RecordExpense extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#default_value' => ($expense->allocation) ? $expense->allocation : NULL,
+            '#default_value' => isset($expense->allocation) ? $expense->allocation : NULL,
             '#title' => t('allocation'),
             '#required' => FALSE,
             '#suffix' => "</div>",
@@ -423,7 +423,7 @@ class RecordExpense extends FormBase {
         );
  * 
  */
-        if(!NULL == $expense->employee && $expense->employee != 'n/a') {
+        if($id != NULL && !NULL == $expense->employee && $expense->employee != 'n/a') {
             $user = \Drupal\user\Entity\User::load($expense->employee);
              if($user) {$userName = $user->getUsername();}
         }
@@ -707,7 +707,7 @@ class RecordExpense extends FormBase {
             );
              
             
-            if($expense->attachment && $i == 1) {
+            if(isset($expense->attachment) && $i == 1) {
                 //editing current entry
                 $form['uri' . $i] = [
                     '#type' => 'hidden',

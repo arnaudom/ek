@@ -310,11 +310,6 @@ class ReportController extends ControllerBase {
                 '#markup' => "<a href='" . $post . "' >" . t('Start new year') . "</a>",
             );
 
-            $items['table_1'] = $table_1; //revenue
-            $items['table_2'] = $table_2; //cos
-            $items['table_3'] = $table_3; //charges
-            $items['table_4'] = $table_4; //result
-            $items['table_5'] = $table_5; //info
         }
 
 
@@ -406,13 +401,7 @@ class ReportController extends ControllerBase {
                 $items['post'] = '';
             }
             
-            $items['table_1'] = $table_1;
-            $items['table_2'] = $table_2;
-            $items['table_3'] = $table_3;
-            $items['table_4'] = $table_4;
-            $items['table_5'] = $table_5;
         }
-
 
         return array(
             '#theme' => 'ek_balance_sheet',
