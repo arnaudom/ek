@@ -7,7 +7,7 @@ ek_logistics_task_delivery_list:
 ek_logistics_task_delivery_edit:
   route_name: ek_logistics_delivery_edit
   base_route: ek_logistics_list_delivery
-  title: 'New order'
+  title: 'New delivery'
   weight: 2
   
 ek_logistics_task_receiving_list:

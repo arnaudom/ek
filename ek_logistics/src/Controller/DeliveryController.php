@@ -7,12 +7,10 @@ namespace Drupal\ek_logistics\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_admin\CompanySettings;
@@ -185,16 +183,16 @@ if(isset($_SESSION['lofilter']['filter']) && $_SESSION['lofilter']['filter'] == 
       
  
   if($r->status == 0) {
-      $status =   t('open') . " <div class='greendot right'></div>";
+      $status = "<i class='fa fa-circle green' aria-hidden='true'></i> " . t('open');
   }
   if($r->status == 1) {
-      $status =   t('printed') . " <div class='yellowdot right'></div>";
+      $status =  "<i class='fa fa-circle blue' aria-hidden='true'></i> " . t('printed');
   } 
   if($r->status == 2) {
-      $status =   t('invoiced') . " <div class='orangedot right'></div>";
+      $status =  "<i class='fa fa-circle yellow' aria-hidden='true'></i> " . t('invoiced');
   }
   if($r->status == 3) {
-      $status =   t('posted') . " <div class='reddot right'></div>";
+      $status =  "<i class='fa fa-circle red' aria-hidden='true'></i> " . t('posted');
   } 
       $options[$r->id] = array(
       'number' => ['data' => ['#markup' => $number], 'title' => t('view in browser')],
@@ -232,15 +230,7 @@ if ($r->status == 2 )  {
           );  
 }
 
-/*
-if($r->alert == 1) $alert = t('on');
-if($r->alert == 0) $alert = t('off');
 
-          $links['alert'] = array(
-            'title' => $this->t('Set alert [@a]', array('@a' => $alert)),
-            'url' => Url::fromRoute('ek_logistics.invoices.alert', ['id' => $r->id] ),
-          );        
- */
 if (\Drupal::currentUser()->hasPermission('print_share_delivery')) {
 
           $links['print'] = array(
@@ -292,7 +282,7 @@ if (\Drupal::currentUser()->hasPermission('delete_delivery') && $r->status == 0)
       '#attributes' => array('id' => 'logistics_table'),
       '#empty' => $this->t('No delivery order available.'),
       '#attached' => array(
-          'library' => array('ek_logistics/ek_logistics_css'), 
+          'library' => array('ek_logistics/ek_logistics_css','ek_admin/ek_admin_css'), 
       ),
     );
 
@@ -312,8 +302,32 @@ if (\Drupal::currentUser()->hasPermission('delete_delivery') && $r->status == 0)
  */
 
   public function edit(Request $request, $id) {
+      
+    //filter edit
+    if($id){
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_logi_delivery', 'd')
+                ->fields('d', ['head','status'])
+                ->condition('id', $id , '=');
+            $d = $query->execute()->fetchObject();
+        $settings = new LogisticsSettings($d->head); 
+        if ( $d->status == 0 
+          || ($settings->get('edit') == 1 && $d->status == 1 )
+          || ($settings->get('edit') == 2 && $d->status == 2 )
+            ) {
+              $build['delivery'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Delivery', $id); 
+        } else {
+            $url = Url::fromRoute('ek_logistics_list_delivery', array(), array())->toString();
+            $build['back'] = array(
+                '#markup' => t('Document not editable. Go to <a href="@url" >List</a>.', array('@url' => $url ) ) ,
+            );
+        }
+    } else {
+        //new
+        $build['delivery'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Delivery', $id);
+    }
   
-    $build['delivery'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Delivery', $id);
+    
     
     return $build;  
   
@@ -391,22 +405,14 @@ if (\Drupal::currentUser()->hasPermission('delete_delivery') && $r->status == 0)
                 );
 
                 $format = 'html';
+                $url_pdf = Url::fromRoute('ek_logistics_delivery_print_share', ['id' => $doc_id], [])->toString();
+                $url_excel = Url::fromRoute('ek_logistics_delivery_excel', ['param' => serialize([$doc_id,'logi_delivery',0,0])], [])->toString();
+                $url_edit = Url::fromRoute('ek_logistics_delivery_edit', ['id' => $doc_id], [])->toString();
                 include_once drupal_get_path('module', 'ek_logistics') . '/manage_print_output.inc';
-
-                $build['excel'] = [
-                    '#markup' => "<a class='button button-action' href='"
-                    . Url::fromRoute('ek_logistics_delivery_excel', ['param' => serialize([$doc_id,'logi_delivery',0,0])])->toString() . "' >"
-                    . t('Excel') . "</a>"
-                    . "<a class='button button-action' href='"
-                    . Url::fromRoute('ek_logistics_delivery_print_share', ['id' => $doc_id], [])->toString() . "' >"
-                    . t('Pdf') . "</a>"
-                        ,
-                ];
-
                 $build['delivery'] = [
                     '#markup' => $document,
                     '#attached' => array(
-                        'library' => array('ek_logistics/ek_logistics_html_documents_css'),
+                        'library' => array('ek_logistics/ek_logistics_html_documents_css','ek_admin/ek_admin_css'),
                         
                     ),
                 ];
@@ -491,6 +497,9 @@ if (\Drupal::currentUser()->hasPermission('delete_delivery') && $r->status == 0)
   public function pdf(Request $request, $param) {
     $markup = array();
     $format = 'pdf';
+    if ($this->moduleHandler->moduleExists('ek_products')) {
+        $product = TRUE;
+    }
     include_once drupal_get_path('module', 'ek_logistics').'/manage_print_output.inc'; 
     return $markup;
   }   

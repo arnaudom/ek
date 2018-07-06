@@ -62,27 +62,9 @@ Switch ($source) {
 
         While ($line = $lines->fetchObject()) {
             $data = array();
-            if ($line->itemcode <> '') {
-
-                $query = "SELECT * from {ek_items} where itemcode=:id";
-                $thisitem = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $line->itemcode))
-                        ->fetchObject();
-                $data['item'] = $thisitem->description1;
-                $data['itemid'] = $thisitem->id;
-                $data['itemcode'] = $thisitem->itemcode;
-                $data['supplier_code'] = $thisitem->supplier_code;
-
-                $query = "SELECT * from {ek_item_barcodes} where itemcode=:id order by id";
-                $barcodes = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $line->itemcode));
-                $i = 0;
-                while ($b = $barcodes->fetchObject()) {
-                    $i++;
-                    $data['barcode' . $i] = $b->barcode;
-                    $data['encode' . $i] = $b->encode;
-                }
-                $data['currency'] = $line->currency;
+            if ($line->itemcode != '') {
+                $data['item'] = $line->itemcode;
+                //$data['currency'] = $line->currency;
                 $data['quantity'] = $line->quantity;
                 if($source == 'logi_delivery') {
                     $data['value'] = $line->value;
@@ -91,15 +73,41 @@ Switch ($source) {
                     $data['total'] = $line->amount;
                     $data['value'] = round(($line->amonunt / $line->quantity), 2);
                 }
+                $data['itemid'] = '';
+                $data['itemcode'] = '';
+                $data['supplier_code'] = '';
+                $data['barcode'] = '';
+                $data['unit_measure'] = '';
+                
+                if(isset($product) && \Drupal\ek_products\ItemData::item_bycode($line->itemcode)){
+                    
+                    $query = "SELECT * from {ek_items} where itemcode=:id";
+                    $thisitem = Database::getConnection('external_db', 'external_db')
+                            ->query($query, array(':id' => $line->itemcode))
+                            ->fetchObject();
+                    $data['item'] = $thisitem->description1;
+                    $data['itemid'] = $thisitem->id;
+                    $data['itemcode'] = $thisitem->itemcode;
+                    $data['supplier_code'] = $thisitem->supplier_code;
 
-                $query = "SELECT * FROM {ek_item_packing} where itemcode=:id";
-                $thisitem = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $line->itemcode))
-                        ->fetchObject();
+                    $query = "SELECT * from {ek_item_barcodes} where itemcode=:id order by id";
+                    $barcodes = Database::getConnection('external_db', 'external_db')
+                            ->query($query, array(':id' => $line->itemcode));
+                    $i = 0;
+                    while ($b = $barcodes->fetchObject()) {
+                        $i++;
+                        $data['barcode' . $i] = $b->barcode;
+                        $data['encode' . $i] = $b->encode;
+                    }
 
-                $data['unit_measure'] = $thisitem->unit_measure;
+                    $query = "SELECT * FROM {ek_item_packing} where itemcode=:id";
+                    $thisitem = Database::getConnection('external_db', 'external_db')
+                            ->query($query, array(':id' => $line->itemcode))
+                            ->fetchObject();
 
-
+                    $data['unit_measure'] = $thisitem->unit_measure;
+                    
+                }
                 $items[] = $data;
             }
         }

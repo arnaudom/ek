@@ -15,10 +15,8 @@ use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
 use Drupal\Core\Cache\Cache;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_projects\ProjectData;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\FinanceSettings;
-use Drupal\ek_products\ItemData;
 
 /**
  * Provides a form to create and edit receiving/return report.
@@ -38,7 +36,6 @@ class receiving extends FormBase {
      */
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
-        $this->settings = new FinanceSettings();
     }
 
     /**
@@ -67,10 +64,15 @@ class receiving extends FormBase {
             //edit existing DO
 
             $query = "SELECT * from {ek_logi_receiving} where id=:id";
-            $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
+            $data = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $id))
+                    ->fetchObject();
             $query = "SELECT * from {ek_logi_receiving_details} where serial=:id";
-            $detail = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $data->serial));
+            $detail = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $data->serial));
 
+            $doc_type = $data->type;
+            $route = ($doc_type == 'RR') ? 'ek_logistics_list_receiving' : 'ek_logistics_list_returning';
 
             If ($clone != 'clone') {
                 $form['edit_receiving'] = array(
@@ -83,7 +85,7 @@ class receiving extends FormBase {
                     '#value' => $data->serial,
                 );
             } else {
-                $form['clone_invoice'] = array(
+                $form['clone_doc'] = array(
                     '#type' => 'item',
                     '#markup' => t('Template receiving order based on ref. @p . A new order will be generated.', array('@p' => $data->serial)),
                 );
@@ -96,19 +98,16 @@ class receiving extends FormBase {
                 );
             }
 
-
-
             $n = 0;
-            $form_state->set('current_items', 0);
-            if (!$form_state->get('num_items'))
+            $grandtotal = 0;
+            if (!$form_state->get('num_items')) {
                 $form_state->set('num_items', 0);
-
-            if (!$form_state->getValue('head'))
-                $form_state->setValue('head', $data->head);
-
-            if ($this->moduleHandler->moduleExists('ek_finance')) {
-                $baseCurrency = $this->settings->get('baseCurrency');
             }
+
+            if (!$form_state->getValue('head')) {
+                $form_state->setValue('head', $data->head);
+            }
+
         } else {
             //new
             $form['new_receiving'] = array(
@@ -121,23 +120,28 @@ class receiving extends FormBase {
             $detail = NULL;
             $data = NULL;
         }
-
-        if (strpos(\Drupal::request()->getRequestUri(), 'receiving')) {
-            $type = 'RR';
-        } else {
-            $type = 'RT';
+        if(!isset($doc_type)){
+            if (strpos(\Drupal::request()->getRequestUri(), 'receiving')) {
+                $doc_type = 'RR';
+                $route = 'ek_logistics_list_receiving';
+            } else {
+                $doc_type = 'RT';
+                $route = 'ek_logistics_list_returning';
+            }
         }
         $form['type'] = array(
             '#type' => 'hidden',
-            '#value' => $type,
+            '#value' => $doc_type,
         );
-
+        $url = Url::fromRoute($route)->toString();
+        $form['back'] = array(
+            '#type' => 'item',
+            '#markup' => t('<a href="@url" >List</a>', array('@url' => $url)),
+        );
         $form['options'] = array(
             '#type' => 'details',
             '#title' => $this->t('Options'),
-            '#open' => TRUE,
-            '#attributes' => '',
-            '#prefix' => "",
+            '#open' => ($id != NULL || $form_state->get('num_items') > 0) ? FALSE : TRUE,
         );
 
         $company = AccessCheck::CompanyListByUid();
@@ -230,7 +234,7 @@ class receiving extends FormBase {
             $form['options']['pcode'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => ProjectData::listprojects(0),
+                '#options' => \Drupal\ek_projects\ProjectData::listprojects(0),
                 '#required' => TRUE,
                 '#default_value' => isset($data->pcode) ? $data->pcode : NULL,
                 '#title' => t('Project'),
@@ -246,33 +250,21 @@ class receiving extends FormBase {
             '#prefix' => "<div class='container-inline'>",
         );
 
-        /*
-          $form['options']['logistic_cost'] = array(
-          '#type' => 'textfield',
-          '#size' => 6,
-          '#maxlength' => 25,
-          '#default_value' => isset($data->logistic_cost) ? $data->logistic_cost : NULL,
-          '#title' => t('Logistic cost'),
-          '#attributes' => array('placeholder'=>t('value')),
-          '#suffix' => '</div>',
-          );
-         */
-
         $form['items'] = array(
             '#type' => 'details',
             '#title' => $this->t('Items'),
             '#open' => TRUE,
-            '#attributes' => '',
         );
 
 
         $form['items']['actions']['add'] = array(
             '#type' => 'submit',
             '#value' => $this->t('Add item'),
-            //'#limit_validation_errors' => array(),
+            '#limit_validation_errors' => [['head'], ['itemTable']],
             '#submit' => array(array($this, 'addForm')),
-            '#prefix' => "<div id='add'>",
+            '#prefix' => "<div id='add' class='right'>",
             '#suffix' => '</div>',
+            '#attributes' => array('class' => array('button--add')),
             '#states' => array(
                 'invisible' => array(
                     "select[name='head']" => array('value' => ''),
@@ -280,137 +272,173 @@ class receiving extends FormBase {
             ),
         );
 
+        $header = array(
+                'description' => array(
+                    'data' => $this->t('Items'),
+                    'id' => ['tour-item1'],
+                ),
+                'quantity' => array(
+                    'data' => $this->t('Quantity'),
+                    'id' => ['tour-item2'],
+                ),
+                'delete' => array(
+                    'data' => $this->t('Delete'),
+                    'id' => ['tour-item3'],
+                ),
+            );
 
-
-        $headerline = "<div class='table'  id='purchase_form_items'>
-                  <div class='row'>
-                      <div class='cell'>" . t("Items") . "</div>
-                      <div class='cell'>" . t("Quantities") . "</div>
-                      <div class='cell'>" . t("delete") . "</div>
-                   ";
-
-
-
-        $form['items']["headerline"] = array(
-            '#type' => 'item',
-            '#markup' => $headerline,
+        $form['items']['itemTable'] = array(
+            '#tree' => TRUE,
+            '#theme' => 'table',
+            '#header' => $header,
+            '#rows' => array(),
+            '#attributes' => array('id' => 'itemTable'),
+            '#empty' => '',
         );
 
-
+        $rows = $form_state->getValue('itemTable');
+        $z = 0;
+        
         if (isset($detail)) {
-//edition mode
-//list current items
+        //edition mode
+        //list current items
 
             while ($d = $detail->fetchObject()) {
 
                 $n++;
-                $c = $form_state->get('current_items') + 1;
-                $form_state->set('current_items', $c);
-                $form_state->setRebuild();
-
+                $z++;
+                $link = NULL;
+                $grandtotal += $d->quantity;
+                $rowClass = ($rows[$n]['delete'] == 1) ? 'delete' : 'current';
+                $trClass = 'tr' . $n;
                 if ($this->moduleHandler->moduleExists('ek_products') && 
-                        $name = ItemData::item_bycode($d->itemcode) ) {
+                    $name = \Drupal\ek_products\ItemData::item_bycode($d->itemcode)) {
                     //item exist in database
-                    $url = ItemData::geturl_bycode($d->itemcode, TRUE);
+                    $link = \Drupal\ek_products\ItemData::geturl_bycode($d->itemcode, TRUE);
                 } else {
                     $name = $d->itemcode;
-                    $url = '';
+                    $link = '';
                 }
 
 
-
-                $form['items']["itemid$n"] = array(
+                $form['description'] = array(
+                    '#id' => 'description-' . $n,
                     '#type' => 'textfield',
-                    '#size' => 50,
+                    '#size' => 60,
                     '#maxlength' => 255,
+                    '#attributes' => array('placeholder' => t('item')),
                     '#default_value' => $name,
-                    '#description' => isset($url) ? $url : '',
-                    '#attributes' => array('placeholder' => t('item code, barcode, description')),
-                    '#prefix' => "<div class='row current'><div class='cell'>",
-                    '#suffix' => '</div>',
-                    '#autocomplete_route_name' => 'ek.look_up_item_ajax',
+                    '#field_prefix' => "<span class='badge'>" . $n . "</span>",
+                    '#field_suffix' => isset($link) ? "<span class='badge'>" . $link . "</span>" : '',
+                    '#autocomplete_route_name' => $this->moduleHandler->moduleExists('ek_products') ? 'ek.look_up_item_ajax' : '',
                 );
-
-
-
-                $form['items']["unit$n"] = array(
-                    '#type' => 'textfield',
+                
+                $form['quantity'] = array(
                     '#id' => 'quantity' . $n,
-                    '#size' => 8,
-                    '#maxlength' => 255,
-                    '#default_value' => $d->quantity,
+                    '#type' => 'textfield',
+                    '#size' => 12,
+                    '#maxlength' => 40,
                     '#attributes' => array('placeholder' => t('units'), 'class' => array('amount')),
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
+                    '#default_value' => $d->quantity,
+                    '#required' => TRUE,
                 );
-
-
-                $form['items']["delete$n"] = array(
+                
+                $form['delete'] = array(
+                    '#id' => 'del' . $n,
                     '#type' => 'checkbox',
-                    '#attributes' => array('title' => t('delete'), 'class' => array()),
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div></div>',
+                    '#default_value' => 0,
+                    '#attributes' => array(
+                        'title' => t('delete on save'),
+                        'onclick' => "jQuery('#" . $n . "').toggleClass('delete');",
+                        'class' => array('amount')
+                    ),
                 );
+                
+                //built edit rows for table
+                $form['items']['itemTable'][$n] = array(
+                    'description' => &$form['description'],
+                    'quantity' => &$form['quantity'],
+                    'delete' => &$form['delete'],
+                );
+
+                $form['items']['itemTable']['#rows'][$n] = array(
+                    'data' => array(
+                        array('data' => &$form['description']),
+                        array('data' => &$form['quantity']),
+                        array('data' => &$form['delete']),
+                    ),
+                    'id' => array($n),
+                    'class' => $rowClass,
+                );
+                unset($form['description']);
+                unset($form['quantity']);
+                unset($form['delete']);
+                
             }
         } //details of current records
 
 
-        if (isset($detail)) {
-            // reset the new rows items
-            $max = $form_state->get('num_items') + $n;
-            $n++;
-        } else {
-            $max = $form_state->get('num_items');
-            $n = 1;
-        }
+    if(isset($detail)) {
+        // reset the new rows items
+        $max = $form_state->get('num_items')+$n;
+        $n++;
+      } else {
+        $max = $form_state->get('num_items');
+        $n = 1;
+      }
+
 
         for ($i = $n; $i <= $max; $i++) {
-
-            $form['items']["itemid$i"] = array(
+            $z++;
+            $form['description'] = array(
+                '#id' => 'description-' . $n,
                 '#type' => 'textfield',
-                '#size' => 50,
+                '#size' => 60,
                 '#maxlength' => 255,
-                '#default_value' => $form_state->getValue("itemid$i") ? $form_state->getValue("itemid$i") : NULL,
-                '#attributes' => array('placeholder' => t('item code, barcode, description')),
-                '#prefix' => "<div class='container-inline'>",
-                '#autocomplete_route_name' => 'ek.look_up_item_ajax',
-                '#prefix' => "<div class='row'><div class='cell'>",
-                '#suffix' => '</div>',
+                '#attributes' => array('placeholder' => t('item')),
+                '#default_value' => '',
+                '#field_prefix' => "<span class='badge'>" . $z . "</span>",
+                '#autocomplete_route_name' => $this->moduleHandler->moduleExists('ek_products') ? 'ek.look_up_item_ajax' : '',
             );
-
-
-            $form['items']["unit$i"] = array(
+            $form['quantity'] = array(
+                '#id' => 'quantity' . $n,
                 '#type' => 'textfield',
-                '#id' => 'quantity' . $i,
-                '#size' => 8,
-                '#maxlength' => 255,
-                '#default_value' => $form_state->getValue("unit$i") ? $form_state->getValue("unit$i") : NULL,
+                '#size' => 12,
+                '#maxlength' => 30,
                 '#attributes' => array('placeholder' => t('units'), 'class' => array('amount')),
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div>',
+                '#default_value' => '',
+                '#required' => TRUE,
+            );
+            $form['delete'] = array(
+                '#item' => '',
+            );
+            //built edit rows for table
+            $form['items']['itemTable'][$n] = array(
+                'description' => &$form['description'],
+                'quantity' => &$form['quantity'],
+                'delete' => &$form['delete'],
             );
 
-
-
-            $form['items']["delete$i"] = array(
-                '#type' => 'item',
-                '#attributes' => '',
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div></div>',
+            $form['items']['itemTable']['#rows'][$n] = array(
+                'data' => array(
+                    array('data' => &$form['description']),
+                    array('data' => &$form['quantity']),
+                    array('data' => &$form['delete']),
+                ),
+                'id' => array($n),
             );
+            unset($form['description']);
+            unset($form['quantity']);
+            unset($form['delete']);
+            $n++;
+
         }
 
         $form['items']['count'] = array(
             '#type' => 'hidden',
-            '#value' => isset($detail) ? $n - 1 + $form_state->get('num_items') : $form_state->get('num_items'),
+            '#value' => $n-1,
             '#attributes' => array('id' => 'itemsCount'),
         );
-
-        $form['items']['closetable'] = array(
-            '#type' => 'item',
-            '#markup' => '</div>',
-        );
-
 
 //
 // FOOTER
@@ -422,18 +450,74 @@ class receiving extends FormBase {
                 $form['items']['remove'] = array(
                     '#type' => 'submit',
                     '#value' => $this->t('remove last item'),
-                    //'#limit_validation_errors' => array(),
+                    '#limit_validation_errors' => array(),
                     '#submit' => array(array($this, 'removeForm')),
+                    '#attributes' => array('class' => array('button--remove')),
+                    '#prefix' => "<div id='remove' class='right'>",
+                    '#suffix' => '</div>',
                 );
             }
 
 
+            $n = $n + 2;
+            $form['description'] = array(
+                '#type' => 'item',
+                '#markup' => t('Total'),
+            );
+            
+            $form['quantity'] = array(
+                '#id' => 'itemsTotal',
+                '#type' => 'textfield',
+                '#size' => 12,
+                '#maxlength' => 40,
+                '#default_value' => isset($grandtotal) ? number_format($grandtotal, 2) : 0,
+                '#attributes' => array('placeholder' => t('total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
+            );
+            $form['value'] = array('#type' => 'hidden', '#value' => 'footer', '#attributes' => ['id' => ['value' . $n]],);
+            
+            $form['delete'] = array(
+                '#item' => "",
+            );
+            //built total rows for table
+            $form['items']['itemTable'][$n] = array(
+                'description' => &$form['description'],
+                'quantity' => &$form['quantity'],
+                'value' => &$form['value'],
+                'delete' => &$form['delete'],
+            );
 
+            $form['items']['itemTable']['#rows'][$n] = array(
+                'data' => array(
+                    array('data' => &$form['description']),
+                    array('data' => &$form['quantity']),
+                    array('data' => &$form['delete']),
+                ),
+                'id' => array($n),
+            );
+            unset($form['description']);
+            unset($form['quantity']);
+            unset($form['value']);
+            unset($form['delete']);
+
+
+            $form['actions'] = array(
+              '#type' => 'actions',
+            );
+
+            $redirect = array(0 => t('preview'),1 => t('list'), 2 => t('print'));
+
+            $form['actions']['redirect'] = array(
+                '#type' => 'radios',
+                '#title' => t('Next'),
+                '#default_value' => 0,
+                '#options' => $redirect,
+            );        
 
             $form['actions']['record'] = array(
                 '#type' => 'submit',
                 '#value' => $this->t('Record'),
-            );
+                '#attributes' => array('class' => array('button--record')),
+            );      
         }
 
         $form['#attached']['library'][] = 'ek_logistics/ek_logistics';
@@ -472,17 +556,19 @@ class receiving extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
 
-        //input used to update values set by user
-        $input = $form_state->getUserInput();
+        $rows = $form_state->getValue('itemTable');
+        if (!empty($rows)) {
+            foreach ($rows as $key => $row) {
+                if ($row['value'] != 'footer') {
+                    if ($row['description'] == '') {
+                        $form_state->setErrorByName("itemTable][$key][description", $this->t('Item @n is empty', array('@n' => $key)));
+                    }
 
-        for ($n = 1; $n <= $form_state->getValue('count'); $n++) {
-
-            if ($form_state->getValue("itemid$n") == '') {
-                $form_state->setErrorByName("itemid$n", $this->t('Item @n is empty', array('@n' => $n)));
-            }
-
-            if ($form_state->getValue("unit$n") == '' || !is_numeric($form_state->getValue("unit$n"))) {
-                $form_state->setErrorByName("unit$n", $this->t('there is no quantity for item @n', array('@n' => $n)));
+                    if ($row['quantity'] == '' || !is_numeric($row['quantity'])) {
+                        $form_state->setErrorByName("itemTable][$key][quantity", $this->t('there is no quantity for item @n', array('@n' => $key)));
+                    }
+                    
+                }
             }
         }
     }
@@ -526,41 +612,43 @@ class receiving extends FormBase {
 
 
 // Items  
-
-        $line = 0;
-        $total = 0;
         $sum = 0;
+        $rows = $form_state->getValue('itemTable');
+        if (!empty($rows)) {
+            foreach ($rows as $key => $row) {
+                if ($row['value'] != 'footer') {
+                    if ($row['delete'] != 1) {
+                        if ($this->moduleHandler->moduleExists('ek_products')) {
+                            //verify if item is in the DB if not just record input
+                            $item = explode(" ", $row["description"]);
+                            $id = trim($item[0]);
+                            if (isset($item[1]) && \Drupal\ek_products\ItemData::item_bycode($item[1])) {
+                                $code = trim($item[1]);
+                            } else {
+                                $code = Xss::filter($row["description"]);
+                            }
+                        } else {
+                            //use input from user
+                            $code = Xss::filter($row["description"]);
+                        }
 
-        for ($n = 1; $n <= $form_state->getValue('count'); $n++) {
+                        $sum = $sum + $row["quantity"];
 
-            if (!$form_state->getValue("delete$n") == 1) {
-                if ($this->moduleHandler->moduleExists('ek_products')) {
-                    //verify if item is in the DB if not just record input
+                        $fields = array('serial' => $serial,
+                            'itemcode' => $code,
+                            'quantity' => $row["quantity"],
+                            'date' => $form_state->getValue('date'),
+                        );
 
-                    $item = explode(" ", $form_state->getValue("itemid$n"));
-                    $id = trim($item[0]);
-                    $code = trim($item[1]);
-                } else {
-                    //use input from user
-                    $code = $form_state->getValue("itemid$n");
-                }
+                        $insert = Database::getConnection('external_db', 'external_db')
+                                ->insert('ek_logi_receiving_details')
+                                ->fields($fields)
+                                ->execute();
+                    }//if not delete
+                }//if not footer
+            }//for
+        }
 
-                $line = (round($form_state->getValue("unit$n") * $form_state->getValue("value$n"), 2));
-                $sum = $sum + $line;
-
-
-                $fields = array('serial' => $serial,
-                    'itemcode' => $code,
-                    'quantity' => $form_state->getValue("unit$n"),
-                    'date' => $form_state->getValue('date'),
-                );
-
-                $insert = Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_logi_receiving_details')
-                        ->fields($fields)
-                        ->execute();
-            }//if not delete
-        }//for
 //main
         if ($form_state->getValue('pcode') == '') {
             $pcode = 'n/a';
@@ -609,11 +697,24 @@ class receiving extends FormBase {
         }
 
         if ($form_state->getValue('type') == 'RR') {
-            $form_state->setRedirect('ek_logistics_list_receiving');
+            $route = 'ek_logistics_list_receiving';
         }
         if ($form_state->getValue('type') == 'RT') {
-            $form_state->setRedirect('ek_logistics_list_returning');
+            $route = 'ek_logistics_list_returning';
         }
+        
+        switch($form_state->getValue('redirect')) {
+                case 0 :
+                    $form_state->setRedirect('ek_logistics.receiving.print_html', ['id' => $reference]);
+                    break;
+                case 1 :
+                    $form_state->setRedirect($route);
+                    break;
+                case 2 :
+                    $form_state->setRedirect('ek_logistics_receiving_print_share', ['id' => $reference]);
+                    break;
+                
+            }    
     }
 
 }
