@@ -22,27 +22,6 @@
     padding: 15px;
 }
 
-.reddot {
-  background-image: url(../art/reddot.png) ;
-  background-repeat: no-repeat;
-  width: 10px;
-  height:10px;
-}
-
-.orangedot {
-  background-image: url(../art/orangedot.png) ;
-  background-repeat: no-repeat;
-  width: 10px;
-  height: 10px;
-}
-
-.greendot {
-  background-image: url(../art/greendot.png) ;
-  background-repeat: no-repeat;
-  width: 10px;
-  height: 10px;
-}
-
 .right {
   text-align:right;
 }
@@ -104,11 +83,11 @@
 }
 
 .current {
-  background-color:#F2F5A9;
+  background-color:#CEE3F6 !important;
 }
 
 .delete {
-  background-color:#FF6666;  
+  background-color:#FF6666 !important;  
 }
 
 .red {
@@ -181,4 +160,16 @@ hr {
     color: #FFF !important;
     background-image: linear-gradient(to bottom, #F7BE81, #DF7401) !important;
     border-color: #F7BE81 #DF7401 #DF7401 !important;
+}
+
+.badge {
+    background-color: #dbdbdb;
+    border-radius: 3px;
+    color: #686868;
+    font-size: 0.9em;
+    padding: 3px;
+    text-align: center;
+    vertical-align: baseline;
+    white-space: nowrap;
+    margin: 0px 0px 0px 5px;   
 }

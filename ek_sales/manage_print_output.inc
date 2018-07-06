@@ -59,13 +59,21 @@ Switch ($source) {
         $data['family'] = '';
         $data['size'] = '';
         $data['color'] = ''; 
+        $data['unit_measure'] = ''; 
+        $data['item_size'] = ''; 
+        $data['pack_size'] = ''; 
+        $data['qty_pack'] = ''; 
         
         if ($line->itemdetail != '') {
         
-        $query = "SELECT * FROM {ek_items} WHERE id=:id";
-        $thisitem = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $line->itemdetail))
-                ->fetchObject();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_items', 'i');
+            $query->fields('i');
+            $query->leftJoin('ek_item_packing', 'p', 'i.itemcode = p.itemcode');
+            $query->fields('p', ['unit_measure','item_size','pack_size','qty_pack']);
+            $query->condition('i.id', $line->itemdetail);
+            $thisitem = $query->execute()->fetchObject();
+                
             if($thisitem->description1 != '') {
                 //add this verification for situation of db migrating from old format
                 $data['item'] = $thisitem->description1;
@@ -79,6 +87,10 @@ Switch ($source) {
                 $data['family'] = $thisitem->family;
                 $data['size'] = $thisitem->size;
                 $data['color'] = $thisitem->color;
+                $data['unit_measure'] = $thisitem->unit_measure; 
+                $data['item_size'] = $thisitem->item_size; 
+                $data['pack_size'] = $thisitem->pack_size; 
+                $data['qty_pack'] = $thisitem->qty_pack;
 
               } else {
                 $data['item']= $line->item;
@@ -132,12 +144,14 @@ Switch ($source) {
 
     if($source == 'invoice') {
         //collect bank data
-        $query = "SELECT * FROM {ek_bank_accounts} ba "
-                . "LEFT JOIN {ek_bank} b "
-                . "ON ba.bid=b.id "
-                . "WHERE ba.id=:id ";
-        $bank = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $head->bank))->fetchObject();
-        $company->bank = $bank;//used in footer
+        if($head->bank != 0) {
+            $query = "SELECT * FROM {ek_bank_accounts} ba "
+                    . "LEFT JOIN {ek_bank} b "
+                    . "ON ba.bid=b.id "
+                    . "WHERE ba.id=:id ";
+            $bank = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $head->bank))->fetchObject();
+            $company->bank = $bank;//used in footer
+        }
     }
        
     break;

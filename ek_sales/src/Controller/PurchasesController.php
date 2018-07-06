@@ -127,8 +127,6 @@ class PurchasesController extends ControllerBase {
         $or1->condition('allocation', $access, 'IN');
 
         $or2 = db_or();
-        //$or2->condition('p.status', $_SESSION['pfilter']['status'], '=');
-        //$or2->condition('p.status', $status2, '=');
 
         if (isset($_SESSION['pfilter']) && $_SESSION['pfilter']['filter'] == 1) {
             
@@ -316,12 +314,15 @@ class PurchasesController extends ControllerBase {
 
             if ($r->status == 0) {
                 $status = t('unpaid');
+                $status_class = 'red';
             }
             if ($r->status == 1) {
-                $status = t('paid') . "<div class='greendot right'></div>";
+                $status = t('paid');
+                $status_class = 'green';
             }
             if ($r->status == 2) {
                 $status = t('partially paid');
+                $status_class = 'red';
             }
 
             //build modal to display extended information
@@ -329,7 +330,7 @@ class PurchasesController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.modal_more', ['param' => $param])->toString();
 
             $more = '<a href="' . $url . '" '
-                    . 'class="use-ajax red"  data-accepts="application/vnd.drupal-modal"  >' . $status . '</a>';
+                    . 'class="use-ajax ' . $status_class .'"  data-accepts="application/vnd.drupal-modal"  >' . $status . '</a>';
 
             $options[$r->id] = array(
                 'number' => ['data' => ['#markup' => $number]],
@@ -800,15 +801,19 @@ class PurchasesController extends ControllerBase {
                 $baseCurrency = $settings->get('baseCurrency');
             }
 
-            if ($options['status'] == 0) {
-                $status2 = 2;
-            } else {
-                $status2 = 1;
-            }
-            $or = db_or();
-            $or->condition('p.status', $options['status'], '=');
-            $or->condition('p.status', $status2, '=');
 
+            $or = db_or();
+            if ($options['status'] == 3) {
+                    //any status
+                    $or->condition('p.status', $_SESSION['pfilter']['status'], '<');
+                } elseif ($options['status'] == 0) {
+                    //unpaid
+                    $or->condition('p.status', 0, '=');
+                    $or->condition('p.status', 2, '=');
+                } else {
+                    //paid
+                    $or->condition('p.status', 1, '=');
+                }
 
             $or1 = db_or();
             $or1->condition('head', $access, 'IN');
@@ -843,8 +848,7 @@ class PurchasesController extends ControllerBase {
      */
     public function NewPurchases(Request $request) {
 
-        $build['new_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\NewPurchase');
-
+        $build['new_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Purchase');
         return $build;
     }
 
@@ -855,8 +859,21 @@ class PurchasesController extends ControllerBase {
      *
      */
     public function EditPurchases(Request $request, $id) {
-        $build['edit_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\NewPurchase', $id);
-
+        //filter edit
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_sales_purchase', 'i')
+            ->fields('i', ['status'])
+            ->condition('id', $id , '=');
+        $status = $query->execute()->fetchField();
+        if($status == '0') {    
+            $build['edit_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Purchase', $id);
+        } else {
+            $url = Url::fromRoute('ek_sales.purchases.list', array(), array())->toString();
+            $build['back'] = array(
+                '#markup' => t('Purchase is not editable. Go to <a href="@url" >List</a>.', array('@url' => $url ) ) ,
+            );
+        }
+        
         return $build;
     }
 
@@ -867,7 +884,7 @@ class PurchasesController extends ControllerBase {
      *
      */
     public function ClonePurchases(Request $request, $id) {
-        $build['new_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\NewPurchase', $id, 'clone');
+        $build['new_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Purchase', $id, 'clone');
 
         return $build;
     }
@@ -1185,22 +1202,16 @@ class PurchasesController extends ControllerBase {
                 );
 
                 $format = 'html';
+                $url_pdf = Url::fromRoute('ek_sales.purchases.print_share', ['id' => $doc_id], [])->toString();
+                $url_excel = Url::fromRoute('ek_sales.purchases.print_excel', ['id' => $doc_id], [])->toString();
+                $url_edit = Url::fromRoute('ek_sales.purchases.edit', ['id' => $doc_id], [])->toString();
+                                
+                
                 include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
-
-                $build['excel'] = [
-                    '#markup' => "<a class='button button-action' href='"
-                    . Url::fromRoute('ek_sales.purchases.print_excel', ['id' => $doc_id], [])->toString() . "' >"
-                    . t('Excel') . "</a>"
-                    . "<a class='button button-action' href='"
-                    . Url::fromRoute('ek_sales.purchases.print_share', ['id' => $doc_id], [])->toString() . "' >"
-                    . t('Pdf') . "</a>"
-                        ,
-                ];
-
                 $build['purchase'] = [
                     '#markup' => $document,
                     '#attached' => array(
-                        'library' => array('ek_sales/ek_sales_html_documents_css'),
+                        'library' => array('ek_sales/ek_sales_html_documents_css','ek_admin/ek_admin_css'),
                         'placeholders' => $css,
                     ),
                 ];

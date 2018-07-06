@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\ek_sales\Form\NewPurchase.
+ * Contains \Drupal\ek_sales\Form\Purchase.
  */
 
 namespace Drupal\ek_sales\Form;
@@ -17,18 +17,12 @@ use Drupal\Component\Utility\Xss;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\ek_admin\CompanySettings;
-use Drupal\ek_projects\ProjectData;
 use Drupal\ek_admin\Access\AccessCheck;
-use Drupal\ek_finance\AidList;
-use Drupal\ek_finance\CurrencyData;
-use Drupal\ek_finance\Journal;
-use Drupal\ek_finance\FinanceSettings;
-use Drupal\ek_products\ItemData;
 
 /**
  * Provides a form to create and edit purchases.
  */
-class NewPurchase extends FormBase {
+class Purchase extends FormBase {
     
     /**
      * The file storage service.
@@ -51,7 +45,7 @@ class NewPurchase extends FormBase {
         $this->moduleHandler = $module_handler;
         $this->fileStorage = $file_storage;
         if($this->moduleHandler->moduleExists('ek_finance')) {
-            $this->settings = new FinanceSettings();
+            $this->settings = new \Drupal\ek_finance\FinanceSettings();
         }
     }
 
@@ -87,9 +81,10 @@ class NewPurchase extends FormBase {
         if (isset($id) && !$id == NULL) {
             //edit
             $data = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT * from {ek_sales_purchase} where id=:id", array(':id' => $id))->fetchObject();
+                    ->query("SELECT * from {ek_sales_purchase} WHERE id=:id", array(':id' => $id))
+                    ->fetchObject();
             $detail = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT * from {ek_sales_purchase_details} where serial=:s", array(':s' => $data->serial));
+                    ->query("SELECT * from {ek_sales_purchase_details} WHERE serial=:s ORDER BY id", array(':s' => $data->serial));
 
             If ($clone != 'clone') {
                 $form['edit_purchase'] = array(
@@ -123,7 +118,7 @@ class NewPurchase extends FormBase {
 
             if ($this->moduleHandler->moduleExists('ek_finance')) {
                 $chart = $this->settings->get('chart');
-                $AidOptions = AidList::listaid($data->head, array($chart['assets'],$chart['cos'],$chart['expenses'],$chart['other_expenses']), 1 );
+                $AidOptions = \Drupal\ek_finance\AidList::listaid($data->head, array($chart['assets'],$chart['cos'],$chart['expenses'],$chart['other_expenses']), 1 );
                 
             }
 
@@ -139,15 +134,18 @@ class NewPurchase extends FormBase {
             $grandtotal = 0;
             $taxable = 0;
             $n = 0;
+            $taxamount = 0;
             $AidOptions = array();
             
         }
 
-
-
+        $baseCurrency = '';
+        $currenciesList = '';
+        
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-
-            $CurrencyOptions = CurrencyData::listcurrency(1);
+            $CurrencyOptions = \Drupal\ek_finance\CurrencyData::listcurrency(1);
+            $baseCurrency = $this->settings->get('baseCurrency'); 
+            $currenciesList = \Drupal\ek_finance\CurrencyData::currencyRates();
             $chart = $this->settings->get('chart');
             if(empty($chart)) {
                 $alert =   "<div id='fx' class='messages messages--warning'>" . t('You did not set the accounts chart structure. Go to <a href="@url">settings</a>.' ,
@@ -157,13 +155,13 @@ class NewPurchase extends FormBase {
                     '#weight' => -17,
                     '#markup' => $alert,
             );          
-        }
+            }
         }
 
         $form['options'] = array(
             '#type' => 'details',
             '#title' => $this->t('Options'),
-            '#open' => (isset($id)) ? FALSE : TRUE,
+            '#open' => (isset($id) || $form_state->get('num_items') > 0) ? FALSE : TRUE,
         );
 
         $company = AccessCheck::CompanyListByUid();
@@ -262,7 +260,7 @@ class NewPurchase extends FormBase {
             $form['options']['pcode'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => ProjectData::listprojects(0),
+                '#options' => \Drupal\ek_projects\ProjectData::listprojects(0),
                 '#required' => TRUE,
                 '#default_value' => isset($data->pcode) ? $data->pcode : NULL,
                 '#title' => t('Project'),
@@ -405,137 +403,217 @@ class NewPurchase extends FormBase {
 
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-            $headerline = "<div class='table'  id='purchase_form_items'>
-                  <div class='row'>
-                      <div class='cell'>" . t("Description") . "</div>
-                      <div class='cell'>" . t("Account") . "</div>
-                      <div class='cell'>" . t("Units") . "</div>
-                      <div class='cell'>" . t("Value") . "</div>
-                      <div class='cell'>" . t("delete") . "</div>
-                      <div class='cell'>" . t("tax") . "</div>
-                      <div class='cell right'>" . t("Line total") . "</div>
-                   ";
+            $header = array(
+                'description' => array(
+                    'data' => $this->t('Description'),
+                    'id' => ['tour-item1'],
+                ),
+                'account' => array(
+                    'data' => $this->t('Account'),
+                    'id' => ['tour-item2'],
+                    'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                ),
+                'quantity' => array(
+                    'data' => $this->t('Quantity'),
+                    'id' => ['tour-item3'],
+                ),
+                'value' => array(
+                    'data' => $this->t('Value'),
+                    'id' => ['tour-item4'],
+                ),
+                'tax' => array(
+                    'data' => $this->t('Tax'),
+                    'id' => ['tour-item6'],
+                ),
+                'total' => array(
+                    'data' => $this->t('Total'),
+                    'id' => ['tour-item7'],
+                ),
+                'delete' => array(
+                    'data' => $this->t('Delete'),
+                    'id' => ['tour-item5'],
+                ),
+            );
         } else {
-            $headerline = "<div class='table' id='purchase_form_items'><div class='row'><div class='cell'>" . t("Description") . "</div><div class='cell'>" . t("Units") . "</div><div class='cell'>" . t("Value") . "</div><div class='cell'>" . t("delete") . "</div><div class='cell'>" . t("tax") . "</div><div class='cell'>" . t("Total") . "</div>";
+            $header = array(
+                    'description' => array(
+                        'data' => $this->t('Description'),
+                        'id' => ['tour-item1'],
+                    ),
+                    'quantity' => array(
+                        'data' => $this->t('Quantity'),
+                        'id' => ['tour-item3'],
+                    ),
+                    'value' => array(
+                        'data' => $this->t('Value'),
+                        'id' => ['tour-item4'],
+                    ),
+                    'tax' => array(
+                        'data' => $this->t('Tax'),
+                        'id' => ['tour-item6'],
+                    ),
+                    'total' => array(
+                        'data' => $this->t('Total'),
+                        'id' => ['tour-item7'],
+                    ),
+                    'delete' => array(
+                        'data' => $this->t('Delete'),
+                        'id' => ['tour-item5'],
+                    ),
+                );            
+            
         }
 
-        $form['items']["headerline"] = array(
-            '#type' => 'item',
-            '#markup' => $headerline,
-        );
+    $form['items']['itemTable'] = array(
+            '#tree' => TRUE,
+            '#theme' => 'table',
+            '#header' => $header,
+            '#rows' => array(),
+            '#attributes' => array('id' => 'itemTable'),
+            '#empty' => '',
+    );
 
-
-        if (isset($detail)) {
+    $rows = $form_state->getValue('itemTable');
+    
+    if (isset($detail)) {
         //edition mode
         //list current items
         $taxable = 0;
         $grandtotal = 0;
-        $cl = ($form_state->getValue("delete".$n) == 1) ? 'delete' : 'current';
+        $rowClass = ($rows[$n]['delete'] == 1) ? 'delete' : 'current';
 
-            while ($d = $detail->fetchObject()) {
+        while ($d = $detail->fetchObject()) {
 
                 $n++;
                 $c = $form_state->get('current_items') + 1;
                 $form_state->set('current_items', $c);
-                $form_state->setRebuild();
-
-                if (!$d->itemdetail == "" && $this->moduleHandler->moduleExists('ek_products')) {
-                    $name = ItemData::item_byid($d->itemdetail);
-                } else {
-                    $name = $d->item;
-                }
-
-
-
-                $form['items']["description$n"] = array(
-                    '#type' => 'textfield',
-                    '#size' => 50,
-                    '#maxlength' => 255,
-                    '#default_value' => $name,
-                    '#attributes' => array('placeholder' => t('item')),
-                    '#prefix' => "<div class='row $cl' id='row$n'><div class='cell'>",
-                    '#suffix' => '</div>',
-                    '#autocomplete_route_name' => 'ek.look_up_item_ajax',
-                );
-
-
-                if ($this->moduleHandler->moduleExists('ek_finance')) {
-
-                    // build purchase account select list from service
-                    // TODO
-
-                    $form['items']["account$n"] = array(
-                        '#type' => 'select',
-                        '#size' => 1,
-                        '#options' => $AidOptions,
-                        '#required' => TRUE,
-                        '#default_value' => isset($d->aid) ? $d->aid : NULL,
-                        '#attributes' => array('style' => array('width:100px;white-space:nowrap')),
-                        '#prefix' => "<div class='cell'>",
-                        '#suffix' => '</div>',
-                    );
-                } // finance    
-
-                $form['items']["quantity$n"] = array(
-                    '#type' => 'textfield',
-                    '#id' => 'quantity' . $n,
-                    '#size' => 8,
-                    '#maxlength' => 255,
-                    '#default_value' => $d->quantity,
-                    '#attributes' => array('placeholder' => t('units'), 'class' => array('amount')),
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                );
-
-                $form['items']["value$n"] = array(
-                    '#type' => 'textfield',
-                    '#id' => 'value' . $n,
-                    '#size' => 8,
-                    '#maxlength' => 255,
-                    '#default_value' => $d->value,
-                    '#attributes' => array('placeholder' => t('price'), 'class' => array('amount')),
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                );
-
-                $form['items']["delete$n"] = array(
-                    '#type' => 'checkbox',
-                    '#id' => 'del' . $n ,
-                    '#attributes' => array('title'=>t('delete on save'), 'class' => array('amount')),
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                );
-
-                $form['items']["tax$n"] = array(
-                    '#type' => 'checkbox',
-                    '#id' => 'optax' . $n,
-                    '#attributes' => array('title' => t('tax include'), 'class' => array('amount')),
-                    '#default_value' => $d->opt,
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                );
-
-                $total = number_format($d->value * $d->quantity, 2);
+                //$form_state->setRebuild();
+                $rowClass = ($rows[$n]['delete'] == 1) ? 'delete' : 'current';
+                $total = number_format($d->value * $d->quantity,2);
                 $grandtotal += ($d->value * $d->quantity);
-                if ($d->opt == 1) {
-                    $taxable += ($d->value * $d->quantity);
+                if($d->opt == 1) {
+                  $taxable += ($d->value * $d->quantity);
                 }
+                $link = NULL;
+                
+                if ($d->itemdetail != "" && $this->moduleHandler->moduleExists('ek_products') )  {
+                    $item = \Drupal\ek_products\ItemData::item_byid($d->itemdetail);  
+                    if(isset($item)) {
+                       $name = $item; 
+                       $link = \Drupal\ek_products\ItemData::geturl_byId($d->itemdetail, TRUE);
+                    } else {
+                       $name =  $d->item;
+                    }
+                  } else {
+                    $name = $d->item;
+                  }
 
-                $form['items']["total$n"] = array(
-                    '#type' => 'textfield',
-                    '#id' => 'total' . $n,
-                    '#size' => 12,
-                    '#maxlength' => 255,
-                    '#default_value' => $total,
-                    '#attributes' => array('placeholder' => t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
-                    '#prefix' => "<div class='cell right'>",
-                    '#suffix' => '</div></div>',
-                );
-            }
-        } //details of current records
+                $form['description'] = array(
+                            '#id' => 'description-' . $n,
+                            '#type' => 'textfield',
+                            '#size' => 40,
+                            '#maxlength' => 255,
+                            '#attributes' => array('placeholder'=>t('item')),
+                            '#default_value' => $name,
+                            '#field_prefix' => "<span class='badge'>". $n ."</span>",
+                            '#field_suffix' => isset($link) ? "<span class='badge'>". $link ."</span>" : '',
+                            '#autocomplete_route_name' => 'ek.look_up_item_ajax',
+                        );
+                if($this->moduleHandler->moduleExists('ek_finance')) { 
+                    $form['account'] = array(
+                                '#id' => 'account-' . $n,
+                                '#type' => 'select',
+                                '#size' => 1,
+                                '#options' => $AidOptions,
+                                '#attributes' => array('style' => array('width:110px;')),
+                                '#default_value' => $d->aid,
+                                '#required' => TRUE,
+                            );
+                } else {
+                    $form['account'] = '';
+                }
+                $form['quantity'] = array(
+                            '#id' => 'quantity' . $n,
+                            '#type' => 'textfield',
+                            '#size' => 8,
+                            '#maxlength' => 30,
+                            '#attributes' => array('placeholder'=>t('units'), 'class' => array('amount')),
+                            '#default_value' => $d->quantity,
+                            '#required' => TRUE,
+                        ); 
+                $form['value'] = array(
+                            '#id' => 'value' . $n,
+                            '#type' => 'textfield',
+                            '#size' => 12,
+                            '#maxlength' => 250,
+                            '#default_value' => $d->value,
+                            '#attributes' => array('placeholder'=>t('unit price'), 'class' => array('amount')),
+                        );
+                $form['tax'] = array(
+                            '#id' => 'optax' . $n,
+                            '#type' => 'checkbox',
+                            '#default_value' => $d->opt,
+                            '#attributes' => array(
+                                'title' => t('tax include'),
+                                'class' => array('amount'),
+                            ),
+                        );
+                $form['total'] = array(
+                            '#id' => 'total' . $n,
+                            '#type' => 'textfield',
+                            '#size' => 12,
+                            '#maxlength' => 250,
+                            '#default_value' => $total,
+                            '#attributes' => array('placeholder'=>t('line total'), 'readonly' => 'readonly', 'class' => array('amount','right')),
+                        );
+                $form['delete'] = array(
+                            '#id' => 'del' . $n,
+                            '#type' => 'checkbox',
+                            '#default_value' => 0,
+                            '#attributes' => array(
+                                'title' => t('delete on save'),
+                                'onclick' => "jQuery('#".$n."').toggleClass('delete');",
+                                'class' => array('amount'),
+                            ),
+                        );
+                //built edit rows for table
+                    $form['items']['itemTable'][$n] = array(
+                            'description' => &$form['description'],
+                            'account' => &$form['account'],
+                            'quantity' => &$form['quantity'],
+                            'value' => &$form['value'],
+                            'tax' => &$form['tax'],
+                            'total' => &$form['total'],
+                            'delete' => &$form['delete'],
+                    );
+
+                    $form['items']['itemTable']['#rows'][$n] = array(
+                            'data' => array(
+                                array('data' => &$form['description']),
+                                array('data' => &$form['account']),
+                                array('data' => &$form['quantity']),
+                                array('data' => &$form['value']),
+                                array('data' => &$form['tax']),
+                                array('data' => &$form['total']),
+                                array('data' => &$form['delete']),
+                            ),
+                            'id' => array($n),
+                            'class' => $rowClass,
+                        );
+                        unset($form['description']);
+                        unset($form['account']);
+                        unset($form['quantity']);
+                        unset($form['value']);
+                        unset($form['tax']);
+                        unset($form['total']);
+                        unset($form['delete']);
 
 
-        if (isset($detail)) {
+        }
+    } //details of current records
+
+
+    if (isset($detail)) {
             // reset the new rows items
             $max = $form_state->get('num_items') + $n;
             $n++;
@@ -545,95 +623,99 @@ class NewPurchase extends FormBase {
         }
 
         for ($i = $n; $i <= $max; $i++) {
-
-            $form['items']["description$i"] = array(
-                '#type' => 'textfield',
-                '#size' => 50,
-                '#maxlength' => 255,
-                '#default_value' => $form_state->getValue("description$i") ? $form_state->getValue("description$i") : NULL,
-                '#attributes' => array('placeholder' => t('item')),
-                '#prefix' => "<div class='container-inline'>",
-                '#autocomplete_route_name' => 'ek.look_up_item_ajax',
-                '#prefix' => "<div class='row'><div class='cell'>",
-                '#suffix' => '</div>',
-            );
-
-
-            if ($this->moduleHandler->moduleExists('ek_finance')) {
-
-                $form['items']["account$i"] = array(
-                    '#type' => 'select',
-                    '#size' => 1,
-                    '#options' => $form_state->get('AidOptions'),
-                    '#required' => TRUE,
-                    '#default_value' => isset($d->aid) ? $d->aid : NULL,
-                    '#attributes' => array('style' => array('width:100px;white-space:nowrap')),
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
+            $n++;
+            $form['description'] = array(
+                        '#id' => 'description-' . $i,
+                        '#type' => 'textfield',
+                        '#size' => 40,
+                        '#maxlength' => 255,
+                        '#field_prefix' => "<span class='badge'>". $i ."</span>",
+                        '#attributes' => array('placeholder'=>t('item')),
+                        '#autocomplete_route_name' => 'ek.look_up_item_ajax',
+                    );
+            if($this->moduleHandler->moduleExists('ek_finance')) { 
+                $form['account'] = array(
+                            '#id' => 'account-' . $i,
+                            '#type' => 'select',
+                            '#size' => 1,
+                            '#options' => $form_state->get('AidOptions'),
+                            '#attributes' => array('style' => array('width:110px;')),
+                            '#required' => TRUE,
+                        );
+            } else {
+                $form['account'] = '';
+            }
+            $form['quantity'] = array(
+                        '#id' => 'quantity' . $i,
+                        '#type' => 'textfield',
+                        '#size' => 8,
+                        '#maxlength' => 30,
+                        '#attributes' => array('placeholder'=>t('units'), 'class' => array('amount')),
+                        '#required' => TRUE,
+                    ); 
+            $form['value'] = array(
+                        '#id' => 'value' . $i,
+                        '#type' => 'textfield',
+                        '#size' => 12,
+                        '#maxlength' => 250,
+                        //'#default_value' => $d->value,
+                        '#attributes' => array('placeholder'=>t('unit price'), 'class' => array('amount')),
+                    );
+            $form['tax'] = array(
+                        '#id' => 'optax' . $i,
+                        '#type' => 'checkbox',
+                        '#attributes' => array(
+                            'title' => t('tax include'),
+                            'class' => array('amount'),
+                        ),
+                    );
+            $form['total'] = array(
+                        '#id' => 'total' . $i,
+                        '#type' => 'textfield',
+                        '#size' => 12,
+                        '#maxlength' => 250,
+                        '#attributes' => array('placeholder'=>t('line total'), 'readonly' => 'readonly', 'class' => array('amount','right')),
+                    );
+            $form['delete'] = array( );
+            //built edit rows for table
+                $form['items']['itemTable'][$i] = array(
+                        'description' => &$form['description'],
+                        'account' => &$form['account'],
+                        'quantity' => &$form['quantity'],
+                        'value' => &$form['value'],
+                        'tax' => &$form['tax'],
+                        'total' => &$form['total'],
+                        'delete' => &$form['delete'],
                 );
-            } // finance    
 
-            $form['items']["quantity$i"] = array(
-                '#type' => 'textfield',
-                '#id' => 'quantity' . $i,
-                '#size' => 8,
-                '#maxlength' => 255,
-                '#default_value' => $form_state->getValue("quantity$i") ? $form_state->getValue("quantity$i") : NULL,
-                '#attributes' => array('placeholder' => t('units'), 'class' => array('amount')),
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div>',
-            );
-
-            $form['items']["value$i"] = array(
-                '#type' => 'textfield',
-                '#id' => 'value' . $i,
-                '#size' => 8,
-                '#maxlength' => 255,
-                '#default_value' => $form_state->getValue("value$i") ? $form_state->getValue("value$i") : NULL,
-                '#attributes' => array('placeholder' => t('price'), 'class' => array('amount')),
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div>',
-            );
-
-            $form['items']["delete$i"] = array(
-                '#type' => 'item',
-                '#attributes' => '',
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div>',
-            );
-
-            $form['items']["tax$i"] = array(
-                '#type' => 'checkbox',
-                '#id' => 'optax' . $i,
-                '#attributes' => array('title' => t('tax include'), 'class' => array('amount')),
-                '#default_value' => 1,
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div>',
-            );
-
-            $total = number_format($form_state->getValue("value$i") * $form_state->getValue("quantity$i"), 2);
-            $grandtotal += $form_state->getValue("value$i") * $form_state->getValue("quantity$i");
-            $form['items']["total$i"] = array(
-                '#type' => 'textfield',
-                '#id' => 'total' . $i,
-                '#size' => 12,
-                '#maxlength' => 255,
-                '#attributes' => array('placeholder' => t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
-                '#prefix' => "<div class='cell right'>",
-                '#suffix' => '</div></div>',
-            );
+                $form['items']['itemTable']['#rows'][$i] = array(
+                        'data' => array(
+                            array('data' => &$form['description']),
+                            array('data' => &$form['account']),
+                            array('data' => &$form['quantity']),
+                            array('data' => &$form['value']),
+                            array('data' => &$form['tax']),
+                            array('data' => &$form['total']),
+                            array('data' => &$form['delete']),
+                        ),
+                        'id' => array($i)
+                );
+                unset($form['description']);
+                unset($form['account']);
+                unset($form['quantity']);
+                unset($form['value']);
+                unset($form['tax']);
+                unset($form['total']);
+                unset($form['delete']);
+            
         }
 
         $form['items']['count'] = array(
             '#type' => 'hidden',
-            '#value' => isset($detail) ? $n - 1 + $form_state->get('num_items') : $form_state->get('num_items'),
+            '#value' => $n - 1,
             '#attributes' => array('id' => 'itemsCount'),
         );
 
-        $form['items']['closetable'] = array(
-            '#type' => 'item',
-            '#markup' => '</div>',
-        );
 
         if (($form_state->get('num_items') && $form_state->get('num_items') > 0) || isset($detail)) {
 
@@ -641,7 +723,7 @@ class NewPurchase extends FormBase {
                 $form['items']['remove'] = array(
                     '#type' => 'submit',
                     '#value' => $this->t('remove last item'),
-                    //'#limit_validation_errors' => array(),
+                    '#limit_validation_errors' => array(),
                     '#submit' => array(array($this, 'removeForm')),
                     '#prefix' => "<div id='remove' class='right'>",
                     '#suffix' => '</div>',
@@ -649,50 +731,197 @@ class NewPurchase extends FormBase {
                 );
             }
 
-            $form['items']['foot'] = array(
-                '#type' => 'item',
-                '#markup' => '<hr>',
-                '#prefix' => "<div class='table' id='purchase_form_footer'>",
-            );
+        //Table footer
+        //total
+            $n++;
+                if(isset($id) && $baseCurrency != $data->currency) {
+                      $c = \Drupal\ek_finance\CurrencyData::currencyRates();
+                      $converted = round($grandtotal/$c[$data->currency],2) . " " . $baseCurrency;
+                  } else {
+                      $converted = '';
+                  }
+                    $form['description'] = array(                    
+                                '#type' => 'item',
+                                '#markup' => t('Total') . " " . "<span id='convertedValue' class='badge'>".$converted."</span>"
+                            );   
+                    $form['account'] = array(
+                                '#type' => 'item',
+                            );
+                    $form['quantity'] = array(
+                                '#type' => 'item',
+                            ); 
+                    $form['value'] = array(
+                                '#type' => 'hidden',
+                                '#value' => 'footer',
+                            );
+                    $form['tax'] = array(
+                                '#type' => 'item',
+                            );
+                    $form['total'] = array(
+                                '#id' => 'itemsTotal',
+                                '#type' => 'textfield',    
+                                '#size' => 12,
+                                '#maxlength' => 250,
+                                '#value' => isset($grandtotal) ?  number_format($grandtotal, 2) : 0,
+                                '#attributes' => array('placeholder'=>t('total'), 'readonly' => 'readonly', 'class' => array('amount')),
+                            ); 
+                    $form['delete'] = array(
+                                '#type' => 'item',
+                            );
+                    //built total rows for table
+                    $form['items']['itemTable'][$n] = array(
+                            'description' => &$form['description'],
+                            'account' => &$form['account'],
+                            'quantity' => &$form['quantity'],
+                            'value' => &$form['value'],
+                            'tax' => &$form['tax'],
+                            'total' => &$form['total'],
+                            'delete' => &$form['delete'],
+                    );
 
-            $form['items']["grandtotal"] = array(
-                '#type' => 'textfield',
-                '#id' => 'grandtotal',
-                '#size' => 12,
-                '#maxlength' => 255,
-                '#value' => isset($grandtotal) ? number_format($grandtotal, 2) : 0,
-                '#title' => isset($grandtotal) ? t('Items total') : NULL,
-                '#attributes' => array('placeholder' => t('total'), 'readonly' => 'readonly', 'class' => array('amount')),
-                '#prefix' => "<div class='row'><div class='cell right'>",
-                '#suffix' => '</div></div>',
-            );
+                    $form['items']['itemTable']['#rows'][$n] = array(
+                            'data' => array(
+                                array('data' => &$form['description']),
+                                array('data' => &$form['account']),
+                                array('data' => &$form['quantity']),
+                                array('data' => &$form['value']),
+                                array('data' => &$form['tax']),
+                                array('data' => &$form['total']),
+                                array('data' => &$form['delete']),
+                            ),
+                            'id' => array($n)
+                    );
+                    unset($form['description']);
+                    unset($form['account']);
+                    unset($form['quantity']);
+                    unset($form['value']);
+                    unset($form['tax']);
+                    unset($form['total']);
+                    unset($form['delete']);
 
-            $taxamount = number_format(($taxable * $data->taxvalue / 100), 2);
+        //tax
+                $taxamount = isset($data->taxvalue) ? round(($taxable * $data->taxvalue/100), 2): Null ;
+                $n++;
+                $form['description'] = array(                    
+                            '#type' => 'item',
+                            '#markup' => t('Tax payable'),
+                        );   
+                $form['account'] = array(
+                            '#type' => 'item',
+                        );
+                $form['quantity'] = array(
+                            '#type' => 'item',
+                        ); 
+                $form['value'] = array(
+                            '#type' => 'hidden',
+                            '#value' => 'footer',
+                        );
+                $form['tax'] = array(
+                            '#type' => 'item',
+                        );
+                $form['total'] = array(
+                            '#id' => 'taxValue',
+                            '#type' => 'textfield',    
+                            '#size' => 12,
+                            '#maxlength' => 250,
+                            '#value' => number_format($taxamount,2),
+                            '#attributes' => array('placeholder'=>t('tax'), 'readonly' => 'readonly', 'class' => array('amount')),
+                        ); 
+                $form['delete'] = array(
+                            '#type' => 'item',
+                        );
+                //built tax row for table
+                $form['items']['itemTable'][$n] = array(
+                        'description' => &$form['description'],
+                        'account' => &$form['account'],
+                        'quantity' => &$form['quantity'],
+                        'value' => &$form['value'],
+                        'tax' => &$form['tax'],
+                        'total' => &$form['total'],
+                        'delete' => &$form['delete'],
+                );
 
-            $form['items']["taxamount"] = array(
-                '#type' => 'textfield',
-                '#id' => 'taxamount',
-                '#title' => '',
-                '#size' => 12,
-                '#value' => $taxamount,
-                '#title' => isset($taxamount) ? t('Tax payable') : NULL,
-                '#maxlength' => 255,
-                '#attributes' => array('placeholder' => t('tax'), 'readonly' => 'readonly', 'class' => array('amount')),
-                '#prefix' => "<div class='row'><div class='cell right'>",
-                '#suffix' => '</div></div>',
-            );
+                $form['items']['itemTable']['#rows'][$n] = array(
+                        'data' => array(
+                            array('data' => &$form['description']),
+                            array('data' => &$form['account']),
+                            array('data' => &$form['quantity']),
+                            array('data' => &$form['value']),
+                            array('data' => &$form['tax']),
+                            array('data' => &$form['total']),
+                            array('data' => &$form['delete']),
+                        ),
+                        'id' => array($n)
+                );
+                unset($form['description']);
+                unset($form['account']);
+                unset($form['quantity']);
+                unset($form['value']);
+                unset($form['tax']);
+                unset($form['total']);
+                unset($form['delete']);
 
-            $form['items']["totaltax"] = array(
-                '#type' => 'textfield',
-                '#id' => 'totaltax',
-                '#size' => 12,
-                '#maxlength' => 255,
-                '#value' => number_format($grandtotal + ($taxable * $data->taxvalue / 100), 2),
-                '#title' => isset($grandtotal) ? t('Total purchase') : NULL,
-                '#attributes' => array('placeholder' => t('total purchase'), 'readonly' => 'readonly', 'class' => array('amount')),
-                '#prefix' => "<div class='row'><div class='cell right'>",
-                '#suffix' => '</div></div></div>',
-            );
+        //purchase total
+                $n++;
+                $form['description'] = array(                    
+                            '#type' => 'item',
+                            '#markup' => t('Total purchase'),
+                        );   
+                $form['account'] = array(
+                            '#type' => 'item',
+                        );
+                $form['quantity'] = array(
+                            '#type' => 'item',
+                        ); 
+                $form['value'] = array(
+                            '#type' => 'hidden',
+                            '#value' => 'footer',
+                        );
+                $form['tax'] = array(
+                            '#type' => 'item',
+                        );
+                $form['total'] = array(
+                            '#id' => 'totalWithTax',
+                            '#type' => 'textfield',    
+                            '#size' => 12,
+                            '#maxlength' => 250,
+                            '#default_value' => number_format($grandtotal + $taxamount, 2),
+                            '#attributes' => array('placeholder'=>t('total purchase'), 'readonly' => 'readonly', 'class' => array('amount')),
+                        ); 
+                $form['delete'] = array(
+                            '#type' => 'item',
+                        );
+                //built purchase total row for table
+                $form['items']['itemTable'][$n] = array(
+                        'description' => &$form['description'],
+                        'account' => &$form['account'],
+                        'quantity' => &$form['quantity'],
+                        'value' => &$form['value'],
+                        'tax' => &$form['tax'],
+                        'total' => &$form['total'],
+                        'delete' => &$form['delete'],
+                );
+
+                $form['items']['itemTable']['#rows'][$n] = array(
+                        'data' => array(
+                            array('data' => &$form['description']),
+                            array('data' => &$form['account']),
+                            array('data' => &$form['quantity']),
+                            array('data' => &$form['value']),
+                            array('data' => &$form['tax']),
+                            array('data' => &$form['total']),
+                            array('data' => &$form['delete']),
+                        ),
+                        'id' => array($n)
+                );
+                unset($form['description']);
+                unset($form['account']);
+                unset($form['quantity']);
+                unset($form['value']);
+                unset($form['tax']);
+                unset($form['total']);
+                unset($form['delete']);
+
         }
 
         if (isset($data->uri) && $data->uri != '') {
@@ -738,7 +967,10 @@ class NewPurchase extends FormBase {
             );
         }
 
-        $form['#attached']['library'][] = 'ek_sales/ek_sales.purchase';
+        $form['#attached'] = array(
+                'drupalSettings' => array('currencies' => $currenciesList, 'baseCurrency' => $baseCurrency),
+                'library' => array('ek_sales/ek_sales.purchase'),
+        );
 
         return $form;
     }
@@ -793,7 +1025,7 @@ class NewPurchase extends FormBase {
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $chart = $this->settings->get('chart'); 
-            $form_state->set('AidOptions', AidList::listaid($form_state->getValue('head'),array($chart['assets'],$chart['cos'],$chart['expenses'],$chart['other_expenses']), 1));
+            $form_state->set('AidOptions', \Drupal\ek_finance\AidList::listaid($form_state->getValue('head'),array($chart['assets'],$chart['cos'],$chart['expenses'],$chart['other_expenses']), 1));
         }
 
         $form_state->setRebuild();
@@ -864,23 +1096,26 @@ class NewPurchase extends FormBase {
             $form_state->setErrorByName('due', $this->t('Terms days should be numeric'));
         }
 
-        for ($n = 1; $n <= $form_state->get('num_items'); $n++) {
+        $rows = $form_state->getValue('itemTable');
+        if(!empty($rows)){
+            foreach ($rows as $key => $row) {
+                if($row['value'] != 'footer' ) {
+                    if($row['description'] == '') {
+                        $form_state->setErrorByName("itemTable][$key][description", $this->t('Item @n is empty', array('@n'=> $key)) );
+                    }
 
-            if ($form_state->getValue("description$n") == '') {
-                $form_state->setErrorByName("description$n", $this->t('Item @n is empty', array('@n' => $n)));
+                    if($row['quantity'] == '' || !is_numeric($row['quantity'])) {
+                        $form_state->setErrorByName("itemTable][$key][quantity", $this->t('there is no quantity for item @n', array('@n'=> $key)) );
+                    }
+                    if($row['value'] == '' || !is_numeric($row['value'])) {
+                        $form_state->setErrorByName("itemTable][$key][value",  $this->t('there is no value for item @n', array('@n'=> $key)) );
+                    }            
+                    //if($this->moduleHandler->moduleExists('ek_finance')) {
+                        // validate account
+                        // @TODO
+                    //}          
+                }
             }
-
-            if ($form_state->getValue("quantity$n") == '' || !is_numeric($form_state->getValue("quantity$n"))) {
-                $form_state->setErrorByName("quantity$n", $this->t('there is no quantity for item @n', array('@n' => $n)));
-            }
-            if ($form_state->getValue("value$n") == '' || !is_numeric($form_state->getValue("value$n"))) {
-                $form_state->setErrorByName("value$n", $this->t('there is no value for item @n', array('@n' => $n)));
-            }
-            if ($this->moduleHandler->moduleExists('ek_finance')) {
-
-                // validate account
-                // @TODO
-            } // finance            
         }
     }
 
@@ -933,62 +1168,68 @@ class NewPurchase extends FormBase {
         $taxable = 0;
         $sum = 0;
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-            $journal = new Journal();
+            $journal = new \Drupal\ek_finance\Journal();
         }
-        for ($n = 1; $n <= $form_state->getValue('count'); $n++) {
+        $rows = $form_state->getValue('itemTable');
+        if(!empty($rows)){
+            foreach ($rows as $key => $row) {     
+                if($row['value'] != 'footer') {
+                    if($row['delete'] != 1) { 
+                                if ($this->moduleHandler->moduleExists('ek_products')) {
+                                    //verify if item is in the DB if not just record input
 
-            if (!$form_state->getValue("delete$n") == 1) {
-                if ($this->moduleHandler->moduleExists('ek_products')) {
-                    //verify if item is in the DB if not just record input
+                                    $item = explode(" ", $row["description"]);
+                                    $id = trim($item[0]);
+                                    if(isset($item[1])) {
+                                        $code = trim($item[1]);
+                                    }
+                                    $description = \Drupal\ek_products\ItemData::item_description_byid($id, 1);
 
-                    $item = explode(" ", $form_state->getValue("description$n"));
-                    $id = trim($item[0]);
-                    if(isset($item[1])) {
-                        $code = trim($item[1]);
-                    }
-                    $description = ItemData::item_description_byid($id, 1);
+                                    if ($description) {
+                                        $item = $description;
+                                        $itemdetail = $id;
+                                    } else {
+                                        $item = Xss::filter($row["description"]);
+                                        $itemdetail = '';
+                                    }
+                                } else {
+                                    //use input from user
+                                    $item = Xss::filter($row["description"]);
+                                    $itemdetail = '';
+                                }
 
-                    if ($description) {
-                        $item = $description;
-                        $itemdetail = $id;
-                    } else {
-                        $item = $form_state->getValue("description$n");
-                        $itemdetail = '';
-                    }
-                } else {
-                    //use input from user
-                    $item = $form_state->getValue("description$n");
-                    $itemdetail = '';
-                }
+                                $line = (round($row["quantity"] * $row["value"] , 2));
+                               // $linebase = (round($row["quantity"] * $row["value"] / $currencyRate, 2));
+                                $sum = $sum + $line;
+                                if ($row["tax"] == 1) {
+                                    $taxable = $taxable + $line;
+                                }
 
-                $line = (round($form_state->getValue("quantity$n") * $form_state->getValue("value$n"), 2) );
-                $sum = $sum + $line;
-                if ($form_state->getValue("tax$n") == 1) {
-                    $taxable = $taxable + $line;
-                }
+                                if (!$row["account"]) {
+                                    $account = 0;
+                                } else {
+                                    $account = $row["account"];
+                                }
 
-                if (!$form_state->getValue("account$n")) {
-                    $account = 0;
-                } else {
-                    $account = $form_state->getValue("account$n");
-                }
+                                $fields = array('serial' => $serial,
+                                    'item' => $item, // description used in displays
+                                    'itemdetail' => $itemdetail, //add detail / id if item is in DB
+                                    'quantity' => $row["quantity"],
+                                    'value' => $row["value"],
+                                    'total' => $line,
+                                    'opt' => $row["tax"],
+                                    'aid' => $account
+                                );
 
-                $fields = array('serial' => $serial,
-                    'item' => $item, // description used in displays
-                    'itemdetail' => $itemdetail, //add detail / id if item is in DB
-                    'quantity' => $form_state->getValue("quantity$n"),
-                    'value' => $form_state->getValue("value$n"),
-                    'total' => $line,
-                    'opt' => $form_state->getValue("tax$n"),
-                    'aid' => $account
-                );
+                                $insert = Database::getConnection('external_db', 'external_db')
+                                        ->insert('ek_sales_purchase_details')
+                                        ->fields($fields)
+                                        ->execute();
+                        }//if not delete
+                }//if not footer
+            }//for
+        }
 
-                $insert = Database::getConnection('external_db', 'external_db')->insert('ek_sales_purchase_details')
-                        ->fields($fields)
-                        ->execute();
-            }//if not delete
-        }//for
-//main
 
         /*
           if($form_state->getValue('bank') == '')
@@ -1018,7 +1259,7 @@ class NewPurchase extends FormBase {
             $baseCurrency = $this->settings->get('baseCurrency');
             $sumwithtax = $sum + (round($taxable * $form_state->getValue('taxvalue') / 100, 2));
             if ($baseCurrency <> $form_state->getValue('currency')) {
-                $currencyRate = CurrencyData::rate($form_state->getValue('currency'));
+                $currencyRate = \Drupal\ek_finance\CurrencyData::rate($form_state->getValue('currency'));
                 //calculate the value in base currency of the amount without tax
                 $amountbc = round($sum / $currencyRate, 2);
             } else {
@@ -1129,27 +1370,29 @@ class NewPurchase extends FormBase {
             }
 
 
-            for ($n = 1; $n <= $form_state->getValue('count'); $n++) {
+            foreach ($rows as $key => $row) {     
+                if($row['value'] != 'footer') {
 
-                if (!$form_state->getValue("delete$n") == 1) {
-                    if ($form_state->getValue('taxvalue') > 0 && $form_state->getValue("tax$n") == 1) {
-                        $tax = round($form_state->getValue("value$n") * $form_state->getValue('taxvalue') / 100, 2);
-                    } else {
-                        $tax = 0;
+                    if ($row['delete'] != 1) {
+                        if ($form_state->getValue('taxvalue') > 0 && $row['tax'] == 1) {
+                            $tax = round($row['value'] * $form_state->getValue('taxvalue') / 100, 2);
+                        } else {
+                            $tax = 0;
+                        }
+                        $line = (round($row['quantity'] * $row['value'], 2));
+                        $journal->record(
+                                array(
+                                    'source' => "purchase",
+                                    'coid' => $form_state->getValue('head'),
+                                    'aid' => $row['account'],
+                                    'reference' => $reference,
+                                    'date' => $form_state->getValue('date'),
+                                    'value' => $line,
+                                    'currency' => $form_state->getValue('currency'),
+                                    'tax' => $tax,
+                                )
+                        );
                     }
-                    $line = (round($form_state->getValue("quantity$n") * $form_state->getValue("value$n"), 2));
-                    $journal->record(
-                            array(
-                                'source' => "purchase",
-                                'coid' => $form_state->getValue('head'),
-                                'aid' => $form_state->getValue("account$n"),
-                                'reference' => $reference,
-                                'date' => $form_state->getValue('date'),
-                                'value' => $line,
-                                'currency' => $form_state->getValue('currency'),
-                                'tax' => $tax,
-                            )
-                    );
                 }
             } //for
 
@@ -1164,7 +1407,7 @@ class NewPurchase extends FormBase {
                     )
             );
             
-            if($journal->credit <> $journal->debit) {
+            if(round($journal->credit,4) <> round($journal->debit,4)) {
                 $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
                 \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }
@@ -1176,7 +1419,7 @@ class NewPurchase extends FormBase {
             
   
             if ($this->moduleHandler->moduleExists('ek_projects')) {
-                //notify user if invoice is linked to a project
+                //notify user if purchase is linked to a project
                 if ($pcode && $pcode != 'n/a') {
                     $pid = Database::getConnection('external_db', 'external_db')
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])

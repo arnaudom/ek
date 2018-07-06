@@ -25,8 +25,11 @@ if ($stamp == "2") {
           $original = "<IMG src='". file_create_url($original) ."' alt='original' class='align-center'/>";    
         }  
 } 
+$document = "<a class='button' href='" . $url_edit . "' ><i class='fa fa-edit'></i> " . t('Edit') . "</a>" 
+        . "<a class='button' href='" . $url_excel . "' ><i class='fa fa-file-excel-o'></i> " . t('Excel') . "</a>" 
+        . "<a class='button' href='" . $url_pdf . "' ><i class='fa fa-file-pdf-o'></i> " . t('Pdf') . "</a>";
 
-$document = '<page_wrapper>';
+$document .= '<page_wrapper>';
 //HEADER data
     //LOGO
     $logo = '';
@@ -286,6 +289,7 @@ $document .= '<page_signature>
                 </page_signature>';
 $document .= '<hr>';
 //BANK
+if(isset($company->bank->name)){
 $document .= '<page_bank>
                 <table>
                     <tr>
@@ -307,6 +311,22 @@ $document .= '<page_bank>
                     </tr>
                 </table>
                 </page_bank>';
+} else {
+$document .= '<page_bank>
+                <table>
+                    <tr>
+                        <td class="c50 left">'. t("Payment information") .'</td>
+                        <td class="c50 left"></td>
+                        
+                    </tr>
+                    <tr>
+                        <td>' . t("Cash") . '</td>
+                        <td></td>
+                    </tr>
+                   
+                </table>
+                </page_bank>';    
+}
 
 //CORRESPONDENCE
 if ($company->address3 != "") {

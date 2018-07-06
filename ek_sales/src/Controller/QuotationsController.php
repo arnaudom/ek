@@ -191,10 +191,9 @@ class QuotationsController extends ControllerBase {
             } 
 
             $value = $r->currency . ' ' . number_format($r->amount, 2);
-
-            if ($r->incoterm && !stristr($r->incoterm, 'na')) {
-
-                $incoterm = explode('|', $r->incoterm);
+            
+            $incoterm = explode('|', $r->incoterm);
+            if ($incoterm[0] != '0') {                
                 $value .= '<br/>' . $incoterm[0] . ' ' . $r->currency . ' ' . number_format(($r->amount * $incoterm[1] / 100), 2);
                 $term = $r->amount * $incoterm[1] / 100;
             } else {
@@ -202,9 +201,8 @@ class QuotationsController extends ControllerBase {
             }
 
             if ($r->tax) {
-
                 $tax = explode('|', $r->tax);
-                $value .= '<br/>' . $tax[0] . ' ' . $r->currency . ' ' . number_format(($r->amount + $term ) * $tax[1] / 100, 2);
+                $value .= '<br/>' . $tax[0] . ' ' . $r->currency . ' ' . number_format(($r->amount) * $tax[1] / 100, 2);
             }
 
             //quotations are recorded by revision No. Each revision is kept in history
@@ -304,14 +302,14 @@ class QuotationsController extends ControllerBase {
 
     public function NewQuotations(Request $request) {
 
-        $build['new_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\NewQuotation');
+        $build['new_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Quotation');
 
         return $build;
     }
 
     public function EditQuotation(Request $request, $id) {
 
-        $build['edit_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\NewQuotation', $id);
+        $build['edit_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Quotation', $id);
 
         return $build;
     }
@@ -418,19 +416,16 @@ class QuotationsController extends ControllerBase {
                 );
 
                 $format = 'html';
+                
+                $url_pdf = Url::fromRoute('ek_sales.quotations.print_share', ['id' => $doc_id], [])->toString();
+                $url_edit = Url::fromRoute('ek_sales.quotations.edit', ['id' => $doc_id], [])->toString();
                 include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
 
-                $build['excel'] = [
-                    '#markup' =>  "<a class='button button-action' href='"
-                    . Url::fromRoute('ek_sales.quotations.print_share', ['id' => $doc_id], [])->toString() . "' >"
-                    . t('Pdf') . "</a>"
-                        ,
-                ];
 
-                $build['invoice'] = [
+                $build['quotation'] = [
                     '#markup' => $document,
                     '#attached' => array(
-                        'library' => array('ek_sales/ek_sales_html_documents_css'),
+                        'library' => array('ek_sales/ek_sales_html_documents_css','ek_admin/ek_admin_css'),
                         'placeholders' => $css,
                     ),
                 ];

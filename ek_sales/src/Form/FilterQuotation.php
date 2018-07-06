@@ -67,7 +67,7 @@ class FilterQuotation extends FormBase {
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Filter'),
-            '#open' => ($_SESSION['qfilter']['filter'] == 1 ) ? FALSE : TRUE,
+            '#open' => isset($_SESSION['qfilter']['filter']) ? FALSE : TRUE,
             '#attributes' => array('class' => array('container-inline')),
         );
         $form['filters']['filter'] = array(

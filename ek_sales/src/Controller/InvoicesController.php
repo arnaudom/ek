@@ -309,12 +309,15 @@ class InvoicesController extends ControllerBase {
 
             if ($r->status == 0) {
                 $status = t('unpaid');
+                $status_class = 'red';
             }
             if ($r->status == 1) {
                 $status = t('paid');
+                $status_class = 'green';
             }
             if ($r->status == 2) {
                 $status = t('partially paid');
+                $status_class = 'red';
             }
 
             //build modal to display extended information
@@ -322,7 +325,7 @@ class InvoicesController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.modal_more', ['param' => $param])->toString();
 
             $more = '<a href="' . $url . '" '
-                    . 'class="use-ajax red"  data-accepts="application/vnd.drupal-modal"  >' . $status . '</a>';
+                    . 'class="use-ajax ' . $status_class . '"  data-accepts="application/vnd.drupal-modal"  >' . $status . '</a>';
 
 
             $options[$r->id] = array(
@@ -845,9 +848,7 @@ class InvoicesController extends ControllerBase {
      *
      */
     public function NewInvoices(Request $request) {
-
-        $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\NewInvoice');
-
+        $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Invoice');
         return $build;
     }
 
@@ -858,8 +859,20 @@ class InvoicesController extends ControllerBase {
      *
      */
     public function EditInvoice(Request $request, $id) {
-        $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\NewInvoice', $id);
-
+        //filter edit
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_sales_invoice', 'i')
+            ->fields('i', ['status'])
+            ->condition('id', $id , '=');
+        $status = $query->execute()->fetchField();
+        if($status == '0') {    
+            $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Invoice', $id);
+        } else {
+            $url = Url::fromRoute('ek_sales.invoices.list', array(), array())->toString();
+            $build['back'] = array(
+                '#markup' => t('Invoice is not editable. Go to <a href="@url" >List</a>.', array('@url' => $url ) ) ,
+            );
+        }
         return $build;
     }
 
@@ -870,7 +883,7 @@ class InvoicesController extends ControllerBase {
      *
      */
     public function CloneInvoices(Request $request, $id) {
-        $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\NewInvoice', $id, 'clone');
+        $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Invoice', $id, 'clone');
 
         return $build;
     }
@@ -883,7 +896,7 @@ class InvoicesController extends ControllerBase {
      */
     public function DoInvoices(Request $request, $id) {
         //convert a delivery order into invoice
-        $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\NewInvoice', $id, 'delivery');
+        $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Invoice', $id, 'delivery');
 
         return $build;
     }
@@ -1203,22 +1216,16 @@ class InvoicesController extends ControllerBase {
                 );
 
                 $format = 'html';
+                
+                $url_pdf = Url::fromRoute('ek_sales.invoices.print_share', ['id' => $doc_id], [])->toString();
+                $url_excel = Url::fromRoute('ek_sales.invoices.print_excel', ['id' => $doc_id], [])->toString();
+                $url_edit = Url::fromRoute('ek_sales.invoices.edit', ['id' => $doc_id], [])->toString();
+                
                 include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
-
-                $build['excel'] = [
-                    '#markup' => "<a class='button button-action' href='"
-                    . Url::fromRoute('ek_sales.invoices.print_excel', ['id' => $doc_id], [])->toString() . "' >"
-                    . t('Excel') . "</a>"
-                    . "<a class='button button-action' href='"
-                    . Url::fromRoute('ek_sales.invoices.print_share', ['id' => $doc_id], [])->toString() . "' >"
-                    . t('Pdf') . "</a>"
-                        ,
-                ];
-
                 $build['invoice'] = [
                     '#markup' => $document,
                     '#attached' => array(
-                        'library' => array('ek_sales/ek_sales_html_documents_css'),
+                        'library' => array('ek_sales/ek_sales_html_documents_css','ek_admin/ek_admin_css'),
                         'placeholders' => $css,
                     ),
                 ];

@@ -26,7 +26,9 @@ if ($stamp == "2") {
         }  
 } 
 
-$document = '<page_wrapper>';
+$document = "<a class='button' href='" . $url_edit . "' ><i class='fa fa-edit'></i> " . t('Edit') . "</a>"
+        . "<a class='button' href='" . $url_pdf . "' ><i class='fa fa-file-pdf-o'></i> " . t('Pdf') . "</a>";
+$document .= '<page_wrapper>';
 //HEADER data
     //LOGO
     $logo = '';

@@ -107,7 +107,7 @@ WHILE ($data = $result->fetchAssoc()) {
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $data['id']);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $data['serial']);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$l", $data['do_no']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $data['name']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $companies[$data['head']]);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $companies[$data['allocation']]);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $status[$data['status']]);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $data['amount']);
