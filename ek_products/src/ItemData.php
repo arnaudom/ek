@@ -25,15 +25,13 @@ use Drupal\Core\Database\Database;
 
   }  
 
-/*
-     * @return 
-     *  a item view url from item code input
-     *  generate internal/external link to the view
-     * @param mix $code 
-     *  item code
-     * @param bolean $ext
-     *  flag to open link in new window
-     */
+/**
+* generate internal/external link to item page
+* @param string $code item code
+* @param bolean $ext TRUE to open link in new tab
+* @return  formated url from item code input
+*  
+*/
 
     public static function geturl_bycode($code, $ext = NULL) { 
         
@@ -54,6 +52,26 @@ use Drupal\Core\Database\Database;
         return  $link;
     }
     
+/**
+* generate internal/external link to item page
+* @param string $id item id
+* @param bolean $ext TRUE to open link in new tab
+* @return  formated url from item code input
+*  
+*/
+
+    public static function geturl_byId($id, $ext = NULL) { 
+        
+        $link = NULL;
+        $url =  Url::fromRoute('ek_products.view', array('id' => $id), [])->toString(); 
+                if($ext == TRUE) {
+                   $link =  "<a target='_blank' href='". $url ."'>" . $id . "</a>";
+                } else {
+                   $link =  "<a href='". $url ."'>" . $id . "</a>"; 
+                }
+        
+        return  $link;
+    }   
     
   /**
    * Return item comprehensive name references by id 
