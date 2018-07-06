@@ -140,33 +140,37 @@
         } else {
         //extract table data
             $.ajax({
-               type: "POST",
+               type: "GET",
                url: drupalSettings.path.baseUrl + 'human-resources/get_table_amount',
-               data: {'coid' : settings.ek_hr.coid, 'type' : 'fund1', 'value' : fund_base, 'field1' : 'employer_1', 'field2' : 'employee_1'},
+               data: {'coid' : settings.ek_hr.coid, 'type' : 'fund1', 'value' : fund_base, 'field1' : 'employer1', 'field2' : 'employee1'},
                async: false,
                success: function (data) { 
                    
                   var str_1 = data.amount1;
                   var str_2 = data.amount2;
-                  
-                  if (str_1.indexOf("%") > 0 ) {
-                   //else if return value is % , calculate tax
-                         var rate = str_1.replace('%', '');
-                         var f1r = eval(rate*fund_base/100);
-                         $('#fund1_employer').val(f1r);
-                    } else {
-                        $('#fund1_employer').val(data.amount1);
-                    }
-                  
-                  if (str_2.indexOf("%") > 0 ) {
-                   //else if return value is % , calculate tax
-                         var rate = str_2.replace('%', '');
-                         var f1e = eval(rate*fund_base/100);
-                         $('#fund1_employee').val(f1e);
-                    } else {
-                        $('#fund1_employee').val(data.amount2);
-                    } 
-                    }
+                  if (!jQuery.isNumeric(str_1) && str.indexOf("%") > 0 ) {
+                        //else if return value is % , calculate tax
+                             var rate = str_1.replace('%', '');
+                             var f1 = eval(rate*fund_base/100);
+                             $('#fund1_employer').val(f1);
+                         } else if(jQuery.isNumeric(str_1)) {
+                         //if the return value is double, return value
+                             $('#fund1_employer').val(data.amount1); 
+                         } else {
+                             $('#fund1_employer').val(0); 
+                         }
+                  if (!jQuery.isNumeric(str_2) && str.indexOf("%") > 0 ) {
+                        //else if return value is % , calculate tax
+                             var rate = str_2.replace('%', '');
+                             var f1 = eval(rate*fund_base/100);
+                             $('#fund1_employee').val(f1);
+                         } else if(jQuery.isNumeric(str_2)) {
+                         //if the return value is double, return value
+                             $('#fund1_employee').val(data.amount2); 
+                         } else {
+                             $('#fund1_employee').val(0); 
+                         }
+                }
              }); 
         
         }
@@ -179,7 +183,7 @@
           }
         
           if($('#fund1_employee').val()) {
-          var f1 = parseFloat($('#fund1_employee').val());
+            var f1 = parseFloat($('#fund1_employee').val());
           }        
         }
 
@@ -203,33 +207,38 @@
         } else {
         //extract table data
             $.ajax({
-               type: "POST",
+               type: "GET",
                url: drupalSettings.path.baseUrl + 'human-resources/get_table_amount',
-               data: {'coid' : settings.ek_hr.coid, 'type' : 'fund2', 'value' : fund_base, 'field1' : 'employer_1', 'field2' : 'employee_1'},
+               data: {'coid' : settings.ek_hr.coid, 'type' : 'fund2', 'value' : fund_base, 'field1' : 'employer1', 'field2' : 'employee1'},
                async: false,
                success: function (data) { 
                    
                   var str_1 = data.amount1;
                   var str_2 = data.amount2;
-                  
-                  if (str_1.indexOf("%") > 0 ) {
-                   //else if return value is % , calculate tax
-                         var rate = str_1.replace('%', '');
-                         var f2r = eval(rate*fund_base/100);
-                         $('#fund2_employer').val(f2r);
-                    } else {
-                        $('#fund2_employer').val(data.amount1);
-                    }
-                  
-                  if (str_2.indexOf("%") > 0 ) {
-                   //else if return value is % , calculate tax
-                         var rate = str_2.replace('%', '');
-                         var f2e = eval(rate*fund_base/100);
-                         $('#fund2_employee').val(f2e);
-                    } else {
-                        $('#fund2_employee').val(data.amount2);
-                    } 
-                    }
+                  if (!jQuery.isNumeric(str_1) && str.indexOf("%") > 0 ) {
+                        //else if return value is % , calculate tax
+                             var rate = str_1.replace('%', '');
+                             var f2 = eval(rate*fund_base/100);
+                             $('#fund2_employer').val(f2);
+                         } else if(jQuery.isNumeric(str_1)) {
+                         //if the return value is double, return value
+                             $('#fund2_employer').val(data.amount1); 
+                         } else {
+                             $('#fund2_employer').val(0); 
+                         }
+                  if (!jQuery.isNumeric(str_2) && str.indexOf("%") > 0 ) {
+                        //else if return value is % , calculate tax
+                             var rate = str_2.replace('%', '');
+                             var f2 = eval(rate*fund_base/100);
+                             $('#fund2_employee').val(f2);
+                         } else if(jQuery.isNumeric(str_2)) {
+                         //if the return value is double, return value
+                             $('#fund2_employee').val(data.amount2); 
+                         } else {
+                             $('#fund2_employee').val(0); 
+                         }
+                
+                }
              });  
                    
         }
@@ -266,33 +275,37 @@
         } else {
         //extract table data
               $.ajax({
-               type: "POST",
+               type: "GET",
                url: drupalSettings.path.baseUrl + 'human-resources/get_table_amount',
-               data: {'coid' : settings.ek_hr.coid, 'type' : 'fund3', 'value' : fund_base, 'field1' : 'employer_1', 'field2' : 'employee_1'},
+               data: {'coid' : settings.ek_hr.coid, 'type' : 'fund3', 'value' : fund_base, 'field1' : 'employer1', 'field2' : 'employee1'},
                async: false,
-               success: function (data) { 
+                success: function (data) { 
                    
                   var str_1 = data.amount1;
                   var str_2 = data.amount2;
-                  
-                  if (str_1.indexOf("%") > 0 ) {
-                   //else if return value is % , calculate tax
-                         var rate = str_1.replace('%', '');
-                         var f3r = eval(rate*fund_base/100);
-                         $('#fund3_employer').val(f3r);
-                    } else {
-                        $('#fund3_employer').val(data.amount1);
-                    }
-                  
-                  if (str_2.indexOf("%") > 0 ) {
-                   //else if return value is % , calculate tax
-                         var rate = str_2.replace('%', '');
-                         var f3e = eval(rate*fund_base/100);
-                         $('#fund3_employee').val(f3e);
-                    } else {
-                        $('#fund3_employee').val(data.amount2);
-                    } 
-                    }
+                  if (!jQuery.isNumeric(str_1) && str.indexOf("%") > 0 ) {
+                        //else if return value is % , calculate tax
+                             var rate = str_1.replace('%', '');
+                             var f3 = eval(rate*fund_base/100);
+                             $('#fund3_employer').val(f3);
+                         } else if(jQuery.isNumeric(str_1)) {
+                         //if the return value is double, return value
+                             $('#fund3_employer').val(data.amount1); 
+                         } else {
+                             $('#fund3_employer').val(0); 
+                         }
+                  if (!jQuery.isNumeric(str_2) && str.indexOf("%") > 0 ) {
+                        //else if return value is % , calculate tax
+                             var rate = str_2.replace('%', '');
+                             var f3 = eval(rate*fund_base/100);
+                             $('#fund3_employee').val(f3);
+                         } else if(jQuery.isNumeric(str_2)) {
+                         //if the return value is double, return value
+                             $('#fund3_employee').val(data.amount2); 
+                         } else {
+                             $('#fund3_employee').val(0); 
+                         }
+                }
              });     
         }
         
@@ -353,7 +366,7 @@
 
         //extract table data
             $.ajax({
-               type: "POST",
+               type: "GET",
                url: drupalSettings.path.baseUrl + 'human-resources/get_table_amount',
                data: {'coid' : settings.ek_hr.coid, 'type' : 'income_tax', 'value' : fund_base, 'field1' : settings.ek_hr.tax_category},
                async: false,
@@ -362,17 +375,19 @@
                    if(str == 0) {
                        $('#incometax_alert').html( "No value" );
                    } else {
-                        if (str.indexOf("%") > 0 ) {
+                        if (!jQuery.isNumeric(str) && str.indexOf("%") > 0 ) {
                         //else if return value is % , calculate tax
                              var rate = str.replace('%', '');
                              var t1 = eval(rate*fund_base/100);
                              $('#income_tax').val(t1);
                              $('#incometax_alert').html( rate + "% x " + fund_base );
-                         } else {
+                         } else if(jQuery.isNumeric(str)) {
                          //if the return value is double, return value
                              $('#income_tax').val(data.amount1); 
-                             $('#incometax_alert').html( "base: " + fund_base );
-
+                             $('#incometax_alert').html( "base: " + fund_base);
+                         } else {
+                             $('#income_tax').val(0); 
+                             $('#incometax_alert').html( "no data" );
                          }
                      }
                         

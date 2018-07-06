@@ -214,21 +214,30 @@ class PayrollRecord extends FormBase {
                     6 => $param->get('ad', 'LDC6' . $c, 'formula'),
                     7 => $param->get('ad', 'LDC7' . $c, 'formula'),
                 ),
-                'fund1_calc' => $param->get('param', 'd', 'value'),
-                'fund1_pc_yer' => $param->get('param', 'e', 'value'),
-                'fund1_pc_yee' => $param->get('param', 'f', 'value'),
-                'fund1_base' => $param->get('param', 'g', 'value'),
-                'fund2_calc' => $param->get('param', 'i', 'value'),
-                'fund2_pc_yer' => $param->get('param', 'j', 'value'),
-                'fund2_pc_yee' => $param->get('param', 'k', 'value'),
-                'fund2_base' => $param->get('param', 'l', 'value'),
-                'fund3_calc' => $param->get('param', 'r', 'value'),
-                'fund3_pc_yer' => $param->get('param', 's', 'value'),
-                'fund3_pc_yee' => $param->get('param', 't', 'value'),
-                'fund3_base' => $param->get('param', 'u', 'value'),
-                'tax_calc' => $param->get('param', 'n', 'value'),
-                'tax_base' => $param->get('param', 'o', 'value'),
-                'tax_pc' => $param->get('param', 'p', 'value'),
+                'fund1_calc' => $param->get('param', 'fund_1', ['calcul','value']),
+                'fund1_pc_yer' => $param->get('param', 'fund_1', ['employer','value']),
+                'fund1_pc_yee' => $param->get('param', 'fund_1', ['employee','value']),
+                'fund1_base' => $param->get('param','fund_1', ['base','value']),
+                'fund2_calc' => $param->get('param', 'fund_2', ['calcul','value']),
+                'fund2_pc_yer' => $param->get('param', 'fund_2', ['employer','value']),
+                'fund2_pc_yee' => $param->get('param', 'fund_2', ['employee','value']),
+                'fund2_base' => $param->get('param','fund_2', ['base','value']),
+                'fund3_calc' => $param->get('param', 'fund_3', ['calcul','value']),
+                'fund3_pc_yer' => $param->get('param', 'fund_3', ['employer','value']),
+                'fund3_pc_yee' => $param->get('param', 'fund_3', ['employee','value']),
+                'fund3_base' => $param->get('param', 'fund_3', ['base','value']),
+                'fund4_calc' => $param->get('param', 'fund_4', ['calcul','value']),
+                'fund4_pc_yer' => $param->get('param', 'fund_4', ['employer','value']),
+                'fund4_pc_yee' => $param->get('param', 'fund_4', ['employee','value']),
+                'fund4_base' => $param->get('param', 'fund_4', ['base','value']),
+                'fund5_calc' => $param->get('param', 'fund_5', ['calcul','value']),
+                'fund5_pc_yer' => $param->get('param', 'fund_5', ['employer','value']),
+                'fund5_pc_yee' => $param->get('param', 'fund_5', ['employee','value']),
+                'fund5_base' => $param->get('param', 'fund_5', ['base','value']),
+                'tax_calc' => $param->get('param', 'tax', ['calcul','value']),
+                'tax_base' => $param->get('param', 'tax', ['base','value']),
+                'tax_pc' => $param->get('param', 'tax', ['employee','value']),
+                'tax_pcr' => $param->get('param', 'tax', ['employer','value']),
                 'tax_category' => $e->itax_c,
             );
 
@@ -869,11 +878,10 @@ class PayrollRecord extends FormBase {
             $form['hr']["fund1_employer"] = array(
                 '#type' => 'textfield',
                 '#id' => 'fund1_employer',
-                '#title' => $param->get('param', 'c', 'value'),
+                '#title' => $param->get('param', 'fund_1', ['name','value']),
                 '#title_display' => 'after',
                 '#required' => FALSE,
-                '#size' => 8,
-                //'#default_value' => isset($post->epf_yer) ? $post->epf_yer : 0 ,
+                '#size' => 8,'param', 'tax', ['name','value'],
                 '#value' => isset($post->epf_er) ? $post->epf_er : 0,
                 '#attributes' => array('class' => array('amount', 'calculate')),
                 '#prefix' => '<div class="table"><div class="row "><div class="cell cellmedium">',
@@ -906,11 +914,10 @@ class PayrollRecord extends FormBase {
             $form['hr']["fund2_employer"] = array(
                 '#type' => 'textfield',
                 '#id' => 'fund2_employer',
-                '#title' => $param->get('param', 'h', 'value'),
+                '#title' => $param->get('param', 'fund_2', ['name','value']),
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->socso_yer) ? $post->socso_yer : 0 ,
                 '#value' => isset($post->socso_er) ? $post->socso_er : 0,
                 '#attributes' => array('class' => array('amount', 'calculate')),
                 '#prefix' => '<div class="table"><div class="row "><div class="cell cellmedium">',
@@ -923,7 +930,6 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->socso_yee) ? $post->socso_yee : 0 ,
                 '#value' => isset($post->socso_yee) ? $post->socso_yee : 0,
                 '#attributes' => array('class' => array('amount', 'calculate')),
                 '#prefix' => '<div class="cell cellmedium">',
@@ -944,7 +950,7 @@ class PayrollRecord extends FormBase {
             $form['hr']["fund3_employer"] = array(
                 '#type' => 'textfield',
                 '#id' => 'fund3_employer',
-                '#title' => $param->get('param', 'q', 'value'),
+                '#title' => $param->get('param', 'fund_3', ['name','value']),
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
@@ -978,9 +984,9 @@ class PayrollRecord extends FormBase {
             );
 
 //row 36 income tax
-            $form['hr']["null36"] = array(
+            $form['hr']["tax_employee"] = array(
                 '#type' => 'item',
-                '#markup' => $param->get('param', 'm', 'value'),
+                '#markup' => $param->get('param', 'tax', ['name','value']),
                 '#prefix' => '<div class="table"><div class="row "><div class="cell cellmedium">',
                 '#suffix' => '</div>',
             );
@@ -1244,50 +1250,6 @@ class PayrollRecord extends FormBase {
         return $form['hr']['actions']['alert'];
     }
 
-    /**
-     * Callback for tax/fund computation
-     */
-    public function readtable() {
 
-        $coid = $_POST['coid'];
-        $type = $_POST['type'];
-        $value = $_POST['value'];
-        $field1 = $_POST['field1'];
-        $field2 = $_POST['field2'];
-
-        //define table
-        $query = "SELECT code from {ek_country} INNER join {ek_company} ON ek_company.country=ek_country.name WHERE ek_company.id=:c";
-        $a = array(':c' => $coid);
-        $code = Database::getConnection('external_db', 'external_db')
-                ->query($query, $a)
-                ->fetchField();
-
-        $table = 'ek_hr_' . $type . '_' . strtolower($code);
-
-        if (!$field2 == '') {
-            $query = "SELECT " . $field1 . ", " . $field2 . " from {" . $table . "} where min<:m  and max>=:x";
-            $a = array(':m' => $value, ':x' => $value);
-        } else {
-            $query = "SELECT " . $field1 . " from {" . $table . "} where min<:m  and max>=:x";
-            $a = array(':m' => $value, ':x' => $value);
-        }
-
-        $r = Database::getConnection('external_db', 'external_db')
-                ->query($query, $a)
-                ->fetchObject();
-
-        if ($r->$field1 == NULL) {
-            $f1 = 0;
-        } else {
-            $f1 = $r->$field1;
-        };
-        if ($field2 != '' && $r->$field2 == NULL) {
-            $f2 = 0;
-        } elseif($field2 != '') {
-            $f2 = $r->$field2;
-        };
-
-        return new JsonResponse(array('amount1' => $f1, 'amount2' => $f2));
-    }
 
 }

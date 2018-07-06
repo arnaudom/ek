@@ -468,11 +468,11 @@ class ParametersController extends ControllerBase {
                     6 => $param->get('ad', 'LDC6-' . $c, 'formula'),
                     7 => $param->get('ad', 'LDC7-' . $c, 'formula'),
                 ),
-                'fund1' => $param->get('param', 'c', 'value'),
-                'fund2' => $param->get('param', 'h', 'value'),
-                'fund3' => $param->get('param', 'q', 'value'),
-                'fund4' => $param->get('param', 'v', 'value'),
-                'fund5' => $param->get('param', 'aa', 'value'),
+                'fund1' => $param->get('param', 'fund_1', ['name','value']),
+                'fund2' => $param->get('param', 'fund_2', ['name','value']),
+                'fund3' => $param->get('param', 'fund_3', ['name','value']),
+                'fund4' => $param->get('param', 'fund_4', ['name','value']),
+                'fund5' => $param->get('param', 'fund_5', ['name','value']),
             );
 
             return array(
@@ -862,9 +862,14 @@ class ParametersController extends ControllerBase {
         $build['filter_form'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\FilterFund');
 
         if (isset($_SESSION['hrfundfilter']['filter']) && $_SESSION['hrfundfilter']['filter'] == 1) {
+            
+            $param = explode('_', $_SESSION['hrfundfilter']['fund']);
+            $form = "Drupal\\ek_hr_" . $_SESSION['hrfundfilter']['code'] . "\Form\\" . $param[0] . 'Form';
+            
+            $build['fundTable'] = $this->formBuilder->getForm($form);
+            
 
-            //extract data based on filter and display
-            //1/ get the country code and build the table name
+            /*
             $query = "SELECT code FROM {ek_country} WHERE name = :n";
             $code = Database::getConnection('external_db', 'external_db')
                     ->query($query, [ ':n' => $_SESSION['hrfundfilter']['country']])
@@ -888,11 +893,12 @@ class ParametersController extends ControllerBase {
                         ->query($query);
                 $param = NEW HrSettings($_SESSION['hrfundfilter']['coid']);
                 $opt = [
-                'fund1' => $param->get('param', 'c', 'value'),
-                'fund2' => $param->get('param', 'h', 'value'),
-                'fund3' => $param->get('param', 'q', 'value'),
-                'fund4' => $param->get('param', 'v', 'value'),
-                'fund5' => $param->get('param', 'aa', 'value'),
+                'fund1' => $param->get('param', 'fund_1', ['name','value']),
+                'fund2' => $param->get('param', 'fund_2', ['name','value']),
+                'fund3' => $param->get('param', 'fund_3', ['name','value']),
+                'fund4' => $param->get('param', 'fund_4', ['name','value']),
+                'fund5' => $param->get('param', 'fund_5', ['name','value']),
+                //'income_tax' => $param->get('param', 'tax', ['name','value']),
                 ];
                 
                 $display = "
@@ -942,6 +948,8 @@ class ParametersController extends ControllerBase {
             } else {
                 $build['content'] = t('table @t does not exist', ['@t' => $tb]);
             }
+             * 
+             */
         }
 
 
@@ -949,39 +957,29 @@ class ParametersController extends ControllerBase {
             '#theme' => 'ek_hr_fund',
             '#items' => $build,
             '#title' => t('Funds management'),
-            '#attached' => array(
-                'library' => array('ek_hr/ek_hr.fund_edit'),
-            ),
+            
         );
     }
 
     /**
-     *  Callback function for fund table editing
-     *  post = table, reference, value    
-     * reference : id_field
+     * Callback function for fund table editing
+     * @param 
+     *  table 
+     *  reference [id] + "_" + [field]
+     *  value    
+     * @return TRUE or FALSE
      */
     public function fundEdit(Request $request) {
 
-        $ref = explode('_', $_POST['reference']);
+        $ref = explode('_', $request->query->get('reference'));
 
-        switch ($ref[1]) {
-            case 'min' :
-            case 'max' :
-                if (is_numeric($_POST['value'])) {
-                    $input = str_replace(',', '', $_POST['value']);
-                    //$query = "UPDATE {". $_POST['table'] ."} SET ". $ref['1'] ." = :v WHERE id=:id";
-                }
-                break;
-
-            case 'employer_1' :
-            case 'employee_1' :
-                $input = SafeMarkup::checkPlain($_POST['value']);
-            //$query = "UPDATE {". $_POST['table'] ."} SET ". $ref['1'] ." = :v WHERE id=:id";
+        if (is_numeric($request->query->get('value'))) {
+                    $input = str_replace(',', '', $request->query->get('value'));
         }
 
         if (isset($input)) {
             $update = Database::getConnection('external_db', 'external_db')
-                    ->update($_POST['table'])
+                    ->update($request->query->get('table'))
                     ->fields(array($ref['1'] => $input))
                     ->condition('id', $ref[0])
                     ->execute();
@@ -1055,52 +1053,54 @@ class ParametersController extends ControllerBase {
     public function employee_autocomplete(Request $request) {
         $option = $request->query->get('option');
         $term = trim($request->query->get('q'));
-        
-        Switch ($option) {
-            Case 'default':
-            default:
-                $or = db_or();
-                $or->condition('hr.name', $term . '%', 'like');
-                $or->condition('hr.id', $term, '=');
-                $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_hr_workforce', 'hr')
-                ->fields('hr', ['id','name'])
-                ->condition($or)
-                ->execute();
-                $data = [];
-                While($d = $query->fetchObject()){
-                    $data[] = $d->id . ' | ' . $d->name;
-                }
-                
-                break;
-            Case 'image':
-                $or = db_or();
-                $or->condition('hr.name', $term . '%', 'like');
-                $or->condition('hr.id', $term, '=');
-                $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_hr_workforce', 'hr')
-                ->fields('hr', ['id','name','picture'])
-                ->condition($or)
-                ->execute();
-                $data = [];
-                While($d = $query->fetchObject()){
-                    $line = [];
-                    if ($d->picture) {
-                         $pic = "<img class='hr_thumbnail' src='"
-                        . file_create_url($d->picture) . "'>";
-                    } else {
-                        $default = file_create_url(drupal_get_path('module', 'ek_hr') . '/art/default.jpeg');
-                        $pic = "<img class='hr_thumbnail' src='"
-                        . $default . "'>";
+        $data = [];
+        if(strlen($term) > 0 && strpos($term, '%') === FALSE){
+            Switch ($option) {
+                Case 'default':
+                default:
+                    $or = db_or();
+                    $or->condition('hr.name', $term . '%', 'like');
+                    $or->condition('hr.id', $term, '=');
+                    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_hr_workforce', 'hr')
+                    ->fields('hr', ['id','name'])
+                    ->condition($or)
+                    ->execute();
+
+                    While($d = $query->fetchObject()){
+                        $data[] = $d->id . ' | ' . $d->name;
                     }
-                    $line['picture'] = isset($pic) ? $pic : '';
-                    $line['name'] = $d->name;
-                    $line['id'] = $d->id;
-                    
-                    $data[] = $line;
-                }
-                break;
-                
+
+                    break;
+                Case 'image':
+                    $or = db_or();
+                    $or->condition('hr.name', $term . '%', 'like');
+                    $or->condition('hr.id', $term, '=');
+                    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_hr_workforce', 'hr')
+                    ->fields('hr', ['id','name','picture'])
+                    ->condition($or)
+                    ->execute();
+
+                    While($d = $query->fetchObject()){
+                        $line = [];
+                        if ($d->picture) {
+                             $pic = "<img class='hr_thumbnail' src='"
+                            . file_create_url($d->picture) . "'>";
+                        } else {
+                            $default = file_create_url(drupal_get_path('module', 'ek_hr') . '/art/default.jpeg');
+                            $pic = "<img class='hr_thumbnail' src='"
+                            . $default . "'>";
+                        }
+                        $line['picture'] = isset($pic) ? $pic : '';
+                        $line['name'] = $d->name;
+                        $line['id'] = $d->id;
+
+                        $data[] = $line;
+                    }
+                    break;
+
+            }
         }
         
         

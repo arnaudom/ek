@@ -460,38 +460,23 @@ class EditEmployee extends FormBase {
             if (file_exists($dir)) {
                 $ranks = file_get_contents($dir);
                 $ranks = str_replace("\r\n", "", $ranks);
-                $rank = explode(",", $ranks);
-
+              //  $rank = explode(",", $ranks);
+                $chapters = explode("@", $ranks);
                 $opt = array();
-                $opt[0] = '';
-
-                foreach ($rank as $k) {
-
-                    $k = trim($k);
-                    if (strpos($k, '@') === 0) {
-
-                        if (empty($options)) {
-                            //1st line
-                            $k = Xss::filter(str_replace("@", "- ", $k));
-                            //create opt container
-                            $options = array();
-                            // store the name
-                            $previous = $k;
-                        } else {
-                            //new opt
-                            $opt[$previous] = $options;
-                            $k = Xss::filter(str_replace("@", "- ", $k));
-                            //create next opt container
-                            $options = array();
-                            // store the name
-                            $previous = $k;
-                        }
-                    } else {
-                        $k = Xss::filter($k);
-                        $options[$k] = $k;
-                    }
+                foreach($chapters as $title) {
+                    //title = ADMINISTRATION, A1 General manager,  A2 Executive,  A3 Clerk, 
+                    $selects = explode(",", $title);
+                     $s =  Xss::filter(trim($selects[0]));
+                     $opt[$s] = [];
+                     $rows = [];
+                     foreach($selects as $key => $row) {
+                         if($key != 0 && $row != null) {
+                             $rows[] = Xss::filter(trim($row));
+                         }
+                     }
+                     $opt[$selects[0]] = $rows;
                 }
-
+ 
                 $form[3]['rank'] = array(
                     '#type' => 'select',
                     '#size' => 1,

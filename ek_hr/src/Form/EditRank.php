@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_hr\HrSettings;
-;
+
 /**
  * Provides a form to view and upload ranks file
  */
@@ -95,26 +95,56 @@ class EditRank extends FormBase {
 
     $dir = "private://hr/data/" . $form_state->getValue('coid')  ."/ranks/ranks.txt";
     if(file_exists($dir)) {
-    $ranks = file_get_contents($dir);
-    $ranks = str_replace("\r\n","<br/>",$ranks);
-    
-    $form['file'] = array(
-    '#type' => 'details',
-    '#title' => t('Current file'),
-      '#collapsible' => TRUE, 
-      '#open' => TRUE,    
-    );    
-    $form['file']['ranks'] = array(
-    '#type' => 'item',
-    '#markup' => "<pre>" . $ranks . "</pre>",
-    
-    );
-    
+        $ranks = file_get_contents($dir);
+        //$ranks = str_replace("\r\n","<br/>",$ranks);
+
+        $form['file'] = array(
+        '#type' => 'details',
+        '#title' => t('Current file'),
+          '#collapsible' => TRUE, 
+          '#open' => TRUE,    
+        );    
+        $form['file']['rank'] = array(
+            '#type' => 'textarea',
+            '#default_value' => $ranks,
+            '#rows' => 10,
+            
+        );
+            
+    } else {
+       $form['info1'] = array(
+            '#type' => 'item',
+            '#markup' => t('You do not have any rank definition yet. You can create one directly by typing your structure or alternatively upload a text file.') 
+        ); 
+       $form['info2'] = array(
+            '#type' => 'item',
+            '#markup' => t('1) indicate ranks titles by preceeding the name with character "@" and terminated with comma "," 2) indicate rank within a title separated by comma.') 
+        ); 
+       
+       $sample = "@ADMINISTRATION,"
+               . "\r\n A1 General manager,"
+               . "\r\n A2 Executive,"
+               . "\r\n A3 Clerk,"
+               . "\r\n@SALES, "
+               . "\r\n S1 Manager,"
+               . "\r\n@LOGISTICS,"
+               . "\r\n L1 Manager, "
+               . "\r\n L2 Assistant,"
+               . "\r\n L3 Clerk,"
+               . "\r\n@";
+       
+       $form['rank'] = array(
+            '#type' => 'textarea',
+            '#default_value' => $sample,
+            '#rows' => 10,
+            
+        );
+       
     }
     
-    $form['help'] = array(
+    $form['info3'] = array(
       '#type' => 'item',
-      '#markup' => t('You can upload any text file (with .txt extension) with following structure: 1) indicate ranks titles by preceeding the name with character "@" and terminated with comma ","; 2) indicate rank within a title separated by comma. i.e. "@ADMINISTRATION, 1 General manager, 2 Executive, 3 Clerk, @SALES, 1 Manager, 2 ... etc..." ') 
+      '#markup' => t('You can also upload any text file (with .txt extension) with your structure.') 
     
     );
 
@@ -166,8 +196,8 @@ class EditRank extends FormBase {
         $file = file_save_upload($field , $validators, FALSE, 0, FILE_EXISTS_REPLACE);  
         
         if($file) {
-        $form_state->set('new_upload', $file);
-        //$form_state->setRebuild();
+            $form_state->set('new_upload', $file);
+            //$form_state->setRebuild();
         
         }
   
@@ -194,7 +224,18 @@ class EditRank extends FormBase {
             $filename = file_unmanaged_copy($form_state->get('new_upload')->getFileUri(), $dest , FILE_EXISTS_REPLACE);
             \Drupal::messenger()->addStatus(t("New file uploaded"));
 
-  
+    } elseif($form_state->getValue('rank')) {        
+        //write the data to the file
+            $dir = "private://hr/data/" . $form_state->getValue('coid')  ."/ranks";
+            if(!file_exists()) {
+                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            }
+            $file = $dir . '/ranks.txt';
+            $fp = fopen($file, 'w');
+            $text = \Drupal\Component\Utility\Xss::filter($form_state->getValue('rank'));
+            $written = fwrite($fp, $text);
+            fclose($fp);
+            \Drupal::messenger()->addStatus(t("New file created"));
     } else {
         \Drupal::messenger()->addWarning(t("No file uploaded"));
     

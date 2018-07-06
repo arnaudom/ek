@@ -308,7 +308,7 @@ ek_hr.look_up_bank:
 ek_hr.get_table_amount:
   path: '/human-resources/get_table_amount'
   defaults:
-    _controller: '\Drupal\ek_hr\Form\PayrollRecord::readtable'
+    _controller: '\Drupal\ek_hr\Controller\PayrollController::readTable'
   requirements:
     _permission: 'hr_payroll'
 

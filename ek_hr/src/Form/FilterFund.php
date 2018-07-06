@@ -11,6 +11,8 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\Core\Extension\ModuleHandler;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_hr\HrSettings;
 
 /**
@@ -18,6 +20,29 @@ use Drupal\ek_hr\HrSettings;
  */
 class FilterFund extends FormBase {
 
+    /**
+     * The module handler.
+     *
+     * @var \Drupal\Core\Extension\ModuleHandler
+     */
+    protected $moduleHandler;
+
+    /**
+     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+     *   The module handler.
+     */
+    public function __construct(ModuleHandler $module_handler) {
+        $this->moduleHandler = $module_handler;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('module_handler')
+        );
+    }    
   /**
    * {@inheritdoc}
    */
@@ -31,7 +56,7 @@ class FilterFund extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state) {
 
         $company = AccessCheck::CompanyListByUid();
-
+        $code = '';
 
         $form['filters'] = array(
             '#type' => 'details',
@@ -56,28 +81,34 @@ class FilterFund extends FormBase {
             ),
         );
 
-        if ($form_state->getValue('coid')) {
-            $param = NEW HrSettings($form_state->getValue('coid'));
-            
-            $opt = [
-                'fund1' => $param->get('param', 'c', 'value'),
-                'fund2' => $param->get('param', 'h', 'value'),
-                'fund3' => $param->get('param', 'q', 'value'),
-                'fund4' => $param->get('param', 'v', 'value'),
-                'fund5' => $param->get('param', 'aa', 'value'),
-            ];
+        if ((!NULL == $form_state->getValue('coid')) || isset($_SESSION['hrfundfilter']['coid'])) {
+            $coid = (!NULL == $form_state->getValue('coid')) ? $form_state->getValue('coid') : $_SESSION['hrfundfilter']['coid'];
+    
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_country', 'a');
+            $query->fields('a',['code']);
+            $query->leftJoin('ek_company', 'b', 'a.name = b.country');
+            $query->condition('b.id', $coid);
+            $code = $query->execute()->fetchField();
+          
+            $opt = $this->moduleHandler->invokeAll('list_fund',[strtolower($code)]);
            
         } else {
-           $opt = array() ;
+           $opt = array() ; 
         }
 
         $form['filters']['fund'] = array(
             '#type' => 'select',
             '#options' => $opt,
             '#required' => TRUE,
-            '#default_value' =>  NULL,
+            //'#default_value' => '',
             '#prefix' => "<div id='type_fund'>",
             '#suffix' => '</div>',
+        );
+        
+        $form['filters']['code'] = array(
+            '#type' => 'hidden',
+            '#value' => strtolower($code),
         );
 
 
@@ -90,7 +121,7 @@ class FilterFund extends FormBase {
         $form['filters']['actions']['submit'] = array(
             '#type' => 'submit',
             '#value' => $this->t('Apply'),
-                //'#suffix' => "</div>",
+             
         );
 
         if (!empty($_SESSION['hrlfilter'])) {
@@ -108,7 +139,7 @@ class FilterFund extends FormBase {
    * Callback
    */
     public function type_fund(array &$form, FormStateInterface $form_state) {
-
+        $form_state->setRebuild();
         return $form['filters']['fund'];
     }
 
@@ -124,13 +155,9 @@ class FilterFund extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $query = "SELECT country FROM {ek_company} WHERE id=:id";
-        $_SESSION['hrfundfilter']['country'] = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $form_state->getValue('coid')])
-                ->fetchField();
-
         $_SESSION['hrfundfilter']['coid'] = $form_state->getValue('coid');
         $_SESSION['hrfundfilter']['fund'] = $form_state->getValue('fund');
+        $_SESSION['hrfundfilter']['code'] = $form_state->getValue('code');
         $_SESSION['hrfundfilter']['filter'] = 1;
     }
 

@@ -88,6 +88,77 @@ class PayrollController extends ControllerBase {
         $build['payroll'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\PayrollRecord');
         Return $build;
     }
+    
+    /**
+     * Callback for payroll form for tax/fund computation
+     */
+    public function readTable(Request $request) {
+
+        $coid = $request->query->get('coid');
+        $type = $request->query->get('type');
+        $value = $request->query->get('value');
+        $field1 = $request->query->get('field1');
+        $field2 = (NULL != $request->query->get('field2')) ? $request->query->get('field2') : NULL;
+               
+        if ($type != 'income_tax') {
+            //call for funds table
+            $param = ['coid' => $coid,'type' => $type ,'value' => $value, 'field1' => $field1,'field2' => $field2];
+            if($this->moduleHandler->invokeAll('payroll_fund',[$param])){
+                $fund = $this->moduleHandler->invokeAll('payroll_fund',[$param]);
+                    return new JsonResponse($fund);
+            } else {
+                return new JsonResponse(['amount1' => 0, 'amount2' => 0]);
+            }
+            
+        } else {
+            //call for tax table
+            $param = ['coid' => $coid,'value' => $value, 'field1' => $field1];
+            if($this->moduleHandler->invokeAll('payroll_tax', [$param])){
+                $tax = $this->moduleHandler->invokeAll('payroll_tax', [$param]);
+                    return new JsonResponse($tax);
+            } else {
+                return new JsonResponse(['amount1' => 0, 'amount2' => 0]);
+            }
+        }
+        
+        return [];
+        //define table
+        /*
+        $query = "SELECT code from {ek_country} INNER join {ek_company} ON ek_company.country=ek_country.name WHERE ek_company.id=:c";
+        $a = array(':c' => $coid);
+        $code = Database::getConnection('external_db', 'external_db')
+                ->query($query, $a)
+                ->fetchField();
+
+        $table = 'ek_hr_' . $type . '_' . strtolower($code);
+
+        if (!$field2 == '') {
+            $query = "SELECT " . $field1 . ", " . $field2 . " from {" . $table . "} where min<:m  and max>=:x";
+            $a = array(':m' => $value, ':x' => $value);
+        } else {
+            $query = "SELECT " . $field1 . " from {" . $table . "} where min<:m  and max>=:x";
+            $a = array(':m' => $value, ':x' => $value);
+        }
+
+        $r = Database::getConnection('external_db', 'external_db')
+                ->query($query, $a)
+                ->fetchObject();
+
+        if ($r->$field1 == NULL) {
+            $f1 = 0;
+        } else {
+            $f1 = $r->$field1;
+        };
+        if ($field2 != '' && $r->$field2 == NULL) {
+            $f2 = 0;
+        } elseif($field2 != '') {
+            $f2 = $r->$field2;
+        };
+
+        return new JsonResponse(array('amount1' => $f1, 'amount2' => $f2));
+         
+         */
+    }
 
     /**
      * Return current payroll list by company

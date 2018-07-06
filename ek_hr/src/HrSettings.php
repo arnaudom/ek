@@ -71,10 +71,12 @@ use Drupal\Core\Database\Database;
       break   ;
 
       case 'param' : 
+      //i.e key = 'fund_1', data = ['name','description']
+      //i.e key = 'fund_2', data = ['name','value']
       if($data == NULL){      
-        return $this->HrParam[$this->coid][$key];
+        return $this->HrParam[$key];
         } else {
-        return $this->HrParam[$this->coid][$key][$data];
+        return $this->HrParam[$key][$data[0]][$data[1]];
         }      
       break ; 
 
@@ -99,8 +101,9 @@ use Drupal\Core\Database\Database;
   /**
    * Set setting values by name
    *
-   * @vparam setting = setting name
-   * @param key key of array
+   * @param setting = setting name
+   * @param key 
+   * @param array, string or int value 
    */  
   public function set($setting, $key, $value) {
  
@@ -115,7 +118,7 @@ use Drupal\Core\Database\Database;
       break;   
 
       case 'param' : 
-        return $this->HrParam[$this->coid][$key]['value'] = $value;
+        return $this->HrParam[$key][$value[0]]['value'] = $value[1];
       break  ;
 
       case 'accounts' : 
@@ -135,19 +138,22 @@ use Drupal\Core\Database\Database;
    *
    */    
   public function save() {
-  
+  /**/
     $save = Database::getConnection('external_db', 'external_db')->update('ek_hr_workforce_settings')
       ->condition('coid' , $this->coid)
       ->fields(array(
-        'ad' => serialize($this->HrAd ) ,
-        'cat' => serialize($this->HrCat ) ,
-        'param' => serialize($this->HrParam ) ,
-        'accounts' => serialize($this->HrAccounts ) ,
-        'roster' => serialize($this->HrRoster ) ,
+        'ad' => serialize($this->HrAd) ,
+        'cat' => serialize($this->HrCat) ,
+        'param' => serialize($this->HrParam) ,
+        'accounts' => serialize($this->HrAccounts) ,
+        'roster' => serialize($this->HrRoster) ,
       ))
       ->execute();    
   
-  if($save) return TRUE;
+      
+    if($save) {
+        return TRUE;
+    }
   
   }  
 

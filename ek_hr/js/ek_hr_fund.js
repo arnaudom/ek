@@ -8,7 +8,7 @@
        var reference = this.id;
        var value = this.value;
        jQuery.ajax({
-                     type: "POST",
+                     type: "GET",
                      url: 'parameters-fund/edit',
                      data:{ 'table' : table, 'reference' : reference, 'value' : value},
                      async: false,

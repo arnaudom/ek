@@ -72,3 +72,61 @@ function ek_hr_update_8004() {
     \Drupal::service('router.builder')->rebuild();
     return t('HR routes updated.');
 }
+
+/**
+ * change settings structure
+ * 
+ * 
+*/
+function ek_hr_update_8005() {
+    
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_company', 'c');
+        $query->fields('c', ['id']);
+        $data = $query->execute();
+        
+        while($row = $data->fetchObject()){
+            $settings = new \Drupal\ek_hr\HrSettings($row->id);
+            $param = $settings->HrParam[$row->id];
+            $tr1 = $param['p'];
+            $tr1['description'] = 'income tax employee (%)';
+            $tr1['value'] = 'income tax employee (%)';
+            $tr2 = $param['p'];
+            $tr2['description'] = 'income tax employer (%)';
+            $tr2['value'] = 0;
+          $p = [
+            'fund_1' => ['name' => $param['c'], 'calcul' => $param['d'], 'employer' => $param['e'], 'employee' => $param['f'], 'base' => $param['g']],
+            'fund_2' => ['name' => $param['h'], 'calcul' => $param['i'], 'employer' => $param['j'], 'employee' => $param['k'], 'base' => $param['l']],
+            'fund_3' => ['name' => $param['q'], 'calcul' => $param['r'], 'employer' => $param['s'], 'employee' => $param['t'], 'base' => $param['u']],
+            'fund_4' => ['name' => $param['v'], 'calcul' => $param['w'], 'employer' => $param['x'], 'employee' => $param['y'], 'base' => $param['z']],
+            'fund_5' => [
+                            'name' => array('description' => 'Fund 5 name', 'value' => 'Fund 5',),
+                            'calcul' => array('description' => 'Fund 5 calculation (P=percent; T=table)', 'value' => 'P',),
+                            'employer' => array('description' => 'employer Fund 5 (%)', 'value' => '0',),
+                            'employee' => array('description' => 'employee Fund 5 (%)', 'value' => '0',),
+                            'base' => array('description' => 'Fund 5 calculation base (C=contract,A=average,B=basic,G=gross,GOT=Gross-OTs)', 'value' => 'C',),
+                        ],
+            'tax' => ['name' => $param['m'], 'calcul' => $param['n'], 'base' => $param['o'], 'employee' => $tr1, 'employer' => $tr2]
+            ];
+          
+        Database::getConnection('external_db', 'external_db')
+                ->update('ek_hr_workforce_settings')
+                ->condition('coid' , $row->id)
+                ->fields(array('param' => serialize($p)))
+                ->execute(); 
+        
+
+        }
+        
+}
+
+/**
+ * New route path.
+ * Payroll form
+ * 
+*/
+function ek_hr_update_8006() {
+    
+    \Drupal::service('router.builder')->rebuild();
+    return t('HR routes updated.');
+}
