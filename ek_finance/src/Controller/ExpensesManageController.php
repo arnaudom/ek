@@ -216,7 +216,7 @@ class ExpensesManageController extends ControllerBase {
 
             //filter by tags
             if ($settings->get('listPurchases') == 1 && $this->moduleHandler->moduleExists('ek_projects')) {
-                
+               
                 //query data by tag with purchases
                 if($session_filter['pcode'] == 'na') {
                     $session_filter['pcode'] = 'n/a';
@@ -403,7 +403,7 @@ class ExpensesManageController extends ControllerBase {
                 $ref = [];
                 $receipt = '';
 
-                //type expense
+                
                 if (strpos($r->source, 'xpense')) {
                     if ($r->tax > 0) {
                         //if tax is collected, retrieve the tax collection account per company
@@ -466,8 +466,9 @@ class ExpensesManageController extends ControllerBase {
                     }
                 }
 
-                //type expense
+                
                 if (strpos($r->source, 'xpense')) {
+                    $vid = $r->e_id;
                     $clientname = Database::getConnection('external_db', 'external_db')
                             ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $r->clientname))
                             ->fetchField();
@@ -507,7 +508,7 @@ class ExpensesManageController extends ControllerBase {
                     array_push($filteredIds, $r->e_id);
                     
                 } elseif ($r->source == 'purchase') {
-                    
+                    $vid = $r->p_id;
                     if ($r->client != '0') {
                         $url = \Drupal\ek_address_book\AddressBookData::geturl($r->client,['short' => 8]);
                         $ref['client'] = ['#markup' => $url];
@@ -526,12 +527,18 @@ class ExpensesManageController extends ControllerBase {
                             . ' - ' . $r->p_id . ' ' . $r->title . '">' . $r->p_id . '</a>';
                     
                 }
-
+                if($r->coid != $r->allocation) {
+                    $companies = $company_array[$r->coid] . '<br/><small class="grey">(' . $company_array[$r->allocation] . ')</small>';
+                    $t = t('Allocation');
+                } else {
+                    $companies = $company_array[$r->coid];
+                    $t = '';
+                }
                 $options[$i] = array(
-                    'id' => ['data' => ['#markup' => $voucher]],
+                    'id' => ['data' => ['#markup' => $voucher], 'id' => $vid ],
                     'type' => array('data' => $aid . " " . $aname),
                     'reference' => ['data' => ['#theme' => 'item_list', '#list_type' => 'ul', '#items' => $ref]],
-                    'company' => ['data' => ['#markup' => $company_array[$r->coid]], 'title' => ['#markup' => $company_array[$r->allocation]]],
+                    'company' => ['data' => ['#markup' =>  $companies], 'title' => ['#markup' =>  $t] ],
                     'date' => $date,
                     'value' => ['data' => ['#markup' => $value]],
                     'basecurrency' => ['data' => ['#markup' => $evalue]],
@@ -620,6 +627,7 @@ class ExpensesManageController extends ControllerBase {
                     $param = serialize(array(
                         'keyword' => $_SESSION['efilter']['keyword'],
                         'coid' => $_SESSION['efilter']['coid'],
+                        'allocation' => $_SESSION['efilter']['allocation'],
                         'aid' => $_SESSION['efilter']['aid'],
                         'client' => $_SESSION['efilter']['client'],
                         'supplier' => $_SESSION['efilter']['supplier'],

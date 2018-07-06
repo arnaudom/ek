@@ -1145,7 +1145,7 @@ function ek_finance_update_8012() {
 
 /**
  * Add field beneficiary in bank account
- * New route foe payment reset
+ * New route for payment reset
  */
 function ek_finance_update_8013() {
 

@@ -46,8 +46,26 @@ use Drupal\Core\Database\Database;
     }
     
     $query = "SELECT currency,name from {ek_currency} $condition1 order by name";
+    $options = Database::getConnection('external_db', 'external_db')
+            ->query($query,$a)
+            ->fetchAllKeyed();
+    
+    return $options;
+ 
+ }
 
-    $options = Database::getConnection('external_db', 'external_db')->query($query,$a)->fetchAllKeyed();
+   /**
+   * build an array of currencies by name => exchange (ie 'USD' => '1') 
+   *
+   */
+      
+ public static function currencyRates() { 
+ 
+    $a[':status'] = 1;
+    $query = "SELECT currency,rate FROM {ek_currency} WHERE active=:status order by name";
+    $options = Database::getConnection('external_db', 'external_db')
+            ->query($query,$a)
+            ->fetchAllKeyed();
     
     return $options;
  

@@ -30,8 +30,9 @@ $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(8);
 $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(20);
 $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(30);
-$objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(12);
-$objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(32);
+$objPHPExcel->getActiveSheet()->getColumnDimension('n')->setWidth(30);
+$objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(12);
+$objPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(32);
 $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue('A5', 'ID')
         ->setCellValue('B5', (string) t('Class'))
@@ -46,13 +47,14 @@ $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue('K5', "")
         ->setCellValue('L5', (string) t('Credit account'))
         ->setCellValue('M5', (string) t('Company'))
-        ->setCellValue('N5', (string) t('Reconciled'))
-        ->setCellValue('O5', (string) t('Comment'));
+        ->setCellValue('N5', (string) t('Allocation'))
+        ->setCellValue('O5', (string) t('Reconciled'))
+        ->setCellValue('P5', (string) t('Comment'));
 
 
-$objPHPExcel->getActiveSheet()->getStyle('A5:O5')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-$objPHPExcel->getActiveSheet()->getStyle('A5:O5')->getFill()->getStartColor()->setARGB('66b2ff');
-$objPHPExcel->getActiveSheet()->getStyle('A5:O5')->applyFromArray(
+$objPHPExcel->getActiveSheet()->getStyle('A5:P5')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A5:P5')->getFill()->getStartColor()->setARGB('66b2ff');
+$objPHPExcel->getActiveSheet()->getStyle('A5:P5')->applyFromArray(
         array(
             'font' => array(
                 'bold' => true
@@ -126,7 +128,7 @@ $total = 0;
 WHILE ($r = $result->fetchObject()) {
     $l++; // line index
     if ($l & 1) {
-        $row = "A" . $l . ":O" . $l;
+        $row = "A" . $l . ":P" . $l;
         $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
         $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('e6e6fa');
     }
@@ -135,6 +137,7 @@ WHILE ($r = $result->fetchObject()) {
     $aid = $r->aid;
     $aname = $chartList[$r->coid][$aid];
     $company_name = $company_array[$r->coid];
+    $allocation = $company_array[$r->allocation];
     $date = $r->date;
     $value = $r->value;
     $currency = $r->currency;
@@ -239,8 +242,9 @@ WHILE ($r = $result->fetchObject()) {
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $ecurrency);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $credit);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $company_name);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $reco);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", $comment);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $allocation);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", $reco);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("P$l", $comment);
     
     $objPHPExcel->getActiveSheet()->getStyle("H$l")->applyFromArray($HalignRight);
     $objPHPExcel->getActiveSheet()->getStyle("J$l")->applyFromArray($HalignRight);

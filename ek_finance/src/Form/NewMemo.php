@@ -65,97 +65,109 @@ class NewMemo extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $category = NULL, $tempSerial = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $category = NULL, $tempSerial = NULL, $clone = FALSE) {
 
+    $CurrencyOptions = CurrencyData::listcurrency(1); 
+    $baseCurrency = $this->settings->get('baseCurrency');  
 
-  if(isset($id) && $id != NULL  ) {
- 
-  $chart = $this->settings->get('chart');   
-  $baseCurrency = $this->settings->get('baseCurrency');
-  
-  //edit existing memo
+    if(isset($id) && $id != NULL  ) {
+      
+        //edit existing memo
+        $chart = $this->settings->get('chart');   
+        $baseCurrency = $this->settings->get('baseCurrency');  
+        $n = 0;
 
-  
-    $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_expenses_memo', 'memo');
-    $query->fields('memo');
-    $query->condition('id', $id);
-    $data = $query->execute()->fetchObject();
-   
-    $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_expenses_memo_list', 'details');
-    $query->fields('details');
-    $query->condition('serial', $data->serial);
-    $detail = $query->execute();
+        $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_expenses_memo', 'memo');
+        $query->fields('memo');
+        $query->condition('id', $id);
+        $data = $query->execute()->fetchObject();
 
+        $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_expenses_memo_list', 'details');
+        $query->fields('details');
+        $query->condition('serial', $data->serial);
+        $detail = $query->execute();
 
-    $form['edit_memo'] = array(
-      '#type' => 'item',
-      '#markup' => t('Memo ref. @p', array('@p' => $data->serial)),
+        if($clone == FALSE){
+            $date = $data->date;
+            $form['edit_memo'] = array(
+              '#type' => 'item',
+              '#markup' => t('Memo ref. @p', array('@p' => $data->serial)),
 
-    );  
-    
-    $form['serial'] = array(
-      '#type' => 'hidden',
-      '#value' => $data->serial,
-    );  
-    $form['id'] = array(
-      '#type' => 'hidden',
-      '#value' => $id,
-    );     
-    
-  $n = 0;
-  $form_state->set('current_items', 0);
-  if(!$form_state->get('num_items'))  {
-      $form_state->set('num_items', 0); 
+            );  
+            $form['serial'] = array(
+              '#type' => 'hidden',
+              '#value' => $data->serial,
+            );  
+            $form['id'] = array(
+              '#type' => 'hidden',
+              '#value' => $id,
+            );     
+        } else {
+            $date = date('Y-m-d');
+            $form['edit_memo'] = array(
+              '#type' => 'item',
+              '#markup' => t('Clone ref. @p', array('@p' => $data->serial)),
+            );  
+            $form['new_memo'] = array(
+                '#type' => 'hidden',
+                '#value' => 2,
+            );
+            $form['serial'] = array(
+              '#type' => 'hidden',
+              '#value' => $data->serial,
+            );  
+            $form['id'] = array(
+              '#type' => 'hidden',
+              '#value' => $id,
+            );
+
+        }  
+
+      if(!$form_state->get('num_items'))  {
+          $form_state->set('num_items', 0); 
+          }
+
+      if(!$form_state->getValue('currency')) {
+          $form_state->setValue('currency', $data->currency);
+      }
+
+      if($category == 'internal') {
+          $AidOptions = AidList::listaid($data->entity, array($chart['expenses'], $chart['other_expenses']), 1 );
+      } else {
+          $AidOptions = AidList::listaid($data->entity_to, array($chart['expenses'], $chart['other_expenses']), 1 );
+      }
+
+      if ($category == 'personal' && $this->settings->get('authorizeMemo') == 1 ) {
+        $auth_user = explode('|', $data->auth);
+        $this->authorizer = $auth_user[1];
+        //use flag to control form display options when opened by authorizer. Authorizer can't edit all data
+        if(\Drupal::currentUser()->id() == $auth_user[1]) {
+          $authorizer = TRUE;
+        } else {
+          $authorizer = FALSE;
+        }
+      } else {
+        $authorizer = FALSE;
       }
   
-  if(!$form_state->getValue('currency')) {
-      $form_state->setValue('currency', $data->currency);
-  }
-  
-  if($category == 'internal') {
-      $AidOptions = AidList::listaid($data->entity, array($chart['expenses'], $chart['other_expenses']), 1 );
-  } else {
-      $AidOptions = AidList::listaid($data->entity_to, array($chart['expenses'], $chart['other_expenses']), 1 );
-  }
-
-  if ($category == 'personal' && $this->settings->get('authorizeMemo') == 1 ) {
-    $auth_user = explode('|', $data->auth);
-    $this->authorizer = $auth_user[1];
-    //use flag to control form display options when opened by authorizer. Authorizer can't edit all data
-    if(\Drupal::currentUser()->id() == $auth_user[1]) {
-      $authorizer = TRUE;
-    } else {
-      $authorizer = FALSE;
-    }
-  } else {
-    $authorizer = FALSE;
-  }
-  
   
   } else {
-  //new
+    //new
     $form['new_memo'] = array(
       '#type' => 'hidden',
       '#value' => 1,
-
     );
-
-  $grandtotal = 0;
-  $n = 0;
-  $AidOptions = $form_state->get('AidOptions');
-  $detail = NULL;
-  $data = NULL;
+    $date = date('Y-m-d');
+    $grandtotal = 0;
+    $n = 0;
+    $AidOptions = $form_state->get('AidOptions');
+    $detail = NULL;
+    $data = NULL;
   }
     
-
-//
-//Options
-// 
-  $CurrencyOptions = CurrencyData::listcurrency(1); 
-  
-  
+ 
     $form['tempSerial'] = array(
     //used for file uploaded
         '#type' => 'hidden',
@@ -170,11 +182,13 @@ class NewMemo extends FormBase {
 
     );
     
-    
+//
+//Options
+//     
     $form['options'] = array(
       '#type' => 'details',
       '#title' => $this->t('Options'),
-      '#open' => isset($id) ? FALSE : TRUE,
+      '#open' => isset($id) || ($form_state->get('num_items')>0) ? FALSE : TRUE,
     );  
 
   if($category == 'internal') {
@@ -284,7 +298,7 @@ if ($this->settings->get('companyMemo') == 1){
       '#id' => 'edit-from',
       '#size' => 12,
       '#required' => TRUE,
-      '#default_value' => isset($data->date) ? $data->date : date('Y-m-d'),
+      '#default_value' => $date,
       '#title' => t('date'),
       '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
       '#suffix' => '</div>',
@@ -312,8 +326,6 @@ if($this->moduleHandler->moduleExists('ek_projects')) {
       '#title' => t('Project'),
       '#attributes' => array('style' => array('width:250px;')),
       );
-
-
 
 } else {
     $form['options']['pcode'] = array(
@@ -454,29 +466,40 @@ if ($category == 'personal' && $this->settings->get('authorizeMemo') == 1 ) {
       '#type' => 'submit' ,
       '#value' => $this->t('Add item'),
       '#submit' =>  array(array($this, 'addForm')) ,
-      //'#limit_validation_errors' => [['category', 'entity', 'entity_to']],
-      '#prefix' => "<div id='add'>",
-      '#suffix' => '</div>',
+      '#limit_validation_errors' => [['category'], ['entity'], ['entity_to'],['itemTable']],
+      '#attributes' => array('class' => array('button--add')),
     ); 
 
 
+        $header = array(
 
-$headerline = "<div class='table'  id='memo_form_items'>
-                  <div class='row'>
-                      <div class='cell cellborder' id='tour-item1'>" . t("Account") . "</div>
-                      <div class='cell cellborder' id='tour-item2'>" . t("Description") . "</div>
-                      <div class='cell cellborder' id='tour-item3'>" . t("Amount") . "</div>
-                      <div class='cell cellborder' id='tour-item4'>" . t("Receipt") . "</div>
-                      <div class='cell cellborder' id='tour-item5'>" . t("delete") . "</div>
-                   ";
+            'account' => array(
+                'data' => $this->t('Account'),
+            ),
+            'description' => array(
+                'data' => $this->t('Description'),
+                'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+            ),
+            'amount' => array(
+                'data' => $this->t('Amount'),
+            ),
+            'receipt' => array(
+                'data' => $this->t('Receipt'),
+            ),
+            'delete' => array(
+                'data' => $this->t('Delete'),
+            )
+        );
 
-  
-    $form['items']["headerline"] = array(
-      '#type' => 'item',
-      '#markup' => $headerline,
-
-        
-    );  
+        $form['items']['itemTable'] = array(
+            '#tree' => TRUE,
+            '#theme' => 'table',
+            '#header' => $header,
+            '#rows' => array(),
+            '#attributes' => array('id' => 'itemTable'),
+            '#empty' => '',
+        ); 
+            
     
     
 if(isset($detail)) {
@@ -484,69 +507,85 @@ if(isset($detail)) {
 //list current items
 
 $grandtotal = 0;
-
+$rows = $form_state->getValue('itemTable');
   while ($d = $detail->fetchObject()) {
 
-  $n++; 
-  $c = $form_state->get('current_items')+1;
-  $form_state->set('current_items', $c) ;
-  $grandtotal += $d->amount;
-  
-  
-        $form['items']["aid$n"] = array(
-        '#type' => 'select',
-        '#size' => 1,
-        '#options' => $AidOptions,
-        '#required' => TRUE,
-        '#default_value' => isset($d->aid) ? $d->aid : NULL,
-        '#attributes' => array('style' => array('width:110px;white-space: nowrap')),
-        '#prefix' => "<div class='row current'><div class='cell'>",
-        '#suffix' => '</div>',
-        );   
-        
-        $form['items']["description$n"] = array(
-        '#type' => 'textfield',
-        '#size' => 38,
-        '#maxlength' => 200,
-        '#default_value' => $d->description,
-        '#attributes' => array('placeholder'=>t('description')),
-        '#prefix' => "<div class='cell'>",
-        '#suffix' => '</div>',
-        ); 
-    
-        $form['items']["amount$n"] = array(
-        '#type' => 'textfield',
-        '#id' => 'amount'.$n,        
-        '#size' => 8,
-        '#maxlength' => 30,
-        '#default_value' => number_format($d->amount, 2),
-        '#attributes' => array('placeholder'=>t('amount'), 'class' => array('amount')),
-        '#prefix' => "<div class='cell right'>",
-        '#suffix' => '</div>',        
-        ); 
+    $n++; 
+    $grandtotal += $d->amount;
+    $rowClass = ($rows[$n]['delete'] == 1) ? 'delete' : 'current';
+     
+        $form['account'] = array(
+                    '#id' => 'account-' . $n,
+                    '#type' => 'select',
+                    '#size' => 1,
+                    '#options' => $AidOptions,
+                    '#attributes' => array('style' => array('width:110px;')),
+                    '#default_value' => $d->aid,
+                    '#required' => TRUE,
+                );   
+        $form['description'] = array(
+                    '#id' => 'description-' . $n,
+                    '#type' => 'textfield',
+                    '#size' => 38,
+                    '#maxlength' => 200,
+                    '#attributes' => array('placeholder'=>t('description')),
+                    '#default_value' => $d->description,
+                    '#required' => TRUE,
+                );        
+        $form['amount'] = array(
+                    '#id' => 'amount' . $n,
+                    '#type' => 'textfield',
+                    '#size' => 12,
+                    '#maxlength' => 30,
+                    '#attributes' => array('placeholder'=>t('amount'), 'class' => array('amount')),
+                    '#default_value' => number_format($d->amount, 2),
+                    '#required' => TRUE,
+                ); 
+        $form['receipt'] = array(
+                    '#id' => 'receipt-' . $n,
+                    '#type' => 'textfield',
+                    '#size' => 10,
+                    '#maxlength' => 100,
+                    '#attributes' => array('placeholder'=>t('ref')),
+                );
+        $form['delete'] = array(
+                    '#id' => 'del' . $n,
+                    '#type' => 'checkbox',
+                    '#default_value' => 0,
+                    '#attributes' => array(
+                        'title' => t('delete'),
+                        'onclick' => "jQuery('#".$n."').toggleClass('delete');",
+                        'class' => array('amount')
+                    ),
+                );
 
-        $form['items']["receipt$n"] = array(
-        '#type' => 'textfield',
-        '#size' => 8,
-        '#maxlength' => 100,
-        '#default_value' => $d->receipt,
-        '#attributes' => array('placeholder'=>t('ref.'), ),
-        '#prefix' => "<div class='cell center'>",
-        '#suffix' => '</div>',    
-        );             
+        //built edit rows for table
+            $form['items']['itemTable'][$n] = array(
+                    'account' => &$form['account'],
+                    'description' => &$form['description'],
+                    'amount' => &$form['amount'],
+                    'receipt' => &$form['receipt'],
+                    'delete' => &$form['delete']
+                );
+           
+            $form['items']['itemTable']['#rows'][$n] = array(
+                    'data' => array(
+                        array('data' => &$form['account']),
+                        array('data' => &$form['description']),
+                        array('data' => &$form['amount']),
+                        array('data' => &$form['receipt']),
+                        array('data' => &$form['delete']),
+                    ),
+                    'id' => array($n),
+                    'class' => $rowClass,
+                );
 
-        $form['items']["delete$n"] = array(
-        '#type' => 'checkbox',
-        '#id' => 'del' . $n ,
-        '#attributes' => array('title'=>t('delete'), 'class' => array('amount')),
-        '#prefix' => "<div class='cell center'>",
-        '#suffix' => '</div></div>',    
-        );   
-  
-  } 
-
-
-
+                unset($form['account']);
+                unset($form['description']);
+                unset($form['amount']);
+                unset($form['receipt']);
+                unset($form['delete']);
+    }               
 } //details of current records
 
 
@@ -554,115 +593,160 @@ $grandtotal = 0;
   // reset the new rows items
     $max = $form_state->get('num_items')+$n;
     $n++;
-      } else {
-        $max = $form_state->get('num_items');
-        $n = 1;
-      }
-  
-    for ($i=$n;$i<=$max;$i++)
-    {
-
-        $form['items']["aid$i"] = array(
-        '#type' => 'select',
-        '#size' => 1,
-        '#options' => $AidOptions,
-        '#required' => TRUE,
-        '#default_value' => $form_state->getValue("aid$i") ? $form_state->getValue("aid$i") : NULL,
-        '#attributes' => array('style' => array('width:110px; white-space: nowrap')),
-        '#prefix' => "<div class='row'><div class='cell'>",
-        '#suffix' => '</div>',
-        ); 
-           
-        $form['items']["description$i"] = array(
-        '#type' => 'textfield',
-        '#size' => 38,
-        '#maxlength' => 200,
-        '#default_value' => $form_state->getValue("description$i") ? $form_state->getValue("description$i") : NULL,
-        '#attributes' => array('placeholder'=>t('description')),
-        '#prefix' => "<div class='cell'>",
-        '#suffix' => '</div>',         
-        ); 
+  } else {
+    $max = $form_state->get('num_items');
+    $n = 1;
+  }
     
+    for ($i=$n;$i<=$max;$i++) {
+        $grandtotal += $rows[$i]['amount'];
+        $n++;
+        $form['account'] = array(
+                    '#id' => 'account-' . $i,
+                    '#type' => 'select',
+                    '#size' => 1,
+                    '#options' => $AidOptions,
+                    '#attributes' => array('style' => array('width:110px;')),
+                    //'#default_value' => ($rows[$i]['account']) ? $rows[$i]['account'] : NULL,
+                    '#required' => TRUE,
+                );   
+        $form['description'] = array(
+                    '#id' => 'description-' . $i,
+                    '#type' => 'textfield',
+                    '#size' => 38,
+                    '#maxlength' => 200,
+                    '#attributes' => array('placeholder'=>t('description')),
+                    //'#default_value' => ($rows[$i]['description']) ? $rows[$i]['description'] : NULL,
+                    '#required' => TRUE,
+                );        
+        $form['amount'] = array(
+                    '#id' => 'amount' . $i,
+                    '#type' => 'textfield',
+                    '#size' => 12,
+                    '#maxlength' => 30,
+                    '#attributes' => array('placeholder'=>t('amount'), 'class' => array('amount')),
+                    //'#default_value' => ($rows[$i]['amount']) ? number_format($rows[$i]['amount'],2) : NULL,
+                    '#required' => TRUE,
+                ); 
+        $form['receipt'] = array(
+                    '#id' => 'receipt-' . $i,
+                    '#type' => 'textfield',
+                    '#size' => 10,
+                    '#maxlength' => 100,
+                    '#attributes' => array('placeholder'=>t('ref')),
+                    //'#default_value' => ($rows[$i]['description']) ? $rows[$i]['description'] : NULL,
+                );
+        $form['delete'] = array(
+                    '#type' => 'item',
+                );
+        
+        //built rows for table
+            $form['items']['itemTable'][$i] = array(
+                    'account' => &$form['account'],
+                    'description' => &$form['description'],
+                    'amount' => &$form['amount'],
+                    'receipt' => &$form['receipt'],
+                    'delete' => &$form['delete']
+                );
+            
+            $form['items']['itemTable']['#rows'][$i] = array(
+                    'data' => array(
+                        array('data' => &$form['account']),
+                        array('data' => &$form['description']),
+                        array('data' => &$form['amount']),
+                        array('data' => &$form['receipt']),
+                        array('data' => &$form['delete']),
+                    ),
+                    'id' => array($i)
+                );
 
-        $form['items']["amount$i"] = array(
-        '#type' => 'textfield',
-        '#id' => 'amount'.$i,        
-        '#size' => 8,
-        '#maxlength' => 30,
-        '#default_value' => $form_state->getValue("amount$i") ? number_format($form_state->getValue("amount$i"),2) : NULL,
-        '#attributes' => array('placeholder'=>t('amount'), 'class' => array('amount')),
-        '#prefix' => "<div class='cell right'>",
-        '#suffix' => '</div>', 
-        ); 
-
-
-        $form['items']["receipt$i"] = array(
-        '#type' => 'textfield',
-        '#size' => 8,
-        '#maxlength' => 100,
-        '#default_value' => $form_state->getValue("receipt$i") ? $form_state->getValue("receipt$i") : NULL,
-        '#attributes' => array('placeholder'=>t('ref.'), ),
-        '#prefix' => "<div class='cell center'>",
-        '#suffix' => '</div>',    
-        );
-
-        $form['items']["delete$i"] = array(
-        '#type' => 'item',        
-        '#prefix' => "<div class='cell center'>",
-        '#suffix' => '</div></div>',
-    
-        );             
+                unset($form['account']);
+                unset($form['description']);
+                unset($form['amount']);
+                unset($form['receipt']);
+                unset($form['delete']);
+                
+        
     }
 
-      
 
  
       $form['items']['count'] = array(
         '#type' => 'hidden',
-        '#value' => isset($detail) ? $n-1+$form_state->get('num_items') : $form_state->get('num_items'),
+        '#value' => $n-1,
         '#attributes' => array('id' => 'itemsCount'),
       );
  
     
 
     if( ($form_state->get('num_items') && $form_state->get('num_items')>0) || isset($detail)  ) {
-    
-    
-      $form['items']['1'] = array(
-        '#type' => 'item',
-        '#markup' => t('Total'),
-        '#prefix' => "<div class='row' id='memo_form_footer'><div class='cell'>",
-        '#suffix' => '</div>',
-        );
- 
-      $form['items']['2'] = array(
-        '#type' => 'item',
-        '#prefix' => "<div class='cell'>",
-        '#suffix' => '</div>',
-      );             
-              
-      $form['items']["grandtotal"] = array(
-        '#type' => 'textfield',
-        '#id' => 'grandtotal',        
-        '#size' => 12,
-        '#maxlength' => 255,
-        '#value' => isset($grandtotal) ?  number_format($grandtotal, 2) : 0,
-        '#attributes' => array('placeholder'=>t('total'), 'readonly' => 'readonly', 'class' => array('amount')),
-        '#prefix' => "<div class='cell right'>",
-        '#suffix' => '</div></div></div>',        
-        );       
         
+        if(isset($id) && $baseCurrency != $data->currency) {
+            $c = CurrencyData::currencyRates();
+            $converted = round($grandtotal/$c[$data->currency],2) . " " . $baseCurrency;
+        } else {
+            $converted = '';
+        }
+        $n++;
+        $form['account'] = array(                    
+                    '#type' => 'item',
+                    '#markup' => t('Total')
+                );   
+        $form['description'] = array(
+                    '#type' => 'hidden',
+                    '#value' => 'total'
+                );        
+        $form['amount'] = array(
+                    '#id' => 'grandTotal',
+                    '#type' => 'textfield',    
+                    '#size' => 12,
+                    '#maxlength' => 50,
+                    '#value' => isset($grandtotal) ?  number_format($grandtotal, 2) : 0,
+                    '#attributes' => array('placeholder'=>t('total'), 'readonly' => 'readonly', 'class' => array('amount')),
+                ); 
+        $form['receipt'] = array(
+                    '#type' => 'item',
+                    '#markup' => "<div id='convertedValue' class='badge'>".$converted."</div>",
+                );
+        $form['delete'] = array(
+                    '#type' => 'item',
+                );
+        
+        //built rows for table total
+            $form['items']['itemTable'][$n] = array(
+                    'account' => &$form['account'],
+                    'description' => &$form['description'],
+                    'amount' => &$form['amount'],
+                    'receipt' => &$form['receipt'],
+                    'delete' => &$form['delete']
+                );
+            
+            $form['items']['itemTable']['#rows'][$n] = array(
+                    'data' => array(
+                        array('data' => &$form['account']),
+                        array('data' => &$form['description']),
+                        array('data' => &$form['amount']),
+                        array('data' => &$form['receipt']),
+                        array('data' => &$form['delete']),
+                    ),
+                    'id' => array($n)
+                );
+
+                unset($form['account']);
+                unset($form['description']);
+                unset($form['amount']);
+                unset($form['receipt']);
+                unset($form['delete']);    
+    
       if ($form_state->get('num_items') > 0) {
         $form['items']['remove'] = array(
           '#type' => 'submit',
           '#value' => $this->t('remove last item'),
           '#limit_validation_errors' => array(),
           '#submit' => array(array($this, 'removeForm')),
+          '#attributes' => array('class' => array('button--remove')),
         );     
       } 
-    
-    
- 
     
     }
 
@@ -714,13 +798,21 @@ $grandtotal = 0;
       $form['actions']['record'] = array(
         '#type' => 'submit',
         '#value' => $this->t('Record'),
+        '#attributes' => array('class' => array('button--record')),
       );              
         
-    //$form['#tree'] = TRUE;
-     $form['#attached'] = array(
-                'drupalSettings' => array('id' => $id, 'serial' => $tempSerial),
+    if($clone == TRUE) {
+        //do not display current cloned memo attachements
+        $form['#attached'] = array(
+                'drupalSettings' => array('id' => 0, 'serial' => $tempSerial, 'currencies' => CurrencyData::currencyRates(), 'baseCurrency' => $baseCurrency),
                 'library' => array('ek_finance/ek_finance.memo_form'),
             );
+    } else {
+        $form['#attached'] = array(
+                'drupalSettings' => array('id' => $id, 'serial' => $tempSerial, 'currencies' => CurrencyData::currencyRates(), 'baseCurrency' => $baseCurrency),
+                'library' => array('ek_finance/ek_finance.memo_form'),
+            );
+    }
      
   return $form;
   
@@ -772,7 +864,7 @@ $grandtotal = 0;
   
      //upload
       $extensions = 'png jpg jpeg';
-      $validators = array( 'file_validate_extensions' => array($extensions));
+      $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [file_upload_max_size()]);
       $file = file_save_upload("upload_doc" , $validators, FALSE, 0);
           
       if ($file) {
@@ -800,9 +892,11 @@ $grandtotal = 0;
         }
         
       } else {
-          $msg = "<div aria-label='Error message' class='messages messages--error'>" 
-           . t('Error') . ". " . t('Allowed extensions') . ": " . 'png jpg jpeg'
-            . "</div>";
+          $size = round(file_upload_max_size() / 1000000,0);
+          $msg = "<div aria-label='Error message' class='messages messages--error'>"
+                    . t('Error') . ". " . t('Allowed extensions') . ": " . 'png jpg jpeg'
+                    . ', ' . t('maximum size') . ": " . $size . 'Mb'
+                    . "</div>";
           $response = new AjaxResponse();
             return $response->addCommand(new HtmlCommand('#error', $msg));   
 
@@ -840,7 +934,7 @@ $grandtotal = 0;
     }
    $triggering_element = $form_state->getTriggeringElement();
     //enforce data input
-    /**/
+   
     if($triggering_element['#id'] != 'edit-add' && $form_state->getValue('new_memo') == '1' && 
             !$form_state->get('num_items')) {
         
@@ -849,21 +943,23 @@ $grandtotal = 0;
             
     }
     
-    for ($n=1;$n<=$form_state->get('num_items');$n++) {
-    
-            if($form_state->getValue("description$n") == '') {
-             $form_state->setErrorByName("description$n", $this->t('Item @n is empty', array('@n'=> $n)) );
-            }
+    $rows = $form_state->getValue('itemTable');
+    if(!empty($rows)){
+        foreach ($rows as $key => $row) {
+        /**/ 
+            if($row['description'] != 'total') {
 
-            if($form_state->getValue("amount$n") == '' || !is_numeric($form_state->getValue("amount$n"))) {
-             $form_state->setErrorByName("amount$n",  $this->t('there is no value for item @n', array('@n'=> $n)) );
-            }            
+                if(!is_numeric($row["amount"])) {
+                 $form['options']['#open'] = FALSE;
+                 $form_state->setErrorByName("itemTable][$key][amount",  $this->t('there is no value for item @n', array('@n'=> $key)) );
+                }            
 
-                // validate account
-                // @TODO          
-                
+                    // validate account
+                    // @TODO          
+            }        
+        }
     }
-   
+    
   }
 
   /**
@@ -871,9 +967,8 @@ $grandtotal = 0;
    */  
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
-      if ($form_state->getValue('new_memo') == 1 ) {
+      if ($form_state->getValue('new_memo') == 1 || $form_state->getValue('new_memo') == 2) {
         //create new serial No
-        
         $iid = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT count(id) from {ek_expenses_memo}")
                 ->fetchField();
@@ -913,20 +1008,20 @@ $grandtotal = 0;
   
   $line = 0;
   $total = 0;
-
-  for ($n=1;$n<=$form_state->getValue('count');$n++) {
+  $rows = $form_state->getValue('itemTable');
+  foreach ($rows as $key => $row) {
   
-    if(!$form_state->getValue("delete$n") == 1) { 
+    if($row["delete"] != 1 && $row['description'] != 'total') { 
     
-    $item = Xss::filter($form_state->getValue("description$n"));  
-    $amount = str_replace(',','', $form_state->getValue("amount$n") );
+    $item = Xss::filter($row['description']);  
+    $amount = str_replace(',','', $row['amount'] );
     $linebase = (round($amount/$currencyRate, 2));
     $total = $total + $amount;
     
-    if(!$form_state->getValue("aid$n")) {
+    if($row['account'] == NULL) {
       $aid = 0;
     } else {
-      $aid = $form_state->getValue("aid$n");
+      $aid = $row['account'];
     } 
 
     $fields=array('serial' => $serial,
@@ -934,7 +1029,7 @@ $grandtotal = 0;
                   'description' => $item, 
                   'amount' => $amount,
                   'value_base' => $linebase,
-                  'receipt' => Xss::filter($form_state->getValue("receipt$n")),
+                  'receipt' => Xss::filter($row['receipt']),
                   );
       
     $insert = Database::getConnection('external_db', 'external_db')
@@ -1010,7 +1105,7 @@ $grandtotal = 0;
                 
                 );
                  
-  if ($form_state->getValue('new_memo') && $form_state->getValue('new_memo') == 1 ) {
+  if ($form_state->getValue('new_memo') && ($form_state->getValue('new_memo') == 1 || $form_state->getValue('new_memo') == 2)) {
     $insert = Database::getConnection('external_db', 'external_db')->insert('ek_expenses_memo')
       ->fields($fields1)
       ->execute(); 
@@ -1122,7 +1217,7 @@ $grandtotal = 0;
         } else {
           $form_state->setRedirect('ek_finance_manage_list_memo_personal' ) ;
         }
-  
+ 
   }
 
 }

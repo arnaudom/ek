@@ -5,7 +5,9 @@
 /*
  * Default memo template in php for html display
  */
-
+$document = "<a class='button' href='" . $url_list . "' ><i class='fa fa-list-ul'></i> " . t('List') . "</a>" 
+        . "<a class='button' href='" . $url_edit . "' ><i class='fa fa-edit'></i> " . t('Edit') . "</a>" 
+        . "<a class='button' href='" . $url_pdf . "' ><i class='fa fa-file-pdf-o'></i> " . t('Pdf') . "</a>";
 
 $copy = '';
 $original = '';
@@ -25,7 +27,7 @@ if ($stamp == "2") {
 
 
 
-$document = '<page_wrapper>';
+$document .= '<page_wrapper>';
 
 
 

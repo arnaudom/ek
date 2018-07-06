@@ -49,7 +49,7 @@ foreach($accounts_exp_class as $key => $name) {
     $sum_row_amount = 0;
     $flag = 0;
     $subtotal_column_purchases = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0];
-    $orws = [];
+    $rows = [];
     
     // Get the account type detail
     $query = Database::getConnection('external_db', 'external_db')
@@ -644,7 +644,9 @@ for ($m = 1; $m <= 12; $m++) {
     }
     $balances['enyp']['sumRow'] =  round($sum / $divide, 2);
 
-} 
+}
+
+
 
 
 

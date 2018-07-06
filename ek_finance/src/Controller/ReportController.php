@@ -84,11 +84,42 @@ class ReportController extends ControllerBase {
             $viewS = 'allocation';
             $viewE = 'allocation';
             if($_SESSION['repfilter']['view'] == '1') {
+                //actual data view selected
                 $viewS = 'head';
-                $viewE = 'company';
+                $viewE = 'company';   
+            } else {
+                //control error
+                //allocation view may be wrong if aid accounts from allocation source 
+                //are not active in allocated destination
                 
+                //select all aid accounts that are used in journal from other companies
+                $or = db_or();
+                $or->condition('aid', $chart['cos'] . '%' , 'like');
+                $or->condition('aid', $chart['expenses'] . '%' , 'like');
+                $or->condition('aid', $chart['other_expenses'] . '%' , 'like');
+                $or->condition('aid', $chart['income'] . '%' , 'like');
+                $or->condition('aid', $chart['other_income'] . '%' , 'like');
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+                $query->fields('j', ['aid'])
+                        ->distinct()
+                        ->condition('coid', $coid, '<>')
+                        ->condition($or);
+                $control = $query->execute();
+                $error = [];
+                while($c = $control->fetchObject()) {
+                    $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_accounts', 'a');
+                    $query->fields('a', ['aid'])
+                            ->condition('aid', $c->aid, '=')
+                            ->condition('coid', $coid, '=');
+                    if(! $query->execute()->fetchField()&& $c->aid != 0){
+                       $error[] =  $c->aid;
+                    }
+                }
+                $items['error'] = $error;
             }
-                
+
             $settings = new FinanceSettings();
             $baseCurrency = $settings->get('baseCurrency');
             if ($settings->get('budgetUnit') == 2) {

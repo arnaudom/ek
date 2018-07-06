@@ -115,8 +115,8 @@ class ReceiveMemo extends FormBase {
       '#type' => 'textfield',
       '#size' => 15,
       '#maxlength' => 255,
-      '#default_value' => $rate,
-      '#required' => $req,
+      '#default_value' => 0,
+      '#required' => TRUE,
       '#title' => t('Exchange rate'),
       '#description' =>'',
       '#prefix' => "<div id='fx'>", 
@@ -244,7 +244,7 @@ $i = 0;
       $form_state->setErrorByName("fx_rate", $this->t('the exchange rate value input is wrong'));
     }
     if( !is_numeric($form_state->getValue('grandtotal')) ) {
-          $form_state->setErrorByName('amount'.$i, $this->t('The input value is wrong'));
+          $form_state->setErrorByName('grandtotal', $this->t('The input value is wrong'));
     }
   
   

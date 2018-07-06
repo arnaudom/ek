@@ -468,12 +468,12 @@ class Journal {
 
                 // credit payable 
                 // credit source is set as payroll
-                self::save($j['p1a'], '0', $j['coid'], 'credit', 'payroll', $j['reference'], $j['date'], $j['p1'], '0', $j['currency']);
+                self::save($j['p1a'], '0', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $j['p1'], '0', $j['currency']);
 
                 //exchange
                 if ($j['currency'] <> $baseCurrency) {
                     $exchange = CurrencyData::journalexchange($j['currency'], $j['p1'], $j['fxRate']);
-                    self::save($j['p1a'], '1', $j['coid'], 'credit', 'payroll', $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
+                    self::save($j['p1a'], '1', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                 }
                 //add payable creditors
                 //loop array for funds and tax (able to increase number of funds in future
@@ -481,12 +481,12 @@ class Journal {
 
                     if ($j['funds']["f$i"] > 0) {
                         $a = 'f' . $i . 'a';
-                        self::save($j['funds'][$a], '0', $j['coid'], 'credit', 'payroll', $j['reference'], $j['date'], $j['funds']["f$i"], '0', $j['currency']);
+                        self::save($j['funds'][$a], '0', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $j['funds']["f$i"], '0', $j['currency']);
 
                         //exchange
                         if ($j['currency'] <> $baseCurrency) {
                             $exchange = CurrencyData::journalexchange($j['currency'], $j['funds']["f$i"], $j['fxRate']);
-                            self::save($j['funds'][$a], '1', $j['coid'], 'credit', 'payroll', $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
+                            self::save($j['funds'][$a], '1', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                         }
                     }//if                
                 }//for
@@ -495,12 +495,12 @@ class Journal {
 
                     if ($j['tax']["t$i"] > 0) {
                         $a = 't' . $i . 'a';
-                        self::save($j['tax'][$a], '0', $j['coid'], 'credit', 'payroll', $j['reference'], $j['date'], $j['tax']["t$i"], '0', $j['currency']);
+                        self::save($j['tax'][$a], '0', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $j['tax']["t$i"], '0', $j['currency']);
 
                         //exchange
                         if ($j['currency'] <> $baseCurrency) {
                             $exchange = CurrencyData::journalexchange($j['currency'], $j['tax']["t$i"], $j['fxRate']);
-                            self::save($j['tax'][$a], '1', $j['coid'], 'credit', 'payroll', $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
+                            self::save($j['tax'][$a], '1', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                         }
                     }//if                
                 }//for            
@@ -561,7 +561,7 @@ class Journal {
                 }
                 if($j['source'] == 'payroll') {
                     //record payment credit with expense source for optional edit via expense interface
-                    self::save($aid, '0', $j['coid'], 'credit', 'expense payroll', $j['reference'], $j['date'], $credit, '0', $j['currency']);
+                    self::save($aid, '0', $j['coid'], 'credit', 'payroll', $j['reference'], $j['date'], $credit, '0', $j['currency']);
                 } else {
                     self::save($aid, '0', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $credit, '0', $j['currency']);
                 }
@@ -570,7 +570,7 @@ class Journal {
                 //exchange
                 if ($j['currency'] <> $baseCurrency) {
                     if($j['source'] == 'payroll') {
-                        self::save($aid, '1', $j['coid'], 'credit', 'expense payroll', $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
+                        self::save($aid, '1', $j['coid'], 'credit', 'payroll', $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                     } else {
                         self::save($aid, '1', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                     }

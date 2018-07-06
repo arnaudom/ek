@@ -16,6 +16,8 @@ use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InsertCommand;
+use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\ek_finance\FinanceSettings;
 
 /**
@@ -86,12 +88,17 @@ class AttachFileMemo extends FormBase {
                 '#type' => 'hidden',
                 '#value' => $data->category,
             );
-            
         } else {
             
         }
 
+        $type = array(1 => "internal", 2 => "internal", 3 => "internal", 4 => "internal", 5 => "personal"); 
+    $url = Url::fromRoute('ek_finance_manage_list_memo_'. $type[$data->category], array(), array())->toString();
+        $form['back'] = array(
+          '#type' => 'item',
+          '#markup' => t('<a href="@url" >List</a>', array('@url' => $url ) ) ,
 
+        );
 
 //
 // Attachments
@@ -107,11 +114,10 @@ class AttachFileMemo extends FormBase {
             '#type' => 'details',
             '#title' => $this->t('Attachments'),
             '#open' => TRUE,
-            '#attributes' => '',
         );
         $form['attach']['upload_doc'] = array(
             '#type' => 'file',
-            '#title' => t('Select file'),
+            '#title' => $this->t('Select file'),
             '#prefix' => '<div class="container-inline">',
         );
 
@@ -122,59 +128,28 @@ class AttachFileMemo extends FormBase {
             '#suffix' => '</div>',
             '#ajax' => array(
                 'callback' => array($this, 'uploadFile'),
-                'wrapper' => 'attachments',
+                'wrapper' => 'new_attachments',
                 'effect' => 'fade',
-                'method' => 'append'
+                'method' => 'append',
             ),
         );
-        $form['attach']['t1'] = array(
-            '#type' => 'item',
-            '#prefix' => "<div class='table' id='attachments'>",
+
+        $form['attach']['attach_new'] = array(
+            '#type' => 'container',
+            '#attributes' => array(
+                'id' => 'attachments',
+                'class' => 'table'
+            ),
         );
 
-        if ($id <> '') {
-            $query = 'SELECT d.id,uri FROM {ek_expenses_memo_documents} d '
-                    . 'INNER JOIN {ek_expenses_memo} m '
-                    . 'ON d.serial=m.serial WHERE m.id=:id';
-            $docs = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $id));
+        $form['attach']['attach_error'] = array(
+            '#type' => 'container',
+            '#attributes' => array(
+                'id' => 'error',
+            ),
+        );
 
 
-            $i = 1;
-            while ($doc = $docs->fetchObject()) {
-
-                $name = explode('/', $doc->uri);
-
-                $form['attach']['row' . $i] = array(
-                    '#type' => 'item',
-                    '#markup' => "<a href='" . file_create_url($doc->uri) . "' target='_blank'>" . array_pop($name) . "</a>",
-                    '#prefix' => "<div class='row' id='row" . $i . "'><div class='cell'>",
-                    '#suffix' => "</div>",
-                );
-
-
-                    $form['attach']['del-' . $doc->id] = array(
-                        '#type' => 'button',
-                        '#name' => $i . '-' . $doc->id,
-                        '#value' => t('delete attachment') . ' ' . $i,
-                        '#prefix' => "<div class='cell'>",
-                        '#suffix' => "</div></div>",
-                        '#ajax' => array(
-                            'callback' => array($this, 'removeFile'),
-                            'wrapper' => 'row' . $i,
-                            'effect' => 'fade',
-                        //'method' => 'append'
-                        ),
-                    );
-
-                $i++;
-            }
-
-            $form['attach']['t2'] = array(
-                '#type' => 'item',
-                '#suffix' => "</div>",
-            );
-        }
 
         $form['actions'] = array('#type' => 'actions');
         $form['actions']['record'] = array(
@@ -182,8 +157,10 @@ class AttachFileMemo extends FormBase {
             '#value' => $this->t('Record'),
         );
 
-        //$form['#tree'] = TRUE;
-        $form['#attached']['library'][] = 'ek_finance/ek_finance.memo_form';
+        $form['#attached'] = array(
+            'drupalSettings' => array('id' => $id, 'serial' => $tempSerial),
+            'library' => array('ek_finance/ek_finance.memo_form'),
+        );
 
 
         return $form;
@@ -197,10 +174,9 @@ class AttachFileMemo extends FormBase {
      */
     public function uploadFile(array &$form, FormStateInterface $form_state) {
 
-
         //upload
-        $extensions = 'png jpg jpeg';
-        $validators = array('file_validate_extensions' => array($extensions));
+        $extensions = 'png jpeg jpg';
+        $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [file_upload_max_size()]);
         $file = file_save_upload("upload_doc", $validators, FALSE, 0);
 
         if ($file) {
@@ -210,67 +186,40 @@ class AttachFileMemo extends FormBase {
             $dest = $dir . '/' . $file->getFilename();
             $filename = file_unmanaged_copy($file->getFileUri(), $dest);
 
-
             $fields = array(
                 'serial' => $form_state->getValue('tempSerial'),
                 'uri' => $filename,
                 'doc_date' => time(),
             );
             $insert = Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_expenses_memo_documents')
-                        ->fields($fields)->execute();
-        }
+                            ->insert('ek_expenses_memo_documents')->fields($fields)->execute();
 
-
-        if ($insert) {
-
-            $img = "<div class='row'>
-                  <div class='cell'>
-                    <a href='" . file_create_url($filename) . "' target='_blank'>" . array_pop(explode('/', $filename)) . "</a>
-                  </div>
-                  <div class='cell'>
-                    
-                  </div>
-                </div>
-                ";
             $response = new AjaxResponse();
-            return $response->addCommand(new InsertCommand('#attachments', $img));
+            if ($insert) {
+                return $response->addCommand(new HtmlCommand('#error', ""));
+            } else {
+                $msg = "<div aria-label='Error message' class='messages messages--error'>"
+                        . t('Error') . "</div>";
+                return $response->addCommand(new HtmlCommand('#error', $msg));
+            }
+        } else {
+            $size = round(file_upload_max_size() / 1000000,0);
+            $msg = "<div aria-label='Error message' class='messages messages--error'>"
+                    . t('Error') . ". " . t('Allowed extensions') . ": " . 'png jpg jpeg'
+                    . ', ' . t('maximum size') . ": " . $size . 'Mb'
+                    . "</div>";
+            $response = new AjaxResponse();
+            return $response->addCommand(new HtmlCommand('#error', $msg));
         }
-
-        //upload
     }
 
-    /**
-     * Callback for  ajax file remove
-     * 
-     */
-    public function removeFile(array &$form, FormStateInterface $form_state) {
-
-        $element = explode('-', $_POST['_triggering_element_name']);
-        $id = '#row' . $element[0];
-        $uri = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT uri from {ek_expenses_memo_documents} where id=:id", array(':id' => $element[1]))
-                ->fetchField();
-        file_unmanaged_delete($uri);
-
-        Database::getConnection('external_db', 'external_db')
-                ->delete('ek_expenses_memo_documents')
-                ->condition('id', $element[1])
-                ->execute();
-
-        $msg = "<div class='messages messages--status' aria-label='Status message' role='contentinfo'>
-                " . t('Attachment removed') . ": " . array_pop(explode('/', $uri)) . "
-            </div>";
-        $response = new AjaxResponse();
-        return $response->addCommand(new InsertCommand($id, $msg));
-    }
 
     /**
      * {@inheritdoc}
      * 
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-        
+
     }
 
     /**

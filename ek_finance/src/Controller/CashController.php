@@ -253,7 +253,7 @@ class CashController extends ControllerBase {
                 ':y' => 'Y',
                 ':s' => 'paid',
                 ':cu' => $filter['currency'],
-                ':e' => $account1,
+                ':e' => $account2,
                 ':p1' => $filter['from'],
                 ':p2' => $filter['to'],
               );

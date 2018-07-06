@@ -65,8 +65,9 @@ class PayrollRecord extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $param = NULL) {
 
-        $pay = $_SESSION['pay'];
+        //$pay = $_SESSION['pay'];
         //$_SESSION['pay'] = NULL;
+        $pcode = [];
         $param = unserialize($param);
         $settings = NEW HrSettings($param['coid']);
         $list = $settings->HrAccounts[$param['coid']];
@@ -82,34 +83,75 @@ class PayrollRecord extends FormBase {
             );
         }
 
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_hr_post_data', 'p');
+            $query->fields('p', ['emp_id','month','n_days','nett','advance','epf_er','epf_yee','socso_er','socso_yee','incometax','with_yer','with_yee']);
+            $query->innerJoin('ek_hr_workforce', 'w', 'p.emp_id = w.id');
+            $query->fields('w', ['name', 'currency']);
+            $query->condition('company_id', $param['coid'], '=');
+            $query->condition('month', $param['month'], '=');
+            $data = $query->execute();
 
+            
+            
+            $header = array(
+                'deductions' => [],
+                'select' => array(
+                    'data' => $this->t('select'),
+                ),
+                'description' => array(
+                    'data' => $this->t('Description'),
+                    'field' => 'name',
+                    'sort' => 'asc',
+                    'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                ),
+                'client' => array(
+                    'data' => $this->t('client'),
+                ),
+                'project' => array(
+                    'data' => $this->t('Project'),
+                ),
+                'account' => array(
+                    'data' => $this->t('Account'),
+                ),
+                'credit' => array(
+                    'data' => $this->t('Credit'),
+                ),
+                'fx' => array(
+                    'data' => $this->t('Exc. rate'),
+                ),
+                'payDate' => array(
+                    'data' => $this->t('Pay date'),
+                ),
+                'net' => array(
+                    'data' => $this->t('Net + advance'),
+                ),
+                'currency' => array(
+                    'data' => $this->t('Currency'),
+                ),
+            );
 
-        $headerline = "<div class='table'><div class='row'><div class='cell cellborder'></div><div class='cell cellborder'></div><div class='cell cellborder'>"
-                . t("Description") . "</div><div class='cell cellborder'>"
-                . t("Client") . "</div><div class='cell cellborder'>"
-                . t("Project") . "</div><div class='cell cellborder'>"
-                . t("Account") . "</div><div class='cell cellborder'>"
-                . t("Credit") . "</div><div class='cell cellborder'>"
-                . t('fx') . "</div><div class='cell cellborder'>"
-                . t("Pay date") . "</div><div class='cell cellborder'>"
-                . t("Nett + advance") . "</div><div class='cell cellborder'>"
-                . t("Currency") . "</div>";
+            $form['HrTable'] = array(
+                '#tree' => TRUE,
+                '#theme' => 'table',
+                '#header' => $header,
+                '#rows' => array(),
+                '#attributes' => array('id' => 'HrTable'),
+                '#empty' => $this->t('No data'),
+            );
+            
 
-
-        $form['items']["headerline"] = array(
-            '#type' => 'item',
-            '#markup' => $headerline,
-        );
-
-        $form["coid"] = array(
+        $form['HrTable']["coid"] = array(
             '#type' => 'hidden',
             '#value' => $param['coid'],
         );
 
         $client = array('n/a' => t('not applicable'));
         $client += AddressBookData::addresslist(1);
-        if ($this->moduleHandler->moduleExists('ek_projects'))
+        if ($this->moduleHandler->moduleExists('ek_projects')){
             $pcode = ProjectData::listprojects(0);
+        }
         $fsettings = new FinanceSettings();
         $chart = $fsettings->get('chart');
         $AidOptions = AidList::listaid($param['coid'], array($chart['cos'], $chart['expenses'], $chart['other_expenses']), 1);
@@ -148,171 +190,181 @@ class PayrollRecord extends FormBase {
         $credit[(string) t('cash')] = $cash;
 
         $n = 0;
-
-        foreach ($pay as $employee => $value) {
-
-            if ($employee <> 'coid') {
-                $n++;
-                $d = implode(',', $value['deduction']);
-                $cl = '';
-
-                if ($form_state->getValue('include-' . $n) == '0') {
-                    $cl = 'delete';
-                }
-
-                $form['items']["deduction-" . $n] = array(
-                    '#type' => 'hidden',
-                    '#size' => 20,
-                    '#value' => $d,
-                );
-
-                $form['items']['row' . $n] = array(
-                    '#type' => 'item',
-                    '#markup' => $n,
-                    '#prefix' => "<div class='row current $cl' id='$n' ><div class='cell'>",
-                    '#suffix' => '</div>',
-                );
-
-                $form['items']['include-' . $n] = array(
-                    '#type' => 'checkbox',
-                    '#id' => 'i-' . $employee,
-                    '#default_value' => 1,
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                    '#attributes' => array('onclick' => "jQuery('#$n ').toggleClass('delete');"),
-                );
-
-                $form['items']["description-" . $n] = array(
-                    '#type' => 'textfield',
-                    '#size' => 20,
-                    '#maxlength' => 255,
-                    '#required' => TRUE,
-                    '#default_value' => t('allowance') . ' ' . $value['name'],
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                );
-
-                $form['items']['client-' . $n] = array(
-                    '#type' => 'select',
-                    '#size' => 1,
-                    '#options' => $client,
-                    '#required' => TRUE,
-                    '#default_value' => "not applicable",
-                    '#attributes' => array('style' => array('width:100px;')),
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                );
-
-                if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $query = "SELECT pcode FROM {ek_expenses} WHERE comment LIKE :c ORDER by pdate DESC limit 1";
-                    $default = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':c' => t('allowance') . ' ' . $value['name'] . '%'))
-                            ->fetchField();
-                    $form['items']['pcode-' . $n] = array(
-                        '#type' => 'select',
-                        '#size' => 1,
-                        '#options' => $pcode,
-                        '#default_value' => isset($default) ? $default : NULL,
-                        '#attributes' => array('style' => array('width:100px;')),
-                        '#prefix' => "<div class='cell'>",
-                        '#suffix' => '</div>',
-                    );
-                } // project 
-                else {
-                    $form['items']['pcode-' . $n] = array(
-                        '#type' => 'item',
-                        '#prefix' => "<div class='cell'>",
-                        '#suffix' => '</div>',
-                    );
-                }
-
+        
+        While ($r = $data->fetchObject()) {
+            $n++;
+            //pull default/previous expense,credit accounts for user convenience
                 $query = "SELECT type FROM {ek_expenses} WHERE comment LIKE :c ORDER by pdate DESC limit 1";
-                $default = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':c' => t('allowance') . ' ' . $value['name'] . '%'))
+                $expense_account = Database::getConnection('external_db', 'external_db')
+                        ->query($query, array(':c' => t('allowance') . '%' . $r->name . '%'))
                         ->fetchField();
-                $form['items']["account-" . $n] = array(
-                    '#type' => 'select',
-                    '#size' => 1,
-                    '#options' => $AidOptions,
-                    '#required' => TRUE,
-                    '#default_value' => isset($default) ? $default : NULL,
-                    '#attributes' => array('style' => array('width:100px;')),
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                );
-
+                
                 $query = "SELECT cash,currency,pdate FROM {ek_expenses} WHERE comment LIKE :c ORDER by pdate DESC limit 1";
-                $default = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':c' => t('allowance') . ' ' . $value['name'] . '%'))
+                $credit_account = Database::getConnection('external_db', 'external_db')
+                        ->query($query, array(':c' => t('allowance') . '%' . $r->name . '%'))
                         ->fetchObject();
-                $form['items']['credit-' . $n] = array(
-                    '#type' => 'select',
-                    '#size' => 1,
-                    '#options' => $credit,
-                    '#required' => TRUE,
-                    '#default_value' => isset($default->cash) ? $default->cash : NULL,
-                    '#prefix' => "<div id='credit' class='cell'>",
-                    '#suffix' => '</div>',
-                    '#attributes' => array('style' => array('width:100px;')),
-                    '#ajax' => array(
-                        'callback' => '\Drupal\ek_finance\Form\PayrollRecord::fx_rate',
-                        'wrapper' => "fx$n",
-                        'event' => 'change',
+            //deductions
+            $deductions = array(
+                '0' => $r->epf_er + $r->epf_yee,
+                '1' => $r->socso_er + $r->socso_yee,
+                '2' => $r->with_yer + $r->with_yee,
+                '3' => 0,
+                '4' => 0,
+                '5' => $r->incometax,
+                '6' => 0
+            );
+            $form['deductions'] = array(
+                    '#id' => 'deductions-' . $r->emp_id,
+                    '#type' => 'hidden',
+                    '#value' => serialize($deductions),
+                );            
+            $form['select'] = array(
+                    '#id' => 'select-' . $r->emp_id,
+                    '#type' => 'checkbox',
+                    '#default_value' => 1,
+                    '#attributes' => array(
+                        'title' => t('select'),
+                        'onclick' => "jQuery('#".$r->emp_id."').toggleClass('delete');jQuery('#".$r->emp_id."').toggleClass('odd', $n % 3 === 0);"
                     ),
                 );
-
-                if (isset($default->currency)) {
-                    $val = CurrencyData::rate($default->currency);
-                } else {
-                    $val = 1;
-                }
-                $form['items']['fx_rate-' . $n] = array(
-                    '#type' => 'textfield',
-                    '#size' => 5,
-                    '#default_value' => $val,
-                    '#required' => FALSE,
-                    '#prefix' => "<div id='fx$n' class='cell'>",
-                    '#suffix' => '</div>',
-                );
-
-                $form['items']["pdate-" . $n] = array(
-                    '#type' => 'date',
-                    '#id' => "edit-from$employee",
-                    '#size' => 11,
-                    '#required' => TRUE,
-                    '#default_value' => date('Y-m-d'),
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                );
-
-                $form['items']["nett-" . $n] = array(
+            $form['description'] = array(
+                    '#id' => 'description-' . $r->emp_id,
                     '#type' => 'textfield',
                     '#size' => 20,
                     '#maxlength' => 255,
+                    '#default_value' => t('allowance') . ' ' . $r->month . ' ' . $r->name,
                     '#required' => TRUE,
-                    '#default_value' => number_format($value['nett'] + $value['advance'], 2),
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                    '#attributes' => array('class' => array('amount')),
                 );
-
-                $currency = Database::getConnection('external_db', 'external_db')
-                                ->query("SELECT currency FROM {ek_hr_workforce} WHERE id=:id", array(':id' => $employee))->fetchField();
-
-                $form['items']['currency-' . $n] = array(
-                    '#type' => 'hidden',
-                    '#default_value' => $currency,
-                    '#prefix' => "<div class='cell'>" . $currency,
-                    '#suffix' => '</div></div>',
-                );
+            $form['client'] = array(
+                    '#id' => 'client-' . $r->emp_id,
+                    '#type' => 'select',
+                    '#options' => $client,
+                    '#attributes' => array('style' => array('width:80px;')),
+                    '#default_value' => "not applicable",
+                    '#required' => TRUE,
+                );            
+            
+            if ($this->moduleHandler->moduleExists('ek_projects')) {
+                $form['pcode'] = array(
+                    '#id' => 'pcode-' . $r->emp_id,
+                    '#type' => 'select',
+                    '#options' => $pcode,
+                    '#default_value' => NULL,
+                    '#default_value' => "not applicable",
+                    '#attributes' => array('style' => array('width:80px;')),
+                    '#required' => TRUE,
+                );  
+            } else {
+                $form['pcode'] = array(
+                    '#id' => 'pcode-' . $r->emp_id,
+                    '#type' => 'item',
+                    );
             }
-        }//for
+            
+            $form['account'] = array(
+                    '#id' => 'account-' . $r->emp_id,
+                    '#type' => 'select',
+                    '#options' => $AidOptions,
+                    '#attributes' => array('style' => array('width:80px;')),
+                    '#default_value' => isset($expense_account) ? $expense_account : NULL,
+                    
+                ); 
+            
+            $form['credit'] = array(
+                    '#id' => 'credit-' . $r->emp_id,
+                    '#type' => 'select',
+                    '#options' => $credit,
+                    '#attributes' => array('style' => array('width:80px;')),
+                    '#default_value' => isset($credit_account->cash) ? $credit_account->cash : NULL,
+                    '#ajax' => array(
+                        'callback' => array($this, 'fx_rate'),
+                        'wrapper' => "fx" . $r->emp_id,
+                        'event' => 'change',
+                    ),
+                );             
+             
+            $form['fx'] = array(
+                    '#id' => 'fx-' . $r->emp_id,
+                    '#type' => 'textfield',
+                    '#size' => 5,'#default_value' => isset($credit_account->currency) ? CurrencyData::rate($credit_account->currency) : 1,
+                    '#required' => FALSE,
+                    '#prefix' => "<div id='fx".$r->emp_id."'>",
+                    '#suffix' => '</div>',
+                );
+            
+            $form['payDate'] = array(
+                    '#id' => 'payDate-' . $r->emp_id,
+                    '#type' => 'date',
+                    '#size' => 14,
+                    '#default_value' => date('Y-m-d'),
+                    '#required' => TRUE,
+                );  
+            
+            $form['net'] = array(
+                    '#id' => 'net-' . $r->emp_id,
+                    '#type' => 'textfield',
+                    '#size' => 20,
+                    '#maxlength' => 255,
+                    '#default_value' => number_format($r->nett + $r->advance, 2),
+                    '#required' => TRUE,
+                );
+            
+            $form['currency'] = array(
+                    '#id' => 'currency-' . $r->emp_id,
+                    '#type' => 'textfield',
+                    '#size' => 3,
+                    '#maxlength' => 5,
+                    '#default_value' => $r->currency,
+                    '#disabled' => TRUE,
+                );            
+            
+            
+            $form['HrTable'][$r->emp_id] = array(
+                    'deductions' => &$form['deductions'],
+                    'select' => &$form['select'],
+                    'description' => &$form['description'],
+                    'client' => &$form['client'],
+                    'pcode' => &$form['pcode'],
+                    'account' => &$form['account'],
+                    'credit' => &$form['credit'],
+                    'fx' => &$form['fx'],
+                    'payDate' => &$form['payDate'],
+                    'net' => &$form['net'],
+                    'currency' => &$form['currency'],
+                );
+            
+            $form['HrTable']['#rows'][] = array(
+                    'data' => array(
+                        array('data' => &$form['deductions']),
+                        array('data' => &$form['select']),
+                        array('data' => &$form['description'], 'title' => ['#markup' => $r->name]),
+                        array('data' => &$form['client']),
+                        array('data' => &$form['pcode']),
+                        array('data' => &$form['account']),
+                        array('data' => &$form['credit']),
+                        array('data' => &$form['fx']),
+                        array('data' => &$form['payDate']),
+                        array('data' => &$form['net'], 'title' => ['#markup' => $r->nett . " + " . $r->advance]),
+                        array('data' => &$form['currency']),
+                    ),
+                    'id' => array($r->emp_id)
+                );
 
-        $form['items']['count'] = array(
-            '#type' => 'hidden',
-            '#value' => $n,
-            '#suffix' => '</div>',
-        );
+                unset($form['deductions']);
+                unset($form['select']);
+                unset($form['description']);
+                unset($form['client']);
+                unset($form['pcode']);
+                unset($form['account']);
+                unset($form['credit']);
+                unset($form['fx']);
+                unset($form['payDate']);
+                unset($form['net']);
+                unset($form['currency']);
+                
+                
+        }
+        
 
         if (!isset($error)) {
             $form['actions'] = array(
@@ -338,35 +390,35 @@ class PayrollRecord extends FormBase {
      */
     public function fx_rate(array &$form, FormStateInterface $form_state) {
         // if add exchange rate
+        $data = $form_state->getValue('HrTable');
 
-        $trigger = explode('-', $_POST['_triggering_element_name']);
-        $n = $trigger[1];
+        $trigger = $form_state->getTriggeringElement();
+        $n = $trigger['#parents'][1];
 
         // FILTER cash account
-        if (strpos($form_state->getValue('credit-' . $n), "-")) {
+        if (strpos($data[$n]['credit'], "-")) {
             //the currency is in the form value
-
-            $data = explode("-", $form_state->getValue('credit-' . $n));
-            $currency = $data[0];
+            $c = explode("-", $data[$n]['credit']);
+            $currency = $c[0];
         } else {
             // bank account
             $query = "SELECT currency from {ek_bank_accounts} where id=:id ";
             $currency = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $form_state->getValue('credit-' . $n)))
+                    ->query($query, array(':id' => $data[$n]['credit']))
                     ->fetchField();
         }
 
         $fx = CurrencyData::rate($currency);
 
         if ($fx <> 1) {
-            $form['items']['fx_rate-' . $n]['#value'] = $fx;
-            $form['items']['fx_rate-' . $n]['#required'] = TRUE;
+            $form['HrTable'][$n]['fx']['#value'] = $fx;
+            $form['HrTable'][$n]['fx']['#required'] = TRUE;
         } else {
-            $form['items']['fx_rate-' . $n]['#required'] = False;
-            $form['items']['fx_rate-' . $n]['#value'] = 1;
+            $form['HrTable'][$n]['fx']['#required'] = False;
+            $form['HrTable'][$n]['fx']['#value'] = 1;
         }
 
-        return $form['items']['fx_rate-' . $n];
+        return $form['HrTable'][$n]['fx'];
     }
 
     /**
@@ -374,22 +426,41 @@ class PayrollRecord extends FormBase {
      * 
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
-        for ($n = 1; $n <= $form_state->getValue('count'); $n++) {
-            if ($form_state->getValue('include-' . $n) == 1) {
-
-                if ($form_state->getValue('fx_rate-' . $n) == '0' || !is_numeric($form_state->getValue('fx_rate-' . $n))) {
-
-                    $form_state->setErrorByName("fx_rate-$n", $this->t('there is no value for item @n', array('@n' => $n)));
+        
+        
+        $data = $form_state->getValue('HrTable');
+        $n=0;
+        foreach ($data as $key => $value) {
+           
+            if($key != 'coid' && $value['select'] == 1){
+            $n++; 
+            if ($value['account'] == '' || !is_numeric($value['account'])) {
+                    $form_state->setErrorByName("HrTable][$key][account", $this->t('The input value is wrong for item @n', array('@n' => $value['account'])));
                 }
 
-                $nett = str_replace(',', '', $form_state->getValue('nett-' . $n));
-                if ($nett == '' || !is_numeric($nett)) {
-
-                    $form_state->setErrorByName("nett-$n", $this->t('The input value is wrong for item @n', array('@n' => $n)));
+            if ($value['credit'] == '') {
+                    $form_state->setErrorByName("HrTable][$key][credit", $this->t('The input value is wrong for item @n', array('@n' => $value['credit'])));
                 }
-            }
+                
+            if ($value['fx'] == '0' || !is_numeric($value['fx'])) {
+                    $form_state->setErrorByName("HrTable][$key][fx", $this->t('The input value is wrong for item @n', array('@n' => $value['fx'])));
+                }
+                
+            $net = (float)str_replace(',', '', $value['net']);
+            if ($net == '' || !is_numeric($net)) {
+                    $form_state->setErrorByName("HrTable][$key][net", $this->t('The input value is wrong for item @n', array('@n' => $value['net'])));
+                }
+                
+           }
+            
         }
+
+        if ($n == 0) {
+             $form_state->setErrorByName("HrTable", $this->t('No record selected'));
+             
+          }
+        
+        
     }
 
     /**
@@ -397,26 +468,22 @@ class PayrollRecord extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
+        $array = $form_state->getValue('HrTable');
         $journal = new Journal();
-        $settings = NEW HrSettings($form_state->getValue('coid'));
-        $list = $settings->HrAccounts[$form_state->getValue('coid')];
+        $settings = NEW HrSettings($array['coid']);
+        $list = $settings->HrAccounts[$array['coid']];
         $expenses_entry = 0;
         $journal_entry = 0;
+        $coid = $array['coid'];
 
-        for ($n = 1; $n <= $form_state->getValue('count'); $n++) {
+        foreach ($array as $key => $value) {
 
-            if ($form_state->getValue('include-' . $n) == 1) {
+            if ($key != 'coid' && $value['select'] == 1) {
 
-                $class = substr($form_state->getValue("account-" . $n), 0, 2);
-                $query = "SELECT country from {ek_company} WHERE id=:id";
-                /*reset allocation field to coid
-                $allocation = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $form_state->getValue('coid')))
-                        ->fetchField();
-                */
-                $allocation = $form_state->getValue('coid');
-                $date = explode("-", $form_state->getValue("pdate-" . $n));
-                $value = str_replace(',', '', $form_state->getValue("nett-" . $n));
+                $class = substr($value["account"], 0, 2);
+                $allocation = $coid;
+                $date = explode("-", $value['payDate']);
+                $net = (float)str_replace(',', '', $value['net']);
 
                 $query = "SELECT id,currency FROM {ek_bank_accounts}";
                 $bank_acc_list = Database::getConnection('external_db', 'external_db')
@@ -424,58 +491,58 @@ class PayrollRecord extends FormBase {
                         ->fetchAllKeyed();
 
 
-                if (strpos($form_state->getValue('credit-' . $n), "-")) {
+                if (strpos($value['credit'], "-")) {
                     $cash = 'Y';
-                    $credit = $form_state->getValue('credit-' . $n);
-                    $acc = explode('-', $form_state->getValue('credit-' . $n));
+                    $credit = $value['credit'];
+                    $acc = explode('-', $value['credit']);
                     $crt_currency = $acc[0];
                 } else {
-                    $cash = $form_state->getValue('credit-' . $n);
-                    $credit = $form_state->getValue('credit-' . $n);
-                    $crt_currency = $bank_acc_list[$form_state->getValue('credit-' . $n)];
+                    $cash = $value['credit'];
+                    $credit = $value['credit'];
+                    $crt_currency = $bank_acc_list[$value['credit']];
                 }
 
 
-                if ($form_state->getValue('currency-' . $n) <> $crt_currency) {
+                if ($value['currency'] <> $crt_currency) {
                     //currency of credit account is different from currency of value    
                     $query = "SELECT rate FROM {ek_currency} WHERE currency=:c";
                     $rate2 = Database::getConnection('external_db', 'external_db')
-                            ->query($query, [':c' => $form_state->getValue('currency-' . $n)])
+                            ->query($query, [':c' => $value['currency']])
                             ->fetchField();
                     $rate1 = Database::getConnection('external_db', 'external_db')
                             ->query($query, [':c' => $crt_currency])
                             ->fetchField();
-                    $value = round($value * $rate1 / $rate2, 2);
-                    $amount = round($value / $form_state->getValue('fx_rate-' . $n), 2);
+                    $net = round($net * $rate1 / $rate2, 2);
+                    $amount = round($net / $value['fx'], 2);
                     $currency = $crt_currency;
                 } else {
-                    $amount = round($value / $form_state->getValue('fx_rate-' . $n), 2);
-                    $currency = $form_state->getValue('currency-' . $n);
+                    $amount = round($net / $value['fx'], 2);
+                    $currency = $value['currency'];
                 }
 
 
 
                 $fields = array(
                     'class' => $class,
-                    'type' => $form_state->getValue("account-" . $n),
+                    'type' => $value['account'],
                     'allocation' => $allocation,
-                    'company' => $form_state->getValue('coid'),
-                    'localcurrency' => $value,
-                    'rate' => $form_state->getValue('fx_rate-' . $n),
+                    'company' => $coid,
+                    'localcurrency' => $net,
+                    'rate' => $value['fx'],
                     'amount' => $amount,
                     'currency' => $currency,
                     'amount_paid' => $amount,
                     'year' => $date[0],
                     'month' => $date[1],
-                    'comment' => Xss::filter($form_state->getValue('description-' . $n)),
-                    'pcode' => $form_state->getValue('pcode-' . $n),
-                    'clientname' => $form_state->getValue('client-' . $n),
+                    'comment' => Xss::filter($value['description']),
+                    'pcode' => $value['pcode'],
+                    'clientname' => $value['client'],
                     'suppliername' => '0',
                     'receipt' => 'no',
                     'employee' => 'n/a',
                     'status' => 'yes',
                     'cash' => $cash,
-                    'pdate' => $form_state->getValue("pdate-" . $n),
+                    'pdate' => $value['payDate'],
                     'reconcile' => '0',
                     'attachment' => '',
                 );
@@ -494,36 +561,36 @@ class PayrollRecord extends FormBase {
                 //
 
 
-                $d = explode(',', $form_state->getValue('deduction-' . $n));
+                $d = unserialize($value['deductions']);
 
-                $value = str_replace(',', '', $form_state->getValue("nett-" . $n));
-                $gross = $value;
+                $net = str_replace(',', '', $value['net']);
+                $gross = $net;
 
                 for ($i = 0; $i < count($d); $i++) {
                     //add deduction to value to be credited to liabilities
                     $gross = $gross + $d[$i];
                 }
 
-                if ($form_state->getValue('currency-' . $n) <> $crt_currency) {
+                if ($value['currency'] <> $crt_currency) {
                     //currency of credit account is different from currency of value    
-                    $value = round($value * $rate1 / $rate2, 2);
+                    $net = round($net * $rate1 / $rate2, 2);
                     $gross = round($gross * $rate1 / $rate2, 2);
                     $currency = $crt_currency;
                 } else {
-                    $currency = $form_state->getValue('currency-' . $n);
+                    $currency = $value['currency'];
                 }
                 //record the total liabilities payable (included the above 'paid' net salary) - DT and credit the expense account
                 $journal->record(
                         array(
                             'source' => "expense payroll",
-                            'coid' => $form_state->getValue('coid'),
-                            'aid' => $form_state->getValue("account-" . $n),
+                            'coid' => $coid,
+                            'aid' => $value['account'],
                             'reference' => $insert,
-                            'fxRate' => $form_state->getValue('fx_rate-' . $n),
-                            'date' => $form_state->getValue("pdate-" . $n),
+                            'fxRate' => $value['fx'],
+                            'date' => $value['payDate'],
                             'value' => $gross,
                             'currency' => $currency,
-                            'p1' => $value,
+                            'p1' => $net,
                             'p1a' => $list['pay_account'],
                             'funds' => array(
                                 'f1' => $d[0],
@@ -550,33 +617,30 @@ class PayrollRecord extends FormBase {
                 $journal->record(
                         array(
                             'source' => "payroll",
-                            'coid' => $form_state->getValue('coid'),
+                            'coid' => $coid,
                             'aid' => $list['pay_account'],
                             'bank' => $credit,
                             'reference' => $insert,
-                            'date' => $form_state->getValue("pdate-" . $n),
-                            'value' => $value,
+                            'date' => $value['payDate'],
+                            'value' => $net,
                             'currency' => $currency,
                             'tax' => '',
-                            'fxRate' => $form_state->getValue('fx_rate-' . $n),
+                            'fxRate' => $value['fx'],
                         )
                 );
             } // if include       
         }
         
-        if($journal->credit <> $journal->debit) {
+        if(round($journal->credit,4) <> round($journal->debit,4)) {
             $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
             \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
         }
 
-        if ($expenses_entry == $form_state->getValue('count')) {
-            \Drupal::messenger()->addStatus(t('Expenses recorded'));
-        } else {
-            \Drupal::messenger()->addWarning(t('Some data not recorded'));
-        }
-
-        $_SESSION['pay'] = NULL;
+        
+        \Drupal::messenger()->addStatus(t('Expenses recorded'));
+        
         $form_state->setRedirect('ek_finance.manage.list_expense');
+        
     }
 
 

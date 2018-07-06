@@ -12,8 +12,7 @@
     </p>
     
 </div>
-<table class='report'>
-    
+<table class='report'>   
         <colgroup/>
         <colgroup class="c1"/>
         <colgroup class="c2"/>
@@ -150,9 +149,7 @@
 
 </tbody>
 
-
-
-    <thead class=''>
+<thead class=''>
         <th class='column_aid header_th'>
             <a href=#purchases_data' id='purchases' onclick="jQuery('#purchases_data').toggle('slow');">{{ 'Purchases'|t }}</a> {{ items.year }} - {{ items.baseCurrency }} {{ items.budgetUnit }}
         </th>
@@ -169,9 +166,10 @@
         <th class='column_value header_th'>{{ 'Nov'|t }}</th>
         <th class='column_value header_th'>{{ 'Dec'|t }}</th>
         <th class='column_value header_th'>{{ 'Total'|t }}</th>
-    </thead>
+</thead>
+    
 <tbody id='purchases_data'>
-    {# loop class #}
+{# loop class #}
     {% for arrays,values in items.purchases.0.classes %}
         <tr>
             <td colspan='3' class='detail'>{{ values.id }} {{ values.name }} </td>
@@ -217,6 +215,9 @@
 
     {% endfor %}
 
+
+</tbody>
+<tbody>
     <tr>
         <td class='left grandtotal'>{{ 'Total'|t }} {{ 'purchases'|t }}</td>
         <td class='right grandtotal' >{{ items.purchases.0.total.1|number_format }}</td>
@@ -232,10 +233,8 @@
         <td class='right grandtotal' >{{ items.purchases.0.total.11|number_format }}</td>
         <td class='right grandtotal' >{{ items.purchases.0.total.12|number_format }}</td>
         <td class='right grandtotal' >{{ items.purchases.0.total.sumRow|number_format }}</td>
-    </tr>
-
-
-</tbody>
+    </tr>    
+<tbody>
 
 <thead class=''>
     <th class='column_aid header_th'>
@@ -254,7 +253,7 @@
     <th class='column_value header_th'>{{ 'Nov'|t }}</th>
     <th class='column_value header_th'>{{ 'Dec'|t }}</th>
     <th class='column_value header_th'>{{ 'Total'|t }}</th>
-    </thead>
+</thead>
 <tbody id='expenses_data'>
     {# loop class #}
     {% for arrays,values in items.expenses.0.classes %}
@@ -302,6 +301,10 @@
 
     {% endfor %}
 
+
+
+</tbody>
+<tbody>
     <tr>
         <td class='left grandtotal'>{{ 'Total'|t }} {{ 'expenses'|t }}</td>
         <td class='right grandtotal' >{{ items.expenses.0.total.1|number_format }}</td>
@@ -317,9 +320,8 @@
         <td class='right grandtotal' >{{ items.expenses.0.total.11|number_format }}</td>
         <td class='right grandtotal' >{{ items.expenses.0.total.12|number_format }}</td>
         <td class='right grandtotal' >{{ items.expenses.0.total.sumRow|number_format }}</td>
-    </tr>
-
-
+    </tr>    
+<tbody>
 
 <thead class=''>
     <th class='column_aid header_th'>
@@ -385,7 +387,8 @@
         </tr>
 
     {% endfor %}
-
+</tbody>
+<tbody>
     <tr>
         <td class='left grandtotal'>{{ 'Total'|t }} {{ 'income'|t }}</td>
         <td class='right grandtotal' >{{ items.income.0.total.1|number_format }}</td>
@@ -401,7 +404,17 @@
         <td class='right grandtotal' >{{ items.income.0.total.11|number_format }}</td>
         <td class='right grandtotal' >{{ items.income.0.total.12|number_format }}</td>
         <td class='right grandtotal' >{{ items.income.0.total.sumRow|number_format }}</td>
-    </tr>    
-
-</tbody>
+    </tr>      
+<tbody>
 </table>
+    
+{% if items.error %}
+    {{ 'Some accounts from allocation companies are not used or active in allocated 
+        company chart. This may result in compilation errors. Please check the 
+        following accounts for errors'|t }}:
+    <ul>
+    {% for key,aid in items.error %} 
+        <li>{{ aid }}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}

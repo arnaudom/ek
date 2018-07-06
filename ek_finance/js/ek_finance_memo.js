@@ -19,23 +19,33 @@
             jQuery('.amount').on('change', function () {
 
                 var i = jQuery('#itemsCount').val();
-                var gtotal = 0;
-                jQuery('#grandtotal').val(0);
+                var grandTotal = 0;
+                jQuery('#grandTotal').val(0);
 
                 for (var n = 1; n <= i; n++) {
                     var amount = jQuery('#amount' + n).val().replace(/[^0-9-.]/g, '');
                     var v = parseFloat(amount);
                     if (!jQuery("#del" + n).is(':checked')) {
                         jQuery('#amount' + n).val(v.toFixed(2))
-                        gtotal = gtotal + v;
+                        grandTotal = grandTotal + v;
                     }
 
                 }
 
-                jQuery('#grandtotal').val(gtotal.toFixed(2));
-
+                jQuery('#grandTotal').val(grandTotal.toFixed(2));
+                convert();
             });
 
+            function convert() {
+                var total = jQuery('#grandTotal').val().replace(/[^0-9-.]/g, '');
+                var currency = jQuery('#edit-currency').val();
+                var convert = '';
+                
+                if(settings.currencies[currency] != 1 && total > 0) {
+                    var convert = (total/settings.currencies[currency]).toFixed(2) + ' ' + settings.baseCurrency;
+                }
+                jQuery('#convertedValue').html(convert);
+            }
 
             function attachments(id,serial) {
 

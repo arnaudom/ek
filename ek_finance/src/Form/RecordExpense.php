@@ -807,10 +807,9 @@ class RecordExpense extends FormBase {
      * callback functions  
      */
     public function thistax(array &$form, FormStateInterface $form_state) {
-
-        $element = $_POST['_triggering_element_name'];
-        $i = str_replace('tax', '', $_POST['_triggering_element_name']);
-        if ($form_state->getValue($element) == 1) {  
+        $trigger = $form_state->getTriggeringElement();
+        $i = str_replace('tax-', '', $trigger['#id']);
+        if ($trigger['#value'] == 1) {  
             $value = str_replace(",", "", $form_state->getValue("value$i"));
             $form['debit']["tv$i"]['#markup'] = "(" . $form_state->getValue('currency') . "  " . round($value * $form_state->get('stax_rate') / 100, 2) . ")";
         } else {

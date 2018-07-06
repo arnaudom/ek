@@ -269,7 +269,8 @@ class QuickEdit extends FormBase {
             \Drupal::messenger()->addStatus(t('The @doc is recorded. Ref. @r', ['@r' => $id, '@doc' => t('expense')]));
         }
 
-        $form_state->setRedirect("ek_finance.manage.list_expense");
+        $form_state->setRedirect("ek_finance.manage.list_expense", [], ['fragment' => $id]);
+       
     }
 
 }
