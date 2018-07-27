@@ -10,39 +10,12 @@ namespace Drupal\ek_assets\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
-use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Url;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_admin\Access\AccessCheck;
 
 /**
  * Provides a form to reecord and edit purchase email alerts.
  */
 class DeleteForm extends FormBase {
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandler
-   */
-  protected $moduleHandler;
-
-  /**
-   * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-   *   The module handler.
-   */
-  public function __construct(ModuleHandler $module_handler) {
-    $this->moduleHandler = $module_handler;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('module_handler')
-    );
-  }
 
 
   /**
@@ -56,7 +29,7 @@ class DeleteForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $name = NULL, $del = NULL) {
 
     $url = Url::fromRoute('ek_assets.list', array(), array())->toString();
     $form['back'] = array(
@@ -65,37 +38,13 @@ class DeleteForm extends FormBase {
 
     );  
 
-
-  $query = "SELECT * from {ek_assets} a INNER JOIN {ek_assets_amortization} b "
-                . "ON a.id = b.asid "
-                . "WHERE id=:id";
-  $data = Database::getConnection('external_db', 'external_db')
-          ->query($query, array(':id' => $id))
-          ->fetchObject();
-
-    $access = AccessCheck::GetCompanyByUser();
-    $coid = implode(',',$access);
-  
     $form['edit_item'] = array(
-      '#type' => 'item',
-      '#markup' => t('Asset : @p', array('@p' => $data->asset_name)),
-
-    );   
-
+        '#type' => 'item',
+        '#markup' => t('Asset : @p', array('@p' => $name)),
+    ); 
+     
     
-    $del = 1;
-    //if(!in_array(\Drupal::currentUser()->id(), $access)) {
-    if(!in_array($data->coid, $access)) {
-      $del = 0;
-      $message = t('You are not authorized to delete this item.');
-    } elseif($data->amort_record != '') {
-      $del = 0;
-      $message = t('This asset is not amortized. It cannot be deleted.');
-
-    } 
-    
-    
-    if($del != 0 ) {     
+    if($del != '0' ) {     
 
         $form['for_id'] = array(
           '#type' => 'hidden',
@@ -118,16 +67,16 @@ class DeleteForm extends FormBase {
 
         );   
       
-           $form['actions']['record'] = array(
+        $form['actions']['record'] = array(
             '#type' => 'submit',
             '#value' => $this->t('Delete'),
-
-          );     
+        );     
+        
     } else {
 
         $form['alert'] = array(
           '#type' => 'item',
-          '#markup' => $message ,
+          '#markup' => $this->t('No access'),
 
         );  
 

@@ -365,9 +365,44 @@ class AssetsController extends ControllerBase {
      *
      */
     public function assetsdelete(Request $request, $id) {
+        
+        $query = "SELECT * from {ek_assets} a INNER JOIN {ek_assets_amortization} b "
+                . "ON a.id = b.asid "
+                . "WHERE id=:id";
+        $data = Database::getConnection('external_db', 'external_db')
+                ->query($query, array(':id' => $id))
+                ->fetchObject();
 
-        $build['form_assets_edit'] = $this->formBuilder->getForm('Drupal\ek_assets\Form\DeleteForm', $id);
-        $build['#attached']['library'] = array('ek_assets/ek_assets_css');
+        $access = AccessCheck::GetCompanyByUser();
+        $coid = implode(',',$access);
+
+        $del = '1';
+        //if(!in_array(\Drupal::currentUser()->id(), $access)) {
+        if(!in_array($data->coid, $access)) {
+          $del = '0';
+          $message = t('You are not authorized to delete this item.');
+        } elseif($data->amort_record != '') {
+          $del = '0';
+          $message = t('This asset is not amortized. It cannot be deleted.');
+
+        } 
+
+        if ($del == '1'){
+            $build['form_assets_edit'] = $this->formBuilder->getForm('Drupal\ek_assets\Form\DeleteForm', $data->asset_name, 1);
+            $build['#attached']['library'] = array('ek_assets/ek_assets_css');
+        } else {
+            $items['type'] = 'delete';
+            $items['message'] = ['#markup' => $message];
+            $url = Url::fromRoute('ek_assets.list', array(), array())->toString();
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $build = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+            ];  
+        }
         return $build;
     }
 
