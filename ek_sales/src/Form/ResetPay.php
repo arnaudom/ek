@@ -53,95 +53,55 @@ class ResetPay extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $doc = NULL, $id = NULL) {
+    public function buildForm(array $form, FormStateInterface $form_state, $doc = NULL, $id = NULL, $head = NULL, $serial = NULL) {
 
         switch ($doc) {
             case 'invoice':
-                $query = "SELECT head,status,serial from {ek_sales_invoice} where id=:id";
+                $route = 'ek_sales.invoices.list';
                 break;
             case 'purchase' :
-                $query = "SELECT head,status,serial from {ek_sales_purchase} where id=:id";
+                $route = 'ek_sales.purchases.list';
                 break;
         }
-
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $id))
-                ->fetchObject();
-
-        $read = 1;
-        $access = AccessCheck::GetCompanyByUser();
-        if (!in_array($data->head, $access)) {
-            $read = 0;
-        }
-
-        $reco = 0;
-        if ($this->moduleHandler->moduleExists('ek_finance')) {
-            if($doc == 'invoice') {
-                $source = 'receipt';
-            }
-            if($doc == 'purchase') {
-                $source = 'payment';
-            }
-            $query = "SELECT count(id) from {ek_journal} "
-                    . "WHERE coid=:coid AND source=:s "
-                    . "AND reference=:r "
-                    . "AND reconcile=:c";
-            $reco = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':coid' => $data->head, ':s' => $source, ':r' => $id, ':c' => 1))
-                ->fetchField();
-            
-        }
-        $form['edit_pay'] = array(
-            '#type' => 'item',
-            '#markup' => t('Document ref. @p', array('@p' => $data->serial)),
-        );
-        if ($read == 0) {
-            $form['alert'] = array(
-                '#type' => 'item',
-                '#markup' => t('This @doc cannot be reset. Acess denied.', ['@doc' => $doc]),
-            );
-        } elseif ($reco > 0) {
-            $form['alert'] = array(
-                '#type' => 'item',
-                '#markup' => t('This @doc cannot be reset. Data already reconciled.', ['@doc' => $doc]),
-            );
-        }
-         elseif ($data->status == 1 && $read == 1) {
-
-            $form['for_id'] = array(
-                '#type' => 'hidden',
-                '#value' => $id,
-            );
-            $form['for_doc'] = array(
-                '#type' => 'hidden',
-                '#value' => $doc,
-            );
-            $form['for_coid'] = array(
-                '#type' => 'hidden',
-                '#value' => $data->head,
-            );
-            $form['serial'] = array(
-                '#type' => 'hidden',
-                '#value' => $data->serial,
-            );
-
-            $form['alert'] = array(
-                '#type' => 'item',
-                '#markup' => t('Are you sure you want to reset payment for this @doc ?', ['@doc' => $doc]),
-            );
-
-            $form['actions']['record'] = array(
-                '#type' => 'submit',
-                '#value' => $this->t('Reset'),
-            );
-
         
-        } else {
-            $form['alert'] = array(
-                '#type' => 'item',
-                '#markup' => t('This @doc cannot be reset because it has not been paid', ['@doc' => $doc]),
-            );
-        }
+        $form['list'] = array(
+          '#type' => 'item',
+          '#markup' => t('<a href="@url" >List</a>', array('@url' => \Drupal\Core\Url::fromRoute($route,[],[])->toString())) ,
+        );
+
+        $form['edit'] = array(
+            '#type' => 'item',
+            '#markup' => t("$doc ref. @p", array('@p' => $serial)),
+        );
+        $form['for_id'] = array(
+            '#type' => 'hidden',
+            '#value' => $id,
+        );
+        $form['for_doc'] = array(
+            '#type' => 'hidden',
+            '#value' => $doc,
+        );
+        $form['for_coid'] = array(
+            '#type' => 'hidden',
+            '#value' => $head,
+        );
+        $form['serial'] = array(
+            '#type' => 'hidden',
+            '#value' => $serial,
+        );
+
+        $form['alert'] = array(
+            '#type' => 'item',
+            '#markup' => t('Are you sure you want to reset payment for this @doc ?', ['@doc' => $doc]),
+        );
+
+        $form['actions']['record'] = array(
+            '#type' => 'submit',
+            '#value' => $this->t('Reset'),
+        );
+
+
+
         return $form;
     }
 
@@ -187,7 +147,7 @@ class ResetPay extends FormBase {
                 }
 
                 break;
-                
+
             case 'purchase' :
                 $query = "SELECT amountbc from {ek_sales_purchase} where id=:id";
                 $ab = Database::getConnection('external_db', 'external_db')
@@ -214,7 +174,7 @@ class ResetPay extends FormBase {
                             ->condition('coid', $form_state->getValue('for_coid'))
                             ->condition('source', 'payment')
                             ->execute();
-                }               
+                }
                 break;
         }
 

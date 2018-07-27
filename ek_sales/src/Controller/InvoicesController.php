@@ -868,10 +868,19 @@ class InvoicesController extends ControllerBase {
         if($status == '0') {    
             $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Invoice', $id);
         } else {
+            $opt =['0' => t('Unpaid'),1 => t('Paid'), 2 => t('Partially paid')];
             $url = Url::fromRoute('ek_sales.invoices.list', array(), array())->toString();
-            $build['back'] = array(
-                '#markup' => t('Invoice is not editable. Go to <a href="@url" >List</a>.', array('@url' => $url ) ) ,
-            );
+            $items['type'] = 'edit';
+            $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Invoice')))];
+            $items['description'] = ['#markup' => $opt[$status]];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $build = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+            ];  
         }
         return $build;
     }
@@ -896,8 +905,31 @@ class InvoicesController extends ControllerBase {
      */
     public function DoInvoices(Request $request, $id) {
         //convert a delivery order into invoice
-        $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Invoice', $id, 'delivery');
-
+        //require logisticsmodule
+        if ($this->moduleHandler->moduleExists('ek_logistics')) {
+                $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_logi_delivery', 'd')
+                ->fields('d', ['status'])
+                ->condition('id', $id , '=');
+                $status = $query->execute()->fetchField();
+            if($status < '2' ) {    
+                $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Invoice', $id, 'delivery');
+            } else {
+                $opt =['0' => t('open'),1 => t('printed'), 2 => t('invoiced'),3 => t('posted')];
+                $url = Url::fromRoute('ek_logistics_list_delivery', array(), array())->toString();
+                $items['type'] = 'edit';
+                $items['message'] = ['#markup' => t('@document cannot be converted.', array('@document' => t('Delivery')))];
+                $items['description'] = ['#markup' => $opt[$status]];
+                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $build = [
+                    '#items' => $items,
+                    '#theme' => 'ek_admin_message',
+                    '#attached' => array(
+                        'library' => array('ek_admin/ek_admin_css'),
+                    ),
+                ];  
+            }
+        }
         return $build;
     }
 
@@ -1161,10 +1193,18 @@ class InvoicesController extends ControllerBase {
             );
         } else {
             $url = Url::fromRoute('ek_sales.invoices.list')->toString();
-            $message = t('Access denied') . '<br/>' . t("<a href=\"@c\">List</a>", ['@c' => $url]);
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
             return [
-                '#markup' => $message,
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
             ];
+           
         }
     }
 
@@ -1233,19 +1273,24 @@ class InvoicesController extends ControllerBase {
             return array($build);
         } else {
             $url = Url::fromRoute('ek_sales.invoices.list')->toString();
-            $message = t('Access denied') . '<br/>' . t("<a href=\"@c\">List</a>", ['@c' => $url]);
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
             return [
-                '#markup' => $message,
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
             ];
         }
     }
 
     /**
-     * @retun
-     *  a form to download invoice in excel format
+     * @retun  array form or denied content
      * 
-     * @param 
-     *  INT $id document id
+     * @param  INT $id document id
      */
     public function Excel($id) {
         //filter access to document
@@ -1282,24 +1327,55 @@ class InvoicesController extends ControllerBase {
             return array($build);
         } else {
             $url = Url::fromRoute('ek_sales.invoices.list')->toString();
-            $message = t('Access denied') . '<br/>' . t("<a href=\"@c\">List</a>", ['@c' => $url]);
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
             return [
-                '#markup' => $message,
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
             ];
         }
     }
 
     /**
-     * @retun
-     *  a from to delete invoice
-     * @param $id = id of invoice
+     * @param INT $id = id of invoice
+     * @retun array form or denied message content
      *
      */
     public function DeleteInvoices(Request $request, $id) {
-        $build['delete_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\DeleteInvoice', $id);
-
+        //filter del
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_sales_invoice', 'i')
+            ->fields('i', ['status'])
+            ->condition('id', $id , '=');
+        $status = $query->execute()->fetchField();
+        if($status == '0') {    
+            $build['delete_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\DeleteInvoice', $id);
+        } else {
+            $items = [];
+            $opt =['0' => t('Unpaid'),1 => t('Paid'), 2 => t('Partially paid')];
+            $url = Url::fromRoute('ek_sales.invoices.list', array(), array())->toString();
+            $items['type'] = 'delete';
+            $items['message'] = ['#markup' => t('@document cannot be deleted.' , array('@document' => t('Invoice') ))];
+            $items['description'] = ['#markup' => $opt[$status]];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $build['content'] = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+            ];    
+            
+        }
+        
         return $build;
+
     }
 
-//end class  
+ 
 }

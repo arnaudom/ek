@@ -720,18 +720,85 @@ class SalesController extends ControllerBase {
     }
 
     /**
-     * @retun
-     *  a from to reset a payment
+     * @return array form to reset a payment
      * @param $doc = document key i.e invoice|purchase
      * @param $id = id of doc
      *
      */
     public function ResetPayment($doc, $id) {
         
+        $build = [];
+        switch ($doc) {
+            case 'invoice':
+                $tb = "ek_sales_invoice";
+                $route = 'ek_sales.invoices.list';
+                break;
+            case 'purchase' :
+                $tb = "ek_sales_purchase";
+                $route = 'ek_sales.purchases.list';
+                break;
+        }
         
-        $build['reset_pay'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\ResetPay', $doc, $id);
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select($tb, 't');
+        $query->fields('t', ['head','status','serial']);
+        $query->condition('id', $id);
+        $data = $query->execute()->fetchObject();
 
+        $read = 1;
+        $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
+        if (!in_array($data->head, $access)) {
+            $read = 0;
+            $message = t('You are not authorized to view this content');
+        }
+
+        $reco = 0;
+        if ($this->moduleHandler->moduleExists('ek_finance')) {
+            if($doc == 'invoice') {
+                $source = 'receipt';
+                
+            }
+            if($doc == 'purchase') {
+                $source = 'payment';
+                
+            }
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 't');
+            $query->addExpression('count(id)', 'sumValue');
+            $query->condition('coid', $data->head);
+            $query->condition('source', $source);
+            $query->condition('reference', $id);
+            $query->condition('reconcile', 1);
+            
+            $reco = $query->execute()->fetchField();
+            if($reco > 0) {
+                $message = t('This entry cannot be deleted because it has been reconciled.');
+            }
+            
+        }
+        
+        if ($read == 0 || $reco > 0 || $data->status != 1) {
+            if(!isset($message)) {
+                $message = t('This @doc cannot be reset because it has not been paid', ['@doc' => $doc]);
+            }
+            $url = Url::fromRoute($route)->toString();
+            $items['type'] = 'edit';
+            $items['message'] = ['#markup' => $message];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            return [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ];
+            
+        } else {
+            $build['reset_pay'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\ResetPay', $doc, $id, $data->head, $data->serial);
+        }
+        
         return $build;
     }
-//end class  
+
 }

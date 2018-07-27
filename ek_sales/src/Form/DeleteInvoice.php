@@ -70,12 +70,18 @@ class DeleteInvoice extends FormBase {
 
     );   
 
-    if($data->status == 0 ) {     
+    if($data->status > 0 ) {     
+        $form['alert'] = array(
+          '#type' => 'item',
+          '#markup' => t('This @doc cannot be deleted because it has been fully or partially paid', ['@doc' => $data->title]),
+
+        );  
+        
+    } else {
 
         $form['for_id'] = array(
           '#type' => 'hidden',
           '#value' => $id,
-
         );
         
         $form['coid'] = array(
@@ -94,21 +100,14 @@ class DeleteInvoice extends FormBase {
 
         );   
       
-           $form['actions']['record'] = array(
+        $form['actions']['record'] = array(
             '#type' => 'submit',
             '#value' => $this->t('Delete'),
-
-          );     
-    } else {
-
-        $form['alert'] = array(
-          '#type' => 'item',
-          '#markup' => t('This @doc cannot be deleted because it has been fully or partially paid', ['@doc' => $data->title]),
-
-        );  
-
+          ); 
     }
-  return $form;    
+    
+  return $form;  
+  
   }
 
 
@@ -145,8 +144,15 @@ class DeleteInvoice extends FormBase {
   }
   
   if ($delete){
-      \Drupal::messenger()->addStatus(t('The invoice has been deleted'));
-       $form_state->setRedirect("ek_sales.invoices.list" );  
+      
+        //////////////////////////
+        //    WATCHDOG          //
+        //////////////////////////
+        $a = array('@u' => \Drupal::currentUser()->getUsername(), '@d' => $form_state->getValue('serial'));
+        $log = t("User @u has deleted document @d", $a);
+        \Drupal::logger('ek_sales')->notice( $log );                
+        \Drupal::messenger()->addStatus(t('The invoice has been deleted'));
+        $form_state->setRedirect("ek_sales.invoices.list" );  
   }
   
   }

@@ -1283,6 +1283,12 @@ $grandtotal = 0;
                     ->query("SELECT count(id) from {ek_sales_invoice}")
                     ->fetchField();
             $iid++;
+            $query = "SELECT id FROM {ek_sales_invoice} WHERE serial like :s";
+            while (Database::getConnection('external_db', 'external_db')->query($query,[':s' => '%-' .$iid])->fetchField()) {
+                //to prevent serial duplication after document have been deleted, increment until no match is found
+                $iid++;
+            }
+            
             $short = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT short from {ek_company} where id=:id", array(':id' => $form_state->getValue('head')))
                     ->fetchField();

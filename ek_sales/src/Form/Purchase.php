@@ -1140,6 +1140,11 @@ class Purchase extends FormBase {
                     ->query("SELECT count(id) from {ek_sales_purchase}")
                     ->fetchField();
             $poid++;
+            $query = "SELECT id FROM {ek_sales_purchase} WHERE serial like :s";
+            while (Database::getConnection('external_db', 'external_db')->query($query,[':s' => '%-' .$poid])->fetchField()) {
+                //to prevent serial duplication after document have been deleted, increment until no match is found
+                $poid++;
+            }            
             $short = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT short from {ek_company} where id=:id", array(':id' => $form_state->getValue('head')))
                     ->fetchField();

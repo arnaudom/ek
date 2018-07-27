@@ -861,17 +861,27 @@ class PurchasesController extends ControllerBase {
     public function EditPurchases(Request $request, $id) {
         //filter edit
         $query = Database::getConnection('external_db', 'external_db')
-            ->select('ek_sales_purchase', 'i')
-            ->fields('i', ['status'])
+            ->select('ek_sales_purchase', 'p')
+            ->fields('p', ['status'])
             ->condition('id', $id , '=');
         $status = $query->execute()->fetchField();
         if($status == '0') {    
             $build['edit_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Purchase', $id);
         } else {
+            
+            $opt =['0' => t('Unpaid'),1 => t('Paid'), 2 => t('Partially paid')];
             $url = Url::fromRoute('ek_sales.purchases.list', array(), array())->toString();
-            $build['back'] = array(
-                '#markup' => t('Purchase is not editable. Go to <a href="@url" >List</a>.', array('@url' => $url ) ) ,
-            );
+            $items['type'] = 'edit';
+            $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Purchase')))];
+            $items['description'] = ['#markup' => $opt[$status]];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $build = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+            ];              
         }
         
         return $build;
@@ -1095,9 +1105,8 @@ class PurchasesController extends ControllerBase {
     }
 
     /**
-     * @retun
-     *  a form and printing and sharing pdf document
-     * 
+     * @retun array form or access denied content
+     * @param INT id
      *
      */
     public function PrintSharePurchases($id) {
@@ -1146,16 +1155,22 @@ class PurchasesController extends ControllerBase {
             );
         } else {
             $url = Url::fromRoute('ek_sales.purchases.list')->toString();
-            $message = t('Access denied') . '<br/>' . t("<a href=\"@c\">List</a>", ['@c' => $url]);
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
             return [
-                '#markup' => $message,
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
             ];
         }
     }
 
     /**
-     * @retun
-     *  a display of purchase in pdf format
+     * @retun array content
      * 
      *
      */
@@ -1219,10 +1234,18 @@ class PurchasesController extends ControllerBase {
             return array($build);
         } else {
             $url = Url::fromRoute('ek_sales.purchases.list')->toString();
-            $message = t('Access denied') . '<br/>' . t("<a href=\"@c\">List</a>", ['@c' => $url]);
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
             return [
-                '#markup' => $message,
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
             ];
+            
         }
     }
 
@@ -1268,23 +1291,52 @@ class PurchasesController extends ControllerBase {
             return array($build);
         } else {
             $url = Url::fromRoute('ek_sales.purchases.list')->toString();
-            $message = t('Access denied') . '<br/>' . t("<a href=\"@c\">List</a>", ['@c' => $url]);
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
             return [
-                '#markup' => $message,
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
             ];
         }
     }
 
     /**
-     * @retun
-     *  a from to delete purchase
      * @param $id = id of purchase
+     * @retun array from or html denied message
      *
      */
     public function DeletePurchases(Request $request, $id) {
-
-        $build['delete_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\DeletePurchase', $id);
-
+        //filter del
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_sales_purchase', 'p')
+            ->fields('p', ['status'])
+            ->condition('id', $id , '=');
+        $status = $query->execute()->fetchField();
+        if($status == '0') {    
+            $build['delete_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\DeletePurchase', $id);
+        } else {
+            $items = [];
+            $opt =['0' => t('Unpaid'),1 => t('Paid'), 2 => t('Partially paid')];
+            $url = Url::fromRoute('ek_sales.purchases.list', array(), array())->toString();
+            $items['type'] = 'delete';
+            $items['message'] = ['#markup' => t('@document cannot be deleted.' , array('@document' => t('Purchase') ))];
+            $items['description'] = ['#markup' => $opt[$status]];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $build['content'] = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+            ];    
+            
+        }
+        
         return $build;
     }
 

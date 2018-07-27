@@ -376,7 +376,7 @@ $objPHPExcel->setActiveSheetIndex(0)
 $objPHPExcel->setActiveSheetIndex(0)
                 ->setCellValue("K$i", $grandtotal); 
 $objPHPExcel->getActiveSheet()->getStyle("K$i")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
-$objPHPExcel->getActiveSheet()->getStyle("H$iK$i")->getFont()->setBold(true);
+$objPHPExcel->getActiveSheet()->getStyle("H$i:K$i")->getFont()->setBold(true);
 $i++;
 
 //ADD AMOUNT IN WORDS -----------------------------------------------
