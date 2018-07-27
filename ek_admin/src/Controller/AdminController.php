@@ -728,30 +728,42 @@ class AdminController extends ControllerBase {
     /**
      * Edit business entity
      * @param int id
-     * @return Form
+     * @return array Form or content access denied
      */
     public function AdminCompanyEdit($id) {
         $access = AccessCheck::GetCompanyAccess($id);
+        
         if(in_array(\Drupal::currentUser()->id(), $access[$id])) {
             $form_builder = $this->formBuilder();
             $response = $form_builder->getForm('Drupal\ek_admin\Form\EditCompanyForm', $id);
             $query = "SELECT name from {ek_company} where id=:id";
             $company = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':id' => $id))
-                    ->fetchField();
+                    ->fetchField();        
+            return array(
+                '#theme' => 'ek_admin_company_form',
+                '#items' => $response,
+                '#title' => t('Edit company  - <small>@id</small>', array('@id' => $company)),
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+            );
          } else {
-            $response = ['#markup' => t('Access denied')];
-            $company = $id;
+            $url = Url::fromRoute('ek_admin.company.list',[],[])->toString(); 
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('Access denied')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            return  [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ]; 
+            
         }
-        
-        return array(
-            '#theme' => 'ek_admin_company_form',
-            '#items' => $response,
-            '#title' => t('Edit company  - <small>@id</small>', array('@id' => $company)),
-            '#attached' => array(
-                'library' => array('ek_admin/ek_admin_css'),
-            ),
-        );
+
     }
 
     /**
@@ -769,8 +781,18 @@ class AdminController extends ControllerBase {
                     ->query($query, array(':id' => $id))
                     ->fetchField();            
         } else {
-            $response = ['#markup' => t('Access denied')];
-            $company = $id;
+            $url = Url::fromRoute('ek_admin.company.list',[],[])->toString(); 
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('Access denied')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            return  [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ]; 
         }
 
         return array(

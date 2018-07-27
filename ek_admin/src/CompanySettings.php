@@ -46,13 +46,11 @@ use Drupal\Core\Database\Database;
   
     if(!empty($this->settings)) {
       if(!$currency == '') {
-      
         return  $this->settings[$currency][$name];
-      
-      } else {
-      
+      } elseif(isset($this->settings[$name])) {
         return  $this->settings[$name];
-      
+      } else {
+          return NULL;
       }
     }
   }

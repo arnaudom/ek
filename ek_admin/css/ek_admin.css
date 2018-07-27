@@ -84,3 +84,16 @@
 .orange {
     color: #FF8000;
 }
+
+.ek_messages {
+    background-color: #E0ECF8;
+    color: #A9BCF5;
+    border: 5px solid;
+    border-radius: 5px;
+    padding: 20px;
+}
+
+.ek_messages p {
+    color: #3276b1;
+    text-align: center;
+}

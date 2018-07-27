@@ -134,7 +134,12 @@ function ek_admin_file_download($uri) {
  */
 function ek_admin_theme() {
   return array(
-
+    // default alert, access message
+    'ek_admin_message' => array
+    (
+      'template' => 'ek_admin_message',
+      'variables' => array('items' => array()),
+    ),
     // for the company form
     'ek_admin_company_form' => array
     (

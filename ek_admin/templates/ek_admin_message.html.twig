@@ -1,0 +1,22 @@
+<div class='ek_messages'>
+    {% set color = '' %}
+    {% if items.type == 'delete' %}{% set color = 'red' %}{% endif %}
+    {% if items.type == 'access' %}{% set color = 'orange' %}{% endif %}
+    {% if items.message %}
+    <p>
+        <i class="fa fa-bell {{ color }}"></i>   {{ items.message }}   
+    </p>
+    {% endif %}
+    {% if items.description %}
+    <p>
+        {{ items.description }}   
+    </p>
+    {% endif %}    
+    {% if items.link %}
+    <p>
+        <i class=""></i> {{ items.link }}   
+    </p>
+    {% endif %}
+</div>
+
+
