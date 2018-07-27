@@ -420,9 +420,16 @@ if (\Drupal::currentUser()->hasPermission('delete_delivery') && $r->status == 0)
             return array($build);
         } else {
             $url = Url::fromRoute('ek_logistics_list_delivery')->toString();
-            $message = t('Access denied') . '<br/>' . t("<a href=\"@c\">List</a>", ['@c' => $url]);
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
             return [
-                '#markup' => $message,
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
             ];
         }
     }
@@ -479,11 +486,18 @@ if (\Drupal::currentUser()->hasPermission('delete_delivery') && $r->status == 0)
                   ),
               );  
     } else {
-        $url = Url::fromRoute('ek_logistics_list_delivery')->toString();
-        $message = t('Access denied') . '<br/>' . t("<a href=\"@c\">List</a>", ['@c' => $url]);
-        return [
-            '#markup' => $message,
-        ];
+            $url = Url::fromRoute('ek_logistics_list_delivery')->toString();
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            return [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ];
     }
   }
 
@@ -512,6 +526,9 @@ if (\Drupal::currentUser()->hasPermission('delete_delivery') && $r->status == 0)
  */
   public function excel(Request $request, $param) {
     $markup = array();
+    if ($this->moduleHandler->moduleExists('ek_products')) {
+        $product = TRUE;
+    }
     include_once drupal_get_path('module', 'ek_logistics').'/manage_excel_output.inc'; 
     return $markup;
   }  
@@ -536,7 +553,29 @@ if (\Drupal::currentUser()->hasPermission('delete_delivery') && $r->status == 0)
  * 
  */     
   public function delete(Request $request, $id) {
-    $build['delete_delivery'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Delete', $id);
+    
+    $query = "SELECT status,serial FROM {ek_logi_delivery} WHERE id=:id";
+    $table = 'delivery';
+    $opt = [0 => t('open'), 1 => t('printed'), 2 => t('invoiced'), 3 => t('posted')];
+    $data = Database::getConnection('external_db', 'external_db')
+            ->query($query, array(':id' => $id))->fetchObject();
+    
+    if($data->status > 0){
+    $items['type'] = 'delete';
+            $items['message'] = ['#markup' => t('@document cannot be deleted.' , array('@document' => t('Delivery') ))];
+            $items['description'] = ['#markup' => $opt[$data->status]];
+            $url = Url::fromRoute('ek_logistics_list_delivery', [],[])->toString();            
+            $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>",['@url' => $url])];
+            $build = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+            ];  
+    } else {
+        $build['delete_logistics'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Delete', $id, $table, "D");
+    }
     
     return $build;  
   

@@ -71,7 +71,7 @@ Switch ($source) {
                     $data['total'] = round(($line->quantity * $line->value), 2);
                 } else {
                     $data['total'] = $line->amount;
-                    $data['value'] = round(($line->amonunt / $line->quantity), 2);
+                    $data['value'] = round(($line->amount / $line->quantity), 2);
                 }
                 $data['itemid'] = '';
                 $data['itemcode'] = '';

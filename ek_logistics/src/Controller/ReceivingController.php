@@ -404,10 +404,18 @@ class ReceivingController extends ControllerBase {
             return array($build);
         } else {
             $url = Url::fromRoute('ek_logistics_list_' . $type)->toString();
-            $message = t('Access denied') . '<br/>' . t("<a href=\"@c\">List</a>", ['@c' => $url]);
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
             return [
-                '#markup' => $message,
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
             ];
+            
         }
     }
 
@@ -465,6 +473,9 @@ class ReceivingController extends ControllerBase {
 
     public function excel(Request $request, $param) {
         $markup = array();
+        if ($this->moduleHandler->moduleExists('ek_products')) {
+            $product = TRUE;
+        }        
         include_once drupal_get_path('module', 'ek_logistics') . '/manage_excel_output.inc';
         return $markup;
     }
@@ -476,9 +487,37 @@ class ReceivingController extends ControllerBase {
     }
 
     public function delete(Request $request, $id) {
-        $build['delete_receiving'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\DeleteReceiving', $id);
-
-        return $build;
+        
+        $query = "SELECT status,serial,type FROM {ek_logi_receiving} WHERE id=:id";
+        $table = 'receiving';
+        $opt = [0 => t('open'), 1 => t('printed'), 2 => t('invoiced'), 3 => t('posted')];
+        $data = Database::getConnection('external_db', 'external_db')
+                ->query($query, array(':id' => $id))->fetchObject();
+        if ($data->type == 'RR'){
+            $route = "ek_logistics_list_receiving"; 
+            $doc = t('Receiving');
+        } else {
+            $route = "ek_logistics_list_returning";
+            $doc = t('Returning');
+        } 
+        if($data->status > 0){
+            $items['type'] = 'delete';
+            $items['message'] = ['#markup' => t('@document cannot be deleted.' , array('@document' => $doc))];
+            $items['description'] = ['#markup' => $opt[$data->status]];
+            $url = Url::fromRoute($route, [],[])->toString();            
+            $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>",['@url' => $url])];
+            $build = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+            ];  
+        } else {
+            $build['delete_delivery'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Delete', $id, $table,$data->type);
+        }        
+        
+         return $build;
     }
 
 //end class  

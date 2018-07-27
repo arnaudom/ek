@@ -10,37 +10,12 @@ namespace Drupal\ek_logistics\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
-use Drupal\Core\Extension\ModuleHandler;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Url;
 
 /**
  * Provides a form to delete logistics record.
  */
 class Delete extends FormBase {
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandler
-   */
-  protected $moduleHandler;
-
-  /**
-   * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-   *   The module handler.
-   */
-  public function __construct(ModuleHandler $module_handler) {
-    $this->moduleHandler = $module_handler;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('module_handler')
-    );
-  }
 
 
   /**
@@ -54,31 +29,28 @@ class Delete extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $table = NULL, $type = NULL) {
   
-  $path = \Drupal::request()->getRequestUri();
-  
-  if(strpos($path,'-delivery')) {
-    $query = "SELECT status,serial FROM {ek_logi_delivery} WHERE id=:id";
-    $table = 'delivery';
-    
-  } else {
-    $query = "SELECT status,serial FROM {ek_logi_receiving} WHERE id=:id";
-    $table = 'receiving';
-  }
-  
-  
-  $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
+ 
+  $dbTable = 'ek_logi_' . $table;
+  $query = "SELECT status,serial FROM {$dbTable} WHERE id=:id";
+  $data = Database::getConnection('external_db', 'external_db')
+          ->query($query, array(':id' => $id))->fetchObject();
 
-  
+  if($type == 'RR') {
+      $route = "ek_logistics_list_receiving"; 
+  } elseif($type == 'RT') {
+      $route = "ek_logistics_list_returning"; 
+  } else {
+      $route = "ek_logistics_list_delivery"; 
+  }
     $form['del_logistics'] = array(
       '#type' => 'item',
       '#markup' => t('Record ref. @p', array('@p' => $data->serial)),
 
     );   
 
-    if($data->status == 0 ) {     
-
+       
         $form['for_id'] = array(
           '#type' => 'hidden',
           '#value' => $id,
@@ -87,8 +59,8 @@ class Delete extends FormBase {
         $form['table'] = array(
           '#type' => 'hidden',
           '#value' => $table,
-
         );
+        
         $form['serial'] = array(
           '#type' => 'hidden',
           '#value' => $data->serial, 
@@ -98,23 +70,24 @@ class Delete extends FormBase {
           '#type' => 'item',
           '#markup' => t('Are you sure you want to delete this record ?'),
 
-        );   
-      
-           $form['actions']['record'] = array(
+        );
+        
+        $form['actions'] = array(
+            '#type' => 'actions',
+            '#attributes' => array('class' => array('container-inline')),
+        );
+        
+        $form['actions']['record'] = array(
             '#type' => 'submit',
             '#value' => $this->t('Delete'),
-
-          );     
-    } else {
-
-        $form['alert'] = array(
+        );     
+        
+        $form['actions']['cancel'] = array(
           '#type' => 'item',
-          '#markup' => t('This order cannot be deleted because it has been printed'),
+          '#markup' => t('<a href="@url" >Cancel</a>', array('@url' => Url::fromRoute($route,[],[])->toString())) ,
+        );
 
-        );  
-
-    }
-  return $form;    
+        return $form;    
   }
 
 
@@ -130,52 +103,44 @@ class Delete extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
   
-  if( $form_state->getValue('table') == 'delivery' && \Drupal::currentUser()->hasPermission('delete_delivery')) {
-  
-    $delete = Database::getConnection('external_db', 'external_db')
-            ->delete('ek_logi_delivery')->condition('id', $form_state->getValue('for_id'))
-            ->execute();
-    $delete = Database::getConnection('external_db', 'external_db')
-            ->delete('ek_logi_delivery_details')->condition('serial', $form_state->getValue('serial'))
-            ->execute();
-    
-    if ($delete){
-        \Drupal::messenger()->addStatus(t('The record has been deleted'));
-         $form_state->setRedirect("ek_logistics_list_delivery" );  
-    }  
-  
-  } 
+    if( $form_state->getValue('table') == 'delivery' ) {
 
-  elseif($form_state->getValue('table') == 'receiving' && \Drupal::currentUser()->hasPermission('delete_receiving')) {
+      $delete = Database::getConnection('external_db', 'external_db')
+              ->delete('ek_logi_delivery')->condition('id', $form_state->getValue('for_id'))
+              ->execute();
+      $delete = Database::getConnection('external_db', 'external_db')
+              ->delete('ek_logi_delivery_details')->condition('serial', $form_state->getValue('serial'))
+              ->execute();
 
-    $type = Database::getConnection('external_db', 'external_db')
-            ->query('SELECT type FROM {ek_logi_receiving} WHERE id=:id', array(':id' => $form_state->getValue('for_id') ) )
-            ->fetchField();
-    
-    $delete = Database::getConnection('external_db', 'external_db')
-            ->delete('ek_logi_receiving')->condition('id', $form_state->getValue('for_id'))
-            ->execute();
-    $delete = Database::getConnection('external_db', 'external_db')
-            ->delete('ek_logi_receiving_details')->condition('serial', $form_state->getValue('serial'))
-            ->execute();
-    
-            if ($delete && $type == 'RR'){
-                \Drupal::messenger()->addStatus(t('The record has been deleted'));
-                 $form_state->setRedirect("ek_logistics_list_receiving" );  
-            }    
+      if ($delete){
+          \Drupal::messenger()->addStatus(t('The record has been deleted'));
+           $form_state->setRedirect("ek_logistics_list_delivery" );  
+      }  
 
-            if ($delete && $type == 'RT'){
-                \Drupal::messenger()->addStatus(t('The record has been deleted'));
-                 $form_state->setRedirect("ek_logistics_list_returning" );  
-            } 
-      
-        } else {
-            \Drupal::messenger()->addWarning(t('You do not have enough privileges to delete this record. Please contact administrator.'));
+    }   elseif($form_state->getValue('table') == 'receiving' ) {
 
-        }
+      $type = Database::getConnection('external_db', 'external_db')
+              ->query('SELECT type FROM {ek_logi_receiving} WHERE id=:id', array(':id' => $form_state->getValue('for_id') ) )
+              ->fetchField();
 
-  
+      $delete = Database::getConnection('external_db', 'external_db')
+              ->delete('ek_logi_receiving')->condition('id', $form_state->getValue('for_id'))
+              ->execute();
+      $delete = Database::getConnection('external_db', 'external_db')
+              ->delete('ek_logi_receiving_details')->condition('serial', $form_state->getValue('serial'))
+              ->execute();
+
+              if ($delete && $type == 'RR'){
+                  \Drupal::messenger()->addStatus(t('The record has been deleted'));
+                   $form_state->setRedirect("ek_logistics_list_receiving" );  
+              }    
+
+              if ($delete && $type == 'RT'){
+                  \Drupal::messenger()->addStatus(t('The record has been deleted'));
+                   $form_state->setRedirect("ek_logistics_list_returning" );  
+              } 
+    }
   }
 
 
-}//class
+}
