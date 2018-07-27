@@ -498,9 +498,20 @@ class AddressBookController extends ControllerBase {
         
         if(!empty($usage)) {
             $modules = implode(', ', $usage);
-            $response = ['#markup' => t('This address book cannot be deleted. It is used in following module(s): @m',
-                        ['@m' => $modules]),
-                ];
+            $items['type'] = 'delete';
+            $items['message'] = ['#markup' => t('This address book entry cannot be deleted.')];
+            $items['description'] = ['#markup' => t('Used in @m', ['@m' => $modules])];
+            $url = Url::fromRoute('ek_address_book.view', ['abid' => $abid],[])->toString();
+            $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>",['@url' => $url])];
+            
+            $response = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+            ]; 
+            
         } else {
         
             $form_builder = $this->formBuilder();
