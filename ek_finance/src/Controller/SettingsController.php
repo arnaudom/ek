@@ -36,4 +36,23 @@ class SettingsController extends ControllerBase {
         );
     }
 
+    /**
+     *  General parameters settings for finance
+     *  @return array
+     *      render Html
+     */
+    public function moveData() {
+
+        $form_builder = $this->formBuilder();
+        
+        if(isset($_SESSION['moveLog'])) {
+            $url = file_create_url($_SESSION['moveLog']);
+            $items['log'] = ['#markup' => "<a target='_blank' href='". $url ."'>" . t('View last log') . "</a>"];
+            $_SESSION['moveLog'] = NULL;
+        }
+        
+        $items['form'] = $form_builder->getForm('Drupal\ek_finance\Form\moveData');
+        
+        return $items;
+    }
 }

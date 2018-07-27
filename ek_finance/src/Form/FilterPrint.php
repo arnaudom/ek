@@ -97,7 +97,7 @@ class FilterPrint extends FormBase {
         $form['filters']['template'] = array(
             '#type' => 'select',
             '#options' => $list,
-            '#default_value' => $_SESSION['printfilter']['template'],
+            '#default_value' => isset($_SESSION['printfilter']['template']) ? $_SESSION['printfilter']['template'] : NULL,
             '#title' => t('template'),
         );
 

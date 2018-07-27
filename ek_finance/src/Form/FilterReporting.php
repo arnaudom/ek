@@ -64,7 +64,8 @@ class FilterReporting extends FormBase {
       $access = AccessCheck::GetCompanyByUser();
       $company = implode(',',$access);
       $query = "SELECT id,name from {ek_company} where active=:t AND FIND_IN_SET (id, :c ) order by name";
-      $company = Database::getConnection('external_db', 'external_db')->query($query, array(':t' => 1, ':c' => $company))->fetchAllKeyed();  
+      $company = Database::getConnection('external_db', 'external_db')->query($query, array(':t' => 1, ':c' => $company))->fetchAllKeyed(); 
+      $company += ['all' => "-- " . t('compilation') . " --"];
 
     $form['filters'] = array(
       '#type' => 'details',
@@ -104,6 +105,10 @@ class FilterReporting extends FormBase {
             '#required' => TRUE,
             '#title' => '',
             '#default_value' => isset($_SESSION['repfilter']['view']) ? $_SESSION['repfilter']['view'] : NULL,
+            '#states' => array(
+                'invisible' => array('select[name="coid"]' => array('value' => 'all'),
+                ),
+              ),
 
         );  
     } else {

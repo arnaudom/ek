@@ -15,8 +15,6 @@ use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\InsertCommand;
-use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\ek_projects\ProjectData;
 use Drupal\ek_admin\Access\AccessCheck;
@@ -949,7 +947,7 @@ $rows = $form_state->getValue('itemTable');
         /**/ 
             if($row['description'] != 'total') {
 
-                if(!is_numeric($row["amount"])) {
+                if(!is_numeric(str_replace(',','',$row["amount"]))) {
                  $form['options']['#open'] = FALSE;
                  $form_state->setErrorByName("itemTable][$key][amount",  $this->t('there is no value for item @n', array('@n'=> $key)) );
                 }            

@@ -56,19 +56,10 @@ class DeleteExpense extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $j = NULL) {
   
   $query = "SELECT * from {ek_expenses} where id=:id";
   $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
-
-  if($this->moduleHandler->moduleExists('ek_finance')) {  
-    $query = "SELECT reconcile from {ek_journal} WHERE type=:t AND source like :s AND reference=:r AND exchange=:e";
-    $a = array(':t' => 'debit', ':s' => 'expense%', ':r' => $id, ':e' => 0);
-    $j = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-  } else {
-    $j = 0;
-  }
-
   
     $form['edit_expense'] = array(
       '#type' => 'item',
@@ -81,7 +72,7 @@ class DeleteExpense extends FormBase {
 
     );  
     
-    if($j == 0 ) {     
+    if($j == '0' ) {     
 
         $form['for_id'] = array(
           '#type' => 'hidden',

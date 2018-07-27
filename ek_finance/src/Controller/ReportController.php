@@ -81,90 +81,129 @@ class ReportController extends ControllerBase {
 
             $coid = $_SESSION['repfilter']['coid'];
             $year = $_SESSION['repfilter']['year'];
-            $viewS = 'allocation';
-            $viewE = 'allocation';
-            if($_SESSION['repfilter']['view'] == '1') {
-                //actual data view selected
-                $viewS = 'head';
-                $viewE = 'company';   
-            } else {
-                //control error
-                //allocation view may be wrong if aid accounts from allocation source 
-                //are not active in allocated destination
-                
-                //select all aid accounts that are used in journal from other companies
-                $or = db_or();
-                $or->condition('aid', $chart['cos'] . '%' , 'like');
-                $or->condition('aid', $chart['expenses'] . '%' , 'like');
-                $or->condition('aid', $chart['other_expenses'] . '%' , 'like');
-                $or->condition('aid', $chart['income'] . '%' , 'like');
-                $or->condition('aid', $chart['other_income'] . '%' , 'like');
-                $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_journal', 'j');
-                $query->fields('j', ['aid'])
-                        ->distinct()
-                        ->condition('coid', $coid, '<>')
-                        ->condition($or);
-                $control = $query->execute();
-                $error = [];
-                while($c = $control->fetchObject()) {
-                    $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_accounts', 'a');
-                    $query->fields('a', ['aid'])
-                            ->condition('aid', $c->aid, '=')
-                            ->condition('coid', $coid, '=');
-                    if(! $query->execute()->fetchField()&& $c->aid != 0){
-                       $error[] =  $c->aid;
-                    }
-                }
-                $items['error'] = $error;
-            }
-
+            
             $settings = new FinanceSettings();
-            $baseCurrency = $settings->get('baseCurrency');
-            if ($settings->get('budgetUnit') == 2) {
-                $budgetUnit = "'000";
-                $divide = 1000;
-            } elseif ($settings->get('budgetUnit') == 3) {
-                $budgetUnit = "'000,000";
-                $divide = 1000000;
-            } else {
-                $budgetUnit = '';
-                $divide = 1;
-            }
-
-            include_once drupal_get_path('module', 'ek_finance') . '/reporting.inc';
-
-            $param = serialize(
-                    array(
-                        'coid' => $coid,
-                        'year' => $year,
-                        'baseCurrency' => $baseCurrency,
-                        'view' => ['E' => $viewE, 'S' => $viewS]
-                    )
-            );
-            $excel = Url::fromRoute('ek_finance_reporting_excel', array('param' => $param), array())->toString();
-            $items['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
-            );
-
-            $items['year'] = $year;
+                $baseCurrency = $settings->get('baseCurrency');
+                if ($settings->get('budgetUnit') == 2) {
+                    $budgetUnit = "'000";
+                    $divide = 1000;
+                } elseif ($settings->get('budgetUnit') == 3) {
+                    $budgetUnit = "'000,000";
+                    $divide = 1000000;
+                } else {
+                    $budgetUnit = '';
+                    $divide = 1;
+                }
+            $items['year'] = $_SESSION['repfilter']['year'];
             $items['baseCurrency'] = $baseCurrency;
             $items['budgetUnit'] = $budgetUnit;
-            $items['purchases'] = $purchases;
-            $items['expenses'] = $expenses;
-            $items['income'] = $income;
-            $items['internal_received'] = $internal_received;
-            $items['internal_paid'] = $internal_paid;
-            $items['balances'] = $balances;
             
-            return array(
-                '#theme' => 'ek_finance_reporting',
-                '#items' => $items,
-                '#attached' => array(
-                    'library' => array('ek_finance/ek_finance.reporting'),
-                ),
-            );
+            if($coid != 'all') {
+                $viewS = 'allocation';
+                $viewE = 'allocation';
+                if($_SESSION['repfilter']['view'] == '1') {
+                    //actual data view selected
+                    $viewS = 'head';
+                    $viewE = 'company';   
+                } else {
+                    //control error
+                    //allocation view may be wrong if aid accounts from allocation source 
+                    //are not active in allocated destination
+
+                    //select all aid accounts that are used in journal from other companies
+                    $or = db_or();
+                    $or->condition('aid', $chart['cos'] . '%' , 'like');
+                    $or->condition('aid', $chart['expenses'] . '%' , 'like');
+                    $or->condition('aid', $chart['other_expenses'] . '%' , 'like');
+                    $or->condition('aid', $chart['income'] . '%' , 'like');
+                    $or->condition('aid', $chart['other_income'] . '%' , 'like');
+                    $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_journal', 'j');
+                    $query->fields('j', ['aid'])
+                            ->distinct()
+                            ->condition('coid', $coid, '<>')
+                            ->condition($or)
+                            ->orderBy('aid');
+                    $control = $query->execute();
+                    $error = [];
+                    while($c = $control->fetchObject()) {
+                        $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_accounts', 'a');
+                        $query->fields('a', ['aid'])
+                                ->condition('aid', $c->aid, '=')
+                                ->condition('a.coid', $coid, '=');
+                        $Obj = $query->execute()->fetchObject();
+                        if((!$Obj && $c->aid != 0) || $Obj->astatus == '0'){
+                           $error[] =  $c->aid;
+                        } 
+                    }
+                    $items['error'] = $error;
+                }
+
+                include_once drupal_get_path('module', 'ek_finance') . '/reporting.inc';
+
+                $param = serialize(
+                        array(
+                            'coid' => $coid,
+                            'year' => $year,
+                            'baseCurrency' => $baseCurrency,
+                            'view' => ['E' => $viewE, 'S' => $viewS]
+                        )
+                );
+                $excel = Url::fromRoute('ek_finance_reporting_excel', array('param' => $param), array())->toString();
+                $items['excel'] = array(
+                    '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                );
+
+                
+                $items['purchases'] = $purchases;
+                $items['expenses'] = $expenses;
+                $items['income'] = $income;
+                $items['internal_received'] = $internal_received;
+                $items['internal_paid'] = $internal_paid;
+                $items['balances'] = $balances;
+
+                return array(
+                    '#theme' => 'ek_finance_reporting',
+                    '#items' => $items,
+                    '#attached' => array(
+                        'library' => array('ek_finance/ek_finance.reporting'),
+                    ),
+                );
+            } else {
+                //display a compilation table
+                
+                include_once drupal_get_path('module', 'ek_finance') . '/reporting_compilation.inc';
+                $items['purchases'] = $purchases;
+                $items['expenses'] = $expenses;
+                $items['income'] = $income;
+                $items['balances'] = $balances;
+                $items['error'] = $error;
+      
+                $query = "SELECT id,name from {ek_company} ORDER by id";
+                $items['company'] = Database::getConnection('external_db', 'external_db')
+                                ->query($query)
+                                ->fetchAllKeyed();
+                $p = serialize(
+                        array(
+                            'compilation' => $coid,
+                            'year' => $year,
+                            'baseCurrency' => $baseCurrency,
+                        )
+                );
+                $excel = Url::fromRoute('ek_finance_reporting_excel', array('param' => $p), array())->toString();
+                $items['excel'] = array(
+                    '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                );
+                return array(
+                    '#theme' => 'ek_finance_reporting_compilation',
+                    '#items' => $items,
+                    '#attached' => array(
+                        'library' => array('ek_finance/ek_finance.reporting'),
+                    ),
+                );
+                
+            }
         } else {
             return $items['form'];
         }
@@ -186,7 +225,12 @@ class ReportController extends ControllerBase {
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
-        include_once drupal_get_path('module', 'ek_finance') . '/excel_reporting.inc';
+        $p = unserialize($param);
+        if(isset($p['coid'])){
+            include_once drupal_get_path('module', 'ek_finance') . '/excel_reporting.inc';
+        } else {
+            include_once drupal_get_path('module', 'ek_finance') . '/excel_reporting_compilation.inc';
+        }
         return $markup;
     }
 

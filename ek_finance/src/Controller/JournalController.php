@@ -120,10 +120,18 @@ class JournalController extends ControllerBase {
                      //no access
                      $query = "SELECT name from {ek_company} WHERE id=:id";
                      $name = Database::getConnection('external_db', 'external_db')
-                        ->query($query, [':id' => $details['coid']])->fetchField();
-                     $items['#markup'] = "<div class='messages messages--warning'>" 
-                             . t('Denied access for @e to @p', ['@e' => $name, '@p' => \Drupal::currentUser()->getUsername()])
-                             . '</div>';
+                        ->query($query, [':id' => $details['coid']])
+                        ->fetchField();
+                    
+                    $buil['type'] = 'access';
+                    $build['message'] = ['#markup' => t('Denied access for @e to @p', ['@e' => $name, '@p' => \Drupal::currentUser()->getUsername()])];
+                    $items['alert'] = [
+                        '#items' => $build,
+                        '#theme' => 'ek_admin_message',
+                        '#attached' => array(
+                            'library' => array('ek_admin/ek_admin_css'),
+                        ),
+                    ]; 
                      return $items;
                  }
      

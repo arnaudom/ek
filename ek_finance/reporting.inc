@@ -306,13 +306,12 @@ if ($coid != 'all') {
 $query->orderBy('aid');
 $accounts_income_class = $query->execute()->fetchAllKeyed();
 
-
 foreach($accounts_income_class as $key => $name) {
     $class = substr($key, 0, 2);
     $sum_row_amount = 0;
     $flag = 0;
     $subtotal_column_income = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0];
-    $orws = [];
+    $rows = [];
     
     // Get the account type detail
         $query = Database::getConnection('external_db', 'external_db')
@@ -367,11 +366,8 @@ foreach($accounts_income_class as $key => $name) {
                 $query->condition('j.date', $date2, '<=');
                 $query->condition('source', 'invoice', '=');
                 $query->condition('j.type', 'credit');
-                
-                
-            if ($coid != 'all') {           
                 $query->condition($viewS, $coid);
-            }            
+                
 
             $Obj = $query->execute();
             $sumValue = $Obj->fetchObject()->sumValue; 

@@ -1,0 +1,102 @@
+{{ items.form }}
+{{ items.excel|raw }}
+<div id="" class='right'><a class='right' href='#' onclick="jQuery('#help').toggle('slow');">{{ 'help'|t }} <i class="far fa-question-circle"></i></a>
+    <p class='left' id='help' style='display:none;'>
+        {{ 'This report is not an accounting report.
+        It is an analytic report that extract data per company based on business allocation.
+        For instance you may issue an invoice with business entity A but allocate the value to another business entity B 
+        (i.e profit center) for analytic purpose.
+        Selecting "allocated" in the filter above means that data displyed are values allocated to this business entity (i.e. entity B);
+        Selecting "actual" means that data shown are values attached to main entity (i.e entity A).'|t }}
+    </p>
+    
+</div>
+<table class='table'>   
+    <thead class=''>
+        <th class=''>
+            <a href='#balance' id='balance'>{{ 'Balances'|t }}</a> {{ items.year }} - {{ items.baseCurrency }} {{ items.budgetUnit }}
+        </th>
+        <th class='center'>{{ 'Actual'|t }}</th>
+        
+        <th class='center'>{{ 'Allocated'|t }}</th>
+        
+    </thead>
+    <tbody>
+    
+    {% for coid,name in items.company %}
+    <!-- --> <tr>
+        <td class='right'>{{ 'Income'|t }}</td>
+        <td class='right detail'>{{ items.income[coid].actual|number_format }}</td>
+        
+        <td class='right detail'>{{ items.income[coid].allocation|number_format }}</td>
+        
+    </tr>         
+     <tr>
+        <td class='right'>{{ 'Purchases'|t }}</td>
+        <td class='right detail'>({{ items.purchases[coid].actual|number_format }})</td>
+        
+        <td class='right detail'>({{ items.purchases[coid].allocation|number_format }})</td>
+        
+    </tr>         
+     <tr>
+        <td class='right'>{{ 'Expenses'|t }}</td>
+        <td class='right detail'>({{ items.expenses[coid].actual|number_format }})</td>
+        
+        <td class='right detail'>({{ items.expenses[coid].allocation|number_format }})</td>
+        
+    </tr>       
+        {% set actual = items.balances[coid].actual %}
+        {% set allocation = items.balances[coid].allocation %}
+    <tr class='subtotal'>
+        <td class='subtotal'>{{ coid }} {{ name }}</td>
+        <td class='right subtotal {% if actual < 0 %} red {% endif %}'>{{ actual|number_format }}</td>
+        
+        <td class='right subtotal {% if allocation < 0 %} red {% endif %}'>{{ allocation|number_format }}</td>
+        
+    </tr>  
+    
+    {% endfor %}
+    <tr class='grandtotal'>
+        <td>{{ 'Total'|t }}</td>
+        <td class='right {% if items.balances.all.actual < 0 %} red {% endif %}'><b>{{ items.balances.all.actual|number_format }}</b></td>
+        
+        <td class='right {% if items.balances.all.allocation < 0 %} red {% endif %}'><b>{{ items.balances.all.allocation|number_format }}</b></td>
+        
+    </tr>     
+    
+
+<tbody>
+</table>
+    
+    {% if items.error.income  %}
+        {{ 'Income errors, not allocated journal entries. Check if accounts ids (in brackets) exists or is active'|t }}:
+        <br/>({{ items.error.income_aid }})
+            <ul>{{ 'Journal'|t }}
+        {% for key,aid in items.error.income %} 
+            <li>{{ aid }} </li>
+        {% endfor %}
+            </ul>
+        
+    {% endif %}
+
+    {% if items.error.expenses  %}
+            {{ 'Expenses errors, not allocated journal entries. Check if accounts ids (in brackets) exists or is active'|t }}:
+            <br/>({{ items.error.expenses_aid }})
+            <ul>{{ 'Journal'|t }}
+        {% for key,aid in items.error.expenses %} 
+            <li>{{ aid }}</li>
+        {% endfor %}
+            </ul>
+        
+    {% endif %}
+
+    {% if items.error.purchases  %}
+            {{ 'Purchases errors, not allocated journal entries. Check if accounts ids (in brackets) exists or is active'|t }}:
+            <br/>({{ items.error.purchases_aid }})
+            <ul>{{ 'Journal'|t }}
+        {% for key,aid in items.error.purchases %} 
+            <li>{{ aid }}</li>
+        {% endfor %}
+            </ul>
+        
+    {% endif %}    

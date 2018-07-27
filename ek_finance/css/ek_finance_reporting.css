@@ -13,7 +13,7 @@ tr td {
 }
 
 .head {
-    background-color: #848484;
+    background-color: #C0C0C0;
     color: #FFF;
     font-weight: bold;
 }
@@ -39,14 +39,14 @@ tr td {
 }
 
 .subtotal {
-    background-color: #C0C0C0;
+    font-weight: bold;
+    background-color: #D8D8D8;
     border-top: 1px solid #000 !important;
 }
 
 .total {
     font-weight: bold;
-    background-color: #848484;
-    color: #FFF;
+    background-color: #D8D8D8 !important;
 }
 
 .grandtotal {

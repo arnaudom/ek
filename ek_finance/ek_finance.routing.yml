@@ -12,6 +12,14 @@ ek_finance_majour:
   requirements:
     _permission: 'access administration pages'
 
+ek_finance_move_data:
+  path: '/ek_finance/move_data'
+  defaults:
+    _title: 'Move accounts data'
+    _controller: '\Drupal\ek_finance\Controller\SettingsController::moveData'
+  requirements:
+    _permission: 'administrate_finance'
+    
 ek_finance.admin.settings:
   path: '/finance/admin/settings'
   defaults:

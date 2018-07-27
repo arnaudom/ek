@@ -1992,7 +1992,7 @@ class Journal {
         $settings = new FinanceSettings();
         //$ytd = $t['year'] . '-01-01';
         $dates = self::getFiscalDates($t['coid'], $t['year'], $t['month']);
-        $ytd = $dates['from'];
+        $ytd = $dates['fiscal_start'];
         $d1 = $t['year'] . '-' . $t['month'] . '-01';
         $d2 = $t['year'] . '-' . $t['month'] . '-' . cal_days_in_month(CAL_GREGORIAN, $t['month'], $t['year']);
         $data['baseCurrency'] = $settings->get('baseCurrency');

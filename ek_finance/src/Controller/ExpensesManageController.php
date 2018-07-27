@@ -1058,8 +1058,29 @@ class ExpensesManageController extends ControllerBase {
      *      form
      */
     public function deleteexpenses(Request $request, $id) {
-
-        $build['delete_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\DeleteExpense', $id);
+        
+          
+        $query = "SELECT reconcile from {ek_journal} WHERE type=:t AND source like :s AND reference=:r AND exchange=:e";
+        $a = array(':t' => 'debit', ':s' => 'expense%', ':r' => $id, ':e' => 0);
+        $j = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+        
+        if($j == 1) {
+            $items['type'] = 'delete';
+            $items['message'] = ['#markup' => t('This entry cannot be deleted because it has been reconciled.')];
+            $url = Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString();
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            
+            $build = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+            ];  
+        
+        } else {
+            $build['delete_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\DeleteExpense', $id,'0');
+        }
 
         return $build;
     }

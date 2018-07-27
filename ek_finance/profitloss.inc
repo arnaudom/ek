@@ -18,13 +18,13 @@ $items['summary'] = $summary;
  * and has started on 1/07/13
  */
 
-$dates = $journal->getFiscalDates($coid, $year, $month);
-$to = $dates['to'];
-$stop_date = $dates['stop_date'];
+$items['dates'] = $journal->getFiscalDates($coid, $year, $month);
+$to = $items['dates']['to'];
+$stop_date = $items['dates']['stop_date'];
 
 
-if ($dates['archive'] == TRUE) {
-    $from = $dates['from'];
+if ($items['dates']['archive'] == TRUE) {
+    $from = $items['dates']['from'];
     //extract data from archive tables
     $table_accounts = "ek_accounts_" . $year . "_" . $coid;
     $table_journal = "ek_journal_" . $year . "_" . $coid;
@@ -33,14 +33,11 @@ if ($dates['archive'] == TRUE) {
       t('Archive data') .
       "</div>"; */
 } else {
-    $from = $dates['fiscal_start'];
+    $from = $items['dates']['fiscal_start'];
     //extract data from current tables
     $table_accounts = "ek_accounts";
     $table_journal = "ek_journal";
-    $items['title'] = t('Current fiscal year @y', ['@y' => $dates['fiscal_year']]);
-    /* $alert = "<div>" .
-      t('Fiscal year'). ' : ' . $dates['fiscal_year'] .
-      "</div>"; */
+    $items['title'] = t('Current fiscal year @y', ['@y' => $items['dates']['fiscal_year']]);
 }
 //used to create links
 $param = [ 'id' => 'bs',
@@ -48,7 +45,7 @@ $param = [ 'id' => 'bs',
     'to' => $to,
     'coid' => $coid,
     'aid' => '',
-    'archive' => $dates['archive']
+    'archive' => $items['dates']['archive']
 ];
 
 ////////////////////// REVENUE /////////////////////////////
@@ -107,7 +104,7 @@ while ($r = $result->fetchObject()) {
                     'coid' => $coid,
                     'from' => $from,
                     'to' => $to,
-                    'archive' => $dates['archive']
+                    'archive' => $items['dates']['archive']
                 )
         );
 
@@ -118,7 +115,7 @@ while ($r = $result->fetchObject()) {
                     'coid' => $coid,
                     'from' => $from,
                     'to' => $to,
-                    'archive' => $dates['archive']
+                    'archive' => $items['dates']['archive']
                 )
         );
         $balance = $c[0] - $d[0];
@@ -199,7 +196,7 @@ while ($r = $result->fetchObject()) {
                     'coid' => $coid,
                     'from' => $from,
                     'to' => $to,
-                    'archive' => $dates['archive']
+                    'archive' => $items['dates']['archive']
                 )
         );
 
@@ -210,7 +207,7 @@ while ($r = $result->fetchObject()) {
                     'coid' => $coid,
                     'from' => $from,
                     'to' => $to,
-                    'archive' => $dates['archive']
+                    'archive' => $items['dates']['archive']
                 )
         );
         $balance = $c[0] - $d[0];
@@ -294,7 +291,7 @@ while ($r = $result->fetchObject()) {
                     'coid' => $coid,
                     'from' => $from,
                     'to' => $to,
-                    'archive' => $dates['archive']
+                    'archive' => $items['dates']['archive']
                 )
         );
 
@@ -305,7 +302,7 @@ while ($r = $result->fetchObject()) {
                     'coid' => $coid,
                     'from' => $from,
                     'to' => $to,
-                    'archive' => $dates['archive']
+                    'archive' => $items['dates']['archive']
                 )
         );
 
@@ -390,7 +387,7 @@ while ($r = $result->fetchObject()) {
                     'coid' => $coid,
                     'from' => $from,
                     'to' => $to,
-                    'archive' => $dates['archive']
+                    'archive' => $items['dates']['archive']
                 )
         );
 
@@ -401,7 +398,7 @@ while ($r = $result->fetchObject()) {
                     'coid' => $coid,
                     'from' => $from,
                     'to' => $to,
-                    'archive' => $dates['archive']
+                    'archive' => $items['dates']['archive']
                 )
         );
 
@@ -483,7 +480,7 @@ while ($r = $result->fetchObject()) {
                     'coid' => $coid,
                     'from' => $from,
                     'to' => $to,
-                    'archive' => $dates['archive']
+                    'archive' => $items['dates']['archive']
                 )
         );
 
@@ -494,7 +491,7 @@ while ($r = $result->fetchObject()) {
                     'coid' => $coid,
                     'from' => $from,
                     'to' => $to,
-                    'archive' => $dates['archive']
+                    'archive' => $items['dates']['archive']
                 )
         );
 

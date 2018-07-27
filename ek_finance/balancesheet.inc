@@ -478,7 +478,3 @@ $items['total_equity'] = ['base' => $total_class3_base, 'multi' => $total_class3
 if (round($net_assets_base,2) != round($total_class3_base,2) ) {
     $items['error'] = number_format(round($net_assets_base,2) - round($total_class3_base,2), 2);
 } 
-
-
-
-

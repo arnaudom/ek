@@ -105,13 +105,22 @@ class MemoExpensesController extends ControllerBase {
                 ->fetchObject();
         if ($id == NULL) {
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewMemo', $id, 'internal', $tempSerial, $clone);
-        } elseif ( ((\Drupal::currentUser()->hasPermission('admin_memos') || in_array($memo->entity, $access)) &&  $memo->status == 0)
+        } elseif (((\Drupal::currentUser()->hasPermission('admin_memos') || in_array($memo->entity, $access)) &&  $memo->status == 0)
                 || ($memo->status > 0 && $clone == TRUE)
                 ) {
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewMemo', $id, 'personal', $tempSerial, $clone);
         } else {
-            throw new AccessDeniedHttpException();
-            $build['content'] = t('You are not authorized to edit this memo');
+            $url = Url::fromRoute('ek_finance_manage_list_memo_internal', [],[])->toString();
+                $items['type'] = 'access';
+                $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
+                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $build = [
+                    '#items' => $items,
+                    '#theme' => 'ek_admin_message',
+                    '#attached' => array(
+                        'library' => array('ek_admin/ek_admin_css'),
+                    ),
+                ]; 
         }
 
         return $build;
@@ -153,13 +162,22 @@ class MemoExpensesController extends ControllerBase {
         if ($id == NULL)  {
             //edit allowed
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewMemo', $id, 'personal', $tempSerial, $clone);
-        } elseif ( ((\Drupal::currentUser()->hasPermission('admin_memos') || $memo->entity == \Drupal::currentUser()->id()) &&  $memo->status == 0)
+        } elseif (((\Drupal::currentUser()->hasPermission('admin_memos') || $memo->entity == \Drupal::currentUser()->id()) &&  $memo->status == 0)
                 || ($memo->status > 0 && $clone == TRUE)
                 ){
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewMemo', $id, 'personal', $tempSerial, $clone);
         } else {
-            throw new AccessDeniedHttpException();
-            $build['content'] = t('You are not authorized to edit this memo');
+            $url = Url::fromRoute('ek_finance_manage_list_memo_personal', [],[])->toString();
+                $items['type'] = 'access';
+                $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
+                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $build = [
+                    '#items' => $items,
+                    '#theme' => 'ek_admin_message',
+                    '#attached' => array(
+                        'library' => array('ek_admin/ek_admin_css'),
+                    ),
+                ]; 
         }
 
         return $build;
@@ -176,31 +194,46 @@ class MemoExpensesController extends ControllerBase {
     public function attachMemo($id) {
 
 // filter edition access 
-        $m1 = FALSE;
-        $m2 = FALSE;
+        $memo = FALSE;
 
-        $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
-        $coid = Database::getConnection('external_db', 'external_db')
-                        ->query('SELECT entity FROM {ek_expenses_memo} WHERE id=:id AND category<:c ', array(':id' => $id, ':c' => 5))
-                        ->fetchField();
-        if (\Drupal::currentUser()->hasPermission('admin_memos') || in_array($coid, $access)) {
-            $m1 = TRUE;
+        if(\Drupal::currentUser()->hasPermission('admin_memos')){
+            $memo = TRUE;
+        } else {
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses_memo', 'm');
+            $query->fields('m', ['entity', 'category']);
+            $query->condition('id', $id);
+            $Obj = $query->execute()->fetchObject();
+
+            if($Obj->category < 5){
+                $route = 'ek_finance_manage_list_memo_internal';
+                $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
+                if (in_array($Obj->entity, $access)) {
+                    $memo = TRUE;
+                }
+            } else {
+                $route = 'ek_finance_manage_list_memo_personal';
+                if ($Obj->entity == \Drupal::currentUser()->id()) {
+                    $memo = TRUE;
+                }
+            }
         }
 
-        $uid = Database::getConnection('external_db', 'external_db')
-                        ->query('SELECT entity FROM {ek_expenses_memo} WHERE id=:id AND category=:c ', array(':id' => $id, ':c' => 5))->fetchField();
-
-        if (\Drupal::currentUser()->hasPermission('admin_memos') || $uid == \Drupal::currentUser()->id()) {
-            $m2 = TRUE;
-        }
-
-
-        if ($m1 || $m2) {
+        if ($memo) {
             $tempSerial = 'temp' .  hash('crc32b', \Drupal::currentUser()->getUsername());
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\AttachFileMemo', $id, $tempSerial);
         } else {
-            throw new AccessDeniedHttpException();
-            $build['content'] = t('You are not authorized to edit this memo');
+            $url = Url::fromRoute($route, [],[])->toString();
+                $items['type'] = 'access';
+                $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
+                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $build = [
+                    '#items' => $items,
+                    '#theme' => 'ek_admin_message',
+                    '#attached' => array(
+                        'library' => array('ek_admin/ek_admin_css'),
+                    ),
+                ]; 
         }
 
         return $build;
@@ -973,7 +1006,9 @@ class MemoExpensesController extends ControllerBase {
         } else {
 
             $auth = explode("|", $data->auth);
-            if ($data->entity == \Drupal::currentUser()->id() || \Drupal::currentUser()->hasPermission('admin_memos') || $auth[1] == \Drupal::currentUser()->id()) {
+            if ($data->entity == \Drupal::currentUser()->id() 
+                    || \Drupal::currentUser()->hasPermission('admin_memos') 
+                    || $auth[1] == \Drupal::currentUser()->id()) {
                 $flag = 1;
                 //user has access this personal data
             }
@@ -1009,17 +1044,6 @@ class MemoExpensesController extends ControllerBase {
                     $url_edit = Url::fromRoute('ek_finance_manage_personal_memo', ['id' => $doc_id], [])->toString();
                 }
                 include_once drupal_get_path('module', 'ek_finance') . '/manage_print_output.inc';
-                /*$build['button'] = [
-                    '#markup' => "<a class='button' href='"
-                    . $url . "' >"
-                    . t('List') . "</a>"
-                    . "<a class='button' href='"
-                    . Url::fromRoute($route, ['id' => $doc_id], [])->toString() . "' >"
-                    . t('Edit') . "</a>"
-                    . "<a class='button' href='"
-                    . Url::fromRoute('ek_finance_manage_print_memo', ['id' => $doc_id], [])->toString() . "' >"
-                    . t('Pdf') . "</a>",
-                ];*/
 
                 $build['html_memo'] = [
                     '#markup' => $document,
@@ -1036,10 +1060,18 @@ class MemoExpensesController extends ControllerBase {
             } else {
                 $url = Url::fromRoute('ek_finance_manage_list_memo_personal')->toString();
             }
-            $message = t('Access denied') . '<br/>' . t("<a href=\"@c\">List</a>", ['@c' => $url]);
-            return [
-                '#markup' => $message,
-            ];
+            
+                $items['type'] = 'access';
+                $items['message'] = ['#markup' => t('You are not authorized to view this content')];
+                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $build = [
+                    '#items' => $items,
+                    '#theme' => 'ek_admin_message',
+                    '#attached' => array(
+                        'library' => array('ek_admin/ek_admin_css'),
+                    ),
+                ];  
+            return $build;
         }
     }
 

@@ -72,6 +72,11 @@ function ek_finance_theme() {
     (
       'template' => 'ek_finance_reporting',
       'variables' => array('items' => array()),
+    ),
+    'ek_finance_reporting_compilation' => array
+    (
+      'template' => 'ek_finance_reporting_compilation',
+      'variables' => array('items' => array()),
     ), 
         'ek_finance_budgeting' => array
     (

@@ -61,7 +61,6 @@ class ChartAccounts extends FormBase {
 
 
         if ($form_state->getValue('step') == '') {
-
             $form_state->setValue('step', 1);
         }
 
