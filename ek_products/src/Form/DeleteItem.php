@@ -58,14 +58,14 @@ class DeleteItem extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
 
-        $form['back'] = array(
-          '#type' => 'item',
-          '#markup' => t('<a href="@url" >Items list</a>', array('@url' => Url::fromRoute('ek_products.list', array(), array())->toString() ) ) ,
+    $form['back'] = array(
+        '#type' => 'item',
+        '#markup' => t('<a href="@url" >Items list</a>', array('@url' => Url::fromRoute('ek_products.list',[],[])->toString())) ,
+    );  
 
-        );  
 
-
-  $query = "SELECT coid,i.itemcode,description1, active,units from {ek_items} i INNER JOIN {ek_item_packing} p on i.itemcode=p.itemcode where i.id=:id";
+  $query = "SELECT coid,i.itemcode,description1, active,units FROM {ek_items} i "
+          . "INNER JOIN {ek_item_packing} p on i.itemcode=p.itemcode WHERE i.id=:id";
   $data = Database::getConnection('external_db', 'external_db')
           ->query($query, array(':id' => $id))
           ->fetchObject();
@@ -82,84 +82,32 @@ class DeleteItem extends FormBase {
       '#type' => 'item',
       '#markup' => t('Item ref. @p', array('@p' => $data->description1)),
 
-    );
-    
-    $del = 1;
-    if(!in_array($data->coid, $access)) {
-      $del = 0;
-      $message = t('You are not authorized to delete this item.');
-    } elseif($data->units <> 0) {
-      $del = 0;
-      $message = t('The stock value for this item is not null: @u units. It cannot be deleted.', array('@u' => $data->units ));
-    
-    } elseif ($this->moduleHandler->moduleExists('ek_sales') || $this->moduleHandler->moduleExists('ek_logistics')) {
-      
-        if($this->moduleHandler->moduleExists('ek_sales')) {
-          $query = 'SELECT count(id) from {ek_sales_invoice_details} WHERE itemdetail=:id';
-          $invoice = Database::getConnection('external_db', 'external_db')
-                  ->query($query, array(':id' => $id))
-                  ->fetchField();
-          if($invoice > 0) {
-            $del = 0;
-            $message = t('this item is used in Invoices module. It cannot be deleted') . '<br>';
-          }
-          $query = 'SELECT count(id) from {ek_sales_purchase_details} WHERE itemdetail=:id';
-          $purchase = Database::getConnection('external_db', 'external_db')
-                  ->query($query, array(':id' => $id))
-                  ->fetchField();        
-          if($purchase > 0) {
-            $del = 0;
-            $message .= t('this item is used in Purchases module. It cannot be deleted') . '<br>';
-          }
-          $query = 'SELECT count(id) from {ek_sales_quotation_details} WHERE itemdetails=:itemcode';
-          $quotation = Database::getConnection('external_db', 'external_db')
-                  ->query($query, array(':itemcode' => $data->itemcode))
-                  ->fetchField();
-          if($quotation > 0) {
-            $del = 0;
-            $message .= t('this item is used in Quotations module. It cannot be deleted') . '<br>';
-          }        
-        }
-        //@todo logistics
-    
-    } 
-    
-    
-    if($del != 0 ) {     
+    );    
+       
 
         $form['for_id'] = array(
-          '#type' => 'hidden',
-          '#value' => $id,
+            '#type' => 'hidden',
+            '#value' => $id,
 
         );
 
         $form['itemcode'] = array(
-          '#type' => 'hidden',
-          '#value' => $data->itemcode, 
+            '#type' => 'hidden',
+            '#value' => $data->itemcode, 
         );  
           
         $form['alert'] = array(
-          '#type' => 'item',
-          '#markup' => t('Are you sure you want to delete this item ?'),
+            '#type' => 'item',
+            '#markup' => t('Are you sure you want to delete this item ?'),
 
         );   
       
-           $form['actions']['record'] = array(
+        $form['actions']['record'] = array(
             '#type' => 'submit',
             '#value' => $this->t('Delete'),
-
-          );     
-    } else {
-
-        $back =  Url::fromRoute('ek_products.list', array(), array())->toString();
-        $form['alert'] = array(
-          '#type' => 'item',
-          '#markup' => $message ,
-
-        );  
-
-    }
-  return $form;    
+        );     
+    
+    return $form;    
   }
 
 

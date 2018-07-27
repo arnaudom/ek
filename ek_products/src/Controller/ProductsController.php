@@ -356,8 +356,101 @@ class ProductsController extends ControllerBase {
     }
 
     public function deleteproducts(Request $request, $id) {
-        $form_builder = $this->formBuilder();
-        $build['delete'] = $form_builder->getForm('Drupal\ek_products\Form\DeleteItem', $id);
+        
+        $query = "SELECT coid,i.itemcode,description1, active,units from {ek_items} i "
+                . "INNER JOIN {ek_item_packing} p on i.itemcode=p.itemcode where i.id=:id";
+        $data = Database::getConnection('external_db', 'external_db')
+                ->query($query, array(':id' => $id))
+                ->fetchObject();
+
+          $access = AccessCheck::GetCompanyByUser();
+          $coid = implode(',',$access);
+
+          $del = 0;
+          if(!in_array($data->coid, $access)) {
+            $del = 1;
+            $message = t('You are not authorized to delete this item.');
+          } elseif($data->units <> 0) {
+            $del = 1;
+            $message = t('The stock value for this item is not null: @u units. It cannot be deleted.', array('@u' => $data->units ));
+
+          } elseif ($this->moduleHandler->moduleExists('ek_sales') || $this->moduleHandler->moduleExists('ek_logistics')) {
+              
+            $usage = [];
+            if($this->moduleHandler->moduleExists('ek_sales')) {
+              $query = 'SELECT count(id) from {ek_sales_invoice_details} WHERE itemdetail=:id';
+              $invoice = Database::getConnection('external_db', 'external_db')
+                      ->query($query, array(':id' => $id))
+                      ->fetchField();
+              if($invoice > 0) {
+                $del = 2;
+                $usage[] = t('Invoice');
+              }
+              $query = 'SELECT count(id) from {ek_sales_purchase_details} WHERE itemdetail=:id';
+              $purchase = Database::getConnection('external_db', 'external_db')
+                      ->query($query, array(':id' => $id))
+                      ->fetchField();        
+              if($purchase > 0) {
+                $del = 2;
+                $usage[] = t('Purchase');
+              }
+              $query = 'SELECT count(id) from {ek_sales_quotation_details} WHERE itemid=:itemcode';
+              $quotation = Database::getConnection('external_db', 'external_db')
+                      ->query($query, array(':itemcode' => $data->itemcode))
+                      ->fetchField();
+              if($quotation > 0) {
+                $del = 2;
+                $usage[] = t('Quotation');
+              }        
+            }
+            
+            if($this->moduleHandler->moduleExists('ek_logistics')) {
+                $query = 'SELECT count(id) FROM {ek_logi_delivery_details} WHERE itemcode=:itemcode';
+                $delivery = Database::getConnection('external_db', 'external_db')
+                        ->query($query, array(':itemcode' => $data->itemcode))
+                        ->fetchField();
+                if($delivery > 0) {
+                  $del = 2;
+                  $usage[] = t('Delivery');
+                }  
+                $query = 'SELECT count(id) FROM {ek_logi_receiving_details} WHERE itemcode=:itemcode';
+                $delivery = Database::getConnection('external_db', 'external_db')
+                        ->query($query, array(':itemcode' => $data->itemcode))
+                        ->fetchField();
+                if($delivery > 0) {
+                  $del = 2;
+                  $usage[] = t('Receiving');
+                }                
+                
+            }
+
+        }
+        
+        if($del == 1 || $del == 2) {
+            $modules = implode(', ', $usage);
+            $items['type'] = 'delete';
+            if($del == 1){
+                $items['message'] = ['#markup' => $message];
+            } else {
+                $items['message'] = ['#markup' => t('@document cannot be deleted.' , array('@document' => t('Item') ))];
+                $items['description'] = ['#markup' => t('Used in @m', ['@m' => $modules])];
+            }
+            
+            $url = Url::fromRoute('ek_products.view', ['id' => $id],[])->toString();        
+            $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>",['@url' => $url])];
+            $build = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+            ];  
+        } else {
+            $form_builder = $this->formBuilder();
+            $build['delete'] = $form_builder->getForm('Drupal\ek_products\Form\DeleteItem', $id);
+        }
+        
+        
         return $build;
     }
 
