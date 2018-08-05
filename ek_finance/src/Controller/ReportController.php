@@ -129,7 +129,7 @@ class ReportController extends ControllerBase {
                     while($c = $control->fetchObject()) {
                         $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_accounts', 'a');
-                        $query->fields('a', ['aid'])
+                        $query->fields('a', ['aid','astatus'])
                                 ->condition('aid', $c->aid, '=')
                                 ->condition('a.coid', $coid, '=');
                         $Obj = $query->execute()->fetchObject();

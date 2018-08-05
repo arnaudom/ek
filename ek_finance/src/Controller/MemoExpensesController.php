@@ -108,7 +108,7 @@ class MemoExpensesController extends ControllerBase {
         } elseif (((\Drupal::currentUser()->hasPermission('admin_memos') || in_array($memo->entity, $access)) &&  $memo->status == 0)
                 || ($memo->status > 0 && $clone == TRUE)
                 ) {
-            $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewMemo', $id, 'personal', $tempSerial, $clone);
+            $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewMemo', $id, 'internal', $tempSerial, $clone);
         } else {
             $url = Url::fromRoute('ek_finance_manage_list_memo_internal', [],[])->toString();
                 $items['type'] = 'access';
