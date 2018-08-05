@@ -151,16 +151,14 @@ function Header()
     $this->Cell(110);
     $this->Cell(50,4, $this->company->postcode . ',' .$this->company->country ,0,1);
     $this->Cell(110);
-    if ($this->company->telelephone <> '') {
-    $this->Cell(8,3,t("tel:").$this->company->telelephone,0,1);
+    if ($this->company->telephone <> '') {
+    $this->Cell(8,3,t("tel:").$this->company->telephone,0,1);
     }
-    if ($this->companyfax <> '') {
+    if ($this->company->fax <> '') {
     $this->Cell(110);
     $this->Cell(8,4,t("fax:").$this->company->fax,0,1);
     }
-    $this->Cell(110);
-    $this->Cell(8,3,"( Co:$reg_number )",0,1);
-    
+
     //Line break
     $this->Ln(8);
     
@@ -186,12 +184,9 @@ function Footer()
 
 $pdf=new PDF();
 $pdf->setHeaderData($company); 
-$pdf->SetTitle(t('Payment Receipt') );
+$pdf->SetTitle(t('Payment Receipt'));
 $pdf->AliasNbPages();
 $pdf->AddPage('L','A5');
-$pdf->SetAutoPageBreak(1,$margin);
-
-
 
 //DISPLAY DATA
 
