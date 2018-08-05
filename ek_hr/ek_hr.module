@@ -82,17 +82,21 @@ function ek_hr_file_download($uri) {
 
         if (strpos($uri,'/hr/documents')) {
           
-        $query = "SELECT administrator,filemime FROM {ek_hr_workforce} a "
+        $query = "SELECT administrator,filemime,b.uri,b.filename,b.id FROM {ek_hr_workforce} a "
                 . "INNER JOIN {ek_hr_documents} b ON a.id = b.employee_id "
                 . "WHERE b.uri=:uri AND FIND_IN_SET(company_id, :c)";
         $a = array(':uri' => $uri, ':c' => $access);
         $data = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
         $admin_array = explode(',', $data->administrator);
+        $name = \Drupal::currentUser()->getUsername();
+        $place = array('@u' => $name, '@d' => $data->filename, '@i' => $data->id);
 
              if($data->administrator == '0' 
                   || in_array( 'administrator', \Drupal::currentUser()->getRoles()) 
                   || in_array( \Drupal::currentUser()->id(), $admin_array ) 
                ) { 
+               $log = t("User @u has downloaded document @d (file id @i)", $place);
+                    \Drupal::logger('ek_hr')->notice( $log );  
                return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($data->uri));     
                 
              } else { 
@@ -103,7 +107,8 @@ function ek_hr_file_download($uri) {
 
         if (strpos($uri,'/hr/pictures')) {
 
-        $query = "SELECT administrator,picture FROM {ek_hr_workforce} WHERE picture=:uri AND FIND_IN_SET(company_id, :c)";
+        $query = "SELECT administrator,picture FROM {ek_hr_workforce} "
+                . "WHERE picture=:uri AND FIND_IN_SET(company_id, :c)";
         $a = array(':uri' => $uri, ':c' => $access);
         $data = Database::getConnection('external_db', 'external_db')->query($query, $a )->fetchObject();
         $admin_array = explode(',', $data->administrator);

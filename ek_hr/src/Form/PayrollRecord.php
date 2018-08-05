@@ -75,14 +75,13 @@ class PayrollRecord extends FormBase {
             '#disabled' => ($form_state->getValue('coid')) ? TRUE : FALSE,
             '#required' => TRUE,
             '#prefix' => '<div class="container-inline">',
-                //'#suffix' => '</div>',    
         );
 
         if ($form_state->getValue('coid') == '') {
             $form['next'] = array(
                 '#type' => 'submit',
                 '#value' => t('Next') . ' >>',
-                //'#prefix' => '<div class="cell">',
+                '#limit_validation_errors' => [['coid']],
                 '#suffix' => '</div>',
             );
         } else {
@@ -106,6 +105,7 @@ class PayrollRecord extends FormBase {
                 '#size' => 5,
                 '#options' => $employees,
                 '#title' => t('employees'),
+                '#limit_validation_errors' => [['coid'],['eid']],
                 '#prefix' => '<div class="table"><div class="row "><div class="cell">',
                 '#suffix' => '</div></div></div>',
                 '#ajax' => array(
@@ -147,10 +147,11 @@ class PayrollRecord extends FormBase {
 
 
             $category = explode("_", $e->origin);
-            $c = "-" . $category[1]; //old format
-            if ($c == '-')
-                $c = '-' . $e->origin; //new format TODO, update after migration
-
+            if(isset($category[1])){
+                $c = "-" . $category[1]; //old format
+            } else {
+                $c = '-' . $e->origin; //new format
+            }
             $settings = array(
                 'salary' => $e->salary,
                 'salary2' => $e->th_salary,
@@ -263,13 +264,6 @@ class PayrollRecord extends FormBase {
                 $post = NULL;
             }
 
-            /*
-              $key = array('basic_value');
-              $form_state->unsetValue($key);
-              $form_state->setRebuild();
-              dvm($form_state->getValue('basic_value'));
-             */
-
             $query = "SELECT current FROM {ek_hr_payroll_cycle} WHERE coid=:c";
             $a = array(':c' => $form_state->getValue('coid'));
             $current = Database::getConnection('external_db', 'external_db')
@@ -286,6 +280,7 @@ class PayrollRecord extends FormBase {
             }
 
 //show employee data for ref
+            
             $form['hr']['data'] = array(
                 '#title' => t("Employee data"),
                 '#prefix' => '<div id="hr_data">',
@@ -303,14 +298,14 @@ class PayrollRecord extends FormBase {
                 '#type' => 'hidden',
                 '#value' => $e->id,
             );
-            /* */
+           
             $form['hr']['data']['month'] = array(
                 '#markup' => t('Payroll month') . ': <b>' . $current . '</b>',
                 '#prefix' => "<div class='cell right'>",
                 '#suffix' => '</div></div></div>',
                 '#value' => $current,
             );
-            /**/
+           
             $form['hr']['data']['payroll_month'] = array(
                 '#type' => 'hidden',
                 '#value' => $current,
@@ -362,12 +357,12 @@ class PayrollRecord extends FormBase {
 //row 1
             $form['hr']["work_base"] = array(
                 '#type' => 'textfield',
-                '#id' => 'd_base',
+                '#id' => 'work_base',
                 '#title' => t("units work base"),
                 '#title_display' => 'after',
                 '#required' => TRUE,
-                //'#default_value' => isset($post->d_pay) ? $post->d_pay : 0 ,
-                '#value' => isset($post->d_pay) ? $post->d_pay : 0,
+                '#default_value' => isset($post->d_pay) ? $post->d_pay : 0 ,
+                //'#value' => isset($post->d_pay) ? $post->d_pay : 0,
                 '#size' => 5,
                 '#prefix' => '<div class="table"><div class="row "><div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -376,13 +371,13 @@ class PayrollRecord extends FormBase {
 
             $form['hr']["unit_work"] = array(
                 '#type' => 'textfield',
-                '#id' => 'n_days',
+                '#id' => 'unit_work',
                 '#title' => t("units worked"),
                 '#title_display' => 'after',
                 '#required' => TRUE,
                 '#size' => 8,
-                //'#default_value' => isset($post->n_days) ? $post->n_days : 0 ,
-                '#value' => isset($post->n_days) ? $post->n_days : 0,
+                '#default_value' => isset($post->n_days) ? $post->n_days : 0 ,
+                //'#value' => isset($post->n_days) ? $post->n_days : 0,
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div>',
                 '#attributes' => array('class' => array('calculate')),
@@ -395,8 +390,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 3,
-                //'#default_value' => isset($post->no_payday) ? $post->no_payday : 0 ,
-                '#value' => isset($post->no_payday) ? $post->no_payday : 0,
+                '#default_value' => isset($post->no_payday) ? $post->no_payday : 0 ,
+                //'#value' => isset($post->no_payday) ? $post->no_payday : 0,
                 '#attributes' => array('title' => t('number of days not paid')),
                 '#prefix' => '<div class="cell cellmedium">',
             );
@@ -408,8 +403,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 3,
-                //'#default_value' => isset($post->leave) ? $post->leave : 0 ,
-                '#value' => isset($post->leave) ? $post->leave : 0,
+                '#default_value' => isset($post->tleave) ? $post->tleave : 0 ,
+                //'#value' => isset($post->leave) ? $post->leave : 0,
                 '#attributes' => array('title' => t('number of days leave'), 'class' => array('calculate')),
                 '#suffix' => '</div></div>',
             );
@@ -431,7 +426,7 @@ class PayrollRecord extends FormBase {
                 '#required' => TRUE,
                 '#size' => 8,
                 //'#default_value' => ($form_state->getValue('basic_value')) ? $form_state->getValue('basic_value') : $post->basic ,
-                '#value' => isset($post->basic) ? $post->basic : 0,
+                '#default_value' => isset($post->basic) ? $post->basic : 0,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div></div>',
@@ -446,8 +441,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 5,
-                //'#default_value' => isset($post->n_ot_days) ? $post->n_ot_days : 0 ,
-                '#value' => isset($post->n_ot_days) ? $post->n_ot_days : 0,
+                '#default_value' => isset($post->n_ot_days) ? $post->n_ot_days : 0 ,
+                //'#value' => isset($post->n_ot_days) ? $post->n_ot_days : 0,
                 '#prefix' => '<div class="row "><div class="cell cellmedium">',
                 '#suffix' => '</div>',
                 '#attributes' => array('class' => array('calculate')),
@@ -460,8 +455,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->n_ot_val) ? $post->n_ot_val : 0 ,
-                '#value' => isset($post->n_ot_val) ? $post->n_ot_val : 0,
+                '#default_value' => isset($post->n_ot_val) ? $post->n_ot_val : 0 ,
+                //'#value' => isset($post->n_ot_val) ? $post->n_ot_val : 0,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div></div>',
@@ -475,8 +470,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 5,
-                //'#default_value' => isset($post->r_day) ? $post->r_day : 0 ,
-                '#value' => isset($post->r_day) ? $post->r_day : 0,
+                '#default_value' => isset($post->r_day) ? $post->r_day : 0 ,
+                //'#value' => isset($post->r_day) ? $post->r_day : 0,
                 '#attributes' => array('title' => t('hours worked on rest day'), 'class' => array('calculate')),
                 '#prefix' => '<div class="row "><div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -489,8 +484,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->r_day_val) ? $post->r_day_val : 0 ,
-                '#value' => isset($post->r_day_val) ? $post->r_day_val : 0,
+                '#default_value' => isset($post->r_day_val) ? $post->r_day_val : 0 ,
+                //'#value' => isset($post->r_day_val) ? $post->r_day_val : 0,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div></div>',
@@ -503,8 +498,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 5,
-                //'#default_value' => isset($post->ph_day) ? $post->ph_day : 0 ,
-                '#value' => isset($post->ph_day) ? $post->ph_day : 0,
+                '#default_value' => isset($post->ph_day) ? $post->ph_day : 0 ,
+                //'#value' => isset($post->ph_day) ? $post->ph_day : 0,
                 '#attributes' => array('title' => t('hours worked on Public Holidays'), 'class' => array('calculate')),
                 '#prefix' => '<div class="row "><div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -517,8 +512,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->ph_day_val) ? $post->ph_day_val : 0 ,
-                '#value' => isset($post->ph_day_val) ? $post->ph_day_val : 0,
+                '#default_value' => isset($post->ph_day_val) ? $post->ph_day_val : 0 ,
+                //'#value' => isset($post->ph_day_val) ? $post->ph_day_val : 0,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div></div>',
@@ -532,8 +527,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 5,
-                //'#default_value' => isset($post->mc_day) ? $post->mc_day : 0 ,
-                '#value' => isset($post->mc_day) ? $post->mc_day : 0,
+                '#default_value' => isset($post->mc_day) ? $post->mc_day : 0 ,
+                //'#value' => isset($post->mc_day) ? $post->mc_day : 0,
                 '#attributes' => array('title' => t('paid medical leave days'), 'class' => array('calculate')),
                 '#prefix' => '<div class="row "><div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -546,8 +541,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->mc_day_val) ? $post->mc_day_val : 0 ,
-                '#value' => isset($post->mc_day_val) ? $post->mc_day_val : 0,
+                '#default_value' => isset($post->mc_day_val) ? $post->mc_day_val : 0 ,
+                //'#value' => isset($post->mc_day_val) ? $post->mc_day_val : 0,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div></div>',
@@ -561,8 +556,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 5,
-                //'#default_value' => isset($post->xr_hours) ? $post->xr_hours : 0 ,
-                '#value' => isset($post->xr_hours) ? $post->xr_hours : 0,
+                '#default_value' => isset($post->xr_hours) ? $post->xr_hours : 0 ,
+                //'#value' => isset($post->xr_hours) ? $post->xr_hours : 0,
                 '#attributes' => array('title' => t('extra hours worked'), 'class' => array('calculate')),
                 '#prefix' => '<div class="row "><div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -575,8 +570,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->xr_hours_val) ? $post->xr_hours_val : 0 ,
-                '#value' => isset($post->xr_hours_val) ? $post->xr_hours_val : 0,
+                '#default_value' => isset($post->xr_hours_val) ? $post->xr_hours_val : 0 ,
+                //'#value' => isset($post->xr_hours_val) ? $post->xr_hours_val : 0,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div></div>',
@@ -590,8 +585,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 5,
-                //'#default_value' => isset($post->turnover) ? $post->turnover : 0 ,
-                '#value' => isset($post->turnover) ? $post->turnover : 0,
+                '#default_value' => isset($post->turnover) ? $post->turnover : 0 ,
+                //'#value' => isset($post->turnover) ? $post->turnover : 0,
                 '#attributes' => array('title' => t('value to calculate commission'), 'class' => array('calculate')),
                 '#prefix' => '<div class="row "><div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -604,8 +599,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->commission) ? $post->commission : 0 ,
-                '#value' => isset($post->commission) ? $post->commission : 0,
+                '#default_value' => isset($post->commission) ? $post->commission : 0 ,
+                //'#value' => isset($post->commission) ? $post->commission : 0,
                 '#attributes' => array('class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -639,13 +634,13 @@ class PayrollRecord extends FormBase {
 
             $form['hr']['customA']["custom_aw1"] = array(
                 '#type' => 'textfield',
-                '#id' => 'customaw1',
+                '#id' => 'custom_aw1',
                 '#title' => $param->get('ad', 'LAC1' . $c, 'description'),
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->custom_aw1) ? $post->custom_aw1 : 0 ,
-                '#value' => isset($post->custom_aw1) ? $post->custom_aw1 : 0,
+                '#default_value' => isset($post->custom_aw1) ? $post->custom_aw1 : 0 ,
+                //'#value' => isset($post->custom_aw1) ? $post->custom_aw1 : 0,
                 '#attributes' => array('class' => array('amount', 'calculate')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -687,13 +682,13 @@ class PayrollRecord extends FormBase {
 
                 $form['hr']['customA']["custom_aw$i"] = array(
                     '#type' => 'textfield',
-                    '#id' => "customaw$i",
+                    '#id' => "custom_aw$i",
                     '#title' => $param->get('ad', "LAC$i" . $c, 'description'),
                     '#title_display' => 'after',
                     '#required' => FALSE,
                     '#size' => 8,
-                    //'#default_value' => isset($post->$custom_aw) ? $post->$custom_aw : 0 ,
-                    '#value' => isset($post->$custom_aw) ? $post->$custom_aw : 0,
+                    '#default_value' => isset($post->$custom_aw) ? $post->$custom_aw : 0 ,
+                    //'#value' => isset($post->$custom_aw) ? $post->$custom_aw : 0,
                     '#attributes' => array('class' => array('amount', 'calculate')),
                     '#prefix' => '<div class="cell cellmedium">',
                     '#suffix' => '</div>',
@@ -720,6 +715,7 @@ class PayrollRecord extends FormBase {
                     '#suffix' => '</div></div>',
                 );
             }//loop
+
 //total gross
             $form['hr']["null14"] = array(
                 '#type' => 'item',
@@ -735,8 +731,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 10,
-                //'#default_value' => isset($post->gross) ? $post->gross : 0 ,
-                '#value' => isset($post->gross) ? $post->gross : 0,
+                '#default_value' => isset($post->gross) ? $post->gross : 0 ,
+                //'#value' => isset($post->gross) ? $post->gross : 0,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium back_green">',
                 '#suffix' => '</div></div>',
@@ -753,8 +749,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 5,
-                //'#default_value' => isset($post->less_hours) ? $post->less_hours : 0 ,
-                '#value' => isset($post->less_hours) ? $post->less_hours : 0,
+                '#default_value' => isset($post->less_hours) ? $post->less_hours : 0 ,
+                //'#value' => isset($post->less_hours) ? $post->less_hours : 0,
                 '#attributes' => array('title' => t('less hours number'), 'class' => array('calculate')),
                 '#prefix' => '<div class="row "><div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -767,8 +763,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->less_hours_val) ? $post->less_hours_val : 0 ,
-                '#value' => isset($post->less_hours_val) ? $post->less_hours_val : 0,
+                '#default_value' => isset($post->less_hours_val) ? $post->less_hours_val : 0 ,
+                //'#value' => isset($post->less_hours_val) ? $post->less_hours_val : 0,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div></div>',
@@ -789,8 +785,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->advance) ? $post->advance : 0 , //todo add from advance records
-                '#value' => isset($post->advance) ? $post->advance : 0,
+                '#default_value' => isset($post->advance) ? $post->advance : 0 , //todo add from advance records
+                //'#value' => isset($post->advance) ? $post->advance : 0,
                 '#attributes' => array('class' => array('amount', 'calculate')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div></div>',
@@ -807,7 +803,6 @@ class PayrollRecord extends FormBase {
 
 //row 25 to 31
             //loop deductions
-
             for ($i = 1; $i <= 6; $i++) {
                 $r = 24 + $i;
                 $form['hr']['customD']["null$r"] = array(
@@ -825,8 +820,8 @@ class PayrollRecord extends FormBase {
                     '#title_display' => 'after',
                     '#required' => FALSE,
                     '#size' => 8,
-                    ///'#default_value' => isset($post->$custom_d) ? $post->$custom_d : 0 ,
-                    '#value' => isset($post->$custom_d) ? $post->$custom_d : 0,
+                    '#default_value' => isset($post->$custom_d) ? $post->$custom_d : 0 ,
+                    // isset($post->$custom_d) ? $post->$custom_d : 0,
                     '#attributes' => array('class' => array('amount', 'calculate')),
                     '#prefix' => '<div class="cell cellmedium">',
                     '#suffix' => '</div>',
@@ -835,7 +830,6 @@ class PayrollRecord extends FormBase {
                 $form['hr']['customD']['tax' . $r] = array(
                     '#type' => 'checkbox',
                     '#id' => 'tax' . $r,
-                    //'#default_value' => $param->get('ad', "LDC$i".$c, 'tax'),
                     '#value' => $param->get('ad', "LDC$i" . $c, 'tax'),
                     '#attributes' => array('title' => t('include tax'), 'class' => array('calculate')),
                     '#prefix' => '<div class="cell cellnarrow">',
@@ -851,7 +845,8 @@ class PayrollRecord extends FormBase {
                     '#prefix' => '<div class="cell cellnarrow">',
                     '#suffix' => '</div></div>',
                 );
-            }//loop
+            }
+
 //total deductions
             $form['hr']["null31"] = array(
                 '#type' => 'item',
@@ -881,8 +876,9 @@ class PayrollRecord extends FormBase {
                 '#title' => $param->get('param', 'fund_1', ['name','value']),
                 '#title_display' => 'after',
                 '#required' => FALSE,
-                '#size' => 8,'param', 'tax', ['name','value'],
-                '#value' => isset($post->epf_er) ? $post->epf_er : 0,
+                '#size' => 8,
+                '#default_value' => isset($post->epf_er) ? $post->epf_er : 0 ,
+                //'#value' => isset($post->epf_er) ? $post->epf_er : 0,
                 '#attributes' => array('class' => array('amount', 'calculate')),
                 '#prefix' => '<div class="table"><div class="row "><div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -891,11 +887,11 @@ class PayrollRecord extends FormBase {
             $form['hr']["fund1_employee"] = array(
                 '#type' => 'textfield',
                 '#id' => 'fund1_employee',
-                '#title_display' => 'after',
+                //'#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->epf_yee) ? $post->epf_yee : 0 ,
-                '#value' => isset($post->epf_yee) ? $post->epf_yee : 0,
+                '#default_value' => isset($post->epf_yee) ? $post->epf_yee : 0 ,
+                //'#value' => isset($post->epf_yee) ? $post->epf_yee : 0,
                 '#attributes' => array('class' => array('amount', 'calculate')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -918,7 +914,7 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                '#value' => isset($post->socso_er) ? $post->socso_er : 0,
+                '#default_value' => isset($post->socso_er) ? $post->socso_er : 0,
                 '#attributes' => array('class' => array('amount', 'calculate')),
                 '#prefix' => '<div class="table"><div class="row "><div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -930,7 +926,7 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                '#value' => isset($post->socso_yee) ? $post->socso_yee : 0,
+                '#default_value' => isset($post->socso_yee) ? $post->socso_yee : 0,
                 '#attributes' => array('class' => array('amount', 'calculate')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -954,8 +950,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->with_yer) ? $post->with_yer : 0 ,
-                '#value' => isset($post->with_yer) ? $post->with_yer : 0,
+                '#default_value' => isset($post->with_yer) ? $post->with_yer : 0 ,
+                //'#value' => isset($post->with_yer) ? $post->with_yer : 0,
                 '#attributes' => array('class' => array('amount', 'calculate')),
                 '#prefix' => '<div class="table"><div class="row "><div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -967,8 +963,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->with_yee) ? $post->with_yee : 0 ,
-                '#value' => isset($post->with_yee) ? $post->with_yee : 0,
+                '#default_value' => isset($post->with_yee) ? $post->with_yee : 0 ,
+                //'#value' => isset($post->with_yee) ? $post->with_yee : 0,
                 '#attributes' => array('class' => array('amount', 'calculate')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -997,8 +993,8 @@ class PayrollRecord extends FormBase {
                 '#title_display' => 'after',
                 '#required' => FALSE,
                 '#size' => 8,
-                //'#default_value' => isset($post->incometax) ? $post->incometax : 0 ,
-                '#value' => isset($post->incometax) ? $post->incometax : 0,
+                '#default_value' => isset($post->incometax) ? $post->incometax : 0 ,
+                //'#value' => isset($post->incometax) ? $post->incometax : 0,
                 '#attributes' => array('class' => array('amount', 'calculate')),
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div>',
@@ -1029,16 +1025,13 @@ class PayrollRecord extends FormBase {
                 '#title' => '',
                 '#title_display' => 'after',
                 '#required' => FALSE,
-                //'#default_value' => isset($post->nett) ? $post->nett : 0 ,
-                '#value' => isset($post->nett) ? $post->nett : 0,
+                '#default_value' => isset($post->nett) ? $post->nett : 0 ,
+                //'#value' => isset($post->nett) ? $post->nett : 0,
                 '#size' => 10,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium back_blue">',
                 '#suffix' => '</div></div>',
             );
-
-
-
 
             $form['hr']['actions'] = array(
                 '#type' => 'actions',
@@ -1061,27 +1054,24 @@ class PayrollRecord extends FormBase {
                 '#type' => 'button',
                 '#value' => $this->t('Save'),
                 '#ajax' => array(
-                    'callback' => array($this, 'submitForm'),
-                    'wrapper' => 'alert1',
+                    'callback' => array($this, 'recordPay'),
+                    'wrapper' => 'alert2',
                 ),
             );
 
 
             $form['hr']['actions']['alert'] = array(
-                '#prefix' => "<div id='alert1'>",
-                '#suffix' => '</div>',
-                '#markup' => '',
+                '#markup' => "<div id='alert1'></div><div id='alert2'></div>",
             );
 
             $form['hr']['actions']['top'] = array(
                 '#type' => 'item',
-                '#markup' => '<span><a href="#edit-eid">' . t('top') . '</a></span>',
+                '#markup' => '<a href="#content">' . t('top') . '</a>',
             );
-        } //if eid
+        }  //if eid
 
 
         $form['hr']['#attached']['library'][] = 'ek_hr/ek_hr.payroll';
-
         $form['#id'] = 'payroll_data';
 
 
@@ -1092,7 +1082,6 @@ class PayrollRecord extends FormBase {
      * callback
      */
     public function payroll(array &$form, FormStateInterface $form_state) {
-
         return $form['hr'];
     }
 
@@ -1104,40 +1093,15 @@ class PayrollRecord extends FormBase {
         if ($form_state->get('step') == 1) {
             $form_state->set('step', 2);
             $form_state->setRebuild();
+            return $form;
         }
         if ($form_state->get('step') == 2) {
             $form_state->set('step', 3);
             $form_state->setRebuild();
+            return $form;
         }
+        
         if ($form_state->get('step') == 3) {
-            /*
-            $input = $form_state->getUserInput();
-
-            if (!is_numeric($input['work_base'])) {
-                $form_state->setErrorByName('work_base', $this->t('Work base should be a numeric value.'));
-            }
-            if (!is_numeric($input['unit_work'])) {
-                $form_state->setErrorByName('unit_work', $this->t('Units worked should be a numeric value.'));
-            }
-            if (!is_numeric($input['n_ot_days'])) {
-                $form_state->setErrorByName('n_ot_days', $this->t('Overtime should be a numeric value.'));
-            } 
-            if (!is_numeric($input['r_day'])) {
-                $form_state->setErrorByName('r_day', $this->t('Rest hours worked should be a numeric value.'));
-            }            
-            if (!is_numeric($input['ph_day'])) {
-                $form_state->setErrorByName('ph_day', $this->t('PH hours worked should be a numeric value.'));
-            }             
-            if (!is_numeric($input['mc_day'])) {
-                $form_state->setErrorByName('mc_day', $this->t('Medical leave hours should be a numeric value.'));
-            }             
-            if (!is_numeric($input['xr_hours'])) {
-                $form_state->setErrorByName('xr_hours', $this->t('Extra hours worked should be a numeric value.'));
-            } 
-            if (!is_numeric($input['turnover'])) {
-                $form_state->setErrorByName('turnover', $this->t('Turnover should be a numeric value.'));
-            }             
-            */
             
         }
     }
@@ -1145,62 +1109,105 @@ class PayrollRecord extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
+    public function recordPay(array &$form, FormStateInterface $form_state) {
+        
         if ($form_state->get('step') == 3) {
-            $input = $form_state->getUserInput();
+            
+            //filter data input
+            $elements =['work_base','unit_work','no_pay_day','leave','overtime_hours',
+                'rest_hours','ph_hours','mc_days','x_hours','turnover','commission',
+                'less_hours','advance','fund1_employer','fund1_employee','fund2_employer','fund2_employee',
+                'fund3_employer','fund3_employee','income_tax'];
+            $response = new \Drupal\Core\Ajax\AjaxResponse();
+            $a_error =[];
+            $a_valid = [];
+            foreach ($elements as $key => $element){
+                if(!is_numeric($form_state->getValue($element))) {
+                    $a_error[] = '#' . $element;
+                }
+                 else {
+                    $a_valid[] = '#' . $element;
+                }
+            }
+        for ($i = 1; $i <= 13; $i++) {
+                if(!is_numeric($form_state->getValue('custom_aw' . $i))) {
+                    $a_error[] = '#' . 'custom_aw' . $i;
+                } else {
+                    $a_valid[] = '#' . 'custom_aw' . $i;
+                }
+            }
+            for ($i = 1; $i <= 6; $i++) {
+                if(!is_numeric($form_state->getValue("custom_d$i"))) {
+                    $a_error[] = '#' . 'custom_d' . $i;
+                } else {
+                    $a_valid[] = '#' . 'custom_d' . $i;
+                }
+            }
+            
+        if(!empty($a_error)) { 
+            $command1 = new \Drupal\Core\Ajax\InvokeCommand(implode(',',$a_error), 'addClass', ['error']);
+            $response->addCommand($command1);
+            $alert = new \Drupal\Core\Ajax\HtmlCommand('#alert2',"<div class='messages messages--error'>" . t('Error') . "</div>");
+            $response->addCommand($alert);
+        }
+        $command2 = new \Drupal\Core\Ajax\InvokeCommand(implode(',',$a_valid), 'removeClass', ['error']);
+        $response->addCommand($command2);
+        
+        if(isset($alert)) {
+            return $response;
+        }
 
             $fields = array(
                 'month' => $form_state->getValue('payroll_month'),
-                'd_pay' => Xss::filter($input['work_base']),
-                'n_days' => Xss::filter($input['unit_work']),
-                'basic' => Xss::filter($input['basic_value']),
-                'n_ot_days' => Xss::filter($input['overtime_hours']),
-                'n_ot_val' => Xss::filter($input['normal_ot']),
-                'r_day' => Xss::filter($input['rest_hours']),
-                'r_day_val' => Xss::filter($input['rest_day_ot']),
-                'ph_day' => Xss::filter($input['ph_hours']),
-                'ph_day_val' => Xss::filter($input['ph_ot']),
-                'mc_day' => Xss::filter($input['mc_days']),
-                'mc_day_val' => Xss::filter($input['mc_day_val']),
-                'xr_hours' => Xss::filter($input['x_hours']),
-                'xr_hours_val' => Xss::filter($input['x_hours_val']),
-                'tleave' => Xss::filter($input['leave']),
-                'custom_aw1' => Xss::filter($input['custom_aw1']),
-                'custom_aw2' => Xss::filter($input['custom_aw2']),
-                'custom_aw3' => Xss::filter($input['custom_aw3']),
-                'custom_aw4' => Xss::filter($input['custom_aw4']),
-                'custom_aw5' => Xss::filter($input['custom_aw5']),
-                'custom_aw6' => Xss::filter($input['custom_aw6']),
-                'custom_aw7' => Xss::filter($input['custom_aw7']),
-                'custom_aw8' => Xss::filter($input['custom_aw8']),
-                'custom_aw9' => Xss::filter($input['custom_aw9']),
-                'custom_aw10' => Xss::filter($input['custom_aw10']),
-                'custom_aw11' => Xss::filter($input['custom_aw11']),
-                'custom_aw12' => Xss::filter($input['custom_aw12']),
-                'custom_aw13' => Xss::filter($input['custom_aw13']),
-                'turnover' => Xss::filter($input['turnover']),
-                'commission' => Xss::filter($input['commission']),
-                'gross' => Xss::filter($input['total_gross']),
-                'no_payday' => Xss::filter($input['no_pay_day']),
-                'less_hours' => Xss::filter($input['less_hours']),
-                'less_hours_val' => Xss::filter($input['less_hours_val']),
-                'advance' => Xss::filter($input['advance']),
-                'custom_d1' => Xss::filter($input['custom_d1']),
-                'custom_d2' => Xss::filter($input['custom_d2']),
-                'custom_d3' => Xss::filter($input['custom_d3']),
-                'custom_d4' => Xss::filter($input['custom_d4']),
-                'custom_d5' => Xss::filter($input['custom_d5']),
-                'custom_d6' => Xss::filter($input['custom_d6']),
-                'epf_yee' => Xss::filter($input['fund1_employee']),
-                'socso_yee' => Xss::filter($input['fund2_employee']),
-                'epf_er' => Xss::filter($input['fund1_employer']),
-                'socso_er' => Xss::filter($input['fund2_employer']),
-                'with_yer' => Xss::filter($input['fund3_employer']),
-                'with_yee' => Xss::filter($input['fund3_employee']),
-                'incometax' => Xss::filter($input['income_tax']),
-                'deduction' => Xss::filter($input['total_deductions']),
-                'nett' => Xss::filter($input['total_net']),
+                'd_pay' => $form_state->getValue('work_base'),
+                'n_days' => $form_state->getValue('unit_work'),
+                'basic' => $form_state->getValue('basic_value'),
+                'n_ot_days' => $form_state->getValue('overtime_hours'),
+                'n_ot_val' => $form_state->getValue('normal_ot'),
+                'r_day' => $form_state->getValue('rest_hours'),
+                'r_day_val' => $form_state->getValue('rest_day_ot'),
+                'ph_day' => $form_state->getValue('ph_hours'),
+                'ph_day_val' => $form_state->getValue('ph_ot'),
+                'mc_day' => $form_state->getValue('mc_days'),
+                'mc_day_val' => $form_state->getValue('mc_day_val'),
+                'xr_hours' => $form_state->getValue('x_hours'),
+                'xr_hours_val' => $form_state->getValue('x_hours_val'),
+                'tleave' => $form_state->getValue('leave'),
+                'custom_aw1' => $form_state->getValue('custom_aw1'),
+                'custom_aw2' => $form_state->getValue('custom_aw2'),
+                'custom_aw3' => $form_state->getValue('custom_aw3'),
+                'custom_aw4' => $form_state->getValue('custom_aw4'),
+                'custom_aw5' => $form_state->getValue('custom_aw5'),
+                'custom_aw6' => $form_state->getValue('custom_aw6'),
+                'custom_aw7' => $form_state->getValue('custom_aw7'),
+                'custom_aw8' => $form_state->getValue('custom_aw8'),
+                'custom_aw9' => $form_state->getValue('custom_aw9'),
+                'custom_aw10' => $form_state->getValue('custom_aw10'),
+                'custom_aw11' => $form_state->getValue('custom_aw11'),
+                'custom_aw12' => $form_state->getValue('custom_aw12'),
+                'custom_aw13' => $form_state->getValue('custom_aw13'),
+                'turnover' => $form_state->getValue('turnover'),
+                'commission' => $form_state->getValue('commission'),
+                'gross' => $form_state->getValue('total_gross'),
+                'no_payday' => $form_state->getValue('no_pay_day'),
+                'less_hours' => $form_state->getValue('less_hours'),
+                'less_hours_val' => $form_state->getValue('less_hours_val'),
+                'advance' => $form_state->getValue('advance'),
+                'custom_d1' => $form_state->getValue('custom_d1'),
+                'custom_d2' => $form_state->getValue('custom_d2'),
+                'custom_d3' => $form_state->getValue('custom_d3'),
+                'custom_d4' => $form_state->getValue('custom_d4'),
+                'custom_d5' => $form_state->getValue('custom_d5'),
+                'custom_d6' => $form_state->getValue('custom_d6'),
+                'epf_yee' => $form_state->getValue('fund1_employee'),
+                'socso_yee' => $form_state->getValue('fund2_employee'),
+                'epf_er' => $form_state->getValue('fund1_employer'),
+                'socso_er' => $form_state->getValue('fund2_employer'),
+                'with_yer' => $form_state->getValue('fund3_employer'),
+                'with_yee' => $form_state->getValue('fund3_employee'),
+                'incometax' => $form_state->getValue('income_tax'),
+                'deduction' => $form_state->getValue('total_deductions'),
+                'nett' => $form_state->getValue('total_net'),
             );
 
             // check if account already exist
@@ -1226,12 +1233,11 @@ class PayrollRecord extends FormBase {
                         ->execute();
             }
 
-            //if ($db) {
-            $form['hr']['actions']['alert']['#markup'] = "<div id='alert' class='messages messages--status'>" . t('Data updated') . "</div>";
-
-            return $form['hr']['actions']['alert'];
-            // }
-        }//step 3
+            $alert = new \Drupal\Core\Ajax\HtmlCommand('#alert2',"<div class='messages messages--status'>" . t('Data updated') . "</div>");
+            $response->addCommand($alert);
+            return $response;
+            
+        }
     }
 
     /**
@@ -1246,10 +1252,12 @@ class PayrollRecord extends FormBase {
 
 
         $form['hr']['actions']['alert']['#markup'] = "<div id='alert' class='messages messages--warning'>" . t('Data cleared') . "</div>";
-
         return $form['hr']['actions']['alert'];
+
     }
 
-
+    public function submitForm(array &$form, FormStateInterface $form_state) {
+        
+    }
 
 }

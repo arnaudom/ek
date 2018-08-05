@@ -10,18 +10,18 @@
         //$(".calculate").keyup(function(){
         $(".calculate").on("change",function(){  
           var total = 0;
-          var salary = settings.ek_hr.salary;
-          var salary2 = settings.ek_hr.salary2;
+          var salary = parseFloat(settings.ek_hr.salary);
+          var salary2 = parseFloat(settings.ek_hr.salary2);
           //basic
      
-          var d_base = ($('#d_base').val()) ? parseFloat($('#d_base').val()) : null;  
-          var n_days = ($('#n_days').val()) ? parseFloat($('#n_days').val()) : 0;
+          var work_base = ($('#work_base').val()) ? parseFloat($('#work_base').val()) : null;  
+          var unit_work = ($('#unit_work').val()) ? parseFloat($('#unit_work').val()) : 0;
           var leave = ($('#leave').val()) ? parseFloat($('#leave').val()) : 0;
           //var leave = parseFloat($('#leave').val());
           //if(leave == '') leave = 0;
           
-          var thisbasic = settings.ek_hr.salary*(n_days+leave)/d_base;
-          if (thisbasic > settings.ek_hr.salary) {thisbasic = settings.ek_hr.salary}
+          var thisbasic = salary*(unit_work+leave)/work_base;
+          if (thisbasic > salary) {thisbasic = salary}
           
           $('#basic_value').val(thisbasic.toFixed(2));
           total = eval(total+thisbasic);
@@ -64,16 +64,16 @@
           
           if(v != 0 && v != null) { 
             //console.log('v:' + v);
-            $('#customaw'+$i).val(v.toFixed(2));
+            $('#custom_aw'+$i).val(v.toFixed(2));
             total = eval(total+v);
           } else if (f != null && typeof(f)!= 'undefined') {            
             //console.log('f:' + f);
-            $('#customaw'+$i).val(f.toFixed(2));
+            $('#custom_aw'+$i).val(f.toFixed(2));
             total = eval(total+f);
-          } else if($('#customaw'+$i).val() && $('#customaw'+$i).val() != 0) {
-            total = eval(total+parseFloat( $('#customaw'+$i).val() ) );
+          } else if($('#custom_aw'+$i).val() && $('#custom_aw'+$i).val() != 0) {
+            total = eval(total+parseFloat( $('#custom_aw'+$i).val() ) );
           } else {
-            $('#customaw'+$i).val(0);
+            $('#custom_aw'+$i).val(0);
           }       
          
          
