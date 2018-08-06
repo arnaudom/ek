@@ -9,7 +9,7 @@ use Drupal\Core\Url;
 try {
 
   
-  $query = "SELECT * FROM `ek_project_tasks` WHERE notify<>:n AND completion_rate < :r";
+  $query = "SELECT * FROM {ek_project_tasks} WHERE notify<>:n AND completion_rate < :r";
   $a = array(':n' => 0, ':r' => 100);
   $data = Database::getConnection('external_db', 'external_db')
           ->query($query,$a);

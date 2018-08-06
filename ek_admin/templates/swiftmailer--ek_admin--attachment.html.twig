@@ -1,0 +1,60 @@
+{#
+/**
+* @file
+* The default e-mails with attachment in ek_admin.
+*/
+#}
+<style type="text/css">
+    table {
+        width:800px;
+        cellpadding:0;
+        cellspacing:0;
+        padding-left:10px;
+    }    
+    table tr td {
+        font-family: Arial;
+    }
+</style>
+<table width="800px" cellpadding="0" cellspacing="0">
+        <tbody>
+            <tr>
+                <td style='font-size:1.2em;padding:20px;vertical-align: bottom;'>{{ message.options.site }}</td>
+                <td ><img class="img-responsive" style="width:130px;float:right;" src="{{ message.options.logo }}" />
+                </td>
+            </tr>
+        </tbody>
+</table>
+<hr/>
+
+<p>{{ 'Document'|t }} : {{ message.options.filename }}</p>
+<p>{{ 'Document size'|t }} : {{ message.options.size }}</p>
+
+<div>
+    <table width="800px" cellpadding="0" cellspacing="0">
+        <tbody>
+            <tr>
+                <td style='background-color:#D8D8D8;'>
+                    {{ 'From'|t }} : {{ message.options.user }}
+                </td>
+            </tr>
+            <tr>
+                {% if message.options.pcode %}
+                    <td style='background-color:#D8D8D8;'>
+                        {{ 'Project ref.'|t }} : {{ message.options.pcode }}
+                    </td>
+                {% endif %}
+            <tr>
+                <td style='font-size:0.9em;padding:20px;'>
+                    {{ message.body|nl2br }}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <hr/>
+    <p style='font-size:0.8em;'>{{ message.options.stamp }}</p>
+</div>
+<br/>
+<br/>
+<div style='font-size:0.7em;color:#818181;'>
+    <i>Management solution by <a href="http://ek.arrea-systems.com">EK</a></i>
+<div>

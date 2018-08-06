@@ -11,7 +11,7 @@ try {
   
 
   $query = "SELECT t.id,t.serial,t.event,t.uid,t.task,t.start,t.end,t.completion_rate,t.notify,t.notify_who,t.notify_when,s.id as sid "
-          . "FROM {ek_invoice_tasks} t "
+          . "FROM {ek_sales_invoice_tasks} t "
           . "Left JOIN {ek_sales_invoice} s "
           . "ON t.serial=s.serial "
           . "WHERE t.notify<>:n "
