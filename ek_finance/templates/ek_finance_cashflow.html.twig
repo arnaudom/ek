@@ -1,5 +1,5 @@
 {{ items.form }}
-{{ items.excel }}
+{#{{ items.excel }}#}
 {% set i = 0 %}
 
 <table style='text-align: left;' id='table_cashflow' class='' >
@@ -120,17 +120,72 @@
             <td class='right'>{{ items.payable_total.closing_base|number_format('2', '.', ',') }}</td>
         </tr>
     </thead>     
-  
+    
     <tr class='total'>
         <td colspan='2'>{{ 'Total current liabilities'|t }}</td>
         <td class='right'>{{ items.total_liabilities_exc|number_format('2', '.', ',') }}</td>
         <td class='right'>{{ items.total_closing_liabilities_exc|number_format('2', '.', ',') }}</td>
     </tr> 
+    
+{#tax - payable #}
+    <thead class='header_tb'>
+        <tr>
+            <td colspan='2'>{{ 'Tax'|t }}</td>
+        </tr>
+    </thead> 
+    
+        {% set i = i+1 %}
+        <tr id='row{{ i }}'>
+            <td><INPUT type='checkbox' value='{{ items.collect_tax_1_transaction }}' checked id='box{{ i }}' class='calculate'>
+            <INPUT type='hidden' value='{{ items.collect_tax_1_closing }}' id='box2{{ i }}'/></td>
+            <td><a class='use-ajax' href ='{{ items.collect_tax_1_aid_link }}'>{{ items.collect_tax_1_aid }}</a> {{ items.collect_tax_1 }}</td>
+            <td id='value{{ i }}' class='right'>{{ items.collect_tax_1_transaction|number_format('2', '.', ',') }}</td>
+            <td id='valuec{{ i }}' class='right'>{{ items.collect_tax_1_closing|number_format('2', '.', ',') }}</td>
+        </tr>
+    
+        {% set i = i+1 %}
+        <tr id='row{{ i }}'>
+            <td><INPUT type='checkbox' value='{{ items.deduct_tax_1_transaction }}' checked id='box{{ i }}' class='calculate'>
+            <INPUT type='hidden' value='{{ items.deduct_tax_1_closing }}' id='box2{{ i }}'/></td>
+            <td><a class='use-ajax' href ='{{ items.deduct_tax_1_aid_link }}'>{{ items.deduct_tax_1_aid }}</a> {{ items.deduct_tax_1 }}</td>
+            <td id='value{{ i }}' class='right'>{{ items.deduct_tax_1_transaction|number_format('2', '.', ',') }}</td>
+            <td id='valuec{{ i }}' class='right'>{{ items.deduct_tax_1_closing|number_format('2', '.', ',') }}</td>
+        </tr>
+    
+        {% set i = i+1 %}
+        <tr id='row{{ i }}'>
+            <td><INPUT type='checkbox' value='{{ items.collect_tax_2_transaction }}' checked id='box{{ i }}' class='calculate'>
+            <INPUT type='hidden' value='{{ items.collect_tax_2_closing }}' id='box2{{ i }}'/></td>
+            <td><a class='use-ajax' href ='{{ items.collect_tax_2_aid_link }}'>{{ items.collect_tax_2_aid }}</a> {{ items.collect_tax_2 }}</td>
+            <td id='value{{ i }}' class='right'>{{ items.collect_tax_2_transaction|number_format('2', '.', ',') }}</td>
+            <td id='valuec{{ i }}' class='right'>{{ items.collect_tax_2_closing|number_format('2', '.', ',') }}</td>
+        </tr>
+    
+        {% set i = i+1 %}
+        <tr id='row{{ i }}'>
+            <td><INPUT type='checkbox' value='{{ items.deduct_tax_2_transaction }}' checked id='box{{ i }}' class='calculate'>
+            <INPUT type='hidden' value='{{ items.deduct_tax_2_closing }}' id='box2{{ i }}'/></td>
+            <td><a class='use-ajax' href ='{{ items.deduct_tax_2_aid_link }}'>{{ items.deduct_tax_2_aid }}</a> {{ items.deduct_tax_2 }}</td>
+            <td id='value{{ i }}' class='right'>{{ items.deduct_tax_2_transaction|number_format('2', '.', ',') }}</td>
+            <td id='valuec{{ i }}' class='right'>{{ items.deduct_tax_2_closing|number_format('2', '.', ',') }}</td>
+        </tr>    
+  
+    <tr class='total'>
+        <td colspan='2'>{{ 'Tax balance'|t }}</td>
+        <td class='right'>{{ items.tax_total_balance_transaction|number_format('2', '.', ',') }}</td>
+        <td class='right'>{{ items.tax_total_balance_closing|number_format('2', '.', ',') }}</td>
+    </tr> 
+    
+
     <tr class='grandtotal'>
         <td colspan='2'>{{ 'Grand total'|t }}</td>
         <td class='right'><span id='grandtotal'>{{ items.grand_total_exc|number_format('2', '.', ',') }}</span></td>
         <td class='right'><span id='grandtotal2'>{{ items.grand_total_closing_exc|number_format('2', '.', ',') }}</span></td>
     </tr> 
+
+
+
+    
     
 {#average expenses per month #}
 {% set i = i+1 %}

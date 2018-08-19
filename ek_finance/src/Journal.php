@@ -2484,7 +2484,7 @@ class Journal {
         $data['total_debit_exchange'] = $totaldb + $totaldb_exc;
         $data['total_credit_exchange'] = $totalcr + $totalcr_exc;
         $data['total_transaction_exchange'] = $totalcr + $totalcr_exc - $totaldb - $totaldb_exc;
-        $data['closing_exchange'] = $open[0] + $open[1] + $totalcr - $totaldb + $totalcr_exc - $totaldb_exc;
+        $data['closing_exchange'] = $open[1] + $totalcr - $totaldb + $totalcr_exc - $totaldb_exc;
 
         return serialize($data);
     }

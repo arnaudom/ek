@@ -29,6 +29,14 @@ $total_liabilities = 0;
 $total_liabilities_exc = 0;
 $total_closing_liabilities = 0;
 $total_closing_liabilities_exc = 0;
+$total_tax_collect = 0;
+$total_tax_collect_exc = 0;
+$total_closing_tax_collect = 0;
+$total_closing_tax_collect_exc = 0;
+$total_tax_deduct = 0;
+$total_tax_deduct_exc = 0;
+$total_closing_tax_deduct = 0;
+$total_closing_tax_deduct_exc = 0;
 $grand_total = 0;
 $grand_total_exc = 0;
 $items['from'] = $from;
@@ -357,9 +365,118 @@ $expenses = Database::getConnection('external_db', 'external_db')
                         ->query($query, $a)
                         ->fetchField();
 
-$items['average_expenses'] = round($expenses / 12, 2);
+
+/*
+ * Tax 
+ */
+$items['collect_tax_1'] = AidList::aname($coid,$settings->get('stax_collect_aid'));
+$items['deduct_tax_1'] = AidList::aname($coid,$settings->get('stax_deduct_aid'));
+$items['collect_tax_1_aid'] = $settings->get('stax_collect_aid');
+$items['deduct_tax_1_aid']  = $settings->get('stax_deduct_aid');
+
+
+    $histo = $journal->history(serialize(array(
+            'aid' => $items['collect_tax_1_aid'],
+            'coid' => $coid,
+            'from' => $from,
+            'to' => $to
+                )
+            )
+        );
+    $h = unserialize($histo);
+        $total_tax_collect = $h['total_transaction'];
+        $total_tax_collect_exc = $h['total_transaction_exchange'];
+        $total_closing_tax_collect = $h['closing'];
+        $total_closing_tax_collect_exc = $h['closing_exchange'];
+    
+    $histo = $journal->history(serialize(array(
+            'aid' => $items['deduct_tax_1_aid'],
+            'coid' => $coid,
+            'from' => $from,
+            'to' => $to
+                )
+            )
+        );
+    $h = unserialize($histo);
+        $total_tax_deduct = $h['total_transaction'];
+        $total_tax_deduct_exc = $h['total_transaction_exchange'];
+        $total_closing_tax_deduct = $h['closing'];
+        $total_closing_tax_deduct_exc = $h['closing_exchange'];
+        
 
     
+$items['collect_tax_1_transaction'] = -$total_tax_collect_exc;
+$items['collect_tax_1_closing'] = -$total_closing_tax_collect_exc;
+$items['deduct_tax_1_transaction'] = $total_tax_deduct_exc;
+$items['deduct_tax_1_closing'] = $total_closing_tax_deduct_exc;
+
+$items['collect_tax_2'] = AidList::aname($coid,$settings->get('wtax_collect_aid'));//not yet implemented
+$items['deduct_tax_2'] = AidList::aname($coid,$settings->get('wtax_deduct_aid'));//not yet implemented
+$items['collect_tax_2_aid'] = $settings->get('wtax_collect_aid');//not yet implemented
+$items['deduct_tax_2_aid'] = $settings->get('wtax_deduct_aid');//not yet implemented
+
+    $histo = $journal->history(serialize(array(
+            'aid' => $items['collect_tax_2_aid'],
+            'coid' => $coid,
+            'from' => $from,
+            'to' => $to
+                )
+            )
+        );
+    $h = unserialize($histo);
+        $total_tax2_collect = $h['total_transaction'];
+        $total_tax2_collect_exc = $h['total_transaction_exchange'];
+        $total_closing_tax2_collect = $h['closing'];
+        $total_closing_tax2_collect_exc = $h['closing_exchange'];
+    
+    $histo = $journal->history(serialize(array(
+            'aid' => $items['deduct_tax_2_aid'],
+            'coid' => $coid,
+            'from' => $from,
+            'to' => $to
+                )
+            )
+        );
+    $h = unserialize($histo);
+        $total_tax2_deduct = $h['total_transaction'];
+        $total_tax2_deduct_exc = $h['total_transaction_exchange'];
+        $total_closing_tax2_deduct = $h['closing'];
+        $total_closing_tax2_deduct_exc = $h['closing_exchange'];
+        
+
+    
+$items['collect_tax_2_transaction'] = -$total_tax2_collect_exc;
+$items['collect_tax_2_closing'] = -$total_closing_tax2_collect_exc;
+$items['deduct_tax_2_transaction'] = $total_tax2_deduct_exc;
+$items['deduct_tax_2_closing'] = $total_closing_tax2_deduct_exc;
+
+$items['tax_1_balance_transaction'] = round($total_tax_deduct_exc - $total_tax_collect_exc ,2);
+$items['tax_1_balance_closing'] = round($total_closing_tax_deduct_exc - $total_closing_tax_collect_exc,2);
+$items['tax_2_balance_transaction'] = round($total_tax2_deduct_exc - $total_tax2_collect_exc ,2);
+$items['tax_2_balance_closing'] = round($total_closing_tax2_deduct_exc - $total_closing_tax2_collect_exc,2);
+$items['tax_total_balance_transaction'] = round($items['tax_1_balance_transaction'] + $items['tax_2_balance_transaction'] ,2);
+$items['tax_total_balance_closing'] = round($items['tax_1_balance_closing'] + $items['tax_2_balance_closing'],2);
+        
+$param = serialize(
+            array (
+             'id' => 'journal',
+             'from' => $from,
+             'to' => $to,
+             'coid' => $coid,
+             'aid' => $items['collect_tax_2_aid'],
+           ));
+$items['collect_tax_2_aid_link'] =  Url::fromRoute('ek_finance_modal', array('param' => $param), array())->toString();
+$param = serialize(
+            array (
+             'id' => 'journal',
+             'from' => $from,
+             'to' => $to,
+             'coid' => $coid,
+             'aid' => $items['deduct_tax_2_aid'],
+           ));
+$items['deduct_tax_2_aid_link'] =  Url::fromRoute('ek_finance_modal', array('param' => $param), array())->toString();
+
+$items['average_expenses'] = round($expenses / 12, 2); 
 $items['total_assets'] = $total_assets;  
 $items['total_closing_assets'] = $total_closing_assets;  
 $items['total_liabilities'] = $total_liabilities;
@@ -368,9 +485,12 @@ $items['total_assets_exc'] = $total_assets_exc;
 $items['total_closing_assets_exc'] = $total_closing_assets_exc; 
 $items['total_liabilities_exc'] = $total_liabilities_exc;
 $items['total_closing_liabilities_exc'] = $total_closing_liabilities_exc;
+
 $items['grand_total'] = $total_assets + $total_liabilities;    
-$items['grand_total_exc'] = $total_assets_exc + $total_liabilities_exc;
+$items['grand_total_exc'] = $total_assets_exc + $total_liabilities_exc + $items['tax_total_balance_transaction'];
+
 $items['grand_total_closing'] = $total_closing_assets + $total_closing_liabilities;
-$items['grand_total_closing_exc'] = $total_closing_assets_exc + $total_closing_liabilities_exc;       
+$items['grand_total_closing_exc'] = $total_closing_assets_exc + $total_closing_liabilities_exc + $items['tax_total_balance_closing']; 
+
 $items['ratio1'] = round($items['grand_total_exc']/($items['average_expenses']-$items['amortization']), 2);
 $items['ratio2'] = round($items['grand_total_closing_exc']/($items['average_expenses']-$items['amortization']), 2);
