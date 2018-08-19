@@ -25,7 +25,7 @@
     {% set i = i+1 %}
         <tr id='row{{ i }}'>
             <td><INPUT type='checkbox' value='{{ rows.balance_base }}' checked id='box{{ i }}' class='calculate'>
-            <INPUT type='hidden' value='{{ rows.closing_base }}' id='box2{{ i }}'/></td>
+            <INPUT type='hidden' value='{{ rows.closing_base }}' id='box_{{ i }}'/></td>
             <td><a class='use-ajax' href ='{{ rows.link }}'>{{ rows.aid }}</a> {{ rows.name }}</td>
             <td id='value{{ i }}' class='right'>{{ rows.balance_base|number_format('2', '.', ',') }}</td>
             <td id='valuec{{ i }}' class='right'>{{ rows.closing_base|number_format('2', '.', ',') }}</td>
@@ -49,7 +49,7 @@
         {% set i = i+1 %}
         <tr id='row{{ i }}'>
             <td><INPUT type='checkbox' value='{{ rows.balance_base }}' checked id='box{{ i }}' class='calculate'>
-            <INPUT type='hidden' value='{{ rows.closing_base }}' id='box2{{ i }}'/></td>
+            <INPUT type='hidden' value='{{ rows.closing_base }}' id='box_{{ i }}'/></td>
             <td><a class='use-ajax' href ='{{ rows.link }}'>{{ rows.aid }}</a> {{ rows.name }}</td>
             <td id='value{{ i }}' class='right'>{{ rows.balance_base|number_format('2', '.', ',') }}</td>
             <td id='valuec{{ i }}' class='right'>{{ rows.closing_base|number_format('2', '.', ',') }}</td>
@@ -74,7 +74,7 @@
         {% set i = i+1 %}
         <tr id='row{{ i }}'>
             <td><INPUT type='checkbox' value='{{ rows.balance_base }}' checked id='box{{ i }}' class='calculate'>
-            <INPUT type='hidden' value='{{ rows.closing_base }}' id='box2{{ i }}'/></td>
+            <INPUT type='hidden' value='{{ rows.closing_base }}' id='box_{{ i }}'/></td>
             <td><a class='use-ajax' href ='{{ rows.link }}'>{{ rows.aid }}</a> {{ rows.name }}</td>
             <td id='value{{ i }}' class='right'>{{ rows.balance_base|number_format('2', '.', ',') }}</td>
             <td id='valuec{{ i }}' class='right'>{{ rows.closing_base|number_format('2', '.', ',') }}</td>
@@ -106,7 +106,7 @@
         {% set i = i+1 %}
         <tr id='row{{ i }}'>
             <td><INPUT type='checkbox' value='{{ rows.balance_base }}' checked id='box{{ i }}' class='calculate'>
-            <INPUT type='hidden' value='{{ rows.closing_base }}' id='box2{{ i }}'/></td>
+            <INPUT type='hidden' value='{{ rows.closing_base }}' id='box_{{ i }}'/></td>
             <td><a class='use-ajax' href ='{{ rows.link }}'>{{ rows.aid }}</a> {{ rows.name }}</td>
             <td id='value{{ i }}' class='right'>{{ rows.balance_base|number_format('2', '.', ',') }}</td>
             <td id='valuec{{ i }}' class='right'>{{ rows.closing_base|number_format('2', '.', ',') }}</td>
@@ -137,7 +137,7 @@
         {% set i = i+1 %}
         <tr id='row{{ i }}'>
             <td><INPUT type='checkbox' value='{{ items.collect_tax_1_transaction }}' checked id='box{{ i }}' class='calculate'>
-            <INPUT type='hidden' value='{{ items.collect_tax_1_closing }}' id='box2{{ i }}'/></td>
+            <INPUT type='hidden' value='{{ items.collect_tax_1_closing }}' id='box_{{ i }}'/></td>
             <td><a class='use-ajax' href ='{{ items.collect_tax_1_aid_link }}'>{{ items.collect_tax_1_aid }}</a> {{ items.collect_tax_1 }}</td>
             <td id='value{{ i }}' class='right'>{{ items.collect_tax_1_transaction|number_format('2', '.', ',') }}</td>
             <td id='valuec{{ i }}' class='right'>{{ items.collect_tax_1_closing|number_format('2', '.', ',') }}</td>
@@ -146,7 +146,7 @@
         {% set i = i+1 %}
         <tr id='row{{ i }}'>
             <td><INPUT type='checkbox' value='{{ items.deduct_tax_1_transaction }}' checked id='box{{ i }}' class='calculate'>
-            <INPUT type='hidden' value='{{ items.deduct_tax_1_closing }}' id='box2{{ i }}'/></td>
+            <INPUT type='hidden' value='{{ items.deduct_tax_1_closing }}' id='box_{{ i }}'/></td>
             <td><a class='use-ajax' href ='{{ items.deduct_tax_1_aid_link }}'>{{ items.deduct_tax_1_aid }}</a> {{ items.deduct_tax_1 }}</td>
             <td id='value{{ i }}' class='right'>{{ items.deduct_tax_1_transaction|number_format('2', '.', ',') }}</td>
             <td id='valuec{{ i }}' class='right'>{{ items.deduct_tax_1_closing|number_format('2', '.', ',') }}</td>
@@ -155,7 +155,7 @@
         {% set i = i+1 %}
         <tr id='row{{ i }}'>
             <td><INPUT type='checkbox' value='{{ items.collect_tax_2_transaction }}' checked id='box{{ i }}' class='calculate'>
-            <INPUT type='hidden' value='{{ items.collect_tax_2_closing }}' id='box2{{ i }}'/></td>
+            <INPUT type='hidden' value='{{ items.collect_tax_2_closing }}' id='box_{{ i }}'/></td>
             <td><a class='use-ajax' href ='{{ items.collect_tax_2_aid_link }}'>{{ items.collect_tax_2_aid }}</a> {{ items.collect_tax_2 }}</td>
             <td id='value{{ i }}' class='right'>{{ items.collect_tax_2_transaction|number_format('2', '.', ',') }}</td>
             <td id='valuec{{ i }}' class='right'>{{ items.collect_tax_2_closing|number_format('2', '.', ',') }}</td>
@@ -164,7 +164,7 @@
         {% set i = i+1 %}
         <tr id='row{{ i }}'>
             <td><INPUT type='checkbox' value='{{ items.deduct_tax_2_transaction }}' checked id='box{{ i }}' class='calculate'>
-            <INPUT type='hidden' value='{{ items.deduct_tax_2_closing }}' id='box2{{ i }}'/></td>
+            <INPUT type='hidden' value='{{ items.deduct_tax_2_closing }}' id='box_{{ i }}'/></td>
             <td><a class='use-ajax' href ='{{ items.deduct_tax_2_aid_link }}'>{{ items.deduct_tax_2_aid }}</a> {{ items.deduct_tax_2 }}</td>
             <td id='value{{ i }}' class='right'>{{ items.deduct_tax_2_transaction|number_format('2', '.', ',') }}</td>
             <td id='valuec{{ i }}' class='right'>{{ items.deduct_tax_2_closing|number_format('2', '.', ',') }}</td>

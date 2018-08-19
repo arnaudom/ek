@@ -9,7 +9,7 @@ jQuery(document).ready(function(){
                 
                   var value = parseFloat(jQuery('#box'+i).val());
                   sum_cash = sum_cash + value
-                  var value = parseFloat(jQuery('#box2'+i).val());
+                  var value = parseFloat(jQuery('#box_'+i).val());
                   sum_close = sum_close + value
                 }
 
