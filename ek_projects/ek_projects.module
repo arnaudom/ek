@@ -40,6 +40,13 @@ use Drupal\ek_projects\ProjectData;
      
  }
 
+ /**
+ * Implements hook_form_alter().
+ */
+function ek_projects_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+
+    
+}
 
 /**
  * Implementation hook_theme().

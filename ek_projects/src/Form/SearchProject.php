@@ -72,10 +72,9 @@ class SearchProject extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
+        $i = 0;
+        $list = '<ul>';
         if (is_numeric($form_state->getValue('search'))) {
-            $i = 0;
-            $list = '<ul>';
             $id1 = '%-' . trim($form_state->getValue('search')) . '%';
             $id2 = '%-' . trim($form_state->getValue('search')) . '-sub%';
             $a = array(':id1' => $id1, ':id2' => $id2);
