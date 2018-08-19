@@ -28,9 +28,15 @@ class FilterPrint extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $source = NULL, $format = NULL) {
-        $query = "SELECT serial,client,status FROM {ek_sales_$source} WHERE id=:id";
-        $doc = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $id))->fetchObject();
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_'. $source, 's');
+            $query->fields('s',['serial','head','client','status']);
+            $query->condition('s.id', $id);
+            $query->leftJoin('ek_company', 'c', 'c.id = s.head');
+            $query->fields('c', ['sign']);
+        $doc = $query->execute()->fetchObject();
+                
 
         $form['serial'] = array(
             '#type' => 'item',
@@ -70,16 +76,27 @@ class FilterPrint extends FormBase {
             );
         }
         
-        $form['filters']['signature'] = array(
-            '#type' => 'checkbox',
-            '#default_value' => 0,
-            '#attributes' => array('title' => t('signature')),
-            '#title' => t('signature'),
-            '#states' => array(
-                'invisible' => array(':input[name="output_format"]' => array('value' => 2),
-                ),
-                )
-        );
+        if($doc->sign != NULL && file_exists($doc->sign)){
+            $form['filters']['signature'] = array(
+                '#type' => 'checkbox',
+                '#default_value' => isset($_SESSION['printfilter']['signature']) ? $_SESSION['printfilter']['signature'] :0,
+                '#attributes' => array('title' => t('signature')),
+                '#title' => t('signature'),
+                '#states' => array(
+                    'invisible' => array(':input[name="output_format"]' => array('value' => 2),
+                    ),
+                    )
+            );
+        } else {
+            $form['filters']['signature'] = array(
+                '#type' => 'hidden',
+                '#value' => 0,
+            );
+            $form['filters']['signature_alert'] = array(
+                '#markup' => \Drupal\Core\Link::createFromRoute(t('Upload signature'), 'ek_admin.company.edit', ['id' => $doc->head], ['fragment' => 'edit-i'])->toString(),
+            );
+            
+        }
 
         $stamps = array('0' => t('no'), '1' => t('original'), '2' => t('copy'));
 

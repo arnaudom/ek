@@ -338,7 +338,9 @@ $bottom = $y+40 > 268 ? 268: $y+40;
 
         if(isset($company->sign)) {
         $sign = drupal_realpath($company->sign);
-        $pdf->Image($sign,20,$bottom-20,70);
+            if(file_exists($sign)) {
+                $pdf->Image($sign,20,$bottom-20,70);
+            }
         }
     }
     
