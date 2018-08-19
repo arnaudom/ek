@@ -299,7 +299,7 @@ ek_finance.manage.record_expense:
   path: '/finance/expenses/{id}'
   defaults:
     _title: 'Record expenses'
-    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::recordexpenses'
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::recordExpenses'
     id: NULL
   requirements:
     _permission: 'manage_expenses'    
@@ -308,7 +308,7 @@ ek_finance.manage.list_expense:
   path: '/finance/expenses-list'
   defaults:
     _title: 'List expenses'
-    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::listexpenses'
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::listExpenses'
   requirements:
     _permission: 'manage_expenses'      
 
@@ -323,7 +323,7 @@ ek_finance.manage.list_raw_expense:
 ek_finance.manage.excel_expense:
   path: '/finance/expenses-excel/{param}'
   defaults:
-    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::excelexpenses'
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::excelExpenses'
   requirements:
     _permission: 'manage_expenses'
 
@@ -347,7 +347,7 @@ ek_finance.manage.clone_expense:
   path: '/finance/expenses-clone/{id}'
   defaults:
     _title: 'Record expenses'
-    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::cloneexpenses'
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::cloneExpenses'
   requirements:
     _permission: 'manage_expenses'  
     id: \d* 
@@ -356,12 +356,20 @@ ek_finance.manage.delete_expense:
   path: '/finance/expenses-delete/{id}'
   defaults:
     _title: 'Delete expense'
-    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::deleteexpenses'
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::deleteExpenses'
   requirements:
     _permission: 'delete_expenses'  
     id: \d*
-
- 
+    
+#-Exp voucher---------------------------------------------
+ek_finance_voucher.pdf:
+  path: '/finance/voucher/{type}/{id}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::pdfVoucher'
+  requirements:
+    _permission: 'manage_expenses'
+    type: 1|2 #1 = expense, 2 = cash 
+    
 #cash-bank---------------------------------------------- 
 ek_finance.currencies:
   path: '/finance/currencies'
@@ -602,22 +610,12 @@ ek_finance_manage_modal_memo:
   requirements:
     _permission: 'list_memos'
     id: \d*
-    
-#voucher---------------------------------------------
-ek_finance_voucher.pdf:
-  path: '/finance/voucher/{type}/{id}'
-  defaults:
-    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::pdfvoucher'
-  requirements:
-    _permission: 'manage_expenses'
-    type: 1|2 #1 = expense, 2 = cash 
-
      
 ek_finance_payroll.record:   
   path: '/finance/record-payroll/{param}'
   defaults:
     _title: 'Record payroll'
-    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::payrollrecord'
+    _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::payrollRecord'
   requirements:
     _permission: 'hr_payroll_post'   
 

@@ -1006,12 +1006,7 @@ class RecordExpense extends FormBase {
                         ->execute();
         }
         
-        /*
-        $query = "SELECT country from {ek_company} WHERE id=:id";
-        $allocation = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $form_state->getValue('coid')))
-                ->fetchField();
-                */
+        
         if($form_state->getValue('change_location') == 1) {
             $allocation = $form_state->getValue('location');
         } else {
@@ -1056,54 +1051,6 @@ class RecordExpense extends FormBase {
                 $provision = 0;
             }
 
-            //upload
-            /*
-            $extensions = 'png gif jpg jpeg bmp txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip';
-            $validators = array('file_validate_extensions' => array($extensions));
-            $field = "attachment$n";
-            $receipt = 'no';
-            //$form_state->setValue($field, '');
-
-            $file = file_save_upload($field, $validators, FALSE, 0);
-
-            if ($file) {
-                //new
-                $dir = "private://finance/receipt/" . $form_state->getValue('coid');
-                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $filename = file_unmanaged_copy($file->getFileUri(), $dir);
-                $form_state->setValue($field, $filename);
-                $receipt = 'yes';
-                if($form_state->getValue('uri' . $n) != '') {
-                    //if edit and existing, delete current attach.
-                    file_unmanaged_delete( $form_state->getValue('uri' . $n));
-                }
-            } elseif($form_state->getValue('uri' . $n) != '') {
-                $form_state->setValue($field, $form_state->getValue('uri' . $n));
-            } 
-            //upload
-             */
-            $receipt = 'no';
-            $attach = "attachment$n";
-            $fid = $form_state->getValue([$attach, 0]);
-            if (!empty($fid)) {
-                $receipt = 'yes';
-                if($form_state->getValue('uri' . $n) != '') {
-                    //if edit and existing, delete current attach.
-                    file_unmanaged_delete( $form_state->getValue('uri' . $n));
-                }
-                $file = $this->fileStorage->load($fid);   
-                $name = $file->getFileName();
-
-                $dir = "private://finance/receipt/" . $form_state->getValue('coid');
-                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $load_attachment = file_unmanaged_copy($file->getFileUri(), $dir);
-            } elseif($form_state->getValue('uri' . $n) != '') {
-                $receipt = 'yes';
-                $load_attachment = $form_state->getValue('uri' . $n);
-            } else {
-                $load_attachment = ''; 
-            }
-
             if ($form_state->getValue('paid') == '0') {
                 $status = 'paid';
             } else {
@@ -1114,7 +1061,7 @@ class RecordExpense extends FormBase {
                 $uid = 'n/a';
             } else {
                 $uid = $form_state->getValue('uid');
-            }
+            }            
 
             $fields = array(
                 'class' => $class,
@@ -1133,13 +1080,11 @@ class RecordExpense extends FormBase {
                 'pcode' => $form_state->getValue('pcode'),
                 'clientname' => $form_state->getValue('client'),
                 'suppliername' => $form_state->getValue('supplier'),
-                'receipt' => $receipt,
                 'employee' => $uid,
                 'status' => $status,
                 'cash' => $cash,
                 'pdate' => $pdate,
                 'reconcile' => '0',
-                'attachment' => $load_attachment,
             );
 
             if ($form_state->getValue('edit') != '') {
@@ -1156,7 +1101,35 @@ class RecordExpense extends FormBase {
                         ->execute();
             }
 
+            //upload with id ref. added to file name
+            $receipt = 'no';
+            $attach = "attachment$n";
+            $fid = $form_state->getValue([$attach, 0]);
+            if (!empty($fid)) {
+                $receipt = 'yes';
+                if($form_state->getValue('uri' . $n) != '') {
+                    //if edit and existing, delete current attach.
+                    file_unmanaged_delete( $form_state->getValue('uri' . $n));
+                }
+                $file = $this->fileStorage->load($fid);   
+                $name = $file->getFileName();
+                $dir = "private://finance/receipt/" . $form_state->getValue('coid');
+                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                $load_attachment = file_unmanaged_copy($file->getFileUri(), $dir . "/" . $insert . '_' . $name);
+            } elseif($form_state->getValue('uri' . $n) != '') {
+                $receipt = 'yes';
+                $load_attachment = $form_state->getValue('uri' . $n);
+            } else {
+                $load_attachment = ''; 
+            }
 
+            
+            Database::getConnection('external_db', 'external_db')
+                        ->update('ek_expenses')
+                        ->condition('id', $insert)
+                        ->fields(['receipt' => $receipt, 'attachment' => $load_attachment])
+                        ->execute();
+            
             // Record the accounting journal
             $journal->record(
                     array(

@@ -116,9 +116,10 @@ class UploadForm extends FormBase {
                     //$file->filename = $ref[0] . '_' . $file->getFilename();
                     //$file->save();
                     //move it to a new folder
+                    
                     $dir = "private://finance/receipt/" . $att->company;
                     file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                    $filepath = file_unmanaged_copy($file->getFileUri(), $dir);
+                    $filepath = file_unmanaged_copy($file->getFileUri(), $dir . "/" . $ref[0] . '_' . $file->getFilename());
                     $receipt = 'yes';
 
                     if ($att->attachment) {

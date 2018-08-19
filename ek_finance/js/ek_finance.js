@@ -10,18 +10,17 @@ jQuery(document).ready(function(){
      
       
       
-      var debit = parseFloat( jQuery("#debit1").val().replace(",","") );
-      var credit = parseFloat( jQuery("#credit1").val().replace(",","") );
+      var debit = parseFloat( jQuery("#debit1").val().replace(/,/g, ''));
+      var credit = parseFloat( jQuery("#credit1").val().replace(/,/g, ''));
 
-      
       if (i>1) {
         for (var n=2;n<=i;n++) {
         
           if(jQuery("#debit"+n).val() != '') {
-          debit = debit+parseFloat( jQuery("#debit"+n).val().replace(",","") );
+          debit = debit+parseFloat( jQuery("#debit"+n).val().replace(/,/g, '') );
           }
           if(jQuery("#credit"+n).val() != '') {
-          credit = credit+parseFloat( jQuery("#credit"+n).val().replace(",","") );
+          credit = credit+parseFloat( jQuery("#credit"+n).val().replace(/,/g, '') );
           }
         }
      }

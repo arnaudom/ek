@@ -58,8 +58,6 @@ class ChartAccounts extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
 
-
-
         if ($form_state->getValue('step') == '') {
             $form_state->setValue('step', 1);
         }
@@ -67,6 +65,7 @@ class ChartAccounts extends FormBase {
         $settings = new FinanceSettings();
         $baseCurrency = $settings->get('baseCurrency');
         $company = AccessCheck::CompanyListByUid();
+        
         $form['coid'] = array(
             '#type' => 'select',
             '#size' => 1,
@@ -82,7 +81,10 @@ class ChartAccounts extends FormBase {
 
         if ($form_state->getValue('coid')) {
             $coid = $form_state->getValue('coid');
+            $Extract = ['pdf' => t("Print in Pdf"), 'excel' => t('Excel download')];
             $classoptions = AidList::listclass($coid, array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), NULL);
+            array_unshift($classoptions, 'Pdf');
+            array_unshift($classoptions, 'Excel');
         }
 
         $form['class'] = array(
@@ -90,7 +92,6 @@ class ChartAccounts extends FormBase {
             '#size' => 1,
             '#options' => isset($classoptions) ? $classoptions : array(),
             '#required' => TRUE,
-            //'#default_value' =>  NULL,
             '#title' => t('Class'),
             '#prefix' => "<div id='accounts_class'>",
             '#suffix' => '</div>',
@@ -111,42 +112,41 @@ class ChartAccounts extends FormBase {
             '#suffix' => '</div>',
         );
 
-
-         if( $form_state->getValue('coid') ) {
-        /**/
-
-        $form['pdf'] = array(
-            '#title' => $this->t('Pdf'),
-            '#type' => 'link',
-            '#url' => Url::fromRoute('ek_finance.admin.charts_accounts_download', ['coid' => $form_state->getValue('coid')]),
-            '#attributes' => ['target' => '_blank'],
-            '#prefix' => "<br/><div>",
-            '#suffix' => ' </div>',
-            '#states' => array(
-                // Hide data fieldset when class is empty.
-                'invisible' => array(
-                    "select[name='coid']" => array('value' => NULL),
+/*
+        if( $form_state->getValue('coid') ) {
+            $form['pdf'] = array(
+                '#title' => $this->t('Pdf'),
+                '#type' => 'link',
+                '#url' => Url::fromRoute('ek_finance.admin.charts_accounts_download', ['coid' => $form_state->getValue('coid')]),
+                '#attributes' => ['target' => '_blank'],
+                '#prefix' => "<br/><div>",
+                '#suffix' => ' </div>',
+                '#states' => array(
+                    // Hide data fieldset when class is empty.
+                    'invisible' => array(
+                        "select[name='coid']" => array('value' => NULL),
+                    ),
                 ),
-            ),
-        );
-        $form['excel'] = array(
-            '#title' => $this->t('Excel'),
-            '#type' => 'link',
-            '#url' => Url::fromRoute('ek_finance.admin.charts_accounts_excel_export', ['coid' => $form_state->getValue('coid')]),
-            '#attributes' => ['target' => '_blank'],
-            '#prefix' => "<div>",
-            '#suffix' => ' </div>',
-            '#states' => array(
-                // Hide data fieldset when class is empty.
-                'invisible' => array(
-                    "select[name='coid']" => array('value' => ''),
+            );
+            $form['excel'] = array(
+                '#title' => $this->t('Excel'),
+                '#type' => 'link',
+                '#url' => Url::fromRoute('ek_finance.admin.charts_accounts_excel_export', ['coid' => $form_state->getValue('coid')]),
+                '#attributes' => ['target' => '_blank'],
+                '#prefix' => "<div>",
+                '#suffix' => ' </div>',
+                '#states' => array(
+                    // Hide data fieldset when class is empty.
+                    'invisible' => array(
+                        "select[name='coid']" => array('value' => ''),
+                    ),
                 ),
-            ),
-        );
+            );
          }   
 
-
-        if ($form_state->getValue('step') == 2) {
+*/
+        if ($form_state->getValue('step') == 2 
+                & ($form_state->getValue('class') != '0' && $form_state->getValue('class') != '1')) {
 
             $form['step'] = array(
                 '#type' => 'hidden',
@@ -327,22 +327,25 @@ class ChartAccounts extends FormBase {
                 '#attributes' => array('class' => array('container-inline')),
             );
 
-
-
             $form['actions']['submit'] = array(
                 '#type' => 'submit',
                 '#value' => $this->t('Save'),
                 '#suffix' => ''
             );
+        } elseif ($form_state->getValue('step') == 2) {
+            $form['actions'] = array(
+                '#type' => 'actions',
+                '#attributes' => array('class' => array('container-inline')),
+            );
+
+            $form['actions']['submit'] = array(
+                '#type' => 'submit',
+                '#value' => $this->t('Extract'),
+                '#suffix' => '');
         }
 
-
-
         $form['#tree'] = TRUE;
-
-
         $form['#attached']['library'][] = 'ek_finance/ek_finance.journal_form';
-
         return $form;
     }
 
@@ -350,19 +353,15 @@ class ChartAccounts extends FormBase {
      * Callback 
      */
     public function get_class(array &$form, FormStateInterface $form_state) {
-        
-        return [$form['class'], $form['pdf'], $form['excel']];
+        return [$form['class']];//, $form['pdf'], $form['excel']
     }
 
     /**
      * Callback
      */
     public function get_accounts(array &$form, FormStateInterface $form_state) {
-
         $form_state->setValue('step', 2);
-
         $form_state->setRebuild();
-
         return $form;
     }
 
@@ -371,7 +370,8 @@ class ChartAccounts extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
 
-        if ($form_state->getValue('step') == 2) {
+        if ($form_state->getValue('step') == 2 
+                & ($form_state->getValue('class') != '0' && $form_state->getValue('class') != '1')) {
             $formValues = $form_state->getValues();
             //check validity of input values
             $d = $formValues['list']['d'];
@@ -402,43 +402,50 @@ class ChartAccounts extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $formValues = $form_state->getValues();
-        $c = $formValues['list']['c'];
-        $d = $formValues['list']['d'];
-
-
+              
+        if($form_state->getValue('class') == '0' || $form_state->getValue('class') == '1') {
+            if($form_state->getValue('class') == '1') {
+                $form_state->setRedirect('ek_finance.admin.charts_accounts_download',['coid' => $form_state->getValue('coid')],['target' => '_blank']);
+            } else {
+                $form_state->setRedirect('ek_finance.admin.charts_accounts_excel_export',['coid' => $form_state->getValue('coid')]);
+            }
+        }
+        
         if ($form_state->getValue('step') == 2) {
 
+                $formValues = $form_state->getValues();
+                $c = $formValues['list']['c'];
+                $d = $formValues['list']['d'];
+
+                foreach ($c as $key => $value) {
+
+                    $fields = array('aname' => $value['aname'], 'astatus' => $value['astatus']);
+                    $update = Database::getConnection('external_db', 'external_db')
+                            ->update('ek_accounts')
+                            ->condition('id', $key)
+                            ->fields($fields)
+                            ->execute();
+                }
+
+                foreach ($d as $key => $value) {
 
 
-            foreach ($c as $key => $value) {
 
-                $fields = array('aname' => $value['aname'], 'astatus' => $value['astatus']);
-                $update = Database::getConnection('external_db', 'external_db')
-                        ->update('ek_accounts')
-                        ->condition('id', $key)
-                        ->fields($fields)
-                        ->execute();
-            }
+                    $fields = array(
+                        'aname' => $value['aname'],
+                        'balance' => str_replace(',', '', $value['balance']),
+                        'balance_base' => str_replace(',', '', $value['balance_base']),
+                        'balance_date' => $value['balance_date'],
+                        'astatus' => $value['astatus']);
+                    $update = Database::getConnection('external_db', 'external_db')
+                            ->update('ek_accounts')
+                            ->condition('id', $key)
+                            ->fields($fields)
+                            ->execute();
+                }
 
-            foreach ($d as $key => $value) {
-
-
-
-                $fields = array(
-                    'aname' => $value['aname'],
-                    'balance' => str_replace(',', '', $value['balance']),
-                    'balance_base' => str_replace(',', '', $value['balance_base']),
-                    'balance_date' => $value['balance_date'],
-                    'astatus' => $value['astatus']);
-                $update = Database::getConnection('external_db', 'external_db')
-                        ->update('ek_accounts')
-                        ->condition('id', $key)
-                        ->fields($fields)
-                        ->execute();
-            }
-
-           \Drupal::messenger()->addStatus(t('Data updated'));
+               \Drupal::messenger()->addStatus(t('Data updated'));
+            
         }//step 2
     }
 

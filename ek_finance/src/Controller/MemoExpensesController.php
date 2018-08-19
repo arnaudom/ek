@@ -293,6 +293,7 @@ class MemoExpensesController extends ControllerBase {
         $company = implode(',', $access);
         $order = $request->get('order') ? $request->get('order') : 'id';
         $sort = $request->get('sort') ? $request->get('sort') : 'ASC';
+        $options = [];
 
         if (isset($_SESSION['memfilter']['keyword']) && $_SESSION['memfilter']['keyword'] != '' 
                 && $_SESSION['memfilter']['keyword'] <> '%') {
@@ -313,7 +314,7 @@ class MemoExpensesController extends ControllerBase {
            
         } else {
             
-            if ($_SESSION['memfilter']['pcode'] == 'Any'){
+            if (isset($_SESSION['memfilter']['pcode']) && $_SESSION['memfilter']['pcode'] == 'Any'){
                 $_SESSION['memfilter']['pcode'] = '%';
             }
             
@@ -471,6 +472,7 @@ class MemoExpensesController extends ControllerBase {
             'value' => '',
             'basecurrency' => array('data' => ['#markup' => number_format($total, 2) . " " . $baseCurrency]),
             'status' => '',
+            'attach' => '',
             'operations' => '',
         );
 
@@ -547,7 +549,7 @@ class MemoExpensesController extends ControllerBase {
         $company = implode(',', $access);
         $order = $request->get('order') ? $request->get('order') : 'id';
         $sort = $request->get('sort') ? $request->get('sort') : 'ASC';
-
+        $options = [];
         if (isset($_SESSION['memfilter']['keyword']) && $_SESSION['memfilter']['keyword'] != '' 
                 && $_SESSION['memfilter']['keyword'] <> '%') {
 
@@ -578,20 +580,12 @@ class MemoExpensesController extends ControllerBase {
                         ->condition('entity_to', $access, 'IN')
                         ->condition('entity', \Drupal::currentUser()->id(), '=')
                         ->orderBy($order, $sort);
-                /*$query = "SELECT * from {ek_expenses_memo}  
-                WHERE (entity =:e  AND FIND_IN_SET (entity_to, :coid )) 
-                AND category = :c AND serial like :s";*/
+                
             }
 
-            /*$a = array(
-                ':e' => \Drupal::currentUser()->id(),
-                ':s' => $keyword1,
-                ':coid' => $company,
-                ':c' => 5,
-            );*/
-        } else {
-            //not keyword
-            if ($_SESSION['memfilter']['pcode'] == 'Any') {
+        } elseif(isset($_SESSION['memfilter']['from'])) {
+            //not keyword , filter by tags
+            if (isset($_SESSION['memfilter']['pcode']) && $_SESSION['memfilter']['pcode'] == 'Any') {
                     $_SESSION['memfilter']['pcode'] = '%';
             }
 
@@ -632,135 +626,137 @@ class MemoExpensesController extends ControllerBase {
             }
             
         }
+        if(isset($query)){
+            $data = $query->execute();
+            $total = 0;
+            $row = 0;
+            $status = array('0' => t('not paid'), '1' => t('partial paid'), '2' => t('paid'));
+            //store company data
+            $companies = Database::getConnection('external_db', 'external_db')
+                    ->query("SELECT id,name from {ek_company}")
+                    ->fetchAllKeyed();
+            //store users data
+            $userData = Database::getConnection()->select('users_field_data', 'u')
+                        ->fields('u', ['uid', 'name'])
+                        ->execute()->fetchAllKeyed();
 
-        $data = $query->execute();
-        $total = 0;
-        $row = 0;
-        $status = array('0' => t('not paid'), '1' => t('partial paid'), '2' => t('paid'));
-        //store company data
-        $companies = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT id,name from {ek_company}")
-                ->fetchAllKeyed();
-        //store users data
-        $userData = Database::getConnection()->select('users_field_data', 'u')
-                    ->fields('u', ['uid', 'name'])
-                    ->execute()->fetchAllKeyed();
-       
 
-        while ($r = $data->fetchObject()) {
-            $links = array();
-            $row++;
-            $entity = $userData[$r->entity];
-            $entity_to = $companies[$r->entity_to];
-            $query = "SELECT count(id) FROM {ek_expenses_memo_documents} WHERE serial=:s";
-            $attach = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $r->serial))->fetchField();
+            while ($r = $data->fetchObject()) {
+                $links = array();
+                $row++;
+                $entity = $userData[$r->entity];
+                $entity_to = $companies[$r->entity_to];
+                $query = "SELECT count(id) FROM {ek_expenses_memo_documents} WHERE serial=:s";
+                $attach = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $r->serial))->fetchField();
 
-            $ref = '<a href="' . Url::fromRoute('ek_finance_manage_print_html', ['id' => $r->id])->toString() . '">' . $r->serial . '</a>';
+                $ref = '<a href="' . Url::fromRoute('ek_finance_manage_print_html', ['id' => $r->id])->toString() . '">' . $r->serial . '</a>';
 
-            if ($r->pcode != 'not project related' && $r->pcode != '' && $r->pcode != 'n/a') {
-                if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $pcode = str_replace('/', '-', $r->pcode);
-                    $ref .= '<br/>' . ProjectData::geturl($pcode, 0, 0, 1);
+                if ($r->pcode != 'not project related' && $r->pcode != '' && $r->pcode != 'n/a') {
+                    if ($this->moduleHandler->moduleExists('ek_projects')) {
+                        $pcode = str_replace('/', '-', $r->pcode);
+                        $ref .= '<br/>' . ProjectData::geturl($pcode, 0, 0, 1);
+                    }
                 }
-            }
 
-            if ($r->status == '0') {
-                $dot = "<div class='reddot right'></div>";
-            } elseif ($r->status == '1') {
-                $dot = "<div class='orangedot right'></div>";
-            } else {
-                $dot = "<div class='greendot right'></div>";
-            }
-            if ($attach > 0) {
-                $url = Url::fromRoute('ek_finance_manage_modal_memo', ['id' => $r->id])->toString();
-                $docs = t('<a href="@url" class="@c" >attachments</a>', array('@url' => $url, '@c' => 'use-ajax blue'));
-            } else {
-                $docs = '';
-            }
-            
-            $auth = explode('|', $r->auth);
-            if ($r->auth == '0|0') {
-                $autho = t('n/a');
-            } else {
-                $auth_status = array(0 => t('not required'), 1 => t('pending'), 2 => t('authorized'), 3 => t('rejected'));
-                $autho = $userData[$auth[1]] . '<br/>' . $auth_status[$auth[0]];
-            }
+                if ($r->status == '0') {
+                    $dot = "<div class='reddot right'></div>";
+                } elseif ($r->status == '1') {
+                    $dot = "<div class='orangedot right'></div>";
+                } else {
+                    $dot = "<div class='greendot right'></div>";
+                }
+                if ($attach > 0) {
+                    $url = Url::fromRoute('ek_finance_manage_modal_memo', ['id' => $r->id])->toString();
+                    $docs = t('<a href="@url" class="@c" >attachments</a>', array('@url' => $url, '@c' => 'use-ajax blue'));
+                } else {
+                    $docs = '';
+                }
 
-            $options[$row] = array(
-                'company' => ['data' => ['#markup' => $entity . ' /<br>' . $entity_to]],
-                'reference' => ['data' => ['#markup' => $ref], 'title' => ['#markup' => $r->mission]],
-                'date' => $r->date,
-                'value' => number_format($r->value, 2) . " " . $r->currency,
-                'basecurrency' => number_format($r->value_base, 2) . " " . $baseCurrency,
-                'status' => ['data' => ['#markup' => $status[$r->status] . $dot]],
-                'attach' => ['data' => ['#markup' => $docs]],
-                'autho' => ['data' => ['#markup' => $autho]],
+                $auth = explode('|', $r->auth);
+                if ($r->auth == '0|0') {
+                    $autho = t('n/a');
+                } else {
+                    $auth_status = array(0 => t('not required'), 1 => t('pending'), 2 => t('authorized'), 3 => t('rejected'));
+                    $autho = $userData[$auth[1]] . '<br/>' . $auth_status[$auth[0]];
+                }
+
+                $options[$row] = array(
+                    'company' => ['data' => ['#markup' => $entity . ' /<br>' . $entity_to]],
+                    'reference' => ['data' => ['#markup' => $ref], 'title' => ['#markup' => $r->mission]],
+                    'date' => $r->date,
+                    'value' => number_format($r->value, 2) . " " . $r->currency,
+                    'basecurrency' => number_format($r->value_base, 2) . " " . $baseCurrency,
+                    'status' => ['data' => ['#markup' => $status[$r->status] . $dot]],
+                    'attach' => ['data' => ['#markup' => $docs]],
+                    'autho' => ['data' => ['#markup' => $autho]],
+                );
+
+                $total = $total + $r->value_base;
+
+                if ($r->status == 0 && $auth[0] < 2) {
+                    $links['edit'] = array(
+                        'title' => $this->t('Edit'),
+                        'url' => Url::fromRoute('ek_finance_manage_personal_memo', ['id' => $r->id]),
+                    );
+                }
+
+                if ($r->post == 0 && $r->status < 2 && ($auth[0] == '0' || $auth[0] == '2')) {
+                    $links['pay'] = array(
+                        'title' => $this->t('Pay'),
+                        'url' => Url::fromRoute('ek_finance_manage_pay_memo', ['id' => $r->id]),
+                    );
+                }
+                if ($r->status == 0) {
+
+                    $links['del'] = array(
+                        'title' => $this->t('Delete'),
+                        'url' => Url::fromRoute('ek_finance_manage_delete_memo', ['id' => $r->id]),
+                    );
+
+                    $links['upload'] = array(
+                        'title' => $this->t('Add attachment'),
+                        'url' => Url::fromRoute('ek_finance_manage_memo_attach', ['id' => $r->id]),
+                    );
+                }
+
+                $links['clone'] = array(
+                    'title' => $this->t('Clone'),
+                    'url' => Url::fromRoute('ek_finance_manage_personal_memo', ['id' => $r->id], ['query' => ['action' => 'clone']]),
+
+                );
+                $links['print'] = array(
+                    'title' => $this->t('Print'),
+                    'url' => Url::fromRoute('ek_finance_manage_print_memo', ['id' => $r->id]),
+                );
+
+                if ($r->post == 1 && $r->status == '2' && \Drupal::currentUser()->hasPermission('admin_memos')) {
+                    $links['reset'] = array(
+                        'title' => $this->t('Reset'),
+                        'url' => Url::fromRoute('ek_finance_manage_reset_pay_memo', ['id' => $r->id]),
+                    );
+                }            
+
+                $options[$row]['operations']['data'] = array(
+                    '#type' => 'operations',
+                    '#links' => $links,
+                );
+            }// while
+
+
+
+            $total = '<h4>' . number_format($total, 2) . " " . $baseCurrency . '</h4>';
+            $options[$row + 1] = array(
+                'company' => t('Total'),
+                'reference' => '',
+                'date' => '',
+                'value' => '',
+                'basecurrency' => array('data' => ['#markup' => $total]),
+                'status' => '',
+                'attach' => '',
+                'autho' => '',
+                'operations' => '',
             );
-
-            $total = $total + $r->value_base;
-
-            if ($r->status == 0 && $auth[0] < 2) {
-                $links['edit'] = array(
-                    'title' => $this->t('Edit'),
-                    'url' => Url::fromRoute('ek_finance_manage_personal_memo', ['id' => $r->id]),
-                );
-            }
-
-            if ($r->post == 0 && $r->status < 2 && ($auth[0] == '0' || $auth[0] == '2')) {
-                $links['pay'] = array(
-                    'title' => $this->t('Pay'),
-                    'url' => Url::fromRoute('ek_finance_manage_pay_memo', ['id' => $r->id]),
-                );
-            }
-            if ($r->status == 0) {
-
-                $links['del'] = array(
-                    'title' => $this->t('Delete'),
-                    'url' => Url::fromRoute('ek_finance_manage_delete_memo', ['id' => $r->id]),
-                );
-
-                $links['upload'] = array(
-                    'title' => $this->t('Add attachment'),
-                    'url' => Url::fromRoute('ek_finance_manage_memo_attach', ['id' => $r->id]),
-                );
-            }
-
-            $links['clone'] = array(
-                'title' => $this->t('Clone'),
-                'url' => Url::fromRoute('ek_finance_manage_personal_memo', ['id' => $r->id], ['query' => ['action' => 'clone']]),
-                
-            );
-            $links['print'] = array(
-                'title' => $this->t('Print'),
-                'url' => Url::fromRoute('ek_finance_manage_print_memo', ['id' => $r->id]),
-            );
-
-            if ($r->post == 1 && $r->status == '2' && \Drupal::currentUser()->hasPermission('admin_memos')) {
-                $links['reset'] = array(
-                    'title' => $this->t('Reset'),
-                    'url' => Url::fromRoute('ek_finance_manage_reset_pay_memo', ['id' => $r->id]),
-                );
-            }            
-            
-            $options[$row]['operations']['data'] = array(
-                '#type' => 'operations',
-                '#links' => $links,
-            );
-        }// while
-
-
-
-        $total = '<h4>' . number_format($total, 2) . " " . $baseCurrency . '</h4>';
-        $options[$row + 1] = array(
-            'company' => t('Total'),
-            'reference' => '',
-            'date' => '',
-            'value' => '',
-            'basecurrency' => array('data' => ['#markup' => $total]),
-            'status' => '',
-            'operations' => '',
-        );
-
+        }
 
 
         $build['memos_table'] = array(

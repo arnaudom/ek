@@ -69,7 +69,7 @@ class ExpensesManageController extends ControllerBase {
      *  @return array
      *
      */
-    public function recordexpenses(Request $request) {
+    public function recordExpenses(Request $request) {
 
         $build['new_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\RecordExpense');
 
@@ -80,7 +80,7 @@ class ExpensesManageController extends ControllerBase {
      *  clone an expense from existing record 
      *  @return array
      */
-    public function cloneexpenses(Request $request, $id) {
+    public function cloneExpenses(Request $request, $id) {
 
         $build['new_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\RecordExpense', $id, 'clone');
 
@@ -320,7 +320,7 @@ class ExpensesManageController extends ControllerBase {
      *  @return array 
      *  rendered html
      */
-    public function listexpenses(Request $request) {
+    public function listExpenses(Request $request) {
 
         $build['filter_expenses'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterExpenses');
         $sort = 'asc';
@@ -683,7 +683,7 @@ class ExpensesManageController extends ControllerBase {
      *  @return array
      *  rendered html table
      */
-    public function listexpensesraw(Request $request) {
+    public function listExpensesRaw(Request $request) {
 
         $build['filter_expenses'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterExpenses');
 
@@ -982,7 +982,7 @@ class ExpensesManageController extends ControllerBase {
      *  @return array
      *      form
      */
-    public function editexpenses(Request $request, $id) {
+    public function editExpenses(Request $request, $id) {
 
         $build['edit_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\RecordExpense', $id);
 
@@ -1000,7 +1000,7 @@ class ExpensesManageController extends ControllerBase {
      * @return PhpExcel Object
      */
 
-    public function excelexpenses(Request $request, $param = NULL) {
+    public function excelExpenses(Request $request, $param = NULL) {
 
         $markup = array();
         if (!class_exists('PHPExcel')) {
@@ -1028,12 +1028,11 @@ class ExpensesManageController extends ControllerBase {
      *  expense id single or array
      * 
      */
-    public function pdfvoucher($type, $id) {
+    public function pdfVoucher($type, $id) {
         $markup = array();
         include_once drupal_get_path('module', 'ek_finance') . '/pdf.inc';
         return $markup;
     }
-
 
     /*
      * Record expenses after payroll posting if hr module enabled
@@ -1044,7 +1043,7 @@ class ExpensesManageController extends ControllerBase {
      * 
      */
 
-    public function payrollrecord(Request $request, $param) {
+    public function payrollRecord(Request $request, $param) {
 
         $build['new_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\PayrollRecord', $param);
         return $build;
@@ -1057,7 +1056,7 @@ class ExpensesManageController extends ControllerBase {
      *  @return Object
      *      form
      */
-    public function deleteexpenses(Request $request, $id) {
+    public function deleteExpenses(Request $request, $id) {
         
           
         $query = "SELECT reconcile from {ek_journal} WHERE type=:t AND source like :s AND reference=:r AND exchange=:e";

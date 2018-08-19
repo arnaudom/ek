@@ -1168,6 +1168,12 @@ function ek_finance_update_8013() {
  * New route for administration
  */
 function ek_finance_update_8014() {
-   
+    \Drupal::service('router.builder')->rebuild();
+}
+
+/**
+ * Edit route controller destinations
+ */
+function ek_finance_update_8015() {
     \Drupal::service('router.builder')->rebuild();
 }
