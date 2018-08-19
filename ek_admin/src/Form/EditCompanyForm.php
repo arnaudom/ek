@@ -8,7 +8,6 @@
 namespace Drupal\ek_admin\Form;
 
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Core\Flood\FloodInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Locale\CountryManagerInterface;
@@ -19,702 +18,679 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Provides an company form.
  */
 class EditCompanyForm extends FormBase {
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandler
-   */
-  protected $moduleHandler;
 
-  /**
-   * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-   *   The module handler.
-   */
-  public function __construct(ModuleHandler $module_handler) {
-    $this->moduleHandler = $module_handler;
-    
-  }
+    /**
+     * The module handler.
+     *
+     * @var \Drupal\Core\Extension\ModuleHandler
+     */
+    protected $moduleHandler;
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('module_handler')
-    );
-  }
+    /**
+     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+     *   The module handler.
+     */
+    public function __construct(ModuleHandler $module_handler) {
+        $this->moduleHandler = $module_handler;
+    }
 
-  
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'ek_edit_company_form';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('module_handler')
+        );
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-        
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId() {
+        return 'ek_edit_company_form';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+
         $query = "SELECT id,name from {ek_country} where status=:s";
         $country = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => 1))->fetchAllKeyed();
 
         if (isset($id) && !$id == NULL) {
 
-        $form['for_id'] = array(
-          '#type' => 'hidden',
-          '#default_value' => $id,
+            $form['for_id'] = array(
+                '#type' => 'hidden',
+                '#default_value' => $id,
+            );
 
-        ); 
-        
-        $query = "SELECT * from {ek_company} WHERE id=:id";
-        $r = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $id ) )
-                ->fetchAssoc();
-        
+            $query = "SELECT * from {ek_company} WHERE id=:id";
+            $r = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $id))
+                    ->fetchAssoc();
         } else {
 
-        $form['new_company'] = array(
-          '#type' => 'hidden',
-          '#default_value' => 1,
-
-        ); 
-        
+            $form['new_company'] = array(
+                '#type' => 'hidden',
+                '#default_value' => 1,
+            );
         }
 
-          $form['active'] = array(
-              '#type' => 'select',
-              '#options' => array(0 => t('non active'), 1 => t('active')),
-              '#default_value' => isset($r['active']) ? $r['active'] : '1' ,
-              '#required' => TRUE,
-            );
+        $form['active'] = array(
+            '#type' => 'select',
+            '#options' => array(0 => t('non active'), 1 => t('active')),
+            '#default_value' => isset($r['active']) ? $r['active'] : '1',
+            '#required' => TRUE,
+        );
 
-          $form['name'] = array(
-              '#type' => 'textfield',
-              '#size' => 50,
-              '#default_value' => isset($r['name']) ? $r['name'] :null,
-              '#attributes' => array('placeholder'=>t('Name')),
-              '#required' => TRUE,
-              '#description' => t('name'),
-              '#prefix' => "<div class='container-inline'>",
-              '#attached' => array(
-                  'library' => array(
+        $form['name'] = array(
+            '#type' => 'textfield',
+            '#size' => 50,
+            '#default_value' => isset($r['name']) ? $r['name'] : null,
+            '#attributes' => array('placeholder' => t('Name')),
+            '#required' => TRUE,
+            '#description' => t('name'),
+            '#prefix' => "<div class='container-inline'>",
+            '#attached' => array(
+                'library' => array(
                     'ek_admin/ek_admin.script.sn',
-                  ),
                 ),
+            ),
+        );
 
-            );            
+        $form['short'] = array(
+            '#type' => 'textfield',
+            '#id' => 'short_name',
+            '#size' => 10,
+            '#maxlength' => 5,
+            '#required' => true,
+            '#default_value' => isset($r['short']) ? $r['short'] : null,
+            '#attributes' => array('placeholder' => t('Short name')),
+            '#suffix' => '</div>',
+        );
 
-          $form['short'] = array(
-              '#type' => 'textfield',
-              '#id' => 'short_name',
-              '#size' => 10,
-              '#maxlength' => 5,
-              '#required' => true,
-              '#default_value' => isset($r['short']) ? $r['short'] :null,
-              '#attributes' => array('placeholder'=>t('Short name')),
-              '#suffix' => '</div>',
-            ); 
-            
-          $form['alert'] = array(
-              '#markup' => "<div id='alert'></div>",
-          ); 
-          
-          $form['reg_number'] = array(
-              '#type' => 'textfield',
-              '#size' => 20,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['reg_number']) ? $r['reg_number'] :null,
-              '#attributes' => array('placeholder'=>t('registration number')),
-              '#description' => t('registration number'),
-            );
+        $form['alert'] = array(
+            '#markup' => "<div id='alert'></div>",
+        );
 
-          $form['address1'] = array(
-              '#type' => 'textfield',
-              '#size' => 60,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['address1']) ? $r['address1'] :null,
-              '#attributes' => array('placeholder'=>t('address line 1')),
-              '#description' => t('address line 1'),
-            ); 
+        $form['reg_number'] = array(
+            '#type' => 'textfield',
+            '#size' => 20,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['reg_number']) ? $r['reg_number'] : null,
+            '#attributes' => array('placeholder' => t('registration number')),
+            '#description' => t('registration number'),
+        );
 
-          $form['address2'] = array(
-              '#type' => 'textfield',
-              '#size' => 60,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['address2']) ? $r['address2'] :null,
-              '#attributes' => array('placeholder'=>t('address line 2')),
-              '#description' => t('address line 2'),
-            ); 
-            
+        $form['address1'] = array(
+            '#type' => 'textfield',
+            '#size' => 60,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['address1']) ? $r['address1'] : null,
+            '#attributes' => array('placeholder' => t('address line 1')),
+            '#description' => t('address line 1'),
+        );
 
-          $form['city'] = array(
-              '#type' => 'textfield',
-              '#size' => 40,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['city']) ? $r['city'] :null,
-              '#attributes' => array('placeholder'=>t('city')),
-              '#prefix' => "<div class='container-inline'>",
-              '#description' => t('city'),
-            );            
-
-          $form['postcode'] = array(
-              '#type' => 'textfield',
-              '#size' => 10,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['postcode']) ? $r['postcode'] :null,
-              '#attributes' => array('placeholder'=>t('post code')),
-              '#description' => t('post code'),
-            );
-            
-          $form['country'] = array(
-              '#type' => 'select',
-              '#options' => array_combine($country, $country) ,
-              '#default_value' => isset($r['country']) ? $r['country'] : null,
-              '#description' => t('country'),
-              '#suffix' => "</div>",
-              
-            );             
-
-          $form['telephone'] = array(
-              '#type' => 'textfield',
-              '#size' => 40,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['telephone']) ? $r['telephone'] :null,
-              '#attributes' => array('placeholder'=>t('telephone')),
-              '#description' => t('telephone'),
-            );
-
-          $form['fax'] = array(
-              '#type' => 'textfield',
-              '#size' => 40,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['fax']) ? $r['fax'] :null,
-              '#attributes' => array('placeholder'=>t('fax')),
-              '#description' => t('fax'),
-            );
-
-          $form['mobile'] = array(
-              '#type' => 'textfield',
-              '#size' => 40,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['mobile']) ? $r['mobile'] :null,
-              '#attributes' => array('placeholder'=>t('mobile')),
-              '#description' => t('mobile phone'),
-            );
-            
-          $form['email'] = array(
-              '#type' => 'textfield',
-              '#size' => 50,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['email']) ? $r['email'] :null,
-              '#attributes' => array('placeholder'=>t('email')),
-              '#description' => t('email'),
-            );
-
-          $form['contact'] = array(
-              '#type' => 'textfield',
-              '#size' => 60,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['contact']) ? $r['contact'] :null,
-              '#attributes' => array('placeholder'=>t('contact name')),
-              '#description' => t('contact'),
-            );
+        $form['address2'] = array(
+            '#type' => 'textfield',
+            '#size' => 60,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['address2']) ? $r['address2'] : null,
+            '#attributes' => array('placeholder' => t('address line 2')),
+            '#description' => t('address line 2'),
+        );
 
 
-         //correspondance address data
+        $form['city'] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['city']) ? $r['city'] : null,
+            '#attributes' => array('placeholder' => t('city')),
+            '#prefix' => "<div class='container-inline'>",
+            '#description' => t('city'),
+        );
 
-          $form['2'] = array(
-                '#type' => 'details', 
-                '#title' => t('Correspondance address'), 
-                '#collapsible' => TRUE, 
-                '#collapsed' => FALSE,
-            
-           );
+        $form['postcode'] = array(
+            '#type' => 'textfield',
+            '#size' => 10,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['postcode']) ? $r['postcode'] : null,
+            '#attributes' => array('placeholder' => t('post code')),
+            '#description' => t('post code'),
+        );
 
-          $form['2']['address3'] = array(
-              '#type' => 'textfield',
-              '#size' => 60,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['address1']) ? $r['address1'] :null,
-              '#attributes' => array('placeholder'=>t('address line 1')),
-              '#description' => t('address line 1'),
-            ); 
+        $form['country'] = array(
+            '#type' => 'select',
+            '#options' => array_combine($country, $country),
+            '#default_value' => isset($r['country']) ? $r['country'] : null,
+            '#description' => t('country'),
+            '#suffix' => "</div>",
+        );
 
-          $form['2']['address4'] = array(
-              '#type' => 'textfield',
-              '#size' => 60,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['address2']) ? $r['address2'] :null,
-              '#attributes' => array('placeholder'=>t('address line 2')),
-              '#description' => t('address line 2'),
-            ); 
-            
+        $form['telephone'] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['telephone']) ? $r['telephone'] : null,
+            '#attributes' => array('placeholder' => t('telephone')),
+            '#description' => t('telephone'),
+        );
 
-          $form['2']['city2'] = array(
-              '#type' => 'textfield',
-              '#size' => 40,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['city']) ? $r['city'] :null,
-              '#attributes' => array('placeholder'=>t('city')),
-              '#prefix' => "<div class='container-inline'>",
-              '#description' => t('city'),
-            );            
+        $form['fax'] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['fax']) ? $r['fax'] : null,
+            '#attributes' => array('placeholder' => t('fax')),
+            '#description' => t('fax'),
+        );
 
-          $form['2']['postcode2'] = array(
-              '#type' => 'textfield',
-              '#size' => 10,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['postcode']) ? $r['postcode'] :null,
-              '#attributes' => array('placeholder'=>t('post code')),
-              '#description' => t('post code'),
-            );
-            
-          $form['2']['country2'] = array(
-              '#type' => 'select',
-              '#options' => array_combine($country, $country) ,
-              '#default_value' => isset($r['country']) ? $r['country'] : null,
-              '#description' => t('country'),
-              '#suffix' => "</div>",
+        $form['mobile'] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['mobile']) ? $r['mobile'] : null,
+            '#attributes' => array('placeholder' => t('mobile')),
+            '#description' => t('mobile phone'),
+        );
 
-            );             
+        $form['email'] = array(
+            '#type' => 'textfield',
+            '#size' => 50,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['email']) ? $r['email'] : null,
+            '#attributes' => array('placeholder' => t('email')),
+            '#description' => t('email'),
+        );
 
-          $form['2']['telephone2'] = array(
-              '#type' => 'textfield',
-              '#size' => 40,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['telephone2']) ? $r['telephone2'] :null,
-              '#attributes' => array('placeholder'=>t('telephone')),
-              '#description' => t('telephone'),
-            );
+        $form['contact'] = array(
+            '#type' => 'textfield',
+            '#size' => 60,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['contact']) ? $r['contact'] : null,
+            '#attributes' => array('placeholder' => t('contact name')),
+            '#description' => t('contact'),
+        );
 
-          $form['2']['fax2'] = array(
-              '#type' => 'textfield',
-              '#size' => 40,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['fax']) ? $r['fax'] :null,
-              '#attributes' => array('placeholder'=>t('fax')),
-              '#description' => t('fax'),
-            );
+
+        //correspondance address data
+
+        $form['2'] = array(
+            '#type' => 'details',
+            '#title' => t('Correspondance address'),
+            '#collapsible' => TRUE,
+            '#collapsed' => FALSE,
+        );
+
+        $form['2']['address3'] = array(
+            '#type' => 'textfield',
+            '#size' => 60,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['address1']) ? $r['address1'] : null,
+            '#attributes' => array('placeholder' => t('address line 1')),
+            '#description' => t('address line 1'),
+        );
+
+        $form['2']['address4'] = array(
+            '#type' => 'textfield',
+            '#size' => 60,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['address2']) ? $r['address2'] : null,
+            '#attributes' => array('placeholder' => t('address line 2')),
+            '#description' => t('address line 2'),
+        );
+
+
+        $form['2']['city2'] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['city']) ? $r['city'] : null,
+            '#attributes' => array('placeholder' => t('city')),
+            '#prefix' => "<div class='container-inline'>",
+            '#description' => t('city'),
+        );
+
+        $form['2']['postcode2'] = array(
+            '#type' => 'textfield',
+            '#size' => 10,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['postcode']) ? $r['postcode'] : null,
+            '#attributes' => array('placeholder' => t('post code')),
+            '#description' => t('post code'),
+        );
+
+        $form['2']['country2'] = array(
+            '#type' => 'select',
+            '#options' => array_combine($country, $country),
+            '#default_value' => isset($r['country']) ? $r['country'] : null,
+            '#description' => t('country'),
+            '#suffix' => "</div>",
+        );
+
+        $form['2']['telephone2'] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['telephone2']) ? $r['telephone2'] : null,
+            '#attributes' => array('placeholder' => t('telephone')),
+            '#description' => t('telephone'),
+        );
+
+        $form['2']['fax2'] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['fax']) ? $r['fax'] : null,
+            '#attributes' => array('placeholder' => t('fax')),
+            '#description' => t('fax'),
+        );
 
 
         //Images data
 
 
-          $form['i'] = array(
-                '#type' => 'details', 
-                '#title' => t('Images'), 
-                '#collapsible' => TRUE, 
-                '#collapsed' => FALSE,
-            
-           );
+        $form['i'] = array(
+            '#type' => 'details',
+            '#title' => t('Images'),
+            '#collapsible' => TRUE,
+            '#collapsed' => FALSE,
+        );
 
-         $form['i']['logo']  = array(
-              '#type' => 'file',
-               '#title' => t('Upload a logo image'),
-               '#maxlength' => 40,                        
+        $form['i']['logo'] = array(
+            '#type' => 'file',
+            '#title' => t('Upload a logo image'),
+            '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+            '#suffix' => "</div>",
+        );
+
+        /* current image if any */
+        if ($r['logo'] <> '') {
+            $image = "<a href='" . file_create_url($r['logo']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['logo']) . "></a>";
+            $form['i']['logo_delete'] = array(
+                '#type' => 'checkbox',
+                '#title' => t('delete logo'),
+                '#attributes' => array('onclick' => "jQuery('#currentLogo').toggleClass( 'delete');"),
+                '#prefix' => "<div class='cell'>",
             );
-
-              /*current image if any*/
-              if($r['logo'] <> '') {
-                $image = "<a href='" . file_create_url($r['logo'])  ."' target='_blank'><img class='thumbnail' src=". file_create_url($r['logo']) . "></a>";
-                $form['i']['logo_delete'] = array(
-                    '#type' => 'checkbox',
-                    '#title' => t('delete logo'),
-                    '#attributes' => array('onclick' => "jQuery('#currentl').toggleClass( 'delete');"),
-                    '#prefix' => "<div class='container-inline'>",
-                    );                
-                $form['i']["currentlogo"] = array(
-                    '#markup' => "<p id='currentl'style='padding:2px;'>" . $image . "</p>",
-                    '#suffix' => '</div>',
-                  ); 
-             
-              
-              }
-
-         $form['i']['sign']  = array(
-              '#type' => 'file',
-               '#title' => t('Upload a signatue image'),
-               '#maxlength' => 40,   
+            $form['i']["currentlogo"] = array(
+                '#markup' => "<p id='currentLogo' class = 'text-right'>" . $image . "</p>",
+                '#suffix' => "</div></div></div>",
             );
-
-              /*current image if any*/
-              if($r['sign'] <> '') {
-                $image = "<a href='" . file_create_url($r['sign'])  ."' target='_blank'><img class='thumbnail' src=". file_create_url($r['sign']) . "></a>";
-                $form['i']['sign_delete'] = array(
-                    '#type' => 'checkbox',
-                    '#title' => t('delete signature'),
-                    '#attributes' => array('onclick' => "jQuery('#currents').toggleClass( 'delete');"),
-                    '#prefix' => "<div class='container-inline'>",
-                    );                
-                $form['i']["currentsign"] = array(
-                    '#markup' => "<p id='currents'style='padding:2px;'>" . $image . "</p>",
-                    '#suffix' => '</div>',
-                  ); 
-             
-              
-              }
-
-
-          //admin data
-
-
-          $form['f'] = array(
-                '#type' => 'details', 
-                '#title' => t('Other settings'), 
-                '#collapsible' => TRUE, 
-                '#collapsed' => FALSE,
-            
-           );
-if($this->moduleHandler->moduleExists('ek_finance')) {
-        //choice to load standard account or use othe company accunts
-     
-    
-        if (!isset($id)) {
-            //new company
-            $option = [0 => t('Default standard')];
-            $t = t('Copy from') . ":";
-            $option[$t] = Database::getConnection('external_db','external_db')
-                    ->query("SELECT id,name from {ek_company} order by name")
-                    ->fetchAllKeyed();
-
-            $form['f']['use_chart'] = array(
-              '#type' => 'select',
-              '#title' => t('Select chart of accounts'), 
-              '#options' => $option,
-              '#default_value' => NULL,
-              '#required' => TRUE,
-              '#description' => t('chart selection from other company will be copied into new entity'),
-
+        } else {
+            $form['i']["currentlogo"] = array(
+                '#type' => "item",
+                '#suffix' => "</div></div>",
             );
-            
         }
-    
-}
-if(!$this->moduleHandler->moduleExists('ek_finance')) {
-          $form['f']['accounts_year'] = array(
-              '#type' => 'textfield',
-              '#size' => 6,
-              '#maxlength' => 4,
-              '#default_value' => isset($r['accounts_year']) ? $r['accounts_year'] :null,
-              '#attributes' => array('placeholder'=>t('year')),
-              '#description' => t('financial year'),
-            );
 
-          $form['f']['accounts_month'] = array(
-              '#type' => 'textfield',
-              '#size' => 6,
-              '#maxlength' => 2,
-              '#default_value' => isset($r['accounts_month']) ? $r['accounts_month'] :null,
-              '#attributes' => array('placeholder'=>t('month. ex.12')),
-              '#description' => t('financial month'),
+        $form['i']['sign'] = array(
+            '#type' => 'file',
+            '#title' => t('Upload a signatue image'),
+            '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+            '#suffix' => "</div>",
+        );
+
+        /* current image if any */
+        if ($r['sign'] <> '') {
+            $image = "<a href='" . file_create_url($r['sign']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['sign']) . "></a>";
+            $form['i']['sign_delete'] = array(
+                '#type' => 'checkbox',
+                '#title' => t('delete signature'),
+                '#attributes' => array('onclick' => "jQuery('#currentSign').toggleClass('delete');"),
+                '#prefix' => "<div class='cell'>",
             );
-} else {
-    $settings = new \Drupal\ek_admin\CompanySettings($id);
+            $form['i']["currentsign"] = array(
+                '#markup' => "<p id='currentSign'  class = 'text-right'>" . $image . "</p>",
+                '#suffix' => "</div></div></div>",
+            );
+        } else {
+            $form['i']["currentsign"] = array(
+                '#type' => "item",
+                '#suffix' => "</div></div>",
+            );
+        }
+
+
+        //admin data
+
+
+        $form['f'] = array(
+            '#type' => 'details',
+            '#title' => t('Other settings'),
+            '#collapsible' => TRUE,
+            '#collapsed' => FALSE,
+        );
+        if ($this->moduleHandler->moduleExists('ek_finance')) {
+            //choice to load standard account or use othe company accunts
+
+
+            if (!isset($id)) {
+                //new company
+                $option = [0 => t('Default standard')];
+                $t = t('Copy from') . ":";
+                $option[$t] = Database::getConnection('external_db', 'external_db')
+                        ->query("SELECT id,name from {ek_company} order by name")
+                        ->fetchAllKeyed();
+
+                $form['f']['use_chart'] = array(
+                    '#type' => 'select',
+                    '#title' => t('Select chart of accounts'),
+                    '#options' => $option,
+                    '#default_value' => NULL,
+                    '#required' => TRUE,
+                    '#description' => t('chart selection from other company will be copied into new entity'),
+                );
+            }
+        }
+        if (!$this->moduleHandler->moduleExists('ek_finance')) {
             $form['f']['accounts_year'] = array(
-              '#type' => 'textfield',
-              '#size' => 6,
-              '#disabled' => TRUE,
-              '#maxlength' => 4,
-              '#default_value' => $settings->get('fiscal_year'),
-              '#description' => t('financial year'),
+                '#type' => 'textfield',
+                '#size' => 6,
+                '#maxlength' => 4,
+                '#default_value' => isset($r['accounts_year']) ? $r['accounts_year'] : null,
+                '#attributes' => array('placeholder' => t('year')),
+                '#description' => t('financial year'),
             );
 
             $form['f']['accounts_month'] = array(
-              '#type' => 'textfield',
-              '#size' => 6,
-              '#disabled' => TRUE,
-              '#maxlength' => 2,
-              '#default_value' => $settings->get('fiscal_month'),
-              '#description' => t('financial month'),
+                '#type' => 'textfield',
+                '#size' => 6,
+                '#maxlength' => 2,
+                '#default_value' => isset($r['accounts_month']) ? $r['accounts_month'] : null,
+                '#attributes' => array('placeholder' => t('month. ex.12')),
+                '#description' => t('financial month'),
             );
-          
-}
-          $form['f']['itax_no'] = array(
-              '#type' => 'textfield',
-              '#size' => 20,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['itax_no']) ? $r['itax_no'] :null,
-              '#attributes' => array('placeholder'=>t('tax no.')),
-              '#description' => t('income tax no.'),
+        } else {
+            $settings = new \Drupal\ek_admin\CompanySettings($id);
+            $form['f']['accounts_year'] = array(
+                '#type' => 'textfield',
+                '#size' => 6,
+                '#disabled' => TRUE,
+                '#maxlength' => 4,
+                '#default_value' => $settings->get('fiscal_year'),
+                '#description' => t('financial year'),
             );
-            
-          $form['f']['pension_no'] = array(
-              '#type' => 'textfield',
-              '#size' => 20,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['pension_no']) ? $r['pension_no'] :null,
-              '#attributes' => array('placeholder'=>t('pension no.')),
-              '#description' => t('pension no.'),
-            );            
 
-          $form['f']['social_no'] = array(
-              '#type' => 'textfield',
-              '#size' => 20,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['social_no']) ? $r['social_no'] :null,
-              '#attributes' => array('placeholder'=>t('social no.')),
-              '#description' => t('social security no.'),
-            ); 
+            $form['f']['accounts_month'] = array(
+                '#type' => 'textfield',
+                '#size' => 6,
+                '#disabled' => TRUE,
+                '#maxlength' => 2,
+                '#default_value' => $settings->get('fiscal_month'),
+                '#description' => t('financial month'),
+            );
+        }
+        $form['f']['itax_no'] = array(
+            '#type' => 'textfield',
+            '#size' => 20,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['itax_no']) ? $r['itax_no'] : null,
+            '#attributes' => array('placeholder' => t('tax no.')),
+            '#description' => t('income tax no.'),
+        );
 
-          $form['f']['vat_no'] = array(
-              '#type' => 'textfield',
-              '#size' => 20,
-              '#maxlength' => 255,
-              '#default_value' => isset($r['vat_no']) ? $r['vat_no'] :null,
-              '#attributes' => array('placeholder'=>t('vat ref. no.')),
-              '#description' => t('vat ref. no.'),
-            ); 
+        $form['f']['pension_no'] = array(
+            '#type' => 'textfield',
+            '#size' => 20,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['pension_no']) ? $r['pension_no'] : null,
+            '#attributes' => array('placeholder' => t('pension no.')),
+            '#description' => t('pension no.'),
+        );
+
+        $form['f']['social_no'] = array(
+            '#type' => 'textfield',
+            '#size' => 20,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['social_no']) ? $r['social_no'] : null,
+            '#attributes' => array('placeholder' => t('social no.')),
+            '#description' => t('social security no.'),
+        );
+
+        $form['f']['vat_no'] = array(
+            '#type' => 'textfield',
+            '#size' => 20,
+            '#maxlength' => 255,
+            '#default_value' => isset($r['vat_no']) ? $r['vat_no'] : null,
+            '#attributes' => array('placeholder' => t('vat ref. no.')),
+            '#description' => t('vat ref. no.'),
+        );
 
 
-            
-            
-    $form['actions'] = array('#type' => 'actions');
-    $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
+        $form['actions'] = array('#type' => 'actions');
+        $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
 
-
-        
-        return $form;  
-        
-
-  }
-
-  /**
-   * {@inheritdoc}
-   * 
-   */
-  public function validateForm(array &$form,  FormStateInterface $form_state) {
-  
-    parent::validateForm($form, $form_state);
-    
-    if(!filter_var($form_state->getValue('email'), FILTER_VALIDATE_EMAIL)) {
-    
-    $form_state->setErrorByName('email', $this->t('Invalid email'));
+        return $form;
     }
-    if($form_state->getValue('accounts_year') <> '') {
-        if(!is_numeric($form_state->getValue('accounts_year')) || !preg_match('/\d{4}/', $form_state->getValue('accounts_year') ) ) {
-        $form_state->setErrorByName('accounts_year', $this->t('Financial year is wrong'));
+
+    /**
+     * {@inheritdoc}
+     * 
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state) {
+
+        parent::validateForm($form, $form_state);
+
+        if (!filter_var($form_state->getValue('email'), FILTER_VALIDATE_EMAIL)) {
+
+            $form_state->setErrorByName('email', $this->t('Invalid email'));
+        }
+        if ($form_state->getValue('accounts_year') <> '') {
+            if (!is_numeric($form_state->getValue('accounts_year')) || !preg_match('/\d{4}/', $form_state->getValue('accounts_year'))) {
+                $form_state->setErrorByName('accounts_year', $this->t('Financial year is wrong'));
+            }
+        }
+        if ($form_state->getValue('accounts_month') <> '') {
+            if (!is_numeric($form_state->getValue('accounts_month')) || !preg_match('/\d/', $form_state->getValue('accounts_month'))) {
+                $form_state->setErrorByName('accounts_month', $this->t('Financial month is wrong'));
+            }
+        }
+
+        $validators = array('file_validate_is_image' => array());
+        //LOGO
+
+        $field = "logo";
+
+        // Check for a new uploaded logo.
+        $file = file_save_upload($field, $validators, FALSE, 0);
+
+        if (isset($file)) {
+            $res = file_validate_image_resolution($file, '300x300', '100x100');
+            // File upload was attempted.
+            if ($file) {
+                // Put the temporary file in form_values so we can save it on submit.
+                $form_state->setValue($field, $file);
+            } else {
+                // File upload failed.
+                $form_state->setErrorByName($field, $this->t('Logo could not be uploaded'));
+            }
+        } else {
+            $form_state->setValue($field, 0);
+        }
+
+        //SIGN
+        ;
+        $field = "sign";
+        // Check for a new uploaded logo.
+        $file = file_save_upload($field, $validators, FALSE, 0);
+        if (isset($file)) {
+            $res = file_validate_image_resolution($file, '300x300', '100x100');
+            // File upload was attempted.
+            if ($file) {
+                // Put the temporary file in form_values so we can save it on submit.
+                $form_state->setValue($field, $file);
+            } else {
+                // File upload failed.
+                $form_state->setErrorByName($field, $this->t('Signature could not be uploaded'));
+            }
+        } else {
+            $form_state->setValue($field, 0);
         }
     }
-    if($form_state->getValue('accounts_month') <> '') {
-        if(!is_numeric($form_state->getValue('accounts_month') ) || !preg_match('/\d/', $form_state->getValue('accounts_month') ) ) {
-        $form_state->setErrorByName('accounts_month',  $this->t('Financial month is wrong'));
-        }
-    }    
-    
-    $validators = array('file_validate_is_image' => array());
-    //LOGO
-    
-      $field = "logo";
-      
-      // Check for a new uploaded logo.
-      $file = file_save_upload($field , $validators, FALSE, 0);
-      
-      if (isset($file ) ) {
-      $res = file_validate_image_resolution($file, '300x300','100x100');
-        // File upload was attempted.
-        if ($file) {
-          // Put the temporary file in form_values so we can save it on submit.
-          $form_state->setValue($field, $file) ;
-        }
-        else {
-          // File upload failed.
-         $form_state->setErrorByName($field, $this->t('Logo could not be uploaded'));
-        }
-      } else {
-        $form_state->setValue($field, 0);
-      }
 
-    //SIGN
-      ;
-      $field = "sign";
-      // Check for a new uploaded logo.
-      $file = file_save_upload($field , $validators, FALSE, 0);
-      if (isset($file)) {
-      $res = file_validate_image_resolution($file, '300x300','100x100');
-        // File upload was attempted.
-        if ($file) {
-          // Put the temporary file in form_values so we can save it on submit.
-          $form_state->setValue($field, $file) ;
-        }
-        else {
-          // File upload failed.
-          $form_state->setErrorByName($field, $this->t('Signature could not be uploaded'));
-        }
-      } else {
-        $form_state->setValue($field, 0);
-      }  
-
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form,  FormStateInterface $form_state) {
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state) {
 
 
-      $fields = array (
-                'name' => $form_state->getValue('name'),
-                'short' => $form_state->getValue('short'),
-                'reg_number' => $form_state->getValue('reg_number'),
-                'address1' => $form_state->getValue('address1'),
-                'address2' => $form_state->getValue('address2'),
-                'address3' => $form_state->getValue('address3'),
-                'address4' => $form_state->getValue('address4'),
-                'city' => $form_state->getValue('city'),
-                'city2' => $form_state->getValue('city2'),
-                'postcode' => $form_state->getValue('postcode'),
-                'postcode2' => $form_state->getValue('postcode2'),
-                'country' => $form_state->getValue('country'),
-                'telephone' => $form_state->getValue('telephone'),
-                'telephone2' => $form_state->getValue('telephone2'),
-                'fax' => $form_state->getValue('fax'),
-                'fax2' => $form_state->getValue('fax2'),
-                'email' => $form_state->getValue('email'),
-                'contact' => $form_state->getValue('contact'),
-                'mobile' => $form_state->getValue('mobile'),
-                'accounts_year' => $form_state->getValue('accounts_year'),                
-                'accounts_month' => $form_state->getValue('accounts_month'),
-                'active' => $form_state->getValue('active'),
-                'itax_no' => $form_state->getValue('itax_no'),
-                'pension_no' => $form_state->getValue('pension_no'),                
-                'social_no' => $form_state->getValue('social_no'),
-                'vat_no' => $form_state->getValue('vat_no'),
-                );
+        $fields = array(
+            'name' => $form_state->getValue('name'),
+            'short' => $form_state->getValue('short'),
+            'reg_number' => $form_state->getValue('reg_number'),
+            'address1' => $form_state->getValue('address1'),
+            'address2' => $form_state->getValue('address2'),
+            'address3' => $form_state->getValue('address3'),
+            'address4' => $form_state->getValue('address4'),
+            'city' => $form_state->getValue('city'),
+            'city2' => $form_state->getValue('city2'),
+            'postcode' => $form_state->getValue('postcode'),
+            'postcode2' => $form_state->getValue('postcode2'),
+            'country' => $form_state->getValue('country'),
+            'telephone' => $form_state->getValue('telephone'),
+            'telephone2' => $form_state->getValue('telephone2'),
+            'fax' => $form_state->getValue('fax'),
+            'fax2' => $form_state->getValue('fax2'),
+            'email' => $form_state->getValue('email'),
+            'contact' => $form_state->getValue('contact'),
+            'mobile' => $form_state->getValue('mobile'),
+            'accounts_year' => $form_state->getValue('accounts_year'),
+            'accounts_month' => $form_state->getValue('accounts_month'),
+            'active' => $form_state->getValue('active'),
+            'itax_no' => $form_state->getValue('itax_no'),
+            'pension_no' => $form_state->getValue('pension_no'),
+            'social_no' => $form_state->getValue('social_no'),
+            'vat_no' => $form_state->getValue('vat_no'),
+        );
 
-        if ( $form_state->getValue('for_id') == '')  {
-          $insert = Database::getConnection('external_db', 'external_db')
-                  ->insert('ek_company')
-                  ->fields($fields)
-                  ->execute();
-          $id = $insert;
+        if ($form_state->getValue('for_id') == '') {
+            $insert = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_company')
+                    ->fields($fields)
+                    ->execute();
+            $id = $insert;
         } else {
 
-          //update existing
-              $update = Database::getConnection('external_db', 'external_db')->update('ek_company')
-                ->condition('id', $form_state->getValue('for_id'))
-                ->fields($fields)
-                ->execute();   
-              
-              $id = $form_state->getValue('for_id');
-        
-        }
-
-  if($this->moduleHandler->moduleExists('ek_finance') && $form_state->getValue('for_id') == '') {
-    
-    if($form_state->getValue('use_chart') == 0) {
-        //load standard accounts
-        $file = drupal_get_path('module', 'ek_finance') . '/ek_standard_accounts.sql';  
-        $query = file_get_contents($file);
-        $acc = Database::getConnection('external_db', 'external_db')->query($query);
-        $balance_date = date('Y') . '-01-01';
-        $acc = Database::getConnection('external_db', 'external_db')->update('ek_accounts')
-                    ->condition('coid', 'x')
-                    ->fields(array('coid' => $id, 'balance_date' => $balance_date))
-                    ->execute();
-    } else {
-        //copy chart from other account
-        $query = "SELECT * from {ek_accounts} WHERE coid=:c ORDER by aid";
-        $acc = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':c' => $form_state->getValue('use_chart')]);
-        $date = date('Y') . '-01-01';
-        while ($a = $acc->fetchObject()) {
-            $fields = [
-                'aid' => $a->aid,
-                'aname' => $a->aname,
-                'atype' => $a->atype,
-                'astatus' => $a->astatus,
-                'coid' => $id,
-                'link' => '',
-                'balance' => 0,
-                'balance_base' => 0,
-                'balance_date' => $date,
-                
-            ];
-         Database::getConnection('external_db', 'external_db')
-                 ->insert('ek_accounts')
+            //update existing
+            $update = Database::getConnection('external_db', 'external_db')->update('ek_company')
+                    ->condition('id', $form_state->getValue('for_id'))
                     ->fields($fields)
-                    ->execute();   
-            
+                    ->execute();
+
+            $id = $form_state->getValue('for_id');
+        }
+
+        if ($this->moduleHandler->moduleExists('ek_finance') && $form_state->getValue('for_id') == '') {
+
+            if ($form_state->getValue('use_chart') == 0) {
+                //load standard accounts
+                $file = drupal_get_path('module', 'ek_finance') . '/ek_standard_accounts.sql';
+                $query = file_get_contents($file);
+                $acc = Database::getConnection('external_db', 'external_db')->query($query);
+                $balance_date = date('Y') . '-01-01';
+                $acc = Database::getConnection('external_db', 'external_db')->update('ek_accounts')
+                        ->condition('coid', 'x')
+                        ->fields(array('coid' => $id, 'balance_date' => $balance_date))
+                        ->execute();
+            } else {
+                //copy chart from other account
+                $query = "SELECT * from {ek_accounts} WHERE coid=:c ORDER by aid";
+                $acc = Database::getConnection('external_db', 'external_db')
+                        ->query($query, [':c' => $form_state->getValue('use_chart')]);
+                $date = date('Y') . '-01-01';
+                while ($a = $acc->fetchObject()) {
+                    $fields = [
+                        'aid' => $a->aid,
+                        'aname' => $a->aname,
+                        'atype' => $a->atype,
+                        'astatus' => $a->astatus,
+                        'coid' => $id,
+                        'link' => '',
+                        'balance' => 0,
+                        'balance_base' => 0,
+                        'balance_date' => $date,
+                    ];
+                    Database::getConnection('external_db', 'external_db')
+                            ->insert('ek_accounts')
+                            ->fields($fields)
+                            ->execute();
+                }
+            }
+        }
+
+        // images
+        if ($form_state->getValue('logo_delete') == 1) {
+            //delete existing file
+            $query = "SELECT logo from {ek_company} where id=:id";
+            $filename = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
+            $pic = drupal_realpath($filename);
+            unlink($pic);
+            \Drupal::messenger()->addWarning(t("Logo image deleted"));
+            Database::getConnection('external_db', 'external_db')->update('ek_company')->fields(array('logo' => ''))->condition('id', $id)->execute();
+        }
+
+        if ($form_state->getValue('sign_delete') == 1) {
+            //delete existing file
+            $query = "SELECT sign from {ek_company} where id=:id";
+            $filename = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
+            $pic = drupal_realpath($filename);
+            unlink($pic);
+            Database::getConnection('external_db', 'external_db')->update('ek_company')->fields(array('sign' => ''))->condition('id', $id)->execute();
+            \Drupal::messenger()->addWarning(t("Signature image deleted"));
+        }
+
+        if (!$form_state->getValue('logo') == 0) {
+            if ($file = $form_state->getValue('logo')) {
+
+                $dir = "private://admin/company" . $id . "/images";
+                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                $logo = file_unmanaged_copy($file->getFileUri(), $dir);
+                Database::getConnection('external_db', 'external_db')
+                        ->update('ek_company')
+                        ->fields(array('logo' => $logo))
+                        ->condition('id', $id)->execute();
+                \Drupal::messenger()->addStatus(t("New logo image uploaded"));
+            }
+        }
+
+        if (!$form_state->getValue('sign') == 0) {
+            if ($file = $form_state->getValue('sign')) {
+
+                $dir = "private://admin/company" . $id . "/images";
+                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                $sign = file_unmanaged_copy($file->getFileUri(), $dir);
+                Database::getConnection('external_db', 'external_db')
+                        ->update('ek_company')
+                        ->fields(array('sign' => $sign))
+                        ->condition('id', $id)->execute();
+                \Drupal::messenger()->addStatus(t("New signature image uploaded"));
+            }
+        }
+
+
+        //insert default access for new
+        if ($form_state->getValue('for_id') == '') {
+            if (\Drupal::currentUser()->id() == 1) {
+                $access = array('1');
+            } else {
+                $access = array('1', \Drupal::currentUser()->id());
+            }
+            $access = serialize(implode(",", $access));
+
+            Database::getConnection('external_db', 'external_db')
+                    ->update('ek_company')
+                    ->fields(array('access' => $access))
+                    ->condition('id', $id)
+                    ->execute();
+        }
+
+        if (isset($insert) || isset($update)) {
+            \Drupal::messenger()->addStatus(t("The company is recorded"));
+            $form_state->setRedirect('ek_admin.company.list');
         }
     }
-  
-  }
-  
-    // images
-    if($form_state->getValue('logo_delete') == 1) {
-    //delete existing file
-    $query = "SELECT logo from {ek_company} where id=:id";
-    $filename = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
-    $pic = drupal_realpath($filename);
-    unlink($pic);
-    \Drupal::messenger()->addWarning(t("Logo image deleted"));
-    Database::getConnection('external_db', 'external_db')->update('ek_company')->fields(array('logo' =>'' ))->condition('id', $id)->execute();
-    }
-
-    if($form_state->getValue('sign_delete') == 1) {
-    //delete existing file
-    $query = "SELECT sign from {ek_company} where id=:id";
-    $filename = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
-    $pic = drupal_realpath($filename);
-    unlink($pic);
-    Database::getConnection('external_db', 'external_db')->update('ek_company')->fields(array('sign' =>'' ))->condition('id', $id)->execute();
-    \Drupal::messenger()->addWarning(t("Signature image deleted"));
-    
-    }
-
-    if (!$form_state->getValue('logo') == 0) {
-        if ($file = $form_state->getValue('logo')) {
-          
-          $dir = "private://admin/company" . $id . "/images"   ;
-          file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-          $logo = file_unmanaged_copy($file->getFileUri(), $dir);
-          Database::getConnection('external_db', 'external_db')
-                  ->update('ek_company')
-                  ->fields(array('logo' => $logo))
-                  ->condition('id', $id)->execute();
-          \Drupal::messenger()->addStatus(t("New logo image uploaded"));
-        }
-      }
-
-    if (!$form_state->getValue('sign') == 0) {
-        if ($file = $form_state->getValue('sign')) {
-          
-          $dir = "private://admin/company" . $id . "/images"   ;
-          file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-          $sign = file_unmanaged_copy($file->getFileUri(), $dir);
-          Database::getConnection('external_db', 'external_db')
-                  ->update('ek_company')
-                  ->fields(array('sign' => $sign))
-                  ->condition('id', $id)->execute();
-          \Drupal::messenger()->addStatus(t("New signature image uploaded"));
-        }
-      }
-
-  
-  //insert default access for new
-  if($form_state->getValue('for_id') == ''){
-    if(\Drupal::currentUser()->id() == 1) {
-      $access = array('1');
-    } else {
-      $access = array('1', \Drupal::currentUser()->id() );
-    }
-    $access =  serialize( implode(",",$access ) );
-
-    Database::getConnection('external_db', 'external_db')
-            ->update('ek_company')
-            ->fields(array('access' => $access))
-            ->condition('id', $id)
-            ->execute();
-  }
-  
-  if (isset($insert) || isset($update) ) {  
-    \Drupal::messenger()->addStatus(t("The company is recorded"));
-    $form_state->setRedirect('ek_admin.company.list');
-    
-    }
- 
-  }
 
 }
