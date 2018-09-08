@@ -1828,8 +1828,10 @@ class ProjectController extends ControllerBase {
                 ->condition('id', $_POST['id'])
                 ->execute();
 
-        if ($update)
+        if ($update) {
+            \Drupal\Core\Cache\Cache::invalidateTags(['project_last_block']);
             return new JsonResponse(['action' => $action]);
+        }
     }
 
     /**

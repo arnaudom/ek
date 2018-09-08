@@ -31,13 +31,33 @@ class LastCreatedProjectsBlock extends BlockBase {
    */
     public function build() {
 
-        $query = "SELECT p.id, pcode, c.name as country, pname, date,b.name as client FROM {ek_project} p INNER JOIN {ek_country} c ON p.cid=c.id INNER JOIN {ek_address_book} b ON p.client_id=b.id order by p.id DESC limit 20";
-        $data = Database::getConnection('external_db', 'external_db')->query($query);
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project', 'p');
+                    $query->leftJoin('ek_country', 'c', 'p.cid=c.id');
+                    $query->leftJoin('ek_address_book', 'b', 'p.client_id=b.id');
+                    $query->fields('p', array('id', 'pcode', 'pname', 'date', 'notify'));
+                    $query->fields('c', array('name'));
+                    $query->fields('b', array('name'));
+                    $query->range(0,30);
+                    $query->orderBy('p.id', 'DESC');
+        $data = $query->execute();
+       
         $list = '<ul>';
 
         while ($d = $data->fetchObject()) {
+            
+            $notify = explode(',', $d->notify);
+            if (in_array(\Drupal::currentUser()->id(), $notify)) {
+                $cls = "check-square";
+                $title = t("Unfollow");
+            } else {
+                $cls = 'square';
+                $title = t("Follow");
+            }
 
-            $list .= '<li title="' . $d->pname . '-' . $d->client . '" >' . $d->country . ' - '
+            $list .= '<li title="' . $d->pname . '-' . $d->b_name . '" >' 
+                    . '<span title='.$title.' id="'.$d->id.'" class="follow ico '. $cls .'"></span> '
+                    . $d->c_name . ' - '
                     . ProjectData::geturl($d->id) . ' - [' . $d->date . ']</li>';
         }
 
@@ -54,7 +74,7 @@ class LastCreatedProjectsBlock extends BlockBase {
             '#items' => $items,
             '#theme' => 'ek_projects_dashboard',
             '#attached' => array(
-                'library' => array('ek_projects/ek_projects.dashboard'),
+                'library' => ['ek_projects/ek_projects.dashboard','ek_admin/ek_admin_css'],
             ),
             '#cache' => [
                 'tags' => ['project_last_block'],

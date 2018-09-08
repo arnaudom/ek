@@ -1,11 +1,11 @@
 ek_projects_css:
-  version: VERSION
+  version: 1
   css:
     theme:
       css/ek_projects.css: {}
 
 ek_projects.datepicker:
-  version: VERSION
+  version: 1
   js:
     js/ek_projects_date.js: {weight: -20}
   dependencies:
@@ -13,7 +13,7 @@ ek_projects.datepicker:
     - core/jquery.ui.datepicker
     
 ek_projects_updater:
-  version: VERSION 
+  version: 1 
   js:
     js/periodic/jquery.periodic.js: {}
     js/updater.js: {}
@@ -22,10 +22,7 @@ ek_projects_updater:
     - core/drupal
     - core/drupalSettings
     - core/drupal.ajax
-    #- core/drupal.dialog
-    #- core/backbone
 
-    
 ek_projects_view:
   version: 1
   css:
@@ -45,7 +42,7 @@ ek_projects_view:
 
     
 ek_projects_autocomplete:
-  version: VERSION  
+  version: 1  
   js:
     js/autocomplete.js: {}
   dependencies:
@@ -54,7 +51,9 @@ ek_projects_autocomplete:
 
     
 ek_projects.dashboard:
-  version: VERSION
+  version: 1
+  js:
+    js/ek_projects_blocks.js: {}
   css:
     theme:
       css/ek_projects_dashboard.css: {}

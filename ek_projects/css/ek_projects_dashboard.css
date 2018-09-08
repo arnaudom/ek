@@ -23,3 +23,22 @@
 
 }
 
+.ico:before {
+  font-family: FontAwesome;
+  font-size:1.3em;
+  color: #446E9B;
+  width: 1.2em;
+  text-align: center;
+  display: inline-block;
+  text-rendering: auto;
+}
+
+.square:before {
+  content: "\f096";
+  color:blue; 
+}
+.check-square:before {
+  content: "\f046";
+  color:green; 
+}
+
