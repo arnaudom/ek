@@ -47,16 +47,21 @@ class LastCreatedProjectsBlock extends BlockBase {
         while ($d = $data->fetchObject()) {
             
             $notify = explode(',', $d->notify);
-            if (in_array(\Drupal::currentUser()->id(), $notify)) {
-                $cls = "check-square";
+            if(!\Drupal\ek_projects\ProjectData::validate_access($d->id)){
+                $cls = "disabled-square";
+                $detail = '';
+            } elseif (in_array(\Drupal::currentUser()->id(), $notify)) {
+                $cls = "follow check-square";
                 $title = t("Unfollow");
+                $detail = $d->pname . '-' . $d->b_name;
             } else {
-                $cls = 'square';
+                $cls = 'follow square';
                 $title = t("Follow");
+                $detail = $d->pname . '-' . $d->b_name;
             }
 
-            $list .= '<li title="' . $d->pname . '-' . $d->b_name . '" >' 
-                    . '<span title='.$title.' id="'.$d->id.'" class="follow ico '. $cls .'"></span> '
+            $list .= '<li title="' . $detail . '" >' 
+                    . '<span title='.$title.' id="'.$d->id.'" class="ico '. $cls .'"></span> '
                     . $d->c_name . ' - '
                     . ProjectData::geturl($d->id) . ' - [' . $d->date . ']</li>';
         }

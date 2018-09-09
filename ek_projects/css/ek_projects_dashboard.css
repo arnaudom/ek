@@ -41,4 +41,8 @@
   content: "\f046";
   color:green; 
 }
+.disabled-square:before {
+  content: "\f096";
+  color:grey; 
+}
 
