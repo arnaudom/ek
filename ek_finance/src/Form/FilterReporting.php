@@ -102,7 +102,7 @@ class FilterReporting extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => ['1' => t('Actual'), '2' => t('Allocated')],
-            '#required' => TRUE,
+            //'#required' => TRUE,
             '#title' => '',
             '#default_value' => isset($_SESSION['repfilter']['view']) ? $_SESSION['repfilter']['view'] : NULL,
             '#states' => array(
