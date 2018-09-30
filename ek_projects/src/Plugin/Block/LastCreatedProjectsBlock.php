@@ -41,7 +41,7 @@ class LastCreatedProjectsBlock extends BlockBase {
                     $query->range(0,30);
                     $query->orderBy('p.id', 'DESC');
         $data = $query->execute();
-       
+  
         $list = '<ul>';
 
         while ($d = $data->fetchObject()) {
@@ -62,7 +62,7 @@ class LastCreatedProjectsBlock extends BlockBase {
 
             $list .= '<li title="' . $detail . '" >' 
                     . '<span title='.$title.' id="'.$d->id.'" class="ico '. $cls .'"></span> '
-                    . $d->c_name . ' - '
+                    . $d->name . ' - '
                     . ProjectData::geturl($d->id) . ' - [' . $d->date . ']</li>';
         }
 

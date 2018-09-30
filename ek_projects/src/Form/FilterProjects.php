@@ -165,7 +165,7 @@ class FilterProjects extends FormBase {
 
         $form['filters'][4]['date'] = array(
             '#type' => 'checkbox',
-            '#default_value' => isset($_SESSION['pjfilter']['date']) ? $_SESSION['pjfilter']['date'] : '0',
+            '#default_value' => isset($_SESSION['pjfilter']['date']) ? $_SESSION['pjfilter']['date'] : '1',
             '#attributes' => array('title' => t('edit date')),
             '#title' => t('Date'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
@@ -185,12 +185,10 @@ class FilterProjects extends FormBase {
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div>',
             '#states' => array(
-                'invisible' =>  array(
-                                    array(":input[name='date']" => ['checked' => FALSE]),
-                                // OR
-                                    array(':input[name="keyword"]' => ['filled' => TRUE]),
-                            ),
+                'visible' =>  array(":input[name='date']" => ['checked' => TRUE]),
+                'invisible' =>  array(':input[name="keyword"]' => ['filled' => TRUE]),
             ),
+            
         );
 
 
@@ -202,13 +200,9 @@ class FilterProjects extends FormBase {
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
             '#states' => array(
-                'invisible' =>  array(
-                                    array(":input[name='date']" => ['checked' => FALSE]),
-                                // OR
-                                    array(':input[name="keyword"]' => ['filled' => TRUE]),
-                            ),
+                'visible' =>  array(":input[name='date']" => ['checked' => TRUE]),
+                'invisible' =>  array(':input[name="keyword"]' => ['filled' => TRUE]),
             ),
-            
         );
 
         $form['filters']['actions'] = array(
