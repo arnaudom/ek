@@ -85,6 +85,7 @@ class NewMemo extends FormBase {
                         ->select('ek_expenses_memo_list', 'details');
         $query->fields('details');
         $query->condition('serial', $data->serial);
+        $query->orderBy('id');
         $detail = $query->execute();
 
         if($clone == FALSE){
@@ -545,6 +546,7 @@ $rows = $form_state->getValue('itemTable');
                     '#size' => 10,
                     '#maxlength' => 100,
                     '#attributes' => array('placeholder'=>t('ref')),
+                    '#default_value' => $d->receipt,
                 );
         $form['delete'] = array(
                     '#id' => 'del' . $n,
