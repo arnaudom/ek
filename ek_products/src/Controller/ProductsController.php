@@ -463,7 +463,6 @@ class ProductsController extends ControllerBase {
         //return the data
         $items = array();
         
-
         $url_search = Url::fromRoute('ek_products.search', array(), array())->toString();
         $items['search'] = t('<a href="@url">New search</a>', array('@url' => $url_search));
         $url_list = Url::fromRoute('ek_products.list', array(), array())->toString();
@@ -475,7 +474,8 @@ class ProductsController extends ControllerBase {
         $query = "SELECT * from {ek_items} where id=:id";
         $r = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $id))
-                ->fetchAssoc();        
+                ->fetchAssoc();   
+        
         $query = "SELECT name from {ek_company} where id=:id";
         $items['company'] = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $r['coid']))
@@ -496,61 +496,62 @@ class ProductsController extends ControllerBase {
 
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
             $query = "SELECT name from {ek_address_book} where id=:id";
-            $items['supplier'] = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $r['supplier']))->fetchField();
+            $items['supplier'] = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $r['supplier']))->fetchField();
         } else {
             $items['supplier'] = '';
         }
 
         $items['stamp'] = date('Y-m-d', $r['stamp']);
 
-
         $query = "SELECT * from {ek_item_packing} where itemcode=:id";
-        $r = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $r['itemcode']))
+        $k = Database::getConnection('external_db', 'external_db')
+                ->query($query, array(':id' => $items['itemcode']))
                 ->fetchAssoc();
 
-        $items['units'] = $r['units'];
-        $items['unit_measure'] = $r['unit_measure'];
-        $items['item_size'] = $r['item_size'];
-        $items['pack_size'] = $r['pack_size'];
-        $items['qty_pack'] = $r['qty_pack'];
-        $items['c20'] = $r['c20'];
-        $items['c40'] = $r['c40'];
-        $items['min_order'] = $r['min_order'];
+        $items['units'] = $k['units'];
+        $items['unit_measure'] = $k['unit_measure'];
+        $items['item_size'] = $k['item_size'];
+        $items['pack_size'] = $k['pack_size'];
+        $items['qty_pack'] = $k['qty_pack'];
+        $items['c20'] = $k['c20'];
+        $items['c40'] = $k['c40'];
+        $items['min_order'] = $k['min_order'];
 
 
         $query = "SELECT * from {ek_item_prices} where itemcode=:id";
-        $r = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $r['itemcode']))
+        $p = Database::getConnection('external_db', 'external_db')
+                ->query($query, array(':id' => $items['itemcode']))
                 ->fetchAssoc();
 
-        $items['purchase_price'] = $r['purchase_price'];
-        $items['currency'] = $r['currency'];
-        $items['date_purchase'] = date('Y-m-d', $r['date_purchase']);
-        $items['selling_price'] = $r['selling_price'];
+        $items['purchase_price'] = $p['purchase_price'];
+        $items['currency'] = $p['currency'];
+        $items['date_purchase'] = date('Y-m-d', $p['date_purchase']);
+        $items['selling_price'] = $p['selling_price'];
         $items['selling_price_label'] = $this->settings->get('selling_price_label');
-        $items['promo_price'] = $r['promo_price'];
+        $items['promo_price'] = $p['promo_price'];
         $items['promo_price_label'] = $this->settings->get('promo_price_label');
-        $items['discount_price'] = $r['discount_price'];
+        $items['discount_price'] = $p['discount_price'];
         $items['discount_price_label'] = $this->settings->get('discount_price_label');
-        $items['exp_selling_price'] = $r['exp_selling_price'];
+        $items['exp_selling_price'] = $p['exp_selling_price'];
         $items['exp_selling_price_label'] = $this->settings->get('exp_selling_price_label');
-        $items['exp_promo_price'] = $r['exp_promo_price'];
+        $items['exp_promo_price'] = $p['exp_promo_price'];
         $items['exp_promo_price_label'] = $this->settings->get('exp_promo_price_label');
-        $items['exp_discount_price'] = $r['exp_discount_price'];
+        $items['exp_discount_price'] = $p['exp_discount_price'];
         $items['exp_discount_price_label'] = $this->settings->get('exp_discount_price_label');
-        $items['loc_currency'] = $r['loc_currency'];
-        $items['exp_currency'] = $r['exp_currency'];
+        $items['loc_currency'] = $p['loc_currency'];
+        $items['exp_currency'] = $p['exp_currency'];
+        
         $query = "SELECT count(id) from {ek_item_barcodes} where itemcode=:id";
         $c = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $r['itemcode']))
+                ->query($query, array(':id' => $items['itemcode']))
                 ->fetchField();
 
         $items['barcodes'] = array();
         if ($c > 0) {
             $query = "SELECT * from {ek_item_barcodes} where itemcode=:id";
             $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $r['itemcode']));
+                    ->query($query, array(':id' => $items['itemcode']));
             if (class_exists('TCPDF2DBarcode')) {
                 $add_barcode = TRUE;
                 include_once drupal_get_path('module', 'ek_products') . '/code.inc';
@@ -573,20 +574,20 @@ class ProductsController extends ControllerBase {
         $items['pictures'] = array();
 
         $query = "SELECT count(id) from {ek_item_images} where itemcode=:id";
-        $c = Database::getConnection('external_db', 'external_db')
+        $i = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $items['itemcode']))
                 ->fetchField();
-        if ($c > 0) {
+        if ($i > 0) {
             $query = "SELECT * from {ek_item_images} where itemcode=:id";
             $data = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':id' => $items['itemcode']));
             $picture = array();
-            while ($r = $data->fetchAssoc()) {
+            while ($i = $data->fetchAssoc()) {
 
                 
-                if ($r['uri'] <> '') {
-                    $picture['element'] = "<a href='" . file_create_url($r['uri']) . "' target='_blank'><img class='thumbnail' src="
-                            . file_create_url($r['uri']) . "></a>";
+                if ($i['uri'] <> '') {
+                    $picture['element'] = "<a href='" . file_create_url($i['uri']) . "' target='_blank'><img class='thumbnail' src="
+                            . file_create_url($i['uri']) . "></a>";
                 } else {
                     $picture['element'] = '';
                 }
