@@ -64,7 +64,8 @@ class Journal {
         $start_request = date('Y-m', strtotime($end_request .' - ' . $n . ' months' )) . '-01';
         
         if($end_request < $start_fiscal) {
-            $archive = TRUE;           
+            $archive = TRUE; 
+            $start_request = date('Y-m', strtotime($start_fiscal .' - 12 months' )) . '-01';          
         }
 
         $stop_date = date('Y-m-d', strtotime($end_request . ' + 1 day'));
@@ -1165,7 +1166,8 @@ class Journal {
         
              
         $Obj = $query->execute();
-        return $Obj->fetchObject()->sumValue;
+        $sum = $Obj->fetchObject()->sumValue;
+        return $sum;
     }
     
     /*

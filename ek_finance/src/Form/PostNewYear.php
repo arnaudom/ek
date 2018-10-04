@@ -175,7 +175,8 @@ class PostNewYear extends FormBase {
                 $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $fiscal_month , $fiscal_year );
                 $from = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth . ' - 1 year + 1 day'));
                 $to = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth . ' + 1 day'));
-                $earning = $journal->current_earning($form_state->getValue('coid') , $from , $to);
+                $earn_date = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth));
+                $earning = $journal->current_earning($form_state->getValue('coid') , $from , $earn_date);
                 $display = '';
                 $rows = '';
                 $q = "SELECT * FROM {ek_accounts} where coid=:coid ORDER BY aid";
@@ -319,7 +320,8 @@ class PostNewYear extends FormBase {
     $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $fiscal_month , $fiscal_year );
     $from = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth . ' - 1 year + 1 day'));
     $to = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth . ' + 1 day'));
-    $earning = $journal->current_earning($form_state->getValue('coid') , $from , $to);
+    $earn_date = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth));
+    $earning = $journal->current_earning($form_state->getValue('coid') , $from , $earn_date);
 
     /* clone current tables as archives
      * name archive = table + fiscal year + coid     
