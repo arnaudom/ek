@@ -50,6 +50,7 @@ class LastCreatedProjectsBlock extends BlockBase {
             if(!\Drupal\ek_projects\ProjectData::validate_access($d->id)){
                 $cls = "disabled-square";
                 $detail = '';
+                $title = '';
             } elseif (in_array(\Drupal::currentUser()->id(), $notify)) {
                 $cls = "follow check-square";
                 $title = t("Unfollow");
