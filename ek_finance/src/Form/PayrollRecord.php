@@ -540,7 +540,7 @@ class PayrollRecord extends FormBase {
                     'suppliername' => '0',
                     'receipt' => 'no',
                     'employee' => 'n/a',
-                    'status' => 'yes',
+                    'status' => 'paid',
                     'cash' => $cash,
                     'pdate' => $value['payDate'],
                     'reconcile' => '0',
