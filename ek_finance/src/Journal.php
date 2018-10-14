@@ -480,7 +480,7 @@ class Journal {
                 //loop array for funds and tax (able to increase number of funds in future
                 for ($i = 0; $i < count($j['funds']); $i++) {
 
-                    if ($j['funds']["f$i"] > 0) {
+                    if (isset($j['funds']["f$i"]) && $j['funds']["f$i"] > 0) {
                         $a = 'f' . $i . 'a';
                         self::save($j['funds'][$a], '0', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $j['funds']["f$i"], '0', $j['currency']);
 
@@ -494,7 +494,7 @@ class Journal {
 
                 for ($i = 0; $i < count($j['tax']); $i++) {
 
-                    if ($j['tax']["t$i"] > 0) {
+                    if (isset($j['tax']["t$i"]) && $j['tax']["t$i"] > 0) {
                         $a = 't' . $i . 'a';
                         self::save($j['tax'][$a], '0', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $j['tax']["t$i"], '0', $j['currency']);
 
@@ -526,7 +526,7 @@ class Journal {
                     self::save($j['aid'], '1', $j['coid'], 'debit', $j['source'], $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                 }
                 //main  CREDIT  
-                if ($j['provision'] == '1') {
+                if (isset($j['provision']) && $j['provision'] == '1') {
                     $account_currency = $j['currency'];
                     $aid = $j['bank'];
                 } else {
@@ -542,11 +542,7 @@ class Journal {
                         $Obj = $query->execute()->fetchObject();
                         $aid = $Obj->aid;
                         $account_currency = $Obj->currency;
-                        /*
-                        $query = "SELECT currency,aid from {ek_bank_accounts} where id=:id ";
-                        $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $j['bank']))->fetchAssoc();
-                        $account_currency = $data['currency'];
-                        $aid = $data['aid'];*/
+
                     }
                 }
 

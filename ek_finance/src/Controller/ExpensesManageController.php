@@ -578,6 +578,11 @@ class ExpensesManageController extends ControllerBase {
                             'title' => $this->t('Delete'),
                             'url' => Url::fromRoute('ek_finance.manage.delete_expense', ['id' => $r->reference]),
                         );
+                    } elseif($reconcile_flag == 0 && strpos($r->source, 'payroll')) {
+                       $links['edit'] = array(
+                            'title' => $this->t('Edit'),
+                            'url' => Url::fromRoute('ek_finance_payroll.edit', ['id' => $r->reference]),
+                        ); 
                     }
 
                     $links['clone'] = array(
@@ -982,9 +987,59 @@ class ExpensesManageController extends ControllerBase {
      *  @return array
      *      form
      */
-    public function editExpenses(Request $request, $id) {
+    public function editExpenses($id) {
+        
+        //filter access when editing expense to verify if user is legitimate and 
+        // entry has not been reconciled
+        
+            $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
 
-        $build['edit_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\RecordExpense', $id);
+            $query = "SELECT * from {ek_expenses} WHERE id=:id";
+            $expense = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $id))
+                    ->fetchObject();
+
+            $flag = TRUE;
+
+            if (!in_array($expense->company, $access)) {
+                $flag = FALSE;
+                $markup = t('You are not authorized to edit this entry. Return to <a href="@url">list</a>', 
+                        array('@url' => Url::fromRoute('ek_finance.manage.list_expense', array(), array())
+                        ->toString()));
+            } else {
+
+                $query = "SELECT count(id) from {ek_journal} WHERE source like :s "
+                        . "AND reference = :r "
+                        . "AND reconcile = :rec";
+                $a = array(':s' => "expense%", ':r' => $id, ':rec' => 1);
+                $reco = Database::getConnection('external_db', 'external_db')
+                        ->query($query, $a)
+                        ->fetchField();
+
+                if ($reco > 0) {
+                    $flag = FALSE;
+                    $markup = t('Entry reconciled. You cannot edit this entry. Return to <a href="@url">list</a>', 
+                            array('@url' => Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString()));
+                }
+            }
+            if ($flag != TRUE) {
+                
+                $url = Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString();
+                $items['type'] = 'edit';
+                $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Expense')))];
+                $items['description'] = ['#markup' => $markup];
+                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $build = [
+                    '#items' => $items,
+                    '#theme' => 'ek_admin_message',
+                    '#attached' => array(
+                        'library' => array('ek_admin/ek_admin_css'),
+                    ),
+                ];  
+
+                } else {
+                    $build['edit_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\RecordExpense', $id);
+                }
 
         return $build;
     }
@@ -1049,6 +1104,71 @@ class ExpensesManageController extends ControllerBase {
         return $build;
     }
 
+    /*
+     * Edit expenses after payroll posting if hr module enabled
+     * @param array $id
+     *  expense id
+     * @return Object
+     *  form
+     * 
+     */
+
+    public function editPayrollExpense($id) {
+        
+        //filter access when editing expense to verify if user is legitimate and 
+        // entry has not been reconciled
+        
+            $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
+            $query = "SELECT * from {ek_expenses} WHERE id=:id";
+            $expense = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $id))
+                    ->fetchObject();
+
+            $flag = TRUE;
+
+            if (!in_array($expense->company, $access)) {
+                $flag = FALSE;
+                $markup = t('You are not authorized to edit this entry. Return to <a href="@url">list</a>', 
+                        array('@url' => Url::fromRoute('ek_finance.manage.list_expense', array(), array())
+                        ->toString()));
+            } else {
+
+                $query = "SELECT count(id) from {ek_journal} WHERE (source like :s or source like :ss) "
+                        . "AND reference = :r "
+                        . "AND reconcile = :rec";
+                $a = array(':s' => "expense payroll",':ss' => "payroll", ':r' => $id, ':rec' => 1);
+                $reco = Database::getConnection('external_db', 'external_db')
+                        ->query($query, $a)
+                        ->fetchField();
+
+                if ($reco > 0) {
+                    $flag = FALSE;
+                    $markup = t('Entry reconciled. You cannot edit this entry. Return to <a href="@url">list</a>', 
+                            array('@url' => Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString()));
+                }
+            }
+            if ($flag != TRUE) {
+                
+                $url = Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString();
+                $items['type'] = 'edit';
+                $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Expense')))];
+                $items['description'] = ['#markup' => $markup];
+                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $build = [
+                    '#items' => $items,
+                    '#theme' => 'ek_admin_message',
+                    '#attached' => array(
+                        'library' => array('ek_admin/ek_admin_css'),
+                    ),
+                ];  
+            } else {
+        
+                $build['new_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\EditPayrollExpense', $id);
+                
+            }
+            return $build;
+    }
+    
     /**
      *  Delete an expense entry and journal ref.
      *  @param int $id

@@ -108,48 +108,13 @@ class RecordExpense extends FormBase {
             '#markup' => t('<a href="@url" >List</a>', array('@url' => Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString())),
         );
 
-        //filter access when editing expense to verify if user is legitimate and 
-        // entry has not been reconciled
-        if ($id != NULL) {
-            $access = AccessCheck::GetCompanyByUser();
-
+        if ($id != NULL && $form_state->get('num_items') == NULL) {
+            
+            //get expense data
             $query = "SELECT * from {ek_expenses} WHERE id=:id";
             $expense = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':id' => $id))
                     ->fetchObject();
-
-            $flag = TRUE;
-
-            if (!in_array($expense->company, $access)) {
-                $flag = FALSE;
-                $markup = t('You are not authorized to edit this entry. Return to <a href="@url">list</a>', 
-                        array('@url' => Url::fromRoute('ek_finance.manage.list_expense', array(), array())
-                        ->toString()));
-            } elseif($clone != 'clone') {
-
-                $query = "SELECT count(id) from {ek_journal} WHERE source like :s "
-                        . "AND reference = :r "
-                        . "AND type=:t "
-                        . "AND reconcile = :rec";
-                $a = array(':s' => "expense%", ':r' => $id, ':t' => 'debit', ':rec' => 1);
-                $reco = Database::getConnection('external_db', 'external_db')
-                        ->query($query, $a)
-                        ->fetchField();
-
-                if ($reco > 0) {
-                    $flag = FALSE;
-                    $markup = t('Entry reconciled. You cannot edit this entry. Return to <a href="@url">list</a>', 
-                            array('@url' => Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString()));
-                }
-            }
-            if ($flag != TRUE) {
-                $error = array('#markup' => "<div class='messages messages--warning'>" . $markup . "</div>");
-                return $error;
-            }
-        } //edit filter
-
-        if ($id != NULL && $form_state->get('num_items') == NULL) {
-
             //get journal data
             $query = "SELECT * from {ek_journal} WHERE source like :s and reference = :r AND type=:t AND exchange=:e";
             $a = array(':s' => "expense%", ':r' => $id, ':t' => 'debit', ':e' => 0);
@@ -995,9 +960,21 @@ class RecordExpense extends FormBase {
             //delete old  journal records
             $query = "SELECT company FROM {ek_expenses} WHERE id =:r";
             $a = array(':r' => $form_state->getValue('edit'));
+            
             $old = Database::getConnection('external_db', 'external_db')
                     ->query($query, $a)
                     ->fetchField();
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_journal', 'j');
+                $query->fields('j');
+                $query->condition('reference', $form_state->getValue('edit'));
+                $query->condition('coid', $old);
+                $query->condition('source', 'expense%', 'like');
+                $query->condition('type', 'debit', '=');
+                $query->condition('exchange', '0', '=');
+                $backup = $query->execute()->fetchObject();
+                
             $del =   Database::getConnection('external_db', 'external_db')
                         ->delete('ek_journal')
                         ->condition('coid', $old)
@@ -1131,21 +1108,23 @@ class RecordExpense extends FormBase {
                         ->execute();
             
             // Record the accounting journal
-            $journal->record(
-                    array(
-                        'source' => "expense",
-                        'coid' => $form_state->getValue('coid'),
-                        'aid' => $form_state->getValue("account$n"),
-                        'bank' => $credit,
-                        'provision' => $provision,
-                        'reference' => $insert,
-                        'date' => $pdate,
-                        'value' => $value,
-                        'currency' => $form_state->getValue('currency'),
-                        'tax' => $tax,
-                        'fxRate' => $form_state->getValue('fx_rate'),
-                    )
-            );
+            
+                    $journal->record(
+                            array(
+                                'source' => "expense",
+                                'coid' => $form_state->getValue('coid'),
+                                'aid' => $form_state->getValue("account$n"),
+                                'bank' => $credit,
+                                'provision' => $provision,
+                                'reference' => $insert,
+                                'date' => $pdate,
+                                'value' => $value,
+                                'currency' => $form_state->getValue('currency'),
+                                'tax' => $tax,
+                                'fxRate' => $form_state->getValue('fx_rate'),
+                            )
+                    );
+            
         }
 
         if($journal->credit <> $journal->debit) {
