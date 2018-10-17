@@ -1134,11 +1134,8 @@ $rows = $form_state->getValue('itemTable');
   if ($form_state->getValue('category') == 5 && $this->settings->get('authorizeMemo') == 1 ) {
   // send a notification
     $query = "SELECT name,mail from {users_field_data} WHERE uid=:u";
-  
     $user_memo = db_query($query, array(':u' => \Drupal::currentUser()->id() ))->fetchObject();
-  
     $authorizer_mail = db_query($query, array(':u' => $uid ))->fetchObject();
-  
     $entity_mail = db_query($query, array(':u' => $form_state->getValue('entity') ))->fetchObject();
   
     $action = array( 1 => t('pending approval'), 2 => t('authorized'), 3 => t('rejected') );
@@ -1148,7 +1145,7 @@ $rows = $form_state->getValue('itemTable');
     $params['options']['url'] = "<a href='". $url ."'>" . $serial . "</a>";
     $params['options']['user'] = $user_memo->name;
     $body = '';
-    $body .= t('Memo ref.') . ': ' . $serial ; 
+    $body .= t('Memo ref. @p',['@p' => $serial]) ; 
     $body .= '<br/>' . t('Status') . ': ' . $action[$form_state->getValue('action')];
     $error = [];
     if(\Drupal::currentUser()->id() == $form_state->getValue('entity')){
@@ -1208,9 +1205,77 @@ $rows = $form_state->getValue('itemTable');
         \Drupal::messenger()->addStatus(t('Notification message sent'));
     }  
   
-  }//notification
-  
-  
+  } else {
+      //notify for new memo
+      if($form_state->getValue('category') < 5) {
+            $query = Database::getConnection('external_db', 'external_db')
+                      ->select('ek_company', 'c');
+            $query->fields('c', ['name','email', 'contact']);
+            $query->condition('id', $form_state->getValue('entity'), '=');
+            $entity = $query->execute()->fetchObject();
+            $entity_mail = $entity->email;
+        } else {
+            $query = "SELECT name,mail from {users_field_data} WHERE uid=:u";
+            $entity = db_query($query, array(':u' => $form_state->getValue('entity')))
+                    ->fetchObject();
+            $entity_mail = $entity->mail;
+        }
+      
+      $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_company', 'c');
+      $query->fields('c', ['name','email', 'contact']);
+      $query->condition('id', $form_state->getValue('entity_to'), '=');
+      $entity_to = $query->execute()->fetchObject();  
+      
+      if (isset($insert) && isset($entity_mail) && isset($entity_to->email)) {
+            $params['subject'] = t("New memo") . ': ' . $serial;
+            $url = $GLOBALS['base_url'] . Url::fromRoute('ek_finance_manage_print_html', array('id' => $reference))->toString();
+            $params['options']['url'] = "<a href='". $url ."'>" . $serial . "</a>";
+            $params['options']['user'] = $entity->name;
+            
+            $params['body'] = t('Memo ref. @p',['@p' => $serial]) . "." . t('Issued to') . ": " . $entity_to->name; 
+            
+            $error = [];
+            
+            $send = \Drupal::service('plugin.manager.mail')->mail(
+                'ek_finance',
+                'key_memo_note',
+                $entity_to->email,
+                \Drupal::languageManager()->getDefaultLanguage()->getId(),
+                $params,
+                $entity_mail,
+                TRUE
+              );
+            
+              if($send['result'] == FALSE) {
+                $error[] = $entity_to->email;
+              }   
+            
+            $params['subject'] = t("New memo") . ': ' . $serial . " (" . t('copy') . ")";
+            $send = \Drupal::service('plugin.manager.mail')->mail(
+                'ek_finance',
+                'key_memo_note',
+                $entity_mail,
+                \Drupal::languageManager()->getDefaultLanguage()->getId(),
+                $params,
+                $entity_to->email,
+                TRUE
+              );
+            
+              if($send['result'] == FALSE) {
+                $error[] = $entity->email;
+              }  
+              
+              if(!empty($error)) {
+                $errors = implode(',', $error);
+                \Drupal::messenger()->addError(t('Error sending notification to :t', [':t' => $errors]));
+              }
+              
+      }
+      
+     
+    
+  }
   
   if ($form_state->getValue('category') < 5) {
           $form_state->setRedirect('ek_finance_manage_list_memo_internal' ) ;

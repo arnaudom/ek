@@ -463,19 +463,8 @@ class PayMemo extends FormBase {
         $rate2 = CurrencyData::rate($currency2);
         $this_pay = 0;
 
-        /* reset allocation field to coid
-        $query = "SELECT country from {ek_company} WHERE id=:id";
-        $allocation = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $data->entity_to))
-                ->fetchField();
-         */
         $allocation = $data->entity_to;
-        /*changed expense client field from strin to id - to remove
-        $query = "SELECT name from {ek_address_book} WHERE id=:id";
-        $client = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $data->client))
-                ->fetchField();
-        */
+
         for ($i = 1; $i <= $form_state->getValue('count'); $i++) {
             
             $localcurrency = round($form_state->getValue('amount' . $i) * $pay_rate , 2);
@@ -564,6 +553,79 @@ class PayMemo extends FormBase {
         if ($update) {
             $url = Url::fromRoute('ek_finance.manage.edit_expense', ['id' => $insert])->toString();
             \Drupal::messenger()->addStatus(t('Payment recorded for @id. Go to <a href="@url">expense</a> if you need to edit record.', ['@id' => $data->serial, '@url' => $url]));
+            $action = array( 1 => t('Partially paid'), 2 => t('Paid'));
+            
+                //notify for payment
+                if($data->category < 5) {
+                    $query = Database::getConnection('external_db', 'external_db')
+                              ->select('ek_company', 'c');
+                    $query->fields('c', ['name','email', 'contact']);
+                    $query->condition('id', $data->entity, '=');
+                    $entity = $query->execute()->fetchObject();
+                    $entity_mail = $entity->email;
+                } else {
+                    $query = "SELECT name,mail from {users_field_data} WHERE uid=:u";
+                    $entity = db_query($query, array(':u' => $data->entity))
+                            ->fetchObject();
+                    $entity_mail = $entity->mail;
+                }
+                
+                $query = Database::getConnection('external_db', 'external_db')
+                          ->select('ek_company', 'c');
+                $query->fields('c', ['name','email', 'contact']);
+                $query->condition('id', $data->entity_to, '=');
+                $entity_to = $query->execute()->fetchObject();  
+                
+
+                if (isset($entity_mail) && isset($entity_to->email)) {
+                      $params['subject'] = t('Payment information') . ': ' . $data->serial;
+                      $url = $GLOBALS['base_url'] . Url::fromRoute('ek_finance_manage_print_html', array('id' => $data->id))->toString();
+                      $params['options']['url'] = "<a href='". $url ."'>" . $data->serial . "</a>";
+                      $params['options']['user'] = $entity->name;
+
+                      $params['body'] = t('Memo ref. @p',['@p' => $data->serial]) . "." . t('Issued to') . ": " . $entity_to->name; 
+                      $params['body'] .= '<br/>' .  t('Status') . ": " . $action[$paid];
+                      $error = [];
+
+                      $send = \Drupal::service('plugin.manager.mail')->mail(
+                          'ek_finance',
+                          'key_memo_note',
+                          $entity_mail,
+                          \Drupal::languageManager()->getDefaultLanguage()->getId(),
+                          $params,
+                          $entity_to->email,
+                          TRUE
+                        );
+
+                        if($send['result'] == FALSE) {
+                          $error[] = $entity_to->email;
+                        }   
+
+                      $params['subject'] = t('Payment information') . ': ' . $data->serial . " (" . t('copy') . ")";
+                      $send = \Drupal::service('plugin.manager.mail')->mail(
+                          'ek_finance',
+                          'key_memo_note',
+                          $entity_to->email,
+                          \Drupal::languageManager()->getDefaultLanguage()->getId(),
+                          $params,
+                          $entity_mail,
+                          TRUE
+                        );
+
+                        if($send['result'] == FALSE) {
+                          $error[] = $entity->email;
+                        }  
+
+                        if(!empty($error)) {
+                          $errors = implode(',', $error);
+                          \Drupal::messenger()->addError(t('Error sending notification to :t', [':t' => $errors]));
+                        }
+
+                      }
+            
+            
+            
+            
             if ($data->category < 5) {
                 $form_state->setRedirect('ek_finance_manage_list_memo_internal');
             } else {
