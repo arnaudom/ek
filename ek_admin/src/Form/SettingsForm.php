@@ -136,13 +136,13 @@ class SettingsForm extends FormBase {
              '#default_value' => $settings->get('backup_recipients'),
             '#description' => t('Backup recipients email addresses separated by comma'),
         );  
-        
+        /*
         $form['library'] = array(
             '#type' => 'textfield',
             '#size' => 30,
             '#default_value' => $settings->get('library'),
             '#description' => t('Relative path to external libraries; i.e. "/libraries"'),
-        );   
+        );   */
         
         $form['excel'] = array(
             '#type' => 'item',
@@ -203,7 +203,7 @@ class SettingsForm extends FormBase {
         $settings->set('backup_recipients', $form_state->getValue('backup_recipients'));
         $settings->set('password_expire_action', $form_state->getValue('password_expire_action'));
         $settings->set('protocol', $form_state->getValue('protocol'));
-        $settings->set('library', $form_state->getValue('library'));
+        //$settings->set('library', $form_state->getValue('library'));
         $settings->save();
         
         \Drupal::messenger()->addStatus(t('Data updated'));
