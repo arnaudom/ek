@@ -180,18 +180,25 @@ class Purchase extends FormBase {
             ),
         );
 
-
-        $form['options']['allocation'] = array(
-            '#type' => 'select',
-            '#size' => 1,
-            '#options' => $company,
-            '#required' => TRUE,
-            '#default_value' => isset($data->allocation) ? $data->allocation : NULL,
-            '#title' => t('allocated'),
-            '#description' => t('select an entity for which the purchase is done'),
-            '#prefix' => "<div class='cell'>",
-            '#suffix' => '</div></div>',
-        );
+        if(count($company) > 1) {
+            $form['options']['allocation'] = array(
+                '#type' => 'select',
+                '#size' => 1,
+                '#options' => $company,
+                '#required' => TRUE,
+                '#default_value' => isset($data->allocation) ? $data->allocation : NULL,
+                '#title' => t('allocated'),
+                '#description' => t('select an entity for which the purchase is done'),
+                '#prefix' => "<div class='cell'>",
+                '#suffix' => '</div></div>',
+            );
+        } else {
+            $form['options']['allocation'] = array(
+              '#type' => 'hidden',
+              '#value' => key($company), 
+              '#suffix' => '</div>',
+            );
+        }
 
 
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
@@ -202,6 +209,7 @@ class Purchase extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $supplier,
+                    '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
                     '#required' => TRUE,
                     '#default_value' => isset($data->client) ? $data->client : NULL,
                     '#title' => t('supplier'),
@@ -265,6 +273,8 @@ class Purchase extends FormBase {
                 '#default_value' => isset($data->pcode) ? $data->pcode : NULL,
                 '#title' => t('Project'),
                 '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
+                '#prefix' => "<div class='cell'>",
+                '#suffix' => '</div>',
             );
         } // project
 

@@ -173,18 +173,25 @@ class Quotation extends FormBase {
             ),
         );
 
-
-        $form['options']['allocation'] = array(
-            '#type' => 'select',
-            '#size' => 1,
-            '#options' => $company,
-            '#required' => TRUE,
-            '#default_value' => isset($data->allocation) ? $data->allocation : NULL,
-            '#title' => t('Allocated'),
-            '#description' => t('select an entity for which the quotation is done'),
-            '#prefix' => "<div class='cell'>",
-            '#suffix' => '</div></div></div>',
-        );
+        if(count($company) > 1) {
+            $form['options']['allocation'] = array(
+                '#type' => 'select',
+                '#size' => 1,
+                '#options' => $company,
+                '#required' => TRUE,
+                '#default_value' => isset($data->allocation) ? $data->allocation : NULL,
+                '#title' => t('Allocated'),
+                '#description' => t('select an entity for which the quotation is done'),
+                '#prefix' => "<div class='cell'>",
+                '#suffix' => '</div></div></div>',
+            );
+        } else {
+            $form['options']['allocation'] = array(
+              '#type' => 'hidden',
+              '#value' => key($company), 
+              '#suffix' => '</div>',
+            );
+        }
 
 
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
@@ -195,6 +202,7 @@ class Quotation extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $client,
+                    '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
                     '#required' => TRUE,
                     '#default_value' => isset($data->client) ? $data->client : NULL,
                     '#title' => t('Client'),
@@ -235,7 +243,7 @@ class Quotation extends FormBase {
 
         $form['options']['title'] = array(
             '#type' => 'textfield',
-            '#size' => 50,
+            '#size' => 35,
             '#maxlength' => 255,
             '#default_value' => isset($data->title) ? $data->title : NULL,
             '#title' => t('Title'),
@@ -251,6 +259,9 @@ class Quotation extends FormBase {
                 '#required' => TRUE,
                 '#default_value' => isset($data->pcode) ? $data->pcode : NULL,
                 '#title' => t('Project'),
+                '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
+                '#prefix' => "<div class='cell'>",
+                '#suffix' => '</div>',
             );
         } // project
 
@@ -262,6 +273,8 @@ class Quotation extends FormBase {
                 '#required' => TRUE,
                 '#default_value' => isset($data->currency) ? $data->currency : NULL,
                 '#title' => t('currency'),
+                '#prefix' => "<div class='cell'>",
+                '#suffix' => '</div>',
             );
         } // finance
         else {
@@ -278,12 +291,10 @@ class Quotation extends FormBase {
                 '#required' => TRUE,
                 '#default_value' => isset($data->currency) ? $data->currency : NULL,
                 '#title' => t('currency'),
-                '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
-                '#suffix' => '</div></div></div>',
+                '#prefix' => "<div class='cell'>",
+                '#suffix' => '</div>',
             );
         }
-
-
 
 
         $form['options']['incoterm'] = array(
@@ -292,16 +303,9 @@ class Quotation extends FormBase {
             '#title' => t('Incoterms'),
             '#options' => array('0' => t('not applicable'), 'CIF' => 'CIF', 'CIP' => 'CIP', 'FOB' => 'FOB'),
             '#default_value' => isset($incoterm_name) ? $incoterm_name : '0',
-            '#prefix' => "<div class='container-inline'>",
-                /*
-                  '#ajax' => array(
-                  'callback' => array($this, 'term_rate'),
-                  'wrapper' => 'term',
-                  ),
-                 */
+            '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+            '#suffix' => '</div>',
         );
-
-
 
         $form['options']["term_rate"] = array(
             '#type' => 'textfield',
@@ -309,11 +313,10 @@ class Quotation extends FormBase {
             '#size' => 8,
             '#default_value' => $incoterm_rate,
             '#maxlength' => 10,
-            '#description' => '%',
-            '#title_display' => 'after',
+            '#title' => '%',
             '#attributes' => array('placeholder' => t('rate') . ' (%)', 'title' => t('rate') . ' (%)', 'class' => array('amount')),
-            '#prefix' => "<div id='term'>",
-            '#suffix' => '</div></div>',
+            '#prefix' => "<div class='cell' id='term'>",
+            '#suffix' => '</div></div></div>',
             '#states' => array(
                 'invisible' => array(
                     "select[name='incoterm']" => array('value' => 'na'),
@@ -328,7 +331,8 @@ class Quotation extends FormBase {
             '#title' => t('Add tax'),
             '#default_value' => isset($tax_name) ? $tax_name : NULL,
             '#attributes' => array('placeholder' => t('description, ex. VAT')),
-            '#prefix' => "<div class='container-inline'>",
+            '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+            '#suffix' => '</div>',
         );
 
         $form['options']["tax_rate"] = array(
@@ -336,12 +340,11 @@ class Quotation extends FormBase {
             '#id' => 'tax_rate',
             '#size' => 8,
             '#maxlength' => 10,
-            '#description' => '%',
-            '#title_display' => 'after',
+            '#title' => '%',
             '#default_value' => isset($tax_rate) ? $tax_rate : 0,
             '#attributes' => array('placeholder' => t('rate') . ' (%)', 'title' => t('rate') . ' (%)', 'class' => array('amount')),
-            '#prefix' => "<div id='tax_'>",
-            '#suffix' => '</div></div>',
+            '#prefix' => "<div class='cell' id='tax_'>",
+            '#suffix' => '</div></div></div>',
             '#states' => array(
                 'invisible' => array(
                     "input[name='tax']" => array('value' => ''),

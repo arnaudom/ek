@@ -51,6 +51,8 @@
 .cell {  
   display : table-cell;
   vertical-align: top;
+  float: left;
+  padding-left: 30px;
   
 }
 .cellcenter > div {
