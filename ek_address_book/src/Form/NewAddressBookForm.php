@@ -196,7 +196,7 @@ class NewAddressBookForm extends FormBase {
             '#default_value' => isset($r['activity']) ? $r['activity'] : null,
             '#attributes' => array('class' => ['form-select-tag'], 'style' => array('width:200px;')),
             '#description' => t('Tags'),
-            '#required' => TRUE,
+            '#required' => FALSE,
             '#maxlength' => 200,
             '#attached' => array(
                 'library' => array('ek_admin/ek_admin_tageditor'),
