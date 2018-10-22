@@ -122,7 +122,7 @@ class QuotationsController extends ControllerBase {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_quotation', 'q');
         $or1 = db_or();
-        $or1->condition('header', $access, 'IN');
+        $or1->condition('head', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');
 
 
@@ -178,8 +178,8 @@ class QuotationsController extends ControllerBase {
                 $reference = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
             }
             
-            $co = $companies[$r->header];
-            if($r->header <> $r->allocation) {
+            $co = $companies[$r->head];
+            if($r->head <> $r->allocation) {
                 $for = isset($companies[$r->allocation]) ? "<br/>" . t('for') . ": " . $companies[$r->allocation] : '';
                 $co = $co . $for;
             }
@@ -370,12 +370,12 @@ class QuotationsController extends ControllerBase {
     public function PrintShareQuotations($id) {
         
         //filter access to document
-        $query = "SELECT `header`, `allocation` FROM {ek_sales_quotation} WHERE id=:id";
+        $query = "SELECT `head`, `allocation` FROM {ek_sales_quotation} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                   ->query($query, [':id' => $id])
                   ->fetchObject();
         $access = AccessCheck::GetCompanyByUser();
-        if(in_array($data->header, $access) || in_array($data->allocation, $access)) {
+        if(in_array($data->head, $access) || in_array($data->allocation, $access)) {
             
             $format = 'pdf';
             $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'quotation', $format);
@@ -445,7 +445,7 @@ class QuotationsController extends ControllerBase {
     public function Html($id) {
 
         //filter access to document
-        $query = "SELECT `header`, `allocation` FROM {ek_sales_quotation} WHERE id=:id";
+        $query = "SELECT `head`, `allocation` FROM {ek_sales_quotation} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, [':id' => $id])
                 ->fetchObject();

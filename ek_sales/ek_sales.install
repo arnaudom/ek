@@ -165,3 +165,14 @@ function ek_sales_update_8005() {
     
     
 }
+
+
+/**
+ * Alter table field for quotations
+ * 
+ */
+function ek_sales_update_8006() {
+    $query = "ALTER TABLE `ek_sales_quotation` CHANGE COLUMN `header` `head` TINYINT(3) UNSIGNED NULL DEFAULT NULL AFTER `serial`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+    return t('Quotation tables updated.'); 
+}

@@ -252,7 +252,7 @@ Switch ($source) {
     
     $query = "SELECT * from {ek_company} where id=:id";
     $company = Database::getConnection('external_db', 'external_db')
-            ->query($query, array(':id' => $head->header))
+            ->query($query, array(':id' => $head->head))
             ->fetchObject();
 
     $query = "SELECT * from {ek_address_book} where id=:id";

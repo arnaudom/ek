@@ -168,7 +168,7 @@ class InstallController extends ControllerBase {
     $query = "CREATE TABLE IF NOT EXISTS `ek_sales_quotation` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '',
-	`header` TINYINT(3) UNSIGNED NULL DEFAULT NULL,
+	`head` TINYINT(3) UNSIGNED NULL DEFAULT NULL,
 	`allocation` TINYINT(3) UNSIGNED NULL DEFAULT NULL,
 	`status` VARCHAR(45) NOT NULL DEFAULT '',
 	`amount` DOUBLE NOT NULL DEFAULT '0',
