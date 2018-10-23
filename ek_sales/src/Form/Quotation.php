@@ -1365,7 +1365,7 @@ class Quotation extends FormBase {
 
         $fields1 = array(
             'serial' => $serial,
-            'header' => $form_state->getValue('head'),
+            'head' => $form_state->getValue('head'),
             'allocation' => $form_state->getValue('allocation'),
             'status' => 0,
             'amount' => $sum,
