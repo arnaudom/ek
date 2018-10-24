@@ -322,7 +322,7 @@ $countries = $this->countryManager->getList();
                 ->execute();   
               
         }
-        
+        \Drupal\Core\Cache\Cache::invalidateTags(['bank_list']);
         \Drupal::messenger()->addStatus(t('Bank data recorded'));
 
     }

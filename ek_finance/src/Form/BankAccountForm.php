@@ -306,6 +306,7 @@ class BankAccountForm extends FormBase {
                 \Drupal::messenger()->addStatus(t('Bank account data updated'));
             }
 
+            \Drupal\Core\Cache\Cache::invalidateTags(['bank_account_list']);
             $form_state->setRedirect('ek_finance.manage.bank_accounts_list');
         }
     }

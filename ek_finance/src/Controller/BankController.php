@@ -127,6 +127,9 @@ class BankController extends ControllerBase {
             '#attached' => array(
                 'library' => array('ek_finance/ek_finance'),
             ),
+            '#cache' => [
+                'tags' => ['bank_list'],
+            ],
         );
 
         return $build;
@@ -385,6 +388,9 @@ class BankController extends ControllerBase {
             '#attached' => array(
                 'library' => array('ek_finance/ek_finance_css'),
             ),
+            '#cache' => [
+                'tags' => ['bank_account_list'],
+            ],
         );
 
         return $build;
