@@ -1184,3 +1184,23 @@ function ek_finance_update_8015() {
 function ek_finance_update_8016() {
     \Drupal::service('router.builder')->rebuild();
 }
+
+/**
+ * Add field bank code in bank table
+ */
+function ek_finance_update_8017() {
+
+    $schema = Database::getConnection('external_db', 'external_db')->schema();
+    if (!$schema->fieldExists('ek_bank', 'bank_code')) {
+        $spec = array(
+            'description' => 'Bank code',
+            'type' => 'varchar',
+            'length' => 45,
+            'not null' => FALSE,
+        );
+        $schema->addField('ek_bank', 'bank_code', $spec);
+        return t('Table bank updated');
+    }
+    
+    
+}

@@ -10,7 +10,7 @@ namespace Drupal\ek_finance\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
-use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
 use Drupal\Core\Locale\CountryManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -215,6 +215,15 @@ $countries = $this->countryManager->getList();
       '#description' => t('account no.'),
       );      
       
+      $form['bank_code'] = array(
+      '#type' => 'textfield',
+      '#size' => 25,
+      '#maxlength' => 20,
+      '#default_value' => isset($data->bank_code) ? $data->bank_code :null,
+      '#attributes' => array('placeholder'=>t('bank code')),
+      '#description' => t('bank code'),
+      ); 
+      
       $form['swift'] = array(
       '#type' => 'textfield',
       '#size' => 25,
@@ -285,18 +294,19 @@ $countries = $this->countryManager->getList();
     if($form_state->get('step') == 3){
       
             $fields = array (
-                'name' => SafeMarkup::checkPlain($form_state->getValue('name')),
-                'address1' => SafeMarkup::checkPlain($form_state->getValue('address1')),
-                'address2' => SafeMarkup::checkPlain($form_state->getValue('address2')),
-                'postcode' => SafeMarkup::checkPlain($form_state->getValue('postcode')),
+                'name' => Xss::filter($form_state->getValue('name')),
+                'address1' => Xss::filter($form_state->getValue('address1')),
+                'address2' => Xss::filter($form_state->getValue('address2')),
+                'postcode' => Xss::filter($form_state->getValue('postcode')),
                 'country' => $form_state->getValue('country'),
-                'telephone' => SafeMarkup::checkPlain($form_state->getValue('telephone2')),
-                'fax' => SafeMarkup::checkPlain($form_state->getValue('fax')),
+                'telephone' => Xss::filter($form_state->getValue('telephone2')),
+                'fax' => Xss::filter($form_state->getValue('fax')),
                 'email' => $form_state->getValue('email'),
-                'contact' => SafeMarkup::checkPlain($form_state->getValue('contact')),
-                'account1' => SafeMarkup::checkPlain($form_state->getValue('account1')),
-                'account2' => SafeMarkup::checkPlain($form_state->getValue('account2')),
-                'swift' => SafeMarkup::checkPlain($form_state->getValue('swift')),
+                'contact' => Xss::filter($form_state->getValue('contact')),
+                'account1' => Xss::filter($form_state->getValue('account1')),
+                'account2' => Xss::filter($form_state->getValue('account2')),
+                'bank_code' => Xss::filter($form_state->getValue('bank_code')),
+                'swift' => Xss::filter($form_state->getValue('swift')),
                 'coid' => $form_state->getValue('coid'),
                 
                 );
