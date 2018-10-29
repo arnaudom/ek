@@ -186,6 +186,11 @@ function ek_sales_update_8007() {
     $query = "ALTER TABLE `ek_sales_settings` CHANGE COLUMN `settings` `settings` BLOB NULL COMMENT 'serialized settings' AFTER `coid`";
     Database::getConnection('external_db', 'external_db')->query($query);
     
+    Database::getConnection('external_db', 'external_db')
+            ->insert('ek_sales_settings')
+            ->fields(['coid' => 0])
+            ->execute();
+    
     $query ="ALTER TABLE `ek_sales_quotation_details` CHANGE COLUMN `margin` `weight` INT NULL DEFAULT '0' COMMENT 'row weight' AFTER `itemdetails`";
     Database::getConnection('external_db', 'external_db')->query($query);
     
