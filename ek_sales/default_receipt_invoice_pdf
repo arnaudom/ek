@@ -1,203 +1,138 @@
 <?php
+
+class EKPDF extends TCPDF {
+
+    //Page header
+    public function Header() {
+        $data = $this->getHeaderData();
+        $this->company = $data['title'];
+        if ($this->company->logo != '') {
+               $logo = drupal_realpath($this->company->logo);
+               if(file_exists($logo)) {
+                   $this->Image($logo,20,10,43);
+               }
+        }
+        $this->SetTextColor(128,128,128);
+        $lm=1;
+        $c1=45;
+        $c2=70;
+        $c3=30;
+        $c4=35;
+
+        $this->Ln(15);
+        $this->SetFont('helvetica','',12);
+        $this->Cell($c2+$c3);
+        $this->Cell($c3,5,$this->company->name,0,1);
+        if($this->company->reg_number) {
+            $this->SetFont('helvetica','',8);
+            $this->Cell($c2+$c3);
+            $this->Cell($c3,5,'(' . $this->company->reg_number . ')',0,1);
+        }
+        $this->SetFont('helvetica','',10);
+        $this->Cell($c2+$c3);    
+        $this->Cell($c3,4, $this->company->address1,0,1);
+        $this->Cell($c2+$c3);    
+        $this->Cell($c3,4, $this->company->address2,0,1);
+        $this->Cell($c2+$c3);
+        $this->Cell($c3,5, $this->company->postcode . ',' .$this->company->country ,0,1);
+        $this->SetFont('helvetica','',8);
+        $this->Cell($c2+$c3);
+        if ($this->company->telephone <> '') {
+        $this->Cell($c3,3,t("tel:").$this->company->telephone,0,1);
+        }
+        if ($this->company->fax <> '') {
+        $this->Cell($c2+$c3);
+        $this->Cell($c3,4,t("fax:").$this->company->fax,0,1);
+        }
+        //Line break
+        $this->Ln(1);        
+        
+    }
+
+    // Page footer
+    public function Footer() {
+        
+        $data = $this->getHeaderData();
+        $this->company = $data['title'];
+
+        $this->SetTextColor(130,130,130);
+        $this->SetY(-25);
+        $this->SetFont('helvetica', '', 8);
+        if ($this->company->address3 != "") {
+            $c = $this->company->address3;
+            if ($this->company->address4 <> ''){
+                $c .= ", " . $this->company->address4;
+            }
+            if ($this->company->postcode2 <> ''){
+                $c .= ", " . $this->company->postcode2;
+            }
+            if ($this->company->city2 <> ''){
+                $c .= ", " . $this->company->city2;
+            } 
+            if ($this->company->country2 <> ''){
+                $c .= ", " . $this->company->country2;
+            }        
+            $this->Cell(0,4,t('Correspondence address'),'T',1,'C');
+            
+            $this->Cell(0,3,$c,0,1,'C');
+            $t = "";
+            if ($this->company->telephone2 <> ''){ $t .= t('Tel') . ': ' . $this->company->telephone2 . " ";}
+            if ($this->company->fax2 <> '') {$t .= t('Fax') . ':' . $this->company->fax2 ;}
+            $this->Cell(0,3, $t , 0,1, 'C');
+        }
+        // Position at 15 mm from bottom
+        $this->SetY(-15);
+        // Set font
+        $this->SetFont('helvetica', 'I', 8);
+        // Page number
+        $this->Cell(0,5, t('Page') . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, 1, 'R');
+    }
+}
+
+// create new PDF document
+$pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+// set document information
+$no = array_reverse(explode("-",$head->serial));
+$pdf->SetCreator($company->name);
+$pdf->SetAuthor(\Drupal::currentUser()->getUsername());
+$pdf->SetTitle(t('Invoice receipt') . ' ' . $no[0]);
+$pdf->SetSubject(t('Invoice receipt'));
+$pdf->SetKeywords(t('Invoice receipt') . ", " . $head->serial);
+
+// set default header data
+$pdf->SetHeaderData('','',$company);
+
+// set default monospaced font
+$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+// set margins
+$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+// set auto page breaks
+$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+// set image scale factor
+$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
  
-class PDF extends FPDF
-{
-//multicell maxline------------------------------------------------------
-function MultiCell($w,$h,$txt,$border=0,$align='J',$fill=0,$maxline=0)
-    {
-        //Output text with automatic or explicit line breaks, maximum of $maxlines
-        $cw=&$this->CurrentFont['cw'];
-        if($w==0)
-            $w=$this->w-$this->rMargin-$this->x;
-        $wmax=($w-2*$this->cMargin)*1000/$this->FontSize;
-        $s=str_replace("\r",'',$txt);
-        $nb=strlen($s);
-        if($nb>0 and $s[$nb-1]=="\n")
-            $nb--;
-        $b=0;
-        if($border)
-        {
-            if($border==1)
-            {
-                $border='LTRB';
-                $b='LRT';
-                $b2='LR';
-            }
-            else
-            {
-                $b2='';
-                if(is_int(strpos($border,'L')))
-                    $b2.='L';
-                if(is_int(strpos($border,'R')))
-                    $b2.='R';
-                $b=is_int(strpos($border,'T')) ? $b2.'T' : $b2;
-            }
-        }
-        $sep=-1;
-        $i=0;
-        $j=0;
-        $l=0;
-        $ns=0;
-        $nl=1;
-        while($i<$nb)
-        {
-            //Get next character
-            $c=$s[$i];
-            if($c=="\n")
-            {
-                //Explicit line break
-                if($this->ws>0)
-                {
-                    $this->ws=0;
-                    $this->_out('0 Tw');
-                }
-                $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
-                $i++;
-                $sep=-1;
-                $j=$i;
-                $l=0;
-                $ns=0;
-                $nl++;
-                if($border and $nl==2)
-                    $b=$b2;
-                if ( $maxline  && $nl > $maxline ) 
-                    return substr($s,$i);
-                continue;
-            }
-            if($c==' ')
-            {
-                $sep=$i;
-                $ls=$l;
-                $ns++;
-            }
-            $l+=$cw[$c];
-            if($l>$wmax)
-            {
-                //Automatic line break
-                if($sep==-1)
-                {
-                    if($i==$j)
-                        $i++;
-                    if($this->ws>0)
-                    {
-                        $this->ws=0;
-                        $this->_out('0 Tw');
-                    }
-                    $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
-                }
-                else
-                {
-                    if($align=='J')
-                    {
-                        $this->ws=($ns>1) ? ($wmax-$ls)/1000*$this->FontSize/($ns-1) : 0;
-                        $this->_out(sprintf('%.3f Tw',$this->ws*$this->k));
-                    }
-                    $this->Cell($w,$h,substr($s,$j,$sep-$j),$b,2,$align,$fill);
-                    $i=$sep+1;
-                }
-                $sep=-1;
-                $j=$i;
-                $l=0;
-                $ns=0;
-                $nl++;
-                if($border and $nl==2)
-                    $b=$b2;
-                if ( $maxline  && $nl > $maxline ) 
-                    return substr($s,$i);
-            }
-            else
-                $i++;
-        }
-        //Last chunk
-        if($this->ws>0)
-        {
-            $this->ws=0;
-            $this->_out('0 Tw');
-        }
-        if($border and is_int(strpos($border,'B')))
-            $b.='B';
-        $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
-        $this->x=$this->lMargin;
-        return '';
-    }
-//===============================================================================
-//Page header
-function Header()
-{
-    //Logo
-    if ($this->company->logo <> '') {
-        $logo = drupal_realpath($this->company->logo);
-        if(file_exists($logo)) {
-            $this->Image($logo,10,8,33);
-        }
-    }
-    
-
-    //Arial bold 15
-    $this->Ln(10);
-    $this->SetFont('Arial','',12);
-    $this->Cell(110);
-    $this->Cell(50,5,$this->company->name,0,1);
-    if($this->company->reg_number){
-    $this->SetFont('Arial','',8);
-    $this->Cell(110);
-    $this->Cell(8,3,"(" . $this->company->reg_number . ")",0,1);
-    }
-    $this->SetFont('Arial','',8);
-    $this->Cell(110);    
-    $this->Cell(60,4, $this->company->address1,0,1);
-    $this->Cell(110);    
-    $this->Cell(60,4, $this->company->address2,0,1);
-    $this->Cell(110);
-    $this->Cell(50,4, $this->company->postcode . ',' .$this->company->country ,0,1);
-    $this->Cell(110);
-    if ($this->company->telephone <> '') {
-    $this->Cell(8,3,t("tel:").$this->company->telephone,0,1);
-    }
-    if ($this->company->fax <> '') {
-    $this->Cell(110);
-    $this->Cell(8,4,t("fax:").$this->company->fax,0,1);
-    }
-
-    //Line break
-    $this->Ln(8);
-    
-}
-
-function setHeaderData($company){ 
-    $this->company = $company;
-} 
-
-//Page footer
-function Footer()
-{
-    
-    
-    //Position at 1.5 cm from bottom
-    $this->SetY(-15);
-    //Arial italic 8
-    $this->SetFont('Arial','I',8);
-
-    
-  }
-}
-
-$pdf=new PDF();
-$pdf->setHeaderData($company); 
 $pdf->SetTitle(t('Payment Receipt'));
-$pdf->AliasNbPages();
-$pdf->AddPage('L','A5');
 
+$pdf->setMargins(10,50);
+$pdf->SetLineStyle(array('width' => 0.1, 'color' => array(130,130,130)));
+$pdf->AddPage('L','A5');
 //DISPLAY DATA
 
 //image
 $pdf->Ln(5);
 $amount = number_format( $head->amountreceived ,2);
 
-$pdf->SetFont('Arial','B',16);
+$pdf->SetFont('helvetica','B',16);
     $pdf->Cell(175,5, t('Payment Receipt') ,0,1);
 $pdf->Ln(2);    
-$pdf->SetFont('Arial','',8);
+$pdf->SetFont('helvetica','',8);
     $pdf->Cell(75,5,'Receipt ref.',0,0);
     $pdf->Cell(100,5, $head->id ,0,1);
     $pdf->Cell(75,5, t('Date') ,0,0);
@@ -216,9 +151,22 @@ $pdf->SetFont('Arial','',8);
     $pdf->Cell(75,5, t('Invoice ref.') ,0,0);
     $pdf->Cell(100,5, $head->serial ,0,1);    
         
-$pdf->Ln(20);
-    
+$pdf->Ln(10);
 
-    $pdf->Cell(75,10,t("Received by") . ":","B",0);
+ //SIGNATURE============================================================ 
+
+
+if($signature == 1) {
+    
+    if(isset($company->sign)) {
+        $sign = drupal_realpath($company->sign);
+            if(file_exists($sign)) {
+                $pdf->Image($sign,115,98,50);
+        }
+    }
+}
+    
+    $pdf->Cell(20,10,t("Received by") . ":","B",0);
+    ($signature == 1) ? $pdf->Cell(70,10,$company->name,"B",0) : $pdf->Cell(70,10,'',"B",0);
     $pdf->Cell(50,10, t("Signature") . ":","B",1);
   

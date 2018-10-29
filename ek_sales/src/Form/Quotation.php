@@ -34,9 +34,10 @@ class Quotation extends FormBase {
      *   The module handler.
      */
     public function __construct(ModuleHandler $module_handler) {
+        $this->salesSettings = new \Drupal\ek_sales\SalesSettings();
         $this->moduleHandler = $module_handler;
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-            $this->settings = new \Drupal\ek_finance\FinanceSettings();
+            $this->Financesettings = new \Drupal\ek_finance\FinanceSettings();
         }
     }
 
@@ -61,10 +62,7 @@ class Quotation extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
 
-
-        $settings = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT * FROM {ek_sales_quotation_settings}")
-                ->fetchAll();
+        $quotationSettings = $this->salesSettings->get('quotation');
         $revision = NULL;
 
         if (isset($id) && !$id == NULL) {
@@ -73,8 +71,14 @@ class Quotation extends FormBase {
                     ->query("SELECT * FROM {ek_sales_quotation} where id=:id", array(':id' => $id))
                     ->fetchObject();
             $detail = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT * FROM {ek_sales_quotation_details} where serial=:id ORDER BY id", array(':id' => $data->serial));
-
+                    ->query("SELECT * FROM {ek_sales_quotation_details} where serial=:id ORDER BY weight,id", 
+                            array(':id' => $data->serial));
+            
+            $itemLines = Database::getConnection('external_db', 'external_db')
+                    ->query("SELECT count(id) FROM {ek_sales_quotation_details} where serial=:id", 
+                            array(':id' => $data->serial))
+                    ->fetchField();
+            
             $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision DESC";
             $revision = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $data->serial))->fetchField();
 
@@ -137,13 +141,13 @@ class Quotation extends FormBase {
         $currenciesList = '';
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $CurrencyOptions = \Drupal\ek_finance\CurrencyData::listcurrency(1);
-            $baseCurrency = $this->settings->get('baseCurrency');
+            $baseCurrency = $this->Financesettings->get('baseCurrency');
             $currenciesList = \Drupal\ek_finance\CurrencyData::currencyRates();
         }
 
         $form['settings'] = array(
             '#type' => 'hidden',
-            '#value' => serialize($settings),
+            '#value' => serialize($quotationSettings),
         );
 
         $url = Url::fromRoute('ek_sales.quotations.list', array(), array())->toString();
@@ -163,7 +167,7 @@ class Quotation extends FormBase {
             '#size' => 1,
             '#options' => $company,
             '#required' => TRUE,
-            '#default_value' => isset($data->header) ? $data->header : NULL,
+            '#default_value' => isset($data->head) ? $data->head : NULL,
             '#title' => t('Header'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
@@ -426,6 +430,10 @@ class Quotation extends FormBase {
                     'data' => $this->t('Delete'),
                     'id' => ['tour-item7'],
                 ),
+                'weight' => array(
+                    'data' => '',
+                    'id' => ['tour-item8'],
+                ),
             );
         } else {
             $header = array(
@@ -453,6 +461,10 @@ class Quotation extends FormBase {
                     'data' => $this->t('Delete'),
                     'id' => ['tour-item7'],
                 ),
+                'weight' => array(
+                    'data' => '',
+                    'id' => ['tour-item8'],
+                ),
             );
         }
 
@@ -477,6 +489,7 @@ class Quotation extends FormBase {
                 $z++;
                 $link = NULL;
                 $rowClass = ($rows[$n]['delete'] == 1) ? 'delete' : 'current';
+                $rowClass .= ' move';
                 $trClass = 'tr' . $n;
                 if($d->opt == 1) {
                   $taxable += ($d->value * $d->unit);
@@ -484,16 +497,16 @@ class Quotation extends FormBase {
                 $total = number_format($d->value * $d->unit, 2);
                 $grandtotal += $d->value * $d->unit;
 
-                if ($d->itemdetail == "" && $this->moduleHandler->moduleExists('ek_products') )  {
+                if ($d->itemdetails == "" && $this->moduleHandler->moduleExists('ek_products') )  {
                     $item = \Drupal\ek_products\ItemData::item_bycode($d->itemid); 
                     if(isset($item)) {
                        $name = $item; 
                        $link = \Drupal\ek_products\ItemData::geturl_bycode($d->itemid, TRUE);
                     } else {
-                       $name =  $d->item;
+                       $name =  $d->itemdetails;
                     }
                   } else {
-                    $name = $d->item;
+                    $name = $d->itemdetails;
                   }
 
                 $form['description'] = array(
@@ -601,6 +614,17 @@ class Quotation extends FormBase {
                         'class' => array('amount'),
                     ),
                 );
+                $form['weight'] = array(
+                    '#id' => 'weight' . $n,
+                    '#type' => 'number',
+                    '#size' => 2,
+                    '#maxlength' => 2,
+                    '#min' => 1,
+                    '#max' => $itemLines,
+                    '#step' => 1,
+                    '#default_value' => (!null == $d->weight) ? $d->weight : $z,
+                    '#attributes' => array('style' => array('width:50px;white-space:nowrap')),
+                );
                 //built edit rows for table
                 $form['items']['itemTable'][$n] = array(
                     'description' => &$form['description'],
@@ -610,6 +634,7 @@ class Quotation extends FormBase {
                     'tax' => &$form['tax'],
                     'total' => &$form['total'],
                     'delete' => &$form['delete'],
+                    'weight' => &$form['weight'],
                 );
 
                 $form['items']['itemTable']['#rows'][$n] = array(
@@ -621,6 +646,7 @@ class Quotation extends FormBase {
                         array('data' => &$form['tax']),
                         array('data' => &$form['total']),
                         array('data' => &$form['delete']),
+                        array('data' => &$form['weight']),
                     ),
                     'id' => array($n),
                     'class' => [$rowClass, $trClass],
@@ -632,9 +658,10 @@ class Quotation extends FormBase {
                 unset($form['tax']);
                 unset($form['total']);
                 unset($form['delete']);
+                unset($form['weight']);
 
                 //second row edit to be insterted based on settings
-                if ($settings[2]->active == 1 || $settings[1]->active == 1) {
+                if ($quotationSettings[2]['active'] == 1 || $quotationSettings[3]['active'] == 1) {
                     $n++;
                     $form['value'] = array(
                         '#value' => 'secondRow',
@@ -642,7 +669,7 @@ class Quotation extends FormBase {
                         '#type' => 'hidden',
                         '#attributes' => ['id' => ['value' . $n]],
                     );
-                    if ($settings[1]->active == 1) {
+                    if ($quotationSettings[2]['active'] == 1) {
                         //add origin field
                         $form["column_2"] = array(
                             '#type' => 'textfield',
@@ -650,12 +677,12 @@ class Quotation extends FormBase {
                             '#size' => 30,
                             '#maxlength' => 255,
                             '#default_value' => $d->column_2,
-                            '#attributes' => array('placeholder' => $settings[1]->name),
+                            '#attributes' => array('placeholder' => $quotationSettings[2]['name']),
                         );
                     } else {
                         $form["column_2"] = ['#type' => 'item'];
                     }
-                    if ($settings[2]->active == 1) {
+                    if ($quotationSettings[3]['active'] == 1) {
                         //add reference field
                         $form["column_3"] = array(
                             '#type' => 'textfield',
@@ -663,7 +690,7 @@ class Quotation extends FormBase {
                             '#size' => 30,
                             '#maxlength' => 255,
                             '#default_value' => $d->column_3,
-                            '#attributes' => array('placeholder' => $settings[2]->name),
+                            '#attributes' => array('placeholder' => $quotationSettings[3]['name']),
                         );
                     } else {
                         $form["column_3"] = ['#type' => 'item'];
@@ -782,6 +809,11 @@ class Quotation extends FormBase {
                 '#attributes' => array('placeholder' => t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['delete'] = array();
+            $form['weight'] = array(
+                    '#id' => 'weight' . $n,
+                    '#type' => 'hidden',
+                    '#default_value' =>  $z,
+                );
             //built edit rows for table
             $form['items']['itemTable'][$n] = array(
                 'description' => &$form['description'],
@@ -791,6 +823,7 @@ class Quotation extends FormBase {
                 'tax' => &$form['tax'],
                 'total' => &$form['total'],
                 'delete' => &$form['delete'],
+                'weight' => &$form['weight'],
             );
 
             $form['items']['itemTable']['#rows'][$n] = array(
@@ -802,6 +835,7 @@ class Quotation extends FormBase {
                     array('data' => &$form['tax']),
                     array('data' => &$form['total']),
                     array('data' => &$form['delete']),
+                    array('data' => &$form['weight']),
                 ),
                 'id' => array($n),
             );
@@ -812,9 +846,10 @@ class Quotation extends FormBase {
             unset($form['tax']);
             unset($form['total']);
             unset($form['delete']);
+            unset($form['weight']);
 
             //second row to be insterted based on settings
-            if ($settings[2]->active == 1 || $settings[1]->active == 1) {
+            if ($quotationSettings[2]['active'] == 1 || $quotationSettings[3]['active'] == 1) {
                 $n++;
                 $form['value'] = array(
                     '#value' => 'secondRow',
@@ -822,7 +857,7 @@ class Quotation extends FormBase {
                     '#type' => 'hidden',
                     '#attributes' => ['id' => ['value' . $n]],
                 );
-                if ($settings[1]->active == 1) {
+                if ($quotationSettings[2]['active'] == 1) {
                     //add origin field
                     $form["column_2"] = array(
                         '#type' => 'textfield',
@@ -830,12 +865,12 @@ class Quotation extends FormBase {
                         '#size' => 30,
                         '#maxlength' => 255,
                         '#default_value' => '',
-                        '#attributes' => array('placeholder' => $settings[1]->name),
+                        '#attributes' => array('placeholder' => $quotationSettings[2]['name']),
                     );
                 } else {
                     $form["column_2"] = ['#type' => 'item'];
                 }
-                if ($settings[2]->active == 1) {
+                if ($quotationSettings[3]['active'] == 1) {
                     //add reference field
                     $form["column_3"] = array(
                         '#type' => 'textfield',
@@ -843,7 +878,7 @@ class Quotation extends FormBase {
                         '#size' => 30,
                         '#maxlength' => 255,
                         '#default_value' => '',
-                        '#attributes' => array('placeholder' => $settings[2]->name),
+                        '#attributes' => array('placeholder' => $quotationSettings[3]['name']),
                     );
                 } else {
                     $form["column_3"] = ['#type' => 'item'];
@@ -918,6 +953,9 @@ class Quotation extends FormBase {
             $form['delete'] = array(
                 '#item' => "",
             );
+            $form['weight'] = array(
+                '#item' => "",
+            );
             //built total rows for table
             $form['items']['itemTable'][$n] = array(
                 'description' => &$form['description'],
@@ -927,6 +965,7 @@ class Quotation extends FormBase {
                 'tax' => &$form['tax'],
                 'total' => &$form['total'],
                 'delete' => &$form['delete'],
+                'weight' => &$form['weight'],
             );
 
             $form['items']['itemTable']['#rows'][$n] = array(
@@ -938,6 +977,7 @@ class Quotation extends FormBase {
                     array('data' => &$form['tax']),
                     array('data' => &$form['total']),
                     array('data' => &$form['delete']),
+                    array('data' => &$form['weight']),
                 ),
                 'id' => array($n),
             );
@@ -948,6 +988,7 @@ class Quotation extends FormBase {
             unset($form['tax']);
             unset($form['total']);
             unset($form['delete']);
+            unset($form['weight']);
 
         //incoterm       
             $n++;
@@ -975,6 +1016,7 @@ class Quotation extends FormBase {
                 '#attributes' => array('placeholder' => t('incoterm'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['delete'] = ['#type' => 'item'];
+            $form['weight'] = ['#type' => 'item'];
             //built total rows for table
 
             $form['items']['itemTable'][$n] = array(
@@ -985,6 +1027,7 @@ class Quotation extends FormBase {
                 'tax' => &$form['tax'],
                 'total' => &$form['total'],
                 'delete' => &$form['delete'],
+                'weight' => &$form['weight'],
             );
 
             $form['items']['itemTable']['#rows'][$n] = array(
@@ -996,6 +1039,7 @@ class Quotation extends FormBase {
                     array('data' => &$form['tax']),
                     array('data' => &$form['total']),
                     array('data' => &$form['delete']),
+                    array('data' => &$form['weight']),
                 ),
                 'id' => array($n),
             );
@@ -1006,6 +1050,7 @@ class Quotation extends FormBase {
             unset($form['tax']);
             unset($form['total']);
             unset($form['delete']);
+            unset($form['weight']);
 
         //tax   
             $n++;
@@ -1026,6 +1071,7 @@ class Quotation extends FormBase {
                 '#attributes' => array('placeholder' => t('tax'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['delete'] = ['#type' => 'item'];
+            $form['weight'] = ['#type' => 'item'];
             //built total rows for table
 
             $form['items']['itemTable'][$n] = array(
@@ -1036,6 +1082,7 @@ class Quotation extends FormBase {
                 'tax' => &$form['tax'],
                 'total' => &$form['total'],
                 'delete' => &$form['delete'],
+                'weight' => &$form['weight'],
             );
 
             $form['items']['itemTable']['#rows'][$n] = array(
@@ -1047,6 +1094,7 @@ class Quotation extends FormBase {
                     array('data' => &$form['tax']),
                     array('data' => &$form['total']),
                     array('data' => &$form['delete']),
+                    array('data' => &$form['weight']),
                 ),
                 'id' => array($n),
             );
@@ -1057,6 +1105,7 @@ class Quotation extends FormBase {
             unset($form['tax']);
             unset($form['total']);
             unset($form['delete']);
+            unset($form['weight']);
 
             //grand total
             $n++;
@@ -1076,6 +1125,7 @@ class Quotation extends FormBase {
                 '#attributes' => array('placeholder' => t('total quotation'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['delete'] = ['#type' => 'item'];
+            $form['weight'] = ['#type' => 'weight'];
             //built total rows for table
 
             $form['items']['itemTable'][$n] = array(
@@ -1086,6 +1136,7 @@ class Quotation extends FormBase {
                 'tax' => &$form['tax'],
                 'total' => &$form['total'],
                 'delete' => &$form['delete'],
+                'weight' => '',
             );
 
             $form['items']['itemTable']['#rows'][$n] = array(
@@ -1097,6 +1148,7 @@ class Quotation extends FormBase {
                     array('data' => &$form['tax']),
                     array('data' => &$form['total']),
                     array('data' => &$form['delete']),
+                    array('data' => &$form['weight']),
                 ),
                 'id' => array($n),
             );
@@ -1107,6 +1159,7 @@ class Quotation extends FormBase {
             unset($form['tax']);
             unset($form['total']);
             unset($form['delete']);
+            unset($form['weight']);
 
             $redirect = array(0 => t('view list'), 1 => t('print'));
             $form['actions']['redirect'] = array(
@@ -1243,15 +1296,7 @@ class Quotation extends FormBase {
         $settings = unserialize($form_state->getValue('settings'));
         if ($form_state->getValue('new_quotation') && $form_state->getValue('new_quotation') == 1) {
             //create new serial No
-            $quid = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT count(id) from {ek_sales_quotation}")
-                    ->fetchField();
-            $quid++;
-            $query = "SELECT id FROM {ek_sales_quotation} WHERE serial like :s";
-            while (Database::getConnection('external_db', 'external_db')->query($query,[':s' => '%-' .$quid])->fetchField()) {
-                //to prevent serial duplication after document have been deleted, increment until no match is found
-                $quid++;
-            }  
+            $type = 'QU';
             $short = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT short from {ek_company} where id=:id", array(':id' => $form_state->getValue('head')))
                     ->fetchField();
@@ -1259,8 +1304,48 @@ class Quotation extends FormBase {
             $sup = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT shortname from {ek_address_book} where id=:id", array(':id' => $form_state->getValue('client')))
                     ->fetchField();
-            $serial = ucwords($short) . "-QU-" . $date . "-" . ucwords($sup) . "-" . $quid;
+            $format = $this->salesSettings->get('serialFormat');
+            if($format['code'] == '') {
+                $format['code'] = [1,2,3,4,5];
+            }
+            if ($format['increment'] == '' || $format['increment'] < 1) {
+                $format['increment'] = 1;
+            }
+            $quid = Database::getConnection('external_db', 'external_db')
+                    ->query("SELECT count(id) from {ek_sales_quotation}")
+                    ->fetchField();
+            $quid = $quid +1 +$format['increment'];
+            $query = "SELECT id FROM {ek_sales_quotation} WHERE serial like :s";
+            while (Database::getConnection('external_db', 'external_db')->query($query,[':s' => '%-' .$quid])->fetchField()) {
+                //to prevent serial duplication after document have been deleted, increment until no match is found
+                $quid++;
+            }  
+            $serial = '';
+            //$serial = ucwords($short) . "-QU-" . $date . "-" . ucwords($sup) . "-" . $quid;
             $revision = 0;
+                        foreach($format['code'] as $k => $v) {
+                    switch ($v) {
+                        case 0 :
+                            break;
+                        case 1 :
+                            $serial .= ucwords(str_replace('-', '', $short)) . '-';
+                            break;
+                        case 2 :
+                            $serial .= $type . '-';
+                            break;
+                        case 3 :
+                            $serial .= $date . '-';
+                            break;
+                        case 4 :
+                            $serial .= ucwords(str_replace('-', '', $sup)) . '-';
+                            break;
+                        case 5 :
+                            $serial .= $quid;
+                            break;
+                        
+                    }
+            }
+            
         } else {
             //edit
             $serial = $form_state->getValue('serial');
@@ -1288,13 +1373,16 @@ class Quotation extends FormBase {
         $line = 0;
         $total = 0;
         $sum = 0;
+        $quotationSettings = $this->salesSettings->get('quotation');
 
         $rows = $form_state->getValue('itemTable');
         if (!empty($rows)) {
             foreach ($rows as $key => $row) {
                 if ($row['value'] != 'footer' && $row['value'] != 'secondRow'&& $row['value'] != 'incoterm') {
                     if ($row['delete'] != 1) {
-
+                        $itemId = '';
+                        $itemDetails = Xss::filter($row['description']);
+                        $check = NULL;
                         $column_2 = '';
                         $column_3 = '';
                         if ($this->moduleHandler->moduleExists('ek_products')) {
@@ -1303,25 +1391,16 @@ class Quotation extends FormBase {
                             $id = trim($item[0]);
                             if (isset($item[1])) {
                                 $itemCode = trim($item[1]);
+                                $check = \Drupal\ek_products\ItemData::item_description_bycode($itemCode, 1);
+                                if ($check) {
+                                    $itemId = $itemCode;
+                                    $itemDetails = '';
+                                } 
                             }
-                            $check = \Drupal\ek_products\ItemData::item_description_bycode($itemCode, 1);
-
-                            if ($check) {
-                                $itemId = $itemCode;
-                                $itemDetails = '';
-                            } else {
-                                $itemId = '';
-                                $itemDetails = Xss::filter($row['description']);
-                            }
-                        } else {
-                            //use input from user
-                            $itemId = '';
-                            $itemDetails = Xss::filter($row['description']);
                         }
-
                         $line = (round($row['quantity'] * $row['value'], 2));
                         $sum = $sum + $line;
-                        if ($settings[2]->active == 1 || $settings[1]->active == 1) {
+                        if ($quotationSettings[2]['active'] == 1 || $quotationSettings[3]['active'] == 1) {
                             $nextRow = $key + 1;
                             $column_2 = Xss::filter($rows[$nextRow]['description']);
                             $column_3 = Xss::filter($rows[$nextRow]['quantity']);
@@ -1332,6 +1411,7 @@ class Quotation extends FormBase {
                             'itemdetails' => $itemDetails,
                             'unit' => $row['quantity'],
                             'value' => $row['value'],
+                            'weight' => $row['weight'],
                             'total' => $line,
                             'opt' => $row['tax'],
                             'revision' => $revision,

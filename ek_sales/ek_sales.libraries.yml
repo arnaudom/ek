@@ -17,6 +17,15 @@ ek_sales.dashboard:
       css/ek_sales_dashboard.css: {}
   dependencies:
     - core/jquery
+
+ek_sales_settings:
+  css:
+    theme:
+      css/ek_sales.css: {}
+  js:
+    js/ek_sales_settings.js: {}
+  dependencies:
+    - core/jquery 
     
 ek_sales_print:
   version: 1

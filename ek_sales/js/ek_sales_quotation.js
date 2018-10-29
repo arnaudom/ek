@@ -1,10 +1,8 @@
 (function ($, Drupal, drupalSettings) {
     Drupal.behaviors.quotation = {
         attach: function (context, settings) {
-            
-        
-        jQuery('.amount').on('change', function(){
-            
+      
+        jQuery('.amount').on('change', function(){     
             
             var i = jQuery('#itemsCount').val()*2 + 2;
 

@@ -10,7 +10,6 @@ namespace Drupal\ek_sales\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
-use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Component\Utility\Xss;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -19,29 +18,15 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class SettingsQuotation extends FormBase {
 
+
     /**
-     * The module handler.
      *
-     * @var \Drupal\Core\Extension\ModuleHandler
      */
-    protected $moduleHandler;
-
-    /**
-     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler.
-     */
-    public function __construct(ModuleHandler $module_handler) {
-        $this->moduleHandler = $module_handler;
+    public function __construct() {
+        $this->salesSettings = new \Drupal\ek_sales\SalesSettings();
+        
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function create(ContainerInterface $container) {
-        return new static(
-                $container->get('module_handler')
-        );
-    }
 
     /**
      * {@inheritdoc}
@@ -54,32 +39,33 @@ class SettingsQuotation extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-        $query = "SELECT * from {ek_sales_quotation_settings} ";
-        $data = Database::getConnection('external_db', 'external_db')->query($query);
 
+        $quote = $this->salesSettings->get('quotation');
         $form['setting']['#tree'] = TRUE;
+        $name = [1 => 'Item', 2 => 'Origin', 3 => 'Reference', 4 => 'Quantities', 5 => 'Price', 6 => 'Total' ];
 
-        while ($d = $data->fetchObject()) {
+        for($i = 1; $i <= 6; $i++) {
 
-            $form['setting'][$d->id]['field'] = array(
-                '#type' => 'item',
-                '#markup' => t($d->field),
-                '#value' => $d->field,
+            $form['setting'][$i]['field'] = array(
+                '#type' => 'textfield',
+                '#value' => t('column') .' '. $i,
+                '#disabled' => TRUE,
+                '#size' => 20,
                 '#prefix' => "<div class='container-inline'>",
             );
 
-            $form['setting'][$d->id]['name'] = array(
+            $form['setting'][$i]['name'] = array(
                 '#type' => 'textfield',
-                '#default_value' => $d->name,
+                '#default_value' => isset($quote[$i]['name']) ? $quote[$i]['name'] : $name[$i],
                 '#size' => 20,
                 '#maxlength' => 50,
                 '#required' => TRUE,
             );
 
-            $form['setting'][$d->id]['active'] = array(
+            $form['setting'][$i]['active'] = array(
                 '#type' => 'select',
                 '#options' => array('0' => t('hide'), '1' => t('display')),
-                '#default_value' => $d->active,
+                '#default_value' => isset($quote[$i]['active']) ? $quote[$i]['active'] : 1,
                 '#suffix' => '</div>',
             );
         }
@@ -106,18 +92,22 @@ class SettingsQuotation extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
+        $quotation = [];
+        $i = 0;
+        foreach ($form_state->getValue('setting') as $key => $data) {
+            $i++;
+            $quotation[$i]['field'] = $data['field'];
+            $quotation[$i]['name'] = trim(Xss::filter($data['name']));
+            $quotation[$i]['active'] = $data['active'];
+        }
 
-
-        foreach ($form_state->getValue('setting') as $key => $fields) {
-
-            Database::getConnection('external_db', 'external_db')
-                    ->update('ek_sales_quotation_settings')
-                    ->condition('id', Xss::filter($key))
-                    ->fields($fields)
-                    ->execute();
+        $this->salesSettings->set('quotation', $quotation);
+        $save = $this->salesSettings->save();
+      
+        if ($save){
+           \Drupal::messenger()->addStatus(t('The settings are recorded'));
         }
         
-        \Drupal::messenger()->addStatus(t('Settings recorded'));
     }
 
 }

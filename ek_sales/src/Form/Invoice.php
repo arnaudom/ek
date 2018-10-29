@@ -36,9 +36,10 @@ class Invoice extends FormBase {
      */
     public function __construct(ModuleHandler $module_handler) {
 
+        $this->salesSettings = new \Drupal\ek_sales\SalesSettings();
         $this->moduleHandler = $module_handler;
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-            $this->settings = new \Drupal\ek_finance\FinanceSettings();
+            $this->Financesettings = new \Drupal\ek_finance\FinanceSettings();
         }
     }
 
@@ -171,9 +172,9 @@ class Invoice extends FormBase {
             }
 
             if ($this->moduleHandler->moduleExists('ek_finance')) {
-                $chart = $this->settings->get('chart');
+                $chart = $this->Financesettings->get('chart');
                 $AidOptions = \Drupal\ek_finance\AidList::listaid($data->head, array($chart['income'], $chart['other_income']), 1);
-                $baseCurrency = $this->settings->get('baseCurrency');
+                $baseCurrency = $this->Financesettings->get('baseCurrency');
                 if ($baseCurrency <> $data->currency) {
                     $requireFx = TRUE;
                 } else {
@@ -202,9 +203,9 @@ class Invoice extends FormBase {
         $currenciesList = '';
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $CurrencyOptions = \Drupal\ek_finance\CurrencyData::listcurrency(1);
-            $baseCurrency = $this->settings->get('baseCurrency');
+            $baseCurrency = $this->Financesettings->get('baseCurrency');
             $currenciesList = \Drupal\ek_finance\CurrencyData::currencyRates();
-            $chart = $this->settings->get('chart');
+            $chart = $this->Financesettings->get('chart');
             if (empty($chart)) {
                 $alert = "<div id='fx' class='messages messages--warning'>" . t('You did not set the accounts chart structure. Go to <a href="@url">settings</a>.', array('@url' => Url::fromRoute('ek_finance.admin.settings', array(), array())->toString())) . "</div>";
                 $form['alert'] = array(
@@ -1149,7 +1150,7 @@ class Invoice extends FormBase {
 
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-            $chart = $this->settings->get('chart');
+            $chart = $this->Financesettings->get('chart');
             $form_state->set('AidOptions', \Drupal\ek_finance\AidList::listaid($form_state->getValue('head'), array($chart['income'], $chart['other_income']), 1));
         }
 
@@ -1242,20 +1243,11 @@ class Invoice extends FormBase {
             //create new serial No
             switch ($form_state->getValue('title')) {
                 case '4':
-                    $type = "-CN-";
+                    $type = "CN";
                     break;
                 default:
-                    $type = "-I-";
+                    $type = "I";
                     break;
-            }
-            $iid = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT count(id) from {ek_sales_invoice}")
-                    ->fetchField();
-            $iid++;
-            $query = "SELECT id FROM {ek_sales_invoice} WHERE serial like :s";
-            while (Database::getConnection('external_db', 'external_db')->query($query, [':s' => '%-' . $iid])->fetchField()) {
-                //to prevent serial duplication after document have been deleted, increment until no match is found
-                $iid++;
             }
 
             $short = Database::getConnection('external_db', 'external_db')
@@ -1265,7 +1257,51 @@ class Invoice extends FormBase {
             $sup = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT shortname from {ek_address_book} where id=:id", array(':id' => $form_state->getValue('client')))
                     ->fetchField();
-            $serial = ucwords(str_replace('-', '', $short)) . $type . $date . "-" . ucwords(str_replace('-', '', $sup)) . "-" . $iid;
+            
+            $format = $this->salesSettings->get('serialFormat');
+            if($format['code'] == '') {
+                $format['code'] = [1,2,3,4,5];
+            }
+            if ($format['increment'] == '' || $format['increment'] < 1) {
+                $format['increment'] = 0;
+            }
+            
+            $iid = Database::getConnection('external_db', 'external_db')
+                    ->query("SELECT count(id) from {ek_sales_invoice}")
+                    ->fetchField();
+                      
+            $iid = $iid +1 +$format['increment'];
+            $query = "SELECT id FROM {ek_sales_invoice} WHERE serial like :s";
+            while (Database::getConnection('external_db', 'external_db')->query($query, [':s' => '%-' . $iid])->fetchField()) {
+                //to prevent serial duplication after document have been deleted, increment until no match is found
+                $iid++;
+            }
+
+            $serial = '';
+            foreach($format['code'] as $k => $v) {
+                    switch ($v) {
+                        case 0 :
+                            break;
+                        case 1 :
+                            $serial .= ucwords(str_replace('-', '', $short)) . '-';
+                            break;
+                        case 2 :
+                            $serial .= $type . '-';
+                            break;
+                        case 3 :
+                            $serial .= $date . '-';
+                            break;
+                        case 4 :
+                            $serial .= ucwords(str_replace('-', '', $sup)) . '-';
+                            break;
+                        case 5 :
+                            $serial .= $iid;
+                            break;
+                        
+                    }
+            }
+            
+            //$serial = ucwords(str_replace('-', '', $short)) . $type . $date . "-" . ucwords(str_replace('-', '', $sup)) . "-" . $iid;
         } else {
             //edit
             $serial = $form_state->getValue('serial');
@@ -1283,7 +1319,7 @@ class Invoice extends FormBase {
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             // used to calculate currency gain/loss from rate at invoice record time
             // and linebase
-            $baseCurrency = $this->settings->get('baseCurrency');
+            $baseCurrency = $this->Financesettings->get('baseCurrency');
             if ($baseCurrency != $form_state->getValue('currency')) {
 
                 if ($fx_rate <> '' && is_numeric($fx_rate)) {

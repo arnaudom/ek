@@ -27,6 +27,14 @@ ek_sales_settings_forms:
     _controller: '\Drupal\ek_sales\Controller\SettingsController::settingsForms'
   requirements:
     _permission: 'administrate_sales'
+
+ek_sales_settings_serial:
+  path: '/ek_sales/admin/settings-serial'
+  defaults:
+    _title: 'Serial'
+    _controller: '\Drupal\ek_sales\Controller\SettingsController::settingsSerial'
+  requirements:
+    _permission: 'administrate_sales'
     
 ek_sales.main:
   path: '/sales_management'

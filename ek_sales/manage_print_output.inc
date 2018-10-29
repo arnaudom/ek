@@ -171,7 +171,6 @@ Switch ($source) {
     $taxline = 0;
 
       While ($line = $lines->fetchObject()) {
-        $data = array();
         $data['description2'] = '';
         $data['itemid'] = '';
         $data['itemcode'] = '';
@@ -182,14 +181,26 @@ Switch ($source) {
         $data['family'] = '';
         $data['size'] = '';
         $data['color'] = ''; 
+        $data['unit_measure'] = ''; 
+        $data['item_size'] = ''; 
+        $data['pack_size'] = ''; 
+        $data['qty_pack'] = ''; 
         
         if ($line->itemid != NULL && ItemData::item_bycode($line->itemid) ) {
         //item exist
        
-        $query = "SELECT * from {ek_items} where itemcode=:id";
+        /*$query = "SELECT * from {ek_items} where itemcode=:id";
         $thisitem = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $line->itemid))
-                ->fetchObject();
+                ->fetchObject();*/
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_items', 'i');
+            $query->fields('i');
+            $query->leftJoin('ek_item_packing', 'p', 'i.itemcode = p.itemcode');
+            $query->fields('p', ['unit_measure','item_size','pack_size','qty_pack']);
+            $query->condition('i.itemcode', $line->itemid);
+            $thisitem = $query->execute()->fetchObject();
+            
             if($thisitem->description1 != '') {
                 //add this verification for situation of db migrating from old format
                 $data['item'] = $thisitem->description1;
@@ -203,14 +214,18 @@ Switch ($source) {
                 $data['family'] = $thisitem->family;
                 $data['size'] = $thisitem->size;
                 $data['color'] = $thisitem->color;
+                $data['unit_measure'] = $thisitem->unit_measure; 
+                $data['item_size'] = $thisitem->item_size; 
+                $data['pack_size'] = $thisitem->pack_size; 
+                $data['qty_pack'] = $thisitem->qty_pack;
 
               } else {
-                $data['item']= $line->item . " " . $line->itemdetails;
+                $data['item']= $line->itemdetails;
        
               }
           
           } else {
-            $data['item']= $line->itemid . " " . $line->itemdetails;
+            $data['item']= $line->itemdetails;
           }
 
         $data['unit'] = $line->unit;
@@ -234,20 +249,22 @@ Switch ($source) {
       $items['reference'] = $head->serial;    
       }
     $incoterm = explode('|', $head->incoterm);
-    $tax =  explode('|', $head->tax);
     $items['incoterm_name'] = $incoterm[0];
     $items['incoterm_rate'] = $incoterm[1];
-    $items['tax_name'] = $tax[0];
-    $items['tax_rate'] = $tax[1];
+    if($head->tax == '') {
+        $items['tax_name'] = '';
+        $items['tax_rate'] = '';  
+    } else {
+        $tax = explode('|', $head->tax);
+        $items['tax_name'] = $tax[0];
+        $items['tax_rate'] = $tax[1];  
+    }
     
-    
-    $query = "SELECT * from {ek_sales_quotation_settings} ";
-    $data = Database::getConnection('external_db', 'external_db')->query($query);
-    $i = 1;
-    While ($r = $data->fetchObject()) {
-        $items['column_name'.$i] = $r->name;
-        $items['column_active'.$i] = $r->active;
-        $i++;
+    $salesSettings = new \Drupal\ek_sales\SalesSettings();
+    $quotationSettings = $salesSettings->get('quotation');
+    foreach($quotationSettings as $key => $data) {
+        $items['column_name'. $key] = $data['name'];
+        $items['column_active'. $key] = $data['active'];
     }
     
     $query = "SELECT * from {ek_company} where id=:id";

@@ -77,26 +77,41 @@ class SettingsController extends ControllerBase {
 
 
 /**
-   * Return settings global
-   *
+ * Return settings global
+ * @return array 
 */
 
  public function settings(Request $request) {
  
-  $build['settings_global'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Settings');
-  return $build;
+    $build['settings_global'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Settings');
+    return $build;
+    
  }
 
 
 /**
-   * Return settings forms management
-   *
+ * Return settings forms management
+ * @return array 
 */
 
  public function settingsForms(Request $request) {
  
-  $build['settings_forms'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\SettingsForms');
-  return $build;
+    $build['settings_forms'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\SettingsForms');
+    return $build;
+    
+ }
+ 
+ /**
+  * Return settings serial management form
+  * @return array  
+  *
+*/
+
+ public function settingsSerial() {
+ 
+    $build['settings_forms'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\SerialFormat');
+    return $build;
+    
  }
 
 

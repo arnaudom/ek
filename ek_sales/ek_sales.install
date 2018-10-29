@@ -174,5 +174,21 @@ function ek_sales_update_8005() {
 function ek_sales_update_8006() {
     $query = "ALTER TABLE `ek_sales_quotation` CHANGE COLUMN `header` `head` TINYINT(3) UNSIGNED NULL DEFAULT NULL AFTER `serial`";
     Database::getConnection('external_db', 'external_db')->query($query);
-    return t('Quotation tables updated.'); 
+    return t('Quotation table updated.'); 
+}
+
+
+/**
+ * Add new settings for custom serial
+ * Change field in quotation table
+ */
+function ek_sales_update_8007() {
+    $query = "ALTER TABLE `ek_sales_settings` CHANGE COLUMN `settings` `settings` BLOB NULL COMMENT 'serialized settings' AFTER `coid`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+    
+    $query ="ALTER TABLE `ek_sales_quotation_details` CHANGE COLUMN `margin` `weight` INT NULL DEFAULT '0' COMMENT 'row weight' AFTER `itemdetails`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+    
+    \Drupal::service('router.builder')->rebuild(); 
+    return t('Settings table updated.'); 
 }

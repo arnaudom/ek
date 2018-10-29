@@ -4,11 +4,17 @@ ek_sales_settings:
   title: 'Global'
   weight: 1
   
+ek_sales_settings_serial:
+  route_name: ek_sales_settings_serial
+  base_route: ek_sales_settings
+  title: 'Serial format'
+  weight: 2
+  
 ek_sales_settings_forms:
   route_name: ek_sales_settings_forms
   base_route: ek_sales_settings
   title: 'Forms'
-  weight: 2
+  weight: 3
   
 ek_sales_settings_quotations:
   route_name: ek_sales.quotations.settings

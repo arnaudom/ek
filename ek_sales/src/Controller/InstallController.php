@@ -213,28 +213,6 @@ class InstallController extends ControllerBase {
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'quotations details table created <br/>';      
    
-    $query = "CREATE TABLE `ek_sales_quotation_settings` (
-	`id` SMALLINT(10) NOT NULL AUTO_INCREMENT,
-	`field` VARCHAR(10) NOT NULL DEFAULT '0',
-	`name` VARCHAR(255) NOT NULL DEFAULT '0',
-	`active` TINYINT(1) NOT NULL DEFAULT '0',
-	PRIMARY KEY (`id`)
-        )
-        COLLATE='utf8_unicode_ci'
-        ENGINE=InnoDB";
-
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    
-    $query = "INSERT INTO `ek_sales_quotation_settings` (`id`, `field`, `name`, `active`) VALUES
-	(1, 'column_1', 'item', 1),
-	(2, 'column_2', 'column_2', 1),
-	(3, 'column_3', 'column_3', 1),
-	(4, 'column_4', 'Quantities', 1),
-	(5, 'column_5', 'Price', 1),
-	(6, 'column_6', 'Total', 1)";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'quotations settings table created <br/>';     
     
     $query = "CREATE TABLE IF NOT EXISTS `ek_sales_invoice` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -323,7 +301,7 @@ class InstallController extends ControllerBase {
 
     $query = "CREATE TABLE IF NOT EXISTS `ek_sales_settings` (
 	`coid` INT(11) NULL DEFAULT NULL COMMENT 'company ID',
-	`settings` VARCHAR(255) NULL DEFAULT NULL COMMENT 'serialized settings',
+	`settings` BLOB NULL COMMENT 'serialized settings',
 	UNIQUE INDEX `Index 1` (`coid`)
         )
         COMMENT='holds settings by company'

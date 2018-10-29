@@ -151,12 +151,6 @@ $pdf->SetKeywords(t('Invoice') . ", " . $head->serial);
 // set default header data
 $pdf->SetHeaderData('','',$company,$bank);
 
-
-/*
-// set header and footer fonts
-$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
-$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));*/
-
 // set default monospaced font
 $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
@@ -191,7 +185,6 @@ $pdf->SetLineStyle(array('width' => 0.1, 'color' => array(130,130,130)));
 //calculate a due date
 $due = date('Y-m-d',strtotime(date("Y-m-d", strtotime($head->date) ) . "+".$head->due . ' ' . t("days") ));
 
-
 // HIGHLIGHT =====================================================
 $pdf->SetFont('helvetica','B',14);    
 $pdf->Cell($c2+$c3);
@@ -202,8 +195,6 @@ $pdf->SetFont('helvetica','B',10);
 $pdf->Cell($c2+$c3);
 $pdf->Cell($c3,10, $head->serial ,0,1);
     
-
-
 // CLIENT ======================================================== 
 $pdf->Ln(1);
 $pdf->SetFont('helvetica','U',12);
@@ -321,7 +312,7 @@ foreach ($items as $detail) {
           $grandtotal = round(($grandtotal + $total),2);
 
         //check position for a break. Add page if bottom is reached====================
-        if ($pdf->GetY() >$cut) { 
+        if ($pdf->GetY() > $cut) { 
             $pdf->AddPage("P","A4");
             
             $pdf->SetFont('helvetica','B',14);    

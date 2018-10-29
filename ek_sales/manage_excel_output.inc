@@ -213,14 +213,11 @@ Switch ($source) {
     $items['tax_name'] = $tax[0];
     $items['tax_rate'] = $tax[1];
     
-    
-    $query = "SELECT * from {ek_sales_quotation_settings} ";
-    $data = Database::getConnection('external_db', 'external_db')->query($query);
-    $i = 1;
-    While ($r = $data->fetchObject()) {
-    $items['column_name'.$i] = $r->name;
-    $items['column_active'.$i] = $r->active;
-    $i++;
+    $salesSettings = new \Drupal\ek_sales\SalesSettings();
+    $quotationSettings = $salesSettings->get('quotation');
+    foreach($quotationSettings as $key => $data) {
+        $items['column_name'. $key] = $data['name'];
+        $items['column_active'. $key] = $data['active'];
     }
     
     $query = "SELECT * from {ek_company} where id=:id";

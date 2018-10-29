@@ -100,7 +100,7 @@ class ConvertQuotation extends FormBase {
         if (!$form_state->get('num_items')) {
             $form_state->set('num_items', 0);
         }
-        $form_state->setValue('head', $data->header);
+        $form_state->setValue('head', $data->head);
 
         $baseCurrency = '';
         $currenciesList = '';
@@ -109,7 +109,7 @@ class ConvertQuotation extends FormBase {
             $baseCurrency = $this->settings->get('baseCurrency'); 
             $currenciesList = \Drupal\ek_finance\CurrencyData::currencyRates();
             $chart = $this->settings->get('chart');
-            $AidOptions = \Drupal\ek_finance\AidList::listaid($data->header, array($chart['income'], $chart['other_income']), 1);
+            $AidOptions = \Drupal\ek_finance\AidList::listaid($data->head, array($chart['income'], $chart['other_income']), 1);
             $baseCurrency = $this->settings->get('baseCurrency');
             if ($baseCurrency <> $data->currency) {
                 $requireFx = TRUE;
@@ -130,7 +130,7 @@ class ConvertQuotation extends FormBase {
             '#size' => 1,
             '#options' => $company,
             '#required' => TRUE,
-            '#default_value' => isset($data->header) ? $data->header : NULL,
+            '#default_value' => isset($data->head) ? $data->head : NULL,
             '#title' => t('header'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
@@ -201,13 +201,13 @@ class ConvertQuotation extends FormBase {
             '#suffix' => '</div>',
         );
 
-        $options = array(t('Invoice'), t('Commercial invoice'));
+        $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'), '4' => t('Credit note'));
         $form['options']['title'] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#options' => array_combine($options, $options),
+            '#options' => $options,
             '#required' => TRUE,
-            '#default_value' => isset($data->title) ? $data->title : 0,
+            '#default_value' => isset($data->title) ? $data->title : 1,
             '#title' => t('title'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
@@ -221,6 +221,9 @@ class ConvertQuotation extends FormBase {
                 '#required' => TRUE,
                 '#default_value' => isset($data->pcode) ? $data->pcode : NULL,
                 '#title' => t('Project'),
+                '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
+                '#prefix' => "<div class='cell'>",
+                '#suffix' => '</div>'
             );
         } // project
 
@@ -266,7 +269,7 @@ class ConvertQuotation extends FormBase {
                 $value = '';
 
                 $description = '';
-                $settings = new CompanySettings($data->header);
+                $settings = new CompanySettings($data->head);
                 $aid = $settings->get('asset_account', $data->currency);
 
                 if ($aid == '') {
@@ -303,7 +306,7 @@ class ConvertQuotation extends FormBase {
             if ($form_state->getValue('head')) {
                 $options['bank'] = \Drupal\ek_finance\BankData::listbankaccountsbyaid($form_state->getValue('head'));
             } else {
-                $options['bank'] = \Drupal\ek_finance\BankData::listbankaccountsbyaid($data->header);
+                $options['bank'] = \Drupal\ek_finance\BankData::listbankaccountsbyaid($data->head);
             }
 
             $form['options']['bank_account'] = array(

@@ -12,6 +12,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\ek_sales\SalesSettings;
 use Drupal\ek_admin\Access\AccessCheck;
+
 /**
  * Provides a sales settings form.
  */
@@ -125,10 +126,14 @@ class Settings extends FormBase {
    
     //verify coid exist first
       $query ='SELECT coid from {ek_sales_settings} WHERE coid=:c';
-      $coid = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $form_state->getValue('coid') ))->fetchField();
+      $coid = Database::getConnection('external_db', 'external_db')
+              ->query($query, array(':c' => $form_state->getValue('coid')))
+              ->fetchField();
 
       if(!$coid ) { 
-        Database::getConnection('external_db', 'external_db')->insert('ek_sales_settings')->fields(array('coid' => $form_state->getValue('coid')))->execute();
+        Database::getConnection('external_db', 'external_db')
+                ->insert('ek_sales_settings')->fields(array('coid' => $form_state->getValue('coid')))
+                ->execute();
       }
     
  

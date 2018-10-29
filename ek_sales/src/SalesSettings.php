@@ -26,7 +26,7 @@ use Drupal\Core\Database\Database;
   public function __construct($coid = NULL) {
     
     if($coid == NULL) {
-        $coid = 1;
+        $coid = 0;
     }
     $this->coid = $coid;
     $query = "SELECT * from {ek_sales_settings} WHERE coid=:coid";
@@ -75,7 +75,9 @@ use Drupal\Core\Database\Database;
       ))
       ->execute();    
   
-  if($save) return TRUE;
+    if($save) {
+        return TRUE;
+    }
   
   }  
 
