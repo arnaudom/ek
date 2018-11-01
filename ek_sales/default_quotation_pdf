@@ -257,76 +257,90 @@ $pdf->SetFont('helvetica','',8);
 
 // items ///////////////////////
 $grandtotal = 0;
+$subtotal = 0;
 foreach ($items['lines'] as $detail) {
     if($detail['item'] <> '') {
-        // column 0    
-        $pdf->Cell($b1,5, $i ,1,0);
-        // column 1
-
-        $x= $pdf->GetX();
-        $y= $pdf->GetY();
-        $pdf->MultiCell($b2,5, $detail['item'], 1,'L');
-        $y2= $pdf->GetY();    
-        $pdf->SetFont('helvetica','',8);
-        $pdf->SetXY($x , $y);
-        $h=$y2-$y;
-
-        // column 4
-        $pdf->Cell($b2);
-        if ($detail['unit']>0) {
-            $pdf->Cell($b3,$h,$detail['unit'],1,0,'C');
-            $pdf->Cell($b4,$h, number_format($detail['value'],2) ,1,0, 'R');
-            $pdf->Cell($b5,$h,number_format($detail['total'] , 2) , 1, 1,'R');
-        } else {
-            $pdf->Cell($b3,$h,'',1,0);
-            $pdf->Cell($b4,$h,'',1,0);
-            $pdf->Cell($b5,$h,'',1,1,'R');
-        }
-        // line 2 
-        if($items['column_active2']) {  
+        if ($detail['item'] === "sub_total" || $detail['item'] === "[sub total]" ) {
+            //insert sub total only
+            $pdf->SetFont('helvetica', 'B', 8);
             $pdf->Cell($b1);
-            $pdf->SetFont('helvetica','B',8);
-            $wd = ($items['column_active3'] == 1) ? ($b4+$b5) : ($b2-$b1-$b3);
-            $pdf->Cell($b1+$b3,5, $items['column_name2'] ,1,0,'L','1');
-            $pdf->Cell($wd,5, $detail['column_2'],1,0);
+            $pdf->Cell($b2+$b3+$b4, 5, t('Sub total'),'T',"", 'R', 0);
+            $pdf->SetFillColor(210, 210, 210);
+            $pdf->Cell($b5, 5, number_format($subtotal, 2),'RT', 1, 'R', 1);
+            $pdf->SetFillColor(238, 238, 238);
+            $subtotal = 0;
+        } else {
+            // column 0    
+            $pdf->Cell($b1,5, $i ,1,0);
+            // column 1
 
-            if($items['column_active3']) {
-                $pdf->Cell($b1+$b3,5, $items['column_name3'] ,1,0,'L','1');
-                $pdf->Cell($wd,5, $detail['column_3'],1,1);
+            $x= $pdf->GetX();
+            $y= $pdf->GetY();
+            $pdf->MultiCell($b2,5, $detail['item'], 1,'L');
+            $y2= $pdf->GetY();    
+            $pdf->SetFont('helvetica','',8);
+            $pdf->SetXY($x , $y);
+            $h=$y2-$y;
+
+            // column 4
+            $pdf->Cell($b2);
+            if ($detail['unit']>0) {
+                $pdf->Cell($b3,$h,$detail['unit'],1,0,'C');
+                $pdf->Cell($b4,$h, number_format($detail['value'],2) ,1,0, 'R');
+                $pdf->Cell($b5,$h,number_format($detail['total'] , 2) , 1, 1,'R');
             } else {
-                $pdf->Cell($wd,5, "",0,1);  
+                $pdf->Cell($b3,$h,'',1,0);
+                $pdf->Cell($b4,$h,'',1,0);
+                $pdf->Cell($b5,$h,'',1,1,'R');
             }
-        } elseif($items['column_active3']) {
-            $pdf->Cell(5);
-            $pdf->SetFont('helvetica','B',8);
-            $pdf->Cell(25,5, $items['column_name3'] ,1,0,'L','1');
-            $pdf->Cell(85,5, $detail['column_3'],1,1);
-        }
+            // line 2 
+            if($items['column_active2']) {  
+                $pdf->Cell($b1);
+                $pdf->SetFont('helvetica','B',8);
+                $wd = ($items['column_active3'] == 1) ? ($b4+$b5) : ($b2-$b1-$b3);
+                $pdf->Cell($b1+$b3,5, $items['column_name2'] ,1,0,'L','1');
+                $pdf->Cell($wd,5, $detail['column_2'],1,0);
 
-        $i++;
-        $grandtotal = round(($grandtotal + $detail['total']),2);
-        //check position for a break
-        $here = $pdf->GetY();
-        if ($here >$cut) { 
-            $pdf->AddPage('P','A4');
-            $pdf->SetFont('helvetica','B',14);
-            $pdf->SetTextColor(120, 150, 190);
-            $pdf->Cell($c2+$c3);
-            $pdf->Cell($c3,10, strtoupper(t('Quotation')),0,1);
-            $pdf->SetTextColor(0, 0, 0);
-            $pdf->Cell($c2+$c3);
-            $pdf->SetTextColor(53,53,53);
-            $pdf->SetFont('helvetica','B',9); 
-            $pdf->Cell($c3,5,$items['reference'],0,1);
-            
-            $pdf->Ln(3);
-            $pdf->SetFont('helvetica','',8);    
-            $pdf->Cell($b1,5,'',1,0);
-            $pdf->Cell($b2,5, t('Description') ,1,0,'C','0');      
-            $pdf->Cell($b3,5, $items['column_name4'] ,1,0,'C','0');
-            $pdf->Cell($b4,5, $items['column_name5'] ,1,0,'C','0');
-            $pdf->Cell($b5,5, $items['column_name6'] . " " . $head->currency ,1,1,'C','0');
-        }    
+                if($items['column_active3']) {
+                    $pdf->Cell($b1+$b3,5, $items['column_name3'] ,1,0,'L','1');
+                    $pdf->Cell($wd,5, $detail['column_3'],1,1);
+                } else {
+                    $pdf->Cell($wd,5, "",0,1);  
+                }
+            } elseif($items['column_active3']) {
+                $pdf->Cell(5);
+                $pdf->SetFont('helvetica','B',8);
+                $pdf->Cell(25,5, $items['column_name3'] ,1,0,'L','1');
+                $pdf->Cell(85,5, $detail['column_3'],1,1);
+            }
+
+            $i++;
+            $grandtotal = round(($grandtotal + $detail['total']),2);
+            $subtotal = round(($subtotal + $detail['total']), 2);
+            //check position for a break
+            $here = $pdf->GetY();
+            if ($here >$cut) { 
+                $pdf->AddPage('P','A4');
+                $pdf->SetFont('helvetica','B',14);
+                $pdf->SetTextColor(120, 150, 190);
+                $pdf->Cell($c2+$c3);
+                $pdf->Cell($c3,10, strtoupper(t('Quotation')),0,1);
+                $pdf->SetTextColor(0, 0, 0);
+                $pdf->Cell($c2+$c3);
+                $pdf->SetTextColor(53,53,53);
+                $pdf->SetFont('helvetica','B',9); 
+                $pdf->Cell($c3,5,$items['reference'],0,1);
+
+                $pdf->Ln(3);
+                $pdf->SetFont('helvetica','',8);    
+                $pdf->Cell($b1,5,'',1,0);
+                $pdf->Cell($b2,5, t('Description') ,1,0,'C','0');      
+                $pdf->Cell($b3,5, $items['column_name4'] ,1,0,'C','0');
+                $pdf->Cell($b4,5, $items['column_name5'] ,1,0,'C','0');
+                $pdf->Cell($b5,5, $items['column_name6'] . " " . $head->currency ,1,1,'C','0');
+            }             
+        }
+   
     }
 }
     

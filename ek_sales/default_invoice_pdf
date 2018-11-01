@@ -273,74 +273,87 @@ $pdf->Cell($c3+$c4,5,t('Value') . " " . $head->currency,1,1,'R');
      
 $i=1;
 $grandtotal = 0;
+$subtotal = 0;
 $pdf->SetFillColor(238, 238, 238);
 foreach ($items as $detail) {
-    if($detail['item'] != '') {    
-        if($detail['total'] == 0 && $detail['value'] == 0 && $detail['quantity'] == 0){
-            $pdf->SetFont('helvetica','B',9);
-            $i++;
-          } else {
-            $pdf->SetFont('helvetica','',8);
-            ($i % 2 == 0) ? $fill = 1 : $fill = 0;
-          }    
-        //get the starting point of description
-        $pdf->Cell($lm);
-        $x= $pdf->GetX();
-        $y= $pdf->GetY();
-        
-        //include text into justified cell (first column)
-        $pdf->MultiCell($c1+$c2,5, $detail['item'],"LR",'L',$fill);
-
-        //get ending coordinate Y
-        $y2 = $pdf->GetY();    
-        //calculate the new coordinate Y
-        $h = $y2-$y;      
-        //restart from initial coordinate for second column
-        $pdf->SetXY($x, $y);
-        $total = $detail['total'];
-        //the line total
-            //$pdf->Cell($lm);
-            if($total <> 0 && ($detail['value'] <> 0 || $detail['quantity'] <> 0)) {
-                 $pdf->Cell($c1+$c2);
-                 $pdf->Cell($c3+$c4,$h, number_format($total,2),'R',1,'R',$fill);
+    if($detail['item'] != '') {
+        if ($detail['item'] === "sub_total" || $detail['item'] === "[sub total]" ) {
+            //insert sub total only
+            $pdf->SetFont('helvetica', 'B', 8);
+            $pdf->Cell($lm);
+            $pdf->Cell($c1+$c2+$c3, 5, t('Sub total'),'T',"", 'R', 0);
+            $pdf->SetFillColor(210, 210, 210);
+            $pdf->Cell($c4, 5, number_format($subtotal, 2),'RT', 1, 'R', 1);
+            $pdf->SetFillColor(238, 238, 238);
+            $subtotal = 0;
+        } else {
+            if($detail['total'] == 0 && $detail['value'] == 0 && $detail['quantity'] == 0){
+                $pdf->SetFont('helvetica','B',9);
+                $fill = 0;
+                $i++;
               } else {
-                 $pdf->Cell($c1+$c2);
-                 $pdf->Cell($c3+$c4,$h,'','R',1,'R');
-              }  
-
-          $i++;
-          $grandtotal = round(($grandtotal + $total),2);
-
-        //check position for a break. Add page if bottom is reached====================
-        if ($pdf->GetY() > $cut) { 
-            $pdf->AddPage("P","A4");
-            
-            $pdf->SetFont('helvetica','B',14);    
-            $pdf->Cell($c2+$c3);
-            $pdf->SetTextColor(120, 150, 190);
-            $pdf->Cell($c3,10, strtoupper($head->title) ,0,1);
-            $pdf->SetTextColor(53,53,53);
-            $pdf->SetFont('helvetica','B',10);     
-            $pdf->Cell($c2+$c3);
-            $pdf->Cell($c3,10, $head->serial ,0,1);
-            $pdf->Ln(3);
-
-            $pdf->SetFont('helvetica','B',10);
+                $pdf->SetFont('helvetica','',8);
+                ($i % 2 == 0) ? $fill = 1 : $fill = 0;
+              }    
+            //get the starting point of description
             $pdf->Cell($lm);
-            $pdf->Cell($c1+$c2,5,t('Items') ,1,0, 'C');
-            $pdf->Cell($c3+$c4,5,t('Value') . " " . $head->currency,1,1,'R');  
-            $pdf->SetFont('helvetica','',8); 
-            $pdf->Cell($lm);
-            $pdf->Cell($c1+$c2,3,"","LTR",0);    
-            $pdf->Cell($c3+$c4,3,"","TR",1);
+            $x= $pdf->GetX();
+            $y= $pdf->GetY();
+
+            //include text into justified cell (first column)
+            $pdf->MultiCell($c1+$c2,5, $detail['item'],"LRT",'L',$fill);
+
+            //get ending coordinate Y
+            $y2 = $pdf->GetY();    
+            //calculate the new coordinate Y
+            $h = $y2-$y;      
+            //restart from initial coordinate for second column
+            $pdf->SetXY($x, $y);
+            $total = $detail['total'];
+            //the line total
+                //$pdf->Cell($lm);
+                if($total <> 0 && ($detail['value'] <> 0 || $detail['quantity'] <> 0)) {
+                     $pdf->Cell($c1+$c2);
+                     $pdf->Cell($c3+$c4,$h, number_format($total,2),'LRT',1,'R',$fill);
+                  } else {
+                     $pdf->Cell($c1+$c2);
+                     $pdf->Cell($c3+$c4,$h,'','LRT',1,'R');
+                  }  
+
+              $i++;
+              $grandtotal = round(($grandtotal + $total),2);
+              $subtotal = round(($subtotal + $total), 2);
+            //check position for a break. Add page if bottom is reached====================
+            if ($pdf->GetY() > $cut) { 
+                $pdf->AddPage("P","A4");
+
+                $pdf->SetFont('helvetica','B',14);    
+                $pdf->Cell($c2+$c3);
+                $pdf->SetTextColor(120, 150, 190);
+                $pdf->Cell($c3,10, strtoupper($head->title) ,0,1);
+                $pdf->SetTextColor(53,53,53);
+                $pdf->SetFont('helvetica','B',10);     
+                $pdf->Cell($c2+$c3);
+                $pdf->Cell($c3,10, $head->serial ,0,1);
+                $pdf->Ln(3);
+
+                $pdf->SetFont('helvetica','B',10);
+                $pdf->Cell($lm);
+                $pdf->Cell($c1+$c2,5,t('Items') ,1,0, 'C');
+                $pdf->Cell($c3+$c4,5,t('Value') . " " . $head->currency,1,1,'R');  
+                $pdf->SetFont('helvetica','',8); 
+                $pdf->Cell($lm);
+                $pdf->Cell($c1+$c2,3,"","LTR",0);    
+                $pdf->Cell($c3+$c4,3,"","TR",1);
+            }            
         }
+
     }
 }
 
 //CLOSE =====================================================  
 $pdf->Cell($lm);
-$pdf->Cell($c1+$c2,3,"","LBR",0);    
-$pdf->Cell($c3+$c4,3,"","BR",1);
+$pdf->Cell($c1+$c2+$c3+$c4,3,"","T",0);
     
     
 $pdf->Ln(2);      
