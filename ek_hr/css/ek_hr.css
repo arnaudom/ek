@@ -44,6 +44,8 @@
 .cell {  
   display : table-cell;
   line-height: 1;
+  float: left;
+  padding-left: 30px;
 }
 .cellsmall {  
   display :inline-block;
