@@ -58,6 +58,8 @@
 .cell {  
   display : table-cell;
   vertical-align: middle;
+  float: left;
+  padding-left: 30px;
 }
 
 .cell50 {  
