@@ -993,11 +993,13 @@ class ExpensesManageController extends ControllerBase {
         // entry has not been reconciled
         
             $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
-
-            $query = "SELECT * from {ek_expenses} WHERE id=:id";
-            $expense = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $id))
-                    ->fetchObject();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses', 'e');
+            $query->fields('e',['company']);
+            $query->leftJoin('ek_journal', 'j', 'e.id = j.reference');
+            $query->fields('j',['source']);
+            $query->condition('e.id', $id, '=');
+            $expense = $query->execute()->fetchObject();
 
             $flag = TRUE;
 
@@ -1038,7 +1040,14 @@ class ExpensesManageController extends ControllerBase {
                 ];  
 
                 } else {
-                    $build['edit_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\RecordExpense', $id);
+                    //verify type of expense for edition
+                    //payroll has a dedicated format.
+                    if(strpos($expense->source, 'payroll')){
+                        $build['edit_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\EditPayrollExpense', $id);
+                    } else {
+                        $build['edit_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\RecordExpense', $id);
+                    }
+                    
                 }
 
         return $build;
