@@ -42,6 +42,8 @@
 
 .cell {  
     display : table-cell;
+    float: left;
+    padding-left: 30px;
 }
 
 .cellborder {  
