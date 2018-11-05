@@ -131,6 +131,7 @@ class JournalController extends ControllerBase {
                         '#attached' => array(
                             'library' => array('ek_admin/ek_admin_css'),
                         ),
+                        '#cache' => ['max-age' => 0,],
                     ]; 
                      return $items;
                  }
