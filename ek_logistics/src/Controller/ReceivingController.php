@@ -512,6 +512,7 @@ class ReceivingController extends ControllerBase {
                 '#attached' => array(
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
+                '#cache' => ['max-age' => 0,],
             ];  
         } else {
             $build['delete_delivery'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Delete', $id, $table,$data->type);

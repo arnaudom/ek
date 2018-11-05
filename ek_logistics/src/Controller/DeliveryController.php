@@ -572,6 +572,7 @@ if (\Drupal::currentUser()->hasPermission('delete_delivery') && $r->status == 0)
                 '#attached' => array(
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
+                '#cache' => ['max-age' => 0,],
             ];  
     } else {
         $build['delete_logistics'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Delete', $id, $table, "D");
