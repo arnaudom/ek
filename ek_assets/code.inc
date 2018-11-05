@@ -17,4 +17,7 @@ function qr_code($text = NULL, $format = NULL, $size = 6, $color = NULL , $type 
         return $barcodeobj->getBarcodePNGdata($size, $size, array($color,$color,$color));
     }
     
+    if($type == 'svg') {
+        return $barcodeobj->getBarcodeSVGcode($size, $size, $color);
+    }    
 }

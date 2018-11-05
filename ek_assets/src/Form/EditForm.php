@@ -254,7 +254,8 @@ class EditForm extends FormBase {
         $form['i']['asset_pic'] = array(
             '#type' => 'file',
             '#title' => t('Upload picture'),
-            '#maxlength' => 50,
+            '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+            '#suffix' => "</div>",
         );
 
         /* current image if any */
@@ -264,19 +265,25 @@ class EditForm extends FormBase {
             $form['i']['picture_delete'] = array(
                 '#type' => 'checkbox',
                 '#title' => t('Delete picture'),
-                '#attributes' => array('onclick' => "jQuery('#currentl').toggleClass( 'delete');"),
-                '#prefix' => "<div class='container-inline'>",
+                '#attributes' => array('onclick' => "jQuery('#currentPicture').toggleClass('delete');"),
+                '#prefix' => "<div class='cell300 cellcenter'>",
             );
-            $form['i']["currentpicture"] = array(
-                '#markup' => "<p id='currentl'style='padding:2px;'>" . $image . "</p>",
+            $form['i']["currentPicture"] = array(
+                '#markup' => "<p id='currentPicture' style='padding:2px;'>" . $image . "</p>",
                 '#suffix' => '</div>',
+            );
+        } else {
+            $form['i']["currentPicture"] = array(
+                '#type' => "item",
+                '#suffix' => "</div></div>",
             );
         }
 
         $form['i']['asset_doc'] = array(
             '#type' => 'file',
             '#title' => t('Upload attachment'),
-            '#maxlength' => 50,
+            '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+            '#suffix' => "</div>",
         );
 
         /* current doc if any */
@@ -289,12 +296,17 @@ class EditForm extends FormBase {
             $form['i']['doc_delete'] = array(
                 '#type' => 'checkbox',
                 '#title' => t('Delete attachment'),
-                '#attributes' => array('onclick' => "jQuery('#currents').toggleClass( 'delete');"),
-                '#prefix' => "<div class='container-inline'>",
+                '#attributes' => array('onclick' => "jQuery('#currentAttachment').toggleClass('delete');"),
+                '#prefix' => "<div class='cell300 cellcenter'>",
             );
-            $form['i']["currentattachment"] = array(
-                '#markup' => "<p id='currents' style='padding:2px;'>" . $doc . "</p>",
-                '#suffix' => '</div>',
+            $form['i']["currentAttachment"] = array(
+                '#markup' => "<p id='currentAttachment' style='padding:2px;'>" . $doc . "</p>",
+                '#suffix' => "</div></div></div>",
+            );
+        } else {
+            $form['i']["currentAttachment"] = array(
+                '#type' => "item",
+                '#suffix' => "</div></div>",
             );
         }
 

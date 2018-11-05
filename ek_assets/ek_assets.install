@@ -45,3 +45,13 @@ function ek_assets_update_8001() {
         \Drupal::service('router.builder')->rebuild();
         return t('Assets table updated.');
 }
+
+/**
+ * Edit routes.
+ * 
+*/
+function ek_assets_update_8002() {
+    
+        \Drupal::service('router.builder')->rebuild();
+        return t('Assets module updated.');
+}

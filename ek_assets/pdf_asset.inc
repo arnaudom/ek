@@ -41,7 +41,7 @@ $col3 = 80;
         if(file_exists($logo)) {
             $info = getimagesize($logo);
             $h = $info[1]*80/$info[0];
-            $pdf->Image($logo,160,10,$h);
+            $pdf->Image($logo,10,10,190,50,'','','C',false,72,'',false,false,0,'CM');
         }
     }
 

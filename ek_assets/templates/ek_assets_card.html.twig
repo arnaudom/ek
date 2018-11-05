@@ -1,83 +1,146 @@
 <section class="assets_card">
 
-  <div class="assets_card-data">
-      <div class="text-right"><a href="pdf/{{ items.id }}" target="_blank">{{ 'Print in Pdf'|t }}</a></div>
-      <table class=''>
-          <tr>
-              <td rowspan ='3' class="text-center">{{ items.qr_code|raw }}</td>
-              <td width="30%"><strong><h3>{{ 'ID'|t }}:</h3></strong></td>
-              <td><h3>{{ items.id }}</h3></td>
-              
-          </tr>
-          <tr>
-              <td><strong>{{ 'Registered under'|t }}:</strong></td>
-              <td>{{ items.company_name }}</td>
-              
-          </tr>
-          <tr>
-              <td><strong>{{ 'Asset name'|t }}:</strong></td>
-              <td>{{ items.asset_name }}</td>
-              
-          </tr>          
-          <tr>
-              <td><strong>{{ 'Asset brand'|t }}:</strong></td>
-              <td>{{ items.asset_brand }}</td>
-              <td rowspan ='3' class="text-center">{{ items.picture|raw}}</td>
-          </tr>
-          <tr>
-              <td><strong>{{ 'Asset reference'|t }}:</strong></td>
-              <td>{{ items.asset_reference }}</td>
-              
-          </tr>
-          <tr>
-              <td><strong>{{ 'Asset quantity'|t }}:</strong></td>
-              <td >{{ items.unit }}</td>
-              
-          </tr>          
-          <tr>
-              <td><strong>{{ 'Description'|t }}:</strong></td>
-              <td colspan=''>{{ items.asset_comment }}</td>
-              <td>{{ items.doc|raw }}</td>
-          </tr>
+    <div class="assets_card-data">
+        <div class="text-right"><a href="pdf/{{ items.id }}" target="_blank">{{ 'Print in Pdf'|t }}</a></div>
 
-          <tr>
-              <td><strong>{{ 'Asset category'|t }}:</strong></td>
-              <td colspan='2'>{{ items.aid }} {{ items.aname }}</td>
-          </tr>
-          <tr>
-              <td><strong>{{ 'Asset value'|t }}:</strong></td>
-              <td colspan='2'>{{ items.asset_value }} {{ items.currency }}</td>
-          </tr>
-          <tr>
-              <td><strong>{{ 'Purchase date'|t }}:</strong></td>
-              <td colspan='2'>{{ items.date_purchase }}</td>
-          </tr>
-           <tr>
-              <td><strong>{{ 'Amortization rate'|t }}:</strong></td>
-              <td colspan='2'>{{ items.amort_rate }}</td>
-          </tr>
-          <tr>
-              <td><strong>{{ 'Amortization value'|t }}:</strong></td>
-              <td colspan='2'>{{ items.amort_value }}</td>
-          </tr>
-          <tr>
-              <td><strong>{{ 'Amortization per year'|t }}:</strong></td>
-              <td colspan='2'>{{ items.amort_yearly }}</td>
-          </tr>
-          <tr>
-              <td><strong>{{ 'Amortization status'|t }}:</strong></td>
-              <td colspan='2'>{{ items.amort_status }}</td>
-          </tr>
-          {% if items.eid %}
-          <tr>
-              <td><strong>{{ 'Allocated'|t }}:</strong></td>
-              <td colspan='2'><a href="{{ items.eurl }}">{{ items.eid }} | {{ items.employee }}</a></td>
-          </tr>
-          {% endif %}
-      </table>
-    
-  </div>      
-          
+        <div class='table'>
+            <div class='row'>
+                <div class='cell200 text-left'>
+                    <p class='badge'>{{ 'ID'|t }}: {{ items.id }}</p>
+                </div>
+                <div class='cell300 text-center'>
+                    {{ items.picture|raw}}
+                </div>
+                <div class='cell200 text-right'>
+                    {{ items.qr_code_svg|raw }}
+                </div>
+                
+            </div>
+        </div>
+                <hr>
+        <div class='table'>
+            <div class='row'>
+                <div class='cell300'>
+                    {{ 'Registered under'|t }}:
+                </div>
+                <div class='cell300 cellborder'>
+                    {{ items.company_name }}
+                </div>
+            </div>
+
+            <div class='row'>
+                <div class='cell300'>
+                    {{ 'Asset name'|t }}:
+                </div>
+                <div class='cell300 cellborder'>
+                    {{ items.asset_name }}
+                </div>
+            </div>
+
+            <div class='row'>
+                <div class='cell300'>
+                    {{ 'Asset brand'|t }}:
+                </div>
+                <div class='cell300 cellborder'>
+                    {{ items.asset_brand }}
+                </div>
+            </div>
+            <div class='row'>
+                <div class='cell300'>
+                    {{ 'Asset reference'|t }}:
+                </div>
+                <div class='cell300 cellborder'>
+                    {{ items.asset_reference }}
+                </div>
+            </div>
+            <div class='row'>
+                <div class='cell300'>
+                    {{ 'Asset quantity'|t }}:
+                </div>
+                <div class='cell300 cellborder'>
+                    {{ items.unit }}
+                </div>
+            </div>  
+            <div class='row'>
+                <div class='cell300'>
+                    {{ 'Description'|t }}:
+                </div>
+                <div class='cell300 cellborder'>
+                    {{ items.asset_comment }}
+                </div>
+            </div> 
+            <div class='row'>
+                <div class='cell300'>
+                    {{ 'Asset category'|t }}:
+                </div>
+                <div class='cell300 cellborder'>
+                    {{ items.aid }} {{ items.aname }}
+                </div>
+            </div>
+            <div class='row'>
+                <div class='cell300'>
+                    {{ 'Asset value'|t }}:
+                </div>
+                <div class='cell300 cellborder'>
+                    {{ items.asset_value }} {{ items.currency }}
+                </div>
+            </div> 
+            <div class='row'>
+                <div class='cell300'>
+                    {{ 'Purchase date'|t }}:
+                </div>
+                <div class='cell300 cellborder'>
+                    {{  items.date_purchase }}
+                </div>
+            </div>
+            <div class='row'>
+                <div class='cell300'>
+                    {{ 'Amortization rate'|t }}:
+                </div>
+                <div class='cell300 cellborder'>
+                    {{ items.amort_rate }}
+                </div>
+            </div>
+            <div class='row'>
+                <div class='cell300'>
+                    {{ 'Amortization value'|t }}:
+                </div>
+                <div class='cell300 cellborder'>
+                    {{ items.amort_value }}
+                </div>
+            </div>                  
+            <div class='row'>
+                <div class='cell300'>
+                    {{ 'Amortization per year'|t }}:
+                </div>
+                <div class='cell300 cellborder'>
+                    {{ items.amort_yearly }}
+                </div>
+            </div>                  
+            <div class='row'>
+                <div class='cell300'>
+                    {{ 'Amortization status'|t }}:
+                </div>
+                <div class='cell300 cellborder'>
+                    {{ items.amort_status }}
+                </div>
+            </div>
+            {% if items.eid %}     
+                <div class='row'>
+                    <div class='cell300'>
+                        {{ 'Allocated'|t }}:
+                    </div>
+                    <div class='cell300 cellborder'>
+                        <a href="{{ items.eurl }}">{{ items.eid }} | {{ items.employee }}</a>
+                    </div>
+                </div>                     
+            {% endif %}             
+        </div>
+
+
+
+    </div>      
+
 
 
 </section>

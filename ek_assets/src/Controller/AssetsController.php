@@ -71,7 +71,7 @@ class AssetsController extends ControllerBase {
      * Return list
      *
      */
-    public function assetslist() {
+    public function assetsList() {
      
         $new = Url::fromRoute('ek_assets.new')->toString();
         $build["new"] = array(
@@ -105,13 +105,7 @@ class AssetsController extends ControllerBase {
             ),
 
         );
-        /*
-        if (class_exists('TCPDF2DBarcode')) {
-           $header['qrcode'] = '';
-           include_once drupal_get_path('module', 'ek_assets') . '/code.inc';
-           $qr = TRUE;
-        }
-        */
+
         $header['operations'] = '';
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
@@ -125,16 +119,20 @@ class AssetsController extends ControllerBase {
             }
             //build the export link
             $param = serialize(array(
+                'id' => 0,
                 'coid' => $_SESSION['assetfilter']['coid'],
                 'aid' => $_SESSION['assetfilter']['category'],
                 'status' => $s
-                    )
+                )
             );
             $excel = Url::fromRoute('ek_assets.excel', array('param' => $param))->toString();
             $build['excel'] = array(
                 '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
             );
-
+            $qrcode = Url::fromRoute('ek_assets.print-qrcode', array('param' => $param))->toString();
+            $build['qrcode'] = array(
+                '#markup' => "<br/><a href='" . $qrcode . "' target='_blank'>" . t('Qr codes') . "</a>",
+            );
             //get data base on criteria
             $query = "SELECT * from {ek_assets} a INNER JOIN {ek_assets_amortization} b "
                     . "ON a.id = b.asid "
@@ -172,12 +170,7 @@ class AssetsController extends ControllerBase {
                 } else {
                     $img = '';
                 }
-                /*
-                if($qr) {
-                    $qr_text = t('ID') . ': ' . $r->id . ', ' . t('Name') . ': ' . $r->asset_name . ', ' . t('Company') . ': ' . $company_name;
-                    $qr_code = qr_code($qr_text, 'QRCODE,H', '2', 'black', 'html'); 
-                }
-                 */
+
                 $options[$r->id] = array(
                     'id' => $r->id,
                     'name' => array('data' => $r->asset_name),
@@ -187,17 +180,25 @@ class AssetsController extends ControllerBase {
                     'image' => ['data' => ['#markup' => $img]],
                     
                 );
-                /*
-                if($qr) {
-                    $options[$r->id]['qrcode'] = ['data' => ['#markup' => $qr_code]];
-                }
-                */
+
                 $links = array();
                 $links['view'] = array(
                     'title' => $this->t('View'),
                     'url' => Url::fromRoute('ek_assets.view', ['id' => $r->id]),
                     'route_name' => 'ek_assets.view',
                 );
+                $param = serialize(array(
+                    'id' => $r->id,
+                    'coid' => $_SESSION['assetfilter']['coid'],
+                    'aid' => $_SESSION['assetfilter']['category'],
+                    'status' => $s
+                    )
+                );
+                $links['qrcode'] = array(
+                    'title' => $this->t('QRcode'),
+                    'url' => Url::fromRoute('ek_assets.print-qrcode', ['param' => $param],['attributes' =>['target' => '_blank']]),
+                    'route_name' => 'ek_assets.view',
+                );                
                 $links['edit'] = array(
                     'title' => $this->t('Edit'),
                     'url' => Url::fromRoute('ek_assets.edit', ['id' => $r->id]),
@@ -245,7 +246,7 @@ class AssetsController extends ControllerBase {
      * Return view page
      *
      */
-    public function assetsview(Request $request, $id) {
+    public function assetsView(Request $request, $id) {
 
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
@@ -309,11 +310,13 @@ class AssetsController extends ControllerBase {
         if (class_exists('TCPDF2DBarcode')) {
            include_once drupal_get_path('module', 'ek_assets') . '/code.inc';
            $qr_text = t('ID') . ': ' . $data->id . ', ' . t('Name') . ': ' 
-                   . $data->asset_name . ', ' 
-                   . t('Company') . ': ' . $company_name
-                   . ', ' . t('Date of purchase') . ': ' . $data->date_purchase;
-           $items['qr_code'] = qr_code($qr_text, 'QRCODE,H', '2', 'black', 'html'); 
-            
+                       . $data->asset_name . ', ' . t('Company') . ': ' . $company_name . ', '
+                       . t('Date of purchase') . ': ' . $data->date_purchase . ', '
+                       . t('Reference') . ': ' . $data->asset_ref . ', '
+                       . t('Category') . ': ' . $aname;
+           
+           $items['qr_code_html'] = qr_code($qr_text, 'QRCODE,H', '2', 'black', 'html'); 
+           $items['qr_code_svg'] = qr_code($qr_text, 'QRCODE,H', '3', 'black', 'svg');//"<IMG src ='data:image,".  . "' />"; 
         }
         if ($this->moduleHandler->moduleExists('ek_hr')) {
                 $check = Database::getConnection('external_db', 'external_db')
@@ -342,7 +345,7 @@ class AssetsController extends ControllerBase {
      * Return edit form for new asset
      *
      */
-    public function assetsnew(Request $request) {
+    public function assetsNew(Request $request) {
 
         $build['form_assets_new'] = $this->formBuilder->getForm('Drupal\ek_assets\Form\EditForm', 0);
         $build['#attached']['library'] = array('ek_assets/ek_assets_css', 'ek_assets/ek_assets.number_format');
@@ -353,7 +356,7 @@ class AssetsController extends ControllerBase {
      * Return edit form
      *
      */
-    public function assetsedit(Request $request, $id) {
+    public function assetsEdit(Request $request, $id) {
 
         $build['form_assets_edit'] = $this->formBuilder->getForm('Drupal\ek_assets\Form\EditForm', $id);
         $build['#attached']['library'] = array('ek_assets/ek_assets_css', 'ek_assets/ek_assets.number_format');
@@ -364,7 +367,7 @@ class AssetsController extends ControllerBase {
      * Return delete form
      *
      */
-    public function assetsdelete(Request $request, $id) {
+    public function assetsDelete(Request $request, $id) {
         
         $query = "SELECT * from {ek_assets} a INNER JOIN {ek_assets_amortization} b "
                 . "ON a.id = b.asid "
@@ -410,7 +413,7 @@ class AssetsController extends ControllerBase {
      * Return export of list in excel format
      *
      */
-    public function assetsexcel($param) {
+    public function assetsExcel($param) {
         $markup = array();    
         if (!class_exists('PHPExcel')) {
             $markup = t('Excel library not available, please contact administrator.');
@@ -448,10 +451,12 @@ class AssetsController extends ControllerBase {
     }
 
     /**
-     * Return print pdf output
+     * @parm id
+     *  asset id
+     * @return print pdf output
      *
      */
-    public function assetsprint($id) {
+    public function assetsPrint($id) {
 
         if (!class_exists('TCPDF')) {
             $markup = ['#markup' => t('Pdf library not available, please contact administrator.')];
@@ -541,7 +546,85 @@ class AssetsController extends ControllerBase {
         
         
     }
+    
+    /**
+     * @parm param
+     *  printing parameters
+     *  int id = asset id , 0 for list
+     *  int coid = company id
+     *  string aid = account id or  '%'
+     *  string status = flag 0 or '%'
+     * @return print pdf output
+     *
+     */
+    public function assetsPrintQrcode($param) {
+        
+        $params = unserialize($param);
+        
+        if (in_array($params['coid'], \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser())) {
+        
+            
+                //print all from list
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_assets', 'a');
+                $query->fields('a',['id','asset_name','date_purchase','coid','eid','asset_ref','aid']);
+                $query->leftJoin('ek_assets_amortization', 'b', 'a.id = b.asid');
+                $query->fields('b');
+                $query->leftJoin('ek_company', 'c', 'a.coid = c.id');
+                $query->fields('c',['name']);
+                $query->condition('coid', $params['coid'], '=');
+                $query->condition('aid', $params['aid'], 'like');
+                $query->condition('amort_status', $params['status'], 'like');
+                if($params['id'] != '%') {
+                    $query->condition('a.id', $params['id'], '=');
+                } 
+                $data = $query->execute();
+                $print = [];
+                
+                while ($d = $data->fetchObject()) {
+                    $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_accounts', 'a');
+                    $query->fields('a',['aname']);
+                    $query->condition('coid', $d->coid, '=');
+                    $query->condition('aid', $d->aid, '=');
+                    $account = $query->execute()->fetchField();
+                    
+                    $qrcode = t('ID') . ': ' . $d->id . ', ' . t('Name') . ': ' 
+                       . $d->asset_name . ', ' . t('Company') . ': ' . $d->name . ', '
+                       . t('Date of purchase') . ': ' . $d->date_purchase . ', '
+                       . t('Reference') . ': ' . $d->asset_ref . ', '
+                       . t('Category') . ': ' . $account;
+                    $assigned = isset($d->eid) ? 1 :0;
+                    
+                    $print[] = [
+                        'id' => $d->id,
+                        'reference' => $d->asset_ref,
+                        'name' => $d->asset_name,
+                        'company' => $d->name,
+                        'assigned' => $assigned,
+                        'qrcode' => $qrcode,
+                    ];
+                    
+                }
+                
+                include_once drupal_get_path('module', 'ek_assets') . '/qrcode.inc';
+            
+        } else {
+                $url = Url::fromRoute('ek_assets.listl', [],[])->toString();
+                $items['type'] = 'access';
+                $items['message'] = ['#markup' => t('You are not authorized to print this information')];
+                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                return [
+                    '#items' => $items,
+                    '#theme' => 'ek_admin_message',
+                    '#attached' => array(
+                        'library' => array('ek_admin/ek_admin_css'),
+                    ),
+                ]; 
+            
+        }
 
-
+    }
+    
 //end class
 }

@@ -16,7 +16,7 @@ ek_assets.list:
   path: '/assets'
   defaults:
     _title: 'Assets'
-    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetslist'
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsList'
   requirements:
     _permission: 'view_assets'
 
@@ -24,7 +24,7 @@ ek_assets.view:
   path: '/assets/{id}'
   defaults:
     _title: 'Assets'
-    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsview'
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsView'
   requirements:
     _permission: 'view_assets'
     id: \d*
@@ -33,7 +33,7 @@ ek_assets.new:
   path: '/assets/new'
   defaults:
     _title: 'New asset'
-    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsnew'
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsNew'
   requirements:
     _permission: 'edit_assets'
     
@@ -41,7 +41,7 @@ ek_assets.edit:
   path: '/assets/edit/{id}'
   defaults:
     _title: 'Edit assets'
-    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsedit'
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsEdit'
   requirements:
     _permission: 'edit_assets'
     id: \d*
@@ -50,7 +50,7 @@ ek_assets.delete:
   path: '/assets/delete/{id}'
   defaults:
     _title: 'Delete assets'
-    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsdelete'
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsDelete'
   requirements:
     _permission: 'delete_assets'
     id: \d*
@@ -58,7 +58,7 @@ ek_assets.delete:
 ek_assets.excel:
   path: '/assets/export/{param}'
   defaults:
-    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsexcel'
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsExcel'
   requirements:
     _permission: 'view_assets'
     
@@ -66,10 +66,17 @@ ek_assets.print:
   path: '/assets/pdf/{id}'
   defaults:
     _title: 'Print assets'
-    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsprint'
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsPrint'
   requirements:
     _permission: 'view_assets'
     id: \d*
+    
+ek_assets.print-qrcode:
+  path: '/assets/qrcode/{param}'
+  defaults:
+    _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsPrintQrcode'
+  requirements:
+    _permission: 'view_assets'
     
 ek_assets.set_amortization:
   path: '/assets/amortization/{id}'

@@ -7,7 +7,7 @@
 }
 
 .large {
-  width : 300px;
+    width : 300px;
 }
 
 .delete {
@@ -16,67 +16,93 @@
 }
 
 .text-right {
-  text-align:right;
+    text-align:right;
 }
 .text-left {
-  text-align:left;
+    text-align:left;
 }
 .text-center {
-  text-align:center;
+    text-align:center;
 }
 
 .table {
-  display: table;
-  width: 100%;
+    display: table;
+    width: 100%;
 }
 
 .row {
-  display : table-row;
-  height:auto;
-  
+    display : table-row;
+    height:auto;
+
 }
 
 .cell {  
-  display : table-cell;
-  vertical-align: middle;
+    display : table-cell;
+    vertical-align: middle;
+    float: left;
+    padding-left: 10px;
 }
 
 .cell50 {  
-  display :inline-block;
-  width: 50px;
+    display :inline-block;
+    width: 50px;
+    float: left;
+    padding-left: 10px;
 }
 
 .cell100 {  
-  display :inline-block;
-  width: 100px;
+    display :inline-block;
+    width: 100px;
+    float: left;
+    padding-left: 10px;
 }
 
 .cell150 {  
-  display :inline-block;
-  width: 150px;
+    display :inline-block;
+    width: 150px;
+    float: left;
+    padding-left: 10px;
 }
 
 .cell200 {  
-  display :inline-block;
-  width: 200px;
+    display :inline-block;
+    width: 200px;
+    float: left;
+    padding-left: 10px;
 }
 
 .cell300 {  
-  display :inline-block;
-  width: 300px;
+    display :inline-block;
+    width: 300px;
+    float: left;
+    padding-left: 10px;
 }
 
 .cellcenter {
-  padding: 2px;
-  text-align: center;
+    padding: 2px;
+    text-align: center;
 }
 
 .cellborder {  
-  border-width: thin ;
-  border-spacing: 1px;
-  border-style: solid;
-  border-color: #A4A4A4;
-  border-collapse: collapse;
-  background-color: #CEE3F6;
-  padding: 2px;
+    border: solid;
+    border-width: thin;
+    border-spacing: 1px;
+    border-collapse: collapse;
+    border-color: #CEE3F6;
+    //background-color: #CEE3F6;
+
+}
+
+.badge {
+    background-color: #9dbed0;
+    border-radius: 5px;
+    color: #fff;
+    display: inline-block;
+    font-weight: bold;
+    line-height: 1;
+    min-width: 10px;
+    padding: 5px 9px;
+    text-align: center;
+    vertical-align: baseline;
+    white-space: nowrap;
 }
