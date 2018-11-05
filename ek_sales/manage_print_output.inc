@@ -188,11 +188,7 @@ Switch ($source) {
         
         if ($line->itemid != NULL && ItemData::item_bycode($line->itemid) ) {
         //item exist
-       
-        /*$query = "SELECT * from {ek_items} where itemcode=:id";
-        $thisitem = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $line->itemid))
-                ->fetchObject();*/
+
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_items', 'i');
             $query->fields('i');

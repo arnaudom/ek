@@ -267,6 +267,10 @@ class QuotationsController extends ControllerBase {
                     'title' => $this->t('Print'),
                     'url' => Url::fromRoute('ek_sales.quotations.print_share', ['id' => $r->id]),
                 );
+                $links['excel'] = array(
+                    'title' => $this->t('Excel download'),
+                    'url' => Url::fromRoute('ek_sales.quotations.print_excel', ['id' => $r->id]),
+                );
             }
 
             if (\Drupal::currentUser()->hasPermission('delete_quotation') && $r->status == 0) {
@@ -501,6 +505,61 @@ class QuotationsController extends ControllerBase {
         }
     }    
     
+    /**
+     * @retun
+     *  a form to download quotation in excel format
+     * 
+     * @param 
+     *  INT $id document id
+     */
+    public function Excel($id) {
+        //filter access to document
+        $query = "SELECT `head`, `allocation` FROM {ek_sales_quotation} WHERE id=:id";
+        $data = Database::getConnection('external_db', 'external_db')
+                ->query($query, [':id' => $id])
+                ->fetchObject();
+        $access = AccessCheck::GetCompanyByUser();
+        if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
+            $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'quotation', 'excel');
+
+            if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
+                //$_SESSION['printfilter']['filter'] = 0;
+                $id = explode('_', $_SESSION['printfilter']['for_id']);
+
+                $param = serialize(
+                        array(
+                            $id[0], //id
+                            $id[1], //source
+                            $_SESSION['printfilter']['signature'],
+                            $_SESSION['printfilter']['stamp'],
+                            $_SESSION['printfilter']['template'],
+                            $_SESSION['printfilter']['contact'],
+                            $_SESSION['printfilter']['output_format'],
+                        )
+                );
+                $_SESSION['printfilter'] = array();
+                $format = 'excel';
+
+                include_once drupal_get_path('module', 'ek_sales') . '/manage_excel_output.inc';
+            }
+
+            return array($build);
+            
+        } else {
+            $url = Url::fromRoute('ek_sales.quotations.list')->toString();
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            return [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ];
+        }
+    }
     
     public function DeleteQuotations(Request $request, $id) {
         //filter del

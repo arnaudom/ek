@@ -34,8 +34,13 @@ Switch ($source) {
     case 'invoice':
     case 'purchase':
     
-    $lines = Database::getConnection('external_db', 'external_db')
-            ->query("SELECT * FROM {ek_sales_". $source. "_details} WHERE serial=:s ORDER BY id", array(':s' => $head->serial));
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select("ek_sales_". $source. "_details", 's');
+            $query->fields('s');        
+            $query->condition('serial',$head->serial, '=');
+            $query->orderBy('id', 'ASC');
+            
+    $lines = $query->execute();
 
     $items = array();
     $taxline = 0;
@@ -44,10 +49,14 @@ Switch ($source) {
         $data = array();
         if ($line->itemdetail != '') {
         
-        $query = "SELECT * FROM {ek_items} WHERE id=:id";
-        $thisitem = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $line->itemdetail))
-                ->fetchObject();
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_items', 'i');
+            $query->fields('i');
+            $query->leftJoin('ek_item_packing', 'p', 'i.itemcode = p.itemcode');
+            $query->fields('p', ['unit_measure','item_size','pack_size','qty_pack']);
+            $query->condition('i.id', $line->itemdetail);
+            $thisitem = $query->execute()->fetchObject();
+            
             if($thisitem->description1 != '') {
                 //add this verification for situation of db migrating from old format
                 $data['item'] = $thisitem->description1;
@@ -136,23 +145,53 @@ Switch ($source) {
     case 'quotation':
     
     //use last revision
-    $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision DESC";
-    $revision = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $head->serial))->fetchField();  
-    $lines = Database::getConnection('external_db', 'external_db')
-            ->query("SELECT * FROM {ek_sales_". $source. "_details} WHERE serial=:s and revision=:r ORDER BY id", array(':s' => $head->serial, ':r' => $revision));
-
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_quotation_details', 'q');
+        $query->fields('q',['revision']);
+        $query->condition('serial',$head->serial, '=');
+        $query->orderBy('id', 'DESC');
+        
+    $revision = $query->execute()->fetchField();
+        
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select("ek_sales_". $source. "_details", 's');
+            $query->fields('s');        
+            $query->condition('serial',$head->serial, '=');
+            $query->condition('revision',$revision, '=');
+            $query->orderBy('weight', 'ASC');
+            
+    $lines = $query->execute();
     $items = array();
     $taxline = 0;
 
       While ($line = $lines->fetchObject()) {
         $data = array();
+        $data['description2'] = '';
+        $data['itemid'] = '';
+        $data['itemcode'] = '';
+        $data['type'] = '';
+        $data['supplier_code'] = '';
+        $data['collection'] = '';
+        $data['department'] = '';
+        $data['family'] = '';
+        $data['size'] = '';
+        $data['color'] = ''; 
+        $data['unit_measure'] = ''; 
+        $data['item_size'] = ''; 
+        $data['pack_size'] = ''; 
+        $data['qty_pack'] = ''; 
+        
         if ($line->itemid != NULL && ItemData::item_bycode($line->itemid) ) {
         //item exist
-        
-        $query = "SELECT * from {ek_items} where itemcode=:id";
-        $thisitem = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $line->itemid))
-                ->fetchObject();
+
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_items', 'i');
+            $query->fields('i');
+            $query->leftJoin('ek_item_packing', 'p', 'i.itemcode = p.itemcode');
+            $query->fields('p', ['unit_measure','item_size','pack_size','qty_pack']);
+            $query->condition('i.itemcode', $line->itemid);
+            $thisitem = $query->execute()->fetchObject();
+            
             if($thisitem->description1 != '') {
                 //add this verification for situation of db migrating from old format
                 $data['item'] = $thisitem->description1;
@@ -166,19 +205,14 @@ Switch ($source) {
                 $data['family'] = $thisitem->family;
                 $data['size'] = $thisitem->size;
                 $data['color'] = $thisitem->color;
+                $data['unit_measure'] = $thisitem->unit_measure; 
+                $data['item_size'] = $thisitem->item_size; 
+                $data['pack_size'] = $thisitem->pack_size; 
+                $data['qty_pack'] = $thisitem->qty_pack;
 
               } else {
-                $data['item']= $line->item;
-                $data['description2'] = '';
-                $data['itemid'] = '';
-                $data['itemcode'] = '';
-                $data['type'] = '';
-                $data['supplier_code'] = '';
-                $data['collection'] = '';
-                $data['department'] = '';
-                $data['family'] = '';
-                $data['size'] = '';
-                $data['color'] = '';        
+                $data['item']= $line->itemdetails;
+       
               }
           
           } else {
@@ -192,9 +226,7 @@ Switch ($source) {
         $data['column_2'] = $line->column_2;
         $data['column_3'] = $line->column_3;
 
-
-          $taxline+=$data['total'];
-
+        $taxline+=$data['total'];
 
         $items['lines'][] = $data;
 
@@ -202,10 +234,7 @@ Switch ($source) {
      
     $items['taxable'] = $taxline;
     $items['revision'] = $revision;
-    if ($items['revision'] > 0) { $items['reference'] = $head->serial  . ' '  . t('revision') . $items['revision']; 
-      } else {
-      $items['reference'] = $head->serial;    
-      }
+    $items['reference'] = $head->serial;
     $incoterm = explode('|', $head->incoterm);
     $tax =  explode('|', $head->tax);
     $items['incoterm_name'] = $incoterm[0];
@@ -221,7 +250,7 @@ Switch ($source) {
     }
     
     $query = "SELECT * from {ek_company} where id=:id";
-    $company = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $head->header))->fetchObject();
+    $company = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $head->head))->fetchObject();
 
     $query = "SELECT * from {ek_address_book} where id=:id";
     $client = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $head->client))->fetchObject();
@@ -238,9 +267,9 @@ Switch ($source) {
     
     //change quotation status
     Database::getConnection('external_db', 'external_db')->update('ek_sales_quotation')
-    ->fields(array('status' => 1))
-    ->condition('id',$id)
-    ->execute();
+        ->fields(array('status' => 1))
+        ->condition('id',$id)
+        ->execute();
     
     break;
 

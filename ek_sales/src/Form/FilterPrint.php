@@ -72,7 +72,7 @@ class FilterPrint extends FormBase {
                 '#options' => array('1' => t('excel'), '2' => t('csv')),
                 '#default_value' => 1,
                 '#attributes' => array('title' => t('output format')),
-                '#title' => t('output format'),
+                '#title' => t('Format'),
             );
         }
         

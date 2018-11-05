@@ -280,6 +280,15 @@ ek_sales.quotations.invoice:
   requirements:
     _permission: 'create_quotation'
     id: \d* 
+
+ek_sales.quotations.print_excel:
+  path: '/quotations/excel/{id}'
+  defaults:
+    _title: 'Export in excel format'
+    _controller: '\Drupal\ek_sales\Controller\QuotationsController::Excel'
+  requirements:
+    _permission: 'print_share_quotation'
+    id: \d* 
     
 ek_sales.quotations.print_share:
   path: '/quotations/print/{id}'

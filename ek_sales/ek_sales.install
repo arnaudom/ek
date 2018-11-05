@@ -197,3 +197,11 @@ function ek_sales_update_8007() {
     \Drupal::service('router.builder')->rebuild(); 
     return t('Settings table updated.'); 
 }
+
+/**
+ * Add quotation excel download route
+ * 
+ */
+function ek_sales_update_8008() {
+   \Drupal::service('router.builder')->rebuild(); 
+}
