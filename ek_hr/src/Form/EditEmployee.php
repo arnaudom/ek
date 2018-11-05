@@ -826,7 +826,7 @@ class EditEmployee extends FormBase {
                 $url = \Drupal::messenger()->addStatus(t("Data updated"));
                 $form_state->setRedirect('ek_hr.employee.view',['id' => $form_state->getValue('for_id')]);
             }
-            Cache::invalidateTags(['payroll_stat_block']);
+            Cache::invalidateTags(['payroll_stat_block','employee_data_view']);
         }//step 2
     }
 
