@@ -444,6 +444,7 @@ class ProductsController extends ControllerBase {
                 '#attached' => array(
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
+                '#cache' => ['max-age' => 0,],
             ];  
         } else {
             $form_builder = $this->formBuilder();
