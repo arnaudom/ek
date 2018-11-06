@@ -236,7 +236,7 @@ class ShareForm extends FormBase {
                 );
             }
 
-
+            \Drupal\Core\Cache\Cache::invalidateTags(['shared_documents']);
             $form_state->set('message', t('success') . '. ' . $d);
             $form_state->setRebuild();
         } else {

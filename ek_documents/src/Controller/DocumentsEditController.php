@@ -206,7 +206,9 @@ class DocumentsEditController extends ControllerBase {
                     ->delete('ek_documents')
                     ->condition('id', $id)
                     ->execute();
-
+            
+            \Drupal\Core\Cache\Cache::invalidateTags(['common_documents','my_documents','shared_documents']);
+            
             if ($delete) {
                 $query = "SELECT * FROM {file_managed} WHERE uri=:u";
                 $file = db_query($query, [':u' => $uri])->fetchObject();

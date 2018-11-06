@@ -65,3 +65,12 @@ function ek_documents_update_8001() {
         }
 
 }
+
+
+/**
+ * Change route controller names
+ * 
+*/
+function ek_documents_update_8002() {
+    \Drupal::service('router.builder')->rebuild();
+}

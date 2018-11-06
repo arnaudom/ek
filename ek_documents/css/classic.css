@@ -1,0 +1,504 @@
+/* 
+    Created on : Nov 6, 2018, 9:00:58 AM
+    Author     : EK
+    Classic document icons
+*/
+
+.icon_doc {
+    background-size: 45px;
+    width:45px;
+    height:45px;
+    margin-left:15px;
+}
+
+.icon_doc_list {
+    background-repeat: no-repeat;
+    width:16px;
+    height:16px;
+    margin-top:5px;
+    margin-left:5px;
+}
+
+/*
+* Large icons
+*/
+
+._doc {
+    background-image: url(../art/no.png);
+}
+.ac3_doc {
+    background-image: url(../art/ac3.png);
+}
+.ai_doc {
+    background-image: url(../art/ai.png);
+}
+.aiff_doc {
+    background-image: url(../art/aiff.png);
+}
+.ani_doc {
+    background-image: url(../art/ani.png);
+}
+.asf_doc {
+    background-image: url(../art/asf.png);
+}
+.au_doc {
+    background-image: url(../art/au.png);
+}
+.avi_doc {
+    background-image: url(../art/avi.png);
+}
+.bat_doc {
+    background-image: url(../art/bat.png);
+}
+.bin_doc {
+    background-image: url(../art/bin.png);
+}
+.bmp_doc {
+    background-image: url(../art/bmp.png);
+}
+.bup_doc {
+    background-image: url(../art/bup.png);
+}
+.cab_doc {
+    background-image: url(../art/cap.png);
+}
+.cal_doc {
+    background-image: url(../art/cal.png);
+}
+.cat_doc {
+    background-image: url(../art/cat.png);
+}
+.csv_doc {
+    background-image: url(../art/csv.png);
+}
+.cur_doc {
+    background-image: url(../art/cur.png);
+}
+.dat_doc {
+    background-image: url(../art/dat.png);
+}
+.dcr_doc {
+    background-image: url(../art/dcr.png);
+}
+.der_doc {
+    background-image: url(../art/der.png);
+}
+.dic_doc {
+    background-image: url(../art/dic.png);
+}
+.dll_doc {
+    background-image: url(../art/dll.png);
+}
+.doc_doc {
+    background-image: url(../art/doc.png);
+}
+.docx_doc {
+    background-image: url(../art/doc.png);
+}
+.dvd_doc {
+    background-image: url(../art/dvd.png);
+}
+.dwg_doc {
+    background-image: url(../art/dwg.png);
+}
+.dwt_doc {
+    background-image: url(../art/dwt.png);
+}
+.eml_doc {
+    background-image: url(../art/eml.png);
+}
+.fon_doc {
+    background-image: url(../art/fon.png);
+}
+.gif_doc {
+    background-image: url(../art/gif.png);
+}
+.hlp_doc {
+    background-image: url(../art/hlp.png);
+}
+.html_doc {
+    background-image: url(../art/html.png);
+}
+.ico_doc {
+    background-image: url(../art/ico.png);
+}
+.ifo_doc {
+    background-image: url(../art/ifo.png);
+}
+.inf_doc {
+    background-image: url(../art/inf.png);
+}
+.ini_doc {
+    background-image: url(../art/ini.png);
+}
+.java_doc {
+    background-image: url(../art/java.png);
+}
+.jif_doc {
+    background-image: url(../art/jif.png);
+}
+.jpg_doc {
+    background-image: url(../art/jpg.png);
+}
+.jpeg_doc {
+    background-image: url(../art/jpg.png);
+}
+.log_doc {
+    background-image: url(../art/log.png);
+}
+.m4a_doc {
+    background-image: url(../art/m4a.png);
+}
+.mmf_doc {
+    background-image: url(../art/mmf.png);
+}
+.mmm_doc {
+    background-image: url(../art/mmm.png);
+}
+.mov_doc {
+    background-image: url(../art/mov.png);
+}
+.mp2_doc {
+    background-image: url(../art/mp2.png);
+}
+.mp2v_doc {
+    background-image: url(../art/mp2v.png);
+}
+.mp3_doc {
+    background-image: url(../art/mp3.png);
+}
+.mp4_doc {
+    background-image: url(../art/mp4.png);
+}
+.mpeg_doc {
+    background-image: url(../art/mpeg.png);
+}
+.msp_doc {
+    background-image: url(../art/msp.png);
+}
+.no_doc {
+    background-image: url(../art/no.png);
+}
+.odp_doc {
+    background-image: url(../art/odp.png);
+}
+.ods_doc {
+    background-image: url(../art/ods.png);
+}
+.odt_doc {
+    background-image: url(../art/odt.png);
+}
+.pdf_doc {
+    background-image: url(../art/pdf.png);
+}
+.png_doc {
+    background-image: url(../art/png.png);
+}
+.ppt_doc {
+    background-image: url(../art/ppt.png);
+}
+.pptx_doc {
+    background-image: url(../art/ppt.png);
+}
+.psd_doc {
+    background-image: url(../art/psd.png);
+}
+.ra_doc {
+    background-image: url(../art/ra.png);
+}
+.rar_doc {
+    background-image: url(../art/rar.png);
+}
+.reg_doc {
+    background-image: url(../art/reg.png);
+}
+.rtf_doc {
+    background-image: url(../art/rtf.png);
+}
+.theme_doc {
+    background-image: url(../art/theme.png);
+}
+.tiff_doc {
+    background-image: url(../art/tiff.png);
+}
+.tlb_doc {
+    background-image: url(../art/tlb.png);
+}
+.ttf_doc {
+    background-image: url(../art/ttf.png);
+}
+.txt_doc {
+    background-image: url(../art/txt.png);
+}
+.vob_doc {
+    background-image: url(../art/vob.png);
+}
+.wav_doc {
+    background-image: url(../art/wav.png);
+}
+.wma_doc {
+    background-image: url(../art/wma.png);
+}
+.wmv_doc {
+    background-image: url(../art/wmv.png);
+}
+.wpl_doc {
+    background-image: url(../art/wpl.png);
+}
+.wri_doc {
+    background-image: url(../art/wri.png);
+}
+.xls_doc {
+    background-image: url(../art/xls.png);
+}
+.xlsx_doc {
+    background-image: url(../art/xls.png);
+}
+.xlm_doc {
+    background-image: url(../art/xlm.png);
+}
+.zip_doc {
+    background-image: url(../art/zip.png);
+}
+
+/*
+* Small icons
+*/
+
+._doc_list {
+    background-image: url(../art/no.png);
+}
+.ac3_doc_list {
+    background-image: url(../art/ico/music.png);
+}
+.ai_doc_list {
+    background-image: url(../art/ico/image.png);
+}
+.aiff_doc_list {
+    background-image: url(../art/ico/audio.png);
+}
+.ani_doc_list {
+    background-image: url(../art/ico/script.png);
+}
+.asf_doc_list {
+    background-image: url(../art/ico/video.png);
+}
+.au_doc_list {
+    background-image: url(../art/ico/audio.png);
+}
+.avi_doc_list {
+    background-image: url(../art/ico/film.png);
+}
+.bat_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.bin_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.bmp_doc_list {
+    background-image: url(../art/ico/image.png);
+}
+.bup_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.cab_doc_list {
+    background-image: url(../art/ico/package.png);
+}
+.cal_doc_list {
+    background-image: url(../art/ico/spreadsheet.png);
+}
+.cat_doc_list {
+    background-image: url(../art/ico/txt.png);
+}
+.csv_doc_list {
+    background-image: url(../art/ico/txt.png);
+}
+.cur_doc_list {
+    background-image: url(../art/ico/spreadsheet.png);
+}
+.dat_doc_list {
+    background-image: url(../art/ico/db.png);
+}
+.dcr_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.der_doc_list {
+    background-image: url(../art/ico/txt.png);
+}
+.dic_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.dll_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.doc_doc_list {
+    background-image: url(../art/ico/doc.png);
+}
+.docx_doc_list {
+    background-image: url(../art/ico/doc.png);
+}
+.dvd_doc_list {
+    background-image: url(../art/ico/video.png);
+}
+.dwg_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.dwt_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.eml_doc_list {
+    background-image: url(../art/ico/eml.png);
+}
+.fon_doc_list {
+    background-image: url(../art/ico/txt.png);
+}
+.gif_doc_list {
+    background-image: url(../art/ico/picture.png);
+}
+.hlp_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.html_doc_list {
+    background-image: url(../art/ico/html.png);
+}
+.ico_doc_list {
+    background-image: url(../art/ico/image.png);
+}
+.ifo_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.inf_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.ini_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.java_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.jif_doc_list {
+    background-image: url(../art/ico/picture.png);
+}
+.jpg_doc_list {
+    background-image: url(../art/ico/jpg.png);
+}
+.jpeg_doc_list {
+    background-image: url(../art/ico/jpg.png);
+}
+.log_doc_list {
+    background-image: url(../art/ico/text-plain.png);
+}
+.m4a_doc_list {
+    background-image: url(../art/ico/music.png);
+}
+.mmf_doc_list {
+    background-image: url(../art/ico/msg.png);
+}
+.mmm_doc_list {
+    background-image: url(../art/ico/video.png);
+}
+.mov_doc_list {
+    background-image: url(../art/ico/video.png);
+}
+.mp2_doc_list {
+    background-image: url(../art/ico/music.png);
+}
+.mp2v_doc_list {
+    background-image: url(../art/ico/video.png);
+}
+.mp3_doc_list {
+    background-image: url(../art/ico/music.png);
+}
+.mp4_doc_list {
+    background-image: url(../art/ico/film.png);
+}
+.mpeg_doc_list {
+    background-image: url(../art/ico/video.png);
+}
+.msp_doc_list {
+    background-image: url(../art/ico/psd.png);
+}
+.no_doc_list {
+    background-image: url(../art/ico/no.png);
+}
+.odp_doc_list {
+    background-image: url(../art/ico/odp.png);
+}
+.ods_doc_list {
+    background-image: url(../art/ico/ods.png);
+}
+.odt_doc_list {
+    background-image: url(../art/ico/odt.png);
+}
+.pdf_doc_list {
+    background-image: url(../art/ico/pdf.png);
+}
+.png_doc_list {
+    background-image: url(../art/ico/png.png);
+}
+.ppt_doc_list {
+    background-image: url(../art/ico/ppt.png);
+}
+.pptx_doc_list {
+    background-image: url(../art/ico/ppt.png);
+}
+.psd_doc_list {
+    background-image: url(../art/ico/psd.png);
+}
+.ra_doc_list {
+    background-image: url(../art/ico/music.png);
+}
+.rar_doc_list {
+    background-image: url(../art/ico/package.png);
+}
+.reg_doc_list {
+    background-image: url(../art/ico/db.png);
+}
+.rtf_doc_list {
+    background-image: url(../art/ico/document.png);
+}
+.theme_doc_list {
+    background-image: url(../art/ico/psd.png);
+}
+.tiff_doc_list {
+    background-image: url(../art/ico/picture.png);
+}
+.tlb_doc_list {
+    background-image: url(../art/ico/file.png);
+}
+.ttf_doc_list {
+    background-image: url(../art/ico/text-plain.png);
+}
+.txt_doc_list {
+    background-image: url(../art/ico/txt.png);
+}
+.vob_doc_list {
+    background-image: url(../art/ico/video.png);
+}
+.wav_doc_list {
+    background-image: url(../art/ico/music.png);
+}
+.wma_doc_list {
+    background-image: url(../art/ico/video.png);
+}
+.wmv_doc_list {
+    background-image: url(../art/ico/video.png);
+}
+.wpl_doc_list {
+    background-image: url(../art/ico/video.png);
+}
+.wri_doc_list {
+    background-image: url(../art/ico/document.png);
+}
+.xls_doc_list {
+    background-image: url(../art/ico/xls.png);
+}
+.xlsx_doc_list {
+    background-image: url(../art/ico/xls.png);
+}
+.xlm_doc_list {
+    background-image: url(../art/ico/script.png);
+}
+.zip_doc_list {
+    background-image: url(../art/ico/zip.png);
+}

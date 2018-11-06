@@ -134,9 +134,6 @@ class UploadForm extends FormBase {
                 $file->save();
                 $filename  = $file->getFileName();
                 $uri = $file->getFileUri();
-
-
-
                     $fields = array(
                       'uid' => $user,
                       //'fid' => '',
@@ -161,6 +158,11 @@ class UploadForm extends FormBase {
                 $log = 'user ' . \Drupal::currentUser()->id() .'|'. \Drupal::currentUser()->getUsername() .'|upload|'. $filename;
                 \Drupal::logger('ek_documents')->notice( $log );  
                 $form['doc_upload_message']['#markup'] = t('file uploaded @f', array('@f' => $filename ));
+                if($user == 0){
+                    \Drupal\Core\Cache\Cache::invalidateTags(['common_documents']);
+                } else {
+                    \Drupal\Core\Cache\Cache::invalidateTags(['my_documents']);
+                }
             }
             
         } else {

@@ -1,5 +1,5 @@
 ek_documents_display:
-  version: VERSION
+  version: 1
   js:
     js/jquery.periodicalupdater.js: {}
     js/ek_documents.js: {}
@@ -19,10 +19,14 @@ ek_documents_display:
     - core/jquery.ui.droppable    
     - core/jquery.ui.draggable
 
-  
+classic:
+  version: 1
+  css:
+    theme:
+      css/classic.css: {}  
     
 ek_documents_multiselect:
-  version: VERSION
+  version: 1
   js:
     js/multiselect/js/jquery.multi-select.js: {}
     js/multiselect.js: {}

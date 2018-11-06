@@ -13,8 +13,6 @@
  *   doc_name (string) name without extension
  *   doc_name_short (string) name 12 char without extension
  *   extension (string)
- *   icon_path_small (string) path to small icon img
- *   icon_path (string) path to icon img
  *   uri (sting)system path
  *   url (string)full path
  *   type (bol)
@@ -66,7 +64,7 @@
 
                                         <div class="doc_content">
                                             <a target='_blank' href="{{ doc.url }}">
-                                                <IMG class='largeico'  src="{{ doc.icon_path }}">               
+                                                <div class="icon_doc {{ doc.extension }}_doc"></div>               
                                                 <div title="{{ doc.date_full }}, {{ doc.filename }}">
                                                     {{ doc.doc_name_short }} ({{ doc.size }} Kb)
                                                 </div>
@@ -111,7 +109,7 @@
 
                                         <div class="doc_content">
                                             <a target='_blank' href="{{ doc.url }}">
-                                                <IMG class='largeico'  src="{{ doc.icon_path }}">               
+                                                <div class="icon_doc {{ doc.extension }}_doc"></div>              
                                                 <div title="{{ doc.date_full }}, {{ doc.filename }}">
                                                     {{ doc.doc_name_short }} ({{ doc.size }} Kb)
                                                 </div>
@@ -143,7 +141,7 @@
 
                                         <div class="doc_content">
                                             <a target='_blank' href="{{ doc.url }}">
-                                                <IMG class='largeico'  src="{{ doc.icon_path }}">             
+                                                <div class="icon_doc {{ doc.extension }}_doc"></div>              
                                                 <div title="{{ doc.date_full }}, {{ doc.filename }}">
                                                     {{ doc.doc_name_short }} ({{ doc.size }} Kb)
                                                 </div>
@@ -162,7 +160,7 @@
                                     </div>
                                 </div>   
                             </div> 
-                        </div>
+                        
 
                     {% endif %}
 

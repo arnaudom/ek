@@ -133,11 +133,6 @@
 
 }
 
-.largeico {
-    width:45px;
-    margin-top:5px;
-} 
-
 .top-ico:before {
     content: "\f0aa"; 
     font-family: FontAwesome;
@@ -211,7 +206,7 @@
     color: #7d97a5;
 }
 
-.handle-ico img:hover {
+.handle-ico p:hover {
     cursor:all-scroll;
 }
 .handle-ico div:hover {

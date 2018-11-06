@@ -13,8 +13,6 @@
  *   doc_name (string) name without extension
  *   doc_name_short (string) name 12 char without extension
  *   extension (string)
- *   icon_path_small (string) path to small icon img
- *   icon_path (string) path to icon img
  *   uri (sting)system path
  *   url (string)full path
  *   type (bol)
@@ -71,9 +69,8 @@
 
                             {% for doc in docs %}
 
-
                                 <tr class='move'id="div-{{ doc.id }}">
-                                    <td class='priority-low handle-ico'><IMG class='smallico' src="{{ doc.icon_path_small }}" ></td>
+                                    <td class='priority-low handle-ico' style="text-align: center;"><p class="smallico icon_doc_list {{ doc.extension }}_doc_list"></p></td>
                                     <td title="{{ doc.filename }}"><a target='_blank' href="{{ doc.url }}">{{ doc.doc_name }}</a></td>
                                     <td class="priority-low"><h5>{{ doc.date_full }}</h5></td>
                                     <td class='priority-low'><h5>{{ doc.size }} Kb</h5></td>

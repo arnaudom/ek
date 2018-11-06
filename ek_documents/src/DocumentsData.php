@@ -91,10 +91,10 @@ use Drupal\Core\Database\Database;
                 $icon_path_small = drupal_get_path('module', 'ek_documents') . '/art/ico/' . $extension . ".png";
             
                 if (!file_exists($icon_path)) {
-                    $icon_path = drupal_get_path('module', 'ek_documents') . '/art/no.png';
+                    $extension = 'no';
                 } 
                 if(!file_exists($icon_path_small)){
-                    $icon_path_small = drupal_get_path('module', 'ek_documents') . '/art/ico/no.png';
+                    $extension = 'no';
                 }
                                
                 $thisarray = array('id' => $l->id,
@@ -104,8 +104,6 @@ use Drupal\Core\Database\Database;
                                 'doc_name' => $doc_name,
                                 'doc_name_short' => $doc_short_name, 
                                 'extension' => $extension,
-                                'icon_path' => $icon_path,
-                                'icon_path_small' => $icon_path_small,
                                 'uri' => $l->uri,
                                 'url' => file_create_url($l->uri),
                                 'type' => $l->type,
