@@ -58,6 +58,8 @@
 .cell {  
   display : table-cell;
   vertical-align: middle;
+}
+.cellfloat {  
   float: left;
   padding-left: 30px;
 }

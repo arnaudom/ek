@@ -135,7 +135,7 @@ class FilterMemo extends FormBase {
               '#options' => $entity,
               '#default_value' => isset($_SESSION['memfilter']['coid']) ? $_SESSION['memfilter']['coid'] : '%',
               '#title' => t('Issuer'),
-              '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+              '#prefix' => "<div class='table'><div class='row'><div class='cell cellfloat'>",
               '#suffix' => '</div>',
               '#states' => array(
                 'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
@@ -150,7 +150,7 @@ class FilterMemo extends FormBase {
               '#default_value' => isset($_SESSION['memfilter']['coid2']) ? $_SESSION['memfilter']['coid2'] : 0,
               '#title' => t('Payor'),
               '#attributes' => array('style' => array('width:150px;')),
-              '#prefix' => "<div class='cell'>",
+              '#prefix' => "<div class='cell cellfloat'>",
               '#suffix' => '</div></div>',
               '#states' => array(
                 'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
@@ -163,7 +163,7 @@ class FilterMemo extends FormBase {
               '#type' => 'date',
               '#size' => 12,
               '#default_value' => isset($_SESSION['memfilter']['from']) ? $_SESSION['memfilter']['from'] : $from,
-              '#prefix' => "<div class='row'><div class='cell'>",
+              '#prefix' => "<div class='row'><div class='cell cellfloat'>",
               '#suffix' => '</div>',
               '#title' => t('from'),
               '#states' => array(
@@ -177,7 +177,7 @@ class FilterMemo extends FormBase {
               '#size' => 12,
               '#default_value' => isset($_SESSION['memfilter']['to']) ? $_SESSION['memfilter']['to'] : $to,
                '#title' => t('to'),
-               '#prefix' => "<div class='cell'>",
+               '#prefix' => "<div class='cell cellfloat'>",
                '#suffix' => '</div></div>',  
               '#states' => array(
                 'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
@@ -192,7 +192,7 @@ class FilterMemo extends FormBase {
                 '#default_value' => isset($_SESSION['memfilter']['status']) ? $_SESSION['memfilter']['status'] : '%' ,
                 '#title' => t('status'),
                 '#suffix' => '</div>',
-                '#prefix' => "<div class='row'><div class='cell'>",
+                '#prefix' => "<div class='row'><div class='cell cellfloat'>",
                 '#suffix' => '</div>', 
                 '#states' => array(
                   'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
@@ -216,7 +216,7 @@ if($this->moduleHandler->moduleExists('ek_projects')) {
                 '#default_value' => isset($_SESSION['memfilter']['pcode']) ? $_SESSION['memfilter']['pcode'] : '%',
                 '#title' => t('project'),
                 '#attributes' => array('style' => array('width:150px;')),
-                '#prefix' => "<div class='cell'>",
+                '#prefix' => "<div class='cell cellfloat'>",
                 '#suffix' => '</div></div>', 
                 '#states' => array(
                   'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),

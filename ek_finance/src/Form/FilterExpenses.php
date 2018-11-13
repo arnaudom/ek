@@ -85,7 +85,7 @@ class FilterExpenses extends FormBase {
                   'callback' => array($this, 'set_coid'), 
                   'wrapper' => 'add',
               ),
-              '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+              '#prefix' => "<div class='table'><div class='row'><div class='cell cellfloat'>",
               '#suffix' => '</div>',
               '#states' => array(
                 'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
@@ -108,7 +108,7 @@ class FilterExpenses extends FormBase {
             '#title' => t('class'),
             '#default_value' => isset($_SESSION['efilter']['aid']) ? $_SESSION['efilter']['aid'] : NULL ,
             '#attributes' => array('style' => array('width:200px;')),
-            '#prefix' => "<div id='add'  class='cell'>",
+            '#prefix' => "<div id='add'  class='cell cellfloat'>",
             '#suffix' => '</div>',  
               '#states' => array(
                 'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
@@ -125,7 +125,7 @@ class FilterExpenses extends FormBase {
             '#default_value' => isset($_SESSION['efilter']['allocation']) ? $_SESSION['efilter']['allocation'] : 0,
             '#title' => t('Allocation'),
             '#attributes' => array('style' => array('width:200px;')),
-            '#prefix' => "<div class='cell'>",
+            '#prefix' => "<div class='cell cellfloat'>",
             '#suffix' => '</div></div></div>',  
               '#states' => array(
                 'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
@@ -137,7 +137,7 @@ class FilterExpenses extends FormBase {
               '#size' => 12,
               '#default_value' => isset($_SESSION['efilter']['from']) ? $_SESSION['efilter']['from'] : date('Y-m') . "-01",
               //'#attributes' => array('placeholder'=>t('from')),
-              '#prefix' => "<div class=''><div class='row'><div class='cell'>",
+              '#prefix' => "<div class=''><div class='row'><div class='cell cellfloat'>",
               '#suffix' => '</div>',
               '#title' => t('from'),
               '#states' => array(
@@ -152,7 +152,7 @@ class FilterExpenses extends FormBase {
               '#default_value' => isset($_SESSION['efilter']['to']) ? $_SESSION['efilter']['to'] : $to->date,
               //'#attributes' => array('placeholder'=>t('to')),
               '#title' => t('to'),
-              '#prefix' => "<div class='cell'>",
+              '#prefix' => "<div class='cell cellfloat'>",
               '#suffix' => '</div></div></div>',  
               '#states' => array(
                 'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
@@ -175,7 +175,7 @@ class FilterExpenses extends FormBase {
                 '#default_value' => isset($_SESSION['efilter']['supplier']) ? $_SESSION['efilter']['supplier'] :'%',
                 '#title' => t('supplier'),
                 '#attributes' => array('style' => array('width:200px;')),
-                '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+                '#prefix' => "<div class='table'><div class='row'><div class='cell cellfloat'>",
                 '#suffix' => '</div>',
                 '#states' => array(
                   'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
@@ -196,7 +196,7 @@ class FilterExpenses extends FormBase {
                 '#default_value' => isset($_SESSION['efilter']['client']) ? $_SESSION['efilter']['client'] : '%',
                 '#title' => t('client'),
                 '#attributes' => array('style' => array('width:200px;')),
-                '#prefix' => "<div class='cell'>",
+                '#prefix' => "<div class='cell cellfloat'>",
                 '#suffix' => '</div>',  
                 '#states' => array(
                   'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
@@ -231,7 +231,7 @@ class FilterExpenses extends FormBase {
                 '#default_value' => isset($_SESSION['efilter']['pcode']) ? $_SESSION['efilter']['pcode'] : '%',
                 '#title' => t('project'),
                 '#attributes' => array('style' => array('width:200px;')),
-                '#prefix' => "<div class='cell'>",
+                '#prefix' => "<div class='cell cellfloat'>",
                 '#suffix' => '</div></div></div>', 
                 '#states' => array(
                   'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
