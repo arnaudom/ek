@@ -141,6 +141,7 @@ class FilterPurchase extends FormBase {
                   '#options' => $supplier,
                   '#required' => TRUE,
                   '#default_value' => isset($_SESSION['pfilter']['client']) ? $_SESSION['pfilter']['client'] : '%',
+                  '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
                   '#title' => t('supplier'),
                   '#states' => array(
                 'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),

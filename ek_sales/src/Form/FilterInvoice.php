@@ -142,6 +142,7 @@ class FilterInvoice extends FormBase {
                   '#required' => TRUE,
                   '#default_value' => isset($_SESSION['ifilter']['client']) ? $_SESSION['ifilter']['client'] : '%',
                   '#title' => t('client'),
+                  '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
                   '#prefix' => "<div class='container-inline'>",
                   '#states' => array(
                     'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
