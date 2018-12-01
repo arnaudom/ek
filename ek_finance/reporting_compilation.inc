@@ -168,7 +168,7 @@ foreach($company as $key => $coid) {
             $Obj = $query->execute();
             $purchasesId[$coid]['actual'] = $Obj->fetchCol(); 
   
-            // Get the sum of purchases per 'allocation'  
+            // Get the ids of  purchases per 'allocation'  
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal', 'j');
                 $query->leftJoin('ek_sales_purchase', 'p', 'p.id = j.reference');    
@@ -184,7 +184,7 @@ foreach($company as $key => $coid) {
             $Obj = $query->execute();
             $purchasesId[$coid]['allocation'] = $Obj->fetchCol();        
 
-            // Get the sum of expenses per 'actual' 
+            // Get the ids of  expenses per 'actual' 
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
                     $query->leftJoin('ek_expenses', 'e', 'e.id = j.reference');    
@@ -192,7 +192,7 @@ foreach($company as $key => $coid) {
                     $query->condition('aid', $accounts_exp_class, 'IN');
                     $query->condition('date', $date1, '>=');
                     $query->condition('date', $date2, '<=');
-                    $query->condition('source', 'expense', '!=');
+                    $query->condition('source', 'expense', '=');
                     $query->condition('j.type', 'debit');
                     $query->condition('j.exchange', '0');
                     $query->condition('company', $coid);
@@ -201,7 +201,7 @@ foreach($company as $key => $coid) {
             $expensesId[$coid]['actual'] = $Obj->fetchCol(); 
 
 
-            // Get the sum of expenses per 'allocation' 
+            // Get the ids of  expenses per 'allocation' 
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
                     $query->leftJoin('ek_expenses', 'e', 'e.id = j.reference');    
@@ -209,7 +209,7 @@ foreach($company as $key => $coid) {
                     $query->condition('aid', $accounts_exp_class, 'IN');
                     $query->condition('date', $date1, '>=');
                     $query->condition('date', $date2, '<=');
-                    $query->condition('source', 'expense', '!=');
+                    $query->condition('source', 'expense', '=');
                     $query->condition('j.type', 'debit');
                     $query->condition('j.exchange', '0');
                     $query->condition('allocation', $coid);
@@ -217,7 +217,7 @@ foreach($company as $key => $coid) {
             $Obj = $query->execute();
             $expensesId[$coid]['allocation'] = $Obj->fetchCol();
             
-            // Get the sum of income per 'actual' 
+            // Get the ids of income per 'actual' 
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
                     $query->leftJoin('ek_sales_invoice', 'i', 'i.id = j.reference');    
@@ -233,7 +233,7 @@ foreach($company as $key => $coid) {
             $Obj = $query->execute();
             $incomeId[$coid]['actual'] = $Obj->fetchCol();
 
-            // Get the sum of income per 'allocation' 
+            // Get the ids of income per 'allocation' 
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
                     $query->leftJoin('ek_sales_invoice', 'i', 'i.id = j.reference');    
