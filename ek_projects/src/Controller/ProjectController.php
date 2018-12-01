@@ -131,12 +131,14 @@ class ProjectController extends ControllerBase {
                     $or->condition('p.pname', $keyword2, 'like');
                     $or->condition('d.filename', $keyword2, 'like');
                     $or->condition('t.project_description', $keyword2, 'like');
+                    $or->condition('t.project_comment', $keyword2, 'like');
                     $data = $query
                             ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date','archive'))
                             ->condition($or)
                             ->extend('Drupal\Core\Database\Query\TableSortExtender')
                             ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
                             ->limit(10)->orderBy('id', 'ASC')
+                            ->distinct()
                             ->execute();
                 }
             } else {
