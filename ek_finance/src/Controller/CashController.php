@@ -206,11 +206,11 @@ class CashController extends ControllerBase {
         //user cash transactions
             $account_list = [];
             $account1 = $filter['account'];
-            $account2 = db_query('SELECT name from {users_field_data} WHERE uid=:u', array(':u' => $filter['account']))
+            $items['filter']['username'] = db_query('SELECT name from {users_field_data} WHERE uid=:u', array(':u' => $filter['account']))
                             ->fetchfield();
             $company = '%';    
             $items['filter']['type'] = 1;
-            $items['filter']['username'] = $account2;
+            $account2 = $filter['account'];
         }
       
             /*
