@@ -135,6 +135,7 @@ class DeletePurchase extends FormBase {
 
         if ($delete) {
             \Drupal::messenger()->addStatus(t('The purchase has been deleted'));
+            \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
             $form_state->setRedirect("ek_sales.purchases.list");
         }
     }

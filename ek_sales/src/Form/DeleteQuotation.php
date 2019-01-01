@@ -113,6 +113,7 @@ class DeleteQuotation extends FormBase {
 
         if ($delete) {
             \Drupal::messenger()->addStatus(t('The quotation has been deleted'));
+            \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
             $form_state->setRedirect("ek_sales.quotations.list");
         }
     }

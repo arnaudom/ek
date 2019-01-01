@@ -1466,8 +1466,8 @@ class Purchase extends FormBase {
 
         Cache::invalidateTags(['project_page_view']);
         if (isset($insert) || isset($update)) {
+            Cache::invalidateTags(['reporting']);
             \Drupal::messenger()->addStatus(t('The purchase is recorded. Ref @r', ['@r' => $serial]));
-            
   
             if ($this->moduleHandler->moduleExists('ek_projects')) {
                 //notify user if purchase is linked to a project

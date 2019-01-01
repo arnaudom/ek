@@ -1543,6 +1543,7 @@ class Invoice extends FormBase {
 
         Cache::invalidateTags(['project_page_view']);
         if (isset($insert) || isset($update)) {
+            Cache::invalidateTags(['reporting']);
             \Drupal::messenger()->addStatus(t('The @doc is recorded. Ref. @r', ['@r' => $serial, '@doc' => $options[$form_state->getValue('title')]]));
 
             if ($this->moduleHandler->moduleExists('ek_projects')) {

@@ -1447,6 +1447,7 @@ class ConvertQuotation extends FormBase {
                 ->execute();
 
         if (isset($insert)) {
+            \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
             \Drupal::messenger()->addStatus(t('The invoice @r is recorded', ['@r' => $serial]));
             
                 switch($form_state->getValue('redirect')) {
