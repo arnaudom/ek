@@ -1,6 +1,6 @@
 name : 'ek_projects'
 type: module
-description: 'Projects amangement module for ek management tools suite'
+description: 'Projects management module for ek management tools suite'
 core: 8.x
 package: ek 
 version: "8.5.x.y"

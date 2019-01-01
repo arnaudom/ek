@@ -207,14 +207,14 @@ use Drupal\ek_admin\Access\AccessCheck;
     /*
      * @return 
      *  access validation to a project by uid 
-     * @param
-     *  id = project id, $uid = user id provided if not current user to be checked
+     * @param int  $id project id, 
+     * @param int $uid  user id provided if not current user to be checked
      */
 
     public static function validate_access($id , $uid = NULL) { 
  
     if($uid == NULL) {
-    $uid =  \Drupal::currentUser()->id();
+        $uid =  \Drupal::currentUser()->id();
     }
 
     $query = "SELECT cid,share,deny FROM {ek_project} WHERE id=:id";
