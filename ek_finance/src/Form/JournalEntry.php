@@ -573,6 +573,7 @@ class JournalEntry extends FormBase {
                 \Drupal::messenger()->addError(t('Error journal record (@aid)',['@aid' => $msg]));
             }
             
+            \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
             $url = Url::fromRoute('ek_finance.manage.journal_edit', array('id' => $rec[1]), array())->toString();
             \Drupal::messenger()->addStatus(t('Data updated. <a href="@url">Edit</a>', ['@url' => $url]));
         }//step 2

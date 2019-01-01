@@ -1,18 +1,67 @@
 <?php
 
-$pdf=new FPDF();
+class EKPDF extends TCPDF {
+
+    //Page header
+    public function Header() {       
+        
+    }
+
+    // Page footer
+    public function Footer() {
+        // Position at 15 mm from bottom
+        $this->SetY(-15);
+        // Set font
+        $this->SetFont('helvetica', 'I', 8);
+        // Page number
+        $this->Cell(0,5, t('Page') . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, 1, 'R');
+    }
+}
+
+// create new PDF document
+$pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+// set document information
+$pdf->SetCreator($company);
+$pdf->SetAuthor(\Drupal::currentUser()->getUsername());
 $pdf->SetTitle($fileName);
-$pdf->AliasNbPages();
+$pdf->SetSubject(t('Chart of accounts'));
+
+// set default header data
+$pdf->SetHeaderData();
+
+// set default monospaced font
+$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+// set margins
+$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+// set auto page breaks
+$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+// set image scale factor
+$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+
+// ---------------------------------------------------------
+
+// set font
+$pdf->SetFont('helvetica', 'BI', 12);
+$pdf->setMargins(20,20);
+// add a page
 $pdf->AddPage('P','A4');
-$pdf->SetMargins(10,10);
+$pdf->SetAutoPageBreak(TRUE,20);
 
 
+$pdf->SetLineStyle(array('width' => 0.1, 'color' => array(130,130,130)));
 $pdf->SetDrawColor(128, 128, 128);  
 
-$pdf->SetFont('Arial','',16); 
+$pdf->SetFont('helvetica','',16); 
 $pdf->Cell(100,15, t('Chart of accounts') .  ': ' . $company  ,0,1); 
 
-$pdf->SetFont('Arial','',8); 
+$pdf->SetFont('helvetica','',8); 
 While($d = $data->fetchObject()) {
     
     if($d->astatus == 0) {
@@ -22,19 +71,19 @@ While($d = $data->fetchObject()) {
     }
     
     if($d->atype == 'header') {
-        $pdf->SetFont('Arial','',10); 
+        $pdf->SetFont('helvetica','',10); 
         $pdf->Cell(5,6, '' ,0,0); 
         $pdf->Cell(25,6, $d->aid ,'B',0); 
         $pdf->Cell(100,6, $d->aname ,'B',1);
         
     } elseif($d->atype == 'class') {
-        $pdf->SetFont('Arial','',9); 
+        $pdf->SetFont('helvetica','',9); 
         $pdf->Cell(8,5, '' ,0,0); 
         $pdf->Cell(25,5, $d->aid ,'B',0); 
         $pdf->Cell(100,5, $d->aname ,'B',1);
         
     } else {
-        $pdf->SetFont('Arial','',8); 
+        $pdf->SetFont('helvetica','',8); 
         $pdf->Cell(10,4, '' ,0,0); 
         $pdf->Cell(25,4, $d->aid ,0,0); 
         $pdf->Cell(100,4, $d->aname ,0,1);

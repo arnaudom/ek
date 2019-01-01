@@ -431,6 +431,7 @@ class JournalEdit extends FormBase {
                         ->execute();
             }
             
+            \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
             \Drupal::messenger()->addStatus(t('Data edited. Go to <a href="@url">journal</a>', ['@url' => $url]));
         }
         

@@ -901,7 +901,7 @@ class EditPayrollExpense extends FormBase {
         } else {
             \Drupal::messenger()->addStatus(t('Expenses recorded ref. @id', ['@id' => $insert]));
         }
-
+        \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
         $form_state->setRedirect('ek_finance.manage.list_expense');
     }
 

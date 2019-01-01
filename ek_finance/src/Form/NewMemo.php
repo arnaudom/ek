@@ -1277,6 +1277,8 @@ $rows = $form_state->getValue('itemTable');
     
   }
   
+  \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
+  
   if ($form_state->getValue('category') < 5) {
           $form_state->setRedirect('ek_finance_manage_list_memo_internal' ) ;
         } else {

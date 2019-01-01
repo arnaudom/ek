@@ -91,6 +91,7 @@ class PayrollRecord extends FormBase {
             $query->fields('w', ['name', 'currency']);
             $query->condition('company_id', $param['coid'], '=');
             $query->condition('month', $param['month'], '=');
+            $query->distinct();
             $data = $query->execute();
 
             
@@ -636,9 +637,8 @@ class PayrollRecord extends FormBase {
             \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
         }
 
-        
+        \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
         \Drupal::messenger()->addStatus(t('Expenses recorded'));
-        
         $form_state->setRedirect('ek_finance.manage.list_expense');
         
     }

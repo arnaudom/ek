@@ -158,14 +158,10 @@ class DeleteExpense extends FormBase {
       file_unmanaged_delete($form_state->getValue('attachment'));
   }
   
-  //if($this->moduleHandler->moduleExists('ek_finance')) {
-
     $journal = new \Drupal\ek_finance\Journal();
     $journalId = $journal->delete('expense%', $form_state->getValue('for_id'),$form_state->getValue('coid'));
     //count field sequence must be restored 
     $journal->resetCount($form_state->getValue('coid'), $journalId[1]);
-  
-  //}
   
   if($this->moduleHandler->moduleExists('ek_assets')) {
       
@@ -203,7 +199,7 @@ class DeleteExpense extends FormBase {
   
     if ($delete){
         \Drupal::messenger()->addStatus(t('The entry has been deleted'));
-        
+        \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
         $form_state->setRedirect("ek_finance.manage.list_expense" );  
     }
   

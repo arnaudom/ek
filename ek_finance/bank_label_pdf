@@ -1,23 +1,68 @@
 <?php
 
+class EKPDF extends TCPDF {
 
-$pdf=new FPDF();
+    //Page header
+    public function Header() {       
+        
+    }
+
+    // Page footer
+    public function Footer() {
+        // Position at 15 mm from bottom
+        $this->SetY(-15);
+        // Set font
+        $this->SetFont('helvetica', 'I', 8);
+        // Page number
+        $this->Cell(0,5, t('Page') . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, 1, 'R');
+    }
+}
+
+// create new PDF document
+$pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+// set document information
+$pdf->SetCreator('EK');
+$pdf->SetAuthor(\Drupal::currentUser()->getUsername());
 $pdf->SetTitle($fileName);
-$pdf->AliasNbPages();
+$pdf->SetSubject(t('Bank label'));
+
+// set default header data
+$pdf->SetHeaderData();
+
+// set default monospaced font
+$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+// set margins
+$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+// set auto page breaks
+$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+// set image scale factor
+$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+
+// ---------------------------------------------------------
+
+// add a page
 $pdf->AddPage('P','A4');
-$pdf->SetMargins(10,10);
+$pdf->SetAutoPageBreak(TRUE,20);
+$pdf->SetMargins(20,5);
 
+$pdf->SetDrawColor(128, 128, 128); 
+$pdf->SetLineStyle(array('width' => 0.1, 'color' => array(130,130,130)));
+  
 
-$pdf->SetDrawColor(128, 128, 128);     
-
-//DISPLAY DATA simple
+$pdf->SetFont('helvetica','',8);
 
 //left right corners
+$pdf->Cell(5);
     $pdf->Cell(5,3,"","LT",0);
     $pdf->Cell(100,3,"",0,0); 
     $pdf->Cell(5,3,"","RT",1);
-    
-$pdf->SetFont('Arial','',8);   
     
     $pdf->Cell(5,5,"",0,0);    
     $pdf->Cell(100,5, $bank->name ,0,0);
@@ -46,11 +91,11 @@ $pdf->SetFont('Arial','',8);
     $pdf->Cell(1,5,"",0,1);
     
 if ($line["telephone"] || $line["fax"]) {
-$pdf->SetFont('Arial','',7);
+$pdf->SetFont('helvetica','',7);
     $pdf->Cell(9,3,"",0,0);       
     $pdf->Cell(100,3,t("tel.") . " " . $bank->telephone . t('fax.') . ' ' . $bank->fax,0,0); 
     $pdf->Cell(1,3,"",0,1);
-$pdf->SetFont('Arial','',8);  
+$pdf->SetFont('helvetica','',8);  
 }
 
     $pdf->Cell(9,5,"",0,0);       

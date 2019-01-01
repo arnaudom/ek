@@ -169,6 +169,9 @@ class ReportController extends ControllerBase {
                     '#attached' => array(
                         'library' => array('ek_finance/ek_finance.reporting'),
                     ),
+                    '#cache' => [
+                        'tags' => ['reporting'],
+                    ],
                 );
             } else {
                 //display a compilation table
@@ -201,6 +204,9 @@ class ReportController extends ControllerBase {
                     '#attached' => array(
                         'library' => array('ek_finance/ek_finance.reporting'),
                     ),
+                    '#cache' => [
+                        'tags' => ['reporting'],
+                    ],
                 );
                 
             }
