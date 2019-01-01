@@ -24,7 +24,7 @@ $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 
 
-$pdf->SetFont('times', '', 10);
+$pdf->SetFont('helvetica', '', 10);
 
 // add a page
 $pdf->AddPage();
@@ -40,8 +40,9 @@ $col3 = 80;
         $logo = drupal_realpath($items['company_logo']);
         if(file_exists($logo)) {
             $info = getimagesize($logo);
-            $h = $info[1]*80/$info[0];
-            $pdf->Image($logo,10,10,190,50,'','','C',false,72,'',false,false,0,'CM');
+            //original height / original width x new width = new height
+            $h = $info[1] / $info[0] * 40;
+            $pdf->Image($logo,20,20,40,$h,'','','C',false,72,'',false,false,0,'CM');
         }
     }
 
@@ -62,15 +63,7 @@ $col3 = 80;
         
     }
 
-/*item image*/
-    if ($items['picture'] != '') {
-        $picture = drupal_realpath($items['picture']);
-        if(file_exists($picture)) {
-            $info = getimagesize($picture);
-            $h = $info[1]*50/$info[0];
-            $pdf->Image($picture,150,50,$h);
-        }
-    }
+
 
 
 $pdf->Ln(1);
@@ -90,64 +83,64 @@ $pdf->Cell($col3, 8, $items['asset_name'],0,1);
 $pdf->Ln(10);
 
 $pdf->Cell($col1, 5,t('Asset brand') . ':',0,0);
-$pdf->SetFont('times','',8);
+$pdf->SetFont('helvetica','',8);
 $pdf->Cell($col2, 5,$items['asset_brand'],0,0);
 $pdf->Cell($col3, 5,"",0,1);
-$pdf->SetFont('times','',10);
+$pdf->SetFont('helvetica','',10);
 
 $pdf->Cell($col1, 5,t('Asset quantity') . ':',0,0);
-$pdf->SetFont('times','',8);
+$pdf->SetFont('helvetica','',8);
 $pdf->Cell($col2, 5,$items['asset_unit'],0,0);
 $pdf->Cell($col3, 5,"",0,1);
-$pdf->SetFont('times','',10);
+$pdf->SetFont('helvetica','',10);
 
 $pdf->Cell($col1, 6,t('Description') . ':',0,0);
-$pdf->SetFont('times','',8);
+$pdf->SetFont('helvetica','',8);
 $pdf->MultiCell($col2, 6,$items['asset_comment'],'','L',0);
 $pdf->Cell($col3, 6,'',0,1);
-$pdf->SetFont('times','',10);
+$pdf->SetFont('helvetica','',10);
 
 $pdf->Cell($col1, 5,t('Asset category') . ':',0,0);
-$pdf->SetFont('times','',8);
+$pdf->SetFont('helvetica','',8);
 $pdf->Cell($col2, 5,$items['aid'] . ' ' . $items['aname'],0,0);
 $pdf->Cell($col3, 5,"",0,1);
-$pdf->SetFont('times','',10);
+$pdf->SetFont('helvetica','',10);
 
 $pdf->Cell($col1, 5,t('Asset value') . ':',0,0);
-$pdf->SetFont('times','',8);
+$pdf->SetFont('helvetica','',8);
 $pdf->Cell($col2, 5,$items['asset_value'] . ' ' . $items['currency'],0,0);
 $pdf->Cell($col3, 5,"",0,1);
-$pdf->SetFont('times','',10);
+$pdf->SetFont('helvetica','',10);
 
 $pdf->Cell($col1, 5,t('Purchase date') . ':',0,0);
-$pdf->SetFont('times','',8);
+$pdf->SetFont('helvetica','',8);
 $pdf->Cell($col2, 5,$items['date_purchase'],0,0);
 $pdf->Cell($col3, 5,"",0,1);
-$pdf->SetFont('times','',10);
+$pdf->SetFont('helvetica','',10);
 
 $pdf->Cell($col1, 5,t('Amortization rate') . ':',0,0);
-$pdf->SetFont('times','',8);
+$pdf->SetFont('helvetica','',8);
 $pdf->Cell($col2, 5,$items['amort_rate'],0,0);
 $pdf->Cell($col3, 5,"",0,1);
-$pdf->SetFont('times','',10);
+$pdf->SetFont('helvetica','',10);
 
 $pdf->Cell($col1, 5,t('Amortization value') . ':',0,0);
-$pdf->SetFont('times','',8);
+$pdf->SetFont('helvetica','',8);
 $pdf->Cell($col2, 5,$items['amort_value'],0,0);
 $pdf->Cell($col3, 5,"",0,1);
-$pdf->SetFont('times','',10);
+$pdf->SetFont('helvetica','',10);
 
 $pdf->Cell($col1, 5,t('Amortization per year') . ':',0,0);
-$pdf->SetFont('times','',8);
+$pdf->SetFont('helvetica','',8);
 $pdf->Cell($col2, 5,$items['amort_yearly'],0,0);
 $pdf->Cell($col3, 5,"",0,1);
-$pdf->SetFont('times','',10);
+$pdf->SetFont('helvetica','',10);
 
 $pdf->Cell($col1, 5,t('Amortization status') . ':',0,0);
-$pdf->SetFont('times','',8);
+$pdf->SetFont('helvetica','',8);
 $pdf->Cell($col2, 5,$items['amort_status'],0,0);
 $pdf->Cell($col3, 5,"",0,1);
-$pdf->SetFont('times','',10);
+$pdf->SetFont('helvetica','',10);
 
 
 
@@ -160,11 +153,23 @@ $pdf->Write(5, t('Attachment') . ': ' . $items['doc_name'], $link);
 if($items['eid']) {
     $link2 = file_create_url($items['eurl']);
     $pdf->Cell($col1, 5,t('Allocation') . ':',0,0);
-    $pdf->SetFont('times','',8);
+    $pdf->SetFont('helvetica','',8);
     $pdf->Cell($col2, 5,$items['eid'] . ' | ' . $items['employee'],0,0,'L',FALSE);
     $pdf->Cell($col3, 5,"",0,1);
-    $pdf->SetFont('times','',10);    
+    $pdf->SetFont('helvetica','',10);    
 }
+
+
+/*item image*/
+    if ($items['picture'] != '') {
+        $picture = drupal_realpath($items['picture']);
+        if(file_exists($picture)) {
+            $info = getimagesize($picture);
+            //original height / original width x new width = new height
+            $h = $info[1] / $info[0] * 30;
+            $pdf->Image($picture,20,170,30,$h,'','','C',false,72,'',false,false,0,'CM');
+        }
+    }
 
 header('Cache-Control: private');
 header('Content-Type: application/pdf');
