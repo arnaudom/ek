@@ -286,3 +286,71 @@ function ek_documents_mail($key, &$message, $params) {
 
     }
 }
+
+/**
+ * Implements hook_form_alter().
+ */
+function ek_documents_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+    
+  if ($form_id == 'user_multiple_cancel_confirm') {
+    
+    $form['move_uid_documents'] = [
+      '#type' => 'textfield',
+      '#title' => t('Move uer documents'),
+      '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
+      '#description' => t('Select to whom to transfer personal documents'),
+    ];
+    $form['#validate'][] = 'ek_documents_form_user_delete_validate';
+    $form['#submit'][] = 'ek_documents_form_user_delete_submit';
+    
+     return $form;
+      
+  }
+} 
+
+/**
+ * Implements hook_form_validate().
+ */
+function ek_documents_form_user_delete_validate(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+
+  if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
+        if ($form_state->getValue('move_uid_documents') <> '') {
+            
+            $query = "SELECT uid FROM {users_field_data} WHERE name = :n";
+            $data = db_query($query, [':n' => $form_state->getValue('move_uid_documents')])
+                    ->fetchField();
+            if ($data) {
+                $form_state->setValue('move_uid_documents', $data);
+            } else {
+                $form_state->setErrorByName('move_uid_documents', t('Unknown user to move documents'));
+            }
+            
+  
+        }
+    
+     return $form;
+      
+  }
+}
+
+/**
+ * Implements hook_form_submit().
+ */
+function ek_documents_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+    
+  if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
+    if($form_state->getValue('move_uid_documents')){
+        foreach($form_state->getValue('accounts') as $key => $id) {
+
+                $query = Database::getConnection('external_db', 'external_db')
+                      ->update('ek_documents')
+                      ->fields(['uid' => $form_state->getValue('move_uid_documents'), 'folder' => t('Moved from user @u', ['@u' => $id])])
+                      ->condition('uid', $id)->execute();
+            }
+    }
+     \Drupal::messenger()->addStatus(t('Documents moved to user @u', ['@u' => $form_state->getValue('move_uid_documents')]));
+     return $form;
+      
+  }
+}
+
