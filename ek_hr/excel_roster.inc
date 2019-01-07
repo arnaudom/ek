@@ -121,8 +121,8 @@ function sum_h($t, $h) {
     return $ta;
 }
 
-// Create new PHPExcel object
-$objPHPExcel = new PHPExcel();
+// Create new Excel object
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 // Set properties
 $objPHPExcel->getProperties()->setCreator("EK")
@@ -147,7 +147,7 @@ $objPHPExcel->getActiveSheet(0)->getColumnDimension('G')->setWidth(25);
 $styleThinBlackBorderOutline = array(
     'borders' => array(
         'outline' => array(
-            'style' => PHPExcel_Style_Border::BORDER_THIN,
+            'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
             'color' => array('argb' => 'FF000000'),
         ),
     ),
@@ -208,22 +208,22 @@ while ($l = $locations->fetchObject()) {
             ->setCellValue("F$i", "Fi")
             ->setCellValue("G$i", "Sat");
 
-    $objPHPExcel->getActiveSheet(0)->getStyle("A$i:G$i")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $objPHPExcel->getActiveSheet(0)->getStyle("A$i:G$i")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
     $objPHPExcel->getActiveSheet(0)->getStyle("A$i:G$i")->applyFromArray(
             array(
                 'font' => array(
                     'bold' => true
                 ),
                 'alignment' => array(
-                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
                 ),
                 'borders' => array(
                     'top' => array(
-                        'style' => PHPExcel_Style_Border::BORDER_THIN
+                        'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
                     )
                 ),
                 'fill' => array(
-                    'type' => PHPExcel_Style_Fill::FILL_GRADIENT_LINEAR,
+                    'type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
                     'rotation' => 90,
                     'startcolor' => array(
                         'rgb' => 'C0C0C0'
@@ -257,17 +257,17 @@ while ($l = $locations->fetchObject()) {
         }
 
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($col[$c] . $i, $day_num);
-        $objPHPExcel->getActiveSheet(0)->getStyle($col[$c] . $i)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet(0)->getStyle($col[$c] . $i)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $objPHPExcel->getActiveSheet(0)->getStyle($col[$c] . $i)->getFill()->getStartColor()->setRGB($color);
         $objPHPExcel->getActiveSheet(0)->getStyle($col[$c] . $i)->getFont()->setBold(true);
-        $objPHPExcel->getActiveSheet(0)->getStyle($col[$c] . $i)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $objPHPExcel->getActiveSheet(0)->getStyle($col[$c] . $i)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
 
         //INSERT ROSTER DATA///////////////////////////////////////////////////////
         if ($day_num >= $param['cutoff']) {
             $display = '';
             $period = $month0 . "-" . $year0 . "-" . $day_num;
-            $objRichText = new PHPExcel_RichText();
+            $objRichText = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
             $objRichText->createText('');
             $co = 0;
 
@@ -321,7 +321,7 @@ while ($l = $locations->fetchObject()) {
                 }
             }
         } else {
-            $objRichText = new PHPExcel_RichText();
+            $objRichText = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
             $objRichText->createText('-');
         }
         $ii = $i + 1;
@@ -380,22 +380,22 @@ while ($l = $locations->fetchObject()) {
             ->setCellValue("F$i", "Fri")
             ->setCellValue("G$i", "Sat");
 
-    $objPHPExcel->getActiveSheet(0)->getStyle("A$i:G$i")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $objPHPExcel->getActiveSheet(0)->getStyle("A$i:G$i")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
     $objPHPExcel->getActiveSheet(0)->getStyle("A$i:G$i")->applyFromArray(
             array(
                 'font' => array(
                     'bold' => true
                 ),
                 'alignment' => array(
-                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
                 ),
                 'borders' => array(
                     'top' => array(
-                        'style' => PHPExcel_Style_Border::BORDER_THIN
+                        'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
                     )
                 ),
                 'fill' => array(
-                    'type' => PHPExcel_Style_Fill::FILL_GRADIENT_LINEAR,
+                    'type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
                     'rotation' => 90,
                     'startcolor' => array(
                         'rgb' => 'C0C0C0'
@@ -428,18 +428,17 @@ while ($l = $locations->fetchObject()) {
         }
 
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($col[$c] . $i, $day_num);
-        $objPHPExcel->getActiveSheet()->getStyle($col[$c] . $i)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet()->getStyle($col[$c] . $i)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $objPHPExcel->getActiveSheet()->getStyle($col[$c] . $i)->getFill()->getStartColor()->setRGB($color);
         $objPHPExcel->getActiveSheet()->getStyle($col[$c] . $i)->getFont()->setBold(true);
-        $objPHPExcel->getActiveSheet()->getStyle($col[$c] . $i)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $objPHPExcel->getActiveSheet()->getStyle($col[$c] . $i)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
 
         //INSERT HERE THE CODE FOR ROSTER DATA
         if ($day_num <= $param['cutoff']) {
             $display = '';
             $period = $month . "-" . $year . "-" . $day_num;
-            $objRichText = new PHPExcel_RichText();
-            $objRichText->createText('');
+            $objRichText = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
             $co = 0;
 
             //while ($row = $data2->fetchAssoc()) {
@@ -490,7 +489,7 @@ while ($l = $locations->fetchObject()) {
                 }
             }
         }else {
-            $objRichText = new PHPExcel_RichText();
+            $objRichText = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
             $objRichText->createText('-');
         }
         $ii = $i + 1;
@@ -557,10 +556,10 @@ foreach ($location_array as $key => $location) {
         }
 
         $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$c] . $l, "$i");
-        $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFill()->getStartColor()->setRGB($color);
         $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFont()->setBold(true);
-        $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         $objPHPExcel->getActiveSheet(1)->getColumnDimension($col[$c])->setWidth(5);
         $c++;
     }
@@ -578,10 +577,10 @@ foreach ($location_array as $key => $location) {
         }
 
         $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$c] . $l, "$i");
-        $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFill()->getStartColor()->setRGB("$color");
         $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFont()->setBold(true);
-        $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         $objPHPExcel->getActiveSheet(1)->getColumnDimension("$col[$c]")->setWidth(5);
         $c++;
     }
@@ -635,12 +634,12 @@ foreach ($location_array as $key => $location) {
                 $this_time = $r['status'];
             }
             if ($r['status'] != '') {
-                $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+                $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
                 $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFill()->getStartColor()->setRGB("969696");
             }
 
             $PHPDateValue = strtotime($this_time);
-            $ExcelDateValue = PHPExcel_Shared_Date::PHPToExcel($PHPDateValue);
+            $ExcelDateValue = \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel($PHPDateValue);
             $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$c] . $l, $this_time);
             $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFont()->setSize(8);
             $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getNumberFormat()->setFormatCode('[h]:mm');
@@ -673,10 +672,10 @@ foreach ($location_array as $key => $location) {
                 $this_time = $r['status'];
             }
             if ($r['status'] != '') {
-                $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+                $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
                 $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFill()->getStartColor()->setRGB("969696");
             }
-            $ExcelDateValue = PHPExcel_Shared_Date::stringToExcel($this_time);
+            $ExcelDateValue = \PhpOffice\PhpSpreadsheet\Shared\Date::stringToExcel($this_time);
             $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getNumberFormat()->setFormatCode('[h]:mm');
             $objPHPExcel->getActiveSheet(1)->getStyle($col[$c] . $l)->getFont()->setSize(8);
             $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$c] . $l, $this_time);
@@ -720,11 +719,9 @@ $fileName = 'Roster_' . str_replace(' ', '_', $company_name) . '-' . $year . '-'
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Cache-Control: max-age=0');
-//header('Content-Type: application/vnd.ms-excel');
 header("Content-Disposition: attachment;filename=$fileName");
 header('Cache-Control: max-age=0');
-$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-//$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+$objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
 $objWriter->save('php://output');
 exit;
 ?>

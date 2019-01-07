@@ -211,7 +211,7 @@ class ReconciliationController extends ControllerBase {
     public function excelreco($param) {
 
         $markup = array();
-        if (!class_exists('PHPExcel')) {
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
             $data = array();

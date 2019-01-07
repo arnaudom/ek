@@ -8,7 +8,7 @@ use Drupal\ek_finance\Journal;
 $TopBorderThin = array(
 	'borders' => array(
 		'top' => array(
-			'style' => PHPExcel_Style_Border::BORDER_THIN,
+			'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
 			'color' => array('argb' => 'FF000000'),
 		),
 	),
@@ -17,7 +17,7 @@ $TopBorderThin = array(
 $BottomBorderThin = array(
 	'borders' => array(
 		'bottom' => array(
-			'style' => PHPExcel_Style_Border::BORDER_THIN,
+			'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
 			'color' => array('argb' => 'FF000000'),
 		),
 	),
@@ -27,7 +27,7 @@ $FontBoldCenter = array(
 				'bold'      => true
 			),
 			'alignment' => array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
 			),
 		);
 $FontRed = array(
@@ -45,8 +45,8 @@ $columns=Array ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P',
 $journal = new Journal();
 $param = unserialize($param);
  
-// Create new PHPExcel object
-$objPHPExcel = new PHPExcel(); 
+// Create new Excel object
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 $objPHPExcel->getProperties()->setCreator("Ek")
                                 ->setLastModifiedBy('')
                                 ->setTitle("Tax report")
@@ -128,12 +128,12 @@ $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
 $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
 $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
 
-$objPHPExcel->getActiveSheet()->setBreak( 'F1' , PHPExcel_Worksheet::BREAK_COLUMN );
-$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
-$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+$objPHPExcel->getActiveSheet()->setBreak( 'F1' , \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_COLUMN );
+$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
 
-$objPHPExcel->getActiveSheet()->getStyle('A4:D5')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT); 
-$objPHPExcel->getActiveSheet()->getStyle('A4:D5')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A4:D5')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT); 
+$objPHPExcel->getActiveSheet()->getStyle('A4:D5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle('A4:D5')->getFill()->getStartColor()->setARGB('FFFFFF');
 
 
@@ -142,10 +142,10 @@ $objPHPExcel->getActiveSheet()->getStyle('A6:D6')->applyFromArray($TopBorderThin
 $objPHPExcel->getActiveSheet()->getStyle('A8:D8')->applyFromArray($BottomBorderThin);
 $objPHPExcel->getActiveSheet()->getStyle('A10:D10')->applyFromArray($BottomBorderThin);
 $objPHPExcel->getActiveSheet()->getStyle('A4:D5')->applyFromArray($FontBoldCenter); 
-$objPHPExcel->getActiveSheet()->getStyle('A4:D5')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A4:D5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle('A4:D5')->getFill()->getStartColor()->setARGB('e6e6fa');
 $objPHPExcel->getActiveSheet()->getStyle('A8:D8')->getNumberFormat()
-                    ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+                    ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
 $objPHPExcel->getActiveSheet()->mergeCells('C9:D9');
 
 $query = "SELECT  * FROM {ek_journal} 
@@ -171,7 +171,7 @@ $l = 10;
        if($d->exchange == '1') {
            
            $objPHPExcel->getActiveSheet()->getStyle("A$l:D$l")->getFont()->setSize(10);
-           $objPHPExcel->getActiveSheet()->getStyle("A$l:E$l")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+           $objPHPExcel->getActiveSheet()->getStyle("A$l:E$l")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
            $objPHPExcel->getActiveSheet()->getStyle("A$l:E$l")->getFill()->getStartColor()->setARGB('cbcbcb');
            if($d->type == 'credit') {
                 $total_base_cr = $total_base_cr + $d->value;
@@ -203,12 +203,12 @@ $l = 10;
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$l", $d->value );
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", '' );
             $objPHPExcel->getActiveSheet()->getStyle("C$l")->getNumberFormat()
-                    ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+                    ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
         } else {
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$l", '' );
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $d->value );
             $objPHPExcel->getActiveSheet()->getStyle("D$l")->getNumberFormat()
-                    ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+                    ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
             
         } 
         
@@ -235,7 +235,7 @@ $l = 10;
         }
     $objPHPExcel->getActiveSheet()->getStyle("C$l:D$l")->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle("C$l:D$l")->getNumberFormat()
-                    ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+                    ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
     $l++;
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", (string)t('balance base currency') );
 
@@ -254,7 +254,7 @@ $l = 10;
 
     $objPHPExcel->getActiveSheet()->getStyle("C$l:D$l")->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle("C$l:D$l")->getNumberFormat()
-                    ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+                    ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
     
 $date = date('Y-m-d h:i:s');
 $l+=2;
@@ -335,12 +335,12 @@ $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
 $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
 $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
 
-$objPHPExcel->getActiveSheet()->setBreak( 'F1' , PHPExcel_Worksheet::BREAK_COLUMN );
-$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
-$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+$objPHPExcel->getActiveSheet()->setBreak( 'F1' , \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_COLUMN );
+$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
 
-$objPHPExcel->getActiveSheet()->getStyle('A4:E5')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT); 
-$objPHPExcel->getActiveSheet()->getStyle('A4:E5')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A4:E5')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT); 
+$objPHPExcel->getActiveSheet()->getStyle('A4:E5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle('A4:E5')->getFill()->getStartColor()->setARGB('FFFFFF');
 
 
@@ -349,10 +349,10 @@ $objPHPExcel->getActiveSheet()->getStyle('A6:E6')->applyFromArray($TopBorderThin
 $objPHPExcel->getActiveSheet()->getStyle('A8:E8')->applyFromArray($BottomBorderThin);
 $objPHPExcel->getActiveSheet()->getStyle('A10:E10')->applyFromArray($BottomBorderThin);
 $objPHPExcel->getActiveSheet()->getStyle('A4:E5')->applyFromArray($FontBoldCenter); 
-$objPHPExcel->getActiveSheet()->getStyle('A4:E5')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A4:E5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle('A4:E5')->getFill()->getStartColor()->setARGB('e6e6fa');
 $objPHPExcel->getActiveSheet()->getStyle('A8:E8')->getNumberFormat()
-                    ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+                    ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
 $objPHPExcel->getActiveSheet()->mergeCells('C9:E9');
 
 $query = "SELECT  * FROM {ek_journal} 
@@ -388,7 +388,7 @@ $l = 10;
        
        if($d->exchange == '1') {    
            $objPHPExcel->getActiveSheet()->getStyle("A$l:E$l")->getFont()->setSize(10);
-           $objPHPExcel->getActiveSheet()->getStyle("A$l:E$l")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+           $objPHPExcel->getActiveSheet()->getStyle("A$l:E$l")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
            $objPHPExcel->getActiveSheet()->getStyle("A$l:E$l")->getFill()->getStartColor()->setARGB('cbcbcb');
            if($d->type == 'credit') {
                $total_base_cr = $total_base_cr + $d->value;
@@ -420,13 +420,13 @@ $l = 10;
             $objPHPExcel->setActiveSheetIndex(1)->setCellValue("D$l", $status );
             $objPHPExcel->setActiveSheetIndex(1)->setCellValue("E$l", '' );
             $objPHPExcel->getActiveSheet()->getStyle("C$l")->getNumberFormat()
-                    ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+                    ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
         } else {
             $objPHPExcel->setActiveSheetIndex(1)->setCellValue("C$l", '' );
             $objPHPExcel->setActiveSheetIndex(1)->setCellValue("D$l", $status );
             $objPHPExcel->setActiveSheetIndex(1)->setCellValue("E$l", $d->value );
             $objPHPExcel->getActiveSheet()->getStyle("E$l")->getNumberFormat()
-                    ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+                    ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
             
         }
     }
@@ -453,7 +453,7 @@ $l = 10;
         }
     $objPHPExcel->getActiveSheet()->getStyle("C$l:E$l")->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle("C$l:E$l")->getNumberFormat()
-                    ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+                    ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
     $l++;
     $objPHPExcel->setActiveSheetIndex(1)->setCellValue("A$l", (string)t('balance base currency') );
 
@@ -472,7 +472,7 @@ $l = 10;
 
     $objPHPExcel->getActiveSheet()->getStyle("C$l:E$l")->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle("C$l:E$l")->getNumberFormat()
-                    ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);    
+                    ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);    
 
 $date = date('Y-m-d h:i:s');
 $l+=2;
@@ -482,11 +482,9 @@ $fileName = 'Tax-report_' . $param['from'] . '_' . $param['to'] . '_' . str_repl
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Cache-Control: max-age=0');
-        //header('Content-Type: application/vnd.ms-excel');
         header("Content-Disposition: attachment;filename=$fileName");
         header('Cache-Control: max-age=0');
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        //$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
         $objWriter->save('php://output');    
         exit;
 

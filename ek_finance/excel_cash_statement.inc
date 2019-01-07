@@ -29,23 +29,23 @@ $grand_total = 0;
 $grand_total_exc = 0;
 
 // Create new PHPExcel object
-$objPHPExcel = new PHPExcel();
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet(); 
 
 //formatting
 $HalignCenter = array(
     'alignment' => array(
-        'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
     ),
 );
 
 $HalignLeft = array(
     'alignment' => array(
-        'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
     ),
 );
 $HalignRight = array(
     'alignment' => array(
-        'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,
+        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
     ),
 );
 $Fontgrey = array(
@@ -69,9 +69,9 @@ $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(70);
 $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(25);
 $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(25);
-$objPHPExcel->getActiveSheet()->setBreak('E1', PHPExcel_Worksheet::BREAK_COLUMN);
-$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
-$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+$objPHPExcel->getActiveSheet()->setBreak('E1', \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_COLUMN);
+$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
 // title
 $objPHPExcel->getActiveSheet()->getStyle('A1')->getFont()->setName('Arial');
 $objPHPExcel->getActiveSheet()->getStyle('A1')->getFont()->setSize(12);
@@ -85,7 +85,7 @@ $objPHPExcel->getActiveSheet()->getStyle('A3:D3')->getFont()->setName('Arial');
 $objPHPExcel->getActiveSheet()->getStyle('A3:D3')->getFont()->setSize(10);
 $objPHPExcel->getActiveSheet()->getStyle('A3:D3')->getFont()->setBold(true);
 
-$objPHPExcel->getActiveSheet()->getStyle("A3:D3")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("A3:D3")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("A3:D3")->getFill()->getStartColor()->setRGB('acacac');
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A3', (string) t('Account'));
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B3', (string) t('Name'));
@@ -106,7 +106,7 @@ $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", (STRING) t('Bank'));
 $objPHPExcel->getActiveSheet()->mergeCells("A$i:D$i");
-$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->getStartColor()->setRGB('CCE5FF');
 
 $query = "SELECT DISTINCT aid FROM {ek_bank_accounts} a INNER JOIN {ek_bank} b "
@@ -144,7 +144,7 @@ while ($r = $result->fetchObject()) {
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$h['total_transaction_exchange'], 2));
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$h['closing_exchange'], 2));
     $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
-            ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(10);
     $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(false);
 }
@@ -163,7 +163,7 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$closing_exc, 2
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
-        ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
 /*
  * Cash - account
@@ -174,7 +174,7 @@ $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", (STRING) t('Cash'));
 $objPHPExcel->getActiveSheet()->mergeCells("A$i:D$i");
-$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->getStartColor()->setRGB('CCE5FF');
 $total = 0;
 $total_exc = 0;
@@ -211,7 +211,7 @@ foreach ($Currencies as $currency => $name) {
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$h['total_transaction_exchange'], 2));
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$h['closing_exchange'], 2));
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
-                ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getFont()->setSize(10);
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getFont()->setBold(false);
     }
@@ -230,7 +230,7 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$closing_exc, 2
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getNumberFormat()
-        ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
 
 /*
@@ -242,7 +242,7 @@ $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", (STRING) t('Receivable'));
 $objPHPExcel->getActiveSheet()->mergeCells("A$i:D$i");
-$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->getStartColor()->setRGB('CCE5FF');
 $total = 0;
 $total_exc = 0;
@@ -279,7 +279,7 @@ foreach ($Currencies as $currency => $name) {
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$h['total_transaction_exchange'], 2));
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$h['closing_exchange'], 2));
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
-                ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getFont()->setSize(10);
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getFont()->setBold(false);
     }
@@ -298,7 +298,7 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$closing_exc, 2
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getNumberFormat()
-        ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
 /*
  * Total assets
@@ -311,8 +311,8 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round($total_closing_a
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getNumberFormat()
-        ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->getStartColor()->setRGB('99CCFF');
 
 /*
@@ -324,7 +324,7 @@ $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", (STRING) t('Payable'));
 $objPHPExcel->getActiveSheet()->mergeCells("A$i:D$i");
-$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->getStartColor()->setRGB('CCE5FF');
 $total = 0;
 $total_exc = 0;
@@ -362,7 +362,7 @@ foreach ($Currencies as $currency => $name) {
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($h['total_transaction_exchange'], 2));
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round($h['closing_exchange'], 2));
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
-                ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getFont()->setSize(10);
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getFont()->setBold(false);
     }
@@ -381,8 +381,8 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round($closing_exc, 2)
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getNumberFormat()
-        ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->getStartColor()->setRGB('99CCFF');
 
 /*
@@ -396,8 +396,8 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round($total_closing_a
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getNumberFormat()
-        ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+$objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->getStartColor()->setRGB('66B2FF');
 
 
@@ -440,7 +440,7 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($expenses / 12, 
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
-        ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 $objPHPExcel->getActiveSheet()->mergeCells("C$i:D$i");
 
 
@@ -491,7 +491,7 @@ if (isset($extract['amortization'])) {
     $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
     $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
-            ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     $objPHPExcel->getActiveSheet()->mergeCells("C$i:D$i");
 }
 
@@ -515,8 +515,8 @@ $objPHPExcel->getActiveSheet()->getHeaderFooter()->setOddFooter('&L&B' . $objPHP
 
 
 // Set page orientation and size
-$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
-$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
 
 $fileName = "cash_flow";
 
@@ -524,7 +524,7 @@ header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetm
 header('Cache-Control: max-age=0');
 header("Content-Disposition: attachment;filename=$fileName");
 header('Cache-Control: max-age=0');
-$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+$objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
 $objWriter->save('php://output');
 exit;
-?>
+

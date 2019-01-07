@@ -146,7 +146,7 @@ class SettingsForm extends FormBase {
         
         $form['excel'] = array(
             '#type' => 'item',
-            '#markup' => (class_exists('PHPExcel')) ? "<div class='messages messages--status'>" 
+            '#markup' => (class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) ? "<div class='messages messages--status'>" 
                             . 'Excel ' .  t('library installed') . '</div>'
             : "<div class='messages messages--warning'>" . 'Excel ' .  t('library not available') . '</div>',
         );

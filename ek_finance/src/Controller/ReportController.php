@@ -334,7 +334,7 @@ class ReportController extends ControllerBase {
      */
     public function excelbudgeting($param) {
         $markup = array();
-        if (!class_exists('PHPExcel')) {
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
             //The chart structure is as follow
@@ -585,7 +585,7 @@ class ReportController extends ControllerBase {
      */
     public function excelcashflow($param) {
         $markup = array();
-        if (!class_exists('PHPExcel')) {
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
             $chart = $this->settings->get('chart');

@@ -1,4 +1,5 @@
 <?php
+
 use Drupal\Core\Database\Database;
 
 
@@ -8,7 +9,8 @@ $del = Database::getConnection('external_db', 'external_db')
             ->condition('reference', $cond, 'like')
             ->execute();
 
-$Reader = PHPExcel_IOFactory::createReaderForFile($uri);
+$inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($uri);
+$Reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
 // set this, to not read all excel properties, just data
 $Reader->setReadDataOnly(true); 
 $objXLS = $Reader->load($uri);

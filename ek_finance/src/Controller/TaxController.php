@@ -174,7 +174,7 @@ class TaxController extends ControllerBase {
      */
     public function exceltax($param) {
         $markup = array();    
-        if (!class_exists('PHPExcel')) {
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
             include_once drupal_get_path('module', 'ek_finance') . '/excel_tax.inc';

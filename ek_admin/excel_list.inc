@@ -3,7 +3,7 @@ use Drupal\Core\Database\Database;
 
 
 // Create new PHPExcel object
-$objPHPExcel = new PHPExcel(); 
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet(); 
 
 $objPHPExcel->getProperties()->setCreator("Ek")
                             ->setLastModifiedBy('')
@@ -48,7 +48,7 @@ $objPHPExcel->setActiveSheetIndex(0)
             ->setCellValue('AB3', 'adhoc No');                                                                                     
             
             
-$objPHPExcel->getActiveSheet()->getStyle('A3:AB3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A3:AB3')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle('A3:AB3')->getFill()->getStartColor()->setARGB('66b2ff');
 $objPHPExcel->getActiveSheet()->getStyle('A3:AB3')->applyFromArray(
 		array(
@@ -56,11 +56,11 @@ $objPHPExcel->getActiveSheet()->getStyle('A3:AB3')->applyFromArray(
 				'bold'      => true
 			),
 			'alignment' => array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
 			),
 			'borders' => array(
 				'top'     => array(
- 					'style' => PHPExcel_Style_Border::BORDER_THIN
+ 					'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
  				)
 			)
 		)
@@ -72,7 +72,7 @@ $l=3;
 $l=$l+1; // line index
 if ($l & 1) {
 $row="A".$l.":AB".$l;
-$objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->getStartColor()->setARGB('e6e6fa');
 } 
  
@@ -115,11 +115,9 @@ $fileName = 'companies_list.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Cache-Control: max-age=0');
-        //header('Content-Type: application/vnd.ms-excel');
         header("Content-Disposition: attachment;filename=$fileName");
         header('Cache-Control: max-age=0');
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        //$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
         $objWriter->save('php://output');    
         exit;
 

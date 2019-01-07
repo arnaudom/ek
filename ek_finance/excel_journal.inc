@@ -14,7 +14,7 @@ use Drupal\ek_finance\FinanceSettings;
      
      
 // Create new PHPExcel object
-$objPHPExcel = new PHPExcel(); 
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 $objPHPExcel->setActiveSheetIndex(0);
 $objPHPExcel->getProperties()->setCreator("Ek")
                                 ->setLastModifiedBy('')
@@ -29,7 +29,7 @@ $columns=Array ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P',
 $TopBorderThin = array(
 	'borders' => array(
 		'top' => array(
-			'style' => PHPExcel_Style_Border::BORDER_THIN,
+			'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
 			'color' => array('argb' => 'FF000000'),
 		),
 	),
@@ -40,7 +40,7 @@ $FontBoldCenter = array(
 				'bold'      => true
 			),
 			'alignment' => array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
 			),
 		);
 $greyfont = array(
@@ -68,7 +68,7 @@ $objPHPExcel->getActiveSheet($sheet)->getStyle('A1')->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet($sheet)->getStyle('A2:D2')->getFont()->setName('Arial');
 $objPHPExcel->getActiveSheet($sheet)->getStyle('A2:D2')->getFont()->setSize(10);
 $objPHPExcel->getActiveSheet($sheet)->getStyle('A2:D2')->getFont()->setBold(true);
-$objPHPExcel->getActiveSheet($sheet)->getStyle('D2')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT); 
+$objPHPExcel->getActiveSheet($sheet)->getStyle('D2')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT); 
 
 // Add rows
 $objPHPExcel->setActiveSheetIndex($sheet)
@@ -83,15 +83,15 @@ $objPHPExcel->getActiveSheet($sheet)->getColumnDimension('D')->setWidth(20);
 $objPHPExcel->getActiveSheet($sheet)->getColumnDimension('E')->setWidth(25);
 $objPHPExcel->getActiveSheet($sheet)->getStyle('E')->getFont()->setSize(9);
 $objPHPExcel->getActiveSheet()->getStyle('E')->applyFromArray($greyfont);
-$objPHPExcel->getActiveSheet($sheet)->setBreak( 'E1' , PHPExcel_Worksheet::BREAK_COLUMN );
-$objPHPExcel->getActiveSheet($sheet)->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
-$objPHPExcel->getActiveSheet($sheet)->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
-$objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT); 
-$objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet($sheet)->setBreak( 'E1' , \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_COLUMN );
+$objPHPExcel->getActiveSheet($sheet)->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+$objPHPExcel->getActiveSheet($sheet)->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
+$objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT); 
+$objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->getFill()->getStartColor()->setARGB('FFFFFF');
 $objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->applyFromArray($TopBorderThin);     
 $objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->applyFromArray($FontBoldCenter); 
-$objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->getFill()->getStartColor()->setARGB('e6e6fa');
 
      
@@ -149,7 +149,7 @@ $c = 0;
                     $c+=1;
                     $cell=$columns[$c].$l;              
                       $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($line['value'],2) );
-                      $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1); 
+                      $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1); 
                     $c+=2;
                     $cell=$columns[$c].$l;
                       $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $line['trail']['username'] . ' - ' . $line['trail']['time'] );  
@@ -157,7 +157,7 @@ $c = 0;
                     $c+=2;
                     $cell=$columns[$c].$l;               
                       $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($line['value'],2));
-                      $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                      $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                     $c++;
                     $cell=$columns[$c].$l;
                       $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $line['trail']['username'] . ' - ' . $line['trail']['time'] );
@@ -174,13 +174,13 @@ $c = 0;
                   $c+=2;
                   $cell=$columns[$c].$l;
                   $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_debit'],2)); 
-                  $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                  $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                   $c+=1;
                   $cell=$columns[$c].$l; 
                   $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_credit'],2) ); 
-                  $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                  $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                   $r ="A".$l.":D".$l;
-                  $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+                  $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
                   $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->getStartColor()->setARGB('e6e6fa');   
                   $objPHPExcel->getActiveSheet()->getStyle($r)->applyFromArray($TopBorderThin);  
                   $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFont()->setBold(true);
@@ -193,14 +193,14 @@ $c = 0;
                $c+=2;
                $cell=$columns[$c].$l;
                $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_debit']+$row['total_debit_base'],2) );
-               $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1); 
+               $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1); 
                $c+=1;
                $cell=$columns[$c].$l; 
                $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_credit']+$row['total_credit_base'],2) ); 
-               $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+               $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
               
                $r="A".$l.":D".$l;
-               $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+               $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
                $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->getStartColor()->setARGB('e6e6fa');
                $objPHPExcel->getActiveSheet()->getStyle($r)->applyFromArray($TopBorderThin);
                $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFont()->setBold(true);
@@ -230,11 +230,9 @@ $fileName = 'journal_' . $param['date1'] . '_' . $param['date2'] . '.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Cache-Control: max-age=0');
-        //header('Content-Type: application/vnd.ms-excel');
         header("Content-Disposition: attachment;filename=$fileName");
         header('Cache-Control: max-age=0');
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        //$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
         $objWriter->save('php://output');    
         exit;
 

@@ -460,7 +460,7 @@ class InvoicesController extends ControllerBase {
 
         $markup = array();
 
-        if (!class_exists('PHPExcel')) {
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
             $options = unserialize($param);

@@ -283,7 +283,7 @@ class ProjectController extends ControllerBase {
     public function list_excel($param) {
         $markup = array();
         
-        if (!class_exists('PHPExcel')) {
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
             $param = unserialize($param);

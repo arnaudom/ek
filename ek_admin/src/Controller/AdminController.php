@@ -814,7 +814,7 @@ class AdminController extends ControllerBase {
      */
     public function excelcompany($id = NULL) {
         $markup = array();    
-        if (!class_exists('PHPExcel')) {
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
             include_once drupal_get_path('module', 'ek_admin') . '/excel_list.inc';

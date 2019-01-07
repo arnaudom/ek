@@ -188,7 +188,7 @@ class JournalController extends ControllerBase {
      */
     public function exceljournal($param = NULL) {
         $markup = array();    
-        if (!class_exists('PHPExcel')) {
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
             $param = unserialize($param);

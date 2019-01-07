@@ -158,7 +158,7 @@ class CashController extends ControllerBase {
   public function excelcash($param) {
   
     $markup = array();    
-        if (!class_exists('PHPExcel')) {
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
             //$settings = new FinanceSettings(); 

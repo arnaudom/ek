@@ -77,17 +77,13 @@ if ($template != NULL) {
     $path = PrivateStream::basePath();
 
     include_once drupal_realpath("private://hr/forms/" . $template);
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-// Redirect output to a client’s web browser (Excel5)
     $fileName = 'Borang A ' . $month . '.xlsx';
 
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     header('Cache-Control: max-age=0');
-    //header('Content-Type: application/vnd.ms-excel');
     header("Content-Disposition: attachment;filename=$fileName");
     header('Cache-Control: max-age=0');
-    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-    //$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+    $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
     $objWriter->save('php://output');
     exit;
 }

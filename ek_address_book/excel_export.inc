@@ -1,8 +1,8 @@
 <?php
 use Drupal\Core\Database\Database;
 
-// Create new PHPExcel object
-$objPHPExcel = new PHPExcel(); 
+// Create new Excel object
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 $objPHPExcel->getProperties()->setCreator("Ek")
                             ->setLastModifiedBy('')
@@ -38,7 +38,7 @@ if($source == 'Address_book') {
             $l=$l+1; // line index
             if ($l & 1) {
             $row="A".$l.":P".$l;
-            $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+            $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
             $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->getStartColor()->setARGB('e6e6fa');
             } 
 
@@ -88,7 +88,7 @@ if($source == 'Address_book') {
             $l=$l+1; // line index
             if ($l & 1) {
             $row="A".$l.":O".$l;
-            $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+            $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
             $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->getStartColor()->setARGB('e6e6fa');
             } 
 
@@ -127,10 +127,10 @@ $fileName = 'export_' . $source . '.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Cache-Control: max-age=0');
-        //header('Content-Type: application/vnd.ms-excel');
+        
         header("Content-Disposition: attachment;filename=$fileName");
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        //$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
+        
         $objWriter->save('php://output');    
         exit;
 

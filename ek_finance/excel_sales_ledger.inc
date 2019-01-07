@@ -76,7 +76,7 @@ use Drupal\ek_finance\Journal;
 
 
 // Create new PHPExcel object
-$objPHPExcel = new PHPExcel(); 
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 $objPHPExcel->getProperties()->setCreator("Ek")
                                 ->setLastModifiedBy('')
@@ -86,15 +86,15 @@ $objPHPExcel->getProperties()->setCreator("Ek")
                                 ->setKeywords("office 2007 openxml php")
                                 ->setCategory("file");
 $objPHPExcel->getActiveSheet()->setTitle('Ledger');
-$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
-$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
-$objPHPExcel->getActiveSheet()->setBreak( 'G1' , PHPExcel_Worksheet::BREAK_COLUMN );
+$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
+$objPHPExcel->getActiveSheet()->setBreak( 'G1' , \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_COLUMN );
 
 $columns=Array ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ');
 $TopBorderThin = array(
 	'borders' => array(
 		'top' => array(
-			'style' => PHPExcel_Style_Border::BORDER_THIN,
+			'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
 			'color' => array('argb' => 'FF000000'),
 		),
 	),
@@ -105,7 +105,7 @@ $FontBoldCenter = array(
 				'bold'      => true
 			),
 			'alignment' => array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
 			),
 		);
 $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(30);
@@ -153,12 +153,12 @@ $objPHPExcel->setActiveSheetIndex(0)
 
 
 
-$objPHPExcel->getActiveSheet()->getStyle("A$l:F$l")->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT); 
-$objPHPExcel->getActiveSheet()->getStyle("A$l:F$l")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("A$l:F$l")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT); 
+$objPHPExcel->getActiveSheet()->getStyle("A$l:F$l")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("A$l:F$l")->getFill()->getStartColor()->setARGB('FFFFFF');
 $objPHPExcel->getActiveSheet()->getStyle("A$l:F$l")->applyFromArray($TopBorderThin);     
 $objPHPExcel->getActiveSheet()->getStyle("A$l:F$l")->applyFromArray($FontBoldCenter); 
-$objPHPExcel->getActiveSheet()->getStyle("A$l:F$l")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("A$l:F$l")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("A$l:F$l")->getFill()->getStartColor()->setARGB('e6e6fa');
 
 $c = 0; // column index
@@ -331,11 +331,9 @@ $fileName = 'sales_ledger_' . $name . '_' . $param['date1'] . '_' . $param['date
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Cache-Control: max-age=0');
-        //header('Content-Type: application/vnd.ms-excel');
         header("Content-Disposition: attachment;filename=$fileName");
         header('Cache-Control: max-age=0');
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        //$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
         $objWriter->save('php://output');    
         exit;
 

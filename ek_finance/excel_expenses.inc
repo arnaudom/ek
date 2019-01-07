@@ -6,7 +6,7 @@ use Drupal\ek_finance\AidList;
 
 
 // Create new PHPExcel object
-$objPHPExcel = new PHPExcel();
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet(); 
 
 $objPHPExcel->getProperties()->setCreator("Ek")
         ->setLastModifiedBy('')
@@ -52,7 +52,7 @@ $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue('P5', (string) t('Comment'));
 
 
-$objPHPExcel->getActiveSheet()->getStyle('A5:P5')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A5:P5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle('A5:P5')->getFill()->getStartColor()->setARGB('66b2ff');
 $objPHPExcel->getActiveSheet()->getStyle('A5:P5')->applyFromArray(
         array(
@@ -60,29 +60,29 @@ $objPHPExcel->getActiveSheet()->getStyle('A5:P5')->applyFromArray(
                 'bold' => true
             ),
             'alignment' => array(
-                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
             ),
             'borders' => array(
                 'top' => array(
-                    'style' => PHPExcel_Style_Border::BORDER_THIN
+                    'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
                 )
             )
         )
 );
 $HalignCenter = array(
     'alignment' => array(
-        'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
     ),
 );
 
 $HalignLeft = array(
     'alignment' => array(
-        'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
     ),
 );
 $HalignRight = array(
     'alignment' => array(
-        'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,
+        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
     ),
 );
 
@@ -129,7 +129,7 @@ WHILE ($r = $result->fetchObject()) {
     $l++; // line index
     if ($l & 1) {
         $row = "A" . $l . ":P" . $l;
-        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('e6e6fa');
     }
     $CompanySettings = new CompanySettings($r->coid);
@@ -249,15 +249,15 @@ WHILE ($r = $result->fetchObject()) {
     $objPHPExcel->getActiveSheet()->getStyle("H$l")->applyFromArray($HalignRight);
     $objPHPExcel->getActiveSheet()->getStyle("J$l")->applyFromArray($HalignRight);
     $objPHPExcel->getActiveSheet()->getStyle("L$l")->applyFromArray($HalignCenter);
-    $objPHPExcel->getActiveSheet()->getStyle("H$l")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
-    $objPHPExcel->getActiveSheet()->getStyle("J$l")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);    
+    $objPHPExcel->getActiveSheet()->getStyle("H$l")->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
+    $objPHPExcel->getActiveSheet()->getStyle("J$l")->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);    
     
     //add one line to display tax paid/deductible
     if (isset($r->tax) && $r->tax > 0) {
         
         $l++;
         $row = "A" . $l . ":O" . $l;
-        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('FAFAE6');
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $id);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $stax_deduct_aid);
@@ -278,14 +278,14 @@ WHILE ($r = $result->fetchObject()) {
         $objPHPExcel->getActiveSheet()->getStyle("H$l")->applyFromArray($HalignRight);
         $objPHPExcel->getActiveSheet()->getStyle("J$l")->applyFromArray($HalignRight);
         $objPHPExcel->getActiveSheet()->getStyle("L$l")->applyFromArray($HalignCenter);
-        $objPHPExcel->getActiveSheet()->getStyle("H$l")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
-        $objPHPExcel->getActiveSheet()->getStyle("J$l")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+        $objPHPExcel->getActiveSheet()->getStyle("H$l")->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
+        $objPHPExcel->getActiveSheet()->getStyle("J$l")->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
         
     } elseif(isset($r->taxvalue) && $r->taxvalue > 0){
         
         $l++;
         $row = "A" . $l . ":O" . $l;
-        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('FAFAE6');
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $id);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $stax_deduct_aid);
@@ -306,15 +306,15 @@ WHILE ($r = $result->fetchObject()) {
         $objPHPExcel->getActiveSheet()->getStyle("H$l")->applyFromArray($HalignRight);
         $objPHPExcel->getActiveSheet()->getStyle("J$l")->applyFromArray($HalignRight);
         $objPHPExcel->getActiveSheet()->getStyle("L$l")->applyFromArray($HalignCenter);
-        $objPHPExcel->getActiveSheet()->getStyle("H$l")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
-        $objPHPExcel->getActiveSheet()->getStyle("J$l")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+        $objPHPExcel->getActiveSheet()->getStyle("H$l")->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
+        $objPHPExcel->getActiveSheet()->getStyle("J$l")->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
     }
 }
 $p = $l;
 $l++;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", "=SUM(J6:J$p)");
 $objPHPExcel->getActiveSheet()->getStyle("J$l")->applyFromArray($HalignRight);
-$objPHPExcel->getActiveSheet()->getStyle("J$l")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+$objPHPExcel->getActiveSheet()->getStyle("J$l")->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
 
 $date = date('Y-m-d h:i:s');
 $l+=2;
@@ -324,11 +324,9 @@ $fileName = 'expenses_list.xlsx';
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Cache-Control: max-age=0');
-//header('Content-Type: application/vnd.ms-excel');
 header("Content-Disposition: attachment;filename=$fileName");
 header('Cache-Control: max-age=0');
-$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-//$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+$objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
 $objWriter->save('php://output');
 exit;
 

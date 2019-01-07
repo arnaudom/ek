@@ -8,7 +8,8 @@ $del = Database::getConnection('external_db', 'external_db')
             ->condition('coid', $coid, '=')
             ->execute();
 
-$Reader = PHPExcel_IOFactory::createReaderForFile($uri);
+$inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($uri);
+$Reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
 // set this, to not read all excel properties, just data
 $Reader->setReadDataOnly(true); 
 $objXLS = $Reader->load($uri);
@@ -46,8 +47,8 @@ WHILE ($objXLS->getSheet(0)->getCell("A$row")->getValue() != '') {
             //filter date
             $cellF = $objXLS->getActiveSheet()->getCell("F$row");
             $colF = $cellF->getValue();
-            if(PHPExcel_Shared_Date::isDateTime($cellF) || is_numeric($colF)) {
-                $colF = date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($colF)); 
+            if(\PhpOffice\PhpSpreadsheet\Shared\Date::isDateTime($cellF) || is_numeric($colF)) {
+                $colF = date('Y-m-d', \PhpOffice\PhpSpreadsheet\Shared\Date::ExcelToPHP($colF)); 
             } else {
                 $colF = Xss::filter($colF);
             }

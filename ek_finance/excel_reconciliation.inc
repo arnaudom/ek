@@ -4,7 +4,7 @@ use Drupal\ek_admin\CompanySettings;
 
 
 // Create new PHPExcel object
-$objPHPExcel = new PHPExcel();
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 // Set properties
 $objPHPExcel->getProperties()->setCreator("ek")
@@ -18,18 +18,18 @@ $objPHPExcel->getProperties()->setCreator("ek")
 //formatting
 $HalignCenter = array(
 			'alignment' => array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
 			),
 );
 
 $HalignLeft = array(
 			'alignment' => array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
 			),
 );
 $HalignRight = array(
 			'alignment' => array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
 			),
 );
 $Fontgrey = array(
@@ -44,9 +44,9 @@ $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
 $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
 $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(80);
-$objPHPExcel->getActiveSheet()->setBreak( 'F1' , PHPExcel_Worksheet::BREAK_COLUMN );
-$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
-$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+$objPHPExcel->getActiveSheet()->setBreak( 'F1' , \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_COLUMN );
+$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
 // title
 $objPHPExcel->getActiveSheet()->getStyle('A1')->getFont()->setName('Arial');
 $objPHPExcel->getActiveSheet()->getStyle('A1')->getFont()->setSize(12);
@@ -66,19 +66,19 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B4', $data['opencredit'] );
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A5', (string)t('Balance') );
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B5', $data['openbalance'] );
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A6', (string)t('Current total') );
-$objPHPExcel->getActiveSheet()->getStyle('C6:D6')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+$objPHPExcel->getActiveSheet()->getStyle('C6:D6')->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
 //table header
 $objPHPExcel->getActiveSheet()->getStyle('A7:E7')->getFont()->setName('Arial');
 $objPHPExcel->getActiveSheet()->getStyle('A7:E7')->getFont()->setSize(10);
 $objPHPExcel->getActiveSheet()->getStyle('A7:E7')->getFont()->setBold(true);
-$objPHPExcel->getActiveSheet()->getStyle("A7")->getBorders()->getRight()->setBorderStyle( PHPExcel_Style_Border::BORDER_THIN); 
+$objPHPExcel->getActiveSheet()->getStyle("A7")->getBorders()->getRight()->setBorderStyle( \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN); 
 
-$objPHPExcel->getActiveSheet()->getStyle("B7")->getBorders()->getRight()->setBorderStyle( PHPExcel_Style_Border::BORDER_THIN); 
-$objPHPExcel->getActiveSheet()->getStyle("C7")->getBorders()->getRight()->setBorderStyle( PHPExcel_Style_Border::BORDER_THIN); 
-$objPHPExcel->getActiveSheet()->getStyle("D7")->getBorders()->getRight()->setBorderStyle( PHPExcel_Style_Border::BORDER_THIN); 
-$objPHPExcel->getActiveSheet()->getStyle("E7")->getBorders()->getRight()->setBorderStyle( PHPExcel_Style_Border::BORDER_THIN); 
-$objPHPExcel->getActiveSheet()->getStyle("A7:E7")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("B7")->getBorders()->getRight()->setBorderStyle( \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN); 
+$objPHPExcel->getActiveSheet()->getStyle("C7")->getBorders()->getRight()->setBorderStyle( \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN); 
+$objPHPExcel->getActiveSheet()->getStyle("D7")->getBorders()->getRight()->setBorderStyle( \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN); 
+$objPHPExcel->getActiveSheet()->getStyle("E7")->getBorders()->getRight()->setBorderStyle( \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN); 
+$objPHPExcel->getActiveSheet()->getStyle("A7:E7")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("A7:E7")->getFill()->getStartColor()->setRGB('C0C0C0');
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A7', (string)t('Id'));
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B7', (string)t('Date'));
@@ -99,7 +99,7 @@ $i=8;
 
     if ($i & 1) {
         $row="A".$i.":E".$i;
-        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('e6e6fa');
     } 
      $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", $line['id']);
@@ -115,7 +115,7 @@ $i=8;
          $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", '');
      }
      $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
-             ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+             ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
      $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$i", $line['comment']);
      $objPHPExcel->getActiveSheet()->getStyle("E$i")->applyFromArray($Fontgrey);
@@ -136,6 +136,6 @@ $i=8;
         header('Cache-Control: max-age=0');
         header("Content-Disposition: attachment;filename=$fileName");
         header('Cache-Control: max-age=0');
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+        $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
         $objWriter->save('php://output');    
         exit;

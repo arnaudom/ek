@@ -83,7 +83,7 @@ class RosterController extends ControllerBase {
      */
     public function excelroster($param) {
         $markup = array();    
-        if (!class_exists('PHPExcel')) {
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
             include_once drupal_get_path('module', 'ek_hr') . '/excel_roster.inc';

@@ -94,7 +94,7 @@ class AccountsChartController extends ControllerBase {
   
         $markup = array();
         
-        if (!class_exists('PHPExcel')) {
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
         $settings = new FinanceSettings(); 

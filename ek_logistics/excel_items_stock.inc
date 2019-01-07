@@ -3,8 +3,8 @@
 use Drupal\Core\Database\Database;
 use Drupal\ek_admin\CompanySettings;
 
-// Create new PHPExcel object
-$objPHPExcel = new PHPExcel();
+// Create new Excel object
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 // Set properties
 $objPHPExcel->getProperties()->setCreator("EK")
@@ -58,7 +58,7 @@ $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(40);
 $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(25);
 $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(25);
 
-$objPHPExcel->getActiveSheet()->getStyle('A3:L3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A3:L3')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle('A3:L3')->getFill()->getStartColor()->setARGB('FFA0A0A0');
 $objPHPExcel->getActiveSheet()->getStyle('A3:L3')->applyFromArray(
 		array(
@@ -66,28 +66,28 @@ $objPHPExcel->getActiveSheet()->getStyle('A3:L3')->applyFromArray(
 				'bold'      => true
 			),
 			'alignment' => array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
 			),
 			'borders' => array(
 				'top'     => array(
- 					'style' => PHPExcel_Style_Border::BORDER_THIN
+ 					'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
  				)
 			)
 		)
 );
 $HalignCenter = array(
     'alignment' => array(
-            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
     ),
 ); 
 $HalignLeft = array(
     'alignment' => array(
-            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
     ),
 );
 $HalignRight = array(
     'alignment' => array(
-            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
     ),
 );
 // insert from line 4
@@ -98,7 +98,7 @@ $l++; // line index
 
 if ($l & 1) {
 $row="A".$l.":L".$l;
-$objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('e6e6fa');
 }
 
@@ -159,11 +159,9 @@ $fileName = 'items_stock_list.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Cache-Control: max-age=0');
-        //header('Content-Type: application/vnd.ms-excel');
         header("Content-Disposition: attachment;filename=$fileName");
         header('Cache-Control: max-age=0');
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        //$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
         $objWriter->save('php://output');    
         exit;
 

@@ -3,29 +3,29 @@ use Drupal\Core\Database\Database;
 use Drupal\ek_admin\CompanySettings;
 
 
-// Create new PHPExcel object
-$objPHPExcel = new PHPExcel();
+// Create new Excel object
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 //formatting
 $HalignCenter = array(
 			'alignment' => array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
 			),
 );
 
 $HalignLeft = array(
 			'alignment' => array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
 			),
 );
 $HalignRight = array(
 			'alignment' => array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
 			),
 );
 $ValignTop = array(
 			'alignment' => array(
-				'vertical' => PHPExcel_Style_Alignment::VERTICAL_TOP,
+				'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
 			),
 );
 $Fontgrey = array(
@@ -57,9 +57,9 @@ $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(20);
 $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(50);
 $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(50);
 $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(50);
-$objPHPExcel->getActiveSheet()->setBreak( 'L1' , PHPExcel_Worksheet::BREAK_COLUMN );
-$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
-$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+$objPHPExcel->getActiveSheet()->setBreak( 'L1' , \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_COLUMN );
+$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
 // title
 $objPHPExcel->getActiveSheet()->getStyle('A1')->getFont()->setName('Arial');
 $objPHPExcel->getActiveSheet()->getStyle('A1')->getFont()->setSize(16);
@@ -85,7 +85,7 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue('K5', (string)t('Comments'));
 
 $objPHPExcel->getActiveSheet()->getStyle('A5:K5')->getFont()->setSize(12);
 $objPHPExcel->getActiveSheet()->getStyle('A5:K5')->getFont()->setBold(true);
-$objPHPExcel->getActiveSheet()->getStyle('A5:K5')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A5:K5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle('A5:K5')->getFill()->getStartColor()->setRGB('A0A0A0');
 $i=5;
 
@@ -97,7 +97,7 @@ $i=5;
 $objPHPExcel->getActiveSheet()->getStyle("A$i:L$i")->getFont()->setName('Arial');
 $objPHPExcel->getActiveSheet()->getStyle("A$i:L$i")->getFont()->setSize(10);
 if(!$class=='') {
-    $objPHPExcel->getActiveSheet()->getStyle("A$i:L$i")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $objPHPExcel->getActiveSheet()->getStyle("A$i:L$i")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
     $objPHPExcel->getActiveSheet()->getStyle("A$i:L$i")->getFill()->getStartColor()->setRGB($class);
 }
 $objPHPExcel->getActiveSheet()->getStyle('A1')->getFont()->setSize(10);
@@ -125,8 +125,8 @@ $objPHPExcel->getActiveSheet()->getHeaderFooter()->setOddFooter('&L&B' . $objPHP
 
 
 // Set page orientation and size
-$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
-$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
 
 $fileName = "Projects_" . date('Y-m-d');
 
@@ -134,9 +134,9 @@ $fileName = "Projects_" . date('Y-m-d');
         header('Cache-Control: max-age=0');
         header("Content-Disposition: attachment;filename=$fileName");
         header('Cache-Control: max-age=0');
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+        $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
         $objWriter->save('php://output');    
         exit;
 
 
-?>
+

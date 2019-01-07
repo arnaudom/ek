@@ -10,23 +10,28 @@ $year = $param['year'];
 $baseCurrency = $param['baseCurrency'];
 $company = AccessCheck::GetCompanyByUser();
 $company = implode(',', $company);
+if($coid != 'all') {
 $query = "SELECT name from {ek_company} WHERE id=:id";
 $company_name = Database::getConnection('external_db', 'external_db')
         ->query($query, array(':id' => $coid))
         ->fetchField();
-
+$company_name_short = substr($company_name, 0, 10);
+} else {
+    $company_name = (string)t('All');
+    $company_name_short = (string)t('All');
+}
 
 // Create new PHPExcel object
-$objPHPExcel = new PHPExcel();
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet(); 
 
 $objPHPExcel->getProperties()->setCreator("Ek")
         ->setLastModifiedBy('')
-        ->setTitle(t("Budget @c @y", array('@c' => $company_name, '@y' => $year)))
+        ->setTitle((string)t("Budget @c @y", array('@c' => $company_name, '@y' => $year)))
         ->setSubject("computer generated")
         ->setDescription((string) t("management report"))
         ->setKeywords("office 2007 openxml php")
         ->setCategory("file");
-$objPHPExcel->getActiveSheet()->setTitle(substr($company_name, 0, 25));
+$objPHPExcel->getActiveSheet()->setTitle($company_name_short);
 
 $columns = Array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ');
 $l = 1;
@@ -61,7 +66,7 @@ $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue('M1', 'DEC')
         ->setCellValue('N1', 'TOTAL');
 
-$objPHPExcel->getActiveSheet()->getStyle('A1:N1')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A1:N1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle('A1:N1')->getFill()->getStartColor()->setARGB('ed95b0');
 $objPHPExcel->getActiveSheet()->getStyle('A1:N1')->applyFromArray(
         array(
@@ -69,11 +74,11 @@ $objPHPExcel->getActiveSheet()->getStyle('A1:N1')->applyFromArray(
                 'bold' => true
             ),
             'alignment' => array(
-                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
             ),
             'borders' => array(
                 'top' => array(
-                    'style' => PHPExcel_Style_Border::BORDER_THIN
+                    'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
                 )
             )
         )
@@ -123,7 +128,7 @@ while ($line = $data->fetchObject()) {
     $c = 0;
     $l++;
     $row = "A" . $l . ":M" . $l;
-    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
     $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('d2bbc2');
     // insert line
     $cell = $columns[$c] . $l;
@@ -165,7 +170,7 @@ while ($line = $data->fetchObject()) {
         $sum_amount = 0;
         $l++;
         $cell = $columns[$c] . $l;
-        $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d2->aid . ' ' . $d2->aname);
 
         for ($m = 1; $m <= 12; $m++) {
@@ -202,25 +207,25 @@ while ($line = $data->fetchObject()) {
             // insert line
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
             $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-                    ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+                    ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
         } //for loop months
         // total line
         $cell = $columns[$m] . $l;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_amount);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-                ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $sum_amount = 0;
     } //while aid
     // Get the class sum - subtotal
     $l++;
     $cell = $columns[0] . $l;
     $row = "A" . $l . ":N" . $l;
-    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
     $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('f3e1b7');
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()
-            ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Sub total'));
 
 
@@ -251,7 +256,7 @@ while ($line = $data->fetchObject()) {
         // insert line
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-                ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     }
 
@@ -260,9 +265,9 @@ while ($line = $data->fetchObject()) {
     $sum_amount = number_format($sum_amount, 2);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-            ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()
-            ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_amount);
     $sum_amount = 0;
     $c++;
@@ -304,7 +309,7 @@ for ($m = 1; $m <= 12; $m++) {
 
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-            ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
 
     $grand_total_expenses[$m] = $amount;
@@ -314,12 +319,12 @@ $cell = $columns[$m] . $l;
 $row = "A" . $l . ":N" . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-        ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()
-        ->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('ed95b0');
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()
-        ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 $sum_amount = number_format($sum_amount, 2);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_amount);
 $sum_amount = 0;
@@ -343,7 +348,7 @@ $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue("M$l", 'DEC')
         ->setCellValue("N$l", 'TOTAL');
 
-$objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->getFill()->getStartColor()->setRGB('a9b1f8');
 $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
         array(
@@ -351,11 +356,11 @@ $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
                 'bold' => true
             ),
             'alignment' => array(
-                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
             ),
             'borders' => array(
                 'top' => array(
-                    'style' => PHPExcel_Style_Border::BORDER_THIN
+                    'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
                 )
             )
         )
@@ -393,7 +398,7 @@ while ($line = $data->fetchObject()) {
     $l++;
     $c = 0;
     $row = "A" . $l . ":M" . $l;
-    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
     $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('d1d5f8');
     $cell = $columns[$c] . $l;
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $line->aid . " " . $line->aname);
@@ -428,7 +433,7 @@ while ($line = $data->fetchObject()) {
 
         $l++;
         $cell = $columns[0] . $l;
-        $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d2->aid . " " . $d2->aname);
 
 
@@ -470,13 +475,13 @@ while ($line = $data->fetchObject()) {
             // insert line
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
             $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-                    ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+                    ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
         } //for loop months
         // insert line
         $cell = $columns[$m] . $l;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-                ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_amount);
 
         $sum_amount = 0;
@@ -485,11 +490,11 @@ while ($line = $data->fetchObject()) {
     $l++;
     $cell = $columns[0] . $l;
     $row = "A" . $l . ":N" . $l;
-    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
     $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('f3e1b7');
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()
-            ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Sub total'));
 
     for ($m = 1; $m <= 12; $m++) {
@@ -519,13 +524,13 @@ while ($line = $data->fetchObject()) {
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-                ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     } // for loop months
     // total subtotal line
     $cell = $columns[$m] . $l;
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-            ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($sum_amount, 2));
     $sum_amount = 0;
 } //while aid
@@ -570,7 +575,7 @@ for ($m = 1; $m <= 12; $m++) {
     $cell = $columns[$m] . $l;
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-            ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
 
 
@@ -582,11 +587,11 @@ $cell = $columns[$m] . $l;
 $row = "A" . $l . ":N" . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-        ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-$objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+$objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('a9b1f8');
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()
-        ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_amount);
 $sum_amount = 0;
 
@@ -612,7 +617,7 @@ $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue("M$l", 'DEC')
         ->setCellValue("N$l", 'TOTAL');
 
-$objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->getFill()->getStartColor()->setRGB('a9b1f8');
 $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
         array(
@@ -620,11 +625,11 @@ $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
                 'bold' => true
             ),
             'alignment' => array(
-                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
             ),
             'borders' => array(
                 'top' => array(
-                    'style' => PHPExcel_Style_Border::BORDER_THIN
+                    'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
                 )
             )
         )
@@ -640,7 +645,7 @@ $sum_pl = 0;
 for ($m = 1; $m <= 12; $m++) {
     $cell = $columns[$m] . $l;
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()
-            ->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
     $pl = $grand_total_revenue[$m] - $grand_total_expenses[$m];
 
     if ($pl < 0) {
@@ -650,13 +655,13 @@ for ($m = 1; $m <= 12; $m++) {
     }
     //insert line
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-            ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $pl);
     $sum_pl = $sum_pl + $pl;
 }
 $cell = $columns[$m] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()
-        ->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 if ($sum_pl < 0) {
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('ed95b0');
 } else {
@@ -664,7 +669,7 @@ if ($sum_pl < 0) {
 }
 //$thispl=number_format($sum_pl,2);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
-        ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_pl);
 $sum_pl = 0;
@@ -675,15 +680,13 @@ $date = date('Y-m-d h:i:s');
 $l+=2;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $date);
 
-$fileName = 'budget_' . str_replace(' ', '_', $company_name) . '-' . $year . '.xlsx';
+$fileName = 'budget_' . str_replace(' ', '_', $company_name) . '_' . $year . '.xlsx';
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Cache-Control: max-age=0');
-//header('Content-Type: application/vnd.ms-excel');
 header("Content-Disposition: attachment;filename=$fileName");
 header('Cache-Control: max-age=0');
-$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-//$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+$objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
 $objWriter->save('php://output');
 exit;
 

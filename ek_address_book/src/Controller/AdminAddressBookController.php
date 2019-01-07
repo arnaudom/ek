@@ -55,7 +55,7 @@ class AdminAddressBookController extends ControllerBase {
 */
   public function export(Request $request, $id = NULL) {
       
-        if (!class_exists('PHPExcel')) {
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $response = ['#markup' => t('Excel library not available, please contact administrator.')];
         } else {
             $form_builder = $this->formBuilder();
@@ -71,7 +71,7 @@ class AdminAddressBookController extends ControllerBase {
    *
 */
   public function import(Request $request, $id = NULL) {
-         if (!class_exists('PHPExcel')) {
+         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $response = ['#markup' => t('Excel library not available, please contact administrator.')];
         } else {
             $form_builder = $this->formBuilder();

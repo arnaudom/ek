@@ -3,8 +3,8 @@ use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\Response;
 
 
-// Create new PHPExcel object
-$objPHPExcel = new PHPExcel(); 
+// Create new Excel object
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 $objPHPExcel->getProperties()->setCreator("Ek")
                                 ->setLastModifiedBy('')
@@ -56,7 +56,7 @@ $objPHPExcel->setActiveSheetIndex(0)
         ;
             
             
-$objPHPExcel->getActiveSheet()->getStyle('A5:Q5')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A5:Q5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle('A5:H5')->getFill()->getStartColor()->setARGB('66b2ff');
 $objPHPExcel->getActiveSheet()->getStyle('I5:N5')->getFill()->getStartColor()->setARGB('22b2ff');
 $objPHPExcel->getActiveSheet()->getStyle('O5:Q5')->getFill()->getStartColor()->setARGB('88b5ee');
@@ -67,11 +67,11 @@ $objPHPExcel->getActiveSheet()->getStyle('A5:Q6')->applyFromArray(
 				'bold'      => true
 			),
 			'alignment' => array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
 			),
 			'borders' => array(
 				'top'     => array(
- 					'style' => PHPExcel_Style_Border::BORDER_THIN
+ 					'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
  				)
 			)
 		)
@@ -96,7 +96,7 @@ $l=6;
     $l=$l+1; // line index
     if ($l & 1) {
     $row="A".$l.":Q".$l;
-    $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
     $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->getStartColor()->setARGB('e6e6fa');
     } 
 
@@ -115,13 +115,13 @@ $l=6;
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $r->active);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $r->start);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $bank );
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("G$l",$r->gross,PHPExcel_Cell_DataType::TYPE_NUMERIC);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("H$l",$r->deduction,PHPExcel_Cell_DataType::TYPE_NUMERIC);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("I$l",$r->epf_yee,PHPExcel_Cell_DataType::TYPE_NUMERIC);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("J$l",$r->socso_yee,PHPExcel_Cell_DataType::TYPE_NUMERIC);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("K$l",$r->with_yee,PHPExcel_Cell_DataType::TYPE_NUMERIC);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("L$l",$r->incometax,PHPExcel_Cell_DataType::TYPE_NUMERIC);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("M$l",$r->nett,PHPExcel_Cell_DataType::TYPE_NUMERIC);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("G$l",$r->gross,\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("H$l",$r->deduction,\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("I$l",$r->epf_yee,\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("J$l",$r->socso_yee,\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("K$l",$r->with_yee,\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("L$l",$r->incometax,\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("M$l",$r->nett,\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $r->currency);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", '');
 
@@ -140,8 +140,7 @@ $fileName = 'current_payroll.xlsx';
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header("Content-Disposition: attachment;filename=$fileName");
         header('Cache-Control: max-age=0');
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        //$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
         $objWriter->save('php://output');   
            
         exit();

@@ -3,8 +3,8 @@ use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\Response;
 
 
-// Create new PHPExcel object
-$objPHPExcel = new PHPExcel(); 
+// Create new Excel object
+$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 $objPHPExcel->getProperties()->setCreator("Ek")
                                 ->setLastModifiedBy('')
@@ -58,11 +58,11 @@ $objPHPExcel->getActiveSheet()->getStyle('A3:Q3')->applyFromArray(
 				'bold'      => true
 			),
 			'alignment' => array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
 			),
 			'borders' => array(
 				'top'     => array(
- 					'style' => PHPExcel_Style_Border::BORDER_THIN
+ 					'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
  				)
 			)
 		)
@@ -87,7 +87,7 @@ $l=3;
     $l=$l+1; // line index
     if ($l & 1) {
     $row="A".$l.":Q".$l;
-    $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
     $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->getStartColor()->setARGB('e6e6fa');
     } 
 
@@ -112,8 +112,8 @@ $l=3;
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l",$r->service);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l",$r->start);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l",$r->resign);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("M$l",$r->salary,PHPExcel_Cell_DataType::TYPE_NUMERIC);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("N$l", $r->th_salary,PHPExcel_Cell_DataType::TYPE_NUMERIC);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("M$l",$r->salary,\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValueExplicit("N$l", $r->th_salary,\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", $r->currency);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("P$l", $r->archive);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("Q$l", $r->active);
@@ -128,13 +128,12 @@ $date = date('Y-m-d h:i:s');
 $l+=2;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $date);
 
-$fileName = 'current_payroll.xlsx';      
+$fileName = 'employees_list.xlsx';      
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header("Content-Disposition: attachment;filename=$fileName");
         header('Cache-Control: max-age=0');
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        //$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
         $objWriter->save('php://output');   
            
         exit();
