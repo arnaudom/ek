@@ -1234,42 +1234,21 @@ $rows = $form_state->getValue('itemTable');
             $params['options']['user'] = $entity->name;
             
             $params['body'] = t('Memo ref. @p',['@p' => $serial]) . "." . t('Issued to') . ": " . $entity_to->name; 
-            
-            $error = [];
-            
-            $send = \Drupal::service('plugin.manager.mail')->mail(
-                'ek_finance',
-                'key_memo_note',
-                $entity_to->email,
-                \Drupal::languageManager()->getDefaultLanguage()->getId(),
-                $params,
-                $entity_mail,
-                TRUE
-              );
-            
-              if($send['result'] == FALSE) {
-                $error[] = $entity_to->email;
-              }   
-            
-            $params['subject'] = t("New memo") . ': ' . $serial . " (" . t('copy') . ")";
-            $send = \Drupal::service('plugin.manager.mail')->mail(
-                'ek_finance',
-                'key_memo_note',
-                $entity_mail,
-                \Drupal::languageManager()->getDefaultLanguage()->getId(),
-                $params,
-                $entity_to->email,
-                TRUE
-              );
-            
-              if($send['result'] == FALSE) {
-                $error[] = $entity->email;
-              }  
-              
-              if(!empty($error)) {
-                $errors = implode(',', $error);
-                \Drupal::messenger()->addError(t('Error sending notification to :t', [':t' => $errors]));
-              }
+            //send notification email to central email queue;
+            $data['module'] = 'ek_finance';
+            $data['key'] = 'key_memo_note';
+            $data['email'] = $entity_to->email;
+            $data['subject'] = $params['subject'];
+            $data['message'] = '';
+            $data['params'] = $params;
+            $data['lang'] = \Drupal::languageManager()->getDefaultLanguage()->getId();
+            $queue = \Drupal::queue('ek_email_queue');
+            $queue->createQueue();
+            $queue->createItem($data);
+            $data['subject'] = t("New memo") . ': ' . $serial . " (" . t('copy') . ")";
+            $data['email'] = $entity_mail;
+            $queue->createItem($data);
+
               
       }
       
