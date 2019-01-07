@@ -1,11 +1,11 @@
 .tip-module-ek-projects{
-  background-color: #CEE3F6 !important;
+    background-color: #CEE3F6 !important;
 }
 
 .panel-default {
 }
 .panel {
- padding: 0px !important;
+    padding: 0px !important;
 }
 
 .panel-default > .panel-heading {
@@ -18,8 +18,9 @@
 .panel-body {
 }
 .panel-title {
-    //color: #446E9B;
+    color: #fff;
     font-family: sans-serif;
+    cursor:pointer;
 }
 .table {
     display: table;
@@ -85,7 +86,7 @@
 }
 
 .editBackground{
-   background-color: #e7e7e7;
+    background-color: #e7e7e7;
 }
 .open {
     background-color: #FFE166;
@@ -152,7 +153,7 @@
 
 
 .open-ico {
-      
+
 }
 .open-ico:before {
     content: "\f2d0"; 
@@ -163,7 +164,7 @@
     cursor:pointer;
 }
 .close-ico {
-      
+
 }
 .close-ico:before {
     content: "\f2d1"; 
@@ -182,118 +183,126 @@
 }
 
 .btn {
-  -webkit-user-select:none;
-  background-image:none;
-  border:1px solid transparent;
-  border-radius:4px;
-  cursor:pointer;
-  display:inline-block;
-  font-size:14px;
-  font-weight:400;
-  line-height:1.42857;
-  margin-bottom:0;
-  padding:6px 12px;
-  text-align:center;
-  touch-action:manipulation;
-  vertical-align:middle;
-  white-space:nowrap;
+    -webkit-user-select:none;
+    background-image:none;
+    border:1px solid transparent;
+    border-radius:4px;
+    cursor:pointer;
+    display:inline-block;
+    font-size:14px;
+    font-weight:400;
+    line-height:1.42857;
+    margin-bottom:0;
+    padding:6px 12px;
+    text-align:center;
+    touch-action:manipulation;
+    vertical-align:middle;
+    white-space:nowrap;
 }
 
 .follow {
-  background-color:#5CB85C;
-  border-color:#4CAE4C;
-  color:#FFFFFF;  
+    background-color:#5CB85C;
+    border-color:#4CAE4C;
+    color:#FFFFFF;  
 }
 
 ._follow {
-  background-color:#D9534F;
-  border-color:#D43F3A;
-  color:#FFFFFF;  
+    background-color:#D9534F;
+    border-color:#D43F3A;
+    color:#FFFFFF;  
 }
 
 .edit {
-  background-color:#FF8000;
-  color:#FFFFFF;  
+    background-color:#FF8000;
+    color:#FFFFFF;  
 }
 
+#project-edit{
+    position:fixed;
+    bottom:100px;
+    right:100px;
+    box-shadow: 2px 2px 3px #999; 
+}
+
+
 ._edit {
-  background-color:#A4A4A4;
-  color:#FFFFFF;  
+    background-color:#A4A4A4;
+    color:#FFFFFF;  
 }
 
 .ico:before {
-  font-family: FontAwesome;
-  font-size:1.3em;
-  color: #446E9B;
-  width: 1.4em;
-  text-align: center;
-  display: inline-block;
-  text-rendering: auto;
+    font-family: FontAwesome;
+    font-size:1.3em;
+    color: #446E9B;
+    width: 1.4em;
+    text-align: center;
+    display: inline-block;
+    text-rendering: auto;
 }
 .show-ico:before {
-  content: "\f06e";
+    content: "\f06e";
 }
 .hide-ico:before {
-  content: "\f070";
-  color:#000;
+    content: "\f070";
+    color:#000;
 }
 
 .pencil:before {
-  content: "\f040";
-  color:#FFFFFF;
+    content: "\f040";
+    color:#FFFFFF;
 }
 
 .pencil-edit:before {
-  content: "\f040";
-  color:#FF8000;
+    content: "\f040";
+    color:#FF8000;
 }
 .users:before {
-  content: "\f0c0"; 
+    content: "\f0c0"; 
 }
 
 .address-card:before {
-  content: "\f2bc"; 
+    content: "\f2bc"; 
 }
 
 .exchange:before {
-  content: "\f0ec"; 
+    content: "\f0ec"; 
 }
 
 .user-circle:before {
-  content: "\f2be"; 
+    content: "\f2be"; 
 }
 
 .envelope:before {
-  content: "\f003"; 
+    content: "\f003"; 
 }
 
 .lock:before {
-  content: "\f023"; 
+    content: "\f023"; 
 }
 
 .tasks:before {
-  content: "\f0ae"; 
+    content: "\f0ae"; 
 }
 
 .square:before {
-  content: "\f096";
-  color:#FFFFFF; 
+    content: "\f096";
+    color:#FFFFFF; 
 }
 .check-square:before {
-  content: "\f046";
-  color:#FFFFFF; 
+    content: "\f046";
+    color:#FFFFFF; 
 }
 
 .extranet-btn-green:before {
-  font-family: FontAwesome;
-  font-size:1.3em;
-  color: #00D744;
-  content: "\f205";
+    font-family: FontAwesome;
+    font-size:1.3em;
+    color: #00D744;
+    content: "\f205";
 }
 
 .extranet-btn-red:before {
-  font-family: FontAwesome;
-  font-size:1.3em;
-  color: #FF6666;
-  content: "\f204";
+    font-family: FontAwesome;
+    font-size:1.3em;
+    color: #FF6666;
+    content: "\f204";
 }

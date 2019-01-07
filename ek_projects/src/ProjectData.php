@@ -5,6 +5,7 @@ namespace Drupal\ek_projects;
 use Drupal\Core\Url;
 use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Drupal\user\Entity\User;
 use Drupal\ek_admin\Access\AccessCheck;
 
@@ -363,7 +364,7 @@ use Drupal\ek_admin\Access\AccessCheck;
     if(!isset($param['mail']) || $param['mail'] == NULL ) {
         $param['mail'] = 'nomail';
     }
-    $error = '';
+    $data = [];
       if($param['field'] != 'new_project') {
           //send to users following project
           // note user still in project will be filtered out if non active
@@ -430,31 +431,27 @@ use Drupal\ek_admin\Access\AccessCheck;
         
         $params['body'] = $body;
         
+        $queue = \Drupal::queue('ek_email_queue');
+        $queue->createQueue();
+        $data['module'] = 'ek_projects';
+        $data['key'] = 'project_note';
+        $data['params'] = $params;
+        
         foreach (User::loadMultiple($notify) as $account) {
             if($account->isActive()) {
                 
-                $send = \Drupal::service('plugin.manager.mail')->mail(
-                  'ek_projects',
-                  'project_note',
-                  $account->getEmail(),
-                  $account->getPreferredLangcode(),
-                  $params,
-                  $from->mail,
-                  TRUE
-                );
-              
-                if($send['result'] == FALSE) {
-                  $error .= $account->getEmail() . ' ';
-                }
-                
+                //send notification email to central email queue;
+                $data['email'] = $account->getEmail();
+                $data['lang'] = $account->getPreferredLangcode();
+                $queue->createItem($data);
             }
         }
         
-        return TRUE;
+        return new Response('', 204);
         
       } //if>0 
    
-    return $error;
+    return new Response('', 204);
     }    
  
  }//class
