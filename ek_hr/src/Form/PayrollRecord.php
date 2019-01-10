@@ -158,11 +158,17 @@ class PayrollRecord extends FormBase {
                 'currency' => $e->currency,
                 'coid' => $form_state->getValue('coid'),
                 'LAF1' => $param->get('ad', 'LAF1' . $c, 'value'),
+                'LAF1f' => $param->get('ad', 'LAF1' . $c, 'formula'),
                 'LAF2' => $param->get('ad', 'LAF2' . $c, 'value'),
+                'LAF2f' => $param->get('ad', 'LAF2' . $c, 'formula'),
                 'LAF3' => $param->get('ad', 'LAF3' . $c, 'value'),
+                'LAF3f' => $param->get('ad', 'LAF3' . $c, 'formula'),
                 'LAF4' => $param->get('ad', 'LAF4' . $c, 'value'),
+                'LAF4f' => $param->get('ad', 'LAF4' . $c, 'formula'),
                 'LAF5' => $param->get('ad', 'LAF5' . $c, 'value'),
+                'LAF5f' => $param->get('ad', 'LAF5' . $c, 'formula'),
                 'LAF6' => $param->get('ad', 'LAF6' . $c, 'value'),
+                'LAF6f' => $param->get('ad', 'LAF6' . $c, 'formula'),
                 'custom_a_val' => array(
                     1 => $param->get('ad', 'LAC1' . $c, 'value'),
                     2 => $param->get('ad', 'LAC2' . $c, 'value'),
@@ -459,6 +465,16 @@ class PayrollRecord extends FormBase {
                 //'#value' => isset($post->n_ot_val) ? $post->n_ot_val : 0,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium">',
+                '#suffix' => '</div>',
+            );
+            $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAF1" . $c;
+            $opt = serialize($opt);
+            $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
+            $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'>[f]</a>";
+            $form['hr']['formula_not'] = array(
+                '#type' => 'item',
+                '#markup' => $mark,
+                '#prefix' => '<div class="cell cellnarrow">',
                 '#suffix' => '</div></div>',
             );
 
@@ -488,8 +504,18 @@ class PayrollRecord extends FormBase {
                 //'#value' => isset($post->r_day_val) ? $post->r_day_val : 0,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium">',
-                '#suffix' => '</div></div>',
+                '#suffix' => '</div>',
             );
+            $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAF2" . $c;
+            $opt = serialize($opt);
+            $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
+            $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'>[f]</a>";
+            $form['hr']['formula_rdot'] = array(
+                '#type' => 'item',
+                '#markup' => $mark,
+                '#prefix' => '<div class="cell cellnarrow">',
+                '#suffix' => '</div></div>',
+            );            
 //row 5
             $form['hr']["ph_hours"] = array(
                 '#type' => 'textfield',
@@ -516,9 +542,18 @@ class PayrollRecord extends FormBase {
                 //'#value' => isset($post->ph_day_val) ? $post->ph_day_val : 0,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium">',
-                '#suffix' => '</div></div>',
+                '#suffix' => '</div>',
             );
-
+            $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAF3" . $c;
+            $opt = serialize($opt);
+            $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
+            $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'>[f]</a>";
+            $form['hr']['formula_phot'] = array(
+                '#type' => 'item',
+                '#markup' => $mark,
+                '#prefix' => '<div class="cell cellnarrow">',
+                '#suffix' => '</div></div>',
+            );  
 //row 6
             $form['hr']["mc_days"] = array(
                 '#type' => 'textfield',
@@ -545,8 +580,18 @@ class PayrollRecord extends FormBase {
                 //'#value' => isset($post->mc_day_val) ? $post->mc_day_val : 0,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium">',
-                '#suffix' => '</div></div>',
+                '#suffix' => '</div>',
             );
+            $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAF4" . $c;
+            $opt = serialize($opt);
+            $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
+            $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'>[f]</a>";
+            $form['hr']['formula_mc'] = array(
+                '#type' => 'item',
+                '#markup' => $mark,
+                '#prefix' => '<div class="cell cellnarrow">',
+                '#suffix' => '</div></div>',
+            );              
 
 //row 7
             $form['hr']["x_hours"] = array(
@@ -574,9 +619,18 @@ class PayrollRecord extends FormBase {
                 //'#value' => isset($post->xr_hours_val) ? $post->xr_hours_val : 0,
                 '#attributes' => array('readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cellmedium">',
-                '#suffix' => '</div></div>',
+                '#suffix' => '</div>',
             );
-
+            $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAF5" . $c;
+            $opt = serialize($opt);
+            $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
+            $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'>[f]</a>";
+            $form['hr']['formula_xh'] = array(
+                '#type' => 'item',
+                '#markup' => $mark,
+                '#prefix' => '<div class="cell cellnarrow">',
+                '#suffix' => '</div></div>',
+            );  
 //row 8
             $form['hr']["turnover"] = array(
                 '#type' => 'textfield',
@@ -605,7 +659,16 @@ class PayrollRecord extends FormBase {
                 '#prefix' => '<div class="cell cellmedium">',
                 '#suffix' => '</div>',
             );
-
+            $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAF6" . $c;
+            $opt = serialize($opt);
+            $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
+            $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'>[f]</a>";
+            $form['hr']['formula_com'] = array(
+                '#type' => 'item',
+                '#markup' => $mark,
+                '#prefix' => '<div class="cell cellnarrow">',
+                '#suffix' => '</div>',
+            );  
             $form['hr']['tax0'] = array(
                 '#type' => 'checkbox',
                 //'#default_value' => $param->get('ad', "LAF6".$c, 'tax'),

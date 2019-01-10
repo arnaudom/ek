@@ -27,32 +27,62 @@
           total = eval(total+thisbasic);
           //OT
           var overtime_hours = ($('#overtime_hours').val()) ? parseFloat($('#overtime_hours').val()) : 0;
-          var normal_ot = settings.ek_hr.LAF1*overtime_hours;
+          if(settings.ek_hr.LAF1f != null){
+            var f = eval(settings.ek_hr.LAF1f);
+            var normal_ot = f.toFixed(2) * overtime_hours;  
+          } else {
+            var normal_ot = settings.ek_hr.LAF1 * overtime_hours;
+          }
           $('#normal_ot').val(normal_ot.toFixed(2));
           total = eval(total+normal_ot);
           
           var rest_hours = ($('#rest_hours').val()) ? parseFloat($('#rest_hours').val()) : 0;
-          var rest_day_ot = settings.ek_hr.LAF2*rest_hours;
+          if(settings.ek_hr.LAF2f != null){
+            var f = eval(settings.ek_hr.LAF2f);
+            var rest_day_ot = f.toFixed(2) * rest_hours; 
+          } else {
+            var rest_day_ot = settings.ek_hr.LAF2 * rest_hours;
+          }    
           $('#rest_day_ot').val(rest_day_ot.toFixed(2));
           total = eval(total+rest_day_ot); 
           
           var ph_hours = ($('#ph_hours').val()) ? parseFloat($('#ph_hours').val()) : 0;
-          var ph_ot = settings.ek_hr.LAF3*ph_hours;
+          if(settings.ek_hr.LAF3f != null){
+            var f = eval(settings.ek_hr.LAF3f);
+            var ph_ot = f.toFixed(2) * ph_hours; 
+          } else {
+            var ph_ot = settings.ek_hr.LAF3 * ph_hours;
+          }            
           $('#ph_ot').val(ph_ot.toFixed(2));
           total = eval(total+ph_ot);           
 
           var mc_days = ($('#mc_days').val()) ? parseFloat($('#mc_days').val()) : 0;
-          var mc_day_val = settings.ek_hr.LAF4*mc_days;
+          if(settings.ek_hr.LAF4f != null){
+            var f = eval(settings.ek_hr.LAF4f);
+            var mc_day_val = f.toFixed(2) * mc_days; 
+          } else {
+            var mc_day_val = settings.ek_hr.LAF4 * mc_days;
+          } 
           $('#mc_day_val').val(mc_day_val.toFixed(2));
           total = eval(total+mc_day_val);                     
 
           var x_hours = ($('#x_hours').val()) ? parseFloat($('#x_hours').val()) : 0;
-          var x_hours_val = settings.ek_hr.LAF5*x_hours;
+          if(settings.ek_hr.LAF5f != null){
+            var f = eval(settings.ek_hr.LAF5f);
+            var x_hours_val = f.toFixed(2) * x_hours; 
+          } else {
+            var x_hours_val = settings.ek_hr.LAF5 * x_hours;
+          }  
           $('#x_hours_val').val(x_hours_val.toFixed(2));
           total = eval(total+x_hours_val);
 
           var turnover = ($('#turnover').val()) ? parseFloat($('#turnover').val()) : 0;
-          var commission = settings.ek_hr.LAF6*turnover;
+          if(settings.ek_hr.LAF6f != null){
+            var f = eval(settings.ek_hr.LAF6f);
+            var commission = f.toFixed(2) * turnover; 
+          } else {
+            var commission = settings.ek_hr.LAF6 * turnover;
+          }  
           $('#commission').val(commission.toFixed(2));
           total = eval(total+commission);
 
