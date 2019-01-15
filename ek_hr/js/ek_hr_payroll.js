@@ -27,7 +27,7 @@
           total = eval(total+thisbasic);
           //OT
           var overtime_hours = ($('#overtime_hours').val()) ? parseFloat($('#overtime_hours').val()) : 0;
-          if(settings.ek_hr.LAF1f != null){
+          if(settings.ek_hr.LAF1f != ''){
             var f = eval(settings.ek_hr.LAF1f);
             var normal_ot = f.toFixed(2) * overtime_hours;  
           } else {
@@ -37,7 +37,7 @@
           total = eval(total+normal_ot);
           
           var rest_hours = ($('#rest_hours').val()) ? parseFloat($('#rest_hours').val()) : 0;
-          if(settings.ek_hr.LAF2f != null){
+          if(settings.ek_hr.LAF2f != ''){
             var f = eval(settings.ek_hr.LAF2f);
             var rest_day_ot = f.toFixed(2) * rest_hours; 
           } else {
@@ -47,7 +47,7 @@
           total = eval(total+rest_day_ot); 
           
           var ph_hours = ($('#ph_hours').val()) ? parseFloat($('#ph_hours').val()) : 0;
-          if(settings.ek_hr.LAF3f != null){
+          if(settings.ek_hr.LAF3f != ''){
             var f = eval(settings.ek_hr.LAF3f);
             var ph_ot = f.toFixed(2) * ph_hours; 
           } else {
@@ -57,7 +57,7 @@
           total = eval(total+ph_ot);           
 
           var mc_days = ($('#mc_days').val()) ? parseFloat($('#mc_days').val()) : 0;
-          if(settings.ek_hr.LAF4f != null){
+          if(settings.ek_hr.LAF4f != ''){console.log(settings.ek_hr.LAF4f);
             var f = eval(settings.ek_hr.LAF4f);
             var mc_day_val = f.toFixed(2) * mc_days; 
           } else {
@@ -67,7 +67,7 @@
           total = eval(total+mc_day_val);                     
 
           var x_hours = ($('#x_hours').val()) ? parseFloat($('#x_hours').val()) : 0;
-          if(settings.ek_hr.LAF5f != null){
+          if(settings.ek_hr.LAF5f != ''){
             var f = eval(settings.ek_hr.LAF5f);
             var x_hours_val = f.toFixed(2) * x_hours; 
           } else {
@@ -77,7 +77,7 @@
           total = eval(total+x_hours_val);
 
           var turnover = ($('#turnover').val()) ? parseFloat($('#turnover').val()) : 0;
-          if(settings.ek_hr.LAF6f != null){
+          if(settings.ek_hr.LAF6f != ''){
             var f = eval(settings.ek_hr.LAF6f);
             var commission = f.toFixed(2) * turnover; 
           } else {
