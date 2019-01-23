@@ -85,7 +85,7 @@ class PayrollController extends ControllerBase {
      */
     public function payroll(Request $request) {
 
-        $build['payroll'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\PayrollRecord');
+        $build['payroll'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\PayrollRecord',$request->query->get('coid'),$request->query->get('eid'));
         Return $build;
     }
     
@@ -209,7 +209,9 @@ class PayrollController extends ControllerBase {
 
 
 
-        $query = "SELECT * from {ek_hr_workforce_pay} INNER JOIN {ek_hr_workforce} ON ek_hr_workforce_pay.id=ek_hr_workforce.id  WHERE company_id=:coid AND FIND_IN_SET (company_id, :a) order by ek_hr_workforce.id";
+        $query = "SELECT * from {ek_hr_workforce_pay} INNER JOIN {ek_hr_workforce} "
+                . "ON ek_hr_workforce_pay.id=ek_hr_workforce.id  "
+                . "WHERE company_id=:coid AND FIND_IN_SET (company_id, :a) order by ek_hr_workforce.id";
 
         if ($_SESSION['hrlfilter']['filter'] == 1) {
 
@@ -238,7 +240,7 @@ class PayrollController extends ControllerBase {
                             '#links' => array(
                                 'edit' => array(
                                     'title' => $this->t('Edit pay'),
-                                    'url' => Url::fromRoute('ek_hr.payroll'),
+                                    'url' => Url::fromRoute('ek_hr.payroll',['coid' => $_SESSION['hrlfilter']['coid'], 'eid' => $r->id]),
                                 ),
                                 'change' => array(
                                     'title' => $this->t('Edit profile'),

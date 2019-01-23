@@ -454,6 +454,7 @@ class ParametersController extends ControllerBase {
                     4 => $param->get('ad', 'LDC4-' . $c, 'description'),
                     5 => $param->get('ad', 'LDC5-' . $c, 'description'),
                     6 => $param->get('ad', 'LDC6-' . $c, 'description'),
+                    7 => $param->get('ad', 'LDC7-' . $c, 'description'),
                 ),
                 'LDF1' => $param->get('ad', 'LDF1-' . $c, 'description'),
                 'LDF2' => $param->get('ad', 'LDF2-' . $c, 'description'),
@@ -473,6 +474,7 @@ class ParametersController extends ControllerBase {
                 'fund3' => $param->get('param', 'fund_3', ['name','value']),
                 'fund4' => $param->get('param', 'fund_4', ['name','value']),
                 'fund5' => $param->get('param', 'fund_5', ['name','value']),
+                'incometax' => $param->get('param', 'tax', ['name', 'value']),
             );
 
             return array(

@@ -1,93 +1,93 @@
 .reddot {
-  background-image: url(../art/reddot.png) ;
-  background-repeat: no-repeat;
-  width: 10px;
-  height:10px;
+    background-image: url(../art/reddot.png) ;
+    background-repeat: no-repeat;
+    width: 10px;
+    height:10px;
 }
 
 .orangedot {
-  background-image: url(../art/orangedot.png) ;
-  background-repeat: no-repeat;
-  width: 10px;
-  height: 10px;
+    background-image: url(../art/orangedot.png) ;
+    background-repeat: no-repeat;
+    width: 10px;
+    height: 10px;
 }
 
 .greendot {
-  background-image: url(../art/greendot.png) ;
-  background-repeat: no-repeat;
-  width: 10px;
-  height: 10px;
+    background-image: url(../art/greendot.png) ;
+    background-repeat: no-repeat;
+    width: 10px;
+    height: 10px;
 }
 
 .right {
-  text-align:right;
+    text-align:right;
 }
 
 .left {
-  text-align:left;
+    text-align:left;
 }
 
 .table {
-  display: table;
-  width: 100%;
+    display: table;
+    width: 100%;
 }
 
 .row {
-  display : table-row;
-  height:auto;
+    display : table-row;
+    height:auto;
 }
 
 .header_tb {  
-  display : table-cell;
+    display : table-cell;
 }
 
 .cell {  
-  display : table-cell;
-  line-height: 1;
-  float: left;
-  padding-left: 30px;
+    display : table-cell;
+    line-height: 1;
+    float: left;
+    padding-left: 30px;
 }
 .cellsmall {  
-  display :inline-block;
-  width: 100px;
+    display :inline-block;
+    width: 100px;
 }
 
 .cellmedium {  
-  display :inline-block;
-  width: 300px;
+    display :inline-block;
+    width: 300px;
 }
 .cellnarrow {  
-  display :inline-block;
-  width: 30px;
+    display :inline-block;
+    width: 30px;
 }
 
 .cellborder {  
-  border-width: thin ;
-	border-spacing: 1px;
-	border-style: solid;
-	border-color: #A4A4A4;
-	border-collapse: collapse;
-	padding: 2px;
+    border-width: thin ;
+    border-spacing: 1px;
+    border-style: solid;
+    border-color: #A4A4A4;
+    border-collapse: collapse;
+    padding: 2px;
 }
 
 .cellbordertop {  
-  border-width: 0px 1px 0px 0px ;
-	border-spacing: 1px;
-	border-style: solid;
-	border-color: #A4A4A4;
-	border-collapse: collapse;
+    border-width: 0px 1px 0px 0px ;
+    border-spacing: 1px;
+    border-style: solid;
+    border-color: #A4A4A4;
+    border-collapse: collapse;
 
 }
 .inline {
-  display:inline;
+    display:inline;
 }
 
 .amount {
-  text-align:right;
+    text-align:right;
 }
 
 .current {
-  background-color:#F2F5A9;
+    background-color:#F2F5A9;
 }
 
 .delete {
@@ -102,53 +102,152 @@
 }
 
 .red {
-  color: #FF6666;
+    color: #FF6666;
 }
 .green {
-  color: #66FF97;
+    color: #66FF97;
 }
 
 .blue {
-  color: #CEE3F6;
+    color: #CEE3F6;
 }
 
-.back_red {
-  background-color: #FF6666;
-}
-.back_green {
-  background-color: #66FF97;
-}
 
 .back_blue {
-  background-color: #CEE3F6;
+    background-color: #CEE3F6;
+    //color:#fafafa;
+}
+.back_red {
+    background-color: #FF6666;
+    color: #fafafa;
+    width: 200px;
+    padding-left: 10px;
 }
 
-.back_yellow {
-  background-color: #F2F5A9;
+.clear:hover {
+    background-color: #FFF;
+    color: #FFF !important;
+    background-image: linear-gradient(to bottom, #F7BE81, #DF7401) !important;
+    border-color: #F7BE81 #DF7401 #DF7401 !important;
+}
+
+.save:hover {
+    background-color: #FFF;
+    color: #FFF !important;
+    background-image: linear-gradient(to bottom, #A9F5A9, #298A08) !important;
+    border-color: #A9F5A9 #298A08 #298A08 !important;
 }
 
 hr {
-  -moz-border-bottom-colors: none;
-  -moz-border-left-colors: none;
-  -moz-border-right-colors: none;
-  -moz-border-top-colors: none;
-   border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
-  border-image: none;
-  border-right: 0 none;
-  border-style: solid none none;
-  border-width: 1px 0 0;
-  margin-bottom: 2px;
-  margin-top: 2px;
-  height: 0;
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
+    border-image: none;
+    border-right: 0 none;
+    border-style: solid none none;
+    border-width: 1px 0 0;
+    margin-bottom: 2px;
+    margin-top: 2px;
+    height: 0;
 }
 
+.form-number-small {
+    width: 60px;
+}
+.payroll-record {
+    width: 75%;
+}
+
+#total_display {
+    position:fixed;
+    font-size:1.4em;
+    box-shadow: 2px 2px 3px #999; 
+    -webkit-user-select:none;
+    border:1px solid transparent;
+    border-radius:4px;
+    display:inline-block;
+    line-height:1.42857;
+    margin-bottom:0;
+    padding:6px 12px;
+    text-align:right;
+    vertical-align:middle;
+    white-space:nowrap;
+    background-color:#5CB85C;
+    color:#fafafa;
+}
+
+.formula:before {
+    content: "\f069"; 
+    font-family: FontAwesome;
+    font-size:1em;
+    color: #408FD7;
+}
+
+.top-ico:before {
+    content: "\f0aa"; 
+    font-family: FontAwesome;
+    font-size:1.8em;
+    color: #419ff1;
+    float:right;
+    cursor:pointer;
+}
+
+@media (min-width: 1441px) and (max-width: 1920px) { 
+    #total_display {
+        top:500px;
+        left:1350px;
+    }
+}
+@media (max-width: 1440px) { 
+    #total_display {
+        top:500px;
+        left:1012px;
+        
+    }
+}
+@media screen and (max-width: 1024px) { 
+    #total_display {
+        top:500px;
+        left:830px;
+        
+    }
+}
+@media screen and (max-width: 834px) { 
+    #total_display {
+        top:450px;
+        left:586px;
+        
+    }
+}
+@media screen and (max-width: 768px) { 
+    #total_display {
+         top:450px;
+         left:600px;
+       
+    }
+}
+@media screen and (max-width: 667px) { 
+    #total_display {
+         top:460px;
+         left:469px;
+       
+    }
+}
+@media screen and (max-width: 600px) { 
+    #total_display {
+         top:460px;
+         left:421px;
+       
+    }
+}
 #payroll_data .form-item, .form-actions {
     margin-bottom: 0em !important;
     margin-top: 0em !important;
 }
 
 .hr_thumbnail {
-    
     width: 30px;
     height: 30px;
     overflow: hidden;
@@ -164,9 +263,9 @@ hr {
 }
 
 #hr-search-result {
-   max-height: 300px;
-   overflow: auto;
+    max-height: 300px;
+    overflow: auto;
 }
 .hr_image-link {
-  border-bottom: 0px !important;
+    border-bottom: 0px !important;
 }
