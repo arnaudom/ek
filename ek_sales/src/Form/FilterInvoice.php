@@ -143,7 +143,7 @@ class FilterInvoice extends FormBase {
                   '#default_value' => isset($_SESSION['ifilter']['client']) ? $_SESSION['ifilter']['client'] : '%',
                   '#title' => t('client'),
                   '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
-                  '#prefix' => "<div class='container-inline'>",
+                  //'#prefix' => "<div class='container-inline'>",
                   '#states' => array(
                     'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
                     ),
@@ -154,7 +154,8 @@ class FilterInvoice extends FormBase {
               
               $form['filters']['client'] = array(
                   '#markup' => t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
-                  '#prefix' => "<div class='container-inline'>",
+                  '#prefix' => "<div class='messages messages--warning'>",
+                  '#suffix' => '</div>',
                   );      
         }
 
@@ -163,7 +164,6 @@ class FilterInvoice extends FormBase {
               $form['filters']['client'] = array(
                   '#markup' => t('You do not have any client list.'),
                   '#default_value' => 0,
-                  '#prefix' => "<div class='container-inline'>",
                 );
 
   }           
@@ -172,7 +172,6 @@ class FilterInvoice extends FormBase {
       '#type' => 'select',
       '#options' => array(0 => t('Not paid'), 1 => t('Paid'), 3 => t('Any')),
       '#default_value' => isset($_SESSION['ifilter']['status']) ? $_SESSION['ifilter']['status'] : '0' ,
-      '#suffix' => '</div>',
       '#states' => array(
           'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
           ),
@@ -187,7 +186,6 @@ class FilterInvoice extends FormBase {
     $form['filters']['actions']['submit'] = array(
       '#type' => 'submit',
       '#value' => $this->t('Apply'),
-      //'#suffix' => "</div>",
     );
 
     if (!empty($_SESSION['ifilter'])) {

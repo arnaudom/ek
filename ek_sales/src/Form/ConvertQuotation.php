@@ -173,9 +173,8 @@ class ConvertQuotation extends FormBase {
             } else {
                 $new = Url::fromRoute('ek_address_book.new', array())->toString();
                 $form['options']['client'] = array(
-                    '#markup' => t("You do not have any @n in your record.", ['@n' => $new]),
-                    '#default_value' => 0,
-                    '#prefix' => "<div class='cell'>",
+                    '#markup' => t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $new]),
+                    '#prefix' => "<div class='messages messages--warning'>",
                     '#suffix' => '</div>',
                 );
             }

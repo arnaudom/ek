@@ -91,10 +91,9 @@ class FilterQuotation extends FormBase {
 
 
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
-            $client = array('%' => t('Any'));
-            $client += \Drupal\ek_address_book\AddressBookData::addresslist(1);
-
+            $client = \Drupal\ek_address_book\AddressBookData::addresslist(1);
             if (!empty($client)) {
+                $client = array('%' => t('Any')) + $client;
                 $form['filters']['client'] = array(
                     '#type' => 'select',
                     '#size' => 1,
@@ -106,9 +105,10 @@ class FilterQuotation extends FormBase {
                 );
             } else {
                 $link = Url::fromRoute('ek_address_book.new', array())->toString();
-                $new = "<a title='" . t('new') . "' href='" . $link . "'>" . t('client') . "</a>";
                 $form['options']['client'] = array(
-                    '#markup' => t("You do not have any @n in your record.", ['@n' => $new]),
+                    '#markup' => t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
+                    '#prefix' => "<div class='messages messages--warning'>",
+                    '#suffix' => '</div>',
                 );
             }
         } else {

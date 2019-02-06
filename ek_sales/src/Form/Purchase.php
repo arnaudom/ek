@@ -219,12 +219,10 @@ class Purchase extends FormBase {
                 );
             } else {
                 $link = Url::fromRoute('ek_address_book.new', array())->toString();
-                $new = "<a title='" . t('new') . "' href='" . $link . "'>" . t('client') . "</a>";
                 $form['options']['supplier'] = array(
-                    '#markup' => t("You do not have any @n in your record.", ['@n' => $new]),
-                    '#default_value' => 0,
-                    '#prefix' => "<div class='row'><div class='cell'>",
-                    '#suffix' => '</div></div></div>',
+                  '#markup' => t("You do not have any <a title='create' href='@cl'>supplier</a> in your record.", ['@cl' => $link]),
+                  '#prefix' => "<div class='messages messages--warning'>",
+                  '#suffix' => '</div></div>',
                 );
             }
         } else {

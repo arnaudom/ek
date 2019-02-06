@@ -187,7 +187,6 @@ class FilterPurchase extends FormBase {
     $form['filters']['actions']['submit'] = array(
       '#type' => 'submit',
       '#value' => $this->t('Apply'),
-      //'#suffix' => "</div>",
     );
 
     if (!empty($_SESSION['pfilter'])) {

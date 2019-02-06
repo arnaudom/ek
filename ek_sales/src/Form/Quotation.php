@@ -96,7 +96,7 @@ class Quotation extends FormBase {
             if (!$form_state->get('num_items'))
                 $form_state->set('num_items', 0);
 
-            $form_state->setValue('head', $data->header);
+            $form_state->setValue('head', $data->head);
 
             $incoterm = explode('|', $data->incoterm);
             if ($incoterm[0] != '0') {
@@ -215,11 +215,9 @@ class Quotation extends FormBase {
                 );
             } else {
                 $link = Url::fromRoute('ek_address_book.new', array())->toString();
-                $new = "<a title='" . t('new') . "' href='" . $link . "'>" . t('client') . "</a>";
                 $form['options']['client'] = array(
-                    '#markup' => t("You do not have any @n in your record.", ['@n' => $new]),
-                    '#default_value' => 0,
-                    '#prefix' => "<div class='cell'>",
+                    '#markup' => t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
+                    '#prefix' => "<div class='messages messages--warning'>",
                     '#suffix' => '</div>',
                 );
             }
