@@ -89,8 +89,9 @@ class CalendarController extends ControllerBase {
    */
   protected function dialog($is_modal = FALSE) {
   
-    $content = $this->formBuilder->getForm('Drupal\ek_projects\Form\SelectCalendar');
-    $content['content']['#markup'] = "<div id='calendar'></div>";
+    $content = [];
+    $content['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\SelectCalendar');
+    $content['cal']['#markup'] = "<div id='calendar'></div>";
                         
     $response = new AjaxResponse();
     $title = t('Calendar');
