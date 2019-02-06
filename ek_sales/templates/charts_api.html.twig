@@ -1,4 +1,5 @@
-{% set library = 'charts_' ~ chart_type ~ '/' ~ chart_type %}
+{% set library, height, width, height_units, width_units = 'charts_' ~ chart_type ~ '/' ~ chart_type, options.height, options.width, options.height_units, options.width_units %}
+
 {{ attach_library("#{ library }") }}
 
-<div {{ attributes }} {{ content_attributes }} style="width:auto; height:300px;"></div>
+<div {{ attributes }} {{ content_attributes }} style="width:500px; height:400px;"></div>

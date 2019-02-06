@@ -16,6 +16,7 @@
 
 use Drupal\charts\Charts\ModuleSelector;
 use Drupal\Core\Database\Database;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 
 
 /**
@@ -65,9 +66,11 @@ function ek_sales_theme() {
   //variables charts api  
   $vars = [
     'library' => '',
-    'categories' => '',
-    'seriesData' => '',
-    'options' => '',
+    'categories' => [],
+    'seriesData' => [],
+    'options' => [],
+    'id' => '',
+      
   ];
     
   return array(
@@ -114,14 +117,24 @@ function ek_sales_theme() {
  */
 function template_preprocess_charts_api(&$variables) {
   
-  $id = md5(mt_rand(5, 10));
-  $moduleSelector = new ModuleSelector(
-          $variables['library'], 
-          $variables['categories'], 
-          $variables['seriesData'], 
-          $variables['options'], 
-          [], $variables, 'xyz'
-          );
+  // Charts override settings applied at this point.
+  $chartOverridePluginManager = \Drupal::service('plugin.manager.charts_override');
+  $plugin_definition = [];
+  $chartOverrideOptions = [];
+  try {
+    $plugin_definition = $chartOverridePluginManager->getDefinition($variables['library'] . '_overrides');
+    if (!empty($plugin_definition)) {
+      $chartOverridePlugin = $chartOverridePluginManager->createInstance($variables['library'] . '_overrides');
+      $chartOverrideOptions = $chartOverridePlugin->chartOverrides($variables['options']);
+    }
+  } catch (PluginNotFoundException $e) {
+    \Drupal::service('messenger')
+      ->addMessage(t('Exception...' . $e->getMessage()));
+  }
+
+  $plugin_manager = \Drupal::service('plugin.manager.charts');
+  $plugin = $plugin_manager->createInstance($variables['library']);
+  $plugin->buildVariables($variables['options'], $variables['categories'], $variables['seriesData'], [], $variables, $variables['id'], $chartOverrideOptions);
 }
 
 /**
