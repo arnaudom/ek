@@ -375,6 +375,7 @@ class NewAddressBookCardForm extends FormBase {
             \Drupal::messenger()->addStatus(t('The address book card is recorded'));
         }
 
+       \Drupal\Core\Cache\Cache::invalidateTags(['address_book_card']);
        $form_state->setRedirect('ek_address_book.view', array('abid' => $form_state->getValue('for_id')));
     }
 
