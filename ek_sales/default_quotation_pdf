@@ -227,7 +227,7 @@ $pdf->Ln(5);
         $pdf->Cell($c1,5,t("Comments") . ':' ,0,1,'L');
         $pdf->SetFont('helvetica','I',8);
         $pdf->Cell($lm);
-        $pdf->MultiCell(0,5,utf8_decode($head->comment),0,'L');
+        $pdf->MultiCell(0,5,$head->comment,0,'L');
     }  
 // PROJECT ========================================================
 $pdf->Ln(2);
