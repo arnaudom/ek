@@ -70,7 +70,15 @@ ek_sales_modal:
 ek_sales_delete_file:
   path: 'ek_sales/delete_file/{id}'
   defaults:
-    _controller: '\Drupal\ek_sales\Controller\SalesController::deletefile'
+    _controller: '\Drupal\ek_sales\Controller\SalesController::deleteFile'
+  requirements:
+    _permission: 'sales_data'
+    id: \d*
+
+ek_sales_delete_file_confirm:
+  path: 'ek_sales/delete_file_confirm/{id}'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\SalesController::deleteFileConfirmed'
   requirements:
     _permission: 'sales_data'
     id: \d*

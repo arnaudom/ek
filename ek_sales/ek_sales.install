@@ -205,3 +205,11 @@ function ek_sales_update_8007() {
 function ek_sales_update_8008() {
    \Drupal::service('router.builder')->rebuild(); 
 }
+
+/**
+ * New route
+ * 
+*/
+function ek_sales_update_8009() {
+    \Drupal::service('router.builder')->rebuild();
+}

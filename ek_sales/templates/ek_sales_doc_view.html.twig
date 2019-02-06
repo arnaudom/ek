@@ -29,14 +29,14 @@
 {% for key, item in items %}
 
     {% if item.fid == 1 %}
-        <tr>
+        <tr id='row{{ item.id }}'>
             <td title='{{ item.doc_name }} |  {{ item.date }} , {{ item.size }}'>
                 <IMG src='../../{{ item.icon_path }}{{item.icon}}.png'/> 
                 <a href="{{ item.file_url }}" target='_blank' >{{ item.doc_name }}</a>
             </td>
             <td>{{ item.comment }}</td>
             {% if item.delete == 1 %}
-                <td style="text-align: center;"><a id='d{{ item.key }}' href="{{ item.delete_url }}" class='use-ajax red' title={{'delete the file'|t }} >
+                <td style="text-align: center;"><a id='sd{{ item.id }}' href="{{ item.delete_url }}" class='use-ajax red' title={{'delete the file'|t }} >
                         <i class="fa fa-lg fa-trash-o" aria-hidden="true"></i></a></td>
             {% else %}
                 <td style="text-align: center;"><i class="fa fa-lg fa-trash" aria-hidden="true"></td>
