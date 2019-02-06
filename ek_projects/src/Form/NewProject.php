@@ -134,9 +134,8 @@ class NewProject extends FormBase {
                     );
                 } else {
                     $link = Url::fromRoute('ek_address_book.new', array())->toString();
-                    $new = "<a title='" . t('new') . "' href='" . $link . "'>" . t('client') . "</a>";
                     $form['client'] = array(
-                        '#markup' => t("You do not have any @n in your record.", ['@n' => $new]),
+                        '#markup' => t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
                     );
                 }
             } else {
