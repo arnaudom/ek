@@ -1008,8 +1008,9 @@ class Purchase extends FormBase {
 
 
         if ($aid == '') {
+            $l = "../ek_admin/company/edit-settings/" . $coid;
             $form['options']['alert']['#prefix'] = "<div id='alert' class='messages messages--warning'>";
-            $form['options']['alert']['#markup'] = t('Warning, you do not have liability account set for this company and currency. You cannot proceed. Please contact administrator');
+            $form['options']['alert']['#markup'] = t('There is no liability account set for this company and currency. Please <a href=@l>edit settings</a> or contact administrator.',['@l' => $l]);
             $form['options']['alert']['#description'] = '';
         } else {
             $form['options']['alert']['#prefix'] = "<div id='alert' class=''>";
@@ -1077,7 +1078,8 @@ class Purchase extends FormBase {
             $settings = new CompanySettings($form_state->getValue('head'));
             $aid = $settings->get('liability_account', $form_state->getValue('currency') );
             if($aid == '') {
-                $form_state->setErrorByName('currency', t('Warning, you do not have liability account set for this company and currency. You cannot proceed. Please contact administrator'));
+                $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
+                $form_state->setErrorByName('currency', t('There is no liability account set for this company and currency. Please <a href=@l>edit settings</a> or contact administrator.',['@l' => $l]));
             }
         }
     

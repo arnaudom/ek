@@ -1080,9 +1080,9 @@ class Invoice extends FormBase {
                 $aid = $settings->get('asset_account', $form_state->getValue('currency'));
 
                 if ($aid == '') {
-
+                    $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
                     $description = "<div id='fx' class='messages messages--warning'>"
-                            . t('There is no assets account defined for currency. Please contact administrator.') . "</div>";
+                            . t('There is no assets account defined for currency. Please <a href=@l>edit settings</a> or contact administrator.',['@l' => $l]) . "</div>";
                 } else {
 
                     $fx_rate = \Drupal\ek_finance\CurrencyData::rate($form_state->getValue('currency'));
@@ -1178,8 +1178,10 @@ class Invoice extends FormBase {
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $settings = new CompanySettings($form_state->getValue('head'));
             $aid = $settings->get('asset_account', $form_state->getValue('currency'));
+            
             if ($aid == '') {
-                $form_state->setErrorByName('currency', t('There is no assets account defined for currency. Please contact administrator.'));
+                $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
+                $form_state->setErrorByName('currency', t('There is no assets account defined for currency. Please <a href=@l>edit settings</a> or contact administrator.',['@l' => $l]));
             }
         }
 
