@@ -146,6 +146,7 @@ class InstallController extends ControllerBase {
         `account1` VARCHAR(45) NULL DEFAULT '' COMMENT 'account No 1' COLLATE 'utf8_unicode_ci',
         `account2` VARCHAR(45) NULL DEFAULT '' COMMENT 'account No 2' COLLATE 'utf8_unicode_ci',
         `swift` VARCHAR(45) NULL DEFAULT '' COMMENT 'swift or BIC' COLLATE 'utf8_unicode_ci',
+        `bank_code` VARCHAR(45) NULL DEFAULT '' COMMENT 'bank code' COLLATE 'utf8_unicode_ci',
         `coid` VARCHAR(5) NOT NULL COMMENT 'company id' COLLATE 'utf8_unicode_ci',
         PRIMARY KEY (`id`)
       )
