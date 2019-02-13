@@ -607,6 +607,20 @@ class InstallController extends ControllerBase {
         if ($db) {
             $markup .= 'Finance journal trail installed<br/>';
         }
+        
+        $query = "CREATE TABLE IF NOT EXISTS `ek_yearly_budget` (
+            `reference` VARCHAR(25) NOT NULL COMMENT 'account-country-year-month' COLLATE 'utf8_unicode_ci',
+            `value_base` DOUBLE UNSIGNED NULL DEFAULT NULL COMMENT 'budget value in base currency',
+            UNIQUE INDEX `Index 1` (`reference`)
+        )
+        COMMENT='Budget data'
+        COLLATE='utf8mb4_general_ci'
+        ENGINE=InnoDB
+        ;";
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Budget table installed<br/>';
+        }
 
         $link = Url::fromRoute('ek_admin.main', array(), array())->toString();
         $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
