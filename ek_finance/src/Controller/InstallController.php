@@ -167,6 +167,7 @@ class InstallController extends ControllerBase {
           `bid` TINYINT(3) UNSIGNED NULL DEFAULT NULL COMMENT 'bank id reference from bank table',
           `aid` INT(5) NULL DEFAULT NULL COMMENT 'account id from chart',
           `active` SMALLINT(1) NULL DEFAULT '1' COMMENT 'Active status',
+          `beneficiary` VARCHAR(255) NULL DEFAULT NULL COMMENT 'Beneficiary name',
           PRIMARY KEY (`id`)
         )
         COMMENT='list of bank acounts'
@@ -579,6 +580,7 @@ class InstallController extends ControllerBase {
           `aid` INT(10) NOT NULL COMMENT 'account id from chart',
           `coid` INT(10) NOT NULL COMMENT 'company id',
           `data` TEXT NOT NULL COMMENT 'serialized data' COLLATE 'utf8_unicode_ci',
+          `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'File attachment' COLLATE 'utf8_unicode_ci',
           PRIMARY KEY (`id`)
         )
         COMMENT='record reconciliation reports'
