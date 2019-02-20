@@ -30,6 +30,7 @@ if(class_exists('\Drupal\ek_admin\GlobalSettings')) {
     }
  
 }
+
 /**
  * Implements hook__preprocess_page.
  * @param type $variables

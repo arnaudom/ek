@@ -232,6 +232,8 @@ class AdminController extends ControllerBase {
                  * Module Tables installed; Verify various settings data
                  */
 
+                $build['updatephp'] = [ '#markup' => '<p>' . t('Always run the <a href=":update-php">update script</a> each time a module is updated.', [':update-php' => \Drupal::url('system.db_update'),]) . '</p>'];
+                    
                 //countries
                 $query = "SELECT count(id) FROM {ek_country} WHERE status=:s";
                 $data = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => 1))->fetchField();
@@ -390,7 +392,6 @@ class AdminController extends ControllerBase {
                         exit;
                     }
 
-
                     $settings = new FinanceSettings();
                     $baseCurrency = $settings->get('baseCurrency');
 
@@ -401,6 +402,7 @@ class AdminController extends ControllerBase {
                         );
                     }
                 }
+                
             } else {
                 //need to install tables for main module
                 return new RedirectResponse(\Drupal::url('ek_admin_install'));
