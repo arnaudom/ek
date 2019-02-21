@@ -175,3 +175,14 @@ hr {
     white-space: nowrap;
     margin: 0px 0px 0px 5px;   
 }
+
+/*
+* items autocomplete
+*/
+.ui-menu-item {
+    padding-left: 10px;
+    padding-bottom: 10px;
+    border-bottom: gray;
+        border-bottom-style: none;
+    border-bottom-style: solid;
+}
