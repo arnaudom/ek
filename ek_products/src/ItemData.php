@@ -2,6 +2,8 @@
 
 namespace Drupal\ek_products;
 use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\Core\Database\Database;
 
 /**
@@ -271,5 +273,108 @@ use Drupal\Core\Database\Database;
         
  
  }
+ 
+     /**ajaxlookupitem
+     * Util to return item description callback.
+     * @param option
+     *  image: to return an image link with reponse
+     * @param id
+     *  a company id to filter by company, 0 for include all
+     * @param term
+     * @return \Symfony\Component\HttpFoundation\JsonResponse;
+     *   An Json response object.
+     */
+    public function ajaxlookupitem(Request $request, $id) {
+
+        $term = $request->query->get('q');
+        $option = $request->query->get('option');
+        
+        if(strlen($term) < 3) {
+            return new JsonResponse([]);
+        }
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_items', 'i');
+        $query->fields('i', ['id', 'itemcode', 'description1', 'description2', 'supplier_code']);
+        $query->leftJoin('ek_item_barcodes', 'b', 'i.itemcode = b.itemcode');
+        $query->fields('b', ['barcode']);
+        $query->leftJoin('ek_item_images', 'g', 'i.itemcode = g.itemcode');
+        $query->fields('g', ['uri']);
+        $condition = $query->orConditionGroup()
+            ->condition('i.id', $term . "%", 'like')
+            ->condition('i.itemcode', $term . "%", 'like')
+            ->condition('i.description1', $term . "%", 'like')    
+            ->condition('b.barcode', $term . "%", 'like')       
+            ->condition('i.supplier_code', $term . "%", 'like');
+        $query->condition($condition);
+        
+        
+        if ($id != '0') {
+            
+            $query->condition('i.coid', $id);
+                    
+        } 
+         
+        //$query->limit(50);
+        
+        $data = $query->execute(); 
+        
+        $name = array();
+        while ($r = $data->fetchObject()) {
+
+            if (strlen($r->description1) > 30) {
+                $desc = substr($r->description1, 0, 30) . "...";
+            } else {
+                $desc = $r->description1;
+            }
+            if (strlen($r->description2) > 60) {
+                $desc2 = substr($r->description2, 0, 60) . "...";
+            } else {
+                $desc2 = $r->description2;
+            }
+            
+            if($option == 'image') {
+                $line = [];
+                if ($r->uri) {
+                         $pic = "<img class='product_thumbnail' src='"
+                        . file_create_url($r->uri) . "'>";
+                    } else {
+                        $default = file_create_url(drupal_get_path('module', 'ek_products') . '/css/images/default.jpg');
+                        $pic = "<img class='product_thumbnail' src='"
+                        . $default . "'>";
+                    }
+                    $line['picture'] = isset($pic) ? $pic : '';
+                    $line['description'] = $desc;
+                    $line['name'] = $r->id . " " . $r->itemcode . " " . $r->barcode . " " . $desc . " " .$r->supplier_code;
+                    $line['id'] = $r->id;
+                    
+                    $name[] = $line;
+                
+            } else {
+                $settings = new \Drupal\ek_products\ItemSettings();
+                $str = $r->id . " " . $r->itemcode . " ";
+                
+                if($settings->get('auto_barcode') == 1) {
+                    $str .= $r->barcode . " ";
+                }
+                
+                if($settings->get('auto_main_description') == 1) {
+                    $str .= $desc . " ";
+                } 
+                 
+                if($settings->get('auto_supplier_code') == 1) {
+                    $str .= $r->supplier_code;
+                } 
+                
+                if($settings->get('auto_other_description') == 1) {
+                    $str .= '<br>' . $desc2;
+                } 
+                
+                $name[] = $str;
+            }
+           
+        }
+        return new JsonResponse($name);
+    }
      
- }//class
+ }

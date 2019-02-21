@@ -90,7 +90,7 @@ ek_products.delete:
 ek.look_up_item_ajax:
   path: '/look_up_item_ajax/{id}'
   defaults:
-    _controller: '\Drupal\ek_products\Controller\ProductsController::ajaxlookupitem'
+    _controller: '\Drupal\ek_products\ItemData::ajaxlookupitem'
     id: 0
   requirements:
     _permission: 'view_products'
