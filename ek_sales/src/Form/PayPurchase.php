@@ -11,7 +11,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\ek_admin\CompanySettings;
-use Drupal\ek_finance\AidList;
+use Drupal\Core\Url;
 use Drupal\ek_finance\CurrencyData;
 use Drupal\ek_finance\Journal;
 use Drupal\ek_finance\BankData;
@@ -61,15 +61,28 @@ class PayPurchase extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
 
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT * from {ek_sales_purchase} where id=:id", array(':id' => $id))
-                ->fetchObject();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_sales_purchase', 'p');
+        $query->fields('p');
+        $query->leftJoin('ek_company', 'c', 'c.id = p.head');
+        $query->fields('c', ['name']);
+        $query->condition('p.id', $id, '=');
 
+        $data = $query->execute()->fetchObject();
+
+        $url = Url::fromRoute('ek_sales.purchases.list', array(), array())->toString();
+        $form['back'] = array(
+            '#type' => 'item',
+            '#markup' => t('<a href="@url" >List</a>', array('@url' => $url)),
+        );
         $form['edit_purchase'] = array(
             '#type' => 'item',
             '#markup' => t('Purchase ref. @p', array('@p' => $data->serial)),
         );
-
+        $form['company'] = array(
+            '#type' => 'item',
+            '#markup' => "<p>" . $data->name . "</p>",
+        );
         $form['for_id'] = array(
             '#type' => 'hidden',
             '#value' => $id,
@@ -120,7 +133,7 @@ class PayPurchase extends FormBase {
                 '#default_value' => NULL,
                 '#title' => t('account payment'),
                 '#ajax' => array(
-                    'callback' => [$this, 'fx_rate' ],
+                    'callback' => [$this, 'fx_rate'],
                     'wrapper' => 'fx',
                 ),
             );
@@ -312,7 +325,9 @@ class PayPurchase extends FormBase {
             //check from journal
             $companysettings = new CompanySettings($data->head);
             $liabacc = $companysettings->get('liability_account', $data->currency);
-            //$journal = new Journal();
+            if ($liabacc == '') {
+                $form_state->setErrorByName("company", $this->t('Error with liability account'));
+            }
 
             $a = array(
                 'source_dt' => 'payment',
@@ -320,8 +335,8 @@ class PayPurchase extends FormBase {
                 'reference' => $form_state->getValue('for_id'),
                 'account' => $liabacc,
             );
-
-            if (($this->journal->checkTransactionDebit($a) + $this_pay) > 0) {
+            $journal_payable = $this->journal->checkTransactionDebit($a);
+            if ($journal_payable == 0 || ($journal_payable + $this_pay) > 0) {
                 $form_state->setErrorByName("amount", $this->t('this payment exceeds purchase balance amount in journal'));
             }
         } else {
@@ -353,7 +368,7 @@ class PayPurchase extends FormBase {
 
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-            
+
             $settings = new FinanceSettings();
             $baseCurrency = $settings->get('baseCurrency');
             $currencyRate = CurrencyData::rate($data->currency);
@@ -393,12 +408,11 @@ class PayPurchase extends FormBase {
                         'fxRate' => $fx,
                     )
             );
-            
-            if($this->journal->credit <> $this->journal->debit) {
+
+            if ($this->journal->credit <> $this->journal->debit) {
                 $msg = 'debit: ' . $this->journal->debit . ' <> ' . 'credit: ' . $this->journal->credit;
                 \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
-            }            
-            
+            }
         }
 
         $amountpaid = $data->amountpaid + $this_pay;
@@ -422,23 +436,22 @@ class PayPurchase extends FormBase {
                 ->execute();
 
         if ($update) {
-                if ($this->moduleHandler->moduleExists('ek_projects')) {
+            if ($this->moduleHandler->moduleExists('ek_projects')) {
                 //notify user if purchase is linked to a project
-                if ($data->pcode && $data->pcode != 'n/a' ) {
+                if ($data->pcode && $data->pcode != 'n/a') {
                     $pid = Database::getConnection('external_db', 'external_db')
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $data->pcode])
                             ->fetchField();
                     $param = serialize(
-                    array(
-                        'id' => $pid,
-                        'field' => 'purchase_payment',
-                        'value' => $data->serial,
-                        'pcode' => $data->pcode
-                        )
+                            array(
+                                'id' => $pid,
+                                'field' => 'purchase_payment',
+                                'value' => $data->serial,
+                                'pcode' => $data->pcode
+                            )
                     );
                     \Drupal\ek_projects\ProjectData::notify_user($param);
                 }
-                
             }
             $form_state->setRedirect('ek_sales.purchases.list');
         }

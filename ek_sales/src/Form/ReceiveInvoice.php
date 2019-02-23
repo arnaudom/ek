@@ -67,6 +67,16 @@ class ReceiveInvoice extends FormBase {
 
         $data = Database::getConnection('external_db', 'external_db')
                         ->query("SELECT * from {ek_sales_invoice} where id=:id", array(':id' => $id))->fetchObject();
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice', 'i');
+            $query->fields('i');
+            $query->leftJoin('ek_company', 'c', 'c.id = i.head');
+            $query->fields('c' , ['name']);
+            $query->condition('i.id', $id, '=');
+            
+            $data = $query->execute()->fetchObject();
+       
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $baseCurrency = $this->settings->get('baseCurrency');
@@ -82,6 +92,10 @@ class ReceiveInvoice extends FormBase {
         $form['edit_invoice'] = array(
             '#type' => 'item',
             '#markup' => t('Invoice ref. @p', array('@p' => $data->serial)),
+        );
+        $form['company'] = array(
+            '#type' => 'item',
+            '#markup' => "<p>" . $data->name. "</p>",
         );
 
         $form['for_id'] = array(
@@ -454,17 +468,20 @@ class ReceiveInvoice extends FormBase {
             //check from journal
             $companysettings = new CompanySettings($data->head);
             $assetacc = $companysettings->get('asset_account', $data->currency);
-
+            if ($assetacc == '') {
+                $form_state->setErrorByName("company", $this->t('Error with asset account'));
+            }
             $a = array(
                 'source_dt' => 'invoice',
                 'source_ct' => 'receipt',
                 'reference' => $form_state->getValue('for_id'),
                 'account' => $assetacc,
             );
+            
             $value = round($this->journal->checkTransactionCredit($a), 4);
             $form_state->set('max_pay', abs($value));
             
-                if (round($value + $this_pay, 4) > 0) {
+                if ($value == 0 || round($value + $this_pay, 4) > 0) {
                     $a = ['@a' => $value, '@b' => $this_pay, '@c' => $assetacc];
                     $form_state->setErrorByName('amount', $this->t('this payment exceeds receivable balance amount in journal (@a, @b, @c).', $a));
                 }            
@@ -486,8 +503,6 @@ class ReceiveInvoice extends FormBase {
         $max_pay = round($form_state->get('max_pay'), 2);
         $taxable = round($form_state->get('details') * $this_pay / $max_pay, 4);
         $rate = round($data->amount / $data->amountbase, 4); //original rate used to calculate currency gain/loss
-
-        
 
         if ($this->moduleHandler->moduleExists('ek_finance') && $this_pay > 0) {
             $currencyRate = CurrencyData::rate($data->currency);
