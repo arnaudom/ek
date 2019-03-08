@@ -180,10 +180,13 @@ class BalanceLedgerController extends ControllerBase {
                 $link = 'ek_sales.purchases.print_html';
 
                 if ($_SESSION['salesledger']['client'] == '%') {
-                    $clients = Database::getConnection('external_db', 'external_db')
-                            ->query("SELECT DISTINCT ab.id FROM {ek_address_book} ab "
-                                    . "INNER JOIN {ek_sales_purchase} p ON p.client = ab.id order by name")
-                            ->fetchCol();
+                    $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_address_book', 'ab');
+                    $query->fields('ab', ['id']);
+                    $query->innerJoin('ek_sales_purchase', 'p', 'ab.id = p.client');
+                    $query->orderBy('ab.name', 'ASC');
+                    $data = $query->execute()->fetchCol();
+                    $clients = array_unique($data); 
                 } else {
                     $clients = [0 => $_SESSION['salesledger']['client']];
                 }
@@ -195,10 +198,14 @@ class BalanceLedgerController extends ControllerBase {
                 $link = 'ek_sales.invoices.print_html';
 
                 if ($_SESSION['salesledger']['client'] == '%') {
-                    $clients = Database::getConnection('external_db', 'external_db')
-                            ->query("SELECT DISTINCT ab.id FROM {ek_address_book} ab "
-                                    . "INNER JOIN {ek_sales_invoice} i ON i.client = ab.id order by name")
-                            ->fetchCol();
+                    $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_address_book', 'ab');
+                    $query->fields('ab', ['id']);
+                    $query->innerJoin('ek_sales_invoice', 'i', 'ab.id = i.client');
+                    $query->orderBy('ab.name', 'ASC');
+                    $data = $query->execute()->fetchCol();
+                    $clients = array_unique($data); 
+                    
                 } else {
                     $clients = [0 => $_SESSION['salesledger']['client']];
                 }
