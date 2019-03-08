@@ -141,7 +141,7 @@ class LogisticsController extends ControllerBase {
               ->condition($or)
               ->extend('Drupal\Core\Database\Query\TableSortExtender')
               ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-              ->limit(30)->orderBy('p.id', 'ASC')
+              ->limit(30)->orderBy('i.id', 'ASC')
               ->execute();  
           
       } else {
@@ -277,7 +277,6 @@ class LogisticsController extends ControllerBase {
                 $barcode_data = $query
                             ->fields('b', ['itemcode', 'barcode'])          
                             ->condition('i.id', $extract, 'IN')
-                            ->orderBy('b.id', 'ASC')
                             ->execute();
                 $barcode = $barcode_data->fetchAll(\PDO::FETCH_ASSOC);
                 $markup = array();
