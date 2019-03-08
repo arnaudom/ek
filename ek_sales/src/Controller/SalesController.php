@@ -48,14 +48,14 @@ class SalesController extends ControllerBase {
      * @var \Drupal\Core\Form\FormBuilderInterface
      */
     protected $formBuilder;
-    protected $uuidService;
+    //protected $uuidService;
 
     /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('database'), $container->get('form_builder'), $container->get('module_handler'), $container->get('uuid')
+                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
     }
 
@@ -67,11 +67,10 @@ class SalesController extends ControllerBase {
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler, Php $uuidService) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
-        $this->uuidService = $uuidService;
     }
 
     /**
@@ -194,14 +193,14 @@ class SalesController extends ControllerBase {
                         ]
                     ];
 
-
+                    $uuid_service = \Drupal::service('uuid');
                     $element = [
                         '#theme' => 'charts_api',
                         '#library' => (string) $chartSettings['library'],
                         '#categories' => $categories,
                         '#seriesData' => $seriesData,
                         '#options' => $options,
-                        '#id' => 'chart-' . $this->uuidService->generate(),
+                        '#id' => 'chart-' . $uuid_service->generate(),
                         '#override' => [],
                     ];
 
@@ -318,13 +317,14 @@ class SalesController extends ControllerBase {
                     ["name" => t('Average'), "color" => $chartSettings['colors'][2], "type" => "bar", "data" => [$items['invoices']['avg']]]
                 ];
 
+                $uuid_service = \Drupal::service('uuid');
                 $element = [
                     '#theme' => 'charts_api',
                     '#library' => (string) $chartSettings['library'],
                     '#categories' => $categories,
                     '#seriesData' => $seriesData,
                     '#options' => $options,
-                    '#id' => 'chart-' . $this->uuidService->generate(),
+                    '#id' => 'chart-' . $uuid_service->generate(),
                     '#override' => [],
                 ];
 
@@ -357,13 +357,14 @@ class SalesController extends ControllerBase {
                     ],
                 ];
 
+                $uuid_service = \Drupal::service('uuid');
                 $element = [
                     '#theme' => 'charts_api',
                     '#library' => (string) $chartSettings['library'],
                     '#categories' => $categories,
                     '#seriesData' => $seriesData,
                     '#options' => $options,
-                    '#id' => 'chart-' . $this->uuidService->generate(),
+                    '#id' => 'chart-' . $uuid_service->generate(),
                     '#override' => [],
                 ];
 
@@ -407,13 +408,14 @@ class SalesController extends ControllerBase {
                     ["name" => t('Average'), "color" => $chartSettings['colors'][2], "type" => "bar", "data" => [$items['payment_performance']['avg']]]
                 ];
 
+                $uuid_service = \Drupal::service('uuid');
                 $element = [
                     '#theme' => 'charts_api',
                     '#library' => (string) $chartSettings['library'],
                     '#categories' => $categories,
                     '#seriesData' => $seriesData,
                     '#options' => $options,
-                    '#id' => 'chart-' . $this->uuidService->generate(),
+                    '#id' => 'chart-' . $uuid_service->generate(),
                     '#override' => [],
                 ];
 
