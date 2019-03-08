@@ -228,7 +228,7 @@ use Drupal\Core\Database\Database;
  */
  public static function CountryListByUid($uid = NULL) {
  
- $access = self::GetCountryByUser();
+ $access = self::GetCountryByUser($uid);
  
   $country = implode(',',$access);
   $query = "SELECT id,name from {ek_country} where status=:t AND FIND_IN_SET (id, :c ) order by name";
