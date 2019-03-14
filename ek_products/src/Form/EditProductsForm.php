@@ -692,7 +692,8 @@ class EditProductsForm extends FormBase {
                     ->query("SELECT count(id) from {ek_items}")
                     ->fetchField();
             $id++;
-            $itemcode = ucwords(substr($form_state->getValue('type'), 0, 3)) . $id;
+            $t_code = str_replace(" ", "", $form_state->getValue('type'));//remove blank space if any
+            $itemcode = strtoupper(substr($t_code, 0, 3)) . $id;//take 3 first letters
         }
 
 //main
@@ -748,60 +749,84 @@ class EditProductsForm extends FormBase {
             $fields2['itemcode'] = $itemcode;
             $fields3['itemcode'] = $itemcode;
 
-            $id = Database::getConnection('external_db', 'external_db')->insert('ek_items')->fields($fields1)->execute();
-            $insert2 = Database::getConnection('external_db', 'external_db')->insert('ek_item_packing')->fields($fields2)->execute();
-            $insert3 = Database::getConnection('external_db', 'external_db')->insert('ek_item_prices')->fields($fields3)->execute();
+            $id = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_items')
+                    ->fields($fields1)
+                    ->execute();
+            $insert = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_item_packing')
+                    ->fields($fields2)
+                    ->execute();
+            $insert = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_item_prices')
+                    ->fields($fields3)
+                    ->execute();
 
-            Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+            $insert = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_item_price_history')
+                    ->fields(
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('purchase_price'),
                         'currency' => $form_state->getValue('currency'),
                         'type' => 'pp')
             )->execute();
 
-            Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+            $insert = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_item_price_history')
+                    ->fields(
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('selling_price'),
                         'currency' => $form_state->getValue('loc_currency'),
                         'type' => 'sp')
             )->execute();
 
-            Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+            $insert = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_item_price_history')
+                    ->fields(
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('promo_price'),
                         'currency' => $form_state->getValue('loc_currency'),
                         'type' => 'prp')
             )->execute();
 
-            Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+            $insert = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_item_price_history')
+                    ->fields(
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('discount_price'),
                         'currency' => $form_state->getValue('loc_currency'),
                         'type' => 'dp')
             )->execute();
 
-            Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+            $insert = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_item_price_history')
+                    ->fields(
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('exp_selling_price'),
                         'currency' => $form_state->getValue('exp_currency'),
                         'type' => 'esp')
             )->execute();
 
-            Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+            $insert = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_item_price_history')
+                    ->fields(
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('exp_promo_price'),
                         'currency' => $form_state->getValue('exp_currency'),
                         'type' => 'eprp')
             )->execute();
 
-            Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+            $insert = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_item_price_history')
+                    ->fields(
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('exp_discount_price'),
                         'currency' => $form_state->getValue('exp_currency'),
                         'type' => 'edp')
             )->execute();
+            
         } else {
-
+            //update
             $itemcode = $form_state->getValue('itemcode');
             //update existing
             $update = Database::getConnection('external_db', 'external_db')->update('ek_items')
@@ -824,7 +849,9 @@ class EditProductsForm extends FormBase {
 
             if ($current['purchase_price'] <> $form_state->getValue('purchase_price')) {
 
-                Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+                $insert = Database::getConnection('external_db', 'external_db')
+                        ->insert('ek_item_price_history')
+                        ->fields(
                         array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                             'price' => $form_state->getValue('purchase_price'),
                             'currency' => $form_state->getValue('currency'),
@@ -834,7 +861,9 @@ class EditProductsForm extends FormBase {
 
             if ($current['selling_price'] <> $form_state->getValue('selling_price')) {
 
-                Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+                $insert = Database::getConnection('external_db', 'external_db')
+                        ->insert('ek_item_price_history')
+                        ->fields(
                         array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                             'price' => $form_state->getValue('selling_price'),
                             'currency' => $form_state->getValue('loc_currency'),
@@ -844,7 +873,9 @@ class EditProductsForm extends FormBase {
 
             if ($current['promo_price'] <> $form_state->getValue('promo_price')) {
 
-                Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+                $insert = Database::getConnection('external_db', 'external_db')
+                        ->insert('ek_item_price_history')
+                        ->fields(
                         array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                             'price' => $form_state->getValue('promo_price'),
                             'currency' => $form_state->getValue('loc_currency'),
@@ -854,7 +885,9 @@ class EditProductsForm extends FormBase {
 
             if ($current['discount_price'] <> $form_state->getValue('discount_price')) {
 
-                Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+                $insert = Database::getConnection('external_db', 'external_db')
+                        ->insert('ek_item_price_history')
+                        ->fields(
                         array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                             'price' => $form_state->getValue('discount_price'),
                             'currency' => $form_state->getValue('loc_currency'),
@@ -864,7 +897,9 @@ class EditProductsForm extends FormBase {
 
             if ($current['exp_discount_price'] <> $form_state->getValue('exp_discount_price')) {
 
-                Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+                $insert = Database::getConnection('external_db', 'external_db')
+                        ->insert('ek_item_price_history')
+                        ->fields(
                         array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                             'price' => $form_state->getValue('exp_discount_price'),
                             'currency' => $form_state->getValue('exp_currency'),
@@ -874,7 +909,9 @@ class EditProductsForm extends FormBase {
 
             if ($current['exp_promo_price'] <> $form_state->getValue('exp_promo_price')) {
 
-                Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+                $insert = Database::getConnection('external_db', 'external_db')
+                        ->insert('ek_item_price_history')
+                        ->fields(
                         array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                             'price' => $form_state->getValue('exp_promo_price'),
                             'currency' => $form_state->getValue('exp_currency'),
@@ -884,7 +921,9 @@ class EditProductsForm extends FormBase {
 
             if ($current['exp_selling_price'] <> $form_state->getValue('exp_selling_price')) {
 
-                Database::getConnection('external_db', 'external_db')->insert('ek_item_price_history')->fields(
+                $insert = Database::getConnection('external_db', 'external_db')
+                        ->insert('ek_item_price_history')
+                        ->fields(
                         array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                             'price' => $form_state->getValue('exp_selling_price'),
                             'currency' => $form_state->getValue('exp_currency'),
@@ -899,7 +938,7 @@ class EditProductsForm extends FormBase {
         }
 
 
-// barcodes
+        // barcodes
         //new
         if (($form_state->getValue('barcode')) && !$form_state->getValue('barcode') == '') {
             $fields4 = array(
@@ -907,7 +946,10 @@ class EditProductsForm extends FormBase {
                 'barcode' => $form_state->getValue('barcode'),
                 'encode' => $form_state->getValue('encode'),
             );
-            $insert4 = Database::getConnection('external_db', 'external_db')->insert('ek_item_barcodes')->fields($fields4)->execute();
+            $insert = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_item_barcodes')
+                    ->fields($fields4)
+                    ->execute();
         }
 
         //old
@@ -933,7 +975,7 @@ class EditProductsForm extends FormBase {
             }
         }
 
-// images
+        // images
         if (($form_state->getValue('images_count')) && $form_state->getValue('images_count') >= 0) {
 
             for ($i = 0; $i <= $form_state->getValue('images_count'); $i++) {
