@@ -288,6 +288,13 @@ class FinanceSettingsForm extends FormBase {
   $settings = new FinanceSettings();
   
   $settings->set('baseCurrency', $form_state->getValue('baseCurrency'));
+  
+  //force base currency with rate = 1 
+  \Drupal\Core\Database\Database::getConnection('external_db', 'external_db')->update('ek_currency')
+               ->condition('currency', $form_state->getValue('baseCurrency'))
+               ->fields(array('rate' => 1 , 'active' => 1) )
+               ->execute(); 
+  
   $settings->set('authorizeMemo', $form_state->getValue('authorizeMemo'));
   $settings->set('companyMemo', $form_state->getValue('companyMemo'));
   $settings->set('budgetUnit', $form_state->getValue('budgetUnit'));
