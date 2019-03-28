@@ -130,3 +130,23 @@ function ek_hr_update_8006() {
     \Drupal::service('router.builder')->rebuild();
     return t('HR routes updated.');
 }
+
+/**
+ * fix field in post table.
+ * 
+*/
+function ek_hr_update_8007() {
+    
+        $schema = Database::getConnection('external_db','external_db')->schema();
+        if(!$schema->fieldExists('ek_hr_post_data', 'deduction')) {
+            $spec = array(
+                'description' => 'total deductions',
+                'type' => 'float',
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_hr_post_data', 'deduction', $spec);
+        }
+        
+        return t('Table updated.');
+}
