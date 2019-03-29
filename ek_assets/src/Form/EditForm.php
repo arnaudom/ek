@@ -177,7 +177,7 @@ class EditForm extends FormBase {
                 '#default_value' => $data->eid,
                 '#maxlength' => 255,
                 '#title' => t('Allocation'),
-                '#attributes' => array('placeholder' => t('emloyee')),
+                '#attributes' => array('placeholder' => t('employee')),
                 '#autocomplete_route_name' => 'ek_hr.employee.autocomplete',
             );
             $form['e']['eid_global'] = array(
