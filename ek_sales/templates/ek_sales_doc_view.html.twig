@@ -30,8 +30,8 @@
 
     {% if item.fid == 1 %}
         <tr id='row{{ item.id }}'>
+            <td><div class='icon_doc_list {{ item.icon }}'/></td>
             <td title='{{ item.doc_name }} |  {{ item.date }} , {{ item.size }}'>
-                <IMG src='../../{{ item.icon_path }}{{item.icon}}.png'/> 
                 <a href="{{ item.file_url }}" target='_blank' >{{ item.doc_name }}</a>
             </td>
             <td>{{ item.comment }}</td>
@@ -53,9 +53,9 @@
         </tr>
     {% else %}
         <tr class="hide">
+            <td><div class='icon_doc_list {{ item.icon }}'/></td>
             <td>
-                <IMG src='../../{{ item.icon_path }}{{item.icon}}.png'/> 
-                {{ item.doc_name }}
+               {{ item.doc_name }}
             </td>
             <td>{{ item.comment }}</td>
             <td style="text-align: center;"><i class="fa fa-lg fa-trash-o" aria-hidden="true"></td>

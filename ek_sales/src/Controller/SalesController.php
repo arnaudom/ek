@@ -435,7 +435,7 @@ class SalesController extends ControllerBase {
                 'drupalSettings' => array('abid' => $abid),
                 'library' => array(
                     'ek_sales/ek_sales_docs_updater',
-                    'ek_sales/ek_sales_css', 'ek_admin/ek_admin_css'),
+                    'ek_sales/ek_sales_css', 'ek_admin/ek_admin_css', 'ek_admin/classic_doc'),
             ),
             '#cache' => [
                 'tags' => ['sales_data']
@@ -482,12 +482,10 @@ class SalesController extends ControllerBase {
                     $items[$i]['uri'] = $l->uri;
 
                     $extension = explode(".", $l->filename);
-                    $extension = array_pop($extension);
-
-                    $items[$i]['icon_path'] = drupal_get_path('module', 'ek_sales') . '/art/icons/';
-
-                    if (file_exists(drupal_get_path('module', 'ek_sales') . '/art/icons/' . $extension . ".png")) {
-                        $items[$i]['icon'] = strtolower($extension);
+                    $extension = strtolower(array_pop($extension));
+                    $items[$i]['icon']  = '_doc_list';  
+                    if (file_exists(drupal_get_path('module', 'ek_admin') . '/art/ico/' . $extension . ".png")) {
+                        $items[$i]['icon'] = $extension . '_doc_list';
                     }
 
                     //filename formating
