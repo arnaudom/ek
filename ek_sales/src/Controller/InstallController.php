@@ -196,7 +196,7 @@ class InstallController extends ControllerBase {
 	`serial` VARCHAR(45) NOT NULL DEFAULT '',
 	`itemid` TEXT NULL,
 	`itemdetails` TEXT NULL,
-	`margin` DOUBLE NULL DEFAULT '0',
+	`weight` INT(5) NULL DEFAULT '0' COMMENT 'row weight',
 	`unit` INT(10) UNSIGNED NOT NULL DEFAULT '0',
 	`value` DOUBLE NOT NULL DEFAULT '0',
 	`total` DOUBLE NULL DEFAULT NULL,
