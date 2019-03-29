@@ -51,12 +51,12 @@ jQuery('#expand').click(function () {
 
 
 function load_my_docs() {
-    jQuery('#myDocs').html('<IMG src="modules/ek_documents/css/images/loading.gif">');
     jQuery.ajax({
         dataType: "json",
         url: "documents/load",
         data: {get: 'myDocs', sort: 'all'},
         success: function (data) {
+            jQuery('.loading').remove();
             jQuery('#myDocs').html(data.list);
             addajax();
             adddragdrop();

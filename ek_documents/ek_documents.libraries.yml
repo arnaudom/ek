@@ -19,11 +19,6 @@ ek_documents_display:
     - core/jquery.ui.droppable    
     - core/jquery.ui.draggable
 
-classic:
-  version: 1
-  css:
-    theme:
-      css/classic.css: {}  
     
 ek_documents_multiselect:
   version: 1

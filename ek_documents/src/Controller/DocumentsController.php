@@ -83,7 +83,7 @@ class DocumentsController extends ControllerBase {
       '#items' => $items,
       '#attached' => array(
         'drupalSettings' => array('ek_documents' => 'myDocs' ),        
-        'library' => array('ek_documents/ek_documents_display','ek_documents/classic','ek_admin/ek_admin_css' ),
+        'library' => array('ek_documents/ek_documents_display','ek_admin/classic_doc','ek_admin/ek_admin_css' ),
         
       ),
       '#cache' => [
@@ -108,7 +108,7 @@ class DocumentsController extends ControllerBase {
       '#items' => $items,
       '#attached' => array(
         'drupalSettings' => array('ek_documents' => 'sharedDocs'),
-        'library' => array('ek_documents/ek_documents_display','ek_documents/classic','ek_admin/ek_admin_css'),
+        'library' => array('ek_documents/ek_documents_display','ek_admin/classic_doc','ek_admin/ek_admin_css'),
       ),
       '#cache' => [
             'tags' => ['shared_documents']
@@ -131,7 +131,7 @@ class DocumentsController extends ControllerBase {
       '#items' => $items,
       '#attached' => array(
         'drupalSettings' => array('ek_documents' => 'commonDocs'),
-        'library' => array('ek_documents/ek_documents_display','ek_documents/classic','ek_admin/ek_admin_css'),
+        'library' => array('ek_documents/ek_documents_display','ek_admin/classic_doc','ek_admin/ek_admin_css'),
       ),
       '#cache' => [
             'tags' => ['common_documents']

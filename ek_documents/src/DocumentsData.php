@@ -87,8 +87,8 @@ use Drupal\Core\Database\Database;
                 $doc_short_name = substr($extension[0], 0, 12) . "...";
                 $extension = array_pop($extension);
 
-                $icon_path = drupal_get_path('module', 'ek_documents') . '/art/' . $extension . ".png";
-                $icon_path_small = drupal_get_path('module', 'ek_documents') . '/art/ico/' . $extension . ".png";
+                $icon_path = drupal_get_path('module', 'ek_admin') . '/art/' . $extension . ".png";
+                $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/' . $extension . ".png";
             
                 if (!file_exists($icon_path)) {
                     $extension = 'no';
@@ -190,14 +190,14 @@ use Drupal\Core\Database\Database;
                 $doc_name = $extension[0];
                 $doc_short_name = substr($extension[0], 0, 12) . "...";
                 $extension = array_pop($extension);
-                    $icon_path = drupal_get_path('module', 'ek_documents') . '/art/' . $extension . ".png";
-                    $icon_path_small = drupal_get_path('module', 'ek_documents') . '/art/ico/' . $extension . ".png";
+                    $icon_path = drupal_get_path('module', 'ek_admin') . '/art/' . $extension . ".png";
+                    $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/' . $extension . ".png";
 
                     if (!file_exists($icon_path)) {
-                        $icon_path = drupal_get_path('module', 'ek_documents') . '/art/no.png';
+                        $icon_path = drupal_get_path('module', 'ek_admin') . '/art/no.png';
                     } 
                     if(!file_exists($icon_path_small)){
-                        $icon_path_small = drupal_get_path('module', 'ek_documents') . '/art/ico/no.png';
+                        $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/no.png';
                     }
 
                 $thisarray = array('id' => $l->id,
@@ -298,14 +298,14 @@ use Drupal\Core\Database\Database;
                 $doc_name = $extension[0];
                 $doc_short_name = substr($extension[0], 0, 12) . "...";
                 $extension = array_pop($extension);
-                $icon_path = drupal_get_path('module', 'ek_documents') . '/art/' . $extension . ".png";
-                $icon_path_small = drupal_get_path('module', 'ek_documents') . '/art/ico/' . $extension . ".png";
+                $icon_path = drupal_get_path('module', 'ek_admin') . '/art/' . $extension . ".png";
+                $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/' . $extension . ".png";
 
                 if (!file_exists($icon_path)) {
-                    $icon_path = drupal_get_path('module', 'ek_documents') . '/art/no.png';
+                    $icon_path = drupal_get_path('module', 'ek_admin') . '/art/no.png';
                 } 
                 if(!file_exists($icon_path_small)){
-                    $icon_path_small = drupal_get_path('module', 'ek_documents') . '/art/ico/no.png';
+                    $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/no.png';
                 }
 
 
