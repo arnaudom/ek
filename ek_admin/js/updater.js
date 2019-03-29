@@ -3,25 +3,35 @@
 
   Drupal.behaviors.ek_admin = {
     attach: function (context, settings) {
-
-      jQuery('#company_docs').html('<IMG src="../../modules/ek_admin/css/images/loading.gif">');
       jQuery.ajax({
         dataType: "json",
-        url: "../../ek_admin/load_documents",
+        url: drupalSettings.path.baseUrl + "ek_admin/load_documents",
         data: {coid: settings.coid },
         success: function (data) { 
+            jQuery('.loading').remove();
             jQuery('#company_docs').html(data.list);
             addajax();
         }
         });
-    
     
     } //attach
     
 
   }; //bahaviors
 
+    /* delete files toggle
+     * 
+     */
+    jQuery(function () {
+        jQuery('.hideFile').click(function () {
+            if (jQuery('.hideFile').hasClass('show-ico'))
+                jQuery('.hide').hide('fast');
+            if (jQuery('.hideFile').hasClass('hide-ico'))
+                jQuery('.hide').show('fast');
+            jQuery('.hideFile').toggleClass('show-ico hide-ico');
 
+        });
+    });
 })(jQuery, Drupal, drupalSettings);
 
 function addajax() {

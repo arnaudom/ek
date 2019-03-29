@@ -1,20 +1,27 @@
 ek_admin_css:
-  version: VERSION
+  version: 1
   css:
     theme:
       css/ek_admin.css: {}
       https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css: { type: external }
 
+#global css resources for doc icons
+classic_doc:
+  version: 1
+  css:
+    theme:
+      css/classic_doc.css: {} 
+
+
 ek_admin.script.sn:
-  version: VERSION
+  version: 1
   js:
     js/ek_admin_sn.js: {}
   dependencies:
     - core/jquery
 
-#used in ek_sales
 ek_admim.users_autocomplete:
-  version: VERSION
+  version: 1
   js:
     js/ek_admin_users_autocomplete.js: {}
   dependencies:
@@ -22,7 +29,7 @@ ek_admim.users_autocomplete:
     - core/jquery.ui.autocomplete
        
 ek_admin_docs_updater:
-  version: VERSION
+  version: 1
   js:
     js/updater.js: {}
   dependencies:
@@ -37,7 +44,7 @@ ek_admin_docs_updater:
  
     
 ek_admin_charts:
-  version: VERSION
+  version: 1
   css:
     theme:
       https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css: { type: external }

@@ -1,10 +1,18 @@
 {{ items.back }}
 
+<div class="text-right">
+    <span title="{{ 'toggle deleted files'|t }}" class="hideFile ico show-ico"></span>
+</div>
 <section class="documents">
-          <table class='table'>
-            <tbody id='company_docs'>
-            </tbody>
-          </table>
+    <table class='table'>
+        <tbody id='company_docs'>
+        <p class='loading'/>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan='6'>{{ items.form }}</td>
+            </tr>
+        </tfoot>
+    </table>
 </section>
 
-{{ items.form }}

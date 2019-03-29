@@ -97,3 +97,30 @@
     color: #3276b1;
     text-align: center;
 }
+
+.loading {
+    background-repeat: no-repeat;
+    width:16px;
+    height:16px;
+    margin-top:5px;
+    margin-left:5px;
+    background-image: url(../css/images/loading.gif);
+}
+
+.ico:before {
+    font-family: FontAwesome;
+    font-size:1.3em;
+    color: #446E9B;
+    width: 1.4em;
+    text-align: center;
+    display: inline-block;
+    text-rendering: auto;
+}
+
+.show-ico:before {
+    content: "\f06e";
+}
+.hide-ico:before {
+    content: "\f070";
+    color:#000;
+}

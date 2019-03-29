@@ -35,3 +35,12 @@ function ek_admin_update_8002() {
     \Drupal::cache('data')->deleteAll();
     return t('Edit permission settings');  
 }
+
+/**
+ * Add route for delete file
+ * Clear cache for new doc template and css
+*/
+function ek_admin_update_8003() {
+    \Drupal::service('router.builder')->rebuild();
+    \Drupal::cache('data')->deleteAll(); 
+}

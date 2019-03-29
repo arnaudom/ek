@@ -134,39 +134,44 @@ function ek_admin_file_download($uri) {
  * Implementation hook_theme().
  */
 function ek_admin_theme() {
-  return array(
-    // default alert, access message
-    'ek_admin_message' => array
-    (
-      'template' => 'ek_admin_message',
-      'variables' => array('items' => array()),
-    ),
-    // for the company form
-    'ek_admin_company_form' => array
-    (
-      'template' => 'ek_admin_company_form',
-      'variables' => array('items' => array()),
-    ), 
+    return array(
+        // default alert, access message
+        'ek_admin_message' => array
+        (
+          'template' => 'ek_admin_message',
+          'variables' => array('items' => array()),
+        ),
+        // for the company form
+        'ek_admin_company_form' => array
+        (
+          'template' => 'ek_admin_company_form',
+          'variables' => array('items' => array()),
+        ), 
 
-    // for the country form
-    'ek_admin_country_form' => array
-    (
-      'template' => 'ek_admin_country_form',
-      'variables' => array('items' => array()),
-    ), 
-    // for user access view
-    'ek_admin_user_access' => array
-    (
-      'template' => 'ek_admin_user_access',
-      'variables' => array('items' => array()),
-    ),
-    // for the documents
-    'ek_admin_docs_view' => array
-    (
-      'template' => 'ek_admin_docs_view',
-      'variables' => array('items' => array()),
-    ),
-      );
+        // for the country form
+        'ek_admin_country_form' => array
+        (
+          'template' => 'ek_admin_country_form',
+          'variables' => array('items' => array()),
+        ), 
+        // for user access view
+        'ek_admin_user_access' => array
+        (
+          'template' => 'ek_admin_user_access',
+          'variables' => array('items' => array()),
+        ),
+        // for the documents
+        'ek_admin_docs_view' => array
+        (
+          'template' => 'ek_admin_docs_view',
+          'variables' => array('items' => array()),
+        ),
+        'ek_admin_list_docs_view' => array
+        (
+          'template' => 'ek_admin_list_docs_view',
+          'variables' => array('items' => array()),
+        ),
+    );
      
 }
 

@@ -116,16 +116,15 @@ class AdminController extends ControllerBase {
             $stamp = date('U');
             $log = 'start tasks checking at: ' . date('Y-m-d h:i', $stamp);
             \Drupal::logger('ek_admin')->notice($log);
-            
+
             //include the tasks checking code (modules ek_sales, ek_projects)
             include_once drupal_get_path('module', 'ek_admin') . '/cron/cron_get_tasks.php';
         }
-        
+
         // HTTP 204 is "No content", meaning "I did what you asked and we're done."
         return new Response('', 204);
     }
 
-    
     /**
      * Run Cron called by server to retrieve backup file9s) and email to selected addresses.
      * Cron backup must be set separately on the server. This will only send an email with attached file
@@ -139,34 +138,33 @@ class AdminController extends ControllerBase {
             $stamp = date('U');
             $log = 'send backup file to recipient: ' . date('Y-m-d h:i', $stamp);
             \Drupal::logger('ek_admin')->notice($log);
-            
-          $settings = new GlobalSettings(0);
-          $backupDir = $settings->get('backup_directory');
-          $backupFiles = explode(",", $settings->get('backup_filename'));
-          $recipients = explode(",", $settings->get('backup_recipients'));
-          
-          $options['origin'] = "backup_documents";
-          $options['user'] = t("Automated task");
-          
-          
-          $message = t("<p>Your faithful assistant has generated a backup of your company data.</p>") . "<br/>" .
-            
-            t("<p>DISCLAIMER: the system provider and its affiliates take no responsibility 
+
+            $settings = new GlobalSettings(0);
+            $backupDir = $settings->get('backup_directory');
+            $backupFiles = explode(",", $settings->get('backup_filename'));
+            $recipients = explode(",", $settings->get('backup_recipients'));
+
+            $options['origin'] = "backup_documents";
+            $options['user'] = t("Automated task");
+
+
+            $message = t("<p>Your faithful assistant has generated a backup of your company data.</p>") . "<br/>" .
+                    t("<p>DISCLAIMER: the system provider and its affiliates take no responsibility 
             for any data loss or corruption when using this script and service. 
             You are advised to download, verify and store your backup in a safe place.</p>");
-          
-          foreach($backupFiles as $backupFile) {
-            if(file_exists($backupDir . "/" . $backupFile)) {
-                mail_attachment($recipients, $backupDir . "/" . $backupFile, $message, $options);
+
+            foreach ($backupFiles as $backupFile) {
+                if (file_exists($backupDir . "/" . $backupFile)) {
+                    mail_attachment($recipients, $backupDir . "/" . $backupFile, $message, $options);
+                }
             }
-          }
         }
-        
+
 
         // HTTP 204 is "No content", meaning "I did what you asked and we're done."
         return new Response('', 204);
     }
-    
+
     /**
      * Return default 
      *
@@ -233,7 +231,7 @@ class AdminController extends ControllerBase {
                  */
 
                 $build['updatephp'] = [ '#markup' => '<p>' . t('Always run the <a href=":update-php">update script</a> each time a module is updated.', [':update-php' => \Drupal::url('system.db_update'),]) . '</p>'];
-                    
+
                 //countries
                 $query = "SELECT count(id) FROM {ek_country} WHERE status=:s";
                 $data = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => 1))->fetchField();
@@ -243,13 +241,13 @@ class AdminController extends ControllerBase {
                         '#markup' => t('You have not activated any country yet. Go <a href="@c">here</a> to activate countries.', array('@c' => $link)) . '<br/>',
                     );
                 }
-                
+
                 //company
                 $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_company', 'c')
-                    ->fields('c', ['id']);
+                        ->select('ek_company', 'c')
+                        ->fields('c', ['id']);
                 $coids = $query->execute()->fetchCol();
-                
+
                 if (empty($coids)) {
                     $link = Url::fromRoute('ek_admin.company.new', array(), array())->toString();
                     $build['company'] = array(
@@ -402,14 +400,13 @@ class AdminController extends ControllerBase {
                         );
                     }
                 }
-                
             } else {
                 //need to install tables for main module
                 return new RedirectResponse(\Drupal::url('ek_admin_install'));
                 exit;
             }
-            
-            \Drupal::moduleHandler()->invokeAll('ek_settings',[$coids]);
+
+            \Drupal::moduleHandler()->invokeAll('ek_settings', [$coids]);
         }
 
         return $build;
@@ -533,13 +530,14 @@ class AdminController extends ControllerBase {
         $link = Url::fromRoute('ek_admin.company.list', array(), array())->toString();
 
         $items['back'] = t('<a href="@c">List</a>', array('@c' => $link));
+        
 
         return array(
             '#items' => $items,
             '#theme' => 'ek_admin_docs_view',
             '#attached' => array(
                 'drupalSettings' => array('coid' => $id),
-                'library' => array('ek_admin/ek_admin_docs_updater', 'ek_admin/ek_admin_css'),
+                'library' => array('ek_admin/ek_admin_docs_updater', 'ek_admin/ek_admin_css', 'ek_admin/classic_doc'),
             ),
         );
     }
@@ -551,12 +549,14 @@ class AdminController extends ControllerBase {
     public function load(Request $request) {
 
         $query = "SELECT * FROM {ek_company_documents} WHERE coid = :c order by id";
-        $list = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $request->get('coid')));
+        $list = Database::getConnection('external_db', 'external_db')
+                ->query($query, array(':c' => $request->get('coid')));
 
 
         //build list of documents
         $t = '';
         $i = 0;
+        $items = [];
         if (isset($list)) {
             while ($l = $list->fetchObject()) {
                 $i++;
@@ -565,61 +565,50 @@ class AdminController extends ControllerBase {
 
                 if ($l->share == '0' || ( in_array(\Drupal::currentUser()->id(), $share) && !in_array(\Drupal::currentUser()->id(), $deny) )) {
 
+                    $items[$i]['id'] = $l->id;
+                    $items[$i]['fid'] = 0; //default file status off
+                    $items[$i]['ico'] = '_doc_list';
+                    $items[$i]['doc'] = $l->filename;
+                    $items[$i]['comment'] = $l->comment;
+                    $items[$i]['date'] = date('Y-m-d', $l->date);
+                    $items[$i]['size'] = round($l->size / 1000, 0) . " Kb";
+                    $items[$i]['del_button'] = 0;
+                    $items[$i]['share_button'] = 0;
+
                     $extension = explode(".", $l->filename);
                     $extension = array_pop($extension);
-                    $image = 'modules/ek_admin/art/icons/' . $extension . ".png";
-                    $uri = $l->uri;
-
-                    if (file_exists($image)) {
-                        $image = "<IMG src='../../$image'>";
-                    } else {
-                        $image = "<IMG src='../../modules/ek_admin/art/icons/file.png'>";
+                    $icon_path = drupal_get_path('module', 'ek_admin') . '/art/ico/';
+                    if (file_exists($icon_path . $extension . ".png")) {
+                        $items[$i]['ico'] = $extension . '_doc_list';
                     }
 
-                    if ($l->fid == '0') { //file was deleted
-                        $del_button = '[-]';
-                        $doc = $l->filename;
-                        $mail_button = '';
-                    } else {
-                        if (file_exists(file_uri_target($uri))) {
+                    if ($l->fid != '0') {
+                        //file not deleted
+                        $items[$i]['fid'] = 1;
+                        if (!file_exists($l->uri)) {
                             //file not on server (archived?) TODO ERROR file path not detected
-                            $del_button = '';
-                            $l->comment = t('Document not available. Please contact administrator');
-                            $doc = $l->filename;
-                            $mail_button = '';
+                            $items[$i]['comment'] = t('Document not available. Please contact administrator');
+                            $items[$i]['url'] = 0;
                         } else {
                             //file exist
+                            $items[$i]['del_button'] = Url::fromRoute('ek_admin_confirm_delete_file', ['id' => $l->id])->toString();
+                            $items[$i]['url'] = file_create_url($l->uri);
 
-                            $route = Url::fromRoute('ek_admin_delete_file', ['id' => $l->id])->toString();
-                            $del_button = "<a id='d$i' href=" . $route . " class='use-ajax red fa fa-trash-o' title='" . t('delete the file') . "'></a>";
-                            $doc = "<a href='" . file_create_url($uri) . "' target='_blank' >" . $l->filename . "</a>";
+                            //$del_button = "<a id='d$i' href=" . $route . " class='use-ajax red fa fa-trash-o' title='" . t('delete the file') . "'></a>";
+                            //$doc = "<a href='" . file_create_url($uri) . "' target='_blank' >" . $l->filename . "</a>";
+                            $param_access = 'access|' . $l->id . '|company_doc';
+                            $link = Url::fromRoute('ek_admin_modal', ['param' => $param_access])->toString();
+                            $items[$i]['share_button'] = Url::fromRoute('ek_admin_modal', ['param' => $param_access])->toString();
+                            //$share_button = t('<a href="@url" class="@c"  > access </a>', array('@url' => $link, '@c' => 'use-ajax red fa fa-lock'));
                         }
                     }
 
-
-                    if ($l->fid != '0') {
-
-                        $param_access = 'access|' . $l->id . '|company_doc';
-                        $link = Url::fromRoute('ek_admin_modal', ['param' => $param_access])->toString();
-                        $share_button = t('<a href="@url" class="@c"  > access </a>', array('@url' => $link, '@c' => 'use-ajax red fa fa-lock'));
-                    } else {
-                        $share_button = '';
-                    }
-
-                    $t .= "<tr id='ad" . $l->id . "'>
-                          <td>" . $image . " " . $doc . "</td>
-                          <td>" . date('Y-m-d', $l->date) . "</td>
-                          <td>" . $l->comment . "</td>
-                          <td>" . $del_button . "</td>
-                          <td>" . $share_button . "</td>
-
-                      </tr>
-                      
-                      ";
                 } //in array
             }
         }
-        return new JsonResponse(array('list' => $t));
+        $render = ['#theme' => 'ek_admin_list_docs_view', '#items' => $items];
+        $data = \Drupal::service('renderer')->render($render);
+        return new JsonResponse(array('list' => $data));
     }
 
     /**
@@ -673,12 +662,41 @@ class AdminController extends ControllerBase {
         return $response;
     }
 
+
+    /**
+     * Return ajax delete confirmation alert
+     * @param $id document id
+     * @return ajax response
+     */
+    public function confirmDeleteFile($id) {
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_company_documents', 'd')
+                ->fields('d', ['filename'])
+                ->condition('id', $id, '=');
+        $file = $query->execute()->fetchField();
+        $url = Url::fromRoute('ek_admin_delete_file', ['id' => $id])->toString();
+        $content = array('content' =>
+            array('#markup' =>
+                "<div><a href='" . $url . "' class='use-ajax'>"
+                . t('delete') . "</a> " . $file . "</div>")
+        );
+
+        $response = new AjaxResponse();
+
+        $title = $this->t('Confirm');
+        $content['#attached']['library'][] = 'core/drupal.dialog.ajax';
+
+        $response->addCommand(new OpenModalDialogCommand($title, $content));
+        return $response;
+    }
+
+    
     /**
      * delete a file from list 
      * @return Ajax response
      *
      */
-    public function deletefile($id) {
+    public function deleteFile($id) {
 
         $p = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT * from {ek_company_documents} WHERE id=:f", array(':f' => $id))
@@ -734,14 +752,14 @@ class AdminController extends ControllerBase {
      */
     public function AdminCompanyEdit($id) {
         $access = AccessCheck::GetCompanyAccess($id);
-        
-        if(in_array(\Drupal::currentUser()->id(), $access[$id])) {
+
+        if (in_array(\Drupal::currentUser()->id(), $access[$id])) {
             $form_builder = $this->formBuilder();
             $response = $form_builder->getForm('Drupal\ek_admin\Form\EditCompanyForm', $id);
             $query = "SELECT name from {ek_company} where id=:id";
             $company = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':id' => $id))
-                    ->fetchField();        
+                    ->fetchField();
             return array(
                 '#theme' => 'ek_admin_company_form',
                 '#items' => $response,
@@ -750,22 +768,20 @@ class AdminController extends ControllerBase {
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
             );
-         } else {
-            $url = Url::fromRoute('ek_admin.company.list',[],[])->toString(); 
+        } else {
+            $url = Url::fromRoute('ek_admin.company.list', [], [])->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('Access denied')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
-            return  [
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.', ['@url' => $url])];
+            return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
                 '#attached' => array(
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
                 '#cache' => ['max-age' => 0,],
-            ]; 
-            
+            ];
         }
-
     }
 
     /**
@@ -775,26 +791,26 @@ class AdminController extends ControllerBase {
      */
     public function AdminCompanyEditSettings($id) {
         $access = AccessCheck::GetCompanyAccess($id);
-        if(in_array(\Drupal::currentUser()->id(), $access[$id])) {
+        if (in_array(\Drupal::currentUser()->id(), $access[$id])) {
             $form_builder = $this->formBuilder();
             $response = $form_builder->getForm('Drupal\ek_admin\Form\EditCompanySettings', $id);
             $query = "SELECT name from {ek_company} where id=:id";
             $company = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':id' => $id))
-                    ->fetchField();            
+                    ->fetchField();
         } else {
-            $url = Url::fromRoute('ek_admin.company.list',[],[])->toString(); 
+            $url = Url::fromRoute('ek_admin.company.list', [], [])->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('Access denied')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
-            return  [
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.', ['@url' => $url])];
+            return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
                 '#attached' => array(
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
                 '#cache' => ['max-age' => 0,],
-            ]; 
+            ];
         }
 
         return array(
@@ -815,7 +831,7 @@ class AdminController extends ControllerBase {
      *
      */
     public function excelcompany($id = NULL) {
-        $markup = array();    
+        $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
@@ -901,16 +917,15 @@ class AdminController extends ControllerBase {
      */
     public function AccessByUser() {
 
-        
+
         $form_builder = $this->formBuilder();
         $items['form'] = $form_builder->getForm('Drupal\ek_admin\Form\UserSelect');
-        
-        
-        if(isset($_SESSION['admin_user_select'])) {
-            
+
+
+        if (isset($_SESSION['admin_user_select'])) {
+
             $items['company'] = AccessCheck::CompanyListByUid($_SESSION['admin_user_id_select']);
             $items['country'] = AccessCheck::CountryListByUid($_SESSION['admin_user_id_select']);
-            
         }
         return array(
             '#theme' => 'ek_admin_user_access',
@@ -920,7 +935,7 @@ class AdminController extends ControllerBase {
             ),
         );
     }
-    
+
     /**
      * Generate a business entity shortname
      * @param request
@@ -1001,13 +1016,13 @@ class AdminController extends ControllerBase {
         $row = $data->fetchObject();
         $params['options']['name'] = $row->name;
         $mail = $row->mail;
-  
+
         $params['options']['subject'] = $params['subject'];
 
         if ($params['type'] == 'status') {
             $template = 'project_status';
             $params['options']['data'] = $params['data'];
-        } elseif($params['type'] == 'salert') {
+        } elseif ($params['type'] == 'salert') {
             $template = 'sales_alert';
             $params['options']['data'] = $params['data'];
         } else { //default
@@ -1017,30 +1032,23 @@ class AdminController extends ControllerBase {
             $params['options']['task'] = $params['task'];
             $params['options']['end'] = $params['end'];
             $params['options']['alert'] = $params['alert'];
-            
+
             $query = "SELECT name, mail FROM `users_field_data` WHERE uid=:uid";
             $a = array(':uid' => $params['assign']);
             $data = db_query($query, $a);
             $row = $data->fetchObject();
             $params['options']['assign_name'] = $row->name;
         }
-        
+
         if ($mail) {
             if ($target_user = user_load_by_mail($mail)) {
-                    $target_langcode = $target_user->getPreferredLangcode();
+                $target_langcode = $target_user->getPreferredLangcode();
             } else {
-                    $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
+                $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
             }
-          $send = \Drupal::service('plugin.manager.mail')->mail(
-                'ek_admin',
-                $template,
-                trim($mail),
-                $target_langcode,
-                $params,
-                "do_not_reply@" . $_SERVER['HTTP_HOST'],
-                TRUE
+            $send = \Drupal::service('plugin.manager.mail')->mail(
+                    'ek_admin', $template, trim($mail), $target_langcode, $params, "do_not_reply@" . $_SERVER['HTTP_HOST'], TRUE
             );
-            
         } else {
             return FALSE;
         }

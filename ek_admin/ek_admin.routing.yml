@@ -103,11 +103,20 @@ ek_admin_modal:
     _controller: '\Drupal\ek_admin\Controller\AdminController::modal'
   requirements:
     _permission: 'company_documents'
+
+    
+ek_admin_confirm_delete_file:
+  path: 'ek_admin/delete_file_confirm/{id}'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::confirmDeleteFile'
+  requirements:
+    _permission: 'company_documents'
+    id: \d*
     
 ek_admin_delete_file:
   path: 'ek_admin/delete_file/{id}'
   defaults:
-    _controller: '\Drupal\ek_admin\Controller\AdminController::deletefile'
+    _controller: '\Drupal\ek_admin\Controller\AdminController::deleteFile'
   requirements:
     _permission: 'company_documents'
     id: \d*
