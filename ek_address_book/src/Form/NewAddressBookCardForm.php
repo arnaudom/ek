@@ -306,7 +306,7 @@ class NewAddressBookCardForm extends FormBase {
                         'salutation' => $data->salutation,
                         'title' => $data->title,
                         'telephone' => $data->telephone,
-                        'mobilephone' => $data->cmobilephone,
+                        'mobilephone' => $data->mobilephone,
                         'email' => $data->email,
                         'card' => $data->card,
                         'department' => $data->department,
