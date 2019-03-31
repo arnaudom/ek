@@ -238,12 +238,16 @@ $pdf->Cell($c1,5, trim($client->city . " " . $client->postcode .' ' . $client->c
 $pdf->SetFont('helvetica','',12);       
 $pdf->Cell($c3,5,"",0,0,'L');    
 $pdf->Cell($c4,5,"",0,1,'L');
-$pdf->Ln(2);
-$pdf->SetFont('helvetica','U',10);
-$pdf->Cell($lm);
-$pdf->Cell($c1,5,t("Attention to") . ":",0,0,'L');
-$pdf->SetFont('helvetica','B',10); 
-$pdf->Cell($c2,5, $client_card->salutation . " " . $client_card->contact_name ,0,1,'L'); 
+
+if(isset($client_card->contact_name)){
+    $pdf->Ln(2);
+    $pdf->SetFont('helvetica','U',10);
+    $pdf->Cell($lm);
+    $pdf->Cell($c1,5,t("Attention to") . ":",0,0,'L');
+    $pdf->SetFont('helvetica','B',10); 
+    $pdf->Cell($c2,5, $client_card->salutation . " " . $client_card->contact_name ,0,1,'L');  
+}
+
 
 // COMMENT ========================================================
 $pdf->Ln(2);

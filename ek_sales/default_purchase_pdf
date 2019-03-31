@@ -224,12 +224,16 @@ if(isset($head->pcode) && $head->pcode != 'n/a'){
 } else {
     $pdf->Cell($lm,5,'',0,1);
 }
-$pdf->Ln(2);
-$pdf->SetFont('helvetica','U',10);
-$pdf->Cell($lm);
-$pdf->Cell($c1,5,t("Attention") . ":",0,0,'L');
-$pdf->SetFont('helvetica','B',10); 
-$pdf->Cell($c2,5, $client_card->salutation . " " . $client_card->contact_name ,0,0,'L');   
+
+if(isset($client_card->contact_name)){
+    $pdf->Ln(2);
+    $pdf->SetFont('helvetica','U',10);
+    $pdf->Cell($lm);
+    $pdf->Cell($c1,5,t("Attention") . ":",0,0,'L');
+    $pdf->SetFont('helvetica','B',10); 
+    $pdf->Cell($c2,5, $client_card->salutation . " " . $client_card->contact_name ,0,0,'L');  
+}
+   
 
     
 // COMMENT ========================================================

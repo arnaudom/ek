@@ -23,7 +23,7 @@
 }
 
 .right {
-  text-align:right;
+    text-align:right;
 }
 
 .text-left {
@@ -35,25 +35,25 @@
 }
 
 .table {
-  display: table;
-  width: 100%;
+    display: table;
+    width: 100%;
 }
 
 .row {
-  display : table-row;
-  height:auto;
+    display : table-row;
+    height:auto;
 }
 
 .header_tb {  
-  display : table-cell;
+    display : table-cell;
 }
 
 .cell {  
-  display : table-cell;
-  vertical-align: top;
-  float: left;
-  padding-left: 30px;
-  
+    display : table-cell;
+    vertical-align: top;
+    float: left;
+    padding-left: 30px;
+
 }
 .cellcenter > div {
     margin-left:auto;
@@ -71,52 +71,52 @@
     width: 50%;
 }
 .cellborder {  
-  border-width: thin ;
-	border-spacing: 1px;
-	border-style: solid;
-	border-color: #A4A4A4;
-	border-collapse: collapse;
-	background-color: #CEE3F6;
-	padding: 2px;
+    border-width: thin ;
+    border-spacing: 1px;
+    border-style: solid;
+    border-color: #A4A4A4;
+    border-collapse: collapse;
+    background-color: #CEE3F6;
+    padding: 2px;
 }
 
 .amount {
-  text-align:right;
+    text-align:right;
 }
 
 .current {
-  background-color:#CEE3F6 !important;
+    background-color:#CEE3F6 !important;
 }
 
 .delete {
-  background-color:#FF6666 !important;  
+    background-color:#FF6666 !important;  
 }
 
 .red {
-  color: #FF6666;
+    color: #FF6666;
 }
 
 .green {
-  color: #00D744;
+    color: #00D744;
 }
 
 .blue {
-  color: #2E64FE;
+    color: #2E64FE;
 }
 
 hr {
-  -moz-border-bottom-colors: none;
-  -moz-border-left-colors: none;
-  -moz-border-right-colors: none;
-  -moz-border-top-colors: none;
-   border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
-  border-image: none;
-  border-right: 0 none;
-  border-style: solid none none;
-  border-width: 1px 0 0;
-  margin-bottom: 2px;
-  margin-top: 2px;
-  height: 0;
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
+    border-image: none;
+    border-right: 0 none;
+    border-style: solid none none;
+    border-width: 1px 0 0;
+    margin-bottom: 2px;
+    margin-top: 2px;
+    height: 0;
 }
 
 #invoice_form_footer .form-item, .form-actions {
@@ -140,7 +140,7 @@ hr {
 }
 
 .tip-module-ek-sales{
-  background-color: #CEE3F6 !important;;
+    background-color: #CEE3F6 !important;;
 }
 
 .button--record:hover {
@@ -183,6 +183,6 @@ hr {
     padding-left: 10px;
     padding-bottom: 10px;
     border-bottom: gray;
-        border-bottom-style: none;
+    border-bottom-style: none;
     border-bottom-style: solid;
 }

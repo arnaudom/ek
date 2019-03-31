@@ -4,69 +4,61 @@
  * Default invoice template in php for html display
  */
 
-/* custom css attachment via placeholders
- * added into render array: '#attached' => ['placeholders' => ['@foo' => 'replacement']],
- */
-$css = [
-    //'@blue' => 'style="color:#7896BE"',
-];
 $copy = '';
 $original = '';
 if ($stamp == "2") {
-      
-        $copy = drupal_get_path('module', 'ek_sales') . "/art/copy.png";
-        if (file_exists($copy)) {
-          $copy = "<IMG src='". file_create_url($copy) ."' alt='copy' class='align-center'/>";
-        }
-           
+
+    $copy = drupal_get_path('module', 'ek_sales') . "/art/copy.png";
+    if (file_exists($copy)) {
+        $copy = "<IMG src='" . file_create_url($copy) . "' alt='copy' class='align-center'/>";
+    }
 } elseif ($stamp == "1") {
-        $original = drupal_get_path('module', 'ek_sales') . "/art/original.png";
-        if (file_exists($original)) {         
-          $original = "<IMG src='". file_create_url($original) ."' alt='original' class='align-center'/>";    
-        }  
-} 
-$document = "<a class='button' href='" . $url_edit . "' ><i class='fa fa-edit'></i> " . t('Edit') . "</a>" 
-        . "<a class='button' href='" . $url_excel . "' ><i class='fa fa-file-excel-o'></i> " . t('Excel') . "</a>" 
+    $original = drupal_get_path('module', 'ek_sales') . "/art/original.png";
+    if (file_exists($original)) {
+        $original = "<IMG src='" . file_create_url($original) . "' alt='original' class='align-center'/>";
+    }
+}
+$document = "<a class='button' href='" . $url_edit . "' ><i class='fa fa-edit'></i> " . t('Edit') . "</a>"
+        . "<a class='button' href='" . $url_excel . "' ><i class='fa fa-file-excel-o'></i> " . t('Excel') . "</a>"
         . "<a class='button' href='" . $url_pdf . "' ><i class='fa fa-file-pdf-o'></i> " . t('Pdf') . "</a>";
 
 $document .= '<page_wrapper>';
 //HEADER data
-    //LOGO
-    $logo = '';
-    if ($company->logo != '') {
-        $path = $company->logo;
-        if(file_exists($path)) {
-           $logo = "<IMG src='". file_create_url($path) ."'/>";
-        }
-    
+//LOGO
+$logo = '';
+if ($company->logo != '') {
+    $path = $company->logo;
+    if (file_exists($path)) {
+        $logo = "<IMG src='" . file_create_url($path) . "'/>";
     }
-    //COMPANY
-    $header = '<b><h2>' . $company->name . '</h2></b>';
-    
-        if($company->reg_number) {
-            $header .= '<br/><small>(' . $company->reg_number . ')</small>';
-        }
-        
-    $header .= '<br/>' . $company->address1 . '';
-    $header .= '<br/>' . $company->address2 . '';
-    
-        if($company->postcode) {
-            $header .= '<br/>' . $company->postcode . ', ';
-        } else {
-            $header .= '<br/>'; 
-        }
-        if($company->country) {
-            $header .= '' . $company->country . '';
-        }        
-        if($company->telephone) {
-            $header .= '<br/>' . t('Tel') . ':' . $company->telephone . ', ';
-        } else {
-            $header .= '<br/>'; 
-        }
-        if($company->fax) {
-            $header .= '' . t('Fax') . ':' . $company->fax . '';
-        }         
-    $document .= '<page>
+}
+//COMPANY
+$header = '<b><h2>' . $company->name . '</h2></b>';
+
+if ($company->reg_number) {
+    $header .= '<br/><small>(' . $company->reg_number . ')</small>';
+}
+
+$header .= '<br/>' . $company->address1 . '';
+$header .= '<br/>' . $company->address2 . '';
+
+if ($company->postcode) {
+    $header .= '<br/>' . $company->postcode . ', ';
+} else {
+    $header .= '<br/>';
+}
+if ($company->country) {
+    $header .= '' . $company->country . '';
+}
+if ($company->telephone) {
+    $header .= '<br/>' . t('Tel') . ':' . $company->telephone . ', ';
+} else {
+    $header .= '<br/>';
+}
+if ($company->fax) {
+    $header .= '' . t('Fax') . ':' . $company->fax . '';
+}
+$document .= '<page>
                     <page_header>
                         <table>
                             <tr>
@@ -76,16 +68,16 @@ $document .= '<page_wrapper>';
                             </tr>
                         </table>
                     </page_header>';
- 
+
 
 //DOCUMENT ref
 
 $ref = '<h2 class="blue">' . strtoupper($head->title) . '</h2>';
 $ref .= '<br/>' . $head->serial;
 $ref .= '<br/>' . t("Billing date") . ": " . $head->date;
-if($head->due) {
-   $due = date('Y-m-d',strtotime(date("Y-m-d", strtotime($head->date) ) . "+". $head->due . ' ' . t("days") )); 
-   $ref .= '<br/>' . t("Due date") . ": " . $due;
+if ($head->due) {
+    $due = date('Y-m-d', strtotime(date("Y-m-d", strtotime($head->date)) . "+" . $head->due . ' ' . t("days")));
+    $ref .= '<br/>' . t("Due date") . ": " . $due;
 }
 
 $document .= '<page_reference>
@@ -102,35 +94,38 @@ $document .= '<page_reference>
 
 $cl = '<h2 class="">' . strtoupper($client->name) . '</h2>';
 $cl .= '<br/>' . $client->address;
-        if($client->address2) {
-            $cl .= '<br/>' . $client->address2;
-        }
-        if($client->city) {
-            $cl .= '<br/>' . $client->city;
-        }
-        if($client->postcode) {
-            $cl .= ', ' . $client->postcode . ', ';
-        }
-        if($client->country) {
-            $cl .= ', ' . $client->country ;
-        }
-        if($client->telephone) {
-            $cl .= '<br/>' . t('Tel') . ':' . $client->telephone . ', ';
-        } else {
-            $cl .= '<br/>'; 
-        }
-        if($client->fax) {
-            $cl .= '' . t('Fax') . ':' . $client->fax . '';
-        } 
-        
-$cl .= '<br/><h3>' . t("Attention to") . ":" . $client_card->salutation . " " . $client_card->contact_name . '</h3>';
+if ($client->address2) {
+    $cl .= '<br/>' . $client->address2;
+}
+if ($client->city) {
+    $cl .= '<br/>' . $client->city;
+}
+if ($client->postcode) {
+    $cl .= ', ' . $client->postcode . ', ';
+}
+if ($client->country) {
+    $cl .= ', ' . $client->country;
+}
+if ($client->telephone) {
+    $cl .= '<br/>' . t('Tel') . ':' . $client->telephone . ', ';
+} else {
+    $cl .= '<br/>';
+}
+if ($client->fax) {
+    $cl .= '' . t('Fax') . ':' . $client->fax . '';
+}
+
+if (isset($client_card->contact_name)) {
+    $cl .= '<br/><h3>' . t("Attention to") . ":" . $client_card->salutation . " " . $client_card->contact_name . '</h3>';
+}
+
 
 $document .= '<page_client>
                         <table>
                             <tr>
                                 <td class="c10 left"></td>
                                 <td class="c50 left">' . $cl . '</td>
-                                <td class="c40 center">' . $copy . $original .'</td>
+                                <td class="c40 center">' . $copy . $original . '</td>
                             </tr>
                         </table>
                     </page_client>';
@@ -155,45 +150,53 @@ $subtotal = 0;
 $i = 1;
 $j = 1;
 foreach ($items as $detail) {
-    if($detail['item'] != '') {
+    if ($detail['item'] != '') {
         $list .= '<tr>';
-        if($detail['total'] == 0 && $detail['value'] == 0  ){
+        if ($detail['item'] === "sub_total" || $detail['item'] === "[sub total]") {
+            //subtotal
+            $list .= '<td class="c10"></td>';
+            $list .= '<td class="c30 right lightgrey_background"><b>' . t('Sub total') . '</b></td>';
+        } elseif (($detail['total'] == 0 && $detail['value'] == 0)) {
             $list .= '<td class="c10 center">' . $i . '</td>';
             $list .= '<td class="c30 left"><b>' . nl2br($detail['item']) . '</b></td>';
             $i++;
             $j = 1;
         } else {
-            $l = ($i > 1)? ($i-1): "1";
-            $list .= '<td class="c10 center">' . $l . '.' . $j . '</td>';
+            $l = ($i > 1) ? ($i - 1) : "1";
+            $list .= '<td class="c10 right">- ' . $j . '</td>';
             $list .= '<td class="c30 left">' . nl2br($detail['item']) . '</td>';
             $j++;
         }
 
-        
+
         $list .= '<td class="c10 center">' . $detail['itemcode'] . '<br/>' . $detail['supplier_code'] . '</td>';
-        if ($detail['value'] != 0 )  { 
-            $list .= '<td class="c10 right">' . number_format($detail['value'] , 2)  . '</td>';
+        if ($detail['value'] != 0) {
+            $list .= '<td class="c10 right">' . number_format($detail['value'], 2) . '</td>';
         } else {
             $list .= '<td class="c10"></td>';
         }
-        if ($detail['quantity'] != 0 )  { 
-            $list .= '<td class="c10 center">' . $detail['quantity']  . '</td>';
+        if ($detail['quantity'] != 0) {
+            $list .= '<td class="c10 center">' . $detail['quantity'] . '</td>';
         } else {
             $list .= '<td class="c10"></td>';
         }
-        if ($detail['total'] != 0 )  { 
-            $list .= '<td class="c20 right">' . number_format($detail['total'] , 2)  . '</td>';
-        } else {
-            $list .= '<td class="c20"></td>';
-        }    
-        $subtotal = round(($subtotal + $detail['total']),2);
-        $grandtotal = round(($grandtotal + $detail['total']),2);
+        if ($detail['total'] != 0) {
+            $list .= '<td class="c20 right">' . number_format($detail['total'], 2) . '</td>';
+            } elseif ($detail['item'] === "sub_total" || $detail['item'] === "[sub total]") {
+            $list .= '<td class="c20 right cellbordertop lightgrey_background">' . number_format($subtotal, 2) . '</td>';
+            $subtotal = 0;
+            
+                } else {
+                    $list .= '<td class="c20"></td>';
+                }
+        $subtotal = round(($subtotal + $detail['total']), 2);
+        $grandtotal = round(($grandtotal + $detail['total']), 2);
         $list .= '</tr>';
     }
 }
 
 if ($head->pcode) {
-   $list .= '<tr>
+    $list .= '<tr>
                 <td></td><td colspan=5>' . t("Our ref.") . ' ' . $project_link . '</td>
            </tr>';
 }
@@ -223,17 +226,17 @@ $document .= '<page_total>
                                 <td class="c10 center"></td>
                                 <td class="c10 center"></td>
                                 <td class="c10 center"></td>
-                                <td class="c10 right"><b>' . number_format($grandtotal, 2) . '</b></td>
+                                <td class="c10 right cellbordertop"><b>' . number_format($grandtotal, 2) . '</b></td>
                             </tr>';
 
-if($head->taxvalue > 0) {
-  $document .= '<tr>
+if ($head->taxvalue > 0) {
+    $document .= '<tr>
                     <td class="c10 left"></td>
-                    <td class="c30 left"><b>' . $head->tax . " " . $head->taxvalue . "%"  . '</b></td>
+                    <td class="c30 left"><b>' . $head->tax . " " . $head->taxvalue . "%" . '</b></td>
                     <td class="c10 center"></td>
                     <td class="c10 center"></td>
                     <td class="c10 center"></td>
-                    <td class="c10 right"><b>' . number_format($items['taxamount'],2) . '</b></td>
+                    <td class="c10 right"><b>' . number_format($items['taxamount'], 2) . '</b></td>
                 </tr>
                 <tr>
                     <td class="c10 left"></td>
@@ -241,39 +244,39 @@ if($head->taxvalue > 0) {
                     <td class="c10 center"></td>
                     <td class="c10 center"></td>
                     <td class="c10 center"></td>
-                    <td class="c10 right"><b>' . number_format($items['taxamount'] + $grandtotal,2) . '</b></td>
-                </tr>';  
+                    <td class="c10 right cellbordertop"><b>' . number_format($items['taxamount'] + $grandtotal, 2) . '</b></td>
+                </tr>';
 }
 $resultinwords = new Drupal\ek_sales\NumberToWord();
-$word = $resultinwords->en(round($items['taxamount']+$grandtotal,2));
+$word = $resultinwords->en(round($items['taxamount'] + $grandtotal, 2));
 $document .= '</table>
             <div class="right">' . $word . '</div>
             </page_total>';
 
 //RECEIPT
 $receipt = '';
-if ($head->status == 1 && $stamp != 2 && $stamp != 1 ) {
- $receipt = '<div class="red">' . t('RECEIVED') . '</div>';
- $receipt .= '<div class="red">' . t('Date') . ': ' . $head->pay_date . '</div>';
- $receipt .= '<div class="red">' . $company->name . '</div>';
+if ($head->status == 1 && $stamp != 2 && $stamp != 1) {
+    $receipt = '<div class="red">' . t('RECEIVED') . '</div>';
+    $receipt .= '<div class="red">' . t('Date') . ': ' . $head->pay_date . '</div>';
+    $receipt .= '<div class="red">' . $company->name . '</div>';
 }
 
 //SIGNATURE
 $sign = '';
 if ($signature == "1") {
-    if(isset($company->sign)) {  
+    if (isset($company->sign)) {
         $path = $company->sign;
-        if(file_exists($path)) {
-           $sign = "<IMG src='". file_create_url($path) ."'/>";
+        if (file_exists($path)) {
+            $sign = "<IMG src='" . file_create_url($path) . "'/>";
         }
-    }       
+    }
 }
 $document .= '<page_signature>
                 <table>
                     <tr>
                         <td class="c10 left"></td>
-                        <td class="c60 left">'. $sign .'</td>
-                        <td class="c30 left">'. $receipt .'</td>
+                        <td class="c60 left">' . $sign . '</td>
+                        <td class="c30 left">' . $receipt . '</td>
                     </tr>
                     <tr>
                         <td></td>
@@ -282,18 +285,18 @@ $document .= '<page_signature>
                     </tr>
                     <tr>
                         <td></td>
-                        <td>'. t("Authorized signatory") .'<td>
+                        <td>' . t("Authorized signatory") . '<td>
                         <td></td>
                     </tr>
                 </table>
                 </page_signature>';
 $document .= '<hr>';
 //BANK
-if(isset($company->bank->name)){
-$document .= '<page_bank>
+if (isset($company->bank->name)) {
+    $document .= '<page_bank>
                 <table>
                     <tr>
-                        <td class="c50 left">'. t("Payment information") .'</td>
+                        <td class="c50 left">' . t("Payment information") . '</td>
                         <td class="c50 left"></td>
                         
                     </tr>
@@ -302,20 +305,20 @@ $document .= '<page_bank>
                         <td>' . t("Beneficiary") . ': ' . $company->name . '</td>
                     </tr>
                     <tr>
-                        <td>' . t("Address") . ': ' . $company->bank->address1 . '<br/>' .  $company->bank->address2 . '</td>
+                        <td>' . t("Address") . ': ' . $company->bank->address1 . '<br/>' . $company->bank->address2 . '</td>
                         <td>' . t("Account") . ': ' . $company->bank->account_ref . '</td>
                     </tr>                    
                     <tr>
-                        <td>' . $company->bank->postcode . ', ' .  $company->country . '</td>
+                        <td>' . $company->bank->postcode . ', ' . $company->country . '</td>
                         <td>' . t("Swift") . ': ' . $company->bank->swift . '</td>
                     </tr>
                 </table>
                 </page_bank>';
 } else {
-$document .= '<page_bank>
+    $document .= '<page_bank>
                 <table>
                     <tr>
-                        <td class="c50 left">'. t("Payment information") .'</td>
+                        <td class="c50 left">' . t("Payment information") . '</td>
                         <td class="c50 left"></td>
                         
                     </tr>
@@ -325,29 +328,28 @@ $document .= '<page_bank>
                     </tr>
                    
                 </table>
-                </page_bank>';    
+                </page_bank>';
 }
 
 //CORRESPONDENCE
 if ($company->address3 != "") {
     $document .= '<hr>';
     $correspondence = '<p class="grey">' . t('Correspondence address') . ':' . '';
-    $correspondence .= $company->address3 . ' ' 
-                        . $company->address4 
-                        . ' ' . $company->postcode2 
-                        .', ' . $company->city2 
-                        .', ' . $company->country2;
-    $correspondence .= '<br/>' . t('Tel') . ': ' . $company->telephone2 .' ' . t('Fax') . ':' . $company->fax2;
+    $correspondence .= $company->address3 . ' '
+            . $company->address4
+            . ' ' . $company->postcode2
+            . ', ' . $company->city2
+            . ', ' . $company->country2;
+    $correspondence .= '<br/>' . t('Tel') . ': ' . $company->telephone2 . ' ' . t('Fax') . ':' . $company->fax2;
     $correspondence .= '</p>';
-    
+
     $document .= '<page_correspondence>
                 <table>
                     <tr>
-                        <td class="c100 center">'. $correspondence .'</td>
+                        <td class="c100 center">' . $correspondence . '</td>
                     </tr>
                 </table>
             </page_correspondence>';
-
 }
 
 $document .= '</page></page_wrapper>';

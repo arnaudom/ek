@@ -213,3 +213,17 @@ function ek_sales_update_8008() {
 function ek_sales_update_8009() {
     \Drupal::service('router.builder')->rebuild();
 }
+
+
+/**
+ * Alter table field attributes
+ * 
+*/
+function ek_sales_update_8010() {
+    $query = "ALTER TABLE `ek_sales_quotation` CHANGE COLUMN `pcode` `pcode` VARCHAR(45) NULL DEFAULT '' AFTER `title`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+    
+    $query = "ALTER TABLE `ek_sales_quotation` CHANGE COLUMN `comment` `comment` TEXT NULL AFTER `pcode`";
+    Database::getConnection('external_db', 'external_db')->query($query);
+    
+}

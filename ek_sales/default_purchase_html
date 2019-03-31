@@ -4,12 +4,6 @@
  * Default purchase template in php for html display
  */
 
-/* custom css attachment via placeholders
- * added into render array: '#attached' => ['placeholders' => ['@foo' => 'replacement']],
- */
-$css = [
-    //'@blue' => 'style="color:#7896BE"',
-];
 $copy = '';
 $original = '';
 if ($stamp == "2") {
@@ -122,8 +116,11 @@ $cl .= '<br/>' . $client->address;
         if($client->fax) {
             $cl .= '' . t('Fax') . ':' . $client->fax . '';
         } 
-        
-$cl .= '<br/><h3>' . t("Attention to") . ":" . $client_card->salutation . " " . $client_card->contact_name . '</h3>';
+
+        if(isset($client_card->contact_name)) {
+            $cl .= '<br/><h3>' . t("Attention to") . ":" . $client_card->salutation . " " . $client_card->contact_name . '</h3>';
+        }
+
 
 $document .= '<page_client>
                         <table>
@@ -157,17 +154,25 @@ $j = 1;
 foreach ($items as $detail) {
     if($detail['item'] != '') {
         $list .= '<tr>';
-        if($detail['total'] == 0 && $detail['value'] == 0  ){
+        
+        if($detail['item'] === "sub_total" || $detail['item'] === "[sub total]") {
+            //subtotal
+            $list .= '<td class="c10"></td>';
+            $list .= '<td class="c30 right lightgrey_background"><b>' . t('Sub total') . '</b></td>';
+        } 
+        elseif (($detail['total'] == 0 && $detail['value'] == 0))
+            {
             $list .= '<td class="c10 center">' . $i . '</td>';
             $list .= '<td class="c30 left"><b>' . nl2br($detail['item']) . '</b></td>';
             $i++;
             $j = 1;
-        } else {
-            $l = ($i > 1)? ($i-1): "1";
-            $list .= '<td class="c10 center">' . $l . '.' . $j . '</td>';
-            $list .= '<td class="c30 left">' . nl2br($detail['item']) . '</td>';
-            $j++;
-        }
+            }
+            else {
+                    $l = ($i > 1) ? ($i-1): "1";
+                    $list .= '<td class="c10 right">- ' . $j . '</td>';
+                    $list .= '<td class="c30 left">' . nl2br($detail['item']) . '</td>';
+                    $j++;
+                }
 
         
         $list .= '<td class="c10 center">' . $detail['itemcode'] . '<br/>' . $detail['supplier_code'] . '</td>';
@@ -183,16 +188,19 @@ foreach ($items as $detail) {
         }
         if ($detail['total'] != 0 )  { 
             $list .= '<td class="c20 right">' . number_format($detail['total'] , 2)  . '</td>';
+        } elseif ($detail['item'] === "sub_total" || $detail['item'] === "[sub total]") {
+            $list .= '<td class="c20 right cellbordertop lightgrey_background">' . number_format($subtotal, 2) . '</td>';
+            $subtotal = 0;
         } else {
-            $list .= '<td class="c20"></td>';
-        }    
+                $list .= '<td class="c20"></td>';
+            }    
         $subtotal = round(($subtotal + $detail['total']),2);
         $grandtotal = round(($grandtotal + $detail['total']),2);
         $list .= '</tr>';
     }
 }
 
-if ($head->pcode) {
+if ($head->pcode && $head->pcode != 'n/a') {
    $list .= '<tr>
                 <td></td><td colspan=5>' . t("Our ref.") . ' ' . $project_link . '</td>
            </tr>';
@@ -223,7 +231,7 @@ $document .= '<page_total>
                                 <td class="c10 center"></td>
                                 <td class="c10 center"></td>
                                 <td class="c10 center"></td>
-                                <td class="c10 right"><b>' . number_format($grandtotal, 2) . '</b></td>
+                                <td class="c10 right cellbordertop"><b>' . number_format($grandtotal, 2) . '</b></td>
                             </tr>';
 
 if($head->taxvalue > 0) {
@@ -241,7 +249,7 @@ if($head->taxvalue > 0) {
                     <td class="c10 center"></td>
                     <td class="c10 center"></td>
                     <td class="c10 center"></td>
-                    <td class="c10 right"><b>' . number_format($items['taxamount'] + $grandtotal,2) . '</b></td>
+                    <td class="c10 right cellbordertop"><b>' . number_format($items['taxamount'] + $grandtotal,2) . '</b></td>
                 </tr>';  
 }
 $resultinwords = new Drupal\ek_sales\NumberToWord();

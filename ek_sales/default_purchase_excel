@@ -159,7 +159,9 @@ if ($next) {
 
 $l++;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", (String)t("Attention to") . ":");
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $client_card->salutation . " " . $client_card->contact_name);
+if(isset($client_card->contact_name)){
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $client_card->salutation . " " . $client_card->contact_name);
+}
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('H14', (String)t("Date") . ": " . $head->date);
 //calculate a due date
 if ($head->due > 0) {

@@ -612,6 +612,7 @@ class Quotation extends FormBase {
                         'class' => array('amount'),
                     ),
                 );
+                
                 $form['weight'] = array(
                     '#id' => 'weight' . $n,
                     '#type' => 'number',
@@ -1123,7 +1124,7 @@ class Quotation extends FormBase {
                 '#attributes' => array('placeholder' => t('total quotation'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['delete'] = ['#type' => 'item'];
-            $form['weight'] = ['#type' => 'weight'];
+            $form['weight'] = ['#type' => 'item'];
             //built total rows for table
 
             $form['items']['itemTable'][$n] = array(
@@ -1134,7 +1135,7 @@ class Quotation extends FormBase {
                 'tax' => &$form['tax'],
                 'total' => &$form['total'],
                 'delete' => &$form['delete'],
-                'weight' => '',
+                'weight' => $form['weight'],
             );
 
             $form['items']['itemTable']['#rows'][$n] = array(
@@ -1425,8 +1426,8 @@ class Quotation extends FormBase {
             }//foeach
         }//empty
         //main
-        if ($form_state->getValue('pcode') == '') {
-            $pcode = 'n/a';
+        if ($form_state->getValue('pcode') == 'n/a') {
+            $pcode = '';
         } else {
             $pcode = $form_state->getValue('pcode');
         }

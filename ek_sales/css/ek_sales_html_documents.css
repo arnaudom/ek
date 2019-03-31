@@ -81,6 +81,10 @@ td, th {
     border-bottom: 1px solid #888;
 }
 
+.cellbordertop {
+    border-top: 2px solid #999;
+}
+
 .c10 {
     width: 10%;
 }
@@ -165,7 +169,9 @@ td, th {
 .grey {
     color: #5a5a5a;
 }
-
+.lightgrey_background {
+    background: #dfdfdf;
+}
 .grey_background {
     background:#9b9b9b;
     color: #fff;
