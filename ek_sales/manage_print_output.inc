@@ -48,7 +48,6 @@ Switch ($source) {
     $taxline = 0;
 
       While ($line = $lines->fetchObject()) {
-        $data = array();
         $data['description2'] = '';
         $data['itemid'] = '';
         $data['itemcode'] = '';
@@ -127,7 +126,8 @@ Switch ($source) {
     $client = Database::getConnection('external_db', 'external_db')
             ->query($query, array(':id' => $head->client))
             ->fetchObject();
-
+    $client_card = new stdClass();
+    
     if($contact != '') {
     //selected contact from list
     $query = "SELECT * FROM {ek_address_book_contacts} WHERE id=:id ";

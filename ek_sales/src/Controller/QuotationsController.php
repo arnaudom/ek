@@ -452,11 +452,11 @@ class QuotationsController extends ControllerBase {
 
         //filter access to document
         $query = "SELECT `head`, `allocation` FROM {ek_sales_quotation} WHERE id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
+        $doc_data = Database::getConnection('external_db', 'external_db')
                 ->query($query, [':id' => $id])
                 ->fetchObject();
         $access = AccessCheck::GetCompanyByUser();
-        if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
+        if (in_array($doc_data->head, $access) || in_array($doc_data->allocation, $access)) {
             $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'quotation', 'html');
             $document = '';
 
@@ -486,7 +486,6 @@ class QuotationsController extends ControllerBase {
                     '#markup' => $document,
                     '#attached' => array(
                         'library' => array('ek_sales/ek_sales_html_documents_css','ek_admin/ek_admin_css'),
-                        'placeholders' => $css,
                     ),
                 ];
             }

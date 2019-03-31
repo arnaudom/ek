@@ -243,6 +243,7 @@ class InvoicesController extends ControllerBase {
             $duetitle = '';
             $weight = '';
             $doctype = '';
+            $total_value = 0;
 
             if(isset($abook[$r->client])) {
                 $client_name = $abook[$r->client];
@@ -428,8 +429,7 @@ class InvoicesController extends ControllerBase {
                 '#links' => $links,
             );
         } //while
-
-
+        
         $build['invoices_table'] = array(
             '#type' => 'table',
             '#header' => $header,
@@ -1234,11 +1234,11 @@ class InvoicesController extends ControllerBase {
 
         //filter access to document
         $query = "SELECT `head`, `allocation` FROM {ek_sales_invoice} WHERE id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
+        $doc_data = Database::getConnection('external_db', 'external_db')
                 ->query($query, [':id' => $id])
                 ->fetchObject();
         $access = AccessCheck::GetCompanyByUser();
-        if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
+        if (in_array($doc_data->head, $access) || in_array($doc_data->allocation, $access)) {
             $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'invoice', 'html');
             $document = '';
 
