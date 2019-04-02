@@ -513,7 +513,7 @@ class AdminController extends ControllerBase {
             '#attributes' => array('id' => 'company_table'),
             '#empty' => $this->t('No company'),
             '#attached' => array(
-                'library' => array('ek_admin/ek_admin_css'),
+                'library' => array('ek_admin/ek_admin_css', 'core/drupal.ajax'),
             ),
         );
 
