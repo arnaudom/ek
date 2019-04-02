@@ -111,6 +111,19 @@ hr {
   margin-top: 2px;
   height: 0;
 }
+
+/* clipboard */
+
+.clipboard_add , .clipboard_name {
+    cursor : copy;
+}
+
+.copy {
+   display:none;
+   color: green;
+   padding-left: 20px;
+   font-size: 0.8em;
+}
 /* search display */
 .abook_thumbnail {
     

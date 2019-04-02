@@ -13,7 +13,7 @@
         <div class='table'>
             <div class='row'>
                 <div class='cell cellborder'>
-                    <h2> {{items.name }} </h2>
+                    <h2 id="name">{{ items.name }}</h2>
                 </div>
                 <div class='cell'>
                     <img class="" style="width:50px;" alt="logo" src="{{ items.logo_url }}"/>
@@ -32,21 +32,21 @@
 
                 <div class='cell'>
                     {# righ column #}
-                    <h2><span class="ico map-marker"></span> {{ 'Address'|t }}</h2>
+                    <h2><span class="ico map-marker"></span><span class=" clipboard_add">{{ 'Address'|t }}</span><span class="copy copyAdd">copied to clipboard</span></h2>
                     <table>
                         <tr>
-                            <td> {{ items.address }} </td><td></td>
+                            <td id="address1">{{ items.address }}</td><td></td>
                         </tr> 
                         <tr>
-                            <td> {{ items.address2 }} </td><td> {{ items.country }}</td>
+                            <td id="address2">{{ items.address2 }}</td><td id="country">{{ items.country }}</td>
                         </tr>  
                         <tr>
-                            <td> {{ items.postcode }} </td><td> {{ items.city }}</td>
+                            <td id="postcode">{{ items.postcode }}</td><td id="city">{{ items.city }}</td>
                         </tr> 
                     </table>
 
                     <hr>
-                    <h2><span class="ico phone"></span> {{ 'Contact'|t }}</h2>
+                    <h2><span class="ico phone"></span>{{ 'Contact'|t }}</h2>
                     <table>    
                         <tr>
                         </tr>    
@@ -56,7 +56,7 @@
                         </tr> 
                         {% if items.website != '' %}
                             <tr>
-                                <td> {{ items.website }} </td><td></td>
+                                <td>{{ items.website }}</td><td></td>
                             </tr>    
                         {% endif %}
                     </table>
@@ -97,15 +97,18 @@
             <div class="panel panel-default">
 
                 <div class="panel-heading"><a href='#{{ item.id }}'  onclick="jQuery('#{{ item.id }}').toggle();">
-                        <h3 class="panel-title">{{ item.salutation }} {{ item.contact_name }}</h3></a>
+                        <h3 class="panel-title"><span id="salutation{{ item.id }}">{{ item.salutation }}</span> <span id="card{{ item.id }}">{{ item.contact_name }}</span></h3></a>
 
                 </div>
 
                 <div class="panel-body" id="{{ item.id }}">
                     <table>
                         <tr>
-                            <td><span class="ico user"></span><span> | </span><span>{{ item.contact_name }}</span></td>
-                            <td ></td>
+                            <td>
+                                <span class="ico user"></span>
+                                <span> | </span><span id="{{ item.id }}" class="clipboard_name">{{ item.contact_name }}<span id="copy{{ item.id }}" class="copy">copied to clipboard</span></span>
+                            </td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td><span class="ico briefcase"></span><span> | </span><span>{{ item.title }}</span></td>
@@ -147,3 +150,5 @@
     </div>
 
 </section>
+  
+    
