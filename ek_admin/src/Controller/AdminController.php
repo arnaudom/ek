@@ -473,9 +473,10 @@ class AdminController extends ControllerBase {
         $i = 0;
         while ($r = $data->fetchObject()) {
             $i++;
+            $lk = Url::fromRoute('ek_admin_modal', ['param' => 'clipboard|' . $r->id])->toString();
             $options[$i] = array(
                 'id' => $r->id,
-                'name' => $r->name,
+                'name' => ['data' => ['#markup' => '<a href="'.$lk.'" class="use-ajax clipboard_add"></a>' . $r->name . '']],
                 'status' => ($r->active == '0') ? t('non active') : t('active'),
             );
 
@@ -646,6 +647,40 @@ class AdminController extends ControllerBase {
                 $content = $this->formBuilder->getForm('Drupal\ek_admin\Form\DocAccessEdit', $id, $type);
                 $options = array('width' => '25%',);
                 break;
+            
+            case 'clipboard' :
+                
+                $title = t('Copy address');
+                $options = array('width' => '50%',);
+                $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_company', 'c')
+                            ->fields('c')
+                            ->condition('id', $param[1] , '=');
+                $data = $query->execute()->fetchObject();
+                 $markup = "<p>"
+                        . $data->name . "<br/>"
+                        . "(" . $data->reg_number . ")<br/>"
+                        . $data->address1 . "<br/>"
+                        . $data->address2 . "<br/>"
+                        . $data->city . "<br/>"
+                        . $data->postcode . "<br/>"
+                        . $data->country . "<br/>"
+                        . t('telephone') . " " . $data->telephone . "<br/>"
+                        . t('fax') . ": " . $data->fax . "<br/>"
+                        . t('email') . ": " . $data->email . "<br/>"
+                        . t('contact') . ": " . $data->contact . "<br/></p>";
+                if(isset($data->address3) && $data->address3 != $data->address1) {
+                    $markup .= "<p>"
+                        . $data->address3 . "<br/>"
+                        . $data->address4 . "<br/>"
+                        . $data->city2 . "<br/>"
+                        . $data->postcode2 . "<br/>"
+                        . $data->country2 . "<br/>"
+                        . t('telephone') . ": " . $data->telephone2 . "<br/>"
+                        . t('fax') . ": " . $data->fax2 . "</p>";
+                }
+                
+                $content['#markup'] = $markup;
         }
 
         $response = new AjaxResponse();

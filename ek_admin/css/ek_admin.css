@@ -47,8 +47,22 @@
     padding: 15px;
 }
 
-.closed {
-    //display : none;
+/* clipboard */
+.clipboard_add:before {
+    font-family: FontAwesome;
+    font-size:1em;
+    color: #446E9B;
+    width: 1.4em;
+    text-align: center;
+    display: inline-block;
+    text-rendering: auto;
+    content: "\f0c5";
+    padding-right: 10px;
+
+}
+
+.clipboard_add {
+    border-bottom: 0px ;
 }
 
 .text-left {
@@ -70,15 +84,15 @@
 }
 
 .red {
-  color: #FF6666;
+    color: #FF6666;
 }
 
 .green {
-  color: #00D744;
+    color: #00D744;
 }
 
 .blue {
-  color: #2E64FE;
+    color: #2E64FE;
 }
 
 .orange {
