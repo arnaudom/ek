@@ -296,7 +296,7 @@ function ek_documents_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $f
     
     $form['move_uid_documents'] = [
       '#type' => 'textfield',
-      '#title' => t('Move uer documents'),
+      '#title' => t('Move user documents'),
       '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
       '#description' => t('Select to whom to transfer personal documents'),
     ];
