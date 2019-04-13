@@ -1268,7 +1268,6 @@ class InvoicesController extends ControllerBase {
                     '#markup' => $document,
                     '#attached' => array(
                         'library' => array('ek_sales/ek_sales_html_documents_css','ek_admin/ek_admin_css'),
-                        'placeholders' => $css,
                     ),
                 ];
             }
