@@ -149,7 +149,9 @@ Switch ($source) {
                     . "LEFT JOIN {ek_bank} b "
                     . "ON ba.bid=b.id "
                     . "WHERE ba.id=:id ";
-            $bank = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $head->bank))->fetchObject();
+            $bank = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $head->bank))
+                    ->fetchObject();
             $company->bank = $bank;//used in footer
         }
     }
@@ -164,7 +166,7 @@ Switch ($source) {
             ->query($query, array(':s' => $head->serial))
             ->fetchField();  
     $lines = Database::getConnection('external_db', 'external_db')
-            ->query("SELECT * from {ek_sales_". $source. "_details} WHERE serial=:s and revision=:r ORDER BY id", 
+            ->query("SELECT * from {ek_sales_". $source. "_details} WHERE serial=:s and revision=:r ORDER BY weight,id", 
                     array(':s' => $head->serial, ':r' => $revision));
 
     $items = array();

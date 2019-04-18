@@ -145,6 +145,7 @@ class QuotationsController extends ControllerBase {
             $from = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT date from {ek_sales_quotation} order by date limit 1")
                     ->fetchField();
+            $from = date('Y-m-d', strtotime(date('Y-m-d') ." -60 days")); 
             $data = $query
                     ->fields('q')
                     ->condition($or1)
