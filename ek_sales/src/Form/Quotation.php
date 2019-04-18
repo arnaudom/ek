@@ -789,7 +789,7 @@ class Quotation extends FormBase {
                     '#id' => 'priceType-' . $n,
                     '#type' => 'select',
                     '#size' => 1,
-                    '#options' => array('0' => '-', '1' => t('normal'), '2' => t('promo'), '3' => t('discount')),
+                    '#options' => $prices_options,
                     '#attributes' => array('class' => array('amount')),
                     '#ajax' => array(
                         'callback' => array($this, 'put_price'),
