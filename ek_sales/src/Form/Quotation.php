@@ -449,6 +449,17 @@ class Quotation extends FormBase {
                     'id' => ['tour-item8'],
                 ),
             );
+            
+            $itemSettings = new \Drupal\ek_products\ItemSettings();
+            $prices_options = [
+                0 => '-',
+                1 => $itemSettings->get('selling_price_label'),
+                2 => $itemSettings->get('promo_price_label'),
+                3 => $itemSettings->get('discount_price_label'),
+                4 => $itemSettings->get('exp_selling_price_label'),
+                5 => $itemSettings->get('exp_promo_price_label'),
+                6 => $itemSettings->get('exp_discount_price_label'),
+            ];
         } else {
             $header = array(
                 'description' => array(
@@ -568,7 +579,7 @@ class Quotation extends FormBase {
                         '#id' => 'priceType-' . $n,
                         '#type' => 'select',
                         '#size' => 1,
-                        '#options' => array('0' => '-', '1' => t('normal'), '2' => t('promo'), '3' => t('discount')),
+                        '#options' => $prices_options,
                         '#attributes' => array('class' => array('amount')),
                         '#default_value' => $priceType,
                         //'#required' => TRUE,
