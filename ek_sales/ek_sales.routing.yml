@@ -127,7 +127,7 @@ ek_sales.purchases.aging:
 ek_sales.purchases.create:
   path: '/purchases/new'
   defaults:
-    _title: 'New purchase'
+    _title: 'Purchase'
     _controller: '\Drupal\ek_sales\Controller\PurchasesController::NewPurchases'
   requirements:
     _permission: 'create_purchase'
@@ -135,7 +135,7 @@ ek_sales.purchases.create:
 ek_sales.purchases.clone:
   path: '/purchases/clone/{id}'
   defaults:
-    _title: 'New purchase'
+    _title: 'Purchase'
     _controller: '\Drupal\ek_sales\Controller\PurchasesController::ClonePurchases'
   requirements:
     _permission: 'create_purchase'
@@ -266,7 +266,7 @@ ek_sales.quotations.list:
 ek_sales.quotations.create:
   path: '/quotations/new'
   defaults:
-    _title: 'New quotations'
+    _title: 'Quotations'
     _controller: '\Drupal\ek_sales\Controller\QuotationsController::NewQuotations'
   requirements:
     _permission: 'create_quotation'
@@ -353,7 +353,7 @@ ek_sales.invoices.aging:
 ek_sales.invoices.create:
   path: '/invoices/new'
   defaults:
-    _title: 'New invoices'
+    _title: 'Invoice'
     _controller: '\Drupal\ek_sales\Controller\InvoicesController::NewInvoices'
   requirements:
     _permission: 'create_invoice'
@@ -361,7 +361,7 @@ ek_sales.invoices.create:
 ek_sales.invoices.clone:
   path: '/invoices/clone/{id}'
   defaults:
-    _title: 'New invoices'
+    _title: 'Invoice'
     _controller: '\Drupal\ek_sales\Controller\InvoicesController::CloneInvoices'
   requirements:
     _permission: 'create_invoice'
@@ -370,7 +370,7 @@ ek_sales.invoices.clone:
 ek_sales.invoices.do:
   path: '/invoices/do/{id}'
   defaults:
-    _title: 'New invoices'
+    _title: 'Invoice'
     _controller: '\Drupal\ek_sales\Controller\InvoicesController::DoInvoices'
   requirements:
     _permission: 'create_invoice'

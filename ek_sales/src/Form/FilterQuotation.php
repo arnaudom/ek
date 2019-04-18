@@ -58,12 +58,15 @@ class FilterQuotation extends FormBase {
 
         $to = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT date FROM {ek_sales_quotation} order by date DESC limit 1")
-                ->fetchObject();
-        $from = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT date FROM {ek_sales_quotation} order by date limit 1")
-                ->fetchObject();
-        //$date1= date('Y-m-d', strtotime($data2." -30 days")) ;
-
+                ->fetchField();
+        
+        if($to) {
+           $from = date('Y-m-d', strtotime($to ." -30 days")) ; 
+        } else {
+            $to = date('Y-m') . "-01";
+            $from = date('Y-m') . "-01";
+        }
+        
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Filter'),
@@ -77,7 +80,7 @@ class FilterQuotation extends FormBase {
         $form['filters']['from'] = array(
             '#type' => 'date',
             '#size' => 12,
-            '#default_value' => isset($_SESSION['qfilter']['from']) ? $_SESSION['qfilter']['from'] : $from->date,
+            '#default_value' => isset($_SESSION['qfilter']['from']) ? $_SESSION['qfilter']['from'] : $from,
             //'#prefix' => "<div class='container-inline'>",
             '#title' => t('from'),
         );
@@ -85,7 +88,7 @@ class FilterQuotation extends FormBase {
         $form['filters']['to'] = array(
             '#type' => 'date',
             '#size' => 12,
-            '#default_value' => isset($_SESSION['qfilter']['to']) ? $_SESSION['qfilter']['to'] : $to->date,
+            '#default_value' => isset($_SESSION['qfilter']['to']) ? $_SESSION['qfilter']['to'] : $to,
             '#title' => t('to'),
         );
 

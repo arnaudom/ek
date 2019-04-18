@@ -124,7 +124,9 @@ class Invoice extends FormBase {
                 $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'), '4' => t('Credit note'));
                 $form['clone_invoice'] = array(
                     '#type' => 'item',
-                    '#markup' => t('Template invoice based on ref. @p . A new invoice will be generated.', array('@p' => $data->serial)),
+                    '#markup' => "<div class='messages messages--warning'>"
+                        . t('Template invoice based on ref. @p . A new invoice will be generated.', ['@p' => $data->serial])
+                        . "</div>",
                 );
 
                 $data->date = date('Y-m-d');

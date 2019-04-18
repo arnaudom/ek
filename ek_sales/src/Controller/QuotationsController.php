@@ -272,7 +272,12 @@ class QuotationsController extends ControllerBase {
                     'url' => Url::fromRoute('ek_sales.quotations.print_excel', ['id' => $r->id]),
                 );
             }
-
+            
+            $links['clone'] = array(
+                    'title' => $this->t('Clone'),
+                    'url' => Url::fromRoute('ek_sales.quotations.edit', ['id' => $r->id], ['query' => ['action' => 'clone']]),
+            );
+            
             if (\Drupal::currentUser()->hasPermission('delete_quotation') && $r->status == 0) {
 
                 $links['delete'] = array(
@@ -320,8 +325,9 @@ class QuotationsController extends ControllerBase {
             ->fields('q', ['status'])
             ->condition('id', $id , '=');
         $status = $query->execute()->fetchField();
-        if($status <> 2) {    
-            $build['edit_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Quotation', $id);
+        $clone = ($request->query->get('action') == 'clone') ? TRUE : FALSE;
+        if($clone == TRUE || $status <> 2) {
+            $build['edit_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Quotation', $id, $clone);
         } else {
             
             $opt =['0' => t('open'),1 => t('printed'), 2 => t('invoiced')];

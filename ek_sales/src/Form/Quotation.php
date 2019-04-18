@@ -60,7 +60,7 @@ class Quotation extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $clone = FALSE) {
 
         $quotationSettings = $this->salesSettings->get('quotation');
         $revision = NULL;
@@ -71,21 +71,32 @@ class Quotation extends FormBase {
                     ->query("SELECT * FROM {ek_sales_quotation} where id=:id", array(':id' => $id))
                     ->fetchObject();
             $detail = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT * FROM {ek_sales_quotation_details} where serial=:id ORDER BY weight,id", 
-                            array(':id' => $data->serial));
-            
+                    ->query("SELECT * FROM {ek_sales_quotation_details} where serial=:id ORDER BY weight,id", array(':id' => $data->serial));
+
             $itemLines = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT count(id) FROM {ek_sales_quotation_details} where serial=:id", 
-                            array(':id' => $data->serial))
+                    ->query("SELECT count(id) FROM {ek_sales_quotation_details} where serial=:id", array(':id' => $data->serial))
                     ->fetchField();
-            
+
             $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision DESC";
             $revision = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $data->serial))->fetchField();
+            if ($clone) {
+                $form['clone_quotation'] = array(
+                    '#type' => 'item',
+                    '#markup' => "<div class='messages messages--warning'>" 
+                        . t('Template quotation based on ref. @p . A new quotation will be generated.', array('@p' => $data->serial))
+                        . "</div>",
+                );
+                $form['clone'] = array(
+                    '#type' => 'hidden',
+                    '#value' => TRUE,
+                );
+            } else {
+                $form['edit_quotation'] = array(
+                    '#type' => 'item',
+                    '#markup' => t('Quotation ref. @q', array('@q' => $data->serial)),
+                );
+            }
 
-            $form['edit_quotation'] = array(
-                '#type' => 'item',
-                '#markup' => t('Quotation ref. @q', array('@q' => $data->serial)),
-            );
             $form['serial'] = array(
                 '#type' => 'hidden',
                 '#value' => $data->serial,
@@ -133,7 +144,6 @@ class Quotation extends FormBase {
             $incoterm_rate = 0;
             $tax_name = '';
             $tax_rate = 0;
-            
         }
 
 
@@ -177,7 +187,7 @@ class Quotation extends FormBase {
             ),
         );
 
-        if(count($company) > 1) {
+        if (count($company) > 1) {
             $form['options']['allocation'] = array(
                 '#type' => 'select',
                 '#size' => 1,
@@ -191,9 +201,9 @@ class Quotation extends FormBase {
             );
         } else {
             $form['options']['allocation'] = array(
-              '#type' => 'hidden',
-              '#value' => key($company), 
-              '#suffix' => '</div>',
+                '#type' => 'hidden',
+                '#value' => key($company),
+                '#suffix' => '</div>',
             );
         }
 
@@ -298,12 +308,18 @@ class Quotation extends FormBase {
             );
         }
 
-
+        $select_incoterm = ['0' => t('not applicable'), 'FOB' => 'FOB', 'CFR' => 'CFR', 'CIF' => 'CIF', 'EXW' => 'EXW'];
+        $vocabulary = \Drupal::entityManager()->getStorage('taxonomy_term')->loadTree('incoterm', 0, 1);
+        if ($vocabulary = \Drupal::entityManager()->getStorage('taxonomy_term')->loadTree('incoterm', 0, 1)) {
+            foreach ($vocabulary as $item) {
+                $select_incoterm[$item->name] = $item->name;
+            }
+        }
         $form['options']['incoterm'] = array(
             '#type' => 'select',
             '#size' => 1,
             '#title' => t('Incoterms'),
-            '#options' => array('0' => t('not applicable'), 'CIF' => 'CIF', 'CIP' => 'CIP', 'FOB' => 'FOB'),
+            '#options' => $select_incoterm,
             '#default_value' => isset($incoterm_name) ? $incoterm_name : '0',
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
@@ -450,7 +466,7 @@ class Quotation extends FormBase {
                 'tax' => array(
                     'data' => $this->t('Tax'),
                     'id' => ['tour-item5'],
-                ),                
+                ),
                 'total' => array(
                     'data' => $this->t('Total'),
                     'id' => ['tour-item6'],
@@ -481,7 +497,7 @@ class Quotation extends FormBase {
             //edition mode
             //list current items
             $grandtotal = 0;
-            
+
             while ($d = $detail->fetchObject()) {
                 $n++;
                 $z++;
@@ -489,23 +505,23 @@ class Quotation extends FormBase {
                 $rowClass = ($rows[$n]['delete'] == 1) ? 'delete' : 'current';
                 $rowClass .= ' move';
                 $trClass = 'tr' . $n;
-                if($d->opt == 1) {
-                  $taxable += ($d->value * $d->unit);
-                }           
+                if ($d->opt == 1) {
+                    $taxable += ($d->value * $d->unit);
+                }
                 $total = number_format($d->value * $d->unit, 2);
                 $grandtotal += $d->value * $d->unit;
 
-                if ($d->itemdetails == "" && $this->moduleHandler->moduleExists('ek_products') )  {
-                    $item = \Drupal\ek_products\ItemData::item_bycode($d->itemid); 
-                    if(isset($item)) {
-                       $name = $item; 
-                       $link = \Drupal\ek_products\ItemData::geturl_bycode($d->itemid, TRUE);
+                if ($d->itemdetails == "" && $this->moduleHandler->moduleExists('ek_products')) {
+                    $item = \Drupal\ek_products\ItemData::item_bycode($d->itemid);
+                    if (isset($item)) {
+                        $name = $item;
+                        $link = \Drupal\ek_products\ItemData::geturl_bycode($d->itemid, TRUE);
                     } else {
-                       $name =  $d->itemdetails;
+                        $name = $d->itemdetails;
                     }
-                  } else {
+                } else {
                     $name = $d->itemdetails;
-                  }
+                }
 
                 $form['description'] = array(
                     '#id' => 'description-' . $n,
@@ -514,8 +530,8 @@ class Quotation extends FormBase {
                     '#maxlength' => 255,
                     '#attributes' => array('placeholder' => t('item')),
                     '#default_value' => $name,
-                    '#field_prefix' => "<span class='badge'>". $z ."</span>",
-                    '#field_suffix' => isset($link) ? "<span class='badge'>". $link ."</span>" : '',
+                    '#field_prefix' => "<span class='badge'>" . $z . "</span>",
+                    '#field_suffix' => isset($link) ? "<span class='badge'>" . $link . "</span>" : '',
                     '#autocomplete_route_name' => 'ek.look_up_item_ajax',
                 );
                 if ($this->moduleHandler->moduleExists('ek_products')) {
@@ -533,13 +549,12 @@ class Quotation extends FormBase {
                         $itemDescription = $name;
                         $itemValue = $d->value;
                         $thisItemId = explode(' ', $itemDescription);
-                        if(isset($thisItemId[1])){
+                        if (isset($thisItemId[1])) {
                             $thisItemId = trim($thisItemId[1]);
                             $priceType = \Drupal\ek_products\ItemData::item_sell_price_type($thisItemId, $itemValue);
                         } else {
                             $priceType = 0;
                         }
-                        
                     }
 
                     if ($priceType != 0) {
@@ -612,7 +627,7 @@ class Quotation extends FormBase {
                         'class' => array('amount'),
                     ),
                 );
-                
+
                 $form['weight'] = array(
                     '#id' => 'weight' . $n,
                     '#type' => 'number',
@@ -740,7 +755,7 @@ class Quotation extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 40,
                 '#maxlength' => 255,
-                '#field_prefix' => "<span class='badge'>". $z ."</span>",
+                '#field_prefix' => "<span class='badge'>" . $z . "</span>",
                 '#attributes' => array('placeholder' => t('item')),
                 '#autocomplete_route_name' => 'ek.look_up_item_ajax',
             );
@@ -809,10 +824,10 @@ class Quotation extends FormBase {
             );
             $form['delete'] = array();
             $form['weight'] = array(
-                    '#id' => 'weight' . $n,
-                    '#type' => 'hidden',
-                    '#default_value' =>  $z,
-                );
+                '#id' => 'weight' . $n,
+                '#type' => 'hidden',
+                '#default_value' => $z,
+            );
             //built edit rows for table
             $form['items']['itemTable'][$n] = array(
                 'description' => &$form['description'],
@@ -989,7 +1004,7 @@ class Quotation extends FormBase {
             unset($form['delete']);
             unset($form['weight']);
 
-        //incoterm       
+            //incoterm       
             $n++;
             $form['description'] = array(
                 '#type' => 'item',
@@ -1051,9 +1066,9 @@ class Quotation extends FormBase {
             unset($form['delete']);
             unset($form['weight']);
 
-        //tax   
+            //tax   
             $n++;
-            $taxamount = round(($taxable * $tax_rate/100), 2) ;
+            $taxamount = round(($taxable * $tax_rate / 100), 2);
             $form['description'] = array(
                 '#type' => 'item',
                 '#markup' => t('Tax applied')
@@ -1272,7 +1287,7 @@ class Quotation extends FormBase {
         $rows = $form_state->getValue('itemTable');
         if (!empty($rows)) {
             foreach ($rows as $key => $row) {
-                if ($row['value'] != 'footer' && $row['value'] != 'secondRow'&& $row['value'] != 'incoterm') {
+                if ($row['value'] != 'footer' && $row['value'] != 'secondRow' && $row['value'] != 'incoterm') {
                     if ($row['description'] == '') {
                         $form_state->setErrorByName("itemTable][$key][description", $this->t('Item @n is empty', array('@n' => $key)));
                     }
@@ -1293,7 +1308,8 @@ class Quotation extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
         $settings = unserialize($form_state->getValue('settings'));
-        if ($form_state->getValue('new_quotation') && $form_state->getValue('new_quotation') == 1) {
+        if (($form_state->getValue('new_quotation') && $form_state->getValue('new_quotation') == 1)
+                || $form_state->getValue('clone') == TRUE) {
             //create new serial No
             $type = 'QU';
             $short = Database::getConnection('external_db', 'external_db')
@@ -1304,8 +1320,8 @@ class Quotation extends FormBase {
                     ->query("SELECT shortname from {ek_address_book} where id=:id", array(':id' => $form_state->getValue('client')))
                     ->fetchField();
             $format = $this->salesSettings->get('serialFormat');
-            if($format['code'] == '') {
-                $format['code'] = [1,2,3,4,5];
+            if ($format['code'] == '') {
+                $format['code'] = [1, 2, 3, 4, 5];
             }
             if ($format['increment'] == '' || $format['increment'] < 1) {
                 $format['increment'] = 1;
@@ -1313,38 +1329,38 @@ class Quotation extends FormBase {
             $quid = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT count(id) from {ek_sales_quotation}")
                     ->fetchField();
-            $quid = $quid +1 +$format['increment'];
+            $quid = $quid + 1 + $format['increment'];
             $query = "SELECT id FROM {ek_sales_quotation} WHERE serial like :s";
-            while (Database::getConnection('external_db', 'external_db')->query($query,[':s' => '%-' .$quid])->fetchField()) {
+            while (Database::getConnection('external_db', 'external_db')
+                    ->query($query, [':s' => '%-' . $quid])
+                    ->fetchField()) {
                 //to prevent serial duplication after document have been deleted, increment until no match is found
                 $quid++;
-            }  
+            }
             $serial = '';
             //$serial = ucwords($short) . "-QU-" . $date . "-" . ucwords($sup) . "-" . $quid;
             $revision = 0;
-                        foreach($format['code'] as $k => $v) {
-                    switch ($v) {
-                        case 0 :
-                            break;
-                        case 1 :
-                            $serial .= ucwords(str_replace('-', '', $short)) . '-';
-                            break;
-                        case 2 :
-                            $serial .= $type . '-';
-                            break;
-                        case 3 :
-                            $serial .= $date . '-';
-                            break;
-                        case 4 :
-                            $serial .= ucwords(str_replace('-', '', $sup)) . '-';
-                            break;
-                        case 5 :
-                            $serial .= $quid;
-                            break;
-                        
-                    }
+            foreach ($format['code'] as $k => $v) {
+                switch ($v) {
+                    case 0 :
+                        break;
+                    case 1 :
+                        $serial .= ucwords(str_replace('-', '', $short)) . '-';
+                        break;
+                    case 2 :
+                        $serial .= $type . '-';
+                        break;
+                    case 3 :
+                        $serial .= $date . '-';
+                        break;
+                    case 4 :
+                        $serial .= ucwords(str_replace('-', '', $sup)) . '-';
+                        break;
+                    case 5 :
+                        $serial .= $quid;
+                        break;
+                }
             }
-            
         } else {
             //edit
             $serial = $form_state->getValue('serial');
@@ -1377,7 +1393,7 @@ class Quotation extends FormBase {
         $rows = $form_state->getValue('itemTable');
         if (!empty($rows)) {
             foreach ($rows as $key => $row) {
-                if ($row['value'] != 'footer' && $row['value'] != 'secondRow'&& $row['value'] != 'incoterm') {
+                if ($row['value'] != 'footer' && $row['value'] != 'secondRow' && $row['value'] != 'incoterm') {
                     if ($row['delete'] != 1) {
                         $itemId = '';
                         $itemDetails = Xss::filter($row['description']);
@@ -1394,7 +1410,7 @@ class Quotation extends FormBase {
                                 if ($check) {
                                     $itemId = $itemCode;
                                     $itemDetails = '';
-                                } 
+                                }
                             }
                         }
                         $line = (round($row['quantity'] * $row['value'], 2));
@@ -1462,7 +1478,8 @@ class Quotation extends FormBase {
             'type' => '',
         );
 
-        if ($form_state->getValue('new_quotation') && $form_state->getValue('new_quotation') == 1) {
+        if (($form_state->getValue('new_quotation') && $form_state->getValue('new_quotation') == 1)
+                || $form_state->getValue('clone') == TRUE) {
             $insert = Database::getConnection('external_db', 'external_db')
                     ->insert('ek_sales_quotation')
                     ->fields($fields1)

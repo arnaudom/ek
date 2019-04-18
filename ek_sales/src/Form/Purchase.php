@@ -99,7 +99,9 @@ class Purchase extends FormBase {
             } else {
                 $form['clone_purchase'] = array(
                     '#type' => 'item',
-                    '#markup' => t('Template purchase based on ref. @p . A new purchase will be generated.', array('@p' => $data->serial)),
+                    '#markup' => "<div class='messages messages--warning'>"
+                        . t('Template purchase based on ref. @p . A new purchase will be generated.', array('@p' => $data->serial))
+                        . "</div>",
                 );
                 $data->date = date('Y-m-d');
 
