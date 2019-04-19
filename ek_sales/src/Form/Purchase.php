@@ -1488,7 +1488,10 @@ class Purchase extends FormBase {
                     \Drupal\ek_projects\ProjectData::notify_user($param);
                 }
             }
-            
+            if(isset($_SESSION['pfilter']['to'])) {
+                //if filter is set for list adjust date to last created date to enforce document display
+                $_SESSION['pfilter']['to'] = $form_state->getValue('date');
+            }
             switch($form_state->getValue('redirect')) {
             case 0 :
                 $form_state->setRedirect('ek_sales.purchases.list');

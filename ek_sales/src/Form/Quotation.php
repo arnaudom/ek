@@ -1507,8 +1507,28 @@ class Quotation extends FormBase {
 
         Cache::invalidateTags(['project_page_view']);
         if (isset($insert) || isset($update)) {
-            \Drupal::messenger()->addStatus(t('The quotation is recorded'));
-
+            \Drupal::messenger()->addStatus(t('The quotation is recorded. Ref. @r', ['@r' => $serial]));
+            if ($this->moduleHandler->moduleExists('ek_projects')) {
+                //notify user if quotation is linked to a project
+                if ($pcode && $pcode != 'n/a') {
+                    $pid = Database::getConnection('external_db', 'external_db')
+                            ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])
+                            ->fetchField();
+                    $param = serialize(
+                            array(
+                                'id' => $pid,
+                                'field' => 'quotation_edit',
+                                'value' => $serial,
+                                'pcode' => $pcode
+                            )
+                    );
+                    \Drupal\ek_projects\ProjectData::notify_user($param);
+                }
+            }
+            if(isset($_SESSION['qfilter']['to'])) {
+                //if filter is set for list adjust date to last created date to enforce document display
+                $_SESSION['qfilter']['to'] = $form_state->getValue('date');
+            }
             switch ($form_state->getValue('redirect')) {
                 case 0 :
                     $form_state->setRedirect('ek_sales.quotations.list');
