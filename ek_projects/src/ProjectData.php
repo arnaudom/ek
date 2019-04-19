@@ -395,6 +395,11 @@ use Drupal\ek_admin\Access\AccessCheck;
                 $body[] = t('Invoice : @v' , array('@v' => $param['value']));
                 $params['subject'] = t("Project invoicing update");
                 break;
+            case 'quotation_edit':
+                $body[] = t('Quotation edited for project ref. @p', ['@p' => $param['pcode']]) ;
+                $body[] = t('Quotation : @v' , array('@v' => $param['value']));
+                $params['subject'] = t("Project quotation update");
+                break;            
             case 'invoice_edit':
                 $body[] = t('Invoice edited for project ref. @p', ['@p' => $param['pcode']]) ;
                 $body[] = t('Invoice : @v' , array('@v' => $param['value']));
