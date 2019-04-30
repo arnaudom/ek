@@ -12,6 +12,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -251,6 +252,17 @@ class QuotationsController extends ControllerBase {
             $links = array();
 
             if ($r->status <> 2) {
+                
+                $param = 'quick_edit|' . $r->id . '|quotation';
+                $links['qedit'] = array(
+                    'title' => $this->t('Quick edit'),
+                    'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
+                    'attributes' => [
+                        'class' => ['use-ajax'],
+                        'data-dialog-type' => 'modal',
+                        'data-dialog-options' => Json::encode(['width' => 700,]),
+                    ],
+                );
                 $links['edit'] = array(
                     'title' => $this->t('Edit'),
                     'url' => Url::fromRoute('ek_sales.quotations.edit', ['id' => $r->id]),
