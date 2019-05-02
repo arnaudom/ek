@@ -112,39 +112,7 @@ class ChartAccounts extends FormBase {
             '#suffix' => '</div>',
         );
 
-/*
-        if( $form_state->getValue('coid') ) {
-            $form['pdf'] = array(
-                '#title' => $this->t('Pdf'),
-                '#type' => 'link',
-                '#url' => Url::fromRoute('ek_finance.admin.charts_accounts_download', ['coid' => $form_state->getValue('coid')]),
-                '#attributes' => ['target' => '_blank'],
-                '#prefix' => "<br/><div>",
-                '#suffix' => ' </div>',
-                '#states' => array(
-                    // Hide data fieldset when class is empty.
-                    'invisible' => array(
-                        "select[name='coid']" => array('value' => NULL),
-                    ),
-                ),
-            );
-            $form['excel'] = array(
-                '#title' => $this->t('Excel'),
-                '#type' => 'link',
-                '#url' => Url::fromRoute('ek_finance.admin.charts_accounts_excel_export', ['coid' => $form_state->getValue('coid')]),
-                '#attributes' => ['target' => '_blank'],
-                '#prefix' => "<div>",
-                '#suffix' => ' </div>',
-                '#states' => array(
-                    // Hide data fieldset when class is empty.
-                    'invisible' => array(
-                        "select[name='coid']" => array('value' => ''),
-                    ),
-                ),
-            );
-         }   
 
-*/
         if ($form_state->getValue('step') == 2 
                 & ($form_state->getValue('class') != '0' && $form_state->getValue('class') != '1')) {
 
@@ -257,6 +225,12 @@ class ChartAccounts extends FormBase {
                     $markup = "<b title='" . t('account used in journal') . "'>" . $row->aid . '</b>';
                 } else {
                     $markup = $row->aid;
+                }
+                
+                //Force edit name for Site admin
+                $user = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());               
+                if($user->hasRole('administrator')) {
+                    $check = FALSE;
                 }
 
                 $form['list']['d'][$id]['aid'] = array(
