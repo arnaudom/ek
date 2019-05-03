@@ -365,10 +365,11 @@ class ProjectController extends ControllerBase {
             $sub = NULL;
             
             if ($data['project'][0]->level == 'Main project' && $data['project'][0]->subcount > 0) {
-                $query = "SELECT id from {ek_project} WHERE main = :id and pcode <> :c2 order by id";
-                $sub = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id, ':c2' => $pcode));
+                $query = "SELECT id, pname from {ek_project} WHERE main = :id and pcode <> :c2 order by id";
+                $sub = Database::getConnection('external_db', 'external_db')
+                        ->query($query, array(':id' => $id, ':c2' => $pcode));
                     while ($l = $sub->fetchObject()) {
-                        $data['sub'][] = ProjectData::geturl($l->id);
+                        $data['sub'][] = ProjectData::geturl($l->id) . " - " . $l->pname;
                     }
             } elseif ($data['project'][0]->level == 'Sub project') {
                 $data['sub'][] = ProjectData::geturl($data['project'][0]->main);
