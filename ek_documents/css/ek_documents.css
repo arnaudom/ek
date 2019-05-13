@@ -28,9 +28,6 @@
 }
 
 
-*, *:before, *:after {
-    box-sizing: border-box;
-}
 .panel-body:after {
     clear: both;
 }
@@ -63,8 +60,6 @@
     width: 120px;
     height:130px;
     float: left;
-    padding-left: 10px;
-    padding-right: 10px;
 }
 
 .doc_menu {
@@ -99,6 +94,7 @@
     border-radius:8px;
     -moz-border-radius:8px; -webkit-border-radius:8px;
     visibility: visible;
+    box-sizing: border-box;
 }
 
 .doc_content a {
