@@ -1,10 +1,9 @@
-ek_messaging_main:
-  title: 'Messages'
-  description: 'System messaging management'
-  route_name: ek_messaging_inbox
-  expanded: true
-  hidden: 0
-  weight: -5
+ek_messaging_tool:
+  weight: -10
+  title: 'Inbox'
+  description: 'System messages inbox'
+  menu_name: tools
+  class: Drupal\ek_messaging\Plugin\Menu\MessageMenuLink
     
 
   

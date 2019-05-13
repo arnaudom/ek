@@ -61,7 +61,7 @@ class LastCreatedProjectsBlock extends BlockBase {
                 $detail = $d->pname . '-' . $d->b_name;
             }
 
-            $list .= '<li title="' . $detail . '" >' 
+            $list .= '<li title="' . $detail . '" class="project_title">' 
                     . '<span title='.$title.' id="'.$d->id.'" class="ico '. $cls .'"></span> '
                     . $d->name . ' - '
                     . ProjectData::geturl($d->id) . ' - [' . $d->date . ']</li>';

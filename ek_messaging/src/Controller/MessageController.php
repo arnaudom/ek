@@ -111,19 +111,13 @@ class MessageController extends ControllerBase {
         $message->from = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $message->from_uid))
                 ->fetchField();
         $message->time = date('l jS \of F Y h:i:s A', $message->stamp);
-        $priority = [1 => 'reddot', 2 => 'greendot', 3 => 'greendot'];
         if ($message->priority == 3) {
-            $message->dot = "greendot";
             $message->color = "green";
         } elseif ($message->priority == 2) {
-            $message->dot = "bluedot";
             $message->color = "blue";
         } else {
-            $message->dot = "reddot";
             $message->color = "red";
         }
-
-        
         
         $message->delete = "<a href='#' title='" . t('Delete') . "' id='" . $message->id . "' class='deleteButton' >" . t('Delete') . "</a>";
         $message->archive = "<a href='#' title='" . t('Archive') . "' id='" . $message->id . "' class='archiveButton' >" . t('Archive') . "</a>";
@@ -145,7 +139,10 @@ class MessageController extends ControllerBase {
                 ->condition('id', $id)
                 ->fields(array('status' => $list))
                 ->execute();
-
+        
+        //when reading new message clear cache for menu link display
+        \Drupal\Core\Cache\Cache::invalidateTags(['ek_message_inbox']);
+        
         return array(
             '#theme' => 'ek_messaging_read',
             '#items' => $message,
@@ -153,6 +150,7 @@ class MessageController extends ControllerBase {
             '#attached' => array(
                 'library' => array('ek_admin/ek_admin_css', 'ek_messaging/ek_messaging'),
             ),
+            '#cache' => ['tags' => ['ek_message_' . $id]],
         );
     }
 

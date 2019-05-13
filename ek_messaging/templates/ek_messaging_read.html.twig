@@ -1,42 +1,38 @@
 <div id="line{{ items.id }}">
-    <div class="table">
-        <div class='row'>
-            <div class="cell">
-                <span class='badge'>{{ 'From'|t }} : </span> 
-            </div>
-            <div class="cell">
-                <h3>{{ items.from }}</h3>
-            </div>
-        </div>
-        <div class='row'>    
-            <div class="cell">
-                <span class='badge'>{{ 'Received'|t }} : </span>
-            </div>
-            <div class="cell">
-                {{ items.time }}
-            </div>        
-        </div>
-        <div class='row'>      
-            <div class="cell">
-                <span class='badge'>{{ 'Subject'|t }} : </span>
-            </div>
-            <div class="cell">
-                <i class="fa fa-circle {{ items.color }}" aria-hidden="true"></i> {{ items.subject }}
-            </div>        
-        </div>
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                    <span class='badge'>{{ 'From'|t }} : </span> 
+                </td>
+                <td>
+                    <h1>{{ items.from }}</h1>
+                </td>
+            </tr>
+            <tr>      
+                <td>
+                    <span class='badge'>{{ 'Subject'|t }} : </span>
+                </td>
+                <td>
+                    <h1><i class="fa fa-circle {{ items.color }}" aria-hidden="true"></i> {{ items.subject }}</h1>
+                </td>        
+            </tr>
+            <tr>    
+                <td>
+                    <span class='badge'>{{ 'Received'|t }} : </span>
+                </td>
+                <td>
+                    {{ items.time }}
+                </td>        
+            </tr>
+            <tr>
+                <td colspan='2'>
+                    <span class='badge'>{{ 'Message'|t }} :</span>
+                </td>
 
-        <div class='row'>
-
-            <div class="cell">
-                <span class='badge'>{{ 'Message'|t }} :</span>
-            </div>
-            <div class="cell">
-
-            </div>
-
-        </div>
-
-    </div>
+            </tr>
+        </tbody>
+    </table>
     <br/>
     <div class="table">
         <div class='row'>
@@ -45,9 +41,9 @@
             </div>
         </div>
     </div>
-     <br/>        
+    <br/>        
 </div>
-            
+
 <hr>
 
 <table>

@@ -1,5 +1,1 @@
 services:
-  ek_messaging_event_inbox:
-    class: Drupal\ek_messaging\EventSubscriber\InboxSubscriber
-    tags:
-      - {name: event_subscriber }

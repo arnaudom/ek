@@ -1,74 +1,33 @@
-.reddot {
-  background-image: url(../art/reddot.png) ;
-  background-repeat: no-repeat;
-  width: 10px;
-  height:10px;
-  float: left;
-  padding: 1px 5px 5px 1px;
-  margin-top:5px;  
-}
-
-.orangedot {
-  background-image: url(../art/orangedot.png) ;
-  background-repeat: no-repeat;
-  width: 10px;
-  height: 10px;
-  float: left;
-  padding: 1px 5px 5px 1px;
-  margin-top:5px;  
-}
-.yellowdot {
-  background-image: url(../art/yellowdot.png) ;
-  background-repeat: no-repeat;
-  width: 10px;
-  height: 10px;
-  float: left;
-  padding: 1px 5px 5px 1px;
-  margin-top:5px;  
-}
-
-.greendot {
-  background-image: url(../art/greendot.png) ;
-  background-repeat: no-repeat;
-  width: 10px;
-  height: 10px;
-  float: left;
-  padding: 1px 5px 5px 1px;
-  margin-top:5px;  
-}
-
-.bluedot {
-  background-image: url(../art/bluedot.png) ;
-  background-repeat: no-repeat;
-  width: 10px;
-  height: 10px;
-  float: left;
-  padding: 1px 5px 5px 1px;
-  margin-top:5px;
-}
 .right {
-  text-align:right;
+    text-align:right;
 }
 
 .table {
-  display: table;
-  width: 100%;
-  font-family: 'nunito' ,sans-serif;
+    display: table;
+    width: 100%;
+    font-family: 'nunito' ,sans-serif;
 }
 
 .row {
-  display : table-row;
-  height:auto;
+    display : table-row;
+    height:auto;
 }
 
 .header_tb {  
-  display : table-cell;
+    display : table-cell;
 }
 
 .cell {  
-  display : table-cell;
-  float: left;
-  padding-left: 30px;
+    display : table-cell;
+    float: left;
+    padding-left: 10px;
+}
+
+.cell150 {  
+    display :table-cell;
+    width: 150px;
+    float: left;
+    padding-left: 10px;
 }
 
 .message {  
@@ -77,23 +36,23 @@
 }
 
 .amount {
-  text-align:right;
+    text-align:right;
 }
 
 .current {
-  background-color:#F2F5A9;
+    background-color:#F2F5A9;
 }
 
 .red {
-  color: #FF6666;
+    color: #FF6666;
 }
 
 .green {
-  color: #00D744;
+    color: #00D744;
 }
 
 .blue {
-  color: #2E64FE;
+    color: #2E64FE;
 }
 
 .orange {
@@ -101,18 +60,18 @@
 }
 
 hr {
-  -moz-border-bottom-colors: none;
-  -moz-border-left-colors: none;
-  -moz-border-right-colors: none;
-  -moz-border-top-colors: none;
-  border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
-  border-image: none;
-  border-right: 0 none;
-  border-style: solid none none;
-  border-width: 1px 0 0;
-  margin-bottom: 2px;
-  margin-top: 2px;
-  height: 0;
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
+    border-image: none;
+    border-right: 0 none;
+    border-style: solid none none;
+    border-width: 1px 0 0;
+    margin-bottom: 2px;
+    margin-top: 2px;
+    height: 0;
 }
 
 .read {
@@ -134,6 +93,24 @@ hr {
     white-space: nowrap;
 }
 
+.inbox_message_badge {
+    background-color: #76b4e1;
+    color: #fff;
+    border: 2px solid #0696ff;
+    border-radius: 25px;
+    display: inline-block;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-align: center;
+    min-width: 20px;
+    padding: 1px;
+    position:relative;
+    top:-5px;
+    -webkit-box-shadow: 3px 3px 5px 0px rgba(0,0,0,0.5);
+    -moz-box-shadow: 3px 3px 5px 0px rgba(0,0,0,0.5);
+    box-shadow: 3px 3px 5px 0px rgba(0,0,0,0.5);
+}
+
 .tip-module-ek-messaging{
-  background-color: #CEE3F6 !important;
+    background-color: #CEE3F6 !important;
 }

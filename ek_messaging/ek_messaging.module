@@ -44,26 +44,6 @@ function ek_messaging_file_download($uri) {
     }
     
 }
-/** TODO
- * Implementation menu_links_discovered_alter().
- * add number of unread messages
-
-function ek_messaging_menu_links_discovered_alter(array &$links) {
-
-        $query = Database::getConnection('external_db', 'external_db')->select('ek_messaging', 'm');        $user = '%,' . \Drupal::currentUser()->id() . ',%';       
-        $data = $query
-              ->fields('m', array(count('id') ) )
-              ->condition('m.status', $user , 'not like')
-              ->condition('m.inbox', $user , 'like')
-              ->execute()
-              ->fetchField();  
-              
-         $links['ek_messaging_main']['title'] = t('Messages (@m unread)', array('@m' => $data));
-
-        //return $links;
-}
- */ 
-
  
  
 /*
@@ -101,8 +81,9 @@ $stamp=strtotime("now");
     $body = Database::getConnection('external_db', 'external_db')
             ->insert('ek_messaging_text')->fields($fields)->execute();
     }
-    
-      return $result;
+    //when registering new message clear cache for menu link display
+    \Drupal\Core\Cache\Cache::invalidateTags(['ek_message_inbox']);
+    return $result;
 
     
 

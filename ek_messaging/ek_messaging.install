@@ -19,3 +19,12 @@ function ek_messaging_uninstall() {
  * schema installation is not done at install time but wihin the application
  * in a separate database
  */
+
+
+/**
+ * change inbox notification from event listener to custom menu
+ * clear cache
+*/
+function ek_messaging_update_8001() {
+   //\Drupal::cache('data')->deleteAll();
+} 
