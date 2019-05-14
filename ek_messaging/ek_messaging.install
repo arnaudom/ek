@@ -26,5 +26,5 @@ function ek_messaging_uninstall() {
  * clear cache
 */
 function ek_messaging_update_8001() {
-   //\Drupal::cache('data')->deleteAll();
+   drupal_flush_all_caches();
 } 
