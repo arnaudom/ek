@@ -556,8 +556,8 @@ class NewAddressBookForm extends FormBase {
             $validators = array('file_validate_is_image' => array());
             $file = file_save_upload($field , $validators, FALSE, 0);
 
-                if (isset($file ) ) {
-                    $res = file_validate_image_resolution($file, '400x400','300x300','100x100');
+                if ($file != NULL && !empty($file)) {
+                    $res = file_validate_image_resolution($file, '400x400');
                       // File upload was attempted.
                       if ($file) {
                         // Put the temporary file in form_values so we can save it on submit.
@@ -580,7 +580,7 @@ class NewAddressBookForm extends FormBase {
                 $field = "image" . $i;
                 // Check for a new uploaded .
                 $file = file_save_upload($field, $validators, FALSE, 0);
-                if (isset($file)) {
+                if ($file != NULL && !empty($file)) {
                     // File upload was attempted.
                     if ($file) {
                         $form_state->setValue($field, $file);

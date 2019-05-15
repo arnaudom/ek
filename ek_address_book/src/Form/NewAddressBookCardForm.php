@@ -268,7 +268,7 @@ class NewAddressBookCardForm extends FormBase {
                     $field = "image" . $i;
                     // Check for a new uploaded logo.
                     $file = file_save_upload($field, $validators, FALSE, 0);
-                    if (isset($file)) {
+                    if ($file != NULL && !empty($file)) {
                         // File upload was attempted.
                         if ($file) {
                             // Put the temporary file in form_values so we can save it on submit.
