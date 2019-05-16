@@ -19,7 +19,6 @@
 
 .cell {  
     display : table-cell;
-    float: left;
     padding-left: 10px;
 }
 
