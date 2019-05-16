@@ -91,7 +91,12 @@ function ek_sales_theme() {
       'template' => 'ek_sales_data_charts',
       'variables' => array('items' => array()),
     ),      
-    //template for attached docs in sales data page  
+    //template for attached docs in sales per address book 
+    'ek_sales_documents' => array
+    (
+      'template' => 'ek_sales_documents',
+      'variables' => array('items' => array()),
+    ),
     'ek_sales_doc_view' => array
     (
       'template' => 'ek_sales_doc_view',

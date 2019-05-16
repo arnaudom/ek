@@ -53,13 +53,36 @@ ek_sales.data:
     _permission: 'sales_data'
     abid: \d*
 
+ek_sales.document:
+  path: '/sales/document/{abid}'
+  defaults:
+    _title: 'Documents'
+    _controller: '\Drupal\ek_sales\Controller\SalesController::DataBookDocuments'
+  requirements:
+    _permission: 'sales_data'
+    abid: \d*
+
+ek_sales_folders:
+  path: '/sales/look_up_folders/{abid}'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\SalesController::lookupFolders'
+  requirements:
+    _permission: 'sales_documents'
+    
 ek_sales_documents_load:
   path: 'ek_sales/load_documents'
   defaults:
     _controller: '\Drupal\ek_sales\Controller\SalesController::load'
   requirements:
-    _permission: 'sales_data'
-
+    _permission: 'sales_documents'
+    
+ek_sales_documents_dragdrop:
+  path: 'ek_sales/dragdrop'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\SalesController::dragDrop'
+  requirements:
+    _permission: 'sales_documents'
+    
 ek_sales_modal:
   path: 'ek_sales/documents/modal/{param}'
   defaults:

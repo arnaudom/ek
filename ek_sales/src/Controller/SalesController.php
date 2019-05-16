@@ -18,7 +18,7 @@ use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Ajax\CloseDialogCommand;
 use Drupal\Core\Ajax\RemoveCommand;
-use Drupal\Component\Uuid\Php;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -434,8 +434,7 @@ class SalesController extends ControllerBase {
             '#attached' => array(
                 'drupalSettings' => array('abid' => $abid),
                 'library' => array(
-                    'ek_sales/ek_sales_docs_updater',
-                    'ek_sales/ek_sales_css', 'ek_admin/ek_admin_css', 'ek_admin/classic_doc'),
+                    'ek_sales/ek_sales_css', 'ek_admin/ek_admin_css'),
             ),
             '#cache' => [
                 'tags' => ['sales_data']
@@ -444,16 +443,70 @@ class SalesController extends ControllerBase {
     }
 
     /**
+     * Return sales document data page
+     * data by address book entry
+     * @param abid
+     *  id of address book
+     */
+    public function DataBookDocuments(Request $request, $abid) {
+        
+        $items['abidlink'] = ['#markup' => \Drupal\ek_address_book\AddressBookData::geturl($abid)];
+        //upload form for documents
+        $items['form'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\UploadForm', $abid);
+        $query = "SELECT count(id) FROM {ek_sales_documents} WHERE "
+                        . "abid=:abid";
+        $items['document'] = Database::getConnection('external_db', 'external_db')
+                    ->query($query, [':abid' => $abid])
+                    ->fetchField();
+        
+        return array(
+            '#title' => t('Documents'),
+            '#items' => $items,
+            '#theme' => 'ek_sales_documents',
+            '#attached' => array(
+                'drupalSettings' => array('abid' => $abid),
+                'library' => array(
+                    'ek_sales/ek_sales_docs_updater',
+                    'ek_sales/ek_sales_css', 'ek_admin/ek_admin_css', 'ek_admin/classic_doc'),
+            ),
+            '#cache' => [
+                'tags' => ['sales_data']
+            ],
+        );
+        
+    }
+
+    /**
+     * return folders name autocomplete
+     * @param request
+     * @return Json response
+     */
+    public function lookupFolders(Request $request,$abid = NULL) {
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_sales_documents'); 
+        $data = $query
+              ->fields('ek_sales_documents', ['folder'])
+              ->distinct()
+              ->condition('abid', $abid)
+              ->condition('folder', $request->query->get('q') . '%', 'LIKE')
+              ->execute()
+              ->fetchCol();
+
+        return new JsonResponse($data);
+    }    
+    
+    /**
      * Return data called to update documents for sales data
      *
      */
     public function load(Request $request) {
 
-
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_documents', 'd');
         $query->fields('d');
         $query->condition('abid', $request->get('abid'), '=');
+        $query->orderBy('folder', 'ASC');
         $query->orderBy('id', 'ASC');
         $list = $query->execute();
 
@@ -465,59 +518,57 @@ class SalesController extends ControllerBase {
             while ($l = $list->fetchObject()) {
                 $i++;
                 /* default values */
-                $items[$i]['id'] = $l->id;
-                $items[$i]['fid'] = 1; //default file status on
-                $items[$i]['delete'] = 1; //default delete action is on
-                $items[$i]['icon'] = 'file'; //default icon 
-                $items[$i]['file_url'] = ''; //default
-                $items[$i]['access_url'] = 0; //default access management if off
+                $items[$l->folder][$i]['folder'] = $l->folder;
+                $items[$l->folder][$i]['id'] = $l->id;
+                $items[$l->folder][$i]['fid'] = 1; //default file status on
+                $items[$l->folder][$i]['delete'] = 1; //default delete action is on
+                $items[$l->folder][$i]['icon'] = 'file'; //default icon 
+                $items[$l->folder][$i]['file_url'] = ''; //default
+                $items[$l->folder][$i]['access_url'] = 0; //default access management if off
 
 
                 $share = explode(',', $l->share);
                 $deny = explode(',', $l->deny);
 
                 if ($l->share == '0' || ( in_array(\Drupal::currentUser()->id(), $share) && !in_array(\Drupal::currentUser()->id(), $deny) )) {
-
-
-                    $items[$i]['uri'] = $l->uri;
-
+                    $items[$l->folder][$i]['uri'] = $l->uri;
                     $extension = explode(".", $l->filename);
                     $extension = strtolower(array_pop($extension));
-                    $items[$i]['icon']  = '_doc_list';  
+                    $items[$l->folder][$i]['icon']  = '_doc_list';  
                     if (file_exists(drupal_get_path('module', 'ek_admin') . '/art/ico/' . $extension . ".png")) {
-                        $items[$i]['icon'] = $extension . '_doc_list';
+                        $items[$l->folder][$i]['icon'] = $extension . '_doc_list';
                     }
 
                     //filename formating
                     if (strlen($l->filename) > 30) {
-                        $items[$i]['doc_name'] = substr($l->filename, 0, 30) . " ... ";
+                        $items[$l->folder][$i]['doc_name'] = substr($l->filename, 0, 30) . " ... ";
                     } else {
-                        $items[$i]['doc_name'] = $l->filename;
+                        $items[$l->folder][$i]['doc_name'] = $l->filename;
                     }
 
                     if ($l->fid == '0') { //file was deleted
-                        $items[$i]['fid'] = 0;
-                        $items[$i]['delete'] = 0;
-                        $items[$i]['email'] = 0;
-                        $items[$i]['extranet'] = 0;
-                        $items[$i]['comment'] = $l->comment . " " . date('Y-m-d', $l->uri);
+                        $items[$l->folder][$i]['fid'] = 0;
+                        $items[$l->folder][$i]['delete'] = 0;
+                        $items[$l->folder][$i]['email'] = 0;
+                        $items[$l->folder][$i]['extranet'] = 0;
+                        $items[$l->folder][$i]['comment'] = $l->comment . " " . date('Y-m-d', $l->uri);
                     } else {
                         if (!file_exists($l->uri)) {
                             //file not on server (archived?) TODO ERROR file path not detected
-                            $items[$i]['fid'] = 2;
-                            $items[$i]['delete'] = 0;
-                            $items[$i]['email'] = 0;
-                            $items[$i]['extranet'] = 0;
-                            $items[$i]['comment'] = t('Document not available. Please contact administrator');
+                            $items[$l->folder][$i]['fid'] = 2;
+                            $items[$l->folder][$i]['delete'] = 0;
+                            $items[$l->folder][$i]['email'] = 0;
+                            $items[$l->folder][$i]['extranet'] = 0;
+                            $items[$l->folder][$i]['comment'] = t('Document not available. Please contact administrator');
                         } else {
                             //file exist
                             $route = Url::fromRoute('ek_sales_delete_file', array('id' => $l->id))->toString();
-                            $items[$i]['delete_url'] = $route;
-                            $items[$i]['file_url'] = file_create_url($l->uri);
-                            $items[$i]['delete'] = 1;
-                            $items[$i]['comment'] = $l->comment;
-                            $items[$i]['date'] = date('Y-m-d', $l->date);
-                            $items[$i]['size'] = round($l->size / 1000, 0) . " Kb";
+                            $items[$l->folder][$i]['delete_url'] = $route;
+                            $items[$l->folder][$i]['file_url'] = file_create_url($l->uri);
+                            $items[$l->folder][$i]['delete'] = 1;
+                            $items[$l->folder][$i]['comment'] = $l->comment;
+                            $items[$l->folder][$i]['date'] = date('Y-m-d', $l->date);
+                            $items[$l->folder][$i]['size'] = round($l->size / 1000, 0) . " Kb";
                         }
                     }
 
@@ -526,17 +577,38 @@ class SalesController extends ControllerBase {
                         //add access link for non deleted files
                         $param_access = 'access|' . $l->id . '|sales_doc';
                         $link = Url::fromRoute('ek_sales_modal', ['param' => $param_access])->toString();
-                        $items[$i]['access_url'] = $link;
+                        $items[$l->folder][$i]['access_url'] = $link;
                     }
                 } //built list of accessible files by user
             }
         }
-
-        $render = ['#theme' => 'ek_sales_doc_view', '#items' => $items];
-        $data = \Drupal::service('renderer')->render($render);
+        if($i > 0){
+            $render = ['#theme' => 'ek_sales_doc_view', '#items' => $items];
+            $data = \Drupal::service('renderer')->render($render);
+        } else {
+            $data == NULL;
+        }
+        
         return new JsonResponse(array('data' => $data));
     }
 
+    /**
+     * Return ajax drag & drop
+     *
+     */
+    public function dragDrop(Request $request) {
+
+        $from = explode("-", $request->get('from'));
+        $fields = array('folder' => $request->get('to'));
+        $result = Database::getConnection('external_db', 'external_db')
+                ->update('ek_sales_documents')
+                ->condition('id', $from[1])
+                ->fields($fields)
+                ->execute();
+        
+        return new Response('', 204);
+    }
+    
     /**
      * AJAX callback handler for AjaxTestDialogForm.
      */

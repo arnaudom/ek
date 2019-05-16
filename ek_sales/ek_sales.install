@@ -227,3 +227,23 @@ function ek_sales_update_8010() {
     Database::getConnection('external_db', 'external_db')->query($query);
     
 }
+
+
+/**
+ * Add route for sales documents.
+ * Alter documents table.
+ */
+function ek_sales_update_8011() {
+    $schema = Database::getConnection('external_db','external_db')->schema();
+    if(!$schema->fieldExists('ek_sales_documents', 'folder')) {   
+        $spec = array(
+            'type' => 'varchar',
+            'length' => 255,
+            'not null' => FALSE,
+            'description' => 'Folder',
+        );
+        $schema->addField('ek_sales_documents', 'folder', $spec);
+    }
+     
+   \Drupal::service('router.builder')->rebuild(); 
+}

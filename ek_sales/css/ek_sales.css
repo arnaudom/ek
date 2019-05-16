@@ -186,3 +186,19 @@ hr {
     border-bottom-style: none;
     border-bottom-style: solid;
 }
+
+/*
+* Drag Drop
+*/
+
+.tr-drop {
+   background-color: #FF6666; 
+}
+
+tr.drop-folder {
+   cursor: pointer;
+}
+
+tr.move {
+    //display:none;
+}

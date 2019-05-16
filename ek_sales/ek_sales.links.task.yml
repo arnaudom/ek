@@ -89,3 +89,9 @@ ek_sales.ab_data:
   base_route: ek_address_book.view
   title: 'Sales'
   weight: 4
+  
+ek_sales.ab_documents:
+  route_name: ek_sales.document
+  base_route: ek_address_book.view
+  title: 'Documents'
+  weight: 5

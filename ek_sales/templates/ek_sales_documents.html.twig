@@ -1,0 +1,28 @@
+{#
+* data
+*
+
+#}
+<h1>{{ items.abidlink }}</h1>
+
+{{ items.form }}
+
+<section class="documents">
+    <div class="text-right">
+        <span title="{{ 'toggle deleted files'|t }}" class="hideFile ico show-ico"></span>
+    </div>
+    <table class='table'>
+        <tbody id='sales_docs'>
+            {% if items.document > 0 %}    
+            <p class='loading'/>
+        {% else %}                        
+            <p id='nodoc'>{{ 'No document'|t }}</p>
+        {% endif %}
+        </tbody>
+
+    </table>
+
+
+
+</section>
+

@@ -5,8 +5,11 @@ sales_management:
   title: 'Sales management'
   description: 'Sales management, main access.' 
 sales_data:
-  title: 'Sales data'
+  title: 'Sales data  per address book'
   description: 'Sales data compilation per address book account.'
+sales_documents:
+  title: 'Sales documents per address book'
+  description: 'Sales documents per address book account.'
 list_more:
   title: 'Payment data details'
   description: 'List more info about payment, modal.'

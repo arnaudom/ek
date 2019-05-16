@@ -44,6 +44,14 @@ class UploadForm extends FormBase {
       '#value' => $abid,
     );
     
+    $form['folder'] = array(
+      '#type' => 'textfield',
+      '#size' => 20,
+      '#attributes' => array('placeholder' => t('folder') ),
+      '#autocomplete_route_name' => 'ek_sales_folders',
+      '#autocomplete_route_parameters' => array('abid' => $abid),
+    );
+    
     $form['comment'] = array(
       '#type' => 'textfield',
       '#size' => 20,
@@ -122,6 +130,7 @@ class UploadForm extends FormBase {
                     'size' => filesize($uri),
                     'share' => 0,
                     'deny' => 0,
+                    'folder' => Xss::filter($form_state->getValue('folder')),
                 );
 
                 $insert = Database::getConnection('external_db', 'external_db')
