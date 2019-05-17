@@ -535,7 +535,7 @@ class SalesController extends ControllerBase {
                     $extension = explode(".", $l->filename);
                     $extension = strtolower(array_pop($extension));
                     $items[$l->folder][$i]['icon']  = '_doc_list';  
-                    if (file_exists(drupal_get_path('module', 'ek_admin') . '/art/ico/' . $extension . ".png")) {
+                    if (ek_admin_filter_ico($extension)) {
                         $items[$l->folder][$i]['icon'] = $extension . '_doc_list';
                     }
 
