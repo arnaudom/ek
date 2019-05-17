@@ -129,6 +129,32 @@ function ek_admin_file_download($uri) {
     }
 }
 
+/**
+ * Icon filter
+ * Return true if file extension has corresponding icon.
+ */
+function ek_admin_filter_ico($extension) {
+    
+    $ico = ['ac3' => 'music','ai' => 'image','aiff' => 'audio','ani' => 'script','asf' => 'video','au' => 'audio','avi' => 'film',
+        'bat' => 'file','bin' => 'file','bmp' => 'image','bup' => 'file','cab' => 'package','cal' => 'spreadsheet','cat' => 'txt',
+        'csv' => 'txt','cur' => 'spreadsheet','dat' => 'db','dcr' => 'file','der' => 'txt','dic' => 'file','dll' => 'file',
+        'doc' => 'doc','docx' => 'doc','dvd' => 'video','dwg' => 'file','dwt' => 'file','eml' => 'eml','fon' => 'txt',
+        'gif' => 'picture','hlp' => 'file','html' => 'html','ico' => 'image','ifo' => 'file','inf' => 'file','ini' => 'file',
+        'java' => 'file','jif' => 'picture','jpg' => 'jpg','jpeg' => 'jpg','log' => 'text-plain','m4a' => 'music','mmf' => 'msg',
+        'mmm' => 'video','mov' => 'video','mp2' => 'music','mp2v' => 'video','mp3' => 'music','mp4' => 'film','mpeg' => 'video',
+        'msp' => 'psd','no' => 'no','odp' => 'odp','ods' => 'ods','odt' => 'odt','pdf' => 'pdf','png' => 'png','ppt' => 'ppt',
+        'pptx' => 'ppt','psd' => 'psd','ra' => 'music','rar' => 'package','reg' => 'db','rtf' => 'document','theme' => 'psd',
+        'tiff' => 'picture','tlb' => 'file','ttf' => 'text-plain','txt' => 'txt','vob' => 'video','wav' => 'music',
+        'wma' => 'video','wmv' => 'video','wpl' => 'video','wri' => 'document','xls' => 'xls','xlsx' => 'xls','xlm' => 'script',
+        'zip' => 'zip'];
+    
+    if (file_exists(drupal_get_path('module', 'ek_admin') . '/art/ico/' . $ico[$extension] . ".png")) {
+        return TRUE;
+    }
+    
+    return FALSE;
+    
+}
 
 /**
  * Implementation hook_theme().
