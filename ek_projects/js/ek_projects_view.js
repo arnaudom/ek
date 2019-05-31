@@ -36,7 +36,7 @@
             jQuery('section').toggleClass("editBackground");
             update_fields(drupalSettings.ek_projects.id);
             update_documents(drupalSettings.ek_projects.id);
-
+            
         });
 
     });
@@ -131,6 +131,8 @@ function update_documents(pid) {
             addajax();
         }
     });
+    
+    adddragdrop();
 }
 
 /* add ajax call to links updated 
@@ -172,7 +174,7 @@ function adddragdrop() {
     /**/
     jQuery("#s3,#ps3,#s5,#ps5").droppable({
         activeClass: "ui-state-default",
-        hoverClass: "ui-state-hover",
+        hoverClass: "panel-drop",
         accept: ":not(.ui-sortable-helper), .move",
         activeClass: "",
                 drop: function (event, ui) {
