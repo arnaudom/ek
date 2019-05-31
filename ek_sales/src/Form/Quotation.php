@@ -537,7 +537,7 @@ class Quotation extends FormBase {
                 $form['description'] = array(
                     '#id' => 'description-' . $n,
                     '#type' => 'textfield',
-                    '#size' => 40,
+                    '#size' => 35,
                     '#maxlength' => 255,
                     '#attributes' => array('placeholder' => t('item')),
                     '#default_value' => $name,
@@ -699,7 +699,7 @@ class Quotation extends FormBase {
                         $form["column_2"] = array(
                             '#type' => 'textfield',
                             '#id' => 'column_2' . $n,
-                            '#size' => 30,
+                            '#size' => 25,
                             '#maxlength' => 255,
                             '#default_value' => $d->column_2,
                             '#attributes' => array('placeholder' => $quotationSettings[2]['name']),
@@ -712,10 +712,10 @@ class Quotation extends FormBase {
                         $form["column_3"] = array(
                             '#type' => 'textfield',
                             '#id' => 'column_3' . $n,
-                            '#size' => 30,
+                            '#size' => 25,
                             '#maxlength' => 255,
                             '#default_value' => $d->column_3,
-                            '#attributes' => array('placeholder' => $quotationSettings[3]['name']),
+                            '#attributes' => array('placeholder' => $quotationSettings[3]['name'],),
                         );
                     } else {
                         $form["column_3"] = ['#type' => 'item'];
