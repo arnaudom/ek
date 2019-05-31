@@ -80,7 +80,7 @@ class DeleteItem extends FormBase {
     );   
     $form['edit_item2'] = array(
       '#type' => 'item',
-      '#markup' => t('Item ref. @p', array('@p' => $data->description1)),
+      '#markup' => t('Item description') . ": " . $data->description1,
 
     );    
        
@@ -152,7 +152,16 @@ class DeleteItem extends FormBase {
 
      WHILE ($d = $data->fetchObject()) {
 
-      file_unmanaged_delete($d->uri);
+      \Drupal::service('file_system')->delete($d->uri);
+      
+      $thumb = "private://products/images/" . $form_state->getValue('for_id') . "/40/40x40_" . basename($d->uri);
+      if(file_exists($thumb)) {
+          \Drupal::service('file_system')->delete($thumb);
+      }
+      $thumb = "private://products/images/" . $form_state->getValue('for_id') . "/100/100x100_" . basename($d->uri);
+      if(file_exists($thumb)) {
+          \Drupal::service('file_system')->delete($thumb);
+      }      
       Database::getConnection('external_db', 'external_db')
               ->delete('ek_item_images')
               ->condition('id', $d->id)

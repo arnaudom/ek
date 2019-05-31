@@ -49,6 +49,15 @@
     padding: 15px;
 }
 
+.col_1 {
+    width:70%;
+    float:left;
+}
+
+.col_2 {
+     width:30%;
+     float:left;
+}
 .closed {
     display : none;
 }

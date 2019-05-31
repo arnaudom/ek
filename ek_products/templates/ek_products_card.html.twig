@@ -1,201 +1,203 @@
 <section class="product_card">
-<div class='button' style='float:right;'>{{ items.list }}</div>
-<div class='button' style='float:right;'>{{ items.search }}</div>
-<div class='button' style='float:right;'>{{ items.pdf }}</div><br/>
+    <div class='button' style='float:right;'>{{ items.list }}</div>
+    <div class='button' style='float:right;'>{{ items.search }}</div>
+    <div class='button' style='float:right;'>{{ items.pdf }}</div><br/>
 
-  <div class="products_card-data">
-  
-    <div class='table'>
-      <div class='row'>
-        <div class='cell'><span>( {{ 'Last edit'|t }} : {{ items.stamp }})</span></div>
-        <div class='cell'>{{ items.company }}</div>
-      </div>
-   </div>
-   <hr>
-    <div class='table'>
-      <div class='row'>
-        <div class='cell'><span class='badge'>{{ 'Item code'|t }}</span>: {{ items.itemcode }} </div>
-        <div class='cell'><span class='badge'>{{ 'Item type'|t }}</span>: {{ items.type }}</div>
-      </div>
+    <div class="products_card-data">
 
-      <div class='row'>
-        <div class='cell'><span class='badge'>{{ 'Supplier'|t }}</span>: {{ items.supplier }} </div>
-        <div class='cell'><span class='badge'>{{ 'Supplier code'|t }}</span>: {{ items.supplier_code }}</div>
-      </div>
-
-      <div class='row'>
-        <div class='cell'><span class='badge'>{{ 'Main description'|t }}</span></div>
-        <div class='cell'><span class='badge'>{{ 'Other description'|t }}</div>
-      </div>     
-      <div class='row'>
-        <div class='cell'>{{ items.description1 }} </div>
-        <div class='cell'>{{ items.description2|raw }}</div>
-      </div>
-    </div>
-    
-    <div class='table'>
-      <div class='row'>
-        <div class='cell'><span class='badge'>{{ 'Tag department'|t }}</span>: {{ items.department }}</div>
-        <div class='cell'><span class='badge'>{{ 'Tag size'|t }}</span> : {{ items.size }}</div>
-      </div>
-
-      <div class='row'>
-        <div class='cell'><span class='badge'>{{ 'Tag family'|t }}</span>: {{ items.family }} </div>
-        <div class='cell'><span class='badge'>{{ 'Tag color'|t }}</span>: {{ items.color }}</div>
-      </div>
-
-      <div class='row'>
-        <div class='cell'><span class='badge'>{{ 'Tag collection'|t }}</span>: {{items.collection }} </div>
-      </div>
-    </div>
-    <hr>
-    <section class="">
-        <div class='text-right'>
-            <div id='expand' class='close-ico'></div>
-        </div>
-    </section> 
-    <br/>
-    
-      <div class="panel panel-default">
-        
-        <div class="panel-heading"><a href='#{{ items.id }}'  onclick="jQuery('#l{{ items.id }}').toggle();">
-          <h4 class="panel-title">{{ 'Logistic'|t }}</h4></a>
-          
-        </div>
-        
-        <div class="panel-body" style='display:none;' id="l{{ items.id }}">
-            <table>
-              <tr>
-                <td>{{ 'Stock'|t }}</td>
-                <td>{{ items.units }} {{ items.unit_measure }}</td>
-              </tr>
-              <tr>
-                <td>{{ 'Size'|t }}</td>
-                <td>{{ items.item_size }} </td>
-              </tr>         
-              <tr>
-                <td>{{ 'Packing size'|t }}</td>
-                <td>{{ items.pack_size }} </td>
-              </tr>
-              <tr>
-                <td>{{ 'Quantity per pack'|t }}</td>
-                <td>{{ items.qty_pack }} </td>
-              </tr>
-              <tr>
-                <td>{{ 'Quantity per 20 feet container'|t }}</td>
-                <td>{{ items.c20}} </td>
-              </tr>
-              <tr>
-                <td>{{ 'Quantity per 40 feet container'|t }}</td>
-                <td>{{ items.c40}} </td>
-              </tr>              
-              <tr>
-                <td>{{ 'Minimum order'|t }}</td>
-                <td>{{ items.min_order }} </td>
-              </tr>    
-            </table>
-        </div>
-      </div>
-      <br/>    
-    
-      <div class="panel panel-default">
-        
-        <div class="panel-heading"><a href='#{{ items.id }}'  onclick="jQuery('#p{{ items.id }}').toggle();">
-          <h4 class="panel-title">{{ 'Prices'|t }}</h4></a>
-          
-        </div>
-        
-        <div class="panel-body" style='display:none;' id="p{{ items.id }}">
-            <table>
-              <tr>
-                <td>{{ 'Purchase'|t }} : </td>
-                <td>{{ items.purchase_price }} {{ items.currency }} ({{ items.date_purchase }})</td>
-              </tr>
-              <tr>
-                <td>{{ items.selling_price_label }} : </td>
-                <td>{{ items.selling_price }} {{ items.loc_currency }}</td>
-              </tr>         
-              <tr>
-                <td>{{ items.promo_price_label }} : </td>
-                <td>{{ items.promo_price }} {{ items.loc_currency }}</td>
-              </tr>
-              <tr>
-                <td>{{ items.discount_price_label }} : </td>
-                <td>{{ items.discount_price }} {{ items.loc_currency }}</td>
-              </tr>
-
-              <tr>
-                <td>{{ items.exp_selling_price_label }} : </td>
-                <td>{{ items.exp_selling_price }} {{ items.exp_currency }}</td>
-              </tr>         
-              <tr>
-                <td>{{ items.exp_promo_price_label }} : </td>
-                <td>{{ items.exp_promo_price }} {{ items.exp_currency }}</td>
-              </tr>
-              <tr>
-                <td>{{ items.exp_discount_price_label }} : </td>
-                <td>{{ items.exp_discount_price }} {{ items.exp_currency }}</td>
-              </tr>
-              <tr>
-            </table>
-        </div>
-      </div>
-      <br/>    
-    
-      <div class="panel panel-default">
-        
-        <div class="panel-heading"><a href='#{{ items.id }}'  onclick="jQuery('#b{{ items.id }}').toggle();">
-          <h4 class="panel-title">{{ 'Barcodes'|t }}</h4></a>
-          
-        </div>
-        
-        <div class="panel-body" style='display:none;' id="b{{ items.id }}">
-          <div class='table'>
-{% for item in items.barcodes %}
+        <div class='table'>
             <div class='row'>
-              <div class='cell'> {{ item.barcode }}</div>
-              <div class='cell'>{{ item.encode }}</div>
-              {% if item.image %}
-                  <div class='cell'>{{ item.image|raw }}</div>
-                  {% endif %}
+                <div class='cell'><span>( {{ 'Last edit'|t }} : {{ items.stamp }})</span></div>
+                <div class='cell'>{{ items.company }}</div>
             </div>
-{% endfor %}
-          </div> 
+        </div>
+        <hr>
+        <div class='table'>
+            <div class='row'>
+                <div class='cell'><span class='badge'>{{ 'Item code'|t }}</span>: {{ items.itemcode }} </div>
+                <div class='cell'><span class='badge'>{{ 'Item type'|t }}</span>: {{ items.type }}</div>
+            </div>
+
+            <div class='row'>
+                <div class='cell'><span class='badge'>{{ 'Supplier'|t }}</span>: {{ items.supplier }} </div>
+                <div class='cell'><span class='badge'>{{ 'Supplier code'|t }}</span>: {{ items.supplier_code }}</div>
+            </div>
+
+            <div class='row'>
+                <div class='cell'><span class='badge'>{{ 'Main description'|t }}</span></div>
+                <div class='cell'><span class='badge'>{{ 'Other description'|t }}</div>
+            </div>     
+            <div class='row'>
+                <div class='cell'>{{ items.description1 }} </div>
+                <div class='cell'>{{ items.description2|raw }}</div>
+            </div>
+        </div>
+
+        <div class='table'>
+            <div class='row'>
+                <div class='cell'><span class='badge'>{{ 'Tag department'|t }}</span>: {{ items.department }}</div>
+                <div class='cell'><span class='badge'>{{ 'Tag size'|t }}</span> : {{ items.size }}</div>
+            </div>
+
+            <div class='row'>
+                <div class='cell'><span class='badge'>{{ 'Tag family'|t }}</span>: {{ items.family }} </div>
+                <div class='cell'><span class='badge'>{{ 'Tag color'|t }}</span>: {{ items.color }}</div>
+            </div>
+
+            <div class='row'>
+                <div class='cell'><span class='badge'>{{ 'Tag collection'|t }}</span>: {{items.collection }} </div>
+            </div>
+        </div>
+        <hr>
+        <section class="">
+            <div class='text-right'>
+                <div id='expand' class='close-ico'></div>
+            </div>
+        </section> 
+        <br/>
+        <div class="col_1">
+            <div class="panel panel-default">
+
+                <div class="panel-heading"><a href='#{{ items.id }}'  onclick="jQuery('#l{{ items.id }}').toggle();">
+                        <h4 class="panel-title">{{ 'Logistic'|t }}</h4></a>
+
+                </div>
+
+                <div class="panel-body" style='display:none;' id="l{{ items.id }}">
+                    <table>
+                        <tr>
+                            <td>{{ 'Stock'|t }}</td>
+                            <td>{{ items.units }} {{ items.unit_measure }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ 'Size'|t }}</td>
+                            <td>{{ items.item_size }} </td>
+                        </tr>         
+                        <tr>
+                            <td>{{ 'Packing size'|t }}</td>
+                            <td>{{ items.pack_size }} </td>
+                        </tr>
+                        <tr>
+                            <td>{{ 'Quantity per pack'|t }}</td>
+                            <td>{{ items.qty_pack }} </td>
+                        </tr>
+                        <tr>
+                            <td>{{ 'Quantity per 20 feet container'|t }}</td>
+                            <td>{{ items.c20}} </td>
+                        </tr>
+                        <tr>
+                            <td>{{ 'Quantity per 40 feet container'|t }}</td>
+                            <td>{{ items.c40}} </td>
+                        </tr>              
+                        <tr>
+                            <td>{{ 'Minimum order'|t }}</td>
+                            <td>{{ items.min_order }} </td>
+                        </tr>    
+                    </table>
+                </div>
+            </div>
+            <br/>    
+
+            <div class="panel panel-default">
+
+                <div class="panel-heading"><a href='#{{ items.id }}'  onclick="jQuery('#p{{ items.id }}').toggle();">
+                        <h4 class="panel-title">{{ 'Prices'|t }}</h4></a>
+
+                </div>
+
+                <div class="panel-body" style='display:none;' id="p{{ items.id }}">
+                    <table>
+                        <tr>
+                            <td>{{ 'Purchase'|t }} : </td>
+                            <td>{{ items.purchase_price }} {{ items.currency }} ({{ items.date_purchase }})</td>
+                        </tr>
+                        <tr>
+                            <td>{{ items.selling_price_label }} : </td>
+                            <td>{{ items.selling_price }} {{ items.loc_currency }}</td>
+                        </tr>         
+                        <tr>
+                            <td>{{ items.promo_price_label }} : </td>
+                            <td>{{ items.promo_price }} {{ items.loc_currency }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ items.discount_price_label }} : </td>
+                            <td>{{ items.discount_price }} {{ items.loc_currency }}</td>
+                        </tr>
+
+                        <tr>
+                            <td>{{ items.exp_selling_price_label }} : </td>
+                            <td>{{ items.exp_selling_price }} {{ items.exp_currency }}</td>
+                        </tr>         
+                        <tr>
+                            <td>{{ items.exp_promo_price_label }} : </td>
+                            <td>{{ items.exp_promo_price }} {{ items.exp_currency }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ items.exp_discount_price_label }} : </td>
+                            <td>{{ items.exp_discount_price }} {{ items.exp_currency }}</td>
+                        </tr>
+                        <tr>
+                    </table>
+                </div>
+            </div>
+            <br/>    
+
+            <div class="panel panel-default">
+
+                <div class="panel-heading"><a href='#{{ items.id }}'  onclick="jQuery('#b{{ items.id }}').toggle();">
+                        <h4 class="panel-title">{{ 'Barcodes'|t }}</h4></a>
+
+                </div>
+
+                <div class="panel-body" style='display:none;' id="b{{ items.id }}">
+                    <div class='table'>
+                        {% for item in items.barcodes %}
+                            <div class='row'>
+                                <div class='cell'> {{ item.barcode }}</div>
+                                <div class='cell'>{{ item.encode }}</div>
+                                {% if item.image %}
+                                    <div class='cell'>{{ item.image|raw }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div> 
+
+                </div>
+            </div>
+            <br/>  
 
         </div>
-      </div>
-      <br/>  
-
-  </div>
-
-
-
-  <div class="products_card-images">
-  
-      <div class="panel panel-default">
-        
-        <div class="panel-heading"><a href='#{{ items.id }}'  onclick="jQuery('#i').toggle();">
-          <h4 class="panel-title ">{{ 'Images'|t }}</h4></a>
-          
-        </div>
-        
-        <div class="panel-body" style='display:none;' id="i">
-  
-              <div style='display:inline;display:block;'>
-              {{ items.upload_form }}
-              </div>
-              <hr><br/>
-
-                  <div id='product_images' class="grid_container">
                     
-                      {% for item in items.pictures %}
-                      <div class='grid'>
-                        {{ item.element|raw }}
-                      </div>
-                     {% endfor %}
-                  </div> 
-     
-        </div>      
-  </div>
+        <div class="col_2">
 
+
+            <div class="products_card-images">
+
+                <div class="panel panel-default">
+
+                    <div class="panel-heading"><a href='#{{ items.id }}'  onclick="jQuery('#i').toggle();">
+                            <h4 class="panel-title ">{{ 'Images'|t }}</h4></a>
+
+                    </div>
+
+                    <div class="panel-body" style='' id="i">
+
+                        <div style='display:inline;display:block;'>
+                            {{ items.upload_form }}
+                        </div>
+                        <hr><br/>
+
+                        <div id='product_images' class="grid_container">
+
+                            {% for item in items.pictures %}
+                                <div class='grid'>
+                                    {{ item.element|raw }}
+                                </div>
+                            {% endfor %}
+                        </div> 
+
+                    </div>      
+                </div>
+            </div>
+        </div>
 </section>

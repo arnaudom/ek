@@ -166,8 +166,22 @@ class ProductsController extends ControllerBase {
                         ->query($query, array(':i' => $r->itemcode))->fetchField();
                 $img = '';
                 if($uri) {
+                    $thumb = "private://products/images/" . $r->id . "/40/40x40_" . basename($uri);
+                    if(!file_exists($thumb)) {
+                        $filesystem = \Drupal::service('file_system');
+                        $dir = "private://products/images/" . $r->id . "/40/";
+                        $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                        $filesystem->copy($uri, $thumb, FILE_EXISTS_REPLACE);
+                        //Resize after copy
+                        $image_factory = \Drupal::service('image.factory');
+                        $image = $image_factory->get($thumb);
+                        $image->scale(40);
+                        $image->save();
+                        
+                    }
+                    
                     $img = "<a href='" . file_create_url($uri) . "' target='_blank'>"
-                                . "<img class='thumbnail' src=" . file_create_url($uri) . "></a>";
+                                . "<img class='thumbnail' src=" . file_create_url($thumb) . "></a>";
                 }
             
                 $i++;
@@ -506,11 +520,22 @@ class ProductsController extends ControllerBase {
                     ->query($query, array(':id' => $items['itemcode']));
             $picture = array();
             while ($i = $data->fetchAssoc()) {
-
-                
+                $thumb = "private://products/images/" . $r->id . "/100/100x100_" . basename($i['uri']) ;
+                    if(!file_exists($thumb)) {
+                        $filesystem = \Drupal::service('file_system');
+                        $dir = "private://products/images/" . $r->id . "/100/";
+                        $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                        $filesystem->copy($i['uri'], $thumb, FILE_EXISTS_REPLACE);
+                        //Resize after copy
+                        $image_factory = \Drupal::service('image.factory');
+                        $image = $image_factory->get($thumb);
+                        $image->scale(100);
+                        $image->save();
+                        
+                    }
                 if ($i['uri'] <> '') {
                     $picture['element'] = "<a href='" . file_create_url($i['uri']) . "' target='_blank'><img class='thumbnail' src="
-                            . file_create_url($i['uri']) . "></a>";
+                            . file_create_url($thumb) . "></a>";
                 } else {
                     $picture['element'] = '';
                 }

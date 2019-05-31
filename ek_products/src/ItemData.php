@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\Core\Database\Database;
 
+
 /**
  * 
  *
@@ -336,8 +337,21 @@ use Drupal\Core\Database\Database;
             if($option == 'image') {
                 $line = [];
                 if ($r->uri) {
+                    $thumb = "private://products/images/" . $r->id . "/40/40x40_" . basename($r->uri) ;
+                    if(!file_exists($thumb)) {
+                        $filesystem = \Drupal::service('file_system');
+                        $dir = "private://products/images/" . $r->id . "/40/";
+                        $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                        $filesystem->copy($r->uri, $thumb, FILE_EXISTS_REPLACE);
+                        //Resize after copy
+                        $image_factory = \Drupal::service('image.factory');
+                        $image = $image_factory->get($thumb);
+                        $image->scale(40);
+                        $image->save();
+                        
+                    }
                          $pic = "<img class='product_thumbnail' src='"
-                        . file_create_url($r->uri) . "'>";
+                        . file_create_url($thumb) . "'>";
                     } else {
                         $default = file_create_url(drupal_get_path('module', 'ek_products') . '/css/images/default.jpg');
                         $pic = "<img class='product_thumbnail' src='"
