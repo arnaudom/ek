@@ -1080,15 +1080,28 @@ class ParametersController extends ControllerBase {
                     $or->condition('hr.id', $term, '=');
                     $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_hr_workforce', 'hr')
-                    ->fields('hr', ['id','name','picture'])
+                    ->fields('hr', ['id','company_id','name','picture'])
                     ->condition($or)
                     ->execute();
 
                     While($d = $query->fetchObject()){
                         $line = [];
                         if ($d->picture) {
+                            $thumb = "private://hr/pictures/" . $d->company_id . "/40/40x40_" . basename($d->picture) ;
+                            if(!file_exists($thumb)) {
+                                $filesystem = \Drupal::service('file_system');
+                                $dir = "private://hr/pictures/" . $d->company_id . "/40/";
+                                $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                                $filesystem->copy($d->picture, $thumb, FILE_EXISTS_REPLACE);
+                                //Resize after copy
+                                $image_factory = \Drupal::service('image.factory');
+                                $image = $image_factory->get($thumb);
+                                $image->scale(40);
+                                $image->save();
+                            }
+                            
                              $pic = "<img class='hr_thumbnail' src='"
-                            . file_create_url($d->picture) . "'>";
+                            . file_create_url($thumb) . "'>";
                         } else {
                             $default = file_create_url(drupal_get_path('module', 'ek_hr') . '/art/default.jpeg');
                             $pic = "<img class='hr_thumbnail' src='"

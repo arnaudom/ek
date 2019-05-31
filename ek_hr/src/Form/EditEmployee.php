@@ -182,7 +182,7 @@ class EditEmployee extends FormBase {
             
 
             /* current image if any */
-            if (isset($r->picture)) {
+            if (($r->picture)) {
                 $image = "<a href='" . file_create_url($r->picture) . "' target='_blank'>"
                         . "<img class='thumbnail' src=" . file_create_url($r->picture) . "></a>";
                 $form['image_delete'] = array(
@@ -203,7 +203,11 @@ class EditEmployee extends FormBase {
                     '#suffix' => '</div></div></div>',
                 );
             } else {
-
+                $form["item"] = [
+                    '#type' => 'item',
+                    '#suffix' => '</div></div></div>',
+                ];
+                /*
                 $pic = file_create_url(drupal_get_path('module', 'ek_hr') . '/art/default.jpeg');
                 $image = "<img class='thumbnail' src='" . $pic . "'>";
                 $form["currentimage"] = array(
@@ -211,6 +215,8 @@ class EditEmployee extends FormBase {
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div></div></div>',
                 );
+ 
+ */
             }
 
             $query = 'SELECT uid,name from {users_field_data} WHERE uid>:u AND status=:s order by name';
@@ -723,6 +729,10 @@ class EditEmployee extends FormBase {
             if ($form_state->getValue('image_delete') == 1) {
 
                 file_unmanaged_delete($form_state->getValue('uri'));
+                $thumb = "private://hr/pictures/" . $form_state->getValue('coid') . "/40/40x40_" . basename($form_state->getValue('uri'));
+                if(file_exists($thumb)) {
+                     file_unmanaged_delete($thumb);
+                }
                 \Drupal::messenger()->addStatus(t("Old picture deleted"));
                 $image = '';
                 $del = TRUE;
