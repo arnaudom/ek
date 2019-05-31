@@ -71,6 +71,8 @@ class Journal {
         $stop_date = date('Y-m-d', strtotime($end_request . ' + 1 day'));
 
         return [
+                'month_settings' => $company->get('fiscal_month'),
+                'year_settings' => $company->get('fiscal_year'),
                 'from' => $start_request, 
                 'to' => $end_request, 
                 'stop_date' => $stop_date,
@@ -1561,23 +1563,52 @@ class Journal {
      */
 
     public function ledger($l) {
+        
+        //determine if query cover closed years, before current fiscal year
+        $dates = self::getFiscalDates($l['coid'], date('Y', strtotime($l['date2'])), date('m', strtotime($l['date2'])));
+    
+        $settings = new FinanceSettings();
+        $baseCurrency = $settings->get('baseCurrency');
+        //data holder
+        $data = array();
+        $data['baseCurrency'] = $baseCurrency;
+        $data['ledger']['accounts'] = array();
+        $data['fiscal_start'] = $dates['fiscal_start'];
+        $data['fiscal_end'] = $dates['fiscal_end'];
+
+        if(($l['date2'] >= $dates['from'] && $l['date1'] < $dates['from'])
+                || ( $dates['month_settings'] == '12' && (date('Y', strtotime($l['date2'])) <> date('Y', strtotime($l['date1']))))
+           ) {
+            //mixed query
+            //return message to select different range
+            $data['archive']  = 2;
+            return $data;
+            
+        } elseif ($l['date2'] < $dates['from']){
+            //look into archives
+            $ek_accounts = "ek_accounts_" . date('Y', strtotime($l['date2'])) . '_' . $l['coid'];
+            $ek_journal = "ek_journal_" . date('Y', strtotime($l['date2'])) . '_' . $l['coid'];
+            $data['archive']  = TRUE;
+            
+        } elseif ($l['date1'] >= $dates['from']) {
+            //current year
+            $ek_accounts = "ek_accounts";
+            $ek_journal = "ek_journal";
+            $data['archive'] = FALSE;
+        }
 
         //get array of all chart of accounts structure per coid
         //(to reduce queries call rates)
         $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_accounts', 't');
+                    ->select($ek_accounts, 't');
             $query->fields('t',['aid','aname']);
             $query->condition('coid', $l['coid'], '=');
             $chart = $query->execute()->fetchAllKeyed();
-        /*        
-        $query = "SELECT aid,aname FROM {ek_accounts} WHERE coid=:coid";
-        $chart = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':coid' => $l['coid']))
-                ->fetchAllKeyed();*/
+        
 
         //list the accounts in journal within the range selected
         $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_accounts', 't');
+                    ->select($ek_accounts, 't');
             $query->fields('t',['aid']); 
             $query->distinct();
             $query->condition('coid', $l['coid'], '=');
@@ -1586,18 +1617,6 @@ class Journal {
             $query->orderBy('aid', 'ASC');
         $result = $query->execute();    
         
-        /*
-        $query = "SELECT distinct aid from {ek_accounts} where coid=:coid and aid>=:aid1 and aid<=:aid2 ORDER BY aid";
-        $a = array(':coid' => $l['coid'], ':aid1' => $l['aid1'], ':aid2' => $l['aid2']);
-        $result = Database::getConnection('external_db', 'external_db')->query($query, $a);
-*/
-
-        $settings = new FinanceSettings();
-        $baseCurrency = $settings->get('baseCurrency');
-        //data holder
-        $data = array();
-        $data['baseCurrency'] = $baseCurrency;
-        $data['ledger']['accounts'] = array();
 
         while ($r = $result->fetchObject()) {
 
@@ -1606,22 +1625,17 @@ class Journal {
             //calculate opening balances and get range data per account and date selected
             // opening balance both currency and exchange
             $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_accounts', 't');
+                    ->select($ek_accounts, 't');
             $query->fields('t',['balance', 'balance_base', 'balance_date']); 
             $query->condition('coid', $l['coid'], '=');
             $query->condition('aid',$r->aid, '=');
             $obj =  $query->execute()->fetchObject();
             $system_balance_date = $obj->balance_date;
-            /*
-            $query = "SELECT balance as b,balance_base as bb, balance_date as bd from {ek_accounts} where aid=:aid and coid=:coid ";
-            $a = array(':aid' => $r->aid, ':coid' => $l['coid']);
-            $balance = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchAssoc();
-            $system_balance_date = $balance['bd'];
-            */
+            
 
             // sum transaction currency - CREDIT 
             $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_journal', 'j');
+                ->select($ek_journal, 'j');
             $query->addExpression('SUM(value)', 'sumValue');
             $query->condition('j.exchange', 0, '=')
                     ->condition('j.type', 'credit', '=')
@@ -1631,14 +1645,10 @@ class Journal {
                     ->condition('j.date', $system_balance_date, '>');
             $Obj = $query->execute();
             $credit = $Obj->fetchObject()->sumValue;
-        /*
-            $query = "SELECT sum(value) FROM {ek_journal} where exchange=:exc and type=:type and aid=:aid and coid=:coid and date<:date1 and date>:bd";
-            $a = array(':exc' => 0, ':type' => 'credit', ':aid' => $r->aid, ':coid' => $l['coid'], ':date1' => $l['date1'], ':bd' => $system_balance_date);
-            $credit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-        */
+       
             // sum transaction exchange - CREDIT
             $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_journal', 'j');
+                ->select($ek_journal, 'j');
             $query->addExpression('SUM(value)', 'sumValue');
             $query->condition('j.exchange', 1, '=')
                     ->condition('j.type', 'credit', '=')
@@ -1649,14 +1659,9 @@ class Journal {
             $Obj = $query->execute();
             $credit_exc = $Obj->fetchObject()->sumValue;
             
-            
-           /* $query = "SELECT sum(value) from {ek_journal} where exchange=:exc and type=:type and aid=:aid and coid=:coid and date<:date1 and date>:bd";
-            $a = array(':exc' => 1, ':type' => 'credit', ':aid' => $r->aid, ':coid' => $l['coid'], ':date1' => $l['date1'], ':bd' => $system_balance_date);
-            $credit_exc = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();*/
-
             // sum transaction currency - DEBIT
             $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_journal', 'j');
+                ->select($ek_journal, 'j');
             $query->addExpression('SUM(value)', 'sumValue');
             $query->condition('j.exchange', 0, '=')
                     ->condition('j.type', 'debit', '=')
@@ -1667,13 +1672,10 @@ class Journal {
             $Obj = $query->execute();
             $debit = $Obj->fetchObject()->sumValue;
             
-            /*$query = "SELECT sum(value) from {ek_journal} where exchange=:exc and type=:type and aid=:aid and coid=:coid and date<:date1 and date>:bd";
-            $a = array(':exc' => 0, ':type' => 'debit', ':aid' => $r->aid, ':coid' => $l['coid'], ':date1' => $l['date1'], ':bd' => $system_balance_date);
-            $debit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();*/
 
             // sum transaction exchange - DEBIT
             $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_journal', 'j');
+                ->select($ek_journal, 'j');
             $query->addExpression('SUM(value)', 'sumValue');
             $query->condition('j.exchange', 1, '=')
                     ->condition('j.type', 'debit', '=')
@@ -1684,9 +1686,6 @@ class Journal {
             $Obj = $query->execute();
             $debit_exc = $Obj->fetchObject()->sumValue;
             
-            /*$query = "SELECT sum(value) from {ek_journal} where exchange=:exc and type=:type and aid=:aid and coid=:coid and date<:date1 and date>:bd";
-            $a = array(':exc' => 1, ':type' => 'debit', ':aid' => $r->aid, ':coid' => $l['coid'], ':date1' => $l['date1'], ':bd' => $system_balance_date);
-            $debit_exc = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();*/
 
             // balance in local currency (opening + credit - debit during period preceding 'from date'
             $balance_open = $obj->balance + $credit - $debit;
@@ -1701,7 +1700,7 @@ class Journal {
 
             // calculate transactions per account and range
             $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_journal', 'j');
+                ->select($ek_journal, 'j');
             $query->fields('j', ['id', 'type','exchange','value','date','reference']);
             $query->condition('j.aid', $r->aid, '=')
                     ->condition('j.date', $l['date1'], '>=')
@@ -1709,12 +1708,6 @@ class Journal {
                     ->condition('j.coid', $l['coid'], '=');
             $query->orderBy('date')->orderBy('reference')->orderBy('id');
             $ledger = $query->execute();
-            
-            /*$query = "SELECT id,type,exchange,value,date,reference FROM {ek_journal} "
-                    . "WHERE aid=:aid AND date>=:d1 AND date<=:d2 AND coid=:coid "
-                    . "ORDER BY date,reference,id";
-            $a = array(':aid' => $r->aid, ':d1' => $l['date1'], ':d2' => $l['date2'], ':coid' => $l['coid']);
-            $ledger = Database::getConnection('external_db', 'external_db')->query($query, $a);*/
 
             $rows = array();
 
@@ -1739,7 +1732,7 @@ class Journal {
                     }
                 }
                 //
-            } //while
+            } 
 
             $closing = $balance_open + $sum_c_loc - $sum_d_loc;
             $closing_exchange = $balance_open_base + ($sum_c_loc + $sum_c_base) - ($sum_d_loc + $sum_d_base);
@@ -1761,7 +1754,7 @@ class Journal {
             );
 
             $data['ledger']['accounts'][] = $rows;
-        } //while
+        } 
 
 
         return $data;

@@ -96,9 +96,11 @@ class BalanceLedgerController extends ControllerBase {
             );
 
             $items['data'] = $journal->ledger($param);
-            $excel = Url::fromRoute('ek_finance.extract.excel-ledger', array('param' => serialize($param)), array())->toString();
-
-            $items['excel'] = "<a href='" . $excel . "' >" . t('Excel') . "</a>";
+            if($items['data']['archive'] != 2){
+                $excel = Url::fromRoute('ek_finance.extract.excel-ledger', array('param' => serialize($param)), array())->toString();
+                $items['excel'] = "<a href='" . $excel . "' >" . t('Excel') . "</a>"; 
+            }
+            
         }
 
         return array(

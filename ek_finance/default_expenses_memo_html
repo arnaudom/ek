@@ -5,9 +5,11 @@
 /*
  * Default memo template in php for html display
  */
-$document = "<a class='button' href='" . $url_list . "' ><i class='fa fa-list-ul'></i> " . t('List') . "</a>" 
-        . "<a class='button' href='" . $url_edit . "' ><i class='fa fa-edit'></i> " . t('Edit') . "</a>" 
-        . "<a class='button' href='" . $url_pdf . "' ><i class='fa fa-file-pdf-o'></i> " . t('Pdf') . "</a>";
+$document = "<a class='button' href='" . $url_list . "' ><i class='fa fa-list-ul'></i> " . t('List') . "</a>";
+if($url_edit) {
+   $document .= "<a class='button' href='" . $url_edit . "' ><i class='fa fa-edit'></i> " . t('Edit') . "</a>";
+}
+$document .= "<a class='button' href='" . $url_pdf . "' ><i class='fa fa-file-pdf-o'></i> " . t('Pdf') . "</a>";
 
 $copy = '';
 $original = '';

@@ -1008,8 +1008,13 @@ class MemoExpensesController extends ControllerBase {
             if ($data->entity == \Drupal::currentUser()->id() 
                     || \Drupal::currentUser()->hasPermission('admin_memos') 
                     || $auth[1] == \Drupal::currentUser()->id()) {
-                $flag = 1;
-                //user has access this personal data
+                $flag = 1;//user has access this personal data
+                $edit = 1;
+                
+                if ($data->entity == \Drupal::currentUser()->id() && $auth[0] == 2){
+                   $edit = 0; 
+                }
+                
             }
         }
 
@@ -1040,7 +1045,9 @@ class MemoExpensesController extends ControllerBase {
                     $url_edit = Url::fromRoute('ek_finance_manage_internal_memo', ['id' => $doc_id], [])->toString();
                 } else {
                     $url = Url::fromRoute('ek_finance_manage_list_memo_personal')->toString();
-                    $url_edit = Url::fromRoute('ek_finance_manage_personal_memo', ['id' => $doc_id], [])->toString();
+                    if($edit == 1) {
+                        $url_edit = Url::fromRoute('ek_finance_manage_personal_memo', ['id' => $doc_id], [])->toString();
+                    }
                 }
                 include_once drupal_get_path('module', 'ek_finance') . '/manage_print_output.inc';
 

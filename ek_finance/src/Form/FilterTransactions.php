@@ -77,7 +77,7 @@ class FilterTransactions extends FormBase {
               '#value' => 'filter',
               
             );
-            $options = array($year, $year-1, $year-2, $year-3, $year-4, $year-5);
+            $options = array($year, $year-1, $year-2, $year-3, $year-4, $year-5, $year-6, $year-7, $year-8, $year-9);
             $form['filters']['year'] = array(
               '#type' => 'select',
               '#size' => 1,
