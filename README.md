@@ -1,6 +1,6 @@
 EK management tools suite : an attempt to build a full back-office (often called ERP) system with Drupal.
 
-This application is currently running live with few SME that manage their daily business operations. 
+Note: although this application is been used and tested, this code has not yet completed a best practices or security review. We take no responsibility for any loss you may incur through the use of this code. However, we encourage you to run and test it for further improvements.
 
 The current open version is made of several Drupal 8 modules:
 
@@ -56,6 +56,10 @@ Any cooperation is welcomed.
 The main target (or issue, depending on point of view) would be to make the code fully compatible with Drupal 8 standard
 and more specifically create full content entities per modules. This will help extend application,
 enhance customization capabilities and interface with other systems.
+
+
+
+
 
 
 
