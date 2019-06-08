@@ -104,12 +104,12 @@ class ParametersController extends ControllerBase {
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
 
-        $or = db_or();
-        $or->condition('company_id', $access, 'IN');
 
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_hr_workforce', 'w');
 
+        $or = $query->orConditionGroup();
+        $or->condition('company_id', $access, 'IN');
 
         if (isset($_SESSION['hrlfilter']['filter']) && $_SESSION['hrlfilter']['filter'] == 1) {
 
@@ -213,11 +213,11 @@ class ParametersController extends ControllerBase {
 
             $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
             $company = implode(',', $access);
-            $or = db_or();
-            $or->condition('company_id', $access, 'IN');
+            
             $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_hr_workforce', 'w');
-            
+            $or = $query->orConditionGroup();
+            $or->condition('company_id', $access, 'IN');
             $data = $query
                     ->fields('w')
                     ->condition('company_id', $access, 'IN')
@@ -831,7 +831,7 @@ class ParametersController extends ControllerBase {
         if (\Drupal::currentUser()->hasPermission('hr_parameters')) {
             $file = str_replace('___', '.', $name);
             $uri = "private://hr/payslips/" . $file;
-            if (file_unmanaged_delete($uri)) {
+            if (\Drupal::service('file_system')->delete($uri)) {
                 return new JsonResponse(['id' => $name]);
             }
         } else {
@@ -848,7 +848,7 @@ class ParametersController extends ControllerBase {
         if (\Drupal::currentUser()->hasPermission('hr_parameters')) {
             $file = str_replace('___', '.', $name);
             $uri = "private://hr/forms/" . $file;
-            if (file_unmanaged_delete($uri)) {
+            if (\Drupal::service('file_system')->delete($uri)) {
                 return new JsonResponse(['id' => $name]);
             }
         } else {
@@ -1060,31 +1060,31 @@ class ParametersController extends ControllerBase {
             Switch ($option) {
                 Case 'default':
                 default:
-                    $or = db_or();
-                    $or->condition('hr.name', $term . '%', 'like');
-                    $or->condition('hr.id', $term, '=');
+                    
                     $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_hr_workforce', 'hr')
-                    ->fields('hr', ['id','name'])
-                    ->condition($or)
-                    ->execute();
+                    ->fields('hr', ['id','name']);
+                    $or = $query->orConditionGroup();
+                    $or->condition('hr.name', $term . '%', 'like');
+                    $or->condition('hr.id', $term, '=');
+                    $ids = $query->condition($or)->execute();
 
-                    While($d = $query->fetchObject()){
+                    While($d = $ids->fetchObject()){
                         $data[] = $d->id . ' | ' . $d->name;
                     }
 
                     break;
                 Case 'image':
-                    $or = db_or();
-                    $or->condition('hr.name', $term . '%', 'like');
-                    $or->condition('hr.id', $term, '=');
+                    
                     $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_hr_workforce', 'hr')
-                    ->fields('hr', ['id','company_id','name','picture'])
-                    ->condition($or)
-                    ->execute();
+                    ->fields('hr', ['id','company_id','name','picture']);
+                    $or = $query->orConditionGroup();
+                    $or->condition('hr.name', $term . '%', 'like');
+                    $or->condition('hr.id', $term, '=');
+                    $ids = $query->condition($or)->execute();
 
-                    While($d = $query->fetchObject()){
+                    While($d = $ids->fetchObject()){
                         $line = [];
                         if ($d->picture) {
                             $thumb = "private://hr/pictures/" . $d->company_id . "/40/40x40_" . basename($d->picture) ;

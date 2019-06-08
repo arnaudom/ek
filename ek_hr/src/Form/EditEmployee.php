@@ -728,10 +728,10 @@ class EditEmployee extends FormBase {
             $del = FALSE;
             if ($form_state->getValue('image_delete') == 1) {
 
-                file_unmanaged_delete($form_state->getValue('uri'));
+                \Drupal::service('file_system')->delete($form_state->getValue('uri'));
                 $thumb = "private://hr/pictures/" . $form_state->getValue('coid') . "/40/40x40_" . basename($form_state->getValue('uri'));
                 if(file_exists($thumb)) {
-                     file_unmanaged_delete($thumb);
+                     \Drupal::service('file_system')->delete($thumb);
                 }
                 \Drupal::messenger()->addStatus(t("Old picture deleted"));
                 $image = '';
@@ -746,13 +746,13 @@ class EditEmployee extends FormBase {
                     $file = $this->fileStorage->load($fid);
                     $name = $file->getFileName();
                     $dir = "private://hr/pictures/" . $form_state->getValue('coid');
-                    file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                    $image = file_unmanaged_copy($file->getFileUri(), $dir);
+                    \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                    $image = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                     
                     \Drupal::messenger()->addStatus(t("New Picture uploaded"));
                     //remove old if any
                     if(!$del && $form_state->getValue('uri') != '') {
-                      file_unmanaged_delete($form_state->getValue('uri'));
+                      \Drupal::service('file_system')->delete($form_state->getValue('uri'));
                     }
             
                 }         

@@ -88,10 +88,10 @@ class UploadFormPayslip extends FormBase {
       if ($file) {
           
             $dir = "private://hr/payslips" ;
-            file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
             $filename = str_replace(' ', '_', $file->getFileName());
             $doc = $dir . '/' .  $filename;
-            file_unmanaged_copy($file->getFileUri(), $doc, FILE_EXISTS_REPLACE);
+            \Drupal::service('file_system')->copy($file->getFileUri(), $doc, FILE_EXISTS_REPLACE);
    
             $vid = str_replace('.', '___', $filename );
             $link = "<a href='#' class='deleteButton red'  id='". $vid ."' >[x]</a>" ;
