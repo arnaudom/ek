@@ -16,7 +16,6 @@ use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Component\Utility\Xss;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;

@@ -10,7 +10,6 @@ namespace Drupal\ek_projects\Plugin\Block;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Database\Database;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Access\AccessResult;
 use Drupal\ek_projects\ProjectData;
 
