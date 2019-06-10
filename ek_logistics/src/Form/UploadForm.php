@@ -86,9 +86,9 @@ class UploadForm extends FormBase {
       if ($file) {
           
          $dir = "private://logistics/templates" ;
-         file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+         \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
          $doc = $dir . '/' .  $file->getFileName();
-         $filename = file_unmanaged_copy($file->getFileUri(), $doc, FILE_EXISTS_REPLACE);
+         $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $doc, FILE_EXISTS_REPLACE);
         
 
         $route = Url::fromRoute('ek_logistics_delete_form',['name' => $file->getFileName()])->toString();

@@ -122,7 +122,7 @@ class DeliveryController extends ControllerBase {
   $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_logi_delivery', 'd');
   
-  $or = db_or();
+  $or = $query->orConditionGroup();
   $or->condition('head', $access , 'IN');
   $or->condition('allocation', $access  , 'IN');
    

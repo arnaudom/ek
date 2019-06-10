@@ -207,9 +207,9 @@ class Settings extends FormBase {
             if ($form_state->get('new_pdf_form')) {
 
                 $dir = 'private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/';
-                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
                 $dest = $dir;
-                $filename = file_unmanaged_copy($form_state->get('new_pdf_form')
+                $filename = \Drupal::service('file_system')->copy($form_state->get('new_pdf_form')
                                 ->getFileUri(), $dest, FILE_EXISTS_REPLACE);
                 \Drupal::messenger()->addStatus(t("New pdf form uploaded"));
             }
@@ -217,9 +217,9 @@ class Settings extends FormBase {
             if ($form_state->get('new_xls_form')) {
 
                 $dir = 'private://logistics/templates/' . $form_state->getValue('coid') . '/xls/';
-                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
                 $dest = $dir;
-                $filename = file_unmanaged_copy($form_state->get('new_xls_form')
+                $filename = \Drupal::service('file_system')->copy($form_state->get('new_xls_form')
                                 ->getFileUri(), $dest, FILE_EXISTS_REPLACE);
                 \Drupal::messenger()->addStatus(t("New excel form uploaded"));
             }
@@ -229,14 +229,16 @@ class Settings extends FormBase {
             //
             foreach ($form_state->getValue('pdf') as $key => $value) {
                 if ($value != 0 || $value != '') {
-                    unlink('private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/' . $value);
+                    $del = 'private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/' . $value;
+                    \Drupal::service('file_system')->delete($del);
                     \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
                 }
             }
 
             foreach ($form_state->getValue('xls') as $key => $value) {
                 if ($value != 0 || $value != '') {
-                    unlink('private://logistics/templates/' . $form_state->getValue('coid') . '/xls/' . $value);
+                    $del = 'private://logistics/templates/' . $form_state->getValue('coid') . '/xls/' . $value;
+                    \Drupal::service('file_system')->delete($del);
                     \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
                 }
             }

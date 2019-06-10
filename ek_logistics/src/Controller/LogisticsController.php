@@ -128,7 +128,7 @@ class LogisticsController extends ControllerBase {
           $query->leftJoin('ek_items', 'i', 'i.itemcode=p.itemcode');
           $query->leftJoin('ek_item_barcodes', 'b', 'b.itemcode=p.itemcode');
           
-          $or = db_or();
+          $or = $query->orConditionGroup();
             $or->condition('p.itemcode', $keyword, 'like');
             $or->condition('i.description1', $keyword , 'like');
             $or->condition('b.barcode', $keyword , 'like');

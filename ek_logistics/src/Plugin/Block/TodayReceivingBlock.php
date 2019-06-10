@@ -33,7 +33,7 @@ class TodayReceivingBlock extends BlockBase {
         $company = implode(',', $access);
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_logi_receiving', 'd');
-        $or = db_or();
+        $or = $query->orConditionGroup();
         $or->condition('head', $access, 'IN');
         $or->condition('allocation', $access, 'IN');
         $f = array('id', 'head', 'serial', 'supplier', 'status', 'title', 'date', 'ddate', 'pcode');
