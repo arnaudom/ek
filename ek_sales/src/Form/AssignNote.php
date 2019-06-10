@@ -115,7 +115,7 @@ class AssignNote extends FormBase {
         //collect invoices / purchases to which CN / DN can be assigned
         $query = Database::getConnection('external_db', 'external_db')
                     ->select($form_state->get('table'), 't');
-            $or = db_or();
+            $or = $query->orConditionGroup();
                 $or->condition('status', '2', '=');
                 $or->condition('status', '0', '=');
             $query->fields('t', ['id', 'serial']);

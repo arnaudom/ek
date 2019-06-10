@@ -65,7 +65,7 @@ class TaskInvoice extends FormBase {
   $query = Database::getConnection('external_db', 'external_db')
           ->select('ek_sales_invoice', 'i');
   $query->leftJoin('ek_sales_invoice_tasks', 't', 'i.serial=t.serial');    
-  $or1 = db_or();
+  $or1 = $query->orConditionGroup();
         $or1->condition('head', $access , 'IN');
         $or1->condition('allocation', $access  , 'IN');
         

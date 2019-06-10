@@ -64,7 +64,7 @@ class TaskPurchase extends FormBase {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_purchase', 'p');
         $query->leftJoin('ek_sales_purchase_tasks', 't', 'p.serial=t.serial');
-        $or1 = db_or();
+        $or1 = $query->orConditionGroup();
         $or1->condition('p.head', $access, 'IN');
         $or1->condition('p.allocation', $access, 'IN');
 

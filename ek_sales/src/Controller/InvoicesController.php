@@ -132,7 +132,7 @@ class InvoicesController extends ControllerBase {
         $access = AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_invoice', 'i');
-        $or1 = db_or();
+        $or1 = $query->orConditionGroup();
         $or1->condition('head', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');
 
@@ -153,7 +153,7 @@ class InvoicesController extends ControllerBase {
                     '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
                 );
 
-                $or2 = db_or();
+                $or2 = $query->orConditionGroup();
                 if ($_SESSION['ifilter']['status'] == 3) {
                     //any status
                     $or2->condition('i.status', $_SESSION['ifilter']['status'], '<');
@@ -184,7 +184,7 @@ class InvoicesController extends ControllerBase {
                         ->execute();
             } else {
                 //search based on keyword
-                $or2 = db_or();
+                $or2 = $query->orConditionGroup();
                 $or2->condition('i.serial', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
                 $or2->condition('i.pcode', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
                 $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
@@ -205,7 +205,7 @@ class InvoicesController extends ControllerBase {
             $from = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT SQL_CACHE date from {ek_sales_invoice} order by date limit 1")
                     ->fetchField();
-            $or2 = db_or();
+            $or2 = $query->orConditionGroup();
             $or2->condition('i.status', 0, '=');
             $or2->condition('i.status', 2, '=');
             $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
@@ -472,7 +472,13 @@ class InvoicesController extends ControllerBase {
                 $baseCurrency = $settings->get('baseCurrency');
             }
 
-            $or = db_or();
+
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice', 'i');
+            $query->leftJoin('ek_address_book', 'b', 'i.client=b.id');
+            $query->leftJoin('ek_company', 'c', 'i.head=c.id');
+
+            $or = $query->orConditionGroup();
             if ($options['status'] == 3) {
                 //any status
                 $or->condition('i.status', $options['status'], '<');
@@ -485,15 +491,9 @@ class InvoicesController extends ControllerBase {
                 $or->condition('i.status', 1, '=');
             }
 
-            $or1 = db_or();
+            $or1 = $query->orConditionGroup();
             $or1->condition('head', $access, 'IN');
             $or1->condition('allocation', $access, 'IN');
-
-            $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_invoice', 'i');
-            $query->leftJoin('ek_address_book', 'b', 'i.client=b.id');
-            $query->leftJoin('ek_company', 'c', 'i.head=c.id');
-
             $result = $query
                     ->fields('i')
                     ->fields('b', array('name'))
@@ -561,7 +561,7 @@ class InvoicesController extends ControllerBase {
                 ),
             );
 
-            $or = db_or();
+            $or = $query->orConditionGroup();
             $or->condition('i.status', '0', '=');
             $or->condition('i.status', '2', '=');
 

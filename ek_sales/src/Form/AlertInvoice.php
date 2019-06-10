@@ -59,7 +59,7 @@ class AlertInvoice extends FormBase {
         $access = AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_invoice', 'i');
-        $or1 = db_or();
+        $or1 = $query->orConditionGroup();
         $or1->condition('head', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');
 

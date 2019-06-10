@@ -318,6 +318,7 @@ class InstallController extends ControllerBase {
 	`filename` VARCHAR(200) NULL DEFAULT NULL COMMENT 'Name of the file with no path components.',
 	`uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the URI of the file',
 	`comment` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment',
+        `folder` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment',
 	`date` VARCHAR(50) NULL DEFAULT '0',
 	`size` INT(10) NULL DEFAULT '0',
 	`share` VARCHAR(255) NULL DEFAULT '0',

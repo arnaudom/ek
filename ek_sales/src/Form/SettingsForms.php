@@ -71,27 +71,30 @@ class SettingsForms extends FormBase {
         );
 
         $list_purchase = array();
-        $handle = opendir('private://sales/templates/purchase/');
-        while ($file = readdir($handle)) {
-            if ($file != '.' AND $file != '..') {
-                $list_purchase[$file] = $file;
+        $templates = 'private://sales/templates/purchase/';
+        if(file_exists($templates)) {
+            $handle = opendir('private://sales/templates/purchase/');
+            while ($file = readdir($handle)) {
+                if ($file != '.' AND $file != '..') {
+                    $list_purchase[$file] = $file;
+                }
+            }
+        
+
+            $i = 0;
+
+            foreach ($list_purchase as $key => $name) {
+
+                $form['P']['template' . $i] = array(
+                    '#type' => 'checkbox',
+                    '#default_value' => 0,
+                    '#return_value' => $name,
+                    '#attributes' => array('title' => t('delete')),
+                    '#title' => t('Delete purchase template <b>"@n"</b>', array('@n' => $name)),
+                );
+                $i++;
             }
         }
-
-        $i = 0;
-
-        foreach ($list_purchase as $key => $name) {
-
-            $form['P']['template' . $i] = array(
-                '#type' => 'checkbox',
-                '#default_value' => 0,
-                '#return_value' => $name,
-                '#attributes' => array('title' => t('delete')),
-                '#title' => t('Delete purchase template <b>"@n"</b>', array('@n' => $name)),
-            );
-            $i++;
-        }
-
 
         $form['Q'] = array(
             '#type' => 'details',
@@ -106,25 +109,27 @@ class SettingsForms extends FormBase {
         );
 
         $list_quotation = array();
-        $handle = opendir('private://sales/templates/quotation/');
-        while ($file = readdir($handle)) {
-            if ($file != '.' AND $file != '..') {
-                $list_quotation[$file] = $file;
+        $templates = 'private://sales/templates/quotation/';
+        if(file_exists($templates)) {
+            $handle = opendir('private://sales/templates/quotation/');
+            while ($file = readdir($handle)) {
+                if ($file != '.' AND $file != '..') {
+                    $list_quotation[$file] = $file;
+                }
+            }
+
+            foreach ($list_quotation as $key => $name) {
+
+                $form['Q']['template' . $i] = array(
+                    '#type' => 'checkbox',
+                    '#default_value' => 0,
+                    '#return_value' => $name,
+                    '#attributes' => array('title' => t('delete')),
+                    '#title' => t('Delete quotation template <b>"@n"</b>', array('@n' => $name)),
+                );
+                $i++;
             }
         }
-
-        foreach ($list_quotation as $key => $name) {
-
-            $form['Q']['template' . $i] = array(
-                '#type' => 'checkbox',
-                '#default_value' => 0,
-                '#return_value' => $name,
-                '#attributes' => array('title' => t('delete')),
-                '#title' => t('Delete quotation template <b>"@n"</b>', array('@n' => $name)),
-            );
-            $i++;
-        }
-
 
         $form['I'] = array(
             '#type' => 'details',
@@ -139,25 +144,27 @@ class SettingsForms extends FormBase {
         );
 
         $list_invoice = array();
-        $handle = opendir('private://sales/templates/invoice/');
-        while ($file = readdir($handle)) {
-            if ($file != '.' AND $file != '..') {
-                $list_invoice[$file] = $file;
+        $templates = 'private://sales/templates/invoice/';
+        if(file_exists($templates)) {
+            $handle = opendir('private://sales/templates/invoice/');
+            while ($file = readdir($handle)) {
+                if ($file != '.' AND $file != '..') {
+                    $list_invoice[$file] = $file;
+                }
+            }
+
+            foreach ($list_invoice as $key => $name) {
+
+                $form['I']['template' . $i] = array(
+                    '#type' => 'checkbox',
+                    '#default_value' => 0,
+                    '#return_value' => $name,
+                    '#attributes' => array('title' => t('delete')),
+                    '#title' => t('Delete invoice template <b>"@n"</b>', array('@n' => $name)),
+                );
+                $i++;
             }
         }
-
-        foreach ($list_invoice as $key => $name) {
-
-            $form['I']['template' . $i] = array(
-                '#type' => 'checkbox',
-                '#default_value' => 0,
-                '#return_value' => $name,
-                '#attributes' => array('title' => t('delete')),
-                '#title' => t('Delete invoice template <b>"@n"</b>', array('@n' => $name)),
-            );
-            $i++;
-        }
-
         $form['#tree'] = TRUE;
 
         $form['actions'] = array(
@@ -209,34 +216,25 @@ class SettingsForms extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-
+        $filesystem = \Drupal::service('file_system');
         if ($form_state->get('new_purchase')) {
-
             $dir = "private://sales/templates/purchase/" . $form_state->getValue('coid') . '/';
-            file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-            $dest = $dir;
-            $filename = file_unmanaged_copy($form_state->get('new_purchase')
-                            ->getFileUri(), $dest, FILE_EXISTS_REPLACE);
+            $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            $filesystem->copy($form_state->get('new_purchase')->getFileUri(), $dir, FILE_EXISTS_REPLACE);
             \Drupal::messenger()->addStatus(t("New purchase file uploaded"));
         }
 
         if ($form_state->get('new_quotation')) {
-
             $dir = "private://sales/templates/quotation/" . $form_state->getValue('coid') . '/';
-            file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-            $dest = $dir;
-            $filename = file_unmanaged_copy($form_state->get('new_quotation')
-                            ->getFileUri(), $dest, FILE_EXISTS_REPLACE);
+            $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            $filesystem->copy($form_state->get('new_quotation')->getFileUri(), $dir, FILE_EXISTS_REPLACE);
             \Drupal::messenger()->addStatus(t("New quotation file uploaded"));
         }
 
         if ($form_state->get('new_invoice')) {
-
             $dir = "private://sales/templates/invoice/" . $form_state->getValue('coid') . '/';
-            file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-            $dest = $dir;
-            $filename = file_unmanaged_copy($form_state->get('new_invoice')
-                            ->getFileUri(), $dest, FILE_EXISTS_REPLACE);
+            $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            $filesystem->copy($form_state->get('new_invoice')->getFileUri(), $dir, FILE_EXISTS_REPLACE);
             \Drupal::messenger()->addStatus(t("New invoice file uploaded"));
         }
 

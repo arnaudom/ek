@@ -122,11 +122,9 @@ class PurchasesController extends ControllerBase {
 
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')->select('ek_sales_purchase', 'p');
-        $or1 = db_or();
+        $or1 = $query->orConditionGroup();
         $or1->condition('head', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');
-
-        $or2 = db_or();
 
         if (isset($_SESSION['pfilter']) && $_SESSION['pfilter']['filter'] == 1) {
             
@@ -143,7 +141,8 @@ class PurchasesController extends ControllerBase {
                 $build['excel'] = array(
                     '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
                 );
-
+                
+                $or2 = $query->orConditionGroup();
                 if ($_SESSION['pfilter']['status'] == 3) {
                     //any status
                     $or2->condition('p.status', $_SESSION['pfilter']['status'], '<');
@@ -173,7 +172,7 @@ class PurchasesController extends ControllerBase {
 
                 } else { 
                     //search based on keyword
-                    $or2 = db_or();
+                    $or2 = $or2 = $query->orConditionGroup();
                     $or2->condition('p.serial', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
                     $or2->condition('p.pcode', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
                     $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
@@ -192,7 +191,7 @@ class PurchasesController extends ControllerBase {
         } else {
 
             $from = Database::getConnection('external_db', 'external_db')
-                            ->query("SELECT SQL_CACHE date from {ek_sales_purchase} order by date limit 1")->fetchField();
+                            ->query("SELECT date from {ek_sales_purchase} order by date limit 1")->fetchField();
 
             $param = serialize(array(
                 'coid' => '%',
@@ -206,7 +205,7 @@ class PurchasesController extends ControllerBase {
                 '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
             );
 
-            $or2 = db_or();
+            $or2 = $or2 = $query->orConditionGroup();
             $or2->condition('p.status', 0, '=');
             $or2->condition('p.status', 2, '=');
 
@@ -499,7 +498,7 @@ class PurchasesController extends ControllerBase {
                 ),
             );
 
-            $or = db_or();
+            $or = $or2 = $query->orConditionGroup();
             $or->condition('p.status', '0', '=');
             $or->condition('p.status', '2', '=');
 
@@ -801,8 +800,12 @@ class PurchasesController extends ControllerBase {
                 $baseCurrency = $settings->get('baseCurrency');
             }
 
-
-            $or = db_or();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_purchase', 'p');
+            $query->leftJoin('ek_address_book', 'b', 'p.client=b.id');
+            $query->leftJoin('ek_company', 'c', 'p.head=c.id');
+            
+            $or = $or2 = $query->orConditionGroup();
             if ($options['status'] == 3) {
                     //any status
                     $or->condition('p.status', $_SESSION['pfilter']['status'], '<');
@@ -815,15 +818,9 @@ class PurchasesController extends ControllerBase {
                     $or->condition('p.status', 1, '=');
                 }
 
-            $or1 = db_or();
+            $or1 = $or2 = $query->orConditionGroup();
             $or1->condition('head', $access, 'IN');
             $or1->condition('allocation', $access, 'IN');
-
-            $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_purchase', 'p');
-            $query->leftJoin('ek_address_book', 'b', 'p.client=b.id');
-            $query->leftJoin('ek_company', 'c', 'p.head=c.id');
-
             $result = $query
                     ->fields('p')
                     ->fields('b', array('name'))

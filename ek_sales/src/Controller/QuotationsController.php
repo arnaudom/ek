@@ -122,7 +122,7 @@ class QuotationsController extends ControllerBase {
         $access = AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_quotation', 'q');
-        $or1 = db_or();
+        $or1 = $query->orConditionGroup();
         $or1->condition('head', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');
 

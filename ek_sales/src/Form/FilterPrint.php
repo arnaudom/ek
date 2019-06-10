@@ -118,12 +118,15 @@ class FilterPrint extends FormBase {
         if ($doc->status == '1') {
             $list['default_receipt_invoice_' . $format] = t('receipt');
         }
-        $handle = opendir('private://sales/templates/' . $source . '/');
-        while ($file = readdir($handle)) {
-            if ($file != '.' AND $file != '..') {
-                if(strpos($file, $format)){
-                    $filename = explode('.', $file);
-                    $list[$file] = $filename[0];
+        $templates = 'private://sales/templates/' . $source . '/';
+        if(file_exists($templates)) {
+            $handle = opendir('private://sales/templates/' . $source . '/');
+            while ($file = readdir($handle)) {
+                if ($file != '.' AND $file != '..') {
+                    if(strpos($file, $format)){
+                        $filename = explode('.', $file);
+                        $list[$file] = $filename[0];
+                    }
                 }
             }
         }
