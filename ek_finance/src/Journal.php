@@ -1783,16 +1783,8 @@ class Journal {
         $chart = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':coid' => $l['coid']))
                 ->fetchAllKeyed();
-
-        //list the accounts in journal within the range selected
-        $or = db_or();
-        $or->condition('source', $l['source1'], '=');
-        $or->condition('source', $l['source2'], '=');
-        $or->condition('source', $l['source3'], '=');
-       
-
+      
         //calculate opening value
-
         // sum transaction currency - CREDIT / Invoice , purchase
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_journal', 'j');
@@ -1817,7 +1809,7 @@ class Journal {
                 ->condition('j.date', $l['date1'], '<')
                 ->condition('j.coid', $l['coid'], '=');
 
-        $or_src = db_or();
+        $or_src = $query->orConditionGroup();
             $or_src->condition('j.source', $l['source3'], '='); // CN/DN
             $or_src->condition('j.source', $l['source2'], '='); // receipt/pay
             $query->condition($or_src);
@@ -1869,6 +1861,12 @@ class Journal {
 
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_journal', 'j');
+        
+        //list the accounts in journal within the range selected
+        $or = $query->orConditionGroup();
+        $or->condition('source', $l['source1'], '=');
+        $or->condition('source', $l['source2'], '=');
+        $or->condition('source', $l['source3'], '=');
         $result = $query->fields('j')
                 ->condition('j.reference', $l['references'], 'IN')
                 ->condition($or)

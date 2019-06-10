@@ -118,13 +118,13 @@ class UploadForm extends FormBase {
                     //move it to a new folder
                     
                     $dir = "private://finance/receipt/" . $att->company;
-                    file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                    $filepath = file_unmanaged_copy($file->getFileUri(), $dir . "/" . $ref[0] . '_' . $file->getFilename());
+                    \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                    $filepath = \Drupal::service('file_system')->copy($file->getFileUri(), $dir . "/" . $ref[0] . '_' . $file->getFilename());
                     $receipt = 'yes';
 
                     if ($att->attachment) {
                         // delete current file
-                        file_unmanaged_delete($att->attachment);
+                        \Drupal::service('file_system')->delete($att->attachment);
                     }
 
                     $fields = array(
@@ -154,13 +154,13 @@ class UploadForm extends FormBase {
                 if ($file) {
 
                     $dir = "private://finance/bank/" . $att->coid;
-                    file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                    $filepath = file_unmanaged_copy($file->getFileUri(), $dir);
+                    \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                    $filepath = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                     
 
                     if ($att->uri) {
                         // delete current file
-                        file_unmanaged_delete($att->uri);
+                        \Drupal::service('file_system')->delete($att->uri);
                     }
 
                     $fields = array(

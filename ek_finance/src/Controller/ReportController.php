@@ -109,16 +109,15 @@ class ReportController extends ControllerBase {
                     //control error
                     //allocation view may be wrong if aid accounts from allocation source 
                     //are not active in allocated destination
-
-                    //select all aid accounts that are used in journal from other companies
-                    $or = db_or();
+                    $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_journal', 'j');
+                     //select all aid accounts that are used in journal from other companies
+                    $or = $query->orConditionGroup();
                     $or->condition('aid', $chart['cos'] . '%' , 'like');
                     $or->condition('aid', $chart['expenses'] . '%' , 'like');
                     $or->condition('aid', $chart['other_expenses'] . '%' , 'like');
                     $or->condition('aid', $chart['income'] . '%' , 'like');
                     $or->condition('aid', $chart['other_income'] . '%' , 'like');
-                    $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_journal', 'j');
                     $query->fields('j', ['aid'])
                             ->distinct()
                             ->condition('coid', $coid, '<>')

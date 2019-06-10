@@ -264,12 +264,13 @@ class CashController extends ControllerBase {
             */
             if($filter['type'] == '0') {
                 
-                $or = db_or();
-                $or->condition('j.aid', $filter['aid'], '=');
-                $or->condition('j.aid', $filter['aid2'], '=');
+                
                 $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal', 'j');
                 $query->fields('j');
+                $or = $query->orConditionGroup();
+                $or->condition('j.aid', $filter['aid'], '=');
+                $or->condition('j.aid', $filter['aid2'], '=');
                 $query->condition('j.coid', $company,'=')
                         ->condition('j.source','general', '=')
                         //->condition('j.currency', $filter['currency'], '=')
@@ -287,14 +288,12 @@ class CashController extends ControllerBase {
          
                 $data4 = $query->execute();
 
-                $or = db_or();
-                $or->condition('j.aid', $filter['aid'], '=');
-                $or->condition('j.aid', $filter['aid2'], '=');
-                
-
                 $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal', 'j');
                 $query->fields('j');
+                $or = $query->orConditionGroup();
+                $or->condition('j.aid', $filter['aid'], '=');
+                $or->condition('j.aid', $filter['aid2'], '=');
                 $query->condition('j.coid', $company,'=')
                         ->condition('j.source','general', '=')
                         //->condition('j.currency', $filter['currency'], '=')

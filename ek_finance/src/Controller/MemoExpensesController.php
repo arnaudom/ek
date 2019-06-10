@@ -306,7 +306,7 @@ class MemoExpensesController extends ControllerBase {
                     ->select('ek_expenses_memo', 'm');
                 $query->fields('m');
                 
-                $or = db_or();
+                $or = $query->orConditionGroup();
                     $or->condition('entity', $access, 'IN');
                     $or->condition('entity_to', $access, 'IN');
                     $or->condition('auth', '%|' . \Drupal::currentUser()->id(), 'like');
@@ -327,7 +327,7 @@ class MemoExpensesController extends ControllerBase {
                     ->select('ek_expenses_memo', 'm');
                 $query->fields('m');
                 
-                $or = db_or();
+                $or = $query->orConditionGroup();
                     $or->condition('entity', $access, 'IN');
                     $or->condition('entity_to', $access, 'IN');
                     $or->condition('auth', '%|' . \Drupal::currentUser()->id(), 'like');
@@ -346,7 +346,7 @@ class MemoExpensesController extends ControllerBase {
                     ->select('ek_expenses_memo', 'm');
                 $query->fields('m');
                 
-                $or = db_or();
+                $or = $query->orConditionGroup();
                     $or->condition('entity', $access, 'IN');
                     $or->condition('entity_to', $access, 'IN');
                     $or->condition('auth', '%|' . \Drupal::currentUser()->id(), 'like');
@@ -564,7 +564,7 @@ class MemoExpensesController extends ControllerBase {
  
             
             if (\Drupal::currentUser()->hasPermission('admin_memos')) {
-                    $or = db_or();
+                    $or = $query->orConditionGroup();
                     $or->condition('entity', \Drupal::currentUser()->id(), '=');
                     $or->condition('entity_to', $access, 'IN');
                     
@@ -597,7 +597,7 @@ class MemoExpensesController extends ControllerBase {
                     ->select('ek_expenses_memo', 'm');
                 $query->fields('m');
                 
-                $or = db_or();
+                $or = $query->orConditionGroup();
                     $or->condition('entity', \Drupal::currentUser()->id(), '=');
                     $or->condition('entity_to', $access, 'IN');
                 $query->condition('category', 5)

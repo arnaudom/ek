@@ -40,7 +40,7 @@ class AidList {
         if (empty($type)) {
             $query->condition('aid', '%', 'like');
         } else {
-            $or = db_or();
+            $or = $query->orConditionGroup();
             foreach ($type as $t) {
                 $or->condition('aid', $t . '%', 'like');
             }
@@ -100,7 +100,7 @@ class AidList {
         if (empty($type)) {
             $query->condition('aid', '%', 'like');
         } else {
-            $or = db_or();
+            $or = $query->orConditionGroup();
             foreach ($type as $t) {
                 $or->condition('aid', $t . '%', 'like');
             }

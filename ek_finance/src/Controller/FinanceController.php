@@ -152,7 +152,7 @@ class FinanceController extends ControllerBase {
                       ->select('ek_expenses_memo_documents', 'doc');
               
               if(!null == $memo_id) {
-                $or = db_or();
+                $or = $query->orConditionGroup();
                   $or->condition('memo.id', $memo_id);
                   $or->condition('doc.serial', $memo_serial);
                   $query->fields('doc', ['id', 'uri']);
@@ -209,7 +209,7 @@ class FinanceController extends ControllerBase {
               }
               
               if($del == TRUE) {
-                file_unmanaged_delete($data->uri);
+                \Drupal::service('file_system')->delete($data->uri);
               
                 Database::getConnection('external_db', 'external_db')
                 ->delete('ek_expenses_memo_documents')

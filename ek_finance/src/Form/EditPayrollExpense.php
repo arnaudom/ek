@@ -706,15 +706,15 @@ class EditPayrollExpense extends FormBase {
                     ->query($query, $a)
                     ->fetchField();
             
-            $or = db_or();
-                $or->condition('source', 'payroll', '=');
-                $or->condition('source', 'expense payroll', '=');
-            $del =   Database::getConnection('external_db', 'external_db')
-                        ->delete('ek_journal')
-                        ->condition('coid', $coid)
-                        ->condition($or)
-                        ->condition('reference', $form_state->getValue('edit'))
-                        ->execute();
+            
+            $del = Database::getConnection('external_db', 'external_db')
+                    ->delete('ek_journal')
+                    ->condition('coid', $coid)
+                    ->condition('reference', $form_state->getValue('edit'));
+            $or = $del->orConditionGroup();
+            $or->condition('source', 'payroll', '=');
+            $or->condition('source', 'expense payroll', '=');
+            $del->condition($or)->execute();
         }
         
         
@@ -802,13 +802,13 @@ class EditPayrollExpense extends FormBase {
                     $receipt = 'yes';
                     if($form_state->getValue('uri' . $n) != '') {
                         //if edit and existing, delete current attach.
-                        file_unmanaged_delete( $form_state->getValue('uri' . $n));
+                        \Drupal::service('file_system')->delete( $form_state->getValue('uri' . $n));
                     }
                     $file = $this->fileStorage->load($fid);   
                     $name = $file->getFileName();
                     $dir = "private://finance/receipt/" . $form_state->getValue('coid');
-                    file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                    $load_attachment = file_unmanaged_copy($file->getFileUri(), $dir . "/" . $insert . '_' . $name);
+                    \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                    $load_attachment = \Drupal::service('file_system')->copy($file->getFileUri(), $dir . "/" . $insert . '_' . $name);
                 } elseif($form_state->getValue('uri' . $n) != '') {
                     $receipt = 'yes';
                     $load_attachment = $form_state->getValue('uri' . $n);

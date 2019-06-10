@@ -22,7 +22,7 @@ foreach($company as $key => $coid) {
             $query = Database::getConnection('external_db', 'external_db')
                                 ->select('ek_accounts', 'a');
                 $query->fields('a', ['aid']);
-                $or = db_or();
+                $or = $query->orConditionGroup();
                 $or->condition('aid', $chart['income'] . '%', 'like');
                 $or->condition('aid', $chart['other_income'] . '%', 'like');
                 $query->condition($or);
@@ -38,7 +38,7 @@ foreach($company as $key => $coid) {
             $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_accounts', 'a');
                 $query->fields('a', ['aid']);
-                $or = db_or();
+                $or = $query->orConditionGroup();
                 $or->condition('aid', $chart['cos'] . '%', 'like');
                 $or->condition('aid', $chart['expenses'] . '%', 'like');
                 $or->condition('aid', $chart['other_expenses'] . '%', 'like');

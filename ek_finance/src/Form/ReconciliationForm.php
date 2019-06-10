@@ -722,8 +722,8 @@ class ReconciliationForm extends FormBase {
             if (!$form_state->getValue('upload_doc') == 0) {
                 $file = $form_state->getValue('upload_doc');
                 $dir = "private://finance/bank/" . $form_state->getValue('coid');
-                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $filename = file_unmanaged_copy($file->getFileUri(), $dir);
+                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
             } else {
                 $filename = "";
             }

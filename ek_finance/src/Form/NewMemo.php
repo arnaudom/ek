@@ -870,9 +870,9 @@ $rows = $form_state->getValue('itemTable');
       if ($file) {
         
           $dir = "private://finance/memos"   ;
-          file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+          \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
           $dest = $dir . '/'  . $file->getFilename();
-          $filename = file_unmanaged_copy($file->getFileUri(), $dest);
+          $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $dest);
           
         $fields = array(
           'serial' => $form_state->getValue('tempSerial'),

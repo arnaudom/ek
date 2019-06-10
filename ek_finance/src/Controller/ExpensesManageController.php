@@ -114,10 +114,10 @@ class ExpensesManageController extends ControllerBase {
                 //query data with purchases
                 $query->leftjoin('ek_expenses', 'e', 'e.id=j.reference');
                 $query->leftjoin('ek_sales_purchase', 'p', 'p.id=j.reference');
-                $or = db_or();
+                $or = $query->orConditionGroup();
                 $or->condition('aid', $chart['expenses'] . '%', 'like');
                 $or->condition('aid', $chart['cos'] . '%', 'like');
-                $or2 = db_or();
+                $or2 = $query->orConditionGroup();
                 $or2->condition('j.source', 'expense%', 'like');
                 $or2->condition('j.source', 'purchase%', 'like');
 
@@ -138,7 +138,7 @@ class ExpensesManageController extends ControllerBase {
             } else {
                 //query data without purchases
                 $query->join('ek_expenses', 'e', 'e.id=j.reference');
-                $or = db_or();
+                $or = $query->orConditionGroup();
                 $or->condition('aid', $chart['expenses'] . '%', 'like');
                 $or->condition('aid', $chart['cos'] . '%', 'like');
 
@@ -168,12 +168,12 @@ class ExpensesManageController extends ControllerBase {
 
                 $query->leftjoin('ek_expenses', 'e', 'e.id=j.reference');
                 $query->leftjoin('ek_sales_purchase', 'p', 'p.id=j.reference');
-                $or = db_or();
+                $or = $query->orConditionGroup();
                 $or->condition('e.id', $keyword1, 'like');
                 $or->condition('e.comment', $keyword1, 'like');
                 $or->condition('p.id', $keyword1, 'like');
                 $or->condition('p.title', $keyword1, 'like');
-                $or2 = db_or();
+                $or2 = $query->orConditionGroup();
                 $or2->condition('j.source', 'expense%', 'like');
                 $or2->condition('j.source', 'purchase%', 'like');
 
@@ -195,7 +195,7 @@ class ExpensesManageController extends ControllerBase {
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
                 $query->join('ek_expenses', 'e', 'e.id=j.reference');
-                $or = db_or();
+                $or = $query->orConditionGroup();
                 $or->condition('e.id', $keyword1, 'like');
                 $or->condition('e.comment', $keyword1, 'like');
 
@@ -231,16 +231,16 @@ class ExpensesManageController extends ControllerBase {
                 $query->fields('j', array('id', 'aid', 'date', 'value', 'exchange', 'currency', 'reconcile', 'reference', 'coid', 'source'))
                         ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment', 'allocation'))
                         ->fields('p', array('id', 'taxvalue', 'title', 'pcode', 'client', 'uri', 'status'));
-                $or = db_or();
+                $or = $query->orConditionGroup();
                 $or->condition('aid', $chart['expenses'] . '%', 'like');
                 $or->condition('aid', $chart['cos'] . '%', 'like');
-                $or1 = db_or();
+                $or1 = $query->orConditionGroup();
                 $or1->condition('e.clientname', $session_filter['client'], 'like');
                 $or1->condition('p.client', $session_filter['client'], 'like');
-                $or3 = db_or();
+                $or3 = $query->orConditionGroup();
                 $or3->condition('e.pcode', $session_filter['pcode'], 'like');
                 $or3->condition('p.pcode', $session_filter['pcode'], 'like');
-                $or4 = db_or();
+                $or4 = $query->orConditionGroup();
                 $or4->condition('j.source', 'expense%', 'like');
                 $or4->condition('j.source', 'purchase%', 'like');
 
@@ -280,17 +280,18 @@ class ExpensesManageController extends ControllerBase {
                         ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment', 'allocation'));
 
                 if ($session_filter['aid'] == '%') {
-                    $or = db_or();
+                    $or = $query->orConditionGroup();
                     $or->condition('aid', $chart['expenses'] . '%', 'like');
                     $or->condition('aid', $chart['cos'] . '%', 'like');
                     $query->condition($or);
                 } else {
                     $query->condition('aid', $session_filter['aid'], 'like');
                 }
-                $or = db_or();
+                /*
+                $or = $query->orConditionGroup();
                 $or->condition('aid', $chart['expenses'] . '%', 'like');
                 $or->condition('aid', $chart['cos'] . '%', 'like');
-
+                */
                 $query->condition('e.clientname', $session_filter['client'], 'like')
                         ->condition('e.suppliername', $session_filter['supplier'], 'like')
                         ->condition('pcode', $session_filter['pcode'], 'like')
@@ -298,7 +299,7 @@ class ExpensesManageController extends ControllerBase {
                         ->condition('date', $session_filter['to'], '<=')
                         ->condition('coid', $session_filter['coid'], '=')
                         ->condition('e.allocation', $session_filter['allocation'], 'like')
-                        ->condition($or)
+                        //->condition($or)
                         ->condition('j.source', 'expense%', 'like')
                         ->condition('j.type', 'debit', '=')
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
@@ -760,7 +761,7 @@ class ExpensesManageController extends ControllerBase {
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_expenses', 'e');
 
-                $or = db_or();
+                $or = $query->orConditionGroup();
                 $or->condition('e.id', $keyword1, 'like');
                 $or->condition('e.comment', $keyword1, 'like');
 
@@ -783,7 +784,7 @@ class ExpensesManageController extends ControllerBase {
                 $query->fields('e');
 
                 if ($_SESSION['efilter']['aid'] == '%') {
-                    $or = db_or();
+                    $or = $query->orConditionGroup();
                     $or->condition('type', $chart['expenses'] . '%', 'like');
                     $or->condition('type', $chart['cos'] . '%', 'like');
                     $query->condition($or);

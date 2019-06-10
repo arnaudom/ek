@@ -154,8 +154,8 @@ class DeleteExpense extends FormBase {
   $delete = Database::getConnection('external_db', 'external_db')
           ->delete('ek_expenses')->condition('id', $form_state->getValue('for_id'))->execute();
   
-  if($form_state->getValue('attachment') <> '') {
-      file_unmanaged_delete($form_state->getValue('attachment'));
+  if($form_state->getValue('attachment') != NULL && file_exists($form_state->getValue('attachment'))) {
+      \Drupal::service('file_system')->delete($form_state->getValue('attachment'));
   }
   
     $journal = new \Drupal\ek_finance\Journal();

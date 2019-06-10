@@ -372,22 +372,7 @@ class RecordExpense extends FormBase {
             '#open' => TRUE,
             '#attributes' => array('class' => array('container-inline')),
         );
-/*
-        $user = array('not applicable' => 'not applicable');
-        $user += db_query('SELECT uid,name from {users_field_data} WHERE uid > :u AND status =:s' , array(':u' => 1, ':s' => 1))
-                ->fetchAllKeyed();
-        $form['user_acc']['user'] = array(
-            '#type' => 'select',
-            '#size' => 1,
-            '#options' => array_combine($user, $user),
-            '#required' => TRUE,
-            '#default_value' => isset($expense->employee) ? $expense->employee : NULL,
-            '#title' => t('user account'),
-            '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
-            '#prefix' => "<div  class='container-inline'>",
-        );
- * 
- */
+
         if($id != NULL && !NULL == $expense->employee && $expense->employee != 'n/a') {
             $user = \Drupal\user\Entity\User::load($expense->employee);
              if($user) {$userName = $user->getUsername();}
@@ -1086,13 +1071,13 @@ class RecordExpense extends FormBase {
                 $receipt = 'yes';
                 if($form_state->getValue('uri' . $n) != '') {
                     //if edit and existing, delete current attach.
-                    file_unmanaged_delete( $form_state->getValue('uri' . $n));
+                    \Drupal::service('file_system')->delete( $form_state->getValue('uri' . $n));
                 }
                 $file = $this->fileStorage->load($fid);   
                 $name = $file->getFileName();
                 $dir = "private://finance/receipt/" . $form_state->getValue('coid');
-                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $load_attachment = file_unmanaged_copy($file->getFileUri(), $dir . "/" . $insert . '_' . $name);
+                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                $load_attachment = \Drupal::service('file_system')->copy($file->getFileUri(), $dir . "/" . $insert . '_' . $name);
             } elseif($form_state->getValue('uri' . $n) != '') {
                 $receipt = 'yes';
                 $load_attachment = $form_state->getValue('uri' . $n);
