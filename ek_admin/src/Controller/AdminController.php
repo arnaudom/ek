@@ -14,7 +14,6 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Cache\Cache;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Ajax\AjaxResponse;
@@ -230,7 +229,7 @@ class AdminController extends ControllerBase {
                  * Module Tables installed; Verify various settings data
                  */
 
-                $build['updatephp'] = [ '#markup' => '<p>' . t('Always run the <a href=":update-php">update script</a> each time a module is updated.', [':update-php' => \Drupal::url('system.db_update'),]) . '</p>'];
+                $build['updatephp'] = [ '#markup' => '<p>' . t('Always run the <a href=":update-php">update script</a> each time a module is updated.', [':update-php' => Url::fromRoute('system.db_update')->toString(),]) . '</p>'];
 
                 //countries
                 $query = "SELECT count(id) FROM {ek_country} WHERE status=:s";
@@ -264,7 +263,7 @@ class AdminController extends ControllerBase {
                     $tb = Database::getConnection('external_db', 'external_db')
                                     ->query($query)->fetchField();
                     if ($tb != 'ek_address_book') {
-                        return new RedirectResponse(\Drupal::url('ek_address_book_install'));
+                        return new RedirectResponse(Url::fromRoute('ek_address_book_install')->toString());
                         exit;
                     }
                 }
@@ -276,7 +275,7 @@ class AdminController extends ControllerBase {
                     $tb = Database::getConnection('external_db', 'external_db')
                                     ->query($query)->fetchField();
                     if ($tb != 'ek_assets') {
-                        return new RedirectResponse(\Drupal::url('ek_assets_install'));
+                        return new RedirectResponse(Url::fromRoute('ek_assets_install')->toString());
                         exit;
                     }
                 }
@@ -288,7 +287,7 @@ class AdminController extends ControllerBase {
                     $tb = Database::getConnection('external_db', 'external_db')
                                     ->query($query)->fetchField();
                     if ($tb != 'ek_documents') {
-                        return new RedirectResponse(\Drupal::url('ek_documents_install'));
+                        return new RedirectResponse(Url::fromRoute('ek_documents_install')->toString());
                         exit;
                     }
                 }
@@ -300,7 +299,7 @@ class AdminController extends ControllerBase {
                     $tb = Database::getConnection('external_db', 'external_db')
                                     ->query($query)->fetchField();
                     if ($tb != 'ek_hr_workforce') {
-                        return new RedirectResponse(\Drupal::url('ek_hr_install'));
+                        return new RedirectResponse(Url::fromRoute('ek_hr_install')->toString());
                         exit;
                     }
                 }
@@ -312,7 +311,7 @@ class AdminController extends ControllerBase {
                     $tb = Database::getConnection('external_db', 'external_db')
                                     ->query($query)->fetchField();
                     if ($tb != 'ek_ireports') {
-                        return new RedirectResponse(\Drupal::url('ek_intelligence_install'));
+                        return new RedirectResponse(Url::fromRoute('ek_intelligence_install')->toString());
                         exit;
                     }
                 }
@@ -324,7 +323,7 @@ class AdminController extends ControllerBase {
                     $tb = Database::getConnection('external_db', 'external_db')
                                     ->query($query)->fetchField();
                     if ($tb != 'ek_logi_settings') {
-                        return new RedirectResponse(\Drupal::url('ek_logistics_install'));
+                        return new RedirectResponse(Url::fromRoute('ek_logistics_install')->toString());
                         exit;
                     }
                 }
@@ -336,7 +335,7 @@ class AdminController extends ControllerBase {
                     $tb = Database::getConnection('external_db', 'external_db')
                                     ->query($query)->fetchField();
                     if ($tb != 'ek_messaging') {
-                        return new RedirectResponse(\Drupal::url('ek_messaging_install'));
+                        return new RedirectResponse(Url::fromRoute('ek_messaging_install')->toString());
                         exit;
                     }
                 }
@@ -349,7 +348,7 @@ class AdminController extends ControllerBase {
                     $tb = Database::getConnection('external_db', 'external_db')
                                     ->query($query)->fetchField();
                     if ($tb != 'ek_items') {
-                        return new RedirectResponse(\Drupal::url('ek_products_install'));
+                        return new RedirectResponse(Url::fromRoute('ek_products_install')->toString());
                         exit;
                     }
                 }
@@ -361,7 +360,7 @@ class AdminController extends ControllerBase {
                     $tb = Database::getConnection('external_db', 'external_db')
                                     ->query($query)->fetchField();
                     if ($tb != 'ek_project') {
-                        return new RedirectResponse(\Drupal::url('ek_projects.install'));
+                        return new RedirectResponse(Url::fromRoute('ek_projects.install')->toString());
                         exit;
                     }
                 }
@@ -373,7 +372,7 @@ class AdminController extends ControllerBase {
                     $tb = Database::getConnection('external_db', 'external_db')
                                     ->query($query)->fetchField();
                     if ($tb != 'ek_sales_settings') {
-                        return new RedirectResponse(\Drupal::url('ek_sales_install'));
+                        return new RedirectResponse(Url::fromRoute('ek_sales_install')->toString());
                         exit;
                     }
                 }
@@ -386,7 +385,7 @@ class AdminController extends ControllerBase {
                     $tb = Database::getConnection('external_db', 'external_db')
                                     ->query($query)->fetchField();
                     if ($tb != 'ek_finance') {
-                        return new RedirectResponse(\Drupal::url('ek_finance_install'));
+                        return new RedirectResponse(Url::fromRoute('ek_finance_install')->toString());
                         exit;
                     }
 
@@ -402,7 +401,7 @@ class AdminController extends ControllerBase {
                 }
             } else {
                 //need to install tables for main module
-                return new RedirectResponse(\Drupal::url('ek_admin_install'));
+                return new RedirectResponse(Url::fromRoute('ek_admin_install')->toString());
                 exit;
             }
 
@@ -1028,7 +1027,7 @@ class AdminController extends ControllerBase {
         $controller = $this->entityManager->getStorage('user');
         foreach ($controller->loadMultiple($uids) as $account) {
             if ($account->getUsername() != 'Anonymous') {
-                $matches[] = array('value' => $account->getUsername(), 'label' => SafeMarkup::checkPlain($account->getUsername()));
+                $matches[] = array('value' => $account->getUsername(), 'label' => $account->getUsername());
             }
         }
 
