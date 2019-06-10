@@ -985,7 +985,7 @@ class EditProductsForm extends FormBase {
                     $uri = Database::getConnection('external_db', 'external_db')
                             ->query("SELECT uri from {ek_item_images} where id=:id", array(':id' => $form_state->getValue('imageid' . $i)))
                             ->fetchField();
-                    file_unmanaged_delete($uri);
+                    \Drupal::service('file_system')->delete($uri);
 
                     Database::getConnection('external_db', 'external_db')->delete('ek_item_images')
                             ->condition('id', $form_state->getValue('imageid' . $i))

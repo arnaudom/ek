@@ -90,8 +90,8 @@ class UploadForm extends FormBase {
     if (!$form_state->getValue('upload_image') == 0) {
         if ($file = $form_state->getValue('upload_image')) {
           $dir = "private://products/images/" . $form_state->getValue('for_id')  ;
-          file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-          $filename = file_unmanaged_copy($file->getFileUri(), $dir);
+          \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+          $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
 
         $query = "SELECT itemcode from {ek_items} where id=:id";
         $itemcode = Database::getConnection('external_db', 'external_db')
