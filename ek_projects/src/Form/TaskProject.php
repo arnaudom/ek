@@ -78,7 +78,7 @@ class TaskProject extends FormBase {
   $query = Database::getConnection('external_db', 'external_db')
           ->select('ek_project_tasks', 't');
   $query->leftJoin('ek_project', 'p', 'p.pcode=t.pcode');    
-  $or1 = db_or();
+  $or1 = $query->orConditionGroup();
         $or1->condition('cid', $access , 'IN');
         
         

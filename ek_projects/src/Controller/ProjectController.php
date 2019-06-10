@@ -109,7 +109,7 @@ class ProjectController extends ControllerBase {
 
                     $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
 
-                    $or = db_or();
+                    $or = $query->orConditionGroup();
                     $or->condition('pcode', $id1, 'like');
                     $or->condition('pcode', $id12, 'like');
                     $data = $query
@@ -127,7 +127,7 @@ class ProjectController extends ControllerBase {
                     $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
                     $query->leftJoin('ek_project_documents', 'd', 'p.pcode=d.pcode');
                     $query->leftJoin('ek_project_description', 't', 'p.pcode=t.pcode');
-                    $or = db_or();
+                    $or = $query->orConditionGroup();
                     $or->condition('p.pname', $keyword2, 'like');
                     $or->condition('d.filename', $keyword2, 'like');
                     $or->condition('t.project_description', $keyword2, 'like');
@@ -174,7 +174,7 @@ class ProjectController extends ControllerBase {
                 if( $_SESSION['pjfilter']['supplier'] != '%') {
                     //a project can have multiple suppliers
                     
-                        $or = db_or();
+                        $or = $query->orConditionGroup();
                         foreach($_SESSION['pjfilter']['supplier'] as $key => $id) {
                             $or->condition('supplier_offer', $id . ',%', 'like');
                             $or->condition('supplier_offer', '%,' . $id . ',%', 'like');
@@ -1894,7 +1894,7 @@ class ProjectController extends ControllerBase {
         
         $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
 
-            $or = db_or();
+            $or = $query->orConditionGroup();
             $or->condition('pcode', $text, 'like');
             $or->condition('pname', $text, 'like');
             
@@ -1905,12 +1905,7 @@ class ProjectController extends ControllerBase {
                     ->condition('level', $level, 'like')
                     ->condition('status', $status, 'like')
                     ->execute();
-        /*
-        $query = "SELECT p.id,pcode,pname,cid,p.status from {ek_project} p "
-                . "INNER JOIN {ek_country} c on p.cid=c.id WHERE level=:l AND pcode like :t";
-        $data = Database::getConnection('external_db', 'external_db')->query($query, array(':l' => 'Main project', ':t' => $text));
-        */
-            
+                    
         $name = array();
         while ($r = $data->fetchAssoc()) {
 

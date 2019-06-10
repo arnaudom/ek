@@ -129,7 +129,7 @@ class ProjectSettingsController extends ControllerBase {
                     ->condition('status', $_SESSION['paccessadmin']['status'], 'like')
                     ->condition('client_id', $_SESSION['paccessadmin']['client'], 'like');
             if ($_SESSION['paccessadmin']['supplier'] != '%') {
-                $or = db_or();
+                $or = $query->orConditionGroup();
                 $or->condition('supplier_offer', $_SESSION['paccessadmin']['supplier'] . ',%', 'like');
                 $or->condition('supplier_offer', '%,' . $_SESSION['paccessadmin']['supplier'] . ',%', 'like');
                 $or->condition('supplier_offer', '%,' . $_SESSION['paccessadmin']['supplier'], 'like');
