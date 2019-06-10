@@ -97,7 +97,7 @@ class MessageController extends ControllerBase {
         $query = Database::getConnection('external_db', 'external_db')->select('ek_messaging', 'm');
         $query->leftJoin('ek_messaging_text', 't', 't.id=m.id');
         $user = '%,' . \Drupal::currentUser()->id() . ',%';
-        $or = db_or();
+        $or = $query->orConditionGroup();
         $or->condition('m.to', $user, 'like');
         $or->condition('m.from_uid', \Drupal::currentUser()->id(), '=');
         $data = $query
@@ -171,7 +171,12 @@ class MessageController extends ControllerBase {
                 //search inbox by keyword
 
                 $key = Xss::filter($_SESSION['mefilter']['keyword']);
-                $or = db_or();
+
+
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_messaging', 'm');
+                $query->leftJoin('ek_messaging_text', 't', 't.id=m.id');
+                $or = $query->orConditionGroup();
                 $keyword = '%' . trim($key) . '%';
 
                 $or->condition('m.subject', $keyword, 'like');
@@ -190,11 +195,6 @@ class MessageController extends ControllerBase {
                         }
                     }
                 }
-
-                $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_messaging', 'm');
-                $query->leftJoin('ek_messaging_text', 't', 't.id=m.id');
-
 
                 $data = $query
                         ->fields('m')
@@ -462,7 +462,7 @@ class MessageController extends ControllerBase {
 
                 $query = Database::getConnection('external_db', 'external_db')->select('ek_messaging', 'm');
                 $query->leftJoin('ek_messaging_text', 't', 't.id=m.id');
-                $or = db_or();
+                $or = $query->orConditionGroup();
                 $or->condition('m.to', $archive, 'like');
                 $or->condition('m.from_uid', $user, 'like');
 
@@ -482,7 +482,7 @@ class MessageController extends ControllerBase {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_messaging', 'm');
             $query->leftJoin('ek_messaging_text', 't', 't.id=m.id');
-            $or = db_or();
+            $or = $query->orConditionGroup();
             $or->condition('m.to', $archive, 'like');
             $or->condition('m.from_uid', $user, 'like');
 
@@ -615,7 +615,7 @@ class MessageController extends ControllerBase {
         $user = '%,' . \Drupal::currentUser()->id() . ',%';
 
         //filter condition to validate message is to or from uid
-        $or = db_or();
+        $or = $query->orConditionGroup();
         $or->condition('m.to', $user, 'like');
         $or->condition('m.from_uid', \Drupal::currentUser()->id(), '=');
 
@@ -657,7 +657,7 @@ class MessageController extends ControllerBase {
         $user = '%,' . $uid . ',%';
 
         //filter condition to validate message is to or from uid
-        $or = db_or();
+        $or = $query->orConditionGroup();
         $or->condition('m.to', $user, 'like');
         $or->condition('m.from_uid', $uid , '=');
 
