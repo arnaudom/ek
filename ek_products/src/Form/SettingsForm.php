@@ -10,7 +10,6 @@ namespace Drupal\ek_products\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\Xss;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\ek_products\ItemSettings;
 
 /**

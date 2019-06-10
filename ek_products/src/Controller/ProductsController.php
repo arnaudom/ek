@@ -11,7 +11,6 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\user\UserInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Database\Connection;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;

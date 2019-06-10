@@ -13,7 +13,6 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
-use Drupal\Component\Utility\SafeMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_products\ItemSettings;
 
