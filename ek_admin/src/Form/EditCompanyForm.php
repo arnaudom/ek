@@ -627,7 +627,7 @@ class EditCompanyForm extends FormBase {
             $query = "SELECT logo from {ek_company} where id=:id";
             $filename = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
             $pic = drupal_realpath($filename);
-            unlink($pic);
+            \Drupal::service('file_system')->delete($pic);
             \Drupal::messenger()->addWarning(t("Logo image deleted"));
             Database::getConnection('external_db', 'external_db')->update('ek_company')->fields(array('logo' => ''))->condition('id', $id)->execute();
         }
@@ -637,7 +637,7 @@ class EditCompanyForm extends FormBase {
             $query = "SELECT sign from {ek_company} where id=:id";
             $filename = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
             $pic = drupal_realpath($filename);
-            unlink($pic);
+            \Drupal::service('file_system')->delete($pic);
             Database::getConnection('external_db', 'external_db')->update('ek_company')->fields(array('sign' => ''))->condition('id', $id)->execute();
             \Drupal::messenger()->addWarning(t("Signature image deleted"));
         }
@@ -646,8 +646,8 @@ class EditCompanyForm extends FormBase {
             if ($file = $form_state->getValue('logo')) {
 
                 $dir = "private://admin/company" . $id . "/images";
-                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $logo = file_unmanaged_copy($file->getFileUri(), $dir);
+                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                $logo = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                 Database::getConnection('external_db', 'external_db')
                         ->update('ek_company')
                         ->fields(array('logo' => $logo))
@@ -660,8 +660,8 @@ class EditCompanyForm extends FormBase {
             if ($file = $form_state->getValue('sign')) {
 
                 $dir = "private://admin/company" . $id . "/images";
-                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $sign = file_unmanaged_copy($file->getFileUri(), $dir);
+                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                $sign = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                 Database::getConnection('external_db', 'external_db')
                         ->update('ek_company')
                         ->fields(array('sign' => $sign))

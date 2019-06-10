@@ -5,7 +5,7 @@
 
             if (drupalSettings.auto_complete) {
 
-                $('.form-select-tag').tagEditor({
+                $('.form-select-tag').once().tagEditor({
                     autocomplete: {
                                 source : drupalSettings.path.baseUrl + drupalSettings.auto_complete, 
                                 minLength: 2,
@@ -14,7 +14,7 @@
                         );
 
             } else {
-                $('.form-select-tag').tagEditor();
+                $('.form-select-tag').once().tagEditor();
             }
 
 
