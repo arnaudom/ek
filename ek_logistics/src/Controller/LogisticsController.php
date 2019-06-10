@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\Form\FormBuilderInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Url;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_admin\CompanySettings;
@@ -122,7 +121,7 @@ class LogisticsController extends ControllerBase {
               && $_SESSION['istockfilter']['keyword'] != NULL
               && $_SESSION['istockfilter']['keyword'] != '%') {
           
-          $keyword = SafeMarkup::checkPlain($_SESSION['istockfilter']['keyword']) . '%';
+          $keyword = $_SESSION['istockfilter']['keyword'] . '%';
           $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_item_packing','p');
           $query->leftJoin('ek_items', 'i', 'i.itemcode=p.itemcode');
