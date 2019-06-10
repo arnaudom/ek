@@ -670,73 +670,80 @@ foreach ($location_array as $key => $location) {
             $cnt = 1;
             for ($i = $s0; $i  <= $c0; $i++) {
                 $this_date = $month0 . "-" . $Y0 . "-" . $i;
-                $r = $roster_array[$this_date][$line2['id']];
-                $this_time = '';
-                if (!empty($r) && !null == $r['roster']) {
-                    $time = explode(',', $r['roster']);
-                    $this_time = timed($time[0], $time[1], $time[2], $time[3], $time[4], $time[5]);
-                    if ($this_time == '00:00') {
+                if(isset($roster_array[$this_date][$line2['id']])) {
+                    $r = $roster_array[$this_date][$line2['id']];
+                    $this_time = '';
+                    if (!empty($r) && !null == $r['roster']) {
+                        $time = explode(',', $r['roster']);
+                        $this_time = timed($time[0], $time[1], $time[2], $time[3], $time[4], $time[5]);
+                        if ($this_time == '00:00') {
+                            $this_time = $r['status'];
+                        } elseif ($r['status'] != '') {
+                            $this_time = $r['status'] . "-" . $this_time;
+                        }
+                    } else {
                         $this_time = $r['status'];
-                    } elseif ($r['status'] != '') {
-                        $this_time = $r['status'] . "-" . $this_time;
+                    }
+                    if ($r['status'] != '') {
+                        $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+                        $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getFill()->getStartColor()->setRGB("969696");
+                    }
+
+                    $PHPDateValue = strtotime($this_time);
+                    $ExcelDateValue = \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel($PHPDateValue);
+                    $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $this_time);
+                    $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getFont()->setSize(8);
+                    $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getNumberFormat()->setFormatCode('[h]:mm');
+                    // compute total hours
+                    $total_h += sum_h('n', $this_time);
+                    if (isset($day[$i]) && $day[$i] == 'ph') {
+                        $ph_h += sum_h('ph', $this_time);
+                    } elseif (isset($day[$i]) && $day[$i] == 's') {
+                        $sunday_h +=sum_h('s', $this_time);
+                    } else {
+                        $normal_h+=sum_h('n', $this_time);
                     }
                 } else {
-                    $this_time = $r['status'];
+                    $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, 0);
                 }
-                if ($r['status'] != '') {
-                    $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-                    $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getFill()->getStartColor()->setRGB("969696");
-                }
-
-                $PHPDateValue = strtotime($this_time);
-                $ExcelDateValue = \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel($PHPDateValue);
-                $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $this_time);
-                $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getFont()->setSize(8);
-                $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getNumberFormat()->setFormatCode('[h]:mm');
-                // compute total hours
-                $total_h += sum_h('n', $this_time);
-                if (isset($day[$i]) && $day[$i] == 'ph') {
-                    $ph_h += sum_h('ph', $this_time);
-                } elseif (isset($day[$i]) && $day[$i] == 's') {
-                    $sunday_h +=sum_h('s', $this_time);
-                } else {
-                    $normal_h+=sum_h('n', $this_time);
-                }
-
                 $cnt++;
             }
 
             for ($i = $s; $i  <= $c; $i++) {
                 $this_date = $month . "-" . $Y. "-" . $i;
-                $r = $roster_array[$this_date][$line2['id']];
-                $this_time = '';
-                if (!empty($r) && !null == $r['roster']) {
-                    $time = explode(',', $r['roster']);
-                    $this_time = timed($time[0], $time[1], $time[2], $time[3], $time[4], $time[5]);
-                    if ($this_time == '00:00') {
+                    if(isset($roster_array[$this_date][$line2['id']])) {
+                    $r = $roster_array[$this_date][$line2['id']];
+                    $this_time = '';
+                    if (!empty($r) && !null == $r['roster']) {
+                        $time = explode(',', $r['roster']);
+                        $this_time = timed($time[0], $time[1], $time[2], $time[3], $time[4], $time[5]);
+                        if ($this_time == '00:00') {
+                            $this_time = $r['status'];
+                        } elseif ($r['status'] != '') {
+                            $this_time = $r['status'] . "-" . $this_time;
+                        }
+                    } else {
                         $this_time = $r['status'];
-                    } elseif ($r['status'] != '') {
-                        $this_time = $r['status'] . "-" . $this_time;
+                    }
+                    if ($r['status'] != '') {
+                        $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+                        $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getFill()->getStartColor()->setRGB("969696");
+                    }
+                    $ExcelDateValue = \PhpOffice\PhpSpreadsheet\Shared\Date::stringToExcel($this_time);
+                    $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getNumberFormat()->setFormatCode('[h]:mm');
+                    $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getFont()->setSize(8);
+                    $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $this_time);
+                    // compute total hours
+                    $total_h += sum_h('n', $this_time);
+                    if (isset($day[$i]) && $day[$i] == 'ph') {
+                        $ph_h += sum_h('ph', $this_time);
+                    } elseif (isset($day[$i]) && $day[$i] == 's') {
+                        $sunday_h += sum_h('s', $this_time);
+                    } else {
+                        $normal_h += sum_h('n', $this_time);
                     }
                 } else {
-                    $this_time = $r['status'];
-                }
-                if ($r['status'] != '') {
-                    $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-                    $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getFill()->getStartColor()->setRGB("969696");
-                }
-                $ExcelDateValue = \PhpOffice\PhpSpreadsheet\Shared\Date::stringToExcel($this_time);
-                $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getNumberFormat()->setFormatCode('[h]:mm');
-                $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getFont()->setSize(8);
-                $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $this_time);
-                // compute total hours
-                $total_h += sum_h('n', $this_time);
-                if (isset($day[$i]) && $day[$i] == 'ph') {
-                    $ph_h += sum_h('ph', $this_time);
-                } elseif (isset($day[$i]) && $day[$i] == 's') {
-                    $sunday_h += sum_h('s', $this_time);
-                } else {
-                    $normal_h += sum_h('n', $this_time);
+                    $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l,0);
                 }
                 $cnt++;
             }
