@@ -105,13 +105,18 @@ class DeleteForm extends FormBase {
   
   if($form_state->getValue('asset_pic') != '') {
     $uri = 'private://assets/' . $form_state->getValue('asset_pic');
-    file_unmanaged_delete($uri);
-    \Drupal::messenger()->addStatus(t('The asset image is deleted'));
+    if(file_exists($uri)) {
+        \Drupal::service('file_system')->delete($uri);
+        \Drupal::messenger()->addStatus(t('The asset image is deleted'));
+    }
   }
   if($form_state->getValue('asset_doc') != '') {
     $uri = 'private://assets/' . $form_state->getValue('asset_doc');
-    file_unmanaged_delete($uri);
-    \Drupal::messenger()->addStatus(t('The asset attachment is deleted'));
+    if(file_exists($uri)) {
+        \Drupal::service('file_system')->delete($uri);
+        \Drupal::messenger()->addStatus(t('The asset attachment is deleted')); 
+    }
+    
   }  
 
     $delete2 = Database::getConnection('external_db', 'external_db')

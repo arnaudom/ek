@@ -490,8 +490,8 @@ class EditForm extends FormBase {
             if ($file = $form_state->getValue('asset_pic')) {
 
                 $dir = "private://assets/" . $form_state->getValue('coid');
-                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $picture = file_unmanaged_copy($file->getFileUri(), $dir);
+                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                $picture = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                 
                 \Drupal::messenger()->addStatus(t("Picture uploaded"));
                 $fields['asset_pic'] = $picture;
@@ -503,8 +503,8 @@ class EditForm extends FormBase {
             if ($file = $form_state->getValue('asset_doc')) {
 
                 $dir = "private://assets/" . $form_state->getValue('coid');
-                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $doc = file_unmanaged_copy($file->getFileUri(), $dir);
+                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                $doc = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                 
                 \Drupal::messenger()->addStatus(t("Attachment uploaded"));
                 $fields['asset_doc'] = $doc;

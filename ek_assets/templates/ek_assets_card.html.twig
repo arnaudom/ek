@@ -9,15 +9,22 @@
                     <p class='badge'>{{ 'ID'|t }}: {{ items.id }}</p>
                 </div>
                 <div class='cell300 text-center'>
-                    {{ items.picture|raw}}
+                    <a href='{{ items.picture }}' target='_blank'>
+                    <img class='medium' src='{{ items.picture }}'></a>
+                    
                 </div>
                 <div class='cell200 text-right'>
                     {{ items.qr_code_svg|raw }}
                 </div>
                 
             </div>
+                <div class='row'>
+                    {% if items.doc %}
+                        {{ 'Attachment'|t }} : <a href='{{ items.doc_url}}' target='_blank' >{{ items.doc }}</a>
+                        {% endif %}
+                </div>
         </div>
-                <hr>
+        <hr>
         <div class='table'>
             <div class='row'>
                 <div class='cell300'>

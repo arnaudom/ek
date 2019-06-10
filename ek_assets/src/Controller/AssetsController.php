@@ -291,18 +291,14 @@ class AssetsController extends ControllerBase {
         $items['amort_yearly'] = $data->amort_yearly;
         $status = array(0 => t('not amortized'), 1 => t('amortized'));
         $items['amort_status'] = $status[$data->amort_status];
+        $items['picture'] = '';
         if ($data->asset_pic != '') {
-            $items['picture'] = "<a href='" . file_create_url($data->asset_pic) .
-                    "' target='_blank'>"
-                    . "<img class='medium' src=" . file_create_url($data->asset_pic) . "></a>";
-        } else {
-            $items['picture'] = '';
+            $items['picture'] = file_create_url($data->asset_pic);
         }
         if ($data->asset_doc != '') {
-            $parts = explode("/", $data->asset_doc);
-            $parts = array_reverse($parts);
-            $name = $parts[0];
-            $items['doc'] = "<a href='" . file_create_url($data->asset_doc) . "' target='_blank' >" . $name . "</a>";
+            $items['doc_url'] = file_create_url($data->asset_doc);
+            
+            $items['doc'] = basename($items['doc_url']);
         } else {
             $items['doc'] = '';
         }
@@ -609,6 +605,7 @@ class AssetsController extends ControllerBase {
                 }
                 
                 include_once drupal_get_path('module', 'ek_assets') . '/qrcode.inc';
+                return new \Symfony\Component\HttpFoundation\Response('', 204);
             
         } else {
                 $url = Url::fromRoute('ek_assets.listl', [],[])->toString();
