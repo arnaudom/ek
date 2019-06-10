@@ -658,7 +658,7 @@ class NewAddressBookForm extends FormBase {
             $del = FALSE;
             if ($form_state->getValue('delete_logo') == 1) {
 
-                file_unmanaged_delete($form_state->getValue('logo_uri'));
+                \Drupal::service('file_system')->delete($form_state->getValue('logo_uri'));
                 \Drupal::messenger()->addStatus(t("Old logo deleted"));
                 $logo = '';
                 $del = TRUE;
@@ -671,13 +671,13 @@ class NewAddressBookForm extends FormBase {
                 if ($file = $form_state->getValue('logo')) {
 
                   $dir = "private://address_book/cards/" . $id;
-                  file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                  $logo = file_unmanaged_copy($file->getFileUri(), $dir);
+                  \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                  $logo = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                   \Drupal::messenger()->addStatus(t("New logo uploaded"));
                   
                   //remove old if any
                   if(!isset($del) && $form_state->getValue('logo_uri') != '') {
-                      file_unmanaged_delete($form_state->getValue('logo_uri'));
+                      \Drupal::service('file_system')->delete($form_state->getValue('logo_uri'));
                   }
                 }
              }
@@ -705,7 +705,7 @@ class NewAddressBookForm extends FormBase {
                     if ($file) {
                         $file = str_replace('private://', '', $file);
                         $path = PrivateStream::basePath() . '/' . $file;
-                        file_unmanaged_delete($path);
+                        \Drupal::service('file_system')->delete($path);
                         $log = 'The name card file ' . $file . ' was deleted.';
                         \Drupal::logger('ek_address_book')->notice($log);
                     }
@@ -746,8 +746,8 @@ class NewAddressBookForm extends FormBase {
                             $file = $form_state->getValue('image' . $i);
                             //unset($file);
                             $dir = "private://address_book/cards/" . $id;
-                            file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                            $filename = file_unmanaged_copy($file->getFileUri(), $dir);
+                            \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                            $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                         }
 
 

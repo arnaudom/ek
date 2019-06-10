@@ -405,15 +405,13 @@ class AddressBookController extends ControllerBase {
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_expenses', 't');
-            $query->fields('t', ['id']);
-            $query->addExpression('count(id)', 'ids');
-            $or = db_or();
-            $or->condition('clientname', $abid, '=');
-            $or->condition('suppliername', $abid, '=');
-            $query->condition($or)->groupBy('t.id');
-            $data = $query->execute();
+            $condition = $query->orConditionGroup()
+            ->condition('clientname', $abid)
+            ->condition('suppliername', $abid);
+            $query->condition($condition);
+            $data = $query->countQuery()->execute()->fetchField();
             
-            if($data->fetchObject()->ids > 0){
+            if($data > 0){
                $usage[] = t('finance'); 
             }
                 
@@ -421,77 +419,55 @@ class AddressBookController extends ControllerBase {
         if ($this->moduleHandler->moduleExists('ek_products')) {
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_items', 't');
-            $query->fields('t', ['id']);
-            $query->addExpression('count(id)', 'ids');
             $query->condition('supplier', $abid, '=');
-            $query->groupBy('t.id');
-            $data = $query->execute();
+            $data = $query->countQuery()->execute()->fetchField();
             
-            if($data->fetchObject()->ids > 0){
+            if($data > 0){
                $usage[] = t('products & services'); 
             }
         }
         if ($this->moduleHandler->moduleExists('ek_logistics')) {
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_logi_delivery', 't');
-            $query->fields('t', ['id']);
-            $query->addExpression('count(id)', 'ids');
             $query->condition('client', $abid, '=');
-            $query->groupBy('t.id');
-            $data = $query->execute();
+            $data = $query->countQuery()->execute()->fetchField();
 
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_logi_receiving', 't');
-            $query->fields('t', ['id']);
-            $query->addExpression('count(id)', 'ids');
             $query->condition('supplier', $abid, '=');
-            $query->groupBy('t.id');
-            $data2 = $query->execute();
+            $data2 = $query->countQuery()->execute()->fetchField();
             
-            if($data->fetchObject()->ids > 0 || $data2->fetchObject()->ids > 0){
+            if($data > 0 || $data2 > 0){
                $usage[] = t('logistics'); 
             }
         }
         if ($this->moduleHandler->moduleExists('ek_sales')) {
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_sales_invoice', 't');
-            $query->fields('t', ['id']);
-            $query->addExpression('count(id)', 'ids');
             $query->condition('client', $abid, '=');
-            $query->groupBy('t.id');
-            $data = $query->execute();
+            $data = $query->countQuery()->execute()->fetchField();
 
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_sales_purchase', 't');
-            $query->fields('t', ['id']);
-            $query->addExpression('count(id)', 'ids');
             $query->condition('client', $abid, '=');
-            $query->groupBy('t.id');
-            $data2 = $query->execute();
+            $data2 = $query->countQuery()->execute()->fetchField();
 
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_sales_quotation', 't');
-            $query->fields('t', ['id']);
-            $query->addExpression('count(id)', 'ids');
             $query->condition('client', $abid, '=');
-            $query->groupBy('t.id');
-            $data3 = $query->execute();    
+            $data3 = $query->countQuery()->execute()->fetchField();
             
-            if($data->fetchObject()->ids > 0 || $data2->fetchObject()->ids > 0
-                    || $data3->fetchObject()->ids > 0){
+            if($data > 0 || $data2 > 0 || $data3 > 0){
                $usage[] = t('sales'); 
             }
         }        
         if ($this->moduleHandler->moduleExists('ek_projects')) {
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_project', 't');
-            $query->fields('t', ['id']);
-            $query->addExpression('count(id)', 'ids');
             $query->condition('client_id', $abid, '=');
-            $query->groupBy('t.id');
-            $data = $query->execute();
+            $data = $query->countQuery()->execute()->fetchField();
             
-            if($data->fetchObject()->ids > 0){
+            if($data > 0){
                $usage[] = t('projects'); 
             }
         }
@@ -526,7 +502,7 @@ class AddressBookController extends ControllerBase {
      * Util to return contact name callback.
      * @param (string) $type type of contact % default, 1 client, 2 supplier, 3 other, 4 cards
      * @return \Symfony\Component\HttpFoundation\JsonResponse;
-     *   An Json response object.
+     *   A Json response object.
      */
     public function ajaxlookupcontact(Request $request, $type) {
 
@@ -547,14 +523,12 @@ class AddressBookController extends ControllerBase {
             $query->fields('ab', ['id', 'name', 'type','logo'])->distinct();
 
             $query->leftJoin('ek_address_book_contacts', 'bc', 'ab.id = bc.abid');
-
-            $or = db_or();
-            $or->condition('name', $text . "%", 'like');
-            $or->condition('shortname', $text . "%", 'like');
-            $or->condition('contact_name', $text . "%", 'like');
-            $or->condition('contact_name', $text . "%", 'like');
-            $or->condition('activity', "%" . $text . "%", 'like');
-            $query->condition($or);
+            $or = $query->orConditionGroup()
+                ->condition('name', $text . "%", 'like')
+                ->condition('shortname', $text . "%", 'like')
+                ->condition('contact_name', $text . "%", 'like')
+                ->condition('activity', "%" . $text . "%", 'like');
+             $query->condition($or);
 
             if ($type != '%') {
                 $query->condition('type', $type, '=');
@@ -592,7 +566,7 @@ class AddressBookController extends ControllerBase {
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_address_book_contacts', 'abc');
             $query->fields('abc', ['id', 'contact_name', 'salutation','abid'])->distinct();
-            $or = db_or();
+            $or = $query->orConditionGroup();
             $or->condition('contact_name', $text . "%", 'like');
             $or->condition('contact_name', "%" . $text . "%", 'like');
             $query->condition($or);
@@ -612,33 +586,62 @@ class AddressBookController extends ControllerBase {
      * Util to return contact email callback.
      * @param (string) $type type of contact %: ek address book & users, user: users table, book: Ek address book
      * @return \Symfony\Component\HttpFoundation\JsonResponse;
-     *   An Json response object.
+     *   A Json response object.
      */
     public function ajaxlookupemail(Request $request, $type) {
 
-        $text = $request->query->get('term');
+        $text = $request->query->get('term') . "%";
         $name = array();
         if ($type == '%') {
             //look in address book and users
-            $query = "SELECT distinct email from {ek_address_book_contacts} WHERE email like :t1 or contact_name like :t2 ";
-            $a = array(':t1' => "$text%", ':t2' => "$text%");
-            $name1 = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchCol();
-
-            $query = "SELECT distinct mail from {users_field_data} WHERE (mail like :t1 OR name like :t2) AND status <> :s";
-            $a = array(':t1' => "$text%", ':t2' => "$text%", ':s' => 0);
-            $name2 = db_query($query, $a)->fetchCol();
-
+            //used in docs print/share
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book_contacts', 'a');
+            $query->fields('a', ['email']);
+            $condition = $query->orConditionGroup()
+                ->condition('email', $text, 'LIKE')
+                ->condition('contact_name', $text, 'LIKE');
+            $query->condition($condition);
+            $query->distinct();
+            $name1 = $query->execute()->fetchCol();
+            
+            $query = Database::getConnection()
+                    ->select('users_field_data', 'u');
+            $query->fields('u', ['mail']);
+            $condition = $query->orConditionGroup()
+                ->condition('mail', $text, 'LIKE')
+                ->condition('name', $text, 'LIKE');
+            $query->condition($condition);
+            $query->condition('status', 0, '>');
+            $query->distinct();
+            $name2 = $query->execute()->fetchCol();
             $name = array_merge($name1, $name2);
         } elseif ($type == 'user') {
             //look in  users
-            $query = "SELECT distinct name from {users_field_data} WHERE (mail like :t1 or name like :t2) AND status <> :s";
-            $a = array(':t1' => "$text%", ':t2' => "$text%", ':s' => 0);
-            $name = db_query($query, $a)->fetchCol();
+            //use in notif
+            $query = Database::getConnection()
+                    ->select('users_field_data', 'u');
+            $query->fields('u', ['name']);
+            $condition = $query->orConditionGroup()
+                ->condition('mail', $text, 'LIKE')
+                ->condition('name', $text, 'LIKE');
+            $query->condition($condition);
+            $query->condition('status', 0, '>');
+            $query->distinct();
+            $name = $query->execute()->fetchCol();
+            
         } elseif ($type == 'book') {
             //look in  book   
-            $query = "SELECT distinct email from {ek_address_book_contacts} WHERE email like :t1 or contact_name like :t2 ";
-            $a = array(':t1' => "$text%", ':t2' => "$text%");
-            $name = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchCol();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book_contacts', 'a');
+            $query->fields('a', ['email']);
+            $condition = $query->orConditionGroup()
+                ->condition('email', $text, 'LIKE')
+                ->condition('contact_name', $text, 'LIKE');
+            $query->condition($condition);
+            $query->distinct();
+            $name = $query->execute()->fetchCol();
+            
         }
 
         return new JsonResponse($name);
@@ -706,7 +709,7 @@ class AddressBookController extends ControllerBase {
                     ->select('ek_address_book', 'ab');
         $query->fields('ab', ['activity'])->distinct();
 
-        $or = db_or();
+        $or = $query->orConditionGroup();
         $or->condition('activity', $text . "%", 'like');
         $or->condition('activity', "%," . $text . "%", 'like');
         $query->condition($or);

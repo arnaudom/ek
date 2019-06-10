@@ -333,14 +333,14 @@ class NewAddressBookCardForm extends FormBase {
 
                     // If the user uploaded a new card save it to a permanent location
                     // retrieve previous card file if any
-                    $filename = '';
+                    $card = '';
 
                     if (!$form_state->getValue('image' . $i) == 0) {
 
                         $file = $form_state->getValue('image' . $i);
-                        $dir = "private://address_book/cards/" . $id;
-                        file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                        $filename = file_unmanaged_copy($file->getFileUri(), $dir);
+                        $dir = "private://address_book/cards/" . $form_state->getValue('for_id');
+                        \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                        $card = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                     }
                     //end upload//
 
@@ -352,7 +352,7 @@ class NewAddressBookCardForm extends FormBase {
                         'telephone' => $form_state->getValue('ctelephone' . $i),
                         'mobilephone' => $form_state->getValue('cmobilephone' . $i),
                         'email' => $form_state->getValue('email' . $i),
-                        'card' => $filename,
+                        'card' => $card,
                         'department' => $form_state->getValue('department' . $i),
                         'link' => $form_state->getValue('link' . $i),
                         'comment' => $form_state->getValue('ccomment' . $i),
