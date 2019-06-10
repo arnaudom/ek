@@ -56,7 +56,7 @@ class PostProject extends FormBase {
             '#autocomplete_route_name' => 'ek_look_up_projects',
         );
 
-        $folder = array('ap' => t('action plan'), 'com' => t('communication'), 'fi' => t('finance'),);
+        $folder = array('com' => t('communication'), 'fi' => t('finance'),);
         $form['folder'] = array(
             '#type' => 'select',
             '#options' => $folder,
@@ -121,29 +121,29 @@ class PostProject extends FormBase {
 
         //verify project access
         if (ProjectData::validate_access($string[0])) {
-            $query = "SELECT * from {ek_documents} WHERE id=:id";
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $form_state->getValue('id')))
-                    ->fetchObject();
-
-            $from = $data->uri;
-            $pcode = array_reverse($string[1]);
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_documents', 'd');
+            $query->fields('d');
+            $query->condition('id', $form_state->getValue('id'));
+            $doc = $query->execute()->fetchObject();
+            
+            $code = array_reverse(explode('-',$string[1]));
             $pcode = $code[0];
             $to = "private://projects/documents/" . $pcode;
 
-            file_prepare_directory($to, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-            $to .= '/' . $data->filename;
-            $move = file_unmanaged_copy($from, $to, FILE_EXISTS_RENAME);
-
+            \Drupal::service('file_system')->prepareDirectory($to, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            $to .= $data->filename;
+            
+            $move = \Drupal::service('file_system')->copy($doc->uri, $to, FILE_EXISTS_RENAME);
             // if($move) {
             $fields = array(
                 'pcode' => $string[1],
-                'filename' => $data->filename,
-                'uri' => $to,
+                'filename' => $doc->filename,
+                'uri' => $move,
                 'folder' => $form_state->getValue('folder'),
                 'comment' => $form_state->getValue('comment') ? Xss::filter($form_state->getValue('comment')) : t('Posted from documents'),
                 'date' => date('U'),
-                'size' => filesize($to),
+                'size' => filesize($move),
                 'share' => 0,
                 'deny' => 0,
             );

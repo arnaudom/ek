@@ -267,24 +267,26 @@ class DocumentsEditController extends ControllerBase {
      */
     public function move(Request $request, $id) {
 
-        $query = 'SELECT * FROM {ek_documents} WHERE id=:id';
-        $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
-        $uri = "private://documents/users/" . \Drupal::currentUser()->id() . '/' . $data->filename;
-        $from = drupal_realpath($data->uri);
-        $to = drupal_realpath($uri);
-        $move = file_unmanaged_copy($from, $to, FILE_EXISTS_RENAME);
-        $name = array_pop(explode('/', $move));
-        $uri = "private://documents/users/" . \Drupal::currentUser()->id() . '/' . $name;
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_documents', 'd');
+            $query->fields('d');
+            $query->condition('id', $id, '=');
+        $doc = $query->execute()->fetchObject();
+        
+        $uri = "private://documents/users/" . \Drupal::currentUser()->id() . '/' . basename($doc->uri);
+        $move = \Drupal::service('file_system')->copy($doc->uri, $uri, FILE_EXISTS_RENAME);
+        
         $fields = array(
             'uid' => \Drupal::currentUser()->id(),
             //'fid' => '',
-            'type' => $data->type,
-            'filename' => $name,
-            'uri' => $uri,
+            'type' => $doc->type,
+            'filename' => $doc->filename,
+            'uri' => $move,
             'folder' => t('moved from share folder'),
-            'comment' => $data->comment,
+            'comment' => $doc->comment,
             'date' => time(),
-            'size' => $data->size,
+            'size' => $doc->size,
             'share' => 0,
             'share_uid' => 0,
             'share_gid' => 0,
