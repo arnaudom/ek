@@ -14,7 +14,6 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
-use Drupal\Component\Utility\SafeMarkup;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;

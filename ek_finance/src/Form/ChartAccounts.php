@@ -393,7 +393,7 @@ class ChartAccounts extends FormBase {
 
                 foreach ($c as $key => $value) {
 
-                    $fields = array('aname' => $value['aname'], 'astatus' => $value['astatus']);
+                    $fields = array('aname' => \Drupal\Component\Utility\Xss::filter($value['aname']), 'astatus' => $value['astatus']);
                     $update = Database::getConnection('external_db', 'external_db')
                             ->update('ek_accounts')
                             ->condition('id', $key)
@@ -403,19 +403,24 @@ class ChartAccounts extends FormBase {
 
                 foreach ($d as $key => $value) {
 
-
-
-                    $fields = array(
-                        'aname' => $value['aname'],
+                    $balance = (float)str_replace(',', '', $value['balance']);
+                    $balance_base = (float)str_replace(',', '', $value['balance_base']);
+                    
+                    if(is_numeric($balance) && is_numeric($balance_base)){
+                      $fields = array(
+                        'aname' => \Drupal\Component\Utility\Xss::filter($value['aname']),
                         'balance' => str_replace(',', '', $value['balance']),
                         'balance_base' => str_replace(',', '', $value['balance_base']),
                         'balance_date' => $value['balance_date'],
                         'astatus' => $value['astatus']);
-                    $update = Database::getConnection('external_db', 'external_db')
-                            ->update('ek_accounts')
-                            ->condition('id', $key)
-                            ->fields($fields)
-                            ->execute();
+                            $update = Database::getConnection('external_db', 'external_db')
+                                    ->update('ek_accounts')
+                                    ->condition('id', $key)
+                                    ->fields($fields)
+                                    ->execute();  
+                    }
+
+                    
                 }
 
                \Drupal::messenger()->addStatus(t('Data updated'));

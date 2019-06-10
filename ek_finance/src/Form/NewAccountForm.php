@@ -11,7 +11,6 @@ namespace Drupal\ek_finance\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
-use Drupal\Component\Utility\SafeMarkup;
 
 /**
  * Provides a form to create a new account in finance chart.
@@ -128,7 +127,7 @@ class NewAccountForm extends FormBase {
   if($form_state->get('message') == '' ) {
   
         $aid = $form_state->getValue('for_class').$form_state->getValue('aid');
-        $aname = SafeMarkup::checkPlain( $form_state->getValue('aname') );
+        $aname = \Drupal\Component\Utility\Xss::filter($form_state->getValue('aname'));
         
         $fields = array(
           'aid' => $aid,
