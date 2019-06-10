@@ -11,7 +11,6 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Url;
 use Drupal\user\Entity\User;
