@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Contains \Drupal\ek_hr\Plugin\Block\CurrentPayrollBlock.
@@ -9,7 +10,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Annotation\Translation;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Database\Database;
-use Drupal\Component\Utility\SafeMarkup;
+
 /**
  * Provides a 'Payroll statistics widget' .
  *

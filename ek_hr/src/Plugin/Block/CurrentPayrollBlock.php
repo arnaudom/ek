@@ -7,7 +7,6 @@ namespace Drupal\ek_hr\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Database\Database;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Extension\ModuleHandler;
 

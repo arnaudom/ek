@@ -32,12 +32,12 @@ function ek_hr_help($route_name, RouteMatchInterface $route_match) {
       $output .= '<dt>' . t('List') . '</dt>';
       $output .= '<dd>' . t('The list will show current employees sorted by company and status. From the list you can access and edit employee data.') . '</dd>';
       $output .= '<dt>' . t('New employee') . '</dt>';
-      $output .= '<dd>' . t('Go to <a href="@new">New Employee</a> to record a new employee.', array('@new' => \Drupal::url('ek_hr.new-employee'))) . '</dd>';
+      $output .= '<dd>' . t('Go to <a href="@new">New Employee</a> to record a new employee.', array('@new' => Url::fromRoute('ek_hr.new-employee')->toString())) . '</dd>';
       $output .= '<dt>' . t('Categories') . '</dt>';
       $output .= '<dd>' . t('Categories are classification of employees. You can have 5 different categories like '
               . 'for ex. "manager", "expatriate", "engineer", "part time", etc... '
               . 'For each categories you can define specific allowances and deductions parameters <a href="@allo">here</a>. '
-              . 'You need to define categories before allowances.', array('@allo' => \Drupal::url('ek_hr.parameters-ad'))) . '</dd>';
+              . 'You need to define categories before allowances.', array('@allo' => Url::fromRoute('ek_hr.parameters-ad')->toString())) . '</dd>';
       $output .= '<dt>' . t('Main parameters') . '</dt>';
       $output .= '<dd>' . t('Main parameters are settings that are applicable to all categories and employees for a single company. '
               . 'For ex. the calculation rate of taxes or pension fund name.') . '</dd>';
@@ -50,7 +50,7 @@ function ek_hr_help($route_name, RouteMatchInterface $route_match) {
               . 'In locations, you can define as many working location as needed like "head office" or "factory"; '
               . 'In Services, you will define the type of services available in your organization like "marketing", "maintenance department" or "finance"; '
               . 'In ranks, you can upload a file definition of employees ranks like "General manager", "Senior engineer", "Clerk", etc... '
-              . 'The file structure is defined further <a href="@rank">here</a>. ', array('@rank'  => \Drupal::url('ek_hr.parameters-organization-rank'))) . '</dd>';
+              . 'The file structure is defined further <a href="@rank">here</a>. ', array('@rank'  => Url::fromRoute('ek_hr.parameters-organization-rank')->toString())) . '</dd>';
       $output .= '<dt>' . t('Accounts') . '</dt>';
       $output .= '<dd>' . t('If finance module is enabled, "accounts" parameters will define the mapping of payroll expenses with journal accounts. '
               . 'You need to define the journal chart structure before updating those parameters.') . '</dd>';     

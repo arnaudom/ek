@@ -78,6 +78,7 @@ WHILE ($r = $periods->fetchObject()) {
     ];
 }
 
+
 // Public Holidays
 //store the public holidays and sundays dates to optimize query
 $ph_array = array();
@@ -115,13 +116,25 @@ function timed($t0, $t1, $t2, $t3, $t4, $t5) {
     $t3 = explode(".", $t3);
     $t4 = explode(".", $t4);
     $t5 = explode(".", $t5);
-
-    $ta = $t0[0] * 3600 + $t0[1] * 60;
-    $tb = $t1[0] * 3600 + $t1[1] * 60;
-    $tc = $t2[0] * 3600 + $t2[1] * 60;
-    $td = $t3[0] * 3600 + $t3[1] * 60;
-    $te = $t4[0] * 3600 + $t4[1] * 60;
-    $tf = $t5[0] * 3600 + $t5[1] * 60;
+    
+    $s = is_numeric($t0[0]) ? $t0[0] : 0;
+    $m = is_numeric($t0[1]) ? $t0[1] : 0;
+    $ta = $s * 3600 + $m * 60;
+    $s = is_numeric($t1[0]) ? $t1[0] : 0;
+    $m = is_numeric($t1[1]) ? $t1[1] : 0;
+    $tb = $s * 3600 + $m * 60;
+    $s = is_numeric($t2[0]) ? $t2[0] : 0;
+    $m = is_numeric($t2[1]) ? $t2[1] : 0;
+    $tc = $s * 3600 + $m * 60;
+    $s = is_numeric($t3[0]) ? $t3[0] : 0;
+    $m = is_numeric($t3[1]) ? $t3[1] : 0;
+    $td = $s * 3600 + $m * 60;
+    $s = is_numeric($t4[0]) ? $t4[0] : 0;
+    $m = is_numeric($t4[1]) ? $t4[1] : 0;
+    $te = $s * 3600 + $m * 60;
+    $s = is_numeric($t5[0]) ? $t5[0] : 0;
+    $m = is_numeric($t5[1]) ? $t5[1] : 0;
+    $tf = $s * 3600 + $m * 60;
 
     $total = ($tb - $ta) + ($td - $tc) + ($tf - $te);
     if ($total == 86400) {
@@ -133,9 +146,18 @@ function timed($t0, $t1, $t2, $t3, $t4, $t5) {
 
 function sum_h($t, $h) {
 
-    $t0 = explode(":", $h);
-    $ta = $t0[0] * 3600 + $t0[1] * 60;
-    return $ta;
+    
+    $t_ = explode(":", $h);
+    $s = 0;
+    $m = 0;
+    if(is_array($t_)) {
+        $s = is_numeric($t_[0]) ? $t_[0] : 0;
+        if(isset($t_[1])){
+            $m = is_numeric($t_[1]) ? $t_[1] : 0;
+        }
+        
+    }
+    return  ($s * 3600 + $m * 60);
 }
 
 // Create new Excel object
@@ -650,7 +672,7 @@ foreach ($location_array as $key => $location) {
                 $this_date = $month0 . "-" . $Y0 . "-" . $i;
                 $r = $roster_array[$this_date][$line2['id']];
                 $this_time = '';
-                if (!empty($r)) {
+                if (!empty($r) && !null == $r['roster']) {
                     $time = explode(',', $r['roster']);
                     $this_time = timed($time[0], $time[1], $time[2], $time[3], $time[4], $time[5]);
                     if ($this_time == '00:00') {
@@ -673,9 +695,9 @@ foreach ($location_array as $key => $location) {
                 $objPHPExcel->getActiveSheet(1)->getStyle($col[$cnt] . $l)->getNumberFormat()->setFormatCode('[h]:mm');
                 // compute total hours
                 $total_h += sum_h('n', $this_time);
-                if ($day[$i] == 'ph') {
+                if (isset($day[$i]) && $day[$i] == 'ph') {
                     $ph_h += sum_h('ph', $this_time);
-                } elseif ($day[$i] == 's') {
+                } elseif (isset($day[$i]) && $day[$i] == 's') {
                     $sunday_h +=sum_h('s', $this_time);
                 } else {
                     $normal_h+=sum_h('n', $this_time);
@@ -688,7 +710,7 @@ foreach ($location_array as $key => $location) {
                 $this_date = $month . "-" . $Y. "-" . $i;
                 $r = $roster_array[$this_date][$line2['id']];
                 $this_time = '';
-                if (!empty($r)) {
+                if (!empty($r) && !null == $r['roster']) {
                     $time = explode(',', $r['roster']);
                     $this_time = timed($time[0], $time[1], $time[2], $time[3], $time[4], $time[5]);
                     if ($this_time == '00:00') {
@@ -709,9 +731,9 @@ foreach ($location_array as $key => $location) {
                 $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $this_time);
                 // compute total hours
                 $total_h += sum_h('n', $this_time);
-                if ($day[$i] == 'ph') {
+                if (isset($day[$i]) && $day[$i] == 'ph') {
                     $ph_h += sum_h('ph', $this_time);
-                } elseif ($day[$i] == 's') {
+                } elseif (isset($day[$i]) && $day[$i] == 's') {
                     $sunday_h += sum_h('s', $this_time);
                 } else {
                     $normal_h += sum_h('n', $this_time);
