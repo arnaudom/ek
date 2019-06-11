@@ -106,20 +106,27 @@ function ek_hr_file_download($uri) {
         }
 
         if (strpos($uri,'/hr/pictures')) {
+            
+            if (strpos($uri,'/40/')) {
+                //bypass filter
+                return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($uri));
+            }
 
-        $query = "SELECT administrator,picture FROM {ek_hr_workforce} "
-                . "WHERE picture=:uri AND FIND_IN_SET(company_id, :c)";
-        $a = array(':uri' => $uri, ':c' => $access);
-        $data = Database::getConnection('external_db', 'external_db')->query($query, $a )->fetchObject();
-        $admin_array = explode(',', $data->administrator);
-
+          
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_hr_workforce', 'w')
+                        ->fields('w', ['administrator','picture'])
+                        ->condition('picture', $uri,'=')
+                        ->condition('company_id', $company,'IN');
+            $data = $query->execute()->fetchObject();
+            $admin_array = explode(',', $data->administrator);
         
              if($data->administrator == '0' 
                   || in_array( 'administrator', \Drupal::currentUser()->getRoles()) 
                   || in_array( \Drupal::currentUser()->id(), $admin_array ) 
                ) { 
                     
-              return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($data->picture));
+                return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($data->picture));
                 
              } else { 
               return -1;

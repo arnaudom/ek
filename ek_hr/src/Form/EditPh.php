@@ -226,8 +226,26 @@ class EditPh extends FormBase {
                 '#suffix' => ''
             );
 
+            unset($company[$form_state->getValue('coid')]);
+            $company[0] = t('None');
+            $form['copy'] = array(
+                '#type' => 'select',
+                '#size' => 1,
+                '#options' => $company,
+                '#default_value' => NULL,
+                '#title' => t('copy from'),
+                '#default_value' => 0,
+            );            
+            
             $form['#attached']['library'][] = 'ek_hr/ek_hr.hr';
+            
+            
+            
+            
         }
+        
+
+        
         return $form;
     }
 
@@ -260,6 +278,27 @@ class EditPh extends FormBase {
 
 
         if ($form_state->get('step') == 3) {
+            
+            if($form_state->getValue('copy') != 0) {
+                $data = Database::getConnection('external_db', 'external_db')
+                                ->select('ek_hr_workforce_ph', 'ph')
+                                ->fields('ph')
+                                ->condition('coid', $form_state->getValue('copy'))
+                                ->execute();
+                while($d = $data->fetchObject()) {
+                    $fields = array(
+                            'coid' => $form_state->getValue('coid'),
+                            'description' => $d->description,
+                            'date' => $d->date,
+                        );
+
+                        Database::getConnection('external_db', 'external_db')
+                                ->insert('ek_hr_workforce_ph')
+                                ->fields($fields)
+                                ->execute();
+                }
+                \Drupal::messenger()->addStatus(t('Data copied'));
+            }
 
             $list = $form_state->getValue('ph-table');
             foreach ($list as $key => $value) {
