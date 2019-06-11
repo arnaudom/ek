@@ -111,7 +111,7 @@ class ProjectController extends ControllerBase {
 
                     $or = $query->orConditionGroup();
                     $or->condition('pcode', $id1, 'like');
-                    $or->condition('pcode', $id12, 'like');
+                    $or->condition('pcode', $id2, 'like');
                     $data = $query
                             ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date','archive'))
                             ->condition($or)
