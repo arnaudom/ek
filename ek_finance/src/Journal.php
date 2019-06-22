@@ -263,7 +263,11 @@ class Journal {
                     self::save($asset, '1', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                 }
 
-                //currency gain / loss
+                //currency gain || loss
+                //When rate of non base currency increase between date of sales and date of receipt, there is an exchange loss
+                // loss is recorded with DT of sales account vs CT of debtor
+                //When rate of non base currency decrease between date of sales and date of receipt, there is an exchange gain
+                // gain is recorded with CT of sales account vs DT of debtor
                 if ($account_currency <> $baseCurrency) {
 
                     $gain = self::exchangeGL($j['currency'], $j['value'], $j['rate'], $j['fxRate']);
@@ -272,16 +276,18 @@ class Journal {
                         $aid = '49999';
 
                     if ($gain > 0) {
+                        //gain
                         self::save($aid, '1', $j['coid'], 'credit', 'receipt', $j['reference'], $j['date'], $gain, '0', $baseCurrency);
                         self::save($asset, '1', $j['coid'], 'debit', 'receipt', $j['reference'], $j['date'], $gain, '0', $baseCurrency, 'currency exchange gain');
                     }
 
                     if ($gain < 0) {
+                        //loss
                         $gain = abs($gain);
                         self::save($aid, '1', $j['coid'], 'debit', 'receipt', $j['reference'], $j['date'], $gain, '0', $baseCurrency);
                         self::save($asset, '1', $j['coid'], 'credit', 'receipt', $j['reference'], $j['date'], $gain, '0', $baseCurrency, 'currency exchange loss');
                     }
-                }// gain
+                }
 
 
                 break;
@@ -347,7 +353,11 @@ class Journal {
                     self::save($asset, '1', $j['coid'], 'credit', 'receipt', $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                 }
 
-                //currency gain / loss
+                //currency gain || loss
+                //When rate of non base currency increase between date of sales and date of receipt, there is an exchange loss
+                // loss is recorded with DT of sales account vs CT of debtor
+                //When rate of non base currency decrease between date of sales and date of receipt, there is an exchange gain
+                // gain is recorded with CT of sales account vs DT of debtor
                 if ($j['currency'] <> $baseCurrency) {
 
                     $gain = self::exchangeGL($j['currency'], $j['value'], $j['rate']);
@@ -431,7 +441,11 @@ class Journal {
                 }
 
 
-                //currency gain / loss
+                //currency gain || loss
+                //When rate of non base currency increase between date of purchase and date of payment, there is an exchange gain
+                // gain is recorded with CT of sales account vs DT of debtor
+                //When rate of non base currency decrease between date of purchase and date of payment, there is an exchange loss
+                // loss is recorded with DT of sales account vs CT of debtor
 
                 if ($j['currency'] <> $baseCurrency) {
                     $gain = self::exchangeGL($j['currency'], $j['value'], $j['rate'], $j['fxRate']);
@@ -440,16 +454,19 @@ class Journal {
                     if ($aid == '')
                         $aid = '49999';
 
-                    if ($gain > 0) {
+                    if ($gain > 0) { 
+                        //loss
+                        self::save($aid, '1', $j['coid'], 'debit', 'payment', $j['reference'], $j['date'], $gain, '0', $baseCurrency);
+                        self::save($liability, '1', $j['coid'], 'credit', 'payment', $j['reference'], $j['date'], $gain, '0', $baseCurrency, 'currency exchange loss');
+                    }
+                    
+                    if ($gain < 0) { 
+                        //gain
+                        $gain = abs($gain);
                         self::save($aid, '1', $j['coid'], 'credit', 'payment', $j['reference'], $j['date'], $gain, '0', $baseCurrency);
                         self::save($liability, '1', $j['coid'], 'debit', 'payment', $j['reference'], $j['date'], $gain, '0', $baseCurrency, 'currency exchange gain');
                     }
 
-                    if ($gain < 0) {
-                        $gain = abs($gain);
-                        self::save($aid, '1', $j['coid'], 'debit', 'payment', $j['reference'], $j['date'], $gain, '0', $baseCurrency);
-                        self::save($liability, '1', $j['coid'], 'credit', 'payment', $j['reference'], $j['date'], $gain, '0', $baseCurrency, 'currency exchange loss');
-                    }
                 } //gain/loss
 
 
@@ -1112,7 +1129,7 @@ class Journal {
 
     /*
      * calculate a gain or loss between 2 dates when transactions are not in base currency
-     *
+     * by comparing current value to past value
      * ie Invoice recorded 30 days previous payment received
      * The rates must be expressed relative to base currency
      * For example if base currency is USD = 1, EUR = 0.9, GBP = 0.7, etc
@@ -1131,7 +1148,7 @@ class Journal {
         }
 
         if ($rate <> $current_rate) {
-            $variation = round((($value / $rate) - $value / $current_rate), 2);
+            $variation = round((($value / $current_rate) - $value / $rate), 2);
             return $variation;
         } else {
             return 0;
