@@ -152,14 +152,14 @@ class AssignNote extends FormBase {
                     'callback' => array($this, 'note_details'),
                     'wrapper' => 'div_note_details',
                 ),
-                '#prefix' => "<div class='row'><div class='cell'>",
+                '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
                 '#suffix' => '</div></div>',
             
         ); 
         $form['note_details'] = array(
                 '#type' => 'item',
-                '#prefix' => "<div class = 'cell current blue' id='div_note_details'>",
-                '#suffix' => '</div>',
+                '#prefix' => "<div class='row'><div class = 'cell current blue' id='div_note_details'>",
+                '#suffix' => '</div></div>',
  
             );        
 
@@ -170,6 +170,8 @@ class AssignNote extends FormBase {
             '#required' => TRUE,
             '#default_value' => date('Y-m-d'),
             '#title' => t('Payment date'),
+            '#prefix' => "<div class='row'><div class='cell'>",
+            '#suffix' => '</div>',
         );
         
     
@@ -181,7 +183,7 @@ class AssignNote extends FormBase {
             '#disabled' => TRUE,
             '#default_value' => number_format($cn_amount, 2),
             '#title' => $title,
-            '#prefix' => "<div class='row'><div class='cell'>",
+            '#prefix' => "<div class='cell'>",
             '#suffix' => '</div>',
         );
 
@@ -197,14 +199,14 @@ class AssignNote extends FormBase {
                     '#description' => '',
                     '#attributes' => array('class' => array('amount')),
                     '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div></div>',
+                    '#suffix' => '</div></div></div>',
                 );
             } else {
                 $form['fx_rate'] = array(
                     '#type' => 'hidden',
                     '#value' => 1,
                     '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div></div>',
+                    '#suffix' => '</div></div></div>',
                 );
             }
         } else {
@@ -212,24 +214,11 @@ class AssignNote extends FormBase {
                 '#type' => 'hidden',
                 '#value' => 1,
                 '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div></div>',
+                '#suffix' => '</div></div></div>',
             );
         }
 
-        /*
-        $form['close'] = array(
-            '#type' => 'checkbox',
-            '#title' => t('Force close invoice'),
-            '#prefix' => "<div id='close' >",
-            '#suffix' => '</div>',
-            '#states' => array(
-                'invisible' => array(
-                    "input[name='short']" => array('value' => '0'),
-                ),
-            ),
-        );
-        */
-        
+               
 
         $form['actions'] = array('#type' => 'actions');
         $form['actions']['record'] = array(
