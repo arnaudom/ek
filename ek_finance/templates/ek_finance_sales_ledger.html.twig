@@ -56,7 +56,7 @@
                                 <td>{{ row.date }}</td>
                                 <td>{{ row.id  }} - {{ row.count  }}</td>
                                 <td>
-                                    <span title='{{ row.comment }}'>{{ row.aid }}</span> 
+                                    <span title="">{{ row.aid }}</span> 
                                     {% if  (row.source == "invoice" or row.source == "invoice cn") and row.exchange != 1 %} 
                                         <a class='' title='{{ row.source }}' href="{{  path('ek_sales.invoices.print_html', {'id': row.reference }) }}">{{ row.aname }}</a>
                                     {% elseif  (row.source == "purchase" or row.source == "purchase dn") and row.exchange != 1  %} 
