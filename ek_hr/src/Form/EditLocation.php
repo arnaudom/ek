@@ -135,7 +135,13 @@ class EditLocation extends FormBase {
                     '#attributes' => array('placeholder' => t('location name')),
                     '#required' => TRUE,
                 );
-
+                
+                $form['nameold'] = array(
+                    '#id' => 'nameold-' . $id,
+                    '#type' => 'hidden',
+                    '#value' => $r->location,
+                );
+                
                 $form['desc'] = array(
                     '#id' => 'desc-' . $id,
                     '#type' => 'textfield',
@@ -166,6 +172,7 @@ class EditLocation extends FormBase {
 
                 $form['l-table'][$id] = array(
                     'name' => &$form['name'],
+                    'nameold' => &$form['nameold'],
                     'description' => &$form['desc'],
                     'turnover' => &$form['turnover'],
                     'del' => &$form['del'],
@@ -174,6 +181,7 @@ class EditLocation extends FormBase {
                 $form['l-table']['#rows'][] = array(
                     'data' => array(
                         array('data' => &$form['name']),
+                        //array('data' => &$form['nameold']),
                         array('data' => &$form['desc']),
                         array('data' => &$form['turnover']),
                         array('data' => &$form['del']),
@@ -182,6 +190,7 @@ class EditLocation extends FormBase {
                 );
 
                 unset($form['name']);
+                unset($form['nameold']);
                 unset($form['desc']);
                 unset($form['turnover']);
                 unset($form['del']);
@@ -274,7 +283,6 @@ class EditLocation extends FormBase {
 
         if ($form_state->get('step') == 3) {
 
-
             if ($form_state->getValue('description') <> '') {
                 if ($form_state->getValue('name') == '') {
                     $form_state->setErrorByName('newname', $this->t('You need to enter a name'));
@@ -294,50 +302,59 @@ class EditLocation extends FormBase {
 
             $list = $form_state->getValue('l-table');
             foreach ($list as $key => $value) {
+                
+                if (!is_numeric($value['turnover'])) {
+                    $value['turnover'] = 0;
+                }
 
                 if ($key <> 'new') {
+                    
+                    $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_hr_workforce', 'w');
+                    $query->addExpression('Count(id)', 'count');
+                    $query->condition('location', $value['nameold'], '=');
+
+                    $Obj = $query->execute();
+                    $count = $Obj->fetchObject()->count;
+                    
+                            
                     if ($value['del'] == 1) {
 
-                        $query = "SELECT count(id) from {ek_hr_workforce} WHERE location =:l";
-                        $a = array(':l' => $value['name']);
-                        $count = Database::getConnection('external_db', 'external_db')
-                                ->query($query, $a)
-                                ->fetchField();
-
                         if ($count > 0) {
-                            \Drupal::messenger()->addWarning(t('Location \'@l\' cannot be deleted because it is used.', ['@l' => $value['name']]));
+                            \Drupal::messenger()->addWarning(t('Location \'@l\' cannot be deleted because it is used.', ['@l' => $value['nameold']]));
                         } else {
                             Database::getConnection('external_db', 'external_db')
                                     ->delete('ek_hr_location')
                                     ->condition('id', $key)
                                     ->execute();
-                            \Drupal::messenger()->addWarning(t('Location \'@l\'  deleted', ['@l' => $value['name']]));
+                            \Drupal::messenger()->addWarning(t('Location \'@l\'  deleted', ['@l' => $value['nameold']]));
                         }
+                        
                     } else {
-
-                        if (!is_numeric($value['turnover'])) {
-                            $value['turnover'] = 0;
+                        //edit
+                       
+                        $loc = str_replace('/','_', $value['name']);
+                        
+                        if($value['name'] != $value['nameold']){
+                            //edit location name
+                            //update existing
+                            if ($count > 0) { 
+                                //update workforce
+                                Database::getConnection('external_db', 'external_db')
+                                ->update('ek_hr_workforce')
+                                ->fields(['location' => Xss::filter($loc)])
+                                ->condition('location', $value['nameold'])
+                                ->execute();
+                            }
+                            
                         }
-
-                        $query = "SELECT count(id) from {ek_hr_workforce} WHERE location =:l";
-                        $a = array(':l' => $value['name']);
-                        $count = Database::getConnection('external_db', 'external_db')
-                                ->query($query, $a)
-                                ->fetchField();
-
-                        if ($count > 0) { //In use only update description or turnover
-                            $fields = array(
+                        
+                        //update location table
+                        $fields = array(
+                                'location' => Xss::filter($loc),
                                 'description' => Xss::filter($value['description']),
                                 'turnover' => $value['turnover']
-                            );
-                        } else { //not in use can update all data               
-                            $fields = array(
-                                'location' => Xss::filter($value['name']),
-                                'description' => Xss::filter($value['description']),
-                                'turnover' => $value['turnover']
-                            );
-                        }
-
+                        );
 
                         Database::getConnection('external_db', 'external_db')
                                 ->update('ek_hr_location')
@@ -345,14 +362,15 @@ class EditLocation extends FormBase {
                                 ->condition('id', $key)
                                 ->execute();
                     }
+                    
                 } else {
+                    //new
                     if ($value['name'] <> '') {
-                        if (!is_numeric($value['turnover'])) {
-                            $value['turnover'] = 0;
-                        }
+                        
+                        $loc = str_replace('/','_', $value['name']);
                         $fields = array(
                             'coid' => $form_state->getValue('coid'),
-                            'location' => Xss::filter($value['name']),
+                            'location' => Xss::filter($loc),
                             'description' => Xss::filter($value['description']),
                             'turnover' => $value['turnover']
                         );
@@ -362,7 +380,7 @@ class EditLocation extends FormBase {
                                 ->fields($fields)
                                 ->execute();
                         
-                        \Drupal::messenger()->addStatus(t('Location \'@l\' is created', ['@l' => $value['name']]));
+                        \Drupal::messenger()->addStatus(t('Location \'@l\' is created', ['@l' => $loc]));
                     }
                 }
             }
