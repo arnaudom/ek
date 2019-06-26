@@ -56,6 +56,12 @@ return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess
  */
 function ek_finance_theme() {
   return array(
+    // for audits
+    'ek_journal_audit' => array
+    (
+      'template' => 'audit',
+      'variables' => array('items' => array()),
+    ),
     'ek_finance_settings_form' => array
     (
       'template' => 'ek_finance_settings',

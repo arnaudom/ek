@@ -1,0 +1,41 @@
+{{ items.title }}
+
+
+<table>
+    <thead>
+        <tr>
+            <th>{{ 'Debit' }}</th><th>{{ 'Credit' }}</th><th>{{ 'Journal ID' }}</th>
+            <th>{{ 'Fx in' }}</th><th>{{ 'Fx out' }}</th><th>{{ 'Currency' }}</th><th>{{ 'Audit' }}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for name , lines in items.companies %}
+        <tr>
+            <td colspan='8'>{{ name }}</td>
+        </tr>
+        
+        {% for key in lines %}
+            
+            {% if key is iterable %}
+                <tr>
+                    <td>{{ key.debit }}</td><td>{{ key.credit }}</td><td>{{ key.jid }}</td>
+                    <td>{{ key.fx_in }}</td><td>{{ key.fx_out }}</td><td>{{ key.currency }}</td><td>{{ key.audit }}</td>
+                </tr>
+            {% else  %}
+                <tr>
+                    <td colspan='8'>{{ 'Total' }} {{ key }}</td>
+                </tr>
+                
+            {% endif %}
+            
+            
+            
+
+
+
+        {% endfor %}
+
+    {% endfor %}
+
+    </tbody>
+</table>

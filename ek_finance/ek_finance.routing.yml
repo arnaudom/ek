@@ -19,6 +19,15 @@ ek_finance_move_data:
     _controller: '\Drupal\ek_finance\Controller\SettingsController::moveData'
   requirements:
     _permission: 'administrate_finance'
+
+#audit functionalities    
+ek_finance.audit:
+  path: '/finance/audit/{audit}/{param}'
+  defaults:
+    _title: 'Audit'
+    _controller: '\Drupal\ek_finance\Controller\JournalController::audit'
+  requirements:
+    _permission: 'view_finance_balances'
     
 ek_finance.admin.settings:
   path: '/finance/admin/settings'

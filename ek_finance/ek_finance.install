@@ -1204,3 +1204,11 @@ function ek_finance_update_8017() {
     
     
 }
+
+/**
+ * Add route for audit
+ */
+function ek_finance_update_8018() {
+
+    \Drupal::service('router.builder')->rebuild();
+}

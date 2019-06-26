@@ -222,6 +222,35 @@ class JournalController extends ControllerBase {
         );
     }
 
+    
+    /**
+     * Generate audit data for journal data records
+     * 
+     * @param string $audit
+     *  the data that is audited
+     * @return string - array $param
+     *  parameter to pass to audit function
+     *  render Html
+     *
+     */
+    public function audit($audit, $param) {
+
+        $journal = new Journal();
+        switch ($audit) {
+            case 'currency':
+                $audit = $journal->audit_currency($param);
+                
+                break;
+        }
+        
+        return array(
+            '#theme' => 'ek_journal_audit',
+            '#items' => $audit,
+            '#attached' => array(
+                'library' => array('ek_finance/ek_finance'),
+            ),
+        );
+    }
 }
 
 //class
