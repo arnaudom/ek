@@ -228,7 +228,7 @@ class EditCompanyForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
-            '#default_value' => isset($r['address1']) ? $r['address1'] : null,
+            '#default_value' => isset($r['address3']) ? $r['address3'] : null,
             '#attributes' => array('placeholder' => t('address line 1')),
             '#description' => t('address line 1'),
         );
@@ -237,7 +237,7 @@ class EditCompanyForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
-            '#default_value' => isset($r['address2']) ? $r['address2'] : null,
+            '#default_value' => isset($r['address4']) ? $r['address4'] : null,
             '#attributes' => array('placeholder' => t('address line 2')),
             '#description' => t('address line 2'),
         );
@@ -247,7 +247,7 @@ class EditCompanyForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 40,
             '#maxlength' => 255,
-            '#default_value' => isset($r['city']) ? $r['city'] : null,
+            '#default_value' => isset($r['city2']) ? $r['city2'] : null,
             '#attributes' => array('placeholder' => t('city')),
             '#prefix' => "<div class='container-inline'>",
             '#description' => t('city'),
@@ -257,7 +257,7 @@ class EditCompanyForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 10,
             '#maxlength' => 255,
-            '#default_value' => isset($r['postcode']) ? $r['postcode'] : null,
+            '#default_value' => isset($r['postcode2']) ? $r['postcode2'] : null,
             '#attributes' => array('placeholder' => t('post code')),
             '#description' => t('post code'),
         );
@@ -265,7 +265,7 @@ class EditCompanyForm extends FormBase {
         $form['2']['country2'] = array(
             '#type' => 'select',
             '#options' => array_combine($country, $country),
-            '#default_value' => isset($r['country']) ? $r['country'] : null,
+            '#default_value' => isset($r['country2']) ? $r['country2'] : null,
             '#description' => t('country'),
             '#suffix' => "</div>",
         );
@@ -283,7 +283,7 @@ class EditCompanyForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 40,
             '#maxlength' => 255,
-            '#default_value' => isset($r['fax']) ? $r['fax'] : null,
+            '#default_value' => isset($r['fax2']) ? $r['fax2'] : null,
             '#attributes' => array('placeholder' => t('fax')),
             '#description' => t('fax'),
         );
