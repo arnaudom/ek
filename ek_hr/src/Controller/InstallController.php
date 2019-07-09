@@ -107,18 +107,18 @@ class InstallController extends ControllerBase {
                 `id` INT(8) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `employee_id` MEDIUMINT(8) UNSIGNED NULL DEFAULT NULL,
                 `fid` INT(5) NULL DEFAULT NULL COMMENT 'file managed id',
-                `filename` VARCHAR(255) NULL DEFAULT NULL COMMENT 'Name of the file with no path components.' COLLATE 'utf8mb4_bin',
-                `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the URI of the file' COLLATE 'utf8_bin',
+                `filename` VARCHAR(255) NULL DEFAULT NULL COMMENT 'Name of the file with no path components.' COLLATE 'utf8mb4_unicode_ci',
+                `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the URI of the file' COLLATE 'utf8mb4_unicode_ci',
                 `filemime` VARCHAR(255) NULL DEFAULT NULL COMMENT 'The file\'s MIME type.',
                 `type` VARCHAR(200) NULL DEFAULT NULL COMMENT 'tag or type',
-                `comment` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment',
+                `comment` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment' COLLATE 'utf8mb4_unicode_ci',
                 `date` INT(10) NULL DEFAULT '0',
                 `size` VARCHAR(50) NULL DEFAULT '0',
                 PRIMARY KEY (`id`),
-                UNIQUE INDEX `Index 2` (`uri`)
+                UNIQUE INDEX `Index 2` (`uri`(191))
               )
               COMMENT='holds data about uploaded HR documents'
-              COLLATE='utf8_general_ci'
+              COLLATE='utf8mb4_general_ci'
               ENGINE=InnoDB
               AUTO_INCREMENT=1";
    
