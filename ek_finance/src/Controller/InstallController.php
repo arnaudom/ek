@@ -532,7 +532,7 @@ class InstallController extends ControllerBase {
         $query = "CREATE TABLE IF NOT EXISTS `ek_expenses_memo_documents` (
           `id` INT(10) NOT NULL AUTO_INCREMENT,
           `serial` VARCHAR(100) NOT NULL DEFAULT '0' COMMENT 'memo serial reference',
-          `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'uri of file',
+          `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'uri of file' COLLATE 'utf8mb4_unicode_ci',
           `doc_date` INT(11) NULL DEFAULT NULL COMMENT 'date uploaded',
           PRIMARY KEY (`id`)
         )
@@ -580,7 +580,7 @@ class InstallController extends ControllerBase {
           `aid` INT(10) NOT NULL COMMENT 'account id from chart',
           `coid` INT(10) NOT NULL COMMENT 'company id',
           `data` TEXT NOT NULL COMMENT 'serialized data' COLLATE 'utf8_unicode_ci',
-          `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'File attachment' COLLATE 'utf8_unicode_ci',
+          `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'File attachment' COLLATE 'utf8mb4_unicode_ci',
           PRIMARY KEY (`id`)
         )
         COMMENT='record reconciliation reports'
