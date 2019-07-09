@@ -174,19 +174,19 @@ class InstallController extends ControllerBase {
 	`id` INT(5) NOT NULL AUTO_INCREMENT,
 	`pcode` VARCHAR(45) NULL DEFAULT NULL,
 	`fid` INT(10) NULL DEFAULT NULL COMMENT 'file managed ID',
-	`filename` VARCHAR(200) NULL DEFAULT NULL,
+	`filename` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
 	`folder` VARCHAR(20) NULL DEFAULT NULL,
-	`comment` VARCHAR(255) NULL DEFAULT NULL,
-	`uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the stream uri of file',
+	`comment` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
+	`uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the stream uri of file' COLLATE 'utf8mb4_unicode_ci',
 	`date` VARCHAR(30) NULL DEFAULT NULL COMMENT 'date stamp',
 	`size` INT(10) NULL DEFAULT NULL COMMENT 'size',
 	`share` VARCHAR(250) NULL DEFAULT '0',
 	`deny` VARCHAR(250) NULL DEFAULT '0',
 	PRIMARY KEY (`id`),
-	UNIQUE INDEX `Index 2` (`uri`)
+	UNIQUE INDEX `Index 2` (`uri`(191))
         )
         COMMENT='documents attached to projects'
-        COLLATE='utf8_general_ci'
+        COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB";
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'Projects documents table installed <br/>';    
