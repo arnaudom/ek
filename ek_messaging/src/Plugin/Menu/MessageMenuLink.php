@@ -50,7 +50,8 @@ class MessageMenuLink extends MenuLinkDefault {
      */
     public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
         return new static(
-                $configuration, $plugin_id, $plugin_definition, $container->get('menu_link.static.overrides'), $container->get('current_user')
+                $configuration, $plugin_id, $plugin_definition, $container->get('menu_link.static.overrides'), 
+                $container->get('current_user')
         );
     }
 
@@ -86,17 +87,16 @@ class MessageMenuLink extends MenuLinkDefault {
                     $query->condition('status', $user, 'not like');
                     $query->condition('archive', $user, 'not like');
                     $query->addExpression('Count(id)', 'count');
-                    
+
                     $Obj = $query->execute();
                     $count = $Obj->fetchObject()->count;
-
                     if ($count > 0) {
                         return [
                             '#markup' => $this->t('Messages <span class="inbox_message_badge">@c</span>', ['@c' => $count]),
                             '#attached' => [
                                 'library' => ['ek_messaging/ek_messaging_css'],
                             ],
-                            '#cache' => ['tags' => ['ek_message_inbox']],
+                            
                         ];
                     }
 
@@ -118,7 +118,14 @@ class MessageMenuLink extends MenuLinkDefault {
      * {@inheritdoc}
      */
     public function getCacheContexts() {
-        return [];
+        return ['user'];
     }
+    
+      /**
+   * {@inheritdoc}
+   */
+  public function getCacheTags() {
+    return ['ek_message_inbox'];
+  }
 
 }

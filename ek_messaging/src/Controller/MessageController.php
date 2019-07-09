@@ -142,6 +142,7 @@ class MessageController extends ControllerBase {
         
         //when reading new message clear cache for menu link display
         \Drupal\Core\Cache\Cache::invalidateTags(['ek_message_inbox']);
+        \Drupal\Core\Cache\Cache::invalidateTags(['config:system.menu.tools']);
         
         return array(
             '#theme' => 'ek_messaging_read',
