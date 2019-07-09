@@ -91,10 +91,10 @@ class InstallController extends ControllerBase {
                 `uid` INT(10) NULL DEFAULT NULL COMMENT 'user id',
                 `fid` INT(5) NULL DEFAULT NULL COMMENT 'file managed id',
                 `type` VARCHAR(5) NULL DEFAULT NULL COMMENT 'doc or folder',
-                `filename` VARCHAR(200) NULL DEFAULT NULL COMMENT 'Name of the file with no path components.' COLLATE 'utf8mb4_bin',
-                `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the URI of the file' COLLATE 'utf8_bin',
+                `filename` VARCHAR(200) NULL DEFAULT NULL COMMENT 'Name of the file with no path components.'  COLLATE 'utf8mb4_unicode_ci',
+                `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the URI of the file' COLLATE 'utf8mb4_unicode_ci',
                 `folder` VARCHAR(200) NULL DEFAULT NULL COMMENT 'tag or folder',
-                `comment` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment',
+                `comment` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment' COLLATE 'utf8mb4_unicode_ci',
                 `date` VARCHAR(50) NULL DEFAULT '0',
                 `size` VARCHAR(50) NULL DEFAULT '0',
                 `share` VARCHAR(1) NULL DEFAULT '0' COMMENT 'bolean 0=not shared, 1=shared,2=visible all',
@@ -102,10 +102,10 @@ class InstallController extends ControllerBase {
                 `share_gid` VARCHAR(255) NULL DEFAULT '0' COMMENT 'list of shared groups',
                 `expire` VARCHAR(255) NULL DEFAULT '0' COMMENT 'optional share expiration date',
                 PRIMARY KEY (`id`),
-                UNIQUE INDEX `Index 2` (`uri`)
+                UNIQUE INDEX `Index 2` (`uri`(150))
               )
               COMMENT='holds data about uploaded and shared document'
-              COLLATE='utf8_unicode_ci'
+              COLLATE='utf8mb4_general_ci'
               ENGINE=InnoDB
               AUTO_INCREMENT=1";
     
