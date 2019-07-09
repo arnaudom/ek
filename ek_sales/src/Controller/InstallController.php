@@ -111,7 +111,7 @@ class InstallController extends ControllerBase {
 	`reconcile` VARCHAR(5) NULL DEFAULT '0',
 	`alert` TINYINT(1) NULL DEFAULT '0',
 	`alert_who` VARCHAR(250) NULL DEFAULT NULL,
-	`uri` VARCHAR(250) NULL DEFAULT NULL COMMENT 'uri of file attached',
+	`uri` VARCHAR(250) NULL DEFAULT NULL COMMENT 'uri of file attached' COLLATE 'utf8mb4_unicode_ci',
 	PRIMARY KEY (`id`)
         )
         COMMENT='Record of purchases'
@@ -315,10 +315,10 @@ class InstallController extends ControllerBase {
 	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`abid` INT(11) UNSIGNED NULL DEFAULT NULL COMMENT 'address book id',
 	`fid` INT(11) UNSIGNED NULL DEFAULT NULL COMMENT 'file managed id, option',
-	`filename` VARCHAR(200) NULL DEFAULT NULL COMMENT 'Name of the file with no path components.',
-	`uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the URI of the file',
-	`comment` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment',
-        `folder` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment',
+	`filename` VARCHAR(200) NULL DEFAULT NULL COMMENT 'Name of the file with no path components.' COLLATE 'utf8mb4_unicode_ci',
+	`uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the URI of the file' COLLATE 'utf8mb4_unicode_ci',
+	`comment` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment' COLLATE 'utf8mb4_unicode_ci',
+        `folder` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment' COLLATE 'utf8mb4_unicode_ci',
 	`date` VARCHAR(50) NULL DEFAULT '0',
 	`size` INT(10) NULL DEFAULT '0',
 	`share` VARCHAR(255) NULL DEFAULT '0',
@@ -327,7 +327,7 @@ class InstallController extends ControllerBase {
 	INDEX `Index 2` (`abid`)
 )
         COMMENT='holds data about uploaded prospects documents'
-        COLLATE='utf8_unicode_ci'
+        COLLATE='utf8mb4_unicode_ci'
         ENGINE=InnoDB";
 
     $db = Database::getConnection('external_db', 'external_db')->query($query);
