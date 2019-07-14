@@ -670,7 +670,7 @@ $pdf->Ln(20);
     $pdf->Cell(30,5, t('signature') ,0,1,'C');
 
 
-$pdf->AddPage(P,A4);
+$pdf->AddPage("P","A4");
 
 
 
