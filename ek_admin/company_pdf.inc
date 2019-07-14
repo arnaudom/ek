@@ -11,7 +11,7 @@ $pdf=new FPDF();
 $title = t('Company contact card');
 $pdf->SetTitle($title);
 $pdf->AliasNbPages();
-$pdf->AddPage(P,A4);
+$pdf->AddPage("P","A4");
 $pdf->SetMargins(10,10);
 
 
