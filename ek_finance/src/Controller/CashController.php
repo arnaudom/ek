@@ -101,9 +101,12 @@ class CashController extends ControllerBase {
             $aid = $companysettings->get('cash_account', $_SESSION['cfilter']['currency'] );
             $aid2 = $companysettings->get('cash2_account', $_SESSION['cfilter']['currency'] );
         } else {
-            $aid = db_query('SELECT name from {users_field_data} WHERE uid=:u', 
-                    array(':u' => $_SESSION['cfilter']['account']))
-                            ->fetchfield();
+            $user = \Drupal\user\Entity\User::load($_SESSION['cfilter']['account']);
+            $aid = 'User';
+            if(isset($user)) {
+                $aid = $user->getUsername();
+            }
+            
             $aid2 = '';
         }
         
@@ -204,10 +207,14 @@ class CashController extends ControllerBase {
             
         } else {
         //user cash transactions
-            $account_list = [];
+            $account_list = AidList::chartList();
             $account1 = $filter['account'];
-            $items['filter']['username'] = db_query('SELECT name from {users_field_data} WHERE uid=:u', array(':u' => $filter['account']))
-                            ->fetchfield();
+            $user = \Drupal\user\Entity\User::load($_SESSION['cfilter']['account']);
+            $items['filter']['username'] = 'User';
+            if(isset($user)) {
+                $items['filter']['username'] = $user->getUsername();
+            }
+           
             $company = '%';    
             $items['filter']['type'] = 1;
             $account2 = $filter['account'];
@@ -216,6 +223,31 @@ class CashController extends ControllerBase {
             /*
              * Cash movements in cash table
              */
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_cash', 'c');
+            $query->fields('c');
+            $query->condition('type', 'Credit', '=');
+            $query->condition('coid', $company, 'LIKE');
+            $query->condition('currency', $filter['currency'], '=');
+            $query->condition('uid', $account1, '=');
+            $query->condition('pay_date', $filter['from'], '>=');
+            $query->condition('pay_date', $filter['to'], '<=');
+            
+            $data1= $query->execute();
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_cash', 'c');
+            $query->fields('c');
+            $query->condition('type', 'Debit', '=');
+            $query->condition('coid', $company, 'LIKE');
+            $query->condition('currency', $filter['currency'], '=');
+            $query->condition('uid', $account1, '=');
+            $query->condition('pay_date', $filter['from'], '>=');
+            $query->condition('pay_date', $filter['to'], '<=');
+            
+            $data2= $query->execute();
+            
+            /*
             $query = "SELECT * from {ek_cash} WHERE type=:t AND coid like :c "
                     . "AND currency = :cu AND uid like :u "
                     . "AND pay_date >= :p1 AND pay_date<= :p2";
@@ -229,7 +261,7 @@ class CashController extends ControllerBase {
               );   
            
               $data1 = Database::getConnection('external_db', 'external_db')->query($query, $a);
-
+            
               $a = array(
                 ':t' => 'Debit',
                 ':c' => $company,
@@ -240,10 +272,23 @@ class CashController extends ControllerBase {
               );    
 
               $data2 = Database::getConnection('external_db', 'external_db')->query($query, $a);
-
+*/
             /*
              * Cash movements from expenses
              */
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_expenses', 'e');
+            $query->fields('e',['id','company','type','localcurrency','currency','amount','pdate','comment']);
+            $query->condition('cash', 'Y', '=');
+            $query->condition('company', $company, 'LIKE');
+            $query->condition('status', 'paid', '=');
+            $query->condition('currency', $filter['currency'], '=');
+            $query->condition('employee', $account2, '=');
+            $query->condition('pdate', $filter['from'], '>=');
+            $query->condition('pdate', $filter['to'], '<=');
+            
+            $data3 = $query->execute();
+            /*
             $query = "SELECT id,company,type,localcurrency,currency,amount,pdate,comment FROM {ek_expenses} "
                     . "WHERE company like :c AND cash=:y AND status=:s AND currency = :cu "
                     . "AND employee=:e AND pdate >= :p1 AND pdate <= :p2";
@@ -257,7 +302,7 @@ class CashController extends ControllerBase {
                 ':p1' => $filter['from'],
                 ':p2' => $filter['to'],
               );
-              $data3 = Database::getConnection('external_db', 'external_db')->query($query, $a);
+              $data3 = Database::getConnection('external_db', 'external_db')->query($query, $a);*/
 
             /*
              * Cash movements from journal general entries
@@ -373,11 +418,7 @@ class CashController extends ControllerBase {
               }     
 
               while ($row = $data3->fetchAssoc() ) {
-                //process expenses
-                //$query = "SELECT aname from {ek_accounts} WHERE aid=:a and coid=:c";
-                //$a = array(':a' => $row['type'], ':c' => $row['company']);
-                //$type = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-
+                
                 $comment = str_replace("&","and",$row['comment']);
                 $comment = str_replace("'","",$comment); 
                 $month = explode("-", $row['pdate']);  
@@ -390,7 +431,7 @@ class CashController extends ControllerBase {
                     $thisrow['class'] = "expense debit $month[1]";         
                     $thisrow['id'] = $row['id'];
                     $thisrow['op'] = 'debit';        
-                    $thisrow['type'] = $account_list[$row['company']][$row['type']];         
+                    $thisrow['type'] = $account_list[$row['company']][$row['type']];   
                     $thisrow['amount'] = $row['localcurrency'];
                     $thisrow['currency'] = $row['currency'];                
                     $thisrow['basecurrency'] = $row['amount'];
@@ -409,6 +450,17 @@ class CashController extends ControllerBase {
                
                 if($filter['baseCurrency'] != $row['currency']) {
                     //get exchange value
+                    $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_journal', 'j');
+                    $query->fields('j',['value']);
+                    $query->condition('coid', $row['coid'], '=');
+                    $query->condition('source', 'general', '=');
+                    $query->condition('aid', $row['aid'], '=');
+                    $query->condition('reference', $row['reference'], '=');
+                    $query->condition('type', 'debit', '=');
+                    $query->condition('date', $row['date'], '=');
+                    $query->condition('exchange',1, '=');
+                    /*
                     $query = "SELECT value FROM {ek_journal} "
                     . "WHERE coid like :c AND source = :s AND aid = :aid AND reference = :r "
                     . "AND type = :t AND date = :p1 AND exchange = :ex";
@@ -424,7 +476,8 @@ class CashController extends ControllerBase {
                     );
                     $exchange = Database::getConnection('external_db', 'external_db')
                             ->query($query, $a)
-                            ->fetchField();
+                            ->fetchField();*/
+                    $exchange = $query->execute()->fetchField();
 
                 }
                     if($filter['baseCurrency'] == $filter['currency']){

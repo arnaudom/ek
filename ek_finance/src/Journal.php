@@ -1600,6 +1600,22 @@ class Journal {
             //look into archives
             $ek_accounts = "ek_accounts_" . date('Y', strtotime($l['date2'])) . '_' . $l['coid'];
             $ek_journal = "ek_journal_" . date('Y', strtotime($l['date2'])) . '_' . $l['coid'];
+            $schema = Database::getConnection('external_db', 'external_db')->schema();
+            //verify that the archive journal tables exists
+            //in some cases with older data versions, posted table do not exist
+                if (!$schema->tableExists($ek_journal)) {
+                    $ek_journal = "ek_journal";
+                } else {
+                    $ek_journal = "ek_journal_" . date('Y', strtotime($l['date2'])) . '_' . $l['coid'];
+                }
+            
+            //verify that the archive accounts tables exists
+            //in some cases with older data versions, posted table do not exist
+            if (!$schema->tableExists($ek_accounts)) {
+                    $ek_accounts = "ek_accounts";
+                } else {
+                    $ek_accounts = "ek_accounts_" . date('Y', strtotime($l['date2'])) . '_' . $l['coid'];
+                } 
             $data['archive'] = TRUE;
         } elseif ($l['date1'] >= $dates['from']) {
             //current year

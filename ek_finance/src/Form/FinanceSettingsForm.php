@@ -59,7 +59,7 @@ class FinanceSettingsForm extends FormBase {
             
         );
     }
-    
+   
     $form['companyMemo'] = array(
         '#type' => 'select',
         '#size' => 1,
@@ -69,7 +69,7 @@ class FinanceSettingsForm extends FormBase {
         '#title' => t('Memos companies'),
         '#description' => t('Restrict selection of companies in memo (I.e: claim from)'),
       );
-    
+     
     $form['authorizeMemo'] = array(
         '#type' => 'select',
         '#size' => 1,
@@ -90,7 +90,7 @@ class FinanceSettingsForm extends FormBase {
         '#description' => t('Computation unit'),
       ); 
 
-  
+ 
     $form['expenseAttachmentFormat'] = array(
         '#type' => 'textfield',
         '#size' => 100,
@@ -99,7 +99,7 @@ class FinanceSettingsForm extends FormBase {
         '#title' => t('Files attachment format for expenses'),
         '#description' => t('Extensions list'),
       ); 
-  
+   
     $form['expenseAttachmentSize'] = array(
         '#type' => 'number',
         '#min' => 0.5,
@@ -111,17 +111,15 @@ class FinanceSettingsForm extends FormBase {
         '#title' => t('Files attachment size for expenses'),
         '#description' => t('In Mb'),
       );    
-    
+  
     $form['chart'] = array(
       '#type' => 'details',
       '#title' => $this->t('Chart of accounts structure'),
       '#open' => TRUE,
-      '#attributes' => '',
-      '#prefix' => "",
     ); 
     $chart = $settings->get('chart');
     $perm = in_array( 'administrator', \Drupal::currentUser()->getRoles()) ? 0 : 1;
-    
+      
     $form['chart']['zero'] = array(
       '#type' => 'textfield',
       '#size' => 5,
@@ -224,7 +222,7 @@ class FinanceSettingsForm extends FormBase {
         '#title' => t('Display purchases in expenses list'),
         '#description' => t('Allow view of purchases when listing expenses'),
       );    
-    
+   
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
 

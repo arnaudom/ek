@@ -224,7 +224,7 @@ $pdf = new PDF();
 $pdf->SetTitle($fileName);
 $pdf->setHeaderData($company); 
 $pdf->AliasNbPages();
-$pdf->AddPage(P,A4);
+$pdf->AddPage("P","A4");
 
 
 //margin settings - to adjust output
