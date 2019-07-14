@@ -368,7 +368,7 @@ $y1= $pdf->GetY()+$h/3-4;
     $i++;
     //check position for a break
     $here= $pdf->GetY();
-    if ($here >=250) { $pdf->AddPage(P,A4);
+    if ($here >=250) { $pdf->AddPage("P","A4");
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('Arial','B',8);
     $pdf->Cell(25,4, t('Delivery date:') ,0,0);
