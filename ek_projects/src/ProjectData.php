@@ -399,11 +399,19 @@ use Drupal\ek_admin\Access\AccessCheck;
                 $body[] = t('Quotation edited for project ref. @p', ['@p' => $param['pcode']]) ;
                 $body[] = t('Quotation : @v' , array('@v' => $param['value']));
                 $params['subject'] = t("Project quotation update");
+                if($param['input'] && !empty($param['input'])) {
+                    $body[] =  t('Edit : @v' , array('@v' => implode(",",str_replace("_", " ",$param['input'])))) ;
+                    $body[] =  t('By : @b' , array('@b' => $from->name)) ;
+                }
                 break;            
             case 'invoice_edit':
                 $body[] = t('Invoice edited for project ref. @p', ['@p' => $param['pcode']]) ;
                 $body[] = t('Invoice : @v' , array('@v' => $param['value']));
                 $params['subject'] = t("Project invoicing update");
+                if($param['input'] && !empty($param['input'])) {
+                    $body[] =  t('Edit : @v' , array('@v' => implode(",",str_replace("_", " ",$param['input'])))) ;
+                    $body[] =  t('By : @b' , array('@b' => $from->name)) ;
+                }
                 break;
             case 'purchase_payment':
                 $body[] = t('Purchase paid for project ref. @p', ['@p' => $param['pcode']]) ;
@@ -414,6 +422,10 @@ use Drupal\ek_admin\Access\AccessCheck;
                 $body[] = t('Purchase edited for project ref. @p', ['@p' => $param['pcode']]) ;
                 $body[] = t('Purchase : @v' , array('@v' => $param['value']));
                 $params['subject'] = t("Project purchase update");
+                if($param['input'] && !empty($param['input'])) {
+                    $body[] =  t('Edit : @v' , array('@v' => implode(",",str_replace("_", " ",$param['input'])))) ;
+                    $body[] =  t('By : @b' , array('@b' => $from->name)) ;
+                }
                 break;
             case 'new_project':
                 $body[] = t('New project created with ref @r' , array('@r' => $param['pcode']));
@@ -444,7 +456,6 @@ use Drupal\ek_admin\Access\AccessCheck;
         
         foreach (User::loadMultiple($notify) as $account) {
             if($account->isActive()) {
-                
                 //send notification email to central email queue;
                 $data['email'] = $account->getEmail();
                 $data['lang'] = $account->getPreferredLangcode();
