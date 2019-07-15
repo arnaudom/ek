@@ -1313,9 +1313,17 @@ class Invoice extends FormBase {
                     ->delete('ek_sales_invoice_details')
                     ->condition('serial', $serial)
                     ->execute();
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_sales_invoice', 's')
+                ->fields('s')
+                ->condition('serial', $serial)
+                ->execute();
+            $init_data = $query->fetchAssoc();
+            $iid = $init_data['id'];
+            /*
             $iid = Database::getConnection('external_db', 'external_db')
                     ->query('SELECT id from {ek_sales_invoice} where serial=:s', array(':s' => $serial))
-                    ->fetchField();
+                    ->fetchField();*/
         }
 
         $fx_rate = round($form_state->getValue('fx_rate'), 4);
@@ -1556,10 +1564,17 @@ class Invoice extends FormBase {
                     $pid = Database::getConnection('external_db', 'external_db')
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])
                             ->fetchField();
+                    $inputs = [];
+                    foreach($fields1 as $key => $value) {
+                        if ($value != $init_data[$key]) {
+                            $inputs[] = $key;
+                        }
+                    }
                     $param = serialize(
                             array(
                                 'id' => $pid,
                                 'field' => 'invoice_edit',
+                                'input' => $inputs,
                                 'value' => $serial,
                                 'pcode' => $pcode
                             )

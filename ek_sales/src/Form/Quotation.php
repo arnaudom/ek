@@ -1387,9 +1387,17 @@ class Quotation extends FormBase {
                         ->delete('ek_sales_quotation_details')
                         ->condition('serial', $serial)
                         ->execute();
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_quotation', 'q')
+                    ->fields('q')
+                    ->condition('serial', $serial)
+                    ->execute();
+                $init_data = $query->fetchAssoc();
+                $quid = $init_data['id'];
+                /*
                 $quid = Database::getConnection('external_db', 'external_db')
                         ->query('SELECT id from {ek_sales_quotation} where serial=:s', array(':s' => $serial))
-                        ->fetchField();
+                        ->fetchField();*/
             }
         }
 
@@ -1514,10 +1522,17 @@ class Quotation extends FormBase {
                     $pid = Database::getConnection('external_db', 'external_db')
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])
                             ->fetchField();
+                    $inputs = [];
+                    foreach($fields1 as $key => $value) {
+                        if ($value != $init_data[$key]) {
+                            $inputs[] = $key;
+                        }
+                    }
                     $param = serialize(
                             array(
                                 'id' => $pid,
                                 'field' => 'quotation_edit',
+                                'input' => $inputs,
                                 'value' => $serial,
                                 'pcode' => $pcode
                             )

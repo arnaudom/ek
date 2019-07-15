@@ -348,8 +348,15 @@ class QuickEdit extends FormBase {
 
         $serial = $form_state->getValue('serial');
         $doc = $form_state->getValue('doc');
-
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select("ek_sales_" . $doc, 's')
+                ->fields('s')
+                ->condition('serial', $serial)
+                ->execute();
+        $init_data = $query->fetchAssoc();
+        
         if ($doc == 'quotation' ) {
+           
            if ($form_state->getValue('pcode') == 'n/a') {
                 $pcode = '';
             } else {
@@ -459,10 +466,18 @@ class QuickEdit extends FormBase {
                     $pid = Database::getConnection('external_db', 'external_db')
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])
                             ->fetchField();
+                    $inputs = [];
+                    foreach($fields as $key => $value) {
+                        if ($value != $init_data[$key]) {
+                            $inputs[] = $key;
+                        }
+                    }
+                    
                     $param = serialize(
                             array(
                                 'id' => $pid,
                                 'field' => $doc . '_edit',
+                                'input' => $inputs,
                                 'value' => $serial,
                                 'pcode' => $pcode
                             )

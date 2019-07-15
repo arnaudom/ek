@@ -1208,9 +1208,17 @@ class Purchase extends FormBase {
                     ->delete('ek_sales_purchase_details')
                     ->condition('serial', $form_state->getValue('serial'))
                     ->execute();
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_sales_purchase', 'p')
+                ->fields('p')
+                ->condition('serial', $serial)
+                ->execute();
+            $init_data = $query->fetchAssoc();
+            $poid = $init_data['id'];
+            /*
             $poid = Database::getConnection('external_db', 'external_db')
                     ->query('SELECT id from {ek_sales_purchase} where serial=:s', array(':s' => $serial))
-                    ->fetchField();
+                    ->fetchField();*/
         }
 
 
@@ -1477,10 +1485,17 @@ class Purchase extends FormBase {
                     $pid = Database::getConnection('external_db', 'external_db')
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])
                             ->fetchField();
+                    $inputs = [];
+                    foreach($fields1 as $key => $value) {
+                        if ($value != $init_data[$key]) {
+                            $inputs[] = $key;
+                        }
+                    }
                     $param = serialize(
                             array(
                                 'id' => $pid,
                                 'field' => 'purchase_edit',
+                                'input' => $inputs,
                                 'value' => $serial,
                                 'pcode' => $pcode
                             )
