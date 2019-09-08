@@ -7,11 +7,12 @@
     border-radius: 4px;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
     margin-bottom: 20px;
+    padding:0px !important;
 }
 
 .panel-default > .panel-heading {
-    background-color: #f5f5f5;
-    border-color: #ddd;
+    background-color: #A9BCF5;
+    border-color: #A9BCF5;
     color: #333;
 }
 .panel-heading {
@@ -127,6 +128,24 @@
     float: left;
     margin-left: 2px;
 
+}
+
+@-webkit-keyframes spinner-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@-moz-keyframes spinner-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@-o-keyframes spinner-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@-ms-keyframes spinner-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes spinner-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.spin-ico:before {
+    content: "\f1ce"; 
+    font-family: FontAwesome;
+    font-size: 1.5em;
+    color: #0dec2a;
+    float:right;
+   -webkit-animation: spinner-spin  1s steps(8) infinite;
+   -moz-animation: spinner-spin  1s steps(8) infinite;
+   -o-animation: spinner-spin  1s steps(8) infinite;
+   animation: spinner-spin  1s steps(8) infinite;
 }
 
 .top-ico:before {

@@ -4,16 +4,18 @@
         attach: function (context, settings) {
 
             if (settings.ek_documents == 'myDocs') {
+                jQuery('#spinico').addClass('spin-ico');
                 load_my_docs();
             } else if (settings.ek_documents == 'sharedDocs') {
+                jQuery('#spinico').addClass('spin-ico');
                 load_shared_docs();
             } else {
                 load_common_docs();
             }
 
-            jQuery('#gridview').click(function () {
+            jQuery('#gridview', context).click(function () {
                 jQuery.cookie('list-type', 1, {expires: 1});
-
+                jQuery('#spinico').addClass('spin-ico');
                 if (settings.ek_documents == 'myDocs') {
                     load_my_docs();
                 } else {
@@ -22,8 +24,9 @@
 
             });
 
-            jQuery('#listview').click(function () {
+            jQuery('#listview', context).click(function () {
                 jQuery.cookie('list-type', 0, {expires: 1});
+                jQuery('#spinico').addClass('spin-ico');
                 if (settings.ek_documents == 'myDocs') {
                     load_my_docs();
                 } else {
@@ -58,8 +61,11 @@ function load_my_docs() {
         success: function (data) {
             jQuery('.loading').remove();
             jQuery('#myDocs').html(data.list);
+            jQuery('#spinico').removeClass('spin-ico');
             addajax();
             adddragdrop();
+            
+            
         }
     });
 
@@ -86,9 +92,10 @@ function load_shared_docs() {
         ;
         // Process the new data (only called when there was a change)
         jQuery("#sharedDocs").html(remoteData.list);
+        jQuery('#spinico').removeClass('spin-ico');
         addajax();
         adddragdrop();
-
+        
     });
 
 
