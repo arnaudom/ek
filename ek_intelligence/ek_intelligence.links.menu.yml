@@ -5,3 +5,13 @@ ek_intelligence.menu:
   expanded: true
   hidden: 0
   weight: 12.5  
+  
+#main
+ek_intelligence_main.menu:
+  title: IReports
+  description: 'Intelligence reports'
+  route_name: ek_intelligence.report
+  expanded: true
+  hidden: 0
+  weight: 12.5
+  menu_name: main
