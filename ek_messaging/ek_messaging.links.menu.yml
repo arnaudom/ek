@@ -1,9 +1,17 @@
 ek_messaging_tool:
-  weight: -10
+  weight: 1
   title: 'Inbox'
   description: 'System messages inbox'
   menu_name: tools
   class: Drupal\ek_messaging\Plugin\Menu\MessageMenuLink
+  
+#main
+ek_messaging_tool_main:
+  weight: 1
+  title: 'Inbox'
+  description: 'System messages inbox'
+  class: Drupal\ek_messaging\Plugin\Menu\MessageMenuLink
+  menu_name: main
     
 
   
