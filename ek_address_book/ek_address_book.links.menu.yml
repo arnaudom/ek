@@ -4,7 +4,14 @@ ek_address_book.menu:
   route_name: ek_address_book.search
   expanded: true
   hidden: 0
-  weight: 1
-    
-
-
+  weight: 1.5
+  
+#main
+ek_address_book_main.menu:
+  title: 'Address book'
+  description: 'Manage contacts'
+  route_name: ek_address_book.search
+  expanded: true
+  hidden: 0
+  weight: 1.5
+  menu_name: main
