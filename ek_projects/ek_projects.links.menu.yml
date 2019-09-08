@@ -11,3 +11,20 @@ ek_projects_settings:
   route_name: ek_projects.settings.users
   parent: ek_projects_menu
   weight: 4
+  
+#main
+ek_projects_menu_main:
+  title: 'Projects'
+  description: 'View and edit projects'
+  route_name: 'ek_projects_main'
+  expanded: true
+  weight: 12
+  menu_name: main
+  
+ek_projects_settings_main:
+  title: 'Settings'
+  description: 'Settings'
+  route_name: ek_projects.settings.users
+  parent: ek_projects_menu_main
+  weight: 4
+  menu_name: main
