@@ -4,6 +4,14 @@ ek_products.menu:
   route_name: ek_products.search
   expanded: true
   hidden: 0
-  weight: 2    
-
-
+  weight: 2
+  
+#main
+ek_products_main.menu:
+  title: Products | services
+  description: 'Manage products and services'
+  route_name: ek_products.search
+  expanded: true
+  hidden: 0
+  weight: 2
+  menu_name: main
