@@ -5,3 +5,13 @@ ek_assets.menu:
   expanded: true
   hidden: 0
   weight: 1.5  
+  
+#main
+#move menu link under finance
+ek_assets_main.menu:
+  title: Assets
+  description: 'Manage assets'
+  route_name: ek_assets.list
+  parent: ek_finance_main.menu
+  weight: 0.5
+  menu_name: main
