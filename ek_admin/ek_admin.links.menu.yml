@@ -23,3 +23,34 @@ ek.access-admin:
   description: 'Manage user access'
   route_name: ek_admin.access.company
   parent: ek_admin.menu
+  
+#Main
+ek_admin_main.menu:
+  title: Administration
+  description: 'Administrate content'
+  route_name: ek_admin.main
+  expanded: true
+  menu_name: main
+  hidden: 0
+  weight: 16
+     
+ek.company_main_list:
+  title: Companies
+  description: 'List of companies'
+  route_name: ek_admin.company.list
+  parent: ek_admin_main.menu
+  menu_name: main
+  
+ek.country_main_list:
+  title: Countries
+  description: 'List of countries'
+  route_name: ek_admin.country.list
+  parent: ek_admin_main.menu
+  menu_name: main
+
+ek.access_main-admin:
+  title: Access
+  description: 'Manage user access'
+  route_name: ek_admin.access.company
+  parent: ek_admin_main.menu
+  menu_name: main
