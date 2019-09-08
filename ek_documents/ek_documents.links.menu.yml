@@ -12,3 +12,20 @@ ek_documents_settings_menu:
   route_name: ek_documents_settings
   parent: ek_documents_menu
   hidden: 0
+  
+#main
+ek_documents_main_menu:
+  title: 'Documents'
+  description: 'Manage documents'
+  route_name: ek_documents_documents
+  expanded: true
+  hidden: 0
+  weight: 4
+  menu_name: main
+  
+ek_documents_settings__main_menu:
+  title: 'Settings'
+  description: 'Documents settings'
+  route_name: ek_documents_settings
+  parent: ek_documents_main_menu
+  menu_name: main
