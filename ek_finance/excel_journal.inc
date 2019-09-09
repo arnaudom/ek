@@ -122,6 +122,12 @@ $l = 5; // line index
 
 $c = 0;
       $cell=$columns[$c].$l;
+      if (is_array($row['reference_detail'])) {
+        $row['reference_detail'] = $row['reference_detail']['#markup'];
+        //remove the hyperlink tag for excel
+        preg_match("'>(.*?)</a>'si", $row['reference_detail'], $match);
+        $row['reference_detail'] = $match[1];
+      } 
       $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $row['reference'] . ' - ' . $row['reference_detail']);
       $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getFont()->setBold(true);                
       $l+=1;
