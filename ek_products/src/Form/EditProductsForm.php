@@ -242,7 +242,7 @@ class EditProductsForm extends FormBase {
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['size']) ? $r['size'] : null,
-            '#attributes' => array('placeholder' => t('size')),
+            '#description' => t('item size'),
         );
 
 
@@ -593,16 +593,20 @@ class EditProductsForm extends FormBase {
                         '#type' => 'hidden',
                         '#default_value' => $ri['id'],
                     );
-
-                    $image = "<a href='" . file_create_url($ri['uri']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($ri['uri']) . "></a>";
+                    
+                    $mod = serialize(['content' => 'img', 'id' => $ri['id'],'width' => '50%']);
+                    $route = Url::fromRoute('ek_products_modal', ['param' => $mod])->toString();
+                    
+                    $image = "<a href='" . $route . "'  class='use-ajax'>"
+                            . "<img class='thumbnail' src=" . file_create_url($ri['uri']) . "></a>";
 
                     $form['images']["image" . $i] = array(
-                        '#markup' => "<div style='padding:2px;'>" . $image . "</div>",
+                        '#markup' => "<div id='image$i' style='padding:2px;' class=''>" . $image . "</div>",
                     );
                     $form['images']['image_delete' . $i] = array(
                         '#type' => 'checkbox',
                         '#title' => t('delete image'),
-                        '#attributes' => array('onclick' => "jQuery('#edit-image$i ').toggleClass( 'delete');"),
+                        '#attributes' => array('onclick' => "jQuery('#image$i').toggleClass('delete');"),
                     );
 
                     $i++;
@@ -767,8 +771,7 @@ class EditProductsForm extends FormBase {
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('purchase_price'),
                         'currency' => $form_state->getValue('currency'),
-                        'type' => 'pp')
-            )->execute();
+                        'type' => 'pp'))->execute();
 
             $insert = Database::getConnection('external_db', 'external_db')
                     ->insert('ek_item_price_history')
@@ -776,8 +779,7 @@ class EditProductsForm extends FormBase {
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('selling_price'),
                         'currency' => $form_state->getValue('loc_currency'),
-                        'type' => 'sp')
-            )->execute();
+                        'type' => 'sp'))->execute();
 
             $insert = Database::getConnection('external_db', 'external_db')
                     ->insert('ek_item_price_history')
@@ -785,8 +787,7 @@ class EditProductsForm extends FormBase {
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('promo_price'),
                         'currency' => $form_state->getValue('loc_currency'),
-                        'type' => 'prp')
-            )->execute();
+                        'type' => 'prp'))->execute();
 
             $insert = Database::getConnection('external_db', 'external_db')
                     ->insert('ek_item_price_history')
@@ -794,8 +795,7 @@ class EditProductsForm extends FormBase {
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('discount_price'),
                         'currency' => $form_state->getValue('loc_currency'),
-                        'type' => 'dp')
-            )->execute();
+                        'type' => 'dp'))->execute();
 
             $insert = Database::getConnection('external_db', 'external_db')
                     ->insert('ek_item_price_history')
@@ -803,8 +803,7 @@ class EditProductsForm extends FormBase {
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('exp_selling_price'),
                         'currency' => $form_state->getValue('exp_currency'),
-                        'type' => 'esp')
-            )->execute();
+                        'type' => 'esp'))->execute();
 
             $insert = Database::getConnection('external_db', 'external_db')
                     ->insert('ek_item_price_history')
@@ -812,8 +811,7 @@ class EditProductsForm extends FormBase {
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('exp_promo_price'),
                         'currency' => $form_state->getValue('exp_currency'),
-                        'type' => 'eprp')
-            )->execute();
+                        'type' => 'eprp'))->execute();
 
             $insert = Database::getConnection('external_db', 'external_db')
                     ->insert('ek_item_price_history')
@@ -821,8 +819,7 @@ class EditProductsForm extends FormBase {
                     array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                         'price' => $form_state->getValue('exp_discount_price'),
                         'currency' => $form_state->getValue('exp_currency'),
-                        'type' => 'edp')
-            )->execute();
+                        'type' => 'edp'))->execute();
             
         } else {
             //update
@@ -854,8 +851,7 @@ class EditProductsForm extends FormBase {
                         array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                             'price' => $form_state->getValue('purchase_price'),
                             'currency' => $form_state->getValue('currency'),
-                            'type' => 'pp')
-                )->execute();
+                            'type' => 'pp'))->execute();
             }
 
             if ($current['selling_price'] <> $form_state->getValue('selling_price')) {
@@ -866,8 +862,7 @@ class EditProductsForm extends FormBase {
                         array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                             'price' => $form_state->getValue('selling_price'),
                             'currency' => $form_state->getValue('loc_currency'),
-                            'type' => 'sp')
-                )->execute();
+                            'type' => 'sp'))->execute();
             }
 
             if ($current['promo_price'] <> $form_state->getValue('promo_price')) {
@@ -878,8 +873,7 @@ class EditProductsForm extends FormBase {
                         array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                             'price' => $form_state->getValue('promo_price'),
                             'currency' => $form_state->getValue('loc_currency'),
-                            'type' => 'prp')
-                )->execute();
+                            'type' => 'prp'))->execute();
             }
 
             if ($current['discount_price'] <> $form_state->getValue('discount_price')) {
@@ -890,8 +884,7 @@ class EditProductsForm extends FormBase {
                         array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
                             'price' => $form_state->getValue('discount_price'),
                             'currency' => $form_state->getValue('loc_currency'),
-                            'type' => 'dp')
-                )->execute();
+                            'type' => 'dp'))->execute();
             }
 
             if ($current['exp_discount_price'] <> $form_state->getValue('exp_discount_price')) {
@@ -930,7 +923,8 @@ class EditProductsForm extends FormBase {
                 )->execute();
             }
 
-            $update = Database::getConnection('external_db', 'external_db')->update('ek_item_prices')
+            $update = Database::getConnection('external_db', 'external_db')
+                    ->update('ek_item_prices')
                     ->condition('itemcode', $form_state->getValue('itemcode'))
                     ->fields($fields3)
                     ->execute();
@@ -958,7 +952,8 @@ class EditProductsForm extends FormBase {
 
                 if ($form_state->getValue('barcode_delete' . $i) == 1) {
 
-                    Database::getConnection('external_db', 'external_db')->delete('ek_item_barcodes')
+                    Database::getConnection('external_db', 'external_db')
+                            ->delete('ek_item_barcodes')
                             ->condition('id', $form_state->getValue('bcid' . $i))
                             ->execute();
                 } else {
@@ -966,7 +961,8 @@ class EditProductsForm extends FormBase {
                         'barcode' => $form_state->getValue('barcode' . $i),
                         'encode' => $form_state->getValue('encode' . $i),
                     );
-                    $update = Database::getConnection('external_db', 'external_db')->update('ek_item_barcodes')
+                    $update = Database::getConnection('external_db', 'external_db')
+                            ->update('ek_item_barcodes')
                             ->condition('id', $form_state->getValue('bcid' . $i))
                             ->fields($fields5)
                             ->execute();
@@ -981,19 +977,33 @@ class EditProductsForm extends FormBase {
 
                 if ($form_state->getValue('image_delete' . $i) == 1) {
 
-                    $uri = Database::getConnection('external_db', 'external_db')
-                            ->query("SELECT uri from {ek_item_images} where id=:id", array(':id' => $form_state->getValue('imageid' . $i)))
-                            ->fetchField();
+                    $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_item_images', 'i');
+                    $query->fields('i', ['uri']);
+                    $query->condition('id', $form_state->getValue('imageid' . $i), '=');
+                    $uri = $query->execute()->fetchField();
+                    
                     \Drupal::service('file_system')->delete($uri);
+                    $img = "private://products/images/" . $form_state->getValue('for_id') . "/40/40x40_" . basename($uri);
+                    if(file_exists($img)) {
+                        \Drupal::service('file_system')->delete($img);
+                    }
+                    $img = "private://products/images/" . $form_state->getValue('for_id') . "/100/100x100_" . basename($uri);
+                    if(file_exists($img)) {
+                        \Drupal::service('file_system')->delete($img);
+                    }
 
-                    Database::getConnection('external_db', 'external_db')->delete('ek_item_images')
+                    Database::getConnection('external_db', 'external_db')
+                            ->delete('ek_item_images')
                             ->condition('id', $form_state->getValue('imageid' . $i))
                             ->execute();
                 }
             }
         }
 
-
+        if(isset($update)) {
+            \Drupal\Core\Cache\Cache::invalidateTags(['item_card:'.$id]);
+        }
         if (isset($insert) || isset($update)){
             \Drupal::messenger()->addStatus(t('The item is recorded'));
             $form_state->setRedirect('ek_products.view', array('id' => $id));

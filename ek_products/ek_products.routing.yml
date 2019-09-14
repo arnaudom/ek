@@ -6,11 +6,18 @@ ek_products_install:
     _permission: 'access administration pages'
     
 ek_products_update:
-  path: '/ek_products/migrate'
+  path: '/ek_products/update'
   defaults:
-    _controller: '\Drupal\ek_products\Controller\InstallController::migrate'
+    _controller: '\Drupal\ek_products\Controller\InstallController::update'
   requirements:
     _permission: 'access administration pages'
+
+ek_products_modal:
+  path: '/ek_products/modal/{param}'
+  defaults:
+    _controller: '\Drupal\ek_products\Controller\ProductsController::modal'
+  requirements:
+    _permission: 'view_products'
     
 ek_products.parameters:
   path: '/ek_products/parameters'

@@ -7,45 +7,55 @@
 
         <div class='table'>
             <div class='row'>
-                <div class='cell'><span>( {{ 'Last edit'|t }} : {{ items.stamp }})</span></div>
+                <div class='cell'><span>( {{ 'Last edit'|t }}: {{ items.stamp }})</span></div>
                 <div class='cell'>{{ items.company }}</div>
             </div>
         </div>
         <hr>
         <div class='table'>
             <div class='row'>
-                <div class='cell'><span class='badge'>{{ 'Item code'|t }}</span>: {{ items.itemcode }} </div>
-                <div class='cell'><span class='badge'>{{ 'Item type'|t }}</span>: {{ items.type }}</div>
+                <div class='cell text-center'><span class='badge'>{{ 'Item code'|t }}</span></div>
+                <div class='cell text-center'><span class='badge'>{{ 'Item type'|t }}</span></div>
+                <div class='cell text-center'><span class='badge'>{{ 'Supplier'|t }}</span></div>
+                <div class='cell text-center'><span class='badge'>{{ 'Supplier code'|t }}</span></div>
             </div>
 
             <div class='row'>
-                <div class='cell'><span class='badge'>{{ 'Supplier'|t }}</span>: {{ items.supplier }} </div>
-                <div class='cell'><span class='badge'>{{ 'Supplier code'|t }}</span>: {{ items.supplier_code }}</div>
-            </div>
-
-            <div class='row'>
-                <div class='cell'><span class='badge'>{{ 'Main description'|t }}</span></div>
-                <div class='cell'><span class='badge'>{{ 'Other description'|t }}</div>
-            </div>     
-            <div class='row'>
-                <div class='cell'>{{ items.description1 }} </div>
-                <div class='cell'>{{ items.description2|raw }}</div>
+                <div class='cell text-center'><p>{{ items.itemcode }}</p></div>
+                <div class='cell text-center'><p>{{ items.type }}</p></div>
+                <div class='cell text-center'><p>{{ items.supplier }}</p></div>
+                <div class='cell text-center'><p>{{ items.supplier_code }}</p></div>
             </div>
         </div>
 
         <div class='table'>
             <div class='row'>
-                <div class='cell'><span class='badge'>{{ 'Tag department'|t }}</span>: {{ items.department }}</div>
-                <div class='cell'><span class='badge'>{{ 'Tag size'|t }}</span> : {{ items.size }}</div>
+                <div class='cell text-center'><span class='badge'>{{ 'Main description'|t }}</span></div>
+            </div>     
+            <div class='row'>
+                <div class='cell'><p>{{ items.description1 }}</p></div>
+            </div>
+            <div class='row'>
+                <div class='cell text-center'><span class='badge'>{{ 'Main description'|t }}</span></div>
+            </div>
+            <div class='row'>
+                <div class='cell'><p>{{ items.description2|raw }}</p></div>
+            </div>
+        </div>
+
+        <div class='table'>
+            <div class='row'>
+                <div class='cell'><span class='badge'>{{ 'Tag department'|t }}</span> {{ items.department }}</div>
+                <div class='cell'><span class='badge'>{{ 'Tag size'|t }}</span> {{ items.size }}</div>
             </div>
 
             <div class='row'>
-                <div class='cell'><span class='badge'>{{ 'Tag family'|t }}</span>: {{ items.family }} </div>
-                <div class='cell'><span class='badge'>{{ 'Tag color'|t }}</span>: {{ items.color }}</div>
+                <div class='cell'><span class='badge'>{{ 'Tag family'|t }}</span> {{ items.family }} </div>
+                <div class='cell'><span class='badge'>{{ 'Tag color'|t }}</span> {{ items.color }}</div>
             </div>
 
             <div class='row'>
-                <div class='cell'><span class='badge'>{{ 'Tag collection'|t }}</span>: {{items.collection }} </div>
+                <div class='cell'><span class='badge'>{{ 'Tag collection'|t }}</span> {{items.collection }} </div>
             </div>
         </div>
         <hr>
@@ -167,7 +177,7 @@
             <br/>  
 
         </div>
-                    
+
         <div class="col_2">
 
 

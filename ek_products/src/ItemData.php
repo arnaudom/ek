@@ -15,11 +15,8 @@ use Drupal\Core\Database\Database;
  *  - 
  */
  class ItemData {
- 
-
   
-  /**
-   * 
+     /**
    *   
    */
   public function __construct() {
@@ -39,11 +36,13 @@ use Drupal\Core\Database\Database;
     public static function geturl_bycode($code, $ext = NULL) { 
         
         if($code) {
-        $query = "SELECT id FROM {ek_items} WHERE itemcode = :c";
-        $i = Database::getConnection('external_db', 'external_db')
-            ->query($query, array(':c' => $code))
-            ->fetchObject();
-        $url =  Url::fromRoute('ek_products.view', array('id' => $i->id), [])->toString(); 
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_items', 'i');
+            $query->fields('i', ['id']);
+            $query->condition('itemcode', $code, '=');
+            $i = $query->execute()->fetchField();
+            
+            $url =  Url::fromRoute('ek_products.view', array('id' => $i), [])->toString(); 
                 if($ext == TRUE) {
                    $link =  "<a target='_blank' href='". $url ."'>" . $code . "</a>";
                 } else {
@@ -83,19 +82,20 @@ use Drupal\Core\Database\Database;
   */   
  public static function item_byid($id) { 
 
-    $query = "SELECT * from {ek_items} where id like :id";
-    $thisitem = Database::getConnection('external_db', 'external_db')
-            ->query($query, array(':id' => $id))
-            ->fetchObject();
-    if($thisitem) {
-    if (strlen($thisitem->description1)>30) {
-      $desc = substr($thisitem->description1,0,30)."...";
-        } else {
-          $desc = $thisitem->description1;
-          }
-    $name = $thisitem->id . " " . $thisitem->itemcode . " " . $desc ; 
+    $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_items', 'i');
+    $query->fields('i');
+    $query->condition('id', $id, '=');
+    $thisitem = $query->execute()->fetchObject();
     
-    return $name;
+    if($thisitem) {
+        if (strlen($thisitem->description1) > 30) {
+          $desc = substr($thisitem->description1,0,30)."...";
+            } else {
+              $desc = $thisitem->description1;
+            }
+        $name = $thisitem->id . " " . $thisitem->itemcode . " " . $desc ; 
+        return $name;
     } else {
         return NULL;
     }
@@ -109,19 +109,20 @@ use Drupal\Core\Database\Database;
   */   
  public static function item_bycode($code) { 
 
-    $query = "SELECT * from {ek_items} where itemcode=:code";
-    $thisitem = Database::getConnection('external_db', 'external_db')
-            ->query($query, array(':code' => $code))
-            ->fetchObject();
+    $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_items', 'i');
+    $query->fields('i');
+    $query->condition('itemcode', $code, '=');
+    $thisitem = $query->execute()->fetchObject();
     if($thisitem) {
-    if (strlen($thisitem->description1)>30) {
-      $desc = substr($thisitem->description1,0,30)."...";
-        } else {
-          $desc = $thisitem->description1;
-          }
-    $name = $thisitem->id . " " . $thisitem->itemcode . " " . $desc ; 
-     
-    return $name;
+        if (strlen($thisitem->description1) > 30) {
+          $desc = substr($thisitem->description1,0,30)."...";
+            } else {
+              $desc = $thisitem->description1;
+              }
+        $name = $thisitem->id . " " . $thisitem->itemcode . " " . $desc ; 
+
+        return $name;
      } else {
         return NULL;
     }
@@ -135,13 +136,13 @@ use Drupal\Core\Database\Database;
   */   
  public static function item_description_byid($id, $key = NULL) { 
  
-        $query = "SELECT description1,description2 from {ek_items} where id=:id ";
-        $data = Database::getConnection('external_db', 'external_db')
-          ->query($query, array(':id' => $id))
-          ->fetchObject();
-         
+    $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_items', 'i');
+    $query->fields('i', ['description1','description2']);
+    $query->condition('id', $id, '=');
+    $data = $query->execute()->fetchObject();
+    
       if($data) {
-      
           switch($key) {
             case  1:
             $description = $data->description1;
@@ -154,12 +155,11 @@ use Drupal\Core\Database\Database;
             break;                    
           
           }
-      
-
       } else {
         $description = NULL;
       }
-  return $description;
+      
+    return $description;
  
  }
 
@@ -171,10 +171,11 @@ use Drupal\Core\Database\Database;
   */   
  public static function item_description_bycode($code, $key = NULL) { 
  
-        $query = "SELECT description1,description2 from {ek_items} where itemcode=:code ";
-        $data = Database::getConnection('external_db', 'external_db')
-          ->query($query, array(':code' => $code))
-          ->fetchObject();
+    $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_items', 'i');
+    $query->fields('i', ['description1','description2']);
+    $query->condition('itemcode', $code, '=');
+    $data = $query->execute()->fetchObject();
           
       if($data) {
       
@@ -190,7 +191,6 @@ use Drupal\Core\Database\Database;
             break;                    
           
           }
-      
 
       } else {
         $description = NULL;
@@ -210,37 +210,43 @@ use Drupal\Core\Database\Database;
 
            if($key == NULL) {
                //retrieve all prices in array
-               $query = "SELECT * from {ek_item_prices} where itemcode=:code";
-               $price = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':code' => $code))
-                ->fetchAll();
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_item_prices', 'i');
+                $query->fields('i');
+                $query->condition('itemcode', $code, '=');
+                $price = $query->execute()->fetchAll();
                
            } else {
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_item_prices', 'i');
+                $query->condition('itemcode', $code, '=');
+                
                 switch($key) {
                  case  1:
                  //default:
-                     $query = "SELECT selling_price from {ek_item_prices} where itemcode=:code";
+                     $query->fields('i',['selling_price']);
                  break;   
                  case  2:
-                     $query = "SELECT promo_price from {ek_item_prices} where itemcode=:code";
+                     $query->fields('i',['promo_price']);
                  break; 
                  case  3:
-                     $query = "SELECT discount_price from {ek_item_prices} where itemcode=:code";
+                     $query->fields('i',['discount_price']);
                  break;   
                  case  4:
-                     $query = "SELECT exp_selling_price from {ek_item_prices} where itemcode=:code";
+                     $query->fields('i',['exp_selling_price']);
                  break;
                  case  5:
-                     $query = "SELECT exp_promo_price from {ek_item_prices} where itemcode=:code";
+                     $query->fields('i',['exp_promo_price']);
                  break;
                  case  6:
-                     $query = "SELECT exp_discount_price from {ek_item_prices} where itemcode=:code";
+                     $query->fields('i',['exp_discount_price']);
                  break; 
                }
-             $price = Database::getConnection('external_db', 'external_db')
-               ->query($query, array(':code' => $code))
-               ->fetchField();
+               
+             $price = $query->execute()->fetchField();
+            
            }
+           
         return $price;
  
  
@@ -255,22 +261,23 @@ use Drupal\Core\Database\Database;
    * @return int or false
   */   
  public static function item_sell_price_type($code, $value) { 
- 
+
         $query = Database::getConnection('external_db', 'external_db')
             ->select('ek_item_prices')
             ->fields('ek_item_prices')
             ->condition('itemcode', $code);
      
-        $data = $query->execute()->fetchObject();
-
-        $prices = [$data->selling_price => 1 , $data->promo_price => 2, $data->discount_price => 3,
+        if($data = $query->execute()->fetchObject()) {
+            $prices = [$data->selling_price => 1 , $data->promo_price => 2, $data->discount_price => 3,
             $data->exp_selling_price => 4, $data->exp_promo_price => 5, $data->exp_discount_price => 6];
-        
-        if(isset($prices[$value])) {
-            return $prices[$value];
-        } else {
-            return FALSE;
+            if(isset($prices[$value])) {
+                return $prices[$value];
+            } else {
+                return FALSE;
+            }
         }
+
+        return FALSE;
         
  
  }
@@ -338,7 +345,8 @@ use Drupal\Core\Database\Database;
                 $line = [];
                 if ($r->uri) {
                     $thumb = "private://products/images/" . $r->id . "/40/40x40_" . basename($r->uri) ;
-                    if(!file_exists($thumb)) {
+                    $dir = "private://products/images/" . $r->id . "/";
+                    if(!file_exists($thumb) && file_exists($dir . basename($r->uri))) {
                         $filesystem = \Drupal::service('file_system');
                         $dir = "private://products/images/" . $r->id . "/40/";
                         $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);

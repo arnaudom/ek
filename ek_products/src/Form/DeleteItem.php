@@ -170,6 +170,7 @@ class DeleteItem extends FormBase {
      }
 
     if ($delete){
+        \Drupal\Core\Cache\Cache::invalidateTags(['item_card:'. $form_state->getValue('for_id')]);
         \Drupal::messenger()->addStatus(t('The item has been deleted'));
          $form_state->setRedirect("ek_products.list" );  
     }

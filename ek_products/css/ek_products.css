@@ -18,8 +18,14 @@
     padding: 1px 1px 1px 1px;
 }
 
+.cell p {  
+    padding: 5px 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
 .thumbnail {
-    width : 100px;
+    width : 40px;
+    max-width: 40px;
 
 }
 
@@ -62,6 +68,10 @@
     display : none;
 }
 
+.text-center {
+    text-align:center;
+}
+
 .text-left {
     float: left;
 }
@@ -80,14 +90,14 @@
 }
 
 .badge {
-    background-color: #999;
+    background-color: #ccc;
     border-radius: 5px;
-    color: #fff;
+    color: #555;
     display: inline-block;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: bold;
     line-height: 1;
-    min-width: 10px;
+    min-width: 100px;
     padding: 5px 9px;
     text-align: center;
     vertical-align: baseline;
@@ -135,6 +145,7 @@
     height: auto;
     margin: 0 0 10px;
 }
+
 /* search display */
 .product_thumbnail {
     
