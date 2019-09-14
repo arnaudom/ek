@@ -563,9 +563,12 @@ class AddressBookController extends ControllerBase {
                 }
         } else {
             //pull name cards
+            $types = [1 => t('client'), 2 => t('supplier'), 3 => t('other')];
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_address_book_contacts', 'abc');
-            $query->fields('abc', ['id', 'contact_name', 'salutation','abid'])->distinct();
+            $query->fields('abc', ['id', 'contact_name', 'salutation','abid']);
+            $query->innerJoin('ek_address_book', 'ab', 'ab.id=abc.abid');
+            $query->fields('ab', ['name', 'type']);
             $or = $query->orConditionGroup();
             $or->condition('contact_name', $text . "%", 'like');
             $or->condition('contact_name', "%" . $text . "%", 'like');
@@ -573,7 +576,7 @@ class AddressBookController extends ControllerBase {
 
             $data = $query->execute();
                 while($r = $data->fetchObject()){
-                        $result[] = $r->contact_name;
+                        $result[] = $r->contact_name . " [" . $r->name . " | ". $types[$r->type] ."]";
                 }
             
             

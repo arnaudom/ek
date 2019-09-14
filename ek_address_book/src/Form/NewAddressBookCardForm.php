@@ -234,11 +234,11 @@ class NewAddressBookCardForm extends FormBase {
             $invalid = [];
             $ids = [];
             foreach($parts as $key => $name) {
-                
+                $str = explode("[", $name);
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_address_book_contacts', 'abc');
                 $query->fields('abc', ['id']);
-                $query->condition('contact_name', $name, '=');
+                $query->condition('contact_name', trim($str[0]), '=');
                 $data = $query->execute()->fetchObject();
                 
                 if(!$data->id) {
