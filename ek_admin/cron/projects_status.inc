@@ -10,11 +10,21 @@ use Drupal\Core\Url;
 
 try {
 
-
+    $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_project', 'p');
+            $query->fields('p',['owner']);
+            $query->condition('status',0, '>');
+    $condition = $query->orConditionGroup()
+        ->condition('status', 'open')
+        ->condition('status', 'awarded');        
+     $query->condition($condition);
+     $query->distinct();
+     $data = $query->execute();
+     /*
     $query = "SELECT distinct owner from {ek_project} where status=:s or status=:t";
     $a = array(':s' => 'open', ':t' => 'awarded');
     $data = Database::getConnection('external_db', 'external_db')
-            ->query($query, $a);
+            ->query($query, $a);*/
 
     $protocol = isset($_SERVER["https"]) ? 'https' : 'http';
     $domain = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
@@ -24,6 +34,17 @@ try {
 
     while ($row = $data->fetchObject()) {
 
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_project', 'p');
+            $query->fields('p',['id','last_modified','pcode','pname']);
+            $query->condition('owner',$row->owner);
+            $query->condition('last_modified',$last, '<');
+            $condition = $query->orConditionGroup()
+                ->condition('status', 'open')
+                ->condition('status', 'awarded');        
+        $query->condition($condition);
+        $projects = $query->execute();
+        /*
         $query = "SELECT id, last_modified ,pcode,pname FROM {ek_project} "
                 . "where owner=:o "
                 . "AND (status=:s or status=:t) "
@@ -32,7 +53,7 @@ try {
         $a = array(':o' => $row->owner, ':s' => 'open', ':t' => 'awarded', ':l' => $last);
         $projects = Database::getConnection('external_db', 'external_db')
                 ->query($query, $a);
-
+*/
 
         $list = array();
 

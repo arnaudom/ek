@@ -1,16 +1,12 @@
 <?php
+
 /**
  * @file
- *  module . ek_admin
- *  manage tasks alerts per modules
- */
-namespace Drupal\ek_admin\cron;
-
-
-/*
- * extract core data
+ *  module . ek admin
+ *  start tasks alerts per modules
  * 
  */
+namespace Drupal\ek_admin\cron;
 
 
  if($this->moduleHandler->moduleExists('ek_sales')) {    
@@ -23,6 +19,12 @@ if($this->moduleHandler->moduleExists('ek_projects'))  {
     
    include 'projects_tasks.inc'; 
    include 'projects_status.inc'; 
+    
+}
+
+if($this->moduleHandler->moduleExists('ek_hr'))  {
+    
+   //include 'hr_date_status.inc'; 
     
 }
 

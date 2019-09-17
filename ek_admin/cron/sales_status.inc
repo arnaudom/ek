@@ -10,11 +10,13 @@ use Drupal\Core\Url;
 
 try {
 
-  
-  $query = "SELECT * from {ek_sales_invoice} WHERE status<>:s AND alert = :n";
-  $a = array(':s' => 1, ':n' => 1);
-  $data = Database::getConnection('external_db', 'external_db')
-          ->query($query,$a);
+  $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_sales_invoice', 'i');
+            $query->fields('i');
+            $query->condition('status',1,'<>');
+            $query->condition('alert',1,'=');
+            $data = $query->execute();
+            
   $protocol = isset($_SERVER["https"]) ? 'https' : 'http';
   $domain = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
   $weekday = date('D');

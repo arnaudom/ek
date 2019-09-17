@@ -8,18 +8,16 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 try {
 
-  
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice_tasks', 't');
+            $query->fields('t', ['id', 'serial','event','task','uid','start','end','completion_rate','notify','notify_who','notify_when']);
+            $query->leftJoin('ek_sales_invoice', 'i', 't.serial=i.serial');
+            $query->fields('i',['id']);
+            $query->condition('notify',0,'<>');
+            $query->condition('completion_rate',100,'<');
+            $Obj = $query->execute();
 
-  $query = "SELECT t.id,t.serial,t.event,t.uid,t.task,t.start,t.end,t.completion_rate,t.notify,t.notify_who,t.notify_when,s.id as sid "
-          . "FROM {ek_sales_invoice_tasks} t "
-          . "Left JOIN {ek_sales_invoice} s "
-          . "ON t.serial=s.serial "
-          . "WHERE t.notify<>:n "
-          . "AND completion_rate<:c";
-  
-  $a = array(':n' => 0, ':c' => 100);
-  $data = Database::getConnection('external_db', 'external_db')
-          ->query($query,$a);
+           
   
   $weekday = date('D');
   $stamp = date('U');
@@ -30,7 +28,7 @@ try {
    $log = 'start sales tasks checking at:' . date('Y-m-d h:i', $stamp);
    \Drupal::logger('ek_admin')->notice( $log ); 
 
-while ($row = $data->fetchObject())
+while ($row = $Obj->fetchObject())
 {
 
     $delta = round( ( $row->end  - $stamp ) / (24*60*60), 0); 
@@ -44,13 +42,14 @@ while ($row = $data->fetchObject())
             
                 foreach($users as $key => $user) {
                    $params = array();
+                   $params['type'] = 'task';
                    $params['subject'] = t('Weekly task invoice alert');
                    $params['uid'] =  $user;
                    $params['assign'] = $row->uid;
                    $params['serial'] = $row->serial;
-                   $params['link'] = $domain . Url::fromRoute('ek_sales.invoices.list')->toString();
-                   $params['id'] = $row->sid;
-                   $params['alert'] = $domain . Url::fromRoute('ek_sales.invoices.alert', array('id' => $row->sid))->toString();
+                   $params['link'] = $domain . Url::fromRoute('ek_sales.invoices.print_html',['id' => $row->i_id])->toString();
+                   $params['id'] = $row->i_id;
+                   $params['alert'] = $domain . Url::fromRoute('ek_sales.invoices.task', ['id' => $row->i_id])->toString();
                    $params['end'] = date('Y-m-d', $row->end);
                    $params['task'] = $row->task;
                 
@@ -72,13 +71,14 @@ while ($row = $data->fetchObject())
             
                 foreach($users as $key => $user) {
                    $params = array();
+                   $params['type'] = 'task';
                    $params['subject'] = t('Daily task invoice alert');
                    $params['uid'] =  $user;
                    $params['assign'] = $row->uid;
                    $params['serial'] = $row->serial;
-                   $params['link'] = $domain . Url::fromRoute('ek_sales.invoices.list')->toString();
-                   $params['id'] = $row->sid;
-                   $params['alert'] = $domain . Url::fromRoute('ek_sales.invoices.alert', array('id' => $row->sid))->toString();
+                   $params['link'] = $domain . Url::fromRoute('ek_sales.invoices.print_html',['id' => $row->i_id])->toString();
+                   $params['id'] = $row->i_id;
+                   $params['alert'] = $domain . Url::fromRoute('ek_sales.invoices.task', ['id' => $row->i_id])->toString();
                    $params['end'] = date('Y-m-d', $row->end);
                    $params['task'] = $row->task;
                 
@@ -99,13 +99,14 @@ while ($row = $data->fetchObject())
             
                 foreach($users as $key => $user) {
                    $params = array();
+                   $params['type'] = 'task';
                    $params['subject'] = t('5 days deadline invoice task alert');
                    $params['uid'] =  $user;
                    $params['assign'] = $row->uid;
                    $params['serial'] = $row->serial;
-                   $params['link'] = $domain . Url::fromRoute('ek_sales.invoices.list')->toString();
-                   $params['id'] = $row->sid;
-                   $params['alert'] = $domain . Url::fromRoute('ek_sales.invoices.alert', array('id' => $row->sid))->toString();
+                   $params['link'] = $domain . Url::fromRoute('ek_sales.invoices.print_html',['id' => $row->i_id])->toString();
+                   $params['id'] = $row->i_id;
+                   $params['alert'] = $domain . Url::fromRoute('ek_sales.invoices.task', ['id' => $row->i_id])->toString();
                    $params['end'] = date('Y-m-d', $row->end);
                    $params['task'] = $row->task;
                 
@@ -126,13 +127,14 @@ while ($row = $data->fetchObject())
             
                 foreach($users as $key => $user) {
                    $params = array();
+                   $params['type'] = 'task';
                    $params['subject'] = t('3 days deadline invoice task alert');
                    $params['uid'] =  $user;
                    $params['assign'] = $row->uid;
                    $params['serial'] = $row->serial;
-                   $params['link'] = $domain . Url::fromRoute('ek_sales.invoices.list')->toString();
-                   $params['id'] = $row->sid;
-                   $params['alert'] = $domain . Url::fromRoute('ek_sales.invoices.alert', array('id' => $row->sid))->toString();
+                   $params['link'] = $domain . Url::fromRoute('ek_sales.invoices.print_html',['id' => $row->i_id])->toString();
+                   $params['id'] = $row->i_id;
+                   $params['alert'] = $domain . Url::fromRoute('ek_sales.invoices.task', ['id' => $row->i_id])->toString();
                    $params['end'] = date('Y-m-d', $row->end);
                    $params['task'] = $row->task;
                 
@@ -153,13 +155,14 @@ while ($row = $data->fetchObject())
             
                 foreach($users as $key => $user) {
                    $params = array();
+                   $params['type'] = 'task';
                    $params['subject'] = t('1 day deadline invoice task alert');
                    $params['uid'] =  $user;
                    $params['assign'] = $row->uid;
                    $params['serial'] = $row->serial;
-                   $params['link'] = $domain . Url::fromRoute('ek_sales.invoices.list')->toString();
-                   $params['id'] = $row->sid;
-                   $params['alert'] = $domain . Url::fromRoute('ek_sales.invoices.alert', array('id' => $row->sid))->toString();
+                   $params['link'] = $domain . Url::fromRoute('ek_sales.invoices.print_html',['id' => $row->i_id])->toString();
+                   $params['id'] = $row->i_id;
+                   $params['alert'] = $domain . Url::fromRoute('ek_sales.invoices.task', ['id' => $row->i_id])->toString();
                    $params['end'] = date('Y-m-d', $row->end);
                    $params['task'] = $row->task;
                 
@@ -180,24 +183,23 @@ while ($row = $data->fetchObject())
             
                 foreach($users as $key => $user) {
                    $params = array();
+                   $params['type'] = 'task';
                    $params['subject'] = t('Expired task invoice alert');
                    $params['uid'] =  $user;
                    $params['assign'] = $row->uid;
                    $params['serial'] = $row->serial;
-                   $params['link'] = $domain . Url::fromRoute('ek_sales.invoices.list')->toString();
-                   $params['id'] = $row->sid;
-                   $params['alert'] = $domain . Url::fromRoute('ek_sales.invoices.alert', array('id' => $row->sid))->toString();
+                   $params['link'] = $domain . Url::fromRoute('ek_sales.invoices.print_html',['id' => $row->i_id])->toString();
+                   $params['id'] = $row->i_id;
+                   $params['alert'] = $domain . Url::fromRoute('ek_sales.invoices.task', ['id' => $row->i_id])->toString();
                    $params['end'] = date('Y-m-d', $row->end);
                    $params['task'] = $row->task;
                 
                    self::send_mail($params);
                 }
             
-        
-                    
         }//expired
         
-}//while 
+}
  
   
 } catch (Exception $ex) {
