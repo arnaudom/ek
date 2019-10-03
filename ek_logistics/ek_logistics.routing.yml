@@ -1,7 +1,7 @@
-ek_logistics_majour:
-  path: '/ek_logistics/migrate'
+ek_logistics_update:
+  path: '/ek_logistics/update'
   defaults:
-    _controller: '\Drupal\ek_logistics\Controller\SettingsController::migrate'
+    _controller: '\Drupal\ek_logistics\Controller\SettingsController::update'
   requirements:
     _permission: 'access administration pages'
 

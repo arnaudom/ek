@@ -18,25 +18,31 @@ use Drupal\Core\Database\Database;
  */ 
  function ek_logistics_ek_settings($coids) {
    
+    $flag = 0;
+    
     foreach($coids as $key => $id) {
-
+        $settings = [];
         $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_logi_settings', 'l');
         $query->fields('l', ['coid', 'settings']);
         $query->condition('coid', $id);
         $data = $query->execute()->fetchObject();
-        $settings = unserialize($data->settings);
-
-        if(empty($settings)) {
-            $link = \Drupal\Core\Url::fromRoute('ek_logistics_settings', array(), array())->toString();
-            $message = t('Missing settings for module @m. Go <a href="@c">here</a> to edit.', ['@c' => $link, '@m' => 'logistics']);
-            drupal_set_message($message, 'warning');
-        }        
+        if($data){
+            $settings = unserialize($data->settings);
+        }
+            if(empty($settings)) {
+                $link = \Drupal\Core\Url::fromRoute('ek_logistics_settings', array(), array())->toString();
+                $flag = 1;
+            }  
         
     }
 
-  
-    return new \Symfony\Component\HttpFoundation\Response('', 204);
+    if($flag == 1){
+        return ['logistics' => $link];
+    } else {
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
+    }
+    
      
  }
 

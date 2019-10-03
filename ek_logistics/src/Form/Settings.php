@@ -91,49 +91,55 @@ class Settings extends FormBase {
             );
 
 
-            $list_pdf_forms = array();
-            $handle = opendir('private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/');
-            while ($file = readdir($handle)) {
-                if ($file != '.' AND $file != '..') {
-                    $list_pdf_forms[$file] = $file;
+            
+            if(file_exists('private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/')){
+                $list_pdf_forms = array();
+                $handle = opendir('private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/');
+                while ($file = readdir($handle)) {
+                    if ($file != '.' AND $file != '..') {
+                        $list_pdf_forms[$file] = $file;
+                    }
+                }
+
+                $i = 0;
+
+                foreach ($list_pdf_forms as $key => $name) {
+
+                    $form['pdf']['template_pdf' . $i] = array(
+                        '#type' => 'checkbox',
+                        '#default_value' => 0,
+                        '#return_value' => $name,
+                        '#attributes' => array('title' => t('delete')),
+                        '#title' => t('Delete pdf template <b>"@n"</b>', array('@n' => $name)),
+                    );
+                    $i++;
                 }
             }
+            
+            if(file_exists('private://logistics/templates/' . $form_state->getValue('coid') . '/xls/')){
+                $list_xls_forms = array();
+                $handle = opendir('private://logistics/templates/' . $form_state->getValue('coid') . '/xls/');
+                while ($file = readdir($handle)) {
+                    if ($file != '.' AND $file != '..') {
+                        $list_pdf_forms[$file] = $file;
+                    }
+                }
 
-            $i = 0;
+                $i = 0;
 
-            foreach ($list_pdf_forms as $key => $name) {
+                foreach ($list_xls_forms as $key => $name) {
 
-                $form['pdf']['template_pdf' . $i] = array(
-                    '#type' => 'checkbox',
-                    '#default_value' => 0,
-                    '#return_value' => $name,
-                    '#attributes' => array('title' => t('delete')),
-                    '#title' => t('Delete pdf template <b>"@n"</b>', array('@n' => $name)),
-                );
-                $i++;
-            }
-
-            $list_xls_forms = array();
-            $handle = opendir('private://logistics/templates/' . $form_state->getValue('coid') . '/xls/');
-            while ($file = readdir($handle)) {
-                if ($file != '.' AND $file != '..') {
-                    $list_pdf_forms[$file] = $file;
+                    $form['xls']['template_xls' . $i] = array(
+                        '#type' => 'checkbox',
+                        '#default_value' => 0,
+                        '#return_value' => $name,
+                        '#attributes' => array('title' => t('delete')),
+                        '#title' => t('Delete excel template <b>"@n"</b>', array('@n' => $name)),
+                    );
+                    $i++;
                 }
             }
-
-            $i = 0;
-
-            foreach ($list_xls_forms as $key => $name) {
-
-                $form['xls']['template_xls' . $i] = array(
-                    '#type' => 'checkbox',
-                    '#default_value' => 0,
-                    '#return_value' => $name,
-                    '#attributes' => array('title' => t('delete')),
-                    '#title' => t('Delete excel template <b>"@n"</b>', array('@n' => $name)),
-                );
-                $i++;
-            }
+            
 
             $form['#tree'] = TRUE;
             $form['actions'] = array('#type' => 'actions');
