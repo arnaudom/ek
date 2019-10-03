@@ -38,7 +38,7 @@
             {% endif %}            
             {% if items.currency %}
                 <li>
-                    <span class="list_ico dollar"></span>
+                    <span class="list_ico dollar_icon"></span>
                     <div class="list_name missing">{{ items.currency }}</div>
                 </li>
             {% endif %}
@@ -78,7 +78,7 @@
             </li>             
             <li>
                 {% if items.excel == 1 %}
-                    <span class="list_ico excel"></span>
+                    <span class="list_ico excel_icon"></span>
                     <div class="list_name valid">{{ 'Excel library installed'|t }}</div>
                 {% else %}
                     <span class="list_ico fas fa-exclamation-circle"></span>
@@ -87,7 +87,7 @@
             </li>
             <li>
                 {% if items.fpdf == 1 %}
-                    <span class="list_ico pdf"></span>
+                    <span class="list_ico pdf_icon"></span>
                     <div class="list_name valid">{{ 'Fpdf library installed'|t }}</div>
                 {% else %}
                     <span class="list_ico fas fa-exclamation-circle"></span>
@@ -96,7 +96,7 @@
             </li>
             <li>
                 {% if items.tcpdf == 1 %}
-                    <span class="list_ico pdf"></span>
+                    <span class="list_ico pdf_icon"></span>
                     <div class="list_name valid">{{ 'Tcpdf library installed'|t }}</div>
                 {% else %}
                     <span class="list_ico fas fa-exclamation-circle"></span>

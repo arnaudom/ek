@@ -167,15 +167,15 @@
     padding: 10px;
 }
 
-.excel:before {
+.excel_icon:before {
     content: "\f1c3";
 }
 
-.pdf:before {
+.pdf_icon:before {
     content: "\f1c1";
 }
 
-.dollar:before {
+.dollar_icon:before {
     content: "\f155"
 }
 
