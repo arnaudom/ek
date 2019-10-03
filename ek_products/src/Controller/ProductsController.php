@@ -171,7 +171,7 @@ class ProductsController extends ControllerBase {
                 $item_img = $query->execute()->fetchObject();
                 
                 $img = '';
-                if ($item_img->uri != '') {
+                if (isset($item_img->uri) && $item_img->uri != '') {
                     $thumb = "private://products/images/" . $r->id . "/40/40x40_" . basename($item_img->uri);
                     if (!file_exists($thumb)) {
                         $filesystem = \Drupal::service('file_system');
