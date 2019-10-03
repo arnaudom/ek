@@ -155,13 +155,15 @@ class ProjectData {
      *  flag to open link in new window
      * @param bolean short
      *  return only last part of serial code (number)
+     * @param string text
+     *  custom text for link
      * @return html link or empty string
      *  a project code view url from id or serial
      *  generate internal/external link to the project
      * 
      */
 
-    public static function geturl($id, $ext = NULL, $base = NULL, $short = NULL) {
+    public static function geturl($id, $ext = NULL, $base = NULL, $short = NULL, $text = NULL) {
 
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_project', 'p');
@@ -190,6 +192,8 @@ class ProjectData {
                 $parts = explode('-', $p->pcode);
                 $code = array_reverse($parts);
                 $pcode = $code[0];
+            } elseif ($text != NULL) {
+                $pcode = $text;
             } else {
                 $pcode = $p->pcode;
             }
@@ -393,67 +397,65 @@ class ProjectData {
             $query = "SELECT mail,name from {users_field_data} WHERE uid=:u OR mail=:m";
             $from = Database::getConnection('default', 'default')
                             ->query($query, array(':u' => $currentuserid, ':m' => $param['mail']))->fetchObject();
-            $body = [];
-            $params['options']['url'] = self::geturl($param['id'], 0, 1);
+            $params = [];
+            $params['options']['url'] = self::geturl($param['id'], NULL,1,NULL, t('Open'));
             switch ($param['field']) {
 
                 case 'invoice_payment':
-                    $body[] = t('Payment received for project ref. @p', ['@p' => $param['pcode']]);
-                    $body[] = t('Invoice : @v', array('@v' => $param['value']));
+                    $text = t('Payment received for project ref. @p', ['@p' => $param['pcode']]);
+                    $text .= '<br/>' . t('Invoice : @v', array('@v' => $param['value']));
                     $params['subject'] = t("Project invoicing update");
                     break;
                 case 'quotation_edit':
-                    $body[] = t('Quotation edited for project ref. @p', ['@p' => $param['pcode']]);
-                    $body[] = t('Quotation : @v', array('@v' => $param['value']));
+                    $text = t('Quotation edited for project ref. @p', ['@p' => $param['pcode']]);
+                    $text .= '<br/>' . t('Quotation : @v', array('@v' => $param['value']));
                     $params['subject'] = t("Project quotation update");
                     if ($param['input'] && !empty($param['input'])) {
-                        $body[] = t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input']))));
-                        $body[] = t('By : @b', array('@b' => $from->name));
+                        $text .= '<br/>' . t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input']))));
+                        $text .= '<br/>' . t('By : @b', array('@b' => $from->name));
                     }
                     break;
                 case 'invoice_edit':
-                    $body[] = t('Invoice edited for project ref. @p', ['@p' => $param['pcode']]);
-                    $body[] = t('Invoice : @v', array('@v' => $param['value']));
+                    $text = t('Invoice edited for project ref. @p', ['@p' => $param['pcode']]);
+                    $text .= '<br/>' . t('Invoice : @v', array('@v' => $param['value']));
                     $params['subject'] = t("Project invoicing update");
                     if ($param['input'] && !empty($param['input'])) {
-                        $body[] = t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input']))));
-                        $body[] = t('By : @b', array('@b' => $from->name));
+                        $text .= '<br/>' . t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input']))));
+                        $text .= '<br/>' . t('By : @b', array('@b' => $from->name));
                     }
                     break;
                 case 'purchase_payment':
-                    $body[] = t('Purchase paid for project ref. @p', ['@p' => $param['pcode']]);
-                    $body[] = t('Purchase : @v', array('@v' => $param['value']));
+                    $text = t('Purchase paid for project ref. @p', ['@p' => $param['pcode']]);
+                    $text .= '<br/>' . t('Purchase : @v', array('@v' => $param['value']));
                     $params['subject'] = t("Project purchase update");
                     break;
                 case 'purchase_edit':
-                    $body[] = t('Purchase edited for project ref. @p', ['@p' => $param['pcode']]);
-                    $body[] = t('Purchase : @v', array('@v' => $param['value']));
+                    $text = t('Purchase edited for project ref. @p', ['@p' => $param['pcode']]);
+                    $text .= '<br/>' . t('Purchase : @v', array('@v' => $param['value']));
                     $params['subject'] = t("Project purchase update");
                     if ($param['input'] && !empty($param['input'])) {
-                        $body[] = t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input']))));
-                        $body[] = t('By : @b', array('@b' => $from->name));
+                        $text .= '<br/>' . t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input']))));
+                        $text .= '<br/>' . t('By : @b', array('@b' => $from->name));
                     }
                     break;
                 case 'new_project':
-                    $body[] = t('New project created with ref @r', array('@r' => $param['pcode']));
-                    $body[] = t('Name : @v', array('@v' => $param['pname']));
-                    $body[] = t('By : @v', array('@v' => $from->name));
+                    $text = t('New project created with ref @r', array('@r' => $param['pcode']));
+                    $text .= '<br/>' . t('Name : @v', array('@v' => $param['pname']));
+                    $text .= '<br/>' . t('By : @v', array('@v' => $from->name));
                     $params['subject'] = t("New project in @c", array('@c' => $param['country'])) . '</p>';
                     break;
                 default:
-                    $body[] = t('Data edited for project ref. @p', ['@p' => $param['pcode']]);
-                    $body[] = t('Field : @f', array('@f' => str_replace('_', ' ', $param['field'])));
+                    $text = t('Data edited for project ref. @p', ['@p' => $param['pcode']]);
+                    $text .= '<br/>' . t('Field : @f', array('@f' => str_replace('_', ' ', $param['field'])));
                     if ($param['value']) {
-                        $body[] = t('Value : @v', array('@v' => $param['value']));
-                    }
-                    $body[] = t('By : @b', array('@b' => $from->name));
-
+                        $text .= '<br/>' . t('Value : @v', array('@v' => $param['value']));
+                    } 
+                    $text .= '<br/>' . t('By : @b', array('@b' => $from->name));                    
                     $params['subject'] = t("Project Edited");
                     break;
             }
 
-            $params['body'] = $body;
-
+            $params['body'] = $text;
             $queue = \Drupal::queue('ek_email_queue');
             $queue->createQueue();
             $data['module'] = 'ek_projects';

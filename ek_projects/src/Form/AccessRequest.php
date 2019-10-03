@@ -85,14 +85,17 @@ class AccessRequest extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
   
   $query = "SELECT pcode,owner from {ek_project} WHERE id=:id";
-  $p = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $form_state->getValue('pid')))->fetchObject();
+  $p = Database::getConnection('external_db', 'external_db')
+          ->query($query, array(':id' => $form_state->getValue('pid')))
+          ->fetchObject();
   $query = "SELECT mail from {users_field_data} WHERE uid=:u";
-  $to = db_query($query, array(':u' => $p->owner))->fetchField();
-  
+  $to = db_query($query, array(':u' => $p->owner))
+          ->fetchField();
+  $params = [];
   if (\Drupal::moduleHandler()->moduleExists('swiftmailer')) {
-    $params['body'][] = Xss::filter( $form_state->getValue('message') );
+    $params['body'] = Xss::filter( $form_state->getValue('message') );
     $params['options']['pcode'] = $p->pcode;
-    $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), 0, 1);
+    $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'),NULL,1,NULL, t('Open'));
   } else {
     $params['body'] = Xss::filter( $form_state->getValue('message') ) . '\r\n' 
             . t('Project ref.') . ': ' . ProjectData::geturl( $form_state->getValue('pid'),0,1 );
@@ -100,7 +103,7 @@ class AccessRequest extends FormBase {
   }
   $code = explode("-", $p->pcode);
   $code = array_reverse($code);
-  $params['subject'] = t("Access request") . ": ". $code[0] . ' | ' . $p->pcode;;
+  $params['subject'] = t("Access request") . ": ". $code[0] . ' | ' . $p->pcode;
   $currentuserid = \Drupal::currentUser()->id();
   $query = "SELECT mail from {users_field_data} WHERE uid=:u";
   $from = db_query($query, array(':u' => $currentuserid))->fetchField();

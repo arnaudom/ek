@@ -50,20 +50,9 @@ class ProjectAccessEdit extends FormBase {
             $query->condition('d.id', $id);
             
             
-            /*
-            $query = "SELECT d.share,d.deny,cid,d.pcode,owner FROM {ek_project_documents} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode "
-                    . "WHERE d.id=:id";*/
         }
         $data = $query->execute()->fetchObject();
-        /*
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $id))
-                ->fetchObject();*/
-        /*
-        $users = db_query('SELECT uid,name FROM {users_field_data} WHERE uid<>:u '
-                . 'AND uid <> 0 AND status <> :s order by name', array(':u' => $data->owner, ':s' => 0))
-                ->fetchAllKeyed();*/
+        
         
         $users = [];
             foreach (\Drupal\user\Entity\User::loadMultiple() as $account) {

@@ -68,13 +68,13 @@ class InstallController extends ControllerBase {
   }
 
 /**
-   * data update upon migration
+   * data update
    *
 */
-  public function migrate() {
+  public function update() {
   
   //update and conversion of DB
-  include_once drupal_get_path('module', 'ek_projects') . '/' . 'migrate3.php';
+  include_once drupal_get_path('module', 'ek_projects') . '/' . 'update.php';
   return  array('#markup' => $markup) ;
   }
 

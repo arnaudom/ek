@@ -112,7 +112,7 @@
     color: #2E64FE;
 }
 .orange {
-    color: #FF8000;
+    color: #FFC900;
 }
 
 .field_edit {
@@ -151,6 +151,11 @@
     overflow:auto;
 }
 
+.projectMessagesList {
+    background-color: #e7e7e7;
+    height:10em;
+    overflow:auto;
+}
 
 .open-ico {
 

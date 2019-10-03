@@ -53,7 +53,7 @@ class ProjectMessagesBlock extends BlockBase {
             $data = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':text' => '%' . $pcode . '%'));
                       
-            $list = '<ul>';
+            $list = '<ul class="projectMessagesList">';
 
             while ($d = $data->fetchObject()) {
 

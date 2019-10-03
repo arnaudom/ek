@@ -237,10 +237,11 @@ class Notification extends FormBase {
         //
         // email sending record
         //
-        $body = [];
-        $body[] = $params['text'];
-        $body[] = t('Project ref.') . ': ' .  $code[0] . ' | ' . $p->pcode;     
-        $params['body'] = $body;
+        
+        $text = $params['text'];
+        $text .= "<br>" . t('Project ref.') . ': ' .  $code[0] . ' | ' . $p->pcode;     
+        $params['body'] = $text;
+        $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'),NULL,1,NULL, t('Open'));
         foreach ($addresses as $email) {
             if (trim($email) != NULL) {
                 if ($target_user = user_load_by_mail($email)) {
@@ -263,7 +264,6 @@ class Notification extends FormBase {
         }
 
         if ($error <> '') {
-            //$form_state->setErrorByName("email",  $this->t('error sending message to: @e', array('@e' => $error)));
             $form_state->set('alert', t('Error sending to') . ': ' . rtrim($error, ','));
         } else {
             $form_state->set('alert', t('Message sent'));

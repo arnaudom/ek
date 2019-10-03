@@ -23,30 +23,26 @@ use Drupal\ek_projects\ProjectData;
  */ 
  function ek_projects_ek_settings($coids) { 
     //we do not use param coids here as settings are global
+    $settings = [];
     $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_project_settings', 'p');
     $query->fields('p', ['coid', 'settings']);
     $query->condition('coid', '0');
     $data = $query->execute()->fetchObject();
-    $settings = unserialize($data->settings);
+    if($data){
+        $settings = unserialize($data->settings);
+    }
     
-    if(empty($settings['code'])) {
+    if(isset($settings['code']) && empty($settings['code'])) {
         $link = \Drupal\Core\Url::fromRoute('ek_projects.settings.serial', array(), array())->toString();
-        $message = t('Missing settings for module @m. Go <a href="@c">here</a> to edit.', ['@c' => $link, '@m' => 'projects']);
-        drupal_set_message($message, 'warning');
+        return ['projects' => $link];
+        
     }
   
     return new \Symfony\Component\HttpFoundation\Response('', 204);
      
  }
 
- /**
- * Implements hook_form_alter().
- */
-function ek_projects_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-
-    
-}
 
 /**
  * Implementation hook_theme().
@@ -106,13 +102,19 @@ function ek_projects_mail($key, &$message, &$params) {
     switch($key) {
       case 'project_access':
         $message['subject'] = $params['subject'];
-        $message['body'] = $params['body'];
+        $render = [
+            '#markup' => $params['body'],
+        ];
+        $message['body'][] = \Drupal::service('renderer')->render($render);  
         $message['options'] = $params['options'];
         break;
 
       case 'project_note':
         $message['subject'] = $params['subject'];
-        $message['body'] = $params['body'];
+        $render = [
+            '#markup' => $params['body'],
+        ];
+        $message['body'][] = \Drupal::service('renderer')->render($render);  
         $message['options'] = $params['options'];
         break;
 
@@ -164,6 +166,116 @@ function ek_projects_file_download($uri) {
     }
 
 }
+
+/**
+ * Implements hook_form_alter().
+ */
+function ek_projects_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+    
+  if ($form_id == 'user_multiple_cancel_confirm') {
+    
+
+    $form['project_owner'] = [
+      '#type' => 'textfield',
+      '#title' => t('Move user project'),
+      '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
+      '#description' => t('Select to whom to transfer proejct ownership'),
+    ];
+    $form['#validate'][] = 'ek_projects_form_user_delete_validate';
+    $form['#submit'][] = 'ek_projects_form_user_delete_submit';
+    
+    return $form;
+      
+  }
+} 
+
+/**
+ * Implements hook_form_validate().
+ */
+function ek_projects_form_user_delete_validate(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+
+  if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
+        if ($form_state->getValue('project_owner') <> '') {
+            
+            $query = "SELECT uid FROM {users_field_data} WHERE name = :n";
+            $data = db_query($query, [':n' => $form_state->getValue('project_owner')])
+                    ->fetchField();
+            if ($data) {
+                $form_state->setValue('project_owner', $data);
+            } else {
+                $form_state->setErrorByName('project_owner', t('Unknown user to move documents'));
+            }
+            
+  
+        }
+    
+     return $form;
+      
+  }
+}
+
+/**
+ * Implements hook_form_submit().
+ */
+function ek_projects_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  
+    
+    if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
+
+        foreach($form_state->getValue('accounts') as $key => $id) {
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project', 'p');
+                $query->fields('p',['id','owner', 'share','deny','notify']);
+                $data = $query->execute();
+
+            while($d = $data->fetchObject()) {
+
+                $share = explode(',', $d->share);
+                $index = array_search($id, $share);
+                if($index !== false){
+                    unset($share[$index]);
+                }
+                $share = implode(",", $share);
+                
+                $deny = explode(',', $d->deny);
+                $index = array_search($id, $deny);
+                if($index !== false){
+                    unset($deny[$index]);
+                }
+                $deny = implode(",", $deny);
+                
+                $notify = explode(',', $d->notify);
+                $index = array_search($id, $notify);
+                if($index !== false){
+                    unset($notify[$index]);
+                }                  
+                $notify = implode(",", $notify);
+                
+                $update = Database::getConnection('external_db', 'external_db')->update('ek_project')
+                    ->condition('id', $d->id)
+                    ->fields(['share' => $share,'deny' => $deny,'notify' => $notify])
+                    ->execute();
+            
+                if (is_numeric($form_state->getValue('project_owner')) && $id == $d->owner) {
+                    Database::getConnection('external_db', 'external_db')->update('ek_project')
+                    ->condition('id', $d->id)
+                    ->fields(['owner' => $form_state->getValue('project_owner')])
+                    ->execute();
+                    
+                }
+                
+            } 
+            
+                        
+        }
+       
+    \Drupal::messenger()->addStatus(t('Projects updated'));
+       
+    return $form;
+      
+  }
+} 
 
 /**
  * Implements hook_views_data().
