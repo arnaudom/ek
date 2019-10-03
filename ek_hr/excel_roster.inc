@@ -684,13 +684,13 @@ foreach ($location_array as $key => $location) {
                 $cnt++;
                 $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $sunday_h);
             } else {
-                $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $roster->to_hsm($total_h));
+                $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $roster->to_hms($total_h));
                 $cnt++;
-                $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $roster->to_hsm($normal_h));
+                $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $roster->to_hms($normal_h));
                 $cnt++;
-                $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $roster->to_hsm($ph_h));
+                $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $roster->to_hms($ph_h));
                 $cnt++;
-                $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $roster->to_hsm($sunday_h));
+                $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $roster->to_hms($sunday_h));
             }
         }
     } // END EMPLOYEE LIST
@@ -713,7 +713,7 @@ foreach ($location_array as $key => $location) {
             if ($HrRoster[$coid]['roster_hours_format'] == '2') {
                 $h = round($totalCol[$i]/3600,2);
             } else {
-                $h = $roster->to_hsm($totalCol[$i]);
+                $h = $roster->to_hms($totalCol[$i]);
             }
         }
 
@@ -727,7 +727,7 @@ foreach ($location_array as $key => $location) {
             if ($HrRoster[$coid]['roster_hours_format'] == '2') {
                 $h = round($totalCol[$i]/3600,2);
             } else {
-                $h = $roster->to_hsm($totalCol[$i]);
+                $h = $roster->to_hms($totalCol[$i]);
             }
         }
         $objPHPExcel->setActiveSheetIndex(1)->setCellValue($col[$cnt] . $l, $h);
@@ -947,7 +947,7 @@ for ($i = $s0; $i <= $c0; $i++) {
         if ($HrRoster[$coid]['roster_hours_format'] == '2') {
             $h = round($totalCol[$i] / 3600, 2);
         } else {
-            $h = $roster->to_hsm($totalCol[$i]);
+            $h = $roster->to_hms($totalCol[$i]);
         }
     }
 
@@ -961,7 +961,7 @@ for ($i = $s; $i <= $c; $i++) {
         if ($HrRoster[$coid]['roster_hours_format'] == '2') {
             $h = round($totalCol[$i] / 3600, 2);
         } else {
-            $h = $roster->to_hsm($totalCol[$i]);
+            $h = $roster->to_hms($totalCol[$i]);
         }
     }
     $objPHPExcel->setActiveSheetIndex(2)->setCellValue($col[$cnt] . $l, $h);
@@ -970,7 +970,7 @@ $cnt++;
 if ($HrRoster[$coid]['roster_hours_format'] == '2') {
     $objPHPExcel->setActiveSheetIndex(2)->setCellValue($col[$cnt] . $l, round($totalLast / 3600, 2));
 } else {
-    $objPHPExcel->setActiveSheetIndex(2)->setCellValue($col[$cnt] . $l, $roster->to_hsm($totalLast));
+    $objPHPExcel->setActiveSheetIndex(2)->setCellValue($col[$cnt] . $l, $roster->to_hms($totalLast));
 }
 
 //}//per location
