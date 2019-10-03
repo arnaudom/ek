@@ -276,18 +276,18 @@ class InvoicesController extends ControllerBase {
             $due = date('Y-m-d', strtotime(date("Y-m-d", strtotime($r->date)) . "+" . $r->due . "days"));
             
             if ($r->status != '1') {
-                $long = round((strtotime($due) - strtotime(date('Y-m-d'))) / (24 * 60 * 60), 0);
-                if ($long > $settings->get('longdue')) {
-                    $due .= " <i class='fa fa-circle green' aria-hidden='true'></i>";
+                $delta = round((strtotime(date('Y-m-d')) - strtotime($due)) / (24 * 60 * 60), 0);
+                if ($delta <= $settings->get('shortdue')) {
+                    $due = " <i class='fa fa-circle green' aria-hidden='true'></i> " . $due;
                     $link = 2;
-                } elseif ($long >= $settings->get('shortdue') && $long <= $settings->get('longdue')) {
-                    $due .= " <i class='fa fa-circle orange' aria-hidden='true'></i>";
+                } elseif ($delta > $settings->get('shortdue') && $delta <= $settings->get('longdue')) {
+                    $due = " <i class='fa fa-circle orange' aria-hidden='true'></i> " . $due;
                     $link = 2;
-                } else {
-                    $due .= " <i class='fa fa-circle red' aria-hidden='true'></i>";
+                } elseif ($delta > $settings->get('longdue') )  {
+                    $due = " <i class='fa fa-circle red' aria-hidden='true'></i> " . $due;
                     $weight = 0;
                 }
-                $duetitle = t('past due') . ' ' . -1 * $long . ' ' . t('day(s)');
+                $duetitle = t('due') . ' ' . $delta . ' ' . t('day(s)');
             }
             if ($r->type < 4) {
                 $value = $r->currency . ' ' . number_format($r->amount, 2);

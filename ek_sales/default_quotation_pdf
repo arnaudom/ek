@@ -241,14 +241,14 @@ if ($head->pcode != "n/a") {
 $pdf->Ln(2);
 
 //BODY OF QUOTATION ================================================
-$b1 = 5;
+$b1 = 7;
 $b2 = 110;
 $b3 = 20;
 $b4 = 20;
 $b5 = 30;
 $pdf->SetFillColor(238, 238, 238);
-$pdf->SetFont('helvetica','B',8);
-$pdf->Cell($b1,5,'',1,0);
+$pdf->SetFont('helvetica','B',7);
+$pdf->Cell($b1,5,t('No.'),1,0);
 $pdf->Cell($b2,5, t('Description') ,1,0,'C','0');      
 $pdf->Cell($b3,5, $items['column_name4'] ,1,0,'C','0');
 $pdf->Cell($b4,5, $items['column_name5'] ,1,0,'C','0');
@@ -259,8 +259,10 @@ $pdf->SetFont('helvetica','',8);
 // items ///////////////////////
 $grandtotal = 0;
 $subtotal = 0;
-$i=1;
-$p=0;
+$i=0;  //count item each rows;
+$ii=0; //count groups
+$iii=0;//count group item rows
+
 foreach ($items['lines'] as $detail) {
     if($detail['item'] <> '') {
         if ($detail['item'] === "sub_total" || $detail['item'] === "[sub total]" ) {
@@ -276,9 +278,13 @@ foreach ($items['lines'] as $detail) {
             
             if ($detail['total'] == 0 && $detail['value'] == 0) {
                 //description line
-                $pdf->SetFont('helvetica', 'B', 8);
-                $p++;
-                $pdf->Cell($b1,5, $p ,1,0);
+                $pdf->SetFont('helvetica','B',9);
+                $fill = 0;
+                $ii++;
+                $row = $ii . '_';
+                $iii=0;
+                //item row number
+                $pdf->Cell($b1,5,$row,1,0,'L');
                 // column 1
                 $x= $pdf->GetX();
                 $y= $pdf->GetY();
@@ -291,9 +297,10 @@ foreach ($items['lines'] as $detail) {
                 
             } else {
                 //normal item
-                $pdf->SetFont('helvetica', '', 8);
-                // column 0    
-                $pdf->Cell($b1,5, '' ,0,0);
+                $pdf->SetFont('helvetica','',7);
+                // column 0  
+                $iii++;
+                $pdf->Cell($b1,5,$iii,1,0,'R');
                 // column 1
                 $x= $pdf->GetX();
                 $y= $pdf->GetY();
@@ -310,24 +317,24 @@ foreach ($items['lines'] as $detail) {
                 $pdf->Cell($b5,$h,number_format($detail['total'] , 2) , 1, 1,'R');
                 
                 // line 2 
-                if($items['column_active2']) {  
+                if($items['column_active2']) { 
                     $pdf->Cell($b1);
-                    $pdf->SetFont('helvetica','',8);
-                    $wd = ($items['column_active3'] == 1) ? ($b4+$b5) : ($b2-$b1-$b3);
-                    $pdf->Cell($b1+$b3,5, $items['column_name2'] ,1,0,'L','1');
+                    $pdf->SetFont('helvetica','',7);
+                    $wd = ($items['column_active3'] == 1) ? ($b3+$b4) : ($b2-$b3);
+                    $pdf->Cell($b3,5, $items['column_name2'] ,1,0,'L','1');
                     $pdf->Cell($wd,5, $detail['column_2'],1,0);
 
                     if($items['column_active3']) {
-                        $pdf->Cell($b1+$b3,5, $items['column_name3'] ,1,0,'L','1');
+                        $pdf->Cell($b3,5, $items['column_name3'] ,1,0,'L','1');
                         $pdf->Cell($wd,5, $detail['column_3'],1,1);
                     } else {
                         $pdf->Cell($wd,5, "",0,1);  
                     }
                 } elseif($items['column_active3']) {
-                    $pdf->Cell(5);
-                    $pdf->SetFont('helvetica','',8);
-                    $pdf->Cell(25,5, $items['column_name3'] ,1,0,'L','1');
-                    $pdf->Cell(85,5, $detail['column_3'],1,1);
+                    $pdf->Cell($b1);
+                    $pdf->SetFont('helvetica','',7);
+                    $pdf->Cell($b3,5, $items['column_name3'] ,1,0,'L','1');
+                    $pdf->Cell($b2-$b3,5, $detail['column_3'],1,1);
                 }
 
                 $i++;
@@ -368,33 +375,33 @@ if ($items['incoterm_name'] != "" && $items['incoterm_name'] != "na" && $items['
     $freight = round($grandtotal*$items['incoterm_rate']/100,2); 
     $pdf->Ln(2);      
     $pdf->SetFont('helvetica','B',8);
-        $pdf->Cell(115);      
-        $pdf->Cell(40,5, $items['incoterm_name'] .' '. $items['incoterm_rate'] .'%' ,1,0);
-        $pdf->Cell(30,5,number_format($freight, 2),1,1,'R'); 
+        $pdf->Cell($b1+$b2);     
+        $pdf->Cell($b3+$b4,5, $items['incoterm_name'] .' '. $items['incoterm_rate'] .'%' ,1,0);
+        $pdf->Cell($b5,5,number_format($freight, 2),1,1,'R'); 
 } 
 $tax = 0;
 if ($items['tax_name'] != "" ){
     $tax = round( ($grandtotal + $freight )*$items['tax_rate']/100,2); 
     $pdf->Ln(2);      
     $pdf->SetFont('helvetica','B',8);
-        $pdf->Cell(115);      
-        $pdf->Cell(40,5, $items['tax_name'] ,1,0);
-        $pdf->Cell(30,5,number_format($tax, 2),1,1,'R'); 
+        $pdf->Cell($b1+$b2);      
+        $pdf->Cell($b3+$b4,5, $items['tax_name'] ,1,0);
+        $pdf->Cell($b5,5,number_format($tax, 2),1,1,'R'); 
 } 	
 
 $pdf->Ln(2);      
 $pdf->SetFont('helvetica','B',8);
-$pdf->Cell(115);      
-$pdf->Cell(40,5,t('Total') . ' ' . $head->currency . ' : ',1,0);
+$pdf->Cell($b1+$b2);      
+$pdf->Cell($b3+$b4,5,t('Total') . ' ' . $head->currency . ' : ',1,0);
 $total = $grandtotal + $tax+$freight;
-$pdf->Cell(30,5,number_format($total,2),1,1,'R'); 
+$pdf->Cell($b5,5,number_format($total,2),1,1,'R'); 
 
 //ADD AMOUNT IN WORDS -----------------------------------------------
 $resultinwords = new Drupal\ek_sales\NumberToWord();
 $word = $resultinwords->en($total);
 $pdf->Ln(2);      
 $pdf->SetFont('helvetica','I',8);     
-$pdf->Cell(185,5,$head->currency . ' ' . $word,0,1,'R');
+$pdf->Cell($b1+$b2+$b3+$b4+$b5,5,$head->currency . ' ' . $word,0,1,'R');
 
 // stamps ==============================================================
     if ($stamp == "2") {

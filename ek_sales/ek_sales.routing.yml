@@ -5,10 +5,10 @@ ek_sales_install:
   requirements:
     _permission: 'access administration pages'
     
-ek_sales_majour:
-  path: '/ek_sales/migrate'
+ek_sales_update:
+  path: '/ek_sales/update'
   defaults:
-    _controller: '\Drupal\ek_sales\Controller\InstallController::migrate'
+    _controller: '\Drupal\ek_sales\Controller\InstallController::update'
   requirements:
     _permission: 'access administration pages'
     

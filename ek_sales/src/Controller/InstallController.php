@@ -65,12 +65,12 @@ class InstallController extends ControllerBase {
 
 
 /**
-   * data update upon migration
+   * data update
    *
 */
 
- public function migrate() {
-   include_once drupal_get_path('module', 'ek_sales') . '/' . 'migrate.php';
+ public function update() {
+   include_once drupal_get_path('module', 'ek_sales') . '/' . 'update.php';
     return  array('#markup' => $markup) ;
  
  }

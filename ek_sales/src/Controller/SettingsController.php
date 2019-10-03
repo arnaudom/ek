@@ -67,7 +67,7 @@ class SettingsController extends ControllerBase {
 
 
 /**
-   * data update upon migration
+   * data update
    *
 */
 

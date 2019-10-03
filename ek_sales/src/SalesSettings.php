@@ -29,11 +29,11 @@ use Drupal\Core\Database\Database;
         $coid = 0;
     }
     $this->coid = $coid;
-    $query = "SELECT * from {ek_sales_settings} WHERE coid=:coid";
-    $data = Database::getConnection('external_db', 'external_db')
-            ->query($query, array(':coid' => $this->coid))
-            ->fetchObject();
-    
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_settings', 's');
+    $query->fields('s');
+    $query->condition('coid', $this->coid, '=');
+    $data = $query->execute()->fetchObject();
     $this->settings = unserialize($data->settings);
   }
  
@@ -46,7 +46,7 @@ use Drupal\Core\Database\Database;
   
   public function get($key) {
   
-    return $this->settings[$key];
+    return isset($this->settings[$key]) ? $this->settings[$key] : NULL;
 
   }
 
@@ -68,7 +68,8 @@ use Drupal\Core\Database\Database;
    */     
   public function save() {
   
-    $save = Database::getConnection('external_db', 'external_db')->update('ek_sales_settings')
+    $save = Database::getConnection('external_db', 'external_db')
+      ->update('ek_sales_settings')
       ->condition('coid' , $this->coid)
       ->fields(array(
         'settings' => serialize($this->settings ) ,

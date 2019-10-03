@@ -25,25 +25,30 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
  */ 
  function ek_sales_ek_settings($coids) {
    
+    $flag = 0;
     foreach($coids as $key => $id) {
-
+        $settings = [];
         $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_sales_settings', 'd');
         $query->fields('d', ['coid', 'settings']);
         $query->condition('coid', $id);
         $data = $query->execute()->fetchObject();
-        $settings = unserialize($data->settings);
+        if($data){
+            $settings = unserialize($data->settings);
+        }
 
         if(empty($settings)) {
             $link = \Drupal\Core\Url::fromRoute('ek_sales_settings', array(), array())->toString();
-            $message = t('Missing settings for module @m. Go <a href="@c">here</a> to edit.', ['@c' => $link, '@m' => 'sales']);
-            drupal_set_message($message, 'warning');
+            $flag = 1;
         }        
         
     }
-
   
-    return new \Symfony\Component\HttpFoundation\Response('', 204);
+    if($flag == 1){
+        return ['sales' => $link];
+    } else {
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
+    }
      
  }
  
