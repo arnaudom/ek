@@ -96,7 +96,7 @@
 }
 
 .orange {
-    color: #FF8000;
+    color: #FFC900;
 }
 
 .ek_messages {
@@ -137,4 +137,65 @@
 .hide-ico:before {
     content: "\f070";
     color:#000;
+}
+
+/*
+* Settings dashboard
+*/
+.admin_list li {
+    width: auto;
+    padding: 2px;
+    overflow: hidden;
+    float:left;
+}
+
+.admin_list span {
+    display: block;
+    background: #d7dfe9;
+    width: 50px;
+    height:50px;
+    padding: 20px;
+    border-radius:8px 0px 0px 8px;
+    -moz-border-radius:8px 0px 0px 8px; -webkit-border-radius:8px 0px 0px 8px;
+    visibility: visible;
+    float:left;
+}
+.list_ico:before { 
+    font-family: FontAwesome;
+    color: #2c98c9;
+    font-size:1.8em; 
+    padding: 10px;
+}
+
+.excel:before {
+    content: "\f1c3";
+}
+
+.pdf:before {
+    content: "\f1c1";
+}
+
+.dollar:before {
+    content: "\f155"
+}
+
+.list_name { 
+    display: block;
+    font-size: 1.1em;
+    width: 200px;
+    height:50px;
+    padding: 20px;
+    text-align: center;
+    border-radius:0px 8px 8px 0px;
+    -moz-border-radius:0px 8px 8px 0px; -webkit-border-radius:0px 8px 8px 0px;
+    float:left;
+}
+.valid {
+    background: #93b3e4;
+    color: whitesmoke;
+}
+.missing { 
+    color: #734c00;
+    border-color: #f4daa6 #f4daa6 #f4daa6 transparent;
+    background-color: #fdf8ed;
 }

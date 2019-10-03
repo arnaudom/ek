@@ -54,3 +54,12 @@ function ek_admin_update_8004() {
     \Drupal::service('router.builder')->rebuild();
     \Drupal::cache('data')->deleteAll(); 
 }
+
+
+
+/**
+ * Edit route name
+*/
+function ek_admin_update_8005() {
+    \Drupal::service('router.builder')->rebuild();
+}

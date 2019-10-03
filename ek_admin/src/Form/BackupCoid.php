@@ -694,10 +694,10 @@ class BackupCoid extends FormBase {
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
             
-            $fields = $table .".`id`,`serial`,`header`,`allocation`,`status`,`amount`, "
+            $fields = $table .".`id`,`serial`,`head`,`allocation`,`status`,`amount`, "
                     . "`currency`, `date`, `title`, `pcode`, `comment`,`client`,"
                     . "`incoterm`,`tax`,`bank`,`principal`,`type`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE header=:c ';
+            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE head=:c ';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);             
         
@@ -712,10 +712,10 @@ class BackupCoid extends FormBase {
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
             
-            $fields = $table .".`id`," . $table .".`serial`,`itemid`,`itemdetails`,`margin`,`unit`,`value`, "
+            $fields = $table .".`id`," . $table .".`serial`,`itemid`,`itemdetails`,`weight`,`unit`,`value`, "
                     . "`total`, `revision`,`opt`,`column_2`,`column_3`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_sales_quotation} b ON '
-                    . ''. $table .'.serial = b.serial WHERE header=:c ORDER by ' . $table . '.id';
+                    . ''. $table .'.serial = b.serial WHERE head=:c ORDER by ' . $table . '.id';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);     
             
@@ -748,7 +748,7 @@ class BackupCoid extends FormBase {
                     ->query($query, [':c' => $coid])
                     ->fetchCol();
 
-            $query = "SELECT distinct client FROM {ek_sales_quotation} WHERE header=:c";
+            $query = "SELECT distinct client FROM {ek_sales_quotation} WHERE head=:c";
             $abid3 = Database::getConnection('external_db', 'external_db')
                     ->query($query, [':c' => $coid])
                     ->fetchCol();
@@ -796,11 +796,11 @@ class BackupCoid extends FormBase {
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
             
-            $fields = $table .".`id`,`company_id`,`origin`,`name`,`given_name`,`surname`, "
+            $fields = $table .".`id`,`custom_id`,`company_id`,`origin`,`name`,`given_name`,`surname`, "
                     . "`email`, `address`, `telephone`, `sex`, `rank`,`ic_no`,"
                     . "`ic_type`,`birth`,`epf_no`,`socso_no`,`itax_no`,`itax_c`,"
                     . "`e_status`,`location`,`service`,`bank`,`bank_account`,`bank_account_status`,`thirdp`,`active`,"
-                    . "`start`,`resign`,`currency`,`salary`,`th_salary`,`aleave`,"
+                    . "`start`,`resign`,`contract_expiration`,`currency`,`salary`,`th_salary`,`aleave`,"
                     . "`mcleave`,`archive`,`picture`,`administrator`,`default_ps`,`note`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE company_id=:c ORDER by id';
 
@@ -947,7 +947,7 @@ class BackupCoid extends FormBase {
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
             
-            $fields = $table .".`id`,`period`,`emp_id`,`roster`,`status`";
+            $fields = $table .".`id`,`period`,`emp_id`,`roster`,`status`,". $table .".`note`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_hr_workforce} b ON '
                     . ''. $table .'.emp_id = b.id WHERE company_id=:c ORDER by ' . $table . '.id';
 

@@ -63,13 +63,13 @@ class InstallController extends ControllerBase {
   }
 
 /**
- * data update upon migration from older system
- * @return Form
+ * data update 
+ * 
  *
 */
 
- public function migrate() {
-   include_once drupal_get_path('module', 'ek_admin') . '/' . 'migrate.php';
+ public function update() {
+   include_once drupal_get_path('module', 'ek_admin') . '/' . 'update.php';
   return  array('#markup' => $markup) ;
  
  }
@@ -166,9 +166,9 @@ class InstallController extends ControllerBase {
               `id` INT(5) NOT NULL AUTO_INCREMENT,
               `coid` INT(5) NULL DEFAULT NULL COMMENT 'company id',
               `fid` INT(5) NULL DEFAULT NULL COMMENT 'file managed id',
-              `filename` VARCHAR(200) NULL DEFAULT NULL COMMENT 'Name of the file with no path components.',
-              `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the URI of the file',
-              `comment` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment',
+              `filename` VARCHAR(200) NULL DEFAULT NULL COMMENT 'Name of the file with no path components.' COLLATE 'utf8mb4_general_ci',
+              `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the URI of the file' COLLATE 'utf8mb4_general_ci',
+              `comment` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment' COLLATE 'utf8mb4_general_ci',
               `date` INT(10) NULL DEFAULT '0' COMMENT 'document date',
               `size` INT(10) NULL DEFAULT '0' COMMENT 'document size',
               `share` VARCHAR(255) NULL DEFAULT '0' COMMENT 'list of shared uid',

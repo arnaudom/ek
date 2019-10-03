@@ -72,16 +72,7 @@ class SettingsForm extends FormBase {
             '#type' => 'hidden',
             '#value' => $coid,
         );
-        
-        //verify if the connection to system DB is secured
-        //when system database is remote (from drupal installation server) the connection should be done via ssl
-        $ssl = db_query("SHOW STATUS LIKE 'Ssl_cipher'")->fetchAll();
-        
-        $form['secure'] = array(
-            '#type' => 'item',
-            '#markup' => NULL !=($ssl[0]->Value) ? "<div class='messages messages--status'>" . t('Info: ssl database connection active') . '</div>'
-            : "<div class='messages messages--warning'>" . t('Info: no ssl database connection settings') . '</div>',
-        );
+            
         $form['cronkey'] = array(
             '#type' => 'item',
             '#markup' => t('Use key for cron') . ': <b>' . $this->state->get('system.cron_key') . '</b>', 
@@ -144,24 +135,7 @@ class SettingsForm extends FormBase {
             '#description' => t('Relative path to external libraries; i.e. "/libraries"'),
         );   */
         
-        $form['excel'] = array(
-            '#type' => 'item',
-            '#markup' => (class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) ? "<div class='messages messages--status'>" 
-                            . 'Excel ' .  t('library installed') . '</div>'
-            : "<div class='messages messages--warning'>" . 'Excel ' .  t('library not available') . '</div>',
-        );
-         $form['fpdf'] = array(
-            '#type' => 'item',
-            '#markup' => (class_exists('FPDF')) ? "<div class='messages messages--status'>" 
-                            . 'FPdf ' .  t('library installed') . '</div>'
-            : "<div class='messages messages--warning'>" . 'Pdf ' .  t('library not available') . '</div>',
-        );   
-         $form['tcpdf'] = array(
-            '#type' => 'item',
-            '#markup' => (class_exists('TCPDF')) ? "<div class='messages messages--status'>" 
-                            . 'TcPdf ' .  t('library installed') . '</div>'
-            : "<div class='messages messages--warning'>" . 'Pdf ' .  t('library not available') . '</div>',
-        );           
+             
         $form['actions'] = array('#type' => 'actions');
         $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
 

@@ -1,0 +1,130 @@
+{#
+# available data
+# alert_db : alert about external DB not set
+# form : form to create external DB
+# updatephp : link to run update db
+# country : alert/link about country activation
+# company : alert/link about company creation
+# space : space available on disk for data files
+# excel : alert excel library
+# fpdf : alert fpdf library
+# tcpdf : alert tcpdf library
+# ssl : alert ssl connection for DB
+# finance : alert base currency in finance
+#}
+{% if items.alert_db %}
+
+    <p>{{ items.alert_db }}</p>
+    {{ items.form }}
+
+{% else %}    
+
+    <p>{{ items.updatephp }}</p>
+
+
+    <div>
+        <ul class='admin_list'>
+            {% if items.documents %}
+                <li>
+                    <span class="list_ico fas fa-cog"></span>
+                    <div class="list_name missing">{{ 'Missing settings for documents'|t }}: <a href='{{ items.documents }}'>{{'Edit'|t}}</a></div>
+                </li>
+            {% endif %}
+            {% if items.finance %}
+                <li>
+                    <span class="list_ico fas fa-cog"></span>
+                    <div class="list_name missing">{{ 'Missing settings for finance'|t }}: <a href='{{ items.finance }}'>{{'Edit'|t}}</a></div>
+                </li>
+            {% endif %}            
+            {% if items.currency %}
+                <li>
+                    <span class="list_ico dollar"></span>
+                    <div class="list_name missing">{{ items.currency }}</div>
+                </li>
+            {% endif %}
+            {% if items.logistics %}
+                <li>
+                    <span class="list_ico fas fa-cog"></span>
+                    <div class="list_name missing">{{ 'Missing settings for logistics'|t }}: <a href='{{ items.logistics }}'>{{'Edit'|t}}</a></div>
+                </li>
+            {% endif %}
+            {% if items.projects %}
+                <li>
+                    <span class="list_ico fas fa-cog"></span>
+                    <div class="list_name missing">{{ 'Missing settings for projects'|t }}: <a href='{{ items.projects }}'>{{'Edit'|t}}</a></div>
+                </li>
+            {% endif %}      
+            {% if items.sales %}
+                <li>
+                    <span class="list_ico fas fa-cog"></span>
+                    <div class="list_name missing">{{ 'Missing settings for sales'|t }}: <a href='{{ items.sales }}'>{{'Edit'|t}}</a></div>
+                </li>
+            {% endif %}              
+            <li>
+                <span class="list_ico fas fa-database"></span>
+                {% if items.ssl == 1 %}
+                    <div class="list_name valid">{{ 'Ssl database connection'|t }}</div>
+                {% else %}
+                    <div class="list_name missing">{{ 'No ssl database connection'|t }}</div>
+                {% endif %}
+            </li> 
+            <li>
+                <span class="list_ico fas fa-save"></span>
+                {% if items.space > 0.5 %}
+                    <div class="list_name valid">{{ 'Private file free space'|t }} {{ items.space }}</div>
+                {% else %}
+                    <div class="list_name missing">{{ 'Private file free space'|t }} {{ items.space }}</div>
+                {% endif %}
+            </li>             
+            <li>
+                {% if items.excel == 1 %}
+                    <span class="list_ico excel"></span>
+                    <div class="list_name valid">{{ 'Excel library installed'|t }}</div>
+                {% else %}
+                    <span class="list_ico fas fa-exclamation-circle"></span>
+                    <div class="list_name missing">{{ 'Excel library not installed'|t }}</div>
+                {% endif %}
+            </li>
+            <li>
+                {% if items.fpdf == 1 %}
+                    <span class="list_ico pdf"></span>
+                    <div class="list_name valid">{{ 'Fpdf library installed'|t }}</div>
+                {% else %}
+                    <span class="list_ico fas fa-exclamation-circle"></span>
+                    <div class="list_name missing">{{ 'Fpdf library not installed'|t }}</div>
+                {% endif %}
+            </li>
+            <li>
+                {% if items.tcpdf == 1 %}
+                    <span class="list_ico pdf"></span>
+                    <div class="list_name valid">{{ 'Tcpdf library installed'|t }}</div>
+                {% else %}
+                    <span class="list_ico fas fa-exclamation-circle"></span>
+                    <div class="list_name missing">{{ 'Tcpdf library not installed'|t }}</div>
+                {% endif %}
+            </li>
+
+        </ul>
+
+    </div>
+
+
+
+
+
+
+{% endif %}
+
+{% if items.country %}
+
+    <p>{{ items.country }}</p>
+
+{% endif %}
+
+{% if items.company %}
+
+    <p>{{ items.company }}</p>
+
+{% endif %}
+
+

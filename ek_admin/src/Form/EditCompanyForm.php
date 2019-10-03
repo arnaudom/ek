@@ -307,7 +307,7 @@ class EditCompanyForm extends FormBase {
         );
 
         /* current image if any */
-        if ($r['logo'] <> '') {
+        if (isset($r['logo']) && $r['logo'] <> '') {
             $image = "<a href='" . file_create_url($r['logo']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['logo']) . "></a>";
             $form['i']['logo_delete'] = array(
                 '#type' => 'checkbox',
@@ -334,7 +334,7 @@ class EditCompanyForm extends FormBase {
         );
 
         /* current image if any */
-        if ($r['sign'] <> '') {
+        if (isset($r['sign']) && $r['sign'] <> '') {
             $image = "<a href='" . file_create_url($r['sign']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['sign']) . "></a>";
             $form['i']['sign_delete'] = array(
                 '#type' => 'checkbox',

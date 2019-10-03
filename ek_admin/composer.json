@@ -63,7 +63,7 @@
                 },
                 "type": "drupal-library"
             }
-        }  
+        }
     ],
     "require": {
         "phpoffice/phpspreadsheet": "1.1.*",
@@ -71,9 +71,10 @@
         "tecnickcom/tcpdf": "6.2.*",
         "jquery/multi-select" : "0.9.12",
         "jquery/chosen" : "1.8.7",
-        "jquery/tagEditor" : "1.0.20",
+        "jquery/tageditor" : "1.0.20",
         "fullcalendar/fullcalendar" : "3.10.0",
-        "qTip2/qTip2" : "3.0.3"
+        "qtip2/qtip2" : "3.0.3",
+        "vench/vs-word": "^1.0"
     }
 
 

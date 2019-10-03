@@ -162,6 +162,12 @@ function ek_admin_filter_ico($extension) {
 function ek_admin_theme() {
     return array(
         // default alert, access message
+        'ek_admin_settings' => array
+        (
+          'template' => 'ek_admin_settings',
+          'variables' => array('items' => array()),
+        ),
+        // default alert, access message
         'ek_admin_message' => array
         (
           'template' => 'ek_admin_message',
@@ -238,6 +244,7 @@ function ek_admin_mail($key, &$message, $params) {
         case 'tasks':
         case 'project_status':
         case 'sales_alert':
+        case 'hr_date':
 
         $message['subject'] = $params['options']['subject'];
         $message['options'] = $params['options'];       
@@ -442,7 +449,83 @@ function mail_attachment($email, $file, $message = null , $options = null) {
     
 }
 
- 
+/**
+ * Implements hook_form_alter().
+ */
+function ek_admin_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+    
+  if ($form_id == 'user_multiple_cancel_confirm') {
+    
+    $form['#submit'][] = 'ek_admin_form_user_delete_submit';
+    
+    return $form;
+      
+  }
+} 
+
+/**
+ * Implements hook_form_submit().
+ */
+function ek_admin_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  
+    
+    if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
+
+        foreach($form_state->getValue('accounts') as $key => $id) {
+            
+            /*
+             * company table
+            */
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_company', 'c');
+                $query->fields('c',['id','access']);
+                $data = $query->execute();
+
+            while($d = $data->fetchObject()) {
+
+                $list = explode(',', unserialize($d->access));
+                $index = array_search($id, $list);
+                if($index !== false){
+                    unset($list[$index]);
+                }
+                $access = serialize(implode(",", $list));
+                $update = Database::getConnection('external_db', 'external_db')->update('ek_company')
+                    ->condition('id', $d->id)
+                    ->fields(array('access' => $access))
+                    ->execute();
+            } 
+            
+            /*
+             * country table
+            */
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_country', 'c');
+                $query->fields('c',['id','access']);
+                $query->condition('access', '', '<>');
+                $data = $query->execute();
+
+            while($d = $data->fetchObject()) {
+
+                $list = explode(',', unserialize($d->access));
+                $index = array_search($id, $list);
+                if($index !== false){
+                    unset($list[$index]);
+                }
+                $access = serialize(implode(",", $list));
+                $update = Database::getConnection('external_db', 'external_db')->update('ek_country')
+                    ->condition('id', $d->id)
+                    ->fields(array('access' => $access))
+                    ->execute();
+            } 
+            
+        }
+       
+    \Drupal::messenger()->addStatus(t('Access removed'));
+       
+    return $form;
+      
+  }
+} 
 
 /**
  * Provides the views data.
