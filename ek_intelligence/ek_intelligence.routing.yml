@@ -5,10 +5,10 @@ ek_intelligence_install:
   requirements:
     _permission: 'access administration pages'
 
-ek_intelligence_majour:
-  path: '/ek_intelligence/migrate'
+ek_intelligence_update:
+  path: '/ek_intelligence/update'
   defaults:
-    _controller: '\Drupal\ek_intelligence\Controller\InstallController::migrate'
+    _controller: '\Drupal\ek_intelligence\Controller\InstallController::update'
   requirements:
     _permission: 'access administration pages'
     
