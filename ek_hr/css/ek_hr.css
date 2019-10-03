@@ -87,7 +87,7 @@
 }
 
 .current {
-    background-color:#F2F5A9;
+    background-color:#E6F5FF;
 }
 
 .delete {
@@ -268,4 +268,19 @@ hr {
 }
 .hr_image-link {
     border-bottom: 0px !important;
+}
+
+.badge {
+    background-color: #35a4db;
+    border-radius: 5px;
+    color: #fff;
+    display: inline-block;
+    font-size: 1.1em;
+    font-weight: bold;
+    line-height: 1;
+    min-width: 20px;
+    padding: 4px 8px;
+    text-align: center;
+    vertical-align: baseline;
+    white-space: nowrap;
 }

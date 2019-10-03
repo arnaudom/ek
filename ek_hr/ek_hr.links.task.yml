@@ -159,3 +159,15 @@ ek_hr.task.ph:
   base_route: ek_hr.roster
   title: 'Public Holidays'
   weight: 3
+    
+ek_hr.task.settings:
+  route_name: ek_hr.roster_settings
+  base_route: ek_hr.roster
+  title: 'Settings'
+  weight: 4
+    
+ek_hr.task.delete:
+  route_name: ek_hr.roster_delete
+  base_route: ek_hr.roster
+  title: 'Delete'
+  weight: 5

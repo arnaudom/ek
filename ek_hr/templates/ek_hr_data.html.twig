@@ -10,7 +10,7 @@
             <td class='title'> {{ 'Company'|t }}</td>
             <td class='data'>{{ items.hr.0.company }}</td>
             <!--<td rowspan='8' class='data'>{{ items.hr.0.picture|raw }}</td>-->
-            <td rowspan='8' class='data'><img class="data-avatar" alt="Pofile image" src="{{ items.hr.0.pictureUrl }}"/></td>
+            <td rowspan='8' class='data data-center'><img class="data-avatar" alt="Pofile image" src="{{ items.hr.0.pictureUrl }}"/></td>
         </tr>
         <tr>
             <td class='title'> {{ 'Status'|t }}</td>
@@ -18,7 +18,7 @@
         </tr>
         <tr>
             <td class='title'> {{ 'Name'|t }}</td>
-            <td class='data'> {{ items.hr.0.name }}</td>
+            <td class='data'> <strong>{{ items.hr.0.name }}</strong></td>
         </tr>
         {% if items.hr.0.given_name %} 
         <tr>
@@ -42,7 +42,15 @@
         </tr>    
         <tr>
             <td class='title'>{{ 'Employee ID'|t }}</td>
-            <td class='data'>{{ items.hr.0.id }} </td>
+            <td class='data data-center'><span class='badge'>{{ items.hr.0.id }}</span></td>
+        </tr>
+        <tr>
+            <td class='title'>{{ 'Given ID'|t }}</td>
+            <td class='data data-center'>
+                {% if items.hr.0.custom_id %}
+                <span class='badge'>{{ items.hr.0.custom_id }}</span>
+                {% endif %}
+            </td>   
         </tr>
     </tbody>    
 </table>
@@ -108,6 +116,10 @@
     <tr>
         <td class='title'>{{ 'Resign'|t }} </td>
         <td class='data'>{{ items.hr.0.resign }}</td>
+    </tr>
+    <tr>
+        <td class='title'>{{ 'Contract expiration'|t }} </td>
+        <td class='data'>{{ items.hr.0.contract_expiration }}</td>
     </tr>
     <tr>
         <td class='title'>{{ 'Annual leaves'|t }} </td>

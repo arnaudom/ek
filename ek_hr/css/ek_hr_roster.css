@@ -57,6 +57,9 @@
     margin-top: 0em !important;
 }
 
+#edit-cutoff {
+    width:5em;
+}
 .cellborder {  
     border-width: thin ;
     border-spacing: 1px;
@@ -67,12 +70,25 @@
     text-align: center;
 }
 
+.ui-widget-header{
+    background: #95caff !important;
+}
+
 .ph {
     background-color: #FFBF00;
 }
 
 .sun {
-    background-color: #A4A4A4;
+    background-color: #CCC;
+}
+
+.day {
+    min-width: 30px;
+    padding: 4px 2px;
+}
+
+.day:hover{
+    background-color: #dbe1ea;
 }
 
 .week {
@@ -89,6 +105,8 @@
 
 .time{
     font-size:0.9em;
+    padding: 4px 2px;
+    text-align: center;
 }
 
 .sliderbox {
@@ -108,6 +126,15 @@
     margin-left: 5px;
     margin-right: 5px;
     margin-top:10px;
+}
+
+.slidernote {
+    width:3%;
+    float:left;
+    padding: 1px;
+    margin-left: 3px;
+    margin-right: 5px;
+    margin-bottom:10px;
 }
 
 .status {
@@ -137,4 +164,39 @@
     display: inline-block;
     text-rendering: auto;
     content: "\f1c3";
+}
+
+
+.info_no:before {
+    content: "\f069"; 
+    font-family: FontAwesome;
+    font-size:1em;
+    color: #408FD7;
+    text-align: center;
+    display: inline-block;
+    text-rendering: auto;
+}
+
+.info_on:before {
+    content: "\f069"; 
+    font-family: FontAwesome;
+    font-size:1em;
+    color: #FFBF00;
+    text-align: center;
+    display: inline-block;
+    text-rendering: auto;
+}
+
+.button--update:hover {
+    background-color: #FFF;
+    color: #FFF !important;
+    background-image: linear-gradient(to bottom, #A9F5A9, #298A08) !important;
+    border-color: #A9F5A9 #298A08 #298A08 !important;
+}
+
+.button--record:hover {
+    background-color: #FFF;
+    color: #FFF !important;
+    background-image: linear-gradient(to bottom, #81ADF8, #0059DF) !important;
+    border-color: #81ADF8 #0059DF #0059DF !important;
 }

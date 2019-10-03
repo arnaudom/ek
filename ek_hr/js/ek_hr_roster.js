@@ -4,6 +4,40 @@
         attach: function (context, settings) {
 
 
+            if (settings.roster.cut) {
+                if (jQuery.cookie(settings.roster.cut)) {
+                    jQuery('#edit-cutoff').val(jQuery.cookie(settings.roster.cut));
+                }
+                $('#edit-cutoff').change(function () {
+                    var value = parseFloat(jQuery('#edit-cutoff').val());
+                    jQuery.cookie(settings.roster.cut, value, {expires: 1});
+                });
+            }
+
+            $('.tip').each(function(){
+                $(this).qtip({
+                    position: {
+                            my: 'bottom right', // Position my top left...
+                            at: 'top left', // at the bottom right of...
+                            target: this // my target
+                        },
+                    content: {
+                        text: 'Loading...',
+                        ajax: {
+                            url: '/human-resources/e/autocomplete',
+                            type: 'GET',
+                            data: {q: $(this).attr('id'), option:'image'},
+                            success: function (data, status) {
+                                // Process the data
+                                var tx = data[0]['picture'] + data[0]['name'];
+                                // Set the content manually (required!)
+                                this.set('content.text', tx);
+                            }
+                        }
+                    }
+                })
+            });
+
             $(".day").on("click", function () {
                 jQuery(".time").hide();
                 jQuery(".slide").hide();

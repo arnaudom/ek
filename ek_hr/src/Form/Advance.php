@@ -92,7 +92,7 @@ class Advance extends FormBase {
 
                 $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_hr_workforce', 'w')
-                            ->fields('w', ['id','name','currency'])
+                            ->fields('w', ['id','custom_id' ,'name','currency'])
                             ->condition('company_id', $form_state->getValue('coid'), '=')
                             ->orderBy('name', 'ASC');
            
@@ -128,6 +128,7 @@ class Advance extends FormBase {
             );
             While ($e = $employees->fetchObject()) {
                 $i++;
+                $eid = ($e->custom_id != '') ? $e->custom_id : $e->id;
                 $query = "SELECT advance FROM {ek_hr_workforce_pay} WHERE id=:id";
                 $adv = Database::getConnection('external_db', 'external_db')
                         ->query($query, [':id' => $e->id])
@@ -141,7 +142,7 @@ class Advance extends FormBase {
                 $form['id'] = array(
                     '#id' => 'id-' . $e->id,
                     '#type' => 'item',
-                    '#markup' => "<span class='badge'>" . $e->id . "</span>",
+                    '#markup' => "<span class='badge'>" . $eid . "</span>",
                 );
                 $form['advance'] = array(
                     '#id' => 'advance-' . $e->id,

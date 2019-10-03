@@ -69,13 +69,13 @@ class InstallController extends ControllerBase {
 
 
 /**
-   * migrate from previous version
+   * update version
    *
 */
-  public function migrate() {
+  public function update() {
   
   //update and conversion of DB
-  include_once drupal_get_path('module', 'ek_hr') . '/' . 'migrate.php';
+  include_once drupal_get_path('module', 'ek_hr') . '/' . 'update.php';
    return  array('#markup' => $markup) ;
   }
  
@@ -249,39 +249,40 @@ class InstallController extends ControllerBase {
                 `id` INT(11) NOT NULL AUTO_INCREMENT,
                 `company_id` INT(3) NULL DEFAULT NULL COMMENT 'Id of company employee is attached to',
                 `origin` VARCHAR(30) NULL DEFAULT NULL,
-                `name` VARCHAR(100) NULL DEFAULT NULL,
-                `given_name` VARCHAR(100) NULL DEFAULT NULL,
-                `surname` VARCHAR(100) NULL DEFAULT NULL,
+                `name` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
+                `given_name` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
+                `surname` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
                 `email` VARCHAR(100) NULL DEFAULT NULL,
-                `address` TEXT NULL,
+                `address` TEXT NULL COLLATE 'utf8mb4_unicode_ci',
                 `telephone` VARCHAR(50) NULL DEFAULT NULL,
                 `sex` VARCHAR(5) NULL DEFAULT NULL,
                 `rank` VARCHAR(45) NULL DEFAULT NULL,
-                `ic_no` VARCHAR(40) NULL DEFAULT NULL,
-                `ic_type` VARCHAR(10) NULL DEFAULT NULL,
+                `ic_no` VARCHAR(40) NULL DEFAULT NULL COMMENT 'identification number',
+                `ic_type` VARCHAR(10) NULL DEFAULT NULL COMMENT 'identification type',
                 `birth` VARCHAR(50) NULL DEFAULT NULL,
-                `epf_no` VARCHAR(50) NULL DEFAULT NULL,
-                `socso_no` VARCHAR(50) NULL DEFAULT NULL,
-                `itax_no` VARCHAR(50) NULL DEFAULT NULL,
-                `itax_c` VARCHAR(3) NULL DEFAULT NULL,
-                `e_status` VARCHAR(30) NULL DEFAULT NULL,
+                `epf_no` VARCHAR(50) NULL DEFAULT NULL COMMENT 'pension fund',
+                `socso_no` VARCHAR(50) NULL DEFAULT NULL COMMENT 'social security number',
+                `itax_no` VARCHAR(50) NULL DEFAULT NULL COMMENT 'income tax number',
+                `itax_c` VARCHAR(3) NULL DEFAULT NULL COMMENT 'income tax category',
+                `e_status` VARCHAR(30) NULL DEFAULT NULL COMMENT 'employee work status',
                 `location` VARCHAR(45) NULL DEFAULT NULL,
                 `service` INT(5) UNSIGNED NULL DEFAULT NULL,
                 `bank` VARCHAR(35) NULL DEFAULT NULL,
                 `bank_account` VARCHAR(45) NULL DEFAULT NULL,
                 `bank_account_status` VARCHAR(20) NULL DEFAULT NULL,
-                `thirdp` VARCHAR(100) NULL DEFAULT NULL,
+                `thirdp` VARCHAR(100) NULL DEFAULT NULL COMMENT 'third party credit',
                 `active` VARCHAR(30) NULL DEFAULT NULL,
-                `start` VARCHAR(50) NULL DEFAULT NULL,
-                `resign` VARCHAR(50) NULL DEFAULT NULL,
+                `start` VARCHAR(50) NULL DEFAULT NULL COMMENT 'date',
+                `resign` VARCHAR(50) NULL DEFAULT NULL COMMENT 'date',
+                `contract_expiration` VARCHAR(50) NULL DEFAULT NULL COMMENT 'date',
                 `currency` VARCHAR(5) NULL DEFAULT NULL,
                 `salary` DOUBLE NULL DEFAULT NULL,
-                `th_salary` DOUBLE NULL DEFAULT NULL,
-                `aleave` VARCHAR(3) NULL DEFAULT NULL,
-                `mcleave` VARCHAR(3) NULL DEFAULT NULL,
+                `th_salary` DOUBLE NULL DEFAULT NULL COMMENT 'threshold',
+                `aleave` VARCHAR(3) NULL DEFAULT NULL COMMENT 'days annual leave',
+                `mcleave` VARCHAR(3) NULL DEFAULT NULL COMMENT 'days medical allowance',
                 `archive` VARCHAR(5) NULL DEFAULT NULL,
                 `picture` VARCHAR(100) NULL DEFAULT NULL,
-                `administrator` VARCHAR(255) NULL DEFAULT NULL,
+                `administrator` VARCHAR(255) NULL DEFAULT NULL COMMENT 'access validation',
                 `default_ps` VARCHAR(100) NULL DEFAULT NULL COMMENT 'default payslip form',
                 `note` TEXT NULL COMMENT 'Information note',
                 PRIMARY KEY (`id`)
@@ -379,6 +380,8 @@ class InstallController extends ControllerBase {
                 `emp_id` VARCHAR(50) NULL DEFAULT '0',
                 `roster` VARCHAR(50) NULL DEFAULT '0' COMMENT 'array of timing',
                 `status` VARCHAR(3) NULL DEFAULT NULL,
+                `note` VARCHAR(255) NULL DEFAULT NULL COMMENT 'note per roster entry' COLLATE 'utf8mb4_unicode_ci',
+                `audit` VARCHAR(25) NULL DEFAULT NULL COMMENT 'tracking change',
                 PRIMARY KEY (`id`)
               )
               COMMENT='roster per employee and date'

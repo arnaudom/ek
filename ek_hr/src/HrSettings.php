@@ -31,16 +31,18 @@ use Drupal\Core\Database\Database;
 
 
   public function __construct($coid = NULL) {
-     $this->coid = $coid;
-
-   $query = "SELECT * from {ek_hr_workforce_settings} WHERE coid=:coid";
-    $data = Database::getConnection('external_db', 'external_db')->query($query, array(':coid' => $this->coid))->fetchObject();
-    
-    $this->HrAd = unserialize($data->ad);
-    $this->HrCat = unserialize($data->cat);
-    $this->HrParam = unserialize($data->param);
-    $this->HrAccounts = unserialize($data->accounts);
-    $this->HrRoster = unserialize($data->roster);
+    $this->coid = $coid;
+    $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_hr_workforce_settings', 's')
+                ->fields('s')
+                ->condition('coid', $this->coid , '=')
+                ->execute();
+    $data = $query->fetchObject();
+    $this->HrAd = isset($data->ad) ? unserialize($data->ad) : NULL;
+    $this->HrCat = isset($data->cat) ? unserialize($data->cat) : NULL;
+    $this->HrParam = isset($data->param) ? unserialize($data->param) : NULL;
+    $this->HrAccounts = isset($data->accounts) ? unserialize($data->accounts) : NULL;
+    $this->HrRoster = isset($data->roster) ? unserialize($data->roster) : NULL;
     
   }
  

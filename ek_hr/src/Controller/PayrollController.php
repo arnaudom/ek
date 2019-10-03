@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
-use Drupal\ek_admin\src\Access\AccessCheck;
+use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_hr\HrSettings;
 
@@ -84,7 +84,38 @@ class PayrollController extends ControllerBase {
      *
      */
     public function payroll(Request $request) {
-
+        $flag = 1;
+        if(!null == $request->query->get('coid')) {
+            $flag = (in_array($request->query->get('coid'),AccessCheck::GetCompanyByUser())) ? 1 : 0;
+        }
+        if(!null == $request->query->get('eid')) {
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_hr_workforce', 'h');
+                $query->fields('h', ['administrator'])
+                        ->condition('id', $request->query->get('eid'), '=');
+                $e = $query->execute()->fetchField();
+                if($e != 0) {
+                    $admins = explode(',',$e);
+                    $flag = (in_array(\Drupal::currentUser()->id(),$admins)) ? 1 : 0;
+                }
+                
+        }
+        if($flag == 0){
+            $url = Url::fromRoute('ek_hr.parameters', array(), array())->toString();
+            $items['type'] = 'edit';
+            $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('payroll')))];
+            $items['description'] = ['#markup' => t('no access')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            return [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ];  
+            
+        }
         $build['payroll'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\PayrollRecord',$request->query->get('coid'),$request->query->get('eid'));
         Return $build;
     }
@@ -122,42 +153,7 @@ class PayrollController extends ControllerBase {
         }
         
         return [];
-        //define table
-        /*
-        $query = "SELECT code from {ek_country} INNER join {ek_company} ON ek_company.country=ek_country.name WHERE ek_company.id=:c";
-        $a = array(':c' => $coid);
-        $code = Database::getConnection('external_db', 'external_db')
-                ->query($query, $a)
-                ->fetchField();
 
-        $table = 'ek_hr_' . $type . '_' . strtolower($code);
-
-        if (!$field2 == '') {
-            $query = "SELECT " . $field1 . ", " . $field2 . " from {" . $table . "} where min<:m  and max>=:x";
-            $a = array(':m' => $value, ':x' => $value);
-        } else {
-            $query = "SELECT " . $field1 . " from {" . $table . "} where min<:m  and max>=:x";
-            $a = array(':m' => $value, ':x' => $value);
-        }
-
-        $r = Database::getConnection('external_db', 'external_db')
-                ->query($query, $a)
-                ->fetchObject();
-
-        if ($r->$field1 == NULL) {
-            $f1 = 0;
-        } else {
-            $f1 = $r->$field1;
-        };
-        if ($field2 != '' && $r->$field2 == NULL) {
-            $f2 = 0;
-        } elseif($field2 != '') {
-            $f2 = $r->$field2;
-        };
-
-        return new JsonResponse(array('amount1' => $f1, 'amount2' => $f2));
-         
-         */
     }
 
     /**
@@ -204,7 +200,7 @@ class PayrollController extends ControllerBase {
             'operations' => '',
         );
 
-        $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
+        $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
 
 
@@ -213,7 +209,7 @@ class PayrollController extends ControllerBase {
                 . "ON ek_hr_workforce_pay.id=ek_hr_workforce.id  "
                 . "WHERE company_id=:coid AND FIND_IN_SET (company_id, :a) order by ek_hr_workforce.id";
 
-        if ($_SESSION['hrlfilter']['filter'] == 1) {
+        if (isset($_SESSION['hrlfilter']['filter']) && $_SESSION['hrlfilter']['filter'] == 1) {
 
             $a = array(
                 ':coid' => $_SESSION['hrlfilter']['coid'],
@@ -224,9 +220,9 @@ class PayrollController extends ControllerBase {
             $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
 
             while ($r = $data->fetchObject()) {
-
+                $eid = ($r->custom_id != '') ? $r->custom_id : $r->id;
                 $options[$r->id] = array(
-                    'id' => $r->id,
+                    'id' => ['data' => ['#markup' => "<span class='badge'>" . $eid . "</span>"]],
                     'name' => array('data' => $r->name, 'title' => $r->given_name),
                     'month' => $r->month,
                     'status' => $r->active,
@@ -250,7 +246,7 @@ class PayrollController extends ControllerBase {
                         ),
                     ),
                 );
-            }//loop 
+            }
 
             $param = serialize(array('coid' => $_SESSION['hrlfilter']['coid']));
             $excel = Url::fromRoute('ek_hr.current-payroll-excel', array('param' => $param), array())->toString();

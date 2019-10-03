@@ -111,16 +111,7 @@ class ParametersController extends ControllerBase {
         $or->condition('company_id', $access, 'IN');
 
         if (isset($_SESSION['hrlfilter']['filter']) && $_SESSION['hrlfilter']['filter'] == 1) {
-
-            /*
-              $a = array(
-              ':coid' => $_SESSION['hrlfilter']['coid'],
-              ':s' => $_SESSION['hrlfilter']['status'],
-              ':a' => $company,
-              ':order' => $order,
-              ':sort' => $sort,
-              );
-             */
+            
             $coid = $_SESSION['hrlfilter']['coid'];
             $status = $_SESSION['hrlfilter']['status'];
 
@@ -143,9 +134,9 @@ class ParametersController extends ControllerBase {
                 } else {
                     $archive = '';
                 }
-
+                $eid = ($r->custom_id != '') ? $r->custom_id : $r->id;
                 $options[$r->id] = array(
-                    'id' => $r->id,
+                    'id' => ['data' => ['#markup' => "<span class='badge'>" . $eid . "</span>"]],
                     'name' => array('data' => $r->name, 'title' => $r->name),
                     'status' => $r->active . ' ' . $archive,
                 );
@@ -236,7 +227,7 @@ class ParametersController extends ControllerBase {
      * Return employee data
      *
      */
-    public function employeeview(Request $request, $id) {
+    public function employeeView(Request $request, $id) {
 
         $query = 'SELECT * FROM {ek_hr_workforce}  WHERE id=:id';
         $data['hr'] = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchAll();
@@ -282,6 +273,34 @@ class ParametersController extends ControllerBase {
             $a = array(':id' => $data['hr'][0]->id);
             $data['hr'][0]->location_description = Database::getConnection('external_db', 'external_db')
                     ->query($query, $a)->fetchField();
+            
+            //filter contract expiration
+            $stamp = date('U');
+            if($data['hr'][0]->contract_expiration != NULL) {
+                $delta = round( ( strtotime( $data['hr'][0]->contract_expiration)  - $stamp ) / (24*60*60), 0); 
+            
+                if($delta <= 0) {
+                    \Drupal::messenger()->addError(t('Contract is expired'));
+                }
+                if($delta > 0 && $delta <= 31) {
+                    \Drupal::messenger()->addWarning(t('Contract will expire in @d day(s)', ['@d' => $delta]));
+                }
+                
+            }
+            //filter birthday
+            if($data['hr'][0]->birth != NULL) {
+                $next = date('Y') . '-' . date('m-d', strtotime($data['hr'][0]->birth));
+                $delta = round( ( strtotime($next)  - $stamp ) / (24*60*60), 0); 
+            
+                if($delta <= 0 && $delta > -8 ) {
+                    //TODO add flag if birthday is valid
+                    //\Drupal::messenger()->addWarning(t('You missed employee birthday on @d', ['@d' => $next]));
+                }
+                if($delta > 0 && ($delta < 16)) {
+                    \Drupal::messenger()->addStatus(t('Employee birthday in @d day(s)', ['@d' => $delta]));
+                }
+                
+            }
 
             return array(
                 '#theme' => 'ek_hr_data',
@@ -295,8 +314,18 @@ class ParametersController extends ControllerBase {
                 ],
             );
         } else {
-
-            return array('#markup' => t('Restricted access'));
+                $url = Url::fromRoute("ek_hr.parameters", [],[])->toString();
+                $items['type'] = 'access';
+                $items['message'] = ['#markup' => t('You are not authorized to view this content')];
+                $items['link'] = ['#markup' => t('<a href="@url" >Back</a>.',['@url' => $url])];
+                return $build = [
+                    '#items' => $items,
+                    '#theme' => 'ek_admin_message',
+                    '#attached' => array(
+                        'library' => array('ek_admin/ek_admin_css'),
+                    ),
+                    '#cache' => ['max-age' => 0],
+                ]; 
         }
     }
 
@@ -304,7 +333,7 @@ class ParametersController extends ControllerBase {
      * employee history data
      *
      */
-    public function employeehistory(Request $request, $id) {
+    public function employeeHistory(Request $request, $id) {
 
         $query = 'SELECT * FROM {ek_hr_workforce}  WHERE id=:id';
         $data['hr'] = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchAll();
@@ -387,7 +416,7 @@ class ParametersController extends ControllerBase {
      * employee payment history details 
      *
      */
-    public function employeehistorypay(Request $request, $id) {
+    public function employeeHistoryPay(Request $request, $id) {
 
         $data = array();
         $query = 'SELECT * FROM '
@@ -494,14 +523,14 @@ class ParametersController extends ControllerBase {
      * Return new employee form
      *
      */
-    public function employeenew(Request $request) {
+    public function employeeNew(Request $request) {
 
 
         $build['new_employee'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\EditEmployee');
         Return $build;
     }
 
-    public function employeeedit(Request $request, $id) {
+    public function employeeEdit(Request $request, $id) {
 
         $query = 'SELECT administrator FROM {ek_hr_workforce}  WHERE id=:id';
         $administrator = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
@@ -518,7 +547,7 @@ class ParametersController extends ControllerBase {
      * Return list of documents
      *
      */
-    public function employeedoc(Request $request, $id) {
+    public function employeeDoc(Request $request, $id) {
 
 
         $header = array(
@@ -825,7 +854,7 @@ class ParametersController extends ControllerBase {
      * delete payslip file
      * @name = file name
      */
-    public function deletepayslip(Request $request, $name) {
+    public function deletePayslip(Request $request, $name) {
 
         if (\Drupal::currentUser()->hasPermission('hr_parameters')) {
             $file = str_replace('___', '.', $name);
@@ -842,7 +871,7 @@ class ParametersController extends ControllerBase {
      * delete form file
      * @name = file name
      */
-    public function deleteform(Request $request, $name) {
+    public function deleteForm(Request $request, $name) {
 
         if (\Drupal::currentUser()->hasPermission('hr_parameters')) {
             $file = str_replace('___', '.', $name);
@@ -1015,11 +1044,10 @@ class ParametersController extends ControllerBase {
 
         $param = explode('|', unserialize($param));
         $content = [];
-
         switch ($param[0]) {
 
             case 'formula' :
-
+                $title = $this->t($param[0]);
                 $ad = NEW HrSettings($param[1]);
                 $formula = $ad->get('ad', $param[2], 'formula');
                 if ($formula == '')
@@ -1032,12 +1060,19 @@ class ParametersController extends ControllerBase {
                 $options = array('width' => '25%',);
 
                 break;
+                
+            case 'roster_note' :
+                $title = ucfirst( str_replace('_', ' ',$this->t($param[0])));
+                $ref = explode('_', $param[1]);
+                $width = isset($param[2]) ? $param[2] : '30%';
+                $content['content'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\RosterNoteEdit', $ref[1],$ref[2],$ref[0]);
+                $options = array('width' => $width, 'height' => '300');
+                break;
         }
 
         $response = new AjaxResponse();
-        $title = $this->t($param[0]);
+        
         $content['#attached']['library'][] = 'core/drupal.dialog.ajax';
-
         $dialog = new OpenModalDialogCommand($title, $content, $options);
         $response->addCommand($dialog);
 
@@ -1066,6 +1101,7 @@ class ParametersController extends ControllerBase {
                     $or = $query->orConditionGroup();
                     $or->condition('hr.name', $term . '%', 'like');
                     $or->condition('hr.id', $term, '=');
+                    $or->condition('hr.custom_id', $term, '=');
                     $ids = $query->condition($or)->execute();
 
                     While($d = $ids->fetchObject()){
@@ -1081,15 +1117,17 @@ class ParametersController extends ControllerBase {
                     $or = $query->orConditionGroup();
                     $or->condition('hr.name', $term . '%', 'like');
                     $or->condition('hr.id', $term, '=');
+                    $or->condition('hr.custom_id', $term, '=');
                     $ids = $query->condition($or)->execute();
 
                     While($d = $ids->fetchObject()){
                         $line = [];
-                        if ($d->picture) {
+                        $dir = "private://hr/pictures/" . $d->company_id . "/";
+                        if ($d->picture && file_exists($dir . basename($d->picture))) {
                             $thumb = "private://hr/pictures/" . $d->company_id . "/40/40x40_" . basename($d->picture) ;
                             if(!file_exists($thumb)) {
-                                $filesystem = \Drupal::service('file_system');
                                 $dir = "private://hr/pictures/" . $d->company_id . "/40/";
+                                $filesystem = \Drupal::service('file_system');
                                 $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
                                 $filesystem->copy($d->picture, $thumb, FILE_EXISTS_REPLACE);
                                 //Resize after copy

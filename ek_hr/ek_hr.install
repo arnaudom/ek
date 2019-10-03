@@ -150,3 +150,67 @@ function ek_hr_update_8007() {
         
         return t('Table updated.');
 }
+
+/**
+ * Changed routes 
+ * 
+*/
+function ek_hr_update_8008() {
+    
+    \Drupal::service('router.builder')->rebuild();
+}
+
+
+/**
+ * new fields and route
+ * 
+*/
+function ek_hr_update_8009() {
+    $schema = Database::getConnection('external_db','external_db')->schema();
+        if(!$schema->fieldExists('ek_hr_workforce_roster', 'note')) {
+            $spec = array(
+                'description' => 'roster per employee and date',
+                'type' => 'text',
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_hr_workforce_roster', 'note', $spec);
+        }
+        
+        if(!$schema->fieldExists('ek_hr_workforce', 'custom_id')) {
+            $spec = array(
+                'description' => 'custom ID',
+                'type' => 'varchar',
+                'length' => 15,
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_hr_workforce', 'custom_id', $spec);
+        }
+        
+        if(!$schema->fieldExists('ek_hr_workforce', 'contract_expiration')) {
+            $spec = array(
+                'description' => 'date',
+                'type' => 'varchar',
+                'length' => 50,
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_hr_workforce', 'contract_expiration', $spec);
+        }
+       
+        if(!$schema->fieldExists('ek_hr_workforce_roster', 'audit')) {
+            $spec = array(
+                'description' => 'audit tracking',
+                'type' => 'varchar',
+                'length' => 25,
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_hr_workforce_roster', 'audit', $spec);
+        }
+        
+        \Drupal::service('router.builder')->rebuild();
+        
+        return t('HR tables updated.');
+}

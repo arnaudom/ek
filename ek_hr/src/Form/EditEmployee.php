@@ -85,9 +85,11 @@ class EditEmployee extends FormBase {
                 '#default_value' => $id,
             );
 
-            $query = "SELECT * from {ek_hr_workforce} WHERE id=:id";
-            $a = array(':id' => $id);
-            $r = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_hr_workforce', 'w');
+            $query->fields('w');
+            $query->condition('id', $id, '=');
+            $r = $query->execute()->fetchObject();
             $form_state->set('coid', $r->company_id);
             
         } else {
@@ -127,18 +129,34 @@ class EditEmployee extends FormBase {
 
         if ($form_state->get('step') == '2') {
             
-            $form['coid'] = array(
-                '#type' => 'hidden',
-                '#value' => $form_state->get('coid')
-                
-            );
+            $user = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
+            if ($user->hasRole('administrator')) {
+                $form['coid'] = array(
+                    '#type' => 'select',
+                    '#size' => 1,
+                    '#options' => $company,
+                    '#default_value' => $form_state->get('coid'),
+                    '#title' => t('company'),
+                    '#required' => TRUE,
+                );
+                $form['current_coid'] = array(
+                    '#type' => 'hidden',
+                    '#value' => $form_state->get('coid')
 
-            $form['company'] = array(
-                '#type' => 'item',
-                '#markup' => '<h1>' . $company[$form_state->get('coid')] . '</h1>',
-                
-            );            
+                );
+            } else {
+                $form['coid'] = array(
+                    '#type' => 'hidden',
+                    '#value' => $form_state->get('coid')
 
+                );
+
+                $form['company'] = array(
+                    '#type' => 'item',
+                    '#markup' => '<h1>' . $company[$form_state->get('coid')] . '</h1>',
+
+                );            
+            }
             $form['active'] = array(
                 '#type' => 'select',
                 '#size' => 1,
@@ -233,6 +251,13 @@ class EditEmployee extends FormBase {
                 $admin = [];
             }
 
+            $form['custom_id'] = array(
+                '#type' => 'textfield',
+                '#size' => 20,
+                '#default_value' => isset($r->custom_id) ? $r->custom_id : $r->id,
+                '#title' => t('Given ID'),
+            );
+                        
             $form['note'] = array(
                 '#type' => 'textarea',
                 '#rows' => 2,
@@ -521,7 +546,12 @@ class EditEmployee extends FormBase {
                 '#title' => t('Resign date'),
                 '#suffix' => '</div>',
             );
-
+            $form[3]['contract_expiration'] = array(
+                '#type' => 'date',
+                '#size' => 12,
+                '#default_value' => isset($r->contract_expiration) ? $r->contract_expiration : NULL,
+                '#title' => t('Contract expiration'),
+            );
             $form[3]['aleave'] = array(
                 '#type' => 'textfield',
                 '#size' => 6,
@@ -682,16 +712,39 @@ class EditEmployee extends FormBase {
             
         } elseif ($form_state->get('step') == 2) {
 
-            //check name
+            //check name / id
             if ($form_state->getValue('new') == 1) {
-                $query = "SELECT id FROM {ek_hr_workforce} WHERE company_id=:id AND name = :n ";
+                $query = "SELECT id FROM {ek_hr_workforce} WHERE company_id=:id AND name = :n";
                 $a = array(':id' => $form_state->getValue('coid'), ':n' => $form_state->getValue('name'));
-                $data = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+                $data = Database::getConnection('external_db', 'external_db')
+                        ->query($query, $a)->fetchField();
 
                 if ($data > 0) {
                     $form_state->setErrorByName('name', $this->t('The employee name already exist for this company.'));
                 }
+                
+                $query = "SELECT custom_id FROM {ek_hr_workforce} WHERE custom_id=:id ";
+                $a = array(':id' => $form_state->getValue('custom_id'));
+                $data = Database::getConnection('external_db', 'external_db')
+                        ->query($query, $a)->fetchField();
+
+                if ($data > 0) {
+                    $form_state->setErrorByName('custom_id', $this->t('The given ID already exist.'));
+                }
+            } else {
+                $query = "SELECT custom_id FROM {ek_hr_workforce} WHERE custom_id=:cid and id<>:id";
+                $a = array(':cid' => $form_state->getValue('custom_id'), ':id' => $form_state->getValue('for_id'));
+                $data = Database::getConnection('external_db', 'external_db')
+                        ->query($query, $a)->fetchField();
+
+                if ($data > 0) {
+                    $form_state->setErrorByName('custom_id', $this->t('The given ID already exist.'));
+                }
             }
+                
+            
+            
+            
 
             if (!filter_var($form_state->getValue('email'), FILTER_VALIDATE_EMAIL)) {
                 $form_state->setErrorByName('email', $this->t('Invalid email'));
@@ -778,6 +831,7 @@ class EditEmployee extends FormBase {
                 'company_id' => $form_state->getValue('coid'),
                 'origin' => $form_state->getValue('origin'),
                 'name' => Xss::filter($form_state->getValue('name')),
+                'custom_id' => Xss::filter($form_state->getValue('custom_id')),
                 'given_name' => '',
                 'surname' => '',
                 'email' => $form_state->getValue('email'),
@@ -802,6 +856,7 @@ class EditEmployee extends FormBase {
                 'active' => $form_state->getValue('active'),
                 'start' => $form_state->getValue('start'),
                 'resign' => $form_state->getValue('resign'),
+                'contract_expiration' => $form_state->getValue('contract_expiration'),
                 'currency' => $form_state->getValue('currency'),
                 'salary' => $form_state->getValue('salary'),
                 'th_salary' => $form_state->getValue('th_salary'),
@@ -835,6 +890,13 @@ class EditEmployee extends FormBase {
                 
                 $url = \Drupal::messenger()->addStatus(t("Data updated"));
                 $form_state->setRedirect('ek_hr.employee.view',['id' => $form_state->getValue('for_id')]);
+                
+                if(null !== $form_state->getValue('current_coid')) {
+                    if($form_state->getValue('current_coid') != $form_state->getValue('coid')){
+                        \Drupal::messenger()->addWarning(t('Company was changed'));
+                    }
+                    
+                }
             }
             Cache::invalidateTags(['payroll_stat_block','employee_data_view']);
         }//step 2

@@ -208,6 +208,7 @@ class PostData extends FormBase {
            'custom_d4','custom_d5','custom_d6','custom_d7','epf_yee','socso_yee',
            'deduction','nett','socso_er','epf_er','incometax','with_yer','with_yee','comment'
            ]; 
+       $move = 0;
         foreach($s as $key => $array) {
             $string = implode(',', $array);
             $input = explode(',', $string);
@@ -215,10 +216,11 @@ class PostData extends FormBase {
                         ->insert('ek_hr_post_data');
             $query->values($input);
             $query->fields($fields);
-            $move = $query->execute();
+            $query->execute();
+            $move++;
         }
         
-            if ($move) {
+            if ($move > 0) {
                 //Next : clear current pay
                 $fields = [
                     'month' => '',

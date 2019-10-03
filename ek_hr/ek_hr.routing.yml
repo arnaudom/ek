@@ -5,10 +5,10 @@ ek_hr_install:
   requirements:
     _permission: 'access administration pages'
     
-ek_hr_majour:
-  path: '/ek_hr/migrate'
+ek_hr_update:
+  path: '/ek_hr/update'
   defaults:
-    _controller: '\Drupal\ek_hr\Controller\InstallController::migrate'
+    _controller: '\Drupal\ek_hr\Controller\InstallController::update'
   requirements:
     _permission: 'access administration pages'
     
@@ -113,7 +113,7 @@ ek_hr.parameters-accounts:
 ek_hr.parameters-delete-payslip:
   path: '/human-resources/delete-payslip/{name}'
   defaults:
-    _controller: '\Drupal\ek_hr\Controller\ParametersController::deletepayslip'
+    _controller: '\Drupal\ek_hr\Controller\ParametersController::deletePayslip'
   requirements:
     _permission: 'hr_parameters'
     id: \w*  
@@ -129,7 +129,7 @@ ek_hr.parameters-form:
 ek_hr.parameters-delete-form:
   path: '/human-resources/delete-form/{name}'
   defaults:
-    _controller: '\Drupal\ek_hr\Controller\ParametersController::deleteform'
+    _controller: '\Drupal\ek_hr\Controller\ParametersController::deleteForm'
   requirements:
     _permission: 'hr_parameters'
     id: \w*  
@@ -161,7 +161,7 @@ ek_hr.new-employee:
   path: '/human-resources/new-employee'
   defaults:
     _title: 'New employee'
-    _controller: '\Drupal\ek_hr\Controller\ParametersController::employeenew'
+    _controller: '\Drupal\ek_hr\Controller\ParametersController::employeeNew'
   requirements:
     _permission: 'new_employee'
 
@@ -169,7 +169,7 @@ ek_hr.employee.view:
   path: '/human-resources/view-employee/{id}'
   defaults:
     _title: 'Employee data'
-    _controller: '\Drupal\ek_hr\Controller\ParametersController::employeeview'
+    _controller: '\Drupal\ek_hr\Controller\ParametersController::employeeView'
   requirements:
     _permission: 'new_employee'
     id: \d*
@@ -178,7 +178,7 @@ ek_hr.employee.history:
   path: '/human-resources/history-employee/{id}'
   defaults:
     _title: 'History data'
-    _controller: '\Drupal\ek_hr\Controller\ParametersController::employeehistory'
+    _controller: '\Drupal\ek_hr\Controller\ParametersController::employeeHistory'
   requirements:
     _permission: 'new_employee'
     id: \d*
@@ -187,7 +187,7 @@ ek_hr.employee.history_pay:
   path: '/human-resources/history-pay-employee/{id}'
   defaults:
     _title: 'Pay history'
-    _controller: '\Drupal\ek_hr\Controller\ParametersController::employeehistorypay'
+    _controller: '\Drupal\ek_hr\Controller\ParametersController::employeeHistoryPay'
   requirements:
     _permission: 'new_employee'
     id: \d*    
@@ -196,7 +196,7 @@ ek_hr.employee.edit:
   path: '/human-resources/edit-employee/{id}'
   defaults:
     _title: 'Edit employee'
-    _controller: '\Drupal\ek_hr\Controller\ParametersController::employeeedit'
+    _controller: '\Drupal\ek_hr\Controller\ParametersController::employeeEdit'
   requirements:
     _permission: 'new_employee'
     id: \d*
@@ -205,7 +205,7 @@ ek_hr.employee.doc:
   path: '/human-resources/employee-attachments/{id}'
   defaults:
     _title: 'Attachments'
-    _controller: '\Drupal\ek_hr\Controller\ParametersController::employeedoc'
+    _controller: '\Drupal\ek_hr\Controller\ParametersController::employeeDoc'
   requirements:
     _permission: 'new_employee'
     id: \d*  
@@ -344,3 +344,11 @@ ek_hr.roster_settings:
     _form: '\Drupal\ek_hr\Form\RosterSettings'
   requirements:
     _permission: 'hr_parameters'
+
+ek_hr.roster_delete:
+  path: '/human-resources/roster-delete'
+  defaults:
+    _title: 'Delete roster data'
+    _form: '\Drupal\ek_hr\Form\RosterDelete'
+  requirements:
+    _permission: 'hr_roster_edit'

@@ -22,3 +22,19 @@
   border-radius: 0.3em;
 
 }
+
+.red {
+    color: #FF6666;
+}
+
+.green {
+    color: #007114;
+}
+
+.blue {
+    color: #2E64FE;
+}
+
+.orange {
+    color: #FFC900;
+}

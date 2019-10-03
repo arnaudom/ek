@@ -83,12 +83,16 @@ ek_hr.roster:
   css:
     theme:
       css/ek_hr_roster.css: {}
+      /libraries/qTip2/dist/jquery.qtip.min.css: {}
   js:
     js/ek_hr_roster.js: {}
+    /libraries/qTip2/dist/jquery.qtip.min.js: {}
   dependencies:
     - core/jquery
     - core/drupal
     - core/jquery.ui.slider
+    - core/drupal.form
+    - core/jquery.form
     
 
 ek_hr.fund_edit:

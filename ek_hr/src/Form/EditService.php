@@ -265,12 +265,14 @@ class EditService extends FormBase {
                 if ($key <> 'new') {
                     if ($value['del'] == 1) {
 
-                        $query = "SELECT count(id) from {ek_hr_workforce} WHERE service =:s";
-                        $a = array(':s' => $key);
-                        $count = Database::getConnection('external_db', 'external_db')
-                                ->query($query, $a)
-                                ->fetchField();
+                        $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_hr_workforce', 'w');
+                        $query->addExpression('Count(id)', 'count');
+                        $query->condition('service', $key, '=');
 
+                        $Obj = $query->execute();
+                        $count = $Obj->fetchObject()->count;
+                        
                         if ($count > 0) {
                             \Drupal::messenger()->addWarning(t('Service \'@l\' cannot be deleted because it is used.', ['@l' => $value['name']]));
                         } else {
