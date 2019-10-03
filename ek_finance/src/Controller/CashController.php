@@ -247,32 +247,7 @@ class CashController extends ControllerBase {
             
             $data2= $query->execute();
             
-            /*
-            $query = "SELECT * from {ek_cash} WHERE type=:t AND coid like :c "
-                    . "AND currency = :cu AND uid like :u "
-                    . "AND pay_date >= :p1 AND pay_date<= :p2";
-              $a = array(
-                ':t' => 'Credit',
-                ':c' => $company,
-                ':cu' => $filter['currency'],
-                ':u' => $account1,
-                ':p1' => $filter['from'],
-                ':p2' => $filter['to'],
-              );   
-           
-              $data1 = Database::getConnection('external_db', 'external_db')->query($query, $a);
             
-              $a = array(
-                ':t' => 'Debit',
-                ':c' => $company,
-                ':cu' => $filter['currency'],
-                ':u' => $account1,
-                ':p1' => $filter['from'],
-                ':p2' => $filter['to'],
-              );    
-
-              $data2 = Database::getConnection('external_db', 'external_db')->query($query, $a);
-*/
             /*
              * Cash movements from expenses
              */
@@ -288,22 +263,7 @@ class CashController extends ControllerBase {
             $query->condition('pdate', $filter['to'], '<=');
             
             $data3 = $query->execute();
-            /*
-            $query = "SELECT id,company,type,localcurrency,currency,amount,pdate,comment FROM {ek_expenses} "
-                    . "WHERE company like :c AND cash=:y AND status=:s AND currency = :cu "
-                    . "AND employee=:e AND pdate >= :p1 AND pdate <= :p2";
-      
-              $a = array(
-                ':c' => $company , 
-                ':y' => 'Y',
-                ':s' => 'paid',
-                ':cu' => $filter['currency'],
-                ':e' => $account2,
-                ':p1' => $filter['from'],
-                ':p2' => $filter['to'],
-              );
-              $data3 = Database::getConnection('external_db', 'external_db')->query($query, $a);*/
-
+            
             /*
              * Cash movements from journal general entries
             */
@@ -460,23 +420,7 @@ class CashController extends ControllerBase {
                     $query->condition('type', 'debit', '=');
                     $query->condition('date', $row['date'], '=');
                     $query->condition('exchange',1, '=');
-                    /*
-                    $query = "SELECT value FROM {ek_journal} "
-                    . "WHERE coid like :c AND source = :s AND aid = :aid AND reference = :r "
-                    . "AND type = :t AND date = :p1 AND exchange = :ex";
-
-                    $a = array(
-                      ':c' => $row['coid'] , 
-                      ':s' => 'general',
-                      ':aid' => $row['aid'],
-                      ':r' => $row['reference'],
-                      ':t' => 'debit',
-                      ':p1' => $row['date'],
-                      ':ex' => 1,
-                    );
-                    $exchange = Database::getConnection('external_db', 'external_db')
-                            ->query($query, $a)
-                            ->fetchField();*/
+                    
                     $exchange = $query->execute()->fetchField();
 
                 }
@@ -583,8 +527,6 @@ class CashController extends ControllerBase {
               $open_credit = $result->a;
               $open_credit_base = $result->b;
 
-            // $query = "SELECT sum(amount) as a, sum(cashamount) as b FROM {ek_cash} "
-            //         . "WHERE type=:t and coid=:c and uid=:u and pay_date < :p1 AND pay_date >= :p2";
               $a = array(
                 ':t' => 'Debit',
                 ':c' => $filter['account'],
@@ -622,7 +564,7 @@ class CashController extends ControllerBase {
              //journal 
              //Warning: debit and credit are alternate for user point of view
              //filter only general record to avoid double values
-             
+             if($filter['type'] == '0') {
              $history = unserialize( $journal->history(serialize(
                     ['aid' => $filter['aid'],
                      'source' => 'general',
@@ -631,7 +573,12 @@ class CashController extends ControllerBase {
                      'to' => date('Y-m-d', strtotime('-1 day', strtotime($filter['from'])))
                      ]
                      )));
-        
+             } else {
+                 $history['total_debit_exchange'] = 0;
+                 $history['total_debit'] = 0;
+                 $history['total_credit_exchange'] = 0;                
+                 $history['total_credit'] = 0;
+             }
             if($filter['currency'] == $filter['baseCurrency']) {
                 $open_credit += $history['total_debit_exchange'];
                 $open_credit_base += $history['total_debit_exchange'];
@@ -646,12 +593,7 @@ class CashController extends ControllerBase {
                 $open_debit += $history['total_credit'];
                 $open_debit_base += $history['total_credit_exchange'];
             }
-            /*
-             $open_credit += $history['total_debit'];
-             $open_credit_base += $history['total_debit_exchange'];
-             $open_debit += $history['total_credit'];
-             $open_debit_base += $history['total_credit_exchange'];
-             */
+            
 
             $items['total'] = array();
             $items['total']['year'] = $year[0];

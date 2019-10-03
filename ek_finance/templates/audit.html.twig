@@ -1,41 +1,65 @@
 {{ items.title }}
 
-
-<table>
-    <thead>
-        <tr>
-            <th>{{ 'Debit' }}</th><th>{{ 'Credit' }}</th><th>{{ 'Journal ID' }}</th>
-            <th>{{ 'Fx in' }}</th><th>{{ 'Fx out' }}</th><th>{{ 'Currency' }}</th><th>{{ 'Audit' }}</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for name , lines in items.companies %}
-        <tr>
-            <td colspan='8'>{{ name }}</td>
-        </tr>
-        
-        {% for key in lines %}
-            
-            {% if key is iterable %}
+{% if items.layout == 'currency' %}
+    <table>
+        <thead>
+            <tr>
+                <th>{{ 'Debit' }}</th><th>{{ 'Credit' }}</th><th>{{ 'Journal ID' }}</th>
+                <th>{{ 'Fx in' }}</th><th>{{ 'Fx out' }}</th><th>{{ 'Currency' }}</th><th>{{ 'Audit' }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for name , lines in items.companies %}
                 <tr>
-                    <td>{{ key.debit }}</td><td>{{ key.credit }}</td><td>{{ key.jid }}</td>
-                    <td>{{ key.fx_in }}</td><td>{{ key.fx_out }}</td><td>{{ key.currency }}</td><td>{{ key.audit }}</td>
+                    <td colspan='8'>{{ name }}</td>
                 </tr>
-            {% else  %}
+
+                {% for key in lines %}
+
+                    {% if key is iterable %}
+                        <tr>
+                            <td>{{ key.debit }}</td><td>{{ key.credit }}</td><td>{{ key.jid }}</td>
+                            <td>{{ key.fx_in }}</td><td>{{ key.fx_out }}</td><td>{{ key.currency }}</td><td>{{ key.audit }}</td>
+                        </tr>
+                    {% else  %}
+                        <tr>
+                            <td colspan='8'>{{ 'Total' }} {{ key }}</td>
+                        </tr>
+
+                    {% endif %}
+
+
+
+
+
+
+                {% endfor %}
+
+            {% endfor %}
+
+        </tbody>
+    </table>
+{% endif %}
+
+{% if items.layout == 'chart' %}
+    <p>{{ items.company }}</p>
+    <table>
+        <thead>
+            <tr>
+                <th>{{ 'Missing chart of accounts ID' }}</th>
+                <th>{{ 'Journal ID' }}</th>
+                <th>{{ 'Date' }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key,entry in items.journal %}
                 <tr>
-                    <td colspan='8'>{{ 'Total' }} {{ key }}</td>
+                    <td>{{ entry.aid }}</td>
+                    <td>{{ entry.id }}</td>
+                    <td>{{ entry.date }}</td>
                 </tr>
-                
-            {% endif %}
             
-            
-            
-
-
-
-        {% endfor %}
-
-    {% endfor %}
-
+            {% endfor %}
     </tbody>
 </table>
+{% endif %}

@@ -239,8 +239,12 @@ class JournalController extends ControllerBase {
         switch ($audit) {
             case 'currency':
                 $audit = $journal->audit_currency($param);
-                
+                $audit['layout'] = 'currency';
                 break;
+            case 'chart':
+                $audit = $journal->audit_chart($param);
+                $audit['layout'] = 'chart';
+                $audit['title'] = t('Chart structure in journal');
         }
         
         return array(
@@ -253,4 +257,3 @@ class JournalController extends ControllerBase {
     }
 }
 
-//class

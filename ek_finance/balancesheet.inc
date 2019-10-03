@@ -443,6 +443,7 @@ while ($r = $result->fetchObject()) {
                 'archive' => $dates['archive']
                  )
                 );    
+            
             $b[0] = $b[0] + $ct[0]-$dt[0];
             $b[1] = $b[1] + $ct[1]-$dt[1];
             

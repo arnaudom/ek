@@ -158,7 +158,7 @@ class ReconciliationForm extends FormBase {
                 '#markup' => "<a title='" . t('download') . "' href='" . $xlink . "'>" . t('Excel') . "</a>",
             );
 
-            //Fix a bug to retreive exchange value when inter accounts transfer with different currencies
+            //retreive exchange value when inter accounts transfer with different currencies
             //1 select active currencies
             $currencies = CurrencyData::listcurrency(1);
             //verify settings for currency accounts

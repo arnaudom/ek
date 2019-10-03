@@ -77,7 +77,7 @@ class ManageCash extends FormBase {
   $company = AccessCheck::CompanyListByUid();
   $actions = array(1 => t('Credit office cash'), 2 => t('Debit office cash'), 
       3 => t('Refund cash advanced by employee'), 4 => t('Credit employee account'), 
-      5 => t('Debit amployee account'), 6 => t('Add opening balance or adjustment') );
+      5 => t('Debit employee account'), 6 => t('Add opening balance or adjustment') );
   $CurrencyOptions = array('0' => ''); //this is added to force callback on select
   $CurrencyOptions += CurrencyData::listcurrency(1);
   
@@ -199,10 +199,26 @@ class ManageCash extends FormBase {
   //refund advance by employee
   // select employee
   // select list of expenses 
-    $user = array(0 => '');
-    $user += db_query('SELECT uid,name from {users_field_data} WHERE uid order by name> :u', array(':u' => 1))
-            ->fetchAllKeyed();
+       
+    $i = 1;
+    $access = AccessCheck::GetCompanyByUser();
+    $ax = implode(',', $access);
+    $query = "SELECT DISTINCT uid from {ek_cash} WHERE FIND_IN_SET (coid, :c )";
+    $a = array(':c' => $ax);
+    $uid = Database::getConnection('external_db', 'external_db')
+            ->query($query, $a);
+    $list = array();
 
+    while ($u = $uid->fetchObject()) {
+        $name = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $u->uid))
+                ->fetchField();
+        if($name == '') {
+            $name = t('Unknown') . " " . $i;
+            $i++;
+        }
+        $list[$u->uid] = $name;
+    }
+    natcasesort($list);
 
     $form['info'] = array(
       '#type' => 'item',
@@ -245,7 +261,7 @@ class ManageCash extends FormBase {
     $form['user'] = array(
         '#type' => 'select',
         '#size' => 1,
-        '#options' => array_combine($user, $user),
+        '#options' => isset($list) ? $list : [],
         '#required' => TRUE,
         '#title' => t('payee'),
         '#attributes' => array('style' => array('width:300px;')),
@@ -934,7 +950,7 @@ public function fx_rate_3(array &$form, FormStateInterface $form_state) {
           if( strpos($key, '-', 0) ) { //filter checkbox only
             $total += $val;
 
-            $query = "UPDATE {ek_expenses set status = 'yes' where id=:id";
+            $query = "UPDATE {ek_expenses set status = 'paid' where id=:id";
             $id = explode('-', $key);
             if ($val > 0) {
             Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id[1]));

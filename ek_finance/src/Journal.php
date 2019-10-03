@@ -1986,11 +1986,7 @@ class Journal {
                 ->condition('coid', $t['coid'], '=')
                 ->orderBy('aid', 'ASC')
                 ->execute();
-        /*
-          $query = "SELECT * from ek_accounts where atype=:atype and astatus like :active and coid=:coid  order by aid";
-          $a = array(':atype' => 'detail', ':active' => $t['active'], ':coid' => $t['coid']);
-          $list = Database::getConnection('external_db', 'external_db')->query($query, $a); */
-
+        
         $data = array();
         $total_td = 0;
         $total_tc = 0;
@@ -2003,7 +1999,6 @@ class Journal {
         $total_net = 0;
         $total_net_base = 0;
         $settings = new FinanceSettings();
-        //$ytd = $t['year'] . '-01-01';
         $dates = self::getFiscalDates($t['coid'], $t['year'], $t['month']);
         $ytd = $dates['fiscal_start'];
         $d1 = $t['year'] . '-' . $t['month'] . '-01';
@@ -2015,9 +2010,7 @@ class Journal {
         $query->fields('t', ['name']);
         $query->condition('id', $t['coid']);
         $company = $query->execute()->fetchField();
-        /*
-          $company = Database::getConnection('external_db', 'external_db')
-          ->query('SELECT name from {ek_company} WHERE id=:id', array(':id' => $t['coid']))->fetchField(); */
+        
         $data['company'] = $company;
         $data['year'] = $t['year'];
         $data['month'] = $t['month'];
@@ -2087,8 +2080,11 @@ class Journal {
             );
 
             if (
-                    ($t['null'] == 1 && ($row['transaction_ytd_debit'][0] != 0 || $row['transaction_ytd_credit'][0] != 0 || $row['transaction_ytd_debit'][1] != 0 || $row['transaction_ytd_credit'][1] != 0) ) ||
-                    $t['null'] == 0
+                ($t['null'] == 1 && ($row['transaction_ytd_debit'][0] != 0 
+                        || $row['transaction_ytd_credit'][0] != 0 
+                        || $row['transaction_ytd_debit'][1] != 0 
+                        || $row['transaction_ytd_credit'][1] != 0) ) 
+                        || $t['null'] == 0
             ) {
                 //show 
                 $data['transactions'][] = $row;
@@ -2174,13 +2170,7 @@ class Journal {
                 ->orderBy('aid', 'ASC')
                 ->execute();
         $result = $data->fetchObject();
-        /*
-          $query = "SELECT * FROM {$table_accounts} WHERE aid=:account AND coid=:coid";
-          $r = Database::getConnection('external_db', 'external_db')
-          ->query($query, array(':account' => $account, ':coid' => $coid))
-          ->fetchAssoc();
-         */
-
+        
         //get to total transaction up to d1
         // sum transaction currency
 
@@ -2672,11 +2662,13 @@ class Journal {
 
     /*
      * Audit currency gain or loss records
+     * ex. use /finance/audit/currency/i
      */
 
     function audit_currency($param) {
         $companies = \Drupal\ek_admin\Access\AccessCheck::CompanyList();
-        $items['companies'] = [];
+        $items = [];
+        
         if ($param == 'i') {
             $src = 'invoice';
             $acc = 'asset_account';
@@ -2692,6 +2684,7 @@ class Journal {
         } else {
             return [];
         }
+        $items['companies'] = [];
         foreach ($companies as $coid => $name) {
 
             $total = 0;
@@ -2778,9 +2771,7 @@ class Journal {
                             'currency' => $currency,
                             'audit' => $ok,
                         ];
-                        /*
-                        $text .= "Debit | " . $aid . ' | Credit | ' . $receipt_account . ' | for jid | ' . $d->id
-                                . '| fx from ' . $doc_rate . ' to ' . $receipt_rate . ' ' . $currency . ' | ' . $ok . '<br>';*/
+                        
                     }
 
                     if ($receipt_rate < $doc_rate) {
@@ -2798,8 +2789,7 @@ class Journal {
                             'currency' => $currency,
                             'audit' => $ok,
                         ];
-                        /*$text .= "Debit | " . $receipt_account . ' | Credit | ' . $aid . '| for jid | ' . $d->id
-                                . '| fx from ' . $doc_rate . ' to ' . $receipt_rate . ' ' . $currency . ' | ' . $ok . '<br>';*/
+                        
                     }
                 } elseif ($param == 'p') {
                     if ($receipt_rate < $doc_rate) {
@@ -2817,8 +2807,7 @@ class Journal {
                             'currency' => $currency,
                             'audit' => $ok,
                         ];
-                        /*$text .= "Debit | " . $aid . ' | Credit | ' . $receipt_account . ' | for jid | ' . $d->id
-                                . '| fx from ' . $doc_rate . ' to ' . $receipt_rate . ' ' . $currency . ' | ' . $ok . '<br>';*/
+                        
                     }
 
                     if ($receipt_rate > $doc_rate) {
@@ -2837,8 +2826,7 @@ class Journal {
                             'currency' => $currency,
                             'audit' => $ok,
                         ];
-                        /*$text .= "Debit | " . $receipt_account . ' | Credit | ' . $aid . '| for jid | ' . $d->id
-                                . '| fx from ' . $doc_rate . ' to ' . $receipt_rate . ' ' . $currency . ' | ' . $ok . '<br>';*/
+                        
                     }
                 }
             }
@@ -2846,6 +2834,47 @@ class Journal {
         }
      
         return $items;
+    }
+    
+    /*
+     * Audit chart of account match with journal
+     * @coid int company id
+     * ex. use /finance/audit/chart/1
+     */
+
+    function audit_chart($coid) {
+        
+        $companies = \Drupal\ek_admin\Access\AccessCheck::CompanyList();
+        $items = [];
+        
+        if(isset($companies[$coid])){
+            $items['company'] = $companies[$coid];
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_accounts', 'a');
+            $query->fields('a', ['aid']);
+            $query->condition('coid', $coid);
+            $query->orderBy('aid');
+            $accounts = $query->execute()->fetchCol();
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_journal', 'j');
+            $query->fields('j');
+            $query->condition('coid', $coid);
+            $query->orderBy('id');
+            $journal = $query->execute();
+            /**/
+            while($j = $journal->fetchObject()){
+
+                if(!in_array((int)$j->aid, $accounts)) {
+                    $items['journal'][] = $j;
+                }
+            }
+            if(empty($items['journal'])) {
+                $items['journal'][] = ['aid' => t('No discrepency found')];
+            }
+        }
+        
+        return $items;
+        
     }
 
 }

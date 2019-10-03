@@ -28,26 +28,34 @@ class UploadExcelBudget extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
+        
+        $form['imp'] = array(
+                '#type' => 'details',
+                '#title' => $this->t('Import'),
+                '#open' => FALSE,
+            
+            );
+        
         $here = $this->getRouteMatch();
         if ($here->getRouteName() == 'ek_finance_budgeting' && isset($_SESSION['repfilter']['filter'])) {
-            $form['year'] = array(
+        
+            $form['imp']['year'] = array(
                 '#type' => 'hidden',
                 '#value' => $_SESSION['repfilter']['year'],
             );
 
-            $form['coid'] = array(
+            $form['imp']['coid'] = array(
                 '#type' => 'hidden',
                 '#value' => $_SESSION['repfilter']['coid'],
             );
 
-            $form['upload_doc'] = array(
+            $form['imp']['upload_doc'] = array(
                 '#type' => 'file',
                 '#title' => $this->t('Select file'),
                 '#description' => $this->t('Excel format'),
             );
-            $form['actions'] = array('#type' => 'actions');
-            $form['actions']['upload'] = array(
+            $form['imp']['actions'] = array('#type' => 'actions');
+            $form['imp']['actions']['upload'] = array(
                 '#id' => 'importbutton',
                 '#type' => 'submit',
                 '#value' => t('Import'),
@@ -60,24 +68,22 @@ class UploadExcelBudget extends FormBase {
 
                      */
             );
-        } else {
+            
+            $alert = "<div id='alert' class='messages messages--warning'>"
+                    . t('Import data will erase all current data for year @y and selected company.', ['@y' => $_SESSION['repfilter']['year']]) . "</div>";
+           
+        } elseif($here->getRouteName() == 'ek_finance_budgeting') {
             $alert = "<div id='alert' class='messages messages--warning'>"
                     . t('Select company and year before import.') . "</div>";
-            $form['alert'] = array(
+        } else {
+            
+        }
+
+        $form['imp']['alert'] = array(
                 '#type' => 'markup',
                 '#markup' => $alert,
             );
-        }
-
-        $alert = "<div id='alert' class='messages messages--warning'>"
-                . t('Import data will erase all current data for year @y and selected company.', ['@y' => $_SESSION['repfilter']['year']]) . "</div>";
-
-        $form['alert'] = array(
-            '#type' => 'markup',
-            '#markup' => $alert,
-        );
-
-
+        
         return $form;
 
 

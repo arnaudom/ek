@@ -23,17 +23,20 @@ use Drupal\ek_finance\Journal;
  */ 
  function ek_finance_ek_settings($coids) { 
     //we do not use param coids here as settings are global
+    $settings = [];
     $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_finance', 'f');
     $query->fields('f', ['id', 'settings']);
     $query->condition('id', '1');
     $data = $query->execute()->fetchObject();
-    $settings = unserialize($data->settings);
+    if($data){
+        $settings = unserialize($data->settings);
+    }
     
     if(empty($settings)) {
         $link = \Drupal\Core\Url::fromRoute('ek_finance.admin.settings', array(), array())->toString();
-        $message = t('Missing settings for module @m. Go <a href="@c">here</a> to edit.', ['@c' => $link, '@m' => 'finance']);
-        drupal_set_message($message, 'warning');
+        return ['finance' => $link];
+        
     }
   
     return new \Symfony\Component\HttpFoundation\Response('', 204);
@@ -234,7 +237,100 @@ function ek_finance_mail($key, &$message, $params) {
 
     }
 }
+
+
+/**
+ * Implements hook_form_alter().
+*/ 
+function ek_finance_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+    
+  if ($form_id == 'user_multiple_cancel_confirm') {
+    
+    $form['move_finance'] = [
+      '#type' => 'textfield',
+      '#title' => t('Move cash records'),
+      '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
+      '#description' => t('Select to whom to transfer cash records'),
+    ];
+    $form['#validate'][] = 'ek_finance_form_user_delete_validate';
+    $form['#submit'][] = 'ek_finance_form_user_delete_submit';
+    
+     return $form;
+      
+  }
+} 
+
+/**
+ * Implements hook_form_validate().
+*/
+function ek_finance_form_user_delete_validate(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+
+  if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
+        if ($form_state->getValue('move_finance') <> '') {
+            
+            $query = "SELECT uid FROM {users_field_data} WHERE name = :n";
+            $data = db_query($query, [':n' => $form_state->getValue('move_finance')])
+                    ->fetchField();
+            if ($data) {
+                $form_state->setValue('move_finance', $data);
+            } else {
+                $form_state->setErrorByName('move_finance', t('Unknown user to move documents'));
+            }
+            
   
+        }
+    
+     return $form;
+      
+  }
+} 
+
+/**
+ * Implements hook_form_submit().
+ */
+function ek_finance_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+    
+  if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
+    if($form_state->getValue('move_finance')){
+        foreach($form_state->getValue('accounts') as $key => $id) {
+                
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_cash', 'c');
+                    $query->fields('c',['id','comment']);
+                    $query->condition('uid',$id);
+                    $c = $query->execute();
+                while ($list = $c->fetchObject()) {
+                    $comment = "(". t('Moved from user @u',['@u' => $id]) . ") " . $list->comment;
+                     $query = Database::getConnection('external_db', 'external_db')
+                      ->update('ek_cash')
+                      ->fields(['uid' => $form_state->getValue('move_finance'),'comment' => $comment ])
+                      ->condition('id', $list->id)->execute();
+                }
+                
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses', 'e');
+                    $query->fields('e',['id','comment']);
+                    $query->condition('employee',$id);
+                    $e = $query->execute();
+                while ($list = $e->fetchObject()) {
+                    $comment = "(". t('Moved from user @u',['@u' => $id]) . ") " . $list->comment;
+                     $query = Database::getConnection('external_db', 'external_db')
+                      ->update('ek_expenses')
+                      ->fields(['employee' => $form_state->getValue('move_finance'),'comment' => $comment ])
+                      ->condition('id', $list->id)->execute();
+                }
+                
+                
+            }
+    }
+     \Drupal::messenger()->addStatus(t('Cash records moved to user @u', ['@u' => $form_state->getValue('move_finance')]));
+     return $form;
+      
+  }
+}
+
+
+
 /**
  * Preprocess variables for views.
  *

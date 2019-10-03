@@ -28,9 +28,15 @@ class UploadChart extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
 
-
+        $form['imp'] = array(
+            '#type' => 'details',
+            '#title' => $this->t('Import'),
+            '#open' => FALSE,
+            
+        );
+        
         $company = \Drupal\ek_admin\Access\AccessCheck::CompanyListByUid();
-        $form['coid'] = array(
+        $form['imp']['coid'] = array(
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
@@ -39,13 +45,13 @@ class UploadChart extends FormBase {
             
         );
 
-        $form['upload_doc'] = array(
+        $form['imp']['upload_doc'] = array(
             '#type' => 'file',
             '#title' => $this->t('Select file'),
             '#description' => $this->t('Excel format'),
         );
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['upload'] = array(
+        $form['imp']['actions'] = array('#type' => 'actions');
+        $form['imp']['actions']['upload'] = array(
             '#id' => 'importbutton',
             '#type' => 'submit',
             '#value' => t('Import'),
@@ -55,7 +61,7 @@ class UploadChart extends FormBase {
         $alert = "<div id='alert' class='messages messages--warning'>"
                 . t('Import data will erase all current data for selected company.') . "</div>";
 
-        $form['alert'] = array(
+        $form['imp']['alert'] = array(
             '#type' => 'markup',
             '#markup' => $alert,
         );

@@ -72,8 +72,8 @@ class InstallController extends ControllerBase {
      * @return array
      * render Html
      */
-    public function migrate() {
-        include_once drupal_get_path('module', 'ek_finance') . '/' . 'migrate.php';
+    public function update() {
+        include_once drupal_get_path('module', 'ek_finance') . '/' . 'update.php';
         return array('#markup' => $markup);
     }
 

@@ -254,7 +254,7 @@ class ReportController extends ControllerBase {
         $chart = $this->settings->get('chart');
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterReporting');
 
-        if ($_SESSION['repfilter']['filter'] == 1) {
+        if (isset($_SESSION['repfilter']['filter']) && $_SESSION['repfilter']['filter'] == 1) {
 
             $coid = $_SESSION['repfilter']['coid'];
             $year = $_SESSION['repfilter']['year'];

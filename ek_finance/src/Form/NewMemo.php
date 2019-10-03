@@ -1230,7 +1230,7 @@ $rows = $form_state->getValue('itemTable');
       if (isset($insert) && isset($entity_mail) && isset($entity_to->email)) {
             $params['subject'] = t("New memo") . ': ' . $serial;
             $url = $GLOBALS['base_url'] . Url::fromRoute('ek_finance_manage_print_html', array('id' => $reference))->toString();
-            $params['options']['url'] = "<a href='". $url ."'>" . $serial . "</a>";
+            $params['options']['url'] = "<a title='".$serial."' href='". $url ."'>" . t('Open') . "</a>";
             $params['options']['user'] = $entity->name;
             
             $params['body'] = t('Memo ref. @p',['@p' => $serial]) . "." . t('Issued to') . ": " . $entity_to->name; 
