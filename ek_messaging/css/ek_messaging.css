@@ -55,7 +55,7 @@
 }
 
 .orange {
-    color: #FF8000;
+    color: #FFC900;
 }
 
 hr {
@@ -95,14 +95,13 @@ hr {
 .inbox_message_badge {
     background-color: #76b4e1;
     color: #fff;
-    border: 2px solid #0696ff;
+    border: 1px solid #0696ff;
     border-radius: 25px;
     display: inline-block;
-    font-size: 1.1em;
+    font-size: 0.9em;
     font-weight: bold;
     text-align: center;
     min-width: 20px;
-    padding: 1px;
     position:relative;
     top:-5px;
     -webkit-box-shadow: 3px 3px 5px 0px rgba(0,0,0,0.5);

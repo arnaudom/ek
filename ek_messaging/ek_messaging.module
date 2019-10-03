@@ -104,9 +104,10 @@ function ek_messaging_mail($key, &$message, $params) {
     $params['options']['origin'] = \Drupal::currentUser()->getUsername();
     $params['options']['stamp'] = date('F j, Y, g:i a');
     $priority = array('3' => t('low'), '2' => t('normal'), '1' => t('high'));
-    $color = array('3' => '#9FF781', '2' => '#81DAF5' , '1' => '#F78181');
+    $color = array('3' => '#159F45', '2' => '#0D67A7' , '1' => '#A70D0D');
     $params['options']['priority'] = $priority[$params['priority']];
     $params['options']['color'] = $color[$params['priority']];
+    $params['options']['link'] = $params['link'];
     switch($key) {
       case 'ek_message':
           

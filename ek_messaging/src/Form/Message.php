@@ -195,6 +195,7 @@ class Message extends FormBase {
                 'body' => $message['value'],
                 'from' => $currentuserMail,
                 'priority' => $form_state->getValue('priority'),
+                'link' => 0,
             ];
         } else {
             //send only a notification
@@ -205,6 +206,7 @@ class Message extends FormBase {
                 'body' => "<a href='" . $link . "'>" . t('read') . "</a>",
                 'from' => $currentuserMail,
                 'priority' => $form_state->getValue('priority'),
+                'link' => 1,
             ];
         }
 
