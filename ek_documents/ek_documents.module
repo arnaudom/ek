@@ -23,17 +23,19 @@ use Drupal\Core\Database\Database;
  */ 
  function ek_documents_ek_settings($coids) { 
     //we do not use param coids here as settings are global
+    $settings = [];
     $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_document_settings', 'd');
     $query->fields('d', ['id', 'settings']);
     $query->condition('id', '0');
     $data = $query->execute()->fetchObject();
-    $settings = unserialize($data->settings);
-    
+    if($data){
+        $settings = unserialize($data->settings);
+    }
     if(empty($settings)) {
         $link = \Drupal\Core\Url::fromRoute('ek_documents_settings', array(), array())->toString();
-        $message = t('Missing settings for module @m. Go <a href="@c">here</a> to edit.', ['@c' => $link, '@m' => 'documents']);
-        drupal_set_message($message, 'warning');
+        return ['documents' => $link];
+        
     }
   
     return new \Symfony\Component\HttpFoundation\Response('', 204);
