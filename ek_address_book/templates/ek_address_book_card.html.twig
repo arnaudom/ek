@@ -16,11 +16,19 @@
                     <h2 id="name">{{ items.name }}</h2>
                 </div>
                 <div class='cell'>
-                    <img class="" style="width:50px;" alt="logo" src="{{ items.logo_url }}"/>
+                    <img class="" style="width:40px;" alt="logo" src="{{ items.logo_url }}"/>
                 </div>
             </div>
             <div class='row'>
+                <div class='cell {{ items.type }}'>
+                    
+                </div>
                 <div class='cell'>
+                    {# righ column #}
+                </div>
+            </div>
+            <div class='row'>
+                <div class='cell '>
                     {{ items.shortname }}
                 </div>
                 <div class='cell'>
@@ -56,7 +64,8 @@
                         </tr> 
                         {% if items.website != '' %}
                             <tr>
-                                <td>{{ items.website }}</td><td></td>
+                                <td><a href="http://{{ items.website }}" target="_blank">{{ items.website }}</a></td>
+                                <td></td>
                             </tr>    
                         {% endif %}
                     </table>
@@ -97,7 +106,8 @@
             <div class="panel panel-default">
 
                 <div class="panel-heading"><a href='#{{ item.id }}'  onclick="jQuery('#{{ item.id }}').toggle();">
-                        <h3 class="panel-title"><span id="salutation{{ item.id }}">{{ item.salutation }}</span> <span id="card{{ item.id }}">{{ item.contact_name }}</span></h3></a>
+                        <h3 class="panel-title"><span id="salutation{{ item.id }}">{{ item.salutation }}</span> 
+                            <span id="card{{ item.id }}">{{ item.contact_name }}</span></h3></a>
 
                 </div>
 
@@ -114,7 +124,8 @@
                             <td><span class="ico briefcase"></span><span> | </span><span>{{ item.title }}</span></td>
                             <td rowspan='6' style='text-align:center;width:40%;' >
                                 {% if item.card != '' %}
-                                    {{ item.card|raw }}
+                                    <a href='modal/nojs/{{ item.id }}' class='use-ajax'>
+                                       <img style="width:50%" src="{{ item.card }}"></a>
                                 {% else %}
                                     <span class="ico namecard fa-5x"></span>
                                 {% endif %}

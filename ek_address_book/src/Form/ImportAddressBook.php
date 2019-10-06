@@ -140,7 +140,8 @@ class ImportAddressBook extends FormBase {
                                 if ($data[0] != 'id' && is_numeric($data[0])) {
 
                                     //skip the header line if any
-                                    $fields = ['id' => addslashes(str_replace(',', '', $data[0])),
+                                    $fields = [
+                                        'id' => addslashes(str_replace(',', '', $data[0])),
                                         'name' => addslashes(str_replace(',', '', $data[1])),
                                         'shortname' => addslashes(str_replace(',', '', $data[2])),
                                         'address' => addslashes(str_replace(',', '', $data[3])),
@@ -155,7 +156,8 @@ class ImportAddressBook extends FormBase {
                                         'category' => addslashes($data[12]),
                                         'status' => addslashes($data[13]),
                                         'stamp' => addslashes(strtotime($data[14])),
-                                        'activity' => addslashes($data[15])];
+                                        'activity' => addslashes($data[15])
+                                        ];
 
                                     try {
                                         $i = Database::getConnection('external_db', 'external_db')
@@ -165,10 +167,15 @@ class ImportAddressBook extends FormBase {
                                         $values +=1;
 
                                         //verify if comment table has an entry. If not insert
-                                        $query = "SELECT count(abid) FROM {ek_address_book_comment} WHERE abid=:id";
-                                        $count = Database::getConnection('external_db', 'external_db')
-                                                ->query($query, [':id' => $data[0]])
-                                                ->fetchField();
+                                        $query = Database::getConnection('external_db', 'external_db')
+                                                ->select('ek_address_book_comment', 'abco');
+                                        $query->condition('abid', $data[0]);
+                                        $count = $query->countQuery()->execute()->fetchField();
+
+                                        /* $query = "SELECT count(abid) FROM {ek_address_book_comment} WHERE abid=:id";
+                                          $count = Database::getConnection('external_db', 'external_db')
+                                          ->query($query, [':id' => $data[0]])
+                                          ->fetchField(); */
 
                                         if ($count != 1) {
                                             Database::getConnection('external_db', 'external_db')
@@ -184,7 +191,7 @@ class ImportAddressBook extends FormBase {
                         } while ($data = fgetcsv($handle, 0, $delimiter, $enclose));
 
                         \Drupal::messenger()->addStatus(t('Inserted @x row(s)', ['@x' => $values]));
-                        
+
                         if ($error != '') {
                             \Drupal::messenger()->addError(t('Error with row(s) @r', ['@r' => $error]));
                         }
@@ -235,7 +242,7 @@ class ImportAddressBook extends FormBase {
                         } while ($data = fgetcsv($handle, 0, $delimiter, $enclose));
 
                         \Drupal::messenger()->addStatus(t('Inserted @x row(s)', ['@x' => $values]));
-                        
+
                         if ($error != '') {
                             \Drupal::messenger()->addError(t('Error with row(s) @r', ['@r' => $error]));
                         }
@@ -283,10 +290,16 @@ class ImportAddressBook extends FormBase {
                                                 ->fields($fields)
                                                 ->execute();
                                         $values +=1;
-
-                                        $query = "SELECT name FROM {ek_address_book} WHERE id=:id";
+                                        $source = 'Address_book';
+                                        $query = Database::getConnection('external_db', 'external_db')
+                                                ->select('ek_address_book', 'ab');
+                                        $query->fields('ab',['name']);
+                                        $query->condition('id', $data[1], '=');
+                                        $name = $query->execute()->fetchField();
+                                        
+                                        /*$query = "SELECT name FROM {ek_address_book} WHERE id=:id";
                                         $name = Database::getConnection('external_db', 'external_db')
-                                                        ->query($query, array(':id' => $data[1]))->fetchField();
+                                                        ->query($query, array(':id' => $data[1]))->fetchField();*/
 
                                         if ($name == "") {
                                             $abid .= $data[2] . ', ';
@@ -338,10 +351,15 @@ class ImportAddressBook extends FormBase {
                                                 ->fields($fields)
                                                 ->execute();
                                         $values +=1;
-
-                                        $query = "SELECT name FROM {ek_address_book} WHERE id=:id";
+                                        $query = Database::getConnection('external_db', 'external_db')
+                                                ->select('ek_address_book', 'ab');
+                                        $query->fields('ab',['name']);
+                                        $query->condition('id', $data[1], '=');
+                                        $name = $query->execute()->fetchField();
+                                        
+                                        /*$query = "SELECT name FROM {ek_address_book} WHERE id=:id";
                                         $name = Database::getConnection('external_db', 'external_db')
-                                                        ->query($query, array(':id' => $data[1]))->fetchField();
+                                                        ->query($query, array(':id' => $data[1]))->fetchField();*/
 
                                         if ($name == "") {
                                             $abid .= $data[2] . ', ';
@@ -352,7 +370,7 @@ class ImportAddressBook extends FormBase {
                                 }
                             }
                         } while ($data = fgetcsv($handle, 0, $delimiter, $enclose));
-                            \Drupal::messenger()->addStatus(t('Inserted @x row(s)', ['@x' => $values]));
+                        \Drupal::messenger()->addStatus(t('Inserted @x row(s)', ['@x' => $values]));
                         if ($error != '') {
                             \Drupal::messenger()->addError(t('Error with row(s) @r', ['@r' => $error]));
                         }

@@ -96,11 +96,13 @@ class AddressBookController extends ControllerBase {
                 $items['sales'] = t('<a href="@url" >Sales data</a>', array('@url' => $url_sales));
             }
 
-            $query = "SELECT id,type from {ek_address_book} WHERE name=:n AND type <> :t";
-            $check = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':n' => $r['name'], ':t' => $r['type']))
-                    ->fetchObject();
-
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book', 'ab');
+            $query->fields('ab', ['id', 'type']);
+            $query->condition('name', $r['name']);
+            $query->condition('type', $r['type'],'<>');
+            $check = $query->execute()->fetchObject();
+            
             if (isset($check->type) && $check->type == '1') {
                 $clone = FALSE;
             } elseif (isset($check->type) && $check->type == '2') {
@@ -162,9 +164,12 @@ class AddressBookController extends ControllerBase {
             $id = $r['id'];
             $items['contacts'] = array();
 
-            $query = "SELECT * FROM {ek_address_book_contacts} WHERE abid=:id ORDER BY main DESC";
-            $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid));
-
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book_contacts', 'abc');
+            $query->fields('abc');
+            $query->condition('abid', $abid);
+            $query->orderBy('main', 'DESC');
+            $data = $query->execute();
 
             while ($r = $data->fetchAssoc()) {
                 $contact = array();
@@ -175,8 +180,8 @@ class AddressBookController extends ControllerBase {
                 $contact['telephone'] = $r['telephone'];
                 $contact['mobilephone'] = $r['mobilephone'];
                 $contact['email'] = $r['email'];
-
-                if ($r['card'] <> '') {
+                $contact['card'] = file_create_url($r['card']);
+                if ($r['card_'] <> '') {
                     $image = "<img class='thumbnail' src=" . file_create_url($r['card']) . ">";
                     $url = file_create_url($r['card']);
                     $markup = "<a href='modal/nojs/" . $r['id']
@@ -187,7 +192,7 @@ class AddressBookController extends ControllerBase {
                         '#markup' => $markup,
                     );
                 } else {
-                    $contact['card'] = "";
+                    $contact['card_'] = "";
                 }
                 $contact['department'] = ucwords($r['department']);
                 $contact['link'] = $r['link'];
@@ -220,10 +225,12 @@ class AddressBookController extends ControllerBase {
     public function modal($js = 'nojs', $abid = NULL) {
         if ($js == 'ajax') {
             $options = array('width' => '30%');
-            $query = "SELECT card from {ek_address_book_contacts} where id=:id";
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $abid))
-                    ->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book_contacts', 'abc');
+            $query->fields('abc', ['card']);
+            $query->condition('id', $abid);
+            $data = $query->execute()->fetchField();
+            
             $image = "<img  src=" . file_create_url($data) . ">";
             $content = array(
                 'content' => array(
@@ -284,19 +291,22 @@ class AddressBookController extends ControllerBase {
      */
     public function cloneaddressbook(Request $request, $abid = NULL) {
 
-        $query = "SELECT * from {ek_address_book} WHERE id=:id";
-        $r = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $abid))
-                ->fetchObject();
-
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book', 'ab');
+            $query->fields('ab');
+            $query->condition('id', $abid);
+            $r = $query->execute()->fetchObject();
+            
         //check the entry has not been cloned already
         // there should be only 3 types per name
         $clone = TRUE;
-        $query = "SELECT type from {ek_address_book} WHERE name=:n AND type <> :t";
-        $check = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':n' => $r->name, ':t' => $r->type))
-                ->fetchField();
-
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book', 'ab');
+            $query->fields('ab',['type']);
+            $query->condition('name', $r->name);
+            $query->condition('type', $r->type,'<>');
+            $check = $query->execute()->fetchField();
+        
         if ($check == '1') {
             $clone = FALSE;
         } elseif ($check == '2') {
@@ -500,7 +510,7 @@ class AddressBookController extends ControllerBase {
 
     /**
      * Util to return contact name callback.
-     * @param (string) $type type of contact % default, 1 client, 2 supplier, 3 other, 4 cards
+     * @param (string) $type type of contact % default, 1: client, 2: supplier, 3: other, 4: cards, tip
      * @return \Symfony\Component\HttpFoundation\JsonResponse;
      *   A Json response object.
      */
@@ -513,8 +523,30 @@ class AddressBookController extends ControllerBase {
             $text = str_replace('%', '', $text);
         }
        
-
-        if($type < 4 || $type == '%') {
+        if($type == 'tip') {
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book', 'ab')
+                    ->fields('ab', ['id','name','logo']);
+            $query->condition('id', $text, '=');
+            $data = $query->execute()->fetchObject();
+            $logo = '';
+            $url = '';
+            if ($data->logo && file_exists($data->logo)) {
+                $url = file_create_url($data->logo);
+                $logo = "<img class='thumbnail' src='" . $url . "'>";
+            }
+            
+            $render = array(
+            '#theme' => 'ek_address_book_tip',
+            '#items' => ['type' => 'display','name' => $data->name, 'logo' => $logo, 'url' => $url],
+            
+            );
+            $card = \Drupal::service('renderer')->render($render);
+            return new JsonResponse(['card' => $card]);
+               
+            
+        } elseif($type < 4 || $type == '%') {
             
             //pull company names
             $types = array(1 => t('client'), 2 => t('supplier'), 3 => t('other'));
@@ -561,6 +593,7 @@ class AddressBookController extends ControllerBase {
                         $result[] = $r->name;
                     }
                 }
+            
         } else {
             //pull name cards
             $types = [1 => t('client'), 2 => t('supplier'), 3 => t('other')];
@@ -666,9 +699,7 @@ class AddressBookController extends ControllerBase {
         if ($terms == 1) {
             $short_name .= substr($text, 0, 4);
         } elseif ($terms > 1) {
-
             for ($i = 0; $i <= 3; $i++) {
-
                 if (!isset($entry[$i])) {
                     $short_name .= '-';
                 } elseif(substr($entry[$i], 0, 1) == '/') {
@@ -679,24 +710,25 @@ class AddressBookController extends ControllerBase {
             }
         }
         
-        
-
         //confirm entry
         $valid = '';
         for ($i = 0; $i < $terms; $i++) {
             $valid .= $entry[$i] . '%';
         }
 
-        $query = "SELECT count(name) from {ek_address_book} where name like :text";
-        $ok = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':text' => $valid))
-                ->fetchField();
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book', 'ab');
+            //$query->fields('ab');
+            $query->condition('name', $valid, 'LIKE');
+            $query->addExpression('Count(name)', 'count');
+            $Obj = $query->execute();
+            $count = $Obj->fetchObject()->count;
+        
         $alert = NULL;
-        if ($ok == 1) {
+        if ($count >= 1) {
             $alert = t('This name already exist in the records');
         }
-
-        return new JsonResponse(array('sn' => $short_name, 'name' => $ok, 'alert' => $alert));
+        return new JsonResponse(array('sn' => $short_name, 'name' => $count, 'alert' => $alert));
     }
 
     /**
@@ -742,5 +774,3 @@ class AddressBookController extends ControllerBase {
     }
 
 }
-
-?>

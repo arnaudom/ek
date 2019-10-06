@@ -77,16 +77,16 @@ class InstallController extends ControllerBase {
 
     $query = "CREATE TABLE IF NOT EXISTS `ek_address_book` (
                 `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-                `name` VARCHAR(250) NOT NULL DEFAULT ''COLLATE 'utf8_general_ci' ,
+                `name` VARCHAR(250) NOT NULL DEFAULT '' COLLATE 'utf8mb4_unicode_ci',
                 `shortname` VARCHAR(10) NOT NULL DEFAULT '',
-                `address` TINYTEXT NULL,
-                `address2` TINYTEXT NOT NULL,
-                `postcode` VARCHAR(10) NULL DEFAULT NULL,
+                `address` TINYTEXT NULL  COLLATE 'utf8mb4_unicode_ci',
+                `address2` TINYTEXT NOT NULL  COLLATE 'utf8mb4_unicode_ci',
+                `postcode` VARCHAR(50) NULL DEFAULT NULL,
                 `city` VARCHAR(100) NULL DEFAULT NULL,
                 `country` VARCHAR(45) NULL DEFAULT NULL,
                 `telephone` VARCHAR(45) NULL DEFAULT NULL,
                 `fax` VARCHAR(45) NOT NULL DEFAULT '',
-                `website` VARCHAR(45) NULL DEFAULT NULL,
+                `website` VARCHAR(255) NULL DEFAULT NULL,
                 `type` VARCHAR(20) NULL DEFAULT NULL COMMENT '1 client, 2 supplier, 3 other',
                 `category` VARCHAR(45) NULL DEFAULT NULL,
                 `status` VARCHAR(1) NULL DEFAULT '1' COMMENT 'status, 1=active, 0=inactive',
@@ -107,7 +107,7 @@ class InstallController extends ControllerBase {
                 `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `abid` INT(10) UNSIGNED NOT NULL COMMENT 'id in address book',
                 `main` VARCHAR(2) NULL DEFAULT '0',
-                `contact_name` VARCHAR(200) NOT NULL COMMENT 'full name',
+                `contact_name` VARCHAR(200) NOT NULL COMMENT 'full name' COLLATE 'utf8mb4_unicode_ci',
                 `salutation` VARCHAR(20) NULL DEFAULT NULL COMMENT 'salutation',
                 `title` VARCHAR(100) NULL DEFAULT NULL COMMENT 'function ttitle',
                 `telephone` VARCHAR(45) NULL DEFAULT NULL COMMENT 'fix line',
@@ -131,7 +131,7 @@ class InstallController extends ControllerBase {
 
     $query = "CREATE TABLE IF NOT EXISTS `ek_address_book_comment` (
             `abid` INT(10) UNSIGNED NOT NULL,
-            `comment` TEXT NULL,
+            `comment` TEXT NULL COLLATE 'utf8mb4_unicode_ci',
             PRIMARY KEY (`abid`)
             )
             COMMENT='list of comments per address book entry'

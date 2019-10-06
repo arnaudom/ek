@@ -1,0 +1,32 @@
+
+{#
+/**
+ * @file
+ * theme implementation for rendering tip
+ * Variables
+ * type: link | display
+ * id: book id  (link type)
+ * full: full name  (link type)
+ * short: short name  (link type)
+ * link: url (link type)
+ * name: name (display type)
+ * url: image url (display type)
+ * logo: image element (display type)
+**/
+ #}
+
+{% if items.type == 'link' %}
+    <div class='tip' id='{{ items.id }}' target='_blank' style=""><a href='{{ items.link }}'>{{ items.short }}</a></div>
+{% endif %}
+
+{% if items.type == 'display' %}
+    <div style="text-align:center;padding:3px;">
+        
+    <div><strong>{{ items.name }}</strong></div>
+    {% if items.url %}
+        <hr>
+        <div><img src={{ items.url }} style="width:40px;"/></div>
+        {% endif %}
+    </div>
+{% endif %}
+

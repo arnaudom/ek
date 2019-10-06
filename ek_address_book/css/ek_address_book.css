@@ -149,6 +149,15 @@ hr {
   border-bottom: 0px !important;
 }
 
+div .client {
+    background-color: #6474FF;
+}
+div .supplier {
+    background-color: #00B515;
+}
+div .other  {
+    background-color: #9F9F9F;
+}
 .ico:before {
   font-family: FontAwesome;
   font-size:1.3em;

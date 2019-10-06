@@ -11,7 +11,16 @@ ek_address_book.script.sn:
   dependencies:
     - core/jquery
 
-
+ek_address_boook.tip:
+  version: VERSION
+  css:
+    theme:
+      /libraries/qTip2/dist/jquery.qtip.min.css: {}
+  js:
+    js/ek_address_book_tip.js: {}
+    /libraries/qTip2/dist/jquery.qtip.min.js: {} 
+    
+    
 ek_address_book.email_autocomplete:
   version: VERSION
   js:

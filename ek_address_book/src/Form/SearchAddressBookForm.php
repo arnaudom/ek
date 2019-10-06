@@ -38,7 +38,6 @@ class SearchAddressBookForm extends FormBase {
             '#size' => 35,
             '#required' => true,
             '#attributes' => array('placeholder' => t('Enter name or contact')),
-            //'#autocomplete_route_name' => 'ek.look_up_contact_ajax',
             '#attached' => ['library' => array('ek_address_book/ek_address_book.search')],
             
         );

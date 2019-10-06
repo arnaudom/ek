@@ -66,26 +66,33 @@ class ExportAddressBook extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
  
+       
+            
       switch ($form_state->getValue('source')) {
           
       case '0': 
-          $source = 'Address_book';
-          $query = "SELECT * FROM {ek_address_book} WHERE type like :t ORDER by id";
-
+            $source = 'Address_book';
+            $query = Database::getConnection('external_db', 'external_db')
+                      ->select('ek_address_book', 'ab');
+            $query->fields('ab');
+            $query->condition('type', $form_state->getValue('type'), 'LIKE');
+            $query->orderBy('id');
       break;
   
       case '1':
-          $source = 'Address_book_contacts';
-          $query = "SELECT * FROM {ek_address_book_contacts} c LEFT JOIN {ek_address_book} a "
-              . "ON c.abid = a.id "
-              . "WHERE type like :t order by c.id";
-      
+            $source = 'Address_book_contacts';
+            $query = Database::getConnection('external_db', 'external_db')
+                      ->select('ek_address_book_contacts', 'abc');
+            $query->fields('abc');
+            $query->leftJoin('ek_address_book', 'ab', 'ab.id = abc.abid');
+            $query->fields('ab');
+            $query->condition('type', $form_state->getValue('type'), 'LIKE');
+            $query->orderBy('id');
       break;
           
       }
       
-      $data = Database::getConnection('external_db', 'external_db')
-              ->query($query, array(':t' => $form_state->getValue('type')));
+      $data = $query->execute();
       include_once drupal_get_path('module', 'ek_address_book').'/excel_export.inc';
       return $markup;
       

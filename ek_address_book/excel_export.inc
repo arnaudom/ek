@@ -41,18 +41,29 @@ if($source == 'Address_book') {
             $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
             $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->getStartColor()->setARGB('e6e6fa');
             } 
-
+            
+            //force default cell input to avoid error if reused for import
+            $address = (NULL == $r->address) ? "-" : $r->address;
+            $address2 = (NULL == $r->address2) ? "-" : $r->address2;
+            $postcode = (NULL == $r->postcode) ? "-" : $r->postcode;
+            $city = (NULL == $r->city) ? "-" : $r->city;
+            $country = (NULL == $r->country) ? "-" : $r->country;
+            $telephone = (NULL == $r->telephone) ? "-" : $r->telephone;
+            $fax = (NULL == $r->fax) ? "-" : $r->fax;
+            $website = (NULL == $r->website) ? "-" : $r->website;
+            $website = (NULL == $r->website) ? "-" : $r->website;
+            
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $r->id);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $r->name);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$l", $r->shortname);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $r->address);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $r->address2);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $r->postcode);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $r->city);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $r->country);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $r->telephone);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $r->fax);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $r->website);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $address);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $address2);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $postcode);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $city);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $country);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $telephone);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $fax);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $website);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $r->type);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $r->category);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $r->status);
@@ -91,19 +102,32 @@ if($source == 'Address_book') {
             $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
             $objPHPExcel->getActiveSheet()->getStyle("$row")->getFill()->getStartColor()->setARGB('e6e6fa');
             } 
-
+            
+            //force default cell input to avoid error if reused for import
+            $salutation = (NULL == $r->salutation) ? "-" : $r->salutation;
+            $title = (NULL == $r->title) ? "-" : $r->title;
+            $title = (NULL == $r->title) ? "-" : $r->title;
+            $telephone = (NULL == $r->telephone) ? "-" : $r->telephone;
+            $mobilephone = (NULL == $r->mobilephone) ? "-" : $r->mobilephone;
+            $email = (NULL == $r->email) ? "-" : $r->email;
+            $card = (NULL == $r->card) ? "-" : $r->card;
+            $department = (NULL == $r->department) ? "-" : $r->department;
+            $link = (NULL == $r->link) ? "-" : $r->link;
+            $comment = (NULL == $r->comment) ? "-" : $r->comment;
+            
+            
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $r->id);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $r->abid);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$l", $r->contact_name);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $r->salutation);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $r->title);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $r->telephone);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $r->mobilephone);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $r->email);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $r->card);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $r->department);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $r->link);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $r->comment);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $salutation);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $title);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $telephone);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $mobilephone);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $email);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $card);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $department);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $link);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $comment);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $r->main);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", date('Y-m-d', $r->stamp));
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", $r->name . '(id: ' . $r->abid . ')');
@@ -112,12 +136,6 @@ if($source == 'Address_book') {
         }    
 }
 
-                                                                                    
-            
-           
-   
-   
- 
 
 $date = date('Y-m-d h:i:s');
 $l+=2;
@@ -133,22 +151,3 @@ $fileName = 'export_' . $source . '.xlsx';
         
         $objWriter->save('php://output');    
         exit;
-
-  
-     // end generate report
-
-
-
-
-
-      
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            

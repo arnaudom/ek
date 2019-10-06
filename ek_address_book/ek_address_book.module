@@ -67,7 +67,11 @@ function ek_address_book_theme() {
       'template' => 'ek_address_book_form',
       'variables' => array('items' => array()),
     ),    
-         
+    'ek_address_book_tip' => array
+    (
+      'template' => 'ek_address_book_tip',
+      'variables' => array('items' => array()),
+    ),          
     'edit_contact_form' => array
     (
       'render element' => 'form'

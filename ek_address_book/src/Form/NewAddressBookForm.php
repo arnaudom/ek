@@ -60,11 +60,21 @@ class NewAddressBookForm extends FormBase {
                 '#default_value' => $abid,
             );
 
-            $query = "SELECT * from {ek_address_book} WHERE id=:id";
-            $r = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid))->fetchAssoc();
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_address_book', 'ab');
+                $query->fields('ab');
+                $query->condition('id', $abid, '=');
+                $r = $query->execute()->fetchAssoc();
+                
+            /*$query = "SELECT * from {ek_address_book} WHERE id=:id";
+            $r = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid))->fetchAssoc();*/
 
-            $query = "SELECT count(id) from {ek_address_book_contacts} WHERE abid=:id";
-            $rc = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid))->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_address_book_contacts', 'abc');
+                $query->condition('abid', $abid);
+                $rc = $query->countQuery()->execute()->fetchField();
+            /*$query = "SELECT count(id) from {ek_address_book_contacts} WHERE abid=:id";
+            $rc = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid))->fetchField();*/
         }
 
         $form['name'] = array(
@@ -244,8 +254,14 @@ class NewAddressBookForm extends FormBase {
         if (isset($rc) && $rc > 0) {
 
             //namecard exist
+            $query = Database::getConnection('external_db', 'external_db')
+                      ->select('ek_address_book_contacts', 'abc');
+            $query->fields('abc');
+            $query->condition('abid', $abid, '=');
+            $data = $query->execute();
+            /*
             $query = "SELECT * from {ek_address_book_contacts} WHERE abid=:id order by id";
-            $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid));
+            $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid));*/
 
             while ($rc = $data->fetchAssoc()) {
 
@@ -610,8 +626,6 @@ class NewAddressBookForm extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        
-        
 
         $fields = array(
             'name' => $form_state->getValue('name'),
@@ -670,19 +684,25 @@ class NewAddressBookForm extends FormBase {
             if (!$form_state->getValue('logo') == 0) {
                 if ($file = $form_state->getValue('logo')) {
 
-                  $dir = "private://address_book/cards/" . $id;
-                  \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                  $logo = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
-                  \Drupal::messenger()->addStatus(t("New logo uploaded"));
+                    $dir = "private://address_book/cards/" . $id;
+                    \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                    $logo = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
+                    //Resize after copy
+                    $image_factory = \Drupal::service('image.factory');
+                    $image = $image_factory->get($logo);
+                    $image->scale(60);
+                    $image->save();
+                    \Drupal::messenger()->addStatus(t("New logo uploaded"));
                   
-                  //remove old if any
-                  if(!isset($del) && $form_state->getValue('logo_uri') != '') {
-                      \Drupal::service('file_system')->delete($form_state->getValue('logo_uri'));
-                  }
+                    //remove old if any
+                    if(!isset($del) && $form_state->getValue('logo_uri') != '') {
+                        \Drupal::service('file_system')->delete($form_state->getValue('logo_uri'));
+                    }
                 }
              }
              
-             Database::getConnection('external_db', 'external_db')->update('ek_address_book')
+             Database::getConnection('external_db', 'external_db')
+                    ->update('ek_address_book')
                     ->condition('id', $id)
                     ->fields(['logo' => $logo])
                     ->execute();
@@ -693,15 +713,19 @@ class NewAddressBookForm extends FormBase {
             //update cards
 
             for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
-
-
                 //Check first for deletion
                 if ($form_state->getValue('delete' . $i) == 1) {
 
-                    $query = "SELECT card from {ek_address_book_contacts} where id=:id";
+                    $query = Database::getConnection('external_db', 'external_db')
+                      ->select('ek_address_book_contacts', 'abc');
+                    $query->fields('abc',['card']);
+                    $query->condition('id', $form_state->getValue('id' . $i), '=');
+                    $file = $query->execute()->fetchField();
+                    
+                    /*$query = "SELECT card from {ek_address_book_contacts} where id=:id";
                     $file = Database::getConnection('external_db', 'external_db')
                             ->query($query, array(':id' => $form_state->getValue('id' . $i)))
-                            ->fetchField();
+                            ->fetchField();*/
                     if ($file) {
                         $file = str_replace('private://', '', $file);
                         $path = PrivateStream::basePath() . '/' . $file;
@@ -725,10 +749,17 @@ class NewAddressBookForm extends FormBase {
                         // retrieve previous card file if any
                         $filename = '';
                         if (!$form_state->getValue('id' . $i) <> 'new') {
-                            $query = "SELECT card from {ek_address_book_contacts} where id=:id";
+                            $query = Database::getConnection('external_db', 'external_db')
+                                ->select('ek_address_book_contacts', 'abc');
+                            $query->fields('abc',['card']);
+                            $query->condition('id', $form_state->getValue('id' . $i), '=');
+                            $filename = $query->execute()->fetchField();
+                            
+                            /*$query = "SELECT card from {ek_address_book_contacts} where id=:id";
                             $filename = Database::getConnection('external_db', 'external_db')
                                     ->query($query, array(':id' => $form_state->getValue('id' . $i)))
-                                    ->fetchField();
+                                    ->fetchField();*/
+                            
                             $old_file = $filename;
 
                             if ($form_state->getValue('image_delete' . $i) == 1) {
