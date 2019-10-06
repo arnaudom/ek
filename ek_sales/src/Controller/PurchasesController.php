@@ -263,7 +263,7 @@ class PurchasesController extends ControllerBase {
                     . $r->serial . "</a>";
             if ($r->pcode <> 'n/a') {
                 if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $reference = $supplier . "<br/>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, NULL, NULL, TRUE);
+                    $reference = $supplier . "<div>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, NULL, NULL, TRUE) . "</div>";
                 } else {
                     $reference = $supplier;
                 }
@@ -271,8 +271,8 @@ class PurchasesController extends ControllerBase {
                 $reference = $supplier;
             }
             if ($r->uri <> '') {
-                $attachment = "<a class='blue' href='" . file_create_url($r->uri) . "' target='_blank'>" . t('Attachment') . "</a>";
-                $reference .= "<br/>" . $attachment;
+                $attachment = "<div><a class='blue' href='" . file_create_url($r->uri) . "' target='_blank'>" . t('Attachment') . "</a></div>";
+                $reference .= $attachment;
             }
 
             $due = date('Y-m-d', strtotime(date("Y-m-d", strtotime($r->date)) . "+" . $r->due . "days"));
