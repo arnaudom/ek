@@ -82,7 +82,7 @@ class DocumentsEditController extends ControllerBase {
         $dir = "private://documents/users/" . \Drupal::currentUser()->id();
         file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
         //load mydocs
-
+        $list = [];
         $path = drupal_get_path('module', 'ek_documents');
         if ($request->get('get') == 'myDocs') {
             if (isset($_SESSION['documentfilter']['filter'])) {
@@ -129,8 +129,6 @@ class DocumentsEditController extends ControllerBase {
         }
 
 
-        
-
         if ($data) {  
             $modules = [];
             if ($this->moduleHandler->moduleExists('ek_projects')) {
@@ -153,7 +151,6 @@ class DocumentsEditController extends ControllerBase {
         return $response;
     }
 
-//load
 
     /**
      * Return ajax upload 
