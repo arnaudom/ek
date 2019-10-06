@@ -16,10 +16,12 @@
 
             $('.tip').each(function(){
                 $(this).qtip({
+                    style: { 
+                        classes: 'qtip-bootstrap' 
+                    },
                     position: {
-                            my: 'bottom right', // Position my top left...
-                            at: 'top left', // at the bottom right of...
-                            target: this // my target
+                            my: 'bottom right', // Position my 
+                            at: 'top left', // 
                         },
                     content: {
                         text: 'Loading...',

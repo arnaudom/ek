@@ -12,6 +12,15 @@ ek_hr_css:
     theme:
       css/ek_hr.css: {}
 
+ek_hr_tip:
+  version: VERSION
+  css:
+    theme:
+      /libraries/qTip2/dist/jquery.qtip.min.css: {}
+  js:
+    js/ek_hr_tip.js: {}
+    /libraries/qTip2/dist/jquery.qtip.min.js: {} 
+    
 ek_hr_forms:
   version: VERSION
   css:

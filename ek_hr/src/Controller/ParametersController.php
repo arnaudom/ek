@@ -137,7 +137,7 @@ class ParametersController extends ControllerBase {
                 $eid = ($r->custom_id != '') ? $r->custom_id : $r->id;
                 $options[$r->id] = array(
                     'id' => ['data' => ['#markup' => "<span class='badge'>" . $eid . "</span>"]],
-                    'name' => array('data' => $r->name, 'title' => $r->name),
+                    'name' => array('data' => $r->name, 'title' => $r->name, 'class' => ['tip'],'id' => $r->id),
                     'status' => $r->active . ' ' . $archive,
                 );
 
@@ -174,7 +174,7 @@ class ParametersController extends ControllerBase {
                 '#attributes' => array('id' => 'hr_table'),
                 '#empty' => $this->t('No employee'),
                 '#attached' => array(
-                    'library' => array('ek_hr/ek_hr_css', 'ek_hr/ek_hr_help'),
+                    'library' => array('ek_hr/ek_hr_css', 'ek_hr/ek_hr_help','ek_hr/ek_hr_tip'),
                 ),
             );
             $build['pager'] = array(
