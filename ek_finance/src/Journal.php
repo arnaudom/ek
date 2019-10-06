@@ -1230,12 +1230,13 @@ class Journal {
 
             if ($d->exchange == 0) {
                 //build an history link
+                $d1 = date('Y', strtotime($details['date'])) . '-01-01';
                 $param = serialize(
                         array(
                             'id' => 'journal',
-                            'from' => $details['date1'],
-                            'to' => $details['date2'],
-                            'coid' => $details['company'],
+                            'from' => $d1,
+                            'to' => $details['date'],
+                            'coid' => $details['coid'],
                             'aid' => $d->aid
                 ));
                 $history = Url::fromRoute('ek_finance_modal', array('param' => $param), array())->toString();
