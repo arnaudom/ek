@@ -24,7 +24,7 @@ if($this->moduleHandler->moduleExists('ek_projects'))  {
 
 if($this->moduleHandler->moduleExists('ek_hr'))  {
     
-   //include 'hr_date_status.inc'; 
+   include 'hr_date_status.inc'; 
     
 }
 
