@@ -16,7 +16,9 @@
                     <h2 id="name">{{ items.name }}</h2>
                 </div>
                 <div class='cell'>
-                    <img class="" style="width:40px;" alt="logo" src="{{ items.logo_url }}"/>
+                     {% if items.logo_url != '' %}
+                        <img class="" style="width:40px;" alt="logo" src="{{ items.logo_url }}"/>
+                    {% endif %}
                 </div>
             </div>
             <div class='row'>

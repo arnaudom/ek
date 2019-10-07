@@ -149,7 +149,7 @@ class AddressBookController extends ControllerBase {
                 $items['comment'] = $r['comment'];
             }
 
-            if ($r['logo']) {
+            if ($r['logo'] != '' && file_exists($r['logo'])) {
                 $items['logo_url'] = file_create_url($r['logo']);
                 $items['logo_img'] = "<img class='thumbnail' src='"
                         . file_create_url($r['logo']) . "'>";
