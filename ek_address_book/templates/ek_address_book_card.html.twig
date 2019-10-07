@@ -123,7 +123,7 @@
                         <tr>
                             <td><span class="ico briefcase"></span><span> | </span><span>{{ item.title }}</span></td>
                             <td rowspan='6' style='text-align:center;width:40%;' >
-                                {% if item.card != '' %}
+                                {% if item.card_ != '' %}
                                     <a href='modal/nojs/{{ item.id }}' class='use-ajax'>
                                        <img style="width:50%" src="{{ item.card }}"></a>
                                 {% else %}

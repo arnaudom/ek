@@ -181,13 +181,13 @@ class AddressBookController extends ControllerBase {
                 $contact['mobilephone'] = $r['mobilephone'];
                 $contact['email'] = $r['email'];
                 $contact['card'] = file_create_url($r['card']);
-                if ($r['card_'] <> '') {
+                if ($r['card'] <> '') {
                     $image = "<img class='thumbnail' src=" . file_create_url($r['card']) . ">";
                     $url = file_create_url($r['card']);
                     $markup = "<a href='modal/nojs/" . $r['id']
                             . "' class='use-ajax'><img class='thumbnail' src=" . file_create_url($r['card']) . "></a>";
 
-                    $contact['card'] = array(
+                    $contact['card_'] = array(
                         '#type' => 'markup',
                         '#markup' => $markup,
                     );
