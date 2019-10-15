@@ -85,9 +85,9 @@ class ExportAddressBook extends FormBase {
                       ->select('ek_address_book_contacts', 'abc');
             $query->fields('abc');
             $query->leftJoin('ek_address_book', 'ab', 'ab.id = abc.abid');
-            $query->fields('ab');
+            $query->fields('ab', ['name']);
             $query->condition('type', $form_state->getValue('type'), 'LIKE');
-            $query->orderBy('id');
+            $query->orderBy('abc.id');
       break;
           
       }
