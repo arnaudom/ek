@@ -721,11 +721,7 @@ class NewAddressBookForm extends FormBase {
                     $query->fields('abc',['card']);
                     $query->condition('id', $form_state->getValue('id' . $i), '=');
                     $file = $query->execute()->fetchField();
-                    
-                    /*$query = "SELECT card from {ek_address_book_contacts} where id=:id";
-                    $file = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':id' => $form_state->getValue('id' . $i)))
-                            ->fetchField();*/
+                   
                     if ($file) {
                         $file = str_replace('private://', '', $file);
                         $path = PrivateStream::basePath() . '/' . $file;
@@ -755,16 +751,11 @@ class NewAddressBookForm extends FormBase {
                             $query->condition('id', $form_state->getValue('id' . $i), '=');
                             $filename = $query->execute()->fetchField();
                             
-                            /*$query = "SELECT card from {ek_address_book_contacts} where id=:id";
-                            $filename = Database::getConnection('external_db', 'external_db')
-                                    ->query($query, array(':id' => $form_state->getValue('id' . $i)))
-                                    ->fetchField();*/
-                            
                             $old_file = $filename;
 
                             if ($form_state->getValue('image_delete' . $i) == 1) {
                                 //delete existing file
-                                $pic = drupal_realpath($old_file);
+                                $pic = \Drupal::service('file_system')->realpath($old_file);
                                 unlink($pic);
                                 \Drupal::messenger()->addWarning(t("Card image deleted for card @i", ['@i' => $i + 1]));
                                 $filename = '';
