@@ -6,7 +6,7 @@ class PDF extends FPDF {
     function Header() {
         //Logo
         if ($this->company['logo'] != '') {
-            $logo = drupal_realpath($this->company['logo']);
+            $logo = \Drupal::service('file_system')->realpath($this->company['logo']);
             if (file_exists($logo)) {
                 $this->Image($logo, 10, 4, 33);
             }
@@ -53,8 +53,7 @@ $col5_width = 45;
 
 Foreach($data as $key => $arr) {
     
-    //$company = $arr['main']['entity'];
-    //$head = $arr['main']['entity'];
+    
     $pdf->setHeaderData($arr['main']['entity'], $arr['main']['category']);
     $pdf->AliasNbPages();
     $pdf->AddPage('P','A4');
@@ -144,18 +143,18 @@ Foreach($data as $key => $arr) {
         $pdf->SetFont('Arial', '', 10);
         $pdf->Cell($col3_width, 5, '', 0, 0);
         $pdf->SetFont('Arial', 'B', 9);
-        $pdf->Cell($col4_width, 5, $company_to->country2, 0, 1);
+        $pdf->Cell($col4_width, 5, $arr['main']['entity_to']['country2'], 0, 1);
 
-        if ($company->telephone != '') {
+        if ($arr['main']['entity']['telephone'] != '') {
             $t1 = t('Tel') . ':' . $arr['main']['entity_to']['telephone'];
         }
-        if ($company->fax != '') {
+        if ($arr['main']['entity']['fax'] != '') {
             $t1 .= ' ' . t('Fax') . ':' . $arr['main']['entity']['fax'];
         }
-        if ($company_to->telephone != '') {
+        if ($arr['main']['entity_to']['telephone'] != '') {
             $t1 = t('Tel') . ':' . $arr['main']['entity_to']['telephone'];
         }
-        if ($company_to->fax != '') {
+        if ($arr['main']['entity_to']['fax'] != '') {
             $t1 .= ' ' . t('Fax') . ':' . $arr['main']['entity_to']['fax'];
         }
 
@@ -172,7 +171,7 @@ Foreach($data as $key => $arr) {
         $pdf->Cell($col4_width, 5, $t2, 0, 1);
 
         $pdf->SetFont('Arial', '', 10);
-        if ($company->contact) {
+        if ($arr['main']['entity']['contact']) {
             $pdf->Cell($left_margin, 5, t('Contact') . ':', 0, 0);
             $pdf->Cell($col1_width, 5, '', 0, 0);
             $pdf->SetFont('Arial', 'B', 9);
@@ -300,40 +299,9 @@ Foreach($data as $key => $arr) {
         //SIGNATURE============================================================ 
         if ($signature == 1) {
             $pdf->Cell(100);
-            if (isset($company->sign)) {
-                $sign = drupal_get_path($company->sign);
+            if (isset($arr['main']['entity']['sign'])) {
+                $sign = \Drupal::service('file_system')->realpath($arr['main']['entity']['sign']);
                 $pdf->Image($sign, 20, 210, 50);
             }
         }
-
-/**/
-
-        //show receipts
-        /*
-
-        while ($d = $documents->fetchObject()) {
-
-            if (file_exists($d->uri)) {
-                $pdf->AddPage('P','A4');
-                $info = getimagesize($d->uri);
-                $h = $info[1] ;
-                $w = $info[0] ;
-                $r = 150/$w;
-                $parts = explode('/', $d->uri);
-                $parts = array_reverse($parts);
-                $pdf->Cell(100, 5, $parts[0], 0, 1);
-                $pdf->Image($d->uri, 10, 50, 150, $h*$r);
-            } else {
-                $pdf->SetFont('Arial', '', 10);
-                $pdf->Cell(50, 5, t('Attachment') . ': ', 0, 0);
-                $pdf->SetFont('Arial', '', 8);
-                $parts = explode('/', $d->uri);
-                $parts = array_reverse($parts);
-                $pdf->Cell(100, 5, $parts[0], 0, 1);
-
-            }
-        }
-         */
-
 }
-?>

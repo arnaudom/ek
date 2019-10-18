@@ -186,12 +186,15 @@ class FilterPrintRange extends FormBase {
         // provide selector for templates
         //
         $list = array(0 => 'default');
-        $handle = opendir('private://finance/templates/expenses_memo/');
-        while ($file = readdir($handle)) {
-            if ($file != '.' AND $file != '..') {
-                $list[$file] = $file;
+        if(file_exists('private://finance/templates/expenses_memo/')){
+            $handle = opendir();
+            while ($file = readdir($handle)) {
+                if ($file != '.' AND $file != '..') {
+                    $list[$file] = $file;
+                }
             }
         }
+        
 
         $form['filters']['template'] = array(
             '#type' => 'select',

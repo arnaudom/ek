@@ -6,7 +6,7 @@ class PDF extends FPDF {
     function Header() {
         //Logo
         if ($this->company->logo <> '') {
-            $logo = drupal_realpath($this->company->logo);
+            $logo = \Drupal::service('file_system')->realpath($this->company->logo);
             if (file_exists($logo)) {
                 $this->Image($logo, 10, 4, 33);
             }
@@ -295,7 +295,7 @@ if ($auth[0] == 3) {
 if ($signature == 1) {
     $pdf->Cell(100);
     if (isset($company->sign)) {
-        $sign = drupal_get_path($company->sign);
+        $sign = \Drupal::service('file_system')->realpath($company->sign);
         $pdf->Image($sign, 20, 210, 50);
     }
 }
@@ -327,4 +327,3 @@ while ($d = $documents->fetchObject()) {
         
     }
 }
-?>

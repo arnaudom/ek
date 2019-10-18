@@ -132,10 +132,10 @@ function Header()
     //Logo
     if ($this->company->logo != '') {
   
-    $logo = drupal_realpath($this->company->logo);
+    $logo = \Drupal::service('file_system')->realpath($this->company->logo);
     if(file_exists($logo)) {
         $info = getimagesize($logo);
-        $h = $info[1]*80/$info[0];
+        $h = $info[1]*60/$info[0];
         $this->Image($logo,20,10,$h);
     }
     

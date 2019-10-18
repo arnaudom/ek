@@ -30,6 +30,7 @@ $param = unserialize($param);
         $signature = $_SESSION['memrgfilter']['signature'];
         $stamp = $_SESSION['memrgfilter']['stamp'];
         $_SESSION['memrgfilter'] = NULL;
+        $mode = NULL;
     }
  
 
@@ -295,7 +296,7 @@ Switch ($source) {
   /* 
   * get template data from settings based on source
   */
-if($format == 'pdf' | $mode == 1) {
+if($format == 'pdf' || $mode == 1) {
     
   if( $template == '0' ) {
     $template = drupal_get_path('module', 'ek_finance') . "/default_" . $source . "_pdf";
@@ -303,13 +304,13 @@ if($format == 'pdf' | $mode == 1) {
     $template = PrivateStream::basePath() . '/finance/templates/' . $source . '/' . $template;
     
   }
-  $fileName = $head->serial;
+  
 
   include_once $template;
   
   if ($mode == 1) {
   //save temp file
-
+  //$fileName = $head->serial;
     $path = \Drupal::config('system.file')->get('path.temporary');
     $fileName = $path ."/" . str_replace("/","_", $head->serial ) . ".pdf";
     $pdf->Output($fileName,"F"); 
@@ -323,7 +324,12 @@ if($format == 'pdf' | $mode == 1) {
     header('Content-Type: application/pdf');
     //header("Content-Disposition: 'attachment'; filename='$fileName' ");
     
-    $f = str_replace('/', '_', $head->serial) . '.pdf';
+    if(isset($head)) {
+        $f = str_replace('/', '_', $head->serial) . '.pdf';
+    } else {
+        $f = 'memos.pdf';
+    }
+    
     echo $pdf->Output($f, 'I');
 
     exit ;

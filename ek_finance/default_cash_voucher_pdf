@@ -131,13 +131,10 @@ function Header()
 
     //Logo
     if ($this->company->logo != '') {
-    
-    $logo = drupal_realpath($this->company->logo);
-        if(file_exists($logo)) {
-            $this->Image($logo,20,10,43);
-        }
-    
-    
+        $logo = \Drupal::service('file_system')->realpath($this->company->logo);
+            if(file_exists($logo)) {
+                $this->Image($logo,20,10,43);
+            }
     }
     //Arial bold 15
     $this->Ln(25);
