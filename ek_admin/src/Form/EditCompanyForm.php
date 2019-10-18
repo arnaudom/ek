@@ -625,20 +625,24 @@ class EditCompanyForm extends FormBase {
         if ($form_state->getValue('logo_delete') == 1) {
             //delete existing file
             $query = "SELECT logo from {ek_company} where id=:id";
-            $filename = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
-            $pic = drupal_realpath($filename);
-            \Drupal::service('file_system')->delete($pic);
+            $path = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $id))->fetchField();
+            
+            \Drupal::service('file_system')->delete($path);
             \Drupal::messenger()->addWarning(t("Logo image deleted"));
-            Database::getConnection('external_db', 'external_db')->update('ek_company')->fields(array('logo' => ''))->condition('id', $id)->execute();
+            Database::getConnection('external_db', 'external_db')
+                    ->update('ek_company')->fields(array('logo' => ''))->condition('id', $id)->execute();
         }
 
         if ($form_state->getValue('sign_delete') == 1) {
             //delete existing file
             $query = "SELECT sign from {ek_company} where id=:id";
-            $filename = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
-            $pic = drupal_realpath($filename);
-            \Drupal::service('file_system')->delete($pic);
-            Database::getConnection('external_db', 'external_db')->update('ek_company')->fields(array('sign' => ''))->condition('id', $id)->execute();
+            $path = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $id))->fetchField();
+            
+            \Drupal::service('file_system')->delete($path);
+            Database::getConnection('external_db', 'external_db')
+                    ->update('ek_company')->fields(array('sign' => ''))->condition('id', $id)->execute();
             \Drupal::messenger()->addWarning(t("Signature image deleted"));
         }
 

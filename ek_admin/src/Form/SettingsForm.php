@@ -67,7 +67,6 @@ class SettingsForm extends FormBase {
 
         $settings = new GlobalSettings($coid);
 
-
         $form['coid'] = array(
             '#type' => 'hidden',
             '#value' => $coid,
@@ -135,7 +134,49 @@ class SettingsForm extends FormBase {
             '#description' => t('Relative path to external libraries; i.e. "/libraries"'),
         );   */
         
-             
+        
+        $form['cron'] = array(
+            '#type' => 'details',
+            '#title' => t('Cron tasks'),
+            '#open' => TRUE,
+        );
+        
+        $form['cron']['sale_tasks'] = array(
+                '#type' => 'checkbox',
+                '#title' => t('Sales tasks'),
+                '#default_value' => $settings->get('sale_tasks'),
+            );
+        
+        $form['cron']['sale_status'] = array(
+                '#type' => 'checkbox',
+                '#title' => t('Sales status'),
+                '#default_value' => $settings->get('sale_status'),
+            );
+        
+        $form['cron']['purchase_tasks'] = array(
+                '#type' => 'checkbox',
+                '#title' => t('Purchases tasks'),
+                '#default_value' => $settings->get('purchase_tasks'),
+            );        
+        
+        $form['cron']['project_tasks'] = array(
+                '#type' => 'checkbox',
+                '#title' => t('Project tasks'),
+                '#default_value' => $settings->get('project_tasks'),
+            );
+        
+        $form['cron']['project_status'] = array(
+                '#type' => 'checkbox',
+                '#title' => t('Projects status'),
+                '#default_value' => $settings->get('project_status'),
+            );             
+        
+        $form['cron']['hr_tasks'] = array(
+                '#type' => 'checkbox',
+                '#title' => t('HR tasks'),
+                '#default_value' => $settings->get('hr_tasks'),
+            );         
+        
         $form['actions'] = array('#type' => 'actions');
         $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
 
@@ -178,6 +219,13 @@ class SettingsForm extends FormBase {
         $settings->set('password_expire_action', $form_state->getValue('password_expire_action'));
         $settings->set('protocol', $form_state->getValue('protocol'));
         //$settings->set('library', $form_state->getValue('library'));
+        $settings->set('sale_tasks', $form_state->getValue('sale_tasks'));
+        $settings->set('purchase_tasks', $form_state->getValue('purchase_tasks'));
+        $settings->set('project_tasks', $form_state->getValue('project_tasks'));
+        $settings->set('hr_tasks', $form_state->getValue('hr_tasks'));
+        $settings->set('sale_status', $form_state->getValue('sale_status'));
+        $settings->set('project_status', $form_state->getValue('project_status'));
+        
         $settings->save();
         
         \Drupal::messenger()->addStatus(t('Data updated'));
