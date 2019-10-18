@@ -7,7 +7,7 @@ class EKPDF extends TCPDF {
         $data = $this->getHeaderData();
         $this->company = $data['title'];
         if ($this->company->logo != '') {
-               $logo = drupal_realpath($this->company->logo);
+               $logo = \Drupal::service('file_system')->realpath($this->company->logo);
                if(file_exists($logo)) {
                    $this->Image($logo,20,10,43);
                }
@@ -426,8 +426,10 @@ $bottom = $y+40 > 268 ? 268: $y+40;
     if($signature == 1) {
 
         if(isset($company->sign)) {
-        $sign = drupal_realpath($company->sign);
-        $pdf->Image($sign,20,$bottom-20,70);
+            $sign = \Drupal::service('file_system')->realpath($company->sign);
+            if(file_exists($sign)) {
+                $pdf->Image($sign,20,$bottom-20,70);
+            }
         }
     }
     

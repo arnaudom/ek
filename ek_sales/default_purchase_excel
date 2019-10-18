@@ -40,7 +40,7 @@ if (($company->logo != '')) {
     $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
     $objDrawing->setName('Company logo');
     $objDrawing->setDescription('Company logo');
-    $objDrawing->setPath(drupal_realpath($company->logo));
+    $objDrawing->setPath(\Drupal::service('file_system')->realpath($company->logo));
     $objDrawing->setHeight($resolution);
     $objDrawing->setCoordinates('B2');
     $objDrawing->setOffsetX(10);
@@ -176,7 +176,7 @@ if ($stamp == "2") {
     $objDrawing0 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
     $objDrawing0->setName('Copy');
     $objDrawing0->setDescription('Copy');
-    $objDrawing0->setPath(drupal_realpath($copy));
+    $objDrawing0->setPath(\Drupal::service('file_system')->realpath($copy));
     $objDrawing0->setHeight(150);
     $objDrawing0->setCoordinates('G17');
     $objDrawing0->setOffsetX(10);
@@ -186,7 +186,7 @@ if ($stamp == "2") {
     $objDrawing0 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
     $objDrawing0->setName('Copy');
     $objDrawing0->setDescription('Copy');
-    $objDrawing0->setPath(drupal_realpath($original));
+    $objDrawing0->setPath(\Drupal::service('file_system')->realpath($original));
     $objDrawing0->setHeight(150);
     $objDrawing0->setCoordinates('G17');
     $objDrawing0->setOffsetX(10);
@@ -389,7 +389,7 @@ if ($signature == 1) {
         $resolution = 100 / $w * $h;
         $objDrawing2 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
         $objDrawing2->setName('signature');
-        $objDrawing2->setPath(drupal_realpath($company->sign));
+        $objDrawing2->setPath(\Drupal::service('file_system')->realpath($company->sign));
         $objDrawing2->setHeight($resolution);
         $objDrawing2->setCoordinates('B' . $i);
         $objDrawing2->setOffsetX(10);
