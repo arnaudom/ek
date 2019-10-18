@@ -157,7 +157,7 @@ $settings[$c] = array(
 if ($template == 'default-payslip_pdf') {
     include_once drupal_get_path('module', 'ek_hr') .'/'. $template  . '.inc';
 } else {    
-    include_once drupal_realpath("private://hr/payslips/" . $template . '.inc');
+    include_once \Drupal::service('file_system')->realpath("private://hr/payslips/" . $template . '.inc');
 }
   header('Cache-Control: private');
   header('Content-Type: application/pdf');

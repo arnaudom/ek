@@ -76,7 +76,7 @@ if ($template != NULL) {
     $baseCurrency = $settings->get('baseCurrency');
     $path = PrivateStream::basePath();
 
-    include_once drupal_realpath("private://hr/forms/" . $template);
+    include_once \Drupal::service('file_system')->realpath("private://hr/forms/" . $template);
     $fileName = 'Borang A ' . $month . '.xlsx';
 
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

@@ -233,7 +233,7 @@ $pdf->SetDrawColor(192, 192, 192);
     //Logo
     if ($company->logo != '') {
     
-    $logo = drupal_realpath($company->logo);
+    $logo = \Drupal::service('file_system')->realpath($company->logo);
       if(file_exists($logo)) {
         $info = getimagesize($logo);
         $h = $info[1]*15/$info[0];
