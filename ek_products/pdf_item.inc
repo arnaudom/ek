@@ -38,7 +38,7 @@ $col5 = 80;
 
 /*Logo*/
     if ($items['company_logo'] != '') {  
-        $logo = drupal_realpath($items['company_logo']);
+        $logo = \Drupal::service('file_system')->realpath($items['company_logo']);
         if(file_exists($logo)) {
             $info = getimagesize($logo);
             $h = $info[1]*40/$info[0];
@@ -347,7 +347,7 @@ $row = 50;
 $x = 0;
 foreach($items['pictures'] as $key => $picture) {
        
-        $image = drupal_realpath($picture['uri']);
+        $image = \Drupal::service('file_system')->realpath($picture['uri']);
         if(file_exists($image)) {
             $x++;            
             $info = getimagesize($image);
