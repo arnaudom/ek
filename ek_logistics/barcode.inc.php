@@ -19,9 +19,11 @@
 	* Requirements : PHP with GD library support. 
 	* 
 	* Reference : http://www.barcodeisland.com/symbolgy.phtml
+        * 
+        * Edited ARREA Systems 2019
 	*/
 	
-	class BARCODE
+	class BARCODES
 	{
 		var $_encode;
 		var $_error;

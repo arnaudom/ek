@@ -139,7 +139,7 @@ function Header()
     //Logo
     if ($this->company->logo != '') {
     
-        $logo = drupal_realpath($this->company->logo);
+        $logo = \Drupal::service('file_system')->realpath($this->company->logo);
         if(file_exists($logo)) {
             $this->Image($logo,20,10,43);
         }
@@ -291,7 +291,7 @@ $pdf->Ln(10);
 
 //BODY OF receiving
 include_once drupal_get_path('module', 'ek_logistics') . "/barcode.inc.php";
-	$bar= new BARCODE();
+	$bar= new BARCODES();
 	if($bar==false) {
             die($bar->error());
         }
@@ -447,10 +447,9 @@ $pdf->Ln(2);
     $bottom = $y+40 > 268 ? 268: $y+40;
 
         if($signature == 1) {
-
-            if(isset($company->sign)) {
-            $sign = drupal_realpath($company->sign);
-            $pdf->Image($sign,20,$bottom-20,70);
+            if(isset($company->sign) && file_exists($company->sign)) {
+                $sign = \Drupal::service('file_system')->realpath($company->sign);
+                $pdf->Image($sign,20,$bottom-20,70);
             }
         }
 

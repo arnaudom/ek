@@ -68,7 +68,7 @@ $info = getimagesize($company->logo);
     $h = $info[1];
     $w = $info[0];
     $resolution = 120 / $w * $h;
-$logo = drupal_realpath($company->logo);
+$logo = \Drupal::service('file_system')->realpath($company->logo);
 $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
 $objDrawing->setName('Company logo');
 $objDrawing->setDescription('Company logo');
