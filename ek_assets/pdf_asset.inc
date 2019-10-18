@@ -37,7 +37,7 @@ $col3 = 80;
 
 /*Logo*/
     if ($items['company_logo'] != '') {  
-        $logo = drupal_realpath($items['company_logo']);
+        $logo = \Drupal::service('file_system')->realpath($items['company_logo']);
         if(file_exists($logo)) {
             $info = getimagesize($logo);
             //original height / original width x new width = new height
@@ -162,7 +162,7 @@ if($items['eid']) {
 
 /*item image*/
     if ($items['picture'] != '') {
-        $picture = drupal_realpath($items['picture']);
+        $picture = \Drupal::service('file_system')->realpath($items['picture']);
         if(file_exists($picture)) {
             $info = getimagesize($picture);
             //original height / original width x new width = new height

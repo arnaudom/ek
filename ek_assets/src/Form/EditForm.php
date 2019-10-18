@@ -460,9 +460,9 @@ class EditForm extends FormBase {
         if ($form_state->getValue('picture_delete') == 1) {
             //delete existing file
             $query = "SELECT asset_pic FROM {ek_assets} WHERE id=:id";
-            $filename = Database::getConnection('external_db', 'external_db')
+            $path = Database::getConnection('external_db', 'external_db')
                             ->query($query, array(':id' => $form_state->getValue('for_id')))->fetchField();
-            $pic = drupal_realpath($filename);
+            $pic = \Drupal::service('file_system')->realpath($path);
             unlink($pic);
             \Drupal::messenger()->addWarning(t("Asset image deleted"));
             Database::getConnection('external_db', 'external_db')
@@ -475,9 +475,9 @@ class EditForm extends FormBase {
         if ($form_state->getValue('doc_delete') == 1) {
             //delete existing file
             $query = "SELECT asset_doc FROM {ek_assets} WHERE id=:id";
-            $filename = Database::getConnection('external_db', 'external_db')
+            $path = Database::getConnection('external_db', 'external_db')
                             ->query($query, array(':id' => $form_state->getValue('for_id')))->fetchField();
-            $pic = drupal_realpath($filename);
+            $pic = \Drupal::service('file_system')->realpath($path);
             unlink($pic);
             Database::getConnection('external_db', 'external_db')
                     ->update('ek_assets')
