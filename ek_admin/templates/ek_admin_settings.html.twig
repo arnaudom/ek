@@ -7,7 +7,6 @@
 # company : alert/link about company creation
 # space : space available on disk for data files
 # excel : alert excel library
-# fpdf : alert fpdf library
 # tcpdf : alert tcpdf library
 # ssl : alert ssl connection for DB
 # finance : alert base currency in finance
@@ -83,15 +82,6 @@
                 {% else %}
                     <span class="list_ico fas fa-exclamation-circle"></span>
                     <div class="list_name missing">{{ 'Excel library not installed'|t }}</div>
-                {% endif %}
-            </li>
-            <li>
-                {% if items.fpdf == 1 %}
-                    <span class="list_ico pdf_icon"></span>
-                    <div class="list_name valid">{{ 'Fpdf library installed'|t }}</div>
-                {% else %}
-                    <span class="list_ico fas fa-exclamation-circle"></span>
-                    <div class="list_name missing">{{ 'Fpdf library not installed'|t }}</div>
                 {% endif %}
             </li>
             <li>

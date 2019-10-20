@@ -269,7 +269,6 @@ class AdminController extends ControllerBase {
                 }
                 //libraries 
                 $build['excel'] = (class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) ? 1 : 0;
-                $build['fpdf'] = (class_exists('FPDF')) ? 1 : 0;
                 $build['tcpdf'] = (class_exists('TCPDF')) ? 1 : 0;
 
                 //verify if the connection to system DB is secured
