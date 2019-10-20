@@ -1,7 +1,7 @@
 <?php
 
 /* Manage output of payslip in 2 format, Pdf and xls
- * get data from modules and generate a pdf output base on fpdf library and output templates
+ * get data from modules and generate a pdf output base on pdf library and output templates
  * variables : source = ie. invoice, purchase, quotation; id = source id, signature = bolean; stamps = 
  * 1,2,3 ; mode = print = 0 or save = 1
  */

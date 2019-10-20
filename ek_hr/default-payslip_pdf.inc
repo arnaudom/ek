@@ -1,678 +1,554 @@
 <?php
 
-class PDF extends FPDF
-{
-//multicell maxline------------------------------------------------------
-    function MultiCell($w,$h,$txt,$border=0,$align='J',$fill=0,$maxline=0)
-    {
-        //Output text with automatic or explicit line breaks, maximum of $maxlines
-        $cw=&$this->CurrentFont['cw'];
-        if($w==0)
-            $w=$this->w-$this->rMargin-$this->x;
-        $wmax=($w-2*$this->cMargin)*1000/$this->FontSize;
-        $s=str_replace("\r",'',$txt);
-        $nb=strlen($s);
-        if($nb>0 and $s[$nb-1]=="\n")
-            $nb--;
-        $b=0;
-        if($border)
-        {
-            if($border==1)
-            {
-                $border='LTRB';
-                $b='LRT';
-                $b2='LR';
-            }
-            else
-            {
-                $b2='';
-                if(is_int(strpos($border,'L')))
-                    $b2.='L';
-                if(is_int(strpos($border,'R')))
-                    $b2.='R';
-                $b=is_int(strpos($border,'T')) ? $b2.'T' : $b2;
+class EKPDF extends TCPDF {
+
+    //Page header
+    function Header() {
+        $data = $this->getHeaderData();
+        $this->company = $data['title'];
+        //Logo
+        if ($this->company->logo != '') {
+
+            $logo = \Drupal::service('file_system')->realpath($this->company->logo);
+            if (file_exists($logo)) {
+                $info = getimagesize($logo);
+                $h = $info[1] * 15 / $info[0];
+                $this->Image($logo, 170, 8, 15, $h);
             }
         }
-        $sep=-1;
-        $i=0;
-        $j=0;
-        $l=0;
-        $ns=0;
-        $nl=1;
-        while($i<$nb)
-        {
-            //Get next character
-            $c=$s[$i];
-            if($c=="\n")
-            {
-                //Explicit line break
-                if($this->ws>0)
-                {
-                    $this->ws=0;
-                    $this->_out('0 Tw');
-                }
-                $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
-                $i++;
-                $sep=-1;
-                $j=$i;
-                $l=0;
-                $ns=0;
-                $nl++;
-                if($border and $nl==2)
-                    $b=$b2;
-                if ( $maxline  && $nl > $maxline ) 
-                    return substr($s,$i);
-                continue;
-            }
-            if($c==' ')
-            {
-                $sep=$i;
-                $ls=$l;
-                $ns++;
-            }
-            $l+=$cw[$c];
-            if($l>$wmax)
-            {
-                //Automatic line break
-                if($sep==-1)
-                {
-                    if($i==$j)
-                        $i++;
-                    if($this->ws>0)
-                    {
-                        $this->ws=0;
-                        $this->_out('0 Tw');
-                    }
-                    $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
-                }
-                else
-                {
-                    if($align=='J')
-                    {
-                        $this->ws=($ns>1) ? ($wmax-$ls)/1000*$this->FontSize/($ns-1) : 0;
-                        $this->_out(sprintf('%.3f Tw',$this->ws*$this->k));
-                    }
-                    $this->Cell($w,$h,substr($s,$j,$sep-$j),$b,2,$align,$fill);
-                    $i=$sep+1;
-                }
-                $sep=-1;
-                $j=$i;
-                $l=0;
-                $ns=0;
-                $nl++;
-                if($border and $nl==2)
-                    $b=$b2;
-                if ( $maxline  && $nl > $maxline ) 
-                    return substr($s,$i);
-            }
-            else
-                $i++;
+        
+        $this->SetDrawColor(214, 214, 214);
+        $this->SetLineWidth(0, 0);
+        $this->SetFillColor(214, 214, 214);
+        $this->RoundedRect(81, 8, 70, 12, '3.5', '0101', 'FD', '1');
+
+        $this->SetFillColor(156, 164, 254);
+        $this->RoundedRect(80, 7, 70, 12, '3.5', '0101', 'DF', '1');
+        $this->SetDrawColor(192, 192, 192);
+        $this->Ln(1);
+        $this->SetFont('helvetica','',10);
+        $this->Cell(5);
+        $this->Cell(50,3,$this->company->name,0,1);
+        $this->SetFont('helvetica','',6);
+        if ($this->company->reg_number) {
+            $this->Cell(5);
+            $this->Cell(60,3,"(".$this->company->reg_number .")",0,0);
+            $this->SetTextColor(255,255,255);
+            $this->SetFont('helvetica','',10);
+            $this->Cell(70,3,t("PAYSLIP"),'0',1,"C");
+            $this->SetTextColor(0,0,0);
+            $this->SetFont('helvetica','',6);
+        } else {
+            $this->Cell(65);
+            $this->SetTextColor(255,255,255);
+            $this->SetFont('helvetica','',10);
+            $this->Cell(70,3,t("PAYSLIP"),'0',1,"C");
+            $this->SetTextColor(0,0,0);
+            $this->SetFont('helvetica','',6);
         }
-        //Last chunk
-        if($this->ws>0)
-        {
-            $this->ws=0;
-            $this->_out('0 Tw');
+        if ($this->company->address1) {
+            $this->Cell(5);    
+            $this->Cell(60,3, $this->company->address1,0,1);
+        } 
+        if ($this->company->address2) {
+             $this->Cell(5);    
+            $this->Cell(60,3, $this->company->address2,0,1);
         }
-        if($border and is_int(strpos($border,'B')))
-            $b.='B';
-        $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
-        $this->x=$this->lMargin;
-        return '';
-    }
-    function RoundedRect($x, $y, $w, $h, $r, $corners = '1234', $style = '')
-    {
-        $k = $this->k;
-        $hp = $this->h;
-        if($style=='F')
-            $op='f';
-        elseif($style=='FD' || $style=='DF')
-            $op='B';
-        else
-            $op='S';
-        $MyArc = 4/3 * (sqrt(2) - 1);
-        $this->_out(sprintf('%.2F %.2F m',($x+$r)*$k,($hp-$y)*$k ));
-
-        $xc = $x+$w-$r;
-        $yc = $y+$r;
-        $this->_out(sprintf('%.2F %.2F l', $xc*$k,($hp-$y)*$k ));
-        if (strpos($corners, '2')===false)
-            $this->_out(sprintf('%.2F %.2F l', ($x+$w)*$k,($hp-$y)*$k ));
-        else
-            $this->_Arc($xc + $r*$MyArc, $yc - $r, $xc + $r, $yc - $r*$MyArc, $xc + $r, $yc);
-
-        $xc = $x+$w-$r;
-        $yc = $y+$h-$r;
-        $this->_out(sprintf('%.2F %.2F l',($x+$w)*$k,($hp-$yc)*$k));
-        if (strpos($corners, '3')===false)
-            $this->_out(sprintf('%.2F %.2F l',($x+$w)*$k,($hp-($y+$h))*$k));
-        else
-            $this->_Arc($xc + $r, $yc + $r*$MyArc, $xc + $r*$MyArc, $yc + $r, $xc, $yc + $r);
-
-        $xc = $x+$r;
-        $yc = $y+$h-$r;
-        $this->_out(sprintf('%.2F %.2F l',$xc*$k,($hp-($y+$h))*$k));
-        if (strpos($corners, '4')===false)
-            $this->_out(sprintf('%.2F %.2F l',($x)*$k,($hp-($y+$h))*$k));
-        else
-            $this->_Arc($xc - $r*$MyArc, $yc + $r, $xc - $r, $yc + $r*$MyArc, $xc - $r, $yc);
-
-        $xc = $x+$r ;
-        $yc = $y+$r;
-        $this->_out(sprintf('%.2F %.2F l',($x)*$k,($hp-$yc)*$k ));
-        if (strpos($corners, '1')===false)
-        {
-            $this->_out(sprintf('%.2F %.2F l',($x)*$k,($hp-$y)*$k ));
-            $this->_out(sprintf('%.2F %.2F l',($x+$r)*$k,($hp-$y)*$k ));
+        $next = '';
+        if ($this->company->postcode) {
+            $next .= $this->company->postcode;
         }
-        else
-            $this->_Arc($xc - $r, $yc - $r*$MyArc, $xc - $r*$MyArc, $yc - $r, $xc, $yc - $r);
-        $this->_out($op);
+        if($this->company->city){
+            $next .= " " . $this->company->city;
+        }
+        if($this->company->country){
+            $next .= ", " . $this->company->country;
+        }
+        $this->Cell(5);
+        $this->Cell(50,3, $next ,0,1);
+            
+        if ($this->company->telephone) {
+            $this->Cell(5);
+            $this->Cell(8,3,t("tel:"). $this->company->telephone,0,1);
+        }
+        if ($this->company->fax) {
+            $this->Cell(5);
+            $this->Cell(8,3,t("fax:"). $this->company->telephone,0,1);
+        }
     }
 
-    function _Arc($x1, $y1, $x2, $y2, $x3, $y3)
-    {
-        $h = $this->h;
-        $this->_out(sprintf('%.2F %.2F %.2F %.2F %.2F %.2F c ', $x1*$this->k, ($h-$y1)*$this->k,
-            $x2*$this->k, ($h-$y2)*$this->k, $x3*$this->k, ($h-$y3)*$this->k));
+    //Page footer
+    function Footer() {
+        //Position at 1.5 cm from bottom
+        $this->SetY(-10);
+        //helvetica italic 8
+        $this->SetFont('helvetica', 'I', 8);
+        //Page number
+        $this->Cell(0,5, t('Page') . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, 1, 'R');
     }
 
-//===============================================================================
-//Page header
-function Header()
-{
-
-   
-    
 }
 
-//Page footer
-function Footer()
-{
-    
-    
-    //Position at 1.5 cm from bottom
-    $this->SetY(-10);
-    //Arial italic 8
-    $this->SetFont('Arial','I',8);
-    //Page number
-    //$this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
-    
-  }
-}
-///////////////////////////////////////////////////////////////////////
-$pdf=new PDF();
-$pdf->SetTitle( t('Payslip') ) ;
-$pdf->AliasNbPages();
-$pdf->AddPage("P","A4");
-$pdf->SetAutoPageBreak(1,0);
+// create new PDF document
+$pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
-$col1_width=100;
-$col2_width=30;
-$col3_width=50;
-$col4_width=0;
-// header details
+// set document information
+$pdf->SetCreator($company->name);
+$pdf->SetAuthor(\Drupal::currentUser()->getUsername());
+$pdf->SetTitle(t('Payslip'));
+$pdf->SetSubject(t('Payslip'));
+$pdf->SetKeywords(t('Payslip'));
+
+// set default header data
+$pdf->SetHeaderData('', '',$company, '');
+
+// set default monospaced font
+$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+// set margins
+$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+// set auto page breaks
+$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+// set image scale factor
+$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+
+$pdf->SetAutoPageBreak(1, 0);
+
+$col1_width = 100;
+$col2_width = 30;
+$col3_width = 50;
+$col4_width = 0;
 
 
 while ($line = $data->fetchAssoc()) {
+$pdf->AddPage("P", "A4");
+    $c = $line['origin'];
 
-
-$c = $line['origin'];
-
-
-$pdf->SetDrawColor(214, 214, 214);
-$pdf->SetLineWidth(0,0);
-$pdf->SetFillColor(214, 214, 214);
-$pdf->RoundedRect(81, 11, 70, 12, '3.5','13','FD','1');
-
-$pdf->SetFillColor(56, 71, 252);
-$pdf->RoundedRect(80, 10, 70, 12, '3.5','13','FD','1');
-$pdf->SetDrawColor(192, 192, 192);
-//HEADER =================
-
-    //Logo
-    if ($company->logo != '') {
-    
-    $logo = \Drupal::service('file_system')->realpath($company->logo);
-      if(file_exists($logo)) {
-        $info = getimagesize($logo);
-        $h = $info[1]*15/$info[0];
-        $pdf->Image($logo,170,12,15,$h);
-      }
-    
-    }
-    
-    
-    $pdf->Ln(1);
-    $pdf->SetFont('Arial','B',11);
-    //Move to the right
-    //$pdf->Cell(110);
-    $pdf->Cell(70,4,$company->name,"0",0);
-    
-    
-    $pdf->SetFont('Arial','B',12);
-    $pdf->Cell(70,4,"",'0',0,"C","0");
-    $pdf->Cell(50,4,"",'0',1,"C","0");
-    
-    $pdf->SetFont('Arial','',6);
-    $pdf->Cell(70,3,$company->address1,'0',0);
-    $pdf->SetFont('Arial','B',12);
-$pdf->SetTextColor(255,255,255);
-    $pdf->Cell(70,3,"PAYSLIP",'0',0,"C","0");
-$pdf->SetTextColor(0,0,0);    
-    $pdf->Cell(50,3,"",'0',1,"C","0");
-    
-    $pdf->SetFont('Arial','',6);
-    $pdf->Cell(70,2,$company->address2,'0','0');
-    $pdf->Cell(70,2,"",'0',0,"C","0");
-    $pdf->Cell(50,2,"",'0',1,"C","0");    
-
-    $pdf->Cell(70,2,$company->postcode . ', ' . $company->country,'0',0);
-    $pdf->Cell(70,2,"",'0',0,"C","0");
-    $pdf->Cell(50,2,"",'0',1,"C","0");    
-
-    $pdf->Cell(70,2,"tel: " . $company->tel .',' . 'fax: '. $company->fax,'0',0);
-    $pdf->Cell(70,2,"",'0',0,"C","0");
-    $pdf->Cell(50,2,"",'0',1,"C","0");
-
-    $pdf->Cell(70,2,"Reg number: ". $company->reg_number,'0',0);
-    $pdf->Cell(70,2,"",'0',0,"C","0");
-    $pdf->Cell(50,2,"",'0',1,"C","0");    
-
-
-
-$col1_width=40;
-$col2_width=40;
-$col3_width=40;
-$col4_width=55;
-
+    $pdf->Ln(10);
+    $margin = 10;
+    $col1_width = 25;
+    $col2_width = 55;
+    $col3_width = 25;
+    $col4_width = 55;
+    $pdf->SetLineStyle(['width' => 0.1, 'cap' => 'square', 'join' => 'miter', 'dash' => 0, 'color' => [128, 128, 128]]);
 
 //INSERT employee DATA
-$pdf->Ln(3);
-$pdf->SetFont('Arial','',7);
-    $pdf->Cell($col1_width,4,'Payroll month:',0,0);
-    $pdf->Cell($col2_width,4,$line['month'],1,0);
-    $pdf->Cell($col3_width,4,'Employee No:',0,0);
-    $pdf->Cell($col4_width,4,$line['id'],1,1);
+    $pdf->Ln(3);
+    $pdf->SetFont('helvetica', '', 7);
+    $pdf->Cell($margin);
+    $pdf->Cell($col1_width, 4, t('Payroll month') . ':', 0, 0);
+    $pdf->Cell($col2_width, 4, $line['month'], 1, 0);
+    $pdf->Cell($col3_width, 4, t('Employee No') . ':', 0, 0);
+    $pdf->Cell($col4_width, 4, ($line['custom_id'] != '') ? $line['custom_id'] : $line['id'], 1, 1);
 
- 
-    $pdf->Cell($col1_width,4,'Location:',0,0);
-    $pdf->Cell($col2_width,4,$line['location'],1,0);
-    $pdf->Cell($col3_width,4,'Employee Name:',0,0);
-    $pdf->Cell($col4_width,4,utf8_encode($line['name']),1,1);
+    $pdf->Cell($margin);
+    $pdf->Cell($col1_width, 4, t('Location') .':', 0, 0);
+    $pdf->Cell($col2_width, 4, $line['location'], 1, 0);
+    $pdf->Cell($col3_width, 4, t('Employee Name') .':', 0, 0);
+    $pdf->Cell($col4_width, 4, utf8_encode($line['name']), 1, 1);
 
-
-    $pdf->Cell($col1_width,4,'Bank ref:',0,0);
-    $pdf->Cell($col2_width,4,"$line[bank] - $line[bank_account]",1,0);
-    $pdf->Cell($col3_width,4,'IC/Passport No:',0,0);
-    $pdf->Cell($col4_width,4,$line['ic_no'],1,1);
-
-
-
-$col1_width=25;
-$col2_width=75;
-$col3_width=25;
-$col4_width=25;
-$col5_width=40;
-$col6_width=0;    
-$i=0;
-    
+    $pdf->Cell($margin);
+    $pdf->Cell($col1_width, 4, t('Bank ref') .':', 0, 0);
+    $pdf->Cell($col2_width, 4, "$line[bank] - $line[bank_account]", 1, 0);
+    $pdf->Cell($col3_width, 4, t('IC/Passport No.') .':', 0, 0);
+    $pdf->Cell($col4_width, 4, $line['ic_no'], 1, 1);
 
 
 
+    $col1_width = 20;
+    $col2_width = 50;
+    $col3_width = 25;
+    $col4_width = 25;
+    $col5_width = 40;
+    $col6_width = 0;
+    $i = 0;
+    $pdf->SetFillColor(214, 214, 214);
 //dividing line
-$pdf->Ln(2);    
-$pdf->Line($pdf->Getx(),$pdf->GetY(),200,$pdf->GetY()) ;  
-$pdf->Ln(5);
+    $pdf->Ln(2);
+    $pdf->Line($pdf->Getx(), $pdf->GetY(), 200, $pdf->GetY());
+    $pdf->Ln(5);
 
 //coulmn 1
-$pdf->SetFont('Arial','B',7);
+    $pdf->SetFont('helvetica', 'B', 7);
+    $pdf->Cell($margin);
+    $pdf->Cell($col1_width+$col2_width+$col3_width+$col4_width);
+    $pdf->Cell($col5_width, 3, t('EARNINGS DETAILS'), 1, 1, 'C');
 
-    $pdf->Cell($col1_width,3,"",0,0);
-    $pdf->Cell($col2_width,3,"",0,0);
-    $pdf->Cell($col3_width,3,"",0,0);
-    $pdf->Cell($col4_width,3,"",0,0);
-    $pdf->Cell($col5_width,3,t('EARNINGS DETAILS'),1,1,'C');
+    $pdf->Ln(2);
 
-$pdf->Ln(2);
+    if ($line['basic']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0);
+        $pdf->Cell($col2_width, 3, t('Basic salary'), 0, $i);
+        $pdf->SetFont('helvetica', '', 7);
+        $pdf->Cell($col3_width, 3, '', 0, $i);
+        $pdf->Cell($col4_width, 3, "", 0, $i);
+        $pdf->Cell($col5_width, 3, number_format($line['basic'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+        
+    }
+    if ($line['no_payday']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, t('No pay day(s)'), 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, $line['no_payday'], 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, '', 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    $pdf->SetFillColor(214, 214, 214);
+    if ($line['n_ot_val']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['LAF1'], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, $line['n_ot_days'], 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, $settings[$c]['LAF1_val'], 0, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['n_ot_val'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['r_day_val']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['LAF2'], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, $line['r_day'], 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, $settings[$c]['LAF2_val'], 0, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['r_day_val'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['ph_day_val']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['LAF3'], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, $line['ph_day'], 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, $settings[$c]['LAF3_val'], 0, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['ph_day_val'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['mc_day_val']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['LAF4'], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, $line['mc_day'], 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, $settings[$c]['LAF4_val'], 0, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['mc_day_val'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['xr_hours_val']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['LAF5'], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, $line['xr_hours'], 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, $settings[$c]['LAF5_val'], 0, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['xr_hours_val'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_aw1']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_a'][1], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 0, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_aw1'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_aw2']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_a'][2], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 0, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_aw2'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_aw3']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_a'][3], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_aw3'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_aw4']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_a'][4], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_aw4'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_aw5']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_a'][5], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_aw5'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_aw6']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_a'][6], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_aw6'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_aw7']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_a'][7], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_aw7'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_aw8']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_a'][8], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_aw8'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_aw9']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_a'][9], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_aw9'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_aw10']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_a'][10], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_aw10'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_aw11']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_a'][11], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_aw11'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_aw12']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_a'][12], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_aw12'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_aw13']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_a'][13], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_aw13'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['commission'] != "0") {
+        //LAF6 is commission
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['LAF6'], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, $line['turnover'] . ' x ' . $settings[$c]['LAF6_val'], 0, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['commission'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    $pdf->Ln($i);
+    $pdf->SetFont('helvetica', 'B', 7);
+    $pdf->Cell($margin);
+    $pdf->Cell($col1_width, 5, "", 0, 0);
+    $pdf->Cell($col2_width, 5, t('GROSS SALARY') . ' (' . $line['currency'] . ')', 0, 0, 'L', 0);
+    $pdf->Cell($col3_width, 5, '', 0, 0, 'L', 0);
+    $pdf->Cell($col4_width, 5, "", 1, 0, 'L', 0);
+    $pdf->SetFont('helvetica', 'B', 9);
+    $pdf->Cell($col5_width, 5, number_format($line['gross'], 2), 1, 1, 'R', 0);
 
-if ($line['basic']) { 
-    $pdf->Cell($col1_width,3,"",0,0);
-    $pdf->Cell($col2_width,3, t('Basic salary') ,0,$i);
-$pdf->SetFont('Arial','',7);    
-    $pdf->Cell($col3_width,3,'',0,$i);
-    $pdf->Cell($col4_width,3,"",0,$i);
-    $pdf->Cell($col5_width,3,number_format($line['basic'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['no_payday']) { 
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,t('No pay day(s)') ,0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,$line['no_payday'],1,0,'L',$i);
-    $pdf->Cell($col5_width,3,'',1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;} 
-}  
-$pdf->SetFillColor(214, 214, 214);
-if ($line['n_ot_val']) { 
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3, $settings[$c]['LAF1'] ,0,0,'L',$i);
-    $pdf->Cell($col3_width,3, $line['n_ot_days'] ,0,0,'L',$i);
-    $pdf->Cell($col4_width,3, $settings[$c]['LAF1_val'] ,0,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['n_ot_val'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['r_day_val']) { 
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3, $settings[$c]['LAF2'] ,0,0,'L',$i);
-    $pdf->Cell($col3_width,3, $line['r_day'] ,0,0,'L',$i);
-    $pdf->Cell($col4_width,3, $settings[$c]['LAF2_val'] ,0,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['r_day_val'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['ph_day_val']) { 
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3, $settings[$c]['LAF3'] ,0,0,'L',$i);
-    $pdf->Cell($col3_width,3, $line['ph_day'] ,0,0,'L',$i);
-    $pdf->Cell($col4_width,3, $settings[$c]['LAF3_val'] ,0,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['ph_day_val'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['mc_day_val']) { 
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3, $settings[$c]['LAF4'],0,0,'L',$i);
-    $pdf->Cell($col3_width,3, $line['mc_day'] ,0,0,'L',$i);
-    $pdf->Cell($col4_width,3, $settings[$c]['LAF4_val'],0,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['mc_day_val'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['xr_hours_val']) { 
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);////////////////
-    $pdf->Cell($col2_width,3, $settings[$c]['LAF5'], 0,0,'L',$i);
-    $pdf->Cell($col3_width,3, $line['xr_hours'] ,0,0,'L',$i);
-    $pdf->Cell($col4_width,3, $settings[$c]['LAF5_val'],0,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['xr_hours_val'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['custom_aw1']) {
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3, $settings[$c]['custom_a'][1] ,0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",0,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_aw1'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['custom_aw2']) {
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_a'][2],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",0,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_aw2'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;} 
-}
-if ($line['custom_aw3']) {
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_a'][3],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_aw3'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['custom_aw4']) { 
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_a'][4],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_aw4'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}   
-}
-if ($line['custom_aw5']) {
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_a'][5],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_aw5'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;} 
-}
-if ($line['custom_aw6']) {  
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_a'][6],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_aw6'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}  
-} 
-if ($line['custom_aw7']) { 
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_a'][7],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_aw7'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['custom_aw8']) {    
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_a'][8],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_aw8'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}      
-}
-if ($line['custom_aw9']) {
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_a'][9],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_aw9'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}   
-}
-if ($line['custom_aw10']) {    
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_a'][10],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_aw10'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;} 
-}
-if ($line['custom_aw11']) {
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_a'][11],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_aw11'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;} 
-}
-if ($line['custom_aw12']) {
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_a'][12],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_aw12'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['custom_aw13']) {    
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_a'][13],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_aw13'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}   
-}    
-if ($line['commission'] != "0") {
-    //LAF6 is commission
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3, $settings[$c]['LAF6'], 0,0,'L',$i);
-    $pdf->Cell($col3_width,3, '' ,0,0,'L',$i);
-    $pdf->Cell($col4_width,3, $line['turnover'] . ' x ' . $settings[$c]['LAF6_val'],0,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['commission'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-  
-}
-$pdf->Ln($i);
-$pdf->SetFont('Arial','B',7);    
-    $pdf->Cell($col1_width,5,"",0,0);
-    $pdf->Cell($col2_width,5,t('GROSS SALARY') . ' (' . $line['currency'] . ')',0,0,'L',0);
-    $pdf->Cell($col3_width,5,'',0,0,'L',0);
-    $pdf->Cell($col4_width,5,"",1,0,'L',0);
-$pdf->SetFont('Arial','B',9);    
-    $pdf->Cell($col5_width,5,number_format($line['gross'],2),1,1,'R',0);     
-    
-$pdf->Ln(2); 
-$pdf->SetFont('Arial','B',7);
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,"",0,0);
-    $pdf->Cell($col3_width,3,"",0,0);
-    $pdf->Cell($col4_width,3,"",0,0);
-    $pdf->Cell($col5_width,3,t('DEDUCTIONS DETAILS'),1,1,'C');
-$pdf->Ln(2); 
- $pdf->SetFont('Arial','',7);
-if ($line['advance']) {
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3, t('Advance') ,0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['advance'],2),1,1,'R',$i); 
-    if ($i=='1') {$i=0;} else {$i=1;} 
-}
-if ($line['custom_d1']) {
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_d'][1],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_d1'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['custom_d2']) {
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_d'][2],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_d2'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['custom_d3']) {
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_d'][3],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_d3'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['custom_d4']) {  
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_d'][4],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_d4'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-if ($line['custom_d5']) {    
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_d'][5],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_d5'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}  
-}
-if ($line['custom_d6']) {    
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_d'][6],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_d6'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}   
-}
-if ($line['custom_d7']) {    
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['custom_d'][7],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,"",1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['custom_d7'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;} 
-}
-if ($line['less_hours_val']) {   
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,t('Non worked hours'),0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3, $line['less_hours'] ,1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['less_hours_val'],2),1,1,'R',$i); 
-    if ($i=='1') {$i=0;} else {$i=1;}  
-}
-if($line['epf_yee'] || $line['socso_yee'] || $line['with_yee']) {
- 
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,'' ,0,0,'L');
-    $pdf->Cell($col3_width,3,'',0,0,'C');
-    $pdf->Cell($col4_width,3,t('Employer'),1,0,'C');
-    $pdf->Cell($col5_width,3,t('Employee'),1,1,'C');
-    
-    
-}
-if ($line['epf_yee']) {     
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3, $settings[$c]['fund1_name'],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,number_format($line['epf_er'],2) ,1,0,'R',$i);
-    $pdf->Cell($col5_width,3,number_format($line['epf_yee'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;} 
-}
-if ($line['socso_yee']) { 
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['fund2_name'],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,number_format($line['socso_er'],2) ,1,0,'R',$i);
-    $pdf->Cell($col5_width,3,number_format($line['socso_yee'],2) ,1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}  
-}
-if ($line['with_yee']) {   
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3,$settings[$c]['fund3_name'],0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3,number_format($line['with_yer'],2),1,0,'R',$i);
-    $pdf->Cell($col5_width,3,number_format($line['with_yee'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}  
-}
-if ($line['incometax']) {    
-    $pdf->Cell($col1_width,3,"",0,0,'L',0);
-    $pdf->Cell($col2_width,3, t('Employee Income tax') ,0,0,'L',$i);
-    $pdf->Cell($col3_width,3,'',0,0,'L',$i);
-    $pdf->Cell($col4_width,3, '' ,1,0,'L',$i);
-    $pdf->Cell($col5_width,3,number_format($line['incometax'],2),1,1,'R',$i);
-    if ($i=='1') {$i=0;} else {$i=1;}
-}
-$pdf->Ln($i);
-  
-$totaldeduc = $line['advance']+$line['custom_d1']+$line['custom_d2']+$line['custom_d3']+$line['custom_d4'];
-$totaldeduc =  $totaldeduc+$line['custom_d5']+$line['custom_d6']+$line['custom_d7'];
-$totaldeduc =  $totaldeduc+$line['less_hours_val']+$line['epf_yee']+$line['socso_yee']+$line['with_yee']+$line['incometax'];  
+    $pdf->Ln(2);
+    $pdf->SetFont('helvetica', 'B', 7);
+    $pdf->Cell($margin);
+    $pdf->Cell($col1_width+$col2_width+$col3_width+$col4_width);
+    $pdf->Cell($col5_width, 3, t('DEDUCTIONS DETAILS'), 1, 1, 'C');
+    $pdf->Ln(2);
+    $pdf->SetFont('helvetica', '', 7);
+    if ($line['advance']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, t('Advance'), 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['advance'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_d1']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_d'][1], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_d1'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_d2']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_d'][2], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_d2'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_d3']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_d'][3], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_d3'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_d4']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_d'][4], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_d4'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_d5']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_d'][5], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_d5'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_d6']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_d'][6], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_d6'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['custom_d7']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['custom_d'][7], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, "", 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['custom_d7'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['less_hours_val']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, t('Non worked hours'), 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, $line['less_hours'], 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['less_hours_val'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['epf_yee'] || $line['socso_yee'] || $line['with_yee']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, '', 0, 0, 'L');
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'C');
+        $pdf->Cell($col4_width, 3, t('Employer'), 1, 0, 'C');
+        $pdf->Cell($col5_width, 3, t('Employee'), 1, 1, 'C');
+    }
+    if ($line['epf_yee']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['fund1_name'], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, number_format($line['epf_er'], 2), 1, 0, 'R', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['epf_yee'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['socso_yee']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['fund2_name'], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, number_format($line['socso_er'], 2), 1, 0, 'R', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['socso_yee'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['with_yee']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, $settings[$c]['fund3_name'], 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, number_format($line['with_yer'], 2), 1, 0, 'R', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['with_yee'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    if ($line['incometax']) {
+        $pdf->Cell($margin);
+        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+        $pdf->Cell($col2_width, 3, t('Employee Income tax'), 0, 0, 'L', $i);
+        $pdf->Cell($col3_width, 3, '', 0, 0, 'L', $i);
+        $pdf->Cell($col4_width, 3, '', 1, 0, 'L', $i);
+        $pdf->Cell($col5_width, 3, number_format($line['incometax'], 2), 1, 1, 'R', $i);
+        $i = ($i == '1') ? 0:1;
+    }
+    $pdf->Ln($i);
 
-$pdf->Ln(1);
-$pdf->SetFont('Arial','B',7);    
-    $pdf->Cell($col1_width,5,"",0,0);
-    $pdf->Cell($col2_width,5,t('TOTAL DEDUCTIONS') . ' ('. $line['currency'] .')',0,0,'L',0);
-    $pdf->Cell($col3_width,5,'',0,0,'L',0);
-    $pdf->Cell($col4_width,5,"",1,0,'L',0);
-$pdf->SetFont('Arial','B',9);    
-    $pdf->Cell($col5_width,5,number_format($totaldeduc,2),1,1,'R',0);                              
+    $totaldeduc = $line['advance'] + $line['custom_d1'] + $line['custom_d2'] + $line['custom_d3'] + $line['custom_d4'];
+    $totaldeduc = $totaldeduc + $line['custom_d5'] + $line['custom_d6'] + $line['custom_d7'];
+    $totaldeduc = $totaldeduc + $line['less_hours_val'] + $line['epf_yee'] + $line['socso_yee'] + $line['with_yee'] + $line['incometax'];
 
-$pdf->Ln(2);
-$pdf->SetFont('Arial','B',7);    
-    $pdf->Cell($col1_width,5,"",0,0);
-    $pdf->Cell($col2_width,5,t('NET PAY') . ' ('. $line['currency'] .')',0,0,'L',0);
-    $pdf->Cell($col3_width,5,'',0,0,'L',0);
-    $pdf->Cell($col4_width,5,"",1,0,'L',0);
-$pdf->SetFont('Arial','B',9);    
-    $pdf->Cell($col5_width,5,"$line[currency] ".number_format($line['nett'],2),1,1,'R',0); 
+    $pdf->Ln(1);
+    $pdf->SetFont('helvetica', 'B', 7);
+    $pdf->Cell($margin);
+    $pdf->Cell($col1_width, 5, "", 0, 0);
+    $pdf->Cell($col2_width, 5, t('TOTAL DEDUCTIONS') . ' (' . $line['currency'] . ')', 0, 0, 'L', 0);
+    $pdf->Cell($col3_width, 5, '', 0, 0, 'L', 0);
+    $pdf->Cell($col4_width, 5, "", 1, 0, 'L', 0);
+    $pdf->SetFont('helvetica', 'B', 9);
+    $pdf->Cell($col5_width, 5, number_format($totaldeduc, 2), 1, 1, 'R', 0);
 
-$pdf->Ln(20);
-    $pdf->Cell(30,5,t('NOTE'),1,0); 
-    $pdf->Cell(100,5,$line['comment'],1,0,'C');    
-    $pdf->Cell(30,5, t('signature') ,0,1,'C');
+    $pdf->Ln(2);
+    $pdf->SetFont('helvetica', 'B', 7);
+    $pdf->Cell($margin);
+    $pdf->Cell($col1_width, 5, "", 0, 0);
+    $pdf->Cell($col2_width, 5, t('NET PAY') . ' (' . $line['currency'] . ')', 0, 0, 'L', 0);
+    $pdf->Cell($col3_width, 5, '', 0, 0, 'L', 0);
+    $pdf->Cell($col4_width, 5, "", 1, 0, 'L', 0);
+    $pdf->SetFont('helvetica', 'B', 9);
+    $pdf->Cell($col5_width, 5, "$line[currency] " . number_format($line['nett'], 2), 1, 1, 'R', 0);
 
-
-$pdf->AddPage("P","A4");
-
-
+    $pdf->Ln(20);
+    $pdf->SetFont('helvetica', '', 7);
+    $pdf->Cell($margin);
+    $pdf->Cell($col1_width, 5, t('NOTE'), "B", 0);
+    $pdf->Cell($col2_width+$col3_width+$col4_width, 5, $line['comment'], "B", 1, 'L');
+    $pdf->Cell($margin);
+    $pdf->Cell($col1_width1, 5, t('signature'), 0, 1, 'L');
 
 
 }

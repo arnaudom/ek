@@ -1,7 +1,7 @@
 <?php
 
   /* Manage output of payslip in 2 format, Pdf and xls
-  * get data from modules and generate a pdf output base on fpdf library and output templates
+  * get data from modules and generate a pdf output base on pdf library and output templates
   * variables : coid = company entity id, from = employee id, to = employee id, month = 
   * payroll month , ex. 2015-01, template = output format
   */
