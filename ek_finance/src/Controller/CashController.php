@@ -155,7 +155,7 @@ class CashController extends ControllerBase {
  *  to (date string),currency (code string), baseCurrency (code string),
  *  aid (chart accounts account int value)
  * @return Object
- *  Fpdf download object
+ *  Pdf download object
  *
 */
   public function excelcash($param) {

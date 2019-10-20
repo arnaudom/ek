@@ -411,7 +411,7 @@ class ReportController extends ControllerBase {
      *  month (int), baseCurrency (string code)
      *  summary (bool)
      * @return Object
-     *  Fpdf object download
+     *  Pdf object download
      *
      */
     public function pdfprofitloss(Request $request, $param) {
@@ -500,7 +500,7 @@ class ReportController extends ControllerBase {
      *  month (int), baseCurrency (string code)
      *  summary (bool)
      * @return Object
-     *  Fpdf object download
+     *  Pdf object download
      */
     public function pdfbalancesheet(Request $request, $param) {
 

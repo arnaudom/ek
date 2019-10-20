@@ -1,7 +1,7 @@
 <?php
 
   /* Manage Pdf output
-  * get data from modules and generate a pdf output base on fpdf library and output templates
+  * get data from modules and generate a pdf output base on tcpdf library and output templates
   * variables : source = ie. invoice, purchase, quotation; id = source id, signature = bolean; stamps = 
   * 1,2,3 ; mode = print = 0 or save = 1
   */
@@ -69,7 +69,9 @@ Switch ($source) {
             
         
         if(isset($head->pcode) && $head->pcode != 'n/a') { 
+            $head->pcode_raw = $head->pcode;
             $head->pcode = \Drupal\ek_projects\ProjectData::geturl($head->pcode);
+            
         } else {
             $head->pcode = "";
         }
@@ -84,21 +86,23 @@ Switch ($source) {
             $company = db_query($query, array(':id' => $head->entity))->fetchObject();
 
         }   
+        
+        $auth =  explode('|',$head->auth);
 
         $query = "SELECT * from {ek_company} where id=:id";
         $company_to = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $head->entity_to))->fetchObject();
 
-        $query = "SELECT * from {ek_address_book} where id=:id";
-        $client = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $head->client))->fetchObject();
+        if($head->client != '0'){
+            $query = "SELECT * from {ek_address_book} where id=:id";
+            $client = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $head->client))->fetchObject();
 
-        $query = "SELECT * from {ek_address_book_contacts} where abid=:id and main=:m";
-        $client_card = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $client->id, ':m' => 1))->fetchObject();
-    
-
-
+            $query = "SELECT * from {ek_address_book_contacts} where abid=:id and main=:m";
+            $client_card = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':id' => $client->id, ':m' => 1))->fetchObject();
+        }
+        
         break;
     
     case 'memo_range':

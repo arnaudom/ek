@@ -187,7 +187,7 @@ class ReconciliationController extends ControllerBase {
      * @param int id
      *      id of document record
      * @return Object or markup
-     *      Fpdf object downaload
+     *      Pdf object downaload
      *      or markup if error
      *  
      */

@@ -142,7 +142,7 @@ class BankController extends ControllerBase {
      *  key: param (array 'id' => value)
      * 
      * @return Object
-     *  Fpdf render object
+     *  Pdf render object
      */
     public function banklabel($type, $param) {
 
@@ -402,7 +402,7 @@ class BankController extends ControllerBase {
      *  key: param (array 'id' => value)
      * 
      * @return Object
-     *  Fpdf render object
+     *  Pdf render object
      */
     public function bankaccountslabel($type, $param) {
 

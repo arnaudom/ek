@@ -1,8 +1,8 @@
 <?php
 
 use Drupal\Core\Database\Database;
-use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\Journal;
+
 $journal = new Journal();
 
 $period = $params['year'] . '-' . $params['month'] . 
@@ -20,211 +20,110 @@ if($dates['archive'] == TRUE) {
     //extract data from archive tables
     $table_accounts = "ek_accounts_" . $params['year'] . "_" . $params['coid'];
     $table_journal = "ek_journal_" . $params['year'] . "_" . $params['coid'];
-    
     $alert = t('Archive data');
 } else {
     $from = $dates['fiscal_start'];
     //extract data from current tables
     $table_accounts = "ek_accounts";
     $table_journal = "ek_journal";
-    
     $alert = t('Fiscal year'). ' : ' . $dates['fiscal_year'];
 }
 
-class PDF extends FPDF
-{
+class EKPDF extends TCPDF {
 
-//multicell maxline------------------------------------------------------
-function MultiCell($w,$h,$txt,$border=0,$align='J',$fill=0,$maxline=0)
-    {
-        //Output text with automatic or explicit line breaks, maximum of $maxlines
-        $cw=&$this->CurrentFont['cw'];
-        if($w==0)
-            $w=$this->w-$this->rMargin-$this->x;
-        $wmax=($w-2*$this->cMargin)*1000/$this->FontSize;
-        $s=str_replace("\r",'',$txt);
-        $nb=strlen($s);
-        if($nb>0 and $s[$nb-1]=="\n")
-            $nb--;
-        $b=0;
-        if($border)
-        {
-            if($border==1)
-            {
-                $border='LTRB';
-                $b='LRT';
-                $b2='LR';
-            }
-            else
-            {
-                $b2='';
-                if(is_int(strpos($border,'L')))
-                    $b2.='L';
-                if(is_int(strpos($border,'R')))
-                    $b2.='R';
-                $b=is_int(strpos($border,'T')) ? $b2.'T' : $b2;
-            }
+    function Header(){
+        $data = $this->getHeaderData();
+        $this->company = $data['title'];
+        if ($this->company->logo != '') {
+            $logo = \Drupal::service('file_system')->realpath($this->company->logo);
+            if(file_exists($logo)){
+                $info = getimagesize($logo);
+                $h = $info[1]*30/$info[0];
+                $this->Image($logo,15,5,$h);
+            } 
         }
-        $sep=-1;
-        $i=0;
-        $j=0;
-        $l=0;
-        $ns=0;
-        $nl=1;
-        while($i<$nb)
-        {
-            //Get next character
-            $c=$s[$i];
-            if($c=="\n")
-            {
-                //Explicit line break
-                if($this->ws>0)
-                {
-                    $this->ws=0;
-                    $this->_out('0 Tw');
-                }
-                $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
-                $i++;
-                $sep=-1;
-                $j=$i;
-                $l=0;
-                $ns=0;
-                $nl++;
-                if($border and $nl==2)
-                    $b=$b2;
-                if ( $maxline  && $nl > $maxline ) 
-                    return substr($s,$i);
-                continue;
-            }
-            if($c==' ')
-            {
-                $sep=$i;
-                $ls=$l;
-                $ns++;
-            }
-            $l+=$cw[$c];
-            if($l>$wmax)
-            {
-                //Automatic line break
-                if($sep==-1)
-                {
-                    if($i==$j)
-                        $i++;
-                    if($this->ws>0)
-                    {
-                        $this->ws=0;
-                        $this->_out('0 Tw');
-                    }
-                    $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
-                }
-                else
-                {
-                    if($align=='J')
-                    {
-                        $this->ws=($ns>1) ? ($wmax-$ls)/1000*$this->FontSize/($ns-1) : 0;
-                        $this->_out(sprintf('%.3f Tw',$this->ws*$this->k));
-                    }
-                    $this->Cell($w,$h,substr($s,$j,$sep-$j),$b,2,$align,$fill);
-                    $i=$sep+1;
-                }
-                $sep=-1;
-                $j=$i;
-                $l=0;
-                $ns=0;
-                $nl++;
-                if($border and $nl==2)
-                    $b=$b2;
-                if ( $maxline  && $nl > $maxline ) 
-                    return substr($s,$i);
-            }
-            else
-                $i++;
+        $this->Ln(5);
+        $this->SetFont('helvetica','',12);
+        $this->Cell(100);
+        $this->Cell(50,5,$this->company->name,0,1);
+        $this->SetFont('helvetica','',8);
+        if ($this->company->reg_number) {
+            $this->Cell(100);
+            $this->Cell(8,3,"(".$this->company->reg_number .")",0,1);
         }
-        //Last chunk
-        if($this->ws>0)
-        {
-            $this->ws=0;
-            $this->_out('0 Tw');
+        if ($this->company->address1) {
+            $this->Cell(100);    
+            $this->Cell(60,4, $this->company->address1,0,1);
         }
-        if($border and is_int(strpos($border,'B')))
-            $b.='B';
-        $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
-        $this->x=$this->lMargin;
-        return '';
+        if ($this->company->address2) {
+             $this->Cell(100);    
+            $this->Cell(60,4, $this->company->address2,0,1);
+        }
+        $next = '';
+        if ($this->company->postcode) {
+            $next .= $this->company->postcode;
+        }
+        if($this->company->city){
+            $next .= " " . $this->company->city;
+        }
+        if($this->company->country){
+            $next .= ", " . $this->company->country;
+        }
+        $this->Cell(100);
+        $this->Cell(50,4, $next ,0,1);
+            
+        if ($this->company->telephone) {
+            $this->Cell(100);
+            $this->Cell(8,3,t("tel:"). $this->company->telephone,0,1);
+        }
+        if ($this->company->fax) {
+            $this->Cell(100);
+            $this->Cell(8,4,t("fax:"). $this->company->telephone,0,1);
+        }
     }
-//
-// Page header
-//
 
-function Header()
-{
-
-    //Logo
-    if ($this->company->logo <> '') {
-        $logo = \Drupal::service('file_system')->realpath($this->company->logo);
-        $this->Image($logo,20,10,43);    
+    //Page footer
+    function Footer() {
+        //Position at 1.5 cm from bottom
+        $this->SetY(-15);
+        //helvetica italic 8
+        $this->SetFont('helvetica','I',8);
+        //Page number
+        $this->Cell(0,5, t('Page') . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, 1, 'R');
     }
-    //Arial bold 15
-    $this->Ln(10);
-    $this->SetFont('Arial','',12);
-    //Move to the right
-    $this->Cell(110);
-    $this->Cell(50,5,$this->company->name,0,1);
-    $this->SetFont('Arial','',8);
-    $this->Cell(110);    
-    $this->Cell(60,4, $this->company->address1,0,1);
-    $this->Cell(110);    
-    $this->Cell(60,4, $this->company->address2,0,1);
-    $this->Cell(110);
-    $this->Cell(50,4, $this->company->postcode . ',' .$this->company->country ,0,1);
-    if ($this->company->reg_number <> '') {
-    $this->Cell(110);
-    $this->Cell(8,3,t("Reg.").$this->company->reg_number,0,1);
-    }    
-    
-    if ($this->company->telelephone <> '') {
-    $this->Cell(110);
-    $this->Cell(8,3,t("tel:").$this->company->telelephone,0,1);
-    }
-    if ($this->companyfax <> '') {
-    $this->Cell(110);
-    $this->Cell(8,4,t("fax:").$this->company->fax,0,1);
-    }
-    //Line break
-    $this->Ln(8);
-    
-   
-    
-}
-
-function setHeaderData($company){ 
-$this->company = $company;
-
-
-} 
-
-//Page footer
-function Footer()
-{
-
-    //Position at 1.5 cm from bottom
-    $this->SetY(-15);
-    //Arial italic 8
-    $this->SetFont('Arial','I',8);
-    //Page number
-    $this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
-    
-}
   
 }
 
+// create new PDF document
+$pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
-$pdf=new PDF();
+// set document information
+
+$pdf->SetCreator($company->name);
+$pdf->SetAuthor(\Drupal::currentUser()->getUsername());
+$pdf->SetTitle(t('Balance sheet') . ' ' . $company->name);
+$pdf->SetSubject(t('Balance sheet'));
+$pdf->SetKeywords(t('Balance sheet'));
+
+// set default header data
+$pdf->SetHeaderData('','',$company);
+
+// set default monospaced font
+$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+// set margins
+$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+// set auto page breaks
+$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+// set image scale factor
+$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
 $pdf->SetTitle($fileName);
-$pdf->setHeaderData($company); 
-$pdf->AliasNbPages();
 $pdf->AddPage('P','A4');
-
 
 //margin settings - to adjust output
 $m1=1; $m2=5; $m3=5;
@@ -234,16 +133,17 @@ $c4=40; $c5=40;
 
 //DISPLAY DATA
 $pdf->SetTextColor(0,128,255);
-$pdf->SetFont('Arial','',16);
-    $pdf->Cell(60,5, t("Balance Sheet") ,'B');
-$pdf->SetFont('Arial','',8);
+$pdf->SetDrawColor(128, 128, 128);
+$pdf->SetFont('helvetica','',16);
+$pdf->Cell(60,5, t("Balance Sheet") ,'B', 1);
+$pdf->SetFont('helvetica','',8);
 $pdf->SetTextColor(0,0,0);
-$pdf->Cell(100,5, t('As of') . ": " . $period ,'0',1,'R');
-$pdf->Cell(160,4, '('. $alert . ')' ,'0',1,'R');
+$pdf->Cell(60,5, t('As of') . ": " . $period ,'0',1,'L');
+$pdf->Cell(60,4, '('. $alert . ')' ,'0',1,'L');
 $pdf->Ln(5);
 
 //header
-$pdf->SetFont('Arial','B',12);
+$pdf->SetFont('helvetica','B',12);
     
     $pdf->Cell($c1,5, t('account') ,'B',0);
     $pdf->Cell($c2,5, t('name') ,'B',0);
@@ -271,7 +171,7 @@ $data = $query->execute();
 $rh = $data->fetchObject();
 
 //head-----------------------------//
-$pdf->SetFont('Arial','B',10);
+$pdf->SetFont('helvetica','B',10);
 $pdf->SetTextColor(0,61,121);
     $pdf->Cell($c1,5, $rh->aid ,0,0);
     $pdf->Cell($c2,5, $rh->aname ,0,1);  
@@ -293,7 +193,7 @@ while ($r=$result->fetchAssoc()) {
 
 if ($params['summary'] == 0){
     //class-----------------------------//
-    $pdf->SetFont('Arial','B',8);
+    $pdf->SetFont('helvetica','B',8);
         $pdf->Cell($m1,5,"",0,0);
         $pdf->Cell($c1,5,$r['aid'],0,0);
         $pdf->Cell($c2,5,$r['aname'],0,1);    
@@ -329,7 +229,7 @@ $total_detail_l=0;
     //details-----------------------------//
     if (($b0 != 0 || $b1 != 0) && $params['summary'] == 0){
         //display details if option is selected and different from 0
-        $pdf->SetFont('Arial','',8);
+        $pdf->SetFont('helvetica','',8);
         $pdf->Cell($m1,5,"",0,0);
         $pdf->Cell($m2,5,"",0,0);
         $pdf->Cell($c1,5,$r2['aid'],0,0);
@@ -345,7 +245,7 @@ $total_detail_l=0;
     }    
     
     //Toal class-----------------------------//
-    $pdf->SetFont('Arial','B',9);
+    $pdf->SetFont('helvetica','B',9);
     $pdf->Cell($m1,5,"",0,0);
     $pdf->Cell($c1,5, t('Total') . ' ' . $r['aid'] ,0,0);
     $pdf->Cell($c2,5, $r['aname'] ,0,0);    
@@ -361,7 +261,7 @@ $total_detail_l=0;
 }
 
     //Total head-----------------------------//
-    $pdf->SetFont('Arial','B',10);
+    $pdf->SetFont('helvetica','B',10);
     $pdf->SetTextColor(0,61,121);
     $pdf->Cell($c1,8, t('Total') . ' ' . $rh->aid ,'T',0);
     $pdf->Cell($c2,8, $rh->aname ,'T',0);    
@@ -394,7 +294,7 @@ $data = $query->execute();
 $rh = $data->fetchObject();
 
 //head-----------------------------//
-$pdf->SetFont('Arial','B',10);
+$pdf->SetFont('helvetica','B',10);
 $pdf->SetTextColor(0,61,121);
     $pdf->Cell($c1,5, $rh->aid ,0,0);
     $pdf->Cell($c2,5, $rh->aname ,0,1);  
@@ -416,7 +316,7 @@ while ($r=$result->fetchAssoc()) {
 
 if ($params['summary'] == 0){
     //class-----------------------------//
-    $pdf->SetFont('Arial','B',8);
+    $pdf->SetFont('helvetica','B',8);
         $pdf->Cell($m1,5,"",0,0);
         $pdf->Cell($c1,5,$r['aid'],0,0);
         $pdf->Cell($c2,5,$r['aname'],0,1);    
@@ -452,7 +352,7 @@ $total_detail_l=0;
     //details-----------------------------//
     if (($b0 != 0 || $b1 != 0) && $params['summary'] == 0){
         //display details if option is selected and different from 0
-        $pdf->SetFont('Arial','',8);
+        $pdf->SetFont('helvetica','',8);
         $pdf->Cell($m1,5,"",0,0);
         $pdf->Cell($m2,5,"",0,0);
         $pdf->Cell($c1,5,$r2['aid'],0,0);
@@ -468,7 +368,7 @@ $total_detail_l=0;
     }    
     
     //Toal class-----------------------------//
-    $pdf->SetFont('Arial','B',9);
+    $pdf->SetFont('helvetica','B',9);
     $pdf->Cell($m1,5,"",0,0);
     $pdf->Cell($c1,5, t('Total') . ' ' . $r['aid'] ,0,0);
     $pdf->Cell($c2,5, $r['aname'] ,0,0);    
@@ -484,7 +384,7 @@ $total_detail_l=0;
 }
 
     //Total head-----------------------------//
-    $pdf->SetFont('Arial','B',10);
+    $pdf->SetFont('helvetica','B',10);
     $pdf->SetTextColor(0,61,121);
     $pdf->Cell($c1,8, t('Total') . ' ' . $rh->aid ,'T',0);
     $pdf->Cell($c2,8, $rh->aname ,'T',0);    
@@ -496,7 +396,7 @@ $total_detail_l=0;
     //-----------------------------// 
     
     //Grand Total assets-----------------------------//
-    $pdf->SetFont('Arial','B',10);
+    $pdf->SetFont('helvetica','B',10);
     $pdf->SetTextColor(0,128,255);
     $pdf->Cell($c1,8, t('Total Assets') ,'L,T,B',0);
     $pdf->Cell($c2,8, '' ,'T,B',0);    
@@ -531,7 +431,7 @@ $rh = $data->fetchObject();
 
 
 //head-----------------------------//
-$pdf->SetFont('Arial','B',10);
+$pdf->SetFont('helvetica','B',10);
 $pdf->SetTextColor(0,61,121);
     $pdf->Cell($c1,5, $rh->aid ,0,0);
     $pdf->Cell($c2,5, $rh->aname ,0,1);
@@ -553,7 +453,7 @@ while ($r=$result->fetchAssoc()) {
 
 if ($params['summary'] == 0){
     //class-----------------------------//
-    $pdf->SetFont('Arial','B',8);
+    $pdf->SetFont('helvetica','B',8);
         $pdf->Cell($m1,5,"",0,0);
         $pdf->Cell($c1,5, $r['aid'] ,0,0);
         $pdf->Cell($c2,5, $r['aname'] ,0,1);    
@@ -589,7 +489,7 @@ $total_detail_l=0;
     //details-----------------------------//
     if ( ($b[0] != 0 || $b[1] != 0 )  && $params['summary'] == 0){
         //display details if option is selected and different from 0    
-        $pdf->SetFont('Arial','',8);
+        $pdf->SetFont('helvetica','',8);
         $pdf->Cell($m1,5,"",0,0);
         $pdf->Cell($m2,5,"",0,0);
         $pdf->Cell($c1,5, $r2['aid'] ,0,0);
@@ -605,7 +505,7 @@ $total_detail_l=0;
     }    
     
     //Total class-----------------------------//
-    $pdf->SetFont('Arial','B',9);
+    $pdf->SetFont('helvetica','B',9);
     $pdf->Cell($m1,5,"",0,0);
     $pdf->Cell($c1,5, t('Total') . ' ' . $r['aid'] ,0,0);
     $pdf->Cell($c2,5, $r['aname'] ,0,0);    
@@ -621,7 +521,7 @@ $total_detail_l=0;
 }
 
     //Total head-----------------------------//
-    $pdf->SetFont('Arial','B',10);
+    $pdf->SetFont('helvetica','B',10);
     $pdf->SetTextColor(0,61,121);
     $pdf->Cell($c1,8, t('Total') . ' ' . $rh->aid ,'T',0);
     $pdf->Cell($c2,8, $rh->aname ,'T',0);    
@@ -649,7 +549,7 @@ $rh = $data->fetchObject();
 
 
 //head-----------------------------//
-$pdf->SetFont('Arial','B',10);
+$pdf->SetFont('helvetica','B',10);
 $pdf->SetTextColor(0,61,121);
     $pdf->Cell($c1,5, $rh->aid ,0,0);
     $pdf->Cell($c2,5, $rh->aname ,0,1);
@@ -670,7 +570,7 @@ while ($r=$result->fetchAssoc()) {
 
 if ($params['summary'] == 0){
     //class-----------------------------//
-    $pdf->SetFont('Arial','B',8);
+    $pdf->SetFont('helvetica','B',8);
         $pdf->Cell($m1,5,"",0,0);
         $pdf->Cell($c1,5, $r['aid'] ,0,0);
         $pdf->Cell($c2,5, $r['aname'] ,0,1);    
@@ -706,7 +606,7 @@ $total_detail_l=0;
     //details-----------------------------//
     if ( ($b[0] != 0 || $b[1] != 0 )  && $params['summary'] == 0){
         //display details if option is selected and different from 0    
-        $pdf->SetFont('Arial','',8);
+        $pdf->SetFont('helvetica','',8);
         $pdf->Cell($m1,5,"",0,0);
         $pdf->Cell($m2,5,"",0,0);
         $pdf->Cell($c1,5, $r2['aid'] ,0,0);
@@ -722,7 +622,7 @@ $total_detail_l=0;
     }    
     
     //Total class-----------------------------//
-    $pdf->SetFont('Arial','B',9);
+    $pdf->SetFont('helvetica','B',9);
     $pdf->Cell($m1,5,"",0,0);
     $pdf->Cell($c1,5, t('Total') . ' ' . $r['aid'] ,0,0);
     $pdf->Cell($c2,5, $r['aname'] ,0,0);    
@@ -738,7 +638,7 @@ $total_detail_l=0;
 }
 
     //Total head-----------------------------//
-    $pdf->SetFont('Arial','B',10);
+    $pdf->SetFont('helvetica','B',10);
     $pdf->SetTextColor(0,61,121);
     $pdf->Cell($c1,8, t('Total') . ' ' . $rh->aid ,'T',0);
     $pdf->Cell($c2,8, $rh->aname ,'T',0);    
@@ -750,7 +650,7 @@ $total_detail_l=0;
     //-----------------------------// 
     //
     //Grand Total liabilities-----------------------------//
-    $pdf->SetFont('Arial','B',10);
+    $pdf->SetFont('helvetica','B',10);
     $pdf->SetTextColor(0,128,255);
     $pdf->Cell($c1,8, t('Total Liabilities') ,'L,T,B',0);
     $pdf->Cell($c2,8, '' ,'T,B',0);    
@@ -772,7 +672,7 @@ $net_assets = $total_class0 + $total_class1 - $total_class2 - $total_class7;
 $net_assets_l = $total_class0_l + $total_class1_l - $total_class2_l- $total_class7_l;
 
     //-----------------------------//
-    $pdf->SetFont('Arial','B',11);
+    $pdf->SetFont('helvetica','B',11);
     $pdf->SetTextColor(0,128,255);
     $pdf->Cell($c1,8, t('NET ASSETS') ,'L,T,B',0);
     $pdf->Cell($c2,8,"",'T,B',0);    
@@ -808,7 +708,7 @@ $data = $query->execute();
 $rh = $data->fetchObject();
 
 //head-----------------------------//
-$pdf->SetFont('Arial','B',10);
+$pdf->SetFont('helvetica','B',10);
 $pdf->SetTextColor(0,61,121);
     $pdf->Cell($c1,5, $rh->aid ,0,0);
     $pdf->Cell($c2,5, $rh->aname ,0,1);
@@ -829,7 +729,7 @@ while ($r=$result->fetchAssoc()) {
 
 if ($params['summary'] == 0){
     //class-----------------------------//
-    $pdf->SetFont('Arial','B',8);
+    $pdf->SetFont('helvetica','B',8);
         $pdf->Cell($m1,5,"",0,0);
         $pdf->Cell($c1,5, $r['aid'] ,0,0);
         $pdf->Cell($c2,5, $r['aname'] ,0,1);    
@@ -893,7 +793,7 @@ $total_detail_l=0;
     //details-----------------------------//
     if (( $b[0] != 0 || $b[1] != 0) && $params['summary'] == 0){
         //display details if option is selected and different from 0
-        $pdf->SetFont('Arial','',8);
+        $pdf->SetFont('helvetica','',8);
         $pdf->Cell($m1,5,"",0,0);
         $pdf->Cell($m2,5,"",0,0);
         $pdf->Cell($c1,5, $r2['aid'] ,0,0);
@@ -910,7 +810,7 @@ $total_detail_l=0;
     }    
     
     //total class-----------------------------//
-    $pdf->SetFont('Arial','B',9);
+    $pdf->SetFont('helvetica','B',9);
     $pdf->Cell($m1,5,"",0,0);
     $pdf->Cell($c1,5,t('Total') . ' ' .  $r['aid'] ,0,0);
     $pdf->Cell($c2,5,$r['aname'],0,0);    
@@ -926,7 +826,7 @@ $total_detail_l=0;
 }
 $pdf->Ln(3);
     //total head-----------------------------//
-    $pdf->SetFont('Arial','B',11);
+    $pdf->SetFont('helvetica','B',11);
     $pdf->SetTextColor(0,128,255);
     $pdf->Cell($c1,8,t('Total') . ' ' .  $rh->aid ,'L,T,B',0);
     $pdf->Cell($c2,8,$rh->aname,'T,B',0);    
@@ -939,7 +839,7 @@ $pdf->Ln(3);
     
 
 $pdf->Ln(8);
-    $pdf->SetFont('Arial','',7);
+    $pdf->SetFont('helvetica','',7);
     $pdf->SetTextColor(0,0,0);
     $pdf->Cell(20,3,"printed by",0,0);
     $pdf->Cell(40,3, $userName ,0,0);
