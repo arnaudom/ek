@@ -147,6 +147,7 @@ Foreach($data as $id => $arr) {
             if($arr['line']->attachment) {
                     $parts = explode('/', $arr['line']->attachment);
                     $parts = array_reverse($parts);
+                    $pdf->Cell($m2,5);
                     $pdf->Cell(75, 5, t('Attachment') . ': ', 0, 0);
                     $pdf->SetFont('helvetica', '', 8);
                     $pdf->SetTextColor(0, 128, 255);
@@ -182,7 +183,7 @@ Foreach($data as $id => $arr) {
             $h = $info[1] ;
             $w = $info[0] ;
             $r = 140/$w;
-            $pdf->Image($arr['line']->attachment, 20, 60, 140, $h*$r);  
+            $pdf->Image(\Drupal::service('file_system')->realpath($arr['line']->attachment), 20, 60, 140, $h*$r);  
             
         }
 }
