@@ -41,7 +41,7 @@ $col5 = 80;
         $logo = \Drupal::service('file_system')->realpath($items['company_logo']);
         if(file_exists($logo)) {
             $info = getimagesize($logo);
-            $h = $info[1]*40/$info[0];
+            $h = $info[1]*20/$info[0];
             $pdf->Image($logo,160,8,$h);
         }
     }
