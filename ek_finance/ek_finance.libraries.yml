@@ -60,14 +60,14 @@ ek_finance.budgeting:
     theme:
       css/ek_finance_reporting.css: {} 
 
-
-ek_finance.datepicker:
+ek_finance.journal:
   version: 1
   js:
-    js/ek_finance_date.js: {}
+    js/ek_finance_journal.js: {}
   dependencies:
     - core/jquery
-    - core/jquery.ui.datepicker
+    - core/drupal.ajax
+    - core/drupal.dialog
 
 ek_finance.dialog:
   version: 1

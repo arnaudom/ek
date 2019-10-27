@@ -1328,6 +1328,10 @@ class Journal {
                 ->condition('date', $j['date2'], '<=')
                 ->condition('coid', $j['company'])
                 ->condition('source', $source, 'like');
+        if($j['source'] == 'expense') {
+            //filter doule display of payroll expense
+            $query->condition('source', 'expense payroll', '<>');
+        }
         $query->orderBy('reference');
         $data = $query->execute();
 
@@ -1458,7 +1462,10 @@ class Journal {
                 $query->fields('t', ['comment', 'currency']);
                 $query->condition('id', $reference, '=');
                 $data = $query->execute()->fetchObject();
-                $comment = $data->comment;
+                $url = Url::fromRoute('ek_finance_voucher.pdf', ['type' => 1, 'id' => $reference])->toString();
+                $voucher = '<a href="' . $url . '" target="_blank"  title="' . t('voucher')
+                        . ' - ' . $reference . '">' . $data->comment . '</a>';
+                $comment = ['#markup' => $voucher];
                 $currency = $data->currency;
 
                 break;
@@ -1539,10 +1546,13 @@ class Journal {
 
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 't');
-                $query->fields('t', ['comment', 'currency']);
+                $query->fields('t', ['id','comment', 'currency']);
                 $query->condition('reference', $reference, '=');
                 $query->condition('source', 'general', '=');
                 $data = $query->execute()->fetchObject();
+                //$url = Url::fromRoute('ek_finance.extract.general_journal', [],['query' => ['jid' => $data->id]])->toString();
+                //$voucher = '<a href="' . $url . '" target="_blank"  title="">' . $data->comment . '</a>';
+                //$comment = ['#markup' => $voucher];
                 $comment = $data->comment;
                 $currency = $data->currency;
                 break;
@@ -1554,9 +1564,9 @@ class Journal {
                 $query->condition('reference', $reference, '=');
                 $query->condition('source', 'general cash', '=');
                 $data = $query->execute()->fetchObject();
+                
                 $comment = $data->comment;
                 $currency = $data->currency;
-
                 break;
 
             default:

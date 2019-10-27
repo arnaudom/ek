@@ -55,11 +55,13 @@ class FilterJournal extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state, $jid = NULL) {
   
   $to = date('Y-m-d');
   $from = date('Y-m-').'01';
-  //$date1= date('Y-m-d', strtotime($data2." -30 days")) ;
+  if($jid == NULL && isset($_SESSION['jfilter']['jid'])) {
+      $jid = $_SESSION['jfilter']['jid'];
+  }
 
       $access = AccessCheck::GetCompanyByUser();
       $company = implode(',',$access);
@@ -80,7 +82,7 @@ class FilterJournal extends FormBase {
               '#maxlength' => 20,
               '#size' => 8,
               '#attributes' => array('placeholder'=>t('Search ID')),
-              '#default_value' => isset($_SESSION['jfilter']['jid']) ? $_SESSION['jfilter']['jid'] : NULL,
+              '#default_value' => $jid,
             ); 
                 
             $form['filters']['filter'] = array(

@@ -201,7 +201,7 @@ class ReportController extends ControllerBase {
                     '#theme' => 'ek_finance_reporting_compilation',
                     '#items' => $items,
                     '#attached' => array(
-                        'library' => array('ek_finance/ek_finance.reporting'),
+                        'library' => array('ek_finance/ek_finance.reporting','ek_admin/ek_admin_css'),
                     ),
                     '#cache' => [
                         'tags' => ['reporting'],
@@ -361,7 +361,7 @@ class ReportController extends ControllerBase {
         $chart = $this->settings->get('chart');
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterBalance');
 
-        if ($_SESSION['bsfilter']['filter'] == 1) {
+        if (isset($_SESSION['bsfilter']['filter']) && $_SESSION['bsfilter']['filter'] == 1) {
 
             $coid = $_SESSION['bsfilter']['coid'];
             $year = $_SESSION['bsfilter']['year'];
@@ -540,7 +540,7 @@ class ReportController extends ControllerBase {
             $amortization = TRUE;
         }
 
-        if ($_SESSION['cashflowfilter']['filter'] == 1) {
+        if (isset($_SESSION['cashflowfilter']['filter']) && $_SESSION['cashflowfilter']['filter'] == 1) {
 
             $coid = $_SESSION['cashflowfilter']['coid'];
             $settings = new FinanceSettings();

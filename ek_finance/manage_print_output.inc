@@ -74,6 +74,7 @@ Switch ($source) {
             
         } else {
             $head->pcode = "";
+            $head->pcode_raw = "";
         }
         
         if($head->category < 5) {     
@@ -93,15 +94,24 @@ Switch ($source) {
         $company_to = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $head->entity_to))->fetchObject();
 
+        $client = (object)[];
+        $client_card = (object)[];
         if($head->client != '0'){
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book', 'ab');
+            $query->fields('ab');
+            $query->condition('id', $head->client, '=');
+            $client = $query->execute()->fetchObject();
             $query = "SELECT * from {ek_address_book} where id=:id";
-            $client = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $head->client))->fetchObject();
-
-            $query = "SELECT * from {ek_address_book_contacts} where abid=:id and main=:m";
-            $client_card = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $client->id, ':m' => 1))->fetchObject();
-        }
+           
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book_contacts', 'abc');
+            $query->fields('abc');
+            $query->condition('abid', $client->id, '=');
+            $query->condition('main', 1, '=');
+            $client_card = $query->execute()->fetchObject();
+            
+        } 
         
         break;
     

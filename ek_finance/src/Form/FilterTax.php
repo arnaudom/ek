@@ -101,7 +101,7 @@ class FilterTax extends FormBase {
         '#type' => 'select',
         '#size' => 1,
         '#options' => $company,
-        '#default_value' => $_SESSION['taxfilter']['coid'],
+        '#default_value' => isset($_SESSION['taxfilter']['coid']) ? $_SESSION['taxfilter']['coid'] : NULL,
         '#required' => TRUE,
         '#title' => t('company'),
 

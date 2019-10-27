@@ -79,7 +79,8 @@ class JournalController extends ControllerBase {
     public function journal(Request $request) {
 
         $items = array();
-        $items['filter_journal'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterJournal');
+        $jid = ($request->query->get('jid')) ? $request->query->get('jid'):NULL;
+        $items['filter_journal'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterJournal', $jid);
         $items['data'] = array();
 
         //todo filter by module
@@ -90,7 +91,7 @@ class JournalController extends ControllerBase {
         $journal = new Journal();
 
 
-        if (isset($_SESSION['jfilter']) && $_SESSION['jfilter']['filter'] == 1) {
+        if (isset($_SESSION['jfilter']['filter']) && $_SESSION['jfilter']['filter'] == 1) {
             
             if(isset( $_SESSION['jfilter']['jid']) &&  $_SESSION['jfilter']['jid'] != "") {
                 //retrieve data by journal id
@@ -111,7 +112,7 @@ class JournalController extends ControllerBase {
                         '#theme' => 'ek_finance_journal_by_id',
                         '#items' => $items,
                         '#attached' => array(
-                            'library' => array('ek_finance/ek_finance', 'ek_finance/ek_finance.dialog'),
+                            'library' => array('ek_finance/ek_finance_css', 'ek_finance/ek_finance.journal','ek_admin/ek_admin_css'),
                         ),
                     );
                      
@@ -170,7 +171,7 @@ class JournalController extends ControllerBase {
             '#theme' => 'ek_finance_journal',
             '#items' => $items,
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance', 'ek_finance/ek_finance.dialog'),
+                'library' => array('ek_finance/ek_finance_css', 'ek_finance/ek_finance.journal','ek_admin/ek_admin_css'),
             ),
         );
     }

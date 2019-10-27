@@ -97,7 +97,20 @@ class JournalEntryController extends ControllerBase {
             $build['journal_edit'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\JournalEdit', $param);
         } else {
             $url = Url::fromRoute('ek_finance.extract.general_journal', array(), array())->toString();
-            $build = ['#markup' => t('This journal entry is not editable or was deleted. <a href="@url" >Go to journal.</a>.', ['@url' => $url])];
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('This journal entry is not editable or was deleted.')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url" >Journal</a>', ['@url' => $url])];
+            return [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ];
+            return $items;
+            
+           
         }
         Return $build;
     }

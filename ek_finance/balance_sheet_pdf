@@ -38,7 +38,7 @@ class EKPDF extends TCPDF {
             $logo = \Drupal::service('file_system')->realpath($this->company->logo);
             if(file_exists($logo)){
                 $info = getimagesize($logo);
-                $h = $info[1]*30/$info[0];
+                $h = $info[1]*15/$info[0];
                 $this->Image($logo,15,5,$h);
             } 
         }
@@ -161,7 +161,7 @@ $total_class0_l = 0;
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['other_assets'] . '%', 'like');
 $query->condition('atype', 'header', '=');
 $query->condition('astatus', '1', '=');
@@ -180,7 +180,7 @@ $pdf->SetTextColor(88,88,88);
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['other_assets'] . '%', 'like');
 $query->condition('atype', 'class', '=');
 $query->condition('astatus', '1', '=');
@@ -205,7 +205,7 @@ $total_detail_l=0;
 
     $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-    $query->fields($t, ['aid','aname']);
+    $query->fields('t', ['aid','aname']);
     $query->condition('aid', $aid . '%', 'like');
     $query->condition('atype', 'detail', '=');
     $query->condition('coid', $params['coid'], '=');
@@ -284,7 +284,7 @@ $total_class1_l = 0;
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['assets'] . '%', 'like');
 $query->condition('atype', 'header', '=');
 $query->condition('astatus', '1', '=');
@@ -303,7 +303,7 @@ $pdf->SetTextColor(88,88,88);
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['assets'] . '%', 'like');
 $query->condition('atype', 'class', '=');
 $query->condition('astatus', '1', '=');
@@ -328,7 +328,7 @@ $total_detail_l=0;
 
     $query = Database::getConnection('external_db', 'external_db')
                         ->select($table_accounts, 't');
-    $query->fields($t, ['aid','aname']);
+    $query->fields('t', ['aid','aname']);
     $query->condition('aid', $aid . '%', 'like');
     $query->condition('atype', 'detail', '=');
     $query->condition('coid', $params['coid'], '=');
@@ -420,7 +420,7 @@ $total_class2_l = 0;
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['liabilities'] . '%', 'like');
 $query->condition('atype', 'header', '=');
 $query->condition('astatus', '1', '=');
@@ -440,7 +440,7 @@ $pdf->SetTextColor(88,88,88);
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['liabilities'] . '%', 'like');
 $query->condition('atype', 'class', '=');
 $query->condition('astatus', '1', '=');
@@ -465,7 +465,7 @@ $total_detail_l=0;
 
     $query = Database::getConnection('external_db', 'external_db')
                         ->select($table_accounts, 't');
-    $query->fields($t, ['aid','aname']);
+    $query->fields('t', ['aid','aname']);
     $query->condition('aid', $aid . '%', 'like');
     $query->condition('atype', 'detail', '=');
     $query->condition('coid', $params['coid'], '=');
@@ -538,7 +538,7 @@ $total_class7_l = 0;
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['other_liabilities'] . '%', 'like');
 $query->condition('atype', 'header', '=');
 $query->condition('astatus', '1', '=');
@@ -558,7 +558,7 @@ $pdf->SetTextColor(88,88,88);
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['other_liabilities'] . '%', 'like');
 $query->condition('atype', 'class', '=');
 $query->condition('astatus', '1', '=');
@@ -582,7 +582,7 @@ $total_detail_l=0;
 
     $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-    $query->fields($t, ['aid','aname']);
+    $query->fields('t', ['aid','aname']);
     $query->condition('aid', $aid . '%', 'like');
     $query->condition('atype', 'detail', '=');
     $query->condition('coid', $params['coid'], '=');
@@ -698,7 +698,7 @@ $total_class3_l = 0;
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['equity'] . '%', 'like');
 $query->condition('atype', 'header', '=');
 $query->condition('astatus', '1', '=');
@@ -717,7 +717,7 @@ $pdf->SetTextColor(88,88,88);
 
 $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-$query->fields($t, ['aid','aname']);
+$query->fields('t', ['aid','aname']);
 $query->condition('aid', $chart['equity'] . '%', 'like');
 $query->condition('atype', 'class', '=');
 $query->condition('astatus', '1', '=');
@@ -741,7 +741,7 @@ $total_detail_l=0;
 
     $query = Database::getConnection('external_db', 'external_db')
                     ->select($table_accounts, 't');
-    $query->fields($t, ['aid','aname']);
+    $query->fields('t', ['aid','aname']);
     $query->condition('aid', $aid . '%', 'like');
     $query->condition('atype', 'detail', '=');
     $query->condition('coid', $params['coid'], '=');

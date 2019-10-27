@@ -39,7 +39,7 @@ class EKPDF extends TCPDF {
             $logo = \Drupal::service('file_system')->realpath($this->company->logo);
             if(file_exists($logo)){
                 $info = getimagesize($logo);
-                $h = $info[1]*30/$info[0];
+                $h = $info[1]*15/$info[0];
                 $this->Image($logo,15,5,$h);
             } 
         }

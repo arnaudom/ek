@@ -201,13 +201,15 @@ class FilterMemo extends FormBase {
               );       
             
 if($this->moduleHandler->moduleExists('ek_projects')) {
-  $pcode = array('%' => t('Any'));
-  $query = "SELECT DISTINCT id,pcode from {ek_expenses_memo} WHERE pcode <> :p AND pcode <> :q";
-  $list = Database::getConnection('external_db', 'external_db')
-          ->query($query, array(':p' => 'not project related' , ':q' => 'n/a') )
-          ->fetchAllKeyed();
+    $pcode = array('%' => t('Any'));
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses_memo', 'm');
+    $query->fields('m',['id','pcode']);
+    $query->condition('pcode', 'n/a', '<>');    
+    $query->distinct();   
+    $list = $query->execute()->fetchAllKeyed();
 
-  $pcode += \Drupal\ek_projects\ProjectData::format_project_list($list);
+    $pcode += \Drupal\ek_projects\ProjectData::format_project_list($list);
 
             $form['filters'][3]['pcode'] = array(
                 '#type' => 'select',

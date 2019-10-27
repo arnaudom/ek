@@ -254,7 +254,6 @@ $document .= '<page_signature>
                     <tr>
                         <td class="c10 left"></td>
                         <td class="c60 left">'. $sign .'</td>
-                        <td class="c30 left">'. $receipt .'</td>
                     </tr>
                     <tr>
                         <td></td>

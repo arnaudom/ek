@@ -82,7 +82,7 @@ class BalanceTrialController extends ControllerBase {
         $items['data'] = array();
         $journal = new Journal();
 
-        if ($_SESSION['tfilter']['filter'] == 1) {
+        if (isset($_SESSION['tfilter']['filter']) && $_SESSION['tfilter']['filter'] == 1) {
 
             $param = array(
                 'coid' => $_SESSION['tfilter']['coid'],

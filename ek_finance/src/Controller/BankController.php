@@ -346,6 +346,7 @@ class BankController extends ControllerBase {
         
         $row = 0;
         $status = ['0' => t('inactive'), '1' => t('active')];
+        $options = [];
         while ($l = $list->fetchObject()) {
 
             $row++;

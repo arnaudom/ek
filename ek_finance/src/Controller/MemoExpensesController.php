@@ -386,11 +386,11 @@ class MemoExpensesController extends ControllerBase {
             }
 
             if ($r->status == '0') {
-                $dot = "<div class='reddot right'></div>";
+                $dot = "<i class='fa fa-circle red' aria-hidden='true'></i> ";
             } elseif ($r->status == '1') {
-                $dot = "<div class='orangedot right'></div>";
+                $dot = "<i class='fa fa-circle orange' aria-hidden='true'></i> ";
             } else {
-                $dot = "<div class='greendot right'></div>";
+                $dot = "<i class='fa fa-circle green' aria-hidden='true'></i> ";
             }
 
             if ($attach > 0) {
@@ -406,7 +406,7 @@ class MemoExpensesController extends ControllerBase {
                 'date' => $r->date,
                 'value' => number_format($r->value, 2) . " " . $r->currency,
                 'basecurrency' => number_format($r->value_base, 2) . " " . $baseCurrency,
-                'status' => ['data' => ['#markup' => $status[$r->status] . $dot]],
+                'status' => ['data' => ['#markup' => $dot . $status[$r->status] ]],
                 'attach' => ['data' => ['#markup' => $docs]],
             );
 
@@ -487,7 +487,7 @@ class MemoExpensesController extends ControllerBase {
             '#attributes' => array('id' => 'memos_table'),
             '#empty' => $this->t('No memo available.'),
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance.dialog'),
+                'library' => array('ek_finance/ek_finance.dialog', 'ek_admin/ek_admin_css'),
             ),
         );
 
@@ -661,11 +661,11 @@ class MemoExpensesController extends ControllerBase {
                 }
 
                 if ($r->status == '0') {
-                    $dot = "<div class='reddot right'></div>";
+                    $dot = "<i class='fa fa-circle red' aria-hidden='true'></i> ";
                 } elseif ($r->status == '1') {
-                    $dot = "<div class='orangedot right'></div>";
+                    $dot = "<i class='fa fa-circle orange' aria-hidden='true'></i> ";
                 } else {
-                    $dot = "<div class='greendot right'></div>";
+                    $dot = "<i class='fa fa-circle green' aria-hidden='true'></i> ";
                 }
                 if ($attach > 0) {
                     $url = Url::fromRoute('ek_finance_manage_modal_memo', ['id' => $r->id])->toString();
@@ -688,7 +688,7 @@ class MemoExpensesController extends ControllerBase {
                     'date' => $r->date,
                     'value' => number_format($r->value, 2) . " " . $r->currency,
                     'basecurrency' => number_format($r->value_base, 2) . " " . $baseCurrency,
-                    'status' => ['data' => ['#markup' => $status[$r->status] . $dot]],
+                    'status' => ['data' => ['#markup' => $dot . $status[$r->status]]],
                     'attach' => ['data' => ['#markup' => $docs]],
                     'autho' => ['data' => ['#markup' => $autho]],
                 );
