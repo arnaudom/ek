@@ -138,6 +138,9 @@
     content: "\f070";
     color:#000;
 }
+.print:before {
+  content: "\f02f";
+}
 
 /*
 * Settings dashboard

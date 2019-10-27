@@ -8,10 +8,10 @@ class EKPDF extends TCPDF {
     public function Header() {
         $data = $this->getHeaderData();
         $this->company = $data['title'];
-        if ($this->company->logo != '') {
-               $logo = \Drupal::service('file_system')->realpath($this->company->logo);
+        if ($this->company['logo']!= '') {
+               $logo = \Drupal::service('file_system')->realpath($this->company['logo']);
                if(file_exists($logo)) {
-                   $this->Image($logo,20,10,43);
+                   //$this->Image($logo,160,10,20);
                }
         }
     }
@@ -32,7 +32,7 @@ $company = $query->execute()->fetchAssoc();
 $pdf = $pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 // set document information
 
-$pdf->SetCreator($company->name);
+$pdf->SetCreator($company['name']);
 $pdf->SetAuthor(\Drupal::currentUser()->getUsername());
 $pdf->SetTitle(t('Company') . ' ' . $id);
 $pdf->SetSubject(t('Company'));
