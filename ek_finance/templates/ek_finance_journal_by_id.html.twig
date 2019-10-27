@@ -6,11 +6,10 @@
 
 
 <br/>
-<section class="journal">
-
-
-
-    <table>     
+<section class="journal" id="p{{ items.data.references.reference }}">
+    <div class='print ico right pointer' id="{{ items.data.references.reference }}"></div>
+    <table>
+        
         <tr><td colspan='6' class='journal-reference'>{{ items.data.references.company }}</td></tr>
         <tr><td colspan='6' class='journal-reference'>{{ items.data.references.source|capitalize }} ({{ items.data.references.date }})</td></tr>
         <tr><td colspan='6' class='journal-reference'>{{ items.data.references.reference }} - {{ items.data.references.reference_detail }}</td></tr>
