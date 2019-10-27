@@ -149,15 +149,11 @@ class ProjectSettingsController extends ControllerBase {
             $categories = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT id,type FROM {ek_project_type}")
                     ->fetchAllKeyed();
-
+            $i = 0;
             while ($r = $data->fetchObject()) { 
                 if (in_array($r->cid, $UserAccess)) {//filter access by country
-                   
                     $i++;
                     $pcode = ProjectData::geturl($r->id);
-                    $route = Url::fromRoute('ek_projects_archive', ['id' => $r->id], array())->toString();
-                    $archive_button = "<a id='arch" . $r->id . "' title='" . t('change archive status') . "' href='" . $route . "' class='use-ajax'>" . $archive[$r->archive] . '</a>';
-
                     $share = explode(',', $r->share);
                     $deny = explode(',', $r->deny);
                     

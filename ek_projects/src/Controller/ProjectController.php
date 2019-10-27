@@ -1642,13 +1642,15 @@ class ProjectController extends ControllerBase {
                         
                 $log = $p->pcode . '|' . \Drupal::currentUser()->id() . '|delete|' . $p->filename;
                 \Drupal::logger('ek_projects')->notice($log);
-
-
+                $action = 'delete' . ' ' . $p->filename;
+                if(strlen($action) > 255) {
+                    $action = substr($action,0,250) . "..."; 
+                }
                 $fields = array(
                     'pcode' => $p->pcode,
                     'uid' => \Drupal::currentUser()->id(),
                     'stamp' => time(),
-                    'action' => 'delete' . ' ' . $p->filename
+                    'action' => $action
                 );
                 Database::getConnection('external_db', 'external_db')->insert('ek_project_tracker')
                         ->fields($fields)->execute();
@@ -1812,19 +1814,24 @@ class ProjectController extends ControllerBase {
         $query = "SELECT notify FROM {ek_project} WHERE id=:id";
         $notify = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $_POST['id']))->fetchField();
-
-        $notify = explode(',', $notify);
         $action =  0;
-        if (in_array(\Drupal::currentUser()->id(), $notify)) {
-
-            if (($key = array_search(\Drupal::currentUser()->id(), $notify)) !== false) {
-                unset($notify[$key]);
-            }
-        } else {
-            array_push($notify, \Drupal::currentUser()->id());
+        if($notify == NULL){
+            $notify = \Drupal::currentUser()->id();
             $action = 1;
+        } else {
+            $notify = explode(',', $notify);
+            
+            if (in_array(\Drupal::currentUser()->id(), $notify)) {
+                if (($key = array_search(\Drupal::currentUser()->id(), $notify)) !== false) {
+                    unset($notify[$key]);
+                }
+            } else {
+                array_push($notify, \Drupal::currentUser()->id());
+                $action = 1;
+            }
+            $notify = implode(',', $notify);
         }
-        $notify = implode(',', $notify);
+        
         $update = Database::getConnection('external_db', 'external_db')
                 ->update('ek_project')
                 ->fields(array('notify' => $notify))

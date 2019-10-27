@@ -111,7 +111,7 @@ class InstallController extends ControllerBase {
 	PRIMARY KEY (`id`, `pcode`)
         )
         COMMENT='main projects reference'
-        COLLATE='utf8_general_ci'
+        COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB
         AUTO_INCREMENT=1";
     
@@ -177,7 +177,7 @@ class InstallController extends ControllerBase {
 	`filename` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
 	`folder` VARCHAR(20) NULL DEFAULT NULL,
 	`comment` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
-	`uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the stream uri of file' COLLATE 'utf8mb4_unicode_ci',
+	`uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the stream uri of file' COLLATE 'utf8mb4_general_ci',
 	`date` VARCHAR(30) NULL DEFAULT NULL COMMENT 'date stamp',
 	`size` INT(10) NULL DEFAULT NULL COMMENT 'size',
 	`share` VARCHAR(250) NULL DEFAULT '0',
@@ -262,10 +262,10 @@ class InstallController extends ControllerBase {
 	`pcode` VARCHAR(50) NULL DEFAULT NULL,
 	`uid` INT(10) NULL DEFAULT NULL,
 	`stamp` INT(10) NULL DEFAULT NULL,
-	`action` VARCHAR(100) NULL DEFAULT NULL,
+	`action` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
 	INDEX `Index 1` (`pcode`)
         )
-        COLLATE='utf8_general_ci'
+        COLLATE='utf8mb4_general_ci''
         ENGINE=InnoDB";
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'Projects trackers table installed <br/>';      
@@ -279,7 +279,7 @@ class InstallController extends ControllerBase {
 	PRIMARY KEY (`id`)
         )
         COMMENT='categories of projects'
-        COLLATE='utf8_general_ci'
+        COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB";
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'Projects types table installed <br/>'; 

@@ -131,18 +131,20 @@ class ProjectData {
                     ->select('ek_project', 'p');
             $query->fields('p', ['id', 'status', 'pname']);
             $query->condition('pcode', $code);
-            $p = $query->execute()->fetchObject();
+            $p = $query->execute()->fetchObject();  
+            if($p) {
+                $pname = substr($p->pname, 0, 75) . '...';
+                $pcode_parts = explode("-", $code);
+                $pcode = array_reverse($pcode_parts);
+                $string = $pcode[0] . " | " . $p->status;
+                $string .= isset($pcode[4]) ? " | " . $pcode[4] : '';
+                $string .= isset($pcode[3]) ? " - " . $pcode[3] : '';
+                $string .= isset($pcode[2]) ? " - " . $pcode[2] : '';
+                $string .= isset($pcode[1]) ? " - " . $pcode[1] : '';
+                $string .= " | " . $pname;
+                $list[$code] = $string;
+            }
 
-            $pname = substr($p->pname, 0, 75) . '...';
-            $pcode_parts = explode("-", $code);
-            $pcode = array_reverse($pcode_parts);
-            $string = $pcode[0] . " | " . $p->status;
-            $string .= isset($pcode[4]) ? " | " . $pcode[4] : '';
-            $string .= isset($pcode[3]) ? " - " . $pcode[3] : '';
-            $string .= isset($pcode[2]) ? " - " . $pcode[2] : '';
-            $string .= isset($pcode[1]) ? " - " . $pcode[1] : '';
-            $string .= " | " . $pname;
-            $list[$code] = $string;
         }
 
         return $list;

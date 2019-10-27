@@ -2,26 +2,21 @@
     background-color: #CEE3F6 !important;
 }
 
-.panel-default {
-}
+
 .panel {
     padding: 0px !important;
 }
 
-.panel-default > .panel-heading {
-
-}
 .panel-heading {
     padding: 2px 2px 3px 15px;
 }
 
-.panel-body {
-}
 .panel-title {
     color: #fff;
     font-family: sans-serif;
     cursor:pointer;
 }
+
 .table {
     display: table;
     width: 100%;
