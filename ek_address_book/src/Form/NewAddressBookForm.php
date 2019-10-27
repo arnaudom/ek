@@ -215,7 +215,7 @@ class NewAddressBookForm extends FormBase {
         );
 
         //current logo if any
-        if ($r['logo'] <> '') {
+        if (isset ($r['logo']) && $r['logo'] <> '') {
             $logo = "<a href='" . file_create_url($r['logo']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['logo']) . "></a>";
             $form['delete_logo'] = array(
                 '#type' => 'checkbox',
