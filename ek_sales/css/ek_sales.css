@@ -2,20 +2,16 @@
     border-color: #DDDDDD;
 }
 .panel {
-    background-color: #FFFFFF;
-    border-radius: 4px;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    padding: 0px !important;
 }
 
-.panel-default > .panel-heading {
-    background-color: #A9BCF5;
-    border-color: #A9BCF5;
-    color: #333333;
+.panel-title {
+    color: #fff;
+    cursor:pointer;
 }
+
 .panel-heading {
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-    padding: 10px 15px;
+    padding: 2px 2px 3px 15px;
 }
 
 .panel-body {

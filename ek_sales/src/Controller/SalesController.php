@@ -166,6 +166,10 @@ class SalesController extends ControllerBase {
                         ->query($query, array(':abid' => $abid));
                 $total = 0;
                 $items['category_statistics'] = array();
+                $items['category_statistics']['open'] = 0;
+                $items['category_statistics']['awarded'] = 0;
+                $items['category_statistics']['completed'] = 0;
+                $items['category_statistics']['closed'] = 0;
                 while ($d = $data->fetchObject()) {
                     if ($d->sum == NULL) {
                         $d->sum = '0';
@@ -384,11 +388,20 @@ class SalesController extends ControllerBase {
                 $long = round((strtotime($d->pay_date) - strtotime($d->date)) / (24 * 60 * 60), 0);
                 array_push($af, $long);
             }
-            $items['payment_performance'] = array(
-                'max' => (int) max($af),
-                'min' => (int) min($af),
-                'avg' => round((array_sum($af) / count($af)), 1)
-            );
+            if(count($af) > 0){
+                $items['payment_performance'] = array(
+                    'max' => (int) max($af),
+                    'min' => (int) min($af),
+                    'avg' => round((array_sum($af) / count($af)), 1)
+                );
+            } else {
+                $items['payment_performance'] = array(
+                    'max' => 0,
+                    'min' => 0,
+                    'avg' => 0
+                );
+            }
+            
 
             if (isset($chartSettings)) {
                 $options = [];
@@ -514,6 +527,7 @@ class SalesController extends ControllerBase {
         $t = '';
         $i = 0;
         $items = [];
+        $data = NULL;
         if (isset($list)) {
             while ($l = $list->fetchObject()) {
                 $i++;
@@ -585,8 +599,6 @@ class SalesController extends ControllerBase {
         if($i > 0){
             $render = ['#theme' => 'ek_sales_doc_view', '#items' => $items];
             $data = \Drupal::service('renderer')->render($render);
-        } else {
-            $data == NULL;
         }
         
         return new JsonResponse(array('data' => $data));
