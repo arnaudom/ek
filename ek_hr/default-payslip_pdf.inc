@@ -548,7 +548,7 @@ $pdf->AddPage("P", "A4");
     $pdf->Cell($col1_width, 5, t('NOTE'), "B", 0);
     $pdf->Cell($col2_width+$col3_width+$col4_width, 5, $line['comment'], "B", 1, 'L');
     $pdf->Cell($margin);
-    $pdf->Cell($col1_width1, 5, t('signature'), 0, 1, 'L');
+    $pdf->Cell($col1_width, 5, t('signature'), 0, 1, 'L');
 
 
 }

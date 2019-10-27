@@ -1,24 +1,3 @@
-.reddot {
-    background-image: url(../art/reddot.png) ;
-    background-repeat: no-repeat;
-    width: 10px;
-    height:10px;
-}
-
-.orangedot {
-    background-image: url(../art/orangedot.png) ;
-    background-repeat: no-repeat;
-    width: 10px;
-    height: 10px;
-}
-
-.greendot {
-    background-image: url(../art/greendot.png) ;
-    background-repeat: no-repeat;
-    width: 10px;
-    height: 10px;
-}
-
 .right {
     text-align:right;
 }

@@ -16,7 +16,7 @@
                     content: {
                         text: 'Loading...',
                         ajax: {
-                            url: '/human-resources/e/autocomplete',
+                            url: drupalSettings.path.baseUrl + 'human-resources/e/autocomplete',
                             type: 'GET',
                             data: {q: $(this).attr('id'), option:'image'},
                             success: function (data, status) {
