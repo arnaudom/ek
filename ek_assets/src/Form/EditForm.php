@@ -100,6 +100,8 @@ class EditForm extends FormBase {
                     $data->eid = $check->id . ' | ' . $check->name;
                 }
             }
+        } else {
+            $current_amortization = null;
         }
 
         $form['for_id'] = array(
@@ -123,7 +125,7 @@ class EditForm extends FormBase {
         $form["asset_name"] = array(
             '#type' => 'textfield',
             '#size' => 40,
-            '#default_value' => $data->asset_name,
+            '#default_value' => isset($data->asset_name) ? $data->asset_name : null,
             '#maxlength' => 200,
             '#title' => t('Name'),
             '#attributes' => array('placeholder' => t('asset name')),
@@ -132,7 +134,7 @@ class EditForm extends FormBase {
         $form["asset_brand"] = array(
             '#type' => 'textfield',
             '#size' => 40,
-            '#default_value' => $data->asset_brand,
+            '#default_value' => isset($data->asset_brand) ? $data->asset_brand : null,
             '#maxlength' => 255,
             '#title' => t('Brand'),
             '#attributes' => array('placeholder' => t('asset brand')),
@@ -141,7 +143,7 @@ class EditForm extends FormBase {
         $form["asset_ref"] = array(
             '#type' => 'textfield',
             '#size' => 40,
-            '#default_value' => $data->asset_ref,
+            '#default_value' => isset($data->asset_ref) ? $data->asset_ref : null,
             '#maxlength' => 255,
             '#title' => t('Reference'),
             '#attributes' => array('placeholder' => t('reference')),
@@ -150,7 +152,7 @@ class EditForm extends FormBase {
         $form["unit"] = array(
             '#type' => 'textfield',
             '#size' => 10,
-            '#default_value' => $data->unit,
+            '#default_value' => isset($data->unit) ? $data->unit : null,
             '#maxlength' => 255,
             '#title' => t('Quantity'),
             '#attributes' => array('placeholder' => t('unit(s)')),
@@ -158,7 +160,7 @@ class EditForm extends FormBase {
 
         $form["asset_comment"] = array(
             '#type' => 'textarea',
-            '#default_value' => $data->asset_comment,
+            '#default_value' => isset($data->asset_comment) ? $data->asset_comment : null,
             '#description' => '',
             '#attributes' => array('placeholder' => t('description')),
         );
@@ -174,7 +176,7 @@ class EditForm extends FormBase {
             $form['e']["eid"] = array(
                 '#type' => 'textfield',
                 '#size' => 30,
-                '#default_value' => $data->eid,
+                '#default_value' => isset($data->eid) ? $data->eid : null,
                 '#maxlength' => 255,
                 '#title' => t('Allocation'),
                 '#attributes' => array('placeholder' => t('employee')),
@@ -216,7 +218,7 @@ class EditForm extends FormBase {
             '#size' => 1,
             '#disabled' => $current_amortization,
             '#options' => array_combine($currency, $currency),
-            '#default_value' => $data->currency,
+            '#default_value' => isset($data->currency) ? $data->currency : null,
             '#title' => t('Currency'),
         );
 
@@ -239,7 +241,7 @@ class EditForm extends FormBase {
             '#size' => 12,
             '#disabled' => $current_amortization,
             '#required' => TRUE,
-            '#default_value' => $data->date_purchase,
+            '#default_value' => isset($data->date_purchase) ? number_format($data->date_purchase) : Null,
             '#title' => t('Date of purchase')
         );
 
@@ -248,7 +250,7 @@ class EditForm extends FormBase {
             '#type' => 'details',
             '#title' => t('Attachments'),
             '#collapsible' => TRUE,
-            '#open' => ($data->asset_pic || $data->asset_doc) ? TRUE : FALSE,
+            '#open' => (isset($data->asset_pic) || isset($data->asset_doc)) ? TRUE : FALSE,
         );
 
         $form['i']['asset_pic'] = array(
@@ -259,7 +261,7 @@ class EditForm extends FormBase {
         );
 
         /* current image if any */
-        if ($data->asset_pic != '') {
+        if (isset($data->asset_pic) && $data->asset_pic != '') {
             $image = "<a href='" . file_create_url($data->asset_pic)
                     . "' target='_blank'><img class='thumbnail' src=" . file_create_url($data->asset_pic) . "></a>";
             $form['i']['picture_delete'] = array(
@@ -287,7 +289,7 @@ class EditForm extends FormBase {
         );
 
         /* current doc if any */
-        if ($data->asset_doc != '') {
+        if (isset($data->asset_doc) && $data->asset_doc != '') {
             $parts = explode("/", $data->asset_doc);
             $parts = array_reverse($parts);
             $name = $parts[0];
