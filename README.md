@@ -1,6 +1,6 @@
 EK management tools suite : an attempt to build a full back-office (often called ERP) system with Drupal.
 
-Note: although this application is been used and tested, this code has not yet completed a best practices or security review. We take no responsibility for any loss you may incur through the use of this code. However, we encourage you to run and test it for further improvements.
+Note: although this application is been used and tested, this code has not yet completed a best practices or security review. We take no responsibility for any loss you may incur through the use of this code. However, we encourage you to run and test it for further improvements. 
 
 The current open version is made of several Drupal 8 modules:
 
@@ -15,7 +15,7 @@ The current open version is made of several Drupal 8 modules:
 - report drafting
 - finance (accounts, reporting, journal) 
 
-An online demo site is available [here](http://ek.demo.arrea-systems.com) (with further modules and functions not included into this open version).
+An online demo site is available [here](http://ek.demo.arrea-systems.com) (with further modules and functions not included into this open source version).
 
 ## Install
 
