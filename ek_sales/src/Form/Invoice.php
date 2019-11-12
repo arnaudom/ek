@@ -67,7 +67,7 @@ class Invoice extends FormBase {
         $url = Url::fromRoute('ek_sales.invoices.list', array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url" >List</a>', array('@url' => $url)),
+            '#markup' => t('<a href="@url">List</a>', array('@url' => $url)),
         );
 
 
@@ -1084,7 +1084,7 @@ class Invoice extends FormBase {
                 if ($aid == '') {
                     $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
                     $description = "<div id='fx' class='messages messages--warning'>"
-                            . t('There is no assets account defined for currency. Please <a href=@l>edit settings</a> or contact administrator.',['@l' => $l]) . "</div>";
+                            . t("There is no assets account defined for currency. Please <a href='@l'>edit settings</a> or contact administrator.",['@l' => $l]) . "</div>";
                 } else {
 
                     $fx_rate = \Drupal\ek_finance\CurrencyData::rate($form_state->getValue('currency'));
@@ -1183,7 +1183,7 @@ class Invoice extends FormBase {
             
             if ($aid == '') {
                 $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
-                $form_state->setErrorByName('currency', t('There is no assets account defined for currency. Please <a href=@l>edit settings</a> or contact administrator.',['@l' => $l]));
+                $form_state->setErrorByName('currency', t("There is no assets account defined for currency. Please <a href='@l'>edit settings</a> or contact administrator.",['@l' => $l]));
             }
         }
 
@@ -1320,10 +1320,7 @@ class Invoice extends FormBase {
                 ->execute();
             $init_data = $query->fetchAssoc();
             $iid = $init_data['id'];
-            /*
-            $iid = Database::getConnection('external_db', 'external_db')
-                    ->query('SELECT id from {ek_sales_invoice} where serial=:s', array(':s' => $serial))
-                    ->fetchField();*/
+            
         }
 
         $fx_rate = round($form_state->getValue('fx_rate'), 4);
@@ -1565,9 +1562,11 @@ class Invoice extends FormBase {
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])
                             ->fetchField();
                     $inputs = [];
-                    foreach($fields1 as $key => $value) {
-                        if ($value != $init_data[$key]) {
-                            $inputs[] = $key;
+                    if(isset($init_data)){
+                        foreach($fields1 as $key => $value) {
+                            if ($value != $init_data[$key]) {
+                                $inputs[] = $key;
+                            }
                         }
                     }
                     $param = serialize(

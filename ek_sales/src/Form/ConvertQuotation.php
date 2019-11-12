@@ -83,7 +83,7 @@ class ConvertQuotation extends FormBase {
         );
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url" >List</a>', array('@url' => Url::fromRoute('ek_sales.quotations.list', array(), array())->toString() ) ) ,
+            '#markup' => t('<a href="@url">List</a>', array('@url' => Url::fromRoute('ek_sales.quotations.list', array(), array())->toString() ) ) ,
 
         ); 
         $form['quotation_serial'] = array(

@@ -66,7 +66,7 @@ class ResetPay extends FormBase {
         
         $form['list'] = array(
           '#type' => 'item',
-          '#markup' => t('<a href="@url" >List</a>', array('@url' => \Drupal\Core\Url::fromRoute($route,[],[])->toString())) ,
+          '#markup' => t('<a href="@url">List</a>', array('@url' => \Drupal\Core\Url::fromRoute($route,[],[])->toString())) ,
         );
 
         $form['edit'] = array(

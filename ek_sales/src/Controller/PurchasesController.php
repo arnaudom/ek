@@ -139,7 +139,7 @@ class PurchasesController extends ControllerBase {
                 ));
                 $excel = Url::fromRoute('ek_sales.purchases.excel', array('param' => $param))->toString();
                 $build['excel'] = array(
-                    '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                    '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'></span></a>"
                 );
                 
                 $or2 = $query->orConditionGroup();
@@ -202,7 +202,7 @@ class PurchasesController extends ControllerBase {
             ));
             $excel = Url::fromRoute('ek_sales.purchases.excel', array('param' => $param))->toString();
             $build['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'></span></a>"
             );
 
             $or2 = $or2 = $query->orConditionGroup();
@@ -391,14 +391,16 @@ class PurchasesController extends ControllerBase {
 
             if (\Drupal::currentUser()->hasPermission('print_share_purchase')) {
 
-                $links['print'] = array(
+                $links['pprint'] = array(
                     'title' => $this->t('Print and share'),
                     'url' => Url::fromRoute('ek_sales.purchases.print_share', ['id' => $r->id]),
                     'route_name' => 'ek_sales.purchases.print_share',
+                    'attributes' => ['class' => ['ico', 'pdf']]
                 );
-                $links['excel'] = array(
+                $links['pexcel'] = array(
                     'title' => $this->t('Excel download'),
                     'url' => Url::fromRoute('ek_sales.purchases.print_excel', ['id' => $r->id]),
+                    'attributes' => ['class' => ['ico', 'excel']]
                 );
             }
             if (\Drupal::currentUser()->hasPermission('delete_purchase') && $r->status == '0') {
@@ -868,7 +870,7 @@ class PurchasesController extends ControllerBase {
             $items['type'] = 'edit';
             $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Purchase')))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -1152,7 +1154,7 @@ class PurchasesController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.purchases.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -1230,7 +1232,7 @@ class PurchasesController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.purchases.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -1287,7 +1289,7 @@ class PurchasesController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.purchases.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -1320,7 +1322,7 @@ class PurchasesController extends ControllerBase {
             $items['type'] = 'delete';
             $items['message'] = ['#markup' => t('@document cannot be deleted.' , array('@document' => t('Purchase') ))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             $build['content'] = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',

@@ -85,7 +85,7 @@ class ReceiveInvoice extends FormBase {
         $url = Url::fromRoute('ek_sales.invoices.list', array(), array())->toString();
         $form['back'] = array(
           '#type' => 'item',
-          '#markup' => t('<a href="@url" >List</a>', array('@url' => $url ) ) ,
+          '#markup' => t('<a href="@url">List</a>', array('@url' => $url ) ) ,
 
         );
         

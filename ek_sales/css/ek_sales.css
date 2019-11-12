@@ -136,7 +136,8 @@ hr {
 }
 
 .tip-module-ek-sales{
-    background-color: #CEE3F6 !important;;
+    background-color: rgba(48,48,48,0.9) !important;
+    color: #FFF;
 }
 
 .button--record:hover {

@@ -920,7 +920,7 @@ class SalesController extends ControllerBase {
             $url = Url::fromRoute($route)->toString();
             $items['type'] = 'edit';
             $items['message'] = ['#markup' => $message];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.', ['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',

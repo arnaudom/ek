@@ -276,13 +276,15 @@ class QuotationsController extends ControllerBase {
             }
 
             if (\Drupal::currentUser()->hasPermission('print_share_quotation')) {
-                $links['print'] = array(
+                $links['qprint'] = array(
                     'title' => $this->t('Print'),
                     'url' => Url::fromRoute('ek_sales.quotations.print_share', ['id' => $r->id]),
+                    'attributes' => ['class' => ['ico', 'pdf']]
                 );
-                $links['excel'] = array(
+                $links['qexcel'] = array(
                     'title' => $this->t('Excel download'),
                     'url' => Url::fromRoute('ek_sales.quotations.print_excel', ['id' => $r->id]),
+                    'attributes' => ['class' => ['ico', 'excel']]
                 );
             }
             
@@ -314,7 +316,7 @@ class QuotationsController extends ControllerBase {
             '#attributes' => array('id' => 'quotations_table'),
             '#empty' => $this->t('No quotation available.'),
             '#attached' => array(
-                'library' => array('ek_sales/ek_sales_css'),
+                'library' => array('ek_sales/ek_sales_css', 'ek_admin/ek_admin_css'),
             ),
         );
 
@@ -348,7 +350,7 @@ class QuotationsController extends ControllerBase {
             $items['type'] = 'edit';
             $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Qotation')))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -378,7 +380,7 @@ class QuotationsController extends ControllerBase {
             $items['type'] = 'edit';
             $items['message'] = ['#markup' => t('@document cannot be converted.', array('@document' => t('Qotation')))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -438,7 +440,7 @@ class QuotationsController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.quotations.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -513,7 +515,7 @@ class QuotationsController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.quotations.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -569,7 +571,7 @@ class QuotationsController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.quotations.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -597,7 +599,7 @@ class QuotationsController extends ControllerBase {
             $items['type'] = 'delete';
             $items['message'] = ['#markup' => t('@document cannot be deleted.' , array('@document' => t('Quotation') ))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             $build['delete_quotation'] = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',

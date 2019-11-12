@@ -75,7 +75,7 @@ class Purchase extends FormBase {
         $url = Url::fromRoute('ek_sales.purchases.list', array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url" >List</a>', array('@url' => $url ) ) ,
+            '#markup' => t('<a href="@url">List</a>', array('@url' => $url ) ) ,
 
         );
 
@@ -1012,7 +1012,7 @@ class Purchase extends FormBase {
         if ($aid == '') {
             $l = "../ek_admin/company/edit-settings/" . $coid;
             $form['options']['alert']['#prefix'] = "<div id='alert' class='messages messages--warning'>";
-            $form['options']['alert']['#markup'] = t('There is no liability account set for this company and currency. Please <a href=@l>edit settings</a> or contact administrator.',['@l' => $l]);
+            $form['options']['alert']['#markup'] = t("There is no liability account set for this company and currency. Please <a href='@l'>edit settings</a> or contact administrator.",['@l' => $l]);
             $form['options']['alert']['#description'] = '';
         } else {
             $form['options']['alert']['#prefix'] = "<div id='alert' class=''>";
@@ -1081,7 +1081,7 @@ class Purchase extends FormBase {
             $aid = $settings->get('liability_account', $form_state->getValue('currency') );
             if($aid == '') {
                 $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
-                $form_state->setErrorByName('currency', t('There is no liability account set for this company and currency. Please <a href=@l>edit settings</a> or contact administrator.',['@l' => $l]));
+                $form_state->setErrorByName('currency', t("There is no liability account set for this company and currency. Please <a href='@l'>edit settings</a> or contact administrator.",['@l' => $l]));
             }
         }
     
@@ -1215,10 +1215,7 @@ class Purchase extends FormBase {
                 ->execute();
             $init_data = $query->fetchAssoc();
             $poid = $init_data['id'];
-            /*
-            $poid = Database::getConnection('external_db', 'external_db')
-                    ->query('SELECT id from {ek_sales_purchase} where serial=:s', array(':s' => $serial))
-                    ->fetchField();*/
+            
         }
 
 
@@ -1486,9 +1483,11 @@ class Purchase extends FormBase {
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])
                             ->fetchField();
                     $inputs = [];
-                    foreach($fields1 as $key => $value) {
-                        if ($value != $init_data[$key]) {
-                            $inputs[] = $key;
+                    if(isset($init_data)){
+                        foreach($fields1 as $key => $value) {
+                            if ($value != $init_data[$key]) {
+                                $inputs[] = $key;
+                            }
                         }
                     }
                     $param = serialize(

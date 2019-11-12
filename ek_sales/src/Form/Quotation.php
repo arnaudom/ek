@@ -163,7 +163,7 @@ class Quotation extends FormBase {
         $url = Url::fromRoute('ek_sales.quotations.list', array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url" >List</a>', array('@url' => $url)),
+            '#markup' => t('<a href="@url">List</a>', array('@url' => $url)),
         );
         $form['options'] = array(
             '#type' => 'details',
@@ -1394,10 +1394,7 @@ class Quotation extends FormBase {
                     ->execute();
                 $init_data = $query->fetchAssoc();
                 $quid = $init_data['id'];
-                /*
-                $quid = Database::getConnection('external_db', 'external_db')
-                        ->query('SELECT id from {ek_sales_quotation} where serial=:s', array(':s' => $serial))
-                        ->fetchField();*/
+                
             }
         }
 
@@ -1523,9 +1520,11 @@ class Quotation extends FormBase {
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])
                             ->fetchField();
                     $inputs = [];
-                    foreach($fields1 as $key => $value) {
-                        if ($value != $init_data[$key]) {
-                            $inputs[] = $key;
+                    if(isset($init_data)){
+                        foreach($fields1 as $key => $value) {
+                            if ($value != $init_data[$key]) {
+                                $inputs[] = $key;
+                            }
                         }
                     }
                     $param = serialize(
