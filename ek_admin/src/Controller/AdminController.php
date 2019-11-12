@@ -852,7 +852,7 @@ class AdminController extends ControllerBase {
             $url = Url::fromRoute('ek_admin.company.list', [], [])->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('Access denied')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.', ['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -882,7 +882,7 @@ class AdminController extends ControllerBase {
             $url = Url::fromRoute('ek_admin.company.list', [], [])->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('Access denied')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.', ['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',

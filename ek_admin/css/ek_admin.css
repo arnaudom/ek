@@ -84,19 +84,19 @@
 }
 
 .red {
-    color: #FF6666;
+    color: #FF6666 !important;
 }
 
 .green {
-    color: #00D744;
+    color: #00D744 !important;
 }
 
 .blue {
-    color: #2E64FE;
+    color: #2E64FE !important;
 }
 
 .orange {
-    color: #FFC900;
+    color: #FFC900 !important;
 }
 
 .ek_messages {
@@ -124,11 +124,10 @@
 .ico:before {
     font-family: FontAwesome;
     font-size:1.3em;
-    color: #446E9B;
     width: 1.4em;
     text-align: center;
     display: inline-block;
-    text-rendering: auto;
+    text-decoration: none;
 }
 
 .show-ico:before {
@@ -140,6 +139,12 @@
 }
 .print:before {
   content: "\f02f";
+}
+.pdf:before {
+  content: "\f1c1";
+}
+.excel:before {
+  content: "\f1c3";
 }
 
 /*
