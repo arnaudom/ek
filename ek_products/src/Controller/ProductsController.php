@@ -213,7 +213,7 @@ class ProductsController extends ControllerBase {
                     'title' => $this->t('Clone'),
                     'url' => Url::fromRoute('ek_products.clone', ['id' => $r->id,]),
                 );
-                $links['del'] = array(
+                $links['delete'] = array(
                     'title' => $this->t('Delete'),
                     'url' => Url::fromRoute('ek_products.delete', ['id' => $r->id]),
                 );
@@ -229,7 +229,7 @@ class ProductsController extends ControllerBase {
             $extract = serialize($extract);
             $excel = Url::fromRoute('ek_products.excel_items', array('param' => $extract), array())->toString();
             $build['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>",
             );
             $build['items_table'] = array(
                 '#type' => 'table',
@@ -238,7 +238,7 @@ class ProductsController extends ControllerBase {
                 '#attributes' => array('id' => 'items_table'),
                 '#empty' => $this->t('No item found'),
                 '#attached' => array(
-                    'library' => array('ek_products/ek_products_css'),
+                    'library' => array('ek_products/ek_products_css','ek_admin/admin_css'),
                 ),
             );
 

@@ -106,7 +106,7 @@ class InstallController extends ControllerBase {
 	UNIQUE INDEX `Index 1` (`id`, `itemcode`)
         )
         COMMENT='items list'
-        COLLATE='utf8_general_ci'
+        COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB
         ";
 
@@ -143,7 +143,7 @@ class InstallController extends ControllerBase {
 	INDEX `Index 2` (`itemcode`)
         )
         COMMENT='Itams barcode list'
-        COLLATE='utf8_general_ci'
+        COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB";
 
     $db = Database::getConnection('external_db', 'external_db')->query($query);
@@ -157,7 +157,7 @@ class InstallController extends ControllerBase {
 	INDEX `Index 2` (`itemcode`)
         )
         COMMENT='List images for items'
-        COLLATE='utf8_general_ci'
+        COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB";
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'items images table created <br/>';    
@@ -179,7 +179,7 @@ class InstallController extends ControllerBase {
 	INDEX `Index 2` (`itemcode`)
         )
         COMMENT='packing data and stock value'
-        COLLATE='utf8_general_ci'
+        COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB";
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'items packings table created <br/>';  
@@ -201,7 +201,7 @@ class InstallController extends ControllerBase {
 	PRIMARY KEY (`id`)
         )
         COMMENT='Prices data'
-        COLLATE='utf8_general_ci'
+        COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB";  
     
     $db = Database::getConnection('external_db', 'external_db')->query($query);
@@ -217,7 +217,7 @@ class InstallController extends ControllerBase {
 	PRIMARY KEY (`id`)
         )
         COMMENT='Record of prices history per item'
-        COLLATE='utf8_general_ci'
+        COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB";
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'items prices history created <br/>'; 

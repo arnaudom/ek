@@ -68,7 +68,7 @@ $objPHPExcel->setActiveSheetIndex(0)
             ->setCellValue('Z3','COLLECTION') ;  
                                          
 $objPHPExcel->getActiveSheet()->getRowDimension('3')->setRowHeight(26.5); 
-$objPHPExcel->getActiveSheet()->getColumnDimension('A:Z')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getStyle('A3:Z3')->getAlignment()->setWrapText(true);
 $objPHPExcel->getActiveSheet()->getStyle('A3:Z3')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle('A3:Z3')->getFill()->getStartColor()->setARGB('D8D8D8');
