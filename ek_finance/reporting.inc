@@ -98,7 +98,7 @@ foreach($accounts_exp_class as $key => $name) {
                 if ($sumValue == "") {
                     $row[$m]  = 0;
                 } else {
-                    $row[$m] = round($sumValue / $divide, 2);
+                    $row[$m] = round($sumValue / $divide, $rounding);
                 }
 
                 $sum_row_amount = $sum_row_amount + $sumValue;
@@ -106,7 +106,7 @@ foreach($accounts_exp_class as $key => $name) {
 
             } 
 
-            $row['sumRow'] =  round($sum_row_amount / $divide, 2);
+            $row['sumRow'] =  round($sum_row_amount / $divide, $rounding);
 
             if ($sum_row_amount != 0) {
                $rows[$aid . ' - '. $d2->aname] = $row;
@@ -123,14 +123,14 @@ foreach($accounts_exp_class as $key => $name) {
                 if ($subtotal_column_purchases[$m] == "") {
                     $subTotal[$m] = 0;
                 } else {
-                    $subTotal[$m] =  round($subtotal_column_purchases[$m] / $divide,2);
+                    $subTotal[$m] =  round($subtotal_column_purchases[$m] / $divide,$rounding);
                     $sum_row_amount = $sum_row_amount + $subtotal_column_purchases[$m];
                     $grandtotal_column_purchases[$m] += $subtotal_column_purchases[$m];
                 }
        
             } 
 
-            $subTotal['sumRow'] = round($sum_row_amount / $divide, 2);
+            $subTotal['sumRow'] = round($sum_row_amount / $divide, $rounding);
             $sum_row_amount = 0;
             $classes[] = ['id' => $class, 'name' => $name, 'rows' => $rows, 'subTotal' => $subTotal];
         }
@@ -141,9 +141,9 @@ foreach($accounts_exp_class as $key => $name) {
  * Purchases grand total
 */ 
 $grand_total_purchase = [];
-$grandtotal_column_purchases['sumRow'] = round(array_sum($grandtotal_column_purchases) / $divide, 2);
+$grandtotal_column_purchases['sumRow'] = round(array_sum($grandtotal_column_purchases) / $divide, $rounding);
 for ($m = 1; $m <= 12; $m++) {
-    $grandtotal_column_purchases[$m] = round($grandtotal_column_purchases[$m] / $divide, 2);    
+    $grandtotal_column_purchases[$m] = round($grandtotal_column_purchases[$m] / $divide, $rounding);    
 } 
 
 array_push($purchases , ['classes' => $classes, 'total' =>  $grandtotal_column_purchases]);
@@ -228,7 +228,7 @@ foreach($accounts_exp_class as $key => $name) {
             if ($sumValue == "") {
                 $row[$m]  = 0;
             } else {
-                $row[$m] = round($sumValue / $divide, 2);
+                $row[$m] = round($sumValue / $divide, $rounding);
             }
 
             $sum_row_amount = $sum_row_amount + $sumValue;
@@ -236,7 +236,7 @@ foreach($accounts_exp_class as $key => $name) {
             
         } 
 
-        $row['sumRow'] =  round($sum_row_amount / $divide, 2);
+        $row['sumRow'] =  round($sum_row_amount / $divide, $rounding);
 
         if ($sum_row_amount != 0) {
             $rows[$aid . ' - '. $d2->aname] = $row;
@@ -252,12 +252,12 @@ foreach($accounts_exp_class as $key => $name) {
             if ($subtotal_column_expenses[$m] == "") {
                  $subTotal[$m] = 0;
             } else {
-                $subTotal[$m] =  round($subtotal_column_expenses[$m] / $divide,2);
+                $subTotal[$m] =  round($subtotal_column_expenses[$m] / $divide,$rounding);
                 $sum_row_amount = $sum_row_amount + $subtotal_column_expenses[$m];
                $grandtotal_column_expenses[$m] += $subtotal_column_expenses[$m];
             }
         }
-            $subTotal['sumRow'] = round($sum_row_amount / $divide, 2);
+            $subTotal['sumRow'] = round($sum_row_amount / $divide, $rounding);
             $sum_row_amount = 0;
             $classes[] = ['id' => $class, 'name' => $name, 'rows' => $rows, 'subTotal' => $subTotal];
        
@@ -271,9 +271,9 @@ foreach($accounts_exp_class as $key => $name) {
 
 $grand_total_expenses = [];
 
-$grandtotal_column_expenses['sumRow'] = round(array_sum($grandtotal_column_expenses) / $divide, 2);
+$grandtotal_column_expenses['sumRow'] = round(array_sum($grandtotal_column_expenses) / $divide, $rounding);
 for ($m = 1; $m <= 12; $m++) {
-    $grandtotal_column_expenses[$m] = round($grandtotal_column_expenses[$m] / $divide, 2);    
+    $grandtotal_column_expenses[$m] = round($grandtotal_column_expenses[$m] / $divide, $rounding);    
 } 
 
 array_push($expenses , ['classes' => $classes, 'total' =>  $grandtotal_column_expenses]);
@@ -375,7 +375,7 @@ foreach($accounts_income_class as $key => $name) {
             if ($sumValue == "") {
                 $row[$m]  = 0;
             } else {
-                $row[$m] = round($sumValue / $divide, 2);
+                $row[$m] = round($sumValue / $divide, $rounding);
             }
 
             $sum_row_amount = $sum_row_amount + $sumValue;
@@ -383,7 +383,7 @@ foreach($accounts_income_class as $key => $name) {
             
         } //for loop months
 
-        $row['sumRow'] =  round($sum_row_amount / $divide, 2);
+        $row['sumRow'] =  round($sum_row_amount / $divide, $rounding);
         if ($sum_row_amount != 0) {
                $rows[$aid . ' - '. $d2->aname] = $row;
                $flag = TRUE;
@@ -398,13 +398,13 @@ foreach($accounts_income_class as $key => $name) {
             if ($subtotal_column_income[$m] == "") {
                     $subTotal[$m] = 0;
                 } else {
-                    $subTotal[$m] =  round($subtotal_column_income[$m] / $divide,2);
+                    $subTotal[$m] =  round($subtotal_column_income[$m] / $divide,$rounding);
                     $sum_row_amount = $sum_row_amount + $subtotal_column_income[$m];
                     $grandtotal_column_income[$m] += $subtotal_column_income[$m];
                 }
         } 
     
-    $subTotal['sumRow'] = round($sum_row_amount / $divide, 2);
+    $subTotal['sumRow'] = round($sum_row_amount / $divide, $rounding);
     $sum_row_amount = 0;
     $classes[] = ['id' => $class, 'name' => $name, 'rows' => $rows, 'subTotal' => $subTotal];        
         
@@ -417,9 +417,9 @@ foreach($accounts_income_class as $key => $name) {
 */ 
 
 $grand_total_revenue = [];
-$grandtotal_column_income['sumRow'] = round(array_sum($grandtotal_column_income) / $divide, 2);
+$grandtotal_column_income['sumRow'] = round(array_sum($grandtotal_column_income) / $divide, $rounding);
 for ($m = 1; $m <= 12; $m++) {
-    $grandtotal_column_income[$m] = round($grandtotal_column_income[$m] / $divide, 2);    
+    $grandtotal_column_income[$m] = round($grandtotal_column_income[$m] / $divide, $rounding);    
 } 
 
 array_push($income , ['classes' => $classes, 'total' =>  $grandtotal_column_income]);
@@ -457,11 +457,11 @@ for ($m = 1; $m <= 12; $m++) {
     if ($sumValue == "") {
         $grandtotal_column_internal_received[$m] = 0;
     } else {
-        $grandtotal_column_internal_received[$m] = round($sumValue / $divide, 2);
+        $grandtotal_column_internal_received[$m] = round($sumValue / $divide, $rounding);
         $sum += $sumValue;
     }
     
-    $grandtotal_column_internal_received['sumRow'] = round($sum / $divide, 2);
+    $grandtotal_column_internal_received['sumRow'] = round($sum / $divide, $rounding);
 }
 
 array_push($internal_received, $grandtotal_column_internal_received);
@@ -497,11 +497,11 @@ for ($m = 1; $m <= 12; $m++) {
     if ($sumValue == "") {
         $grandtotal_column_internal_paid[$m] = 0;
     } else {
-        $grandtotal_column_internal_paid[$m] = round($sumValue / $divide, 2);
+        $grandtotal_column_internal_paid[$m] = round($sumValue / $divide, $rounding);
         $sum += $sumValue;
     }
     
-    $grandtotal_column_internal_paid['sumRow'] = round($sum / $divide, 2);
+    $grandtotal_column_internal_paid['sumRow'] = round($sum / $divide, $rounding);
 }
 
 array_push($internal_paid, $grandtotal_column_internal_paid);
@@ -516,9 +516,9 @@ $sum_row_amount = 0;
 $sum = 0;
 for ($m = 1; $m <= 12; $m++) {
     $sum += $grandtotal_column_income[$m] - $grandtotal_column_purchases[$m] - $grandtotal_column_expenses[$m];
-    $balances['pl'][$m] = round($grandtotal_column_income[$m] - $grandtotal_column_purchases[$m] - $grandtotal_column_expenses[$m],2);
+    $balances['pl'][$m] = round($grandtotal_column_income[$m] - $grandtotal_column_purchases[$m] - $grandtotal_column_expenses[$m],$rounding);
 }
-    $balances['pl']['sumRow'] =  round($sum / $divide, 2);
+    $balances['pl']['sumRow'] =  round($sum / $divide, $rounding);
 
 /*
  * Balances
@@ -554,13 +554,13 @@ for ($m = 1; $m <= 12; $m++) {
     if ($not_received == "") {
         $balances['inyr'][$m] = 0;
     } else {
-        $balances['inyr'][$m] = round($not_received / $divide, 2);
+        $balances['inyr'][$m] = round($not_received / $divide, $rounding);
         $sum += $not_received;
     }
 
 } //for loop months   
 
-$balances['inyr']['sumRow'] =  round($sum / $divide, 2);
+$balances['inyr']['sumRow'] =  round($sum / $divide, $rounding);
 
 
 
@@ -595,10 +595,10 @@ for ($m = 1; $m <= 12; $m++) {
     if ($not_paid == "") {
         $balances['short'][$m] = 0;
     } else {
-        $balances['short'][$m] = round($not_paid / $divide, 2);
+        $balances['short'][$m] = round($not_paid / $divide, $rounding);
         $sum += $not_received;
     }
-    $balances['short']['sumRow'] =  round($sum / $divide, 2);
+    $balances['short']['sumRow'] =  round($sum / $divide, $rounding);
 } //for loop months   
 
 
@@ -635,10 +635,10 @@ for ($m = 1; $m <= 12; $m++) {
     if ($not_paid == "") {
         $balances['enyp'][$m] = 0;
     } else {
-        $balances['enyp'][$m] = round($not_paid / $divide, 2);
+        $balances['enyp'][$m] = round($not_paid / $divide, $rounding);
         $sum += $not_received;
     }
-    $balances['enyp']['sumRow'] =  round($sum / $divide, 2);
+    $balances['enyp']['sumRow'] =  round($sum / $divide, $rounding);
 
 }
 

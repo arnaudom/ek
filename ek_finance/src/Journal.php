@@ -155,6 +155,7 @@ class Journal {
     public function record($j) {
 
         $settings = new FinanceSettings();
+        $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
         $baseCurrency = $settings->get('baseCurrency');
         $companysettings = new CompanySettings($j['coid']);
         $currency = new CurrencyData();
@@ -240,7 +241,7 @@ class Journal {
                  * the amount received (debited) is converted into the currency of the payment account
                  */
                 if ($account_currency <> $j['currency']) {
-                    $debit = round($j['fxRate2'] * $j['value'], 2);
+                    $debit = round($j['fxRate2'] * $j['value'], $rounding);
                 } else {
                     $debit = $j['value'];
                 }
@@ -404,11 +405,7 @@ class Journal {
                     $Obj = $query->execute()->fetchObject();
                     $account_currency = $Obj->currency;
                     $account_aid = $Obj->aid;
-                    /*
-                      $query = "SELECT currency,aid from {ek_bank_accounts} where id=:id ";
-                      $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $j['aid']))->fetchAssoc();
-                      $account_currency = $data['currency'];
-                      $account_aid = $data['aid']; */
+                    
                 }
 
                 /*
@@ -416,7 +413,7 @@ class Journal {
                  * the amount paid (credited) is converted into the currency of the payment account
                  */
                 if ($account_currency <> $j['currency']) {
-                    $credit = round($j['value'] / $j['fxRate'], 2);
+                    $credit = round($j['value'] / $j['fxRate'], $rounding);
                 } else {
                     $credit = $j['value'];
                 }
@@ -568,8 +565,8 @@ class Journal {
                  * the amount paid (credited) is converted into the currency of the payment account
                  */
                 if ($account_currency <> $j['currency']) {
-                    $credit = round($j['fxRate'] * $j['value'], 2);
-                    $j['tax'] = round($j['fxRate'] * $j['tax'], 2);
+                    $credit = round($j['fxRate'] * $j['value'], $rounding);
+                    $j['tax'] = round($j['fxRate'] * $j['tax'], $rounding);
                 } else {
                     $credit = $j['value'];
                 }
@@ -711,7 +708,7 @@ class Journal {
 
                 if ($j['tax'] > 0) {
                     //Liability Tax payable account need to be DT with CT of receivable account
-                    $value = round($j['value'] * $j['tax'] / 100, 2);
+                    $value = round($j['value'] * $j['tax'] / 100, $rounding);
                     $liability = $companysettings->get('stax_collect_aid');
 
                     self::save($liability, '0', $j['coid'], 'debit', 'invoice cn', $j['reference'], $j['date'], $value, '0', $j['currency'], $j['comment']);
@@ -754,7 +751,7 @@ class Journal {
                 if ($j['tax'] > 0) {
                     //Asset Tax deductible account need to be CT against liability payable
 
-                    $value = round($j['value'] * $j['tax'] / 100, 2);
+                    $value = round($j['value'] * $j['tax'] / 100, $rounding);
                     $asset = $companysettings->get('stax_deduct_aid');
 
                     self::save($asset, '0', $j['coid'], 'credit', 'purchase dn', $j['reference'], $j['date'], $value, '0', $j['currency'], $j['comment']);
@@ -1067,7 +1064,6 @@ class Journal {
      *                    );
      * @return array 
      *   with transaction value , transaction value in base currency
-     *   rounding is currently set to 2
      */
 
     function transactions($data) {
@@ -1077,6 +1073,8 @@ class Journal {
         $coid = $data['coid'];
         $d1 = $data['from'];
         $d2 = $data['to'];
+        $settings = new FinanceSettings();
+        $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
 
         if (isset($data['archive']) && $data['archive'] == TRUE) {
             //extract data from archive tables
@@ -1121,7 +1119,7 @@ class Journal {
             $transaction_exc = 0;
         }
 
-        return array(round($transactions, 2), round($transactions + $transaction_exc, 2));
+        return array(round($transactions, $rounding), round($transactions + $transaction_exc, $rounding));
     }
 
     /*
@@ -1145,7 +1143,9 @@ class Journal {
         }
 
         if ($rate <> $current_rate) {
-            $variation = round((($value / $current_rate) - $value / $rate), 2);
+            $settings = new FinanceSettings();
+            $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
+            $variation = round((($value / $current_rate) - $value / $rate), $rounding);
             return $variation;
         } else {
             return 0;
@@ -1487,6 +1487,7 @@ class Journal {
                 break;
             case 'pos sale':
                 $comment = t('POS sale');
+                $currency = "";
                 break;
             case 'general memo':
                 $query = "SELECT serial,mission from {ek_expenses_memo} WHERE id=:id";
@@ -1527,6 +1528,7 @@ class Journal {
                 break;
             case 'receipt pos':
                 $comment = t('POS receipt');
+                $currency = "";
                 break;
             case 'payroll':
             case 'expense payroll':
@@ -1594,6 +1596,7 @@ class Journal {
 
         $settings = new FinanceSettings();
         $baseCurrency = $settings->get('baseCurrency');
+        $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
         //data holder
         $data = array();
         $data['baseCurrency'] = $baseCurrency;
@@ -1780,14 +1783,14 @@ class Journal {
             $rows['line']['total'] = array(
                 'aid' => $r->aid,
                 'aname' => $aname,
-                'balance_open' => round($balance_open, 2),
-                'balance_open_base' => round($balance_open_base, 2),
-                'sum_debit' => round($sum_d_loc, 2),
-                'sum_debit_exchange' => round($sum_d_base, 2),
-                'sum_credit' => round($sum_c_loc, 2),
-                'sum_credit_exchange' => round($sum_c_base, 2),
-                'closing' => abs(round($closing, 2)),
-                'closing_exchange' => abs(round($closing_exchange, 2)),
+                'balance_open' => round($balance_open, $rounding),
+                'balance_open_base' => round($balance_open_base, $rounding),
+                'sum_debit' => round($sum_d_loc, $rounding),
+                'sum_debit_exchange' => round($sum_d_base, $rounding),
+                'sum_credit' => round($sum_c_loc, $rounding),
+                'sum_credit_exchange' => round($sum_c_base, $rounding),
+                'closing' => abs(round($closing, $rounding)),
+                'closing_exchange' => abs(round($closing_exchange, $rounding)),
                 'account' => $acc,
             );
 
@@ -1915,6 +1918,7 @@ class Journal {
 
         $settings = new FinanceSettings();
         $baseCurrency = $settings->get('baseCurrency');
+        $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
         //data holder
         $data = array();
         $data['baseCurrency'] = $baseCurrency;
@@ -1955,14 +1959,14 @@ class Journal {
 
 
         $rows['line']['total'] = array(
-            'balance_open' => round($balance_open, 2),
-            'balance_open_base' => round($balance_open_base, 2),
-            'sum_debit' => round($sum_d_loc, 2),
-            'sum_debit_exchange' => round($sum_d_base, 2),
-            'sum_credit' => round($sum_c_loc, 2),
-            'sum_credit_exchange' => round($sum_c_base, 2),
-            'closing' => abs(round($closing, 2)),
-            'closing_exchange' => abs(round($closing_exchange, 2)),
+            'balance_open' => round($balance_open, $rounding),
+            'balance_open_base' => round($balance_open_base, $rounding),
+            'sum_debit' => round($sum_d_loc, $rounding),
+            'sum_debit_exchange' => round($sum_d_base, $rounding),
+            'sum_credit' => round($sum_c_loc, $rounding),
+            'sum_credit_exchange' => round($sum_c_base, $rounding),
+            'closing' => abs(round($closing, $rounding)),
+            'closing_exchange' => abs(round($closing_exchange, $rounding)),
             'account' => $acc,
         );
 
@@ -2010,6 +2014,7 @@ class Journal {
         $total_net = 0;
         $total_net_base = 0;
         $settings = new FinanceSettings();
+        $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
         $dates = self::getFiscalDates($t['coid'], $t['year'], $t['month']);
         $ytd = $dates['fiscal_start'];
         $d1 = $t['year'] . '-' . $t['month'] . '-01';
@@ -2113,13 +2118,13 @@ class Journal {
             }
         }//while
 
-        if (abs(round($total_td, 2) - round($total_tc, 2)) > 0) {
+        if (abs(round($total_td, $rounding) - round($total_tc, $rounding)) > 0) {
             $error1 = 1;
         } else {
             $error1 = 0;
         }
 
-        if (abs(round($total_ytdd, 2) - round($total_ytdc, 2)) > 0) {
+        if (abs(round($total_ytdd, $rounding) - round($total_ytdc, $rounding)) > 0) {
             $error2 = 1;
         } else {
             $error2 = 0;
@@ -2143,7 +2148,6 @@ class Journal {
         return $data;
     }
 
-//trial
 
     /*
      * calculate the opening value of an account
@@ -2701,6 +2705,7 @@ class Journal {
             $total = 0;
             $settings = new \Drupal\ek_finance\FinanceSettings();
             $baseCurrency = $settings->get('baseCurrency');
+            $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
             $company = new \Drupal\ek_admin\CompanySettings($coid);
             $y = $company->get('fiscal_year') - 1;
             $from = $y . '-' . $company->get('fiscal_month') . '-31';
@@ -2738,7 +2743,7 @@ class Journal {
                     $base = $base + $s->value;
                 }
 
-                $doc_rate = round($value / $base, 2);
+                $doc_rate = round($value / $base, $rounding);
 
                 $receipt_account = $company->get($acc, $currency);
                 //check receipt rate
@@ -2762,7 +2767,7 @@ class Journal {
                     $base = $base + $r->value;
                 }
 
-                $receipt_rate = round($value / $base, 2);
+                $receipt_rate = round($value / $base, $rounding);
 
                 $ok = '';
                 if ($param == 'i') {

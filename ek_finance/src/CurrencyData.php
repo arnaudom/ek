@@ -83,15 +83,17 @@ use Drupal\Core\Database\Database;
    */ 
  public static function journalexchange($currency,$value,$rate = NULL) {
 
+    $financeSettings = new \Drupal\ek_finance\FinanceSettings();
+    $rounding = (!null == $financeSettings->get('rounding')) ? $financeSettings->get('rounding'):2;
     if ($rate == '') {
     // the rate is not given by input , check value in DB
       $rate = self::rate($currency);
-      $exchange = round(($value/$rate-$value),2);
+      $exchange = round(($value/$rate-$value),$rounding);
         } else {
-        // the rate is given by input
-        $exchange = round( ($value/$rate-$value), 2);
-
+            // the rate is given by input
+            $exchange = round( ($value/$rate-$value),$rounding);
         }
+        
     return $exchange;
 
     }

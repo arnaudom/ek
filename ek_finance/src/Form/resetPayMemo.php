@@ -66,7 +66,7 @@ class resetPayMemo extends FormBase {
         $url = Url::fromRoute($route, array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url" >List</a>', array('@url' => $url)),
+            '#markup' => t('<a href="@url">List</a>', array('@url' => $url)),
         );
 
         $query = Database::getConnection('external_db', 'external_db')

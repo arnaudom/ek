@@ -6,6 +6,9 @@
 {% if items.excel %}
     {{ items.excel|raw }}
 {% endif %}
+
+{% set rounding = items.rounding %}
+
 <a href='#'><div class='toggle_exchange' style='float:right'>[-]</div></a>
 
 <section class="journal">
@@ -15,7 +18,7 @@
 
             {% set ledger = rows.journal.ledger.0 %}
 
-            <table style='text-align: left; width: 90%;' id='' class='' >
+            <table id='' class='' >
                 <thead class=''>
                     <tr class='' style='font-weight: bold;'>
                         <td style="width: 10%;">
@@ -41,8 +44,8 @@
                     <tr class=''>
                         <td colspan='7'>
                             <span id=''>{{ 'opening'|t }} </span>
-                            {{ ledger.line.total.balance_open | number_format(2) }}
-                            ( {{ ledger.line.total.balance_open_base | number_format(2) }} {{ items.data.baseCurrency }} )
+                            {{ ledger.line.total.balance_open | number_format(rounding) }}
+                            ( {{ ledger.line.total.balance_open_base | number_format(rounding) }} {{ items.data.baseCurrency }} )
                         </td>
                     </tr>
 
@@ -74,10 +77,10 @@
 
                                 {#align values on left or right column based on Dt/Ct#}
                                 {% if row.type == "debit" %}
-                                    <td  class='right'>{{  row.value| number_format(2)  }}</td><td></td>
+                                    <td  class='right'>{{  row.value| number_format(rounding)  }}</td><td></td>
 
                                 {% else %}
-                                    <td  ></td><td class='right'>{{  row.value| number_format(2)  }}</td>
+                                    <td  ></td><td class='right'>{{  row.value| number_format(rounding)  }}</td>
                                     {% endif %}
                                     {#indicate reconciliation status#}                      
                                     {% if row.reconcile == "1" %}  
@@ -94,8 +97,8 @@
                                 <td colspan='4'>
                                     <span id=''>{{ 'Total period'|t }}</span>
                                 </td>
-                                <td class='journal-total right' >{{  row.sum_debit | number_format(2) }}</td>
-                                <td class='journal-total right'>{{  row.sum_credit | number_format(2) }}</td><td></td>
+                                <td class='journal-total right' >{{  row.sum_debit | number_format(rounding) }}</td>
+                                <td class='journal-total right'>{{  row.sum_credit | number_format(rounding) }}</td><td></td>
                             </tr>
 
                             {% if flag_exchange == 1 %}
@@ -105,10 +108,10 @@
                                         {{ items.data.baseCurrency }}
                                     </td>
                                     <td class='right'>
-                                        {{  (row.sum_debit+row.sum_debit_exchange) | number_format(2) }}
+                                        {{  (row.sum_debit+row.sum_debit_exchange) | number_format(rounding) }}
                                     </td>
                                     <td class='right'>
-                                        {{  (row.sum_credit+row.sum_credit_exchange) | number_format(2) }}
+                                        {{  (row.sum_credit+row.sum_credit_exchange) | number_format(rounding) }}
                                     </td>
                                     <td></td>
                                 </tr>
@@ -120,13 +123,13 @@
 
                                 <tr class='journal-closing'>
                                     <td colspan='4'><span id=''>{{ 'Closing'|t }}</span></td>
-                                    <td  class='right journal-total'>{{  row.closing | number_format(2) }}</td><td ></td> <td></td>
+                                    <td  class='right journal-total'>{{  row.closing | number_format(rounding) }}</td><td ></td> <td></td>
                                 </tr>
 
                                 {% if flag_exchange == 1 %}
                                     <tr class='journal-closing'>
                                         <td colspan='4'><span id=''>{{ 'Closing'|t }}</span> {{ items.data.baseCurrency }} </td>
-                                        <td  class='right journal-total'>{{  row.closing_exchange | number_format(2) }}</td><td ></td> <td></td>
+                                        <td  class='right journal-total'>{{  row.closing_exchange | number_format(rounding) }}</td><td ></td> <td></td>
                                     </tr>
                                 {% endif %}
 
@@ -136,28 +139,21 @@
                                 <tr class='journal-closing'>
                                     <td colspan='4'><span id=''>{{ 'Closing'|t }}</span></td>
                                     <td ></td>
-                                    <td class='right journal-total'>{{  row.closing | number_format(2) }}</td> <td></td>
+                                    <td class='right journal-total'>{{  row.closing | number_format(rounding) }}</td> <td></td>
                                 </tr>
 
                                 {% if flag_exchange == 1 %}
                                     <tr class='journal-closing'>
                                         <td colspan='4'><span id=''> {{ 'Closing'|t }}</span> {{ items.data.baseCurrency }} </td>
-                                        <td ></td><td  class='right journal-total'>{{  row.closing_exchange | number_format(2) }}</td> <td></td>
+                                        <td ></td><td  class='right journal-total'>{{  row.closing_exchange | number_format(rounding) }}</td> <td></td>
                                     </tr>             
                                 {% endif %}
 
-
                             {% endif %}             
-
 
                         {% endif %}{#total#}
 
-
-                    {% endfor %} {#line in lines#}              
-
-
-
-
+                    {% endfor %} {#line in lines#}          
                 </tbody>
             </table>
         

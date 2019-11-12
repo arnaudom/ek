@@ -42,6 +42,8 @@ class PayrollRecord extends FormBase {
      */
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
+        $this->settings = new FinanceSettings();
+        $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding'):2;
     }
 
     /**
@@ -65,8 +67,6 @@ class PayrollRecord extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $param = NULL) {
 
-        //$pay = $_SESSION['pay'];
-        //$_SESSION['pay'] = NULL;
         $pcode = [];
         $param = unserialize($param);
         $settings = NEW HrSettings($param['coid']);
@@ -513,11 +513,11 @@ class PayrollRecord extends FormBase {
                     $rate1 = Database::getConnection('external_db', 'external_db')
                             ->query($query, [':c' => $crt_currency])
                             ->fetchField();
-                    $net = round($net * $rate1 / $rate2, 2);
-                    $amount = round($net / $value['fx'], 2);
+                    $net = round($net * $rate1 / $rate2, $this->rounding);
+                    $amount = round($net / $value['fx'], $this->rounding);
                     $currency = $crt_currency;
                 } else {
-                    $amount = round($net / $value['fx'], 2);
+                    $amount = round($net / $value['fx'], $this->rounding);
                     $currency = $value['currency'];
                 }
 
@@ -574,8 +574,8 @@ class PayrollRecord extends FormBase {
 
                 if ($value['currency'] <> $crt_currency) {
                     //currency of credit account is different from currency of value    
-                    $net = round($net * $rate1 / $rate2, 2);
-                    $gross = round($gross * $rate1 / $rate2, 2);
+                    $net = round($net * $rate1 / $rate2, $this->rounding);
+                    $gross = round($gross * $rate1 / $rate2, $this->rounding);
                     $currency = $crt_currency;
                 } else {
                     $currency = $value['currency'];

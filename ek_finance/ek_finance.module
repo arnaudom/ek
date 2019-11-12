@@ -76,6 +76,12 @@ function ek_finance_theme() {
       'template' => 'ek_finance_dashboard',
       'variables' => array('items' => array()),
     ), 
+    //expenses list
+    'ek_finance_list_expenses' => array
+    (
+      'template' => 'ek_finance_list_expenses',
+      'variables' => array('items' => array()),
+    ),
     //monthly reoprt, budget
     'ek_finance_reporting' => array
     (

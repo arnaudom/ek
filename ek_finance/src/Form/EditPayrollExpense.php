@@ -95,7 +95,7 @@ class EditPayrollExpense extends FormBase {
         $form['cancel'] = array(
             '#type' => 'item',
             '#weight' => -16,
-            '#markup' => t('<a href="@url" >List</a>', array('@url' => Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString())),
+            '#markup' => t('<a href="@url">List</a>', array('@url' => Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString())),
         );
 
         if ($form_state->get('num_items') == NULL) {
@@ -693,7 +693,8 @@ class EditPayrollExpense extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
         $journal = new Journal();
-        $settings = new FinanceSettings(); 
+        $settings = new FinanceSettings();
+        $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding'):2;
         $baseCurrency = $settings->get('baseCurrency');
         $currency = $form_state->getValue('currency'); 
         
@@ -755,9 +756,9 @@ class EditPayrollExpense extends FormBase {
                 $class = substr($exp_account, 0, 2);
                 $gross = $value;
                 if ($baseCurrency != $currency) {
-                    $amount = round($value / $form_state->getValue('fx_rate'), 2);
+                    $amount = round($value / $form_state->getValue('fx_rate'), $rounding);
                 } else {
-                    $amount = round($value , 2);
+                    $amount = round($value , $rounding);
                     $form_state->setValue('fx_rate', 1);
                 }
 
@@ -849,7 +850,7 @@ class EditPayrollExpense extends FormBase {
                 ->fields($exp_fields)
                 ->execute();
 
-        $net = round($gross - $deductions,2);
+        $net = round($gross - $deductions,$rounding);
         $journal->record(
                     array(
                         'source' => "expense payroll",

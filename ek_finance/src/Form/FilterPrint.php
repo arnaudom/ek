@@ -40,7 +40,7 @@ class FilterPrint extends FormBase {
      
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url" >List</a>', array('@url' => $url ) ) ,
+            '#markup' => t('<a href="@url">List</a>', array('@url' => $url ) ) ,
         );
     
         $form['serial'] = array(

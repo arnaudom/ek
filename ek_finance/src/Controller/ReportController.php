@@ -84,6 +84,7 @@ class ReportController extends ControllerBase {
             
             $settings = new FinanceSettings();
                 $baseCurrency = $settings->get('baseCurrency');
+                $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
                 if ($settings->get('budgetUnit') == 2) {
                     $budgetUnit = "'000";
                     $divide = 1000;
@@ -97,7 +98,7 @@ class ReportController extends ControllerBase {
             $items['year'] = $_SESSION['repfilter']['year'];
             $items['baseCurrency'] = $baseCurrency;
             $items['budgetUnit'] = $budgetUnit;
-            
+            $items['rounding'] = $rounding;
             if($coid != 'all') {
                 $viewS = 'allocation';
                 $viewE = 'allocation';
@@ -146,12 +147,13 @@ class ReportController extends ControllerBase {
                             'coid' => $coid,
                             'year' => $year,
                             'baseCurrency' => $baseCurrency,
+                            'rounding' => $rounding,
                             'view' => ['E' => $viewE, 'S' => $viewS]
                         )
                 );
                 $excel = Url::fromRoute('ek_finance_reporting_excel', array('param' => $param), array())->toString();
                 $items['excel'] = array(
-                    '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                    '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>",
                 );
 
                 
@@ -166,7 +168,7 @@ class ReportController extends ControllerBase {
                     '#theme' => 'ek_finance_reporting',
                     '#items' => $items,
                     '#attached' => array(
-                        'library' => array('ek_finance/ek_finance.reporting'),
+                        'library' => array('ek_finance/ek_finance.reporting','ek_admin/ek_admin_css'),
                     ),
                     '#cache' => [
                         'tags' => ['reporting'],
@@ -191,11 +193,12 @@ class ReportController extends ControllerBase {
                             'compilation' => $coid,
                             'year' => $year,
                             'baseCurrency' => $baseCurrency,
+                            'rounding' => $rounding
                         )
                 );
                 $excel = Url::fromRoute('ek_finance_reporting_excel', array('param' => $p), array())->toString();
                 $items['excel'] = array(
-                    '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                    '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>",
                 );
                 return array(
                     '#theme' => 'ek_finance_reporting_compilation',
@@ -260,7 +263,7 @@ class ReportController extends ControllerBase {
             $year = $_SESSION['repfilter']['year'];
             $settings = new FinanceSettings();
             $baseCurrency = $settings->get('baseCurrency');
-
+            $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
             if ($settings->get('budgetUnit') == 2) {
                 $budgetUnit = "'000";
             } elseif ($settings->get('budgetUnit') == 3) {
@@ -274,7 +277,8 @@ class ReportController extends ControllerBase {
                     array(
                         'coid' => $coid,
                         'year' => $year,
-                        'baseCurrency' => $baseCurrency
+                        'baseCurrency' => $baseCurrency,
+                        'rounding' => $rounding
                     )
             );
             $excel = Url::fromRoute('ek_finance_budgeting_excel', array('param' => $param), array())->toString();
@@ -383,7 +387,7 @@ class ReportController extends ControllerBase {
 
             $pdf = Url::fromRoute('ek_finance_extract.profit_loss_pdf', array('param' => $param), array())->toString();
             $items['pdf'] = array(
-                '#markup' => "<a href='" . $pdf . "' target='_blank'>" . t('Export') . "</a>",
+                '#markup' => "<a href='" . $pdf . "' title='" . t('Export to pdf') . "' target='_blank'><span class='ico pdf red'/></a>",
             );
             $post = Url::fromRoute('ek_finance.admin.new_year', array(), array())->toString();
             $items['post'] = array(
@@ -397,7 +401,7 @@ class ReportController extends ControllerBase {
             '#theme' => 'ek_profit_loss',
             '#items' => $items,
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance.reporting', 'ek_finance/ek_finance.dialog'),
+                'library' => array('ek_finance/ek_finance.reporting', 'ek_admin/ek_admin_css'),
             ),
         );
     }
@@ -469,7 +473,7 @@ class ReportController extends ControllerBase {
 
             $pdf = Url::fromRoute('ek_finance_extract.balance_sheet_pdf', array('param' => $param), array())->toString();
             $items['pdf'] = array(
-                '#markup' => "<a href='" . $pdf . "' target='_blank'>" . t('Export') . "</a>",
+                '#markup' => "<a href='" . $pdf . "' title='" . t('Export to pdf') . "' target='_blank'><span class='ico pdf red'/></a>",
             );
 
             if (strtotime(date("Y-m-d")) > strtotime($dates["fiscal_year"]) && $dates['archive'] == FALSE ) {
@@ -487,7 +491,7 @@ class ReportController extends ControllerBase {
             '#theme' => 'ek_balance_sheet',
             '#items' => $items,
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance.reporting', 'ek_finance/ek_finance.dialog'),
+                'library' => array('ek_finance/ek_finance.reporting','ek_admin/ek_admin_css'),
             ),
         );
     }
@@ -545,7 +549,8 @@ class ReportController extends ControllerBase {
             $coid = $_SESSION['cashflowfilter']['coid'];
             $settings = new FinanceSettings();
             $items['baseCurrency'] = $settings->get('baseCurrency');
-
+            $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
+            $items['rounding'] = $rounding;
             include_once drupal_get_path('module', 'ek_finance') . '/cashflow_statement.inc';
 
             $param = serialize(
@@ -557,7 +562,7 @@ class ReportController extends ControllerBase {
 
             $excel = Url::fromRoute('ek_finance.extract.cashflow_statement', array('param' => $param), array())->toString();
             $items['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                '#markup' => "<a href='" . $excel . "' title='". t('Excel download') ."'><span class='ico excel green'/></a>",
             );
         }
 
@@ -566,7 +571,8 @@ class ReportController extends ControllerBase {
             '#theme' => 'ek_finance_cashflow',
             '#items' => $items,
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance.cashflow', 'ek_finance/ek_finance.dialog'),
+                'library' => array('ek_finance/ek_finance.cashflow'),
+                'drupalSettings' => array('rounding' => $rounding),
             ),
         );
     }
@@ -590,6 +596,7 @@ class ReportController extends ControllerBase {
             $chart = $this->settings->get('chart');
             $settings = new FinanceSettings();
             $items['baseCurrency'] = $settings->get('baseCurrency');
+            $items['rounding'] = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
             $extract = unserialize($param);
             $coid = $extract['coid'];
             include_once drupal_get_path('module', 'ek_finance') . '/excel_cash_statement.inc';

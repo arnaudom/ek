@@ -77,7 +77,7 @@ class DeleteMemo extends FormBase {
     $url = Url::fromRoute($route, array(), array())->toString();
     $form['back'] = array(
       '#type' => 'item',
-      '#markup' => t('<a href="@url" >List</a>', array('@url' => $url ) ) ,
+      '#markup' => t('<a href="@url">List</a>', array('@url' => $url ) ) ,
 
     );
     

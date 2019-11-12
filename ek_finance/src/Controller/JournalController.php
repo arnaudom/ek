@@ -82,7 +82,9 @@ class JournalController extends ControllerBase {
         $jid = ($request->query->get('jid')) ? $request->query->get('jid'):NULL;
         $items['filter_journal'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterJournal', $jid);
         $items['data'] = array();
-
+        $settings = new \Drupal\ek_finance\FinanceSettings(); 
+        $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
+        
         //todo filter by module
         $folders = array('general', 'expense', 'receipt', 'payroll', 'invoice', 'pos', 'purchase', 'payment');
 
@@ -107,7 +109,7 @@ class JournalController extends ControllerBase {
                 $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
                  if(in_array($details['coid'], $access)) {
                      $items['data'] = $journal->data_by_jid($_SESSION['jfilter']['jid']);
-                     
+                     $items['rounding'] = $rounding;
                      return array(
                         '#theme' => 'ek_finance_journal_by_id',
                         '#items' => $items,
@@ -148,7 +150,7 @@ class JournalController extends ControllerBase {
                         'company' => $_SESSION['jfilter']['coid'],
                         'edit' => 0,
                         'source' => $folder
-                            )
+                        )
                     );
 
                     $items['data'] += $data;
@@ -158,12 +160,15 @@ class JournalController extends ControllerBase {
                         array(
                             'date1' => $_SESSION['jfilter']['from'],
                             'date2' => $_SESSION['jfilter']['to'],
-                            'company' => $_SESSION['jfilter']['coid']
+                            'company' => $_SESSION['jfilter']['coid'],
+                            'baseCurrency' => $settings->get('baseCurrency'),
+                            'rounding' => $rounding
                         )
                 );
 
+                $items['rounding'] = $rounding;
                 $excel = Url::fromRoute('ek_finance.extract.excel-journal', array('param' => $param), array())->toString();
-                $items['excel'] = "<a href='" . $excel . "' >" . t('Excel') . "</a>";
+                $items['excel'] = "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>";
             }
         }
 

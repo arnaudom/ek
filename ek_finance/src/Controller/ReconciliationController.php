@@ -66,10 +66,11 @@ class ReconciliationController extends ControllerBase {
         $this->database = $database;
         $this->formBuilder = $data_builder;
         $this->moduleHandler = $module_handler;
+        $this->financeSettings = new \Drupal\ek_finance\FinanceSettings();
     }
 
     /**
-     *  do reconciliation betwee internal account and external data
+     *  do reconciliation between internal account and external data
      * 
      * @return array
      *  Form
@@ -211,6 +212,8 @@ class ReconciliationController extends ControllerBase {
     public function excelreco($param) {
 
         $markup = array();
+        $rounding = (!null == $this->financeSettings->get('rounding')) ? $this->financeSettings->get('rounding'):2;
+        
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
@@ -288,16 +291,16 @@ class ReconciliationController extends ControllerBase {
             }
 
             $data['openchart'] = $account->balance;
-            $data['opencredit'] = round($credit, 2);
-            $data['opendebit'] = round($debit, 2);
+            $data['opencredit'] = round($credit, $rounding);
+            $data['opendebit'] = round($debit, $rounding);
             $data['openbalance'] = $balance;
 
 
             // top bar displaying the total
-            $data["debits"] = round($debit, 2);
-            $data["credits"] = round($credit, 2);
-            $data['balance'] = abs(round($balance, 2)) . " (" . $ab . ")";
-            $data["statement"] = abs(round($balance, 2));
+            $data["debits"] = round($debit, $rounding);
+            $data["credits"] = round($credit, $rounding);
+            $data['balance'] = abs(round($balance, $rounding)) . " (" . $ab . ")";
+            $data["statement"] = abs(round($balance, $rounding));
             $data['rows'] = array();
             $i = 0;
             while ($r = $result->fetchObject()) {

@@ -1,6 +1,8 @@
-{{ items.form }}
-{{ items.excel|raw }}
-<div id="" class='right'><a class='right' href='#' onclick="jQuery('#help').toggle('slow');">{{ 'help'|t }} <i class="far fa-question-circle"></i></a>
+
+<div>{{ items.form }}</div>
+<div class='right' title='{{ 'Excel download'|t }}'>{{ items.excel|raw }}</div>
+{% set rounding = items.rounding %}
+<div id="" class='right'><a class='right' href='#' onclick="jQuery('#help').toggle('slow');">{{ 'help'|t }} <i class="fa fa-question-circle"></i></a>
     <p class='left' id='help' style='display:none;'>
         {{ 'This report is not an accounting report.
         It is an analytic report that extract data per company based on business allocation.
@@ -26,41 +28,41 @@
     {% for coid,name in items.company %}
     <!-- --> <tr>
         <td class='right'>{{ 'Income'|t }}</td>
-        <td class='right detail'>{{ items.income[coid].actual|number_format }}</td>
+        <td class='right detail'>{{ items.income[coid].actual|number_format(rounding) }}</td>
         
-        <td class='right detail'>{{ items.income[coid].allocation|number_format }}</td>
+        <td class='right detail'>{{ items.income[coid].allocation|number_format(rounding) }}</td>
         
     </tr>         
      <tr>
         <td class='right'>{{ 'Purchases'|t }}</td>
-        <td class='right detail'>({{ items.purchases[coid].actual|number_format }})</td>
+        <td class='right detail'>({{ items.purchases[coid].actual|number_format(rounding) }})</td>
         
-        <td class='right detail'>({{ items.purchases[coid].allocation|number_format }})</td>
+        <td class='right detail'>({{ items.purchases[coid].allocation|number_format(rounding) }})</td>
         
     </tr>         
      <tr>
         <td class='right'>{{ 'Expenses'|t }}</td>
-        <td class='right detail'>({{ items.expenses[coid].actual|number_format }})</td>
+        <td class='right detail'>({{ items.expenses[coid].actual|number_format(rounding) }})</td>
         
-        <td class='right detail'>({{ items.expenses[coid].allocation|number_format }})</td>
+        <td class='right detail'>({{ items.expenses[coid].allocation|number_format(rounding) }})</td>
         
     </tr>       
         {% set actual = items.balances[coid].actual %}
         {% set allocation = items.balances[coid].allocation %}
     <tr class='subtotal'>
         <td class='subtotal'>{{ coid }} {{ name }}</td>
-        <td class='right subtotal {% if actual < 0 %} red {% endif %}'>{{ actual|number_format }}</td>
+        <td class='right subtotal {% if actual < 0 %} red {% endif %}'>{{ actual|number_format(rounding) }}</td>
         
-        <td class='right subtotal {% if allocation < 0 %} red {% endif %}'>{{ allocation|number_format }}</td>
+        <td class='right subtotal {% if allocation < 0 %} red {% endif %}'>{{ allocation|number_format(rounding) }}</td>
         
     </tr>  
     
     {% endfor %}
     <tr class='grandtotal'>
         <td>{{ 'Total'|t }}</td>
-        <td class='right {% if items.balances.all.actual < 0 %} red {% endif %}'><b>{{ items.balances.all.actual|number_format }}</b></td>
+        <td class='right {% if items.balances.all.actual < 0 %} red {% endif %}'><b>{{ items.balances.all.actual|number_format(rounding) }}</b></td>
         
-        <td class='right {% if items.balances.all.allocation < 0 %} red {% endif %}'><b>{{ items.balances.all.allocation|number_format }}</b></td>
+        <td class='right {% if items.balances.all.allocation < 0 %} red {% endif %}'><b>{{ items.balances.all.allocation|number_format(rounding) }}</b></td>
         
     </tr>     
     

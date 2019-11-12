@@ -6,7 +6,7 @@ use Drupal\ek_finance\Journal;
      $journal = new Journal();
      $param = unserialize($param);
      $items['data'] = $journal->ledger( $param );
-     
+     $rounding = $param['rounding'];
      
      
 // Create new PHPExcel object
@@ -107,8 +107,8 @@ $l=4;
 
           $l++;
           $cell=$columns[$c].$l;
-          $text = (string) t('opening') . ': ' . round($lines['line']['total']['balance_open'],2) 
-                  . " , (". round($lines['line']['total']['balance_open_base'],2) . " " 
+          $text = (string) t('opening') . ': ' . round($lines['line']['total']['balance_open'],$rounding) 
+                  . " , (". round($lines['line']['total']['balance_open_base'],$rounding) . " " 
                   . $items['data']['baseCurrency'] . ")";
           $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,$text);
           $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
@@ -147,7 +147,7 @@ $l=4;
                            
                    //input left column
                   if ($row['type'] == 'debit') {
-                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['value'],2) ); 
+                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['value'],$rounding) ); 
                     $c++;
                     $cell=$columns[$c].$l; 
                     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, '');
@@ -163,7 +163,7 @@ $l=4;
                     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell , '');
                     $c++;
                     $cell=$columns[$c].$l;  
-                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['value'],2) );             
+                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['value'],$rounding) );             
 
                       if($row['exchange']==0) {
                       } else 
@@ -182,10 +182,10 @@ $l=4;
                 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Total (local currency)') );
                 $c=4;
                 $cell=$columns[$c].$l;            
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['sum_debit'],2));              
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['sum_debit'],$rounding));              
                 $c=5;
                 $cell=$columns[$c].$l;                               
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['sum_credit'],2));              
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['sum_credit'],$rounding));              
                                 
                 if ($exchange_view==1) {
                   $l++ ;
@@ -195,10 +195,10 @@ $l=4;
                   $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, t('Total') . ' ' . $items['data']['baseCurrency']);
                   $c=4;
                   $cell=$columns[$c].$l;            
-                  $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['sum_debit']+$row['sum_debit_exchange'],2));              
+                  $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['sum_debit']+$row['sum_debit_exchange'],$rounding));              
                   $c=5;
                   $cell=$columns[$c].$l;                               
-                  $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,round($row['sum_credit']+$row['sum_credit_exchange'],2));
+                  $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,round($row['sum_credit']+$row['sum_credit_exchange'],$rounding));
                 }
 
                 $l++;
@@ -213,7 +213,7 @@ $l=4;
                     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Closing (local currency)') );
                     $c=4;
                     $cell=$columns[$c].$l;            
-                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['closing'],2));              
+                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['closing'],$rounding));              
                              
                       if ($exchange_view==1) {
                              
@@ -224,7 +224,7 @@ $l=4;
                         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Closing') . ' ' . $items['data']['baseCurrency']);
                         $c=4;
                         $cell=$columns[$c].$l;            
-                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['closing_exchange'],2) );              
+                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['closing_exchange'],$rounding) );              
      
                         }              
                     } else {
@@ -234,7 +234,7 @@ $l=4;
                     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,  (string) t('Closing (local currency)') );
                     $c=5;
                     $cell=$columns[$c].$l;            
-                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['closing'],2) );              
+                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['closing'],$rounding) );              
                              
                       if ($exchange_view==1) {
                         $l++;
@@ -244,7 +244,7 @@ $l=4;
                         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Closing') . ' ' . $items['data']['baseCurrency'] );
                         $c=5;
                         $cell=$columns[$c].$l;            
-                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,round($row['closing_exchange'],2) );              
+                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,round($row['closing_exchange'],$rounding) );              
                              
                       }
 

@@ -42,6 +42,7 @@ class NewMemo extends FormBase {
   public function __construct(ModuleHandler $module_handler) {
     $this->moduleHandler = $module_handler;
     $this->settings = new FinanceSettings();
+    $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding'):2;
   }
 
   /**
@@ -177,7 +178,7 @@ class NewMemo extends FormBase {
     $url = Url::fromRoute('ek_finance_manage_list_memo_'. $category, array(), array())->toString();
     $form['back'] = array(
       '#type' => 'item',
-      '#markup' => t('<a href="@url" >List</a>', array('@url' => $url ) ) ,
+      '#markup' => t('<a href="@url">List</a>', array('@url' => $url ) ) ,
 
     );
     
@@ -499,8 +500,7 @@ if ($category == 'personal' && $this->settings->get('authorizeMemo') == 1 ) {
             '#empty' => '',
         ); 
             
-    
-    
+
 if(isset($detail)) {
 //edition mode
 //list current items
@@ -537,7 +537,7 @@ $rows = $form_state->getValue('itemTable');
                     '#size' => 12,
                     '#maxlength' => 30,
                     '#attributes' => array('placeholder'=>t('amount'), 'class' => array('amount')),
-                    '#default_value' => number_format($d->amount, 2),
+                    '#default_value' => number_format($d->amount, $this->rounding),
                     '#required' => TRUE,
                 ); 
         $form['receipt'] = array(
@@ -607,7 +607,6 @@ $rows = $form_state->getValue('itemTable');
                     '#size' => 1,
                     '#options' => $AidOptions,
                     '#attributes' => array('style' => array('width:110px;')),
-                    //'#default_value' => ($rows[$i]['account']) ? $rows[$i]['account'] : NULL,
                     '#required' => TRUE,
                 );   
         $form['description'] = array(
@@ -616,7 +615,6 @@ $rows = $form_state->getValue('itemTable');
                     '#size' => 38,
                     '#maxlength' => 200,
                     '#attributes' => array('placeholder'=>t('description')),
-                    //'#default_value' => ($rows[$i]['description']) ? $rows[$i]['description'] : NULL,
                     '#required' => TRUE,
                 );        
         $form['amount'] = array(
@@ -625,7 +623,6 @@ $rows = $form_state->getValue('itemTable');
                     '#size' => 12,
                     '#maxlength' => 30,
                     '#attributes' => array('placeholder'=>t('amount'), 'class' => array('amount')),
-                    //'#default_value' => ($rows[$i]['amount']) ? number_format($rows[$i]['amount'],2) : NULL,
                     '#required' => TRUE,
                 ); 
         $form['receipt'] = array(
@@ -634,7 +631,6 @@ $rows = $form_state->getValue('itemTable');
                     '#size' => 10,
                     '#maxlength' => 100,
                     '#attributes' => array('placeholder'=>t('ref')),
-                    //'#default_value' => ($rows[$i]['description']) ? $rows[$i]['description'] : NULL,
                 );
         $form['delete'] = array(
                     '#type' => 'item',
@@ -679,11 +675,11 @@ $rows = $form_state->getValue('itemTable');
  
     
 
-    if( ($form_state->get('num_items') && $form_state->get('num_items')>0) || isset($detail)  ) {
+    if( ($form_state->get('num_items') && $form_state->get('num_items') > 0) || isset($detail)  ) {
         
         if(isset($id) && $baseCurrency != $data->currency) {
             $c = CurrencyData::currencyRates();
-            $converted = round($grandtotal/$c[$data->currency],2) . " " . $baseCurrency;
+            $converted = round($grandtotal/$c[$data->currency],$this->rounding) . " " . $baseCurrency;
         } else {
             $converted = '';
         }
@@ -701,7 +697,7 @@ $rows = $form_state->getValue('itemTable');
                     '#type' => 'textfield',    
                     '#size' => 12,
                     '#maxlength' => 50,
-                    '#value' => isset($grandtotal) ?  number_format($grandtotal, 2) : 0,
+                    '#value' => isset($grandtotal) ?  number_format($grandtotal, $this->rounding) : 0,
                     '#attributes' => array('placeholder'=>t('total'), 'readonly' => 'readonly', 'class' => array('amount')),
                 ); 
         $form['receipt'] = array(
@@ -1015,7 +1011,7 @@ $rows = $form_state->getValue('itemTable');
     
     $item = Xss::filter($row['description']);  
     $amount = str_replace(',','', $row['amount'] );
-    $linebase = (round($amount/$currencyRate, 2));
+    $linebase = (round($amount/$currencyRate, $this->rounding));
     $total = $total + $amount;
     
     if($row['account'] == NULL) {
@@ -1095,7 +1091,7 @@ $rows = $form_state->getValue('itemTable');
                 'status' => '0',
                 'value' => $total,
                 'currency' => $form_state->getValue('currency'),
-                'value_base' => round($total/$currencyRate, 2),
+                'value_base' => round($total/$currencyRate, $this->rounding),
                 'amount_paid' => 0,
                 'amount_paid_base' => 0,
                 'comment' => Xss::filter($form_state->getValue('comment')),

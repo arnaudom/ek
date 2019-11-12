@@ -211,9 +211,9 @@ class Currencies extends FormBase {
    
     $fx = 'fx'.$r['id'];
     if(is_numeric($form_state->getValue($fx))) {
-    $rate = round($form_state->getValue($fx), 4); 
+        $rate = round($form_state->getValue($fx), 4); 
     } else {
-    $rate = 0;
+        $rate = 0;
     }
     $status = 'active'.$r['id'];
     

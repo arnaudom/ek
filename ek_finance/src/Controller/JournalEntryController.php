@@ -69,20 +69,37 @@ class JournalEntryController extends ControllerBase {
     public function editjournal($id) {
 
         $company = AccessCheck::GetCompanyByUser();
-        $query = "SELECT * FROM {ek_journal} WHERE id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $id))->fetchObject();
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+            $query->fields('j');
+            $query->condition('id', $id, '=');
+            
+        $data = $query->execute()->fetchObject();
         $edit = TRUE;
         if(!$data) {
             $edit = FALSE;
         }
         elseif (!in_array($data->coid, $company)) {
+            //user has no access to this information
             $edit = FALSE;
         }
         elseif ($data->reconcile == '1') {
             $edit = FALSE; 
-        }
-        elseif ( $data->source != 'general' && $data->source != 'general cash' && $data->source != 'payment') {
+        } elseif($data->reconcile == '0') {
+            //need to check double entry recociliation status
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+            $query->fields('j',['reconcile']);
+            $query->condition('source', $data->source, '=');
+            $query->condition('reference', $data->reference, '=');
+            $query->condition('comment', $data->comment, '=');
+            $query->condition('id', $data->id, '<>');
+            if ($query->execute()->fetchField() == '1'){
+               $edit = FALSE; 
+            }
+               
+        } elseif ( $data->source != 'general' || $data->source != 'general cash' ) {
+            //TODO check this condition is valid : || $data->source != 'payment'
             $edit = FALSE;
         }
 

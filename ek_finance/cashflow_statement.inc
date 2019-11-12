@@ -1,4 +1,5 @@
 <?php
+
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Drupal\ek_admin\Access\AccessCheck;
@@ -332,19 +333,16 @@ foreach($Currencies as $currency => $name) {
                     if($date >= $now = date('U')) {
                         $rate = CurrencyData::rate($d->currency);
                          
-                        $items['amortization'] += round($value['value']/$rate, 2);
+                        $items['amortization'] += round($value['value']/$rate, $rounding);
                         break;
                         
                         
-                    }                  
-                    
+                    }            
+                }
             }
-            }
-            
-            
         }
-      
     }
+    
 /*
  * Average expenses 
  */    
@@ -450,12 +448,12 @@ $items['collect_tax_2_closing'] = -$total_closing_tax2_collect_exc;
 $items['deduct_tax_2_transaction'] = $total_tax2_deduct_exc;
 $items['deduct_tax_2_closing'] = $total_closing_tax2_deduct_exc;
 
-$items['tax_1_balance_transaction'] = round($total_tax_deduct_exc - $total_tax_collect_exc ,2);
-$items['tax_1_balance_closing'] = round($total_closing_tax_deduct_exc - $total_closing_tax_collect_exc,2);
-$items['tax_2_balance_transaction'] = round($total_tax2_deduct_exc - $total_tax2_collect_exc ,2);
-$items['tax_2_balance_closing'] = round($total_closing_tax2_deduct_exc - $total_closing_tax2_collect_exc,2);
-$items['tax_total_balance_transaction'] = round($items['tax_1_balance_transaction'] + $items['tax_2_balance_transaction'] ,2);
-$items['tax_total_balance_closing'] = round($items['tax_1_balance_closing'] + $items['tax_2_balance_closing'],2);
+$items['tax_1_balance_transaction'] = round($total_tax_deduct_exc - $total_tax_collect_exc ,$rounding);
+$items['tax_1_balance_closing'] = round($total_closing_tax_deduct_exc - $total_closing_tax_collect_exc,$rounding);
+$items['tax_2_balance_transaction'] = round($total_tax2_deduct_exc - $total_tax2_collect_exc ,$rounding);
+$items['tax_2_balance_closing'] = round($total_closing_tax2_deduct_exc - $total_closing_tax2_collect_exc,$rounding);
+$items['tax_total_balance_transaction'] = round($items['tax_1_balance_transaction'] + $items['tax_2_balance_transaction'] ,$rounding);
+$items['tax_total_balance_closing'] = round($items['tax_1_balance_closing'] + $items['tax_2_balance_closing'],$rounding);
         
 $param = serialize(
             array (
@@ -476,7 +474,7 @@ $param = serialize(
            ));
 $items['deduct_tax_2_aid_link'] =  Url::fromRoute('ek_finance_modal', array('param' => $param), array())->toString();
 
-$items['average_expenses'] = round($expenses / 12, 2); 
+$items['average_expenses'] = round($expenses / 12, $rounding); 
 $items['total_assets'] = $total_assets;  
 $items['total_closing_assets'] = $total_closing_assets;  
 $items['total_liabilities'] = $total_liabilities;
@@ -492,5 +490,5 @@ $items['grand_total_exc'] = $total_assets_exc + $total_liabilities_exc + $items[
 $items['grand_total_closing'] = $total_closing_assets + $total_closing_liabilities;
 $items['grand_total_closing_exc'] = $total_closing_assets_exc + $total_closing_liabilities_exc + $items['tax_total_balance_closing']; 
 
-$items['ratio1'] = round($items['grand_total_exc']/($items['average_expenses']-$items['amortization']), 2);
-$items['ratio2'] = round($items['grand_total_closing_exc']/($items['average_expenses']-$items['amortization']), 2);
+$items['ratio1'] = round($items['grand_total_exc']/($items['average_expenses']-$items['amortization']), $rounding);
+$items['ratio2'] = round($items['grand_total_closing_exc']/($items['average_expenses']-$items['amortization']), $rounding);

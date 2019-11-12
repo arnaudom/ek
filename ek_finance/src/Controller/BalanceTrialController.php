@@ -96,7 +96,7 @@ class BalanceTrialController extends ControllerBase {
 
             $excel = Url::fromRoute('ek_finance.extract.excel-trial', array('param' => serialize($param)), array())->toString();
 
-            $items['excel'] = "<a href='" . $excel . "' >" . t('Excel') . "</a>";
+            $items['excel'] = "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>";
             
             if($items['data']['total']['error1'] == '1') {
                 //try to identify balances errors
@@ -112,7 +112,7 @@ class BalanceTrialController extends ControllerBase {
             '#theme' => 'ek_finance_trial',
             '#items' => $items,
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance', 'ek_finance/ek_finance.dialog'),
+                'library' => array('ek_finance/ek_finance', 'ek_finance/ek_finance.dialog','ek_admin/ek_admin_css'),
             ),
         );
     }

@@ -9,6 +9,7 @@ $coid = $param['coid'];
 $year = $param['year'];
 $view = $param['view'];
 $baseCurrency = $param['baseCurrency'];
+$rounding = $param['rounding'];
 $company = AccessCheck::GetCompanyByUser();
 $company = implode(',', $company);
 if($coid != 'all') {
@@ -188,7 +189,7 @@ foreach($accounts_exp_class as $key => $name) {
             if ($sum_d2 == "") {
                 $amount = 0;
             } else {
-                $amount = round($sum_d2, 2);
+                $amount = round($sum_d2, $rounding);
             }
             $thisline[$m] = $amount;
             $sum_row_amount = $sum_row_amount + $sum_d2;
@@ -265,7 +266,7 @@ foreach($accounts_exp_class as $key => $name) {
                 $amount = 0;
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
             } else {
-                $amount = round($total_class, 2);
+                $amount = round($total_class, $rounding);
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
             }
             $grandtotal_column_purchases[$m] += $subtotal_column_purchases[$m];
@@ -305,7 +306,7 @@ for ($m = 1; $m <= 12; $m++) {
         $amount = 0;
         //$objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = round($grandtotal_column_purchases[$m], 2);
+        $amount = round($grandtotal_column_purchases[$m], $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
 
@@ -448,7 +449,7 @@ foreach($accounts_exp_class as $key => $name) {
                 $amount = 0;
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
             } else {
-                $amount = round($sum_d2, 2);
+                $amount = round($sum_d2, $rounding);
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
             }
 
@@ -486,7 +487,7 @@ foreach($accounts_exp_class as $key => $name) {
             $amount = 0;
             $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
         } else {
-            $amount = round($subtotal_column_expenses[$m], 2);
+            $amount = round($subtotal_column_expenses[$m], $rounding);
             $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
         }
 
@@ -500,7 +501,7 @@ foreach($accounts_exp_class as $key => $name) {
 
     // total subtotal line
     $cell = $columns[$m] . $l;
-    $sum_amount = number_format($sum_amount, 2);
+    $sum_amount = round($sum_amount, $rounding);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
@@ -547,7 +548,7 @@ $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCod
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('ed95b0');
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-$sum_amount = number_format($sum_amount, 2);
+$sum_amount = round($sum_amount, $rounding);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
 $sum_row_amount = 0;
 
@@ -681,7 +682,7 @@ foreach($accounts_income_class as $key => $name) {
                 $amount = 0;
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
             } else {
-                $amount = round($sum_d2, 2);
+                $amount = round($sum_d2, $rounding);
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
             }
 
@@ -717,7 +718,7 @@ foreach($accounts_income_class as $key => $name) {
             $amount = 0;
             $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
         } else {
-            $amount = round($subtotal_column_income[$m], 2);
+            $amount = round($subtotal_column_income[$m], $rounding);
             $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
         }
 
@@ -756,7 +757,7 @@ for ($m = 1; $m <= 12; $m++) {
         $amount = 0;
         //$objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = round($grandtotal_column_income[$m], 2);
+        $amount = round($grandtotal_column_income[$m], $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
 
@@ -853,45 +854,12 @@ if ($sum_pl < 0) {
 } else {
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('a9b1f8');
 }
-//$thispl=number_format($sum_pl,2);
+
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
 $sum_pl = 0;
 
-/*
-$l++;
-$cell = $columns[0] . $l;
-$objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Profit/Loss with internal transfers'));
-
-for ($m = 1; $m <= 12; $m++) {
-    $cell = $columns[$m] . $l;
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-    $pl = $grand_total_revenue[$m] - $grand_total_purchases[$m] - $grand_total_expenses[$m] + $amount_i[$m]; //ADD IT
-    if ($pl < 0) {
-        $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('ed95b0');
-    } else {
-        $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('FFCC99');
-    }
-    //insert line
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $pl);
-    $sum_pl = $sum_pl + $pl;
-} // end For P/L  
-
-$cell = $columns[$m] . $l;
-$objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-if ($sum_pl < 0) {
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('ed95b0');
-} else {
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('FFCC99');
-}
-//$thispl=number_format($sum_pl,2);
-$objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-$objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
-*/
 
 /*
  * Balances
@@ -934,7 +902,7 @@ for ($m = 1; $m <= 12; $m++) {
         $amount = 0;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = round($not_received, 2);
+        $amount = round($not_received, $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
 
@@ -990,7 +958,7 @@ for ($m = 1; $m <= 12; $m++) {
         $amount = 0;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = round($not_paid, 2);
+        $amount = round($not_paid, $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
 
@@ -1047,7 +1015,7 @@ $query = Database::getConnection('external_db', 'external_db')
         $amount = 0;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = round($not_paid, 2);
+        $amount = round($not_paid, $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
 
@@ -1102,7 +1070,7 @@ for ($m = 1; $m <= 12; $m++) {
         $amount_i[$m] = 0;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount_i[$m] = round($sumValue, 2);
+        $amount_i[$m] = round($sumValue, $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
     $sum_row_amount = $sum_row_amount + $amount_i[$m];
@@ -1152,7 +1120,7 @@ for ($m = 1; $m <= 12; $m++) {
         $amount_i[$m] = 0;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount_i[$m] = round($sumValue, 2);
+        $amount_i[$m] = round($sumValue, $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
     $sum_row_amount = $sum_row_amount + $amount_i[$m];

@@ -43,6 +43,12 @@ ek_finance.reporting:
   css:
     theme:
       css/ek_finance_reporting.css: {} 
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/drupal.ajax
+    - core/drupal.dialog
     
 ek_finance.cashflow:
   version: 1
@@ -51,7 +57,13 @@ ek_finance.cashflow:
   css:
     theme:
       css/ek_finance_reporting.css: {} 
-      
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/drupal.ajax
+    - core/drupal.dialog
+    
 ek_finance.budgeting:
   version: 1
   js:

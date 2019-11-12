@@ -5,14 +5,11 @@
 </section>
 
 <p>{{ 'current fiscal year start'|t }}: {{ items.data.fiscal_start }}</p>
-
+{% set rounding = items.rounding %}
 {% if items.data.archive > 1 %}
     <div class='messages messages--warning'>
         {{ 'Select date range for current fiscal year or within previous fiscal years period'|t }}
-        
     </div>
-
-
 {% else %}
 
     {% if items.data.archive == 1 %}
@@ -29,7 +26,7 @@
 
         {% set flag_exchange = 0 %}
         {% set ledger = lines.line %}
-              <table style='text-align: left; width: 90%;' id='' class='' >
+              <table id='' class='' >
                 <thead class=''>
                     <tr class='' style='font-weight: bold;'>
                       <td style="width: 10%;">
@@ -55,8 +52,8 @@
                     <tr class=''>
                       <td colspan='7'>
                           <span id=''>{{ 'opening'|t }} </span>
-                          {{ lines.line.total.balance_open | number_format(2) }}
-                          ( {{ lines.line.total.balance_open_base | number_format(2) }} {{ items.data.baseCurrency }} )
+                          {{ lines.line.total.balance_open | number_format(rounding) }}
+                          ( {{ lines.line.total.balance_open_base | number_format(rounding) }} {{ items.data.baseCurrency }} )
                       </td>
                     </tr>
 
@@ -101,8 +98,8 @@
                             <td colspan='4'>
                               <span id=''>{{ 'Total period (local currency)'|t }}</span>
                             </td>
-                            <td class='journal-total right' >{{  row.sum_debit | number_format(2) }}</td>
-                            <td class='journal-total right'>{{  row.sum_credit | number_format(2) }}</td><td></td>
+                            <td class='journal-total right' >{{  row.sum_debit | number_format(rounding) }}</td>
+                            <td class='journal-total right'>{{  row.sum_credit | number_format(rounding) }}</td><td></td>
                           </tr>
 
                           {% if flag_exchange == 1 %}
@@ -112,10 +109,10 @@
                                  {{ items.data.baseCurrency }}
                               </td>
                               <td class='right'>
-                              {{  (row.sum_debit+row.sum_debit_exchange) | number_format(2) }}
+                              {{  (row.sum_debit+row.sum_debit_exchange) | number_format(rounding) }}
                               </td>
                               <td class='right'>
-                              {{  (row.sum_credit+row.sum_credit_exchange) | number_format(2) }}
+                              {{  (row.sum_credit+row.sum_credit_exchange) | number_format(rounding) }}
                               </td>
                               <td></td>
                             </tr>
@@ -127,13 +124,13 @@
 
                                   <tr class='journal-closing'>
                                     <td colspan='4'><span id=''>{{ 'Closing (local currency)'|t }}</span></td>
-                                    <td  class='right journal-total'>{{  row.closing | number_format(2) }}</td><td ></td> <td></td>
+                                    <td  class='right journal-total'>{{  row.closing | number_format(rounding) }}</td><td ></td> <td></td>
                                   </tr>
 
                                    {% if flag_exchange == 1 %}
                                     <tr class='journal-closing'>
                                       <td colspan='4'><span id=''>{{ 'Closing'|t }}</span> {{ items.data.baseCurrency }} </td>
-                                      <td  class='right journal-total'>{{  row.closing_exchange | number_format(2) }}</td><td ></td> <td></td>
+                                      <td  class='right journal-total'>{{  row.closing_exchange | number_format(rounding) }}</td><td ></td> <td></td>
                                     </tr>
                                    {% endif %}
 
@@ -143,13 +140,13 @@
                                   <tr class='journal-closing'>
                                     <td colspan='4'><span id=''>{{ 'Closing (local currency)'|t }}</span></td>
                                     <td ></td>
-                                    <td class='right journal-total'>{{  row.closing | number_format(2) }}</td> <td></td>
+                                    <td class='right journal-total'>{{  row.closing | number_format(rounding) }}</td> <td></td>
                                   </tr>
 
                                     {% if flag_exchange == 1 %}
                                     <tr class='journal-closing'>
                                       <td colspan='4'><span id=''> {{ 'Closing'|t }}</span> {{ items.data.baseCurrency }} </td>
-                                      <td ></td><td  class='right journal-total'>{{  row.closing_exchange | number_format(2) }}</td> <td></td>
+                                      <td ></td><td  class='right journal-total'>{{  row.closing_exchange | number_format(rounding) }}</td> <td></td>
                                     </tr>             
                                     {% endif %}
 

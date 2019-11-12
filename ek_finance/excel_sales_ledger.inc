@@ -1,10 +1,10 @@
 <?php
+
 use Drupal\Core\Database\Database;
 use Drupal\ek_finance\Journal;
 
     $items['data'] = array();
     $journal = new Journal();
-    
   
             if ($p['source1'] == 'purchase') {
                 $entity = 'purchase';
@@ -172,8 +172,8 @@ $l++;
 
           $l+=2;
           $cell = $columns[$c].$l;
-          $text = (string) t('opening') . ': ' . round($lines['total']['balance_open'],2) 
-                  . " , (". round($lines['total']['balance_open_base'],2) . " " 
+          $text = (string) t('opening') . ': ' . round($lines['total']['balance_open'],$p['rounding']) 
+                  . " , (". round($lines['total']['balance_open_base'],$p['rounding']) . " " 
                   . $rows['journal']['baseCurrency'] . ")";
           $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,$text);
           $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
@@ -206,7 +206,7 @@ $l++;
                            
                    //input left column
                   if ($row['type'] == 'debit') {
-                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['value'],2) ); 
+                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['value'],$p['rounding']) ); 
                     $c++;
                     $cell=$columns[$c].$l; 
                     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, '');
@@ -222,7 +222,7 @@ $l++;
                     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell , '');
                     $c++;
                     $cell=$columns[$c].$l;  
-                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['value'],2) );             
+                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['value'],$p['rounding']) );             
 
                       if($row['exchange']==0) {
                       } else 
@@ -241,10 +241,10 @@ $l++;
                 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Total') );
                 $c=4;
                 $cell=$columns[$c].$l;            
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['sum_debit'],2));              
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['sum_debit'],$p['rounding']));              
                 $c=5;
                 $cell=$columns[$c].$l;                               
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['sum_credit'],2));              
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['sum_credit'],$p['rounding']));              
                                 
                 if ($exchange_view==1) {
                   $l++ ;
@@ -254,10 +254,10 @@ $l++;
                   $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, t('Total') . ' ' . $items['data']['baseCurrency']);
                   $c=4;
                   $cell=$columns[$c].$l;            
-                  $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['sum_debit']+$row['sum_debit_exchange'],2));              
+                  $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['sum_debit']+$row['sum_debit_exchange'],$p['rounding']));              
                   $c=5;
                   $cell=$columns[$c].$l;                               
-                  $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,round($row['sum_credit']+$row['sum_credit_exchange'],2));
+                  $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,round($row['sum_credit']+$row['sum_credit_exchange'],$p['rounding']));
                 }
 
                 $l++;
@@ -272,7 +272,7 @@ $l++;
                     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Closing') );
                     $c=4;
                     $cell=$columns[$c].$l;            
-                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['closing'],2));              
+                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['closing'],$p['rounding']));              
                              
                       if ($exchange_view==1) {
                              
@@ -283,7 +283,7 @@ $l++;
                         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Closing') . ' ' . $items['data']['baseCurrency']);
                         $c=4;
                         $cell=$columns[$c].$l;            
-                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['closing_exchange'],2) );              
+                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['closing_exchange'],$p['rounding']) );              
      
                         }              
                     } else {
@@ -293,7 +293,7 @@ $l++;
                     $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,  (string) t('Closing') );
                     $c=5;
                     $cell=$columns[$c].$l;            
-                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['closing'],2) );              
+                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($row['closing'],$p['rounding']) );              
                              
                       if ($exchange_view==1) {
                         $l++;
@@ -303,20 +303,13 @@ $l++;
                         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Closing') . ' ' . $items['data']['baseCurrency'] );
                         $c=5;
                         $cell=$columns[$c].$l;            
-                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,round($row['closing_exchange'],2) );              
+                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,round($row['closing_exchange'],$p['rounding']) );              
                              
                       }
-
                    }
-                
                 $l+=2;
-              
-              
               }
-
           }//ledger rows
-
-      
 }//rows in data      
 
 
@@ -336,9 +329,6 @@ $fileName = 'sales_ledger_' . $name . '_' . $param['date1'] . '_' . $param['date
         $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
         $objWriter->save('php://output');    
         exit;
-
-  
-     // end generate report
 
 
 

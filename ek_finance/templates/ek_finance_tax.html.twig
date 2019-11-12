@@ -1,15 +1,5 @@
-{{ items.form }}
-
-<table>
-    <tr>
-        <td>
-            {{ items.excel }}
-        </td>
-        <td>
-            {{ items.local }}
-        </td>
-    </tr>
-</table>
+<div>{{ items.form }}</div>
+<div class='right' title='{{ 'Excel download'|t }}'>{{ items.excel|raw }} {{ items.local }}</div>
 
 {% if (items.alert1 or items.alert2 or items.alert3) %}
     <div class="messages messages--warning" aria-label="Status message" role="contentinfo">

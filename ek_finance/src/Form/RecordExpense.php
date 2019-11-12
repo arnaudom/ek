@@ -51,6 +51,8 @@ class RecordExpense extends FormBase {
     public function __construct(ModuleHandler $module_handler,EntityStorageInterface $file_storage) {
         $this->moduleHandler = $module_handler;
         $this->fileStorage = $file_storage;
+        $this->settings = new FinanceSettings();
+        $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding') : 2;
     }
 
     /**
@@ -75,16 +77,15 @@ class RecordExpense extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $clone = NULL) {
 
-        $settings = new FinanceSettings(); 
-        $recordProvision = $settings->get('recordProvision');
-        $chart = $settings->get('chart');
-        if(NULL !== $settings->get('expenseAttachmentFormat')) {
-            $ext_format = $settings->get('expenseAttachmentFormat');
+        $recordProvision = $this->settings->get('recordProvision');
+        $chart = $this->settings->get('chart');
+        if(NULL !== $this->settings->get('expenseAttachmentFormat')) {
+            $ext_format = $this->settings->get('expenseAttachmentFormat');
         } else {
             $ext_format = 'png jpg jpeg doc docx xls xlsx odt ods odp pdf rar rtf zip';
         }
-        if(NULL !== $settings->get('expenseAttachmentSize')) {
-            $ext_size = $settings->get('expenseAttachmentSize') * 1000000;
+        if(NULL !== $this->settings->get('expenseAttachmentSize')) {
+            $ext_size = $this->settings->get('expenseAttachmentSize') * 1000000;
         } else {
             $ext_size = '500000';
         }
@@ -105,7 +106,7 @@ class RecordExpense extends FormBase {
         $form['cancel'] = array(
             '#type' => 'item',
             '#weight' => -16,
-            '#markup' => t('<a href="@url" >List</a>', array('@url' => Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString())),
+            '#markup' => t('<a href="@url">List</a>', array('@url' => Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString())),
         );
 
         if ($id != NULL && $form_state->get('num_items') == NULL) {
@@ -604,35 +605,6 @@ class RecordExpense extends FormBase {
                     ),
                 );
             }
-            /*
-            if($expense->attachment) {
-                //editing current entry
-                $form['uri' . $i] = array(
-                    '#type' => 'hidden',
-                    '#value' => $expense->attachment,
-
-                );
-                $fname = array_reverse(explode('/', $expense->attachment));
-                $form['debit']['attachment' . $i] = array(
-                    '#type' => 'file',
-                    '#description' => $fname[0],
-                    '#maxlength' => 100,
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                );
-                */          
-            //} else {
-                /*
-                $form['debit']['attachment' . $i] = array(
-                    '#type' => 'file',
-                    '#title' => t(''),
-                    '#maxlength' => 100,
-                    '#attributes' => ['class' => ['file_input']],
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
-                );
-                 */              
-            //}
              
             $form['debit']['attachment' . $i] = [
                     '#type' => 'managed_file',
@@ -902,7 +874,8 @@ class RecordExpense extends FormBase {
             
             //filter account when allocation is different from accounts entity.
             //this has an impact on analytical report
-            if(!NULL == $form_state->getValue("location") && $form_state->getValue("location") != $form_state->getValue("coid")){
+            if(!NULL == $form_state->getValue("change_location") && $form_state->getValue("location") != $form_state->getValue("coid")){
+                
                 $query = Database::getConnection('external_db', 'external_db')
                      ->select('ek_accounts', 'a')
                      ->fields('a', ['id'])
@@ -937,8 +910,7 @@ class RecordExpense extends FormBase {
         
 
         $journal = new Journal();
-        $settings = new FinanceSettings(); 
-        $baseCurrency = $settings->get('baseCurrency');
+        $baseCurrency = $this->settings->get('baseCurrency');
         $currency = $form_state->getValue('currency'); 
         
         if ($form_state->getValue('edit') != '') {
@@ -984,16 +956,15 @@ class RecordExpense extends FormBase {
             $value = str_replace(',', '', $form_state->getValue("value$n"));
            
             if ($baseCurrency != $currency) {
-                
-                $amount = round($value / $form_state->getValue('fx_rate'), 2);
+                $amount = round($value / $form_state->getValue('fx_rate'), $this->rounding);
             } else {
-                $amount = round($value , 2);
+                $amount = round($value , $this->rounding);
                 $form_state->setValue('fx_rate', 1);
             }
             // amount is recorded without tax($tax/$form_state->getValue('fx_rate'))     
 
             if ($form_state->getValue("tax$n") == 1) {
-                $tax = round($value * $form_state->get('stax_rate') / 100, 2);
+                $tax = round($value * $form_state->get('stax_rate') / 100, $this->rounding);
             } else {
                 $tax = 0;
             }
@@ -1122,7 +1093,7 @@ class RecordExpense extends FormBase {
         } else {
             \Drupal::messenger()->addStatus(t('Expenses recorded ref. @id', ['@id' => $insert]));
         }
-        \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
+        \Drupal\Core\Cache\Cache::invalidateTags(['reporting','expenses']);
         $form_state->setRedirect('ek_finance.manage.list_expense');
     }
 

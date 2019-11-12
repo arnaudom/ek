@@ -381,14 +381,9 @@ class ExpensesManageController extends ControllerBase {
 
             $data = $this->pullExpensesData($_SESSION['efilter'], $sort, $order, $settings);
             $chartList = Aidlist::chartList();
-
             $total = 0;
-            $query = "SELECT id,name from {ek_company}";
-            $company_array = Database::getConnection('external_db', 'external_db')
-                    ->query($query)
-                    ->fetchAllKeyed();
+            $company_array = \Drupal\ek_admin\Access\AccessCheck::CompanyList();
             $i = 0;
-            
             
             while ($r = $data->fetchObject()) {
                 $links = array();
@@ -629,7 +624,6 @@ class ExpensesManageController extends ControllerBase {
                 /* */
                 if (isset($_SESSION['efilter']['filter']) && $_SESSION['efilter']['filter'] == 1) {
 
-
                     $param = serialize(array(
                         'keyword' => $_SESSION['efilter']['keyword'],
                         'coid' => $_SESSION['efilter']['coid'],
@@ -644,13 +638,13 @@ class ExpensesManageController extends ControllerBase {
                             )
                     );
                 } else {
-                    $param = 0;
+                    $param = serialize(0);
                 }
                 /**/
 
                 $excel = Url::fromRoute('ek_finance.manage.excel_expense', array('param' => $param), [])->toString();
                 $build['excel'] = array(
-                    '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                    '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>",
                 );
             }
         }
@@ -660,7 +654,7 @@ class ExpensesManageController extends ControllerBase {
             $s = serialize($filteredIds);
             $url = Url::fromRoute('ek_finance_voucher.pdf', array('type' => 1, 'id' => $s), array())->toString();
             $build['print_range'] = array(
-                    '#markup' => "<p><a href='" . $url . "' target='_blank'>" . t('Print range') . "</a></p>",
+                    '#markup' => "<a href='" . $url . "' title='". t('Pdf download') . "' target='_blank'><span class='ico pdf red'/></a>",
                 );
         }
         
@@ -671,7 +665,7 @@ class ExpensesManageController extends ControllerBase {
             '#attributes' => array('id' => 'expenses_table'),
             '#empty' => $this->t('No expense available.'),
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance'),
+                'library' => array(),
             ),
         );
 
@@ -679,7 +673,17 @@ class ExpensesManageController extends ControllerBase {
             '#type' => 'pager',
         );
 
-        return $build;
+        return array(
+                    '#theme' => 'ek_finance_list_expenses',
+                    '#title' => t('List expenses'),
+                    '#items' => $build,
+                    '#attached' => array(
+                        'library' => array('ek_finance/ek_finance','ek_admin/admin_css'),
+                    ),
+                    '#cache' => [
+                        'tags' => ['expenses'],
+                    ],
+                );
     }
 
     /**
@@ -1031,7 +1035,7 @@ class ExpensesManageController extends ControllerBase {
                 $items['type'] = 'edit';
                 $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Expense')))];
                 $items['description'] = ['#markup' => $markup];
-                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
                 $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
@@ -1074,6 +1078,7 @@ class ExpensesManageController extends ControllerBase {
         } else {
             $settings = new FinanceSettings();
             $baseCurrency = $settings->get('baseCurrency');
+            $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
             $query = "SELECT id, name from {ek_company} ";
             $company_array = Database::getConnection('external_db', 'external_db')
                             ->query($query)->fetchAllKeyed();
@@ -1164,7 +1169,7 @@ class ExpensesManageController extends ControllerBase {
                 $items['type'] = 'edit';
                 $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Expense')))];
                 $items['description'] = ['#markup' => $markup];
-                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
                 $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
@@ -1199,7 +1204,7 @@ class ExpensesManageController extends ControllerBase {
             $items['type'] = 'delete';
             $items['message'] = ['#markup' => t('This entry cannot be deleted because it has been reconciled.')];
             $url = Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString();
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             
             $build = [
                 '#items' => $items,

@@ -186,7 +186,7 @@ class DeleteExpense extends FormBase {
                             ->fields(['amort_record' => serialize($schedule), 'amort_status' => 0])
                             ->execute();
                         $url = Url::fromRoute('ek_assets.set_amortization', ['id' => $r->id])->toString();
-                        \Drupal::messenger()->addWarning(t('An amortization record was updated for asset id <a href=@url>@id</a>',['@url' => $url, '@id' => $r->id]));
+                        \Drupal::messenger()->addWarning(t("An amortization record was updated for asset id <a href='@url'>@id</a>",['@url' => $url, '@id' => $r->id]));
                        
                         
                     }

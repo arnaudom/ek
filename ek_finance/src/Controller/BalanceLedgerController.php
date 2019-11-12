@@ -8,7 +8,6 @@
 namespace Drupal\ek_finance\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\user\UserInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Database\Connection;
@@ -16,7 +15,6 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\ek_finance\Journal;
 use Drupal\Core\Routing\RouteMatchInterface;
 
@@ -82,6 +80,8 @@ class BalanceLedgerController extends ControllerBase {
         $items['filter_ledger'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterLedger');
         $items['data'] = array();
         $journal = new Journal();
+        $settings = new \Drupal\ek_finance\FinanceSettings(); 
+        $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
 
 
         if (isset($_SESSION['lfilter']['filter']) && $_SESSION['lfilter']['filter'] == 1) {
@@ -92,13 +92,15 @@ class BalanceLedgerController extends ControllerBase {
                 'aid2' => $_SESSION['lfilter']['account_to'],
                 'date1' => $_SESSION['lfilter']['from'],
                 'date2' => $_SESSION['lfilter']['to'],
-                'type' => 'accounts'
+                'type' => 'accounts',
+                'rounding' => $rounding,
             );
 
             $items['data'] = $journal->ledger($param);
+            $items['rounding'] = $rounding;
             if($items['data']['archive'] != 2){
                 $excel = Url::fromRoute('ek_finance.extract.excel-ledger', array('param' => serialize($param)), array())->toString();
-                $items['excel'] = "<a href='" . $excel . "' >" . t('Excel') . "</a>"; 
+                $items['excel'] = "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>"; 
             }
             
         }
@@ -173,6 +175,8 @@ class BalanceLedgerController extends ControllerBase {
         if (isset($_SESSION['salesledger']['filter']) && $_SESSION['salesledger']['filter'] == 1) {
 
             $journal = new Journal();
+            $settings = new \Drupal\ek_finance\FinanceSettings(); 
+            $items['rounding'] = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
 
             if ($id == 'purchase') {
                 $entity = 'purchase';
@@ -212,6 +216,7 @@ class BalanceLedgerController extends ControllerBase {
                     $clients = [0 => $_SESSION['salesledger']['client']];
                 }
             }
+            
             $items['book'] = \Drupal\ek_address_book\AddressBookData::addresslist($book);
             $items['data'] = [];
             
@@ -256,16 +261,18 @@ class BalanceLedgerController extends ControllerBase {
             $param['type'] = 'sales';
             $param['client'] = $_SESSION['salesledger']['client'];
             $param['references'] = '';
+            $param['rounding'] = $items['rounding'];
 
             $excel = Url::fromRoute('ek_finance.extract.excel-ledger', array('param' => serialize($param)), array())->toString();
-            $items['excel'] = "<a href='" . $excel . "' >" . t('Excel') . "</a>";
+            $items['excel'] = "<a href='" . $excel . "' ><span class='ico excel green'/></a>";
 
 
             return array(
                 '#theme' => 'ek_finance_sales_ledger',
                 '#items' => $items,
                 '#attached' => array(
-                    'library' => array('ek_finance/ek_finance.ledger'),),
+                    'library' => array('ek_finance/ek_finance.ledger','ek_admin/ek_admin_css')
+                    ),
             );
         } else {
             return $items['form'];

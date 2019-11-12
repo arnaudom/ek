@@ -100,19 +100,19 @@ $total_credit_base = 0;
  if ($i%2) { $class="e6e6fa";} else {$class='';}
  if ($line['op']=='debit') 
   { 
-    $amount = round(-$line['amount'],2); 
-    $baseamount = round(-$line['basecurrency'],2);
+    $amount = round(-$line['amount'],$parameters['rounding']); 
+    $baseamount = round(-$line['basecurrency'],$parameters['rounding']);
     $total_debit_amount+=$line['amount'];
     $total_debit_base+=$line['basecurrency'];
     
   } else {
-    $amount = round($line['amount'],2); 
-    $baseamount = round($line['basecurrency'],2);
+    $amount = round($line['amount'],$parameters['rounding']); 
+    $baseamount = round($line['basecurrency'],$parameters['rounding']);
     $total_credit_amount+=$line['amount'];
     $total_credit_base+=$line['basecurrency'];  
   }
-  $t1 = round(($total_credit_amount - $total_debit_amount),2);
-  $t2 = round(($total_credit_base - $total_debit_base),2);
+  $t1 = round(($total_credit_amount - $total_debit_amount),$parameters['rounding']);
+  $t2 = round(($total_credit_base - $total_debit_base),$parameters['rounding']);
   
   //formating
   $objConditional1 = new \PhpOffice\PhpSpreadsheet\Style\Conditional();

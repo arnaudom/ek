@@ -130,7 +130,7 @@ while ($line = $data->fetchObject()) {
             if ($sum_d2 == "") {
                 $amount = "0";
             } else {
-                $amount = round($sum_d2, 2);
+                $amount = round($sum_d2, $rounding);
             }
 
             $sum_amount = $sum_amount + $sum_d2;
@@ -150,7 +150,7 @@ while ($line = $data->fetchObject()) {
 
         $id = $d2->aid . "-total";
         $table_1 .= "
-           <td class='right total' ><span id='" . $id . "'>" . number_format($sum_amount, 2) . "</span></td></tr>";
+           <td class='right total' ><span id='" . $id . "'>" . number_format($sum_amount, $rounding) . "</span></td></tr>";
     } //while aid
     // Get the class sum - subtotal
     $sum_amount = 0;
@@ -175,19 +175,19 @@ while ($line = $data->fetchObject()) {
         if ($total_class == "") {
             $amount = "0";
         } else {
-            $amount = round($total_class, 2);
+            $amount = round($total_class, $rounding);
         }
 
 
         $sum_amount = $sum_amount + $amount;
         $id = $class . '-' . $m . '-total';
         $table_1 .= "
-                <td class='right subtotal' ><span id='" . $id . "'>" . number_format($amount, 2) . "</span></td>";
+                <td class='right subtotal' ><span id='" . $id . "'>" . number_format($amount, $rounding) . "</span></td>";
     }
 
     $id = $class . '-subtotal';
     $table_1 .= "
-          <td class='right subtotal' ><span id='" . $id . "'>" . number_format($sum_amount, 2) . "</span></td></tr>";
+          <td class='right subtotal' ><span id='" . $id . "'>" . number_format($sum_amount, $rounding) . "</span></td></tr>";
     $sum_amount = 0;
     $c++;
 } //while class 
@@ -227,14 +227,14 @@ for ($m = 1; $m <= 12; $m++) {
 
     $id = $class_exp . '-' . $m . '-grandtotal';
     $table_1 .= "
-          <td class='right grandtotal' ><span id='" . $id . "'>" . number_format($amount, 2) . "</span></td>";
+          <td class='right grandtotal' ><span id='" . $id . "'>" . number_format($amount, $rounding) . "</span></td>";
 
 
     $grand_total_expenses[$m] = $amount;
 } //loop months
 
 $table_1 .= "
-    <td class='right grandtotal' ><span id='sumexpense'>" . number_format($sum_amount, 2) . "</span></td></tr>
+    <td class='right grandtotal' ><span id='sumexpense'>" . number_format($sum_amount, $rounding) . "</span></td></tr>
     </tbody>
     </table><hr>";
 
@@ -353,7 +353,7 @@ while ($line = $data->fetchObject()) {
             if ($sum_d2 == "") {
                 $amount = "0";
             } else {
-                $amount = round($sum_d2, 2);
+                $amount = round($sum_d2, $rounding);
             }
 
             $sum_amount = $sum_amount + $amount;
@@ -371,7 +371,7 @@ while ($line = $data->fetchObject()) {
 
         $id = $d2->aid . "-total";
         $table_2 .= "
-            <td class='total right' ><span id='" . $id . "'>" . number_format($sum_amount, 2) . "</span></td></tr>";
+            <td class='total right' ><span id='" . $id . "'>" . number_format($sum_amount, $rounding) . "</span></td></tr>";
 
         $sum_amount = 0;
     } //while aid
@@ -399,18 +399,18 @@ while ($line = $data->fetchObject()) {
         if ($total_class == "") {
             $amount = "0";
         } else {
-            $amount = round($total_class, 2);
+            $amount = round($total_class, $rounding);
         }
 
         $sum_amount = $sum_amount + $amount;
         $id = $class . '-' . $m . '-total';
         $table_2 .="
-          <td class='subtotal right' ><span id='" . $id . "'>" . number_format($amount, 2) . "</span></td>";
+          <td class='subtotal right' ><span id='" . $id . "'>" . number_format($amount, $rounding) . "</span></td>";
     } // for loop months
 
     $id = $class . '-subtotal';
     $table_2 .="
-        <td class='subtotal right' ><span id='" . $id . "'>" . number_format($sum_amount, 2) . "</span></td></tr>";
+        <td class='subtotal right' ><span id='" . $id . "'>" . number_format($sum_amount, $rounding) . "</span></td></tr>";
 
 
     $sum_amount = 0;
@@ -445,20 +445,20 @@ for ($m = 1; $m <= 12; $m++) {
     if ($grand_total == "") {
         $amount = "0";
     } else {
-        $amount = round($grand_total, 2);
+        $amount = round($grand_total, $rounding);
     }
 
     $sum_amount = $sum_amount + $amount;
     $id = $class_inc . '-' . $m . '-grandtotal';
     $table_2 .= "
-          <td class='right grandtotal' ><span id='" . $id . "'>" . number_format($amount, 2) . "</span></td>";
+          <td class='right grandtotal' ><span id='" . $id . "'>" . number_format($amount, $rounding) . "</span></td>";
 
     //$grand_total_revenue[$m] = $line5["sum(valueusd)"]+$amount_i[$m];//includes internal transactions   
     $grand_total_revenue[$m] = $grand_total; //exclude internal transactions  
 }  //for loop month
 
 $table_2 .= "
-         <td class='right grandtotal' ><span id='sumincome'>" . number_format($sum_amount, 2) . "</span></td></tr>
+         <td class='right grandtotal' ><span id='sumincome'>" . number_format($sum_amount, $rounding) . "</span></td></tr>
          ";
 
 $sum_amount = 0;
@@ -501,10 +501,10 @@ for ($m = 1; $m <= 12; $m++) {
     $id = 'balance-' . $m;
     if ($pl < 0) {
         $table_3 .= "
-          <td class='right' ><span class='red' id='" . $id . "'>" . number_format($pl, 2) . "</span></td>";
+          <td class='right' ><span class='red' id='" . $id . "'>" . number_format($pl, $rounding) . "</span></td>";
     } else {
         $table_3 .= "
-          <td class='right' ><span id='" . $id . "' class='' >" . number_format($pl, 2) . "</span></td>";
+          <td class='right' ><span id='" . $id . "' class='' >" . number_format($pl, $rounding) . "</span></td>";
     }
 
     $sum_pl = $sum_pl + $pl;
@@ -512,10 +512,10 @@ for ($m = 1; $m <= 12; $m++) {
 
 if ($sum_pl < 0) {
     $table_3 .= "
-          <td class='right total'><span id='balancetotal' class='red' > " . number_format($sum_pl, 2) . "</span></td></tr>";
+          <td class='right total'><span id='balancetotal' class='red' > " . number_format($sum_pl, $rounding) . "</span></td></tr>";
 } else {
     $table_3 .= "
-          <td class='right total'><span id='balancetotal' class='' > " . number_format($sum_pl, 2) . "</span></td></tr>";
+          <td class='right total'><span id='balancetotal' class='' > " . number_format($sum_pl, $rounding) . "</span></td></tr>";
 }
 
 

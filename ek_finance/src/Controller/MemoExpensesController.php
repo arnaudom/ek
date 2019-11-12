@@ -112,7 +112,7 @@ class MemoExpensesController extends ControllerBase {
             $url = Url::fromRoute('ek_finance_manage_list_memo_internal', [],[])->toString();
                 $items['type'] = 'access';
                 $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
-                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
                 $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
@@ -170,7 +170,7 @@ class MemoExpensesController extends ControllerBase {
             $url = Url::fromRoute('ek_finance_manage_list_memo_personal', [],[])->toString();
                 $items['type'] = 'access';
                 $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
-                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
                 $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
@@ -227,7 +227,7 @@ class MemoExpensesController extends ControllerBase {
             $url = Url::fromRoute($route, [],[])->toString();
                 $items['type'] = 'access';
                 $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
-                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
                 $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
@@ -423,7 +423,7 @@ class MemoExpensesController extends ControllerBase {
                     'url' => Url::fromRoute('ek_finance_manage_memo_attach', ['id' => $r->id]),
                 );
 
-                $links['del'] = array(
+                $links['delete'] = array(
                     'title' => $this->t('Delete'),
                     'url' => Url::fromRoute('ek_finance_manage_delete_memo', ['id' => $r->id]),
                 );
@@ -453,9 +453,10 @@ class MemoExpensesController extends ControllerBase {
                 'url' => Url::fromRoute('ek_finance_manage_internal_memo', ['id' => $r->id], ['query' => ['action' => 'clone']]),
                 
             );
-            $links['print'] = array(
+            $links['mprint'] = array(
                 'title' => $this->t('Print'),
                 'url' => Url::fromRoute('ek_finance_manage_print_memo', ['id' => $r->id]),
+                'attributes' => ['class' => ['ico', 'pdf']]
             );
 
             $options[$row]['operations']['data'] = array(
@@ -710,7 +711,7 @@ class MemoExpensesController extends ControllerBase {
                 }
                 if ($r->status == 0) {
 
-                    $links['del'] = array(
+                    $links['delete'] = array(
                         'title' => $this->t('Delete'),
                         'url' => Url::fromRoute('ek_finance_manage_delete_memo', ['id' => $r->id]),
                     );
@@ -726,9 +727,10 @@ class MemoExpensesController extends ControllerBase {
                     'url' => Url::fromRoute('ek_finance_manage_personal_memo', ['id' => $r->id], ['query' => ['action' => 'clone']]),
 
                 );
-                $links['print'] = array(
+                $links['mprint'] = array(
                     'title' => $this->t('Print'),
                     'url' => Url::fromRoute('ek_finance_manage_print_memo', ['id' => $r->id]),
+                    'attributes' => ['class' => ['ico', 'pdf']]
                 );
 
                 if ($r->post == 1 && $r->status == '2' && \Drupal::currentUser()->hasPermission('admin_memos')) {
@@ -768,7 +770,7 @@ class MemoExpensesController extends ControllerBase {
             '#attributes' => array('id' => 'memos_table'),
             '#empty' => $this->t('No memo available.'),
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance.dialog'),
+                'library' => array('ek_finance/ek_finance.dialog', 'ek_admin/ek_admin_css'),
             ),
         );
 
@@ -1068,7 +1070,7 @@ class MemoExpensesController extends ControllerBase {
             
                 $items['type'] = 'access';
                 $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
                 $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',

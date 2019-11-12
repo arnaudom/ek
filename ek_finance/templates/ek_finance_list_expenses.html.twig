@@ -1,0 +1,27 @@
+{#
+/**
+ * @file
+ * Default theme implementation for rendering list of expenses.
+ *
+ *
+ * Available items:
+ *   - title
+ *   - filter_expenses
+ *   - excel
+ *   - print_range
+ *   - expenses_table
+ *   - pager
+ * @see listExpenses()
+ *
+ * 
+ */
+#}
+
+
+{{ items.filter_expenses }}
+
+<div class="right">{{ items.excel }}  {{ items.print_range }}</div>
+
+{{ items.expenses_table }}
+
+{{ items.pager }}

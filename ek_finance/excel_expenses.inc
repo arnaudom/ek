@@ -4,7 +4,6 @@ use Drupal\Core\Database\Database;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\AidList;
 
-
 // Create new PHPExcel object
 $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet(); 
 
@@ -88,38 +87,46 @@ $HalignRight = array(
 
 
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', (string) t('Company') . ":");
-if ($param['coid'] != '') {
+if (isset($param['coid']) || $param['coid'] != '') {
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', $company_array[$param['coid']]);
 } else {
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', (string) t('Any'));
 }
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', (string) t('from') . ":");
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue('B2', $param['from']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue('C2', (string) t('to') . ":");
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue('D2', $param['to']);
+if (isset($param['from'])) {
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', (string) t('from') . ":");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B2', $param['from']);  
+}
+if (isset($param['to'])) {
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C2', (string) t('to') . ":");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D2', $param['to']);
+}
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A3', (string) t('supplier') . ":");
-if ($param['supplier'] == '%') {
-    $param['supplier'] = (string) t('Any');
+if (!isset($param['supplier']) || $param['supplier'] == '%') {
+    $supplier = (string) t('Any');
 } else {
-    $param['supplier'] = Database::getConnection('external_db', 'external_db')
+    $supplier = Database::getConnection('external_db', 'external_db')
             ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $param['supplier']))
             ->fetchField();
 }
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue('B3', $param['supplier']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue('B3', $supplier);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C3', (string) t('client') . ":");
-if ($param['client'] == '%') {
-    $param['client'] = (string) t('Any');
+if (!isset($param['client']) || $param['client'] == '%') {
+    $client = (string) t('Any');
 } else {
-    $param['client'] = Database::getConnection('external_db', 'external_db')
+    $client = Database::getConnection('external_db', 'external_db')
             ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $param['client']))
             ->fetchField();
 }
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue('D3', $param['client']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A4', (string) t('project') . ":");
-if ($param['pcode'] == '%') {
-    $param['pcode'] = (string) t('Any');
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue('D3', $client);
+if (!isset($param['pcode']) || $param['pcode'] == '%') {
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A4', (string) t('project') . ":");
+    $pcode = (string) t('Any');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B4', $pcode);
+} else {
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A4', (string) t('project') . ":");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B4', $param['pcode']);
 }
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue('B4', $param['pcode']);
+
 
 
 $l = 5;
@@ -219,11 +226,11 @@ WHILE ($r = $result->fetchObject()) {
                 $total = $total + $evalue;
                 
                 if ($r->taxvalue > 0 ) {
-                    $stax_deduct_aid_value_0 = round($value*$r->taxvalue/100, 2);
-                    $stax_deduct_aid_value_1 = round($evalue*$r->taxvalue/100, 2);
+                    $stax_deduct_aid_value_0 = round($value*$r->taxvalue/100, $rounding);
+                    $stax_deduct_aid_value_1 = round($evalue*$r->taxvalue/100, $rounding);
                 } else {
-                    $stax_deduct_aid_value_0 = round($value, 2);
-                    $stax_deduct_aid_value_1= round($evalue, 2);
+                    $stax_deduct_aid_value_0 = round($value, $rounding);
+                    $stax_deduct_aid_value_1= round($evalue, $rounding);
                 }
                 
                 
@@ -266,9 +273,9 @@ WHILE ($r = $result->fetchObject()) {
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", '');
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", '');
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $r->date);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", round($stax_deduct_aid_value[0], 2));
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", round($stax_deduct_aid_value[0], $rounding));
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $currency);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", round($stax_deduct_aid_value[0] + $stax_deduct_aid_value[1], 2));
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", round($stax_deduct_aid_value[0] + $stax_deduct_aid_value[1], $rounding));
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $ecurrency);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $credit);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $company_name);

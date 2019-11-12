@@ -1,17 +1,15 @@
 <?php
+
 use Drupal\Core\Database\Database;
 use Drupal\ek_finance\Journal;
-use Drupal\ek_finance\FinanceSettings;
+//use Drupal\ek_finance\FinanceSettings;
 
-        $settings = new FinanceSettings(); 
-        $baseCurrency = $settings->get('baseCurrency'); 
-        $folders = array('general', 'expense', 'receipt', 'payroll', 'invoice', 'purchase');
-        
+        //$settings = new FinanceSettings(); 
+        $baseCurrency = $param['baseCurrency']; 
+        $rounding = $param['rounding'];
+        $folders = array('general', 'expense', 'receipt', 'payroll', 'invoice', 'purchase');       
         $journal = new Journal();
         $sheet = 0;
-        
-     
-     
      
 // Create new PHPExcel object
 $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
@@ -154,7 +152,7 @@ $c = 0;
                     if ($line['type'] == 'debit') {
                     $c+=1;
                     $cell=$columns[$c].$l;              
-                      $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($line['value'],2) );
+                      $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($line['value'],$rounding) );
                       $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1); 
                     $c+=2;
                     $cell=$columns[$c].$l;
@@ -162,7 +160,7 @@ $c = 0;
                     } else  {
                     $c+=2;
                     $cell=$columns[$c].$l;               
-                      $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($line['value'],2));
+                      $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($line['value'],$rounding));
                       $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                     $c++;
                     $cell=$columns[$c].$l;
@@ -179,11 +177,11 @@ $c = 0;
                   $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, (string) t('Total') . ' ' . $row['currency']);
                   $c+=2;
                   $cell=$columns[$c].$l;
-                  $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_debit'],2)); 
+                  $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_debit'],$rounding)); 
                   $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                   $c+=1;
                   $cell=$columns[$c].$l; 
-                  $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_credit'],2) ); 
+                  $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_credit'],$rounding) ); 
                   $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                   $r ="A".$l.":D".$l;
                   $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
@@ -198,11 +196,11 @@ $c = 0;
                $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, (string) t('Total') . ' ' . $baseCurrency);
                $c+=2;
                $cell=$columns[$c].$l;
-               $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_debit']+$row['total_debit_base'],2) );
+               $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_debit']+$row['total_debit_base'],$rounding) );
                $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1); 
                $c+=1;
                $cell=$columns[$c].$l; 
-               $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_credit']+$row['total_credit_base'],2) ); 
+               $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_credit']+$row['total_credit_base'],$rounding) ); 
                $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
               
                $r="A".$l.":D".$l;

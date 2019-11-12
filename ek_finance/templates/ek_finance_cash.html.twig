@@ -1,113 +1,113 @@
 <section class="filter">
 
-{{ items.filter_cash }}
+    {{ items.filter_cash }}
 
 </section>
-
-<a title='{{ 'download'|t }}' href='{{ items.excel }}'>{{ 'Excel'|t }}</a>
+{% set rounding = items.settings.rounding %}
+<div class='right' title='{{ 'Excel download'|t }}'><a href='{{ items.excel }}'><span class="ico excel green"/></a></div>
 <section class="cash">
 
 
-          <table>
-            <header>
-              <tr>
+    <table>
+        <header>
+            <tr>
                 <th colspan='2'>{{ 'Account'|t }} {{ items.aid }}</th>
                 <th colspan='2'>{{ 'Local currency'|t }}</th>
                 <th >{{ 'Base currency'|t }} {{ items.settings.baseCurrency }}</th>
                 <th/>
-              </tr>
-              <tr>
+            </tr>
+            <tr>
                 <th >{{ 'Date'|t }}</th>
                 <th >{{ 'Reference'|t }}</th>
                 <th class='pointer' onclick = "jQuery('.dt').toggle();">{{ 'Debit'|t }}</th>
                 <th class='pointer' onclick = "jQuery('.ct').toggle();">{{ 'Credit'|t }}</th>
                 <th colspan='2'></th>
 
-              </tr>              
-            </header>
+            </tr>              
+        </header>
 
-            <tbody>
-            
-              <tr>
+        <tbody>
+
+            <tr>
                 <td colspan='2'>{{ 'sum values'|t }} {{ 'before'|t }} {{ items.from }}</td>
-                <td class='right dt'>{{ items.total.debit_open|number_format(2) }}</td>
-                <td class='right ct'>{{ items.total.credit_open|number_format(2) }}</td>
+                <td class='right dt'>{{ items.total.debit_open|number_format(rounding) }}</td>
+                <td class='right ct'>{{ items.total.credit_open|number_format(rounding) }}</td>
                 <td></td>
                 <td colspan='2'></td>
-              
-              </tr>
-            
-              {% for key, item in items.data %}
-            
+
+            </tr>
+
+            {% for key, item in items.data %}
+
                 {% if item.op == 'debit' %}
-                <tr class="dt">
+                    <tr class="dt">
                     {% else %} 
                     <tr  class="ct">
-                        {% endif %}   
-                  <td class=''>{{ item.date }}</td>
-                  <td >{{ item.voucher|raw }} {{ item.type }}</td>
-   
-                {% if item.op == 'debit' %}
+                    {% endif %}   
+                    <td class=''>{{ item.date }}</td>
+                    <td >{{ item.voucher|raw }} {{ item.type }}</td>
 
-                    <td class='right' > {{ item.currency }} ({{ item.amount | number_format(2) }})</td>
-                    <td/>
-               
-                
-                {% else %} 
+                    {% if item.op == 'debit' %}
 
-                    <td/>
-                    <td class='right' > {{ item.currency }} {{ item.amount | number_format(2) }} </td>
-                  
-                
-                {% endif %}
-                
-                {% if item.op == 'debit' %}
-                    <td class='right red'> ({{ item.basecurrency | number_format(2) }})  </td>
-                {% else %}
-                    <td class='right green'> {{ item.basecurrency | number_format(2) }}  </td>
-                {% endif %}
-                
+                        <td class='right' > {{ item.currency }} ({{ item.amount | number_format(rounding) }})</td>
+                        <td/>
+
+
+                    {% else %} 
+
+                        <td/>
+                        <td class='right' > {{ item.currency }} {{ item.amount | number_format(rounding) }} </td>
+
+
+                    {% endif %}
+
+                    {% if item.op == 'debit' %}
+                        <td class='right red'> ({{ item.basecurrency | number_format(rounding) }})  </td>
+                    {% else %}
+                        <td class='right green'> {{ item.basecurrency | number_format(rounding) }}  </td>
+                    {% endif %}
+
                     <td > {{ item.comment }}  </td>
-                 </tr>
-                            
+                </tr>
 
-                
-              {% endfor %} {# items #}
-             
-              {#total#}
-              <tr class=''>
+
+
+            {% endfor %} {# items #}
+
+            {#total#}
+            <tr class=''>
                 <td colspan='2'>{{ 'Total period'|t  }} </td>
-                
-                <td class='right cash-total'>({{ items.total.debit | number_format(2) }})</td>
-                <td class='right cash-total'>{{ items.total.credit | number_format(2) }}</td>                        
-                <td class='right cash-total'>{{ items.total.base | number_format(2) }}</td>
+
+                <td class='right cash-total'>({{ items.total.debit | number_format(rounding) }})</td>
+                <td class='right cash-total'>{{ items.total.credit | number_format(rounding) }}</td>                        
+                <td class='right cash-total'>{{ items.total.base | number_format(rounding) }}</td>
                 <td/>
 
-              </tr>  
-              
-              <tr class=''>
+            </tr>  
+
+            <tr class=''>
                 <td colspan='2'>{{ 'Balance'|t }} {{ items.total.year }}</td>
-                
+
                 {% if (items.total.balance >= 0) %}
-                <td/>
-                <td class='right cash-total green'>{{ items.total.balance | number_format(2) }}</td>                
-                <td class='right cash-total green'>{{ items.total.balance_base | number_format(2) }}</td>
+                    <td/>
+                    <td class='right cash-total green'>{{ items.total.balance | number_format(rounding) }}</td>                
+                    <td class='right cash-total green'>{{ items.total.balance_base | number_format(rounding) }}</td>
                 {% else %} 
-                
-                <td class='right cash-total red'>{{ items.total.balance | number_format(2) }}</td>                  
-                <td/>
-                <td class='right cash-total red'>{{ items.total.balance_base | number_format(2) }}</td>
+
+                    <td class='right cash-total red'>{{ items.total.balance | number_format(rounding) }}</td>                  
+                    <td/>
+                    <td class='right cash-total red'>{{ items.total.balance_base | number_format(rounding) }}</td>
                 {% endif %}
-                
-                
-                
+
+
+
                 <td/>
 
-              </tr>               
-              </tbody>  
-              
-              
-          </table>
+            </tr>               
+        </tbody>  
+
+
+    </table>
 
 
 </section>

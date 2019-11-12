@@ -141,8 +141,8 @@ while ($r = $result->fetchObject()) {
     $name = AidList::aname($coid, $r->aid);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", $r->aid);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", $name);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$h['total_transaction_exchange'], 2));
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$h['closing_exchange'], 2));
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$h['total_transaction_exchange'], $items['rounding']));
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$h['closing_exchange'], $items['rounding']));
     $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
             ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(10);
@@ -158,8 +158,8 @@ $total_closing_assets_exc += -$closing_exc;
 $i++;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", (STRING) t('Total'));
 $objPHPExcel->getActiveSheet()->mergeCells("A$i:B$i");
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$total_exc, 2));
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$closing_exc, 2));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$total_exc, $items['rounding']));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$closing_exc, $items['rounding']));
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
@@ -208,8 +208,8 @@ foreach ($Currencies as $currency => $name) {
         $name = AidList::aname($coid, $aid);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", $aid);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", $name);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$h['total_transaction_exchange'], 2));
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$h['closing_exchange'], 2));
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$h['total_transaction_exchange'], $items['rounding']));
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$h['closing_exchange'], $items['rounding']));
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
                 ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getFont()->setSize(10);
@@ -225,8 +225,8 @@ $total_closing_assets_exc += -$closing_exc;
 $i++;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", (STRING) t('Total'));
 $objPHPExcel->getActiveSheet()->mergeCells("A$i:B$i");
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$total_exc, 2));
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$closing_exc, 2));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$total_exc, $items['rounding']));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$closing_exc, $items['rounding']));
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getNumberFormat()
@@ -276,8 +276,8 @@ foreach ($Currencies as $currency => $name) {
         $name = AidList::aname($coid, $aid);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", $aid);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", $name);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$h['total_transaction_exchange'], 2));
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$h['closing_exchange'], 2));
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$h['total_transaction_exchange'], $items['rounding']));
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$h['closing_exchange'], $items['rounding']));
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
                 ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getFont()->setSize(10);
@@ -293,8 +293,8 @@ $total_closing_assets_exc += -$closing_exc;
 $i++;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", (STRING) t('Total'));
 $objPHPExcel->getActiveSheet()->mergeCells("A$i:B$i");
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$total_exc, 2));
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$closing_exc, 2));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round(-$total_exc, $items['rounding']));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round(-$closing_exc, $items['rounding']));
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getNumberFormat()
@@ -306,8 +306,8 @@ $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getNumberFormat()
 $i++;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", (STRING) t('Total current assets'));
 $objPHPExcel->getActiveSheet()->mergeCells("A$i:B$i");
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($total_assets_exc, 2));
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round($total_closing_assets_exc, 2));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($total_assets_exc, $items['rounding']));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round($total_closing_assets_exc, $items['rounding']));
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getNumberFormat()
@@ -359,8 +359,8 @@ foreach ($Currencies as $currency => $name) {
         $name = AidList::aname($coid, $aid);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", $aid);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", $name);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($h['total_transaction_exchange'], 2));
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round($h['closing_exchange'], 2));
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($h['total_transaction_exchange'], $items['rounding']));
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round($h['closing_exchange'], $items['rounding']));
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
                 ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getFont()->setSize(10);
@@ -376,8 +376,8 @@ $total_closing_liabilities_exc += -$closing_exc;
 $i++;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", (STRING) t('Total current liabilities'));
 $objPHPExcel->getActiveSheet()->mergeCells("A$i:B$i");
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($total_exc, 2));
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round($closing_exc, 2));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($total_exc, $items['rounding']));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round($closing_exc, $items['rounding']));
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getNumberFormat()
@@ -391,8 +391,8 @@ $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFill()->getStartColor()-
 $i++;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", (STRING) t('Grand total'));
 $objPHPExcel->getActiveSheet()->mergeCells("A$i:B$i");
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($total_assets_exc + $total_liabilities_exc, 2));
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round($total_closing_assets_exc + $total_closing_liabilities_exc, 2));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($total_assets_exc + $total_liabilities_exc, $items['rounding']));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$i", round($total_closing_assets_exc + $total_closing_liabilities_exc, $items['rounding']));
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getNumberFormat()
@@ -436,7 +436,7 @@ $expenses = Database::getConnection('external_db', 'external_db')
 $i++;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", (STRING) t('Per month'));
 $objPHPExcel->getActiveSheet()->mergeCells("A$i:B$i");
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($expenses / 12, 2));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($expenses / 12, $items['rounding']));
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
 $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
@@ -475,7 +475,7 @@ if (isset($extract['amortization'])) {
                 if ($date >= $now = date('U')) {
                     $rate = CurrencyData::rate($d->currency);
 
-                    $items['amortization'] += round($value['value'] / $rate, 2);
+                    $items['amortization'] += round($value['value'] / $rate, $items['rounding']);
                     break;
                 }
             }
@@ -487,7 +487,7 @@ if (isset($extract['amortization'])) {
     $i++;
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", (STRING) t('Monthly amortization'));
     $objPHPExcel->getActiveSheet()->mergeCells("A$i:B$i");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($items['amortization'], 2));
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", round($items['amortization'], $items['rounding']));
     $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setSize(11);
     $objPHPExcel->getActiveSheet()->getStyle("A$i:D$i")->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle("C$i:D$i")->getNumberFormat()
@@ -498,8 +498,8 @@ if (isset($extract['amortization'])) {
 /*
  * Ratio 1
  */
-$ratio = round(($total_assets_exc + $total_liabilities_exc) / ((($expenses / 12) - $items['amortization'])), 2);
-$ratio2 = round(($total_closing_assets_exc + $total_closing_liabilities_exc) / (($expenses / 12) - $items['amortization']), 2);
+$ratio = round(($total_assets_exc + $total_liabilities_exc) / ((($expenses / 12) - $items['amortization'])), $items['rounding']);
+$ratio2 = round(($total_closing_assets_exc + $total_closing_liabilities_exc) / (($expenses / 12) - $items['amortization']), $items['rounding']);
 $i++;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$i", (STRING) t('Ratio: cash flow / overhead'));
 $objPHPExcel->getActiveSheet()->mergeCells("A$i:B$i");

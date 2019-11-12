@@ -8,6 +8,7 @@ $param = unserialize($param);
 $coid = $param['coid'];
 $year = $param['year'];
 $baseCurrency = $param['baseCurrency'];
+$rounding = $param['rounding'];
 $company = AccessCheck::GetCompanyByUser();
 $company = implode(',', $company);
 if($coid != 'all') {
@@ -198,7 +199,7 @@ while ($line = $data->fetchObject()) {
                 $amount = 0;
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
             } else {
-                $amount = round($sum_d2, 2);
+                $amount = round($sum_d2, $rounding);
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
             }
 
@@ -247,7 +248,7 @@ while ($line = $data->fetchObject()) {
             $amount = 0;
             $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
         } else {
-            $amount = round($total_class, 2);
+            $amount = round($total_class, $rounding);
             $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
         }
 
@@ -262,7 +263,7 @@ while ($line = $data->fetchObject()) {
 
     // total subtotal line
     $cell = $columns[$m] . $l;
-    $sum_amount = number_format($sum_amount, 2);
+    $sum_amount = round($sum_amount, $rounding);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
             ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
@@ -325,7 +326,7 @@ $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('ed95b0');
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()
         ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-$sum_amount = number_format($sum_amount, 2);
+$sum_amount = round($sum_amount, $rounding);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $sum_amount);
 $sum_amount = 0;
 
@@ -467,7 +468,7 @@ while ($line = $data->fetchObject()) {
                 $amount = 0;
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
             } else {
-                $amount = round($sum_d2, 2);
+                $amount = round($sum_d2, $rounding);
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
             }
 
@@ -515,7 +516,7 @@ while ($line = $data->fetchObject()) {
         if ($total_class == "") {
             $amount = "0";
         } else {
-            $amount = round($total_class, 2);
+            $amount = round($total_class, $rounding);
         }
 
         $sum_amount = $sum_amount + $amount;
@@ -531,7 +532,7 @@ while ($line = $data->fetchObject()) {
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
             ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($sum_amount, 2));
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, round($sum_amount, $rounding));
     $sum_amount = 0;
 } //while aid
 /////////////////////
@@ -565,7 +566,7 @@ for ($m = 1; $m <= 12; $m++) {
         $amount = 0;
         //$objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = round($grand_total, 2);
+        $amount = round($grand_total, $rounding);
         //$objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
 
@@ -667,7 +668,7 @@ if ($sum_pl < 0) {
 } else {
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('a9b1f8');
 }
-//$thispl=number_format($sum_pl,2);
+
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()
         ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);

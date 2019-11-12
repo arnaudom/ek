@@ -119,7 +119,7 @@ class TaxController extends ControllerBase {
                 if($show == 1) {
                     $excel = Url::fromRoute('ek_finance_tax_excel', array('param' => $param), array())->toString();
                     $items['excel'] = array(
-                        '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                        '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>",
                     );
 
 
@@ -151,7 +151,7 @@ class TaxController extends ControllerBase {
             '#theme' => 'ek_finance_tax',
             '#items' => $items,
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance_css', 'ek_finance/ek_finance.dialog'),
+                'library' => array('ek_finance/ek_finance_css', 'ek_finance/ek_finance.dialog','ek_admin/ek_admin_css'),
             ),
         );
     }

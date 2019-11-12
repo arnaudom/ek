@@ -111,6 +111,7 @@ class CashController extends ControllerBase {
         }
         
         $items['settings']['baseCurrency'] = $settings->get('baseCurrency');
+        $items['settings']['rounding'] = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
         $items['from'] = $_SESSION['cfilter']['from'];
         $items['to'] = $_SESSION['cfilter']['to'];
         $items['aid'] = $aid;
@@ -122,6 +123,7 @@ class CashController extends ControllerBase {
                     'to' => $_SESSION['cfilter']['to'],
                     'currency' => $_SESSION['cfilter']['currency'],
                     'baseCurrency' => $items['settings']['baseCurrency'],
+                    'rounding' => $items['settings']['rounding'],
                     'aid' => $aid,
                     'aid2' => $aid2,
                     ];
@@ -139,7 +141,7 @@ class CashController extends ControllerBase {
       '#theme' => 'ek_finance_cash',
       '#items' => $items,
       '#attached' => array(
-          'library' => array('ek_finance/ek_finance'),
+          'library' => array('ek_finance/ek_finance','ek_admin/ek_admin_css'),
       ),
     );
 

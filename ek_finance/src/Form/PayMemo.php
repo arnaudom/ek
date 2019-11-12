@@ -25,8 +25,14 @@ use Drupal\ek_finance\FinanceSettings;
  * Provides a form to record memo payment.
  */
 class PayMemo extends FormBase {
-
-
+   /**
+     * {@inheritdoc}
+     */
+    public function __construct() {
+      $this->settings = new FinanceSettings();
+      $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding'):2;
+    }
+  
   /**
    * {@inheritdoc}
    */
@@ -161,8 +167,8 @@ class PayMemo extends FormBase {
                 '#markup' => '<div class="orangedot floatleft"></div><b>' . t('Balance not paid : @p @c', ['@p' => $data->value - $data->amount_paid, '@c' => $data->currency]) . '</b>',
             );
         }
-        $settings = new FinanceSettings();
-        $chart = $settings->get('chart');
+        
+        $chart = $this->settings->get('chart');
         $AidOptions = AidList::listaid($data->entity_to, array($chart['liabilities'],$chart['expenses'], $chart['other_expenses']), 1);
         $i = 0;
 
@@ -308,7 +314,7 @@ class PayMemo extends FormBase {
             if ($pay_rate && $memo_rate) {
                 $fx_rate = round($pay_rate / $memo_rate, 4);
                 $form['fx_rate']['#value'] = $fx_rate;
-                $credit = round($form_state->getValue('baseValue') * $fx_rate, 2);
+                $credit = round($form_state->getValue('baseValue') * $fx_rate, $this->rounding);
                 $message = t('<span class="red">Warning: you are not paying from a <b>@p</b> '
                         . 'account</span>.<br/>Amount credited @c @a', 
                         array('@c' => $currency2, '@a' => $credit, '@p' => $currency));
@@ -356,7 +362,7 @@ class PayMemo extends FormBase {
         if ($currency <> $currency2) {
             if ($form_state->getValue('fx_rate')) {
                 
-                $credit = round($form_state->getValue('baseValue') * $form_state->getValue('fx_rate'), 2);
+                $credit = round($form_state->getValue('baseValue') * $form_state->getValue('fx_rate'), $this->rounding);
                 $message = t('<span class="red">Warning: you are not paying from a <b>@p</b> account.</span>'
                         . '<br/>Amount credited @c @a', 
                         array('@c' => $currency2, '@a' => $credit, '@p' => $currency));
@@ -425,7 +431,7 @@ class PayMemo extends FormBase {
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form_state->getValue('for_id')))
                 ->fetchObject();
-        $max_pay = $data->value - $data->amount_paid;
+        (float) $max_pay = $data->value - $data->amount_paid;
         $memo_rate = CurrencyData::rate($data->currency);
 
         // FILTER payment account
@@ -461,15 +467,15 @@ class PayMemo extends FormBase {
         
         $pay_rate = $form_state->getValue('fx_rate');
         $rate2 = CurrencyData::rate($currency2);
-        $this_pay = 0;
+        (float) $this_pay = 0;
 
         $allocation = $data->entity_to;
 
         for ($i = 1; $i <= $form_state->getValue('count'); $i++) {
             
-            $localcurrency = round($form_state->getValue('amount' . $i) * $pay_rate , 2);
+            $localcurrency = round($form_state->getValue('amount' . $i) * $pay_rate , $this->rounding);
             $rate = round($pay_rate * $memo_rate, 4);
-            $amount = round($localcurrency/$rate, 2);
+            $amount = round($localcurrency/$rate, $this->rounding);
             $attachment = ($form_state->getValue('attachment' . $i) == '0') ?
                     "" : $form_state->getValue('attachment' . $i);
 
@@ -523,7 +529,7 @@ class PayMemo extends FormBase {
 
         $post = 1;
 
-        if ($this_pay == $max_pay) {
+        if (round($this_pay,$this->rounding) == round($max_pay,$this->rounding)) {
             $paid = 2; //full payment
         } else {
             if ($form_state->getValue('close') == '1') {
@@ -532,12 +538,11 @@ class PayMemo extends FormBase {
                 $paid = 1; // partial payment
             }
         }
-        
 
         $fields = array(
             'status' => $paid,
             'amount_paid' => $this_pay,
-            'amount_paid_base' => round($this_pay / $memo_rate, 2),
+            'amount_paid_base' => round($this_pay / $memo_rate, $this->rounding),
             'pdate' => $form_state->getValue('date'),
             'post' => $post,
         );

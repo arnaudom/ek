@@ -48,6 +48,8 @@ class ReconciliationForm extends FormBase {
     public function __construct(ModuleHandler $module_handler,EntityStorageInterface $file_storage) {
         $this->moduleHandler = $module_handler;
         $this->fileStorage = $file_storage;
+        $this->settings = new FinanceSettings();
+        $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding') : 2;
     }
 
     /**
@@ -77,10 +79,10 @@ class ReconciliationForm extends FormBase {
 
             $form_state->set('step', 1);
         }
-        $access = AccessCheck::GetCompanyByUser();
-        $company = implode(',', $access);
-        $query = "SELECT id,name from {ek_company} where active=:t AND FIND_IN_SET (id, :c ) order by name";
-        $company = Database::getConnection('external_db', 'external_db')->query($query, array(':t' => 1, ':c' => $company))->fetchAllKeyed();
+        $company = AccessCheck::CompanyListByUid();
+        //$company = implode(',', $access);
+        //$query = "SELECT id,name from {ek_company} where active=:t AND FIND_IN_SET (id, :c ) order by name";
+        //$company = Database::getConnection('external_db', 'external_db')->query($query, array(':t' => 1, ':c' => $company))->fetchAllKeyed();
 
         $form['filters'] = array(
             '#type' => 'details',
@@ -155,7 +157,7 @@ class ReconciliationForm extends FormBase {
             $xlink = Url::fromRoute('ek_finance_reconciliation_excel', ['param' => $param])->toString();
             $form['excel'] = array(
                 '#type' => 'item',
-                '#markup' => "<a title='" . t('download') . "' href='" . $xlink . "'>" . t('Excel') . "</a>",
+                '#markup' => "<a title='" . t('Excel download') . "' href='" . $xlink . "'><span class='ico excel green'/></a>",
             );
 
             //retreive exchange value when inter accounts transfer with different currencies
@@ -210,8 +212,8 @@ class ReconciliationForm extends FormBase {
             // remove filter with 'exchange' flag for case where journal has records
             // with internal currency transfers - applies to base currency
 
-            $settings = new FinanceSettings();
-            $baseCurrency = $settings->get('baseCurrency');
+            //$settings = new FinanceSettings();
+            $baseCurrency = $this->settings->get('baseCurrency');
 
             if ($baseCurrency == $account_currency) {
                 $exchange = '%';
@@ -266,12 +268,12 @@ class ReconciliationForm extends FormBase {
             );
             $form['opencredit'] = array(
                 '#type' => 'hidden',
-                '#default_value' => round($credit, 2),
+                '#default_value' => round($credit, $this->rounding),
                 '#attributes' => array('id' => 'opencredits'),
             );
             $form['opendebit'] = array(
                 '#type' => 'hidden',
-                '#default_value' => round($debit, 2),
+                '#default_value' => round($debit, $this->rounding),
                 '#attributes' => array('id' => 'opendebits'),
             );
             $form['openbalance'] = array(
@@ -317,7 +319,7 @@ class ReconciliationForm extends FormBase {
 
             $form['bar']['balance'] = array(
                 '#type' => 'item',
-                '#markup' => "<span id='balance'>" . abs(round($balance, 2)) . "</span><span id='ab'> (" . $ab . ")</span>",
+                '#markup' => "<span id='balance'>" . abs(round($balance, $this->rounding)) . "</span><span id='ab'> (" . $ab . ")</span>",
                 '#prefix' => '<div class="cell cell150">',
                 '#suffix' => '</div>',
             );
@@ -329,7 +331,7 @@ class ReconciliationForm extends FormBase {
                 '#title_display' => 'before',
                 '#required' => TRUE,
                 '#size' => 15,
-                '#default_value' => abs(round($balance, 2)),
+                '#default_value' => abs(round($balance, $this->rounding)),
                 '#attributes' => array('title' => t('statement value'),
                     'class' => array('calculate amount'),
                 ),
@@ -518,11 +520,12 @@ class ReconciliationForm extends FormBase {
             );
         }//step 2
 
-        $form['#attached']['library'][] = 'ek_finance/ek_finance.reco_form';
-
-
-
-
+        $form['#attached'] = [
+            'library' => ['ek_finance/ek_finance.reco_form','ek_admin/ek_admin_css'],
+            'drupalSettings' => ['rounding' => $this->rounding],
+        ];
+        
+        
         return $form;
     }
 
