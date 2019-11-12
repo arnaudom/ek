@@ -1,4 +1,5 @@
 <?php
+
     ///////////////////////////////////////////////////
     //                  COPYRIGHT                    //
     //                                               //
@@ -19,7 +20,11 @@
  */
 function ek_assets_theme() {
   return array(
-
+    'ek_assets_list' => array
+    (
+      'template' => 'ek_assets_list',
+      'variables' => array('items' => array()),
+    ),
     'ek_assets_card' => array
     (
       'template' => 'ek_assets_card',

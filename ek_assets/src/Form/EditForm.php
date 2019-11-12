@@ -535,6 +535,7 @@ class EditForm extends FormBase {
             $ref = $form_state->getValue('for_id');
         }
         \Drupal::messenger()->addStatus(t('Asset recorded'));
+        \Drupal\Core\Cache\Cache::invalidateTags(['assets']);
 
         switch ($form_state->getValue('redirect')) {
             case 0 :

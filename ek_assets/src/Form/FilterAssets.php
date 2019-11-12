@@ -13,6 +13,7 @@ use Drupal\Core\Extension\ModuleHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\AidList;
+use Drupal\ek_finance\FinanceSettings;
 
 /**
  * Provides a form to filter assets list.
@@ -32,6 +33,7 @@ class FilterAssets extends FormBase {
      */
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
+        $this->settings = new FinanceSettings();
     }
 
     /**
@@ -79,9 +81,11 @@ class FilterAssets extends FormBase {
             ),
         );
 
-        if ($form_state->getValue('coid')) {
+        if ($form_state->getValue('coid') || isset($_SESSION['assetfilter']['coid'])) {
             $aid = array('%' => t('Any'));
-            $aid += AidList::listaid($form_state->getValue('coid'), array($chart['assets']), 1);
+            $coid = isset($_SESSION['assetfilter']['coid']) ? isset($_SESSION['assetfilter']['coid']):$form_state->getValue('coid');
+            $chart = $this->settings->get('chart');
+            $aid += AidList::listaid($coid, array($chart['assets']), 1);
             $_SESSION['assetfilter']['options'] = $aid;
         } else {
             $_SESSION['assetfilter']['options'] = array('%' => t('Any'));

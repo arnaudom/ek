@@ -78,39 +78,39 @@ class AssetsController extends ControllerBase {
             '#markup' => "<a href='" . $new . "' >" . t('New asset') . "</a>",
         );
         $build['filter_assets_list'] = $this->formBuilder->getForm('Drupal\ek_assets\Form\FilterAssets');
-        $header = array(
-            'id' => array(
-                'data' => $this->t('ID'),
-                'class' => array(RESPONSIVE_PRIORITY_LOW),
-            ),
-            'name' => array(
-                'data' => $this->t('Name'),
-                'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
-            ),
-            'category' => array(
-                'data' => $this->t('Category'),
-                'class' => array(RESPONSIVE_PRIORITY_LOW),
-            ),
-            'location' => array(
-                'data' => $this->t('Registered'),
-                'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
-            ),
-            'quantity' => array(
-                'data' => $this->t('Quantity'),
-                'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
-            ),
-            'image' => array(
-                'data' => '',
-                'class' => array(RESPONSIVE_PRIORITY_LOW),
-            ),
-
-        );
-
-        $header['operations'] = '';
-        $access = AccessCheck::GetCompanyByUser();
-        $company = implode(',', $access);
-
+        
         if (isset($_SESSION['assetfilter']['filter']) && $_SESSION['assetfilter']['filter'] == 1) {
+            $header = array(
+                'id' => array(
+                    'data' => $this->t('ID'),
+                    'class' => array(RESPONSIVE_PRIORITY_LOW),
+                ),
+                'name' => array(
+                    'data' => $this->t('Name'),
+                    'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                ),
+                'category' => array(
+                    'data' => $this->t('Category'),
+                    'class' => array(RESPONSIVE_PRIORITY_LOW),
+                ),
+                'location' => array(
+                    'data' => $this->t('Registered'),
+                    'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                ),
+                'quantity' => array(
+                    'data' => $this->t('Quantity'),
+                    'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                ),
+                'image' => array(
+                    'data' => '',
+                    'class' => array(RESPONSIVE_PRIORITY_LOW),
+                ),
+
+            );
+
+            $header['operations'] = '';
+            $access = AccessCheck::GetCompanyByUser();
+            $company = implode(',', $access);
             
             if($_SESSION['assetfilter']['amort_status'] == '1') {
                 $s = 0;
@@ -127,11 +127,11 @@ class AssetsController extends ControllerBase {
             );
             $excel = Url::fromRoute('ek_assets.excel', array('param' => $param))->toString();
             $build['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>",
             );
             $qrcode = Url::fromRoute('ek_assets.print-qrcode', array('param' => $param))->toString();
             $build['qrcode'] = array(
-                '#markup' => "<br/><a href='" . $qrcode . "' target='_blank'>" . t('Qr codes') . "</a>",
+                '#markup' => "<a href='" . $qrcode . "' title='". t('Qr codes') . "' target='_blank'><span class='ico barcode'/></a>",
             );
             //get data base on criteria
             $query = "SELECT * from {ek_assets} a INNER JOIN {ek_assets_amortization} b "
@@ -230,16 +230,31 @@ class AssetsController extends ControllerBase {
                 '#attributes' => array('id' => 'assets_table'),
                 '#empty' => $this->t('No asset'),
                 '#attached' => array(
-                    'library' => array('ek_assets/ek_assets_css'),
+                    'library' =>[],
                 ),
             );
+            
+            
+            
         } else {
 
-            $build['alert'] = array(
+            $build['assets_table'] = array(
                 '#markup' => t('Use filter to search assets'),
             );
+            
         }
-        Return $build;
+        
+        return array(
+            '#theme' => 'ek_assets_list',
+            '#title' => t('List assets'),
+            '#items' => $build,
+            '#attached' => array(
+                'library' => array('ek_assets/ek_assets_css','ek_admin/admin_css'),
+            ),
+            '#cache' => [
+                'tags' => ['assets'],
+            ],
+        );
     }
 
     /**
@@ -393,7 +408,7 @@ class AssetsController extends ControllerBase {
             $items['type'] = 'delete';
             $items['message'] = ['#markup' => $message];
             $url = Url::fromRoute('ek_assets.list', array(), array())->toString();
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -611,7 +626,7 @@ class AssetsController extends ControllerBase {
                 $url = Url::fromRoute('ek_assets.listl', [],[])->toString();
                 $items['type'] = 'access';
                 $items['message'] = ['#markup' => t('You are not authorized to print this information')];
-                $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+                $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
                 return [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',

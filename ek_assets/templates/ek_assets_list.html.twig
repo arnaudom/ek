@@ -1,0 +1,24 @@
+{#
+/**
+ * @file
+ * Default theme implementation for rendering list.
+ * Available items:
+ *   - title
+ *   - new (link)
+ *   - filter_assets_list (form)
+ *   - assets_table
+ *   - excel (link)
+ *   - qrcode (link)
+ * @see assetsList()() 
+ *
+ *
+ */
+#}
+
+
+{{ items.filter_assets_list }}
+
+<div class="text-right">{{ items.excel }}  {{ items.qrcode }}</div>
+
+{{ items.assets_table }}
+

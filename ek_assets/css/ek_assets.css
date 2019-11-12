@@ -106,3 +106,7 @@
     vertical-align: baseline;
     white-space: nowrap;
 }
+
+.barcode:before {
+  content: "\f02a";
+}
