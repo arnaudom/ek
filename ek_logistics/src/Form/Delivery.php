@@ -63,7 +63,7 @@ class Delivery extends FormBase {
         $url = Url::fromRoute('ek_logistics_list_delivery', array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url" >List</a>', array('@url' => $url)),
+            '#markup' => t('<a href="@url">List</a>', array('@url' => $url)),
         );
         if (isset($id) && $id != NULL) {
 

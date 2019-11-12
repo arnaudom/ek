@@ -216,7 +216,7 @@ class LogisticsController extends ControllerBase {
     $extract = serialize($extract);
     $excel =  Url::fromRoute('ek_logistics_excel_stock', array('param' => $extract), array())->toString();
     $build['excel'] = array(
-      '#markup' => "<a href='" . $excel ."' target='_blank'>" . t('Export current view') . "</a>",
+      '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'></span></a>"
     ); 
     $build['items_table'] = array(
       '#type' => 'table',
@@ -225,7 +225,7 @@ class LogisticsController extends ControllerBase {
       '#attributes' => array('id' => 'items_table'),
       '#empty' => $this->t('No item found'),
       '#attached' => array(
-        'library' => array('ek_logistics/ek_logistics_css'),       
+        'library' => array('ek_logistics/ek_logistics_css','ek_admin/ek_admin_css'),       
       ),
     );       
   

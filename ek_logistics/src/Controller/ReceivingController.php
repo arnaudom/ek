@@ -114,16 +114,13 @@ class ReceivingController extends ControllerBase {
             ),
         );
 
-
-
         /*
          * Table - query data
          */
-
-
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
         $path = \Drupal::request()->getRequestUri();
+        $company_array = \Drupal\ek_admin\Access\AccessCheck::CompanyList();
 
         if (strpos($path, 'list-receiving')) {
             $type = 'RR';
@@ -141,9 +138,7 @@ class ReceivingController extends ControllerBase {
         $or->condition('head', $access, 'IN');
         $or->condition('allocation', $access, 'IN');
 
-
         if (isset($_SESSION['lofilter']['filter']) && $_SESSION['lofilter']['filter'] == 1) {
-
             $status = $_SESSION['lofilter']['status'];
             $client = $_SESSION['lofilter']['client'];
             $from = $_SESSION['lofilter']['from'];
@@ -154,7 +149,7 @@ class ReceivingController extends ControllerBase {
             $client = '%';
             $from = date('Y-m') . '-01';
             $to = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT SQL_CACHE date from {ek_logi_delivery} order by date DESC limit 1")
+                    ->query("SELECT date from {ek_logi_delivery} order by date DESC limit 1")
                     ->fetchField();
             if ($to < $from) {
                 $to = $from;
@@ -180,10 +175,6 @@ class ReceivingController extends ControllerBase {
 
             $settings = new LogisticsSettings($r->head);
             $client = \Drupal\ek_address_book\AddressBookData::geturl($r->supplier,['short' => 8]);
-            $query = "SELECT name from {ek_company} where id=:id";
-            $co = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $r->head))
-                    ->fetchField();
             $number = "<a title='" . t('view') . "' href='"
                     . Url::fromRoute('ek_logistics.receiving.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
@@ -211,7 +202,7 @@ class ReceivingController extends ControllerBase {
             $options[$r->id] = array(
                 'number' => ['data' => ['#markup' => $number], 'title' => t('view in browser')],
                 'reference' => ['data' => ['#markup' => $reference]],
-                'issuer' => array('data' => $co, 'title' => $r->title),
+                'issuer' => array('data' => $company_array[$r->head], 'title' => $r->title),
                 'date' => $r->date,
                 'delivery' => $r->ddate,
                 'status' => ['data' => ['#markup' => $status]],
@@ -226,7 +217,11 @@ class ReceivingController extends ControllerBase {
                     'url' => Url::fromRoute($edit_route, ['id' => $r->id]),
                 );
             }
-
+            
+            $links['clone'] = array(
+                'title' => $this->t('Clone'),
+                'url' => Url::fromRoute('ek_logistics_receiving_clone', ['id' => $r->id]),
+            );
 
             if ($r->status == 1) {
                 $links['post'] = array(
@@ -234,27 +229,21 @@ class ReceivingController extends ControllerBase {
                     'url' => Url::fromRoute('ek_logistics_receiving_post', ['id' => $r->id]),
                 );
             }
-
            
             if (\Drupal::currentUser()->hasPermission('print_share_receiving')) {
 
-                $links['print'] = array(
+                $links['rprint'] = array(
                     'title' => $this->t('Print and share'),
                     'url' => Url::fromRoute('ek_logistics_receiving_print_share', ['id' => $r->id]),
+                    'attributes' => array('class' => ['ico', 'pdf']),
                 );
-                /*
-                 * @param
-                 * id
-                 * source
-                 * mode (0 download, 1 save)
-                 * template, 0 = default
-                 */
+                /* @param: id,source,mode (0 download, 1 save),template, 0 = default */
                 $param = serialize([$r->id, 'logi_receiving', 0, 0]);
 
-                $links['excel'] = array(
+                $links['rexcel'] = array(
                     'title' => $this->t('Excel download'),
                     'url' => Url::fromRoute('ek_logistics_receiving_excel', ['param' => $param]),
-                    'attributes' => array('target' => '_blank'),
+                    'attributes' => array('target' => '_blank', 'class' => ['ico', 'excel']),
                 );
             }
             if (\Drupal::currentUser()->hasPermission('delete_receiving') && $r->status == 0) {
@@ -317,7 +306,7 @@ class ReceivingController extends ControllerBase {
                 }
                 $url = Url::fromRoute($route)->toString();
                 $build['back'] = array(
-                    '#markup' => t('Document not editable. Go to <a href="@url" >List</a>.', array('@url' => $url ) ) ,
+                    '#markup' => t('Document not editable. Go to <a href="@url">List</a>.', array('@url' => $url ) ) ,
                 );
             }
         } else {
@@ -405,7 +394,7 @@ class ReceivingController extends ControllerBase {
             $url = Url::fromRoute('ek_logistics_list_' . $type)->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
