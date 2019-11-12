@@ -3,32 +3,49 @@ ek_hr.task.list:
   base_route: ek_hr.parameters
   title: 'List'
   weight: 1
-  id: 'tour1'
+  options:
+    attributes:
+      id:
+        - 'tour1'
 
 ek_hr.task.new_employee:
   route_name: ek_hr.new-employee
   base_route: ek_hr.parameters
   title: 'New employee'
   weight: 2
+  options:
+    attributes:
+      id:
+        - 'tour2'  
 
 ek_hr.task.categories:
   route_name: ek_hr.parameters-category
   base_route: ek_hr.parameters
   title: 'Categories'
   weight: 3
-
+  options:
+    attributes:
+      id:
+        - 'tour3'
+        
 ek_hr.task.main_param:
   route_name: ek_hr.parameters-main
   base_route: ek_hr.parameters
   title: 'Main parameters'
   weight: 4
-  
+  options:
+    attributes:
+      id:
+        - 'tour4'  
 ek_hr.task.ad:
   route_name: ek_hr.parameters-ad
   base_route: ek_hr.parameters
   title: 'Allowances'
   weight: 5
-
+  options:
+    attributes:
+      id:
+        - 'tour5'
 
 #ek_hr.task.location:
 ek_hr.parameters-organization:
@@ -36,6 +53,10 @@ ek_hr.parameters-organization:
   title: 'Organization'
   base_route: ek_hr.parameters
   weight: 7
+  options:
+    attributes:
+      id:
+        - 'tour6'  
 
 ek_hr.task.location:
   route_name: ek_hr.parameters-organization-location
@@ -63,24 +84,40 @@ ek_hr.task.accounts:
   route_name: ek_hr.parameters-accounts
   base_route: ek_hr.parameters
   weight: 11
+  options:
+    attributes:
+      id:
+        - 'tour7'
 
 ek_hr.task.payslip:
   title: 'Manage payslips'
   route_name: ek_hr.parameters-payslip
   base_route: ek_hr.parameters
   weight: 12
+  options:
+    attributes:
+      id:
+        - 'tour8'
 
 ek_hr.task.forms:
   title: 'Forms'
   route_name: ek_hr.parameters-form
   base_route: ek_hr.parameters
   weight: 13
+  options:
+    attributes:
+      id:
+        - 'tour9'
 
 ek_hr.task.funds:
   title: 'Funds'
   route_name: ek_hr.parameters-fund
   base_route: ek_hr.parameters
   weight: 14
+  options:
+    attributes:
+      id:
+        - 'tour10'
   
 ek_hr.task.data_employee:
   route_name: ek_hr.employee.view

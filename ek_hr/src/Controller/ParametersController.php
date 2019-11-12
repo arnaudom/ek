@@ -164,7 +164,7 @@ class ParametersController extends ControllerBase {
             $param = serialize(['coid' => $coid, 'status' => $status]);
             $excel = Url::fromRoute('ek_hr.parameters-excel', array('param' => $param), array())->toString();
             $build['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'></span></a>"
             );
 
             $build['hr_table'] = array(
@@ -174,18 +174,14 @@ class ParametersController extends ControllerBase {
                 '#attributes' => array('id' => 'hr_table'),
                 '#empty' => $this->t('No employee'),
                 '#attached' => array(
-                    'library' => array('ek_hr/ek_hr_css', 'ek_hr/ek_hr_help','ek_hr/ek_hr_tip'),
+                    'library' => array('ek_hr/ek_hr_css', 'ek_hr/ek_hr_help','ek_hr/ek_hr_tip','ek_admin/ek_admin_css'),
                 ),
             );
             $build['pager'] = array(
                 '#type' => 'pager',
             );
-        } else {
-            
-        }
-
-
-
+        } 
+        
         Return $build;
     }
 

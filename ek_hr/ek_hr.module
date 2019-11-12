@@ -22,7 +22,7 @@ use Drupal\Core\Url;
  */
 function ek_hr_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
-    case 'ek_hr.parameters':
+    case 'help.page.ek_hr':
       $output = '';
       $output .= '<div id="help">' . t('Parameters settings help') . '</div>';
       $output .= '<div id="help_content">';

@@ -52,6 +52,7 @@
 #               If you omit both the .data-id and .data-class, the tip will be
 #               shown as modal instead of being targeted to an element.
 #
+
 id: ek_hr.parameters
 module: ek_hr
 label: 'HR parameters tour'
@@ -63,14 +64,101 @@ tips:
     id: introduction
     plugin: text
     label: 'HR parameters guide'
-    body: 'This is an guided tour to manage HR parameters.'
+    body: 'This is a guided tour to manage HR parameters.'
     weight: 1
-  item1:
-    id: item1
+  item-1:
+    id: first-item
     plugin: text
     label: 'List'
     body: "This is the list of current employees. It can be filtered by company and working status. The list will display the employee ID, name status and a link to edit the employee's profile."
     weight: 2
     location: bottom
     attributes:
-      data-class: 'tabs primary'
+      data-id: "tour1"
+  item-2:
+    id: first-item
+    plugin: text
+    label: 'New employee'
+    body: "You can create a new employee by filling-up the form. But before creating your first employee, you will need to set categories, main parameters, custom allowance or deductions and organization options."
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: "tour2"
+  item-3:
+    id: first-item
+    plugin: text
+    label: 'Categories'
+    body: "You can create 5 type of employee categories. Each category of employee will have its own set of custom allowance and deductions. You need to define categories before allowances."
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: "tour3"
+  item-4:
+    id: first-item
+    plugin: text
+    label: 'Main parameters'
+    body: "In this tab, you can define main parameters (funds,contributions or tax) by company that apply to all employees of that company."
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: "tour4"
+  item-5:
+    id: first-item
+    plugin: text
+    label: 'Allowances and deductions'
+    body: "Allowances and deductions are defined by company and by category. Whithin each category you will have fixed and custom allowances and deductions. You can set your own parameters for custom inputs (description,value, formula)."
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: "tour5"
+  item-6:
+    id: first-item
+    plugin: text
+    label: 'Organization'
+    body: "Inside organization, you can set your locations by company (i.e. Head office, factory, storage); the type of services (i.e. Sales department, Quality control, Logistics); the structure of your organization (i.e. Executive, Senior manager, Director)."
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: "tour6"      
+  item-7:
+    id: first-item
+    plugin: text
+    label: 'Accounts'
+    body: "If finance module is installed, you can map main parameters with acounting references per company. You will need to create a chart of accounts first."
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: "tour7"      
+  item-8:
+    id: first-item
+    plugin: text
+    label: 'Manage payslips'
+    body: "Use this tab to upload custom payslip formats."
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: "tour8"
+  item-9:
+    id: first-item
+    plugin: text
+    label: 'Forms'
+    body: "Use this tab to upload custom HR forms (i.e. tax submission form or pension declaration form)."
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: "tour9"
+  item-10:
+    id: first-item
+    plugin: text
+    label: 'Funds'
+    body: "Funds table are used to calculate deduction values from tables (see main parameters). They can be edited directly and are specific to countries where applicable. Thisparameter requires custom HR module installation."
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: "tour10"
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Thank you'
+    body: ''
+    weight: 12

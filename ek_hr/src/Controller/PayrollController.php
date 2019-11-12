@@ -105,7 +105,7 @@ class PayrollController extends ControllerBase {
             $items['type'] = 'edit';
             $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('payroll')))];
             $items['description'] = ['#markup' => t('no access')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -202,28 +202,25 @@ class PayrollController extends ControllerBase {
 
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
-
-
-
-        $query = "SELECT * from {ek_hr_workforce_pay} INNER JOIN {ek_hr_workforce} "
-                . "ON ek_hr_workforce_pay.id=ek_hr_workforce.id  "
-                . "WHERE company_id=:coid AND FIND_IN_SET (company_id, :a) order by ek_hr_workforce.id";
-
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_hr_workforce_pay', 'wp');
+            $query->fields('wp');
+            $query->leftJoin('ek_hr_workforce', 'w', 'wp.id = w.id');
+            $query->orderBy('w.id');
+            $query->fields('w');
         if (isset($_SESSION['hrlfilter']['filter']) && $_SESSION['hrlfilter']['filter'] == 1) {
 
-            $a = array(
-                ':coid' => $_SESSION['hrlfilter']['coid'],
-                ':a' => $company
-            );
-
-            //$data = db_query($query, $a);
-            $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
+            $query->condition('company_id', $_SESSION['hrlfilter']['coid'], '=');
+            $query->condition('company_id', $access, 'IN');
+            
+            $data = $query->execute();
 
             while ($r = $data->fetchObject()) {
                 $eid = ($r->custom_id != '') ? $r->custom_id : $r->id;
                 $options[$r->id] = array(
                     'id' => ['data' => ['#markup' => "<span class='badge'>" . $eid . "</span>"]],
-                    'name' => array('data' => $r->name, 'title' => $r->given_name),
+                    'name' => array('data' => $r->name, 'title' => $r->given_name, 'class' => ['tip'],'id' => $r->id),
                     'month' => $r->month,
                     'status' => $r->active,
                     'start' => $r->start,
@@ -251,7 +248,7 @@ class PayrollController extends ControllerBase {
             $param = serialize(array('coid' => $_SESSION['hrlfilter']['coid']));
             $excel = Url::fromRoute('ek_hr.current-payroll-excel', array('param' => $param), array())->toString();
             $build['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                 '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'></span></a>"
             );
 
             $build['hr_table'] = array(
@@ -261,14 +258,10 @@ class PayrollController extends ControllerBase {
                 '#attributes' => array('id' => 'hr_current_pay'),
                 '#empty' => $this->t('No data'),
                 '#attached' => array(
-                    'library' => array('ek_hr/ek_hr_css'),
+                    'library' => array('ek_hr/ek_hr_css', 'ek_hr/ek_hr_help','ek_hr/ek_hr_tip','ek_admin/ek_admin_css'),
                 ),
             );
-        } else {
-            
-        }
-
-
+        } 
 
         Return $build;
     }
