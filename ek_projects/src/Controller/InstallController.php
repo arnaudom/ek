@@ -265,7 +265,7 @@ class InstallController extends ControllerBase {
 	`action` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
 	INDEX `Index 1` (`pcode`)
         )
-        COLLATE='utf8mb4_general_ci''
+        COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB";
     $db = Database::getConnection('external_db', 'external_db')->query($query);
     if($db) $markup .= 'Projects trackers table installed <br/>';      
