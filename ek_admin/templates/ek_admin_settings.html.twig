@@ -19,7 +19,17 @@
 {% else %}    
 
     <p>{{ items.updatephp }}</p>
+    {% if items.country %}
 
+        <p>{{ items.country }}</p>
+
+    {% endif %}
+
+    {% if items.company %}
+
+        <p>{{ items.company }}</p>
+
+    {% endif %}
 
     <div>
         <ul class='admin_list'>
@@ -97,24 +107,5 @@
         </ul>
 
     </div>
-
-
-
-
-
-
+                
 {% endif %}
-
-{% if items.country %}
-
-    <p>{{ items.country }}</p>
-
-{% endif %}
-
-{% if items.company %}
-
-    <p>{{ items.company }}</p>
-
-{% endif %}
-
-
