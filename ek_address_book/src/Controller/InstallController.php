@@ -107,11 +107,11 @@ class InstallController extends ControllerBase {
                 `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `abid` INT(10) UNSIGNED NOT NULL COMMENT 'id in address book',
                 `main` VARCHAR(2) NULL DEFAULT '0',
-                `contact_name` VARCHAR(200) NOT NULL COMMENT 'full name' COLLATE 'utf8mb4_unicode_ci',
+                `contact_name` VARCHAR(255) NOT NULL COMMENT 'full name' COLLATE 'utf8mb4_unicode_ci',
                 `salutation` VARCHAR(20) NULL DEFAULT NULL COMMENT 'salutation',
                 `title` VARCHAR(100) NULL DEFAULT NULL COMMENT 'function ttitle',
                 `telephone` VARCHAR(45) NULL DEFAULT NULL COMMENT 'fix line',
-                `mobilephone` VARCHAR(45) NULL DEFAULT NULL COMMENT 'mobile ine',
+                `mobilephone` VARCHAR(45) NULL DEFAULT NULL COMMENT 'mobile line',
                 `email` VARCHAR(100) NULL DEFAULT NULL COMMENT 'email',
                 `card` VARCHAR(255) NULL DEFAULT NULL COMMENT 'name card, fid',
                 `department` VARCHAR(100) NULL DEFAULT NULL COMMENT 'department',
@@ -119,7 +119,7 @@ class InstallController extends ControllerBase {
                 `comment` TEXT NULL COMMENT 'comment',
                 `stamp` VARCHAR(50) NULL DEFAULT NULL,
                 PRIMARY KEY (`id`),
-                INDEX `Index 2` (`contact_name`, `abid`)
+                INDEX `Index 2` (`abid`)
               )
               COMMENT='Address book contacts'
               COLLATE=utf8_general_ci
