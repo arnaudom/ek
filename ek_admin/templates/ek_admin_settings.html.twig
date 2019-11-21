@@ -19,6 +19,12 @@
 {% else %}    
 
     <p>{{ items.updatephp }}</p>
+    {% if items.privateStream %}
+
+        <p>{{ items.privateStream }}</p>
+
+    {% endif %}
+    
     {% if items.country %}
 
         <p>{{ items.country }}</p>
@@ -80,9 +86,9 @@
             <li>
                 <span class="list_ico fas fa-save"></span>
                 {% if items.space > 0.5 %}
-                    <div class="list_name valid">{{ 'Private file free space'|t }} {{ items.space }}</div>
+                    <div class="list_name valid">{{ 'Private file free space'|t }}: {{ items.space }}</div>
                 {% else %}
-                    <div class="list_name missing">{{ 'Private file free space'|t }} {{ items.space }}</div>
+                    <div class="list_name missing">{{ 'Private file free space'|t }}: {{ items.space }}</div>
                 {% endif %}
             </li>             
             <li>

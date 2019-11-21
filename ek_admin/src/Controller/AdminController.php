@@ -266,6 +266,9 @@ class AdminController extends ControllerBase {
                         $Index++;
                     }
                     $build['space'] = round($f) . " " . $Type[$Index] . "bytes"; 
+                } else {
+                    $build['privateStream'] = t("Set private data folder in <a href='@c'>configuration</a>.", ['@c' => '../../../admin/config/media/file-system']);
+                    $build['space'] = 'n/a';
                 }
                 //libraries 
                 $build['excel'] = (class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) ? 1 : 0;

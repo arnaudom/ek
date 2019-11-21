@@ -298,65 +298,68 @@ class EditCompanyForm extends FormBase {
             '#collapsible' => TRUE,
             '#collapsed' => FALSE,
         );
-
-        $form['i']['logo'] = array(
-            '#type' => 'file',
-            '#title' => t('Upload a logo image'),
-            '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
-            '#suffix' => "</div>",
-        );
-
-        /* current image if any */
-        if (isset($r['logo']) && $r['logo'] <> '') {
-            $image = "<a href='" . file_create_url($r['logo']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['logo']) . "></a>";
-            $form['i']['logo_delete'] = array(
-                '#type' => 'checkbox',
-                '#title' => t('delete logo'),
-                '#attributes' => array('onclick' => "jQuery('#currentLogo').toggleClass( 'delete');"),
-                '#prefix' => "<div class='cell'>",
+        if (null !== \Drupal\Core\StreamWrapper\PrivateStream::basePath()) {
+            $form['i']['logo'] = array(
+                '#type' => 'file',
+                '#title' => t('Upload a logo image'),
+                '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+                '#suffix' => "</div>",
             );
-            $form['i']["currentlogo"] = array(
-                '#markup' => "<p id='currentLogo' class = 'text-right'>" . $image . "</p>",
-                '#suffix' => "</div></div></div>",
+
+            /* current image if any */
+            if (isset($r['logo']) && $r['logo'] <> '') {
+                $image = "<a href='" . file_create_url($r['logo']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['logo']) . "></a>";
+                $form['i']['logo_delete'] = array(
+                    '#type' => 'checkbox',
+                    '#title' => t('delete logo'),
+                    '#attributes' => array('onclick' => "jQuery('#currentLogo').toggleClass( 'delete');"),
+                    '#prefix' => "<div class='cell'>",
+                );
+                $form['i']["currentlogo"] = array(
+                    '#markup' => "<p id='currentLogo' class = 'text-right'>" . $image . "</p>",
+                    '#suffix' => "</div></div></div>",
+                );
+            } else {
+                $form['i']["currentlogo"] = array(
+                    '#type' => "item",
+                    '#suffix' => "</div></div>",
+                );
+            }
+
+            $form['i']['sign'] = array(
+                '#type' => 'file',
+                '#title' => t('Upload a signatue image'),
+                '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+                '#suffix' => "</div>",
             );
+            
+            /* current image if any */
+            if (isset($r['sign']) && $r['sign'] <> '') {
+                $image = "<a href='" . file_create_url($r['sign']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['sign']) . "></a>";
+                $form['i']['sign_delete'] = array(
+                    '#type' => 'checkbox',
+                    '#title' => t('delete signature'),
+                    '#attributes' => array('onclick' => "jQuery('#currentSign').toggleClass('delete');"),
+                    '#prefix' => "<div class='cell'>",
+                );
+                $form['i']["currentsign"] = array(
+                    '#markup' => "<p id='currentSign'  class = 'text-right'>" . $image . "</p>",
+                    '#suffix' => "</div></div></div>",
+                );
+            } else {
+                $form['i']["currentsign"] = array(
+                    '#type' => "item",
+                    '#suffix' => "</div></div>",
+                );
+            }
         } else {
-            $form['i']["currentlogo"] = array(
-                '#type' => "item",
-                '#suffix' => "</div></div>",
+            $form['i']['path'] = array(
+                '#type' => 'item',
+                '#markup' => t("Set private data folder in <a href='@c'>configuration</a> before uploading files", ['@c' => '../../../admin/config/media/file-system']),
             );
         }
-
-        $form['i']['sign'] = array(
-            '#type' => 'file',
-            '#title' => t('Upload a signatue image'),
-            '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
-            '#suffix' => "</div>",
-        );
-
-        /* current image if any */
-        if (isset($r['sign']) && $r['sign'] <> '') {
-            $image = "<a href='" . file_create_url($r['sign']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['sign']) . "></a>";
-            $form['i']['sign_delete'] = array(
-                '#type' => 'checkbox',
-                '#title' => t('delete signature'),
-                '#attributes' => array('onclick' => "jQuery('#currentSign').toggleClass('delete');"),
-                '#prefix' => "<div class='cell'>",
-            );
-            $form['i']["currentsign"] = array(
-                '#markup' => "<p id='currentSign'  class = 'text-right'>" . $image . "</p>",
-                '#suffix' => "</div></div></div>",
-            );
-        } else {
-            $form['i']["currentsign"] = array(
-                '#type' => "item",
-                '#suffix' => "</div></div>",
-            );
-        }
-
 
         //admin data
-
-
         $form['f'] = array(
             '#type' => 'details',
             '#title' => t('Other settings'),
@@ -626,8 +629,8 @@ class EditCompanyForm extends FormBase {
             //delete existing file
             $query = "SELECT logo from {ek_company} where id=:id";
             $path = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $id))->fetchField();
-            
+                            ->query($query, array(':id' => $id))->fetchField();
+
             \Drupal::service('file_system')->delete($path);
             \Drupal::messenger()->addWarning(t("Logo image deleted"));
             Database::getConnection('external_db', 'external_db')
@@ -638,8 +641,8 @@ class EditCompanyForm extends FormBase {
             //delete existing file
             $query = "SELECT sign from {ek_company} where id=:id";
             $path = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $id))->fetchField();
-            
+                            ->query($query, array(':id' => $id))->fetchField();
+
             \Drupal::service('file_system')->delete($path);
             Database::getConnection('external_db', 'external_db')
                     ->update('ek_company')->fields(array('sign' => ''))->condition('id', $id)->execute();
