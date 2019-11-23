@@ -198,6 +198,10 @@ class SerialFormat extends FormBase {
           ->execute();
         
         \Drupal::messenger()->addStatus(t('Settings updated'));
+        if($_SESSION['install'] == 1){
+                unset($_SESSION['install']);
+                $form_state->setRedirect('ek_admin.main');
+        }
     }
 
 }

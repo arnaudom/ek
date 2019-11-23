@@ -57,11 +57,17 @@ class EditTypes extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
 
-
-        $query = "SELECT * from {ek_project_type} ORDER by id";
-
-        $data = Database::getConnection('external_db', 'external_db')->query($query);
         $link = Url::fromRoute('ek_projects_new', array(), array())->toString();
+        $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_project_type', 'pt')
+                            ->fields('pt');
+        $query->orderBy('id');
+        $data = $query->execute();
+        $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_project', 'p')
+                            ->fields('p',['category']);
+        $query->distinct();
+        $categories = $query->execute()->fetchCol();
 
         $form['p'] = array(
             '#type' => 'item',
@@ -85,6 +91,7 @@ class EditTypes extends FormBase {
                 'data' => $this->t('Short name'),
             ),
             'del' => $this->t('Delete'),
+            'id' => '',
         );
 
         $form['l-table'] = array(
@@ -98,7 +105,6 @@ class EditTypes extends FormBase {
 
 
         While ($r = $data->fetchObject()) {
-
 
             $id = $r->id;
 
@@ -124,6 +130,7 @@ class EditTypes extends FormBase {
                 '#default_value' => $r->type,
                 '#attributes' => array('placeholder' => t('project type name')),
                 '#required' => TRUE,
+                '#disabled' => in_array($id,$categories) ? TRUE:FALSE,
             );
 
             $form['comment'] = array(
@@ -143,6 +150,7 @@ class EditTypes extends FormBase {
                 '#default_value' => $r->short,
                 '#required' => TRUE,
                 '#attributes' => array('class' => array('short name')),
+                '#disabled' => in_array($id,$categories) ? TRUE:FALSE,
             );
 
             $form['del'] = array(
@@ -248,7 +256,10 @@ class EditTypes extends FormBase {
         unset($form['short']);
         unset($form['del']);
 
-
+        $form['categories'] = array(
+                '#type' => 'hidden',
+                '#value' => $categories,
+            );
 
         $form['actions'] = array(
             '#type' => 'actions',
@@ -274,14 +285,11 @@ class EditTypes extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
 
-
         if ($form_state->getValue('comment') != '' || $form_state->getValue('short') != '') {
             if ($form_state->getValue('type') == '') {
                 $form_state->setErrorByName('newtype', $this->t('You need to enter a type'));
             }
         }
-        
-        
     }
 
     /**
@@ -291,18 +299,13 @@ class EditTypes extends FormBase {
 
 
         $list = $form_state->getValue('l-table');
+        $categories = $form_state->getValue('categories');
         foreach ($list as $key => $value) {
 
             if ($key != 'new') {
                 if ($value['del'] == 1) {
 
-                    $query = "SELECT count(id) from {ek_project} WHERE category =:l";
-                    $a = array(':l' => $value['id']);
-                    $count = Database::getConnection('external_db', 'external_db')
-                            ->query($query, $a)
-                            ->fetchField();
-
-                    if ($count > 0) {
+                    if (in_array($value['id'],$categories)) {
                         \Drupal::messenger()->addWarning(t('Project type \'@l\' cannot be deleted because it is used.', ['@l' => $value['type']]));
                     } else {
                         Database::getConnection('external_db', 'external_db')
@@ -313,20 +316,13 @@ class EditTypes extends FormBase {
                     }
                 } else {
 
-
-                    $query = "SELECT count(id) from {ek_project} WHERE category =:l";
-                    $a = array(':l' => $value['id']);
-                    $count = Database::getConnection('external_db', 'external_db')
-                            ->query($query, $a)
-                            ->fetchField();
-
-                    if ($count > 0) { //In use only update description
+                    if (in_array($value['id'],$categories)) { //In use only update description
                         $fields = array(
                             'comment' => Xss::filter($value['comment']),
                             'gp' => Xss::filter($value['group']),
                         );
-                    } else { //not in use can update all data  
-                        
+                    } else { 
+                        //not in use can update all data
                         //check if field is less than 6 char
                         $short = Xss::filter($value['short']);
                         if(count_chars($short,3) > 5) {

@@ -34,6 +34,7 @@ use Drupal\ek_projects\ProjectData;
     }
     
     if(isset($settings['code']) && empty($settings['code'])) {
+        $_SESSION['install'] = 1;
         $link = \Drupal\Core\Url::fromRoute('ek_projects.settings.serial', array(), array())->toString();
         return ['projects' => $link];
         
