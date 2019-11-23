@@ -226,6 +226,10 @@ class Currencies extends FormBase {
     }
     
     \Drupal::messenger()->addStatus(t('Currency data updated'));
+    if($_SESSION['install'] == 1){
+                unset($_SESSION['install']);
+                $form_state->setRedirect('ek_admin.main');
+    }
           
  
   }

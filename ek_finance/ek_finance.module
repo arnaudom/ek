@@ -34,6 +34,7 @@ use Drupal\ek_finance\Journal;
     }
     
     if(empty($settings)) {
+        $_SESSION['install'] = 1;
         $link = \Drupal\Core\Url::fromRoute('ek_finance.admin.settings', array(), array())->toString();
         return ['finance' => $link];
         
