@@ -40,6 +40,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
         if(empty($settings)) {
             $link = \Drupal\Core\Url::fromRoute('ek_sales_settings', array(), array())->toString();
             $flag = 1;
+            $_SESSION['install'] = 1;
         }        
         
     }
