@@ -55,8 +55,13 @@ class EditCompanyForm extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
 
-        $query = "SELECT id,name from {ek_country} where status=:s";
-        $country = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => 1))->fetchAllKeyed();
+        $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_country', 'c')
+                        ->fields('c',['id','name'])
+                        ->condition('status', 1)
+                        ->orderBy('name');
+       
+        $country = $query->execute()->fetchAllKeyed();
 
         if (isset($id) && !$id == NULL) {
 
@@ -65,10 +70,13 @@ class EditCompanyForm extends FormBase {
                 '#default_value' => $id,
             );
 
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_company', 'c')
+                        ->condition('id', $id)
+                        ->fields('c');
+            $r = $query->execute()->fetchAssoc();
             $query = "SELECT * from {ek_company} WHERE id=:id";
-            $r = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $id))
-                    ->fetchAssoc();
+            
         } else {
 
             $form['new_company'] = array(
@@ -696,8 +704,15 @@ class EditCompanyForm extends FormBase {
 
         if (isset($insert) || isset($update)) {
             \Drupal::messenger()->addStatus(t("The company is recorded"));
-            $form_state->setRedirect('ek_admin.company.list');
+            if($_SESSION['install'] == 1){
+                unset($_SESSION['install']);
+                $form_state->setRedirect('ek_admin.main');
+            } else {
+                $form_state->setRedirect('ek_admin.company.list');
+            }
+            
         }
+            
     }
 
 }

@@ -7,7 +7,6 @@
 
 namespace Drupal\ek_admin\Form;
 
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Locale\CountryManagerInterface;
@@ -49,11 +48,13 @@ class EditCountryForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+    public function buildForm(array $form, FormStateInterface $form_state) {
 
-
-        $query = "SELECT * from {ek_country} order by name";
-        $data = Database::getConnection('external_db', 'external_db')->query($query);
+        $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_country', 'c')
+                        ->fields('c')
+                        ->orderBy('name');
+        $data = $query->execute();
         
         $header1 = [
             'name' => $this->t('Name'),
@@ -216,7 +217,15 @@ class EditCountryForm extends FormBase {
         }
 
         \Drupal::messenger()->addStatus(t('Country data updated'));
-        $form_state->setRedirect('ek_admin.country.list');
+        
+        if($_SESSION['install'] == 1){
+            unset($_SESSION['install']);
+            $form_state->setRedirect('ek_admin.main');
+        } else {
+            $form_state->setRedirect('ek_admin.country.list');
+        }
+        
+            
     }
 
 }

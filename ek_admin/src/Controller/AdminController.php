@@ -230,12 +230,18 @@ class AdminController extends ControllerBase {
                  * Module Tables installed; Verify various settings data
                  */
 
-                $build['updatephp'] = [ '#markup' => '<p>' . t('Always run the <a href=":update-php">update script</a> each time a module is updated.', [':update-php' => Url::fromRoute('system.db_update')->toString(),]) . '</p>'];
+                $build['updatephp'] = [ '#markup' => '<p>' . t('Always run the <a href=":update-php">update script</a> each time a module is updated.',
+                        [':update-php' => Url::fromRoute('system.db_update')->toString(),]) . '</p>'];
 
                 //countries
-                $query = "SELECT count(id) FROM {ek_country} WHERE status=:s";
-                $data = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => 1))->fetchField();
-                if ($data < 1) {
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_country', 'c')
+                        ->condition('status', 1);
+                $query->addExpression('Count(id)', 'count');
+                $Obj = $query->execute();
+                $count = $Obj->fetchObject()->count; 
+                if ($count < 1) {
+                    $_SESSION['install'] = 1;
                     $link = Url::fromRoute('ek_admin.country.list', array(), array())->toString();
                     $build['country'] = array(
                         '#markup' => t('You have not activated any country yet. Go <a href="@c">here</a> to activate countries.', array('@c' => $link)) . '<br/>',
@@ -249,6 +255,7 @@ class AdminController extends ControllerBase {
                 $coids = $query->execute()->fetchCol();
 
                 if (empty($coids)) {
+                    $_SESSION['install'] = 1;
                     $link = Url::fromRoute('ek_admin.company.new', array(), array())->toString();
                     $build['company'] = array(
                         '#markup' => t('You have not created any company yet. Go <a href="@c">here</a> to create one.', array('@c' => $link)) . '<br/>',
@@ -267,7 +274,7 @@ class AdminController extends ControllerBase {
                     }
                     $build['space'] = round($f) . " " . $Type[$Index] . "bytes"; 
                 } else {
-                    $build['privateStream'] = t("Set private data folder in <a href='@c'>configuration</a>.", ['@c' => '../../../admin/config/media/file-system']);
+                    $build['privateStream'] = t("Set private data folder in <a href='@c'>configuration</a>.", ['@c' => './admin/config/media/file-system']);
                     $build['space'] = 'n/a';
                 }
                 //libraries 
@@ -1027,11 +1034,10 @@ class AdminController extends ControllerBase {
     public function ajaxcsnbuilt(Request $request) {
 
         $text = $request->query->get('term');
-
         $a = explode(' ', $text);
-
         $terms = count($a);
         $sn = '';
+        $alert = null;
 
         if ($terms == 1) {
             $sn.= substr($text, 0, 4);
@@ -1053,12 +1059,18 @@ class AdminController extends ControllerBase {
         for ($i = 0; $i <= $terms; $i++) {
             $valid.= $a[$i] . '%';
         }
-        $query = "SELECT count(name) from {ek_company} where name like :text";
-        $ok = Database::getConnection('external_db', 'external_db')->query($query, array(':text' => $valid))->fetchField();
-        if ($ok == 1)
+        $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_company', 'c')
+                        ->condition('name', $valid, 'LIKE');
+                $query->addExpression('Count(name)', 'count');
+                $Obj = $query->execute();
+        $count = $Obj->fetchObject()->count; 
+                
+        if ($count == 1){
             $alert = t('This name already exists in the records');
+        }
 
-        return new JsonResponse(array('sn' => $sn, 'name' => $ok, 'alert' => $alert));
+        return new JsonResponse(array('sn' => $sn, 'name' => $count, 'alert' => $alert));
     }
 
     /**
