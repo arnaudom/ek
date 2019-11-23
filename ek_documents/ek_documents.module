@@ -33,6 +33,7 @@ use Drupal\Core\Database\Database;
         $settings = unserialize($data->settings);
     }
     if(empty($settings)) {
+        $_SESSION['install'] = 1;
         $link = \Drupal\Core\Url::fromRoute('ek_documents_settings', array(), array())->toString();
         return ['documents' => $link];
         
