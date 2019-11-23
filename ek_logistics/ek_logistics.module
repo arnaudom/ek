@@ -32,6 +32,7 @@ use Drupal\Core\Database\Database;
         }
             if(empty($settings)) {
                 $link = \Drupal\Core\Url::fromRoute('ek_logistics_settings', array(), array())->toString();
+                $_SESSION['install'] = 1;
                 $flag = 1;
             }  
         
