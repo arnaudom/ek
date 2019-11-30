@@ -1241,7 +1241,7 @@ class Invoice extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'), '4' => t('Credit note'));
+        $options = array('1' => 'Invoice', '2' => 'Commercial invoice', '4' => 'Credit note');
 
         if ($form_state->getValue('new_invoice') == 1) {
             //create new serial No

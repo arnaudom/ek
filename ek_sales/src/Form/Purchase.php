@@ -1137,7 +1137,7 @@ class Purchase extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         
-        $options = array('1' => t('Purchase'), '4' => t('Debit note'));
+        $options = array('1' => 'Purchase', '4' => 'Debit note');
 
         if ($form_state->getValue('new_purchase') == 1) {
             //create new serial No
