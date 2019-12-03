@@ -1191,7 +1191,7 @@ class ProjectController extends ControllerBase {
         //doc query
         $querydoc = Database::getConnection('external_db', 'external_db')
                     ->select('ek_project_documents', 'd');
-            $querydoc->fields('d', ['id','fid','filename', 'uri', 'date', 'comment', 'size']);
+            $querydoc->fields('d', ['id','fid','filename', 'sub_folder', 'uri', 'date', 'comment', 'size']);
             $querydoc->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
             $querydoc->fields('p', ['pcode', 'owner']);
             $querydoc->condition('p.id', $id);
@@ -1344,72 +1344,72 @@ class ProjectController extends ControllerBase {
                     $i++;
                     
                     /* default values */
-                    $items[$i]['pcode'] = $l->pcode; //used in hooks to extend data
-                    $items[$i]['id'] = $l->id; //db id
-                    $items[$i]['fid'] = 1; //default file status on
-                    $items[$i]['delete'] = 1; //default delete action is on
-                    $items[$i]['email'] = 1; //default email action is on
-                    $items[$i]['extranet'] = 0;//default extranet action is of
-                    $items[$i]['icon'] = 'file';//default icon 
-                    $items[$i]['file_url'] = ''; //default
-                    $items[$i]['access_url'] = 0; //default access management if off
+                    $items[$l->sub_folder][$i]['pcode'] = $l->pcode; //used in hooks to extend data
+                    $items[$l->sub_folder][$i]['id'] = $l->id; //db id
+                    $items[$l->sub_folder][$i]['fid'] = 1; //default file status on
+                    $items[$l->sub_folder][$i]['delete'] = 1; //default delete action is on
+                    $items[$l->sub_folder][$i]['email'] = 1; //default email action is on
+                    $items[$l->sub_folder][$i]['extranet'] = 0;//default extranet action is of
+                    $items[$l->sub_folder][$i]['icon'] = 'file';//default icon 
+                    $items[$l->sub_folder][$i]['file_url'] = ''; //default
+                    $items[$l->sub_folder][$i]['access_url'] = 0; //default access management if off
                     
-                    $items[$i]['uri'] = $l->uri;
+                    $items[$l->sub_folder][$i]['uri'] = $l->uri;
                     
                     $extension = explode(".", $l->filename);
                     $extension = array_pop($extension);
                     
-                    $items[$i]['icon_path'] = drupal_get_path('module', 'ek_projects') . '/art/icons/';
+                    $items[$l->sub_folder][$i]['icon_path'] = drupal_get_path('module', 'ek_projects') . '/art/icons/';
                     
                     if (file_exists(drupal_get_path('module', 'ek_projects') . '/art/icons/' . $extension . ".png")) {
-                        $items[$i]['icon'] = strtolower($extension);
+                        $items[$l->sub_folder][$i]['icon'] = strtolower($extension);
                     } 
 
                     //filename formating
                     if (strlen($l->filename) > 30) {
-                        $items[$i]['doc_name'] = substr($l->filename, 0, 30) . " ... ";
+                        $items[$l->sub_folder][$i]['doc_name'] = substr($l->filename, 0, 30) . " ... ";
                     } else {
-                        $items[$i]['doc_name'] = $l->filename;
+                        $items[$l->sub_folder][$i]['doc_name'] = $l->filename;
                     }
                     
                     
                     if ($l->fid == '0') { //file was deleted
-                        $items[$i]['fid'] = 0;
-                        $items[$i]['delete'] = 0;
-                        $items[$i]['email'] = 0;
-                        $items[$i]['extranet'] = 0;
-                        $items[$i]['comment'] = $l->comment . " " . date('Y-m-d', $l->date);
+                        $items[$l->sub_folder][$i]['fid'] = 0;
+                        $items[$l->sub_folder][$i]['delete'] = 0;
+                        $items[$l->sub_folder][$i]['email'] = 0;
+                        $items[$l->sub_folder][$i]['extranet'] = 0;
+                        $items[$l->sub_folder][$i]['comment'] = $l->comment . " " . date('Y-m-d', $l->date);
                         
                     } else {
                         if (!file_exists($l->uri)) { 
                             //file not on server (archived?) TODO ERROR file path not detected
-                            $items[$i]['fid'] = 2;
-                            $items[$i]['delete'] = 0;
-                            $items[$i]['email'] = 0;
-                            $items[$i]['extranet'] = 0;
-                            $items[$i]['comment'] = t('Document not available. Please contact administrator');
+                            $items[$l->sub_folder][$i]['fid'] = 2;
+                            $items[$l->sub_folder][$i]['delete'] = 0;
+                            $items[$l->sub_folder][$i]['email'] = 0;
+                            $items[$l->sub_folder][$i]['extranet'] = 0;
+                            $items[$l->sub_folder][$i]['comment'] = t('Document not available. Please contact administrator');
                         } else {
                             //file exist
                             if (ProjectData::validate_file_access($l->id)) {
                                 $route = Url::fromRoute('ek_projects_delete_file', ['id' => $l->id])->toString();
-                                $items[$i]['delete_url'] = $route;
-                                $items[$i]['file_url'] = file_create_url($l->uri);
+                                $items[$l->sub_folder][$i]['delete_url'] = $route;
+                                $items[$l->sub_folder][$i]['file_url'] = file_create_url($l->uri);
 
                                 $param_mail = 'mail|' . $l->id . '|project_documents';
                                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_mail])->toString();
-                                $items[$i]['mail_url'] = $link;
-                                $items[$i]['delete'] = 1;
-                                $items[$i]['email'] = 1;
-                                $items[$i]['comment'] = ['#markup' => $l->comment];
-                                $items[$i]['date'] = date('Y-m-d', $l->date);
-                                $items[$i]['size'] = round($l->size / 1000, 0) . " Kb";
+                                $items[$l->sub_folder][$i]['mail_url'] = $link;
+                                $items[$l->sub_folder][$i]['delete'] = 1;
+                                $items[$l->sub_folder][$i]['email'] = 1;
+                                $items[$l->sub_folder][$i]['comment'] = ['#markup' => $l->comment];
+                                $items[$l->sub_folder][$i]['date'] = date('Y-m-d', $l->date);
+                                $items[$l->sub_folder][$i]['size'] = round($l->size / 1000, 0) . " Kb";
                                 
                             } else {  
                                 //file exist but access not authorized
-                                $items[$i]['delete'] = 0;
-                                $items[$i]['email'] = 0;
-                                $items[$i]['fid'] = 0;
-                                $items[$i]['comment'] = t('Restricted access');
+                                $items[$l->sub_folder][$i]['delete'] = 0;
+                                $items[$l->sub_folder][$i]['email'] = 0;
+                                $items[$l->sub_folder][$i]['fid'] = 0;
+                                $items[$l->sub_folder][$i]['comment'] = t('Restricted access');
                             }
                         }
                     }
@@ -1422,7 +1422,7 @@ class ProjectController extends ControllerBase {
                             || \Drupal::currentUser()->hasPermission('admin_projects')) && $l->fid != '0') {
                         $param_access = 'access|' . $l->id . '|project_doc';
                         $link = Url::fromRoute('ek_projects_modal', ['param' => $param_access])->toString();
-                        $items[$i]['access_url'] = $link;
+                        $items[$l->sub_folder][$i]['access_url'] = $link;
                     } 
 
 
@@ -1512,45 +1512,58 @@ class ProjectController extends ControllerBase {
     public function DragDrop(Request $request) {
 
         $from = explode("-", $request->get('from'));
-        switch($request->get('to')) {
-            case 's1' :
-            case 'ps1' :
-                $folder = 'ap';            
-            case 's3' :
-            case 'ps3' :
-                $folder = 'com';
-                break;
-            case 's5' :
-            case 'ps5' :
-                $folder = 'fi';
-                break;
-        }
-        $fields = array('folder' => $folder);
-        $move = Database::getConnection('external_db', 'external_db')
-                ->update('ek_project_documents')
-                ->condition('id', $from[1])
-                ->fields($fields)
-                ->execute();
-        if($move){
-            $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_project_documents', 'd');        
+        
+        if($request->get('move') == 'folder') {
 
-            $data = $query
-                  ->fields('d', array('pcode', 'filename'))
-                  ->condition('d.id', $from[1] , '=')
-                  ->execute()
-                  ->fetchObject();
-            $fields = array(
-                        'pcode' => $data->pcode,
-                        'uid' => \Drupal::currentUser()->id(),
-                        'stamp' => time(),
-                        'action' => 'move' . ' ' . $data->filename
-                );
-                Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_project_tracker')
-                        ->fields($fields)->execute();
+            switch($request->get('to')) {
+                case 's1' :
+                case 'ps1' :
+                    $folder = 'ap';            
+                case 's3' :
+                case 'ps3' :
+                    $folder = 'com';
+                    break;
+                case 's5' :
+                case 'ps5' :
+                    $folder = 'fi';
+                    break;
+            }
+            $fields = array('folder' => $folder);
+            $move = Database::getConnection('external_db', 'external_db')
+                    ->update('ek_project_documents')
+                    ->condition('id', $from[1])
+                    ->fields($fields)
+                    ->execute();
+            if($move){
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project_documents', 'd');        
+
+                $data = $query
+                      ->fields('d', array('pcode', 'filename'))
+                      ->condition('d.id', $from[1] , '=')
+                      ->execute()
+                      ->fetchObject();
+                $fields = array(
+                            'pcode' => $data->pcode,
+                            'uid' => \Drupal::currentUser()->id(),
+                            'stamp' => time(),
+                            'action' => 'move' . ' ' . $data->filename
+                    );
+                    Database::getConnection('external_db', 'external_db')
+                            ->insert('ek_project_tracker')
+                            ->fields($fields)->execute();
+            }
         }
         
+        if($request->get('move') == 'subfolder') {
+            $fields = array('sub_folder' => $request->get('to'));
+            $move = Database::getConnection('external_db', 'external_db')
+                    ->update('ek_project_documents')
+                    ->condition('id', $from[1])
+                    ->fields($fields)
+                    ->execute();
+            
+        }
         return new Response('', 204);
     }
     

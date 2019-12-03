@@ -310,3 +310,14 @@
 .panel-drop {
    background-color: #CEE3F6; 
 }
+
+.tr-drop {
+   background-color: #FF6666; 
+}
+.sub-folder {
+   
+}
+.sub-folder-title {
+   border-bottom: 2px solid #94b4d0;
+   padding-bottom:1px; 
+}

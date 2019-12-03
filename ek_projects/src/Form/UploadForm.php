@@ -63,10 +63,18 @@ class UploadForm extends FormBase {
             '#type' => 'file',
             '#title' => t('Select file'),
         );
-
+        
+        $form['sub_folder'] = array(
+          '#type' => 'textfield',
+          '#size' => 25,
+          '#maxlength' => 30,
+          '#attributes' => array('placeholder' => t('tag or folder') ),
+        );
+        
         $form['comment'] = array(
             '#type' => 'textfield',
-            '#size' => 20,
+            '#size' => 25,
+            '#maxlength' => 200,
             '#attributes' => array('placeholder' => t('comment')),
         );
 
@@ -145,10 +153,10 @@ class UploadForm extends FormBase {
 
                     $fields = array(
                         'pcode' => $ref[0],
-                        //'fid' => $fid,
                         'filename' => $filename,
                         'uri' => $uri,
                         'folder' => $ref[2],
+                        'sub_folder' => Xss::filter($form_state->getValue('sub_folder')),
                         'comment' => Xss::filter($form_state->getValue('comment')),
                         'date' => time(),
                         'size' => filesize($uri),
@@ -187,10 +195,12 @@ class UploadForm extends FormBase {
                     ->insert('ek_project_tracker')
                     ->fields($fields)->execute();
             
-            $query = "Select id FROM {ek_project} WHERE pcode = :p";
-            $id = Database::getConnection('external_db', 'external_db')
-                    ->query($query , [':p' => $ref[0]])
-                    ->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project', 'p');
+            $query->fields('a',['id']);
+            $query->condition('pcode', $ref[0], '=');
+            
+            $id = $query->execute()->fetchField();
             $param = serialize (
             array (
               'id' => $id,
@@ -199,10 +209,9 @@ class UploadForm extends FormBase {
               'pcode' => $ref[0]
             )
            );
-           ProjectData::notify_user($param);
-
-
+            ProjectData::notify_user($param);
             $form['doc_upload_message']['#markup'] = t('file uploaded @f', array('@f' => $filename));
+            
         } else {
             $form['doc_upload_message']['#markup'] = t('error copying file');
         }

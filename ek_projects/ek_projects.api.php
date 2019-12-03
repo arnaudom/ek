@@ -39,11 +39,13 @@ function hook_project_view($data, $pcode) {
  * 
  */
 function hook_project_doc_view($items) {
-  foreach($items as $key => $doc) {
+  foreach($items as $folder => $docs) { 
+        foreach($docs as $key => $doc) {
             if($key && $doc['pcode']){
-                $items[$key]['module_info'] = 'info';
+                $items[$folder][$key]['module_info'] = 'info';
             }
         }
+  }
     return $items;
     
 }

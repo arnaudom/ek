@@ -24,7 +24,7 @@
  *   extranet_share (bol)
  *   access_url
  *   comment (string)
- *
+ *   sub_folder (string)
  *
  * @see ek_projects_doc_view
  *
@@ -32,64 +32,73 @@
  */
 #}
 
-{% for key, item in items %}
-
-    {% if item.fid == 1 %}
-        <tr id="tr-{{ item.id }}" class="move">
-            <td title='{{ item.doc_name }} |  {{ item.date }} , {{ item.size }}'>
-                <IMG src='../../{{ item.icon_path }}{{item.icon}}.png'/> 
-                <a href="{{ item.file_url }}" target='_blank' >{{ item.doc_name }}</a>
-            </td>
-            <td>{{ item.comment }}</td>
-            {% if item.delete == 1 %}
-                <td style="text-align: center;"><a id='d{{ item.key }}' href="{{ item.delete_url }}" class='use-ajax red' title={{'delete the file'|t }} >
-                        <i class="fa fa-lg fa-trash-o" aria-hidden="true"></i></a></td>
-            {% else %}
-                <td style="text-align: center;"><i class="fa fa-lg fa-trash" aria-hidden="true"></td>
-            {% endif %}
-
-            {% if item.access_url != '0' %}
-                <td style="text-align: center;"><a href="{{ item.access_url }}" class='use-ajax red' title={{'manage access by users'|t }} >
-                        <i class="fa fa-lg fa-lock" aria-hidden="true"></i></a></td>
-                    {% else %}
-                <td style="text-align: center;"><i class="fa fa-lg fa-lock" aria-hidden="true"></i></td>
-            {% endif %}
-
-            {% if item.email == 1 %}
-                <td style="text-align: center;"><a href="{{ item.mail_url }}" class='use-ajax blue' title="{{'share by email'|t }}" >
-                        <i class="fa fa-lg fa-envelope-o" aria-hidden="true"></i></a></td>
-                    {% else %}
-                <td style="text-align: center;"><i class="fa fa-lg fa-envelope-o" aria-hidden="true"></i></td>
-            {% endif %}
-
-            {% if item.extranet == 1 %}
-
-                {% if item.extranet_share == 1 %}
-
-                    <td style="text-align: center;"><a href="{{ item.extranet_url }}" class='use-ajax' title="{{'Extranet shared; click to unshare'|t }}">
-                            <span id="{{ item.elementId }}" class="extranet-btn-green" aria-hidden="true"></span></a></td>
-                        {% else %}
-                    <td style="text-align: center;"><a href="{{ item.extranet_url }}" class='use-ajax' title="{{'Extranet not shared; click to share'|t }}">
-                            <span id="{{ item.elementId }}" class="extranet-btn-red" aria-hidden="true"></span></a></td>
-                        {% endif %}
-
-            {% else %}
-                <td></td>
-            {% endif %}
+{% for folder, data in items %}
+    
+        <tr id="{{ folder }}" class='sub-folder'>
+            <td class='sub-folder-title' colspan='6' onclick="jQuery('.{{ 'folder_' }}{{ key }}').toggle('fast');"><h1>{{ folder }}</h1></td>
         </tr>
-    {% else %}
-        <tr class='hide'>
-            <td>
-                <IMG src='../../{{ item.icon_path }}{{item.icon}}.png'/> 
-                {{ item.doc_name }}
-            </td>
-            <td>{{ item.comment }}</td>
-            <td style="text-align: center;"><i class="fa fa-lg fa-trash-o" aria-hidden="true"></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        {% endif %}
+        
+        
+        {% for key, item in data %}
 
+            {% if item.fid == 1 %}
+                <tr id="tr-{{ item.id }}" class="move">
+                    <td title='{{ item.doc_name }} |  {{ item.date }} , {{ item.size }}'>
+                        <IMG src='../../{{ item.icon_path }}{{item.icon}}.png'/> 
+                        <a href="{{ item.file_url }}" target='_blank' >{{ item.doc_name }}</a>
+                    </td>
+                    <td>{{ item.comment }}</td>
+                    {% if item.delete == 1 %}
+                        <td style="text-align: center;"><a id='d{{ item.key }}' href="{{ item.delete_url }}" class='use-ajax red' title={{'delete the file'|t }} >
+                                <i class="fa fa-lg fa-trash-o" aria-hidden="true"></i></a></td>
+                    {% else %}
+                        <td style="text-align: center;"><i class="fa fa-lg fa-trash" aria-hidden="true"></td>
+                    {% endif %}
+
+                    {% if item.access_url != '0' %}
+                        <td style="text-align: center;"><a href="{{ item.access_url }}" class='use-ajax red' title={{'manage access by users'|t }} >
+                                <i class="fa fa-lg fa-lock" aria-hidden="true"></i></a></td>
+                            {% else %}
+                        <td style="text-align: center;"><i class="fa fa-lg fa-lock" aria-hidden="true"></i></td>
+                    {% endif %}
+
+                    {% if item.email == 1 %}
+                        <td style="text-align: center;"><a href="{{ item.mail_url }}" class='use-ajax blue' title="{{'share by email'|t }}" >
+                                <i class="fa fa-lg fa-envelope-o" aria-hidden="true"></i></a></td>
+                            {% else %}
+                        <td style="text-align: center;"><i class="fa fa-lg fa-envelope-o" aria-hidden="true"></i></td>
+                    {% endif %}
+
+                    {% if item.extranet == 1 %}
+
+                        {% if item.extranet_share == 1 %}
+
+                            <td style="text-align: center;"><a href="{{ item.extranet_url }}" class='use-ajax' title="{{'Extranet shared; click to unshare'|t }}">
+                                    <span id="{{ item.elementId }}" class="extranet-btn-green" aria-hidden="true"></span></a></td>
+                                {% else %}
+                            <td style="text-align: center;"><a href="{{ item.extranet_url }}" class='use-ajax' title="{{'Extranet not shared; click to share'|t }}">
+                                    <span id="{{ item.elementId }}" class="extranet-btn-red" aria-hidden="true"></span></a></td>
+                                {% endif %}
+
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                </tr>
+            {% else %}
+                <tr class='hide'>
+                    <td>
+                        <IMG src='../../{{ item.icon_path }}{{item.icon}}.png'/> 
+                        {{ item.doc_name }}
+                    </td>
+                    <td>{{ item.comment }}</td>
+                    <td style="text-align: center;"><i class="fa fa-lg fa-trash-o" aria-hidden="true"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {% endif %}
+
+        {% endfor %}
+   
 {% endfor %}
 

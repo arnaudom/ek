@@ -22,7 +22,7 @@
                 }
             });
         });
-        
+
     });
 
 
@@ -36,7 +36,7 @@
             jQuery('section').toggleClass("editBackground");
             update_fields(drupalSettings.ek_projects.id);
             update_documents(drupalSettings.ek_projects.id);
-            
+
         });
 
     });
@@ -90,12 +90,12 @@ function update_fields(pid) {
         async: false,
         success: function (remoteData) {
             for (key in remoteData.data) {
-                if(key == 'status_container') {
+                if (key == 'status_container') {
                     jQuery('#status_container').removeClass().addClass(remoteData.data[key]);
                 } else {
-                jQuery("#" + key).html(remoteData.data[key]);
-            
-                //tbeep.play();
+                    jQuery("#" + key).html(remoteData.data[key]);
+
+                    //tbeep.play();
                     for (i = 0; i < 3; i++) {
                         jQuery("#" + key).fadeTo('slow', 0.5).fadeTo('slow', 1.0);
                     }
@@ -131,7 +131,7 @@ function update_documents(pid) {
             addajax();
         }
     });
-    
+
     adddragdrop();
 }
 
@@ -181,13 +181,30 @@ function adddragdrop() {
                     jQuery.ajax({
                         type: "POST",
                         url: drupalSettings.path.baseUrl + "projects/dragdrop",
-                        data: {from: (ui.draggable).attr("id"), to: this.id},
+                        data: {move: 'folder',from: (ui.draggable).attr("id"), to: this.id},
                         async: false
                     });
                     status = 1;
 
                 }
     })
+
+    jQuery(".sub-folder").droppable({
+        activeClass: "ui-state-default",
+        hoverClass: "tr-drop",
+        accept: ":not(.ui-sortable-helper), .move",
+        activeClass: "",
+                drop: function (event, ui) {
+                    jQuery.ajax({
+                        type: "POST",
+                        url: drupalSettings.path.baseUrl + "projects/dragdrop",
+                        data: {move: 'subfolder',from: (ui.draggable).attr("id"), to: this.id},
+                        async: false
+                    });
+                    status = 1;
+
+                }
+    });
 
 
     jQuery(".move").draggable({
@@ -198,7 +215,7 @@ function adddragdrop() {
         helper: "clone",
         stop: function (event, ui) {
             if (status == 1) {
-               
+
             }
         }
     });

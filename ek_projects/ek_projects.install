@@ -110,3 +110,23 @@ function ek_projects_update_8007() {
         return t('Projects table updated.');
 }
 
+/**
+ * Add sub folder in projects.
+*/
+function ek_projects_update_8008() {
+    
+        $schema = Database::getConnection('external_db','external_db')->schema();
+        if(!$schema->fieldExists('ek_project_documents', 'sub_folder')) {
+            $spec = array(
+                'description' => 'Sub folder',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_project_documents', 'sub_folder', $spec);
+        }
+ 
+        return t('Projects table updated.');
+}
+
