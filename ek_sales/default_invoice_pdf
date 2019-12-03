@@ -190,7 +190,7 @@ $due = date('Y-m-d',strtotime(date("Y-m-d", strtotime($head->date) ) . "+".$head
 $pdf->SetFont('helvetica','B',14);    
 $pdf->Cell($c2+$c3);
 $pdf->SetTextColor(120, 150, 190);
-$pdf->Cell($c3,10, strtoupper($head->title) ,0,1);
+$pdf->Cell($c3,10, strtoupper(t($head->title)) ,0,1);
 $pdf->SetTextColor(53,53,53);
 $pdf->SetFont('helvetica','B',10);     
 $pdf->Cell($c2+$c3);
