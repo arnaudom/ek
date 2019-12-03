@@ -65,16 +65,13 @@ class NewAddressBookForm extends FormBase {
                 $query->fields('ab');
                 $query->condition('id', $abid, '=');
                 $r = $query->execute()->fetchAssoc();
-                
-            /*$query = "SELECT * from {ek_address_book} WHERE id=:id";
-            $r = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid))->fetchAssoc();*/
+            
 
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_address_book_contacts', 'abc');
                 $query->condition('abid', $abid);
                 $rc = $query->countQuery()->execute()->fetchField();
-            /*$query = "SELECT count(id) from {ek_address_book_contacts} WHERE abid=:id";
-            $rc = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid))->fetchField();*/
+            
         }
 
         $form['name'] = array(
