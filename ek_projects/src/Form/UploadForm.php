@@ -197,7 +197,7 @@ class UploadForm extends FormBase {
             
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_project', 'p');
-            $query->fields('a',['id']);
+            $query->fields('p',['id']);
             $query->condition('pcode', $ref[0], '=');
             
             $id = $query->execute()->fetchField();
