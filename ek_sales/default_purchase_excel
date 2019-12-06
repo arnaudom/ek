@@ -454,7 +454,7 @@ if ($company->address3 <> "") {
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Cache-Control: max-age=0');
-header("Content-Disposition: attachment;filename=$fileName");
+header("Content-Disposition: attachment;filename=$fileName" . ".xlsx");
 header('Cache-Control: max-age=0');
 $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
 $objWriter->save('php://output');
