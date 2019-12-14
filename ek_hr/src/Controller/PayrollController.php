@@ -209,6 +209,8 @@ class PayrollController extends ControllerBase {
             $query->leftJoin('ek_hr_workforce', 'w', 'wp.id = w.id');
             $query->orderBy('w.id');
             $query->fields('w');
+            $query->condition('active', 'resigned', '<>');
+            
         if (isset($_SESSION['hrlfilter']['filter']) && $_SESSION['hrlfilter']['filter'] == 1) {
 
             $query->condition('company_id', $_SESSION['hrlfilter']['coid'], '=');

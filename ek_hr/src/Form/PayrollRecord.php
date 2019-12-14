@@ -63,7 +63,7 @@ class PayrollRecord extends FormBase {
             if (array_key_exists($coid, AccessCheck::CompanyListByUid())) {
                 $form_state->set('step', 2);
                 $form_state->setValue('coid', $coid);
-                $form_state->setValue('eid', $eid);
+                
 
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_hr_workforce', 'h');
@@ -83,6 +83,13 @@ class PayrollRecord extends FormBase {
                     } else {
                         $id = isset($e->custom_id) ? $e->custom_id : $e->id;
                         $employees[$e->id] = $id . " - " . $e->name;
+                    }
+                    
+                    if($e->id == $eid) {
+                       //validate current id is editable
+                       //i.e. filter resigned
+                       /* TODO disable form if not editable */
+                       $form_state->setValue('eid', $eid); 
                     }
                     
                 }
