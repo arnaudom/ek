@@ -68,8 +68,11 @@ Switch ($source) {
                 $data['collection'] = $thisitem->collection;
                 $data['department'] = $thisitem->department;
                 $data['family'] = $thisitem->family;
-                $data['size'] = $thisitem->size;
                 $data['color'] = $thisitem->color;
+                $data['unit_measure'] = $thisitem->unit_measure;
+                $data['item_size'] = $thisitem->item_size; 
+                $data['pack_size'] = $thisitem->pack_size; 
+                $data['qty_pack'] = $thisitem->qty_pack;
 
               } else {
                 $data['item']= $line->item;
@@ -81,8 +84,12 @@ Switch ($source) {
                 $data['collection'] = '';
                 $data['department'] = '';
                 $data['family'] = '';
-                $data['size'] = '';
-                $data['color'] = '';        
+                $data['item_size'] = ''; 
+                $data['pack_size'] = ''; 
+                $data['qty_pack'] = '';
+                $data['color'] = '';
+                $data['unit_measure'] = ''; 
+                
               }
           
         } else {
@@ -203,7 +210,6 @@ Switch ($source) {
                 $data['collection'] = $thisitem->collection;
                 $data['department'] = $thisitem->department;
                 $data['family'] = $thisitem->family;
-                $data['size'] = $thisitem->size;
                 $data['color'] = $thisitem->color;
                 $data['unit_measure'] = $thisitem->unit_measure; 
                 $data['item_size'] = $thisitem->item_size; 
@@ -212,7 +218,7 @@ Switch ($source) {
 
               } else {
                 $data['item']= $line->itemdetails;
-       
+     
               }
           
           } else {
