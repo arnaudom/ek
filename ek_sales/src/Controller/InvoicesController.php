@@ -1153,10 +1153,12 @@ class InvoicesController extends ControllerBase {
     public function PrintShareInvoices($id) {
 
         //filter access to document
-        $query = "SELECT `head`, `allocation` FROM {ek_sales_invoice} WHERE id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $id])
-                ->fetchObject();
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice', 's');
+            $query->fields('s',['head','allocation', 'pcode']);
+            $query->condition('s.id', $id);
+        $data = $query->execute()->fetchObject();
+        
         $access = AccessCheck::GetCompanyByUser();
         if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
 
@@ -1180,6 +1182,9 @@ class InvoicesController extends ControllerBase {
 
                 $build['filter_mail'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterMailDoc', $param);
 
+                if($data->pcode != NULL && $data->pcode != 'n/a') {
+                    $build['filter_post'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterPostDoc', $param,$data->pcode);
+                }
 
                 $path = $GLOBALS['base_url'] . "/invoices/print/pdf/" . $param;
 

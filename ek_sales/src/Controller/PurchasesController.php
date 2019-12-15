@@ -1109,11 +1109,14 @@ class PurchasesController extends ControllerBase {
     public function PrintSharePurchases($id) {
 
         //filter access to document
-        $query = "SELECT `head`, `allocation` FROM {ek_sales_purchase} WHERE id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $id])
-                ->fetchObject();
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_purchase', 'p');
+            $query->fields('p',['head','allocation', 'pcode']);
+            $query->condition('p.id', $id);
+        $data = $query->execute()->fetchObject();
+        
         $access = AccessCheck::GetCompanyByUser();
+        
         if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
 
             $format = 'pdf';
@@ -1135,7 +1138,9 @@ class PurchasesController extends ControllerBase {
                 );
 
                 $build['filter_mail'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterMailDoc', $param);
-
+                if($data->pcode != NULL && $data->pcode != 'n/a') {
+                    $build['filter_post'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterPostDoc', $param,$data->pcode);
+                }
                 $path = $GLOBALS['base_url'] . "/purchases/print/pdf/" . $param;
 
                 $iframe = "<iframe src ='" . $path . "' width='100%' height='1000px' id='view' name='view'></iframe>";

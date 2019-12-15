@@ -5,6 +5,11 @@
     {{ items.filter_mail }}
 </section>
 <section>
+    {% if items.filter_post %}
+        {{ items.filter_post }}
+    {% endif %}
+</section>
+<section>
     <span class="view_popup text-right">{{ items.external|raw }}</span>
     {{ items.iframe|raw }}
 </section>

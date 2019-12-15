@@ -310,7 +310,7 @@ Switch ($source) {
    * mode 1 = save file for emailing (pdf)
   */
 
-if($format == 'pdf' | $mode == 1) {
+if((isset($format) && $format == 'pdf') | $mode == 1) {
   if( $template == '0' ) {
       
       $template = drupal_get_path('module', 'ek_sales') . "/default_" . $source . "_pdf";
