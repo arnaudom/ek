@@ -189,13 +189,11 @@ if($data->pcode) {
       '#attributes' => isset($read['event']) ? array('readonly' => $read['event']): NULL,
     );   
     
-    $user = db_query('SELECT uid,name from {users_field_data} WHERE uid > :u AND status=:s' , array(':u' => 0, ':s' => 1))
-        ->fetchAllKeyed();
     
     $form['uid'] = array(
         '#type' => 'select',
         '#size' => 1,
-        '#options' => $user,
+        '#options' => \Drupal\ek_admin\Access\AccessCheck::listUsers(),
         '#required' => TRUE,
         '#default_value' => isset($data->uid) ? $data->uid : NULL,
         '#title' => $this->t('Assigned to'),
@@ -218,7 +216,6 @@ if($data->pcode) {
       '#size' => 12,
       '#required' => TRUE,
       '#default_value' => isset($data->start) ? date('Y-m-d', $data->start) : date('Y-m-d'),
-      //'#attributes' => array('class' => array($read['class'], 'date'), 'readonly' => $read['start']),
       '#title' => $this->t('Starting'),
       '#prefix' => "<div class='container-inline'>",
 
@@ -229,15 +226,8 @@ if($data->pcode) {
       '#type' => 'date',
       '#size' => 12,
       '#default_value' => isset($data->end) ? date('Y-m-d', $data->end) : NULL,
-      //'#attributes' => array('class' => array($read['class'], 'date'), 'readonly' => $read['end']),
       '#title' => $this->t('ending'),
       '#suffix' => '</div>',
-      '#attached' => array(
-          'library' => array(
-            'ek_projects/ek_projects.datepicker',
-          ),
-        ), 
-
     );
 
     $form['color'] = array(
