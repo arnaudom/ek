@@ -37,6 +37,24 @@ function hook_ek_settings($coids) {
 
 
 /**
+ * alter users list permodule
+ * @param array $list
+ *   array list ids,names.
+ * @see \Drupal\ek_admin\Controller\AccessCheck::listUsers()
+ * 
+ */
+function hook_list_users($list) {
+    
+    $new_list = [];
+    foreach($list as $id => $name) {
+        $user = \Drupal\user\Entity\User::loadMultiple([$id]);
+        $new_list[$id] = $name . " (" . implode(",",$user->getRoles()) . ")";
+    }
+    
+    return $new_list;
+}
+
+/**
  * @} End of "addtogroup hooks".
  */
 

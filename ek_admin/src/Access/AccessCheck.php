@@ -2,6 +2,8 @@
 
 namespace Drupal\ek_admin\Access;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\user\Entity\User;
+use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Database\Database;
 
 /**
@@ -20,6 +22,38 @@ use Drupal\Core\Database\Database;
     $this->account = $account;
   }
 
+
+/**
+ * make list of users
+ * 
+ * @param int $active status
+ * @return
+ *      array of users id , name
+ */
+ 
+ public static function listUsers($active = 1) {
+     
+    $list = [];
+    $users = User::loadMultiple();
+     
+    foreach($users as $u){
+        if($u->id() > 0) {
+           if($active == 1 && $u->isActive()){
+                $list[$u->id()] = $u->getDisplayName();
+           } elseif($active == 0) {
+                $list[$u->id()] = $u->getDisplayName();
+           }
+        }            
+    }
+    
+    // Let other modules add or remove data to the list.
+    if($invoke = \Drupal::moduleHandler()->invokeAll('list_users', [$list])){
+        $list = $invoke;
+    }
+
+    return $list;
+     
+ }
 
 /**
  * access of users by company / entity
