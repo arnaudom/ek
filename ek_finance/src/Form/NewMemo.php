@@ -217,12 +217,8 @@ if ($this->settings->get('companyMemo') == 1){
   if($category != 'internal') {
      
      if(\Drupal::currentUser()->hasPermission('admin_memos')) {
-        $query = Database::getConnection()
-                    ->select('users_field_data', 'users');
-        $query->fields('users', ['uid', 'name']);
-        $query->condition('status', 1);
-        $query->orderBy('name', 'ASC');
-        $entity = $query->execute()->fetchAllKeyed();
+        
+         $entity = \Drupal\ek_admin\Access\AccessCheck::listUsers();
          
      } else {
           $entity = array(
