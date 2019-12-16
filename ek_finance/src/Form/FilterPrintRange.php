@@ -75,19 +75,15 @@ class FilterPrintRange extends FormBase {
             '#open' => ($_SESSION['memrgfilter']['filter'] == 1) ? FALSE : TRUE,
         );
 
-        $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
-        $company = implode(',', $access);
-        $query = "SELECT id,name from {ek_company} where active=:t AND FIND_IN_SET (id, :c ) order by name";
-        $company = Database::getConnection('external_db', 'external_db')->query($query, array(':t' => 1, ':c' => $company))->fetchAllKeyed();
         $coid = array('%' => t('Any'));
-        $coid += $company;
+        $coid += \Drupal\ek_admin\Access\AccessCheck::CompanyListByUid();
 
         if ($category != 'internal') {
 
-            if (\Drupal::currentUser()->hasPermission('admin_memos')) {
-                $query = "SELECT uid,name from {users_field_data} WHERE uid > 0 ORDER by name";
+            if(\Drupal::currentUser()->hasPermission('admin_memos')) {
                 $entity = array('%' => t('Any'));
-                $entity += db_query($query)->fetchAllKeyed();
+                $entity += \Drupal\ek_admin\Access\AccessCheck::listUsers();
+                $category = 'personal';
             } else {
                 $entity = array(
                     \Drupal::currentUser()->id() => \Drupal::currentUser()->getUsername()
