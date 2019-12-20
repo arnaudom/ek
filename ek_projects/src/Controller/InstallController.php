@@ -176,7 +176,7 @@ class InstallController extends ControllerBase {
 	`fid` INT(10) NULL DEFAULT NULL COMMENT 'file managed ID',
 	`filename` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
 	`folder` VARCHAR(20) NULL DEFAULT NULL,
-        `sub_folder` VARCHAR(255) NULL DEFAULT NULL 'sub folder' COLLATE 'utf8mb4_general_ci',
+        `sub_folder` VARCHAR(255) NULL DEFAULT NULL COMMENT 'sub folder' COLLATE 'utf8mb4_general_ci',
 	`comment` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
 	`uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the stream uri of file' COLLATE 'utf8mb4_general_ci',
 	`date` VARCHAR(30) NULL DEFAULT NULL COMMENT 'date stamp',
