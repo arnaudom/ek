@@ -169,12 +169,10 @@ if($this->moduleHandler->moduleExists('ek_address_book')) {
    
    $recipients = array();
     if($form_state->getValue('email') == '') {
-    $form['maildoc']['alert']['#prefix'] = "<div id='SendMessage' class='messages messages--error'>";
-    $form['maildoc']['alert']['#markup'] = t('There is no email address.');
+        $form['maildoc']['alert']['#prefix'] = "<div id='SendMessage' class='messages messages--error'>";
+        $form['maildoc']['alert']['#markup'] = t('There is no email address.');
     
-    return $form['maildoc']['alert'];
-
-    
+        return $form['maildoc']['alert'];
     
       } else {
         $addresses = explode(',', $form_state->getValue('email'));
@@ -201,8 +199,6 @@ if($this->moduleHandler->moduleExists('ek_address_book')) {
         return $form['maildoc']['alert'];
        } else {
        //proceed with mailing
-  
-      
        $param = $form_state->getValue('param');
        
        switch( $form_state->getValue('source') ) {
@@ -225,6 +221,10 @@ if($this->moduleHandler->moduleExists('ek_address_book')) {
         $options['user'] = \Drupal::currentUser()->getUsername();
         $options['filename'] = str_replace("/","_", $head->serial ) . ".pdf";
         $options['origin'] = 'sales';
+        if(!NULL == $form_state->getValue('stripe_add') && $form_state->getValue('stripe_add') == 1){
+            $options['stripe'] = 1;
+            $options['checkout'] = $form_state->getValue('checkout');
+        }
         break;
 
         case 'delivery' :
