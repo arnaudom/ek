@@ -19,17 +19,7 @@ use Drupal\ek_admin\Access\AccessCheck;
  * @file
  *  module . ek_admin
  */
-if(class_exists('\Drupal\ek_admin\GlobalSettings')) {
 
-    $settings = new GlobalSettings(0);
-    $libraries_path = $settings->get('library');
-    if ($libraries_path != NULL) {
-        define("LIBRARY_PATH", $libraries_path);
-    } else {
-        define("LIBRARY_PATH", NULL);
-    }
- 
-}
 
 /**
  * Implements hook__preprocess_page.
@@ -297,17 +287,20 @@ function mail_attachment($email, $file, $message = null , $options = null) {
             global $base_url;
             $params['options']['logo'] = $base_url . $theme['url'];
             $params['options']['site'] = \Drupal::config('system.site')->get('name');
+            if(isset($options['stripe']) && $options['stripe'] == 1){
+                $params['options']['checkout'] = $options['checkout'];
+            }
             switch($options['origin']) {
                 case 'project_documents':
-                    $param['options']['origin'] = t('Project');
+                    $params['options']['origin'] = t('Project');
                     $params['options']['pcode'] = $options['pcode'];
                     break;
                 case 'backup_documents':
-                    $param['options']['origin'] = t('Backup');
+                    $params['options']['origin'] = t('Backup');
                     break;                
                 case 'default':
                 default:
-                    $param['options']['origin'] = t('Document');
+                    $params['options']['origin'] = t('Document');
                     break;
             }
 
