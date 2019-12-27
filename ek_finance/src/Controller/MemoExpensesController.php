@@ -696,7 +696,7 @@ class MemoExpensesController extends ControllerBase {
 
                 $total = $total + $r->value_base;
 
-                if ($r->status == 0 && $auth[0] < 2) {
+                if (($r->status == 0 && $auth[0] < 2) || \Drupal::currentUser()->hasPermission('admin_memos')) {
                     $links['edit'] = array(
                         'title' => $this->t('Edit'),
                         'url' => Url::fromRoute('ek_finance_manage_personal_memo', ['id' => $r->id]),
