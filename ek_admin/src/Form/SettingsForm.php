@@ -77,47 +77,51 @@ class SettingsForm extends FormBase {
             '#markup' => t('Use key for cron') . ': <b>' . $this->state->get('system.cron_key') . '</b>', 
                 );
         
-        $form['installation_id'] = array(
-            '#type' => 'textfield',
-            '#required' => TRUE,
-            '#size' => 30,
-            '#maxlength' => 50,
-            '#default_value' => ($settings->get('installation_id') != '') ? $settings->get('installation_id') : 'ek_default_validation',
-            '#attributes' => array('placeholder' => t('installation id')),
-            '#description' => t('system installation id'),
-        );
-        $form['validation_url'] = array(
-            '#type' => 'textfield',
-            '#required' => TRUE,
-            '#size' => 50,
-            '#maxlength' => 150,
-            '#default_value' => $settings->get('validation_url'),
-            '#attributes' => array('placeholder' => t('validation url')),
-            '#description' => t('validation url address for support and installation'),
-        );
+        $master = $this->currentUser()->hasPermission('administer site configuration');
+        
+        if($master){
+            $form['installation_id'] = array(
+                '#type' => 'textfield',
+                '#required' => TRUE,
+                '#size' => 30,
+                '#maxlength' => 50,
+                '#default_value' => ($settings->get('installation_id') != '') ? $settings->get('installation_id') : 'ek_default_validation',
+                '#attributes' => array('placeholder' => t('installation id')),
+                '#description' => t('system installation id'),
+            );
+            $form['validation_url'] = array(
+                '#type' => 'textfield',
+                '#required' => TRUE,
+                '#size' => 50,
+                '#maxlength' => 150,
+                '#default_value' => $settings->get('validation_url'),
+                '#attributes' => array('placeholder' => t('validation url')),
+                '#description' => t('validation url address for support and installation'),
+            );
+                
+            $form['backup_directory'] = array(
+                '#type' => 'textfield',
+                '#size' => 30,
+                '#maxlength' => 200,
+                '#default_value' => $settings->get('backup_directory'),
+                '#description' => t('Backup full path to directory'),
+            );
 
+            $form['backup_filename'] = array(
+                '#type' => 'textfield',
+                '#size' => 60,
+                '#maxlength' => 200,
+                '#default_value' => $settings->get('backup_filename'),
+                '#description' => t('Backup file name(s) separated by comma'),
+            );
+        }
+        
         $form['protocol'] = array(
             '#type' => 'select',
             '#size' => 1,
             '#options' => array('https' => 'https', 'http' => 'http'),
             '#default_value' => $settings->get('protocol'),
             '#description' => t('Connection type'),
-        );
-        
-        $form['backup_directory'] = array(
-            '#type' => 'textfield',
-            '#size' => 30,
-            '#maxlength' => 200,
-            '#default_value' => $settings->get('backup_directory'),
-            '#description' => t('Backup full path to directory'),
-        );
-        
-        $form['backup_filename'] = array(
-            '#type' => 'textfield',
-            '#size' => 60,
-            '#maxlength' => 200,
-            '#default_value' => $settings->get('backup_filename'),
-            '#description' => t('Backup file name(s) separated by comma'),
         );
          
         $form['backup_recipients'] = array(
@@ -126,13 +130,6 @@ class SettingsForm extends FormBase {
              '#default_value' => $settings->get('backup_recipients'),
             '#description' => t('Backup recipients email addresses separated by comma'),
         );  
-        /*
-        $form['library'] = array(
-            '#type' => 'textfield',
-            '#size' => 30,
-            '#default_value' => $settings->get('library'),
-            '#description' => t('Relative path to external libraries; i.e. "/libraries"'),
-        );   */
         
         
         $form['cron'] = array(
@@ -210,15 +207,16 @@ class SettingsForm extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
         $settings = new GlobalSettings($form_state->getValue('coid'));
-        $settings->set('installation_id', $form_state->getValue('installation_id'));
-        $settings->set('validation_url', $form_state->getValue('validation_url'));
-        $settings->set('password_expire', $form_state->getValue('password_expire'));
-        $settings->set('backup_directory', rtrim($form_state->getValue('backup_directory'), "/"));
-        $settings->set('backup_filename', $form_state->getValue('backup_filename'));
+        $master = $this->currentUser()->hasPermission('administer site configuration');
+        if($master){
+            $settings->set('installation_id', $form_state->getValue('installation_id'));
+            $settings->set('validation_url', $form_state->getValue('validation_url'));
+            $settings->set('backup_directory', rtrim($form_state->getValue('backup_directory'), "/"));
+            $settings->set('backup_filename', $form_state->getValue('backup_filename'));
+        }
+        
         $settings->set('backup_recipients', $form_state->getValue('backup_recipients'));
-        $settings->set('password_expire_action', $form_state->getValue('password_expire_action'));
         $settings->set('protocol', $form_state->getValue('protocol'));
-        //$settings->set('library', $form_state->getValue('library'));
         $settings->set('sale_tasks', $form_state->getValue('sale_tasks'));
         $settings->set('purchase_tasks', $form_state->getValue('purchase_tasks'));
         $settings->set('project_tasks', $form_state->getValue('project_tasks'));

@@ -443,6 +443,23 @@ function mail_attachment($email, $file, $message = null , $options = null) {
 }
 
 /**
+ * Implements hook_form_ID_alter().
+ * lock user edit for user 1
+ */
+function ek_admin_form_user_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+        
+    if($form['account']['mail']['#default_value']){
+        $edit = user_load_by_mail($form['account']['mail']['#default_value']);
+        if($edit && $edit->id() == 1 &&  \Drupal::currentUser()->id() != 1) {
+            //only user 1 can edit user 1 role and status
+            $form['account']['status']['#disabled'] = TRUE;
+            $form['account']['roles']['#disabled'] = TRUE;
+            return $form;
+        }
+    }
+}
+
+/**
  * Implements hook_form_alter().
  */
 function ek_admin_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
@@ -454,7 +471,15 @@ function ek_admin_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_
     return $form;
       
   }
+  
+  if ($form_id == 'user_admin_permissions') {
+  
+      
+  }
+  
 } 
+
+
 
 /**
  * Implements hook_form_submit().

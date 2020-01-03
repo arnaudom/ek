@@ -194,7 +194,7 @@ ek_admin.access.company:
     _title: 'Edit company access'
     _controller: '\Drupal\ek_admin\Controller\AdminController::AccessCompany'
   requirements:
-    _permission: 'administrate_settingse'
+    _permission: 'administrate_settings'
     
 ek_admin.access.country:
   path: '/ek_admin/access_country'

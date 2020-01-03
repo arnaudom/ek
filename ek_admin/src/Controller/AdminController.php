@@ -229,10 +229,11 @@ class AdminController extends ControllerBase {
                 /*
                  * Module Tables installed; Verify various settings data
                  */
-
-                $build['updatephp'] = [ '#markup' => '<p>' . t('Always run the <a href=":update-php">update script</a> each time a module is updated.',
-                        [':update-php' => Url::fromRoute('system.db_update')->toString(),]) . '</p>'];
-
+                $master = $this->currentUser()->hasPermission('administer site configuration');
+                if($master) {
+                    $build['updatephp'] = [ '#markup' => '<p>' . t('Always run the <a href=":update-php">update script</a> each time a module is updated.',
+                            [':update-php' => Url::fromRoute('system.db_update')->toString(),]) . '</p>'];
+                }
                 //countries
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_country', 'c')
