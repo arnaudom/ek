@@ -48,9 +48,9 @@ use Drupal\Core\Database\Database;
     
     // Let other modules add or remove data to the list.
     if($invoke = \Drupal::moduleHandler()->invokeAll('list_users', [$list])){
-        $list = $invoke;
+       $list = $invoke['data'];
     }
-
+     
     return $list;
      
  }

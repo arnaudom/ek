@@ -51,7 +51,7 @@ function hook_list_users($list) {
         $new_list[$id] = $name . " (" . implode(",",$user->getRoles()) . ")";
     }
     
-    return $new_list;
+    return ['data' => $new_list];
 }
 
 /**
