@@ -1,0 +1,81 @@
+id: ek_messaging.outbox
+module: ek_messaging
+label: 'Message outbox tour'
+langcode: en
+routes:
+  - route_name: ek_messaging_outbox
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Send and receive internal messages'
+    body: 'This is a guided tour about outbox for messaging module.'
+    weight: 1
+  item0:
+    id: tabs
+    plugin: text
+    label: 'Outbox'
+    body: 'This page list all messages sent by you to other users.'
+    weight: 2
+    location: bottom
+    attributes:
+      backdrop: 1
+  item1:
+    id: table1
+    plugin: text
+    label: 'Outbox messages'
+    body: 'Messages are listed by date and time. If you use search box from inbox, outbox messages are also filtered with same keyword.'
+    weight: 3
+    location: top
+    attributes:
+      data-id: outbox_date
+  item2:
+    id: table2
+    plugin: text
+    label: 'Outbox messages'
+    body: 'To: the application user to whom the message was sent.'
+    weight: 4
+    location: top
+    attributes:
+      data-id: outbox_to
+  item3:
+    id: table3
+    plugin: text
+    label: 'Outbox messages'
+    body: 'Subject: the message subject.'
+    weight: 4
+    location: top
+    attributes:
+      data-id: outbox_subject
+  item4:
+    id: subject
+    plugin: text
+    label: 'Inbox messages: subject'
+    body: 'Click on message subject to open it. There are 3 colors indicating priority <ul><li><span class="fa fa-circle red"/> Urgent</li><li><span class="fa fa-circle blue"/> Normal</li><li><span class="fa fa-circle green"/> Low</li></ul>'
+    weight: 5
+    location: top
+    attributes:
+      data-id: outbox_subject
+  item5:
+    id: archive
+    plugin: text
+    label: 'Action'
+    body: 'Click on archive icon <span class="fa fa-folder archiveButton"/> to move message to archive.'
+    weight: 6
+    location: left
+    attributes:
+      data-id: outbox_action
+  item6:
+    id: new_message
+    plugin: text
+    label: 'Send new message'
+    body: 'Click this button to send a new message.'
+    weight: 7
+    attributes:
+      data-id: block-ek-local-actions
+  conclusion:
+    id: introduction
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-messaging">online documentation</a> for further help.'
+    weight: 100  

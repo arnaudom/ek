@@ -274,17 +274,21 @@ class MessageController extends ControllerBase {
             'date' => array(
                 'data' => $this->t('Date'),
                 'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                'id' => 'inbox_date',
             ),
             'from' => array(
                 'data' => $this->t('From'),
                 'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                'id' => 'inbox_from',
             ),
             'subject' => array(
                 'data' => $this->t('Subject'),
                 'class' => array(),
+                'id' => 'inbox_subject',
             ),
             'action' => array(
                 'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                'id' => 'inbox_action',
             ),
         );
         $build['inbox_list'] = array(
@@ -413,17 +417,21 @@ class MessageController extends ControllerBase {
             'date' => array(
                 'data' => $this->t('Date'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'outbox_date',
             ),
             'to' => array(
                 'data' => $this->t('To'),
                 'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                'id' => 'outbox_to',
             ),
             'subject' => array(
                 'data' => $this->t('Subject'),
                 'class' => array(),
+                'id' => 'outbox_subject',
             ),
             'action' => array(
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'outbox_action',
             ),
         );
         $build['outbox_list'] = array(
@@ -564,21 +572,26 @@ class MessageController extends ControllerBase {
             'date' => array(
                 'data' => $this->t('Date'),
                 'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                'id' => 'archive_date',
             ),
             'to' => array(
                 'data' => $this->t('To'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'archive_to',
             ),
             'from' => array(
                 'data' => $this->t('From'),
                 'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                'id' => 'archive_from',
             ),
             'subject' => array(
                 'data' => $this->t('Subject'),
                 'class' => array(),
+                'id' => 'archive_subject',
             ),
             'action' => array(
                 'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                'id' => 'archive_action',
             ),
         );
         $build['archive_list'] = array(
