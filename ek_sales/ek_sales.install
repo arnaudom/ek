@@ -11,6 +11,17 @@ use Drupal\Core\Database\Database;
  * Implements hook_uninstall().
  */
 function ek_sales_uninstall() {
+  
+    $configs = [
+        'tour.tour.invoice',
+        'tour.tour.invoice_list',
+    ];
+    
+    foreach ($configs as $config) {
+        // Deleting config.
+        \Drupal::configFactory()->getEditable($config)->delete();
+    }  
+    
   // Clear ek_messaging data out of the cache.
   \Drupal::cache('data')->deleteAll();
 }

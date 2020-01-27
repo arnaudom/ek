@@ -135,11 +135,6 @@ hr {
     margin-top: 0em !important;
 }
 
-.tip-module-ek-sales{
-    background-color: rgba(48,48,48,0.9) !important;
-    color: #FFF;
-}
-
 .button--record:hover {
     background-color: #FFF;
     color: #FFF !important;
@@ -194,8 +189,4 @@ hr {
 
 tr.drop-folder {
    cursor: pointer;
-}
-
-tr.move {
-    //display:none;
 }

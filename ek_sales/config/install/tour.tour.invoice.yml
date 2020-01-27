@@ -1,57 +1,3 @@
-# This file defines the tour for our example page. There should be one tour
-# file for each tour that you create. These tour files should be placed in a
-# module's 'config' folder and named using the pattern
-# 'tour.tour.{tour-id}.yml'.
-#
-# Each tour file has two parts: 1) The tour properties, and 2) the tip
-# definitions.
-#
-#
-# TOUR PROPERTIES
-#
-# The tour properties define information that applies to the tour as a whole.
-# Properties that you can define for your tours include the following:
-#
-#   id:         Each tour should have a unique ID. This id is used in the
-#               filename and appears as an ID in the HTML.
-#   module:     The machine name of the module containing your tour.
-#   label:      A human readable name for the tour.
-#   status:     A boolean, defining whether the tour is enabled.
-#   langcode:   A two-letter language code defining the language of your tour.
-#   routes:     An array of routes for which the tour is active. Specify these
-#               as an array with route_name and optional route_params (also an
-#               array). Route names are found in each module's routing.yml file.
-#
-#
-# TIP DEFINITIONS
-#
-# Here, you define each tip that you want to appear in your tour. Each of
-# the tips have properties that must be defined, including the following:
-#
-#   id:         Each tip needs a unique ID. This appears as an ID in the HTML.
-#   plugin:     The Tour API uses plugins for defining different types of
-#               tips. The 'text' plugin (for making text tooltips) is provided
-#               in core, but developers can define additional plugins for tips
-#               containing images, video, or other interactions.
-#   label:      The lable for the tip. This will be rendered in an h3 element.
-#   body:       The body of the tip. HTML markup is allowed.
-#   weight:     Tips within a tour are ordered by weight, beginning with the
-#               lowest number. Negative values are acceptable.
-#   location:   Defines the location of the tip, relative to its target.
-#               Acceptable values include: top, bottom, left, & right. If the
-#               location is not defined, the default value (bottom) will be
-#               used.
-#   attributes: Attributes provdied to the tip for various purposes. Use the
-#               following attributes to control the placement of the tip:
-#
-#                 data-id:      Places this tip on the DOM element containing
-#                               this ID.
-#                 data-class:   Places this tip on the DOM element containing
-#                               this class.
-#
-#               If you omit both the .data-id and .data-class, the tip will be
-#               shown as modal instead of being targeted to an element.
-#
 id: ek_sales.invoice_create
 module: ek_sales
 label: 'Create invoice tour'
@@ -78,7 +24,7 @@ tips:
     id: second-item
     plugin: text
     label: 'Allocation'
-    body: 'In a multi companies configuration type, you can allocate the invoice to a different company of the group. This is used when a company invoice on behalf of another and you want to keep track of internal transactions or generate reports per business unit.'
+    body: 'In a multi companies configuration, you can allocate the invoice to a different company of the group. This is used when a company invoice on behalf of another and you want to keep track of internal transactions or generate reports per business unit.'
     weight: 3
     location: top
     attributes:
@@ -87,7 +33,7 @@ tips:
     id: third-item
     plugin: text
     label: 'Client'
-    body: 'Select a client in the list. Clients are managed by the address book module.'
+    body: 'Select a client in the list. Clients are managed by the <a href="/address_book">address book</a> module.'
     weight: 4
     location: bottom
     attributes:
@@ -96,21 +42,19 @@ tips:
     id: fourth-item
     plugin: text
     label: 'Date'
-    body: 'The date of issueing. By default, current date is set. A calendar is automatically opened when clicking on the date.'
+    body: 'The date of issueing the document. By default, current date is set. A calendar is automatically opened when clicking on the date.'
     weight: 5
     location: left
     attributes:
       data-id: edit-from
-
   item4:
     id: item4
     plugin: text
     label: 'Title'
-    body: 'The title that will appear on the invoice print-out'
+    body: 'The title that will appear on the invoice; Credit note is a special document to generate a credit for your client. Credit notes are compensated by invoices.'
     weight: 6
     attributes:
       data-id: edit-title
-
   item5:
     id: item5
     plugin: text
@@ -119,7 +63,6 @@ tips:
     weight: 7
     attributes:
       data-id: edit-pcode
-      
   item6:
     id: item6
     plugin: text
@@ -128,7 +71,6 @@ tips:
     weight: 8
     attributes:
       data-id: edit-currency
-      
   item7:
     id: item7
     plugin: text
@@ -137,7 +79,6 @@ tips:
     weight: 9
     attributes:
       data-id: edit-fx-rate
-      
   item8:
     id: item8
     plugin: text
@@ -146,7 +87,6 @@ tips:
     weight: 10
     attributes:
       data-id: edit-bank-account
-      
   item9:
     id: item9
     plugin: text
@@ -155,7 +95,6 @@ tips:
     weight: 11
     attributes:
       data-id: edit-tax
-      
   item10:
     id: item10
     plugin: text
@@ -164,7 +103,6 @@ tips:
     weight: 12
     attributes:
       data-id: edit-terms
-
   item11:
     id: item11
     plugin: text
@@ -173,7 +111,6 @@ tips:
     weight: 13
     attributes:
       data-id: edit-comment
-      
   item12:
     id: item12
     plugin: text
@@ -182,7 +119,6 @@ tips:
     weight: 14
     attributes:
       data-id: edit-add
-      
   item13:
     id: item13
     plugin: text
@@ -191,7 +127,6 @@ tips:
     weight: 15
     attributes:
       data-id: tour-item1
-
   item14:
     id: item14
     plugin: text
@@ -200,7 +135,6 @@ tips:
     weight: 16
     attributes:
       data-id: tour-item2
-
   item15:
     id: item15
     plugin: text
@@ -209,7 +143,6 @@ tips:
     weight: 17
     attributes:
       data-id: tour-item3
-      
   item16:
     id: item16
     plugin: text
@@ -218,7 +151,6 @@ tips:
     weight: 18
     attributes:
       data-id: tour-item4
-      
   item17:
     id: item17
     plugin: text
@@ -227,7 +159,6 @@ tips:
     weight: 19
     attributes:
       data-id: tour-item5
-      
   item18:
     id: item18
     plugin: text
@@ -236,13 +167,20 @@ tips:
     weight: 20
     attributes:
       data-id: tour-item6
-      
   item19:
     id: item19
     plugin: text
     label: 'Line total'
-    body: 'The line total is calculted based on the number of unit(s) x the unit value for each item. Tax value is calculated separately.'
+    body: 'The line total is calculated based on the number of unit(s) x the unit value for each item. Tax value is calculated separately.'
     weight: 21
     location: left
     attributes:
       data-id: tour-item7
+  conclusion:
+    id: introduction
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-sales">online documentation</a> for further help.'
+    weight: 22
+    attributes:
+      backdrop: 1
