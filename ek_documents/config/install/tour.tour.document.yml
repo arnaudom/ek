@@ -1,0 +1,112 @@
+id: ek_documents.my_documents
+module: ek_documents
+label: 'Create document tour'
+langcode: en
+routes:
+  - route_name: ek_documents_documents
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Store and share documents guide'
+    body: 'This is an guided tour to store and share documents online.'
+    weight: 1
+  item0:
+    id: ek-documents-upload
+    plugin: text
+    label: 'Upload'
+    body: 'Upload document with this form.'
+    weight: 2
+    location: bottom
+    attributes:
+      data-class: ek-documents-upload
+  item1:
+    id: edit-folder
+    plugin: text
+    label: 'Tag or folder'
+    body: 'Input a tag or folder to classify your document when uploading.'
+    weight: 3
+    location: bottom
+    attributes:
+      data-class: form-item-folder
+  item2:
+    id: documents-filter
+    plugin: text
+    label: 'Filter'
+    body: 'You can use filter to search a document by keyword or date range.'
+    weight: 4
+    location: right
+    attributes:
+      data-class: block-filter-document-block
+  item2a:
+    id: tabs
+    plugin: text
+    label: 'Tabs'
+    body: 'There are 3 tabs <ul><li>Your personal documents</li><li>Documents that other users shared with you</li><li>Common documents for all users</li></ul>'
+    weight: 5
+    location: bottom
+    attributes:
+      data-id: block-ek-local-tasks
+  item3:
+    id: listview
+    plugin: text
+    label: 'List'
+    body: 'Click this button to view documents as list.'
+    weight: 6
+    location: bottom
+    attributes:
+      data-id: listview
+  item4:
+    id: gridview
+    plugin: text
+    label: 'Grid'
+    body: 'Click this button to view documents as grid.'
+    weight: 7
+    attributes:
+      data-id: gridview
+  item5:
+    id: expand
+    plugin: text
+    label: 'Expand'
+    body: 'Click this button to expand all folders or close them.'
+    weight: 8
+    attributes:
+      data-id: expand
+  item6:
+    id: share-ico
+    plugin: text
+    label: 'Sharing'
+    body: 'Documents can be shared by clicking the <span class="share-ico"/> and selecting users to share document with.'
+    weight: 9
+    attributes:
+      data-class: share-ico
+  item7:
+    id: trash-ico
+    plugin: text
+    label: 'Delete'
+    body: 'Delete by clicking the <span class="trash-ico"/> trash bin icon.'
+    weight: 10
+    attributes:
+      data-class: trash-ico
+  item8:
+    id: post-ico
+    plugin: text
+    label: 'Post'
+    body: 'If project module is available, you can copy a document to a project by clicking <span class="post-ico"/> attach icon.'
+    weight: 11
+    attributes:
+      data-class: post-ico
+  item9:
+    id: drag
+    plugin: text
+    label: 'Drag & drop'
+    body: 'You can organize your document with drag and drop from one folder to another.'
+    weight: 12
+    attributes:
+      backdrop: 1
+  conclusion:
+    id: introduction
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-documents-manager">online documentation</a> for further help.'
+    weight: 100   

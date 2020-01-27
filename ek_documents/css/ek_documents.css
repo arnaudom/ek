@@ -164,9 +164,6 @@
     padding-right: 5px;
 }
 
-.open-ico {
-     //position:relative; 
-}
 .open-ico:before {
     content: "\f2d0"; 
     font-family: FontAwesome;
@@ -175,9 +172,7 @@
     color: #419ff1;
     cursor:pointer;
 }
-.close-ico {
-     //position:relative; 
-}
+
 .close-ico:before {
     content: "\f2d1"; 
     font-family: FontAwesome;
@@ -187,9 +182,6 @@
     cursor:pointer;
 }
 
-.list-ico {
-     //position:relative;
-}
 .list-ico:before {
     content: "\f03a"; 
     font-family: FontAwesome;
@@ -198,9 +190,7 @@
     color: #446E9B;
     cursor:pointer;
 }
-.grid-ico {
-    //position:relative;
-}
+
 .grid-ico:before {
     content: "\f009"; 
     font-family: FontAwesome;
