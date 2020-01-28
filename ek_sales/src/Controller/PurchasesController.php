@@ -86,32 +86,42 @@ class PurchasesController extends ControllerBase {
             'reference' => array(
                 'data' => $this->t('Reference'),
                 'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                'id' => 'reference',
             ),
             'purchase' => array(
                 'data' => $this->t('Purchaser'),
                 'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                'id' => 'issuer',
             ),
             'date' => array(
                 'data' => $this->t('Date'),
                 'sort' => 'desc',
+                'id' => 'date',
             ),
             'due' => array(
                 'data' => $this->t('Due'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'due',
             ),
             'value' => array(
                 'data' => $this->t('Value'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'value',
             ),
             'paid' => array(
                 'data' => $this->t('Payment date'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'paid',
             ),
             'status' => array(
                 'data' => $this->t('Status'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'status',
             ),
-            'operations' => $this->t('Operations'),
+            'operations' => array(
+                $this->t('Operations'),
+                'id' => 'operations',
+            ),
         );
 
 
