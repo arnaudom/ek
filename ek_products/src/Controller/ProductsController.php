@@ -88,23 +88,27 @@ class ProductsController extends ControllerBase {
             'id' => array(
                 'data' => $this->t('Id'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'item-id',
             ),
             'itemcode' => array(
                 'data' => $this->t('Item Code'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'item-code',
             ),
             'name' => array(
                 'data' => $this->t('Name'),
                 'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                'id' => 'item-name',
             ),
             'image' => array(
                 'data' => '',
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'item-image',
             ),
             'operations' => array(
                 'data' => '',
-                'width' => '15%',
                 'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                'id' => 'operations',
             )
         );
 

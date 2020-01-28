@@ -1,0 +1,38 @@
+id: ek_products.main
+module: ek_products
+label: 'Products & services tour'
+langcode: en
+routes:
+  - route_name: ek_products.search
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Guide to maintain products and services data'
+    body: 'This is an guided tour about products and services description used as references in other modules.'
+    weight: 1
+  item0:
+    id: tabs
+    plugin: text
+    label: 'Tabs'
+    body: 'There are up to 4 tabs <ul><li>Main search page to search be code, name or barcode</li><li>Filtered list</li><li>Create: to record a new item</li><li>Parameters and settings</li></ul>'
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: block-ek-local-tasks
+  item1:
+    id: listview
+    plugin: htext
+    label: 'Search'
+    body: 'Type name or keyword in the search box to display matching items. Then click on the item to view details.'
+    image: 'ek_products,/art/tour.search.jpg'
+    weight: 3
+    location: right
+    attributes:
+      data-id: product-search-form
+  conclusion:
+    id: introduction
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-products-and-services">online documentation</a> for further help.'
+    weight: 4   
