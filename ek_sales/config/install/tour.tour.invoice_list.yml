@@ -123,7 +123,7 @@ tips:
     id: due
     plugin: text
     label: 'Date'
-    body: 'The payment due date based on due days recorded. Red dot <span class="fa fa-circle red"></span> indicates the due date exceed long due alert (default: 30 days), orange dot <span class="fa fa-circle orange"></span> indicates the due date is between sharot and long due alert (default: 7-30 days), green dot <span class="fa fa-circle green"></span> indicated the due is below short alert (default: 7 days).'
+    body: 'The payment due date based on due days recorded. Red dot <span class="fa fa-circle red"></span> indicates the due date exceed long due alert (default: 30 days), orange dot <span class="fa fa-circle orange"></span> indicates the due date is between short and long due alert (default: 7-30 days), green dot <span class="fa fa-circle green"></span> indicated the date is below short alert (default: 7 days).'
     weight: 13
     location: bottom
     attributes:
