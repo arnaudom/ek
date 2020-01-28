@@ -79,5 +79,5 @@ tips:
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-messaging">online documentation</a> for further help.'
-    weight: 100      
+    weight: 8   
       

@@ -9,6 +9,18 @@
  * Implements hook_uninstall().
  */
 function ek_messaging_uninstall() {
+    $configs = [
+        'tour.tour.archive',
+        'tour.tour.inbox',
+        'tour.tour.outbox',
+        'tour.tour.send',
+    ];
+    
+    foreach ($configs as $config) {
+        // Deleting config.
+        \Drupal::configFactory()->getEditable($config)->delete();
+    }  
+    
   // Clear ek_messaging data out of the cache.
   \Drupal::cache('data')->deleteAll();
 }
