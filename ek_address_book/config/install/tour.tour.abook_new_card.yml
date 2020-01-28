@@ -1,0 +1,58 @@
+id: ek_address_book.new_card
+module: ek_address_book
+label: 'Address book tour'
+langcode: en
+routes:
+  - route_name: ek_address_book.newcard
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Add new name card'
+    body: 'guide to add new name cards to existing address book entry.'
+    weight: 1
+  item0:
+    id: options
+    plugin: text
+    label: 'Options'
+    body: 'There are 2 options to add name card'
+    weight: 2
+  item1:
+    id: copy
+    plugin: text
+    label: 'Option: copy'
+    body: 'If name card already exist and is attached to another address book entry, you can copy to the current edited address book. Type name and select from suggested existing name cards.'
+    weight: 3
+    location: bottom
+    attributes:
+      data-id: edit-copy
+  item2:
+    id: new
+    plugin: text
+    label: 'Option: new'
+    body: 'If name card does not exist, you can key-in a new name card with full details like name, email address, mobile phone, etc...'
+    weight: 4
+    location: bottom
+    attributes:
+      data-id: edit-0
+  item3:
+    id: save
+    plugin: text
+    label: 'Save'
+    body: 'Click "Record" to save your data.'
+    weight: 5
+    location: top
+    attributes:
+      data-id: edit-submit
+  item4:
+    id: video
+    plugin: video
+    label: 'Video tutorial: clone and and copy name card'
+    body: 'https://arrea-systems.com/sites/arrea-systems.com/files/2019-01/clone_AB_copy_card.mp4'
+    weight: 6
+  conclusion:
+    id: introduction
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-address-book">online documentation</a> for further help.'
+    weight: 7

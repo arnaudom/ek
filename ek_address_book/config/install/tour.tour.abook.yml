@@ -1,0 +1,38 @@
+id: ek_address_book.main
+module: ek_address_book
+label: 'Address book tour'
+langcode: en
+routes:
+  - route_name: ek_address_book.search
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Maintain address book data guide'
+    body: 'This is an guided tour about contacts, companies, clients, suppliers used as reference in other modules.'
+    weight: 1
+  item0:
+    id: tabs
+    plugin: text
+    label: 'Tabs'
+    body: 'There are up to 5 tabs <ul><li>Main search page to search be name</li><li>List by company</li><li>List by contact name</li><li>New: to record a new client or supplier</li><li>Administrate: to import or export data</li></ul>'
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: block-ek-local-tasks
+  item1:
+    id: listview
+    plugin: htext
+    label: 'Search'
+    body: 'Type name or keyword in the search box to display matching address book enties. Then click on the display entry to open selected entry.'
+    image: 'ek_address_book,/art/tour.search.jpg'
+    weight: 3
+    location: right
+    attributes:
+      data-id: abook-search-form
+  conclusion:
+    id: introduction
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-address-book">online documentation</a> for further help.'
+    weight: 4   

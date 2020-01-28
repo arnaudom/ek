@@ -11,7 +11,18 @@ use Drupal\Core\Database\Database;
  * Implements hook_uninstall().
  */
 function ek_address_book_uninstall() {
-  
+  $configs = [
+        'tour.tour.abook',
+        'tour.tour.abook_new',
+        'tour.tour.abook_new_card',
+        'tour.tour.abook_view',
+        'tour.tour.abook_edit',
+    ];
+    
+    foreach ($configs as $config) {
+        // Deleting config.
+        \Drupal::configFactory()->getEditable($config)->delete();
+    }
   \Drupal::configFactory()->getEditable('views.view.address_book_contacts')->delete();
   \Drupal::configFactory()->getEditable('views.view.address_list')->delete();
   // Clear data out of the cache.

@@ -1,0 +1,124 @@
+id: ek_address_book.new
+module: ek_address_book
+label: 'Address book tour'
+langcode: en
+routes:
+  - route_name: ek_address_book.new
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Create a new contact in address book'
+    body: 'How to create new contact. complete tour of new contact form'
+    weight: 1
+  item0:
+    id: name
+    plugin: text
+    label: 'Contact name'
+    body: 'Address book is organized by business entities. Input here the name of business, i.e. client company name.'
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: edit-name
+  item1:
+    id: shortname
+    plugin: text
+    label: 'Short name'
+    body: 'Sort name is suggested based on name. You can edit suggestion. It is used to generate identification references in other modules, i.e. invoice reference.'
+    weight: 3
+    location: bottom
+    attributes:
+      data-id: short_name
+  item2:
+    id: status
+    plugin: text
+    label: 'Status'
+    body: 'Status: active or inactive.'
+    weight: 4
+    location: bottom
+    attributes:
+      data-id: edit-status
+  item3:
+    id: address
+    plugin: text
+    label: 'Address section'
+    body: 'Input address, city, postcode and country.'
+    weight: 5
+    location: bottom
+    attributes:
+      data-id: edit-address2
+  item4:
+    id: contact
+    plugin: text
+    label: 'Main contact'
+    body: 'Input main telephone number, fax number, web site address (i.e. www.exemple.com or exemple.com).'
+    weight: 6
+    location: bottom
+    attributes:
+      data-id: edit-telephone
+  item5:
+    id: organization
+    plugin: text
+    label: 'Type of contact'
+    body: '3 types available: <ul><li>Client</li><li>Supplier</li><li>Other</li></ul>.'
+    weight: 7
+    location: bottom
+    attributes:
+      data-id: edit-type
+  item6:
+    id: category
+    plugin: text
+    label: 'Category of contact'
+    body: 'Categories available: <ul><li>Head office</li><li>Store</li><li>Factory</li><li>Other</li></ul>.'
+    weight: 8
+    location: bottom
+    attributes:
+      data-id: edit-category--description
+  item7:
+    id: tags
+    plugin: text
+    label: 'Tags'
+    body: 'Enter tags for your own classification of data. Tags can be searched in the address book search box. Existing tags are suggested when typing.'
+    weight: 9
+    location: bottom
+    attributes:
+      data-id: edit-tags--description
+  item8:
+    id: logo
+    plugin: text
+    label: 'Logo'
+    body: 'Upload contact logo.'
+    weight: 10
+    location: bottom
+    attributes:
+      data-id: edit-logo
+  item9:
+    id: namecard
+    plugin: text
+    label: 'Contact name card'
+    body: 'Input the contact (name card) name for the business entity. Type name and input further details like function, mobile phone, email addrss, etc... When you create a new business contact, you can add only one name card but you can add more name cards later.'
+    weight: 11
+    location: top
+    attributes:
+      data-id: edit-contact-name0
+  item10:
+    id: save
+    plugin: text
+    label: 'Save'
+    body: 'Click "Record" to save your data.'
+    weight: 12
+    location: top
+    attributes:
+      data-id: edit-submit
+  item11:
+    id: video
+    plugin: video
+    label: 'Video tutorial: clone and and copy name card'
+    body: 'https://arrea-systems.com/sites/arrea-systems.com/files/2019-01/clone_AB_copy_card.mp4'
+    weight: 13
+  conclusion:
+    id: introduction
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-address-book">online documentation</a> for further help.'
+    weight: 14
