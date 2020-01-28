@@ -104,9 +104,15 @@ tips:
     weight: 12
     attributes:
       backdrop: 1
+  item10:
+    id: video
+    plugin: video
+    label: 'Video tutorial'
+    body: 'https://arrea-systems.com/sites/arrea-systems.com/files/2018-11/files.mp4'
+    weight: 13
   conclusion:
     id: introduction
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-documents-manager">online documentation</a> for further help.'
-    weight: 100   
+    weight: 14 

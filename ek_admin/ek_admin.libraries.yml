@@ -90,4 +90,3 @@ ek_admin_tageditor:
   dependencies:
     - core/jquery
     - core/jquery.ui.autocomplete
-
