@@ -14,9 +14,16 @@ function ek_sales_uninstall() {
   
     $configs = [
         'tour.tour.invoice',
+        'tour.tour.invoice_edit',
         'tour.tour.invoice_list',
         'tour.tour.purchase',
         'tour.tour.purchase_list',
+        'tour.tour.quotation',
+        'tour.tour.quotation_edit',
+        'tour.tour.quotation_list',
+        'tour.tour.sales_settings_forms',
+        'tour.tour.sales_settings_quotation',
+        'tour.tour.sales_settings_serial',
     ];
     
     foreach ($configs as $config) {

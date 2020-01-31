@@ -1,0 +1,54 @@
+id: ek_sales.settings_quotation
+module: ek_sales
+label: 'Edit sales settings - quotation'
+langcode: en
+routes:
+  - route_name: ek_sales.quotations.settings
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Edit settings'
+    body: 'Manage quotation settings.'
+    weight: 1
+  item1:
+    id: quote
+    plugin: text
+    label: 'Columns'
+    body: 'for each item line in a quotation, there are 6 fields. You can customize 2 optional fields: column 2 and column 3.'
+    weight: 2
+  item2:
+    id: c2
+    plugin: text
+    label: 'Column 2'
+    body: 'You can input a custom description for this field or choose to hide it in the quotation form.'
+    weight: 3
+    location: right
+    attributes:
+      data-id: edit-setting-2-active
+  item3:
+    id: c3
+    plugin: text
+    label: 'Column 3'
+    body: 'You can input a custom description for this field or choose to hide it in the quotation form.'
+    weight: 4
+    location: right
+    attributes:
+      data-id: edit-setting-3-active
+  item4:
+    id: item7
+    plugin: text
+    label: 'Save'
+    body: 'Click "Record" to save settings.'
+    weight: 5
+    location: top
+    attributes:
+      data-id: edit-record
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-sales">online documentation</a> for further help.'
+    weight: 6
+    attributes:
+      backdrop: 1

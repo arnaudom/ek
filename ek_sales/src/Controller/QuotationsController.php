@@ -83,33 +83,42 @@ class QuotationsController extends ControllerBase {
         $header = array(
             'number' => array(
                 'data' => $this->t('Number'),
-                
+                'id' => 'number',
             ),
             'revision' => array(
                 'data' => $this->t('Revision'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'revision',
             ),
              'reference' => array(
                 'data' => $this->t('Reference'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'reference', 
             ),           
             'issuer' => array(
                 'data' => $this->t('Issued by'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'issuer',
             ),
             'date' => array(
                 'data' => $this->t('Date'),
                 'sort' => 'desc',
+                'id' => 'date',
             ),
             'value' => array(
                 'data' => $this->t('Value'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'value',
             ),
             'status' => array(
                 'data' => $this->t('Status'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'status',
             ),
-            'operations' => $this->t('Operations'),
+            'operations' => [
+                $this->t('Operations'),
+                'id' => 'operations',
+            ]
         );
 
 

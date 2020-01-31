@@ -1,0 +1,133 @@
+id: ek_sales.quotation_list
+module: ek_sales
+label: 'List quotations tour'
+langcode: en
+routes:
+  - route_name: ek_sales.quotations.list
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'List of quotations guide'
+    body: 'This is an guided tour about list of quotations.'
+    weight: 1
+  item0:
+    id: tabs
+    plugin: text
+    label: 'Tabs'
+    body: 'There are 2 tabs <ul><li>Current quotations</li><li>New Quatation to create new document</li></ul>'
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: block-ek-local-tasks  
+  item1:
+    id: edit-filters
+    plugin: text
+    label: 'Filter'
+    body: 'You can filter the list with different criteria: <ul><li>Date creation range</li><li>Client</li><li>Status: open,printed,quotationd</li></ul>'
+    weight: 3
+    location: bottom
+    attributes:
+      data-id: edit-filters
+  item2:
+    id: edit-submit
+    plugin: text
+    label: 'Apply button'
+    body: 'click on button to search and filter.'
+    weight: 4
+    location: bottom
+    attributes:
+      data-id: edit-submit   
+  item3:
+    id: edit-reset
+    plugin: text
+    label: 'Apply button'
+    body: 'click on button to clear filter.'
+    weight: 5
+    location: bottom
+    attributes:
+      data-id: edit-reset 
+  item4:
+    id: number
+    plugin: text
+    label: 'Quotation number'
+    body: 'Will display the quotation unique ref. Number. If clicked, will display document content in HTML format.'
+    weight: 6
+    location: bottom
+    attributes:
+      data-id: number
+  item5:
+    id: revision
+    plugin: text
+    label: 'Revision number'
+    body: 'You can edit quotations with revision number for each data change. The last revision number is shown.'
+    weight: 7
+    location: bottom
+    attributes:
+      data-id: revision
+  item6:
+    id: reference
+    plugin: text
+    label: 'Quotation references'
+    body: 'Will display the client name and if available the case file reference number.'
+    weight: 8
+    location: bottom
+    attributes:
+      data-id: reference
+  item7:
+    id: issuer
+    plugin: text
+    label: 'The issuer entity'
+    body: 'The company that has issued the quotation. Optionally will indicate the allocation company for analytics use.'
+    weight: 9
+    location: bottom
+    attributes:
+      data-id: issuer      
+  item8:
+    id: date
+    plugin: text
+    label: 'Date'
+    body: 'The date the quotation was created.'
+    weight: 10
+    location: bottom
+    attributes:
+      data-id: date 
+  item9:
+    id: value
+    plugin: text
+    label: 'Value'
+    body: 'The quotation net total value and taxes if any.'
+    weight: 11
+    location: bottom
+    attributes:
+      data-id: value 
+  item10:
+    id: status
+    plugin: text
+    label: 'Status'
+    body: 'The current status of the quotation: open (not printed), printed, invoiced (converted to invoice).'
+    weight: 12
+    location: bottom
+    attributes:
+      data-id: status  
+  item11:
+    id: operations
+    plugin: text
+    label: 'Operations'
+    body: 'You can <ul><li>Quick edit if not invoiced</li><li>Edit full content if not invoiced</li><li>Convert to invoice</li><li>Print</li><li>Download <span class="ico excel"></span></li><li>print <span class="ico pdf"></span> and share</li><li>download in excel format</li><li>Delete the quotation if not invoiced</li><li>Clone it: re-use the quotation data as template</li></ul>.'
+    weight: 13
+    location: bottom
+    attributes:
+      data-id: operations
+  item12:
+    id: video
+    plugin: video
+    label: 'Video tutorial: Create sub totals in sales documents'
+    body: 'https://arrea-systems.com/sites/arrea-systems.com/files/2018-11/subtotal.mp4'
+    weight: 14      
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-sales">online documentation</a> for further help.'
+    weight: 15

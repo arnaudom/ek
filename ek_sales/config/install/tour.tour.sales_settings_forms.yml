@@ -1,0 +1,57 @@
+id: ek_sales.settings_forms
+module: ek_sales
+label: 'Edit sales settings - forms'
+langcode: en
+routes:
+  - route_name: ek_sales_settings_forms
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Edit settings'
+    body: 'Manage custom sales documents templates.'
+    weight: 1
+  item1:
+    id: purchase
+    plugin: text
+    label: 'Forms'
+    body: 'Each document type, purchase, quotation, invoice can have custom template to be selected in Pdf print.'
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: edit-p
+  item2:
+    id: upload
+    plugin: text
+    label: 'Upload'
+    body: 'Select template file for upload. File are custom code for Pdf output. Contact developer if you need support.'
+    weight: 3
+    location: right
+    attributes:
+      data-id: edit-p-new-purchase
+  item3:
+    id: del
+    plugin: text
+    label: 'Delete'
+    body: 'For existing custom templates, check box beside the template name if you want to remove it.'
+    weight: 4
+    location: right
+    attributes:
+      data-id: edit-p-template0
+  item4:
+    id: item7
+    plugin: text
+    label: 'Save'
+    body: 'Click "Save" to save settings.'
+    weight: 5
+    location: top
+    attributes:
+      data-id: edit-actions-submit
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-sales">online documentation</a> for further help.'
+    weight: 6
+    attributes:
+      backdrop: 1

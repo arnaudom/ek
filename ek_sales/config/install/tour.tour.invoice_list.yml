@@ -30,7 +30,7 @@ tips:
     attributes:
       data-id: edit-filters
   item2:
-    id: edit-from
+    id: edit-k
     plugin: text
     label: 'Keyword'
     body: 'If you filter by keyword, other options are disabled.'
@@ -165,8 +165,8 @@ tips:
     attributes:
       data-id: operations
   conclusion:
-    id: introduction
+    id: conclusion
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-sales">online documentation</a> for further help.'
-    weight: 100      
+    weight: 18    

@@ -1,15 +1,15 @@
-id: ek_sales.purchase_create
+id: ek_sales.purchase_edit
 module: ek_sales
-label: 'Create purchase tour'
+label: 'Edit purchase tour'
 langcode: en
 routes:
-  - route_name: ek_sales.purchases.create
+  - route_name: ek_sales.purchases.edit
 tips:
   introduction:
     id: introduction
     plugin: text
-    label: 'Create or Edit purchase guide'
-    body: 'This is an guided tour to create and edit a purchase.'
+    label: 'Edit purchase guide'
+    body: 'This is an guided tour to edit a purchase.'
     weight: 1
   first-item:
     id: first-item
@@ -89,7 +89,7 @@ tips:
     label: 'Tax value'
     body: 'For example, to compute a sales tax of 10%, input "10" in the percent field. Each subsequent item purchased can be assigned the tax or removed from tax calculation.'
     weight: 9
-    location: bottom
+    location: right
     attributes:
       data-id: taxvalue
   item10:
@@ -98,7 +98,7 @@ tips:
     label: 'Terms'
     body: 'Terms can simply set by days. Purchase payable on receipt do not need any days. If purchase is payable for example after 30 days from date issued, select "due days" and input "30" in the next box. The system will calculate and display the calendar date for reference.'
     weight: 12
-    location: bottom
+    location: right
     attributes:
       data-id: edit-terms
   item11:
@@ -185,26 +185,62 @@ tips:
   item20:
     id: item20
     plugin: text
-    label: 'Attachment'
-    body: 'You can attach a reference document to a purchase, i.e. invoice from the supplier.'
+    label: 'Total'
+    body: 'Total lines value value expressed in selected currency.'
     weight: 22
-    location: top
+    location: left
     attributes:
-      data-id: edit-upload-doc-upload
+      data-id: itemsTotal
   item21:
     id: item21
     plugin: text
-    label: 'Attachment'
-    body: 'before saving the document, you can select next step option: <ul><li>go back to ducuments list</li><li>go to print pdf page</li><li>go to record purchase payment</li></ul>'
+    label: 'Tax'
+    body: 'Total tax value for selected lines.'
     weight: 23
+    location: left
+    attributes:
+      data-id: taxValue
+  item22:
+    id: item22
+    plugin: text
+    label: 'Purchase total'
+    body: 'Total purchase value with tax.'
+    weight: 24
+    location: left
+    attributes:
+      data-id: totalWithTax      
+  item23:
+    id: item23
+    plugin: text
+    label: 'Attachment'
+    body: 'You can attach a reference document to a purchase, i.e. invoice from the supplier. If a file is already attached, it will be replaced by new upload.'
+    weight: 25
+    location: top
+    attributes:
+      data-id: edit-upload-doc-upload
+  item24:
+    id: item24
+    plugin: text
+    label: 'Next'
+    body: 'before saving the document, you can select next step option: <ul><li>go back to ducuments list</li><li>go to print pdf page</li><li>go to record purchase payment</li></ul>'
+    weight: 26
     location: top
     attributes:
       data-id: edit-redirect--wrapper
+  item25:
+    id: item25
+    plugin: text
+    label: 'Save'
+    body: 'Click "Record" to save document.'
+    weight: 27
+    location: right
+    attributes:
+      data-id: edit-record 
   conclusion:
-    id: introduction
+    id: conclusion
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-sales">online documentation</a> for further help.'
-    weight: 24
+    weight: 28
     attributes:
       backdrop: 1

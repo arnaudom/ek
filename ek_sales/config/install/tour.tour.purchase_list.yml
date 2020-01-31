@@ -165,7 +165,7 @@ tips:
     attributes:
       data-id: operations
   conclusion:
-    id: introduction
+    id: conclusion
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-sales">online documentation</a> for further help.'
