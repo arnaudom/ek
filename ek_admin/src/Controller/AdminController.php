@@ -514,19 +514,23 @@ class AdminController extends ControllerBase {
                 'data' => $this->t('id'),
                 'field' => 'id',
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'coid',
             ),
             'name' => array(
                 'data' => $this->t('Name'),
                 'field' => 'name',
                 'class' => array(),
+                'id' => 'name',
             ),
             'status' => array(
                 'data' => $this->t('Status'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'status',
             ),
             'operations' => array(
                 'data' => '',
                 'width' => '20%',
+                'id' => 'operations',
             ),
         );
         $i = 0;

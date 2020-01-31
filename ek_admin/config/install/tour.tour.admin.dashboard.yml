@@ -1,0 +1,39 @@
+id: ek_admin.main
+module: ek_admin
+label: 'Admin dashboard'
+langcode: en
+routes:
+  - route_name: ek_admin.main
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Dashboard'
+    body: 'This page let to you view or access main configuration settings as well as alerts when some configurations are missing.'
+    weight: 1
+  item1:
+    id: b1
+    plugin: text
+    label: 'Dashboard'
+    body: 'From this page you can access to global settings where some parameters are managed for backup and email alerts.'
+    weight: 2
+  item2: 
+    id: b2
+    plugin: text
+    label: 'Dashboard'
+    body: 'You can also go to "Companies" to manage companies or "Countries" to manage countries.'
+    weight: 3
+  item3:
+    id: b4
+    plugin: text
+    label: 'Dashboard'
+    body: '"Access" button will take you to the users data access management section.'
+    weight: 4
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-setup">online documentation</a> for further help.'
+    weight: 5
+    attributes:
+      backdrop: 1

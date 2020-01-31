@@ -9,6 +9,24 @@
  * Implements hook_uninstall().
  */
 function ek_admin_uninstall() {
+    
+   $configs = [
+    'tour.tour.admin.dashboard',
+    'tour.tour.admin.settings',
+    'tour.tour.admin.company_list',
+    'tour.tour.admin.company_new',
+    'tour.tour.admin.country_list',
+    'tour.tour.admin.company_access',
+    'tour.tour.admin.country_access',
+    'tour.tour.admin.verify_access',
+    ];
+    
+    foreach ($configs as $config) {
+        // Deleting config.
+        \Drupal::configFactory()->getEditable($config)->delete();
+    }    
+    
+    
   // Clear data out of the cache.
   \Drupal::cache('data')->deleteAll();
 }
@@ -20,7 +38,7 @@ function ek_admin_uninstall() {
  */
 
 /**
- * Remove seesion event subscription
+ * Remove session event subscription
  * 
 */
 function ek_admin_update_8001() {
@@ -45,7 +63,6 @@ function ek_admin_update_8003() {
     \Drupal::cache('data')->deleteAll(); 
 }
 
-
 /**
  * Add links for main menu
  * Rebuilt route and clear cache
@@ -55,11 +72,16 @@ function ek_admin_update_8004() {
     \Drupal::cache('data')->deleteAll(); 
 }
 
-
-
 /**
  * Edit route name
 */
 function ek_admin_update_8005() {
+    \Drupal::service('router.builder')->rebuild();
+}
+
+/**
+ * Fixed routing
+*/
+function ek_admin_update_8006() {
     \Drupal::service('router.builder')->rebuild();
 }

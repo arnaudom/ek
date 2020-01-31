@@ -65,7 +65,6 @@ ek_admin.settings:
     #_access: 'TRUE'
     _permission: 'administrate_settings'
     
-    
 ek_admin.default:
   path: '/ek'
   defaults:
@@ -103,7 +102,6 @@ ek_admin_modal:
     _controller: '\Drupal\ek_admin\Controller\AdminController::modal'
   requirements:
     _permission: 'company_documents'
-
     
 ek_admin_confirm_delete_file:
   path: 'ek_admin/delete_file_confirm/{id}'
@@ -122,7 +120,7 @@ ek_admin_delete_file:
     id: \d*
         
 ek_admin.company.new:
-  path: '/ek_admin/company/new/0'
+  path: '/ek_admin/company/new'
   defaults:
     _title: 'Manage companies'
     _controller: '\Drupal\ek_admin\Controller\AdminController::AdminCompanyNew'
@@ -146,7 +144,6 @@ ek_admin.company_settings.edit:
   requirements:
     _permission: 'administrate_finance'
     id: \d*
-    
     
 ek_admin.built_csn_ajax:
   path: '/built_csn_ajax'
@@ -178,15 +175,6 @@ ek_admin.country.list:
     _controller: '\Drupal\ek_admin\Controller\AdminController::AdminCountry'
   requirements:
     _permission: 'administrate'
-
-    
-ek_admin.access:
-  path: '/ek_admin/access'
-  defaults:
-    _title: 'Manage access'
-    _controller: '\Drupal\ek_admin\Controller\AdminController::Access'
-  requirements:
-    _permission: 'administrate_settings'
 
 ek_admin.access.company:
   path: '/ek_admin/access_company'

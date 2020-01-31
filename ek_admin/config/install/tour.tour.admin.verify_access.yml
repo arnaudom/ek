@@ -1,0 +1,48 @@
+id: ek_admin.verify_access
+module: ek_admin
+label: 'Admin access'
+langcode: en
+routes:
+  - route_name: ek_admin.access.byuser
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Verify access'
+    body: 'On this page you can verify what are the access by country and company for a specific user.'
+    weight: 1
+  item1:
+    id: name
+    plugin: text
+    label: 'User'
+    body: 'Key-in user name you want to verify.'
+    weight: 2
+    location: right
+    attributes:
+      data-id: edit-name
+  item2: 
+    id: submit
+    plugin: text
+    label: 'Validate'
+    body: 'Click submit button.'
+    weight: 3
+    location: right
+    attributes:
+      data-id: edit-submit
+  item3:
+    id: view
+    plugin: text
+    label: 'Access'
+    body: 'View summary of user access.'
+    weight: 4
+    location: top
+    attributes:
+      data-id: company_per_user
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-setup">online documentation</a> for further help.'
+    weight: 5
+    attributes:
+      backdrop: 1

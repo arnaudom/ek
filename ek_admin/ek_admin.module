@@ -545,6 +545,8 @@ function ek_admin_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStateInt
   }
 } 
 
+
+
 /**
  * Provides the views data.
  * Preprocess variables.

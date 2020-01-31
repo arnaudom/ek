@@ -1,0 +1,192 @@
+id: ek_admin.company_new
+module: ek_admin
+label: 'Admin companies'
+langcode: en
+routes:
+  - route_name: ek_admin.company.new
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Companies form'
+    body: 'This is form to create a new company.'
+    weight: 1
+  item1:
+    id: active
+    plugin: text
+    label: 'Status'
+    body: 'You can set status active or inactive.'
+    weight: 2
+    location: top
+    attributes:
+      data-id: edit-active
+  item2:  
+    id: name
+    plugin: text
+    label: 'Company business name'
+    body: 'This should be the company legal name as it will appear in documents such as invoice.'
+    weight: 3
+    location: right
+    attributes:
+      data-id: edit-name
+  item3:
+    id: short
+    plugin: text
+    label: 'Short name'
+    body: 'Sort name is suggested based on name. You can edit suggestion. It is used to generate identification references in other modules, i.e. invoice reference.'
+    weight: 4
+    location: right
+    attributes:
+      data-id: short_name
+  item4:
+    id: regn
+    plugin: text
+    label: 'Registration'
+    body: 'If your company has an administrative registration number (i.e. Registrar of companies) you can input it here.'
+    weight: 5
+    location: right
+    attributes:
+      data-id: edit-reg-number
+  item5:
+    id: add1
+    plugin: text
+    label: 'Address'
+    body: 'Input full company address.'
+    weight: 6
+    location: right
+    attributes:
+      data-id: edit-address1
+  item6:
+    id: country
+    plugin: text
+    label: 'Country'
+    body: 'Select country from list. List is maintained in <a href="/ek_admin/country">country parameters</a>.'
+    weight: 7
+    location: right
+    attributes:
+      data-id: edit-country
+  item7:
+    id: tel
+    plugin: text
+    label: 'Telephone'
+    body: 'Telephone number.'
+    weight: 9
+    location: right
+    attributes:
+      data-id: edit-telephone     
+  item8:
+    id: mobile
+    plugin: text
+    label: 'Mobile phone'
+    body: 'Mobile telephone number.'
+    weight: 10
+    location: right
+    attributes:
+      data-id: edit-mobile     
+  item9:
+    id: email
+    plugin: text
+    label: 'Email address'
+    body: 'Company email address.'
+    weight: 11
+    location: right
+    attributes:
+      data-id: edit-email    
+  item10:
+    id: contact
+    plugin: text
+    label: 'Contact'
+    body: 'Company contact name.'
+    weight: 12
+    location: right
+    attributes:
+      data-id: edit-contact             
+  item11:
+    id: corresp
+    plugin: text
+    label: 'Secondary address'
+    body: 'Fill up this section if you want a correspondance address that is different than the registered business address.'
+    weight: 13
+    location: top
+    attributes:
+      data-id: edit-2      
+  item12:
+    id: images
+    plugin: text
+    label: 'Images upload'
+    body: 'You can upload 2 images for each company: logo and signature (will be used in documents, i.e.invoices). for best results, logo should be square 200x200px and signature 300x90px'
+    weight: 14
+    location: top
+    attributes:
+      data-id: edit-i
+  item13:
+    id: finance
+    plugin: text
+    label: 'Finance'
+    body: 'This section is related to finance parameters linked to this company if finance module is available.'
+    weight: 15
+    location: top
+    attributes:
+      data-id: edit-f 
+  item14:
+    id: chart
+    plugin: text
+    label: 'Finance'
+    body: 'You need to select a chart model. Pick default one or copy from another existing company if any.'
+    weight: 16
+    location: right
+    attributes:
+      data-id: edit-use-chart     
+  item15:
+    id: tax
+    plugin: text
+    label: 'Finance'
+    body: 'Company tax registratin number if any.'
+    weight: 17
+    location: right
+    attributes:
+      data-id: edit-itax-no      
+  item16:
+    id: pension
+    plugin: text
+    label: 'Finance'
+    body: 'Company pension fund registration number if any.'
+    weight: 18
+    location: right
+    attributes:
+      data-id: edit-pension-no    
+  item17:
+    id: social
+    plugin: text
+    label: 'Finance'
+    body: 'Company social security registration number if any.'
+    weight: 19
+    location: right
+    attributes:
+      data-id: edit-social-no     
+  item18:
+    id: vat
+    plugin: text
+    label: 'Finance'
+    body: 'Company sales tax registration number if any.'
+    weight: 20
+    location: right
+    attributes:
+      data-id: edit-vat-no       
+  item19:
+    id: save
+    plugin: text
+    label: 'Save'
+    body: 'Click "Record" to save your data.'
+    weight: 21
+    location: top
+    attributes:
+      data-id: edit-submit      
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-setup">online documentation</a> for further help.'
+    weight: 22
+    attributes:
+      backdrop: 1

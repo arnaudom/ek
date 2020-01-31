@@ -1,0 +1,48 @@
+id: ek_admin.company_access
+module: ek_sales
+label: 'Admin company access'
+langcode: en
+routes:
+  - route_name: ek_admin.access.company
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Company access'
+    body: 'This page allows control of user access to company data. This will control view of company details and restrict access to information linked to the company, i.e. sales document, HR, etc...'
+    weight: 1
+  item1:
+    id: coid
+    plugin: text
+    label: 'Company'
+    body: 'Select the company first.'
+    weight: 2
+    location: right
+    attributes:
+      data-id: edit-coid
+  item2: 
+    id: name
+    plugin: text
+    label: 'Users'
+    body: 'In the list, you can select or unselect the users who are granted access.'
+    weight: 3
+    location: top
+    attributes:
+      data-class: details-wrapper
+  itemsave:
+    id: save
+    plugin: text
+    label: 'Save'
+    body: 'Click "Record" to save any change.'
+    weight: 4
+    location: top
+    attributes:
+      data-id: edit-submit
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-setup">online documentation</a> for further help.'
+    weight: 5
+    attributes:
+      backdrop: 1

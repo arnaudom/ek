@@ -224,7 +224,7 @@ class BackupCoid extends FormBase {
             $file .= " #--------------------------------------------------------" . $lineEnd;
 
             $fields = "`id`,`name`,`address1`,`address2`,`postcode`,`country`,`contact`,`telephone`,`fax`,`email`,"
-                    . "`account1`, `account2`, `swift`, `coid`";
+                    . "`account1`, `account2`, `swift`, `bank_code`, `coid`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ORDER by id';
              
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
@@ -240,7 +240,7 @@ class BackupCoid extends FormBase {
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
 
-            $fields = $table .".`id`,`account_ref`,`currency`,`bid`,`aid`, `active`";
+            $fields = $table .".`id`,`account_ref`,`currency`,`bid`,`aid`, `active`, `beneficiary`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_bank} b ON '
                     . ''. $table .'.bid = b.id WHERE coid=:c ORDER by ' . $table . '.id';
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
@@ -763,7 +763,7 @@ class BackupCoid extends FormBase {
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
 
-            $fields = "`id`,`abid`,`fid`,`filename`,`uri`,`comment`,`date`,`size`,`share`,`deny`";
+            $fields = "`id`,`abid`,`fid`,`filename`,`uri`,`comment`,`date`,`size`,`share`,`deny`,`folder`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE  FIND_IN_SET (abid, :c ) ORDER by id';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, $condition);            
@@ -947,7 +947,7 @@ class BackupCoid extends FormBase {
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
             
-            $fields = $table .".`id`,`period`,`emp_id`,`roster`,`status`,". $table .".`note`";
+            $fields = $table .".`id`,`period`,`emp_id`,`roster`,`status`,". $table .".`note`,`audit`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_hr_workforce} b ON '
                     . ''. $table .'.emp_id = b.id WHERE company_id=:c ORDER by ' . $table . '.id';
 
@@ -1128,7 +1128,7 @@ class BackupCoid extends FormBase {
             
             $fields = $table .".`id`,`name`,`shortname`,`address`,`address2`,`postcode`,"
                     . "`city`,`country`,`telephone`,`fax`,`website`,`type`,`category`,"
-                    . "`status`,`stamp`,`activity`";
+                    . "`status`,`stamp`,`activity`,`logo`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE  FIND_IN_SET (id, :c ) ORDER by ' . $table . '.id';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, $condition);            

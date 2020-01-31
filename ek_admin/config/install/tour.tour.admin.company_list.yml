@@ -1,0 +1,66 @@
+id: ek_admin.company_list
+module: ek_admin
+label: 'Admin companies'
+langcode: en
+routes:
+  - route_name: ek_admin.company.list
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Companies list'
+    body: 'This is the list of recorded business companies. You can have multiple companies. They are listed here.'
+    weight: 1
+  item1:
+    id: coid
+    plugin: text
+    label: 'Company id'
+    body: 'This is the unique company id.'
+    weight: 2
+    location: top
+    attributes:
+      data-id: coid
+  item2: 
+    id: name
+    plugin: text
+    label: 'Company business name'
+    body: 'This should be the company legal name as it will appear in documents such as invoice. Click on the icon <span class="clipboard_add"></span> to copy address of the company in the clipboard.'
+    weight: 3
+    location: top
+    attributes:
+      data-id: name
+  item3:
+    id: status
+    plugin: text
+    label: 'Status'
+    body: 'Current status: active or inactive.'
+    weight: 4
+    location: top
+    attributes:
+      data-id: status
+  item4:
+    id: op
+    plugin: text
+    label: 'Operations'
+    body: '4 menu options: <ul><li>Edit: go to edit form to change company data</li><li>Finance: if finance module is active, edit related parameters</li><li>Documents: list of attached documents to this company</li><li>label: print company contact in Pdf format</li></ul>'
+    weight: 5
+    location: bottom
+    attributes:
+      data-id: operations
+  item5:
+    id: excel
+    plugin: text
+    label: 'Buttons'
+    body: 'You can download list in excel format and navigate to global settings.'
+    weight: 6
+    location: right
+    attributes:
+      data-class: action-links
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-setup">online documentation</a> for further help.'
+    weight: 6
+    attributes:
+      backdrop: 1

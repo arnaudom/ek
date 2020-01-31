@@ -57,15 +57,15 @@ class EditCountryForm extends FormBase {
         $data = $query->execute();
         
         $header1 = [
-            'name' => $this->t('Name'),
-            'entity' => $this->t('Entity'),
-            'active' => $this->t('Status') . " (" . $this->t('uncheck to desactivate') . ")", 
+            'name' => ['data' => $this->t('Name'), 'id' => 'cname1'],
+            'entity' => ['data' => $this->t('Entity'), 'id' => 'entity1'],
+            'active' => ['data' => $this->t('Status') . " (" . $this->t('uncheck to desactivate') . ")", 'id' => 'active1'],
         ];
         
         $header2 = [
-            'name' => $this->t('Name'),
-            'entity' => $this->t('Entity'),
-            'active' => $this->t('Status') . " (" . $this->t('select to activate') . ")", 
+            'name' => ['data' => $this->t('Name'), 'id' => 'cname2'],
+            'entity' => ['data' => $this->t('Entity'), 'id' => 'entity2'],
+            'active' => ['data' => $this->t('Status') . " (" . $this->t('select to activate') . ")", 'id' => 'active2'],
         ];
         
         $form['active'] = array(

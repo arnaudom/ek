@@ -1,0 +1,48 @@
+id: ek_admin.country_access
+module: ek_admin
+label: 'Admin company access'
+langcode: en
+routes:
+  - route_name: ek_admin.access.country
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Country access'
+    body: 'This page allows control of user access to country data. This will control view of projects per country.'
+    weight: 1
+  item1:
+    id: cid
+    plugin: text
+    label: 'Country'
+    body: 'Select the country first. List of country is controlled in <a href="/ek_admin/country">country parameters</a>.'
+    weight: 2
+    location: right
+    attributes:
+      data-id: edit-cid
+  item2: 
+    id: name
+    plugin: text
+    label: 'Users'
+    body: 'In the list, you can select or unselect the users who are granted access.'
+    weight: 3
+    location: top
+    attributes:
+      data-class: details-wrapper
+  itemsave:
+    id: save
+    plugin: text
+    label: 'Save'
+    body: 'Click "Record" to save any change.'
+    weight: 4
+    location: top
+    attributes:
+      data-id: edit-submit
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-setup">online documentation</a> for further help.'
+    weight: 5
+    attributes:
+      backdrop: 1
