@@ -203,7 +203,6 @@ function ek_admin_theme() {
 function ek_admin_mail($key, &$message, $params) {
 
     $site_config = \Drupal::config('system.site');
-    //$params['from'] =  Drupal::currentUser()->getEmail() ;
     $theme = theme_get_setting('logo');
     $params['options']['logo'] = $GLOBALS['base_url'] . '/' . $theme['url'];
     $params['options']['site'] = $site_config->get('name');
@@ -240,9 +239,30 @@ function ek_admin_mail($key, &$message, $params) {
         $message['options'] = $params['options'];       
         
         break;
+    
     }
 }
 
+/**
+ * Implementation hook_mail_alter().
+ */
+function ek_admin_mail_alter(&$message) {
+    
+  if (stristr($message['id'], 'user_')) {
+    $site_config = \Drupal::config('system.site');
+    $theme = theme_get_setting('logo');
+    $params['options']['logo'] = \Drupal::request()->getSchemeAndHttpHost() . $theme['url'];
+    $params['options']['site'] = $site_config->get('name');
+    $params['options']['stamp'] = date('F j, Y, g:i a');
+    $message['options'] = $params['options'];
+    //Convert content for html mail
+    $render = [
+        '#markup' => nl2br($message['body'][0]),
+    ]; 
+    $message['body'][0] = \Drupal::service('renderer')->render($render);
+    
+  }
+}
 
 /**
  * A file attachment email function used by EK modules (i.e. finance, sales)
@@ -447,15 +467,18 @@ function mail_attachment($email, $file, $message = null , $options = null) {
  * lock user edit for user 1
  */
 function ek_admin_form_user_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-        
+      
     if($form['account']['mail']['#default_value']){
         $edit = user_load_by_mail($form['account']['mail']['#default_value']);
         if($edit && $edit->id() == 1 &&  \Drupal::currentUser()->id() != 1) {
             //only user 1 can edit user 1 role and status
             $form['account']['status']['#disabled'] = TRUE;
             $form['account']['roles']['#disabled'] = TRUE;
-            return $form;
         }
+        if(\Drupal::currentUser()->id() != 1) {
+            $form['contact']['#disabled'] = TRUE;
+        }
+        return $form;
     }
 }
 
