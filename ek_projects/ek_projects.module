@@ -133,16 +133,20 @@ function ek_projects_file_download($uri) {
     //if extranet type, hook_ in use is extranet hook
     if( strpos($uri , '/projects/documents/') 
             &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , '/extranet/project?')
-            &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , 'extranet-file/')) { 
-           
+            &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , 'extranet-file/')
+            &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , '/extranet/chat')
+            ) { 
+        
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     $mime = $finfo->file($uri);
-    $query = "SELECT id, filename FROM {ek_project_documents}  WHERE uri = :uri";
-    $a = array(':uri' => $uri);
+    $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_project_documents', 'd')
+                            ->fields('d',['id','filename'])
+                            ->condition('uri', $uri)
+                            ->execute();
+    $file = $query->fetchObject();
     $name = \Drupal::currentUser()->getUsername();   
-
-    $file = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
-
+    
      if (ProjectData::validate_file_access($file->id) ) {
 
                 //////////////////////////
@@ -151,7 +155,7 @@ function ek_projects_file_download($uri) {
 
                 $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
                 $log = t("User @u has downloaded project document @d (file id @i)", $a);
-                \Drupal::logger('ek_projects')->notice( $log );                
+                \Drupal::logger('ek_projects')->notice( $log );         
                 return array('Content-Type' => $mime);
 
               }  else {
