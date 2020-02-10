@@ -1,6 +1,6 @@
 id: ek_sales.invoice_edit
 module: ek_sales
-label: 'Edit invoice tour'
+label: 'Sales: edit invoice tour'
 langcode: en
 routes:
   - route_name: ek_sales.invoices.edit

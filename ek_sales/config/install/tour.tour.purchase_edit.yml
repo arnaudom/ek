@@ -1,15 +1,15 @@
-id: ek_sales.purchase_create
+id: ek_sales.purchase_edit
 module: ek_sales
-label: 'Sales: create purchase tour'
+label: 'Sales: edit purchase tour'
 langcode: en
 routes:
-  - route_name: ek_sales.purchases.create
+  - route_name: ek_sales.purchases.edit
 tips:
   introduction:
     id: introduction
     plugin: text
-    label: 'Create purchase guide'
-    body: 'This is an guided tour to create and edit a purchase.'
+    label: 'Edit purchase guide'
+    body: 'This is an guided tour to edit a purchase.'
     weight: 1
   first-item:
     id: first-item
@@ -23,7 +23,7 @@ tips:
   second-item:
     id: second-item
     plugin: text
-    label: Allocation
+    label: 'Allocation'
     body: 'In a multi companies configuration, you can allocate the purchase to a different company of the group. This is used when a company purchase on behalf of another and you want to keep track of internal transactions or generate reports per business unit.'
     weight: 3
     location: bottom
@@ -32,7 +32,7 @@ tips:
   third-item:
     id: third-item
     plugin: text
-    label: Client
+    label: 'Client'
     body: 'Select a supplier in the list. Suppliers are managed by the <a href="/address_book">address book</a> module.'
     weight: 4
     location: bottom
@@ -41,7 +41,7 @@ tips:
   fourth-item:
     id: fourth-item
     plugin: text
-    label: Date
+    label: 'Date'
     body: 'The date of issue. By default, current date is set. A calendar is automatically opened when clicking on the date.'
     weight: 5
     location: bottom
@@ -50,7 +50,7 @@ tips:
   item4:
     id: item4
     plugin: text
-    label: Title
+    label: 'Title'
     body: 'The title that will appear on the purchase; Debit note is a special document to generate a debit for your client. Debit notes are compensated by purchases.'
     weight: 6
     location: bottom
@@ -68,7 +68,7 @@ tips:
   item6:
     id: item6
     plugin: text
-    label: Currency
+    label: 'Currency'
     body: 'The currency to be used for purchase. If finance module is available, the currency can only be selected among active currencies. To manage currencies, go to finance module. The exchange rate is calculated from the base currency settings (see next).'
     weight: 8
     location: bottom
@@ -89,22 +89,22 @@ tips:
     label: 'Tax value'
     body: 'For example, to compute a sales tax of 10%, input "10" in the percent field. Each subsequent item purchased can be assigned the tax or removed from tax calculation.'
     weight: 9
-    location: bottom
+    location: right
     attributes:
       data-id: taxvalue
   item10:
     id: item10
     plugin: text
-    label: Terms
+    label: 'Terms'
     body: 'Terms can simply set by days. Purchase payable on receipt do not need any days. If purchase is payable for example after 30 days from date issued, select "due days" and input "30" in the next box. The system will calculate and display the calendar date for reference.'
     weight: 12
-    location: bottom
+    location: right
     attributes:
       data-id: edit-terms
   item11:
     id: item11
     plugin: text
-    label: Comments
+    label: 'Comments'
     body: 'Comments can be any text used for internal reference or to be used in the purchase print-out.'
     weight: 13
     location: top
@@ -158,7 +158,7 @@ tips:
   item17:
     id: item17
     plugin: text
-    label: Tax
+    label: 'Tax'
     body: 'If tax percentage is not null, the tax box is used to include or exclude item form total tax computation.'
     weight: 19
     location: top
@@ -176,7 +176,7 @@ tips:
   item19:
     id: item19
     plugin: text
-    label: Delete
+    label: 'Delete'
     body: 'In edit mode, the delete box will delete the item line upon recording the document if it is selected for a specific item.'
     weight: 21
     location: top
@@ -185,26 +185,62 @@ tips:
   item20:
     id: item20
     plugin: text
-    label: Attachment
-    body: 'You can attach a reference document to a purchase, i.e. invoice from the supplier.'
+    label: 'Total'
+    body: 'Total lines value value expressed in selected currency.'
     weight: 22
-    location: top
+    location: left
     attributes:
-      data-id: edit-upload-doc-upload
+      data-id: itemsTotal
   item21:
     id: item21
     plugin: text
-    label: Attachment
-    body: 'before saving the document, you can select next step option: <ul><li>go back to ducuments list</li><li>go to print pdf page</li><li>go to record purchase payment</li></ul>'
+    label: 'Tax'
+    body: 'Total tax value for selected lines.'
     weight: 23
+    location: left
+    attributes:
+      data-id: taxValue
+  item22:
+    id: item22
+    plugin: text
+    label: 'Purchase total'
+    body: 'Total purchase value with tax.'
+    weight: 24
+    location: left
+    attributes:
+      data-id: totalWithTax      
+  item23:
+    id: item23
+    plugin: text
+    label: 'Attachment'
+    body: 'You can attach a reference document to a purchase, i.e. invoice from the supplier. If a file is already attached, it will be replaced by new upload.'
+    weight: 25
+    location: top
+    attributes:
+      data-id: edit-upload-doc-upload
+  item24:
+    id: item24
+    plugin: text
+    label: 'Next'
+    body: 'before saving the document, you can select next step option: <ul><li>go back to ducuments list</li><li>go to print pdf page</li><li>go to record purchase payment</li></ul>'
+    weight: 26
     location: top
     attributes:
       data-id: edit-redirect--wrapper
+  item25:
+    id: item25
+    plugin: text
+    label: 'Save'
+    body: 'Click "Record" to save document.'
+    weight: 27
+    location: right
+    attributes:
+      data-id: edit-record 
   conclusion:
     id: conclusion
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-sales">online documentation</a> for further help.'
-    weight: 24
+    weight: 28
     attributes:
-      backdrop: '1'
+      backdrop: 1

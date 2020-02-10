@@ -1,6 +1,6 @@
 id: ek_sales.quotation_edit
 module: ek_sales
-label: 'Edit quotation tour'
+label: 'Sales: edit quotation tour'
 langcode: en
 routes:
   - route_name: ek_sales.quotations.edit
@@ -235,7 +235,7 @@ tips:
     id: video
     plugin: video
     label: 'Video tutorial: Create sub-total in sales documents'
-    body: 'https://arrea-systems.com/sites/arrea-systems.com/files/2018-11/subtotal.mp4'
+    body: 'https://arrea-systems.com/sites/arrea-systems.com/files/2020-02/quotation.mp4'
     weight: 26
   conclusion:
     id: conclusion

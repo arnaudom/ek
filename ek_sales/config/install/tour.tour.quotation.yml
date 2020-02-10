@@ -1,6 +1,6 @@
 id: ek_sales.quotation_create
 module: ek_sales
-label: 'Create quotation tour'
+label: 'Sales: create quotation tour'
 langcode: en
 routes:
   - route_name: ek_sales.quotations.create

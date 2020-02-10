@@ -1,6 +1,6 @@
 id: ek_sales.quotation_list
 module: ek_sales
-label: 'List quotations tour'
+label: 'Sales: list quotations tour'
 langcode: en
 routes:
   - route_name: ek_sales.quotations.list

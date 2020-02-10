@@ -159,24 +159,36 @@ class PayPurchase extends FormBase {
         );
 
 
-
-        $form['fx_rate'] = array(
-            '#type' => 'textfield',
-            '#size' => 30,
-            '#maxlength' => 255,
-            '#default_value' => '',
-            '#required' => FALSE,
-            '#title' => t('exchange rate'),
-            '#description' => '',
-            '#prefix' => "<div id='fx'>",
-            '#suffix' => '</div>',
-            '#ajax' => array(
-                'callback' => '\Drupal\ek_sales\Form\PayPurchase::credit_amount',
-                'wrapper' => 'fx',
-                'event' => 'change',
+        if ($this->moduleHandler->moduleExists('ek_finance')) {
+            $form['fx_rate'] = array(
+                '#type' => 'textfield',
+                '#size' => 30,
+                '#maxlength' => 255,
+                '#default_value' => '',
+                '#required' => FALSE,
+                '#title' => t('exchange rate'),
+                '#description' => '',
+                '#prefix' => "<div id='fx'>",
+                '#suffix' => '</div>',
+                '#ajax' => array(
+                    'callback' => '\Drupal\ek_sales\Form\PayPurchase::credit_amount',
+                    'wrapper' => 'fx',
+                    'event' => 'change',
+                ),
+            );  
+        }
+        
+        $form['close'] = array(
+            '#type' => 'checkbox',
+            '#title' => t('Force close purchase'),
+            '#description' => t('Select to close purchase when amount is not fully paid'),
+            '#states' => array(
+                'invisible' => array(
+                    "input[name='short']" => array('value' => '0'),
+                ),
             ),
         );
-
+        
         $form['actions']['record'] = array(
             '#type' => 'submit',
             '#value' => $this->t('Record'),
@@ -352,26 +364,73 @@ class PayPurchase extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $query = "SELECT * from {ek_sales_purchase} where id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $form_state->getValue('for_id')))
-                ->fetchObject();
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_purchase', 'p');
+        $query->fields('p');
+        $query->condition('id', $form_state->getValue('for_id'));
+        $data = $query->execute()->fetchObject();
+        
         $this_pay = str_replace(",", "", $form_state->getValue('amount'));
-        $query = "SELECT sum(quantity*value) from {ek_sales_purchase_details} WHERE serial=:s and opt=:o";
-        $details = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':s' => $data->serial, ':o' => 1))
-                ->fetchField();
-        $max_pay = round($data->amount + ($details * $data->taxvalue / 100), 2);
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_purchase_details', 'p');
+        $query->condition('serial', $data->serial);
+        $query->fields('p',['total','opt']);
+        $lines = $query->execute();
+        
+        $total_taxable = 0;
+        $total = 0;
+        $total_non_taxable = 0;
+         while($d = $lines->fetchObject()){
+             $total  += $d->total;
+             if($d->opt == '1') {
+                 $total_taxable += $d->total;
+             } else {
+                 $total_non_taxable += $d->total;
+             }
+         }
+        
+        $max_pay = round($data->amount + ($total_taxable * $data->taxvalue / 100), 2);
+        
+        $amountpaid = $data->amountpaid + $this_pay;
+        if ($amountpaid == $max_pay) {
+            $paid = 1; //full payment
+        } elseif($form_state->getValue('for_id') == 1) {
+            $paid = 1; //close
+        } else {
+            $paid = 2; // partial payment (can't edit anymore)
+        }
+        if($form_state->getValue('fx_rate')) {
+            $currencyRate = $form_state->getValue('fx_rate');
+        } else {
+            $currencyRate = round($total / $data->amountbc, 2);
+        }
+        //because bal. in base currency is without tax, we need to convert the paid value into 
+        //base currency without tax
+        //on short payment we assume tax are paid in full and short payment applies to non taxed portion
+        $v1 = ($total_taxable * ($data->taxvalue/100)) * $this_pay/($max_pay - $data->amountpaid);//taxed portion value in current payment
+        $v2 = ($this_pay - $v1) / $currencyRate;//payment without tax in base currency
+        $balancebc = round($data->balancebc - $v2, 2);
+        
+        $fields = array(
+            'status' => $paid,
+            'amountpaid' => $amountpaid,
+            'balancebc' => $balancebc,
+            'pdate' => $form_state->getValue('date'),
+        );
 
-        $taxable = round($details * $this_pay / $max_pay, 4);
-        $rate = round($max_pay / $data->amountbc, 4); //used to calculate currency gain/loss
+        $update = Database::getConnection('external_db', 'external_db')
+                ->update('ek_sales_purchase')->fields($fields)
+                ->condition('id', $form_state->getValue('for_id'))
+                ->execute();
 
-
+        
         if ($this->moduleHandler->moduleExists('ek_finance')) {
 
             $settings = new FinanceSettings();
             $baseCurrency = $settings->get('baseCurrency');
-            $currencyRate = CurrencyData::rate($data->currency);
+            
             // FILTER cash account
             if (strpos($form_state->getValue('bank_account'), "-")) {
                 //the currency is in the form value
@@ -392,9 +451,11 @@ class PayPurchase extends FormBase {
             } else {
                 $fx = 1;
             }
-
+            
+            $taxable = round($total_taxable * $this_pay / ($max_pay - $data->amountpaid), 4);
+            
             $this->journal->record(
-                    array(
+                    [
                         'source' => "payment",
                         'coid' => $data->head,
                         'aid' => $form_state->getValue('bank_account'),
@@ -404,9 +465,9 @@ class PayPurchase extends FormBase {
                         'taxable' => $taxable,
                         'tax' => $data->taxvalue,
                         'currency' => $data->currency,
-                        'rate' => $rate,
+                        'rate' => round($total / $data->amountbc, 4),
                         'fxRate' => $fx,
-                    )
+                    ]
             );
 
             if ($this->journal->credit <> $this->journal->debit) {
@@ -414,27 +475,7 @@ class PayPurchase extends FormBase {
                 \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }
         }
-
-        $amountpaid = $data->amountpaid + $this_pay;
-        if ($amountpaid == $max_pay) {
-            $paid = 1; //full payment
-        } else {
-            $paid = 2; // partial payment (can't edit anymore)
-        }
-        $balancebc = round($data->balancebc - $this_pay / $currencyRate, 2);
-
-        $fields = array(
-            'status' => $paid,
-            'amountpaid' => $amountpaid,
-            'balancebc' => $balancebc,
-            'pdate' => $form_state->getValue('date'),
-        );
-
-        $update = Database::getConnection('external_db', 'external_db')
-                ->update('ek_sales_purchase')->fields($fields)
-                ->condition('id', $form_state->getValue('for_id'))
-                ->execute();
-
+        
         if ($update) {
             if ($this->moduleHandler->moduleExists('ek_projects')) {
                 //notify user if purchase is linked to a project

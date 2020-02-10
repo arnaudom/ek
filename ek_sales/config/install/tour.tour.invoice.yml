@@ -1,6 +1,6 @@
 id: ek_sales.invoice_create
 module: ek_sales
-label: 'Create invoice tour'
+label: 'Sales: create invoice tour'
 langcode: en
 routes:
   - route_name: ek_sales.invoices.create

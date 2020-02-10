@@ -65,8 +65,6 @@ class ReceiveInvoice extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
 
-        $data = Database::getConnection('external_db', 'external_db')
-                        ->query("SELECT * from {ek_sales_invoice} where id=:id", array(':id' => $id))->fetchObject();
         
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_sales_invoice', 'i');
@@ -76,10 +74,58 @@ class ReceiveInvoice extends FormBase {
             $query->condition('i.id', $id, '=');
             
             $data = $query->execute()->fetchObject();
+            
+            $form_state->set('invoiceCurrency', $data->currency);
        
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $baseCurrency = $this->settings->get('baseCurrency');
+            //set warning for configuration changes that may alter journal records
+            $companysettings = new CompanySettings($data->head);
+            $asset_account = $companysettings->get('asset_account', $data->currency);
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+            $query->fields('j',['id']);
+            $query->condition('coid', $data->head, '=');
+            $query->condition('source', 'invoice', '=');
+            $query->condition('reference', $data->id, '=');
+            $query->condition('aid',$asset_account , '=');
+            $query->condition('type', 'debit', '=');
+            
+            if($query->execute()->fetchObject() == NULL) {
+                $alert = "<div class='messages messages--warning'>" 
+                        . t('Invoice was recorded with a different @acc account than the one currently selected in your settings. Verify <a href="@url">settings</a>.', 
+                                ['@acc' => t('account receivable'),'@url' => Url::fromRoute('ek_admin.company_settings.edit',['id' => $data->head])->toString()]) . "</div>";
+                $form['alert1'] = array(
+                    '#type' => 'item',
+                    '#markup' => $alert,
+                );
+            }
+            
+            if($data->taxvalue > 0){
+                //Invoice includes taxes, verify the tax collection account settings 
+                $stax_collect_aid = $companysettings->get('stax_collect_aid');
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_journal', 'j');
+                $query->fields('j',['id']);
+                $query->condition('coid', $data->head, '=');
+                $query->condition('source', 'invoice', '=');
+                $query->condition('reference', $data->id, '=');
+                $query->condition('aid',$stax_collect_aid , '=');
+                $query->condition('type', 'credit', '=');
+
+                if($query->execute()->fetchObject() == NULL) {
+                    $alert = "<div class='messages messages--warning'>" 
+                            . t('Invoice was recorded with a different @acc account than the one currently selected in your settings. Verify <a href="@url">settings</a>.', 
+                                    ['@acc' => t('tax collection'),'@url' => Url::fromRoute('ek_admin.company_settings.edit',['id' => $data->head])->toString()]) . "</div>";
+                    $form['alert2'] = array(
+                        '#type' => 'item',
+                        '#markup' => $alert,
+                    );
+                } 
+            }
+            
+            
         }
 
         $url = Url::fromRoute('ek_sales.invoices.list', array(), array())->toString();
@@ -120,20 +166,17 @@ class ReceiveInvoice extends FormBase {
             $aid = $settings->get('cash_account', $data->currency);
             if ($aid <> '') {
                 $query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";
-                $name = Database::getConnection('external_db', 'external_db')
+                /*$name = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':c' => $data->head, ':a' => $aid))
-                        ->fetchField();
+                        ->fetchField();*/
                 $key = $data->currency . "-" . $aid;
-                $cash = array($key => $name);
+                $cash = array($key => AidList::aname($data->head, $aid));
             }
             $aid = $settings->get('cash2_account', $data->currency);
             if ($aid <> '') {
-                $query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";
-                $name = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':c' => $data->head, ':a' => $aid))
-                        ->fetchField();
+               
                 $key = $data->currency . "-" . $aid;
-                $cash += array($key => $name);
+                $cash += array($key => AidList::aname($data->head, $aid));
             }
 
             $options[(string) t('cash')] = $cash;
@@ -242,6 +285,7 @@ class ReceiveInvoice extends FormBase {
         $form['close'] = array(
             '#type' => 'checkbox',
             '#title' => t('Force close invoice'),
+            '#description' => t('Select to close invoice when amount is not fully received'),
             '#prefix' => "<div id='close' >",
             '#suffix' => '</div>',
             '#states' => array(
@@ -280,10 +324,13 @@ class ReceiveInvoice extends FormBase {
                 $currency2 = $ct[0];
             } else {
                 // bank account
-                $query = "SELECT currency from {ek_bank_accounts} where id=:id ";
-                $currency2 = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $data->bank))
-                        ->fetchField();
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_bank_accounts', 'b');
+                $query->fields('b',['currency']);
+                $query->condition('id', $data->bank, '=');
+                $currency2 = $query->execute()->fetchField();
+                $form_state->set('bankAccountCurrency', $currency2);
+                
             }
 
             if ($data->currency <> $currency2) {
@@ -337,23 +384,20 @@ class ReceiveInvoice extends FormBase {
      */
     public function debit_fx_rate(array &$form, FormStateInterface $form_state) {
 
-        $query = "SELECT currency from {ek_sales_invoice} where id=:id";
-        $currency = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $form_state->getValue('for_id')))
-                ->fetchField();
-
+        $currency = $form_state->get('invoiceCurrency');
+        
         // FILTER cash account
         if (strpos($form_state->getValue('bank_account'), "-")) {
             //the currency is in the form value
-
             $data = explode("-", $form_state->getValue('bank_account'));
             $currency2 = $data[0];
         } else {
             // bank account
-            $query = "SELECT currency from {ek_bank_accounts} where id=:id ";
-            $currency2 = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $form_state->getValue('bank_account')))
-                    ->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_bank_accounts', 'b');
+                $query->fields('b',['currency']);
+                $query->condition('id', $form_state->getValue('bank_account', '='));
+                $currency2 = $query->execute()->fetchField();
         }
 
 
@@ -386,23 +430,21 @@ class ReceiveInvoice extends FormBase {
      */
     public function credit_amount(array &$form, FormStateInterface $form_state) {
 
-        $query = "SELECT currency from {ek_sales_invoice} where id=:id";
-        $currency = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $form['for_id']['#value']))
-                ->fetchField();
+        $currency = $form_state->get('invoiceCurrency');
 
         // FILTER cash account
         if (strpos($form_state->getValue('bank_account'), "-")) {
             //the currency is in the form value
-
             $data = explode("-", $form_state->getValue('bank_account'));
             $currency2 = $data[0];
         } else {
             // bank account
-            $query = "SELECT currency from {ek_bank_accounts} where id=:id ";
-            $currency2 = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $form_state->getValue('bank_account')))
-                    ->fetchField();
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_bank_accounts', 'b');
+                $query->fields('b',['currency']);
+                $query->condition('id', $form_state->getValue('bank_account', '='));
+                $currency2 = $query->execute()->fetchField();
         }
 
 
@@ -440,11 +482,13 @@ class ReceiveInvoice extends FormBase {
         
         //verify amount paid does not exceed amount due or partially paid
         $this_pay = str_replace(",", "", $form_state->getValue('amount'));
-        
-        $query = "SELECT * from {ek_sales_invoice} where id=:id";
-            $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $form_state->getValue('for_id')))
-                ->fetchObject();
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice', 'i');
+            $query->fields('i');
+            $query->condition('i.id', $form_state->getValue('for_id'), '=');
+            
+            $data = $query->execute()->fetchObject();
+                        
             $query = "SELECT sum(quantity*value) FROM {ek_sales_invoice_details} WHERE serial=:s ";
             $details = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':s' => $data->serial))
@@ -494,10 +538,12 @@ class ReceiveInvoice extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $query = "SELECT * from {ek_sales_invoice} where id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $form_state->getValue('for_id')))
-                ->fetchObject();
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice', 'i');
+            $query->fields('i');
+            $query->condition('i.id', $form_state->getValue('for_id'), '=');
+            
+            $data = $query->execute()->fetchObject();
 
         $this_pay = str_replace(",", "", $form_state->getValue('amount'));
         $max_pay = round($form_state->get('max_pay'), 2);

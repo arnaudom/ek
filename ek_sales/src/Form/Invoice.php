@@ -500,10 +500,7 @@ class Invoice extends FormBase {
             '#attributes' => array('class' => array('button--add')),
         );
 
-
-        if ($this->moduleHandler->moduleExists('ek_finance')) {
-
-            $header = array(
+        $header = array(
                 'description' => array(
                     'data' => $this->t('Description'),
                     'id' => ['tour-item1'],
@@ -534,34 +531,11 @@ class Invoice extends FormBase {
                     'id' => ['tour-item5'],
                 ),
             );
-        } else {
-            $header = array(
-                'description' => array(
-                    'data' => $this->t('Description'),
-                    'id' => ['tour-item1'],
-                ),
-                'quantity' => array(
-                    'data' => $this->t('Quantity'),
-                    'id' => ['tour-item3'],
-                ),
-                'value' => array(
-                    'data' => $this->t('Value'),
-                    'id' => ['tour-item4'],
-                ),
-                'tax' => array(
-                    'data' => $this->t('Tax'),
-                    'id' => ['tour-item6'],
-                ),
-                'total' => array(
-                    'data' => $this->t('Total'),
-                    'id' => ['tour-item7'],
-                ),
-                'delete' => array(
-                    'data' => $this->t('Delete'),
-                    'id' => ['tour-item5'],
-                ),
-            );
+
+        if ($this->moduleHandler->moduleExists('ek_finance')) {
+            $header['account']['data'] = $this->t('Account');
         }
+        
         $form['items']['itemTable'] = array(
             '#tree' => TRUE,
             '#theme' => 'table',
@@ -778,7 +752,11 @@ class Invoice extends FormBase {
                 '#maxlength' => 250,
                 '#attributes' => array('placeholder' => t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
-            $form['delete'] = array();
+            $form['delete'] = array(
+                '#type' => 'hidden',
+                '#value' => 0,
+            );
+            
             //built edit rows for table
             $form['items']['itemTable'][$i] = array(
                 'description' => &$form['description'],
@@ -1305,7 +1283,6 @@ class Invoice extends FormBase {
                     }
             }
             
-            //$serial = ucwords(str_replace('-', '', $short)) . $type . $date . "-" . ucwords(str_replace('-', '', $sup)) . "-" . $iid;
         } else {
             //edit
             $serial = $form_state->getValue('serial');
@@ -1530,7 +1507,7 @@ class Invoice extends FormBase {
                         );
                     }
                 }
-            } //for
+            } 
 
             $rec = $journal->recordtax(
                     array(

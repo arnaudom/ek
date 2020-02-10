@@ -1,6 +1,6 @@
 id: ek_sales.settings_forms
 module: ek_sales
-label: 'Edit sales settings - forms'
+label: 'Sales: edit sales settings - forms'
 langcode: en
 routes:
   - route_name: ek_sales_settings_forms

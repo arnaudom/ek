@@ -14,7 +14,8 @@ $param = unserialize($param);
 
 $id = $param[0];
 $source = $param[1];
-$signature = $param[2];
+$signature = $param[2][0];
+$s_pos = $param[2][1];
 $stamp = $param[3];
 $template = $param[4];
 $contact = $param[5];

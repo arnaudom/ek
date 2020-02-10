@@ -54,9 +54,10 @@ class FilterPrint extends FormBase {
         $back = Url::fromRoute('ek_sales.' . $source . 's.list', array(), array())->toString();
 
         $form["back"] = array(
-        '#markup' => "<a href='" . $back . "' >" . t('list') . "</a>" ,
+            '#markup' => "<a href='" . $back . "' >" . t('list') . "</a>" ,
         );
-;    
+        
+             
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Options'),
@@ -79,14 +80,27 @@ class FilterPrint extends FormBase {
         if($doc->sign != NULL && file_exists($doc->sign)){
             $form['filters']['signature'] = array(
                 '#type' => 'checkbox',
-                '#default_value' => isset($_SESSION['printfilter']['signature']) ? $_SESSION['printfilter']['signature'] :0,
+                '#default_value' => isset($_SESSION['printfilter']['signature'][0]) ? $_SESSION['printfilter']['signature'][0] :0,
                 '#attributes' => array('title' => t('signature')),
                 '#title' => t('signature'),
                 '#states' => array(
                     'invisible' => array(':input[name="output_format"]' => array('value' => 2),
                     ),
-                    )
+                )
             );
+            
+            $form['filters']['s_pos'] = [
+                '#type' => 'number',
+                '#default_value' => isset($_SESSION['printfilter']['signature'][1]) ? $_SESSION['printfilter']['signature'][1] :40,
+                '#description' => t('Adjust vertical position'),
+                '#min' => 30,
+                '#max' => 90,
+                '#step' => 10,
+                '#states' => array(
+                    'visible' =>  array(":input[name='signature']" => ['checked' => TRUE]),
+                 ),
+            ];
+            
         } else {
             $form['filters']['signature'] = array(
                 '#type' => 'hidden',
@@ -194,7 +208,7 @@ class FilterPrint extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
         $_SESSION['printfilter']['for_id'] = $form_state->getValue('for_id');
-        $_SESSION['printfilter']['signature'] = $form_state->getValue('signature');
+        $_SESSION['printfilter']['signature'] = [$form_state->getValue('signature'),$form_state->getValue('s_pos')];
         $_SESSION['printfilter']['stamp'] = $form_state->getValue('stamp');
         $_SESSION['printfilter']['template'] = $form_state->getValue('template');
         $_SESSION['printfilter']['contact'] = $form_state->getValue('contact');

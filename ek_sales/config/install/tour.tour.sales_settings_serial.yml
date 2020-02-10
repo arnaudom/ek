@@ -1,6 +1,6 @@
 id: ek_sales.settings_serial
 module: ek_sales
-label: 'Edit sales settings - serial number'
+label: 'Sales: edit sales settings - serial number'
 langcode: en
 routes:
   - route_name: ek_sales_settings_serial

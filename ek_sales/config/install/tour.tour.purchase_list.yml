@@ -1,6 +1,6 @@
 id: ek_sales.purchase_list
 module: ek_sales
-label: 'List purchases tour'
+label: 'Sales: list purchases tour'
 langcode: en
 routes:
   - route_name: ek_sales.purchases.list

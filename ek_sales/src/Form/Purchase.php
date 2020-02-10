@@ -412,44 +412,15 @@ class Purchase extends FormBase {
             '#attributes' => array('class' => array('button--add')),
         );
 
-
-        if ($this->moduleHandler->moduleExists('ek_finance')) {
-            $header = array(
-                'description' => array(
-                    'data' => $this->t('Description'),
-                    'id' => ['tour-item1'],
-                ),
-                'account' => array(
-                    'data' => $this->t('Account'),
-                    'id' => ['tour-item2'],
-                    'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
-                ),
-                'quantity' => array(
-                    'data' => $this->t('Quantity'),
-                    'id' => ['tour-item3'],
-                ),
-                'value' => array(
-                    'data' => $this->t('Value'),
-                    'id' => ['tour-item4'],
-                ),
-                'tax' => array(
-                    'data' => $this->t('Tax'),
-                    'id' => ['tour-item6'],
-                ),
-                'total' => array(
-                    'data' => $this->t('Total'),
-                    'id' => ['tour-item7'],
-                ),
-                'delete' => array(
-                    'data' => $this->t('Delete'),
-                    'id' => ['tour-item5'],
-                ),
-            );
-        } else {
-            $header = array(
+        $header = array(
                     'description' => array(
                         'data' => $this->t('Description'),
                         'id' => ['tour-item1'],
+                    ),
+                    'account' => array(
+                        'data' => '',
+                        'id' => ['tour-item2'],
+                        'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
                     ),
                     'quantity' => array(
                         'data' => $this->t('Quantity'),
@@ -471,9 +442,10 @@ class Purchase extends FormBase {
                         'data' => $this->t('Delete'),
                         'id' => ['tour-item5'],
                     ),
-                );            
-            
-        }
+                ); 
+        if ($this->moduleHandler->moduleExists('ek_finance')) {
+            $header['account']['data'] = $this->t('Account');
+        } 
 
     $form['items']['itemTable'] = array(
             '#tree' => TRUE,
@@ -1257,7 +1229,6 @@ class Purchase extends FormBase {
                                 }
 
                                 $line = (round($row["quantity"] * $row["value"] , 2));
-                               // $linebase = (round($row["quantity"] * $row["value"] / $currencyRate, 2));
                                 $sum = $sum + $line;
                                 if ($row["tax"] == 1) {
                                     $taxable = $taxable + $line;
@@ -1288,14 +1259,6 @@ class Purchase extends FormBase {
             }//for
         }
 
-
-        /*
-          if($form_state->getValue('bank') == '')
-          { $bank = 0;
-          } else {
-          $bank = $form_state->getValue('bank');
-          }
-         */
         if ($form_state->getValue('due') == '') {
             $due = 0;
         } else {
@@ -1323,6 +1286,8 @@ class Purchase extends FormBase {
             } else {
                 $amountbc = $sum;
             }
+        } else {
+            $amountbc = $sum;
         }
         $fields1 = array(
             'serial' => $serial,
@@ -1447,6 +1412,7 @@ class Purchase extends FormBase {
                                     'date' => $form_state->getValue('date'),
                                     'value' => $line,
                                     'currency' => $form_state->getValue('currency'),
+                                    'fxRate' => NULL,
                                     'tax' => $tax,
                                 )
                         );

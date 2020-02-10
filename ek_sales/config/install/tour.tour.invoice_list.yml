@@ -1,6 +1,6 @@
 id: ek_sales.invoice_list
 module: ek_sales
-label: 'List invoices tour'
+label: 'Sales: list invoices tour'
 langcode: en
 routes:
   - route_name: ek_sales.invoices.list

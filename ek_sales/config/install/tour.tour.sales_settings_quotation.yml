@@ -1,6 +1,6 @@
 id: ek_sales.settings_quotation
 module: ek_sales
-label: 'Edit sales settings - quotation'
+label: 'Sales: edit sales settings - quotation'
 langcode: en
 routes:
   - route_name: ek_sales.quotations.settings

@@ -440,10 +440,9 @@ $pdf->Cell($lm+$b1+$b2+$b3+$b4+$b5,5, $head->currency . ' ' . $word ,0,1,'R');
  //SIGNATURE============================================================ 
 $x= $pdf->GetX(); 
 $y= $pdf->GetY();
-$bottom = $y+40 > 268 ? 268: $y+40;
-
     if($signature == 1) {
-
+        $adj = ($s_pos > 0) ? $s_pos : 40;
+        $bottom = ($y + $adj) > 268 ? 268: $y + $adj;
         if(isset($company->sign)) {
         $sign = \Drupal::service('file_system')->realpath($company->sign);
             if(file_exists($sign)) {
