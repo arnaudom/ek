@@ -421,9 +421,9 @@ $pdf->Cell($lm+$c1+$c2+$c3+$c4,5, $head->currency . ' ' . $word ,0,1,'R');
 //SIGNATURE============================================================ 
 $x= $pdf->GetX(); 
 $y= $pdf->GetY();
+$adj = ($s_pos > 0) ? $s_pos : 40;
+$bottom = ($y + $adj) > 268 ? 268: $y + $adj;
     if($signature == 1) {
-        $adj = ($s_pos > 0) ? $s_pos : 40;
-        $bottom = ($y + $adj) > 268 ? 268: $y + $adj;
         if(isset($company->sign)) {
             $sign = \Drupal::service('file_system')->realpath($company->sign);
             if(file_exists($sign)) {
@@ -431,7 +431,6 @@ $y= $pdf->GetY();
             }
         }
     }
-    
     
     $pdf->SetXY(20,$bottom);
     $pdf->Cell(60,3,t("Authorized signatory") ,'T',1);

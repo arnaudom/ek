@@ -93,8 +93,8 @@ class FilterPrint extends FormBase {
                 '#type' => 'number',
                 '#default_value' => isset($_SESSION['printfilter']['signature'][1]) ? $_SESSION['printfilter']['signature'][1] :40,
                 '#description' => t('Adjust vertical position'),
-                '#min' => 30,
-                '#max' => 90,
+                '#min' => 10,
+                '#max' => 100,
                 '#step' => 10,
                 '#states' => array(
                     'visible' =>  array(":input[name='signature']" => ['checked' => TRUE]),
