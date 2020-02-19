@@ -31,7 +31,7 @@ tips:
     attributes:
       data-id: abook-search-form
   conclusion:
-    id: introduction
+    id: conclusion
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-address-book">online documentation</a> for further help.'
