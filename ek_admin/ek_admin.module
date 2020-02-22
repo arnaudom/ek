@@ -474,6 +474,11 @@ function ek_admin_form_user_form_alter(&$form, \Drupal\Core\Form\FormStateInterf
             $form['account']['status']['#disabled'] = TRUE;
             $form['account']['roles']['#disabled'] = TRUE;
             $form['account']['mail']['#disabled'] = TRUE;
+            $form['account']['name']['#disabled'] = TRUE;
+        }
+        if($edit && \Drupal::currentUser()->id() != 1) {
+            //remove default administrator
+            unset($form['account']['roles']['#options']['administrator']);
         }
         
         if(\Drupal::currentUser()->id() != 1) {
