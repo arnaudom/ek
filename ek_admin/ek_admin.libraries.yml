@@ -12,7 +12,11 @@ classic_doc:
     theme:
       css/classic_doc.css: {} 
 
-
+frontpage:
+  version: 1
+  js:
+    js/home.js: {}
+      
 ek_admin.script.sn:
   version: 1
   js:

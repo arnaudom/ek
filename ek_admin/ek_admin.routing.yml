@@ -206,3 +206,11 @@ ek_admin.user_autocomplete:
     _controller: '\Drupal\ek_admin\Controller\AdminController::userAutocomplete'
   requirements:
     _permission: 'access_user_autocomplete'
+   
+    
+ek_admin.home:
+  path: '/ek_admin/feature-reset'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::featureReset'
+  requirements:
+    _access: 'TRUE'

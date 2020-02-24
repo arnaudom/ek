@@ -1,0 +1,24 @@
+{#
+# available data
+# welcome
+# api: items from modules
+#  includes: module, name, stamp, type, content, footer
+# 
+#}
+
+{{ items.welcome }}
+
+
+{% for ek in items.api %}    
+<div class="widget-home">    
+        <div class="home-title {{ ek.type }}"  id="{{ ek.module }}_{{ ek.name }}">
+          <span class='list_ico star_icon' title="mark as read"></span><h1 class="">{{ ek.module }}</h1></a>
+        </div>
+        <div class="home-content"  style='' id="{{ items.id }}">      
+          <div>{{ ek.content|raw }}</div>
+        </div>
+        <div class="home-footer">
+              <div>{{ ek.footer }}</div>
+        </div>
+</div>
+{% endfor %}

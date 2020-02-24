@@ -177,12 +177,39 @@ class AdminController extends ControllerBase {
      */
     public function isDefault() {
         $site_config = \Drupal::config('system.site');
-
+        $build = [];
         $build['welcome'] = array(
             '#markup' => '<h2>' . t('Welcome to @s management site.', array('@s' => $site_config->get('name'))) . '</h2>',
         );
-
-        return $build;
+        
+        $build['api']['0'] = [
+            'name' => 'default_homepage',
+            'module' => 'Admin',
+            'stamp' => 1582532880,
+            'type' => "info",
+            'content' => t('This is your home page. You will find here updates and news about application features. Click on the start to mark it as read.'),
+        ];
+        $api = \Drupal::moduleHandler()->invokeAll('ek_home');
+        $userData = \Drupal::service('user.data');
+        foreach ($api as $k => $v) {
+            $page  = $v['module'] . "_" . $v['name'];
+            if(!$userData->get('ek_admin', \Drupal::currentUser()->id(), $page)) {
+                $build['api'][$k] = $v; 
+            }
+        }
+      
+        return [
+            '#theme' => 'ek_admin_home',
+            '#items' => $build,
+            '#title' => t('Back office management'),
+            '#attached' => array(
+                'library' => array('ek_admin/ek_admin_css','ek_admin/frontpage'),
+            ),
+            '#cache' => [
+                'tags' => ['home'],
+                'contexts' => ['user'],
+            ],
+        ];
     }
 
     /**
@@ -230,9 +257,8 @@ class AdminController extends ControllerBase {
                  * Module Tables installed; Verify various settings data
                  */
                 $master = $this->currentUser()->hasPermission('administer site configuration');
-                if($master) {
-                    $build['updatephp'] = [ '#markup' => '<p>' . t('Always run the <a href=":update-php">update script</a> each time a module is updated.',
-                            [':update-php' => Url::fromRoute('system.db_update')->toString(),]) . '</p>'];
+                if ($master) {
+                    $build['updatephp'] = ['#markup' => '<p>' . t('Always run the <a href=":update-php">update script</a> each time a module is updated.', [':update-php' => Url::fromRoute('system.db_update')->toString(),]) . '</p>'];
                 }
                 //countries
                 $query = Database::getConnection('external_db', 'external_db')
@@ -240,7 +266,7 @@ class AdminController extends ControllerBase {
                         ->condition('status', 1);
                 $query->addExpression('Count(id)', 'count');
                 $Obj = $query->execute();
-                $count = $Obj->fetchObject()->count; 
+                $count = $Obj->fetchObject()->count;
                 if ($count < 1) {
                     $_SESSION['install'] = 1;
                     $link = Url::fromRoute('ek_admin.country.list', array(), array())->toString();
@@ -270,10 +296,10 @@ class AdminController extends ControllerBase {
                     $Type = array("", "kilo", "mega", "giga", "tera", "peta", "exa", "zetta", "yotta");
                     $Index = 0;
                     while ($f >= 1024) {
-                        $f/=1024;
+                        $f /= 1024;
                         $Index++;
                     }
-                    $build['space'] = round($f) . " " . $Type[$Index] . "bytes"; 
+                    $build['space'] = round($f) . " " . $Type[$Index] . "bytes";
                 } else {
                     $build['privateStream'] = t("Set private data folder in <a href='@c'>configuration</a>.", ['@c' => './admin/config/media/file-system']);
                     $build['space'] = 'n/a';
@@ -286,7 +312,7 @@ class AdminController extends ControllerBase {
                 //when system database is remote (from drupal installation server) the connection should be done via ssl
                 $ssl = db_query("SHOW STATUS LIKE 'Ssl_cipher'")->fetchAll();
                 $build['ssl'] = ($ssl[0]->Value) ? 1 : 0;
-                
+
 
 
                 //address book
@@ -440,24 +466,21 @@ class AdminController extends ControllerBase {
             }
 
             $api = \Drupal::moduleHandler()->invokeAll('ek_settings', [$coids]);
-            if(array_key_exists('documents', $api)){
+            if (array_key_exists('documents', $api)) {
                 $build['documents'] = $api['documents'];
             }
-            if(array_key_exists('finance', $api)){
+            if (array_key_exists('finance', $api)) {
                 $build['finance'] = $api['finance'];
             }
-            if(array_key_exists('logistics', $api)){
+            if (array_key_exists('logistics', $api)) {
                 $build['logistics'] = $api['logistics'];
             }
-            if(array_key_exists('projects', $api)){
+            if (array_key_exists('projects', $api)) {
                 $build['projects'] = $api['projects'];
             }
-            if(array_key_exists('sales', $api)){
+            if (array_key_exists('sales', $api)) {
                 $build['sales'] = $api['sales'];
-            }            
-            
-            
-            
+            }
         }
 
         return [
@@ -484,10 +507,6 @@ class AdminController extends ControllerBase {
         return $build;
     }
 
-    public function Access() {
-
-        return array(t('Administrate managed entities (companies, countries) and users access to those entities'));
-    }
 
     /**
      * @return company list
@@ -1045,15 +1064,15 @@ class AdminController extends ControllerBase {
         $alert = null;
 
         if ($terms == 1) {
-            $sn.= substr($text, 0, 4);
+            $sn .= substr($text, 0, 4);
         } elseif ($terms > 1) {
 
             for ($i = 0; $i <= 3; $i++) {
 
                 if ($a[$i] == '') {
-                    $sn.= '-';
+                    $sn .= '-';
                 } else {
-                    $sn.= substr($a[$i], 0, 1);
+                    $sn .= substr($a[$i], 0, 1);
                 }
             }
         }
@@ -1062,16 +1081,16 @@ class AdminController extends ControllerBase {
         //confirm entry
         $valid = '';
         for ($i = 0; $i <= $terms; $i++) {
-            $valid.= $a[$i] . '%';
+            $valid .= $a[$i] . '%';
         }
         $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_company', 'c')
-                        ->condition('name', $valid, 'LIKE');
-                $query->addExpression('Count(name)', 'count');
-                $Obj = $query->execute();
-        $count = $Obj->fetchObject()->count; 
-                
-        if ($count == 1){
+                ->select('ek_company', 'c')
+                ->condition('name', $valid, 'LIKE');
+        $query->addExpression('Count(name)', 'count');
+        $Obj = $query->execute();
+        $count = $Obj->fetchObject()->count;
+
+        if ($count == 1) {
             $alert = t('This name already exists in the records');
         }
 
@@ -1105,10 +1124,6 @@ class AdminController extends ControllerBase {
      */
 
     private function send_mail($params) {
-
-        //$site_config = \Drupal::config('system.site');
-        //$site_name = $site_config->get('name');
-        //$domain = $_SERVER['HTTP_HOST'];
 
         $query = "SELECT name, mail FROM `users_field_data` WHERE uid=:uid";
         $a = array(':uid' => $params['uid']);
@@ -1155,6 +1170,22 @@ class AdminController extends ControllerBase {
         } else {
             return FALSE;
         }
+    }
+    
+    /**
+     * reset read feature for home 
+     * @return Ajax response
+     *
+     */
+    public function featureReset(Request $request) {
+        $userData = \Drupal::service('user.data');
+        $q = $request->query->get('q');
+        if(!$userData->get('ek_admin', \Drupal::currentUser()->id(), $q)) {
+            $userData->set('ek_admin', \Drupal::currentUser()->id(), $q, 1);
+            return new JsonResponse(['action' => 1]);
+            
+        }
+        return new JsonResponse(['action' => 0]);
     }
 
 }

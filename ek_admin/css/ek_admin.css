@@ -207,3 +207,51 @@
     border-color: #f4daa6 #f4daa6 #f4daa6 transparent;
     background-color: #fdf8ed;
 }
+
+/*
+* Home dashboard
+*/
+
+.widget-home {
+    padding:10px;
+}
+.widget-home .info {
+    background-color: #93b3e4;
+}
+.widget-home .new {
+    background-color: #1AFF00;
+}
+.home-title {
+    width:50%;
+    border-radius:8px 8px 0px 0px;
+    -moz-border-radius:8px 8px 0px 0px; -webkit-border-radius:8px 8px 0px 0px;
+}
+
+.home-title span,h1,h2{
+    display: inline;
+}
+
+.home-content {
+    width:50%;
+    background-color: #ddd;
+}
+.home-content div {
+    padding:10px;
+}
+
+.home-footer {
+    width:50%;
+    border-radius:0px 0px 8px 8px;
+    -moz-border-radius:0px 0px 8px 8px; -webkit-border-radius:0px 0px 8px 8px;
+    background-color: #ddd;
+}
+.home-footer div {
+    padding:10px;
+}
+
+.star_icon:before {
+    content: "\f006";
+}
+.check_icon:before {
+    content: "\f046";
+}

@@ -6,6 +6,14 @@
  */
 
 /**
+ * Implements hook_install().
+ */
+function ek_admin_install() {
+    $config = \Drupal::service('config.factory')->getEditable('system.site');
+    $config->set('page.front', '/ek')->save();
+}
+
+/**
  * Implements hook_uninstall().
  */
 function ek_admin_uninstall() {
@@ -26,7 +34,8 @@ function ek_admin_uninstall() {
         \Drupal::configFactory()->getEditable($config)->delete();
     }    
     
-    
+  $config = \Drupal::service('config.factory')->getEditable('system.site');
+  $config->set('page.front', '/node/1')->save();
   // Clear data out of the cache.
   \Drupal::cache('data')->deleteAll();
 }
@@ -84,4 +93,12 @@ function ek_admin_update_8005() {
 */
 function ek_admin_update_8006() {
     \Drupal::service('router.builder')->rebuild();
+}
+
+/**
+ * Home page
+*/
+function ek_admin_update_8007() {
+    \Drupal::service('router.builder')->rebuild();
+    \Drupal::cache('data')->deleteAll();
 }
