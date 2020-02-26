@@ -1,6 +1,8 @@
 administrate_documents:
   title: 'Administrate documents parameters' 
 manage_documents:
-  title: 'Access documents management'
+  title: 'Access own and shared documents'
+view_common_documents:
+  title: 'View common documents'
 manage_common_documents:
   title: 'Edit common documents; I.e delete.'

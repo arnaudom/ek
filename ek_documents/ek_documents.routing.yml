@@ -42,7 +42,7 @@ ek_documents_documents_common:
     _title: 'Documents'
     _controller: '\Drupal\ek_documents\Controller\DocumentsController::documentsCommon'
   requirements:
-    _permission: 'manage_documents'
+    _permission: 'view_common_documents'
     
 ek_documents_documents_load:
   path: '/documents/load'
