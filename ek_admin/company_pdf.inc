@@ -33,7 +33,7 @@ $pdf = $pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, '
 // set document information
 
 $pdf->SetCreator($company['name']);
-$pdf->SetAuthor(\Drupal::currentUser()->getUsername());
+$pdf->SetAuthor(\Drupal::currentUser()->getAccountName());
 $pdf->SetTitle(t('Company') . ' ' . $id);
 $pdf->SetSubject(t('Company'));
 $pdf->SetKeywords(t('Company'));

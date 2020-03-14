@@ -96,18 +96,15 @@ class UploadForm extends FormBase {
    */  
   public function saveFile(array &$form, FormStateInterface $form_state) {
 
-       
       //upload
       //function file_save_upload($form_field_name, $validators = array(), $destination = FALSE, $delta = NULL, $replace = FILE_EXISTS_RENAME)
       $extensions = 'png gif jpg jpeg bmp txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip';
       $validators = array( 'file_validate_extensions' => array($extensions));
       $dir = "private://admin/company". $form_state->getValue('coid') ."/documents"  ;
-      file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+      \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
       $file = file_save_upload("upload_doc" , $validators, $dir , 0 , FILE_EXISTS_RENAME);
          
       if ($file) {
-    
-               
           $file->setPermanent();
           $file->save(); 
           $uri = $file->getFileUri();
@@ -130,7 +127,7 @@ class UploadForm extends FormBase {
                   ->execute();
 
         
-   $log = 'user ' . \Drupal::currentUser()->id() .'|'. \Drupal::currentUser()->getUsername() .'|upload|'. $filename;
+   $log = 'user ' . \Drupal::currentUser()->id() .'|'. \Drupal::currentUser()->getAccountName() .'|upload|'. $filename;
    \Drupal::logger('ek_company_documents')->notice( $log );  
    $form['message']['#markup'] = t('file uploaded @f', array('@f' => $filename ) );   
       

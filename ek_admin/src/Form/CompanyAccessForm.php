@@ -53,12 +53,17 @@ class CompanyAccessForm extends FormBase {
         );
 
         if ($form_state->getValue('coid') <> '') {
-
-            $query = "SELECT access from {ek_company} where id=:id";
-            $list_members = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $form_state->getValue('coid')))->fetchField();
+            
+            $query = Database::getConnection('external_db', 'external_db')->select('ek_company', 'c');
+            $query->fields('c', ['access']);
+            $query->condition('id', $form_state->getValue('coid'));
+            $list_members = $query->execute()->fetchField();
             $list = unserialize($list_members);
-            $query = 'SELECT uid,name from {users_field_data} where uid>:u order by name';
-            $users = db_query($query, array(':u' => 0));
+            $query = Database::getConnection()->select('users_field_data', 'u');
+            $query->fields('u', ['uid', 'name']);
+            $query->condition('uid', 0, '>');
+            $query->orderBy('name');
+            $users = $query->execute();
             $default = explode(',', $list);
         }
         
@@ -148,7 +153,7 @@ class CompanyAccessForm extends FormBase {
         $company = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT name from {ek_company} WHERE id=:id", [':id' => $form_state->getValue('coid')])
                 ->fetchField();
-        $name = \Drupal::currentUser()->getUsername();
+        $name = \Drupal::currentUser()->getAccountName();
         $a = array('@u' => $name, '@c' => $company, '@d' => $access);
         $log = t("User @u has given access to company @c for users id @d", $a);
         \Drupal::logger('ek_admin')->notice($log);

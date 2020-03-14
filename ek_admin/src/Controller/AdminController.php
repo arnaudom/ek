@@ -14,12 +14,13 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Cache\Cache;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Ajax\RemoveCommand;
+use Drupal\Core\Ajax\CloseDialogCommand;
 use Drupal\Core\State\StateInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -60,14 +61,14 @@ class AdminController extends ControllerBase {
      *
      * @var \Drupal\Core\Entity\Query\QueryFactory
      */
-    protected $entityQuery;
+    //protected $entityQuery;
 
     /**
      * The entity manager service.
      *
-     * @var \Drupal\Core\Entity\EntityManagerInterface
+     * @var \Drupal\Core\Entity\EntityTypeManager
      */
-    protected $entityManager;
+    protected $entityTypeManager;
 
     /**
      * Stores the state storage service.
@@ -78,7 +79,12 @@ class AdminController extends ControllerBase {
 
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('database'), $container->get('form_builder'), $container->get('module_handler'), $container->get('entity.manager'), $container->get('entity.query'), $container->get('state')
+                $container->get('database'),
+                $container->get('form_builder'),
+                $container->get('module_handler'),
+                $container->get('entity_type.manager'),
+                //$container->get('entity.query'),
+                $container->get('state')
         );
     }
 
@@ -94,12 +100,12 @@ class AdminController extends ControllerBase {
      * @param \Drupal\Core\Entity\Query\QueryFactory $entity_query
      *   The entity query factory.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler, EntityManagerInterface $entity_manager, QueryFactory $entity_query, StateInterface $state) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler, EntityTypeManager  $entity_manager, StateInterface $state) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
-        $this->entityManager = $entity_manager;
-        $this->entityQuery = $entity_query;
+        $this->entityTypeManager = $entity_manager;
+        //$this->entityQuery = $entity_query;
         $this->state = $state;
     }
 
@@ -310,8 +316,10 @@ class AdminController extends ControllerBase {
 
                 //verify if the connection to system DB is secured
                 //when system database is remote (from drupal installation server) the connection should be done via ssl
-                $ssl = db_query("SHOW STATUS LIKE 'Ssl_cipher'")->fetchAll();
-                $build['ssl'] = ($ssl[0]->Value) ? 1 : 0;
+                $query = "SHOW STATUS LIKE 'Ssl_cipher'";
+                $ssl = Database::getConnection()
+                                    ->query($query)->fetchField();
+                $build['ssl'] = ($ssl) ? 1 : 0;
 
 
 
@@ -818,7 +826,7 @@ class AdminController extends ControllerBase {
         $fields = array(
             'fid' => 0,
             'uri' => date('U'),
-            'comment' => t('deleted by') . ' ' . \Drupal::currentUser()->getUsername(),
+            'comment' => t('deleted by') . ' ' . \Drupal::currentUser()->getAccountName(),
             'date' => time()
         );
         $delete = Database::getConnection('external_db', 'external_db')
@@ -826,9 +834,18 @@ class AdminController extends ControllerBase {
                 ->fields($fields)->condition('id', $id)
                 ->execute();
         if ($delete) {
-            $query = "SELECT * FROM {file_managed} WHERE uri=:u";
-            $file = db_query($query, [':u' => $p->uri])->fetchObject();
-            file_delete($file->fid);
+            $query = Database::getConnection()->select('file_managed', 'f');
+            $query->fields('f');
+            $query->condition('uri', $p->uri);
+            $file = $query->execute()->fetchObject();
+            //$query = "SELECT * FROM {file_managed} WHERE uri=:u";
+            //$file = db_query($query, [':u' => $p->uri])->fetchObject();
+            //file_delete($file->fid);
+            if($file->fid) {
+                $obj = \Drupal\file\Entity\File::load($file->fid);
+                $obj->setTemporary();
+                $obj->save();
+            }
         }
 
 
@@ -837,6 +854,7 @@ class AdminController extends ControllerBase {
 
         $response = new AjaxResponse();
         $response->addCommand(new RemoveCommand('#ad' . $id));
+        $response->addCommand(new CloseDialogCommand());
         return $response;
     }
 
@@ -1104,15 +1122,16 @@ class AdminController extends ControllerBase {
      */
     public function userAutocomplete(Request $request) {
         $q = $request->query->get('q');
-        $uids = $this->entityQuery->get('user')
+        $matches = [];
+        $uids = $this->entityTypeManager->getStorage('user')->getQuery()
                 ->condition('name', $q, 'STARTS_WITH')
                 ->range(0, 10)
                 ->execute();
-
-        $controller = $this->entityManager->getStorage('user');
+        
+        $controller = $this->entityTypeManager->getStorage('user');
         foreach ($controller->loadMultiple($uids) as $account) {
-            if ($account->getUsername() != 'Anonymous') {
-                $matches[] = array('value' => $account->getUsername(), 'label' => $account->getUsername());
+            if (!$account->isAnonymous()) {
+                $matches[] = array('value' => $account->getAccountName(), 'label' => $account->getAccountName());
             }
         }
 
@@ -1125,50 +1144,56 @@ class AdminController extends ControllerBase {
 
     private function send_mail($params) {
 
-        $query = "SELECT name, mail FROM `users_field_data` WHERE uid=:uid";
-        $a = array(':uid' => $params['uid']);
-        $data = db_query($query, $a);
-        $row = $data->fetchObject();
-        $params['options']['name'] = $row->name;
-        $mail = $row->mail;
+        $u = \Drupal\user\Entity\User::load($params['uid']);
+        //$query = "SELECT name, mail FROM `users_field_data` WHERE uid=:uid";
+        //$a = array(':uid' => $params['uid']);
+        //$data = db_query($query, $a);
+        //$row = $data->fetchObject();
+        if($u) {
+            $params['options']['name'] = $u->getAccountName();
+            $mail = $u->getEmail();
 
-        $params['options']['subject'] = $params['subject'];
+            $params['options']['subject'] = $params['subject'];
 
-        if ($params['type'] == 'status') {
-            $template = 'project_status';
-            $params['options']['data'] = $params['data'];
-        } elseif ($params['type'] == 'salert') {
-            $template = 'sales_alert';
-            $params['options']['data'] = $params['data'];
-        } elseif ($params['type'] == 'hr_date') {
-            $template = 'hr_date';
-            $params['options']['data'] = $params['data'];
-        } else { //default
-            $template = 'tasks';
-            $params['options']['link'] = $params['link'];
-            $params['options']['serial'] = $params['serial'];
-            $params['options']['task'] = $params['task'];
-            $params['options']['end'] = $params['end'];
-            $params['options']['alert'] = $params['alert'];
+            if ($params['type'] == 'status') {
+                $template = 'project_status';
+                $params['options']['data'] = $params['data'];
+            } elseif ($params['type'] == 'salert') {
+                $template = 'sales_alert';
+                $params['options']['data'] = $params['data'];
+            } elseif ($params['type'] == 'hr_date') {
+                $template = 'hr_date';
+                $params['options']['data'] = $params['data'];
+            } else { //default
+                $template = 'tasks';
+                $params['options']['link'] = $params['link'];
+                $params['options']['serial'] = $params['serial'];
+                $params['options']['task'] = $params['task'];
+                $params['options']['end'] = $params['end'];
+                $params['options']['alert'] = $params['alert'];
 
-            $query = "SELECT name, mail FROM `users_field_data` WHERE uid=:uid";
-            $a = array(':uid' => $params['assign']);
-            $data = db_query($query, $a);
-            $row = $data->fetchObject();
-            $params['options']['assign_name'] = $row->name;
-        }
-
-        if ($mail) {
-            if ($target_user = user_load_by_mail($mail)) {
-                $target_langcode = $target_user->getPreferredLangcode();
-            } else {
-                $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
+                $a = \Drupal\user\Entity\User::load($params['uid']);
+                $params['options']['assign_name'] = '';
+                if($a) {
+                    $params['options']['assign_name'] = $a->getAccountName();
+                }
+                
+                
             }
-            $send = \Drupal::service('plugin.manager.mail')->mail(
-                    'ek_admin', $template, trim($mail), $target_langcode, $params, "do_not_reply@" . $_SERVER['HTTP_HOST'], TRUE
-            );
-        } else {
-            return FALSE;
+
+            if ($mail) {
+                if ($target_user = user_load_by_mail($mail)) {
+                    $target_langcode = $target_user->getPreferredLangcode();
+                } else {
+                    $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
+                }
+                $send = \Drupal::service('plugin.manager.mail')->mail(
+                        'ek_admin', $template, trim($mail), $target_langcode, $params, "do_not_reply@" . $_SERVER['HTTP_HOST'], TRUE
+                );
+            } else {
+                return FALSE;
+            }
+        
         }
     }
     

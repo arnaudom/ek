@@ -7,18 +7,42 @@
 
 namespace Drupal\ek_admin\Form;
 
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Flood\FloodInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Extension\ModuleHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Database\Database;
+use Drupal\user\Entity\User;
 
 /**
  * Provides form to manage access.
  */
 class CountryAccessForm extends FormBase {
 
+/**
+     * The module handler.
+     *
+     * @var \Drupal\Core\Extension\ModuleHandler
+     */
+    protected $moduleHandler;
+
+    /**
+     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+     *   The module handler.
+     */
+    public function __construct(ModuleHandler $module_handler) {
+        $this->moduleHandler = $module_handler;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('module_handler')
+        );
+    }
+    
   /**
    * {@inheritdoc}
    */
@@ -56,16 +80,19 @@ class CountryAccessForm extends FormBase {
                 'wrapper' => 'replace_textfield_div',
             ),
         );
-
-
-
+        
         if ($form_state->getValue('cid') <> '') {
-            $query = "SELECT access from {ek_country} where id=:id";
-            $list_members = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $form_state->getValue('cid')))->fetchField();
+            
+            $query = Database::getConnection('external_db', 'external_db')->select('ek_country', 'c');
+            $query->fields('c', ['access']);
+            $query->condition('id', $form_state->getValue('cid'));
+            $list_members = $query->execute()->fetchField();
             $list = unserialize($list_members);
-            $query = 'SELECT uid,name from {users_field_data} where uid>:u order by name';
-            $users = db_query($query, array(':u' => 0));
-
+            $query = Database::getConnection()->select('users_field_data', 'u');
+            $query->fields('u', ['uid', 'name']);
+            $query->condition('uid', 0, '>');
+            $query->orderBy('name');
+            $users = $query->execute();
             $default = explode(',', $list);
         }
 
@@ -115,6 +142,47 @@ class CountryAccessForm extends FormBase {
         if (!is_numeric($form_state->getValue('cid'))) {
             $form_state->setErrorByName('cid', $this->t('No country selected'));
         }
+        
+        if ($this->moduleHandler->moduleExists('ek_projects')) {
+            $sort = [];
+            $list = $form_state->getValue('list');
+            foreach ($list[$form_state->getValue('cid')] as $key => $value) {
+                if ($value == 0) {
+                    //check if project access for removed user
+                    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project', 'p');
+                    $query->fields('p', ['id', 'pcode']);
+                    $query->condition('cid', $form_state->getValue('cid'));
+                    $or = $query->orConditionGroup()
+                        ->condition('owner', $key)
+                        ->condition('share', "%," . $key . "%", 'like');
+                    $query->condition($or);
+                    $data = $query->execute();
+                    while($d = $data->fetchObject()) {
+                        $sort[$key][] = $d->pcode;
+                    }
+                }
+            }
+            
+            if(!empty($sort)) {
+                $list = "";
+                foreach($sort as $k => $v) {
+                    $u = User::load($k);
+                    $pcode = "";
+                    foreach($v as $c => $code) {
+                        $pcode .= \Drupal\ek_projects\ProjectData::geturl($code,0,0,1) . " ";
+                    }
+                    $list .= "<li>" . $u->getAccountName() . ": " . $pcode . "</li>";
+                }
+                $render = [
+                    '#markup' =>"<ul>" . $list . "</ul>",
+                ];
+                $list = \Drupal::service('renderer')->render($render);
+                $form_state->setErrorByName('cid', 
+                        $this->t('Some users need to be removed from project(s) before country access @l', ['@l' => $list]));
+            }
+            
+        }
     }
 
   /**
@@ -125,7 +193,6 @@ class CountryAccessForm extends FormBase {
         $list = $form_state->getValue('list');
         $access = array();
         foreach ($list[$form_state->getValue('cid')] as $key => $value) {
-
             if ($value == 1) {
                 $access[] = $key;
             }
@@ -149,7 +216,7 @@ class CountryAccessForm extends FormBase {
         $cuntry = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT name from {ek_country} WHERE id=:id", [':id' => $form_state->getValue('cid')])
                 ->fetchField();
-        $name = \Drupal::currentUser()->getUsername();
+        $name = \Drupal::currentUser()->getAccountName();
         $a = array('@u' => $name, '@c' => $cuntry, '@d' => $access);
         $log = t("User @u has given access to country @c for users id @d", $a);
         \Drupal::logger('ek_admin')->notice($log);

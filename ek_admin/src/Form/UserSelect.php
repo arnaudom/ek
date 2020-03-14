@@ -9,6 +9,7 @@ namespace Drupal\ek_admin\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Database\Database;
 
 
 /**
@@ -45,9 +46,11 @@ class UserSelect extends FormBase {
    * {@inheritdoc}
    */    
     public function validateForm(array &$form, FormStateInterface $form_state) {
-        $query = "SELECT uid FROM {users_field_data} WHERE name = :n";
-        $data = db_query($query, [':n' => $form_state->getValue('name')])
-                ->fetchField();
+        
+        $query = Database::getConnection()->select('users_field_data', 'u');
+        $query->fields('u', ['uid']);
+        $query->condition('name', $form_state->getValue('name'));
+        $data = $query->execute()->fetchField();
         if ($data) {
             $form_state->setValue('id', $data);
         } else {

@@ -206,7 +206,7 @@ if($this->moduleHandler->moduleExists('ek_address_book')) {
         case 'expenses_memo' :
         include_once drupal_get_path('module', 'ek_finance').'/manage_pdf_output.inc';
         $file = \Drupal::config('system.file')->get('path.temporary') . "/" . str_replace("/","_", $head->serial ) . ".pdf";
-        $options['user'] = \Drupal::currentUser()->getUsername();
+        $options['user'] = \Drupal::currentUser()->getAccountName();
         $options['filename'] = str_replace("/","_", $head->serial ) . ".pdf";
         $options['origin'] = 'memo';        
         break;
@@ -218,7 +218,7 @@ if($this->moduleHandler->moduleExists('ek_address_book')) {
         include_once drupal_get_path('module', 'ek_sales').'/manage_print_output.inc';
 
         $file = \Drupal::config('system.file')->get('path.temporary') . "/" . str_replace("/","_", $head->serial ) . ".pdf";
-        $options['user'] = \Drupal::currentUser()->getUsername();
+        $options['user'] = \Drupal::currentUser()->getAccountName();
         $options['filename'] = str_replace("/","_", $head->serial ) . ".pdf";
         $options['origin'] = 'sales';
         if(!NULL == $form_state->getValue('stripe_add') && $form_state->getValue('stripe_add') == 1){
@@ -234,7 +234,7 @@ if($this->moduleHandler->moduleExists('ek_address_book')) {
         include_once drupal_get_path('module', 'ek_logistics').'/manage_pdf_output.inc';
         $file = \Drupal::config('system.file')->get('path.temporary') . "/" . str_replace("/","_", $head->serial ) . ".pdf";
         
-        $options['user'] = \Drupal::currentUser()->getUsername();
+        $options['user'] = \Drupal::currentUser()->getAccountName();
         $options['filename'] = str_replace("/","_", $head->serial ) . ".pdf";
         $options['origin'] = 'logistics';
         break;      
@@ -247,7 +247,7 @@ if($this->moduleHandler->moduleExists('ek_address_book')) {
                   ->query($query, array(':id' => $ids[0]))
                   ->fetchObject();
         $file = $data->uri;
-        $options['user'] = \Drupal::currentUser()->getUsername();
+        $options['user'] = \Drupal::currentUser()->getAccountName();
         $options['filename'] = $data->filename;
         $options['origin'] = 'project_documents';
         $options['pcode'] = $data->pcode;

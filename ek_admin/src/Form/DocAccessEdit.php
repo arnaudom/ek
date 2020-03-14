@@ -31,12 +31,19 @@ class DocAccessEdit extends FormBase {
  */
   public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $type = NULL) {
 
-  if($type == 'company_doc') {
-    $query = "SELECT share,deny,coid FROM {ek_company_documents} WHERE id=:id";
-    
-  } 
-  $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
-  $users = db_query('SELECT uid,name FROM {users_field_data} WHERE uid<>0 order by name')->fetchAllKeyed();
+    if($type == 'company_doc') {
+      $query = "SELECT share,deny,coid FROM {ek_company_documents} WHERE id=:id";
+
+    } 
+    $data = Database::getConnection('external_db', 'external_db')
+            ->query($query, array(':id' => $id))
+            ->fetchObject();
+
+    $query = Database::getConnection()->select('users_field_data', 'u');
+    $query->fields('u', ['uid', 'name']);
+    $query->condition('uid', 0 , '<>');
+    $query->orderBy('name');
+    $users = $query->execute()->fetchAllKeyed();
     
     if($data->share == 0) {
     //no custom settings
@@ -99,8 +106,6 @@ class DocAccessEdit extends FormBase {
     }
  
     return $form;  
-         
-  
   
   }
 
@@ -116,16 +121,20 @@ class DocAccessEdit extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
   
-  //set a security check in order to prevent any user to change data except the owner
-  if($form_state->getValue('type') == 'company_doc') {
-    $query = "SELECT share,deny,id FROM {ek_company_documents} WHERE id=:id";
-  } 
+    //set a security check in order to prevent any user to change data except the owner
+    if($form_state->getValue('type') == 'company_doc') {
+      $query = "SELECT share,deny,id FROM {ek_company_documents} WHERE id=:id";
+    } 
     $data = Database::getConnection('external_db', 'external_db')
     ->query($query, array(':id' => $form_state->getValue('for_id')))->fetchObject();
     
     
     //owner can edit data
-    $users = db_query('SELECT uid,name FROM {users_field_data} WHERE uid<>0');
+    $query = Database::getConnection()->select('users_field_data', 'u');
+    $query->fields('u', ['uid', 'name']);
+    $query->condition('uid', 0 , '<>');
+    $users = $query->execute();
+    
     $share = explode(',',$data->share);
     $deny = explode(',', $data->deny);
     $new_share = array();

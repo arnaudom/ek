@@ -76,7 +76,7 @@ function ek_admin_file_download($uri) {
                 ->query($query, $a)->fetchObject();
         $uid = \Drupal::currentUser()->id();
         $now = time();
-        $name = \Drupal::currentUser()->getUsername();
+        $name = \Drupal::currentUser()->getAccountName();
         $access = AccessCheck::GetCompanyAccess($file->coid);   
         
         if(in_array($uid, $access[$file->coid]) && $file->deny == '0') {
@@ -291,7 +291,7 @@ function mail_attachment($email, $file, $message = null , $options = null) {
             $dom = explode("/" , $GLOBALS['base_url']);
             $currentuserMail = "no_reply@" . $dom[2];
         } else {
-            $name = \Drupal::currentUser()->getUsername();
+            $name = \Drupal::currentUser()->getAccountName();
         }
         $filename_parts = explode('/', $file);
         $filenames = array_reverse($filename_parts); // Remove file basename.

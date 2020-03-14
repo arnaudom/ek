@@ -18,8 +18,12 @@ class NewUserSubscriber implements EventSubscriberInterface {
      * Verify number of uid
      */
       if($route == 'user.admin_create' || $route == 'user.register') {
-        $query = "SELECT count(uid) FROM {users} WHERE uid>:id";
-        $users = db_query($query, array(':id' => 1))->fetchField();
+        
+        $query = Database::getConnection()->select('users', 'u');
+        $query->addExpression('Count(uid)', 'count');
+        $query->condition('uid', 1, '>');
+        $Obj = $query->execute();
+        $users = $Obj->fetchObject()->count; 
         $settings = new GlobalSettings(0);
         
         if($settings->get('validation_url') != ''){

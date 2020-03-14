@@ -66,13 +66,17 @@
         }
     ],
     "require": {
-        "phpoffice/phpspreadsheet": "^1.8",
-        "tecnickcom/tcpdf": "6.2.*",
+        "drupal/jquery_ui": "^1.2",
+        "drupal/jquery_ui_slider": "^1.0",
+        "drupal/jquery_ui_droppable": "^1.0",
+        "drupal/jquery_ui_draggable": "^1.0",
+        "fullcalendar/fullcalendar" : "3.10.0",
         "jquery/multi-select" : "0.9.12",
         "jquery/chosen" : "1.8.7",
         "jquery/tageditor" : "1.0.20",
-        "fullcalendar/fullcalendar" : "3.10.0",
+        "phpoffice/phpspreadsheet": "^1.8",
         "qtip2/qtip2" : "3.0.3",
+        "tecnickcom/tcpdf": "6.2.*",
         "vench/vs-word": "^1.0"
     }
 
