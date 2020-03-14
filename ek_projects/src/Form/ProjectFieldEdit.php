@@ -61,8 +61,7 @@ class ProjectFieldEdit extends FormBase {
             case 'owner' :
                 $query = "SELECT owner FROM {ek_project} WHERE id=:id";
                 $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
-                $query = 'SELECT uid,name FROM {users_field_data} WHERE status=:s order by name';
-                $users = db_query($query, [':s' => 1])->fetchAllKeyed();
+                $users = \Drupal\ek_admin\Access\AccessCheck::listUsers(1);
                 $list = array();
 
                 $form['value'] = array(
@@ -140,13 +139,6 @@ class ProjectFieldEdit extends FormBase {
                 '#size' => 11,
                 '#title' => t('date'),
                 '#default_value' => $data,
-                /*
-                '#attributes' => array('class' => array('date')), 
-                '#attached' => array(
-                    'library' => array(
-                      'core/jquery.ui.datepicker',
-                    ),
-                  ),    */     
                 ); 
 
                 break;
@@ -159,12 +151,11 @@ class ProjectFieldEdit extends FormBase {
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
-                $query = 'SELECT uid,name FROM {users_field_data} WHERE status=:s order by name';
-                $users = db_query($query, [':s' => 1]);
+                $users = \Drupal\ek_admin\Access\AccessCheck::listUsers(1);
                 $list = array();
-                while ($u = $users->fetchObject()) {
-                    if (ProjectData::validate_access($id, $u->uid)) {
-                        $list[$u->name] = $u->name;
+                foreach($users as $uid => $name) {
+                    if (ProjectData::validate_access($id, $uid)) {
+                        $list[$name] = $name;
                     }
                 }
 
@@ -257,12 +248,7 @@ class ProjectFieldEdit extends FormBase {
                     '#size' => 11,
                     '#title' => t('date'),
                     '#default_value' => $data,
-                    //'#attributes' => array('class' => array('date')),
-                    '#attached' => array(
-                    'library' => array(
-                      'core/jquery.ui.datepicker',
-                    ),
-                  ),
+                    
                 );
                 break;
             case 'supplier_offer':
@@ -375,12 +361,7 @@ class ProjectFieldEdit extends FormBase {
                     '#size' => 11,
                     '#title' => t('date'),
                     '#default_value' => $data,
-                    //'#attributes' => array('class' => array('date')),
-                    '#attached' => array(
-                    'library' => array(
-                      'core/jquery.ui.datepicker',
-                     ),
-                    ),
+                    
                 );
 
                 break;
@@ -529,7 +510,7 @@ class ProjectFieldEdit extends FormBase {
             case 'project_description' :
             case 'project_comment' :
 
-                $text = Xss::filter($form_state->getValue('text')) . ' [' . \Drupal::currentUser()->getUsername() . '] - ' . date('Y-m-d');
+                $text = Xss::filter($form_state->getValue('text')) . ' [' . \Drupal::currentUser()->getAccountName() . '] - ' . date('Y-m-d');
                 $fields = array(
                     $form_state->getValue('field') => $text
                 );
@@ -639,7 +620,7 @@ class ProjectFieldEdit extends FormBase {
                 break;
 
             case 'comment' :
-                $text = Xss::filter($form_state->getValue('text')) . ' [' . \Drupal::currentUser()->getUsername() . '] - ' . date('Y-m-d');
+                $text = Xss::filter($form_state->getValue('text')) . ' [' . \Drupal::currentUser()->getAccountName() . '] - ' . date('Y-m-d');
                 $fields = array(
                     $form_state->getValue('field') => $text
                 );

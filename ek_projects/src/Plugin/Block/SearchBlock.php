@@ -16,7 +16,7 @@ use Drupal\Core\Access\AccessResult;
  * @Block(
  *   id = "ek_project_search_block",
  *   admin_label = @Translation("Search projects"),
- *   category = @Translation("Ek projects Widgets")
+ *   category = @Translation("Ek projects block")
  *   
  * )
  */

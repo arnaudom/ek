@@ -242,10 +242,12 @@ if($data->pcode) {
     
         foreach ($who as $w) {
         if (trim($w) != NULL) {
-           
-          $query = "SELECT name from {users_field_data} WHERE uid=:u";
-          $name = db_query($query, array(':u' => $w))->fetchField();
-            $list .= $name . ',';
+          //$query = "SELECT name from {users_field_data} WHERE uid=:u";
+          //$name = db_query($query, array(':u' => $w))->fetchField();
+            $acc = \Drupal\user\Entity\User::load($w);
+            if($acc) {
+                $list .= $acc->getAccountName() . ',';
+            }
           }
         }  
     } else {
@@ -360,15 +362,18 @@ if($data->pcode) {
            $notify_who = '';
            foreach ($users as $u) {
            if (trim($u) != '') {
-             //check it is a registered user 
-             $query = "SELECT uid from {users_field_data} WHERE name=:u";
-             $id = db_query($query, array(':u' => trim($u)))->fetchField();
-             if ($id == '') {
-                 $error.= $u . ',';
-                } else {
-                    $notify_who .= $id . ',';
+                //check it is a registered user 
+                
+                $query = Database::getConnection()->select('users_field_data', 'u');
+                $query->fields('u', ['uid']);
+                $query->condition('name', trim($u));
+                $id = $query->execute()->fetchField();
+                if ($id == '') {
+                    $error.= $u . ',';
+                   } else {
+                       $notify_who .= $id . ',';
+                   }
                 }
-             }
            }  
 
            if($error <> '') {
@@ -453,8 +458,13 @@ if($data->pcode) {
                        ->execute();            
                }
 
-                $query = "SELECT name from {users_field_data} WHERE uid=:u";
-                $name = db_query($query, array(':u' => $form_state->getValue('uid') ))->fetchField();
+                //$query = "SELECT name from {users_field_data} WHERE uid=:u";
+                //$name = db_query($query, array(':u' => $form_state->getValue('uid') ))->fetchField();
+                $acc = \Drupal\user\Entity\User::load($form_state->getValue('uid'));
+                $name = '';
+                if($acc) {
+                    $name = $acc->getAccountName();
+                }
                 $param = serialize (
                 array (
                   'id' => $form_state->getValue('for_pid'),

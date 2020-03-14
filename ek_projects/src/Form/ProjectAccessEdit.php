@@ -38,8 +38,6 @@ class ProjectAccessEdit extends FormBase {
             $query->fields('p', ['share', 'deny','cid','pcode','owner']);
             $query->condition('id', $id);
             
-            /*
-            $query = "SELECT share,deny,cid,pcode,owner FROM {ek_project} WHERE id=:id";*/
         } else {
             //select data from documents
             $query = Database::getConnection('external_db', 'external_db')
@@ -51,14 +49,14 @@ class ProjectAccessEdit extends FormBase {
             
             
         }
-        $data = $query->execute()->fetchObject();
         
+        $data = $query->execute()->fetchObject();
         
         $users = [];
             foreach (\Drupal\user\Entity\User::loadMultiple() as $account) {
                 if($account->isActive() && $account->id() != $data->owner && $account->hasPermission('view_project')) {                 
                         $roles = $account->getRoles();
-                        $users[$account->id()] = $account->getUserName() . " [" . $roles[1] . "]";
+                        $users[$account->id()] = $account->getAccountName() . " [" . $roles[1] . "]";
                     }
             }
 
@@ -160,7 +158,10 @@ class ProjectAccessEdit extends FormBase {
         if (\Drupal::currentUser()->id() == $data->owner) {
             //owner can edit data
             $owner = 1;
-            $users = db_query('SELECT uid,name FROM {users_field_data} WHERE uid<> :u', [':u' => 0]);
+            $query = Database::getConnection()->select('users_field_data', 'u');
+            $query->fields('u', ['uid','name']);
+            $query->condition('uid',0,'<>');
+            $users = $query->execute();
             $share = explode(',', $data->share);
             $deny = explode(',', $data->deny);
             $new_share = array();

@@ -19,7 +19,7 @@ use Drupal\ek_projects\ProjectData;
  * @Block(
  *   id = "ek_project_last_projects_block",
  *   admin_label = @Translation("Last created projects"),
- *   category = @Translation("Ek projects Widgets")
+ *   category = @Translation("Ek projects block")
  * )
  */
 class LastCreatedProjectsBlock extends BlockBase {

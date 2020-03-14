@@ -20,7 +20,7 @@ use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Ajax\CloseDialogCommand;
 use Drupal\Core\Ajax\HtmlCommand;
-use Drupal\block\Entity\Block;
+use Drupal\Core\Entity\EntityTypeManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -54,11 +54,21 @@ class ProjectController extends ControllerBase {
     protected $formBuilder;
 
     /**
+     * The entity manager service.
+     *
+     * @var \Drupal\Core\Entity\EntityTypeManager
+     */
+    protected $entityTypeManager;
+    
+    /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
+                $container->get('database'), 
+                $container->get('form_builder'), 
+                $container->get('module_handler'),
+                $container->get('entity_type.manager')
         );
     }
 
@@ -69,11 +79,14 @@ class ProjectController extends ControllerBase {
      *   A database connection.
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
+     * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+     *   The entity manager.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler, EntityTypeManager  $entity_manager) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
+        $this->entityTypeManager = $entity_manager;
     }
 
     /**
@@ -407,8 +420,13 @@ class ProjectController extends ControllerBase {
              * convert last view data
              */
             $last = explode('|', $data['project'][0]->last_modified);
-            $query = "SELECT name from {users_field_data} WHERE uid=:uid";
-            $name = db_query($query, array(':uid' => $last[1]))->fetchField();
+            //$query = "SELECT name from {users_field_data} WHERE uid=:uid";
+            //$name = db_query($query, array(':uid' => $last[1]))->fetchField();
+            $acc = \Drupal\user\Entity\User::load($last[1]);
+            $name = '';
+            if($acc) {
+                $name = $acc->getDisplayName();
+            }
             $on = date('l jS \of F Y h:i A', $last[0]);
             $data['project'][0]->last_modified = $name . ' (' . t('on') . ' ' . $on . ')';
             //update new last view
@@ -429,7 +447,7 @@ class ProjectController extends ControllerBase {
                     ->insert('ek_project_tracker')->fields($fields)->execute();
 
             //system log view
-            $a = array('@u' => \Drupal::currentUser()->getUsername(), '@d' => $pcode);
+            $a = array('@u' => \Drupal::currentUser()->getAccountName(), '@d' => $pcode);
             $log = t("User @u has opened project @d", $a);
             \Drupal::logger('ek_projects')->notice($log);
 
@@ -506,8 +524,12 @@ class ProjectController extends ControllerBase {
             /*
              * user table
              */
-            $query = "SELECT * from {users_field_data} WHERE uid=:uid";
-            $data['user'] = db_query($query, array(':uid' => $data['project'][0]->owner))->fetchAll();
+            //$query = "SELECT * from {users_field_data} WHERE uid=:uid";
+            //$data['user'] = db_query($query, array(':uid' => $data['project'][0]->owner))->fetchAll();
+            $acc = \Drupal\user\Entity\User::load($data['project'][0]->owner);
+            if($acc) {
+                $data['user']['name'] = $acc->getDisplayName();
+            }
             $param_edit = 'followers|' . $id;
             $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
             $data['followers'][0] = new \stdClass;
@@ -1155,7 +1177,7 @@ class ProjectController extends ControllerBase {
                 $data = $invoke;
             }
             
-            
+            $data['#theme'] = 1;
 
             return array(
                 '#theme' => 'ek_projects_view',
@@ -1463,8 +1485,11 @@ class ProjectController extends ControllerBase {
         $today = time('U') - 86400;
         if (isset($id)) {
             
-            $query = "SELECT uid,name from {users_field_data}";
-            $users = db_query($query)->fetchAllKeyed();
+            //$query = "SELECT uid,name from {users_field_data}";
+            //$users = db_query($query)->fetchAllKeyed();
+            $query = Database::getConnection()->select('users_field_data', 'u');
+            $query->fields('u', ['uid', 'name']);
+            $users = $query->execute()->fetchAllKeyed();
             $uid = \Drupal::currentUser()->id();
             $query = 'SELECT t.uid,t.stamp,action  '
                     . 'FROM {ek_project_tracker} t '
@@ -1627,7 +1652,7 @@ class ProjectController extends ControllerBase {
                 $fields = array(
                     'fid' => 0,
                     'uri' => date('U'),
-                    'comment' => t('deleted by') . ' ' . \Drupal::currentUser()->getUsername(),
+                    'comment' => t('deleted by') . ' ' . \Drupal::currentUser()->getAccountName(),
                     'date' => time()
                 );
                 //delete from main data DB
@@ -1639,17 +1664,19 @@ class ProjectController extends ControllerBase {
                 if ($delete) {
                     //Set file status as tmp in file managed DB for recovering process if needed
                     //file will be delete by cron as per settings
-                    
-                    $query = "SELECT fid FROM {file_managed} WHERE uri=:u";
-                    $file = db_query($query, [':u' => $p->uri])->fetchObject();
-                    if($file->fid) {
-                        $obj = \Drupal\file\Entity\File::load($file->fid);
+                    $query = Database::getConnection()->select('file_managed', 'f');
+                    $query->fields('f', ['fid']);
+                    $query->condition('uri', $p->uri);
+                    $fid = $query->execute()->fetchField();
+                    //$query = "SELECT fid FROM {file_managed} WHERE uri=:u";
+                    //$file = db_query($query, [':u' => $p->uri])->fetchObject();
+                    if($fid) {
+                        $obj = \Drupal\file\Entity\File::load($fid);
                         $obj->setTemporary();
                         $obj->save();
                     }
                     
                 }
-                
                 
                 $this->moduleHandler()->invokeAll('project_doc_delete', [['pcode' => $p->pcode ,'id' => $id]]);
                         
@@ -1776,9 +1803,11 @@ class ProjectController extends ControllerBase {
                 $data = $query->execute();
                 $notify = explode(',', $data->fetchField());
                 $list = '';
-                $query = "SELECT uid,name from {users_field_data}";
-                $users = db_query($query)->fetchAllKeyed();
-                
+                //$query = "SELECT uid,name from {users_field_data}";
+                //$users = db_query($query)->fetchAllKeyed();
+                $query = Database::getConnection()->select('users_field_data', 'u');
+                $query->fields('u', ['uid', 'name']);
+                $users = $query->execute()->fetchAllKeyed();
                 foreach($notify as  $value) {
                     if ($value == \Drupal::currentUser()->id()) {
                         $list .= '<li>' . t('Me') . '</li>';
@@ -1996,8 +2025,13 @@ class ProjectController extends ControllerBase {
             if (\Drupal::currentUser()->id() == $r->uid) {
                 $name = t('Myself');
             } else {
-                $query = "SELECT name from {users_field_data} WHERE uid=:u";
-                $name = db_query($query, array(':u' => $r->uid))->fetchField();
+                //$query = "SELECT name from {users_field_data} WHERE uid=:u";
+                //$name = db_query($query, array(':u' => $r->uid))->fetchField();
+                $acc = \Drupal\user\Entity\User::load($r->uid);
+                $name = '';
+                if($acc) {
+                   $name = $acc->getDisplayName();
+                }
             }
 
             if ($r->end != NULL && date('U') > $r->end && $r->completion_rate < 100) {
@@ -2066,19 +2100,29 @@ class ProjectController extends ControllerBase {
 
     /**
      * Return ajax user autocomplete data
-     *
+     * deprecated: use default ek_admin resources
      */
     public function userautocomplete(Request $request) {
 
         $text = $request->query->get('term');
-        $name = array();
+        $matches = [];
+        
+        $query = $this->entityTypeManager->getStorage('user')->getQuery();
+        $or = $query->orConditionGroup();
+        $or->condition('name', $text, 'STARTS_WITH');
+        $or->condition('mail', $text, 'STARTS_WITH');
+        $query->condition($or);
+        $query->range(0, 10);
+        $uids = $query->execute();
+        
+        $controller = $this->entityTypeManager->getStorage('user');
+        foreach ($controller->loadMultiple($uids) as $account) {
+            if (!$account->isAnonymous()) {
+                $matches[] = array('value' => $account->getAccountName(), 'label' => $account->getEmail());
+            }
+        }
 
-        $query = "SELECT distinct name from {users_field_data} WHERE mail like :t1 or name like :t2 ";
-        $a = array(':t1' => "$text%", ':t2' => "$text%");
-        $name = db_query($query, $a)->fetchCol();
-
-        return new JsonResponse($name);
+        return new JsonResponse($matches);
     }
 
-//end class
 }

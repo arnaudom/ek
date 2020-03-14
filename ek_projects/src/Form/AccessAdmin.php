@@ -192,9 +192,14 @@ class AccessAdmin extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     
-    $query = "SELECT uid FROM {users_field_data} WHERE name = :n";
-    $data = db_query($query, [':n' => $form_state->getValue('username')])
-            ->fetchField();
+    //$query = "SELECT uid FROM {users_field_data} WHERE name = :n";
+    //$data = db_query($query, [':n' => $form_state->getValue('username')])
+    //        ->fetchField();
+    $query = Database::getConnection()->select('users_field_data', 'u');
+    $query->fields('u', ['uid']);
+    $query->condition('name', $form_state->getValue('username'));
+    $data = $query->execute()->fetchField();
+    
     if ($data) {
         $form_state->setValue('uid', $data);
 

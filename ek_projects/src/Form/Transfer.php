@@ -161,9 +161,14 @@ class Transfer extends FormBase {
 
         if ($form_state->get('step') == 1) {
 
-            $query = "SELECT uid FROM {users_field_data} WHERE name = :n";
-            $data = db_query($query, [':n' => $form_state->getValue('username')])
-                    ->fetchField();
+            //$query = "SELECT uid FROM {users_field_data} WHERE name = :n";
+            //$data = db_query($query, [':n' => $form_state->getValue('username')])
+            //        ->fetchField();
+            $query = Database::getConnection()->select('users_field_data', 'u');
+            $query->fields('u', ['uid']);
+            $query->condition('name', $form_state->getValue('username'));
+            $data = $query->execute()->fetchField();
+            
             if ($data) {
                 $form_state->setValue('uid', $data);
                 $form_state->set('step', 2);
@@ -179,9 +184,13 @@ class Transfer extends FormBase {
                 $form_state->setErrorByName('tousername', $this->t('Same user selected'));
             }
             
-            $query = "SELECT uid FROM {users_field_data} WHERE name = :n";
-            $data = db_query($query, [':n' => $form_state->getValue('tousername')])
-                    ->fetchField();
+            //$query = "SELECT uid FROM {users_field_data} WHERE name = :n";
+            //$data = db_query($query, [':n' => $form_state->getValue('tousername')])
+            //        ->fetchField();
+            $query = Database::getConnection()->select('users_field_data', 'u');
+            $query->fields('u', ['uid']);
+            $query->condition('name', $form_state->getValue('tousername'));
+            $data = $query->execute()->fetchField();
             if ($data) {
                 $form_state->setValue('touid', $data);
             } else {

@@ -18,7 +18,7 @@ use Drupal\Core\Access\AccessResult;
  * @Block(
  *   id = "track_project_block",
  *   admin_label = @Translation("User interaction projects"),
- *   category = @Translation("Ek projects Widgets")
+ *   category = @Translation("Ek projects block")
  * )
  */
 class TrackBlock extends BlockBase {

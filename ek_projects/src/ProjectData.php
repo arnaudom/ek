@@ -356,8 +356,8 @@ class ProjectData {
     public static function file_owner($id) {
         /*
           $query = "SELECT uid from {file_managed} WHERE id =:f";
-          $owner = db_query($query, array(':f' => $id))->fetchField();
-          $name = db_query('SELECT name from {users_field_data} WHERE uid=:u', array(':u' => $owner))->fetchField();
+          //$owner = db_query($query, array(':f' => $id))->fetchField();
+          //$name = db_query('SELECT name from {users_field_data} WHERE uid=:u', array(':u' => $owner))->fetchField();
 
           return array($owner, $name);
          */

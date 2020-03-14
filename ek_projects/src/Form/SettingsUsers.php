@@ -41,8 +41,9 @@ class SettingsUsers extends FormBase {
 
         );
 
-        $users = db_query('SELECT uid,name,status FROM {users_field_data} WHERE uid>:u order by name', array(':u' => 0));
-
+        //$users = db_query('SELECT uid,name,status FROM {users_field_data} WHERE uid>:u order by name', array(':u' => 0));
+        $users = \Drupal\ek_admin\Access\AccessCheck::listUsers(0);
+        
         $headerline = "<div class='table'  id='users_items'>
                   <div class='row'>
                       <div class='cell cellborder' id='tour-item1'>" . t("Login") . "</div>
@@ -69,44 +70,43 @@ class SettingsUsers extends FormBase {
         );
         $options = [];
         
-        while ($u = $users->fetchObject()) {
-
-
-            $status = ($u->status == '0') ? ' (' . t('Blocked') . ')' : '';
+        foreach ($users as $uid => $name ) {
+            $acc = \Drupal\user\Entity\User::load($uid);
+            $status = ($acc->isBlocked()) ? ' (' . t('Blocked') . ')' : '';
             /**/
-            $form['list'][$u->uid]['user'] = array(
+            $form['list'][$uid]['user'] = array(
                 '#type' => 'item',
-                '#markup' => '[' . $u->uid . '] ' . $u->name . $status,
+                '#markup' => '[' . $uid . '] ' . $name . $status,
 
             );
 
-            $access = ProjectData::validate_section_access($u->uid);
+            $access = ProjectData::validate_section_access($uid);
 
-            $form['list'][$u->uid]['s1'] = array(
+            $form['list'][$uid]['s1'] = array(
                 '#type' => 'checkbox',
                 '#default_value' => in_array(1, $access) ? 1 : 0,
 
             );
 
-            $form['list'][$u->uid]['s2'] =array(
+            $form['list'][$uid]['s2'] =array(
                 '#type' => 'checkbox',
                 '#default_value' => in_array(2, $access) ? 1 : 0,
 
             );
 
-            $form['list'][$u->uid]['s3'] = array(
+            $form['list'][$uid]['s3'] = array(
                 '#type' => 'checkbox',
                 '#default_value' => in_array(3, $access) ? 1 : 0,
 
             );
 
-            $form['list'][$u->uid]['s4'] = array(
+            $form['list'][$uid]['s4'] = array(
                 '#type' => 'checkbox',
                 '#default_value' => in_array(4, $access) ? 1 : 0,
 
             );
 
-            $form['list'][$u->uid]['s5'] = array(
+            $form['list'][$uid]['s5'] = array(
                 '#type' => 'checkbox',
                 '#default_value' => in_array(5, $access) ? 1 : 0,
 
@@ -129,8 +129,6 @@ class SettingsUsers extends FormBase {
         );
 
         $form['#attached']['library'][] = 'ek_projects/ek_projects_css';
-
-
 
         return $form;
     }

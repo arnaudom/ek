@@ -59,7 +59,7 @@ class Notification extends FormBase {
 
         $query = "SELECT pcode,owner from {ek_project} WHERE id=:id";
         $p = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
-        $currentusername = \Drupal::currentUser()->getUsername();
+        $currentusername = \Drupal::currentUser()->getAccountName();
 
         $form['item'] = array(
             '#type' => 'item',
@@ -145,12 +145,17 @@ class Notification extends FormBase {
             foreach ($users as $u) {
                 if (trim($u) != '') {
                     //check it is a registered user 
-                    $query = "SELECT uid,mail from {users_field_data} WHERE name=:u";
-                    $result = db_query($query, array(':u' => trim($u)))->fetchObject();
-                    if ($result->uid == '') {
+                    $query = Database::getConnection()->select('users_field_data', 'u');
+                    $query->fields('u', ['uid','mail']);
+                    $query->condition('name', trim($u));
+                    $id = $query->execute()->fetchObject();
+                    
+                    //$query = "SELECT uid,mail from {users_field_data} WHERE name=:u";
+                    //$result = db_query($query, array(':u' => trim($u)))->fetchObject();
+                    if (!$id) {
                         $error.= $u . ',';
                     } else {
-                        $notify_who .= $result->mail . ',';
+                        $notify_who .= $id->mail . ',';
                     }
                 }
             }
@@ -175,8 +180,13 @@ class Notification extends FormBase {
         $p = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form_state->getValue('pid')))
                 ->fetchObject();
-        $query = "SELECT mail from {users_field_data} WHERE uid=:u";
-        $to = db_query($query, array(':u' => $p->owner))->fetchField();
+        //$query = "SELECT mail from {users_field_data} WHERE uid=:u";
+        //$to = db_query($query, array(':u' => $p->owner))->fetchField();
+        $acc = \Drupal\user\Entity\User::load($p->owner);
+        $to = '';
+        if($acc) {
+            $to = $acc->getEmail();
+        }
         $params['text'] = Xss::filter($form_state->getValue('message'));
         $params['options']['pcode'] = $p->pcode;
         $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), TRUE);
@@ -191,10 +201,14 @@ class Notification extends FormBase {
             $params['subject'] = t("Notification") . ": " . $code[0] . ' | ' . $p->pcode;;
         }
 
-        $currentuserid = \Drupal::currentUser()->id();
-        $query = "SELECT mail from {users_field_data} WHERE uid=:u";
-        $from = db_query($query, array(':u' => $currentuserid))->fetchField();
-
+        //$currentuserid = \Drupal::currentUser()->id();
+        //$query = "SELECT mail from {users_field_data} WHERE uid=:u";
+        //$from = db_query($query, array(':u' => $currentuserid))->fetchField();
+        $acc2 = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
+        $from = '';
+        if($acc2) {
+            $from = $acc2->getEmail();
+        }
         $addresses = explode(',', $form_state->getValue('notify_who'));
         $error = '';
 
@@ -207,9 +221,12 @@ class Notification extends FormBase {
             foreach ($addresses as $key => $email) {
                 if (trim($email) != NULL) {
                     //convert emails address into uid
-                    $query = "SELECT uid from {users_field_data} WHERE mail=:e";
-                    $to = db_query($query, array(':e' => trim($email)))->fetchField();
-
+                    $query = Database::getConnection()->select('users_field_data', 'u');
+                    $query->fields('u', ['uid']);
+                    $query->condition('mail', trim($email));
+                    $to = $query->execute()->fetchField();
+                    //$query = "SELECT uid from {users_field_data} WHERE mail=:e";
+                    //$to = db_query($query, array(':e' => trim($email)))->fetchField();
                     $inbox .= $to . ',';
                 }
             }

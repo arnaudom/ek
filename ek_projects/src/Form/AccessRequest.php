@@ -32,9 +32,7 @@ class AccessRequest extends FormBase {
   
   $query = "SELECT pcode,owner from {ek_project} WHERE id=:id";
   $p = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
-  $currentusername = \Drupal::currentUser()->getUsername();
-  //$query = "SELECT name from {users_field_data} WHERE uid=:u";
-  //$owner = db_query($query, array(':u' => $p->owner))->fetchField();
+  $currentusername = \Drupal::currentUser()->getAccountName();
 
     $form['item'] = array(
       '#type' => 'item',
@@ -84,52 +82,54 @@ class AccessRequest extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
   
-  $query = "SELECT pcode,owner from {ek_project} WHERE id=:id";
-  $p = Database::getConnection('external_db', 'external_db')
-          ->query($query, array(':id' => $form_state->getValue('pid')))
-          ->fetchObject();
-  $query = "SELECT mail from {users_field_data} WHERE uid=:u";
-  $to = db_query($query, array(':u' => $p->owner))
-          ->fetchField();
-  $params = [];
-  if (\Drupal::moduleHandler()->moduleExists('swiftmailer')) {
-    $params['body'] = Xss::filter( $form_state->getValue('message') );
-    $params['options']['pcode'] = $p->pcode;
-    $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'),NULL,1,NULL, t('Open'));
-  } else {
-    $params['body'] = Xss::filter( $form_state->getValue('message') ) . '\r\n' 
-            . t('Project ref.') . ': ' . ProjectData::geturl( $form_state->getValue('pid'),0,1 );
-    $params['options'] = '';  
-  }
-  $code = explode("-", $p->pcode);
-  $code = array_reverse($code);
-  $params['subject'] = t("Access request") . ": ". $code[0] . ' | ' . $p->pcode;
-  $currentuserid = \Drupal::currentUser()->id();
-  $query = "SELECT mail from {users_field_data} WHERE uid=:u";
-  $from = db_query($query, array(':u' => $currentuserid))->fetchField();
+    $query = "SELECT pcode,owner from {ek_project} WHERE id=:id";
+    $p = Database::getConnection('external_db', 'external_db')
+            ->query($query, array(':id' => $form_state->getValue('pid')))
+            ->fetchObject();
+    //$query = "SELECT mail from {users_field_data} WHERE uid=:u";
+    //$to = db_query($query, array(':u' => $p->owner))
+    //        ->fetchField();
+    $acc = \Drupal\user\Entity\User::load($p->owner);
+    $to = '';
+    if($acc) {
+        $to = $acc->getEmail();
+        $params = [];
+        if (\Drupal::moduleHandler()->moduleExists('swiftmailer')) {
+          $params['body'] = Xss::filter( $form_state->getValue('message') );
+          $params['options']['pcode'] = $p->pcode;
+          $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'),NULL,1,NULL, t('Open'));
+        } else {
+          $params['body'] = Xss::filter( $form_state->getValue('message') ) . '\r\n' 
+                  . t('Project ref.') . ': ' . ProjectData::geturl( $form_state->getValue('pid'),0,1 );
+          $params['options'] = '';  
+        }
+        $code = explode("-", $p->pcode);
+        $code = array_reverse($code);
+        $params['subject'] = t("Access request") . ": ". $code[0] . ' | ' . $p->pcode;
+        $acc2 = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
+        $from = '';
+        if($acc2) {
+            $from = $acc2->getEmail();
+        }
         
-    if ($target_user = user_load_by_mail($to)) {
-        $target_langcode = $target_user->getPreferredLangcode();
-    } else {
-        $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
-    }
-  
-  $send = \Drupal::service('plugin.manager.mail')->mail(
-    'ek_projects',
-    'project_access',
-    $to,
-    $target_langcode,
-    $params,
-    $from,
-    TRUE
-  );
-  
-    if($send['result'] == TRUE) {
-        \Drupal::messenger()->addStatus(t('The request has been sent'));
-          $form_state->setRedirect('ek_projects_main') ;
-    }
+        $send = \Drupal::service('plugin.manager.mail')->mail(
+          'ek_projects',
+          'project_access',
+          $to,
+          $acc->getPreferredLangcode(),
+          $params,
+          $from,
+          TRUE
+        );
 
-  }
+          if($send['result'] == TRUE) {
+              \Drupal::messenger()->addStatus(t('The request has been sent'));
+                $form_state->setRedirect('ek_projects_main') ;
+          }
+    } else {
+      \Drupal::messenger()->addWarning(t('Project owner cannot be reached'));  
+    }
+ }
   
   
 }

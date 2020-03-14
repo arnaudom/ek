@@ -152,8 +152,12 @@ class DeleteTaskForm extends FormBase {
 
 
         if ($delete) {
-            $query = "SELECT name from {users_field_data} WHERE uid=:u";
-            $name = db_query($query, array(':u' => \Drupal::currentUser()->id()))->fetchField();
+            
+            $acc = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
+            if($acc) {
+                $name = $acc->getAccountName();
+            }
+            
             $param = serialize(
                     array(
                         'id' => $form_state->getValue('for_pid'),

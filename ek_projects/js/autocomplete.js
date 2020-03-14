@@ -26,8 +26,8 @@ Drupal.behaviors.ek_projects_auto = {
                         })
                         .autocomplete({
                             source: function (request, response) {
-                                jQuery.getJSON(drupalSettings.path.baseUrl + "look_up_email_ajax/user", {
-                                    term: extractLast(request.term)
+                                jQuery.getJSON(drupalSettings.path.baseUrl + "ek_admin/user/autocomplete", {
+                                    q: extractLast(request.term)
                                 }, response);
                             },
                             search: function () {

@@ -20,7 +20,7 @@ use Drupal\user\Entity\User;
  * @Block(
  *   id = "project_messages_block",
  *   admin_label = @Translation("Project messages"),
- *   category = @Translation("Ek projects Widgets")
+ *   category = @Translation("Ek projects block")
  * )
  */
 class ProjectMessagesBlock extends BlockBase {
@@ -64,7 +64,7 @@ class ProjectMessagesBlock extends BlockBase {
                     $from = User::load($d->from_uid);
                     $link = Url::fromRoute('ek_messaging_read', array('id' => $d->id))->toString();
                     $read = "<a href='". $link . "'>" . t('open') . "</a>";
-                    $list .= '<li title="'.$from->getUsername().'" >' 
+                    $list .= '<li title="'.$from->getAccountName.'" >' 
                             .  substr($d->subject, 0, 20) . ' - ' . date('Y-m-d', $d->stamp) . ' [' . $read . ']</li>';
                     
                 }

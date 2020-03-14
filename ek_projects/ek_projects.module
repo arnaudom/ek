@@ -145,7 +145,7 @@ function ek_projects_file_download($uri) {
                             ->condition('uri', $uri)
                             ->execute();
     $file = $query->fetchObject();
-    $name = \Drupal::currentUser()->getUsername();   
+    $name = \Drupal::currentUser()->getAccountName();   
     
      if (ProjectData::validate_file_access($file->id) ) {
 
@@ -201,17 +201,17 @@ function ek_projects_form_user_delete_validate(&$form, \Drupal\Core\Form\FormSta
 
   if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
         if ($form_state->getValue('project_owner') <> '') {
+            $query = Database::getConnection()->select('users_field_data', 'u');
+            $query->fields('u', ['uid']);
+            $query->condition('name', $form_state->getValue('project_owner'));
+            $data = $query->execute()->fetchField();
             
-            $query = "SELECT uid FROM {users_field_data} WHERE name = :n";
-            $data = db_query($query, [':n' => $form_state->getValue('project_owner')])
-                    ->fetchField();
             if ($data) {
-                $form_state->setValue('project_owner', $data);
+                $form_state->setValue('move_uid_documents', $data);
             } else {
                 $form_state->setErrorByName('project_owner', t('Unknown user to move documents'));
             }
-            
-  
+              
         }
     
      return $form;

@@ -3,14 +3,6 @@ ek_projects_css:
   css:
     theme:
       css/ek_projects.css: {}
-
-ek_projects.datepicker:
-  version: 1
-  js:
-    js/ek_projects_date.js: {weight: -20}
-  dependencies:
-    - core/jquery
-    - core/jquery.ui.datepicker
     
 ek_projects_updater:
   version: 1 
@@ -37,8 +29,8 @@ ek_projects_view:
     - core/jquery.form
     - core/drupalSettings
     - core/drupal.ajax
-    - core/jquery.ui.droppable    
-    - core/jquery.ui.draggable    
+    - jquery_ui_droppable/droppable
+    - jquery_ui_draggable/draggable    
 
     
 ek_projects_autocomplete:
@@ -78,7 +70,6 @@ ek_projects.calendar:
     - core/drupalSettings
     - core/drupal.ajax
     - core/drupal.dialog
-    - core/jquery.ui.datepicker
 
 ek_projects_charts:
   js:
