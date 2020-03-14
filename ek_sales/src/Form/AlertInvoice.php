@@ -74,10 +74,12 @@ class AlertInvoice extends FormBase {
         if ($data) {
 
             $alert_who = explode(',', $data->alert_who);
-            $list = array();
+            $list = [];
             foreach ($alert_who as $k => $uid) {
-                $list[] = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $uid))
-                        ->fetchField();
+                $acc = \Drupal\user\Entity\User::load($uid);
+                if($acc){
+                    $list[] = $acc->getAccountName();
+                }
             }
 
 
@@ -161,9 +163,13 @@ class AlertInvoice extends FormBase {
             foreach ($users as $u) {
                 if (trim($u) != NULL) {
                     //check it is a registered user 
-                    $query = "SELECT uid from {users_field_data} WHERE name=:u";
+                    //$query = "SELECT uid from {users_field_data} WHERE name=:u";
+                    //$id = db_query($query, array(':u' => $uname))->fetchField();
                     $uname = trim($u);
-                    $id = db_query($query, array(':u' => $uname))->fetchField();
+                    $query = Database::getConnection()->select('users_field_data', 'u');
+                    $query->fields('u', ['uid']);
+                    $query->condition('name', $uname);
+                    $id = $query->execute()->fetchField();
                     if (!$id) {
                         $error.= $uname . ' ';
                     } else {

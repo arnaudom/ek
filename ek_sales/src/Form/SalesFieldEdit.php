@@ -117,7 +117,7 @@ $form['#attached']['library'][] = 'ek_sales/ek_sales_css';
       
       case 'comment' :
 
-        $text = Xss::filter($form_state->getValue('value')) . ' [' .  \Drupal::currentUser()->getUsername() . '] - ' . date('Y-m-d');
+        $text = Xss::filter($form_state->getValue('value')) . ' [' .  \Drupal::currentUser()->getAccountName() . '] - ' . date('Y-m-d');
 	$fields = array(
             $form_state->getValue('field') => $text
 	);

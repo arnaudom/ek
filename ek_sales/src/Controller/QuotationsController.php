@@ -136,26 +136,56 @@ class QuotationsController extends ControllerBase {
         $or1->condition('allocation', $access, 'IN');
 
 
-        if (isset($_SESSION['qfilter']['filter'])) {
-            $data = $query
+        if (isset($_SESSION['qfilter']['filter']) && $_SESSION['qfilter']['filter'] == 1) {
+            
+            if ($_SESSION['pfilter']['keyword'] != '') {
+                //search based on keyword
+                $or2 = $query->orConditionGroup();
+                $or2->condition('q.serial', '%' . $_SESSION['qfilter']['keyword'] . '%', 'like');
+                $or2->condition('q.pcode', '%' . $_SESSION['qfilter']['keyword'] . '%', 'like');
+                $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date',
+                        'amount', 'pcode', 'incoterm', 'tax','type');
+                $data = $query
+                        ->fields('q', $f)
+                        ->condition($or1)
+                        ->condition($or2)
+                        ->extend('Drupal\Core\Database\Query\TableSortExtender')
+                        ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+                        ->limit(20)
+                        ->orderBy('id', 'ASC')
+                        ->execute();
+            
+                
+            } else {
+                 //search based on input fields
+                $or2 = $query->orConditionGroup();
+                $or2->condition('head', $_SESSION['qfilter']['coid']);
+                $or2->condition('allocation', $_SESSION['qfilter']['coid']);
+                $data = $query
                     ->fields('q')
                     ->condition($or1)
+                    ->condition($or2)
                     ->condition('status', $_SESSION['qfilter']['status'], 'like')
                     ->condition('client', $_SESSION['qfilter']['client'], 'like')
                     ->condition('date', $_SESSION['qfilter']['from'], '>=')
                     ->condition('date', $_SESSION['qfilter']['to'], '<=')
                     ->extend('Drupal\Core\Database\Query\TableSortExtender')
                     ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                    ->limit(10)
+                    ->limit(20)
                     ->orderBy('id', 'ASC')
                     ->execute();
+            }
+            
+            
         } else {
-
-
-            $from = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT date from {ek_sales_quotation} order by date limit 1")
-                    ->fetchField();
-            $from = date('Y-m-d', strtotime(date('Y-m-d') ." -60 days")); 
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_sales_quotation', 'q');
+            $query->fields('q', ['date']);
+            $query->condition('status', 0);
+            $query->orderBy('date', "DESC");
+            $query->range(0, 1);
+            $from = $query->execute()->fetchField();
             $data = $query
                     ->fields('q')
                     ->condition($or1)
@@ -164,7 +194,7 @@ class QuotationsController extends ControllerBase {
                     ->condition('date', date('Y-m-d'), '<=')
                     ->extend('Drupal\Core\Database\Query\TableSortExtender')
                     ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                    ->limit(10)
+                    ->limit(20)
                     ->orderBy('id', 'ASC')
                     ->execute();
         }

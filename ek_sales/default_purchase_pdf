@@ -143,7 +143,7 @@ $pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 // set document information
 $no = array_reverse(explode("-",$head->serial));
 $pdf->SetCreator($company->name);
-$pdf->SetAuthor(\Drupal::currentUser()->getUsername());
+$pdf->SetAuthor(\Drupal::currentUser()->getAccountName());
 $pdf->SetTitle(t('Purchase') . ' ' . $no[0]);
 $pdf->SetSubject(t('Purchase'));
 $pdf->SetKeywords(t('Purchase') . ", " . $head->serial);
@@ -190,6 +190,12 @@ $pdf->SetFont('helvetica','B',10);
 $pdf->Cell($c2+$c3);
 $pdf->Cell($c3,10, $head->serial ,0,1);
 
+// DATE ==========================================================
+$pdf->SetFont('helvetica','',10);     
+$pdf->Cell($c2+$c3);
+$pdf->Cell($c3,5, t("Date") . ":" ,0,0);
+$pdf->Cell($c4,5, $head->date ,0,1,'L'); 
+
 // CLIENT ======================================================== 
 $pdf->Ln(1);
 $pdf->SetFont('helvetica','U',12);
@@ -197,11 +203,8 @@ $pdf->Cell($lm);
 $pdf->Cell($c1,5,t("To") . ":",0,1,'L');
 $pdf->SetFont('helvetica','',10);
 $pdf->Cell($lm);
-$pdf->Cell($c1,5,utf8_decode($client->name),0,0);
-    
-$pdf->Cell($c3 + $c3);    
-$pdf->Cell($c3,5,t("Date") . ":",0,0,'L'); 
-$pdf->Cell($c4,5, $head->date ,0,1,'L');        
+$pdf->Cell($c1,5,utf8_decode($client->name),0,1);
+         
 $pdf->Cell($lm);
 $pdf->SetFont('helvetica','',10);    
 $pdf->Cell($c1,5, $client->address ,0,1);

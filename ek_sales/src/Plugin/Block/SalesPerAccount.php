@@ -20,7 +20,7 @@ use Drupal\ek_finance\FinanceSettings;
  * @Block(
  *   id = "sales_per_account_block",
  *   admin_label = @Translation("Sales per account block"),
- *   category = @Translation("Ek sales Widgets")
+ *   category = @Translation("Ek sales block")
  * )
  */
 class SalesPerAccount extends BlockBase {

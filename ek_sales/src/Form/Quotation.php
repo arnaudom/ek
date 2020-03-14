@@ -309,8 +309,7 @@ class Quotation extends FormBase {
         }
 
         $select_incoterm = ['0' => t('not applicable'), 'FOB' => 'FOB', 'CFR' => 'CFR', 'CIF' => 'CIF', 'EXW' => 'EXW'];
-        $vocabulary = \Drupal::entityManager()->getStorage('taxonomy_term')->loadTree('incoterm', 0, 1);
-        if ($vocabulary = \Drupal::entityManager()->getStorage('taxonomy_term')->loadTree('incoterm', 0, 1)) {
+        if ($vocabulary = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadTree('incoterm', 0, 1)) {
             foreach ($vocabulary as $item) {
                 $select_incoterm[$item->name] = $item->name;
             }

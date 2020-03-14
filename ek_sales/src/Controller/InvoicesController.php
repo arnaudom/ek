@@ -165,7 +165,9 @@ class InvoicesController extends ControllerBase {
                     //paid
                     $or2->condition('i.status', 1, '=');
                 }
-
+                $or3 = $query->orConditionGroup();
+                $or3->condition('head', $_SESSION['ifilter']['coid']);
+                $or3->condition('allocation', $_SESSION['ifilter']['coid']);
 
                 $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
                     'amount', 'amountreceived', 'pcode', 'taxvalue', 'pay_date', 'alert', 'type');
@@ -176,7 +178,7 @@ class InvoicesController extends ControllerBase {
                         ->condition('i.client', $_SESSION['ifilter']['client'], 'like')
                         ->condition('i.date', $_SESSION['ifilter']['from'], '>=')
                         ->condition('i.date', $_SESSION['ifilter']['to'], '<=')
-                        ->condition('i.head', $_SESSION['ifilter']['coid'], '=')
+                        ->condition($or3)
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
                         ->limit(20)
@@ -1004,33 +1006,36 @@ class InvoicesController extends ControllerBase {
         if (isset($_SESSION['taskfilter']['filter'])) {
 
             $stamp = date('U');
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_sales_invoice_tasks','t');
+            $query->fields('t');
+            $query->leftJoin('ek_sales_invoice', 'i', 'i.serial=t.serial');
+            $query->fields('i', ['id']);
+            $query->orderBy('t.id');
+            
             switch ($_SESSION['taskfilter']['type']) {
 
                 case 0:
-                    $query = "SELECT * FROM {ek_sales_invoice_tasks} order by id";
-                    $a = [];
                     break;
                 case 1:
-                    $query = "SELECT * FROM {ek_sales_invoice_tasks} WHERE completion_rate >=:v order by id ";
-                    $a = [':v' => '100'];
+                    $query->condition('completion_rate', 100, '>=');
                     break;
                 case 2:
-                    $query = "SELECT * FROM {ek_sales_invoice_tasks} WHERE completion_rate<:v or completion_rate = :n order by id";
-                    $a = [':v' => 100, ':n' => ''];
+                    $or = $query->orConditionGroup();
+                    $or->condition('completion_rate', 100, '<');
+                    $or->condition('completion_rate', '', '=');
+                    $query->condition($or);
                     break;
                 case 3:
-                    $query = "SELECT * FROM {ek_sales_invoice_tasks} WHERE uid=:v order by id";
-                    $a = [':v' => \Drupal::currentUser()->id()];
+                    $query->condition('uid', \Drupal::currentUser()->id());
                     break;
                 case 4:
-                    $query = "SELECT * FROM {ek_sales_invoice_tasks} WHERE end < :v order by id";
-                    $a = [':v' => $stamp];
+                    $query->condition('end', $stamp, '<');
                     break;
             }
             $data = array();
 
-            $result = Database::getConnection('external_db', 'external_db')
-                    ->query($query, $a);
+            $result = $query->execute();
 
             $notify = array(
                 '0' => t('Never'),
@@ -1042,36 +1047,38 @@ class InvoicesController extends ControllerBase {
                 '4' => t('1 day before dealine'),
             );
 
-
-
-
             while ($r = $result->fetchObject()) {
                 if ($r->end < $stamp) {
                     $expired = t('yes');
                 } else {
                     $expired = t('no');
                 }
-                $query = 'SELECT name FROM {users_field_data} WHERE uid=:u';
-                $username = db_query($query, ['u' => $r->uid])->fetchField();
-
+                $acc = \Drupal\user\Entity\User::load($r->uid);
+                $username = '';
+                if($acc){
+                    $username = $acc->getAccountName();
+                }
                 $who = '';
                 $notify_who = explode(',', $r->notify_who);
 
                 foreach ($notify_who as $value) {
                     if ($value != '') {
-                        $who .= db_query($query, ['u' => $value])->fetchField();
-                        $who .= ',';
+                        $acc = \Drupal\user\Entity\User::load($value);
+                        if($acc){
+                            $who .= $acc->getAccountName();
+                            $who .= ',';
+                        }
                     }
                 }
-
-                $query = "SELECT id FROM {ek_sales_invoice} WHERE serial=:s";
-                $id = Database::getConnection('external_db', 'external_db')
-                                ->query($query, [':s' => $r->serial])->fetchField();
-                $url = Url::fromRoute('ek_sales.invoices.task', ['id' => $id])->toString();
+                $who = rtrim($who, ',');
+                $number = "<a title='" . t('view') . "' href='"
+                    . Url::fromRoute('ek_sales.invoices.print_html', ['id' => $r->id], [])->toString() . "'>"
+                    . $r->serial . "</a>";
+                $url = Url::fromRoute('ek_sales.invoices.task', ['id' => $r->id])->toString();
                 $link = "<a href='" . $url . "'>" . t('edit') . '</a>';
 
                 $data['list'][] = [
-                    'serial' => $r->serial,
+                    'serial' => ['data' => ['#markup' => $number]],
                     'username' => $username,
                     'task' => ['data' => ['#markup' => $r->task ], 'style' => ['background-color:' . $r->color]],
                     'period' => date('Y-m-d', $r->start) . ' -> ' . date('Y-m-d', $r->end),
@@ -1128,7 +1135,8 @@ class InvoicesController extends ControllerBase {
                     'id' => 'edit',
                 ),
             );
-
+            
+            
             $build['invoices_tasks_table'] = array(
                 '#type' => 'table',
                 '#header' => $header,

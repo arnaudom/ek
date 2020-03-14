@@ -148,7 +148,7 @@ class DeleteInvoice extends FormBase {
         //////////////////////////
         //    WATCHDOG          //
         //////////////////////////
-        $a = array('@u' => \Drupal::currentUser()->getUsername(), '@d' => $form_state->getValue('serial'));
+        $a = array('@u' => \Drupal::currentUser()->getAccountName(), '@d' => $form_state->getValue('serial'));
         $log = t("User @u has deleted document @d", $a);
         \Drupal::logger('ek_sales')->notice( $log );                
         \Drupal::messenger()->addStatus(t('The invoice has been deleted'));

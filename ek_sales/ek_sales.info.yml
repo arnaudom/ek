@@ -1,11 +1,12 @@
 name : 'ek_sales'
 type: module
 description: 'sales module for ek management tools suite'
-core: 8.x
-package: ek
 dependencies:
   - ek_admin
-version: "8.6.x.y"
+core: 8.x
+core_version_requirement: ^8 || ^9
+version: "8.x.1.0-beta1"
+package: ek 
 project: "ARREA"
 datestamp: "1398873600"
 

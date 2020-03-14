@@ -20,7 +20,7 @@ use Drupal\ek_finance\FinanceSettings;
  * @Block(
  *   id = "Purchases_per_account_block",
  *   admin_label = @Translation("Purchases per account block"),
- *   category = @Translation("Ek sales Widgets")
+ *   category = @Translation("Ek sales block")
  * )
  */
 class PurchasesPerAccount extends BlockBase {

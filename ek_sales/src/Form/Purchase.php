@@ -56,7 +56,7 @@ class Purchase extends FormBase {
     public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler'),
-                $container->get('entity.manager')->getStorage('file')
+                $container->get('entity_type.manager')->getStorage('file')
         );
     }
 
@@ -1345,9 +1345,19 @@ class Purchase extends FormBase {
                         ->fetchField();
 
                 if($uri != '') {
-                    $query = "SELECT * FROM {file_managed} WHERE uri=:u";
-                    $sysfile = db_query($query, [':u' => $uri])->fetchObject();
-                    file_delete($sysfile->fid);
+                    //$query = "SELECT * FROM {file_managed} WHERE uri=:u";
+                    //$sysfile = db_query($query, [':u' => $uri])->fetchObject();
+                    //file_delete($sysfile->fid);
+                    $query = Database::getConnection()->select('file_managed', 'f');
+                    $query->fields('f', ['fid']);
+                    $query->condition('uri', $uri);
+                    $ofid = $query->execute()->fetchField();
+                    if(!$ofid){
+                        unlink($uri);
+                    } else {
+                        $obj = \Drupal\file\Entity\File::load($ofid);
+                        $obj->delete();
+                    }
                     \Drupal::messenger()->addWarning(t('Previous attachment has been deleted.'));
                 }
             }
@@ -1355,7 +1365,7 @@ class Purchase extends FormBase {
                 $file = $this->fileStorage->load($fid);
         
                 $dir = "private://sales/purchase/" . $reference . "";
-                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
                 
                 $move = file_copy($file, $dir, FILE_EXISTS_RENAME);
                 $move->setPermanent();

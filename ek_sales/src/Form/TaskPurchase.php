@@ -84,7 +84,11 @@ class TaskPurchase extends FormBase {
                 '#markup' => t('Purchase ref. @p', array('@p' => $data->serial)),
             );
 
-
+            $b = Url::fromRoute('ek_sales.purchases.tasks_list', array(), array())->toString();
+            $form['back'] = array(
+                '#markup' => t('<a href="@url">List</a>', array('@url' => $b)),
+            );
+            
             $form['for_serial'] = array(
                 '#type' => 'hidden',
                 '#value' => $data->serial,
@@ -110,17 +114,14 @@ class TaskPurchase extends FormBase {
                 '#default_value' => $data->event,
             );
 
-            $user = db_query('SELECT uid,name from {users_field_data} WHERE uid > :u AND status=:s', array(':u' => 0, ':s' => 1))
-                    ->fetchAllKeyed();
 
             $form['uid'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => $user,
+                '#options' => \Drupal\ek_admin\Access\AccessCheck::listUsers(1),
                 '#required' => TRUE,
                 '#default_value' => isset($data->uid) ? $data->uid : NULL,
                 '#title' => $this->t('Assigned to'),
-                    //'#attributes' => array('style' => array('width:200px;white-space:nowrap')),
             );
 
             $form['task'] = array(
@@ -181,11 +182,11 @@ class TaskPurchase extends FormBase {
 
                 foreach ($who as $w) {
                     if (trim($w) != NULL) {
-
-                        $query = "SELECT name from {users_field_data} WHERE uid=:u";
-                        $name = db_query($query, array(':u' => $w))->FetchField();
-                        $list .= $name . ',';
-                    }
+                    $acc = \Drupal\user\Entity\User::load($w);
+                     if($acc){
+                         $list .= $acc->getAccountName();
+                     }
+                   }
                 }
             } else {
                 $list = '';
@@ -271,8 +272,10 @@ class TaskPurchase extends FormBase {
                 foreach ($users as $u) {
                     if (trim($u) != '') {
                         //check it is a registered user 
-                        $query = "SELECT uid from {users_field_data} WHERE name=:u";
-                        $id = db_query($query, array(':u' => trim($u)))->FetchField();
+                        $query = Database::getConnection()->select('users_field_data', 'u');
+                        $query->fields('u', ['uid']);
+                        $query->condition('name', trim($u));
+                        $id = $query->execute()->fetchField();
                         if ($id == '') {
                             $error.= $u . ',';
                         } else {

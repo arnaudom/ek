@@ -544,7 +544,8 @@ class SalesController extends ControllerBase {
                 $share = explode(',', $l->share);
                 $deny = explode(',', $l->deny);
 
-                if ($l->share == '0' || ( in_array(\Drupal::currentUser()->id(), $share) && !in_array(\Drupal::currentUser()->id(), $deny) )) {
+                if ($l->share == '0' || ( in_array(\Drupal::currentUser()->id(), $share) 
+                        && !in_array(\Drupal::currentUser()->id(), $deny) )) {
                     $items[$l->folder][$i]['uri'] = $l->uri;
                     $extension = explode(".", $l->filename);
                     $extension = strtolower(array_pop($extension));
@@ -813,7 +814,7 @@ class SalesController extends ControllerBase {
             $fields = array(
                 'uri' => date('U'),
                 'fid' => 0,
-                'comment' => t('deleted by') . ' ' . \Drupal::currentUser()->getUsername(),
+                'comment' => t('deleted by') . ' ' . \Drupal::currentUser()->getAccountName(),
                 'date' => time()
             );
 
@@ -821,9 +822,20 @@ class SalesController extends ControllerBase {
                     ->update('ek_sales_documents')->fields($fields)->condition('id', $id)
                     ->execute();
             if ($delete) {
-                $query = "SELECT * FROM {file_managed} WHERE uri=:u";
-                $file = db_query($query, [':u' => $p->uri])->fetchObject();
-                file_delete($file->fid);
+                //$query = "SELECT * FROM {file_managed} WHERE uri=:u";
+                //$file = db_query($query, [':u' => $p->uri])->fetchObject();
+                //file_delete($file->fid);
+                $query = Database::getConnection()->select('file_managed', 'f');
+                $query->fields('f', ['fid']);
+                $query->condition('uri', $p->uri);
+                $fid = $query->execute()->fetchField();
+                if(!$fid){
+                    unlink($p->uri);
+                } else {
+                    $file = \Drupal\file\Entity\File::load($fid);
+                    $file->delete();
+                }
+                
             }
             \Drupal\Core\Cache\Cache::invalidateTags(['sales_data']);
             $log = 'sales document|user|' . \Drupal::currentUser()->id() . '|delete|' . $data->filename;
@@ -844,18 +856,18 @@ class SalesController extends ControllerBase {
 
     /**
      * Return ajax user autocomplete data
-     *
+     * Deprecated: use ek_admin resources autocomplete
      */
     public function userautocomplete(Request $request) {
-
+        /*
         $text = $request->query->get('term');
         $name = array();
 
         $query = "SELECT distinct name from {users_field_data} WHERE mail like :t1 or name like :t2 ";
         $a = array(':t1' => "$text%", ':t2' => "$text%");
-        $name = db_query($query, $a)->fetchCol();
+        //$name = db_query($query, $a)->fetchCol();
 
-        return new JsonResponse($name);
+        return new JsonResponse($name);*/
     }
 
     /**

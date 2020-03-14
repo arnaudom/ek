@@ -12,7 +12,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Url;
+use Drupal\Component\Utility\Xss;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\ek_admin\Access\AccessCheck;
 
 /**
  * Provides a form to filter quotations.
@@ -55,33 +57,57 @@ class FilterQuotation extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
 
-        $to = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT date FROM {ek_sales_quotation} order by date DESC limit 1")
-                ->fetchField();
-        
-        if($to) {
-           $from = date('Y-m-d', strtotime($to ." -30 days")) ; 
-        } else {
-            $to = date('Y-m') . "-01";
-            $from = date('Y-m') . "-01";
-        }
-        
+
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_sales_quotation', 'q');
+        $query->fields('q', ['date']);
+        $query->condition('status', 0);
+        $query->orderBy('date', "DESC");
+        $query->range(0, 1);
+        $from = $query->execute()->fetchField();
+        $to = date('Y-m-d');
+
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Filter'),
             '#open' => isset($_SESSION['qfilter']['filter']) ? FALSE : TRUE,
-            '#attributes' => array('class' => array('container-inline')),
+                //'#attributes' => array('class' => array('container-inline')),
         );
         $form['filters']['filter'] = array(
             '#type' => 'hidden',
             '#value' => 'filter',
         );
+
+        $form['filters']['keyword'] = array(
+            '#type' => 'textfield',
+            '#maxlength' => 75,
+            '#size' => 30,
+            '#attributes' => array('placeholder' => t('Search with keyword, ref No.')),
+            '#default_value' => isset($_SESSION['qfilter']['keyword']) ? $_SESSION['qfilter']['keyword'] : NULL,
+        );
+        $form['filters']['coid'] = array(
+            '#type' => 'select',
+            '#size' => 1,
+            '#options' => AccessCheck::CompanyListByUid(),
+            '#default_value' => isset($_SESSION['qfilter']['coid']) ? $_SESSION['qfilter']['coid'] : 0,
+            '#prefix' => "<div>",
+            '#suffix' => '</div>',
+            '#states' => array(
+                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                ),
+            ),
+        );
         $form['filters']['from'] = array(
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['qfilter']['from']) ? $_SESSION['qfilter']['from'] : $from,
-            //'#prefix' => "<div class='container-inline'>",
             '#title' => t('from'),
+            '#prefix' => "<div class='container-inline'>",
+            '#states' => array(
+                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                ),
+            ),
         );
 
         $form['filters']['to'] = array(
@@ -89,6 +115,10 @@ class FilterQuotation extends FormBase {
             '#size' => 12,
             '#default_value' => isset($_SESSION['qfilter']['to']) ? $_SESSION['qfilter']['to'] : $to,
             '#title' => t('to'),
+            '#suffix' => '</div>',
+            '#states' => array(
+                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),),
+            ),
         );
 
 
@@ -104,6 +134,9 @@ class FilterQuotation extends FormBase {
                     '#default_value' => isset($_SESSION['qfilter']['client']) ? $_SESSION['qfilter']['client'] : NULL,
                     '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
                     '#title' => t('client'),
+                    '#states' => array(
+                        'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),),
+                    ),
                 );
             } else {
                 $link = Url::fromRoute('ek_address_book.new', array())->toString();
@@ -111,6 +144,9 @@ class FilterQuotation extends FormBase {
                     '#markup' => t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
                     '#prefix' => "<div class='messages messages--warning'>",
                     '#suffix' => '</div>',
+                    '#states' => array(
+                        'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),),
+                    ),
                 );
             }
         } else {
@@ -118,6 +154,9 @@ class FilterQuotation extends FormBase {
             $form['filters']['client'] = array(
                 '#markup' => t('You do not have any client list.'),
                 '#default_value' => 0,
+                '#states' => array(
+                    'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),),
+                ),
             );
         }
 
@@ -125,6 +164,9 @@ class FilterQuotation extends FormBase {
             '#type' => 'select',
             '#options' => array('%' => t('All'), 0 => t('Open'), 1 => t('Printed'), 2 => t('Invoiced')),
             '#default_value' => isset($_SESSION['qfilter']['status']) ? $_SESSION['qfilter']['status'] : '0',
+            '#states' => array(
+                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),),
+            ),
         );
 
         $form['filters']['actions'] = array(
@@ -163,6 +205,8 @@ class FilterQuotation extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
+        $_SESSION['qfilter']['keyword'] = Xss::filter($form_state->getValue('keyword'));
+        $_SESSION['qfilter']['coid'] = $form_state->getValue('coid');
         $_SESSION['qfilter']['from'] = $form_state->getValue('from');
         $_SESSION['qfilter']['to'] = $form_state->getValue('to');
         $_SESSION['qfilter']['status'] = $form_state->getValue('status');

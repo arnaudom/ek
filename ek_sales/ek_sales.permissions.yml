@@ -43,9 +43,6 @@ delete_quotation:
 create_invoice:
   title: 'Create or edit invoice'
   description: 'Create or edit invoice.'
-create_invoice:
-  title: 'Create or edit invoice'
-  description: 'Create or edit invoice.'
 list_invoice:
   title: 'List invoices'
   description: 'List invoices and reprint.'

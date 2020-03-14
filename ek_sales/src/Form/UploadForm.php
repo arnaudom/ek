@@ -110,7 +110,7 @@ class UploadForm extends FormBase {
       $extensions = 'png gif jpg jpeg bmp txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip';
       $validators = array( 'file_validate_extensions' => array($extensions));
       $dir = "private://sales/documents/" . $form_state->getValue('abid') ;
-      file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+      \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
       $file = file_save_upload("upload_doc" , $validators, $dir , 0 , FILE_EXISTS_RENAME);
          
       if ($file) {
@@ -138,7 +138,7 @@ class UploadForm extends FormBase {
                                 ->fields($fields)->execute();
 
         
-            $log = 'user ' . \Drupal::currentUser()->id() . '|' . \Drupal::currentUser()->getUsername() . '|upload|' . $filename;
+            $log = 'user ' . \Drupal::currentUser()->id() . '|' . \Drupal::currentUser()->getAccountName() . '|upload|' . $filename;
             \Drupal::logger('ek_sales')->notice($log);
             $form['message']['#markup'] = t('file uploaded @f', array('@f' => $filename)); 
       

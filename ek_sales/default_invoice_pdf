@@ -143,7 +143,7 @@ $pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 // set document information
 $no = array_reverse(explode("-",$head->serial));
 $pdf->SetCreator($company->name);
-$pdf->SetAuthor(\Drupal::currentUser()->getUsername());
+$pdf->SetAuthor(\Drupal::currentUser()->getAccountName());
 $pdf->SetTitle(t('Invoice') . ' ' . $no[0]);
 $pdf->SetSubject(t('Invoice'));
 $pdf->SetKeywords(t('Invoice') . ", " . $head->serial);
@@ -195,7 +195,18 @@ $pdf->SetTextColor(53,53,53);
 $pdf->SetFont('helvetica','B',10);     
 $pdf->Cell($c2+$c3);
 $pdf->Cell($c3,10, $head->serial ,0,1);
-    
+
+// DATE ==========================================================
+$pdf->SetFont('helvetica','',10);     
+$pdf->Cell($c2+$c3);
+$pdf->Cell($c3,5, t("Billing date") . ":" ,0,0);
+$pdf->Cell($c4,5, $head->date ,0,1,'L'); 
+
+if($due > 0) {
+    $pdf->Cell($c2 + $c3);
+    $pdf->Cell($c3,5, t("Due date") . ":",0,0,'L');    
+    $pdf->Cell($c4,5, $due  ,0,1,'L');
+}
 // CLIENT ======================================================== 
 $pdf->Ln(1);
 $pdf->SetFont('helvetica','U',12);
@@ -203,24 +214,10 @@ $pdf->Cell($lm);
 $pdf->Cell($c1,5,t("Bill to") . ":",0,1,'L');
 $pdf->SetFont('helvetica','',10);
 $pdf->Cell($lm);
-$pdf->Cell($c1,5,utf8_decode( $client->name ),0,0);
-    
-$pdf->Cell($c3 + $c3);    
-$pdf->Cell($c3,5,t("Billing date") . ":",0,0,'L'); 
-$pdf->Cell($c4,5, $head->date ,0,1,'L');        
+$pdf->Cell($c1,5,utf8_decode( $client->name ),0,1);       
 $pdf->Cell($lm);
 $pdf->SetFont('helvetica','',10);    
-$pdf->Cell($c1,5, $client->address ,0,0);
-$pdf->Cell($c3 + $c3); 
-$pdf->SetFont('helvetica','',10);  
-  
-if($due > 0) {   
-    $pdf->Cell($c3,5, t("Due date") . ":",0,0,'L');    
-    $pdf->Cell($c4,5, $due  ,0,1,'L');
- } else {
-    $pdf->Cell($c3,5, '',0,0,'L');    
-    $pdf->Cell($c4,5, ''  ,0,1,'L'); 
- }
+$pdf->Cell($c1,5, $client->address ,0,1);
 
 if ( $client->address2 != '') { 
     $pdf->SetFont('helvetica','',10);
@@ -230,8 +227,7 @@ if ( $client->address2 != '') {
     $pdf->SetFont('helvetica','',12);       
     $pdf->Cell($c3,5,"",0,0,'L');    
     $pdf->Cell($c4,5,"",0,1,'L');
-}
-    
+}   
     
 $pdf->SetFont('helvetica','',10);       
 $pdf->Cell($lm);

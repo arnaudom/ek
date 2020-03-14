@@ -25,8 +25,8 @@
           })
           .autocomplete({
             source: function( request, response ) {
-              jQuery.getJSON( "../../ek_sales/autocomplete/user", {
-              term: extractLast( request.term )
+              jQuery.getJSON( drupalSettings.path.baseUrl + "ek_admin/user/autocomplete", {
+              q: extractLast( request.term )
               }, response );
             },
             search: function() {
