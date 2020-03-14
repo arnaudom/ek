@@ -58,7 +58,7 @@ class ReconciliationForm extends FormBase {
     public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler'),
-                $container->get('entity.manager')->getStorage('file')
+                $container->get('entity_type.manager')->getStorage('file')
         );
     }
 

@@ -83,8 +83,12 @@ Switch ($source) {
                     ->query($query, array(':id' => $head->entity))
                     ->fetchObject();
         } else {
-            $query = "SELECT * from {users_field_data} where uid=:id";
-            $company = db_query($query, array(':id' => $head->entity))->fetchObject();
+            $query = Database::getConnection()->select('users_field_data', 'u');
+            $query->fields('u');
+            $query->condition('uid', $head->entity);
+            $company = $query->execute()->fetchObject();
+            //$query = "SELECT * from {users_field_data} where uid=:id";
+            //$company = db_query($query, array(':id' => $head->entity))->fetchObject();
 
         }   
         
@@ -140,10 +144,13 @@ Switch ($source) {
                 ->query($query, $a);
             
                WHILE($l = $list->fetchObject()) {
-                   
-                    $query = "SELECT * from {users_field_data} where uid=:id";
-                    $entity = db_query($query, array(':id' => $l->entity))
-                            ->fetchAssoc();
+                    $query = Database::getConnection()->select('users_field_data', 'u');
+                    $query->fields('u');
+                    $query->condition('uid', $l->entity);
+                    $entity = $query->execute()->fetchAssoc();
+                    //$query = "SELECT * from {users_field_data} where uid=:id";
+                    //$entity = db_query($query, array(':id' => $l->entity))
+                    //        ->fetchAssoc();
                     
                     $query = "SELECT * from {ek_company} where id=:id";
                     $entity_to = Database::getConnection('external_db', 'external_db')

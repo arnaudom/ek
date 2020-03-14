@@ -95,7 +95,7 @@ class MemoExpensesController extends ControllerBase {
         }
         
         $clone = ($request->query->get('action') == 'clone') ? TRUE : FALSE;
-        $tempSerial = 'temp' .  hash('crc32b', \Drupal::currentUser()->getUsername());
+        $tempSerial = 'temp' .  hash('crc32b', \Drupal::currentUser()->getAccountName());
         
         // filter edition access 
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
@@ -151,7 +151,7 @@ class MemoExpensesController extends ControllerBase {
                         ->execute();
             }
         }
-        $tempSerial = 'temp' .  hash('crc32b', \Drupal::currentUser()->getUsername());
+        $tempSerial = 'temp' .  hash('crc32b', \Drupal::currentUser()->getAccountName());
         $clone = ($request->query->get('action') == 'clone') ? TRUE : FALSE;
 
         // filter edition access 
@@ -221,7 +221,7 @@ class MemoExpensesController extends ControllerBase {
         }
 
         if ($memo) {
-            $tempSerial = 'temp' .  hash('crc32b', \Drupal::currentUser()->getUsername());
+            $tempSerial = 'temp' .  hash('crc32b', \Drupal::currentUser()->getAccountName());
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\AttachFileMemo', $id, $tempSerial);
         } else {
             $url = Url::fromRoute($route, [],[])->toString();

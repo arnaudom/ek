@@ -876,7 +876,7 @@ class Journal {
             //Todo implement tracking on delete data (sales doc delete, journal delete)
             $fields = array(
                 'jid' => $insert,
-                'username' => \Drupal::currentUser()->getUsername(),
+                'username' => \Drupal::currentUser()->getAccountName(),
                 'action' => 1,
                 'timestamp' => date('U')
             );

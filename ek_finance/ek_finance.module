@@ -229,7 +229,7 @@ function ek_finance_mail($key, &$message, $params) {
     global $base_url;
     $params['options']['logo'] = $base_url . $theme['url'];
     $params['options']['site'] = \Drupal::config('system.site')->get('name');
-    $params['options']['origin'] = \Drupal::currentUser()->getUsername();
+    $params['options']['origin'] = \Drupal::currentUser()->getAccountName();
     $params['options']['stamp'] = date('F j, Y, g:i a');
     
     switch($key) {
@@ -274,17 +274,17 @@ function ek_finance_form_user_delete_validate(&$form, \Drupal\Core\Form\FormStat
 
   if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
         if ($form_state->getValue('move_finance') <> '') {
+            $query = Database::getConnection()->select('users_field_data', 'u');
+            $query->fields('u', ['uid']);
+            $query->condition('name', $form_state->getValue('move_finance'));
+            $data = $query->execute()->fetchField();
             
-            $query = "SELECT uid FROM {users_field_data} WHERE name = :n";
-            $data = db_query($query, [':n' => $form_state->getValue('move_finance')])
-                    ->fetchField();
             if ($data) {
                 $form_state->setValue('move_finance', $data);
             } else {
                 $form_state->setErrorByName('move_finance', t('Unknown user to move documents'));
             }
             
-  
         }
     
      return $form;

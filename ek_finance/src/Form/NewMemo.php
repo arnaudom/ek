@@ -222,7 +222,7 @@ if ($this->settings->get('companyMemo') == 1){
          
      } else {
           $entity = array(
-            \Drupal::currentUser()->id() => \Drupal::currentUser()->getUsername()
+            \Drupal::currentUser()->id() => \Drupal::currentUser()->getAccountName()
           );
           $data->entity = \Drupal::currentUser()->id();
      }
@@ -1125,17 +1125,20 @@ $rows = $form_state->getValue('itemTable');
   
   if ($form_state->getValue('category') == 5 && $this->settings->get('authorizeMemo') == 1 ) {
   // send a notification
-    $query = "SELECT name,mail from {users_field_data} WHERE uid=:u";
-    $user_memo = db_query($query, array(':u' => \Drupal::currentUser()->id() ))->fetchObject();
-    $authorizer_mail = db_query($query, array(':u' => $uid ))->fetchObject();
-    $entity_mail = db_query($query, array(':u' => $form_state->getValue('entity') ))->fetchObject();
-  
+    //$query = "SELECT name,mail from {users_field_data} WHERE uid=:u";
+    //$user_memo = db_query($query, array(':u' => \Drupal::currentUser()->id() ))->fetchObject();
+    $user_memo =  \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
+    //$authorizer_mail = db_query($query, array(':u' => $uid ))->fetchObject();
+    $authorizer_mail = \Drupal\user\Entity\User::load($uid);
+    //$entity_mail = db_query($query, array(':u' => $form_state->getValue('entity') ))->fetchObject();
+    $entity_mail = \Drupal\user\Entity\User::load($form_state->getValue('entity'));
+            
     $action = array( 1 => t('pending approval'), 2 => t('authorized'), 3 => t('rejected') );
   
     $params['subject'] = t("Authorization notification") . ' - ' . $action[$form_state->getValue('action')];
     $url = $GLOBALS['base_url'] . Url::fromRoute('ek_finance_manage_personal_memo', array('id' => $reference))->toString();
     $params['options']['url'] = "<a href='". $url ."'>" . $serial . "</a>";
-    $params['options']['user'] = $user_memo->name;
+    $params['options']['user'] = $user_memo->getAccountName();
     $body = '';
     $body .= t('Memo ref. @p',['@p' => $serial]) ; 
     $body .= '<br/>' . t('Status') . ': ' . $action[$form_state->getValue('action')];
@@ -1145,39 +1148,41 @@ $rows = $form_state->getValue('itemTable');
         
         $body .= '<br/>' .  t('Authorization action is required. Thank you.');
         $params['body'] = $body;
-        if ($target_user = user_load_by_mail($authorizer_mail->mail)) {
-            $target_langcode = $target_user->getPreferredLangcode();
+        if ($authorizer_mail) {
+            $target_langcode = $authorizer_mail->getPreferredLangcode();
         } else {
             $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
         }
-         $send = \Drupal::service('plugin.manager.mail')->mail(
+        if ($authorizer_mail) {
+            $send = \Drupal::service('plugin.manager.mail')->mail(
                 'ek_finance',
                 'key_memo_note',
-                $authorizer_mail->mail ,
+                $authorizer_mail->getEmail() ,
                 $target_langcode,
                 $params,
-                $user_memo->mail,
+                $user_memo->getEmail(),
                 TRUE
               );
             
               if($send['result'] == FALSE) {
-                $error[] = $authorizer_mail->mail ;
+                $error[] = $authorizer_mail->getEmail() ;
               }   
-    
+        }
     } elseif(\Drupal::currentUser()->id() == $uid) {
     //authorizer editing
         
         $body .= '<br/>' .  t('Authorization has been reviewed. Thank you.');
         $params['body'] = $body;
-        if ($target_user = user_load_by_mail($entity_mail->mail)) {
-            $target_langcode = $target_user->getPreferredLangcode();
+        if ($entity_mail) {
+            $target_langcode = $entity_mail->getPreferredLangcode();
         } else {
             $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
         }        
-         $send = \Drupal::service('plugin.manager.mail')->mail(
+        if ($entity_mail) {
+            $send = \Drupal::service('plugin.manager.mail')->mail(
                 'ek_finance',
                 'key_memo_note',
-                $entity_mail->mail,
+                $entity_mail->getEmail(),
                 $target_langcode,
                 $params,
                 $user_memo->mail,
@@ -1187,7 +1192,7 @@ $rows = $form_state->getValue('itemTable');
               if($send['result'] == FALSE) {
                 $error[] = $user_memo->mail ;
               }      
-    
+        }
     }
   
     if(!empty($error)) {
@@ -1207,10 +1212,14 @@ $rows = $form_state->getValue('itemTable');
             $entity = $query->execute()->fetchObject();
             $entity_mail = $entity->email;
         } else {
-            $query = "SELECT name,mail from {users_field_data} WHERE uid=:u";
-            $entity = db_query($query, array(':u' => $form_state->getValue('entity')))
-                    ->fetchObject();
-            $entity_mail = $entity->mail;
+            //$query = "SELECT name,mail from {users_field_data} WHERE uid=:u";
+            //$entity = db_query($query, array(':u' => $form_state->getValue('entity')))
+            //        ->fetchObject();
+            //$entity_mail = $entity->mail;
+            $query =  \Drupal\user\Entity\User::load($form_state->getValue('entity'));
+            if($query) {
+                $entity_mail = $query->getEmail();
+            }
         }
       
       $query = Database::getConnection('external_db', 'external_db')

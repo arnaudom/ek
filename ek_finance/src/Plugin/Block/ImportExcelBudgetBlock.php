@@ -13,7 +13,7 @@ use Drupal\Core\Access\AccessResult;
  * @Block(
  *   id = "import_excel_budget_block",
  *   admin_label = @Translation("Import Excel budget"),
- *   category = @Translation("Ek Finance Widgets")
+ *   category = @Translation("Ek Finance block")
  * )
  */
 class ImportExcelBudgetBlock extends BlockBase {

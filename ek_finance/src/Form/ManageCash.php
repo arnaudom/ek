@@ -195,13 +195,20 @@ class ManageCash extends FormBase {
                 $list = array();
 
                 while ($u = $uid->fetchObject()) {
-                    $name = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $u->uid))
-                            ->fetchField();
-                    if ($name == '') {
-                        $name = t('Unknown') . " " . $i;
+                    $uaccount = \Drupal\user\Entity\User::load($u->uid);
+                    if($uaccount) {
+                        $list[$u->uid] = $uaccount->getAccountName();
+                    } else {
+                        $list[$u->uid] = t('Unknown') . " " . $i;
                         $i++;
                     }
-                    $list[$u->uid] = $name;
+                    //$name = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $u->uid))
+                    //        ->fetchField();
+                    //if ($name == '') {
+                    //    $name = t('Unknown') . " " . $i;
+                    //    $i++;
+                    //}
+                    //$list[$u->uid] = $name;
                 }
                 natcasesort($list);
 
@@ -321,10 +328,7 @@ class ManageCash extends FormBase {
             if ($form_state->getValue('transaction') == 4 || $form_state->getValue('transaction') == 5) {
                 //allocate cash to employee or return cash from employee to company cash
                 // select employee
-
-                $user = db_query('SELECT uid,name from {users_field_data} WHERE uid > :u order by name', array(':u' => 1))
-                        ->fetchAllKeyed();
-
+                
                 $form['coid'] = array(
                     '#type' => 'select',
                     '#size' => 1,
@@ -336,7 +340,7 @@ class ManageCash extends FormBase {
                 $form['user'] = array(
                     '#type' => 'select',
                     '#size' => 1,
-                    '#options' => $user,
+                    '#options' => \Drupal\ek_admin\Access\AccessCheck::listUsers(),
                     '#required' => TRUE,
                     '#title' => t('employee'),
                     '#attributes' => array('style' => array('width:300px;')),

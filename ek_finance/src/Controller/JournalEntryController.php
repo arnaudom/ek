@@ -131,7 +131,73 @@ class JournalEntryController extends ControllerBase {
         }
         Return $build;
     }
+    
+    /**
+     *  Trace sales records not in journal and get update form
+     *  use if sales modules is available
+     *  utility to use when finance module is installed after sales modules to transfer data.
+     */
+    public function updateJournalSales(Request $request) {
+        
+        $coid = $request->query->get('coid');
+        if(!NULL == $coid) {
+            $build = [];
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice', 'i');
+            $query->fields('i',['id','serial','status']);
+            $query->condition("head", $coid);
+            $query->condition("type",4, "<");// exclude credit notes
+            $invoices = $query->execute();
+            
+            $count_invoices = [];
+            while($i = $invoices->fetchObject()){
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+                $query->fields('j',['id']);
+                $query->condition("reference", $i->id);
+                $query->condition("coid", $coid);
+                $query->condition("source","invoice");
+                
+                $jid = $query->execute()->fetchField();
+                
+                if(NULL == $jid) {
+                    $count_invoices[$i->id] = ['serial' => $i->serial,'status' => $i->status];
+                }
+                
+            }
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_purchase', 'p');
+            $query->fields('p',['id','serial','status']);
+            $query->condition("head", $coid);
+            $query->condition("type",4, "<");// exclude debit notes
+            $purchases = $query->execute();
+            
+            $count_purchases = [];
+            while($p = $purchases->fetchObject()){
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+                $query->fields('j',['id']);
+                $query->condition("reference", $p->id);
+                $query->condition("coid", $coid);
+                $query->condition("source","purchase");
+                
+                $jid = $query->execute()->fetchField();
+                
+                if(NULL == $jid) {
+                    $count_purchases[$p->id] = ['serial' => $p->serial,'status' => $p->status];
+                }
+                
+            }
+            
+            if (!empty($count_invoices) || !empty($count_purchases)) {
+                $build['journal_edit'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\updatejournalSales', $count_invoices,$count_purchases,$coid);
+            }
+            return $build;
+            
+        }
+        
+        return new \Symfony\Component\HttpFoundation\Response('', 204);   
+    }
 
 }
-
-//class

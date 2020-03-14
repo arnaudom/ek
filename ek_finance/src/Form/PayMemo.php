@@ -124,10 +124,13 @@ class PayMemo extends FormBase {
 
         if($data->category == 5) {
             //add option to pay from user cash account
-            $query = "SELECT name from {users_field_data} WHERE uid=:uid";
-            $name = db_query($query, array(':uid' => $data->entity))
-                    ->fetchField();
-            $options[(string)t('user cash account')] = array('user' => $name);
+            //$query = "SELECT name from {users_field_data} WHERE uid=:uid";
+            //$name = db_query($query, array(':uid' => $data->entity))
+            //        ->fetchField();
+            $uaccount = \Drupal\user\Entity\User::load($data->entity);
+            if($uaccount) {
+                $options[(string)t('user cash account')] = array('user' => $uaccount->getAccountName());
+            }
         }
         $options[(string)t('cash')] = $cash;
         $options[(string)t('bank')] = BankData::listbankaccountsbyaid($data->entity_to);
@@ -437,9 +440,13 @@ class PayMemo extends FormBase {
         // FILTER payment account
         if ($form_state->getValue('bank_account') == "user") {
             //use user cash account
-            $query = "SELECT name from {users_field_data} WHERE uid=:uid";
-            $employee = db_query($query, array(':uid' => $data->entity))
-                    ->fetchField();
+            //$query = "SELECT name from {users_field_data} WHERE uid=:uid";
+            //$employee = db_query($query, array(':uid' => $data->entity))
+            //        ->fetchField();
+            $uaccount = \Drupal\user\Entity\User::load($data->entity);
+            if($uaccount) {
+                $employee = $uaccount->getAccountName();
+            }
             $currency2 = $data->currency;
             $cash = 'Y';
             $settings = new CompanySettings($data->entity_to);
@@ -569,10 +576,14 @@ class PayMemo extends FormBase {
                     $entity = $query->execute()->fetchObject();
                     $entity_mail = $entity->email;
                 } else {
-                    $query = "SELECT name,mail from {users_field_data} WHERE uid=:u";
-                    $entity = db_query($query, array(':u' => $data->entity))
-                            ->fetchObject();
-                    $entity_mail = $entity->mail;
+                    //$query = "SELECT name,mail from {users_field_data} WHERE uid=:u";
+                    //$entity = db_query($query, array(':u' => $data->entity))
+                    //        ->fetchObject();
+                    $uaccount = \Drupal\user\Entity\User::load($data->entity);
+                    if($uaccount){
+                        $entity_mail = $uaccount->getEmail();
+                    }
+                    
                 }
                 
                 $query = Database::getConnection('external_db', 'external_db')

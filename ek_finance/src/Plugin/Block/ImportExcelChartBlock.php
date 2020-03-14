@@ -16,7 +16,7 @@ use Drupal\Core\Access\AccessResult;
  * @Block(
  *   id = "import_excel_chart_block",
  *   admin_label = @Translation("Import Excel chart of accounts"),
- *   category = @Translation("Ek Finance Widgets")
+ *   category = @Translation("Ek Finance block")
  * )
  */
 class ImportExcelChartBlock extends BlockBase {

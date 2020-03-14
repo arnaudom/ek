@@ -17,7 +17,7 @@ if ($type == 1) {
     $settings = new FinanceSettings(); 
     $baseCurrency = $settings->get('baseCurrency'); 
     $template = 'default_voucher_pdf';
-    $userName =  \Drupal::currentUser()->getUsername();
+    $userName =  \Drupal::currentUser()->getAccountName();
   
     foreach ($selection as $key => $id) {
      
@@ -73,9 +73,15 @@ $line = Database::getConnection('external_db', 'external_db')
         ->query($query, $a)->fetchObject();
 
 if ($line->uid == 0) { 
-  $employee = t("company cash account");
+    $employee = t("company cash account");
 } else {
-  $employee = db_query('SELECT name from {users_field_data} WHERE uid=:u', array(':u' => $line->uid))->fetchField();
+    //$employee = db_query('SELECT name from {users_field_data} WHERE uid=:u', array(':u' => $line->uid))->fetchField();
+    $u = Drupal\user\Entity\User::load($line->uid);
+    $employee = '';
+    if($u) {
+        $employee = $u->getAccountName();
+    }
+    
 }
   
   $company = Database::getConnection('external_db', 'external_db')
@@ -87,7 +93,7 @@ if ($line->uid == 0) {
 
   $template = 'default_cash_voucher_pdf';
   $fileName = t('cash_voucher') . '_' . $line->id;
-  $userName =  \Drupal::currentUser()->getUsername();
+  $userName =  \Drupal::currentUser()->getAccountName();
 
 }
 
@@ -116,7 +122,7 @@ $line = Database::getConnection('external_db', 'external_db')
   $data = unserialize(utf8_decode($line->data));
   $template = 'default_reco_report_pdf';
   $fileName = t('Reconciliation_report') . '_' . $line->id;
-  $userName =  \Drupal::currentUser()->getUsername();
+  $userName =  \Drupal::currentUser()->getAccountName();
 
 }
 
@@ -131,7 +137,7 @@ if ($type == 4) {
     
     $template = 'profit_and_loss_pdf';
     $fileName = t('Profit_and_loss') . '_' . $params['year'] . '_' . $params['month'];
-    $userName =  \Drupal::currentUser()->getUsername();   
+    $userName =  \Drupal::currentUser()->getAccountName();   
 }
 
 //balance sheet
@@ -145,7 +151,7 @@ if ($type == 5) {
     
     $template = 'balance_sheet_pdf';
     $fileName = t('Balance_sheet') . '_' . $params['year'] . '_' . $params['month'];
-    $userName =  \Drupal::currentUser()->getUsername();
+    $userName =  \Drupal::currentUser()->getAccountName();
 }
 
 
@@ -160,7 +166,7 @@ if ($type == 6) {
     
     $template = 'bank_label_pdf';
     $fileName = $bank->name;
-    $userName =  \Drupal::currentUser()->getUsername();
+    $userName =  \Drupal::currentUser()->getAccountName();
 
 }
 
@@ -183,7 +189,7 @@ if ($type == 7) {
     
     $template = 'bank_account_label_pdf';
     $fileName = $bank->name;
-    $userName =  \Drupal::currentUser()->getUsername();
+    $userName =  \Drupal::currentUser()->getAccountName();
 
 }
 

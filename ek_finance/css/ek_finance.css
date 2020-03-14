@@ -2,12 +2,6 @@
    cursor: pointer; 
 }
 
-.tip-module-ek-finance {
-    background-color: rgba(38, 38, 114, 0.9) !important;
-    color: #FFF !important;
-    font-family: 'Nunito', sans-serif, Arial !important;
-}
-
 .right {
   text-align:right;
 }

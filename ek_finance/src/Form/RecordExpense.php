@@ -61,7 +61,7 @@ class RecordExpense extends FormBase {
     public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler'),
-                $container->get('entity.manager')->getStorage('file')
+                $container->get('entity_type.manager')->getStorage('file')
         );
     }
 
@@ -376,7 +376,7 @@ class RecordExpense extends FormBase {
 
         if($id != NULL && !NULL == $expense->employee && $expense->employee != 'n/a') {
             $user = \Drupal\user\Entity\User::load($expense->employee);
-             if($user) {$userName = $user->getUsername();}
+             if($user) {$userName = $user->getAccountName;}
         }
         $form['user_acc']['user'] = array(
             '#type' => 'textfield',
@@ -814,9 +814,13 @@ class RecordExpense extends FormBase {
 
         if ($form_state->getValue('user') <> '') {
             
-            $query = "SELECT uid FROM {users_field_data} WHERE name = :n";
-            $data = db_query($query, [':n' => $form_state->getValue('user')])
-                    ->fetchField();
+            //$query = "SELECT uid FROM {users_field_data} WHERE name = :n";
+            //$data = db_query($query, [':n' => $form_state->getValue('user')])
+            //        ->fetchField();
+            $query = Database::getConnection()->select('users_field_data', 'u');
+            $query->fields('u', ['uid']);
+            $query->condition('name', $form_state->getValue('user'));
+            $data = $query->execute()->fetchField();
             if ($data) {
                 $form_state->setValue('uid', $data);
             } else {

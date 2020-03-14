@@ -168,7 +168,7 @@ class moveData extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
         $log = date('Y-m-d H:i') . "\r\n";
-        $log .= \Drupal::currentUser()->getUsername() . "\r\n";
+        $log .= \Drupal::currentUser()->getAccountName() . "\r\n";
         
         $class = substr($form_state->getValue("toClass"), 0, 2);
         //Journal
@@ -303,7 +303,7 @@ class moveData extends FormBase {
         
         $dir = "private://finance/log";
         if(!file_exists()) {
-            file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
         }
         $file = $dir . '/log_' . date('Y-m-d_H-i'). '_' .$form_state->getValue('coid'). '_'.$form_state->getValue('fromClass'). '_' .$form_state->getValue('toClass').  '.txt';
         $fp = fopen($file, 'w');

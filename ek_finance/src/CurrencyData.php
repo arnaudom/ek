@@ -137,7 +137,7 @@ use Drupal\Core\Database\Database;
 
 
   /**
-   * toggle active setting of a curency
+   * toggle active setting of a currency
    *
    * @param $currency = currency code (ie. 'EUR')
    * 1 = active, 0 = inactive

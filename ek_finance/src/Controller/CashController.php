@@ -104,7 +104,7 @@ class CashController extends ControllerBase {
             $user = \Drupal\user\Entity\User::load($_SESSION['cfilter']['account']);
             $aid = 'User';
             if(isset($user)) {
-                $aid = $user->getUsername();
+                $aid = $user->getAccountName();
             }
             
             $aid2 = '';
@@ -214,7 +214,7 @@ class CashController extends ControllerBase {
             $user = \Drupal\user\Entity\User::load($_SESSION['cfilter']['account']);
             $items['filter']['username'] = 'User';
             if(isset($user)) {
-                $items['filter']['username'] = $user->getUsername();
+                $items['filter']['username'] = $user->getAccountName();
             }
            
             $company = '%';    

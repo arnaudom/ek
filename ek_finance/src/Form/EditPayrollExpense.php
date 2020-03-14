@@ -59,7 +59,7 @@ class EditPayrollExpense extends FormBase {
     public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler'),
-                $container->get('entity.manager')->getStorage('file')
+                $container->get('entity_type.manager')->getStorage('file')
         );
     }
 
@@ -849,6 +849,13 @@ class EditPayrollExpense extends FormBase {
                 ->insert('ek_expenses')
                 ->fields($exp_fields)
                 ->execute();
+        
+        //delete old record
+        $del_expense = Database::getConnection('external_db', 'external_db')
+                    ->delete('ek_expenses')
+                    ->condition('allocation', $coid)
+                    ->condition('id', $form_state->getValue('edit'))
+                    ->execute();
 
         $net = round($gross - $deductions,$rounding);
         $journal->record(

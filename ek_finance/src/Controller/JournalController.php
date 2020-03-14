@@ -126,7 +126,7 @@ class JournalController extends ControllerBase {
                         ->fetchField();
                     
                     $buil['type'] = 'access';
-                    $build['message'] = ['#markup' => t('Denied access for @e to @p', ['@e' => $name, '@p' => \Drupal::currentUser()->getUsername()])];
+                    $build['message'] = ['#markup' => t('Denied access for @e to @p', ['@e' => $name, '@p' => \Drupal::currentUser()->getAccountName()])];
                     $items['alert'] = [
                         '#items' => $build,
                         '#theme' => 'ek_admin_message',

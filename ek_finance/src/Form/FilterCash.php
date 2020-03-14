@@ -133,13 +133,20 @@ class FilterCash extends FormBase {
                         $list = array();
 
                         while ($u = $uid->fetchObject()) {
-                            $name = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $u->uid))
-                                    ->fetchField();
-                            if($name == '') {
-                                $name = t('Unknown') . " " . $i;
+                            $uaccount = \Drupal\user\Entity\User::load($u->uid);
+                            if($uaccount) {
+                                $list[$u->uid] = $uaccount->getAccountName();
+                            } else {
+                                $list[$u->uid] = t('Unknown') . " " . $i;
                                 $i++;
                             }
-                            $list[$u->uid] = $name;
+                            //$name = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $u->uid))
+                            //        ->fetchField();
+                           // if($name == '') {
+                           //     $name = t('Unknown') . " " . $i;
+                           //     $i++;
+                           // }
+                           // $list[$u->uid] = $name;
                         }
                         natcasesort($list);
                     break;

@@ -1,9 +1,12 @@
 name : 'ek_finance'
 type: module
 description: 'finance and accounts module for ek management tools suite'
+dependencies:
+  - ek_admin
 core: 8.x
+core_version_requirement: ^8 || ^9
+version: "8.x.1.0-beta1"
 package: ek 
-version: "8.5.x.y"
 project: "ARREA"
 datestamp: "1398873600"
 

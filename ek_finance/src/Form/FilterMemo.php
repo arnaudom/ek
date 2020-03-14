@@ -89,7 +89,7 @@ class FilterMemo extends FormBase {
                 $category = 'personal';
             } else {
                 $entity = array(
-                    \Drupal::currentUser()->id() => \Drupal::currentUser()->getUsername()
+                    \Drupal::currentUser()->id() => \Drupal::currentUser()->getAccountName()
                 );
             }
         } else {

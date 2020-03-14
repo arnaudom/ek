@@ -11,6 +11,18 @@ use Drupal\Core\Database\Database;
  * Implements hook_uninstall().
  */
 function ek_finance_uninstall() {
+    
+    $configs = [
+        'tour.tour.journal_entry',
+        'tour.tour.pay_memoe',
+        'tour.tour.receive_memo',
+    ];
+    
+    foreach ($configs as $config) {
+        // Deleting config.
+        \Drupal::configFactory()->getEditable($config)->delete();
+    }
+    
     // Clear data out of the cache.
     \Drupal::cache('data')->deleteAll();
 }
@@ -1209,5 +1221,13 @@ function ek_finance_update_8017() {
  * Add route for audit
  */
 function ek_finance_update_8018() {
+    \Drupal::service('router.builder')->rebuild();
+}
+
+
+/**
+ * Add route for sales update
+ */
+function ek_finance_update_8019() {
     \Drupal::service('router.builder')->rebuild();
 }

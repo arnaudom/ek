@@ -258,9 +258,14 @@ class QuickEdit extends FormBase {
                 ->execute();
 
         $update2 = Database::getConnection('external_db', 'external_db')
-                ->update("ek_journal")
-                ->fields(['date' => $form_state->getValue('date')])
-                ->condition('source', 'expense')
+                ->update("ek_journal");
+        //add conditions when editing expenses recorded via payroll
+        $or = $update2->orConditionGroup();
+        $or->condition('source', 'expense');
+        $or->condition('source', 'payroll');
+        $or->condition('source', 'expense payroll');
+        $update2->fields(['date' => $form_state->getValue('date')])
+                ->condition($or)
                 ->condition('reference', $id)
                 ->execute();
             

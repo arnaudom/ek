@@ -51,7 +51,7 @@ if($head->category < 5){
 } else {
     $pdf->SetCreator($company_to->name);
 }
-$pdf->SetAuthor(\Drupal::currentUser()->getUsername());
+$pdf->SetAuthor(\Drupal::currentUser()->getAccountName());
 $pdf->SetTitle(t('Expense memos'));
 $pdf->SetSubject(t('Expense memos'));
 $pdf->SetKeywords(t('Expense memos') );

@@ -20,6 +20,14 @@ ek_finance_move_data:
   requirements:
     _permission: 'administrate_finance'
 
+ek_finance.sales:
+  path: '/ek_finance/sales/update'
+  defaults:
+    _title: 'Update sales in journal'
+    _controller: '\Drupal\ek_finance\Controller\JournalEntryController::updateJournalSales'
+  requirements:
+    _permission: 'administrate_finance'
+    
 #audit functionalities    
 ek_finance.audit:
   path: '/finance/audit/{audit}/{param}'
