@@ -108,8 +108,11 @@ class MessageController extends ControllerBase {
                 ->execute();
 
         $message = $data->fetchObject();
-        $message->from = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $message->from_uid))
-                ->fetchField();
+        $account = \Drupal\user\Entity\User::load($message->from_uid);
+        if($account) {
+            $message->from = $account->getDisplayName();
+        }
+        
         $message->time = date('l jS \of F Y h:i:s A', $message->stamp);
         if ($message->priority == 3) {
             $message->color = "green";
@@ -226,13 +229,16 @@ class MessageController extends ControllerBase {
 
         $options = array();
 
-
         $i = 0;
         $uid = \Drupal::currentUser()->id();
         while ($r = $data->fetchObject()) {
             $i++;
-            $from = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $r->from_uid))
-                    ->fetchField();
+            $account = \Drupal\user\Entity\User::load($r->from_uid);
+            $from = '';
+            if($account) {
+                $from = $account->getDisplayName();
+            }
+            
             $link = Url::fromRoute('ek_messaging_read', array('id' => $r->id))->toString();
             $subject = "<a title='" . t('open') . "' href='" . $link . "'>" . $r->subject . "</a>";
             if ($r->priority == 3) {
@@ -368,9 +374,10 @@ class MessageController extends ControllerBase {
             $addresses = explode(',', $r->to);
             foreach ($addresses as $uid) {
                 if ($uid > 0) {
-                    $name = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $uid))
-                            ->fetchField();
-                    $to .= $name . ', ';
+                    $account = \Drupal\user\Entity\User::load($uid);
+                    if($account) {
+                        $to .= $account->getDisplayName(). ', ';
+                    }
                 }
             }
             $to = rtrim($to, ', ');
@@ -518,13 +525,17 @@ class MessageController extends ControllerBase {
             $addresses = explode(',', $r->to);
             foreach ($addresses as $uid) {
                 if ($uid > 0) {
-                    $name = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $uid))
-                            ->fetchField();
-                    $to .= $name . ', ';
+                    $account = \Drupal\user\Entity\User::load($uid);
+                    if($account) {
+                        $to .= $account->getDisplayName(). ', ';
+                    }
                 }
             }
-            $from = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $r->from_uid))
-                    ->fetchField();
+            $account = \Drupal\user\Entity\User::load($r->from_uid);
+            $from = '';
+            if($account){
+                $from = $account->getDisplayName();
+            }
             $to = rtrim($to, ', ');
             $link = Url::fromRoute('ek_messaging_read', array('id' => $r->id))->toString();
             $subject = "<a title='" . t('open') . "' href='" . $link . "'>" . $r->subject . "</a>";
@@ -707,22 +718,20 @@ class MessageController extends ControllerBase {
 
     /**
      * Return ajax user autocomplete data
-     *
+     * Deprecated : use default ek_admin resources userAutocomplete
      */
     public function autocomplete(Request $request) {
-
+        /*
         $text = $request->query->get('term');
         $name = array();
 
         $query = "SELECT distinct name from {users_field_data} WHERE mail like :t1 or name like :t2 ";
         $a = array(':t1' => "$text%", ':t2' => "$text%");
-        $name = db_query($query, $a)->fetchCol();
-
-
-
+        //$name = db_query($query, $a)->fetchCol();
+ 
         return new JsonResponse($name);
+         
+         */
     }
 
 }
-
-//class

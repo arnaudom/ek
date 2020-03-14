@@ -40,14 +40,27 @@ class Message extends FormBase {
                 '#value' => $id,
             );
 
-            $query = "SELECT * FROM {ek_messaging} m INNER JOIN {ek_messaging_text} t ON m.id=t.id WHERE t.id=:id";
-            $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
-
-            $to = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $data->from_uid))->fetchField() . ', ';
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_messaging', 'm'); 
+            $query->fields('m');
+            $query->innerJoin('ek_messaging_text', 't', 'm.id=t.id');
+            $query->fields('t');
+            $query->condition('t.id', $id);
+            $data = $query->execute()->fetchObject();            
+            $account = \Drupal\user\Entity\User::load($data->from_uid);
+            $to = '';
+            if($account) {
+                $to = $account->getDisplayName();
+            }
             $subject = t('Re') . ': ' . $data->subject;
             $from = \Drupal\user\Entity\User::load($data->from_uid);
-            $quote = t('On @date, @user wrote', ['@date' => date('l jS \of F Y h:i:s A', $data->stamp), '@user' => $from->getUsername()]);
-            $text = "\r\n\r\n\r\n\r\n ------- " . $quote . " ------- \r\n\r\n" . $data->text;
+            $quote = t('On @date, @user wrote', ['@date' => date('l jS \of F Y h:i:s A', $data->stamp), '@user' => $from->getAccountName()]);
+            if($data->format == 'restricted_html'){
+                $text = "\r\n\r\n\r\n\r\n ------- " . $quote . " ------- \r\n\r\n" . $data->text;
+            } else {
+                $text = "<br><p> ------- " . $quote . " -------</p><p>" . $data->text . "</p>";
+            }
+            
         }
         $form['users'] = array(
             '#type' => 'textarea',
@@ -116,10 +129,12 @@ class Message extends FormBase {
             $list_ids = '';
             foreach ($users as $u) {
                 if (trim($u) != NULL) {
-                    //check it is a registered user 
-                    $query = "SELECT uid from {users_field_data} WHERE name=:u";
+                    //check it is a registered user
                     $uname = trim($u);
-                    $id = db_query($query, array(':u' => $uname))->fetchField();
+                    $query = Database::getConnection()->select('users_field_data', 'u');
+                    $query->fields('u', ['uid']);
+                    $query->condition('name', $uname);
+                    $id = $query->execute()->fetchField();
                     if (!$id) {
                         $error.= $uname . ' ';
                     } else {
@@ -153,7 +168,7 @@ class Message extends FormBase {
         }
 
         $currentuserId = \Drupal::currentUser()->id();
-        $currentuserName = \Drupal::currentUser()->getUsername();
+        $currentuserName = \Drupal::currentUser()->getAccountName();
         $currentuserMail = \Drupal::currentUser()->getEmail();
         $users = explode(',', $form_state->getValue('users'));
         $error = '';

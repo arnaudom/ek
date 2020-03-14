@@ -67,7 +67,7 @@ $stamp=strtotime("now");
       'priority' => $data['priority']
 
       );
-  
+
     $result= Database::getConnection('external_db', 'external_db')
             ->insert('ek_messaging')->fields($fields)->execute();
 
@@ -101,7 +101,7 @@ function ek_messaging_mail($key, &$message, $params) {
     global $base_url;
     $params['options']['logo'] = $base_url . $theme['url'];
     $params['options']['site'] = \Drupal::config('system.site')->get('name');
-    $params['options']['origin'] = \Drupal::currentUser()->getUsername();
+    $params['options']['origin'] = \Drupal::currentUser()->getAccountName();
     $params['options']['stamp'] = date('F j, Y, g:i a');
     $priority = array('3' => t('low'), '2' => t('normal'), '1' => t('high'));
     $color = array('3' => '#159F45', '2' => '#0D67A7' , '1' => '#A70D0D');
