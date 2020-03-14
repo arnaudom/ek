@@ -140,21 +140,30 @@ if($this->moduleHandler->moduleExists('ek_address_book')) {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
 
-
         $users = explode(',', $form_state->getValue('assign'));
         $error = '';
+        $list = [];
         foreach ($users as $u) {
         if (trim($u) != NULL) {
-          //check it is a registered user 
-          $query = "SELECT uid from {users_field_data} WHERE name=:u";
-          $id = db_query($query, array(':u' => $u))->FetchField();
-          if ($id == FALSE) $error.= $u . ' ';
+            //check it is a registered user 
+            $query = Database::getConnection()->select('users_field_data', 'u');
+            $query->fields('u', ['uid']);
+            $query->condition('name', $u);
+            $id = $query->execute()->fetchField();
+            //$query = "SELECT uid from {users_field_data} WHERE name=:u";
+            //$id = db_query($query, array(':u' => $u))->FetchField();
+            if (!$id) {
+                $error.= $u . ' ';
+            } else {
+                $list[] = $id;
+            }
           }
         }  
          
         if($error <> '') {
-         $form_state->setErrorByName("assign",  t('Invalid user(s)') . ': '. $error);
-         
+            $form_state->setErrorByName('assign',  t('Invalid user(s)') . ': '. $error);
+        } else {
+             $form_state->setValue('assign', $list);
         }
        
   }
@@ -166,16 +175,6 @@ if($this->moduleHandler->moduleExists('ek_address_book')) {
   
   
   $description = Xss::filter( $form_state->getValue('description') ) ;
-  $users = explode(',', $form_state->getValue('assign'));
-  $assign = '';
-    foreach ($users as $u) {
-        if (trim($u) != NULL) {
-          
-          $query = "SELECT uid from {users_field_data} WHERE name=:u";
-          $id = db_query($query, array(':u' => $u))->FetchField();
-          $assign .= $id . ' ';
-        }
-    }
   $pcode = '';
   if($form_state->getValue('pcode') != '') {
       $pcode = $form_state->getValue('pcode');
@@ -195,7 +194,7 @@ if($this->moduleHandler->moduleExists('ek_address_book')) {
     $fields = array(
         'serial' => $serial,
         'owner' => \Drupal::currentUser()->id(),
-        'assign' => trim($assign),
+        'assign' => implode(',', $form_state->getValue('assign')),
         'edit' => date('U'),
         'description' => $description,
         'status' => 1,
@@ -213,37 +212,33 @@ if($this->moduleHandler->moduleExists('ek_address_book')) {
   
 
     if($result) {
-         if($form_state->getValue('email') == 1) {
+        if($form_state->getValue('email') == 1) {
             $params = [
               'subject' => $subject,
               'body' => $body,
               'from' => $currentuserMail,
             ];
-            foreach ($users as $key => $name) {
-              if (trim($name) != NULL) {
-
-                $query = "SELECT mail from {users_field_data} WHERE name=:n";
-                $email = db_query($query, array(':n' => trim($name) ))->fetchField();
-                if ($target_user = user_load_by_mail($email)) {
-                        $target_langcode = $target_user->getPreferredLangcode();
-                    } else {
-                        $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
+            $assigned = $form_state->getValue('assign');
+            foreach ($assigned as $key => $id) {
+                //$query = "SELECT mail from {users_field_data} WHERE name=:n";
+                //$email = db_query($query, array(':n' => trim($name) ))->fetchField();
+                $account = \Drupal\user\Entity\User::load($id);
+                if($account){
+                    $send = \Drupal::service('plugin.manager.mail')->mail(
+                      'ek_intelligence',
+                      'notify_message',
+                      $account->getEmail(),
+                      $account->getPreferredLangcode(),
+                      $params,
+                      \Drupal::currentUser()->getEmail(),
+                      TRUE
+                    );
+                    if($send['result'] == FALSE) {
+                      $error .= $email . ' ';
                     }
-                $send = \Drupal::service('plugin.manager.mail')->mail(
-                  'ek_intelligence',
-                  'notify_message',
-                  trim($email),
-                  $target_langcode,
-                  $params,
-                  \Drupal::currentUser()->getEmail(),
-                  TRUE
-                );
-
-                if($send['result'] == FALSE) {
-                  $error .= $email . ' ';
                 }
-              }
             }
+            
         
             if($error != '') {
                 \Drupal::messenger()->addError(t('Error sending email to @m', ['@m' => $error]));

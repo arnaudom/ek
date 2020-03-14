@@ -4,7 +4,8 @@ description: 'provide a reports management tool'
 dependencies:
   - ek_admin
 core: 8.x
-package: ek 
-version: "8.5.x.y"
+core_version_requirement: ^8 || ^9
+version: "8.x.1.0-beta1"
+package: ek
 project: "ARREA"
 datestamp: "1398873600"

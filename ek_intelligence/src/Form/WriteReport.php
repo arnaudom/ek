@@ -98,8 +98,8 @@ class WriteReport extends FormBase {
         );  
         
       if($permission == 1) {
-          if($data->assign > 1) {
-              $assign = User::load($data->assign)->getUsername();
+          if($data->assign > 0) {
+              $assign = User::load($data->assign)->getAccountName();
           } else {
               $assign = '';
           }
@@ -241,18 +241,28 @@ class WriteReport extends FormBase {
         
         $users = explode(',', $form_state->getValue('assign'));
         $error = '';
+        $list = [];
         foreach ($users as $u) {
-        if (trim($u) != NULL) {
-          //check it is a registered user 
-          $query = "SELECT uid from {users_field_data} WHERE name=:u";
-          $id = db_query($query, array(':u' => $u))->FetchField();
-          if ($id == FALSE) $error.= $u . ' ';
-          }
+            if (trim($u) != NULL) {
+              //check it is a registered user 
+              $query = Database::getConnection()->select('users_field_data', 'u');
+                $query->fields('u', ['uid']);
+                $query->condition('name', $u);
+                $id = $query->execute()->fetchField();
+              //$query = "SELECT uid from {users_field_data} WHERE name=:u";
+              //$id = db_query($query, array(':u' => $u))->FetchField();
+                if (!$id ) {
+                    $error.= $u . ' ';
+                } else {
+                    $list[] = $id;
+                }
+            }
         }  
          
         if($error <> '') {
-         $form_state->setErrorByName("assign",  t('Invalid user(s)') . ': '. $error);
-         
+            $form_state->setErrorByName("assign",  t('Invalid user(s)') . ': '. $error);
+        } else {
+            $form_state->setValue('assign', $list);
         }
       } 
   }
@@ -264,16 +274,7 @@ class WriteReport extends FormBase {
   
   if($form_state->getValue('perm') == 1) {
   $description = Xss::filter( $form_state->getValue('description') ) ;
-  $users = explode(',', $form_state->getValue('assign'));
-  $assign = '';
-    foreach ($users as $u) {
-        if (trim($u) != NULL) {
-          
-          $query = "SELECT uid from {users_field_data} WHERE name=:u";
-          $id = db_query($query, array(':u' => $u))->FetchField();
-          $assign .= $id . ' ';
-        }
-    }
+  
   $pcode = '';
   if($form_state->getValue('pcode') != '') {
       $pcode = $form_state->getValue('pcode');
@@ -286,7 +287,7 @@ class WriteReport extends FormBase {
   $report = $form_state->getValue('report') ;
          
     $fields = array(
-        'assign' => trim($assign),
+        'assign' => implode(',', $form_state->getValue('assign')),
         'description' => $description,
         'status' => $form_state->getValue('status'),
         'edit' => date('U'),

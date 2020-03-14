@@ -113,8 +113,6 @@ class IreportController extends ControllerBase {
         $company = implode(',', $access);
 
         if ($_SESSION['ireports']['filter'] == 1) {
-
-
             //get data base on criteria
 
             $query = Database::getConnection('external_db', 'external_db')->select('ek_ireports', 'i');
@@ -135,7 +133,7 @@ class IreportController extends ControllerBase {
             while ($r = $data->fetchObject()) {
 
                 if ($r->assign > 1) {
-                    $user = User::load($r->assign)->getUsername();
+                    $user = User::load($r->assign)->getAccountName();
                 } else {
                     $user = t('not assigned');
                 }
@@ -255,12 +253,12 @@ class IreportController extends ControllerBase {
             $items['status'] = $status[$data->status];
             $items['type'] = $type[$data->type];
             if ($data->assign > 1) {
-                $items['assign'] = User::load($data->assign)->getUsername();
+                $items['assign'] = User::load($data->assign)->getAccountName();
             } else {
                 $items['assign'] = t('not assigned');
             }
             if ($data->owner > 1) {
-                $items['owner'] = User::load($data->owner)->getUsername();
+                $items['owner'] = User::load($data->owner)->getAccountName();
             } else {
                 $items['owner'] = t('no data');
             }
@@ -269,8 +267,8 @@ class IreportController extends ControllerBase {
             } else {
                 $items['edit'] = t('not edited');
             }
-            //$items['report'] = nl2br(unserialize($data->report));
-            $items['report'] = nl2br($data->report);
+            $items['report'] = nl2br(unserialize($data->report));
+            //$items['report'] = nl2br($data->report);
             $link = Url::fromRoute('ek_intelligence.write', ['id' => $id])->toString();
             $items['write'] = t('<a href="@url" >write</a>', array('@url' => $link));
             $link = Url::fromRoute('ek_intelligence.export', ['id' => $id])->toString();
@@ -336,16 +334,22 @@ class IreportController extends ControllerBase {
             $data = Database::getConnection('external_db', 'external_db')
                     ->query($query, $a)
                     ->fetchObject();
-            if ($data->assign > 1) {
-                $query = "SELECT name FROM {users_field_data} WHERE uid=:u";
-                $assign = db_query($query, array(':u' => $data->assign))->fetchField();
+            if ($data->assign > 0) {
+                $account = \Drupal\user\Entity\User::load($data->assign);
+                $assign = '';
+                if($account) {
+                    $assign = $account->getAccountName();
+                }
                 
             } else {
                 $assign = t('not assigned');
             }
-            if ($data->owner > 1) {
-                $query = "SELECT name FROM {users_field_data} WHERE uid=:u";
-                $owner = db_query($query, array(':u' => $data->owner))->fetchField();
+            if ($data->owner > 0) {
+                $account = \Drupal\user\Entity\User::load($data->owner);
+                $owner = '';
+                if($account) {
+                    $owner =  $account->getAccountName();
+                }
                 
             } else {
                 $owner = t('no data');
@@ -354,7 +358,7 @@ class IreportController extends ControllerBase {
             
             $fileName = $data->serial . '_' . 'report.docx';
             $path = "private://intelligence/reports/" . $data->coid ;
-            file_prepare_directory($path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            \Drupal::service('file_system')->prepareDirectory($path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
            
 
             $markup = array();
