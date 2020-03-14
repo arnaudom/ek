@@ -124,7 +124,7 @@ ek.look_up_contact_ajax:
   path: '/look_up_contact_ajax/{type}'
   defaults:
     _controller: '\Drupal\ek_address_book\Controller\AddressBookController::ajaxlookupcontact'
-    type: %
+    type: '%'
   requirements:
     _permission: 'view_address_book'
 
@@ -132,7 +132,7 @@ ek.look_up_email_ajax:
   path: 'look_up_email_ajax/{type}'
   defaults:
     _controller: '\Drupal\ek_address_book\Controller\AddressBookController::ajaxlookupemail'
-    type: %
+    type: '%'
   requirements:
     _permission: 'view_address_book_user_contact'
         

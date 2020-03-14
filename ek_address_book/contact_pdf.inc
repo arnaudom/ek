@@ -47,7 +47,7 @@ $pdf = $pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, '
 // set document information
 
 $pdf->SetCreator($company->name);
-$pdf->SetAuthor(\Drupal::currentUser()->getUsername());
+$pdf->SetAuthor(\Drupal::currentUser()->getAccountName());
 $pdf->SetTitle(t('Address book card') . ' ' . $cid);
 $pdf->SetSubject(t('Address book'));
 $pdf->SetKeywords(t('Address book'));

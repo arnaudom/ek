@@ -43,12 +43,23 @@ class AddressBookData {
 
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'ab');
-            $query->fields('ab', ['id', 'name']);
+            $query->fields('ab', ['id', 'name', 'type']);
             $query->condition('type', $type, 'LIKE');
             $query->condition('category', $category, 'LIKE');
             $query->condition('status', $status, 'LIKE');
             $query->orderBy('name');
-            $options = $query->execute()->fetchAllKeyed();
+            $data = $query->execute();
+        
+        $options = [];
+        $arr = ['1' => t('client'), '2' => t('supplier'), '3' => t('other')];
+        while($d = $data->fetchObject()){
+            If($type == '%') {
+                $t = $arr[$d->type]; 
+                $options[$d->id] = $d->name . " [" . $t . "]";
+            } else {
+                $options[$d->id] = $d->name;
+            }
+        }
             
         return $options;
     }

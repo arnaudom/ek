@@ -61,8 +61,8 @@ class NewAddressBookCardForm extends FormBase {
         );
         
         $salutation = array('-', t('Mr.'), t('Mrs.'), t('Miss.'));
-        $vocabulary = \Drupal::entityManager()->getStorage('taxonomy_term')->loadTree('salutation', 0, 1);
-        if ($vocabulary = \Drupal::entityManager()->getStorage('taxonomy_term')->loadTree('salutation', 0, 1)) {
+       
+        if ($vocabulary = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadTree('salutation', 0, 1)) {
             foreach ($vocabulary as $item) {
                 array_push($salutation, $item->name);
             }
