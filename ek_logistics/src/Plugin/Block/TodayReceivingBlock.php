@@ -19,7 +19,7 @@ use Drupal\Core\Url;
  * @Block(
  *   id = "logistics_today_receiving_block",
  *   admin_label = @Translation("Today receiving"),
- *   category = @Translation("Ek Logistics Widgets")
+ *   category = @Translation("Ek Logistics block")
  * )
  */
 class TodayReceivingBlock extends BlockBase {

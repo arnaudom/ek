@@ -131,7 +131,7 @@ Switch ($source) {
   }
 
   $fileName = str_replace('/', '-', $head->serial);
-  $userName = \Drupal::currentUser()->getUsername();
+  $userName = \Drupal::currentUser()->getAccountName();
   
   include_once $template;  
   
