@@ -4,11 +4,7 @@ status: true
 dependencies:
   module:
     - ek_documents
-    - node
     - system
-    - user
-  theme:
-    - bartik
 id: quickuploaddocument
 theme: bartik
 region: sidebar_first

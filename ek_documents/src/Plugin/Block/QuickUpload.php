@@ -13,7 +13,7 @@ use Drupal\Core\Access\AccessResult;
  * @Block(
  *   id = "quick_upload_block",
  *   admin_label = @Translation("Quick upload document"),
- *   category = @Translation("Ek Documents Widgets")
+ *   category = @Translation("Ek Documents block")
  * )
  */
 class QuickUpload extends BlockBase {

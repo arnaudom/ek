@@ -153,7 +153,7 @@ class PostProject extends FormBase {
                             ->fields($fields)->execute();
 
             if ($insert) {
-                $log = 'user ' . \Drupal::currentUser()->id() . '|' . \Drupal::currentUser()->getUsername()
+                $log = 'user ' . \Drupal::currentUser()->id() . '|' . \Drupal::currentUser()->getAccountName()
                         . '|post|' . $data->filename . '|pcode|'
                         . $form_state->getValue('pcode');
                 \Drupal::logger('ek_documents')->notice($log);

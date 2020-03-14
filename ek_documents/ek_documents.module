@@ -43,6 +43,14 @@ use Drupal\Core\Database\Database;
      
  }
  
+
+/**
+ * Implements hook_ek_home().
+ */
+function ek_documents_ek_home() {
+  
+}
+
 /**
  * Implementation hook_theme().
  */
@@ -99,13 +107,13 @@ function ek_documents_file_download($uri) {
                 ->query($query, $a)
                 ->fetchObject();
         $uid = \Drupal::currentUser()->id();
-        $name = \Drupal::currentUser()->getUsername();
+        $name = \Drupal::currentUser()->getAccountName();
         $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
 
             if ($file->id && $uid) {
 
                 $now = time();
-                $name = \Drupal::currentUser()->getUsername();   
+                $name = \Drupal::currentUser()->getAccountName();   
 
 
                 if ($uid == $file->uid || $file->uid == '0') {
@@ -181,11 +189,10 @@ function ek_documents_file_download($uri) {
  */
 function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL, $priority = NULL) {
 
-
-
-  $users = implode(',' , $to);
-  $query = "SELECT name,mail from {users_field_data} WHERE (FIND_IN_SET (uid, :uid )) ";
-  $list = db_query($query, array(':uid' => $users ));
+  //$users = implode(',' , $to);
+  //$query = "SELECT name,mail from {users_field_data} WHERE (FIND_IN_SET (uid, :uid )) ";
+  //$list = db_query($query, array(':uid' => $users ));
+  $users = ',';
   $param = array();
   $site_config = \Drupal::config('system.site');
   $params['from'] =  Drupal::currentUser()->getEmail() ;
@@ -195,40 +202,41 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
   $params['options']['stamp'] = date('F j, Y, g:i a');
   $url = "<a href='". file_create_url($uri) ."'>". $filename ."</a>";
     
-    while ($l = $list->fetchObject()) {
-    
-      switch($key) {
-        case 'share' :
-        default:
-        $params['subject'] = t("Document shared");
-        $render = [
-            '#markup' => t('Dear @n , @u shared with you a document', array('@n' => $l->name, '@u' => Drupal::currentUser()->getUsername() ))   ,
-        ];
-        //$message = ['#markup' => $message];
-        $params['body'] = \Drupal::service('renderer')->render($render);
-        $render = ['#markup' => $message];
-        $params['options']['message'] = \Drupal::service('renderer')->render($render);
-        $params['options']['url'] = $url;
-        $params['options']['priority'] = $priority;
-        $template = 'key_document_share';
-        break;
-      
-      }
-        if ($target_user = user_load_by_mail($l->mail)) {
-            $target_langcode = $target_user->getPreferredLangcode();
-        } else {
-            $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
+    //while ($l = $list->fetchObject()) {
+    foreach (\Drupal\user\Entity\User::loadMultiple($to) as $account) {
+        
+      if($account) {
+        switch($key) {
+          case 'share' :
+          default:
+          $params['subject'] = t("Document shared");
+          $render = [
+              '#markup' => t('Dear @n , @u shared with you a document', array('@n' => $account->getAccountName(), '@u' => Drupal::currentUser()->getAccountName() ))   ,
+          ];
+          //$message = ['#markup' => $message];
+          $params['body'] = \Drupal::service('renderer')->render($render);
+          $render = ['#markup' => $message];
+          $params['options']['message'] = \Drupal::service('renderer')->render($render);
+          $params['options']['url'] = $url;
+          $params['options']['priority'] = $priority;
+          $template = 'key_document_share';
+          break;
+
         }
-         $send = \Drupal::service('plugin.manager.mail')->mail(
-                'ek_documents',
-                $template,
-                $l->mail ,
-                $target_langcode,
-                $params,
-                $params['from'],
-                TRUE
-              );   
-    
+        $users .= $account->id() . ',';
+        $target_langcode = $account->getPreferredLangcode();
+         
+        $send = \Drupal::service('plugin.manager.mail')->mail(
+                  'ek_documents',
+                  $template,
+                  $account->getEmail(),
+                  $target_langcode,
+                  $params,
+                  $params['from'],
+                  TRUE
+                );   
+
+      }
     }
   
     //send an email copy to me
@@ -252,19 +260,18 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
 
       if($mode == 'internal message') {  
       //add copy in internal messaging
-         
-          ek_message_register( array(
-          'uid' => \Drupal::currentUser()->id(),
-          'to' => $users,
-          'to_group' => 0,
-          'type' => 2,
-          'status' => '',
-          'inbox' => $users,
-          'archive' => '',
-          'subject' => $params['subject'],
-          'body' => serialize($params['body']),
-          'priority' => $priority,
-          )
+          ek_message_register( [
+            'uid' => \Drupal::currentUser()->id(),
+            'to' => $users,
+            'to_group' => 0,
+            'type' => 2,
+            'status' => '',
+            'inbox' => $users,
+            'archive' => '',
+            'subject' => $params['subject'],
+            'body' => serialize($params['body']),
+            'priority' => $priority,
+          ]
           );
 
       }
@@ -318,17 +325,16 @@ function ek_documents_form_user_delete_validate(&$form, \Drupal\Core\Form\FormSt
 
   if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
         if ($form_state->getValue('move_uid_documents') <> '') {
+            $query = Database::getConnection()->select('users_field_data', 'u');
+            $query->fields('u', ['uid']);
+            $query->condition('name', $form_state->getValue('move_uid_documents'));
+            $data = $query->execute()->fetchField();
             
-            $query = "SELECT uid FROM {users_field_data} WHERE name = :n";
-            $data = db_query($query, [':n' => $form_state->getValue('move_uid_documents')])
-                    ->fetchField();
             if ($data) {
                 $form_state->setValue('move_uid_documents', $data);
             } else {
                 $form_state->setErrorByName('move_uid_documents', t('Unknown user to move documents'));
             }
-            
-  
         }
     
      return $form;
@@ -356,4 +362,5 @@ function ek_documents_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStat
       
   }
 }
+
 

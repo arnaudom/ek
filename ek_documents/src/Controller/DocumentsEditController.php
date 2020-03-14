@@ -80,7 +80,7 @@ class DocumentsEditController extends ControllerBase {
 
         //verify if the folder structure exist and create
         $dir = "private://documents/users/" . \Drupal::currentUser()->id();
-        file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+        \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
         //load mydocs
         $list = [];
         $path = drupal_get_path('module', 'ek_documents');
@@ -207,12 +207,15 @@ class DocumentsEditController extends ControllerBase {
             \Drupal\Core\Cache\Cache::invalidateTags(['common_documents','my_documents','shared_documents']);
             
             if ($delete) {
-                $query = "SELECT * FROM {file_managed} WHERE uri=:u";
-                $file = db_query($query, [':u' => $uri])->fetchObject();
-                    if(!$file->fid){
+                $query = Database::getConnection()->select('file_managed', 'f');
+                $query->fields('f', ['fid']);
+                $query->condition('uri', $uri);
+                $fid = $query->execute()->fetchField();
+                    if(!$fid){
                         unlink($uri);
                     } else {
-                        file_delete($file->fid);
+                        $file = \Drupal\file\Entity\File::load($fid);
+                        $file->delete();
                     }
 
                 $response = new AjaxResponse();

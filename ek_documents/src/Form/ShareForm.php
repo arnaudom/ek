@@ -53,26 +53,24 @@ class ShareForm extends FormBase {
             foreach (\Drupal\user\Entity\User::loadMultiple() as $account) {
                 if($account->isActive() && $account->id() != $data->uid ) {
                     if($settings->get('filter_permission') == '1' && $account->hasPermission('manage_documents')) {
-                        $users[$account->id()] = $account->getUserName();
+                        $users[$account->id()] = $account->getAccountName();
                     } elseif ($settings->get('filter_permission') == '0') {
                         $roles = $account->getRoles();
-                        $users[$account->id()] = $account->getUserName() . " [" . $roles[1] . "]";
+                        $users[$account->id()] = $account->getAccountName() . " [" . $roles[1] . "]";
                     }
                     
                 }
             }
             /*
             $users = \Drupal\user\Entity\User::loadMultiple();
-            $users = db_query('SELECT uid,name FROM {users_field_data} WHERE uid<>:u AND uid<>0 AND status <> :s order by name'
+            //$users = db_query('SELECT uid,name FROM {users_field_data} WHERE uid<>:u AND uid<>0 AND status <> :s order by name'
                     , array(':u' => $data->uid, ':s' => 0))->fetchAllKeyed();
                     */
             $default = explode(',', $data->share_uid);
 
-
             $form['item'] = array(
                 '#markup' => t('Document') . ': ' . $data->filename,
             );
-
 
             $form['users'] = array(
                 '#type' => 'select',
@@ -208,7 +206,7 @@ class ShareForm extends FormBase {
                 ->condition('id', $id)
                 ->execute();
 
-        $log = 'doc id ' . $id . '|user ' . \Drupal::currentUser()->getUsername() . '|shared|' . $share_uid;
+        $log = 'doc id ' . $id . '|user ' . \Drupal::currentUser()->getAccountName() . '|shared|' . $share_uid;
         \Drupal::logger('ek_documents')->notice($log);
 
         if ($update) {

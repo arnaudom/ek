@@ -27,8 +27,6 @@ use Drupal\Core\Database\Database;
    */
   public function __construct(Database $database) {
     $this->appdata = $database->getConnection('external_db', 'external_db');
-    
-    
   }   
  
    /**
@@ -40,46 +38,46 @@ use Drupal\Core\Database\Database;
    */ 
   public static function my_documents($filter = NULL, $from = NULL, $to = NULL, $name = NULL, $order = 'filename') {
   
-  $uid = \Drupal::currentUser()->id();
-  $my = array();
+    $uid = \Drupal::currentUser()->id();
+    $my = array();
     
-  $query = "SELECT DISTINCT folder FROM {ek_documents} WHERE uid=:uid order by folder";
-  $a=array(':uid' => $uid);
-  $folders = Database::getConnection('external_db', 'external_db')->query($query, $a);
-  
+    $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_documents', 'd');
+    $query->fields('d', ['folder']);
+    $query->distinct();
+    $query->condition('uid',$uid);
+    $query->orderBy('folder');
+    $folders = $query->execute();
     while($f = $folders->fetchObject()) {
     
-    $folderarrays= array(); 
-      switch($filter) {
-      
-        case 'any':
-
-        $query = "SELECT * FROM {ek_documents} WHERE uid=:uid AND folder=:f order by :o";
-        $a=array(':uid' => $uid, ':f' => $f->folder, ':o' => $order);
-
+        $folderarrays= array();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_documents', 'd');
+        $query->fields('d');
+        $query->condition('uid',$uid,'=');
+        $query->condition('folder',$f->folder); 
+        $query->orderBy($order);
         
-        break;
-      
-        case 'key':
+          switch($filter) {
 
-        $query = "SELECT * FROM {ek_documents} WHERE uid=:uid and filename like :name and folder=:f order by :o";
-        $a=array(':uid' => $uid, ':name' => "%$name%", ':f' => $f->folder, ':o' => $order);
-               
-        break;  
+            case 'any':
+            break;
+
+            case 'key':
+            $query->condition('filename','%' . $name . '%', 'LIKE');    
+            break;  
+
+            case 'date':
+            $d1 = strtotime($from);
+            $d2 = strtotime($to);
+            $query->condition('date',$d1,'>=');
+            $query->condition('date',$d2,'<=');
+            break;    
+
+          }
         
-        case 'date':
-
-        $d1 = strtotime($from);
-        $d2 = strtotime($to);
-        $query = "SELECT * FROM {ek_documents} WHERE uid=:uid AND date>=:d1 AND date<=:d2 AND folder=:f order by :o";
-        $a = array(':uid' => $uid, ':d1' => $d1, ':d2' => $d2, ':f' => $f->folder, ':o' => $order);
-        break;    
-      
-      }
-
-    
-    $list = Database::getConnection('external_db', 'external_db')->query($query, $a);
-    
+        $list = $query->execute();
+        
              while ($l = $list->fetchObject()) {
                  
                 $extension = explode(".", $l->filename);
@@ -96,7 +94,10 @@ use Drupal\Core\Database\Database;
                 if(!file_exists($icon_path_small)){
                     $extension = 'no';
                 }
-                               
+                $size = 0;
+                if(is_numeric($l->size)) {
+                    $size = round($l->size/1000,2);
+                }
                 $thisarray = array('id' => $l->id,
                                 'fid' => $l->fid, //reserved for option usage of file_managed table
                                 'uid' => $l->uid,
@@ -111,7 +112,7 @@ use Drupal\Core\Database\Database;
                                 'timestamp' => $l->date,
                                 'date' => date("Y-m-d", $l->date),
                                 'date_full' => date('D, j M. Y', $l->date),
-                                'size' => round($l->size/1000,2),
+                                'size' => $size,
                                 'share' => $l->share,
                                 'share_uid' => $l->share_uid,
                                 'share_gid' => $l->share_gid,
@@ -125,15 +126,11 @@ use Drupal\Core\Database\Database;
               
     
     
-    } //loop folders
-  
+    } //loop folders 
 
-  return $my;
-  
-  
-  
-  }
+    return $my;
  
+  }
  
  
    /**
@@ -144,47 +141,53 @@ use Drupal\Core\Database\Database;
    */ 
   public static function shared_documents( $filter = NULL, $from = NULL, $to = NULL, $name = NULL, $order = 'filename') {
   
-  $uid = \Drupal::currentUser()->id();
-  $share = array();
+    $uid = \Drupal::currentUser()->id();
+    $share = array();
+    $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_documents', 'd');
+    $query->fields('d', ['uid']);
+    $query->distinct();
+    $query->condition('uid',0,'<>');
+    $query->condition('share',0,'>');
+    $query->orderBy('uid');
+    $folders = $query->execute();
     
-  $query = "SELECT DISTINCT uid FROM {ek_documents} WHERE uid<>:uid AND share > :sh order by uid";
-  $a=array(':uid' => $uid, ':sh' => 0);
-  $folders = Database::getConnection('external_db', 'external_db')->query($query, $a);
-  
     while($f = $folders->fetchObject()) {
     
-    $folder_name = db_query('SELECT name FROM {users_field_data} WHERE uid=:u', array(':u' => $f->uid))->fetchField();
-    $folderarrays= array(); 
-      switch($filter) {
+        $account = \Drupal\user\Entity\User::load($f->uid);
+        $folder_name = $account->getAccountName();
+        $folderarrays= array(); 
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_documents', 'd');
+        $query->fields('d');
+        $query->condition('share',0,'>'); 
+        $query->orderBy($order);
+        switch($filter) {
       
-        case 'any':
+            case 'any':
+            $query->condition('uid',$f->uid);
+            $query->condition('share_uid','%,' . $uid . ',%','LIKE');
+            break;
 
-        $query = "SELECT * FROM {ek_documents} WHERE uid=:uid AND share > :sh AND share_uid like :s order by :o";
-        $a=array(':uid' => $f->uid, ':sh' => 0, ':s' => '%,' . $uid . ',%' , ':o' => $order);
+            case 'key':
+            $query->condition('uid',$uid);
+            $query->condition('filename','%' . $name . '%','LIKE');
+            $query->condition('share_uid','%,' . $uid . ',%','LIKE');
+            break;  
 
+            case 'date':
+            $d1 = strtotime($from);
+            $d2 = strtotime($to);
+            $query->condition('uid',$uid);
+            $query->condition('date',$d1,'>=');
+            $query->condition('date',$d2,'<=');
+            $query->condition('share_uid','%,' . $uid . ',%','LIKE');
+            break;    
+      
+        }
+
+        $list = $query->execute();
         
-        break;
-      
-        case 'key':
-
-        $query = "SELECT * FROM {ek_documents} WHERE uid=:uid AND share > :sh ANd filename like :name AND share_uid like :s order by :o";
-        $a=array(':uid' => $uid, ':sh' => 0, ':name' => "%$name%", ':s' => '%,' . $uid . ',%' , ':o' => $order);
-               
-        break;  
-        
-        case 'date':
-
-        $d1 = strtotime($from);
-        $d2 = strtotime($to);
-        $query = "SELECT * FROM {ek_documents} WHERE uid=:uid AND share > :sh AND date>=:d1 AND date<=:d2 AND share_uid like :s order by :o";
-        $a = array(':uid' => $uid, ':sh' => 0, ':d1' => $d1, ':d2' => $d2, ':s' => '%,' . $uid . ',%' , ':o' => $order);
-        break;    
-      
-      }
-
-    
-    $list = Database::getConnection('external_db', 'external_db')->query($query, $a);
-    
             while ($l=$list->fetchObject()) {
                 $extension = explode(".", $l->filename);
                 $doc_name = $extension[0];
@@ -199,7 +202,10 @@ use Drupal\Core\Database\Database;
                     if(!file_exists($icon_path_small)){
                         $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/no.png';
                     }
-
+                $size = 0;
+                if(is_numeric($l->size)) {
+                    $size = round($l->size/1000,2);
+                }
                 $thisarray = array('id' => $l->id,
                                     'fid' => $l->fid, //reserved for option usage of file_managed table
                                     'uid' => $l->uid,
@@ -216,7 +222,7 @@ use Drupal\Core\Database\Database;
                                     'timestamp' => $l->date,
                                     'date' => date("Y-m-d", $l->date),
                                     'date_full' => date('D, j M. Y', $l->date),
-                                    'size' => round($l->size/1000,2),
+                                    'size' => $size,
                                     'share' => $l->share,
                                     'share_uid' => $l->share_uid,
                                     'share_gid' => $l->share_gid,
@@ -227,16 +233,12 @@ use Drupal\Core\Database\Database;
             }
             
             if(!empty($folderarrays)) {
-            array_push($share, array($folder_name => $folderarrays));
+                array_push($share, array($folder_name => $folderarrays));
             }
               
-    
-
      } //loop folders 
 
-  return $share;
-  
-  
+    return $share;
   
   }//shared 
  
@@ -248,49 +250,50 @@ use Drupal\Core\Database\Database;
    */ 
   public static function common_documents( $filter = NULL, $from = NULL, $to = NULL, $name = NULL, $order = 'filename') {
   
-  $uid = 0;
-  $common = array();
-  $manage = 0;
-    
-  $query = "SELECT DISTINCT folder FROM {ek_documents} WHERE uid=:uid order by folder";
-  $a=array(':uid' => $uid);
-  $folders = Database::getConnection('external_db', 'external_db')->query($query, $a);
+    $uid = 0;
+    $common = array();
+    $manage = 0;
+    $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_documents', 'd');
+    $query->fields('d', ['folder']);
+    $query->distinct();
+    $query->condition('uid',$uid,'=');
+    $query->orderBy('folder');
+    $folders = $query->execute();
   
     while($f = $folders->fetchObject()) {
     
-    $folderarrays= array(); 
-      switch($filter) {
-      
-        case 'any':
-
-        $query = "SELECT * FROM {ek_documents} WHERE uid=:uid AND folder=:f order by :o";
-        $a=array(':uid' => $uid, ':f' => $f->folder, ':o' => $order);
-
+        $folderarrays= array();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_documents', 'd');
+        $query->fields('d');
+        $query->condition('uid',$uid); 
+        $query->condition('folder',$f->folder); 
+        $query->orderBy($order);
         
-        break;
+        switch($filter) {
+
+            case 'any':
+            break;
+
+            case 'key':
+            $query->condition('filename','%' . $name . '%','LIKE');
+            break;  
+
+            case 'date':
+            $d1 = strtotime($from);
+            $d2 = strtotime($to);
+            
+            $query->condition('date',$d1,'>=');
+            $query->condition('date',$d2,'<=');
+            break;    
       
-        case 'key':
+        }
 
-        $query = "SELECT * FROM {ek_documents} WHERE uid=:uid and filename like :name and folder=:f order by :o";
-        $a=array(':uid' => $uid, ':name' => "%$name%", ':f' => $f->folder, ':o' => $order);
-               
-        break;  
-        
-        case 'date':
-
-        $d1 = strtotime($from);
-        $d2 = strtotime($to);
-        $query = "SELECT * FROM {ek_documents} WHERE uid=:uid AND date>=:d1 AND date<=:d2 AND folder=:f order by :o";
-        $a = array(':uid' => $uid, ':d1' => $d1, ':d2' => $d2, ':f' => $f->folder, ':o' => $order);
-        break;    
-      
-      }
-
-    
-    $list = Database::getConnection('external_db', 'external_db')->query($query, $a);
-    if(\Drupal::currentUser()->hasPermission('manage_common_documents')){ 
-        $manage = 1;
-    }
+        $list = $query->execute();
+        if(\Drupal::currentUser()->hasPermission('manage_common_documents')){ 
+            $manage = 1;
+        }
     
             while ($l=$list->fetchObject()) {
             
@@ -308,7 +311,10 @@ use Drupal\Core\Database\Database;
                     $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/no.png';
                 }
 
-
+                $size = 0;
+                if(is_numeric($l->size)) {
+                    $size = round($l->size/1000,2);
+                }
                 $thisarray = array('id' => $l->id,
                                     'fid' => $l->fid, //reserved for option usage of file_managed table
                                     'uid' => $l->uid,
@@ -325,7 +331,7 @@ use Drupal\Core\Database\Database;
                                     'timestamp' => $l->date,
                                     'date' => date("Y-m-d", $l->date),
                                     'date_full' => date('D, j M. Y', $l->date),
-                                    'size' => round($l->size/1000,2),
+                                    'size' => $size,
                                     'share' => $l->share,
                                     'share_uid' => $l->share_uid,
                                     'share_gid' => $l->share_gid,

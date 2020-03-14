@@ -13,7 +13,7 @@ use Drupal\Core\Access\AccessResult;
  * @Block(
  *   id = "filter_document_block",
  *   admin_label = @Translation("Filter documents"),
- *   category = @Translation("Ek Documents Widgets")
+ *   category = @Translation("Ek Documents block")
  * )
  */
 class Filter extends BlockBase {
