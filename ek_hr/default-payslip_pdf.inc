@@ -94,7 +94,7 @@ $pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 
 // set document information
 $pdf->SetCreator($company->name);
-$pdf->SetAuthor(\Drupal::currentUser()->getUsername());
+$pdf->SetAuthor(\Drupal::currentUser()->getAccountName());
 $pdf->SetTitle(t('Payslip'));
 $pdf->SetSubject(t('Payslip'));
 $pdf->SetKeywords(t('Payslip'));

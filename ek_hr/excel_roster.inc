@@ -109,7 +109,7 @@ $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 // Set properties
 $objPHPExcel->getProperties()->setCreator("EK")
-        ->setLastModifiedBy(\Drupal::currentUser()->getUsername())
+        ->setLastModifiedBy(\Drupal::currentUser()->getAccountName())
         ->setTitle("Duty roster")
         ->setSubject("Duty roster")
         ->setDescription("Duty roster for Excel generated using PHP classes.")

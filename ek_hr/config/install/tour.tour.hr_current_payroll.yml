@@ -1,0 +1,118 @@
+id: ek_hr.current_payroll
+module: ek_hr
+label: 'HR current payroll'
+langcode: en
+routes:
+  - route_name: ek_hr.current-payroll
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'List current payroll status'
+    body: 'Current payroll table will display the recorded payable salaries for the current period.'
+    weight: 1
+  item-1:
+    id: coid
+    plugin: text
+    label: 'Company'
+    body: "Select the company."
+    weight: 2
+    location: right
+    attributes:
+      data-id: edit-coid
+  item-2:
+    id: id
+    plugin: text
+    label: 'ID'
+    body: "System ID or given ID if any."
+    weight: 3
+    location: top
+    attributes:
+      data-id: id
+  item-3:
+    id: name
+    plugin: text
+    label: 'Name'
+    body: 'Employee name.'
+    weight: 4
+    location: top
+    attributes:
+      data-id: name
+  item-4:
+    id: month
+    plugin: text
+    label: 'Value'
+    body: 'The month of last record or payroll cycle.'
+    weight: 5
+    location: top
+    attributes:
+      data-id: month
+  item-5:
+    id: wstatus
+    plugin: text
+    label: 'Status'
+    body: 'Working status.'
+    weight: 6
+    location: top
+    attributes:
+      data-id: wstatus
+  item-6:
+    id: start
+    plugin: text
+    label: 'Start'
+    body: 'Date of starting work.'
+    weight: 7
+    location: top
+    attributes:
+      data-id: start
+  item-7:
+    id: gross
+    plugin: text
+    label: 'Gross value'
+    body: 'The value of gross salary currently recorded.'
+    weight: 8
+    location: top
+    attributes:
+      data-id: gross
+  item-8:
+    id: deduction
+    plugin: text
+    label: 'Deductions value'
+    body: 'The value of deductions currently recorded.'
+    weight: 9
+    location: top
+    attributes:
+      data-id: deduc            
+  item-9:
+    id: net
+    plugin: text
+    label: 'Net value'
+    body: 'The value of gross minus deductions currently recorded.'
+    weight: 10
+    location: top
+    attributes:
+      data-id: net            
+  item-10:
+    id: operations
+    plugin: text
+    label: 'Menu'
+    body: 'Available actions menu: <ul><li>Edit payroll data</li><li>Edit profile</li></ul>'
+    weight: 11
+    location: top
+    attributes:
+      data-id: operations
+  item-11:
+    id: excel
+    plugin: text
+    label: 'Download'
+    body: 'Click <span class="ico excel"></span> to download in spreadsheet format.'
+    weight: 12
+    location: right
+    attributes:
+      data-class: excel
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-human-resources">online documentation</a> for further help.'
+    weight: 13

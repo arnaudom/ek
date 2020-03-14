@@ -16,7 +16,7 @@ use Drupal\Core\Extension\ModuleHandler;
  * @Block(
  *   id = "hr_current_payroll_block",
  *   admin_label = @Translation("Current payroll month"),
- *   category = @Translation("Ek HR Widgets")
+ *   category = @Translation("Ek HR block")
  * )
  */
 class CurrentPayrollBlock extends BlockBase {

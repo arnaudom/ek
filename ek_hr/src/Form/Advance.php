@@ -166,7 +166,7 @@ class Advance extends FormBase {
 
                 $form['items']['itemTable']['#rows'][$i] = array(
                     'data' => array(
-                        array('data' => &$form['name']),
+                        array('data' => &$form['name'], 'class' => ['tip'], 'id' => $e->id),
                         array('data' => &$form['id']),
                         array('data' => &$form['advance']),
                         array('data' => &$form['eid']),
@@ -181,12 +181,11 @@ class Advance extends FormBase {
                 
             }
 
-            
-            $query = "SELECT current FROM {ek_hr_payroll_cycle} WHERE coid=:c";
-            $a = array(':c' => $form_state->getValue('coid'));
-            $current = Database::getConnection('external_db', 'external_db')
-                    ->query($query, $a)
-                    ->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_hr_payroll_cycle', 'c')
+                            ->fields('c', ['current'])
+                            ->condition('coid', $form_state->getValue('coid'), '=');
+            $current = $query->execute()->fetchField();
             $form['current'] = array(
                 '#type' => 'hidden',
                 '#value' => $current,
@@ -197,7 +196,6 @@ class Advance extends FormBase {
             );
             $form['actions'] = array(
                 '#type' => 'actions',
-                '#attributes' => array('class' => array('container-inline')),
             );
 
             $form['actions']['submit'] = array(
@@ -206,15 +204,10 @@ class Advance extends FormBase {
                 '#suffix' => ''
             );
             
-        }//if step 2
-
-
-        $form['#attached']['library'][] = 'ek_hr/ek_hr_css';
-
-
-
-
-
+            $form['#attached']['library'][] = ['ek_hr/ek_hr_css'];
+            
+        }
+        
         return $form;
     }
 

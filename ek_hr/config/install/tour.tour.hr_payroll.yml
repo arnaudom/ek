@@ -1,0 +1,277 @@
+id: ek_hr.payroll
+module: ek_hr
+label: 'HR manage payroll'
+langcode: en
+routes:
+  - route_name: ek_hr.payroll
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Payroll form'
+    body: 'This form records salary per employee per company.'
+    weight: 1
+  item-1:
+    id: coid
+    plugin: text
+    label: 'Company'
+    body: "Select the company."
+    weight: 2
+    location: right
+    attributes:
+      data-id: edit-coid
+  item-2:
+    id: eid
+    plugin: text
+    label: 'Employee'
+    body: "Select employee."
+    weight: 3
+    location: right
+    attributes:
+      data-id: edit-eid
+  item-3:
+    id: edit-data
+    plugin: text
+    label: 'Employee data'
+    body: 'This frame display the profile data of the selected employee.'
+    weight: 4
+    location: top
+    attributes:
+      data-id: edit-data
+  item-4:
+    id: work_base
+    plugin: text
+    label: 'Work base'
+    body: 'Work base unit(s) (WB). It can be hours, days or month. For instance 180 Hours (per month).'
+    weight: 5
+    location: right
+    attributes:
+      data-id: work_base
+  item-5:
+    id: unit_work
+    plugin: text
+    label: 'Unit worked'
+    body: 'The total units worked (TW). This will create a ratio: TW/WB to calculate salary payable from basic salary. Ex. if you set WB = 25 (days) and  TW = 24 (days), salary = Basic salary x 24 / 25.'
+    weight: 6
+    location: right
+    attributes:
+      data-id: unit_work
+  item-6:
+    id: no_pay_day
+    plugin: text
+    label: 'Day not paid'
+    body: 'Use to ajust difference between base and worked (if any).'
+    weight: 7
+    location: right
+    attributes:
+      data-id: no_pay_day
+  item-7:
+    id: leave
+    plugin: text
+    label: 'Leave'
+    body: 'Use to ajust difference between base and worked (if any).'
+    weight: 8
+    location: right
+    attributes:
+      data-id: leave
+  item-8:
+    id: basic_value
+    plugin: text
+    label: 'Calculated basic'
+    body: 'The calculated value from ratio between base and worked.'
+    weight: 9
+    location: right
+    attributes:
+      data-id: basic_value
+  item-9:
+    id: table2
+    plugin: text
+    label: 'Fixed allowances'
+    body: 'Table of fixed allowances.'
+    weight: 10
+    location: top
+    attributes:
+      data-id: table2 
+  item-10:
+    id: overtime_hours
+    plugin: text
+    label: 'Fixed allowance unit'
+    body: 'Set allowance unit(s) if any.'
+    weight: 11
+    location: right
+    attributes:
+      data-id: overtime_hours 
+  item-11:
+    id: normal_ot
+    plugin: text
+    label: 'Fixed allowance value'
+    body: 'Calculated value base on <a href="/human-resources/parameters-ad">settings</a>.'
+    weight: 12
+    location: right
+    attributes:
+      data-id: normal_ot      
+  item-12:
+    id: edit-table2-not-formula
+    plugin: text
+    label: 'Formula'
+    body: 'Click on <span class="formula"></span> to read formula (if any).'
+    weight: 13
+    location: right
+    attributes:
+      data-id: edit-table2-not-formula   
+  item-13:
+    id: table3
+    plugin: text
+    label: 'Custom allowances'
+    body: 'Table of custom allowances.'
+    weight: 14
+    location: top
+    attributes:
+      data-id: table3       
+  item-14:
+    id: custom_aw1
+    plugin: text
+    label: 'Fixed allowance value'
+    body: 'Input value. Custom allowance can have a custom name, fixed value or formula. If a formula is set the value will be calculated based on formula only and cannot be set manually. Ex. of formula: {unit_work*15} will take value of unit worked and multiply by 15.'
+    weight: 15
+    location: right
+    attributes:
+      data-id: custom_aw1       
+  item-15:
+    id: tax1
+    plugin: text
+    label: 'Tax include'
+    body: 'Click to include in revenue for personal income tax.'
+    weight: 16
+    location: right
+    attributes:
+      data-id: tax1   
+  item-16:
+    id: total_gross
+    plugin: text
+    label: 'Total'
+    body: 'This is the calculated value Basic + allowances.'
+    weight: 17
+    location: right
+    attributes:
+      data-id: total_gross
+  item-17:
+    id: less_hours
+    plugin: text
+    label: 'Less hours'
+    body: 'Adjust hours (if any).'
+    weight: 18
+    location: right
+    attributes:
+      data-id: less_hours      
+  item-18:
+    id: advance
+    plugin: text
+    label: 'Advance'
+    body: 'This is the value of salary paid in advance (if any). Advances are managed in <a href="/human-resources/advance">here</a>.'
+    weight: 19
+    location: right
+    attributes:
+      data-id: advance        
+  item-19:
+    id: table4
+    plugin: text
+    label: 'Custom deductions'
+    body: 'Table of custom deductions. Data input follows the same structure as custom allowances.'
+    weight: 20
+    location: top
+    attributes:
+      data-id: table4      
+  item-20:
+    id: total_deductions
+    plugin: text
+    label: 'Total'
+    body: 'This is the calculated total of deductions.'
+    weight: 21
+    location: right
+    attributes:
+      data-id: total_deductions
+  item-21:
+    id: table5
+    plugin: text
+    label: 'Contributions'
+    body: 'Table of funds and contributions.'
+    weight: 22
+    location: top
+    attributes:
+      data-id: table5        
+  item-22:
+    id: fund1_employer
+    plugin: text
+    label: 'Employer'
+    body: 'Share allocated to employer (if any).'
+    weight: 23
+    location: right
+    attributes:
+      data-id: fund1_employer       
+  item-23:
+    id: fund1_employee
+    plugin: text
+    label: 'Employee'
+    body: 'Share allocated to employee (if any).'
+    weight: 24
+    location: right
+    attributes:
+      data-id: fund1_employee       
+  item-24:
+    id: thisepf
+    plugin: text
+    label: 'Calculate'
+    body: 'Ckeck box to generate calculation of contribution based on the set <a href="/human-resources/parameters-main">parameters</a>.'
+    weight: 25
+    location: right
+    attributes:
+      data-id: thisepf        
+  item-25:
+    id: income_tax
+    plugin: text
+    label: 'Tax'
+    body: 'Personal income tax value.'
+    weight: 26
+    location: right
+    attributes:
+      data-id: income_tax
+  item-26:
+    id: total_net
+    plugin: text
+    label: 'Total net'
+    body: 'The net payable to employee.'
+    weight: 27
+    location: right
+    attributes:
+      data-id: total_net      
+  item-27:
+    id: total_display
+    plugin: text
+    label: 'Total net'
+    body: 'The net payable is also displayed in this box.'
+    weight: 28
+    location: top
+    attributes:
+      data-id: total_display      
+  item-28:
+    id: save
+    plugin: text
+    label: 'Save'
+    body: 'Click to save data.'
+    weight: 29
+    location: right
+    attributes:
+      data-id: savebutton        
+  item-29:
+    id: video
+    plugin: video
+    label: 'Video tutorial: use formula in payroll'
+    body: 'https://arrea-systems.com/sites/arrea-systems.com/files/2019-02/hr-formula.mp4'
+    weight: 30   
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-human-resources">online documentation</a> for further help.'
+    weight: 31

@@ -44,14 +44,6 @@ ek_hr.hr:
   js:
     js/ek_hr.js: {}
     
-ek_hr.datepicker:
-  version: VERSION
-  js:
-    js/ek_hr_date.js: {}
-  dependencies:
-    - core/jquery
-    - core/jquery.ui.datepicker
-    
 ek_hr.autocomplete:
   version: VERSION
   css:
@@ -99,9 +91,9 @@ ek_hr.roster:
   dependencies:
     - core/jquery
     - core/drupal
-    - core/jquery.ui.slider
     - core/drupal.form
     - core/jquery.form
+    - jquery_ui_slider/slider
     
 
 ek_hr.fund_edit:

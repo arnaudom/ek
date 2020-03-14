@@ -684,7 +684,7 @@ class Roster extends FormBase {
 
             $data = $form_state->getValue('roster');
             $fields = [];
-            $audit = \Drupal::currentUser()->getUsername() . "|" . date('U');
+            $audit = \Drupal::currentUser()->getAccountName() . "|" . date('U');
             $triggering_element = $form_state->getTriggeringElement();
             if ($triggering_element['#id'] == 'edit-actions-clone') {
                 //replicate this month to next.

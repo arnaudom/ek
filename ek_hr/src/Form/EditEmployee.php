@@ -55,7 +55,7 @@ class EditEmployee extends FormBase {
     public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler'),
-                $container->get('entity.manager')->getStorage('file')
+                $container->get('entity_type.manager')->getStorage('file')
         );
     }
 
@@ -70,7 +70,6 @@ class EditEmployee extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
 
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
@@ -225,20 +224,9 @@ class EditEmployee extends FormBase {
                     '#type' => 'item',
                     '#suffix' => '</div></div></div>',
                 ];
-                /*
-                $pic = file_create_url(drupal_get_path('module', 'ek_hr') . '/art/default.jpeg');
-                $image = "<img class='thumbnail' src='" . $pic . "'>";
-                $form["currentimage"] = array(
-                    '#markup' => "<p id='current' style='padding:2px;'>" . $image . "</p>",
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div></div></div>',
-                );
- 
- */
+               
             }
 
-            $query = 'SELECT uid,name from {users_field_data} WHERE uid>:u AND status=:s order by name';
-            $users = db_query($query, array(':u' => 0, ':s' => 1));
             if (isset($id) && !$id == NULL) {
                 $admin = explode(',', $r->administrator);
                 if (in_array(\Drupal::currentUser()->id(), $admin) || in_array('administrator', \Drupal::currentUser()->getRoles())) {
@@ -272,20 +260,25 @@ class EditEmployee extends FormBase {
                 '#open' => FALSE,
                 '#tree' => TRUE,
             );
+            
+            $users =\Drupal\ek_admin\Access\AccessCheck::listUsers(0);
             if (isset($users)) {
-                while ($u = $users->fetchObject()) {
-
-                    $class = in_array($u->uid, $admin) ? 'select' : '';
-                    $obj = \Drupal\user\Entity\User::load($u->uid);
-                    $role = $obj->getRoles();
-                    $role = implode(',', $role);
-                    $form['admin'][$u->uid] = array(
+                foreach($users as $k => $v) {
+                    $class = in_array($k, $admin) ? 'select' : '';
+                    $obj = \Drupal\user\Entity\User::load($k);
+                    $role = '';
+                    if($obj){
+                        $role = $obj->getRoles();
+                        $role = implode(',', $role);
+                    }
+                    
+                    $form['admin'][$k] = array(
                         '#type' => 'checkbox',
                         '#disabled' => $disable,
-                        '#title' => $u->name . ' (' . $role . ')',
-                        '#default_value' => in_array($u->uid, $admin) ? 1 : 0,
-                        '#attributes' => array('onclick' => "jQuery('#u" . $u->uid . "' ).toggleClass('select');"),
-                        '#prefix' => "<div id='u" . $u->uid . "' class='" . $class . "'>",
+                        '#title' => $v . ' (' . $role . ')',
+                        '#default_value' => in_array($k, $admin) ? 1 : 0,
+                        '#attributes' => array('onclick' => "jQuery('#u" . $k . "' ).toggleClass('select');"),
+                        '#prefix' => "<div id='u" . $k . "' class='" . $class . "'>",
                         '#suffix' => '</div>',
                     );
                 }
@@ -690,6 +683,7 @@ class EditEmployee extends FormBase {
         }//if
 
         $form['#attached']['library'][] = 'ek_hr/ek_hr.hr';
+        
 
         return $form;
     }

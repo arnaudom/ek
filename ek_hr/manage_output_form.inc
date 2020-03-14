@@ -71,7 +71,7 @@ if ($template != NULL) {
                 ->fetchField();
     }
 
-    $userName = \Drupal::currentUser()->getUsername();
+    $userName = \Drupal::currentUser()->getAccountName();
     $settings = new FinanceSettings();
     $baseCurrency = $settings->get('baseCurrency');
     $path = PrivateStream::basePath();

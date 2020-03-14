@@ -83,21 +83,28 @@ class ParametersController extends ControllerBase {
         $build['filter_hr_list'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\FilterEmployeeList');
 
         $header = array(
-            'id' => array(
+            'id' => [
                 'data' => $this->t('ID'),
                 'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
                 'sort' => 'asc',
                 'field' => 'id',
-            ),
-            'name' => array(
+                'id' => 'eid',
+            ],
+            'name' => [
                 'data' => $this->t('Name'),
                 'field' => 'name',
-                'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
-            ),
-            'status' => array(
+                'id' => 'ename',
+            ],
+            'status' => [
                 'data' => $this->t('Status'),
-            ),
-            'operations' => $this->t('Operations'),
+                'id' => 'estatus',
+                'class' => array(RESPONSIVE_PRIORITY_LOW),
+                
+            ],
+            'operations' => [
+                'data' => $this->t('Operations'),
+                'id' => 'operations', 
+            ]
         );
 
         $access = AccessCheck::GetCompanyByUser();
@@ -249,9 +256,13 @@ class ParametersController extends ControllerBase {
             }
 
             if ($data['hr'][0]->administrator != '0') {
-                $query = 'SELECT name FROM {users_field_data} WHERE uid>:u AND (FIND_IN_SET (uid, :uid )) order by name';
-                $users = db_query($query, array(':u' => 0, ':uid' => $data['hr'][0]->administrator))->fetchCol();
-                $data['hr'][0]->administrators = implode(',', $users);
+                $users =\Drupal\ek_admin\Access\AccessCheck::listUsers(0);
+                $adm = explode(',', $data['hr'][0]->administrator);
+                $list = [];
+                foreach($adm as $k => $v) {
+                    $list[] = $users[$v];
+                }
+                $data['hr'][0]->administrators = implode(',', $list);
             } else {
                 $data['hr'][0]->administrators = 0;
             }
@@ -521,9 +532,9 @@ class ParametersController extends ControllerBase {
      */
     public function employeeNew(Request $request) {
 
-
         $build['new_employee'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\EditEmployee');
         Return $build;
+
     }
 
     public function employeeEdit(Request $request, $id) {
@@ -659,11 +670,18 @@ class ParametersController extends ControllerBase {
                         ->fields($fields)->condition('id', $id)->execute();
 
         if ($del) {
-            $query = "SELECT * FROM {file_managed} WHERE uri=:u";
-            $file = db_query($query, [':u' => $uri])->fetchObject();
-            $del = file_delete($file->fid);
-
-
+            $query = Database::getConnection()->select('file_managed', 'f');
+            $query->fields('f', ['fid']);
+            $query->condition('uri', $uri);
+            $fid = $query->execute()->fetchField();
+                if(!$fid){
+                    unlink($uri);
+                } else {
+                    //file will be deleted by automated cron task
+                    $file = \Drupal\file\Entity\File::load($fid);
+                    $file->setTemporary();
+                    $file->save();
+                }
             $response = new AjaxResponse();
             $response->addCommand(new RemoveCommand('#div-' . $id));
             return $response;

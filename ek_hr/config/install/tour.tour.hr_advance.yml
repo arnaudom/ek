@@ -1,0 +1,64 @@
+id: ek_hr.advance
+module: ek_hr
+label: 'HR manage advances'
+langcode: en
+routes:
+  - route_name: ek_hr.ek_hr.advance
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Edit salary advances'
+    body: 'An advance on salary can be recorded before payment of full salary. The advance will be computed on the payroll form as a deduction.'
+    weight: 1
+  item-1:
+    id: coid
+    plugin: text
+    label: 'Company'
+    body: "Select the company."
+    weight: 2
+    location: right
+    attributes:
+      data-id: edit-coid
+  item-2:
+    id: fund1
+    plugin: text
+    label: 'Name'
+    body: "Name of employee."
+    weight: 3
+    location: top
+    attributes:
+      data-id: tour-item1
+  item-3:
+    id: fund1name
+    plugin: text
+    label: 'Id'
+    body: 'System ID or given ID if any.'
+    weight: 4
+    location: top
+    attributes:
+      data-id: tour-item2
+  item-4:
+    id: calcul
+    plugin: text
+    label: 'Value'
+    body: 'Input the value advanced in payment currency.'
+    weight: 5
+    location: top
+    attributes:
+      data-id: tour-item3
+  item-5:
+    id: submit
+    plugin: text
+    label: 'Save'
+    body: 'Click "confirm" to save value(s). The current payroll cycle is indicated.'
+    weight: 6
+    location: top
+    attributes:
+      data-id: edit-submit
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-human-resources">online documentation</a> for further help.'
+    weight: 7

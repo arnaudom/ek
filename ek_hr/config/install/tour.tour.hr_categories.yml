@@ -1,0 +1,82 @@
+id: ek_hr.categories
+module: ek_hr
+label: 'HR manage categories'
+langcode: en
+routes:
+  - route_name: ek_hr.parameters-category
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Edit categories parameters'
+    body: 'There are 5 possible categories that can be defined. Each category will have its own set of <a href="/human-resources/parameters-ad">allowance and deductions</a>.'
+    weight: 1
+  item-1:
+    id: coid
+    plugin: text
+    label: 'Company'
+    body: "Select the company."
+    weight: 2
+    location: right
+    attributes:
+      data-id: edit-coid
+  item-2:
+    id: categorya
+    plugin: text
+    label: 'Custom name'
+    body: "Input the custom name for each category you want to use."
+    weight: 3
+    location: right
+    attributes:
+      data-id: edit-a
+  item-3:
+    id: categoryb
+    plugin: text
+    label: 'Custom name'
+    body: ''
+    weight: 4
+    location: right
+    attributes:
+      data-id: edit-b
+  item-4:
+    id: categoryc
+    plugin: text
+    label: 'Custom name'
+    body: ''
+    weight: 5
+    location: right
+    attributes:
+      data-id: edit-c
+  item-5:
+    id: categoryc
+    plugin: text
+    label: 'Custom name'
+    body: ''
+    weight: 6
+    location: right
+    attributes:
+      data-id: edit-d
+  item-6:
+    id: categorycd
+    plugin: text
+    label: 'Custom name'
+    body: ''
+    weight: 7
+    location: right
+    attributes:
+      data-id: edit-e     
+  item-7:
+    id: save
+    plugin: text
+    label: 'Save'
+    body: 'Click to save data.'
+    weight: 8
+    location: top
+    attributes:
+      data-id: edit-submit  
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-human-resources">online documentation</a> for further help.'
+    weight: 22

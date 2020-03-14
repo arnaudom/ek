@@ -1,0 +1,100 @@
+id: ek_hr.main_parameters
+module: ek_hr
+label: 'HR manage main parameters'
+langcode: en
+routes:
+  - route_name: ek_hr.parameters-main
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Edit main parameters'
+    body: 'Main parameters are HR parameters that apply to all employee categories per company. These are standard deduction or contribution calculations like social security or pension fund. There are 5 customizable funds (standard application use only the first 3 while custom module can implement the others) and 1 reserved for income tax.'
+    weight: 1
+  item-1:
+    id: coid
+    plugin: text
+    label: 'Company'
+    body: "Select the company."
+    weight: 2
+    location: right
+    attributes:
+      data-id: edit-coid
+  item-2:
+    id: fund1
+    plugin: text
+    label: 'Fund 1'
+    body: "Each fund can have a name, a calculation method and salary calculation base."
+    weight: 3
+    location: top
+    attributes:
+      data-id: edit-fund-1
+  item-3:
+    id: fund1name
+    plugin: text
+    label: 'Custom name'
+    body: 'Input the custom name.'
+    weight: 4
+    location: right
+    attributes:
+      data-id: edit-fund-1-name
+  item-4:
+    id: calcul
+    plugin: text
+    label: 'Calculation method'
+    body: 'Select the calculation method. Percent for fixed deduction ratio or tabulation for mehtods based on tables. Tabulation may require custom module implementation.'
+    weight: 5
+    location: right
+    attributes:
+      data-id: edit-fund-1-calcul
+  item-5:
+    id: p1
+    plugin: text
+    label: 'Percent'
+    body: 'If you select "percent", you can update the deduction ratio for employer (if any).'
+    weight: 6
+    location: right
+    attributes:
+      data-id: edit-fund-1-employer
+  item-6:
+    id: p2
+    plugin: text
+    label: 'Percent name'
+    body: 'Deduction ratio for employee (if any).'
+    weight: 7
+    location: right
+    attributes:
+      data-id: edit-fund-1-employee 
+  item-7:
+    id: base
+    plugin: text
+    label: 'Base'
+    body: 'This is the base on which the above contribution ratios are applied. <ul><li>Contract: value as it appears in the <a href="/human-resources/new-employee">employee data</a></li><li>Other base: other value as it appears in the <a href="/human-resources/new-employee">employee data</a></li><li>Basic: value calculated in payroll</li><li>Gross: value calculated in payroll</li><li>Gross minus overtime: value calculated in payroll</li></ul>'
+    weight: 8
+    location: top
+    attributes:
+      data-id: edit-fund-1-base 
+  item-8:
+    id: tax
+    plugin: text
+    label: 'Tax'
+    body: 'The last group is reserved for tax. Parameters options are similar to previous funds.'
+    weight: 9
+    location: top
+    attributes:
+      data-id: edit-tax
+  item-9:
+    id: save
+    plugin: text
+    label: 'Save'
+    body: 'Click to save data.'
+    weight: 10
+    location: top
+    attributes:
+      data-id: edit-submit  
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-human-resources">online documentation</a> for further help.'
+    weight: 11

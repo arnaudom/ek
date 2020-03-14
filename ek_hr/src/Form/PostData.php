@@ -310,12 +310,12 @@ class PostData extends FormBase {
                     $param['month'] = $current;
                    
                     $param = serialize($param);
-                    $log = t("User @u has posted HR @now data with expenses", ['@u' => \Drupal::currentUser()->getUsername(), '@now' => $current]);
+                    $log = t("User @u has posted HR @now data with expenses", ['@u' => \Drupal::currentUser()->getAccountName(), '@now' => $current]);
                     \Drupal::logger('ek_hr')->notice( $log );
                     $form_state->setRedirect('ek_finance_payroll.record', array('param' => $param));
                 } else {
                     \Drupal::messenger()->addStatus(t('Posting recorded'));
-                    $log = t("User @u has posted HR @now data without expenses", ['@u' => \Drupal::currentUser()->getUsername(), '@now' => $current]);
+                    $log = t("User @u has posted HR @now data without expenses", ['@u' => \Drupal::currentUser()->getAccountName(), '@now' => $current]);
                     \Drupal::logger('ek_hr')->notice( $log ); 
                 }
             } //if move

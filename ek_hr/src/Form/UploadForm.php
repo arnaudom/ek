@@ -100,7 +100,7 @@ class UploadForm extends FormBase {
       if($form_state->get('new_upload')) {
 
           $dir = "private://hr/documents/" . $form_state->getValue('for_id')  ;
-          file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+          \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
           $move = file_move($form_state->get('new_upload'), $dir);
           
           if ($move) {      

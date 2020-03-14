@@ -17,7 +17,7 @@ use Drupal\Core\Database\Database;
  * @Block(
  *   id = "hr_payroll_stat_block",
  *   admin_label = @Translation("Payroll statistics"),
- *   category = @Translation("Ek HR Widgets")
+ *   category = @Translation("Ek HR block")
  * )
  */
 class PayrollStatBlock extends BlockBase {

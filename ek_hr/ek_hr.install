@@ -11,13 +11,31 @@ use Drupal\Core\Database\Database;
  * Implements hook_uninstall().
  */
 function ek_hr_uninstall() {
+    
+  $configs = [
+      'tour.tour.hr_accounts',
+      'tour.tour.hr_advance',
+      'tour.tour.hr_allowance',
+      'tour.tour.hr_categories',
+      'tour.tour.hr_create_employee',
+      'tour.tour.hr_current_payroll',
+      'tour.tour.hr_main_parameters',
+      'tour.tour.hr_param', 
+      'tour.tour.hr_payroll',
+    ];
+    
+    foreach ($configs as $config) {
+        // Deleting config.
+        \Drupal::configFactory()->getEditable($config)->delete();
+    }  
+    
   // Clear data out of the cache.
   \Drupal::cache('data')->deleteAll();
 }
 
 /**
  * Implements hook_schema().
- * schema installation is not done at install time but wihin the application
+ * schema installation is not done at install time but within the application
  * in a separate database
  */
 

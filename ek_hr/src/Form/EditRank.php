@@ -228,7 +228,7 @@ class EditRank extends FormBase {
         //write the data to the file
             $dir = "private://hr/data/" . $form_state->getValue('coid')  ."/ranks";
             if(!file_exists()) {
-                file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
             }
             $file = $dir . '/ranks.txt';
             $fp = fopen($file, 'w');

@@ -88,7 +88,7 @@ function ek_hr_file_download($uri) {
         $a = array(':uri' => $uri, ':c' => $access);
         $data = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
         $admin_array = explode(',', $data->administrator);
-        $name = \Drupal::currentUser()->getUsername();
+        $name = \Drupal::currentUser()->getAccountName();
         $place = array('@u' => $name, '@d' => $data->filename, '@i' => $data->id);
 
              if($data->administrator == '0' 
@@ -153,7 +153,7 @@ function ek_hr_theme() {
     (
       'template' => 'ek_hr_search',
       'variables' => array('items' => array()),
-    ), 
+    ),
     // for employee data
     'ek_hr_data' => array
     (

@@ -76,7 +76,12 @@ class PayrollController extends ControllerBase {
     public function Advance(Request $request) {
 
         $build['payrolladvance'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\Advance');
-        Return $build;
+        Return [
+            $build ,
+            '#attached' => array(
+                    'library' => array('ek_hr/ek_hr_css','ek_hr/ek_hr_tip','ek_admin/ek_admin_css'),
+            ),
+        ];
         
     }
     /**
@@ -169,35 +174,47 @@ class PayrollController extends ControllerBase {
                 'data' => $this->t('ID'),
                 'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
                 'sort' => 'asc',
+                'id' => 'id',
             ),
             'name' => array(
                 'data' => $this->t('Name'),
                 'field' => 'name',
                 'sort' => 'asc',
+                'id' => 'name',
             ),
             'month' => array(
                 'data' => $this->t('Month'),
+                'id' => 'month',
             ),
             'wstatus' => array(
                 'data' => $this->t('Work status'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'wstatus',
             ),
             'start' => array(
                 'data' => $this->t('Joined'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'start',
             ),
             'gross' => array(
                 'data' => $this->t('Gross salary'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'gross',
             ),
             'deduc' => array(
                 'data' => $this->t('Deductions'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
+                'id' => 'deduc',
             ),
             'net' => array(
                 'data' => $this->t('Net'),
+                'id' => 'net',
             ),
-            'operations' => '',
+            'operations' => array(
+                'data' => '',
+                'id' => 'operations',
+            ),
+            
         );
 
         $access = AccessCheck::GetCompanyByUser();
@@ -209,7 +226,7 @@ class PayrollController extends ControllerBase {
             $query->leftJoin('ek_hr_workforce', 'w', 'wp.id = w.id');
             $query->orderBy('w.id');
             $query->fields('w');
-            $query->condition('active', 'resigned', '<>');
+            //$query->condition('active', 'resigned', '<>');
             
         if (isset($_SESSION['hrlfilter']['filter']) && $_SESSION['hrlfilter']['filter'] == 1) {
 
