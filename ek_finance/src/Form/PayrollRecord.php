@@ -167,23 +167,29 @@ class PayrollRecord extends FormBase {
             $aid = $settings->get('cash_account', $c);
 
             if ($aid <> '') {
-                $query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";
-                $name = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':c' => $param['coid'], ':a' => $aid))
-                        ->fetchField();
+                
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_accounts', 'a')
+                        ->fields('a', ['aname'])
+                        ->condition('coid',$param['coid'])
+                        ->condition('aid', $aid)
+                        ->execute();
                 $key = $c . "-" . $aid;
-                $cash[$key] = '[' . $c . '] -' . $name;
+                $cash[$key] = '[' . $c . '] -' . $query->fetchField();
             }
 
             $aid = $settings->get('cash2_account', $c);
 
             if ($aid <> '') {
-                $query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";
-                $name = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':c' => $param['coid'], ':a' => $aid))
-                        ->fetchField();
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_accounts', 'a')
+                        ->fields('a', ['aname'])
+                        ->condition('coid',$param['coid'])
+                        ->condition('aid', $aid)
+                        ->execute();
+                
                 $key = $c . "-" . $aid;
-                $cash[$key] = '[' . $c . '] -' . $name;
+                $cash[$key] = '[' . $c . '] -' . $query->fetchField();
             }
         }
 
@@ -195,15 +201,23 @@ class PayrollRecord extends FormBase {
         While ($r = $data->fetchObject()) {
             $n++;
             //pull default/previous expense,credit accounts for user convenience
-                $query = "SELECT type FROM {ek_expenses} WHERE comment LIKE :c ORDER by pdate DESC limit 1";
-                $expense_account = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':c' => t('allowance') . '%' . $r->name . '%'))
-                        ->fetchField();
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_expenses', 'e')
+                        ->fields('e', ['type'])
+                        ->condition('comment','%' . $r->name . '%','LIKE' )
+                        ->orderBy('pdate', 'DESC')
+                        ->range(0, 1)
+                        ->execute();
+                $expense_account = $query->fetchField();
                 
-                $query = "SELECT cash,currency,pdate FROM {ek_expenses} WHERE comment LIKE :c ORDER by pdate DESC limit 1";
-                $credit_account = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':c' => t('allowance') . '%' . $r->name . '%'))
-                        ->fetchObject();
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_expenses', 'e')
+                        ->fields('e', ['cash','currency','pdate'])
+                        ->condition('comment', t('allowance') . '%' . $r->name . '%','LIKE' )
+                        ->orderBy('pdate', 'DESC')
+                        ->range(0, 1)
+                        ->execute();
+                $credit_account = $query->fetchObject();
             //deductions
             $deductions = array(
                 '0' => $r->epf_er + $r->epf_yee,
@@ -436,20 +450,24 @@ class PayrollRecord extends FormBase {
             if($key != 'coid' && $value['select'] == 1){
             $n++; 
             if ($value['account'] == '' || !is_numeric($value['account'])) {
-                    $form_state->setErrorByName("HrTable][$key][account", $this->t('The input value is wrong for item @n', array('@n' => $value['account'])));
+                    $form_state->setErrorByName("HrTable][$key][account", 
+                            $this->t('The input value is wrong for item @n', array('@n' => $value['account'])));
                 }
 
             if ($value['credit'] == '') {
-                    $form_state->setErrorByName("HrTable][$key][credit", $this->t('The input value is wrong for item @n', array('@n' => $value['credit'])));
+                    $form_state->setErrorByName("HrTable][$key][credit", 
+                            $this->t('The input value is wrong for item @n', array('@n' => $value['credit'])));
                 }
                 
             if ($value['fx'] == '0' || !is_numeric($value['fx'])) {
-                    $form_state->setErrorByName("HrTable][$key][fx", $this->t('The input value is wrong for item @n', array('@n' => $value['fx'])));
+                    $form_state->setErrorByName("HrTable][$key][fx", 
+                            $this->t('The input value is wrong for item @n', array('@n' => $value['fx'])));
                 }
                 
             $net = (float)str_replace(',', '', $value['net']);
             if ($net == '' || !is_numeric($net)) {
-                    $form_state->setErrorByName("HrTable][$key][net", $this->t('The input value is wrong for item @n', array('@n' => $value['net'])));
+                    $form_state->setErrorByName("HrTable][$key][net", 
+                            $this->t('The input value is wrong for item @n', array('@n' => $value['net'])));
                 }
                 
            }
@@ -458,8 +476,7 @@ class PayrollRecord extends FormBase {
 
         if ($n == 0) {
              $form_state->setErrorByName("HrTable", $this->t('No record selected'));
-             
-          }
+        }
         
         
     }
@@ -477,6 +494,12 @@ class PayrollRecord extends FormBase {
         $journal_entry = 0;
         $coid = $array['coid'];
 
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_bank_accounts', 'ba')
+                ->fields('ba', ['id', 'currency'])
+                ->execute();
+        $bank_acc_list = $query->fetchAllKeyed();
+
         foreach ($array as $key => $value) {
 
             if ($key != 'coid' && $value['select'] == 1) {
@@ -485,11 +508,6 @@ class PayrollRecord extends FormBase {
                 $allocation = $coid;
                 $date = explode("-", $value['payDate']);
                 $net = (float)str_replace(',', '', $value['net']);
-
-                $query = "SELECT id,currency FROM {ek_bank_accounts}";
-                $bank_acc_list = Database::getConnection('external_db', 'external_db')
-                        ->query($query)
-                        ->fetchAllKeyed();
 
 
                 if (strpos($value['credit'], "-")) {
@@ -505,14 +523,9 @@ class PayrollRecord extends FormBase {
 
 
                 if ($value['currency'] <> $crt_currency) {
-                    //currency of credit account is different from currency of value    
-                    $query = "SELECT rate FROM {ek_currency} WHERE currency=:c";
-                    $rate2 = Database::getConnection('external_db', 'external_db')
-                            ->query($query, [':c' => $value['currency']])
-                            ->fetchField();
-                    $rate1 = Database::getConnection('external_db', 'external_db')
-                            ->query($query, [':c' => $crt_currency])
-                            ->fetchField();
+                    //currency of credit account is different from currency of value   
+                    $rate2 = \Drupal\ek_finance\CurrencyData::rate($value['currency']);
+                    $rate1 = \Drupal\ek_finance\CurrencyData::rate($crt_currency);
                     $net = round($net * $rate1 / $rate2, $this->rounding);
                     $amount = round($net / $value['fx'], $this->rounding);
                     $currency = $crt_currency;
@@ -520,8 +533,6 @@ class PayrollRecord extends FormBase {
                     $amount = round($net / $value['fx'], $this->rounding);
                     $currency = $value['currency'];
                 }
-
-
 
                 $fields = array(
                     'class' => $class,

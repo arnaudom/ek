@@ -110,7 +110,7 @@ class ExpensesManageController extends ControllerBase {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal', 'j');
 
-            if ($settings->get('listPurchases') == 1 && $this->moduleHandler->moduleExists('ek_projects')) {
+            if ($settings->get('listPurchases') == 1) {
                 //query data with purchases
                 $query->leftjoin('ek_expenses', 'e', 'e.id=j.reference');
                 $query->leftjoin('ek_sales_purchase', 'p', 'p.id=j.reference');
@@ -398,19 +398,22 @@ class ExpensesManageController extends ControllerBase {
                 $edit = '';
                 $ref = [];
                 $receipt = '';
-
                 
                 if (strpos($r->source, 'xpense')) {
                     if ($r->tax > 0) {
                         //if tax is collected, retrieve the tax collection account per company
                         //get the total tax record from journal
                         $stax_deduct_aid = $CompanySettings->get('stax_deduct_aid');
-                        $query = "SELECT id,value,exchange FROM {ek_journal} WHERE reference=:r AND coid=:c AND aid=:a AND type=:t order by id";
-                        $a = [':r' => $r->e_id, ':c' => $r->coid, ':a' => $stax_deduct_aid, ':t' => 'debit'];
-
-                        $stax = Database::getConnection('external_db', 'external_db')
-                                ->query($query, $a);
-
+                        
+                        $query = Database::getConnection('external_db', 'external_db')
+                                ->select('ek_journal','j')
+                                ->fields('j',['id','value','exchange'])
+                                ->condition('reference', $r->e_id)
+                                ->condition('coid', $r->coid)
+                                ->condition('aid', $stax_deduct_aid)
+                                ->condition('type', 'debit')
+                                ->orderBy('id');
+                        $stax = $query->execute();
                         $stax_deduct_aid_value = array();
                         While ($st = $stax->fetchObject()) {
                             $stax_deduct_aid_value[$st->exchange] = $st->value;

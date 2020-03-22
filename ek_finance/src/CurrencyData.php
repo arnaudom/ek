@@ -106,12 +106,13 @@ use Drupal\Core\Database\Database;
    */ 
   public static function rate($currency) {
 
-      
-      $query = "SELECT rate from {ek_currency} WHERE currency=:c or name=:n";
-      $rate = Database::getConnection('external_db', 'external_db')
-              ->query($query, array(':c' => $currency,':n' => $currency ))
-              ->fetchField();
-      
+    $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_currency','c')
+            ->fields('c', ['rate']);
+    $or = $query->orConditionGroup();   
+    $or->condition('currency',$currency)->condition('name',$currency);
+    $query->condition($or);
+    $rate = $query->execute()->fetchField();      
     return $rate;
 
   }

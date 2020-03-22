@@ -287,7 +287,7 @@ class RecordExpense extends FormBase {
 
             $settings = new CompanySettings($coid);
             $aid = $settings->get('cash_account', $currency);
-            $cash = '';
+            $cash = [];
             if ($aid <> '') {
                 $query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";
                 $name = Database::getConnection('external_db', 'external_db')
@@ -306,14 +306,19 @@ class RecordExpense extends FormBase {
             //$options = array(0 => t('- Select -'));
             $options[(string) t('cash')] = $cash;
             $options[(string) t('bank')] = BankData::listbankaccountsbyaid($coid, $currency);
+            $alert = '';
+            if(empty($options[(string) t('cash')]) && empty($options[(string) t('bank')])){
+                $alert = "<div id='fx' class='messages messages--warning'>"
+                        . t('You do not have any bank or cash payment accounts. Go to <a href="@url">settings</a>.', ['@url' => Url::fromRoute('ek_finance.manage.bank_list', [], [])->toString()]) . "</div>";
+            }
             
             //provision option
             if($recordProvision == '1' || $credit == 'P') {
                 $options[(string) t('provision')] = ['P' => t('record as provision')];
             }
-            $form['credit']['bank_account']['#options'] = $options;
-            $form['credit']['bank_account']['#value'] = 0;
-            $form['credit']['bank_account']['#description'] = '';
+            //$form['credit']['bank_account']['#options'] = $options;
+            //$form['credit']['bank_account']['#value'] = 0;
+            //$form['credit']['bank_account']['#description'] = $alert;
             $form_state->set('bank_opt', $options);
             //$form_state->setRebuild();
 
@@ -327,7 +332,7 @@ class RecordExpense extends FormBase {
                 '#title' => t('account payment'),
                 '#prefix' => "<div id='credit' class='cell'>",
                 '#suffix' => '</div>',
-                '#description' => '',
+                '#description' => $alert,
                 '#validated' => TRUE,
                 '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
                 '#ajax' => array(

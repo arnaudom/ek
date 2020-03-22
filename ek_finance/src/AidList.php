@@ -146,11 +146,14 @@ class AidList {
      * @Return string  
      */
     public static function aname($coid = NULL, $aid = NULL) {
-        $query = "SELECT aname from {ek_accounts} WHERE "
-                . "aid=:d and coid=:id";
-        return Database::getConnection('external_db', 'external_db')
-                        ->query($query, [':d' => $aid, ':id' => $coid])
-                        ->fetchField();
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a')
+                    ->fields('a', ['aname'])
+                    ->condition('aid',$aid)
+                    ->condition('coid',$coid)
+                    ->execute();
+        return $query->fetchField();
     }
 
     /**

@@ -98,25 +98,30 @@ class EditPayrollExpense extends FormBase {
             '#markup' => t('<a href="@url">List</a>', array('@url' => Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString())),
         );
 
-        if ($form_state->get('num_items') == NULL) {
-            
-            
+        if ($form_state->get('num_items') == NULL) {            
             //get expense data
-            $query = "SELECT * from {ek_expenses} WHERE id=:id";
-            $expense = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $id))
-                    ->fetchObject();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses', 'e')
+                    ->fields('e')
+                    ->condition('id', $id)
+                    ->execute();
+            $expense = $query->fetchObject();
             //get journal data
             $query = "SELECT * from {ek_journal} WHERE source like :s and reference = :r AND exchange=:e";
             $a = array(':s' => "expense%", ':r' => $id, ':e' => 0);
-            $j_entry = Database::getConnection('external_db', 'external_db')
-                    ->query($query, $a);
+            $jEntry = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal','j')
+                    ->fields('j')
+                    ->condition('source', 'expense%', 'LIKE')
+                    ->condition('reference', $id)
+                    ->condition('exchange', 0)
+                    ->execute();
             
             $settingsHR = NEW \Drupal\ek_hr\HrSettings($expense->company);
             $paramHR = $settingsHR->HrAccounts[$expense->company];
             
             $i = 1;
-            while ($d = $j_entry->fetchObject()) {
+            while ($d = $jEntry->fetchObject()) {
 
                     $form_state->set("account" . $i, $d->aid);
                     $form_state->set("pdate", $d->date);
@@ -124,21 +129,23 @@ class EditPayrollExpense extends FormBase {
                     $form_state->set("comment" . $i, $expense->comment);
                     $form_state->set("type" . $i, $d->type);
                     $form_state->set("jid" . $i, $d->id);
-                    
                     $i++;
             }
             
             $form_state->set('num_items', $i - 1);
-
             $form_state->set('coid', $expense->company);
             $form_state->set('currency', $expense->currency);
 
             if ($expense->cash == 'Y') {
-                $query = "SELECT aid from {ek_journal} WHERE source like :s and reference = :r AND type=:t AND exchange=:e";
-                $a = array(':s' => "expense%", ':r' => $id, ':t' => 'credit', ':e' => 0);
-                $jCredit = Database::getConnection('external_db', 'external_db')
-                        ->query($query, $a)
-                        ->fetchField();
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal','j')
+                    ->fields('j',['aid'])
+                    ->condition('source', 'expense%', 'LIKE')
+                    ->condition('reference', $id)
+                    ->condition('type', 'credit')
+                    ->condition('exchange', 0)
+                    ->execute();
+                $jCredit = $query->fetchField();
                 $credit = $expense->currency . '-' . $jCredit;
                 
             } else {
@@ -256,19 +263,13 @@ class EditPayrollExpense extends FormBase {
             $aid = $settingsCo->get('cash_account', $currency);
             $cash = '';
             if ($aid <> '') {
-                $query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";
-                $name = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':c' => $coid, ':a' => $aid))->fetchField();
                 $key = $currency . "-" . $aid;
-                $cash = array($key => $name);
+                $cash = [$key => \Drupal\ek_finance\AidList::aname($coid, $aid)];
             }
             $aid = $settingsCo->get('cash2_account', $currency);
             if ($aid <> '') {
-                $query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";
-                $name = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':c' => $coid, ':a' => $aid))->fetchField();
                 $key = $currency . "-" . $aid;
-                $cash += array($key => $name);
+                $cash += [$key => \Drupal\ek_finance\AidList::aname($coid, $aid)];
             }
             
             $options[(string) t('cash')] = $cash;
@@ -339,7 +340,6 @@ class EditPayrollExpense extends FormBase {
         $supplier = array('n/a' => t('not applicable'));
         $supplier += AddressBookData::addresslist(2);
 
-
         $form['reference']['supplier'] = array(
             '#type' => 'select',
             '#size' => 1,
@@ -386,8 +386,6 @@ class EditPayrollExpense extends FormBase {
             
         );
         } // project
-
-    
         
     //debits
         $form['debit'] = array(
@@ -561,10 +559,12 @@ class EditPayrollExpense extends FormBase {
             
         } else {
             // bank account
-            $query = "SELECT currency from {ek_bank_accounts} where id=:id ";
-            $currency = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $form_state->getValue('bank_account')))
-                    ->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_bank_accounts', 'ba')
+                    ->fields('ba', ['currency'])
+                    ->condition('id', $form_state->getValue('bank_account'))
+                    ->execute();
+            $currency = $query->fetchField();
         }
 
         $fx = CurrencyData::rate($currency);
@@ -643,11 +643,7 @@ class EditPayrollExpense extends FormBase {
         $dt = 0;
         $ct = 0;
         for ($n = 1; $n <= $form_state->get('num_items'); $n++) {
-/*
-            if ($form_state->getValue("account$n") == '') {
-                $form_state->setErrorByName("account$n", $this->t('debit account @n is not selected', array('@n' => $n)));
-            }
-*/         
+         
             //filter account when allocation is different from accounts entity.
             //this has an impact on analytical report
             if(!NULL == $form_state->getValue("location") && $form_state->getValue("location") != $form_state->getValue("coid")){
@@ -683,8 +679,6 @@ class EditPayrollExpense extends FormBase {
         if ($dt != $ct) {
                 $form_state->setErrorByName("value1", $this->t('entry is not balanced'));
         }
-        
-        
     }
 
     /**
@@ -700,13 +694,8 @@ class EditPayrollExpense extends FormBase {
         
         if ($form_state->getValue('edit') != '') {
             //delete old  journal records
-            $query = "SELECT company FROM {ek_expenses} WHERE id =:r";
-            $a = array(':r' => $form_state->getValue('edit'));
             
-            $coid = Database::getConnection('external_db', 'external_db')
-                    ->query($query, $a)
-                    ->fetchField();
-            
+            $coid = $form_state->getValue('edit');
             
             $del = Database::getConnection('external_db', 'external_db')
                     ->delete('ek_journal')
