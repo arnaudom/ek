@@ -266,21 +266,24 @@ class EditEmployee extends FormBase {
                 foreach($users as $k => $v) {
                     $class = in_array($k, $admin) ? 'select' : '';
                     $obj = \Drupal\user\Entity\User::load($k);
-                    $role = '';
-                    if($obj){
-                        $role = $obj->getRoles();
-                        $role = implode(',', $role);
+                    if($k > 1 && $obj->hasPermission('new_employee')) {
+                        //restrict choice to permission
+                        $role = '';
+                        if ($obj) {
+                            $role = $obj->getRoles();
+                            $role = implode(',', $role);
+                        }
+
+                        $form['admin'][$k] = array(
+                            '#type' => 'checkbox',
+                            '#disabled' => $disable,
+                            '#title' => $v . ' (' . $role . ')',
+                            '#default_value' => in_array($k, $admin) ? 1 : 0,
+                            '#attributes' => array('onclick' => "jQuery('#u" . $k . "' ).toggleClass('select');"),
+                            '#prefix' => "<div id='u" . $k . "' class='" . $class . "'>",
+                            '#suffix' => '</div>',
+                        );
                     }
-                    
-                    $form['admin'][$k] = array(
-                        '#type' => 'checkbox',
-                        '#disabled' => $disable,
-                        '#title' => $v . ' (' . $role . ')',
-                        '#default_value' => in_array($k, $admin) ? 1 : 0,
-                        '#attributes' => array('onclick' => "jQuery('#u" . $k . "' ).toggleClass('select');"),
-                        '#prefix' => "<div id='u" . $k . "' class='" . $class . "'>",
-                        '#suffix' => '</div>',
-                    );
                 }
             }
 

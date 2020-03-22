@@ -6,7 +6,7 @@ hr_parameters:
   description: 'Set paramaters for HR managment'    
 new_employee:
   title: 'Create new employee'
-  description: 'Create new employee'  
+  description: 'Create new employee, administrate employee profile.'  
 hr_payroll:
   title: 'Payroll'
   description: 'Input payroll data per company' 

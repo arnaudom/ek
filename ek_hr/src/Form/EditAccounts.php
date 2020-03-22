@@ -95,11 +95,16 @@ class EditAccounts extends FormBase {
                 $form_state->set('step', 3);
 
                 //verify if the settings table has the company
-                $query = "SELECT count(coid) from {ek_hr_workforce_settings} where coid=:c";
-                $row = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $form_state->getValue('coid')))->fetchField();
+                
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_hr_workforce_settings')
+                        ->condition('coid', $form_state->getValue('coid'));
+                $query->addExpression('Count(coid)', 'count');
+                $obj = $query->execute();
+                //$query = "SELECT count(coid) from {ek_hr_workforce_settings} where coid=:c";
+                //$row = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $form_state->getValue('coid')))->fetchField();
 
-                if (!$row == 1) {
-
+                if ($obj->fetchObject()->count != 1) {
                     Database::getConnection('external_db', 'external_db')
                             ->insert('ek_hr_workforce_settings')
                             ->fields(array('coid' => $form_state->getValue('coid')))
@@ -109,8 +114,6 @@ class EditAccounts extends FormBase {
 
                 $category = NEW HrSettings($form_state->getValue('coid'));
                 $list = $category->HrAccounts[$form_state->getValue('coid')];
-
-
 
                 if (empty($list)) {
 
@@ -164,6 +167,7 @@ class EditAccounts extends FormBase {
                         '#options' => $options,
                         '#title' => str_replace('_', ' ', $key) . ' (' . $name . ')',
                         '#default_value' => $value,
+                        '#description' => $value,
                     );
                 }
 
