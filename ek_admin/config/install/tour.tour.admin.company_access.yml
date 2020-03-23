@@ -1,5 +1,5 @@
 id: ek_admin.company_access
-module: ek_sales
+module: ek_admin
 label: 'Admin company access'
 langcode: en
 routes:
