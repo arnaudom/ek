@@ -247,7 +247,7 @@ class InstallController extends ControllerBase {
     
     $query = "CREATE TABLE IF NOT EXISTS `ek_hr_workforce` (
                 `id` INT(11) NOT NULL AUTO_INCREMENT,
-                `custom_id` VARCHAR(15) NULL DEFAULT NULL  COLLATE 'utf8mb4_unicode_ci COMMENT 'custom ID',
+                `custom_id` VARCHAR(15) NOT NULL DEFAULT '0' COMMENT 'Custom ID' COLLATE 'utf8mb4_unicode_ci',
                 `company_id` INT(3) NULL DEFAULT NULL COMMENT 'Id of company employee is attached to',
                 `origin` VARCHAR(30) NULL DEFAULT NULL,
                 `name` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
