@@ -1,4 +1,9 @@
 services:
+  ek_admin.theme.negotiator:
+    class: Drupal\ek_admin\Theme\ThemeNegotiator
+    tags:
+      - { name: theme_negotiator, priority: 50 }
+      
   ek_admin_event_user:
     class: Drupal\ek_admin\EventSubscriber\NewUserSubscriber
     tags:

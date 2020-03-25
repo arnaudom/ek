@@ -1,3 +1,139 @@
+/* =========================================================================
+Login page
+========================================================================== */
+header.masthead {
+    position: relative;
+    width: 100%;
+    padding-top: 150px;
+    padding-bottom: 100px;
+    color: white;
+    background: whitesmoke url('../css/images/background1024.jpg') no-repeat center center;
+    background-size:cover;
+}
+
+.header-content {
+    padding: 20px 10px 20px 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    color: rgba(37, 76, 170);
+}
+
+.header-content:before{
+    box-sizing: border-box;
+}
+.header-content:after{
+    box-sizing: border-box;
+}
+
+@media (min-width: 992px) {
+    header.masthead {
+        height: 100vh;
+        min-height: 775px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    header.masthead .header-content {
+        margin-bottom: 0;
+        text-align: left;
+    }
+    header.masthead .header-content h1 {
+        font-size: 50px;
+    }
+    header.masthead .device-container {
+        max-width: 325px;
+    }
+}
+
+.container {
+    width: 100%;
+    padding-right: 10px;
+    padding-left: 10px;
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 1140px;
+    height: 100% !important;
+}
+
+.lrow {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    height: 100% !important;
+}
+
+.my-auto {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+}
+
+.mx-auto {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.col-lg-6 {
+    -ms-flex: 0 0 50%;
+    flex: 0 0 50%;
+    max-width: 50%;
+    position: relative;
+    width: 100%;
+    min-width: 330px;
+}
+
+.login {
+    padding: 50px;
+}
+
+.login input[type=text],input[type=password] {
+    -webkit-touch-callout: default;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    touch-action: auto;
+    width: 100%;
+    border-width: 0 0 2px 0;
+    border-color: rgba(37, 76, 170);
+    background: whitesmoke;
+    height: 30px;
+    font-size: large;
+}
+
+.login input[type=submit] {
+    border-radius: 300px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 20px;
+    color: rgba(37, 76, 170);
+    border: 1px solid;
+    border-color: rgba(37, 76, 170);
+    background-color: whitesmoke;
+    padding: 10px 30px;
+}
+
+.login input[type=submit]:hover {
+    color: whitesmoke;
+    background-color: rgba(37, 76, 170);
+    cursor:pointer;
+}
+
+.login .form-item {
+    margin-top:10px;
+}
+
+.login .description {
+    color: #fff;
+    display:none;
+}
+
+@media (min-width: 768px) {
+    
+}
+
+
+/* =========================================================================
+App
+========================================================================== */
 .table {
     display: table;
     width: 100%;
@@ -138,13 +274,13 @@
     color:#000;
 }
 .print:before {
-  content: "\f02f";
+    content: "\f02f";
 }
 .pdf:before {
-  content: "\f1c1";
+    content: "\f1c1";
 }
 .excel:before {
-  content: "\f1c3";
+    content: "\f1c3";
 }
 
 /*

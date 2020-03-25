@@ -156,6 +156,12 @@ function ek_admin_theme() {
           'template' => 'ek_admin_settings',
           'variables' => array('items' => array()),
         ),
+        // login
+        'ek_login' => array
+        (
+          'template' => 'login',
+          'variables' => array('items' => array()),
+        ),
         // default home
         'ek_admin_home' => array
         (
