@@ -135,7 +135,7 @@ class AdminController extends ControllerBase {
     }
 
     /**
-     * Run Cron called by server to retrieve backup file9s) and email to selected addresses.
+     * Run Cron called by server to retrieve backup files) and email to selected addresses.
      * Cron backup must be set separately on the server. This will only send an email with attached file
      * In order to use this function setup a server with a cron task to call admin task function
      * i.e. in Linux server
@@ -158,20 +158,21 @@ class AdminController extends ControllerBase {
 
             $options['origin'] = "backup_documents";
             $options['user'] = t("Automated task");
-
-
-            $message = t("<p>Your faithful assistant has generated a backup of your company data.</p>") . "<br/>" .
-                    t("<p>DISCLAIMER: the system provider and its affiliates take no responsibility 
-            for any data loss or corruption when using this script and service. 
-            You are advised to download, verify and store your backup in a safe place.</p>");
-
-            foreach ($backupFiles as $backupFile) {
-                if (file_exists($backupDir . "/" . $backupFile)) {
-                    mail_attachment($recipients, $backupDir . "/" . $backupFile, $message, $options);
+            $message = t("<p>Your faithful assistant has generated a backup of your company data.</p>");
+            $message .= t("<p>DISCLAIMER: the system provider and its affiliates take no responsibility 
+                        for any data loss or corruption when using this script and service. 
+                        You are advised to download, verify and store your backup in a safe place.</p>");
+            //scan settings root directory for configuration with backup files in separate sub directories
+            $scan = scandir($backupDir);
+            foreach($scan as $directory) {
+                foreach ($backupFiles as $backupFile) {
+                    if (file_exists($backupDir . "/" . $directory . "/" . $backupFile)) {
+                        
+                        mail_attachment($recipients, $backupDir . "/" . $directory . "/" . $backupFile, $message, $options);
+                    }
                 }
             }
         }
-
 
         // HTTP 204 is "No content", meaning "I did what you asked and we're done."
         return new Response('', 204);
@@ -182,40 +183,58 @@ class AdminController extends ControllerBase {
      *
      */
     public function isDefault() {
+        
         $site_config = \Drupal::config('system.site');
         $build = [];
-        $build['welcome'] = array(
-            '#markup' => '<h2>' . t('Welcome to @s management site.', array('@s' => $site_config->get('name'))) . '</h2>',
-        );
-        
-        $build['api']['0'] = [
-            'name' => 'default_homepage',
-            'module' => 'Admin',
-            'stamp' => 1582532880,
-            'type' => "info",
-            'content' => t('This is your home page. You will find here updates and news about application features. Click on the start to mark it as read.'),
-        ];
-        $api = \Drupal::moduleHandler()->invokeAll('ek_home');
-        $userData = \Drupal::service('user.data');
-        foreach ($api as $k => $v) {
-            $page  = $v['module'] . "_" . $v['name'];
-            if(!$userData->get('ek_admin', \Drupal::currentUser()->id(), $page)) {
-                $build['api'][$k] = $v; 
+        if(!\Drupal::currentUser()->isAuthenticated() && \Drupal::service('theme_handler')->themeExists('ek_login')) {
+            $build['img'] = drupal_get_path('module', 'ek_admin') . "/css/images/";
+            $build['form'] = \Drupal::formBuilder()->getForm('Drupal\user\Form\UserLoginForm');
+            $build['name'] = $site_config->get('name');
+            return array(
+                '#theme' => 'ek_login',
+                '#items' => $build,
+                '#title' => t('login'),
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+            ); 
+            
+        } else {
+            $build['welcome'] = array(
+                 '#markup' => '<h2>' . t('Welcome to @s management site.', array('@s' => $site_config->get('name'))) . '</h2>',
+            );
+
+            $build['api']['0'] = [
+                'name' => 'default_homepage',
+                'module' => 'Admin',
+                'stamp' => 1582532880,
+                'type' => "info",
+                'content' => t('This is your home page. You will find here updates and news about application features. Click on the start to mark it as read.'),
+            ];
+            $api = \Drupal::moduleHandler()->invokeAll('ek_home');
+            $userData = \Drupal::service('user.data');
+            foreach ($api as $k => $v) {
+                $page  = $v['module'] . "_" . $v['name'];
+                if(!$userData->get('ek_admin', \Drupal::currentUser()->id(), $page)) {
+                    $build['api'][$k] = $v; 
+                }
             }
+
+            return [
+                '#theme' => 'ek_admin_home',
+                '#items' => $build,
+                '#title' => t('Back office management'),
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css','ek_admin/frontpage'),
+                ),
+                '#cache' => [
+                    'tags' => ['home'],
+                    'contexts' => ['user'],
+                ],
+            ]; 
         }
-      
-        return [
-            '#theme' => 'ek_admin_home',
-            '#items' => $build,
-            '#title' => t('Back office management'),
-            '#attached' => array(
-                'library' => array('ek_admin/ek_admin_css','ek_admin/frontpage'),
-            ),
-            '#cache' => [
-                'tags' => ['home'],
-                'contexts' => ['user'],
-            ],
-        ];
+        
+        
     }
 
     /**
