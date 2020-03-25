@@ -467,7 +467,7 @@ class QuotationsController extends ControllerBase {
                 if($data->pcode != NULL && $data->pcode != 'n/a') {
                     $build['filter_post'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterPostDoc', $param,$data->pcode);
                 }
-                $path = $GLOBALS['base_url'] . "/invoices/print/pdf/" . $param;
+                $path = $GLOBALS['base_url'] . "/quotations/print/pdf/" . $param;
 
                 $iframe = "<iframe src ='" . $path . "' width='100%' height='1000px' id='view' name='view'></iframe>";
                 $build['iframe'] = $iframe;
