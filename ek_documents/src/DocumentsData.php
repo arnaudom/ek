@@ -155,7 +155,10 @@ use Drupal\Core\Database\Database;
     while($f = $folders->fetchObject()) {
     
         $account = \Drupal\user\Entity\User::load($f->uid);
-        $folder_name = $account->getAccountName();
+        $folder_name = "";
+        if($account) {
+            $folder_name = $account->getAccountName();
+        }
         $folderarrays= array(); 
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_documents', 'd');
