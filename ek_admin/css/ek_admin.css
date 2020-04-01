@@ -85,7 +85,7 @@ header.masthead {
     padding: 50px;
 }
 
-.login input[type=text],input[type=password] {
+.login input[type=text],.login input[type=password] {
     -webkit-touch-callout: default;
     -webkit-user-select: text;
     -moz-user-select: text;
