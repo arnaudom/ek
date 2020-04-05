@@ -190,7 +190,9 @@ class PayrollRecord extends FormBase {
             $settings['salary2'] = $e->th_salary;
             $settings['currency'] = $e->currency;
             $settings['coid'] = $form_state->getValue('coid');
+            $settings['eid'] = $form_state->getValue('eid');
             $settings['tax_category'] = $e->itax_c;
+            $settings['ad_category'] = $e->origin;
             $settings['error'] = t('Wrong input');
 
             $query = "SELECT current FROM {ek_hr_payroll_cycle} WHERE coid=:c";
@@ -206,7 +208,7 @@ class PayrollRecord extends FormBase {
                         ->fields(array('coid' => $form_state->getValue('coid'), 'current' => $current))
                         ->execute();
             }
-
+            $settings['current_month'] = $current;
             $query = "SELECT count(id) from {ek_hr_workforce_pay} WHERE id=:id";
             $a = array(':id' => $form_state->getValue('eid'));
             $count = Database::getConnection('external_db', 'external_db')
@@ -255,8 +257,10 @@ class PayrollRecord extends FormBase {
             $markup .= (!NULL == $form_state->getValue('eid')) ? "<li>" . t('location') . ': <b>' . $e->location . '</b></li>' : '';
             $markup .= (!NULL == $form_state->getValue('eid')) ? "<li>" . t('start date') . ': <b>' . $e->start . '</b></li>' : '';
             $markup .= ($e->resign <> '') ? "<li>" . t('resigned date') . ': <b>' . $e->resign . '</b></li>' : '';
-            $markup .= (!NULL == $form_state->getValue('eid')) ? "<li>" . t('status') . ': <b>' . $e->active . ', ' . $e->e_status . '</b></li></ul>' : '';
+            $markup .= (!NULL == $form_state->getValue('eid')) ? "<li>" . t('status') . ': <b>' . $e->active . ', ' . $e->e_status . '</b></li>' : '';
+            $markup .= (!NULL == $form_state->getValue('eid')) ? "<li>" . t('tax category') . ': <b>' . $e->itax_c . '</b></li></ul>' : '';
             $markup .= (!NULL == $form_state->getValue('eid')) ? "<p>" . $e->note . "</p>" : '';
+            
         }
 
         $form['hr']['data'] = array(
@@ -774,7 +778,13 @@ class PayrollRecord extends FormBase {
             $custom_aw = 'custom_aw' . $i;
             $tax = 'tax' . $i;
             $formula = 'formula' . $i;
-
+            if(!null == $form_state->getValue('eid')){
+                $attr = ['title' => t('include tax'), 'class' => ['calculate']];
+                if($ad["LAC$i-" . $c]['tax'] == 1){
+                    $attr = ['title' => t('include tax'), 'class' => ['calculate'], 'checked' => 'checked'];
+                }
+            }
+            
             $form[$custom_aw] = array(
                 '#type' => 'textfield',
                 '#id' => $custom_aw,
@@ -789,7 +799,7 @@ class PayrollRecord extends FormBase {
             $form[$tax] = array(
                 '#type' => 'checkbox',
                 '#id' => $tax,
-                '#attributes' => array('title' => t('include tax'), 'class' => ['calculate'], 'value' => (!null == $form_state->getValue('eid')) ? $ad["LAC$i-" . $c]['tax'] : 0),
+                '#attributes' => $attr,
             );
 
             $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAC$i-" . $c;
@@ -952,6 +962,12 @@ class PayrollRecord extends FormBase {
             $custom_d = 'custom_d' . $i;
             $tax = 'tax' . $n;
             $formula = 'formula' . $i;
+            if(!null == $form_state->getValue('eid')){
+                $attr = ['title' => t('include tax'), 'class' => ['calculate']];
+                if($ad["LDC$i-" . $c]['tax'] == 1){
+                    $attr = ['title' => t('include tax'), 'class' => ['calculate'], 'checked' => 'checked'];
+                }
+            }
 
             $form[$custom_d] = array(
                 '#type' => 'textfield',
@@ -968,7 +984,7 @@ class PayrollRecord extends FormBase {
             $form[$tax] = array(
                 '#type' => 'checkbox',
                 '#id' => $tax,
-                '#attributes' => array('title' => t('include tax'), 'class' => ['calculate'], 'value' => (!null == $form_state->getValue('eid')) ? $ad["LDC$i-" . $c]['tax'] : 0),
+                '#attributes' => $attr,
             );
 
             $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LDC$i-" . $c;

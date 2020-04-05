@@ -12,7 +12,7 @@
                 $('#total_display').html(display);
             }
 
-            $(".calculate").on("change", function () {
+            $(".calculate",context).on("change", function () {
                 var total = 0;
                 
                 //check numeric values
@@ -170,7 +170,6 @@
 
                 for ($i = 1; $i < 7; $i++) {
 
-
                     var v = eval(settings.ek_hr.custom_d_val[$i]);
                     var f = eval(settings.ek_hr.custom_d_for[$i]);
 
@@ -205,9 +204,11 @@
                     fund_base = thisbasic; //calculated basic
                 if (settings.ek_hr.fund1_base == "G")
                     fund_base = total;//calculated Gross
-                if (settings.ek_hr.fund1_base == "GOT")
-                    fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val);//calculated Gross minus OTs
-                if (settings.ek_hr.fund1_base == "NG")
+                if (settings.ek_hr.fund1_base == "BF")
+                    fund_base = eval(thisbasic + normal_ot + rest_day_ot + ph_ot + mc_day_val + x_hours_val);//calculated Gross + fixed allowances
+                if (settings.ek_hr.fund1_base == "BMF")
+                    fund_base = eval(thisbasic - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val);//calculated Gross minus OTs
+                if (settings.ek_hr.fund1_base == "GMFC")
                     fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val - commision);//calculated Gross minus OTs and deductions
 
                 if ($('#thisepf').prop('checked')) {
@@ -222,10 +223,10 @@
                         $.ajax({
                             type: "GET",
                             url: drupalSettings.path.baseUrl + 'human-resources/get_table_amount',
-                            data: {'coid': settings.ek_hr.coid, 'type': 'fund1', 'value': fund_base, 'field1': 'employer1', 'field2': 'employee1'},
+                            data: {'coid': settings.ek_hr.coid, 'type': 'fund1', 
+                                'value': fund_base, 'field1': 'employer1', 'field2': 'employee1'},
                             async: false,
                             success: function (data) {
-
                                 var str_1 = data.amount1;
                                 var str_2 = data.amount2;
                                 if (!jQuery.isNumeric(str_1) && str.indexOf("%") > 0) {
@@ -269,21 +270,28 @@
 
 
 //fund 2
-                if (settings.ek_hr.fund2_base == "C")
+                if (settings.ek_hr.fund2_base == "C"){
                     fund_base = settings.ek_hr.salary; // contract basic
-                if (settings.ek_hr.fund2_base == "A")
+                }
+                if (settings.ek_hr.fund2_base == "A"){
                     fund_base = settings.ek_hr.salary2; // Average basic
-                if (settings.ek_hr.fund2_base == "B")
+                }
+                if (settings.ek_hr.fund2_base == "B"){
                     fund_base = thisbasic; //calculated basic
-                if (settings.ek_hr.fund2_base == "G")
+                }
+                if (settings.ek_hr.fund2_base == "G"){
                     fund_base = total;//calculated Gross
-                if (settings.ek_hr.fund2_base == "GOT")
-                    fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val);//calculated Gross minus OTs
-                if (settings.ek_hr.fund2_base == "NG")
+                }
+                if (settings.ek_hr.fund2_base == "BF"){
+                    fund_base = eval(thisbasic + normal_ot + rest_day_ot + ph_ot + mc_day_val + x_hours_val);//calculated Gross + fixed allowances
+                }
+                if (settings.ek_hr.fund2_base == "BMF"){
+                    fund_base = eval(thisbasic - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val);//calculated Gross minus OTs
+                }
+                if (settings.ek_hr.fund2_base == "GMFC"){
                     fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val - commision);//calculated Gross minus OTs and deductions
-
+                }
                 if ($('#thissoc').prop('checked')) {
-
                     //employer
                     if (settings.ek_hr.fund2_calc == 'P') {
                         var f2 = eval(settings.ek_hr.fund2_pc_yer * fund_base / 100);
@@ -342,22 +350,30 @@
                 }
 
 
-                //fund 3
-                if (settings.ek_hr.fund3_base == "C")
+//fund 3
+                if (settings.ek_hr.fund3_base == "C"){
                     fund_base = settings.ek_hr.salary; // contract basic
-                if (settings.ek_hr.fund3_base == "A")
+                }
+                if (settings.ek_hr.fund3_base == "A"){
                     fund_base = settings.ek_hr.salary2; // Average basic
-                if (settings.ek_hr.fund3_base == "B")
+                }
+                if (settings.ek_hr.fund3_base == "B"){
                     fund_base = thisbasic; //calculated basic
-                if (settings.ek_hr.fund3_base == "G")
+                }
+                if (settings.ek_hr.fund3_base == "G"){
                     fund_base = total;//calculated Gross
-                if (settings.ek_hr.fund3_base == "GOT")
-                    fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val);//calculated Gross minus OTs
-                if (settings.ek_hr.fund3_base == "NG")
+                }
+                if (settings.ek_hr.fund3_base == "BF"){
+                    fund_base = eval(thisbasic + normal_ot + rest_day_ot + ph_ot + mc_day_val + x_hours_val);//calculated Gross + fixed allowances
+                }
+                if (settings.ek_hr.fund3_base == "BMF"){
+                    fund_base = eval(thisbasic - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val);//calculated Gross minus OTs
+                }
+                if (settings.ek_hr.fund3_base == "GMFC"){
                     fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val - commision);//calculated Gross minus OTs and deductions
+                }
 
                 if ($('#thiswith').prop('checked')) {
-
                     //employer
                     if (settings.ek_hr.fund3_calc == 'P') {
                         var f3 = eval(settings.ek_hr.fund3_pc_yer * fund_base / 100);
@@ -413,58 +429,70 @@
                     }
                 }
 
-                //tax
-                if (settings.ek_hr.tax_base == "C")
-                    fund_base = settings.ek_hr.salary; // contract basic
-                if (settings.ek_hr.tax_base == "A")
-                    fund_base = settings.ek_hr.salary2; // Average basic
-                if (settings.ek_hr.tax_base == "B")
-                    fund_base = thisbasic; //calculated basic
-                if (settings.ek_hr.tax_base == "G")
-                    fund_base = total;//calculated Gross
-                if (settings.ek_hr.tax_base == "GOT")
-                    fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val);//calculated Gross minus OTs
-                if (settings.ek_hr.tax_base == "NG")
-                    fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val - commision);//calculated Gross minus OTs and deductions
-
+//tax
+                if (settings.ek_hr.tax_base == "C"){
+                    tax_base_val = settings.ek_hr.salary; // contract basic
+                }
+                if (settings.ek_hr.tax_base == "A"){
+                    tax_base_val = settings.ek_hr.salary2; // Average basic
+                }
+                if (settings.ek_hr.tax_base == "B"){
+                    tax_base_val = thisbasic; //calculated basic
+                }
+                if (settings.ek_hr.tax_base == "G"){
+                    tax_base_val = total;//calculated Gross
+                }
+                if (settings.ek_hr.tax_base == "BF"){
+                    tax_base_val = eval(thisbasic + normal_ot + rest_day_ot + ph_ot + mc_day_val + x_hours_val);//Gross + F
+                }
+                if (settings.ek_hr.tax_base == "BMF"){
+                    tax_base_val = eval(thisbasic - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val);//Gross - F
+                }
+                if (settings.ek_hr.tax_base == "GMFC"){
+                    tax_base_val = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val - commision);
+                }
+                
                 if ($('#thisincometax').prop('checked')) {
-
                     //adjust with tax option. User can select or unselect amounts (lines) to include in tax
                     //commission
-                    if (!$('#commission-tax').prop('checked')) {
-                        fund_base = fund_base - (parseFloat(jQuery('#commission').val()));
+                    var a_tax_adjustment = 0;
+                    var d_tax_adjustment = 0; 
+                    if ($('#commission-tax').prop('checked')) {
+                        a_tax_adjustment = a_tax_adjustment + (parseFloat(jQuery('#commission').val()));
                     }
 
                     for (i = 1; i < 14; i++) {
                         //adjust with non taxable allowance
-                        if (!$('#tax' + i).prop('checked')) {
-                            fund_base = fund_base - (parseFloat(jQuery('#custom_aw' + i).val()));
+                        //if line is checked, the value is added to the calculated
+                        if ($('#tax' + i).prop('checked')) {
+                            a_tax_adjustment = a_tax_adjustment + (parseFloat(jQuery('#custom_aw' + i).val()));
                         }
                     }
 
-
                     for (i = 1; i < 7; i++) {
                         //adjust with non taxable deduction
+                        //if line is checked, the value is deducted to the calculated
                         var n = i + 13;
-                        if (!$('#tax' + n).prop('checked')) {
-                            //var n=i-24;
-                            fund_base = fund_base - (parseFloat(jQuery('#custom_d' + i).val()));
+                        if ($('#tax' + n).prop('checked')) {
+                            d_tax_adjustment = d_tax_adjustment + (parseFloat(jQuery('#custom_d' + i).val()));
                         }
                     }
 
                     //employee
                     if (settings.ek_hr.tax_calc == 'P') {
-
-                        var t1 = eval(settings.ek_hr.tax_pc * fund_base / 100);
+                        var t1 = eval(settings.ek_hr.tax_pc * (tax_base_val + a_tax_adjustment - d_tax_adjustment) / 100);
                         $('#income_tax').val(t1.toFixed(2));
-                        $('#incometax_alert').html(settings.ek_hr.tax_pc + "% x " + fund_base + " (" + settings.ek_hr.tax_base + ")");
+                        $('#incometax_alert').html(settings.ek_hr.tax_pc + "% x " + tax_base_val + " (" + settings.ek_hr.tax_base + ")");
                     } else {
-
                         //extract table data
                         $.ajax({
                             type: "GET",
                             url: drupalSettings.path.baseUrl + 'human-resources/get_table_amount',
-                            data: {'coid': settings.ek_hr.coid, 'type': 'income_tax', 'value': fund_base, 'field1': settings.ek_hr.tax_category},
+                            data: {'coid': settings.ek_hr.coid, 'eid': settings.ek_hr.eid,'a_tax_adj':a_tax_adjustment,
+                                    'd_tax_adj':d_tax_adjustment,'type': 'income_tax','value': tax_base_val,
+                                    'ad_category': settings.ek_hr.ad_category,'tax_category': settings.ek_hr.tax_category,
+                                    'current_month': settings.ek_hr.current_month,
+                                  },
                             async: false,
                             success: function (data) {
                                 var str = data.amount1;
@@ -474,13 +502,13 @@
                                     if (!jQuery.isNumeric(str) && str.indexOf("%") > 0) {
                                         //else if return value is % , calculate tax
                                         var rate = str.replace('%', '');
-                                        var t1 = eval(rate * fund_base / 100);
+                                        var t1 = eval(rate * tax_base_val / 100);
                                         $('#income_tax').val(t1);
-                                        $('#incometax_alert').html(rate + "% x " + fund_base + " (" + settings.ek_hr.tax_base + ")");
+                                        $('#incometax_alert').html(rate + "% x " + tax_base_val + " (" + settings.ek_hr.tax_base + ")");
                                     } else if (jQuery.isNumeric(str)) {
                                         //if the return value is double, return value
-                                        $('#income_tax').val(data.amount1);
-                                        $('#incometax_alert').html("base: " + fund_base + " (" + settings.ek_hr.tax_base + ")");
+                                        $('#income_tax').val(data.amount1.toFixed(2));
+                                        $('#incometax_alert').html("base: " + tax_base_val + " (" + settings.ek_hr.tax_base + ")");
                                     } else {
                                         $('#income_tax').val(0);
                                         $('#incometax_alert').html("no data");

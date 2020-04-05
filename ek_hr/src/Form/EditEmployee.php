@@ -81,7 +81,7 @@ class EditEmployee extends FormBase {
             
             $form['for_id'] = array(
                 '#type' => 'hidden',
-                '#default_value' => $id,
+                '#value' => $id,
             );
 
             $query = Database::getConnection('external_db', 'external_db')

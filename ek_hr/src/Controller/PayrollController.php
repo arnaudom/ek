@@ -133,12 +133,17 @@ class PayrollController extends ControllerBase {
         $coid = $request->query->get('coid');
         $type = $request->query->get('type');
         $value = $request->query->get('value');
-        $field1 = $request->query->get('field1');
+        $tax_category = (NULL != $request->query->get('tax_category')) ? $request->query->get('tax_category') : 0;
+        $ad_category = (NULL != $request->query->get('ad_category')) ? $request->query->get('ad_category') : 0;
+        $form_data = (NULL != $request->query->get('form_data')) ? $request->query->get('form_data') : [];
         $field2 = (NULL != $request->query->get('field2')) ? $request->query->get('field2') : NULL;
-               
+        $eid = (NULL != $request->query->get('eid')) ? $request->query->get('eid') : 0;
+        $current_month = (NULL != $request->query->get('eid')) ? $request->query->get('current_month') : 0;
+        $param = ['coid' => $coid,'value' => $value,'ad_category' => $ad_category,'tax_category' => $tax_category,
+                'type' => $type,'eid' => $eid, 'current_month' => $current_month,'form_data' => $form_data,
+                ];       
         if ($type != 'income_tax') {
             //call for funds table
-            $param = ['coid' => $coid,'type' => $type ,'value' => $value, 'field1' => $field1,'field2' => $field2];
             if($this->moduleHandler->invokeAll('payroll_fund',[$param])){
                 $fund = $this->moduleHandler->invokeAll('payroll_fund',[$param]);
                     return new JsonResponse($fund);
@@ -148,7 +153,6 @@ class PayrollController extends ControllerBase {
             
         } else {
             //call for tax table
-            $param = ['coid' => $coid,'value' => $value, 'field1' => $field1];
             if($this->moduleHandler->invokeAll('payroll_tax', [$param])){
                 $tax = $this->moduleHandler->invokeAll('payroll_tax', [$param]);
                     return new JsonResponse($tax);

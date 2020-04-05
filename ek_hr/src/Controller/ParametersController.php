@@ -426,14 +426,20 @@ class ParametersController extends ControllerBase {
     public function employeeHistoryPay(Request $request, $id) {
 
         $data = array();
-        $query = 'SELECT * FROM '
-                . '{ek_hr_post_data} p LEFT JOIN {ek_hr_workforce} w ON p.emp_id=w.id WHERE p.id=:id';
-        $data['salary'] = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $id))
-                ->fetchObject();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_hr_post_data', 'p');
+        $query->fields('p');
+        $query->innerJoin('ek_hr_workforce', 'w', 'w.id=p.emp_id');
+        $query->fields('w')
+                ->condition('p.id', $id, '=');
+        $data['salary'] = $query->execute()->fetchObject();
+                
         $condition = $data['salary']->administrator == '0' || in_array(\Drupal::currentUser()->id(), explode(',', $data['salary']->administrator));
         if ($condition) {
 
+            if($invoke = $this->moduleHandler()->invokeAll('hr_history', [$data])){
+                $data = $invoke;
+            }
             $link = Url::fromRoute('ek_hr.employee.history', ['id' => $data['salary']->emp_id])
                     ->toString();
             $data['back'] = '<a href="' . $link . '">' . t('back') . '</a>';
@@ -912,88 +918,6 @@ class ParametersController extends ControllerBase {
             
             $build['fundTable'] = $this->formBuilder->getForm($form);
             
-
-            /*
-            $query = "SELECT code FROM {ek_country} WHERE name = :n";
-            $code = Database::getConnection('external_db', 'external_db')
-                    ->query($query, [ ':n' => $_SESSION['hrfundfilter']['country']])
-                    ->fetchField();
-            $tb = 'ek_hr_' . $_SESSION['hrfundfilter']['fund'] . '_' . strtolower($code);
-
-            //2/ verify table exist
-            try {
-                $query = "SHOW TABLES LIKE  '" . $tb . "'";
-                $try = Database::getConnection('external_db', 'external_db')
-                        ->query($query)
-                        ->fetchField();
-            } catch (Exception $ex) {
-                
-            }
-
-            if ($try == $tb) {
-                //3 the table is available; get the data
-                $query = "SELECT * FROM " . $tb . " ORDER BY id";
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query);
-                $param = NEW HrSettings($_SESSION['hrfundfilter']['coid']);
-                $opt = [
-                'fund1' => $param->get('param', 'fund_1', ['name','value']),
-                'fund2' => $param->get('param', 'fund_2', ['name','value']),
-                'fund3' => $param->get('param', 'fund_3', ['name','value']),
-                'fund4' => $param->get('param', 'fund_4', ['name','value']),
-                'fund5' => $param->get('param', 'fund_5', ['name','value']),
-                //'income_tax' => $param->get('param', 'tax', ['name','value']),
-                ];
-                
-                $display = "
-                    <table style= border=0 cellpadding=1 cellspacing=0 class=''>
-                        <thead class='' >
-                          <th >" . $opt[$_SESSION['hrfundfilter']['fund']] . " " . $code .
-                        "<input type='hidden' id='table' value ='" . $tb . "'></th>
-                          <th >" . t('minimum') . "</th>
-                          <th >" . t('maximum') . "</th>
-                          <th >" . t('employer') . "</th>
-                          <th >" . t('employee') . "</th>
-                        </thead>
-                        <tbody class=''>";
-
-                while ($d = $data->fetchObject()) {
-
-                    $display .= "<tr><td>" . $d->id . "</td>";
-
-
-                    $display .= "<td><INPUT  type='text'"
-                            . "name='" . $d->id . "_min' "
-                            . "id='" . $d->id . "_min' "
-                            . "class='editinline' size='15' "
-                            . "value='" . $d->min . "'/></td>";
-
-                    $display .= "<td><INPUT  type='text'"
-                            . "name='" . $d->id . "_max' "
-                            . "id='" . $d->id . "_max' "
-                            . "class='editinline' size='15' "
-                            . "value='" . $d->max . "'/></td>";
-
-                    $display .= "<td><INPUT  type='text'"
-                            . "name='" . $d->id . "_employer_1' "
-                            . "id='" . $d->id . "_employer_1' "
-                            . "class='editinline' size='15' "
-                            . "value='" . $d->employer_1 . "'/></td>";
-
-                    $display .= "<td><INPUT  type='text'"
-                            . "name='" . $d->id . "_employee_1' "
-                            . "id='" . $d->id . "_employee_1' "
-                            . "class='editinline' size='15' "
-                            . "value='" . $d->employee_1 . "'/></td></tr>";
-                }
-
-                $display .= "</tbody></table>";
-                $build['content'] = $display;
-            } else {
-                $build['content'] = t('table @t does not exist', ['@t' => $tb]);
-            }
-             * 
-             */
         }
 
 

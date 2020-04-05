@@ -167,7 +167,7 @@ $pdf->AddPage("P", "A4");
     $col5_width = 40;
     $col6_width = 0;
     $i = 0;
-    $pdf->SetFillColor(214, 214, 214);
+    $pdf->SetFillColor(226, 226, 226);
 //dividing line
     $pdf->Ln(2);
     $pdf->Line($pdf->Getx(), $pdf->GetY(), 200, $pdf->GetY());
@@ -201,7 +201,7 @@ $pdf->AddPage("P", "A4");
         $pdf->Cell($col5_width, 3, '', 1, 1, 'R', $i);
         $i = ($i == '1') ? 0:1;
     }
-    $pdf->SetFillColor(214, 214, 214);
+    $pdf->SetFillColor(226, 226, 226);
     if ($line['n_ot_val']) {
         $pdf->Cell($margin);
         $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
@@ -516,6 +516,33 @@ $pdf->AddPage("P", "A4");
         $pdf->Cell($col5_width, 3, number_format($line['incometax'], 2), 1, 1, 'R', $i);
         $i = ($i == '1') ? 0:1;
     }
+    
+    if(isset($apiData)) {
+        //extended data from custommodules
+        foreach($apiData['salary']->rec as $k => $v) {
+            if( $k == $line['id']) {
+                //record has input for this eid
+                $pdf->Cell($margin);
+                        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+                        $pdf->Cell($col2_width+$col3_width, 3, '', 0, 1, 'C');
+                        $i = ($i == '1') ? 0:1;
+                for($y = 0; $y < count($v); $y++){
+                    if($v[$y]['value']) {
+                        $pdf->Cell($margin);
+                        $pdf->Cell($col1_width, 3, "", 0, 0, 'L', 0);
+                        $pdf->Cell($col2_width, 3, $v[$y]['description'], 'B', 0, 'L');
+                        $pdf->Cell($col3_width, 3, number_format($v[$y]['value'], 2), 'B', 0, 'R');
+                        $pdf->Cell($col4_width, 3, '', 0, 0);
+                        $pdf->Cell($col5_width, 3, '', 0, 1);
+                        $i = ($i == '1') ? 0:1;
+                    }
+                }
+            }
+            
+        }
+    }
+    
+    
     $pdf->Ln($i);
 
     $totaldeduc = $line['advance'] + $line['custom_d1'] + $line['custom_d2'] + $line['custom_d3'] + $line['custom_d4'];

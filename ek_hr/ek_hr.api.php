@@ -19,7 +19,9 @@ use Drupal\Core\Url;
  *  The employee tax payroll data.
  *  'coid' : company id
  *  'value' : salary value
- *  'field1' : category of tax profile (A-Z)
+ *  'tax_category' : category of tax profile (A-Z)
+ *  'eid' : employee ID
+ *  'current_month' : the payroll month
  * @see \Drupal\ek_hr\Controller\PayrollController::payroll()
  * @see \Drupal\ek_hr\Form\PayrollRecord::readtable()
  * @return NULL or array
@@ -144,6 +146,25 @@ function hook_list_fund($param) {
         }
         return $list;
 }
+
+/**
+ * collect history data
+ * @param array $data
+ * @see \Drupal\ek_hr\Controller\ParametersController::employeeHistoryPay()
+ * @return  array
+ * 
+ */
+function hook_hr_history($data) {
+    $HrCustom = new HrCustomManager();
+    if($data['salary']->id) {
+        $cs = $HrCustom->payrollData($data['salary']->id, $data['salary']->month);
+        if(!empty($cs['info'])) {
+            $data['salary']->apiData = ['info' => $my['info']];
+        }
+    }
+    return $data;
+}
+
 /**
  * @} End of "addtogroup hooks".
  */

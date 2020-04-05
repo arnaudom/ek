@@ -202,10 +202,19 @@ class EditMainParameters extends FormBase {
                     '#default_value' => $value['employee']['value'],
                     '#description' => $value['employee']['description'],
                 );
+                $o = [
+                    'C' => t('Contract'),
+                    'B' => t('Basic'),
+                    'A' => t('Other base'),
+                    'G' => t('Gross'),
+                    'BF' => t('Basic + fixed AW'),
+                    'BMF' => t('Basic - fixed AW'),
+                    'GMFC' => t('Gross - fixed AW & com.')
+                    ];
                 $form[$key]['base'] = array(
                     '#type' => 'select',
                     '#size' => 1,
-                    '#options' => ['C' => t('Contract'), 'B' => t('Basic'),'A' => t('Other base'), 'G' => t('Gross'), 'GOT' => t('Gross minus OT')],
+                    '#options' => $o,
                     '#default_value' => $value['base']['value'],
                     '#description' => $value['base']['description'],
                 );

@@ -1,211 +1,221 @@
 {{ items.back|raw }}
 <table class=''>  
-  <tbody>
-      <tr class='odd'>
-          <td><strong>{{ items.salary.id }} {{ items.salary.name }}</strong></td> 
-      </tr>
-      <tr>
-          <td>
-          {{ 'Basic'|t }} {{ items.salary.salary }} ({{items.salary.currency }})
-          <br/>{{ 'Average'|t }} {{ items.salary.th_salary }} ({{items.salary.currency }})
-          </td>
-      </tr>
-      <tr class='odd'>
-          <td>{{ 'Payroll'|t }} {{ items.salary.month }}</td>
-      </tr>
-      
-  </tbody>
-  
+    <tbody>
+        <tr class='odd'>
+            <td><strong>{{ items.salary.id }} {{ items.salary.name }}</strong></td> 
+        </tr>
+        <tr>
+            <td>
+                {{ 'Basic'|t }} {{ items.salary.salary }} ({{items.salary.currency }})
+                <br/>{{ 'Average'|t }} {{ items.salary.th_salary }} ({{items.salary.currency }})
+            </td>
+        </tr>
+        <tr class='odd'>
+            <td>{{ 'Payroll'|t }} {{ items.salary.month }}</td>
+        </tr>
+
+    </tbody>
+
 </table>
 <table class=''>  
-  <tbody>
-      <tr class='odd'>
-          <td>{{ 'Units work base'|t }}: 
-          <td><strong>{{ items.salary.d_pay }}</strong></td>
-          <td>{{ 'Units worked'|t }}: </td> 
-          <td><strong>{{ items.salary.n_days }}</strong></td>
-      </tr>
-      <tr>
-          <td></td>
-          <td></td>
-          <td>{{ 'No pay day(s)'|t }}:</td> 
-          <td><strong>{{ items.salary.no_payday }}</strong></td>
-      </tr>
-      <tr class='odd'>
-          <td></td>
-          <td></td>
-          <td>{{ 'Leave(s)'|t }}:</td>
-          <td><strong>{{ items.salary.tleave }}</strong></td>
-      </tr>
-      <tr>
-          <td></td>
-           <td></td>
-           <td>{{ 'Basic pay'|t }}:</td>
-           <td><strong>{{ items.salary.basic }}</strong></td>
-      </tr>
-      <tr class='odd'>
-          <td>{{ items.param.LAF1 }}:</td>
-          <td><strong>{{ items.salary.n_ot_days }}</strong></td>
-          <td>{{ 'Value'|t }}:</td>
-          <td><strong>{{ items.salary.n_ot_val }}</strong></td>
-      </tr>
-      <tr>
-          <td>{{ items.param.LAF2 }}:</td>
-          <td><strong>{{ items.salary.r_day }}</strong></td>
-          <td>{{ 'Value'|t }}:</td>
-          <td><strong>{{ items.salary.r_day_val }}</strong></td>
-      </tr>
-      <tr class='odd'>
-          <td>{{ items.param.LAF3 }}:</td>
-          <td><strong>{{ items.salary.ph_day }}</strong></td>
-          <td>{{ 'Value'|t }}:</td>
-          <td><strong>{{ items.salary.ph_day_val }}</strong></td>
-      </tr>
-      <tr>
-          <td>{{ items.param.LAF4 }}:</td>
-          <td><strong>{{ items.salary.mc_day }}</strong></td>
-          <td>{{ 'Value'|t }}:</td>
-          <td><strong>{{ items.salary.mc_day_val }}</strong></td>
-      </tr>
-      <tr class='odd'>
-          <td>{{ items.param.LAF5 }}:</td>
-          <td><strong>{{ items.salary.xr_hours }}</strong></td>
-          <td>{{ 'Value'|t }}:</td>
-          <td><strong>{{ items.salary.xr_hours_val }}</strong></td>
-      </tr>
-      <tr>
-          <td>{{ items.param.LAF6 }}:</td>
-          <td><strong>{{  items.param.LAF6_x }}</strong></td>
-          <td>{{ 'Value'|t }}:</td>
-          <td><strong>{{ items.salary.turnover }}</strong></td>
-      </tr>   
- </tbody>
-  
- 
-  <tbody>
-      <tr class='odd'>
-          <td colspan='3'>{{ items.param.custom_a_val.1 }}:</td>
-          <td><strong>{{ items.salary.custom_aw1 }}</strong></td>          
-      </tr>
-      <tr>
-          <td colspan='3'>{{ items.param.custom_a_val.2 }}:</td>
-          <td><strong>{{ items.salary.custom_aw2 }}</strong></td>          
-      </tr>
-      <tr class='odd'>
-          <td colspan='3'>{{ items.param.custom_a_val.3 }}:</td>
-          <td><strong>{{ items.salary.custom_aw3 }}</strong></td>          
-      </tr>
-      <tr>
-          <td colspan='3'>{{ items.param.custom_a_val.4 }}:</td>
-          <td><strong>{{ items.salary.custom_aw4 }}</strong></td>          
-      </tr>
-      <tr class='odd'>
-          <td colspan='3'>{{ items.param.custom_a_val.5 }}:</td>
-          <td><strong>{{ items.salary.custom_aw5 }}</strong></td>          
-      </tr>
-      <tr>
-          <td colspan='3'>{{ items.param.custom_a_val.6 }}:</td>
-          <td><strong>{{ items.salary.custom_aw6 }}</strong></td>          
-      </tr>
-      <tr class='odd'>
-          <td colspan='3'>{{ items.param.custom_a_val.7 }}:</td>
-          <td><strong>{{ items.salary.custom_aw7 }}</strong></td>          
-      </tr>
-      <tr>
-          <td colspan='3'>{{ items.param.custom_a_val.8 }}:</td>
-          <td><strong>{{ items.salary.custom_aw8 }}</strong></td>          
-      </tr>
-      <tr class='odd'>
-          <td colspan='3'>{{ items.param.custom_a_val.9 }}:</td>
-          <td><strong>{{ items.salary.custom_aw9 }}</strong></td>          
-      </tr>
-      <tr>
-          <td colspan='3'>{{ items.param.custom_a_val.10 }}:</td>
-          <td><strong>{{ items.salary.custom_aw10 }}</strong></td>          
-      </tr>
-      <tr class='odd'>
-          <td colspan='3'>{{ items.param.custom_a_val.11 }}:</td>
-          <td><strong>{{ items.salary.custom_aw11 }}</strong></td>          
-      </tr>  
-      <tr>
-          <td colspan='3'>{{ items.param.custom_a_val.12 }}:</td>
-          <td><strong>{{ items.salary.custom_aw12 }}</strong></td>          
-      </tr>
-      <tr class='odd'>
-          <td colspan='3'>{{ items.param.custom_a_val.13 }}:</td>
-          <td><strong>{{ items.salary.custom_aw13 }}</strong></td>          
-      </tr>
-      <tr>
-          <td colspan='3'>{{ 'Total gross'|t }}:</td>
-          <td><b>{{ items.salary.gross }}</b></td>          
-      </tr> 
-  
-      <tr class='odd'>
-          <td>{{ items.param.LDF2 }}:</td>
-          <td><strong>{{ items.salary.less_hours }}</strong></td>
-          <td>{{ 'Value'|t }}:</td>
-          <td><strong>{{ items.salary.less_hours_val }}</strong></td>
-      </tr>
-      <tr>
-          <td>{{ items.param.LDF1 }}:</td>
-          <td></td>
-          <td>{{ 'Value'|t }}:</td>
-          <td><strong>{{ items.salary.advance }}</strong></td>
-      </tr>   
+    <tbody>
+        <tr class='odd'>
+            <td>{{ 'Units work base'|t }}: 
+            <td><strong>{{ items.salary.d_pay }}</strong></td>
+            <td>{{ 'Units worked'|t }}: </td> 
+            <td><strong>{{ items.salary.n_days }}</strong></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td>{{ 'No pay day(s)'|t }}:</td> 
+            <td><strong>{{ items.salary.no_payday }}</strong></td>
+        </tr>
+        <tr class='odd'>
+            <td></td>
+            <td></td>
+            <td>{{ 'Leave(s)'|t }}:</td>
+            <td><strong>{{ items.salary.tleave }}</strong></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td>{{ 'Basic pay'|t }}:</td>
+            <td><strong>{{ items.salary.basic }}</strong></td>
+        </tr>
+        <tr class='odd'>
+            <td>{{ items.param.LAF1 }}:</td>
+            <td><strong>{{ items.salary.n_ot_days }}</strong></td>
+            <td>{{ 'Value'|t }}:</td>
+            <td><strong>{{ items.salary.n_ot_val }}</strong></td>
+        </tr>
+        <tr>
+            <td>{{ items.param.LAF2 }}:</td>
+            <td><strong>{{ items.salary.r_day }}</strong></td>
+            <td>{{ 'Value'|t }}:</td>
+            <td><strong>{{ items.salary.r_day_val }}</strong></td>
+        </tr>
+        <tr class='odd'>
+            <td>{{ items.param.LAF3 }}:</td>
+            <td><strong>{{ items.salary.ph_day }}</strong></td>
+            <td>{{ 'Value'|t }}:</td>
+            <td><strong>{{ items.salary.ph_day_val }}</strong></td>
+        </tr>
+        <tr>
+            <td>{{ items.param.LAF4 }}:</td>
+            <td><strong>{{ items.salary.mc_day }}</strong></td>
+            <td>{{ 'Value'|t }}:</td>
+            <td><strong>{{ items.salary.mc_day_val }}</strong></td>
+        </tr>
+        <tr class='odd'>
+            <td>{{ items.param.LAF5 }}:</td>
+            <td><strong>{{ items.salary.xr_hours }}</strong></td>
+            <td>{{ 'Value'|t }}:</td>
+            <td><strong>{{ items.salary.xr_hours_val }}</strong></td>
+        </tr>
+        <tr>
+            <td>{{ items.param.LAF6 }}:</td>
+            <td><strong>{{  items.param.LAF6_x }}</strong></td>
+            <td>{{ 'Value'|t }}:</td>
+            <td><strong>{{ items.salary.turnover }}</strong></td>
+        </tr>   
+    </tbody>
 
-      <tr class='odd'>
-          <td colspan='3'>{{ items.param.custom_d_val.1 }}:</td>
-          <td><strong>{{ items.salary.custom_d1 }}</strong></td>          
-      </tr>
-      <tr>
-          <td colspan='3'>{{ items.param.custom_d_val.2 }}:</td>
-          <td><strong>{{ items.salary.custom_d2 }}</strong></td>          
-      </tr>
-      <tr class='odd'>
-          <td colspan='3'>{{ items.param.custom_d_val.3 }}:</td>
-          <td><strong>{{ items.salary.custom_d3 }}</strong></td>          
-      </tr>
-      <tr>
-          <td colspan='3'>{{ items.param.custom_d_val.4 }}:</td>
-          <td><strong>{{ items.salary.custom_d4 }}</strong></td>          
-      </tr>
-      <tr class='odd'>
-          <td colspan='3'>{{ items.param.custom_d_val.5 }}:</td>
-          <td><strong>{{ items.salary.custom_d5 }}</strong></td>          
-      </tr>
-      <tr>
-          <td colspan='3'>{{ items.param.custom_d_val.6 }}:</td>
-          <td><strong>{{ items.salary.custom_d6 }}</strong></td>          
-      </tr>
-     <tr class='odd'>
-          <td colspan='3'>{{ items.param.custom_d_val.7 }}:</td>
-          <td><strong>{{ items.salary.custom_d7 }}</strong></td>          
-      </tr>
-      
-      <tr>
-          <td colspan='2'>{{ items.param.fund1 }}:</td>
-          <td>{{ 'employer'|t }} <strong>{{ items.salary.epf_er }}</strong></td>
-          <td><strong>{{ items.salary.epf_yee }}</strong> {{ 'employee'|t }} </td>
-      </tr>     
-      <tr class='odd'>
-          <td colspan='2'>{{ items.param.fund2 }}:</td>
-          <td>{{ 'employer'|t }} <strong>{{ items.salary.socso_er }}</strong></td>
-          <td><strong>{{ items.salary.socso_yee }}</strong> {{ 'employee'|t }}</td>
-      </tr>       
-      <tr>
-          <td colspan='2'>{{ items.param.fund3 }}:</td>
-          <td>{{ 'employer'|t }} <strong>{{ items.salary.with_yer }}</strong></td>
-          <td><strong>{{ items.salary.with_yee }}</strong> {{ 'employee'|t }}</td>
-      </tr>
-      <tr class='odd'>
-          <td colspan='2'>{{ items.param.incometax }}:</td>
-          <td></td>
-          <td><strong>{{ items.salary.incometax }}</strong></td>
-      </tr> 
-      <tr>
-          <td colspan='3'>{{ 'Nett'|t }}:</td>
-          <td><b>{{ items.salary.nett }}</b></td>
 
-      </tr> 
-  </tbody>
+    <tbody>
+        <tr class='odd'>
+            <td colspan='3'>{{ items.param.custom_a_val.1 }}:</td>
+            <td><strong>{{ items.salary.custom_aw1 }}</strong></td>          
+        </tr>
+        <tr>
+            <td colspan='3'>{{ items.param.custom_a_val.2 }}:</td>
+            <td><strong>{{ items.salary.custom_aw2 }}</strong></td>          
+        </tr>
+        <tr class='odd'>
+            <td colspan='3'>{{ items.param.custom_a_val.3 }}:</td>
+            <td><strong>{{ items.salary.custom_aw3 }}</strong></td>          
+        </tr>
+        <tr>
+            <td colspan='3'>{{ items.param.custom_a_val.4 }}:</td>
+            <td><strong>{{ items.salary.custom_aw4 }}</strong></td>          
+        </tr>
+        <tr class='odd'>
+            <td colspan='3'>{{ items.param.custom_a_val.5 }}:</td>
+            <td><strong>{{ items.salary.custom_aw5 }}</strong></td>          
+        </tr>
+        <tr>
+            <td colspan='3'>{{ items.param.custom_a_val.6 }}:</td>
+            <td><strong>{{ items.salary.custom_aw6 }}</strong></td>          
+        </tr>
+        <tr class='odd'>
+            <td colspan='3'>{{ items.param.custom_a_val.7 }}:</td>
+            <td><strong>{{ items.salary.custom_aw7 }}</strong></td>          
+        </tr>
+        <tr>
+            <td colspan='3'>{{ items.param.custom_a_val.8 }}:</td>
+            <td><strong>{{ items.salary.custom_aw8 }}</strong></td>          
+        </tr>
+        <tr class='odd'>
+            <td colspan='3'>{{ items.param.custom_a_val.9 }}:</td>
+            <td><strong>{{ items.salary.custom_aw9 }}</strong></td>          
+        </tr>
+        <tr>
+            <td colspan='3'>{{ items.param.custom_a_val.10 }}:</td>
+            <td><strong>{{ items.salary.custom_aw10 }}</strong></td>          
+        </tr>
+        <tr class='odd'>
+            <td colspan='3'>{{ items.param.custom_a_val.11 }}:</td>
+            <td><strong>{{ items.salary.custom_aw11 }}</strong></td>          
+        </tr>  
+        <tr>
+            <td colspan='3'>{{ items.param.custom_a_val.12 }}:</td>
+            <td><strong>{{ items.salary.custom_aw12 }}</strong></td>          
+        </tr>
+        <tr class='odd'>
+            <td colspan='3'>{{ items.param.custom_a_val.13 }}:</td>
+            <td><strong>{{ items.salary.custom_aw13 }}</strong></td>          
+        </tr>
+        <tr>
+            <td colspan='3'>{{ 'Total gross'|t }}:</td>
+            <td><b>{{ items.salary.gross }}</b></td>          
+        </tr> 
+
+        <tr class='odd'>
+            <td>{{ items.param.LDF2 }}:</td>
+            <td><strong>{{ items.salary.less_hours }}</strong></td>
+            <td>{{ 'Value'|t }}:</td>
+            <td><strong>{{ items.salary.less_hours_val }}</strong></td>
+        </tr>
+        <tr>
+            <td>{{ items.param.LDF1 }}:</td>
+            <td></td>
+            <td>{{ 'Value'|t }}:</td>
+            <td><strong>{{ items.salary.advance }}</strong></td>
+        </tr>   
+
+        <tr class='odd'>
+            <td colspan='3'>{{ items.param.custom_d_val.1 }}:</td>
+            <td><strong>{{ items.salary.custom_d1 }}</strong></td>          
+        </tr>
+        <tr>
+            <td colspan='3'>{{ items.param.custom_d_val.2 }}:</td>
+            <td><strong>{{ items.salary.custom_d2 }}</strong></td>          
+        </tr>
+        <tr class='odd'>
+            <td colspan='3'>{{ items.param.custom_d_val.3 }}:</td>
+            <td><strong>{{ items.salary.custom_d3 }}</strong></td>          
+        </tr>
+        <tr>
+            <td colspan='3'>{{ items.param.custom_d_val.4 }}:</td>
+            <td><strong>{{ items.salary.custom_d4 }}</strong></td>          
+        </tr>
+        <tr class='odd'>
+            <td colspan='3'>{{ items.param.custom_d_val.5 }}:</td>
+            <td><strong>{{ items.salary.custom_d5 }}</strong></td>          
+        </tr>
+        <tr>
+            <td colspan='3'>{{ items.param.custom_d_val.6 }}:</td>
+            <td><strong>{{ items.salary.custom_d6 }}</strong></td>          
+        </tr>
+        <tr class='odd'>
+            <td colspan='3'>{{ items.param.custom_d_val.7 }}:</td>
+            <td><strong>{{ items.salary.custom_d7 }}</strong></td>          
+        </tr>
+
+        <tr>
+            <td colspan='2'>{{ items.param.fund1 }}:</td>
+            <td>{{ 'employer'|t }} <strong>{{ items.salary.epf_er }}</strong></td>
+            <td><strong>{{ items.salary.epf_yee }}</strong> {{ 'employee'|t }} </td>
+        </tr>     
+        <tr class='odd'>
+            <td colspan='2'>{{ items.param.fund2 }}:</td>
+            <td>{{ 'employer'|t }} <strong>{{ items.salary.socso_er }}</strong></td>
+            <td><strong>{{ items.salary.socso_yee }}</strong> {{ 'employee'|t }}</td>
+        </tr>       
+        <tr>
+            <td colspan='2'>{{ items.param.fund3 }}:</td>
+            <td>{{ 'employer'|t }} <strong>{{ items.salary.with_yer }}</strong></td>
+            <td><strong>{{ items.salary.with_yee }}</strong> {{ 'employee'|t }}</td>
+        </tr>
+        <tr class='odd'>
+            <td colspan='2'>{{ items.param.incometax }}:</td>
+            <td></td>
+            <td><strong>{{ items.salary.incometax }}</strong></td>
+        </tr> 
+        <tr>
+            <td colspan='3'>{{ 'Nett'|t }}:</td>
+            <td><b>{{ items.salary.nett }}</b></td>
+        </tr> 
+        {% if items.salary.apiData %}
+            {% for key, item in items.salary.apiData  %}
+
+                <tr>
+                    <td colspan='2'>{{ item.description }}</td>
+                    <td></td>
+                    <td>{{ item.value }}</td>
+                </tr>
+
+            {% endfor %}
+        {% endif %}
+    </tbody>
 </table>
