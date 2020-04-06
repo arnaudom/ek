@@ -308,6 +308,9 @@ foreach ($items['lines'] as $detail) {
                 // column 1
                 $x= $pdf->GetX();
                 $y= $pdf->GetY();
+                if($detail['description2'] != NULL){
+                    $detail['item'] = strip_tags($detail['description2']);
+                }
                 $pdf->MultiCell($b2,5, $detail['item'], 1,'L');
                 $y2= $pdf->GetY();    
                 $pdf->SetFont('helvetica','',8);

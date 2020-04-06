@@ -315,6 +315,9 @@ $subtotal = 0;
             $y = $pdf->GetY();
             
             //include text into justified cell (first column)
+            if($detail['description2'] != NULL){
+                    $detail['item'] = strip_tags($detail['description2']);
+            }
             $pdf->MultiCell($b2,5, $detail['item'],"TLR",'L',$fill);
 
             //get ending coordinate Y
@@ -376,7 +379,7 @@ $subtotal = 0;
     
 //CLOSE =====================================================  
 $pdf->Cell($lm+$b1);
-$pdf->Cell(175,1,'',"T");
+$pdf->Cell($c1+$c2+$c3+$c4-$b1,3,"","T",0);
 
 $pdf->Ln(2);      
 $pdf->SetFont('helvetica','B',8);
