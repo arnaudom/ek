@@ -94,8 +94,8 @@ ek_sales_docs_updater:
     - core/drupalSettings
     - core/drupal.ajax
     - core/drupal.dialog
-    - core/jquery.ui.droppable    
-    - core/jquery.ui.draggable
+    - jquery_ui_droppable/droppable
+    - jquery_ui_draggable/draggable
     
 ek_sales_charts:
   css:

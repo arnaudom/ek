@@ -57,7 +57,6 @@ class SettingsForms extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
 
-
         $form['P'] = array(
             '#type' => 'details',
             '#title' => t('Purchase forms'),
@@ -188,56 +187,12 @@ class SettingsForms extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
 
-
-        $extensions = 'inc';
-        $validators = array('file_validate_extensions' => array($extensions));
-
-        $field = "P";
-        $file = file_save_upload($field, $validators, FALSE, 0, FILE_EXISTS_REPLACE);
-        if ($file) {
-            $form_state->set('new_purchase', $file);
-        }
-
-        $field = "Q";
-        $file = file_save_upload($field, $validators, FALSE, 0, FILE_EXISTS_REPLACE);
-        if ($file) {
-            $form_state->set('new_quotation', $file);
-        }
-
-        $field = "I";
-        $file = file_save_upload($field, $validators, FALSE, 0, FILE_EXISTS_REPLACE);
-        if ($file) {
-            $form_state->set('new_invoice', $file);
-        }
     }
 
     /**
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
-        $filesystem = \Drupal::service('file_system');
-        if ($form_state->get('new_purchase')) {
-            $dir = "private://sales/templates/purchase/" . $form_state->getValue('coid') . '/';
-            $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-            $filesystem->copy($form_state->get('new_purchase')->getFileUri(), $dir, FILE_EXISTS_REPLACE);
-            \Drupal::messenger()->addStatus(t("New purchase file uploaded"));
-        }
-
-        if ($form_state->get('new_quotation')) {
-            $dir = "private://sales/templates/quotation/" . $form_state->getValue('coid') . '/';
-            $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-            $filesystem->copy($form_state->get('new_quotation')->getFileUri(), $dir, FILE_EXISTS_REPLACE);
-            \Drupal::messenger()->addStatus(t("New quotation file uploaded"));
-        }
-
-        if ($form_state->get('new_invoice')) {
-            $dir = "private://sales/templates/invoice/" . $form_state->getValue('coid') . '/';
-            $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-            $filesystem->copy($form_state->get('new_invoice')->getFileUri(), $dir, FILE_EXISTS_REPLACE);
-            \Drupal::messenger()->addStatus(t("New invoice file uploaded"));
-        }
-
 
         foreach ($form_state->getValue('P') as $key => $value) {
 
@@ -262,6 +217,38 @@ class SettingsForms extends FormBase {
                 \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
             }
         }
+        
+        $filesystem = \Drupal::service('file_system');
+        $extensions = 'inc';
+        $validators = array('file_validate_extensions' => array($extensions));
+        
+       
+            $dir = "private://sales/templates/purchase/";
+            $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            
+            $file = file_save_upload("P", $validators, $dir, 0, FILE_EXISTS_REPLACE);
+            if($file){
+                \Drupal::messenger()->addStatus(t("New purchase file uploaded"));
+            }
+        
+            $dir = "private://sales/templates/quotation/";
+            $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            
+            $file = file_save_upload("Q", $validators, $dir, 0, FILE_EXISTS_REPLACE);
+            if($file){
+                \Drupal::messenger()->addStatus(t("New quotation file uploaded"));
+            }
+        
+            $dir = "private://sales/templates/invoice/";
+            $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            
+            $file = file_save_upload("I", $validators, $dir, 0, FILE_EXISTS_REPLACE);
+            if($file){
+                \Drupal::messenger()->addStatus(t("New invoice file uploaded"));
+            }
+
+
+        
     }
 
 }
