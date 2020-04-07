@@ -7,6 +7,8 @@
   */
 use Drupal\Core\Database\Database;
 use Drupal\Core\StreamWrapper\PrivateStream;
+use Drupal\Core\StreamWrapper\PublicStream;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\user\Entity\User;
 use Drupal\ek_products\ItemData;
 
@@ -299,7 +301,12 @@ if($output_format == '1') {
      
   } else {
       
-      $template =  PrivateStream::basePath() . '/sales/templates/' . $source . '/' . $template;
+      //if print template is a custom file, copy from private to public before include
+      //use this feature when storage of data is remote.
+      $filesystem = \Drupal::service('file_system');
+      $path = PublicStream::basePath() . "/" . $template;
+      $filesystem->copy("private://sales/templates/". $source . '/' . $template, $path, FileSystemInterface::EXISTS_REPLACE );
+      $template = $path ;
     
   }
   
