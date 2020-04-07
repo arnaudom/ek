@@ -33,7 +33,7 @@ $bluefont = array(
 );
 
 // Add a drawing to the worksheet
-if (($company->logo != '')) {
+if (($company->logo != '')  && file_exists($company->logo)) {
     $info = getimagesize($company->logo);
     $h = $info[1];
     $w = $info[0];
@@ -42,7 +42,7 @@ if (($company->logo != '')) {
     $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
     $objDrawing->setName('Company logo');
     $objDrawing->setDescription('Company logo');
-    $objDrawing->setPath(\Drupal::service('file_system')->realpath($company->logo));
+    $objDrawing->setPath($company->logo);
     $objDrawing->setHeight($resolution);
     $objDrawing->setCoordinates('B2');
     $objDrawing->setOffsetX(10);
