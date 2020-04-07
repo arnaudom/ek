@@ -1,76 +1,74 @@
 <?php
 
 class EKPDF extends TCPDF {
-    function Header(){
+
+    function Header() {
         $data = $this->getHeaderData();
         $this->company = $data['title'];
-        
         if ($this->company->logo != '') {
-            $logo = \Drupal::service('file_system')->realpath($this->company->logo);
-            if(file_exists($logo)){
-                $info = getimagesize($logo);
-                $h = $info[1]*30/$info[0];
-                $this->Image($logo,15,5,$h);
-            } 
+               if(file_exists($this->company->logo)) {
+                   $logo = file_create_url($this->company->logo);
+                   $info = getimagesize($logo);
+                    $h = $info[1] * 20 / $info[0];
+                    $this->Image($logo, 25, 10, $h);
+               }
         }
+        
         $this->Ln(5);
-        $this->SetFont('helvetica','',12);
+        $this->SetFont('helvetica', '', 12);
         $this->Cell(100);
-        $this->Cell(50,5,$this->company->name,0,1);
-        $this->SetFont('helvetica','',8);
+        $this->Cell(50, 5, $this->company->name, 0, 1);
+        $this->SetFont('helvetica', '', 8);
         if ($this->company->reg_number) {
             $this->Cell(100);
-            $this->Cell(8,3,"(".$this->company->reg_number .")",0,1);
+            $this->Cell(8, 3, "(" . $this->company->reg_number . ")", 0, 1);
         }
         if ($this->company->address1) {
-            $this->Cell(100);    
-            $this->Cell(60,4, $this->company->address1,0,1);
+            $this->Cell(100);
+            $this->Cell(60, 4, $this->company->address1, 0, 1);
         }
         if ($this->company->address2) {
-             $this->Cell(100);    
-            $this->Cell(60,4, $this->company->address2,0,1);
+            $this->Cell(100);
+            $this->Cell(60, 4, $this->company->address2, 0, 1);
         }
         $next = '';
         if ($this->company->postcode) {
             $next .= $this->company->postcode;
         }
-        if($this->company->city){
+        if ($this->company->city) {
             $next .= " " . $this->company->city;
         }
-        if($this->company->country){
+        if ($this->company->country) {
             $next .= ", " . $this->company->country;
         }
         $this->Cell(100);
-        $this->Cell(50,4, $next ,0,1);
+        $this->Cell(50, 4, $next, 0, 1);
 
         if ($this->company->telephone) {
             $this->Cell(100);
-            $this->Cell(8,3,t("tel:"). $this->company->telephone,0,1);
+            $this->Cell(8, 3, t("tel:") . $this->company->telephone, 0, 1);
         }
         if ($this->company->fax) {
             $this->Cell(100);
-            $this->Cell(8,4,t("fax:"). $this->company->telephone,0,1);
+            $this->Cell(8, 4, t("fax:") . $this->company->telephone, 0, 1);
         }
     }
 
-
-    function Footer(){
+    function Footer() {
         //Position at 1.5 cm from bottom
         $this->SetY(-15);
         //helvetica italic 8
-        $this->SetFont('helvetica','I',8);
+        $this->SetFont('helvetica', 'I', 8);
         //Page number
-        $this->Cell(0,5, t('Page') . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, 1, 'R');
-
+        $this->Cell(0, 5, t('Page') . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, 1, 'R');
     }
-  
+
 }
 
 // create new PDF document
 $pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
 // set document information
-
 //$pdf->SetCreator($company->name);
 $pdf->SetAuthor(\Drupal::currentUser()->getAccountName());
 $pdf->SetTitle(t('Voucher'));
@@ -94,97 +92,96 @@ $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 $m1 = 20;
 $m2 = 30;
 
-Foreach($data as $id => $arr) {
-    
-    
-        $pdf->SetTitle($fileName);
-        $pdf->SetHeaderData('','',$arr['company'],'');
-        $pdf->AddPage('P','A4');
-        $pdf->Ln(25);
-        $pdf->SetFont('helvetica','B',12);
-        $pdf->SetTextColor(68, 151, 242);
-        $pdf->Cell($m1,5);
-        $pdf->Cell(75,5,t('PAYMENT VOUCHER'),0,1);
-        $pdf->SetTextColor(0);
-        $pdf->Ln(3);
+Foreach ($data as $id => $arr) {
 
-        $pdf->SetFont('helvetica','',8);
-        $pdf->Cell($m2,5);
-        $pdf->Cell(75,5,t('Voucher No'),0,0);
-        $pdf->Cell(100,5,$arr['line']->id . ' - ' . $arr['journal']->id . ' - ' . $arr['journal']->count,0,1);
-        $pdf->Cell($m2,5);
-        $pdf->Cell(75,5,t('Date'),0,0);
-        $pdf->Cell(100,5,$arr['line']->pdate,0,1);
-        $pdf->Cell($m2,5);
-        $pdf->Cell(75,5,t('From account'),0,0);
-        $pdf->Cell(100,5,$arr['bank_account'],0,1); 
-        $pdf->Cell($m2,5);
-        $pdf->Cell(75,5,t("Supplier ref"),0,0);
-        $pdf->Cell(100,5,$arr['suppliername'],0,1);
-        $pdf->Cell($m2,5);
-        $pdf->Cell(75,5,t("Client ref"),0,0);
-        $pdf->Cell(100,5,$arr['clientname'],0,1);  
-        $pdf->Cell($m2,5);
-        $pdf->Cell(75,5,t('Amount') . ' - ' . $arr['line']->currency,0,0);
-        $pdf->Cell(100,5,$arr['line']->localcurrency . ' ' . $arr['line']->currency,0,1);
-        if($arr['line']->tax > 0) {
-          $pdf->Cell($m2,5);
-          $pdf->Cell(75,5,t('include tax') ,0,0);
-          $pdf->Cell(100,5,number_format($arr['line']->tax,2) . ' ' . $arr['line']->currency,0,1);  
+
+    $pdf->SetTitle($fileName);
+    $pdf->SetHeaderData('', '', $arr['company'], '');
+    $pdf->AddPage('P', 'A4');
+    $pdf->Ln(25);
+    $pdf->SetFont('helvetica', 'B', 12);
+    $pdf->SetTextColor(68, 151, 242);
+    $pdf->Cell($m1, 5);
+    $pdf->Cell(75, 5, t('PAYMENT VOUCHER'), 0, 1);
+    $pdf->SetTextColor(0);
+    $pdf->Ln(3);
+
+    $pdf->SetFont('helvetica', '', 8);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t('Voucher No'), 0, 0);
+    $pdf->Cell(100, 5, $arr['line']->id . ' - ' . $arr['journal']->id . ' - ' . $arr['journal']->count, 0, 1);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t('Date'), 0, 0);
+    $pdf->Cell(100, 5, $arr['line']->pdate, 0, 1);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t('From account'), 0, 0);
+    $pdf->Cell(100, 5, $arr['bank_account'], 0, 1);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t("Supplier ref"), 0, 0);
+    $pdf->Cell(100, 5, $arr['suppliername'], 0, 1);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t("Client ref"), 0, 0);
+    $pdf->Cell(100, 5, $arr['clientname'], 0, 1);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t('Amount') . ' - ' . $arr['line']->currency, 0, 0);
+    $pdf->Cell(100, 5, $arr['line']->localcurrency . ' ' . $arr['line']->currency, 0, 1);
+    if ($arr['line']->tax > 0) {
+        $pdf->Cell($m2, 5);
+        $pdf->Cell(75, 5, t('include tax'), 0, 0);
+        $pdf->Cell(100, 5, number_format($arr['line']->tax, 2) . ' ' . $arr['line']->currency, 0, 1);
+    }
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t('Object'), 0, 0);
+    $pdf->Cell(100, 5, $arr['type'], 0, 1);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t('Comment'), 0, 0);
+    $pdf->SetFont('helvetica', '', 8);
+    $pdf->MultiCell(60, 5, strip_tags($arr['line']->comment), 0, 'L');
+
+    $pdf->Ln(5);
+
+    //add receipt image or link if any
+    $insert = FALSE;
+    if ($arr['line']->attachment) {
+        $parts = explode('/', $arr['line']->attachment);
+        $parts = array_reverse($parts);
+        $pdf->Cell($m2, 5);
+        $pdf->Cell(75, 5, t('Attachment') . ': ', 0, 0);
+        $pdf->SetFont('helvetica', '', 8);
+        $pdf->SetTextColor(0, 128, 255);
+
+        if (is_array(getimagesize($arr['line']->attachment))) {
+            $info = getimagesize($arr['line']->attachment);
+            $insert = TRUE;
+            $link = $pdf->AddLink();
+            $pdf->SetLink($link, 1, 2);
+            $pdf->Write(5, $parts[0], $link);
+        } else {
+            $link = file_create_url($arr['line']->attachment);
+            $pdf->Write(5, $parts[0], $link);
         }
-        $pdf->Cell($m2,5);
-        $pdf->Cell(75,5,t('Object'),0,0);
-        $pdf->Cell(100,5, $arr['type'] ,0,1);  
-        $pdf->Cell($m2,5);
-        $pdf->Cell(75,5,t('Comment') ,0,0);
-        $pdf->SetFont('helvetica','',8);
-        $pdf->MultiCell(60,5,strip_tags($arr['line']->comment),0,'L');  
+    }
+    $pdf->SetTextColor(100, 100, 100);
+    $pdf->Ln(20);
+    $pdf->SetLineStyle(['width' => 0.1, 'cap' => 'square', 'join' => 'miter', 'dash' => 0, 'color' => [128, 128, 128]]);
+    $pdf->Cell($m1, 5);
+    $pdf->Cell(35, 3, t("Prepared by"), 1, 0);
+    $pdf->Cell(35, 3, t("Verified by"), 1, 0);
+    $pdf->Cell(35, 3, t("Approved by"), 1, 0);
+    $pdf->Cell(35, 3, t("Received by"), 1, 1);
+    $pdf->Cell($m1, 5);
+    $pdf->Cell(35, 10, $userName, 1, 0);
+    $pdf->Cell(35, 10, "", 1, 0);
+    $pdf->Cell(35, 10, "", 1, 0);
+    $pdf->Cell(35, 10, "", 1, 1);
 
-        $pdf->Ln(5);
-
-        //add receipt image or link if any
-            $insert = FALSE;
-            if($arr['line']->attachment) {
-                    $parts = explode('/', $arr['line']->attachment);
-                    $parts = array_reverse($parts);
-                    $pdf->Cell($m2,5);
-                    $pdf->Cell(75, 5, t('Attachment') . ': ', 0, 0);
-                    $pdf->SetFont('helvetica', '', 8);
-                    $pdf->SetTextColor(0, 128, 255);
-                    
-                if (is_array(getimagesize($arr['line']->attachment))) {
-                    $info = getimagesize($arr['line']->attachment);
-                    $insert = TRUE;
-                    $link = $pdf->AddLink();
-                    $pdf->SetLink($link, 1, 2);
-                    $pdf->Write(5, $parts[0], $link);
-                } else {
-                        $link = file_create_url($arr['line']->attachment);
-                        $pdf->Write(5, $parts[0], $link);
-                }
-            }
-        $pdf->SetTextColor(100, 100, 100);       
-        $pdf->Ln(20);
-        $pdf->SetLineStyle(['width' => 0.1, 'cap' => 'square', 'join' => 'miter', 'dash' => 0, 'color' => [128, 128, 128]]);
-        $pdf->Cell($m1,5);
-        $pdf->Cell(35,3,t("Prepared by"),1,0);
-        $pdf->Cell(35,3,t("Verified by"),1,0);
-        $pdf->Cell(35,3,t("Approved by"),1,0);
-        $pdf->Cell(35,3,t("Received by"),1,1);
-        $pdf->Cell($m1,5);
-        $pdf->Cell(35,10, $userName ,1,0);
-        $pdf->Cell(35,10,"",1,0);
-        $pdf->Cell(35,10,"",1,0);
-        $pdf->Cell(35,10,"",1,1);    
-
-        if ($insert == TRUE) {
-            $pdf->AddPage('P','A4');
-            $pdf->Ln(10);
-            $h = $info[1] ;
-            $w = $info[0] ;
-            $r = 140/$w;
-            $pdf->Image(\Drupal::service('file_system')->realpath($arr['line']->attachment), 20, 60, 140, $h*$r);  
-            
-        }
+    if ($insert == TRUE) {
+        $pdf->AddPage('P', 'A4');
+        $pdf->Ln(10);
+        $h = $info[1];
+        $w = $info[0];
+        $r = 140 / $w;
+        $pdf->Image(\Drupal::service('file_system')->realpath($arr['line']->attachment), 20, 60, 140, $h * $r);
+    }
 }
 

@@ -34,14 +34,13 @@ class EKPDF extends TCPDF {
     function Header(){
         $data = $this->getHeaderData();
         $this->company = $data['title'];
-
         if ($this->company->logo != '') {
-            $logo = \Drupal::service('file_system')->realpath($this->company->logo);
-            if(file_exists($logo)){
-                $info = getimagesize($logo);
-                $h = $info[1]*15/$info[0];
-                $this->Image($logo,15,5,$h);
-            } 
+               if(file_exists($this->company->logo)) {
+                   $logo = file_create_url($this->company->logo);
+                   $info = getimagesize($logo);
+                    $h = $info[1] * 15 / $info[0];
+                    $this->Image($logo, 25, 8, $h);
+               }
         }
         $this->Ln(5);
         $this->SetFont('helvetica','',12);
