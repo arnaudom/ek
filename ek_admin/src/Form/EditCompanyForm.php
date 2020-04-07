@@ -501,12 +501,12 @@ class EditCompanyForm extends FormBase {
         }
 
         $validators = array('file_validate_is_image' => array());
+        $destination =  "private://admin/company" . $form_state->getValue('for_id') . "/images";
+        \Drupal::service('file_system')->prepareDirectory($destination, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);        
         //LOGO
-
         $field = "logo";
-
         // Check for a new uploaded logo.
-        $file = file_save_upload($field, $validators, FALSE, 0);
+        $file = file_save_upload($field, $validators,$destination,0,FILE_EXISTS_RENAME);
 
         if (isset($file)) {
             $res = file_validate_image_resolution($file, '300x300', '100x100');
@@ -523,10 +523,10 @@ class EditCompanyForm extends FormBase {
         }
 
         //SIGN
-        ;
         $field = "sign";
-        // Check for a new uploaded logo.
-        $file = file_save_upload($field, $validators, FALSE, 0);
+        // Check for a new uploaded signature.
+        $file = file_save_upload($field, $validators,$destination,0,FILE_EXISTS_RENAME);
+
         if (isset($file)) {
             $res = file_validate_image_resolution($file, '300x300', '100x100');
             // File upload was attempted.
@@ -659,10 +659,9 @@ class EditCompanyForm extends FormBase {
 
         if (!$form_state->getValue('logo') == 0) {
             if ($file = $form_state->getValue('logo')) {
-
-                $dir = "private://admin/company" . $id . "/images";
-                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $logo = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
+                $file->setPermanent();
+                $file->save();
+                $logo = $file->getFileUri();
                 Database::getConnection('external_db', 'external_db')
                         ->update('ek_company')
                         ->fields(array('logo' => $logo))
@@ -673,10 +672,9 @@ class EditCompanyForm extends FormBase {
 
         if (!$form_state->getValue('sign') == 0) {
             if ($file = $form_state->getValue('sign')) {
-
-                $dir = "private://admin/company" . $id . "/images";
-                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $sign = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
+                $file->setPermanent();
+                $file->save();
+                $sign = $file->getFileUri();
                 Database::getConnection('external_db', 'external_db')
                         ->update('ek_company')
                         ->fields(array('sign' => $sign))
