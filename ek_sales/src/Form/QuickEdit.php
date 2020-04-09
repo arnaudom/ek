@@ -74,14 +74,14 @@ class QuickEdit extends FormBase {
 
         $edit = true;
         //filter status for no editable document
-        if($doc == 'quotation' && $data->status == 2) {
+        if ($doc == 'quotation' && $data->status == 2) {
             $edit = false;
         }
-        if(($doc == 'purchase' || $doc == 'invoice') && $data->status > 0) {
+        if (($doc == 'purchase' || $doc == 'invoice') && $data->status > 0) {
             $edit = false;
         }
-        
-        if($edit) {
+
+        if ($edit) {
             if (!$form_state->getValue('head')) {
                 $form_state->setValue('head', $data->head);
             }
@@ -278,6 +278,16 @@ class QuickEdit extends FormBase {
                     '#value' => 0,
                 );
             }
+
+            if ($doc == 'invoice') {
+                $form['options']['po_no'] = array(
+                    '#type' => 'textfield',
+                    '#maxlength' => 50,
+                    '#size' => 25,
+                    '#default_value' => isset($data->po_no) ? $data->po_no : NULL,
+                    '#attributes' => array('placeholder' => t('PO No.')),
+                );
+            }
             $form['options']['comment'] = array(
                 '#type' => 'textarea',
                 '#rows' => 1,
@@ -354,10 +364,10 @@ class QuickEdit extends FormBase {
                 ->condition('serial', $serial)
                 ->execute();
         $init_data = $query->fetchAssoc();
-        
-        if ($doc == 'quotation' ) {
-           
-           if ($form_state->getValue('pcode') == 'n/a') {
+
+        if ($doc == 'quotation') {
+
+            if ($form_state->getValue('pcode') == 'n/a') {
                 $pcode = '';
             } else {
                 $pcode = $form_state->getValue('pcode');
@@ -373,7 +383,7 @@ class QuickEdit extends FormBase {
                 'status' => 0,
             );
         }
-        
+
         if ($doc == 'invoice' || $doc == 'purchase') {
             if ($form_state->getValue('due') == '') {
                 $due = 0;
@@ -406,6 +416,7 @@ class QuickEdit extends FormBase {
         if ($doc == 'invoice') {
             //add specific field for invoice
             $fields['bank'] = $form_state->getValue('bank_account');
+            $fields['po_no'] = $form_state->getValue('po_no');
         }
 
         $update = Database::getConnection('external_db', 'external_db')
@@ -467,12 +478,12 @@ class QuickEdit extends FormBase {
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])
                             ->fetchField();
                     $inputs = [];
-                    foreach($fields as $key => $value) {
+                    foreach ($fields as $key => $value) {
                         if ($value != $init_data[$key]) {
                             $inputs[] = $key;
                         }
                     }
-                    
+
                     $param = serialize(
                             array(
                                 'id' => $pid,

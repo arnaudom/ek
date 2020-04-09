@@ -267,3 +267,22 @@ function ek_sales_update_8011() {
      
    \Drupal::service('router.builder')->rebuild(); 
 }
+
+
+/**
+ * Add field
+ * Alter invoice table.
+ */
+function ek_sales_update_8012() {
+    $schema = Database::getConnection('external_db','external_db')->schema();
+    if(!$schema->fieldExists('ek_sales_invoice', 'po_no')) {   
+        $spec = array(
+            'type' => 'varchar',
+            'length' => 50,
+            'not null' => FALSE,
+            'description' => 'PO number',
+        );
+        $schema->addField('ek_sales_invoice', 'po_no', $spec);
+    }
+}
+     

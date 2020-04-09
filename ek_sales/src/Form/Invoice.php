@@ -473,6 +473,14 @@ class Invoice extends FormBase {
             '#suffix' => "</div></div>",
         );
 
+        $form['options']['po_no'] = array(
+            '#type' => 'textfield',
+            '#maxlength' => 50,
+            '#size' => 25,
+            '#default_value' => isset($data->po_no) ? $data->po_no : NULL,
+            '#description' => t('optional purchase order number'),
+            '#attributes' => array('placeholder' => t('PO No.')),
+        );
         $form['options']['comment'] = array(
             '#type' => 'textarea',
             '#rows' => 1,
@@ -1426,6 +1434,7 @@ class Invoice extends FormBase {
             'type' => $form_state->getValue('title'),
             'pcode' => $pcode,
             'comment' => Xss::filter($form_state->getValue('comment')),
+            'po_no' => Xss::filter($form_state->getValue('po_no')),
             'client' => $form_state->getValue('client'),
             'amountreceived' => 0,
             'pay_date' => '',

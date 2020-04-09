@@ -217,7 +217,8 @@ class InstallController extends ControllerBase {
     $query = "CREATE TABLE IF NOT EXISTS `ek_sales_invoice` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'unique serial number' COLLATE 'utf8_unicode_ci',
-	`do_no` VARCHAR(50) NULL DEFAULT NULL COMMENT 'deliveri order ref' COLLATE 'utf8_unicode_ci',
+	`do_no` VARCHAR(50) NULL DEFAULT NULL COMMENT 'delivery order ref' COLLATE 'utf8_unicode_ci',
+        `po_no` VARCHAR(50) NULL DEFAULT NULL COMMENT 'purchase order ref' COLLATE 'utf8_unicode_ci',
 	`head` TINYINT(3) UNSIGNED NULL DEFAULT NULL COMMENT 'company id',
 	`allocation` TINYINT(4) NOT NULL COMMENT 'company id allocation',
 	`status` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '0 unpaid' COLLATE 'utf8_unicode_ci',
