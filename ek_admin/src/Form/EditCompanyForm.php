@@ -336,7 +336,7 @@ class EditCompanyForm extends FormBase {
 
             $form['i']['sign'] = array(
                 '#type' => 'file',
-                '#title' => t('Upload a signatue image'),
+                '#title' => t('Upload a signature image'),
                 '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
                 '#suffix' => "</div>",
             );

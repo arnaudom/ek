@@ -585,7 +585,7 @@ class BackupCoid extends FormBase {
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
             
-            $fields = $table .".`id`,`serial`,`do_no`,`head`,`allocation`,`status`,`amount`, "
+            $fields = $table .".`id`,`serial`,`do_no`,`po_no`,`head`,`allocation`,`status`,`amount`, "
                     . "`currency`, `date`, `title`, `type`, `pcode`, `comment`,`client`,"
                     . "`amountreceived`,`pay_date`,`class`,`amountbase`,`balancebase`,`terms`,"
                     . "`due`,`bank`,`tax`,`taxvalue`,`reconcile`,`alert`,`alert_who`,`balance_post`";
