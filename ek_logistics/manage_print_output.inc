@@ -8,6 +8,8 @@
 
 use Drupal\Core\Database\Database;
 use Drupal\Core\StreamWrapper\PrivateStream;
+use Drupal\Core\StreamWrapper\PublicStream;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\ek_products\ItemData;
 
 $param = unserialize($param);
@@ -159,7 +161,12 @@ if ($format == 'pdf' | $mode == 1) {
     if ($template == '0') {
         $template = drupal_get_path('module', 'ek_logistics') . "/default_" . $tpl . "_pdf";
     } else {
-        $template = PrivateStream::basePath() . '/logistics/templates/' . $head->head . '/pdf/' . $template;
+        //if print template is a custom file, copy from private to public before include
+        //use this feature when storage of data is remote.
+        $filesystem = \Drupal::service('file_system');
+        $path = PublicStream::basePath() . "/" . $tpl;
+        $filesystem->copy("private://logistics/templates/" . $source . '/' . $tpl, $path, FileSystemInterface::EXISTS_REPLACE);
+        $template = $path;
     }
 
     $fileName = str_replace('/', '-', $head->serial);
@@ -190,8 +197,10 @@ if ($format == 'pdf' | $mode == 1) {
 
         $template = drupal_get_path('module', 'ek_logistics') . "/default_" . $tpl . "_html";
     }  else {
-
-        $template = PrivateStream::basePath() . '/logistics/templates/' . $tpl . '/' . $template;
+        $filesystem = \Drupal::service('file_system');
+        $path = PublicStream::basePath() . "/" . $tpl;
+        $filesystem->copy("private://logistics/templates/" . $source . '/' . $tpl, $path, FileSystemInterface::EXISTS_REPLACE);
+        $template = $path;
     }
 
     $fileName = $head->serial;
