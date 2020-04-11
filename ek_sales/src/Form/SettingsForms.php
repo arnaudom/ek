@@ -228,6 +228,8 @@ class SettingsForms extends FormBase {
             
             $file = file_save_upload("P", $validators, $dir, 0, FILE_EXISTS_REPLACE);
             if($file){
+                $file->setPermanent();
+                $file->save();
                 \Drupal::messenger()->addStatus(t("New purchase file uploaded"));
             }
         
@@ -236,6 +238,8 @@ class SettingsForms extends FormBase {
             
             $file = file_save_upload("Q", $validators, $dir, 0, FILE_EXISTS_REPLACE);
             if($file){
+                $file->setPermanent();
+                $file->save();
                 \Drupal::messenger()->addStatus(t("New quotation file uploaded"));
             }
         
@@ -244,6 +248,8 @@ class SettingsForms extends FormBase {
             
             $file = file_save_upload("I", $validators, $dir, 0, FILE_EXISTS_REPLACE);
             if($file){
+                $file->setPermanent();
+                $file->save();
                 \Drupal::messenger()->addStatus(t("New invoice file uploaded"));
             }
 
