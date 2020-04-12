@@ -33,7 +33,15 @@ $head = Database::getConnection('external_db', 'external_db')
 
 if(\Drupal::moduleHandler()->moduleExists('ek_projects')) {      
     if ($head->pcode && $head->pcode != 'n/a') {
-            $project_link = \Drupal\ek_projects\ProjectData::geturl($head->pcode);
+        $project_link = \Drupal\ek_projects\ProjectData::geturl($head->pcode);
+        //TODO pull data from ProjectData instead
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project', 'p');
+            $query->fields('p', ['pname','pcode']);
+            $query->leftJoin('ek_project_description','d','p.pcode=d.pcode');
+            $query->fields('d', ['project_description']);
+            $query->condition('p.pcode', $head->pcode);
+            $project = $query->execute()->fetchObject(); 
     } else {
         $project_link = '';
     }

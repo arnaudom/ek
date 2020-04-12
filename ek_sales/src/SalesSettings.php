@@ -28,13 +28,17 @@ use Drupal\Core\Database\Database;
     if($coid == NULL) {
         $coid = 0;
     }
+    
+    $this->settings = NULL;
     $this->coid = $coid;
     $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_sales_settings', 's');
     $query->fields('s');
     $query->condition('coid', $this->coid, '=');
     $data = $query->execute()->fetchObject();
-    $this->settings = unserialize($data->settings);
+    if($data){
+        $this->settings = unserialize($data->settings);
+    }
   }
  
   /**

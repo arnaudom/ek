@@ -197,24 +197,55 @@ class SettingsForms extends FormBase {
         foreach ($form_state->getValue('P') as $key => $value) {
 
             if ($value != 0 || $value != '') {
-                unlink("private://sales/templates/purchase/" . $value);
-                \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
+                $uri = "private://sales/templates/purchase/" . $value;
+                $query = Database::getConnection()->select('file_managed', 'f');
+                    $query->fields('f', ['fid']);
+                    $query->condition('uri', $uri);
+                    $fid = $query->execute()->fetchField();
+                    if (!$fid) {
+                        unlink($uri);
+                    } else {
+                        $file = \Drupal\file\Entity\File::load($fid);
+                        $file->delete();
+                        \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
+                    }
+                
             }
         }
 
         foreach ($form_state->getValue('Q') as $key => $value) {
 
             if ($value != 0 || $value != '') {
-                unlink("private://sales/templates/quotation/" . $value);
-                \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
+                $uri = "private://sales/templates/quotation/" . $value;
+                $query = Database::getConnection()->select('file_managed', 'f');
+                    $query->fields('f', ['fid']);
+                    $query->condition('uri', $uri);
+                    $fid = $query->execute()->fetchField();
+                    if (!$fid) {
+                        unlink($uri);
+                    } else {
+                        $file = \Drupal\file\Entity\File::load($fid);
+                        $file->delete();
+                        \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
+                    }
             }
         }
 
         foreach ($form_state->getValue('I') as $key => $value) {
 
             if ($value != 0 || $value != '') {
-                unlink("private://sales/templates/invoice/" . $value);
-                \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
+                $uri = "private://sales/templates/invoice/" . $value;
+                $query = Database::getConnection()->select('file_managed', 'f');
+                    $query->fields('f', ['fid']);
+                    $query->condition('uri', $uri);
+                    $fid = $query->execute()->fetchField();
+                    if (!$fid) {
+                        unlink($uri);
+                    } else {
+                        $file = \Drupal\file\Entity\File::load($fid);
+                        $file->delete();
+                        \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
+                    }
             }
         }
         
