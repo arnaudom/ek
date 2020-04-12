@@ -130,12 +130,14 @@ class AddressBookController extends ControllerBase {
             $items['shortname'] = $r['shortname'];
             $items['address'] = ucwords($r['address']);
             $items['address2'] = ucwords($r['address2']);
+            $items['state'] = ucwords($r['state']);
             $items['postcode'] = ucwords($r['postcode']);
             $items['city'] = ucwords($r['city']);
             $items['country'] = ucwords($r['country']);
             $items['telephone'] = $r['telephone'];
             $items['fax'] = $r['fax'];
             $items['website'] = $r['website'];
+            $items['reg'] = $r['reg'];
             $items['activity'] = ucwords($r['activity']);
             $t = array(1 => t('client'), 2 => t('supplier'), 3 => t('other'));
             $items['type'] = $t[$r['type']];

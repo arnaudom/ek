@@ -82,6 +82,7 @@ class InstallController extends ControllerBase {
                 `address` TINYTEXT NULL  COLLATE 'utf8mb4_unicode_ci',
                 `address2` TINYTEXT NOT NULL  COLLATE 'utf8mb4_unicode_ci',
                 `postcode` VARCHAR(50) NULL DEFAULT NULL,
+                `state` VARCHAR(50) NULL DEFAULT NULL COMMENT 'address state',
                 `city` VARCHAR(100) NULL DEFAULT NULL,
                 `country` VARCHAR(45) NULL DEFAULT NULL,
                 `telephone` VARCHAR(45) NULL DEFAULT NULL,
@@ -93,6 +94,7 @@ class InstallController extends ControllerBase {
                 `stamp` VARCHAR(50) NULL DEFAULT NULL,
                 `activity` VARCHAR(255) NULL DEFAULT NULL,
                 `logo` VARCHAR(255) NULL DEFAULT NULL COMMENT 'contact logo',
+                `reg` VARCHAR(30) NULL DEFAULT NULL COMMENT 'registration number',
                 PRIMARY KEY (`id`)
               )
               COMMENT='list of addresses'

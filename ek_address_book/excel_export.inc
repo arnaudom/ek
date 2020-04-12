@@ -17,21 +17,23 @@ $objPHPExcel->getActiveSheet()->setTitle($source);
 if($source == 'Address_book') {
    $objPHPExcel->setActiveSheetIndex(0)
             ->setCellValue('A1', 'id') 
-            ->setCellValue('B1', 'name')    
-            ->setCellValue('C1', 'shortname')                     
-            ->setCellValue('D1', 'address')           
-            ->setCellValue('E1', 'address2')           
-            ->setCellValue('F1', 'postcode') 
-            ->setCellValue('G1', 'city') 
-            ->setCellValue('H1', 'country') 
-            ->setCellValue('I1', "telephone") 
-            ->setCellValue('J1', 'fax') 
-            ->setCellValue('K1', 'website') 
-            ->setCellValue('L1', 'type') 
-            ->setCellValue('M1', 'category') 
-            ->setCellValue('N1', 'status') 
-            ->setCellValue('O1', 'stamp') 
-            ->setCellValue('P1', 'activity') ; 
+            ->setCellValue('B1', 'name')
+            ->setCellValue('C1', 'reg.')
+            ->setCellValue('D1', 'shortname')                     
+            ->setCellValue('E1', 'address')           
+            ->setCellValue('F1', 'address2')
+            ->setCellValue('G1', 'state')           
+            ->setCellValue('H1', 'postcode') 
+            ->setCellValue('I1', 'city') 
+            ->setCellValue('J1', 'country') 
+            ->setCellValue('K1', "telephone") 
+            ->setCellValue('L1', 'fax') 
+            ->setCellValue('M1', 'website') 
+            ->setCellValue('N1', 'type') 
+            ->setCellValue('O1', 'category') 
+            ->setCellValue('P1', 'status') 
+            ->setCellValue('Q1', 'stamp') 
+            ->setCellValue('R1', 'activity') ; 
    
         $l=1; 
         WHILE ($r = $data->fetchObject()) {
@@ -45,8 +47,10 @@ if($source == 'Address_book') {
             //force default cell input to avoid error if reused for import
             $address = (NULL == $r->address) ? "-" : $r->address;
             $address2 = (NULL == $r->address2) ? "-" : $r->address2;
+            $reg = (NULL == $r->reg) ? "-" : $r->reg;
             $postcode = (NULL == $r->postcode) ? "-" : $r->postcode;
             $city = (NULL == $r->city) ? "-" : $r->city;
+            $state = (NULL == $r->state) ? "-" : $r->state;
             $country = (NULL == $r->country) ? "-" : $r->country;
             $telephone = (NULL == $r->telephone) ? "-" : $r->telephone;
             $fax = (NULL == $r->fax) ? "-" : $r->fax;
@@ -55,20 +59,22 @@ if($source == 'Address_book') {
             
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $r->id);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $r->name);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$l", $r->shortname);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $address);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $address2);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $postcode);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $city);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $country);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $telephone);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $fax);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $website);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $r->type);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $r->category);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $r->status);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", date('Y-m-d', $r->stamp));
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("P$l", $r->activity);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$l", $reg);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $r->shortname);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $address);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $address2);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $state);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $postcode);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $city);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $country);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $telephone);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $fax);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $website);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $r->type);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", $r->category);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("P$l", $r->status);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("Q$l", date('Y-m-d', $r->stamp));
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("R$l", $r->activity);
 
         }    
    

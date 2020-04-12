@@ -13,6 +13,19 @@
  * ek_address_book module .
  */
 
+/**
+ * Implementation hook ek_home.
+ */
+function ek_address_book_ek_home() {
+    $build = [];
+    $build['ab']['name'] = 'ab_1';
+    $build['ab']['module'] = 'address_book';
+    $build['ab']['stamp'] = 1586604000;
+    $build['ab']['type'] = "new";
+    $build['ab']['content'] = '<a href="/address_book">Address book</a>: new fields available for State and company registration number.';
+    $build['ab']['footer'] = 'April 2020';
+    return $build;
+}
 
 /**
  * Implementation hook download.
@@ -90,68 +103,80 @@ function template_preprocess_ek_address_book_form(&$variables) {
 $form = $variables['items'];
 
 $row1[] = array(  
-      'data' => array(
-        array ('data' => $form['name'], 'width' => '50%', 'bgcolor' => ''),
-        array('data' => $form['shortname'], ),
-        array('data' => $form['status'],  ),
+    'data' => array(
+        ['data' => $form['name'],'width' => '50%','bgcolor' => '','colspan' => 2],
+        ['data' => $form['shortname'],],
+        
       ),
-      'class' => array('') ,
+      'class' => [] ,
     );
+
 $row1[] = array(
-        array('data' => array('#markup' => "<div id='alert' ></div>"), 'colspan' => 3 ),
-    );
-    
-$row2[] = array(  
-      'data' => array(
-        array ('data' => $form['address'], 'width' => '50%', 'bgcolor' => ''),
-        array('data' => $form['city'], ),
-        array('data' => $form['postcode'],  ),
+    'data' => array(
+       ['data' => $form['reg'],  'colspan' => 1],
+        ['data' => $form['status'],  'colspan' => 2 ],
       ),
-      'class' => array('') ,
+      'class' => [] ,
+    );
+
+$row1[] = array(
+        array('data' => ['#markup' => "<div id='alert' ></div>"], 'colspan' => 3 ),
+    );
+
+
+$row2[] = array(  
+    'data' => array(
+        ['data' => $form['address'], 'width' => '50%', 'bgcolor' => ''],
+        ['data' => $form['city'], ],
+        ['data' => $form['postcode'],],
+      ),
+      'class' => [] ,
     );  
 
 $row2[] = array(  
       'data' => array(
-        array ('data' => $form['address2'], 'width' => '50%', 'bgcolor' => ''),
-        array('data' => $form['country'], 'colspan' => 2 ),
-
+        ['data' => $form['address2'], 'width' => '50%', 'bgcolor' => ''],
+        ['data' => $form['state'], 'colspan' => 1 ],
+        ['data' => $form['country'], 'colspan' => 1 ],
       ),
-      'class' => array('') ,
+      'class' => [] ,
     );
 
 $row3[] = array(  
       'data' => array(
-        array ('data' => $form['telephone'], ),
-        array('data' => $form['fax'],),
-        array('data' => $form['website'],),
+        ['data' => $form['telephone'],],
+        ['data' => $form['fax'],],
+        ['data' => $form['website'],],
       ),
-      'class' => array('') ,
+      'class' => [] ,
     );
 
 $row4[] = array(  
       'data' => array(
-        array ('data' => $form['type'], ),
-        array('data' => $form['category'],),
-        array('data' => $form['tags'],),
+        ['data' => $form['type'],],
+        ['data' => $form['category'],],
+        ['data' => $form['tags'],],
       ),
-      'class' => array('') ,
+      'class' => [] ,
     );
 $row5[] = array(  
       'data' => array(
-        array ('data' => $form['logo'], ),
-        array('data' => $form['currentlogo'],),
-        array('data' => $form['delete_logo'],),
+        ['data' => $form['logo'],],
+        ['data' => $form['currentlogo'],],
+        ['data' => $form['delete_logo'],],
       ),
-      'class' => array('') ,
+      'class' => [] ,
     );    
 unset($form['name'], 
   $form['shortname'], 
   $form['status'], 
   $form['address'],
   $form['address2'],
+  $form['state'],
   $form['city'],
   $form['postcode'], 
   $form['country'],
+  $form['reg'],      
   $form['telephone'],
   $form['fax'],
   $form['website'],

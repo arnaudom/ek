@@ -117,6 +117,15 @@ class NewAddressBookForm extends FormBase {
             '#default_value' => isset($r['address2']) ? $r['address2'] : null,
             '#attributes' => array('placeholder' => t('Address line 2')),
         );
+        
+        $form['state'] = array(
+            '#type' => 'textfield',
+            '#size' => 30,
+            '#description' => isset($abid) ? t('State') : '',
+            '#maxlength' => 50,
+            '#default_value' => isset($r['state']) ? $r['state'] : null,
+            '#attributes' => array('placeholder' => t('State')),
+        );
 
         $form['postcode'] = array(
             '#type' => 'textfield',
@@ -145,7 +154,16 @@ class NewAddressBookForm extends FormBase {
             '#required' => TRUE,
             '#default_value' => isset($r['country']) ? $r['country'] : NULL,
         );
-
+        
+        $form['reg'] = array(
+            '#type' => 'textfield',
+            '#size' => 15,
+            '#description' => isset($abid) ? t('registration number') : '',
+            '#maxlength' => 30,
+            '#default_value' => isset($r['reg']) ? $r['reg'] : null,
+            '#attributes' => array('placeholder' => t('reg. number')),
+        );
+        
         $form['telephone'] = array(
             '#type' => 'textfield',
             '#size' => 30,
@@ -626,10 +644,12 @@ class NewAddressBookForm extends FormBase {
         $fields = array(
             'name' => $form_state->getValue('name'),
             'shortname' => str_replace('/', '|', $form_state->getValue('shortname')),
+            'reg' => Xss::filter($form_state->getValue('reg')),
             'address' => Xss::filter($form_state->getValue('address')),
             'address2' => Xss::filter($form_state->getValue('address2')),
             'city' => Xss::filter($form_state->getValue('city')),
             'postcode' => Xss::filter($form_state->getValue('postcode')),
+            'state' => Xss::filter($form_state->getValue('state')),
             'country' => $form_state->getValue('country'),
             'telephone' => Xss::filter($form_state->getValue('telephone')),
             'fax' => Xss::filter($form_state->getValue('fax')),

@@ -12,9 +12,11 @@ jQuery(document).ready(function () {
         var text = jQuery('#name').html() + ' \n' 
         + jQuery('#address1').html() + ' \n' 
         + jQuery('#address2').html() + ' \n'
+        + jQuery('#state').html() + ' \n'
         + jQuery('#postcode').html() + ' \n'
         + jQuery('#city').html() + ' \n'
-        + jQuery('#country').html() + ' \n';
+        + jQuery('#country').html() + ' \n'
+        + jQuery('#regname').html() + ' \n';
         var $body = document.getElementsByTagName('body')[0];
         var $tempInput = document.createElement('INPUT');
         $body.appendChild($tempInput);
@@ -39,6 +41,7 @@ jQuery(document).ready(function () {
         + jQuery('#name').html() + ' \n' 
         + jQuery('#address1').html() + ' \n' 
         + jQuery('#address2').html() + ' \n'
+        + jQuery('#state').html() + ' \n'
         + jQuery('#postcode').html() + ' \n'
         + jQuery('#city').html() + ' \n'
         + jQuery('#country').html() + ' \n';

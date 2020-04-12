@@ -45,13 +45,13 @@
                     <h2><span class="ico map-marker"></span><span class=" clipboard_add">{{ 'Address'|t }}</span><span class="copy copyAdd">copied to clipboard</span></h2>
                     <table>
                         <tr>
-                            <td id="address1">{{ items.address }}</td><td></td>
+                            <td id="address1">{{ items.address }}</td><td id="state">{{ items.state }}</td>
                         </tr> 
                         <tr>
-                            <td id="address2">{{ items.address2 }}</td><td id="country">{{ items.country }}</td>
+                            <td id="address2">{{ items.address2 }}</td><td id="country">{{ items.city }}</td>
                         </tr>  
                         <tr>
-                            <td id="postcode">{{ items.postcode }}</td><td id="city">{{ items.city }}</td>
+                            <td id="postcode">{{ items.postcode }}</td><td id="city">{{ items.country }}</td>
                         </tr> 
                     </table>
 
@@ -75,6 +75,9 @@
                 </div>
                 <div class='cell'>
                     <table>
+                        <tr>
+                            <td><span class='badge'>{{ 'Reg. number'|t }}: </span></td><td  id="regnumber">{{ items.reg }}</td>
+                        </tr>
                         <tr>
                             <td><span class='badge'>{{ 'Status'|t }}: </span></td><td  id="astatus">{{ items.status }}</td>
                         </tr>

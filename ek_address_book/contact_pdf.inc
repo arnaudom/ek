@@ -92,7 +92,13 @@ $pdf->Cell(5, 3, "", "RT", 1);
     $pdf->Cell(5, 6, "", "0", 0);
     $pdf->Cell(100, 6, $book_data->name, 0, 0);
     $pdf->Cell(5, 6, "", "0", 1);
-
+    
+    $pdf->SetFont('helvetica', '', 7);
+    $pdf->Cell(5, 6, "", "0", 0);
+    $pdf->Cell(100, 3, '(' . $book_data->reg . ')', 0, 0);
+    $pdf->Cell(5, 6, "", "0", 1);
+    $pdf->SetFont('helvetica', '', 10);
+    
     $pdf->Cell(5, 6, "", "0", 0);
     $pdf->Cell(100, 6, $card_data->salutation . ' ' . $card_data->contact_name, 0, 0);
     $pdf->Cell(5, 6, "", "0", 1);
@@ -112,6 +118,10 @@ $pdf->Cell(5, 3, "", "RT", 1);
 
     $pdf->Cell(10, 5, "", "0", 0);
     $pdf->Cell(90, 5, $book_data->address2, 0, 0);
+    $pdf->Cell(10, 5, "", "0", 1);
+
+    $pdf->Cell(10, 5, "", "0", 0);
+    $pdf->Cell(90, 5, $book_data->state, 0, 0);
     $pdf->Cell(10, 5, "", "0", 1);
 
     $pdf->Cell(10, 5, "", "0", 0);
@@ -142,7 +152,11 @@ $pdf->Cell(5, 3, "", "RT", 1);
     $pdf->Cell(5, 6, "", "0", 0);
     $pdf->Cell(100, 6, $book_data->name, 0, 0);
     $pdf->Cell(5, 6, "", "0", 1);
-
+    $pdf->SetFont('helvetica', '', 7);
+    $pdf->Cell(5, 6, "", "0", 0);
+    $pdf->Cell(100, 3, '(' . $book_data->reg . ')', 0, 0);
+    $pdf->Cell(5, 6, "", "0", 1);
+    $pdf->SetFont('helvetica', '', 10);
     $pdf->Cell(5, 6, "", "0", 0);
     $pdf->Cell(100, 6, $card_data->salutation . ' ' . $card_data->contact_name, 0, 0);
     $pdf->Cell(5, 6, "", "0", 1);
@@ -163,7 +177,11 @@ $pdf->Cell(5, 3, "", "RT", 1);
     $pdf->Cell(10, 5, "", "0", 0);
     $pdf->Cell(90, 5, $book_data->address2, 0, 0);
     $pdf->Cell(10, 5, "", "0", 1);
-
+    
+    $pdf->Cell(10, 5, "", "0", 0);
+    $pdf->Cell(90, 5, $book_data->state, 0, 0);
+    $pdf->Cell(10, 5, "", "0", 1);
+    
     $pdf->Cell(10, 5, "", "0", 0);
     $pdf->Cell(90, 5, $book_data->postcode . ' ' . $book_data->city, 0, 0);
     $pdf->Cell(10, 5, "", "0", 1);

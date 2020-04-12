@@ -64,3 +64,35 @@ function ek_address_book_update_8002() {
     \Drupal::service('router.builder')->rebuild();
     return t('Permission: check and edit permission to allow user to view autocomplete address book data.');
 }
+
+/**
+ * add fields state, registration
+ * 
+ */
+function ek_address_book_update_8003() {
+ $schema = Database::getConnection('external_db','external_db')->schema();
+        if(!$schema->fieldExists('ek_address_book', 'reg')) {
+            $spec = array(
+                'description' => 'registration number',
+                'type' => 'varchar',
+                'length' => 30,
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_address_book', 'reg', $spec);
+        }
+        
+        if(!$schema->fieldExists('ek_address_book', 'state')) {
+            $spec = array(
+                'description' => 'address state',
+                'type' => 'varchar',
+                'length' => 50,
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_address_book', 'state', $spec);
+        }
+        
+        return t('Table updated');
+        
+}
