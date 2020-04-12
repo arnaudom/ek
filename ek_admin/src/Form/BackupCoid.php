@@ -1126,9 +1126,9 @@ class BackupCoid extends FormBase {
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
             
-            $fields = $table .".`id`,`name`,`shortname`,`address`,`address2`,`postcode`,"
-                    . "`city`,`country`,`telephone`,`fax`,`website`,`type`,`category`,"
-                    . "`status`,`stamp`,`activity`,`logo`";
+            $fields = $table .".`id`,`name`,`reg`,`shortname`,`address`,`address2`,`state`,"
+                    . "`postcode`,`city`,`country`,`telephone`,`fax`,`website`,"
+                    . "`type`,`category`,`status`,`stamp`,`activity`,`logo`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE  FIND_IN_SET (id, :c ) ORDER by ' . $table . '.id';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, $condition);            
