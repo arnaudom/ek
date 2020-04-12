@@ -91,8 +91,8 @@ class Settings extends FormBase {
             );
 
 
-            
-            if(file_exists('private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/')){
+
+            if (file_exists('private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/')) {
                 $list_pdf_forms = array();
                 $handle = opendir('private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/');
                 while ($file = readdir($handle)) {
@@ -115,8 +115,8 @@ class Settings extends FormBase {
                     $i++;
                 }
             }
-            
-            if(file_exists('private://logistics/templates/' . $form_state->getValue('coid') . '/xls/')){
+
+            if (file_exists('private://logistics/templates/' . $form_state->getValue('coid') . '/xls/')) {
                 $list_xls_forms = array();
                 $handle = opendir('private://logistics/templates/' . $form_state->getValue('coid') . '/xls/');
                 while ($file = readdir($handle)) {
@@ -139,7 +139,7 @@ class Settings extends FormBase {
                     $i++;
                 }
             }
-            
+
 
             $form['#tree'] = TRUE;
             $form['actions'] = array('#type' => 'actions');
@@ -157,24 +157,24 @@ class Settings extends FormBase {
             $form_state->set('step', 2);
             $form_state->setRebuild();
         }
+        /*
+          if ($form_state->get('step') == 3) {
 
-        if ($form_state->get('step') == 3) {
+          $extensions = 'inc';
+          $validators = array('file_validate_extensions' => array($extensions));
 
-            $extensions = 'inc';
-            $validators = array('file_validate_extensions' => array($extensions));
+          $field = "custom_pdf_form";
+          $file = file_save_upload($field, $validators, FALSE, 0, FILE_EXISTS_REPLACE);
+          if ($file) {
+          $form_state->set('new_pdf_form', $file);
+          }
 
-            $field = "custom_pdf_form";
-            $file = file_save_upload($field, $validators, FALSE, 0, FILE_EXISTS_REPLACE);
-            if ($file) {
-                $form_state->set('new_pdf_form', $file);
-            }
-
-            $field = "custom_xls_form";
-            $file = file_save_upload($field, $validators, FALSE, 0, FILE_EXISTS_REPLACE);
-            if ($file) {
-                $form_state->set('new_xls_form', $file);
-            }
-        }
+          $field = "custom_xls_form";
+          $file = file_save_upload($field, $validators, FALSE, 0, FILE_EXISTS_REPLACE);
+          if ($file) {
+          $form_state->set('new_xls_form', $file);
+          }
+          } */
     }
 
     /**
@@ -185,18 +185,23 @@ class Settings extends FormBase {
         if ($form_state->get('step') == 3) {
 
             //verify coid exist first
-            $query = 'SELECT coid from {ek_logi_settings} WHERE coid=:c';
-            $coid = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':c' => $form_state->getValue('coid')))
-                    ->fetchField();
-
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_logi_settings', 's')
+                    ->fields('s', ['coid'])
+                    ->condition('coid', $form_state->getValue('coid'));
+            $coid = $query->execute()->fetchField();
+            /*
+              $query = 'SELECT coid from {ek_logi_settings} WHERE coid=:c';
+              $coid = Database::getConnection('external_db', 'external_db')
+              ->query($query, array(':c' => $form_state->getValue('coid')))
+              ->fetchField();
+             */
             if (!$coid) {
                 Database::getConnection('external_db', 'external_db')
                         ->insert('ek_logi_settings')
                         ->fields(array('coid' => $form_state->getValue('coid')))
                         ->execute();
             }
-
 
 
             $settings = new LogisticsSettings($form_state->getValue('coid'));
@@ -207,52 +212,68 @@ class Settings extends FormBase {
                 \Drupal::messenger()->addStatus(t('The settings are recorded'));
             }
 
-            //
-            // upload the forms
-            // 
-            if ($form_state->get('new_pdf_form')) {
 
-                $dir = 'private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/';
-                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $dest = $dir;
-                $filename = \Drupal::service('file_system')->copy($form_state->get('new_pdf_form')
-                                ->getFileUri(), $dest, FILE_EXISTS_REPLACE);
-                \Drupal::messenger()->addStatus(t("New pdf form uploaded"));
-            }
-
-            if ($form_state->get('new_xls_form')) {
-
-                $dir = 'private://logistics/templates/' . $form_state->getValue('coid') . '/xls/';
-                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $dest = $dir;
-                $filename = \Drupal::service('file_system')->copy($form_state->get('new_xls_form')
-                                ->getFileUri(), $dest, FILE_EXISTS_REPLACE);
-                \Drupal::messenger()->addStatus(t("New excel form uploaded"));
-            }
-
-            //
             // delete the forms
-            //
+
             foreach ($form_state->getValue('pdf') as $key => $value) {
                 if ($value != 0 || $value != '') {
-                    $del = 'private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/' . $value;
-                    \Drupal::service('file_system')->delete($del);
-                    \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
+                    $uri = 'private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/' . $value;
+                    $query = Database::getConnection()->select('file_managed', 'f');
+                    $query->fields('f', ['fid']);
+                    $query->condition('uri', $uri);
+                    $fid = $query->execute()->fetchField();
+                    if (!$fid) {
+                        unlink($uri);
+                    } else {
+                        $file = \Drupal\file\Entity\File::load($fid);
+                        $file->delete();
+                        \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
+                    }
                 }
             }
 
             foreach ($form_state->getValue('xls') as $key => $value) {
                 if ($value != 0 || $value != '') {
-                    $del = 'private://logistics/templates/' . $form_state->getValue('coid') . '/xls/' . $value;
-                    \Drupal::service('file_system')->delete($del);
-                    \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
+                    $uri = 'private://logistics/templates/' . $form_state->getValue('coid') . '/xls/' . $value;
+                    $query = Database::getConnection()->select('file_managed', 'f');
+                    $query->fields('f', ['fid']);
+                    $query->condition('uri', $uri);
+                    $fid = $query->execute()->fetchField();
+                    if (!$fid) {
+                        unlink($uri);
+                    } else {
+                        $file = \Drupal\file\Entity\File::load($fid);
+                        $file->delete();
+                        \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
+                    }
                 }
             }
-            
-            
-            if($_SESSION['install'] == 1){
-                    unset($_SESSION['install']);
-                    $form_state->setRedirect('ek_admin.main');
+            // upload the forms
+
+
+            $extensions = 'inc';
+            $validators = array('file_validate_extensions' => [$extensions]);
+            $dir = 'private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/';
+            \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            $file = file_save_upload("custom_pdf_form", $validators, $dir, 0, FILE_EXISTS_REPLACE);
+            if ($file) {
+                $file->setPermanent();
+                $file->save();
+                \Drupal::messenger()->addStatus(t("New pdf form uploaded"));
+            }
+
+            $dir = 'private://logistics/templates/' . $form_state->getValue('coid') . '/xls/';
+            \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            $file = file_save_upload("custom_xls_form", $validators, $dir, 0, FILE_EXISTS_REPLACE);
+            if ($file) {
+                $file->setPermanent();
+                $file->save();
+                \Drupal::messenger()->addStatus(t("New excel form uploaded"));
+            }
+
+            if ($_SESSION['install'] == '1') {
+                unset($_SESSION['install']);
+                $form_state->setRedirect('ek_admin.main');
             }
         }//step 3
     }

@@ -165,7 +165,7 @@ if ($format == 'pdf' | $mode == 1) {
         //use this feature when storage of data is remote.
         $filesystem = \Drupal::service('file_system');
         $path = PublicStream::basePath() . "/" . $tpl;
-        $filesystem->copy("private://logistics/templates/" . $source . '/' . $tpl, $path, FileSystemInterface::EXISTS_REPLACE);
+        $filesystem->copy("private://logistics/templates/" . $head->head . "/pdf/" . $template, $path, FileSystemInterface::EXISTS_REPLACE);
         $template = $path;
     }
 
@@ -194,12 +194,11 @@ if ($format == 'pdf' | $mode == 1) {
 } else {
     //html format
     if ($template == '0') {
-
         $template = drupal_get_path('module', 'ek_logistics') . "/default_" . $tpl . "_html";
     }  else {
         $filesystem = \Drupal::service('file_system');
         $path = PublicStream::basePath() . "/" . $tpl;
-        $filesystem->copy("private://logistics/templates/" . $source . '/' . $tpl, $path, FileSystemInterface::EXISTS_REPLACE);
+        $filesystem->copy("private://logistics/templates/" . $head->head . "/html/" . $tpl, $path, FileSystemInterface::EXISTS_REPLACE);
         $template = $path;
     }
 

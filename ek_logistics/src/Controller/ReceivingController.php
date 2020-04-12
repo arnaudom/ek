@@ -357,7 +357,9 @@ class ReceivingController extends ControllerBase {
             $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\FilterPrint', $id, $type , 'html');
             $document = '';
 
-            if (isset($_SESSION['logisticprintfilter']['filter']) && $_SESSION['logisticprintfilter']['filter'] == $id) {
+            if (isset($_SESSION['logisticprintfilter']['filter']) 
+                    && $_SESSION['logisticprintfilter']['filter'] == $id
+                    && $_SESSION['logisticprintfilter']['format'] == 'html') {
 
                 $id = explode('_', $_SESSION['logisticprintfilter']['for_id']);
                 $doc_id = $id[0];

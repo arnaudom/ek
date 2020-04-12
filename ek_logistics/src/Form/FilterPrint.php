@@ -94,7 +94,7 @@ class FilterPrint extends FormBase {
         //
         // provide selector for templates
         //
-  $list = array(0 => 'default');
+        $list = array(0 => 'default');
         $handle = opendir('private://logistics/templates/' . $doc->head . '/' . $format . '/');
         while ($file = readdir($handle)) {
             if ($file != '.' AND $file != '..') {

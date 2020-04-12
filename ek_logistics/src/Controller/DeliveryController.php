@@ -366,7 +366,9 @@ class DeliveryController extends ControllerBase {
             $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\FilterPrint', $id, 'delivery', 'html');
             $document = '';
 
-            if (isset($_SESSION['logisticprintfilter']['filter']) && $_SESSION['logisticprintfilter']['filter'] == $id) {
+            if (isset($_SESSION['logisticprintfilter']['filter']) 
+                    && $_SESSION['logisticprintfilter']['filter'] == $id
+                    && $_SESSION['logisticprintfilter']['format'] == 'html') {
 
                 $id = explode('_', $_SESSION['logisticprintfilter']['for_id']);
                 $doc_id = $id[0];
@@ -392,7 +394,7 @@ class DeliveryController extends ControllerBase {
                         'library' => array('ek_logistics/ek_logistics_html_documents_css', 'ek_admin/ek_admin_css'),
                     ),
                 ];
-            }
+            } 
             return array($build);
         } else {
             $url = Url::fromRoute('ek_logistics_list_delivery')->toString();

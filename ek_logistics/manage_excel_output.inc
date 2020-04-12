@@ -7,11 +7,8 @@
   */
 use Drupal\Core\Database\Database;
 use Drupal\Core\StreamWrapper\PrivateStream;
-use Drupal\ek_products\ItemData;
-
   
 $param = unserialize($param);
-
 $id = $param[0];
 $source = $param[1];
 $mode = $param[2]; 
@@ -25,13 +22,13 @@ $head = Database::getConnection('external_db', 'external_db')
         ->query("SELECT * from {ek_". $source. "} where id=:id", array(':id' => $id))
         ->fetchObject();
 
-if($head->type == 'RR') {
+if(!isset($head->type)) {
+  $head->type = t('DELIVERY ORDER');  
+} elseif($head->type == 'RR') {
   $head->type = t('RECEVING REPORT');
-} elseif($head->type == 'RT') {
-  $head->type = t('RETURNING REPORT');
 } else {
-  $head->type = t('DELIVERY ORDER');
-}
+  $head->type = t('RETURNING REPORT');
+} 
 
 Switch ($source) {
 
@@ -126,6 +123,10 @@ Switch ($source) {
     $form = str_replace('logi_', '', $source);
     $template = drupal_get_path('module', 'ek_logistics') . "/default_" . $form . "_xls";
   } else {
+    $filesystem = \Drupal::service('file_system');
+    $path = PublicStream::basePath() . "/" . $template;
+    $filesystem->copy("private://logistics/templates/" . $head->head . "/xls/" . $template, $path, FileSystemInterface::EXISTS_REPLACE);
+    $template = $path;
     $template = PrivateStream::basePath() . '/logistics/templates/' . $template;
     
   }
