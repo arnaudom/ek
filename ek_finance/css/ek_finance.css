@@ -67,6 +67,16 @@
   text-align: center;
 }
 
+.td-info {
+    width: 25%;
+}
+
+.td-data {
+    color: #425897;
+    font-size: 1.1em;
+    background-color: #FFF;
+}
+
 .grey {
   background-color : #E0ECF8 !important;
 }
@@ -242,3 +252,5 @@ hr {
     padding:1px;
     width:20px;
 }
+
+

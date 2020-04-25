@@ -11,12 +11,9 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\InsertCommand;
-use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\ek_finance\FinanceSettings;
 
@@ -60,10 +57,8 @@ class AttachFileMemo extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $tempSerial = NULL) {
-
-        if (isset($id) && $id != NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $tempSerial = null) {
+        if (isset($id) && $id != null) {
             $query = "SELECT serial,category,mission from {ek_expenses_memo} WHERE id=:id";
             $data = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':id' => $id))
@@ -73,7 +68,7 @@ class AttachFileMemo extends FormBase {
 
             $form['edit_memo'] = array(
                 '#type' => 'item',
-                '#markup' => '<h2>' . t('Memo ref. @p', array('@p' => $data->serial)) . '</h2>',
+                '#markup' => '<h2>' . $this->t('Memo ref. @p', array('@p' => $data->serial)) . '</h2>',
             );
 
             $form['mission'] = array(
@@ -92,17 +87,16 @@ class AttachFileMemo extends FormBase {
             
         }
 
-        $type = array(1 => "internal", 2 => "internal", 3 => "internal", 4 => "internal", 5 => "personal"); 
-    $url = Url::fromRoute('ek_finance_manage_list_memo_'. $type[$data->category], array(), array())->toString();
+        $type = array(1 => "internal", 2 => "internal", 3 => "internal", 4 => "internal", 5 => "personal");
+        $url = Url::fromRoute('ek_finance_manage_list_memo_' . $type[$data->category], array(), array())->toString();
         $form['back'] = array(
-          '#type' => 'item',
-          '#markup' => t('<a href="@url">List</a>', array('@url' => $url ) ) ,
-
+            '#type' => 'item',
+            '#markup' => $this->t('<a href="@url">List</a>', array('@url' => $url)),
         );
 
 //
-// Attachments
-// 
+        // Attachments
+//
 
         $form['tempSerial'] = array(
             //used for file uploaded
@@ -113,7 +107,7 @@ class AttachFileMemo extends FormBase {
         $form['attach'] = array(
             '#type' => 'details',
             '#title' => $this->t('Attachments'),
-            '#open' => TRUE,
+            '#open' => true,
         );
         $form['attach']['upload_doc'] = array(
             '#type' => 'file',
@@ -124,7 +118,7 @@ class AttachFileMemo extends FormBase {
         $form['attach']['upload'] = array(
             '#id' => 'upbuttonid',
             '#type' => 'button',
-            '#value' => t('Attach'),
+            '#value' => $this->t('Attach'),
             '#suffix' => '</div>',
             '#ajax' => array(
                 'callback' => array($this, 'uploadFile'),
@@ -169,18 +163,17 @@ class AttachFileMemo extends FormBase {
 //
 
     /**
-     * Callback for the ajax upload file 
-     * 
+     * Callback for the ajax upload file
+     *
      */
     public function uploadFile(array &$form, FormStateInterface $form_state) {
 
         //upload
         $extensions = 'png jpeg jpg';
         $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [file_upload_max_size()]);
-        $file = file_save_upload("upload_doc", $validators, FALSE, 0);
+        $file = file_save_upload("upload_doc", $validators, false, 0);
 
         if ($file) {
-
             $dir = "private://finance/memos";
             \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
             $dest = $dir . '/' . $file->getFilename();
@@ -199,27 +192,26 @@ class AttachFileMemo extends FormBase {
                 return $response->addCommand(new HtmlCommand('#error', ""));
             } else {
                 $msg = "<div aria-label='Error message' class='messages messages--error'>"
-                        . t('Error') . "</div>";
+                        . $this->t('Error') . "</div>";
                 return $response->addCommand(new HtmlCommand('#error', $msg));
             }
         } else {
-            $size = round(file_upload_max_size() / 1000000,0);
+            $size = round(file_upload_max_size() / 1000000, 0);
             $msg = "<div aria-label='Error message' class='messages messages--error'>"
-                    . t('Error') . ". " . t('Allowed extensions') . ": " . 'png jpg jpeg'
-                    . ', ' . t('maximum size') . ": " . $size . 'Mb'
+                    . $this->t('Error') . ". " . $this->t('Allowed extensions') . ": " . 'png jpg jpeg'
+                    . ', ' . $this->t('maximum size') . ": " . $size . 'Mb'
                     . "</div>";
             $response = new AjaxResponse();
             return $response->addCommand(new HtmlCommand('#error', $msg));
         }
     }
 
-
     /**
      * {@inheritdoc}
-     * 
+     *
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
+        
     }
 
     /**

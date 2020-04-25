@@ -58,9 +58,9 @@ class BankController extends ControllerBase {
     }
 
     /**
-     * list of banks references 
+     * list of banks references
      * filtered by company access
-     * 
+     *
      * @retrun array
      *  renderer Html
      *
@@ -83,21 +83,22 @@ class BankController extends ControllerBase {
             'operations' => $this->t('Operations'),
         );
 
-        $company = AccessCheck::GetCompanyByUser();
-        $company = implode(',', $company);
-        $query = "SELECT b.id, b.name as bank, c.name as co "
-                . "FROM {ek_bank} b "
-                . "INNER JOIN {ek_company} c "
-                . "ON b.coid=c.id "
-                . "WHERE FIND_IN_SET(coid, :c ) ORDER by b.name";
-        $list = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $company));
+        $coids = AccessCheck::GetCompanyByUser();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_bank', 'b');
+        $query->fields('b', ['id', 'name']);
+        $query->leftJoin('ek_company', 'c', 'b.coid = c.id');
+        $query->fields('c', ['name']);
+        $query->condition('coid', $coids, 'IN');
+        $query->orderBy('b.name');
+
+        $list = $query->execute();
         $row = 0;
         while ($l = $list->fetchObject()) {
-
             $row++;
             $options[$row] = array(
-                'name' => $l->bank,
-                'coid' => $l->co,
+                'name' => $l->name,
+                'coid' => $l->c_name,
             );
 
             $links['edit'] = array(
@@ -135,12 +136,12 @@ class BankController extends ControllerBase {
     }
 
     /**
-     * print a label  
-     * 
+     * print a label
+     *
      * @param array
      *  key: type (output type)
      *  key: param (array 'id' => value)
-     * 
+     *
      * @return Object
      *  Pdf render object
      */
@@ -154,17 +155,15 @@ class BankController extends ControllerBase {
 
     /**
      *  output statement per bank account
-     * 
+     *
      * @param int $id
      *  account id
-     * 
+     *
      * @return array
      *  render Html
      *
      */
-    public function statement($id = NULL) {
-
-
+    public function statement($id = null) {
         $access = AccessCheck::GetCompanyByUser();
         $query = "SELECT coid,account_ref, ba.currency, c.name FROM {ek_bank_accounts} ba "
                 . "INNER JOIN {ek_bank} b "
@@ -180,7 +179,7 @@ class BankController extends ControllerBase {
             $build['bank'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterStatement', $id);
 
             if (isset($_SESSION['statfilter']) && $_SESSION['statfilter']['filter'] == 1) {
-                $list = Url::fromRoute('ek_finance.manage.bank_accounts_list', array(), array())->toString() ;
+                $list = Url::fromRoute('ek_finance.manage.bank_accounts_list', array(), array())->toString();
                 $build["list"] = array(
                     '#markup' => "<div><a href='" . $list . "' >" . t('list') . "</a>",
                     '#suffix' => '</div>'
@@ -218,7 +217,6 @@ class BankController extends ControllerBase {
 
                 $row = 0;
                 while ($d = $data->fetchObject()) {
-
                     $row++;
                     if ($d->type == 'credit') {
                         $amount = '(' . number_format($d->amount, 2) . ')';
@@ -250,24 +248,23 @@ class BankController extends ControllerBase {
     }
 
     /**
-     *  create or edit bank 
+     *  create or edit bank
      *  linked to company - coid
-     * 
+     *
      *  @param int $id
      *      bank id
      *  @return array
      *      form
      */
     public function bank(Request $request, $id) {
-
         $build['bank'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\BankForm', $id);
         return $build;
     }
 
     /**
-     *  delete bank 
+     *  delete bank
      *  linked to company - coid
-     * 
+     *
      *  @param int $id
      *      bank id
      *  @return array
@@ -279,14 +276,13 @@ class BankController extends ControllerBase {
     }
 
     /**
-     * list of bank accounts references  
+     * list of bank accounts references
      * filtered by company access
-     * 
+     *
      * @retrun array
      *  renderer Html
      */
     public function bankaccountslist(Request $request) {
-        
         unset($_SESSION['statfilter']);
         $new = Url::fromRoute('ek_finance.manage.bank_accounts_manage', array('id' => 0), array())->toString();
         $build["new"] = array(
@@ -326,29 +322,28 @@ class BankController extends ControllerBase {
             LEFT JOIN {ek_bank} b
             ON a.bid = b.id
             LEFT JOIN {ek_company} c ON b.coid = c.id WHERE FIND_IN_SET(coid, :c )  ORDER by a.id";
-        
-        
+
+
         //$list = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $company));
-        
+
         $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_bank_accounts', 'ba');
-            $query->fields('ba', ['id','account_ref','active','currency','aid']);
-            $query->leftJoin('ek_bank', 'b', 'ba.bid = b.id');
-            $query->addField('b', 'name', 'bank');
-            $query->leftJoin('ek_company', 'c', 'c.id = b.coid');
-            $query->addField('c', 'name', 'co');
-            if(isset($_SESSION['coidfilter']['coid'])) {
-                $query->condition('coid', $_SESSION['coidfilter']['coid'], '=');
-            } else {
-                $query->condition('coid', $company, 'IN');  
-            }
-            $list = $query->execute();
-        
+                ->select('ek_bank_accounts', 'ba');
+        $query->fields('ba', ['id', 'account_ref', 'active', 'currency', 'aid']);
+        $query->leftJoin('ek_bank', 'b', 'ba.bid = b.id');
+        $query->addField('b', 'name', 'bank');
+        $query->leftJoin('ek_company', 'c', 'c.id = b.coid');
+        $query->addField('c', 'name', 'co');
+        if (isset($_SESSION['coidfilter']['coid'])) {
+            $query->condition('coid', $_SESSION['coidfilter']['coid'], '=');
+        } else {
+            $query->condition('coid', $company, 'IN');
+        }
+        $list = $query->execute();
+
         $row = 0;
         $status = ['0' => t('inactive'), '1' => t('active')];
         $options = [];
         while ($l = $list->fetchObject()) {
-
             $row++;
             $options[$row] = array(
                 'account_ref' => $l->account_ref,
@@ -397,11 +392,11 @@ class BankController extends ControllerBase {
     }
 
     /**
-     * bank accounts label  
+     * bank accounts label
      * @param array
      *  key: type (output type)
      *  key: param (array 'id' => value)
-     * 
+     *
      * @return Object
      *  Pdf render object
      */
@@ -416,21 +411,20 @@ class BankController extends ControllerBase {
     /**
      *  reate or edit bank accounts
      *  linked to bank id
-     * 
+     *
      *  @param int $id
      *      account id
      *  @return array
      *      form
      */
     public function bankaccount(Request $request, $id) {
-
         $build['bank'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\BankAccountForm', $id);
         return $build;
     }
 
     /**
      *  delete bank account
-     * 
+     *
      *  @param int $id
      *      account id
      *  @return array
@@ -441,6 +435,32 @@ class BankController extends ControllerBase {
         return array('#markup' => t('Under construction'));
     }
 
-}
+    /**
+     * list of banks references
+     * by address book
+     *
+     * @retrun array
+     *  renderer Html
+     *
+     */
+    public function addressBook($abid) {
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_address_book_bank', 'b');
+        $query->fields('b');
+        $query->condition('abid', $abid);
+        $banks = $query->execute()->fetchAll();
 
-//class
+        return array(
+            '#theme' => 'ab_bank',
+            '#title' => $this->t('Bank references'),
+            '#items' => $banks,
+            '#attached' => array(
+                'library' => array('ek_finance/ek_finance_css', 'ek_admin/ek_admin_css'),
+            ),
+            '#cache' => [
+                'tags' => ['ab_bank_' . $abid],
+            ],
+        );
+    }
+
+}

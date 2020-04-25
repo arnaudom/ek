@@ -6,11 +6,11 @@
  */
  
 namespace Drupal\ek_finance\Plugin\Field\AidField;
- 
+
 use Drupal\Component\Annotation\Plugin;
 use Drupal\Core\Annotation\Translation;
 use Drupal\field\Plugin\Type\Widget\WidgetBase;
- 
+
 /**
  * Provides a 'AidField' field.
  *
@@ -28,7 +28,8 @@ use Drupal\field\Plugin\Type\Widget\WidgetBase;
  *   module = "ek_finance"
  * )
  */
-class AidField extends WidgetBase {
+class AidField extends WidgetBase
+{
  
   /**
    * {@inheritdoc}

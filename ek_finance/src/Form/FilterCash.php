@@ -55,7 +55,6 @@ class FilterCash extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
         $to = date('Y-m-d');
         $from = date('Y-m-') . '01';
 
@@ -63,8 +62,8 @@ class FilterCash extends FormBase {
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Filter'),
-            '#open' => TRUE,
-            //'#attributes' => array('class' => array('container-inline')),
+            '#open' => true,
+                //'#attributes' => array('class' => array('container-inline')),
         );
         $form['filters']['filter'] = array(
             '#type' => 'hidden',
@@ -75,80 +74,78 @@ class FilterCash extends FormBase {
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['cfilter']['from']) ? $_SESSION['cfilter']['from'] : $from,
-            '#title' => t('from'),
+            '#title' => $this->t('from'),
             '#prefix' => "<div class='container-inline'>",
-      
         );
 
         $form['filters']['to'] = array(
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['cfilter']['to']) ? $_SESSION['cfilter']['to'] : $to,
-            //'#attributes' => array('placeholder' => t('to')),
-            '#title' => t('to'),
+            //'#attributes' => array('placeholder' => $this->t('to')),
+            '#title' => $this->t('to'),
         );
-        
+
         $form['filters']['currency'] = array(
             '#type' => 'select',
             '#size' => 1,
             '#options' => CurrencyData::listcurrency(1),
-            '#required' => TRUE,
-            '#default_value' => isset($_SESSION['cfilter']['currency']) ? $_SESSION['cfilter']['currency'] : NULL,
+            '#required' => true,
+            '#default_value' => isset($_SESSION['cfilter']['currency']) ? $_SESSION['cfilter']['currency'] : null,
             '#suffix' => '</div>',
         );
 
         $form['filters']['type'] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#title' => t('type'),
-            '#options' => array('0' => t('company'), '1' => t('employee')),
-            '#required' => TRUE,
-            '#validated' => TRUE,
+            '#title' => $this->t('type'),
+            '#options' => array('0' => $this->t('company'), '1' => $this->t('employee')),
+            '#required' => true,
+            '#validated' => true,
             '#prefix' => "<br/><div class='container-inline'>",
-            '#disabled' => isset($_SESSION['cfilter']['type']) ? TRUE : FALSE,
-            '#default_value' => isset($_SESSION['cfilter']['type']) ? $_SESSION['cfilter']['type'] : NULL,
+            '#disabled' => isset($_SESSION['cfilter']['type']) ? true : false,
+            '#default_value' => isset($_SESSION['cfilter']['type']) ? $_SESSION['cfilter']['type'] : null,
             '#ajax' => array(
                 'callback' => array($this, 'get_accounts'),
                 'wrapper' => 'accounts_',
             ),
         );
 
-        if(NULL !== $form_state->getValue('type') || isset($_SESSION['cfilter']['type'])) {
-      
-            if(isset($_SESSION['cfilter']['type'])) {
+        if (null !== $form_state->getValue('type') || isset($_SESSION['cfilter']['type'])) {
+            if (isset($_SESSION['cfilter']['type'])) {
                 $type = $_SESSION['cfilter']['type'];
             } else {
                 $type = $form_state->getValue('type');
             }
-            
-            switch($type) {
-                case '1':
-                        $i = 1;
-                        $access = AccessCheck::GetCompanyByUser();
-                        $company = implode(',', $access);
-                        $query = "SELECT DISTINCT uid from {ek_cash} WHERE FIND_IN_SET (coid, :c )";
-                        $a = array(':c' => $company);
-                        $uid = Database::getConnection('external_db', 'external_db')
-                                ->query($query, $a);
-                        $list = array();
 
-                        while ($u = $uid->fetchObject()) {
-                            $uaccount = \Drupal\user\Entity\User::load($u->uid);
-                            if($uaccount) {
-                                $list[$u->uid] = $uaccount->getAccountName();
-                            } else {
-                                $list[$u->uid] = t('Unknown') . " " . $i;
-                                $i++;
-                            }
-                            //$name = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $u->uid))
-                            //        ->fetchField();
-                           // if($name == '') {
-                           //     $name = t('Unknown') . " " . $i;
-                           //     $i++;
-                           // }
-                           // $list[$u->uid] = $name;
+            switch ($type) {
+                case '1':
+                    $i = 1;
+                    $access = AccessCheck::GetCompanyByUser();
+                    $company = implode(',', $access);
+                    $query = "SELECT DISTINCT uid from {ek_cash} WHERE FIND_IN_SET (coid, :c )";
+                    $a = array(':c' => $company);
+                    $uid = Database::getConnection('external_db', 'external_db')
+                            ->query($query, $a);
+                    $list = array();
+
+                    while ($u = $uid->fetchObject()) {
+                        $uaccount = \Drupal\user\Entity\User::load($u->uid);
+                        if ($uaccount) {
+                            $list[$u->uid] = $uaccount->getAccountName();
+                        } else {
+                            $list[$u->uid] = $this->t('Unknown') . " " . $i;
+                            $i++;
                         }
-                        natcasesort($list);
+                        //$name = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $u->uid))
+                        //        ->fetchField();
+                        // if($name == '') {
+                        //     $name = $this->t('Unknown') . " " . $i;
+                        //     $i++;
+                        // }
+                        // $list[$u->uid] = $name;
+                    }
+                    natcasesort($list);
                     break;
                 case '0':
                     $list = AccessCheck::CompanyListByUid();
@@ -163,9 +160,9 @@ class FilterCash extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => isset($list) ? $list : array(),
-            '#required' => TRUE,
-            '#default_value' => isset($_SESSION['cfilter']['account']) ? $_SESSION['cfilter']['account'] : NULL,
-            '#title' => t('account'),
+            '#required' => true,
+            '#default_value' => isset($_SESSION['cfilter']['account']) ? $_SESSION['cfilter']['account'] : null,
+            '#title' => $this->t('account'),
             '#prefix' => "<div id='accounts_'>",
             '#suffix' => '</div></div>',
         );
@@ -202,7 +199,6 @@ class FilterCash extends FormBase {
      * Callback
      */
     public function get_accounts(array &$form, FormStateInterface $form_state) {
-        
         return $form['filters']['account'];
     }
 
@@ -213,10 +209,9 @@ class FilterCash extends FormBase {
         if (strtotime($form_state->getValue('to')) < strtotime($form_state->getValue('from'))) {
             $form_state->setErrorByName("from", $this->t('Start date is higher than ending date'));
         }
-        //cash is compiled by single year only. 
+        //cash is compiled by single year only.
         //if date span across 2 years, the first state is recalculated
         if (date('Y', strtotime($form_state->getValue('from'))) < date('Y', strtotime($form_state->getValue('to')))) {
-
             $form_state->setValueForElement($form['filters']["from"], date('Y', strtotime($form_state->getValue('to'))) . '-01-01');
         }
     }
@@ -225,14 +220,12 @@ class FilterCash extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $_SESSION['cfilter']['from'] = $form_state->getValue('from');
         $_SESSION['cfilter']['to'] = $form_state->getValue('to');
         $_SESSION['cfilter']['currency'] = $form_state->getValue('currency');
         $_SESSION['cfilter']['type'] = $form_state->getValue('type');
         $_SESSION['cfilter']['account'] = $form_state->getValue('account');
         $_SESSION['cfilter']['filter'] = 1;
-        
     }
 
     /**
@@ -240,7 +233,6 @@ class FilterCash extends FormBase {
      */
     public function resetForm(array &$form, FormStateInterface $form_state) {
         $_SESSION['cfilter'] = array();
-        
     }
 
 }

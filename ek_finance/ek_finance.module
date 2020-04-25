@@ -1,199 +1,198 @@
 <?php
 
-    ///////////////////////////////////////////////////
-    //                  COPYRIGHT                    //
-    //                                               //
-    // DEVELOPED BY ARREA LTD                        //
-    // all rights reserved                           //
-    // Please read and agree with software           //
-    // application license                           //
-    ///////////////////////////////////////////////////
+///////////////////////////////////////////////////
+//                  COPYRIGHT                    //
+//                                               //
+// DEVELOPED BY ARREA LTD                        //
+// all rights reserved                           //
+// Please read and agree with software           //
+// application license                           //
+///////////////////////////////////////////////////
 
 /**
  * @file
  *  module ek_finance
  */
-
 use Drupal\Core\Database\Database;
+use Drupal\Component\Utility\Xss;
 use Drupal\ek_finance\Journal;
 
 /**
  * Implementation hook_ek_settings().
  * 
- */ 
- function ek_finance_ek_settings($coids) { 
+ */
+function ek_finance_ek_settings($coids) {
     //we do not use param coids here as settings are global
     $settings = [];
     $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_finance', 'f');
+            ->select('ek_finance', 'f');
     $query->fields('f', ['id', 'settings']);
     $query->condition('id', '1');
     $data = $query->execute()->fetchObject();
-    if($data){
+    if ($data) {
         $settings = unserialize($data->settings);
     }
-    
-    if(empty($settings)) {
+
+    if (empty($settings)) {
         $_SESSION['install'] = 1;
         $link = \Drupal\Core\Url::fromRoute('ek_finance.admin.settings', array(), array())->toString();
         return ['finance' => $link];
-        
     }
-  
+
     return new \Symfony\Component\HttpFoundation\Response('', 204);
-     
- }
- 
+}
+
 /**
  * Implementation hook download.
  */
 function ek_finance_file_download($uri) {
 
-if (strpos($uri,'/finance/')) {
-return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($uri));
-}
+    if (strpos($uri, '/finance/')) {
+        return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($uri));
+    }
 }
 
+/**
+ * Implementation hook ek_home.
+ */
+function ek_finance_ek_home() {
+    $build = [];
+    $build[] = [
+        'name' => 'feature_1',
+        'module' => 'Finance - Address book',
+        'stamp' => 1587714990 ,
+        'type' => "new",
+        'content' => '<a href="/address_book">Bank details</a> can now be recorded in address book.',
+        'footer' => 'April 2020',
+    ];
+    
+    return $build;
+}
 
 /**
  * Implementation hook_theme().
  */
 function ek_finance_theme() {
-  return array(
-    // for audits
-    'ek_journal_audit' => array
-    (
-      'template' => 'audit',
-      'variables' => array('items' => array()),
-    ),
-    'ek_finance_settings_form' => array
-    (
-      'template' => 'ek_finance_settings',
-      'variables' => array('items' => array()),
-    ),   
-    // for the dashboard
-    'ek_finance_dashboard' => array
-    (
-      'template' => 'ek_finance_dashboard',
-      'variables' => array('items' => array()),
-    ), 
-    //expenses list
-    'ek_finance_list_expenses' => array
-    (
-      'template' => 'ek_finance_list_expenses',
-      'variables' => array('items' => array()),
-    ),
-    //monthly reoprt, budget
-    'ek_finance_reporting' => array
-    (
-      'template' => 'ek_finance_reporting',
-      'variables' => array('items' => array()),
-    ),
-    'ek_finance_reporting_compilation' => array
-    (
-      'template' => 'ek_finance_reporting_compilation',
-      'variables' => array('items' => array()),
-    ), 
-        'ek_finance_budgeting' => array
-    (
-      'template' => 'ek_finance_budgeting',
-      'variables' => array('items' => array()),
-    ),  
-    // for the journal items display
-    'ek_finance_journal' => array
-    (
-      'template' => 'ek_finance_journal',
-      'variables' => array('items' => array()),
-    ), 
-    // for the journal items display by id
-    'ek_finance_journal_by_id' => array
-    (
-      'template' => 'ek_finance_journal_by_id',
-      'variables' => array('items' => array()),
-    ), 
-    // for account history
-    'ek_journal_history' => array
-    (
-      'template' => 'ek_journal_history',
-      'variables' => array('items' => array()),
-    ),
-    // for the ledger items display
-    'ek_finance_ledger' => array
-    (
-      'template' => 'ek_finance_ledger',
-      'variables' => array('items' => array()),
-    ),
-    'ek_finance_sales_ledger' => array
-    (
-      'template' => 'ek_finance_sales_ledger',
-      'variables' => array('items' => array()),
-    ),
-    // for the trial balalnce items display
-    'ek_finance_trial' => array
-    (
-      'template' => 'ek_finance_trial',
-      'variables' => array('items' => array()),
-    ),
-    // for the cash items display
-    'ek_finance_cash' => array
-    (
-      'template' => 'ek_finance_cash',
-      'variables' => array('items' => array()),
-    ), 
-    // for the balance sheet
-    'ek_balance_sheet' => array
-    (
-      'template' => 'ek_balance_sheet',
-      'variables' => array('items' => array()),
-    ),
-    // for the memos transactions
-    'ek_finance_memo_transactions' => array
-    (
-      'template' => 'ek_finance_memo_transactions',
-      'variables' => array('title' => NULL, 
-                            'baseCurrency' => NULL,
-                            'form' => [], 
-                            'companies' => [], 
-                            'company_access' => [],
-                            'sum' => [], 
-                            'due' => []),
-    ),
-    'ek_finance_memo_transactions_bycoid' => array
-    (
-      'template' => 'ek_finance_memo_transactions_bycoid',
-      'variables' => array('form' => [],
-                            'coid' => NULL,
-                            'baseCurrency' => NULL, 
-                            'companies' => [],
-                            'transactions' => [] ,
-                            'sumCredit' => [], 
-                            'sumDebit' => []),
-    ),
-    // for the profit loss display
-    'ek_profit_loss' => array
-    (
-      'template' => 'ek_profit_loss',
-      'variables' => array('items' => array()),
-    ),
-    // for the tax report
-    'ek_finance_tax' => array
-    (
-      'template' => 'ek_finance_tax',
-      'variables' => array('items' => array()),
-    ),
-    // for cash flow statement
-    'ek_finance_cashflow' => array
-    (
-      'template' => 'ek_finance_cashflow',
-      'variables' => array('items' => array()),
-    ),
-    // for iframe display / pdf
-    'iframe' => array
-    (
-      'template' => 'iframe',
-      'variables' => array('items' => array()),
-    ),      
-  );     
+    return array(
+        // for audits
+        'ek_journal_audit' => [
+            'template' => 'audit',
+            'variables' => ['items' => []],
+        ],
+        'ek_finance_settings_form' => [
+            'template' => 'ek_finance_settings',
+            'variables' => ['items' => []],
+        ],
+        // for the dashboard
+        'ek_finance_dashboard' => [
+            'template' => 'ek_finance_dashboard',
+            'variables' => ['items' => []],
+        ],
+        //expenses list
+        'ek_finance_list_expenses' => [
+            'template' => 'ek_finance_list_expenses',
+            'variables' => ['items' => []],
+        ],
+        //monthly reoprt, budget
+        'ek_finance_reporting' => [
+            'template' => 'ek_finance_reporting',
+            'variables' => ['items' => []],
+        ],
+        'ek_finance_reporting_compilation' => [
+            'template' => 'ek_finance_reporting_compilation',
+            'variables' => ['items' => []],
+        ],
+        'ek_finance_budgeting' => [
+            'template' => 'ek_finance_budgeting',
+            'variables' => ['items' => []],
+        ],
+        // for the journal items display
+        'ek_finance_journal' => [
+            'template' => 'ek_finance_journal',
+            'variables' => ['items' => []],
+        ],
+        // for the journal items display by id
+        'ek_finance_journal_by_id' => [
+            'template' => 'ek_finance_journal_by_id',
+            'variables' => ['items' => []],
+        ],
+        // for account history
+        'ek_journal_history' => [
+            'template' => 'ek_journal_history',
+            'variables' => ['items' => []],
+        ],
+        // for the ledger items display
+        'ek_finance_ledger' => [
+            'template' => 'ek_finance_ledger',
+            'variables' => ['items' => []],
+        ],
+        'ek_finance_sales_ledger' => [
+            'template' => 'ek_finance_sales_ledger',
+            'variables' => ['items' => []],
+        ],
+        // for the trial balalnce items display
+        'ek_finance_trial' => [
+            'template' => 'ek_finance_trial',
+            'variables' => ['items' => []],
+        ],
+        // for the cash items display
+        'ek_finance_cash' => [
+            'template' => 'ek_finance_cash',
+            'variables' => ['items' => []],
+        ],
+        // for the balance sheet
+        'ek_balance_sheet' => [
+            'template' => 'ek_balance_sheet',
+            'variables' => ['items' => []],
+        ],
+        // for the memos transactions
+        'ek_finance_memo_transactions' => [
+            'template' => 'ek_finance_memo_transactions',
+            'variables' => array('title' => NULL,
+                'baseCurrency' => NULL,
+                'form' => [],
+                'companies' => [],
+                'company_access' => [],
+                'sum' => [],
+                'due' => []),
+        ],
+        'ek_finance_memo_transactions_bycoid' => [
+            'template' => 'ek_finance_memo_transactions_bycoid',
+            'variables' => ['form' => [],
+                'coid' => NULL,
+                'baseCurrency' => NULL,
+                'companies' => [],
+                'transactions' => [],
+                'sumCredit' => [],
+                'sumDebit' => []
+                ],
+        ],
+        // for the profit loss display
+        'ek_profit_loss' => [
+            'template' => 'ek_profit_loss',
+            'variables' => ['items' => []],
+        ],
+        // for the tax report
+        'ek_finance_tax' => [
+            'template' => 'ek_finance_tax',
+            'variables' => ['items' => []],
+        ],
+        // for cash flow statement
+        'ek_finance_cashflow' => [
+            'template' => 'ek_finance_cashflow',
+            'variables' => ['items' => []],
+        ],
+        // for iframe display / pdf
+        'iframe' => [
+            'template' => 'iframe',
+            'variables' => ['items' => []],
+        ],
+        // for AB items
+        'ab_bank' => [
+            'template' => 'ab_bank',
+            'variables' => ['items' => []],
+        ],
+    );
 }
 
 /**
@@ -201,25 +200,25 @@ function ek_finance_theme() {
  * @param
  * param = array()
  * id = a modal identifier
-   aid = account id
+  aid = account id
  * coid = company id
  * from = from date
  * to = to date
-*
-*/
-  function history( $param ) {
-  
-  $journal = new Journal();
-  $history = $journal->history($param);
-     return array(
-      '#theme' => 'ek_journal_history',
-      '#items' => unserialize($history),
-      '#attached' => array(
-          'library' => array('ek_finance/ek_finance'),      
-      ),
+ *
+ */
+function history($param) {
+
+    $journal = new Journal();
+    $history = $journal->history($param);
+    return array(
+        '#theme' => 'ek_journal_history',
+        '#items' => unserialize($history),
+        '#attached' => [
+            'library' => ['ek_finance/ek_finance'],
+        ],
     );
-  }
-  
+}
+
 /**
  * Implementation hook_mail().
  */
@@ -231,112 +230,377 @@ function ek_finance_mail($key, &$message, $params) {
     $params['options']['site'] = \Drupal::config('system.site')->get('name');
     $params['options']['origin'] = \Drupal::currentUser()->getAccountName();
     $params['options']['stamp'] = date('F j, Y, g:i a');
-    
-    switch($key) {
-      case 'key_memo_note':
-        $render = [
-            '#markup' => $params['body'],
-        ];
-        $message['subject'] = $params['subject'];
-        $message['body'][] = \Drupal::service('renderer')->render($render);
-        $message['options'] = $params['options'];
-        break;
 
+    switch ($key) {
+        case 'key_memo_note':
+            $render = [
+                '#markup' => $params['body'],
+            ];
+            $message['subject'] = $params['subject'];
+            $message['body'][] = \Drupal::service('renderer')->render($render);
+            $message['options'] = $params['options'];
+            break;
     }
 }
 
-
 /**
  * Implements hook_form_alter().
-*/ 
+ */
 function ek_finance_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-    
-  if ($form_id == 'user_multiple_cancel_confirm') {
-    
-    $form['move_finance'] = [
-      '#type' => 'textfield',
-      '#title' => t('Move cash records'),
-      '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
-      '#description' => t('Select to whom to transfer cash records'),
-    ];
-    $form['#validate'][] = 'ek_finance_form_user_delete_validate';
-    $form['#submit'][] = 'ek_finance_form_user_delete_submit';
-    
-     return $form;
-      
-  }
-} 
+
+    if ($form_id == 'user_multiple_cancel_confirm') {
+
+        $form['move_finance'] = [
+            '#type' => 'textfield',
+            '#title' => t('Move cash records'),
+            '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
+            '#description' => t('Select to whom to transfer cash records'),
+        ];
+        $form['#validate'][] = 'ek_finance_form_user_delete_validate';
+        $form['#submit'][] = 'ek_finance_form_user_delete_submit';
+
+        return $form;
+    }
+}
 
 /**
  * Implements hook_form_validate().
-*/
+ */
 function ek_finance_form_user_delete_validate(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
 
-  if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
+    if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
         if ($form_state->getValue('move_finance') <> '') {
             $query = Database::getConnection()->select('users_field_data', 'u');
             $query->fields('u', ['uid']);
             $query->condition('name', $form_state->getValue('move_finance'));
             $data = $query->execute()->fetchField();
-            
+
             if ($data) {
                 $form_state->setValue('move_finance', $data);
             } else {
                 $form_state->setErrorByName('move_finance', t('Unknown user to move documents'));
             }
-            
         }
-    
-     return $form;
-      
-  }
-} 
+
+        return $form;
+    }
+}
 
 /**
  * Implements hook_form_submit().
  */
 function ek_finance_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
-    
-  if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
-    if($form_state->getValue('move_finance')){
-        foreach($form_state->getValue('accounts') as $key => $id) {
-                
+
+    if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
+        if ($form_state->getValue('move_finance')) {
+            foreach ($form_state->getValue('accounts') as $key => $id) {
+
                 $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_cash', 'c');
-                    $query->fields('c',['id','comment']);
-                    $query->condition('uid',$id);
-                    $c = $query->execute();
+                        ->select('ek_cash', 'c');
+                $query->fields('c', ['id', 'comment']);
+                $query->condition('uid', $id);
+                $c = $query->execute();
                 while ($list = $c->fetchObject()) {
-                    $comment = "(". t('Moved from user @u',['@u' => $id]) . ") " . $list->comment;
-                     $query = Database::getConnection('external_db', 'external_db')
-                      ->update('ek_cash')
-                      ->fields(['uid' => $form_state->getValue('move_finance'),'comment' => $comment ])
-                      ->condition('id', $list->id)->execute();
+                    $comment = "(" . t('Moved from user @u', ['@u' => $id]) . ") " . $list->comment;
+                    $query = Database::getConnection('external_db', 'external_db')
+                                    ->update('ek_cash')
+                                    ->fields(['uid' => $form_state->getValue('move_finance'), 'comment' => $comment])
+                                    ->condition('id', $list->id)->execute();
                 }
-                
+
                 $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_expenses', 'e');
-                    $query->fields('e',['id','comment']);
-                    $query->condition('employee',$id);
-                    $e = $query->execute();
+                        ->select('ek_expenses', 'e');
+                $query->fields('e', ['id', 'comment']);
+                $query->condition('employee', $id);
+                $e = $query->execute();
                 while ($list = $e->fetchObject()) {
-                    $comment = "(". t('Moved from user @u',['@u' => $id]) . ") " . $list->comment;
-                     $query = Database::getConnection('external_db', 'external_db')
-                      ->update('ek_expenses')
-                      ->fields(['employee' => $form_state->getValue('move_finance'),'comment' => $comment ])
-                      ->condition('id', $list->id)->execute();
+                    $comment = "(" . t('Moved from user @u', ['@u' => $id]) . ") " . $list->comment;
+                    $query = Database::getConnection('external_db', 'external_db')
+                                    ->update('ek_expenses')
+                                    ->fields(['employee' => $form_state->getValue('move_finance'), 'comment' => $comment])
+                                    ->condition('id', $list->id)->execute();
                 }
-                
-                
             }
+        }
+        \Drupal::messenger()->addStatus(t('Cash records moved to user @u', ['@u' => $form_state->getValue('move_finance')]));
+        return $form;
     }
-     \Drupal::messenger()->addStatus(t('Cash records moved to user @u', ['@u' => $form_state->getValue('move_finance')]));
-     return $form;
-      
-  }
 }
 
+/**
+ * Implements hook_form_ID_alter().
+ * add bank details info
+ */
+function ek_finance_form_ek_edit_address_book_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
 
+    
+    $form['bank'] = array(
+        '#type' => 'details',
+        '#title' => t('Bank information'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+    );
+    
+    $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_address_book_bank', 'b');
+    $query->fields('b');
+    $query->condition('abid', $form['for_id']['#value']);
+    $banks = $query->execute();
+    $i = 0;
+                
+    while ($bank = $banks->fetchObject()) {
+        $i++;
+        $form['bank']['edit' . $i] = array(
+            '#title' => t('Edit') . " : " . $bank->name,
+            '#type' => 'details',
+            '#collapsed' => true,
+        );
+        
+        $form['bank']['edit' . $i]["bid-" . $i] = array(
+            '#type' => 'hidden',
+            '#value' => $bank->id,
+        );
+        
+        $form['bank']['edit' . $i]["bname" . $i] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 100,
+            '#default_value' => $bank->name,
+            '#attributes' => array('placeholder' => t('bank name')),
+        );
+
+        $form['bank']['edit' . $i]["baddress1" . $i] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 255,
+            '#default_value' => $bank->address1,
+            '#attributes' => array('placeholder' => t('address line 1')),
+        );
+
+        $form['bank']['edit' . $i]["baddress2" . $i] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 255,
+            '#default_value' => $bank->address2,
+            '#attributes' => array('placeholder' => t('address line 2')),
+        );
+
+        $form['bank']['edit' . $i]["bpostcode" . $i] = array(
+            '#type' => 'textfield',
+            '#size' => 10,
+            '#maxlength' => 30,
+            '#default_value' => $bank->postcode,
+            '#attributes' => array('placeholder' => t('postcode')),
+        );
+       
+        $form['bank']['edit' . $i]['bank_country' . $i] = $form['country'];
+        $form['bank']['edit' . $i]['bank_country' . $i]['#default_value'] = $bank->country;
+
+        $form['bank']['edit' . $i]['account' . $i] = array(
+            '#type' => 'textfield',
+            '#size' => 25,
+            '#default_value' => $bank->account,
+            '#maxlength' => 20,
+            '#attributes' => array('placeholder' => t('account')),
+        );
+
+        $form['bank']['edit' . $i]['bank_code' . $i] = array(
+            '#type' => 'textfield',
+            '#size' => 25,
+            '#maxlength' => 20,
+            '#default_value' => $bank->bank_code,
+            '#attributes' => array('placeholder' => t('bank code')),
+        );
+
+        $form['bank']['edit' . $i]['swift' . $i] = array(
+            '#type' => 'textfield',
+            '#size' => 25,
+            '#maxlength' => 20,
+            '#default_value' => $bank->swift,
+            '#attributes' => array('placeholder' => t('swift code')),
+        );
+
+    }
+    
+    $form['count'] = array(
+            '#type' => 'hidden',
+            '#value' => $i,
+    );
+     
+    //if ($form['for_id']) {
+        $form['bank']['new'] = array(
+            '#title' => t('Add new'),
+            '#type' => 'details',
+            '#open' => true,
+        );
+        
+        $form['bank']['new']["bname"] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 100,
+            '#description' => '',
+            '#attributes' => array('placeholder' => t('bank name')),
+        );
+
+        $form['bank']['new']["baddress1"] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 255,
+            '#description' => '',
+            '#attributes' => array('placeholder' => t('address line 1')),
+            '#states' => [
+                'invisible' => [
+                    "input[name='bname']" => ['value' => ''],
+                ],
+            ],
+        );
+
+        $form['bank']['new']["baddress2"] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 255,
+            '#description' => '',
+            '#attributes' => array('placeholder' => t('address line 2')),
+            '#states' => [
+                'invisible' => [
+                    "input[name='bname']" => ['value' => ''],
+                ],
+            ],
+        );
+
+        $form['bank']['new']["bpostcode"] = array(
+            '#type' => 'textfield',
+            '#size' => 10,
+            '#maxlength' => 30,
+            '#description' => '',
+            '#attributes' => array('placeholder' => t('postcode')),
+            '#states' => [
+                'invisible' => [
+                    "input[name='bname']" => ['value' => ''],
+                ],
+            ],
+        );
+       
+        $form['bank']['new']['bank_country'] = $form['country'];
+        $form['bank']['new']['bank_country']['#states'] = [
+                'invisible' => [
+                    "input[name='bname']" => ['value' => ''],
+                ],
+            ];
+
+        $form['bank']['new']['account'] = array(
+            '#type' => 'textfield',
+            '#size' => 25,
+            '#maxlength' => 20,
+            '#attributes' => array('placeholder' => t('account')),
+            '#states' => [
+                'invisible' => [
+                    "input[name='bname']" => ['value' => ''],
+                ],
+            ],
+        );
+
+        $form['bank']['new']['bank_code'] = array(
+            '#type' => 'textfield',
+            '#size' => 25,
+            '#maxlength' => 20,
+            '#attributes' => array('placeholder' => t('bank code')),
+            '#states' => [
+                'invisible' => [
+                    "input[name='bname']" => ['value' => ''],
+                ],
+            ],
+        );
+
+        $form['bank']['new']['swift'] = array(
+            '#type' => 'textfield',
+            '#size' => 25,
+            '#maxlength' => 20,
+            '#attributes' => array('placeholder' => t('swift code')),
+            '#states' => [
+                'invisible' => [
+                    "input[name='bname']" => ['value' => ''],
+                ],
+            ],
+        );
+    //}
+    /*
+    $form['tax'] = array(
+        '#type' => 'details',
+        '#title' => t('Tax information'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+    );
+    if (!$form['for_id']) {
+        $form['tax']['tax_code'] = array(
+            '#type' => 'textfield',
+            '#size' => 25,
+            '#maxlength' => 20,
+            '#attributes' => array('placeholder' => t('tax code')),
+        );
+    }*/
+    
+    $form['#validate'][] = 'ek_finance_ab_bank_validate';
+    $form['#submit'][] = 'ek_fiance_ab_bank_submit';
+    return $form;
+}
+
+/**
+ * Implements hook_form_validate().
+ */
+function ek_finance_ab_bank_validate(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+    
+}
+/**
+ * Implements hook_form_submit().
+ */
+function ek_fiance_ab_bank_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+    
+    if($form_state->getValue('count') > 0) {
+        for($i = 1; $i <= $form_state->getValue('count'); $i++) {
+            $fields = array(
+                    'name' => Xss::filter($form_state->getValue('bname' . $i)),
+                    'address1' => Xss::filter($form_state->getValue('baddress1' . $i)),
+                    'address2' => Xss::filter($form_state->getValue('baddress2' . $i)),
+                    'postcode' => Xss::filter($form_state->getValue('bpostcode' . $i)),
+                    'country' => $form_state->getValue('bank_country' . $i),
+                    'account' => Xss::filter($form_state->getValue('account' . $i)),
+                    'bank_code' => Xss::filter($form_state->getValue('bank_code' . $i)),
+                    'swift' => Xss::filter($form_state->getValue('swift' . $i)),
+                    'abid' => $form_state->getValue('for_id'),
+            );
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                ->update('ek_address_book_bank')
+                ->fields($fields)
+                ->condition('id', $form_state->getValue('bid-' . $i));
+            $query->execute();
+        
+        }
+    }
+    
+    
+    if($form_state->getValue('bname') != NULL) {
+        $fields = array(
+                    'name' => Xss::filter($form_state->getValue('bname')),
+                    'address1' => Xss::filter($form_state->getValue('baddress1')),
+                    'address2' => Xss::filter($form_state->getValue('baddress2')),
+                    'postcode' => Xss::filter($form_state->getValue('bpostcode')),
+                    'country' => $form_state->getValue('bank_country'),
+                    'account' => Xss::filter($form_state->getValue('account')),
+                    'bank_code' => Xss::filter($form_state->getValue('bank_code')),
+                    'swift' => Xss::filter($form_state->getValue('swift')),
+                    'abid' => $form_state->getValue('for_id'),
+        );
+        $query = Database::getConnection('external_db', 'external_db')
+                ->insert('ek_address_book_bank')
+                ->fields($fields);
+        $query->execute();
+        
+    }
+    
+    \Drupal\Core\Cache\Cache::invalidateTags(['ab_bank_' . $form_state->getValue('for_id')]);
+}
 
 /**
  * Preprocess variables for views.
@@ -345,8 +609,8 @@ function ek_finance_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStateI
  *  An associative array containing:
  *   
  */
- function ek_finance_views_data() {
- 
+function ek_finance_views_data() {
+
 //CREATE TABLE `ek_expenses` (
 //	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 //	`class` VARCHAR(200) NOT NULL,
@@ -376,27 +640,24 @@ function ek_finance_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStateI
 //COLLATE='latin1_swedish_ci'
 //ENGINE=MyISAM
 //AUTO_INCREMENT=1;  
- 
- }
+}
 
-  $data['ek_finance']['table']['group'] = t('ek finance');
-  $data['ek_finance']['table']['base'] = array(
+$data['ek_finance']['table']['group'] = t('ek finance');
+$data['ek_finance']['table']['base'] = array(
     'field' => 'id', // This is the identifier field for the view.
     'title' => t('ek expenses records'),
     'help' => t('contains main expenses records data.'),
     'weight' => 1,
     'database' => 'external_db'
-  );
-  
+);
 
-  //  ID table field.
-  $data['ek_finance']['id'] = array(
-    'title' => t('record id'), 
-    'help' => t('record id.'), 
-    'field' => array('id' => 'numeric', ),
+
+//  ID table field.
+$data['ek_finance']['id'] = array(
+    'title' => t('record id'),
+    'help' => t('record id.'),
+    'field' => array('id' => 'numeric',),
     'sort' => array('id' => 'standard',),
     'filter' => array('id' => 'numeric',),
-  );  
-  
-  
+);
 ?>

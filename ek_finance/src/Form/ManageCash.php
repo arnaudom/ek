@@ -38,7 +38,7 @@ class ManageCash extends FormBase {
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
         $this->financeSettings = new \Drupal\ek_finance\FinanceSettings();
-        $this->rounding = (!null == $this->financeSettings->get('rounding')) ? $this->financeSettings->get('rounding'):2;
+        $this->rounding = (!null == $this->financeSettings->get('rounding')) ? $this->financeSettings->get('rounding') : 2;
     }
 
     /**
@@ -61,17 +61,16 @@ class ManageCash extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
 
-        
+
         $baseCurrency = $this->financeSettings->get('baseCurrency');
         $company = AccessCheck::CompanyListByUid();
-        $actions = array(1 => t('Credit office cash'), 2 => t('Debit office cash'),
-            3 => t('Refund cash advanced by employee'), 4 => t('Credit employee account'),
-            5 => t('Debit employee account'), 6 => t('Add opening balance or adjustment'));
+        $actions = array(1 => $this->t('Credit office cash'), 2 => $this->t('Debit office cash'),
+            3 => $this->t('Refund cash advanced by employee'), 4 => $this->t('Credit employee account'),
+            5 => $this->t('Debit employee account'), 6 => $this->t('Add opening balance or adjustment'));
         $CurrencyOptions = array('0' => ''); //this is added to force callback on select
         $CurrencyOptions += CurrencyData::listcurrency(1);
 
@@ -79,8 +78,8 @@ class ManageCash extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $actions,
-            '#title' => t('Cash movement'),
-            '#required' => TRUE,
+            '#title' => $this->t('Cash movement'),
+            '#required' => true,
             '#prefix' => "<div class='container-inline'>",
         );
 
@@ -99,7 +98,6 @@ class ManageCash extends FormBase {
         );
 
         if ($form_state->get('step') == 2) {
-
             if ($form_state->getValue('transaction') == 1 || $form_state->getValue('transaction') == 2) {
                 // office cash
 
@@ -107,8 +105,8 @@ class ManageCash extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $company,
-                    '#title' => t('company receiving funds'),
-                    '#required' => TRUE,
+                    '#title' => $this->t('company receiving funds'),
+                    '#required' => true,
                     '#ajax' => array(
                         'callback' => array($this, 'get_bank'),
                         'wrapper' => 'accounts_bank',
@@ -119,11 +117,11 @@ class ManageCash extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => isset($_SESSION['bankoptions']) ? $_SESSION['bankoptions'] : array(),
-                    '#required' => TRUE,
-                    '#title' => t('bank account debited'),
+                    '#required' => true,
+                    '#title' => $this->t('bank account debited'),
                     '#prefix' => "<div id='accounts_bank'>",
                     '#suffix' => "</div>",
-                    '#validated' => TRUE,
+                    '#validated' => true,
                 );
 
                 $form["amount"] = array(
@@ -131,7 +129,7 @@ class ManageCash extends FormBase {
                     '#size' => 15,
                     '#maxlength' => 20,
                     '#description' => '',
-                    '#attributes' => array('placeholder' => t('amount credited'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                    '#attributes' => array('placeholder' => $this->t('amount credited'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
                     '#prefix' => "<div id='credit_amount' class='container-inline'>",
                     '#suffix' => '',
                 );
@@ -139,7 +137,7 @@ class ManageCash extends FormBase {
                 $form["option"] = array(
                     '#type' => 'checkbox',
                     '#description' => '',
-                    '#title' => t('convert'),
+                    '#title' => $this->t('convert'),
                     '#prefix' => "",
                 );
 
@@ -149,7 +147,7 @@ class ManageCash extends FormBase {
                     '#options' => $CurrencyOptions,
                     '#states' => array(
                         'invisible' => array(
-                            "input[name='option']" => array('checked' => FALSE),
+                            "input[name='option']" => array('checked' => false),
                         ),
                     ),
                     '#ajax' => array(
@@ -163,12 +161,12 @@ class ManageCash extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 8,
                     '#maxlength' => 10,
-                    '#attributes' => array('placeholder' => t('rate'), 'title' => t('conversion currency exchange rate')),
+                    '#attributes' => array('placeholder' => $this->t('rate'), 'title' => $this->t('conversion currency exchange rate')),
                     '#prefix' => "<div id='fx'>",
                     '#suffix' => '</div></div>',
                     '#states' => array(
                         'invisible' => array(
-                            "input[name='option']" => array('checked' => FALSE),
+                            "input[name='option']" => array('checked' => false),
                         ),
                     ),
                     '#ajax' => array(
@@ -183,7 +181,7 @@ class ManageCash extends FormBase {
             if ($form_state->getValue('transaction') == 3) {
                 //refund advance by employee
                 // select employee
-                // select list of expenses 
+                // select list of expenses
 
                 $i = 1;
                 $access = AccessCheck::GetCompanyByUser();
@@ -196,16 +194,16 @@ class ManageCash extends FormBase {
 
                 while ($u = $uid->fetchObject()) {
                     $uaccount = \Drupal\user\Entity\User::load($u->uid);
-                    if($uaccount) {
+                    if ($uaccount) {
                         $list[$u->uid] = $uaccount->getAccountName();
                     } else {
-                        $list[$u->uid] = t('Unknown') . " " . $i;
+                        $list[$u->uid] = $this->t('Unknown') . " " . $i;
                         $i++;
                     }
                     //$name = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $u->uid))
                     //        ->fetchField();
                     //if ($name == '') {
-                    //    $name = t('Unknown') . " " . $i;
+                    //    $name = $this->t('Unknown') . " " . $i;
                     //    $i++;
                     //}
                     //$list[$u->uid] = $name;
@@ -214,15 +212,15 @@ class ManageCash extends FormBase {
 
                 $form['info'] = array(
                     '#type' => 'item',
-                    '#markup' => "<div class='messages messages--warning'>" . t('Use this <u>cash</u> payment only if expenses was previously <u>advanced by employee</u> in cash and recorded as "<u>not paid</u>".') . "</div>",
+                    '#markup' => "<div class='messages messages--warning'>" . $this->t('Use this <u>cash</u> payment only if expenses was previously <u>advanced by employee</u> in cash and recorded as "<u>not paid</u>".') . "</div>",
                 );
 
                 $form['coid'] = array(
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $company,
-                    '#title' => t('refund by'),
-                    '#required' => TRUE,
+                    '#title' => $this->t('refund by'),
+                    '#required' => true,
                 );
 
                 $form['currency'] = array(
@@ -240,7 +238,7 @@ class ManageCash extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 8,
                     '#maxlength' => 10,
-                    '#attributes' => array('placeholder' => t('rate'), 'title' => t('Currency exchange rate')),
+                    '#attributes' => array('placeholder' => $this->t('rate'), 'title' => $this->t('Currency exchange rate')),
                     '#prefix' => "<div id='fx'>",
                     '#suffix' => '</div></div>',
                 );
@@ -249,8 +247,8 @@ class ManageCash extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => isset($list) ? $list : [],
-                    '#required' => TRUE,
-                    '#title' => t('payee'),
+                    '#required' => true,
+                    '#title' => $this->t('payee'),
                     '#attributes' => array('style' => array('width:300px;')),
                     '#ajax' => array(
                         'callback' => array($this, 'list_expenses'),
@@ -260,16 +258,16 @@ class ManageCash extends FormBase {
 
                 $form['list'] = array(
                     '#type' => 'fieldset',
-                    '#title' => t('list of payments'),
+                    '#title' => $this->t('list of payments'),
                     '#prefix' => "<div id='list'>",
                     '#suffix' => '</div>',
-                    '#collapsible' => TRUE,
-                    '#open' => TRUE,
-                    '#validated' => TRUE,
-                    '#tree' => TRUE,
+                    '#collapsible' => true,
+                    '#open' => true,
+                    '#validated' => true,
+                    '#tree' => true,
                 );
 
-                if (( $form_state->getValue('user') <> '')) {
+                if (($form_state->getValue('user') <> '')) {
                     $query = "SELECT id,company, type, currency from {ek_expenses}  WHERE employee=:e and cash=:c and status=:s";
                     $a = array(':e' => $form_state->getValue('user'), ':c' => 'Y', ':s' => 'no');
 
@@ -279,7 +277,6 @@ class ManageCash extends FormBase {
                         $form['list']['records'] = array();
 
                         while ($d = $data->fetchObject()) {
-
                             $query = "SELECT * from {ek_journal} WHERE reference=:r AND source=:s AND type=:t AND coid=:c";
                             $a = array(':r' => $d->id, ':s' => 'expense', ':t' => 'debit', ':c' => $d->company);
                             $journal = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
@@ -306,7 +303,6 @@ class ManageCash extends FormBase {
                     $i = 1;
 
                     foreach ($form['list']['records'] as $key => $val) {
-
                         $form['list']['box']['entry-' . $val['id']] = array(
                             '#type' => 'checkbox',
                             '#attributes' => array('class' => array('sum')),
@@ -320,7 +316,7 @@ class ManageCash extends FormBase {
 
                     $form['list']['total'] = array(
                         '#type' => 'item',
-                        '#markup' => "<span>" . t('total') . " : </span><b><span id='total'></span></b>",
+                        '#markup' => "<span>" . $this->t('total') . " : </span><b><span id='total'></span></b>",
                     );
                 }
             }//3 refund user
@@ -328,21 +324,21 @@ class ManageCash extends FormBase {
             if ($form_state->getValue('transaction') == 4 || $form_state->getValue('transaction') == 5) {
                 //allocate cash to employee or return cash from employee to company cash
                 // select employee
-                
+
                 $form['coid'] = array(
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $company,
-                    '#title' => t('company cash account'),
-                    '#required' => TRUE,
+                    '#title' => $this->t('company cash account'),
+                    '#required' => true,
                 );
 
                 $form['user'] = array(
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => \Drupal\ek_admin\Access\AccessCheck::listUsers(),
-                    '#required' => TRUE,
-                    '#title' => t('employee'),
+                    '#required' => true,
+                    '#title' => $this->t('employee'),
                     '#attributes' => array('style' => array('width:300px;')),
                 );
 
@@ -351,7 +347,7 @@ class ManageCash extends FormBase {
                     '#size' => 15,
                     '#maxlength' => 20,
                     '#description' => '',
-                    '#attributes' => array('placeholder' => t('amount credited'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                    '#attributes' => array('placeholder' => $this->t('amount credited'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
                     '#prefix' => "<div id='credit_amount' class='container-inline'>",
                     '#suffix' => '',
                 );
@@ -359,14 +355,14 @@ class ManageCash extends FormBase {
                 $form['transaction_currency'] = array(
                     '#type' => 'select',
                     '#size' => 1,
-                    '#required' => TRUE,
+                    '#required' => true,
                     '#options' => $CurrencyOptions,
                 );
 
                 $form["option"] = array(
                     '#type' => 'checkbox',
                     '#description' => '',
-                    '#title' => t('convert'),
+                    '#title' => $this->t('convert'),
                     '#prefix' => "",
                 );
 
@@ -376,7 +372,7 @@ class ManageCash extends FormBase {
                     '#options' => $CurrencyOptions,
                     '#states' => array(
                         'invisible' => array(
-                            "input[name='option']" => array('checked' => FALSE),
+                            "input[name='option']" => array('checked' => false),
                         ),
                     ),
                     '#ajax' => array(
@@ -390,12 +386,12 @@ class ManageCash extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 8,
                     '#maxlength' => 10,
-                    '#attributes' => array('placeholder' => t('rate'), 'title' => t('conversion currency exchange rate')),
+                    '#attributes' => array('placeholder' => $this->t('rate'), 'title' => $this->t('conversion currency exchange rate')),
                     '#prefix' => "<div id='fx'>",
                     '#suffix' => '</div></div>',
                     '#states' => array(
                         'invisible' => array(
-                            "input[name='option']" => array('checked' => FALSE),
+                            "input[name='option']" => array('checked' => false),
                         ),
                     ),
                     '#ajax' => array(
@@ -403,7 +399,7 @@ class ManageCash extends FormBase {
                         'wrapper' => 'fx',
                     ),
                 );
-            } //4 ,5 
+            } //4 ,5
 
             if ($form_state->getValue('transaction') == 6) {
                 //Add a balance (opening) or adjustment
@@ -411,8 +407,8 @@ class ManageCash extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $company,
-                    '#title' => t('company'),
-                    '#required' => TRUE,
+                    '#title' => $this->t('company'),
+                    '#required' => true,
                 );
 
                 $form["amount"] = array(
@@ -420,7 +416,7 @@ class ManageCash extends FormBase {
                     '#size' => 15,
                     '#maxlength' => 20,
                     '#description' => '',
-                    '#attributes' => array('placeholder' => t('amount'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                    '#attributes' => array('placeholder' => $this->t('amount'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
                     '#prefix' => "<div id='credit_amount' class='container-inline'>",
                     '#suffix' => '',
                 );
@@ -440,7 +436,7 @@ class ManageCash extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 8,
                     '#maxlength' => 10,
-                    '#attributes' => array('placeholder' => t('rate'), 'title' => t('conversion currency exchange rate')),
+                    '#attributes' => array('placeholder' => $this->t('rate'), 'title' => $this->t('conversion currency exchange rate')),
                     '#prefix' => "<div id='fx'>",
                     '#suffix' => '</div></div>',
                     '#ajax' => array(
@@ -454,10 +450,10 @@ class ManageCash extends FormBase {
 
             $form['date'] = array(
                 '#type' => 'date',
-                '#title' => t('transaction date'),
+                '#title' => $this->t('transaction date'),
                 '#size' => 14,
                 '#maxlength' => 10,
-                '#required' => TRUE,
+                '#required' => true,
             );
 
 
@@ -466,7 +462,7 @@ class ManageCash extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 30,
                     '#maxlength' => 200,
-                    '#attributes' => array('placeholder' => t('references'),),
+                    '#attributes' => array('placeholder' => $this->t('references'),),
                 );
             }
 
@@ -494,7 +490,7 @@ class ManageCash extends FormBase {
      * Callback
      */
     public function fx_rate(array &$form, FormStateInterface $form_state) {
-        
+
         /* if add exchange rate */
 
         if ($form_state->getValue('transaction') == 1 || $form_state->getValue('transaction') == 2) {
@@ -513,12 +509,12 @@ class ManageCash extends FormBase {
         $value = str_replace(',', '', $form_state->getValue('amount')) * $rate;
 
         if ($fx <> 1) {
-            $form['fx_rate']['#required'] = TRUE;
+            $form['fx_rate']['#required'] = true;
         } else {
-            $form['fx_rate']['#required'] = False;
+            $form['fx_rate']['#required'] = false;
         }
         $form['fx_rate']['#value'] = $rate;
-        $form['fx_rate']['#description'] = t('converted amount') . ': ' . number_format($value, 2);
+        $form['fx_rate']['#description'] = $this->t('converted amount') . ': ' . number_format($value, 2);
 
         return $form['fx_rate'];
     }
@@ -532,10 +528,10 @@ class ManageCash extends FormBase {
         $fx = CurrencyData::rate($form_state->getValue('currency'));
         if ($fx <> 1) {
             $form['fx_rate']['#value'] = $fx;
-            $form['fx_rate']['#required'] = TRUE;
+            $form['fx_rate']['#required'] = true;
             $form['fx_rate']['#description'] = '';
         } else {
-            $form['fx_rate']['#required'] = False;
+            $form['fx_rate']['#required'] = false;
             $form['fx_rate']['#value'] = 1;
             $form['fx_rate']['#description'] = '';
         }
@@ -547,25 +543,25 @@ class ManageCash extends FormBase {
      * Callback
      */
     public function fx_rate_3(array &$form, FormStateInterface $form_state) {
-        
+
         /* if add opening or adjusment */
 
         $currency = $form_state->getValue('transaction_currency');
         $fx = CurrencyData::rate($currency);
         if ($fx == 0) {
-            $form['fx_rate']['#required'] = FALSE;
+            $form['fx_rate']['#required'] = false;
             $form['fx_rate']['#value'] = 0;
-            $form['fx_rate']['#description'] = t('the exchange must be a number > 0');
+            $form['fx_rate']['#description'] = $this->t('the exchange must be a number > 0');
         } else {
             $value = round(str_replace(',', '', $form_state->getValue('amount')) / $fx, $this->rounding);
 
             if ($fx <> 1) {
-                $form['fx_rate']['#required'] = TRUE;
+                $form['fx_rate']['#required'] = true;
             } else {
-                $form['fx_rate']['#required'] = FALSE;
+                $form['fx_rate']['#required'] = false;
             }
             $form['fx_rate']['#value'] = $fx;
-            $form['fx_rate']['#description'] = t('converted amount') . ': ' . number_format($value, $this->rounding);
+            $form['fx_rate']['#description'] = $this->t('converted amount') . ': ' . number_format($value, $this->rounding);
         }
 
 
@@ -580,7 +576,7 @@ class ManageCash extends FormBase {
          */
 
         $value = str_replace(',', '', $form_state->getValue('amount')) * $form_state->getValue('fx_rate');
-        $form['fx_rate']['#description'] = t('converted amount') . ': ' . number_format($value, 2);
+        $form['fx_rate']['#description'] = $this->t('converted amount') . ': ' . number_format($value, 2);
         return $form['fx_rate'];
     }
 
@@ -592,7 +588,7 @@ class ManageCash extends FormBase {
          */
 
         $value = str_replace(',', '', $form_state->getValue('amount')) / $form_state->getValue('fx_rate');
-        $form['fx_rate']['#description'] = t('converted amount') . ': ' . number_format($value, 2);
+        $form['fx_rate']['#description'] = $this->t('converted amount') . ': ' . number_format($value, 2);
         return $form['fx_rate'];
     }
 
@@ -600,15 +596,14 @@ class ManageCash extends FormBase {
      * Callback
      */
     public function get_bank(array &$form, FormStateInterface $form_state) {
-
         $options = array();
-        $options[(string) t('Local')] = BankData::listbankaccountsbyaid($form_state->getValue('coid'));
-        $options[(string) t('Group')] = array();
+        $options[(string) $this->t('Local')] = BankData::listbankaccountsbyaid($form_state->getValue('coid'));
+        $options[(string) $this->t('Group')] = array();
         $query = 'SELECT id from {ek_company} WHERE id<>:id';
         $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $form_state->getValue('coid')));
 
         while ($d = $data->fetchObject()) {
-            $options[(string) t('Group')] += BankData::listbankaccountsbyaid($d->id);
+            $options[(string) $this->t('Group')] += BankData::listbankaccountsbyaid($d->id);
         }
 
         $_SESSION['bankoptions'] = $options;
@@ -636,19 +631,15 @@ class ManageCash extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == 1) {
             
         }
 
         if ($form_state->get('step') == 2) {
-
             if ($form_state->getValue('transaction') == 1 || $form_state->getValue('transaction') == 2) {
-
                 $companysettings = new CompanySettings($form_state->getValue('coid'));
 
                 if ($form_state->getValue('option') == 1) {
-
                     if ($form_state->getValue('currency') == '0') {
                         $form_state->setErrorByName('currency', $this->t('conversion currency not selected'));
                     }
@@ -660,7 +651,7 @@ class ManageCash extends FormBase {
                     }
                     $account = $companysettings->get('cash_account', $form_state->getValue('currency'));
 
-                    if ($account == NULL) {
+                    if ($account == null) {
                         $form_state->setErrorByName('bank', $this->t('you do not have cash account set for this currency. Please contact administrator'));
                     }
 
@@ -671,7 +662,7 @@ class ManageCash extends FormBase {
                             ->query($query, array(':id' => $form_state->getValue('bank')))
                             ->fetchField();
                     $account = $companysettings->get('cash_account', $currency);
-                    if ($account == NULL) {
+                    if ($account == null) {
                         $form_state->setErrorByName("bank", $this->t('you do not have cash account set for this currency. Please contact administrator'));
                     }
                 }
@@ -683,11 +674,10 @@ class ManageCash extends FormBase {
 
 
             if ($form_state->getValue('transaction') == 3) {
-
                 $companysettings = new CompanySettings($form_state->getValue('coid'));
                 $account = $companysettings->get('cash_account', $form_state->getValue('currency'));
 
-                if ($account == NULL) {
+                if ($account == null) {
                     $form_state->setErrorByName("bank", $this->t('you do not have cash account set for this currency. Please contact administrator'));
                 }
 
@@ -729,7 +719,6 @@ class ManageCash extends FormBase {
             }
 
             if ($form_state->getValue('transaction') == 6) {
-
                 if ($form_state->getValue('coid') == '') {
                     $form_state->setErrorByName('coid', $this->t('company not selected'));
                 }
@@ -758,9 +747,7 @@ class ManageCash extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == 2) {
-
             $journal = new Journal();
             $companysettings = new CompanySettings($form_state->getValue('coid'));
 

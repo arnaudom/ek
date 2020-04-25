@@ -54,9 +54,7 @@ class resetPayMemo extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         if ($data->category < 5) {
             $route = 'ek_finance_manage_list_memo_internal';
         } else {
@@ -66,7 +64,7 @@ class resetPayMemo extends FormBase {
         $url = Url::fromRoute($route, array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url">List</a>', array('@url' => $url)),
+            '#markup' => $this->t('<a href="@url">List</a>', array('@url' => $url)),
         );
 
         $query = Database::getConnection('external_db', 'external_db')
@@ -84,22 +82,22 @@ class resetPayMemo extends FormBase {
 
         $form['edit_memo'] = array(
             '#type' => 'item',
-            '#markup' => t('Memo ref. @p', array('@p' => $data->serial)),
+            '#markup' => $this->t('Memo ref. @p', array('@p' => $data->serial)),
         );
 
-        if(empty($expense)) {
-           //system can't locate the expense reference
-           //the expense may exists but some fields (comment) may have been changed)
-           $alert =  "<div id='fx' class='messages messages--warning'>" . t('Record not editable'). "</div>"; 
-           $form['error'] = array(
+        if (empty($expense)) {
+            //system can't locate the expense reference
+            //the expense may exists but some fields (comment) may have been changed)
+            $alert = "<div id='fx' class='messages messages--warning'>" . $this->t('Record not editable') . "</div>";
+            $form['error'] = array(
                 '#type' => 'item',
                 '#markup' => $alert,
             );
-           $error = 1;
+            $error = 1;
         } else {
             $form['edit_expense'] = array(
                 '#type' => 'item',
-                '#markup' => $this->t('Expense ref. @p', array('@p' => implode(',',$expense))),
+                '#markup' => $this->t('Expense ref. @p', array('@p' => implode(',', $expense))),
             );
         }
 
@@ -110,19 +108,17 @@ class resetPayMemo extends FormBase {
             //check authorizations
             // can be deleted by user with admin privilege or owner or user with access
             if (\Drupal::currentUser()->hasPermission('admin_memos')) {
-                $delete = TRUE;
+                $delete = true;
             } else {
                 if ($data->category < 5) {
-
                     $access = AccessCheck::CompanyListByUid();
-                    $delete = in_array($data->entity, $access) ? TRUE : FALSE;
+                    $delete = in_array($data->entity, $access) ? true : false;
                 } else {
-                    $delete = (\Drupal::currentUser()->id() == $data->entity) ? TRUE : FALSE;
+                    $delete = (\Drupal::currentUser()->id() == $data->entity) ? true : false;
                 }
             }
 
             if ($delete) {
-
                 $form['for_id'] = array(
                     '#type' => 'hidden',
                     '#value' => $id,
@@ -142,8 +138,7 @@ class resetPayMemo extends FormBase {
                     '#type' => 'hidden',
                     '#value' => $expense,
                 );
-                if(!isset($error)) {
-                    
+                if (!isset($error)) {
                     $form['alert'] = array(
                         '#type' => 'item',
                         '#markup' => $this->t('Are you sure you want to reset this payment ?'),
@@ -156,14 +151,13 @@ class resetPayMemo extends FormBase {
             } else {
                 $form['alert'] = array(
                     '#type' => 'item',
-                    '#markup' => t('You are not authorized to edit this memo.'),
+                    '#markup' => $this->t('You are not authorized to edit this memo.'),
                 );
             }
         } else {
-
             $form['alert'] = array(
                 '#type' => 'item',
-                '#markup' => t('This memo cannot be edited because it has been fully or partially paid'),
+                '#markup' => $this->t('This memo cannot be edited because it has been fully or partially paid'),
             );
         }
 
@@ -182,10 +176,9 @@ class resetPayMemo extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $journal = new \Drupal\ek_finance\Journal();
 
-        foreach($form_state->getValue('expense_id') as $key => $id) {
+        foreach ($form_state->getValue('expense_id') as $key => $id) {
             $journalId = $journal->delete('expense', $id, $form_state->getValue('coid'));
             $journal->resetCount($form_state->getValue('coid'), $journalId[1]);
             $delete = Database::getConnection('external_db', 'external_db')
@@ -193,9 +186,8 @@ class resetPayMemo extends FormBase {
                     ->condition('id', $id)
                     ->execute();
         }
-        
+
         if ($delete) {
-            
             $fields = array(
                 'status' => 0,
                 'amount_paid' => 0,
@@ -205,13 +197,13 @@ class resetPayMemo extends FormBase {
             );
 
             $update = Database::getConnection('external_db', 'external_db')
-                ->update('ek_expenses_memo')
-                ->fields($fields)
-                ->condition('id', $form_state->getValue('for_id'))
-                ->execute();
-            
-            \Drupal::messenger()->addStatus(t('Payment reset; expenses deleted: @e', ['@e' => implode(',',$form_state->getValue('expense_id'))]));
-            
+                    ->update('ek_expenses_memo')
+                    ->fields($fields)
+                    ->condition('id', $form_state->getValue('for_id'))
+                    ->execute();
+
+            \Drupal::messenger()->addStatus(t('Payment reset; expenses deleted: @e', ['@e' => implode(',', $form_state->getValue('expense_id'))]));
+
             if ($form_state->getValue('category') < 5) {
                 $form_state->setRedirect('ek_finance_manage_list_memo_internal');
             } else {

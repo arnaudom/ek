@@ -1,0 +1,19 @@
+
+<table class='table'>
+    <tbody>
+{% for value in items %}        
+    <tr><td class='td-info'><strong>{{ 'Name'|t }} :</strong></td><td class='td-data'>{{ value.name }}</td></tr>
+        <tr><td class='td-info'><strong>{{  'Address'|t }} :</strong></td><td class='td-data'>{{ value.address1 }}
+                <br/>{{ value.address2 }}
+                <br/>{{ value.postcode }}
+                <br/>{{ value.country }}</td></tr>
+        <tr><td class='td-info'><strong>{{  'Account'|t }} :</strong></td><td class='td-data'>{{ value.account }}</td></tr>
+        <tr><td class='td-info'><strong>{{  'Swift'|t }} :</strong></td><td class='td-data'>{{ value.swift }}</td></tr>
+        <tr><td class='td-info'><strong>{{  'bank code'|t }} :</strong></td><td class='td-data'>{{ value.bank_code }}</td></tr>
+        <tr class="blank_row">
+             <td colspan="2" style='background-color: #FFFFFF;'></td>
+        </tr>
+    
+{% endfor %}   
+    </tbody> 
+</table>

@@ -45,18 +45,17 @@ class FilterPrintRange extends FormBase {
         );
     }
 
-  /**
-   * {@inheritdoc}
-   */
+    /**
+     * {@inheritdoc}
+     */
     public function getFormId() {
         return 'memos_filter';
     }
 
-  /**
-   * {@inheritdoc}
-   */
-    public function buildForm(array $form, FormStateInterface $form_state, $category = NULL) {
-
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $category = null) {
         $query = "SELECT SQL_CACHE date from {ek_expenses_memo} order by date DESC limit 1";
         $to = Database::getConnection('external_db', 'external_db')->query($query)->fetchObject();
 
@@ -72,16 +71,15 @@ class FilterPrintRange extends FormBase {
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Filter'),
-            '#open' => ($_SESSION['memrgfilter']['filter'] == 1) ? FALSE : TRUE,
+            '#open' => ($_SESSION['memrgfilter']['filter'] == 1) ? false : true,
         );
 
-        $coid = array('%' => t('Any'));
+        $coid = array('%' => $this->t('Any'));
         $coid += \Drupal\ek_admin\Access\AccessCheck::CompanyListByUid();
 
         if ($category != 'internal') {
-
-            if(\Drupal::currentUser()->hasPermission('admin_memos')) {
-                $entity = array('%' => t('Any'));
+            if (\Drupal::currentUser()->hasPermission('admin_memos')) {
+                $entity = array('%' => $this->t('Any'));
                 $entity += \Drupal\ek_admin\Access\AccessCheck::listUsers();
                 $category = 'personal';
             } else {
@@ -109,7 +107,7 @@ class FilterPrintRange extends FormBase {
             '#size' => 1,
             '#options' => $entity,
             '#default_value' => isset($_SESSION['memrgfilter']['coid']) ? $_SESSION['memrgfilter']['coid'] : '%',
-            '#title' => t('Issuer'),
+            '#title' => $this->t('Issuer'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
         );
@@ -119,7 +117,7 @@ class FilterPrintRange extends FormBase {
             '#size' => 1,
             '#options' => $coid,
             '#default_value' => isset($_SESSION['memrgfilter']['coid2']) ? $_SESSION['memrgfilter']['coid2'] : 0,
-            '#title' => t('Payor'),
+            '#title' => $this->t('Payor'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div>',
         );
@@ -131,18 +129,18 @@ class FilterPrintRange extends FormBase {
             '#default_value' => isset($_SESSION['memrgfilter']['from']) ? $_SESSION['memrgfilter']['from'] : $from,
             '#prefix' => "<div class='row'><div class='cell'>",
             '#suffix' => '</div>',
-            '#title' => t('from'),
+            '#title' => $this->t('from'),
         );
 
         $form['filters'][2]['to'] = array(
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['memrgfilter']['to']) ? $_SESSION['memrgfilter']['to'] : $to,
-            '#title' => t('to'),
+            '#title' => $this->t('to'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div>',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -150,9 +148,9 @@ class FilterPrintRange extends FormBase {
 
         $form['filters'][3]['status'] = array(
             '#type' => 'select',
-            '#options' => array('%' => t('Any'), 0 => t('Not paid'), 1 => t('Partial'), 2 => t('Paid')),
+            '#options' => array('%' => $this->t('Any'), 0 => $this->t('Not paid'), 1 => $this->t('Partial'), 2 => $this->t('Paid')),
             '#default_value' => isset($_SESSION['memrgfilter']['status']) ? $_SESSION['memrgfilter']['status'] : '%',
-            '#title' => t('status'),
+            '#title' => $this->t('status'),
             '#suffix' => '</div>',
             '#prefix' => "<div class='row'><div class='cell'>",
             '#suffix' => '</div>',
@@ -161,19 +159,19 @@ class FilterPrintRange extends FormBase {
         $form['filters'][3]['signature'] = array(
             '#type' => 'checkbox',
             '#default_value' => 0,
-            '#attributes' => array('title' => t('signature')),
-            '#title' => t('signature'),
+            '#attributes' => array('title' => $this->t('signature')),
+            '#title' => $this->t('signature'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div>',
         );
 
-        $stamps = array('0' => t('no'), '1' => t('original'), '2' => t('copy'));
+        $stamps = array('0' => $this->t('no'), '1' => $this->t('original'), '2' => $this->t('copy'));
         $form['filters'][3]['stamp'] = array(
             '#type' => 'radios',
             '#options' => $stamps,
             '#default_value' => 0,
-            '#attributes' => array('title' => t('stamp')),
-            '#title' => t('stamp'),
+            '#attributes' => array('title' => $this->t('stamp')),
+            '#title' => $this->t('stamp'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
         );
@@ -182,21 +180,21 @@ class FilterPrintRange extends FormBase {
         // provide selector for templates
         //
         $list = array(0 => 'default');
-        if(file_exists('private://finance/templates/expenses_memo/')){
+        if (file_exists('private://finance/templates/expenses_memo/')) {
             $handle = opendir();
             while ($file = readdir($handle)) {
-                if ($file != '.' AND $file != '..') {
+                if ($file != '.' and $file != '..') {
                     $list[$file] = $file;
                 }
             }
         }
-        
+
 
         $form['filters']['template'] = array(
             '#type' => 'select',
             '#options' => $list,
             '#default_value' => $_SESSION['memrgfilter']['template'],
-            '#title' => t('template'),
+            '#title' => $this->t('template'),
         );
 
         $form['filters']['actions'] = array(
@@ -232,7 +230,6 @@ class FilterPrintRange extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $_SESSION['memrgfilter']['category'] = $form_state->getValue('category');
         $_SESSION['memrgfilter']['from'] = $form_state->getValue('from');
         $_SESSION['memrgfilter']['to'] = $form_state->getValue('to');

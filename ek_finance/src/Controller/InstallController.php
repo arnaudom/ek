@@ -13,14 +13,14 @@ use Drupal\Core\Database\Database;
 use Drupal\user\UserInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Controller routines for ek module routes.
  */
-class InstallController extends ControllerBase {
+class InstallController extends ControllerBase
+{
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -45,7 +45,8 @@ class InstallController extends ControllerBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -61,7 +62,8 @@ class InstallController extends ControllerBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
+    {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -72,7 +74,8 @@ class InstallController extends ControllerBase {
      * @return array
      * render Html
      */
-    public function update() {
+    public function update()
+    {
         include_once drupal_get_path('module', 'ek_finance') . '/' . 'update.php';
         return array('#markup' => $markup);
     }
@@ -82,7 +85,8 @@ class InstallController extends ControllerBase {
      * @return array
      * render Html
      */
-    public function install() {
+    public function install()
+    {
         /**/
         $query = "CREATE TABLE IF NOT EXISTS `ek_finance` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -148,6 +152,7 @@ class InstallController extends ControllerBase {
         `swift` VARCHAR(45) NULL DEFAULT '' COMMENT 'swift or BIC' COLLATE 'utf8_unicode_ci',
         `bank_code` VARCHAR(45) NULL DEFAULT '' COMMENT 'bank code' COLLATE 'utf8_unicode_ci',
         `coid` VARCHAR(5) NOT NULL COMMENT 'company id' COLLATE 'utf8_unicode_ci',
+        `abid` INT(10) UNSIGNED NULL COMMENT 'Address book id' COLLATE 'utf8_unicode_ci',
         PRIMARY KEY (`id`)
       )
       COMMENT='Bank entities'
@@ -247,7 +252,7 @@ class InstallController extends ControllerBase {
         }
 
         try {
-        $query = "
+            $query = "
             INSERT INTO `ek_currency` (`id`, `currency`, `name`, `rate`, `active`, `date`) VALUES
             (1, 'BIF', 'Franc Burundi', 0, 0, ''),
             (2, 'XAF', 'Franc CFA', 0, 0, ''),
@@ -433,8 +438,9 @@ class InstallController extends ControllerBase {
             (183, 'ZWD', 'Zimbabwe Dollar', 0, 0, '')";
 
             $db = Database::getConnection('external_db', 'external_db')->query($query);
-            if ($db)
+            if ($db) {
                 $markup .= 'Finance currencies data updated <br/>';
+            }
         } catch (Exception $e) {
             $markup .= '<br/><b>Caught exception for currencies: ' . $e->getMessage() . "</b>\n";
         }
@@ -623,6 +629,29 @@ class InstallController extends ControllerBase {
         if ($db) {
             $markup .= 'Budget table installed<br/>';
         }
+        
+        $query = "CREATE TABLE IF NOT EXISTS `ek_address_book_bank` (
+            `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+            `abid` INT(10) UNSIGNED NULL DEFAULT NULL COMMENT 'Address book id',
+            `name` VARCHAR(255) NOT NULL COLLATE 'utf8mb4_unicode_ci',
+            `address1` VARCHAR(255) NULL DEFAULT '' COLLATE 'utf8mb4_unicode_ci',
+            `address2` VARCHAR(255) NULL DEFAULT '' COLLATE 'utf8mb4_unicode_ci',
+            `postcode` VARCHAR(45) NULL DEFAULT '' COLLATE 'utf8mb4_unicode_ci',
+            `country` VARCHAR(45) NULL DEFAULT '' COLLATE 'utf8mb4_unicode_ci',
+            `account` VARCHAR(45) NULL DEFAULT '' COLLATE 'utf8mb4_unicode_ci',
+            `swift` VARCHAR(45) NULL DEFAULT '' COLLATE 'utf8mb4_unicode_ci',
+            `bank_code` VARCHAR(45) NULL DEFAULT NULL COMMENT 'Bank code' COLLATE 'utf8mb4_unicode_ci',
+            PRIMARY KEY (`id`)
+            )
+            COMMENT='Bank entities for AB'
+            COLLATE='utf8mb4_unicode_ci'
+            ENGINE=InnoDB
+        ;";
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'AB bank table installed<br/>';
+        }
+        
 
         $link = Url::fromRoute('ek_admin.main', array(), array())->toString();
         $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
@@ -632,5 +661,4 @@ class InstallController extends ControllerBase {
             '#markup' => $markup
                 );
     }
-
 }

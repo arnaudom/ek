@@ -21,7 +21,8 @@ use Drupal\ek_finance\Journal;
 /**
  * Controller routines for ek module routes.
  */
-class ReconciliationController extends ControllerBase {
+class ReconciliationController extends ControllerBase
+{
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -46,7 +47,8 @@ class ReconciliationController extends ControllerBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -62,7 +64,8 @@ class ReconciliationController extends ControllerBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $data_builder, ModuleHandler $module_handler) {
+    public function __construct(Connection $database, FormBuilderInterface $data_builder, ModuleHandler $module_handler)
+    {
         $this->database = $database;
         $this->formBuilder = $data_builder;
         $this->moduleHandler = $module_handler;
@@ -71,13 +74,13 @@ class ReconciliationController extends ControllerBase {
 
     /**
      *  do reconciliation between internal account and external data
-     * 
+     *
      * @return array
      *  Form
      *
      */
-    public function reconciliation(Request $request) {
-
+    public function reconciliation(Request $request)
+    {
         $build['reconciliation'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\ReconciliationForm');
 
         return $build;
@@ -85,13 +88,13 @@ class ReconciliationController extends ControllerBase {
 
     /**
      *  display list of reconciliationreports
-     * 
+     *
      * @return array
      *  render Html
      *
      */
-    public function reportsreconciliation(Request $request) {
-
+    public function reportsreconciliation(Request $request)
+    {
         $build['reconciliation_report'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterRecoReports');
 
 
@@ -124,8 +127,9 @@ class ReconciliationController extends ControllerBase {
 
 
 
-            if ($_SESSION['recofilter']['coid'] == '0')
+            if ($_SESSION['recofilter']['coid'] == '0') {
                 $_SESSION['recofilter']['coid'] = '%';
+            }
             $a = array(
                 ':coid' => $_SESSION['recofilter']['coid'],
                 ':date1' => $_SESSION['recofilter']['from'],
@@ -184,15 +188,16 @@ class ReconciliationController extends ControllerBase {
 
     /**
      * Extract reconciliation report in pdf format
-     * 
+     *
      * @param int id
      *      id of document record
      * @return Object or markup
      *      Pdf object downaload
      *      or markup if error
-     *  
+     *
      */
-    public function pdfreconciliation(Request $request, $id) {
+    public function pdfreconciliation(Request $request, $id)
+    {
         $type = 3;
         $markup = array();
         include_once drupal_get_path('module', 'ek_finance') . '/pdf.inc';
@@ -207,10 +212,10 @@ class ReconciliationController extends ControllerBase {
      * @return Object
      *  PhpExcel object download
      *  or markup if error
-     * 
+     *
      */
-    public function excelreco($param) {
-
+    public function excelreco($param)
+    {
         $markup = array();
         $rounding = (!null == $this->financeSettings->get('rounding')) ? $this->financeSettings->get('rounding'):2;
         
@@ -243,8 +248,9 @@ class ReconciliationController extends ControllerBase {
                             ->query($query, $a)->fetchObject();
 
 
-            if ($account->balance_date == '')
-                $account->balance_date = 0; //todo input alert for opening balance         
+            if ($account->balance_date == '') {
+                $account->balance_date = 0;
+            } //todo input alert for opening balance
             $data['aname'] = $account->aname;
             $data['aid'] = $account->aid;
 
@@ -279,10 +285,12 @@ class ReconciliationController extends ControllerBase {
 
             $debit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
 
-            if ($debit == NULL)
+            if ($debit == null) {
                 $debit = 0;
-            if ($credit == NULL)
+            }
+            if ($credit == null) {
                 $credit = 0;
+            }
             $balance = $account->balance + $credit - $debit;
             if ($balance < 0) {
                 $ab = 'dt';
@@ -304,9 +312,8 @@ class ReconciliationController extends ControllerBase {
             $data['rows'] = array();
             $i = 0;
             while ($r = $result->fetchObject()) {
-
                 $j = Journal::journalEntryDetails($r->id);
-                if(is_array($j['comment'])){
+                if (is_array($j['comment'])) {
                     //remove the hyperlink tag for excel
                     preg_match("'>(.*?)</a>'si", $j['comment']['#markup'], $match);
                     $comment = $j['reference'] . " - " . $match[1];
@@ -323,11 +330,10 @@ class ReconciliationController extends ControllerBase {
 
                 $data['rows'][$i] = $row;
                 $i++;
-            }//while         
+            }//while
 
             include_once drupal_get_path('module', 'ek_finance') . '/excel_reconciliation.inc';
         }
         return ['#markup' => $markup];
     }
-
 }

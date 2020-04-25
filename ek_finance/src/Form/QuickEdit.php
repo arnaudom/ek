@@ -35,11 +35,9 @@ class QuickEdit extends FormBase {
      *   The module handler.
      */
     public function __construct(ModuleHandler $module_handler) {
-
         $this->moduleHandler = $module_handler;
-        
-            $this->settings = new FinanceSettings();
-        
+
+        $this->settings = new FinanceSettings();
     }
 
     /**
@@ -61,181 +59,174 @@ class QuickEdit extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
+        $query = "SELECT * from {ek_expenses} where id=:id";
+        $data = Database::getConnection('external_db', 'external_db')
+                ->query($query, array(':id' => $id))
+                ->fetchObject();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal');
+        $query->addExpression('SUM(reconcile)', 'reconcile');
+        $query->condition('coid', $data->company, '=');
+        $query->condition('date', $data->pdate, '=');
+        $query->condition('source', 'expense%', 'like');
+        $query->condition('reference', $id, '=');
+        $reconcile_flag = $query->execute()->fetchObject()->reconcile;
+
+        if (!$form_state->getValue('head')) {
+            $form_state->setValue('head', $data->head);
+        }
+        $form['id'] = array(
+            '#type' => 'hidden',
+            '#value' => $id,
+        );
 
 
-            $query = "SELECT * from {ek_expenses} where id=:id";
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $id))
-                    ->fetchObject();
-            $query = Database::getConnection('external_db', 'external_db')
-                          ->select('ek_journal');
-            $query->addExpression('SUM(reconcile)', 'reconcile');
-            $query->condition('coid', $data->company, '=');
-            $query->condition('date', $data->pdate, '=');
-            $query->condition('source', 'expense%', 'like');
-            $query->condition('reference', $id, '=');
-            $reconcile_flag = $query->execute()->fetchObject()->reconcile;
+        $company = AccessCheck::CompanyListByUid();
+        $form['options']['ref'] = array(
+            '#markup' => "<h2>" . $this->t('Reference') . ': ' . $data->id . ', ' . $company[$data->company] . "</h2>",
+        );
 
-            if (!$form_state->getValue('head')) {
-                $form_state->setValue('head', $data->head);
-            }
-            $form['id'] = array(
-                '#type' => 'hidden',
-                '#value' => $id,
-            );
+        $form['options']['allocation'] = array(
+            '#type' => 'select',
+            '#size' => 1,
+            '#options' => $company,
+            '#required' => true,
+            '#default_value' => isset($data->allocation) ? $data->allocation : null,
+            '#title' => $this->t('Allocated'),
+            '#description' => $this->t('select an entity for which the expense is done'),
+            '#prefix' => "",
+            '#suffix' => '',
+        );
 
-
-            $company = AccessCheck::CompanyListByUid();
-            $form['options']['ref'] = array(
-                '#markup' => "<h2>" . t('Reference') . ': ' . $data->id . ', ' . $company[$data->company]. "</h2>",
-            );
-            
-            $form['options']['allocation'] = array(
-                '#type' => 'select',
-                '#size' => 1,
-                '#options' => $company,
-                '#required' => TRUE,
-                '#default_value' => isset($data->allocation) ? $data->allocation : NULL,
-                '#title' => t('Allocated'),
-                '#description' => t('select an entity for which the expense is done'),
+        if ($reconcile_flag == 0) {
+            $form['options']['date'] = array(
+                '#type' => 'date',
+                '#size' => 12,
+                '#required' => true,
+                '#default_value' => isset($data->pdate) ? $data->pdate : date('Y-m-d'),
+                '#title' => $this->t('Date'),
                 '#prefix' => "",
                 '#suffix' => '',
             );
-
-            if($reconcile_flag == 0) {
-                $form['options']['date'] = array(
-                    '#type' => 'date',
-                    '#size' => 12,
-                    '#required' => TRUE,
-                    '#default_value' => isset($data->pdate) ? $data->pdate : date('Y-m-d'),
-                    '#title' => t('Date'),
-                    '#prefix' => "",
-                    '#suffix' => '',
-                );
-            } else $form['date'] = array(
+        } else {
+            $form['date'] = array(
                 '#type' => 'hidden',
                 '#value' => $data->pdate,
             );
-            
-            if ($this->moduleHandler->moduleExists('ek_address_book')) {
-                
-                $client = array('n/a' => t('not applicable'));
-                $client += \Drupal\ek_address_book\AddressBookData::addresslist(1);
+        }
 
-                $form['options']['client'] = array(
-                    '#type' => 'select',
-                    '#size' => 1,
-                    '#options' => $client,
-                    '#required' => TRUE,
-                    '#default_value' => isset($data->clientname) ? $data->clientname : NULL,
-                    '#title' => t('client'),
-                    '#prefix' => "",
-                    '#suffix' => '',
-                    '#attributes' => array('style' => array('width:300px;white-space:nowrap')),
-                );
-                
-                $client = array('n/a' => t('not applicable'));
-                $client += \Drupal\ek_address_book\AddressBookData::addresslist(2);
+        if ($this->moduleHandler->moduleExists('ek_address_book')) {
+            $client = array('n/a' => $this->t('not applicable'));
+            $client += \Drupal\ek_address_book\AddressBookData::addresslist(1);
 
-                $form['options']['supplier'] = array(
-                    '#type' => 'select',
-                    '#size' => 1,
-                    '#options' => $client,
-                    '#required' => TRUE,
-                    '#default_value' => isset($data->suppliername) ? $data->suppliername : NULL,
-                    '#title' => t('supplier'),
-                    '#prefix' => "",
-                    '#suffix' => '',
-                    '#attributes' => array('style' => array('width:300px;white-space:nowrap')),
-                );                
-            } else {
+            $form['options']['client'] = array(
+                '#type' => 'select',
+                '#size' => 1,
+                '#options' => $client,
+                '#required' => true,
+                '#default_value' => isset($data->clientname) ? $data->clientname : null,
+                '#title' => $this->t('client'),
+                '#prefix' => "",
+                '#suffix' => '',
+                '#attributes' => array('style' => array('width:300px;white-space:nowrap')),
+            );
 
-                $form['options']['client'] = array(
-                    '#markup' => t('You do not have any client list.'),
-                    '#default_value' => 0,
-                    '#prefix' => "",
-                    '#suffix' => '',
-                );
-            }
+            $client = array('n/a' => $this->t('not applicable'));
+            $client += \Drupal\ek_address_book\AddressBookData::addresslist(2);
 
-
-            if ($this->moduleHandler->moduleExists('ek_projects')) {
-
-                if(isset($data->pcode) && $data->pcode != 'n/a') {
-                    $thisPcode = t('code') . ' ' . $data->pcode;
-                } else {
-                    $thisPcode = NULL;
-                }
-                $form['reference']['pcode'] = array(
-                    '#type' => 'textfield',
-                    '#size' => 50,
-                    '#maxlength' => 150,
-                    //'#required' => TRUE,
-                    '#default_value' => $thisPcode,
-                    '#attributes' => array('placeholder' => t('Ex. 123')),
-                    '#title' => t('Project'),
-                    '#autocomplete_route_name' => 'ek_look_up_projects',
-                    '#autocomplete_route_parameters' => array('level' => 'all', 'status' => '0'),
-                );
-            } // project
-            
-            $form['debit']["comment"] = array(
-                '#type' => 'textfield',
-                '#size' => 50,
-                '#maxlength' => 255,
-                '#default_value' => $data->comment,
-                '#attributes' => array('placeholder' => t('comment'),),
+            $form['options']['supplier'] = array(
+                '#type' => 'select',
+                '#size' => 1,
+                '#options' => $client,
+                '#required' => true,
+                '#default_value' => isset($data->suppliername) ? $data->suppliername : null,
+                '#title' => $this->t('supplier'),
+                '#prefix' => "",
+                '#suffix' => '',
+                '#attributes' => array('style' => array('width:300px;white-space:nowrap')),
+            );
+        } else {
+            $form['options']['client'] = array(
+                '#markup' => $this->t('You do not have any client list.'),
+                '#default_value' => 0,
                 '#prefix' => "",
                 '#suffix' => '',
             );
-            
-            $form['actions'] = array(
-                '#type' => 'actions',
+        }
+
+
+        if ($this->moduleHandler->moduleExists('ek_projects')) {
+            if (isset($data->pcode) && $data->pcode != 'n/a') {
+                $thisPcode = $this->t('code') . ' ' . $data->pcode;
+            } else {
+                $thisPcode = null;
+            }
+            $form['reference']['pcode'] = array(
+                '#type' => 'textfield',
+                '#size' => 50,
+                '#maxlength' => 150,
+                //'#required' => TRUE,
+                '#default_value' => $thisPcode,
+                '#attributes' => array('placeholder' => $this->t('Ex. 123')),
+                '#title' => $this->t('Project'),
+                '#autocomplete_route_name' => 'ek_look_up_projects',
+                '#autocomplete_route_parameters' => array('level' => 'all', 'status' => '0'),
             );
-            
-            $form['actions']['record'] = array(
-                '#type' => 'submit',
-                '#value' => $this->t('Record'),
-                '#attributes' => array('class' => array('button--record')),
-            );
-        
+        } // project
+
+        $form['debit']["comment"] = array(
+            '#type' => 'textfield',
+            '#size' => 50,
+            '#maxlength' => 255,
+            '#default_value' => $data->comment,
+            '#attributes' => array('placeholder' => $this->t('comment'),),
+            '#prefix' => "",
+            '#suffix' => '',
+        );
+
+        $form['actions'] = array(
+            '#type' => 'actions',
+        );
+
+        $form['actions']['record'] = array(
+            '#type' => 'submit',
+            '#value' => $this->t('Record'),
+            '#attributes' => array('class' => array('button--record')),
+        );
+
 
         $form['#attached']['library'][] = 'ek_finance/ek_finance.expenses_form';
 
         return $form;
     }
 
-
-
     /**
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-        if(!NULL == $form_state->getValue('pcode') && $form_state->getValue('pcode') != 'n/a'){  
+        if (!null == $form_state->getValue('pcode') && $form_state->getValue('pcode') != 'n/a') {
             $p = explode(' ', $form_state->getValue('pcode'));
-                $query = "SELECT id FROM {ek_project} WHERE pcode = :p ";
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, [':p' => $p[1] ])
-                        ->fetchField();
-                if ($data) {
-                    $form_state->setValue('pcode', $p[1]);
-
-                } else {
-                    $form_state->setValue('pcode', 'n/a');
-                }
+            $query = "SELECT id FROM {ek_project} WHERE pcode = :p ";
+            $data = Database::getConnection('external_db', 'external_db')
+                    ->query($query, [':p' => $p[1]])
+                    ->fetchField();
+            if ($data) {
+                $form_state->setValue('pcode', $p[1]);
             } else {
                 $form_state->setValue('pcode', 'n/a');
             }
+        } else {
+            $form_state->setValue('pcode', 'n/a');
+        }
     }
 
     /**
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $id = $form_state->getValue('id');
-        
+
         if ($form_state->getValue('pcode') == '') {
             $pcode = 'n/a';
         } else {
@@ -248,7 +239,7 @@ class QuickEdit extends FormBase {
             'suppliername' => $form_state->getValue('supplier'),
             'pdate' => $form_state->getValue('date'),
             'pcode' => $form_state->getValue('pcode'),
-            'comment' => \Drupal\Component\Utility\Xss::filter($form_state->getValue('comment'), ['em','b', 'strong']),
+            'comment' => \Drupal\Component\Utility\Xss::filter($form_state->getValue('comment'), ['em', 'b', 'strong']),
         );
 
         $update1 = Database::getConnection('external_db', 'external_db')
@@ -268,14 +259,13 @@ class QuickEdit extends FormBase {
                 ->condition($or)
                 ->condition('reference', $id)
                 ->execute();
-            
+
         Cache::invalidateTags(['project_page_view']);
         if (isset($update1) && isset($update2)) {
-            \Drupal::messenger()->addStatus(t('The @doc is recorded. Ref. @r', ['@r' => $id, '@doc' => t('expense')]));
+            \Drupal::messenger()->addStatus(t('The @doc is recorded. Ref. @r', ['@r' => $id, '@doc' => $this->t('expense')]));
         }
 
         $form_state->setRedirect("ek_finance.manage.list_expense", [], ['fragment' => $id]);
-       
     }
 
 }

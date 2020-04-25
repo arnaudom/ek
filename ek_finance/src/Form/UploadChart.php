@@ -27,22 +27,19 @@ class UploadChart extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
         $form['imp'] = array(
             '#type' => 'details',
             '#title' => $this->t('Import'),
-            '#open' => FALSE,
-            
+            '#open' => false,
         );
-        
+
         $company = \Drupal\ek_admin\Access\AccessCheck::CompanyListByUid();
         $form['imp']['coid'] = array(
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#title' => t('company'),
-            '#required' => TRUE,
-            
+            '#title' => $this->t('company'),
+            '#required' => true,
         );
 
         $form['imp']['upload_doc'] = array(
@@ -54,12 +51,12 @@ class UploadChart extends FormBase {
         $form['imp']['actions']['upload'] = array(
             '#id' => 'importbutton',
             '#type' => 'submit',
-            '#value' => t('Import'),
+            '#value' => $this->t('Import'),
         );
 
 
         $alert = "<div id='alert' class='messages messages--warning'>"
-                . t('Import data will erase all current data for selected company.') . "</div>";
+                . $this->t('Import data will erase all current data for selected company.') . "</div>";
 
         $form['imp']['alert'] = array(
             '#type' => 'markup',
@@ -93,18 +90,15 @@ class UploadChart extends FormBase {
         $file = file_save_upload("upload_doc", $validators, $dir, 0, FILE_EXISTS_RENAME);
 
         if ($file) {
-
             $filename = $file->getFileName();
             $uri = \Drupal::service('file_system')->realpath($file->getFileUri());
             $coid = $form_state->getValue('coid');
-            
+
             include_once drupal_get_path('module', 'ek_finance') . '/excel_import_chart.inc';
             \Drupal::messenger()->addStatus(t('imported @n rows from file @f', ['@n' => $row, '@f' => $filename]));
         } else {
             \Drupal::messenger()->addError(t('error copying file'));
         }
-
-        
     }
 
 }

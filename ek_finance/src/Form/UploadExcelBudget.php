@@ -23,22 +23,18 @@ class UploadExcelBudget extends FormBase {
         return 'ek_finance_import_budget';
     }
 
-
     /**
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-        
         $form['imp'] = array(
-                '#type' => 'details',
-                '#title' => $this->t('Import'),
-                '#open' => FALSE,
-            
-            );
-        
+            '#type' => 'details',
+            '#title' => $this->t('Import'),
+            '#open' => false,
+        );
+
         $here = $this->getRouteMatch();
         if ($here->getRouteName() == 'ek_finance_budgeting' && isset($_SESSION['repfilter']['filter'])) {
-        
             $form['imp']['year'] = array(
                 '#type' => 'hidden',
                 '#value' => $_SESSION['repfilter']['year'],
@@ -58,7 +54,7 @@ class UploadExcelBudget extends FormBase {
             $form['imp']['actions']['upload'] = array(
                 '#id' => 'importbutton',
                 '#type' => 'submit',
-                '#value' => t('Import'),
+                '#value' => $this->t('Import'),
                     /*
                       '#ajax' => array(
                       'callback' => array($this, 'saveFile'),
@@ -68,22 +64,21 @@ class UploadExcelBudget extends FormBase {
 
                      */
             );
-            
+
             $alert = "<div id='alert' class='messages messages--warning'>"
-                    . t('Import data will erase all current data for year @y and selected company.', ['@y' => $_SESSION['repfilter']['year']]) . "</div>";
-           
-        } elseif($here->getRouteName() == 'ek_finance_budgeting') {
+                    . $this->t('Import data will erase all current data for year @y and selected company.', ['@y' => $_SESSION['repfilter']['year']]) . "</div>";
+        } elseif ($here->getRouteName() == 'ek_finance_budgeting') {
             $alert = "<div id='alert' class='messages messages--warning'>"
-                    . t('Select company and year before import.') . "</div>";
+                    . $this->t('Select company and year before import.') . "</div>";
         } else {
             
         }
 
         $form['imp']['alert'] = array(
-                '#type' => 'markup',
-                '#markup' => $alert,
-            );
-        
+            '#type' => 'markup',
+            '#markup' => $alert,
+        );
+
         return $form;
 
 
@@ -110,7 +105,6 @@ class UploadExcelBudget extends FormBase {
         $file = file_save_upload("upload_doc", $validators, $dir, 0, FILE_EXISTS_RENAME);
 
         if ($file) {
-
             $filename = $file->getFileName();
             $uri = \Drupal::service('file_system')->realpath($file->getFileUri());
             $coid = $form_state->getValue('coid');
@@ -128,6 +122,5 @@ class UploadExcelBudget extends FormBase {
     public function saveFile(array &$form, FormStateInterface $form_state) {
         
     }
-
 
 }

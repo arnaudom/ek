@@ -33,14 +33,12 @@ class JournalEntry extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-        if (!$id == NULL) {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
+        if (!$id == null) {
             //pull edit data
         }
 
         if ($form_state->get('step') == '') {
-
             $form_state->set('step', 1);
         }
 
@@ -50,17 +48,17 @@ class JournalEntry extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : NULL,
-            '#title' => t('company'),
-            '#disabled' => $form_state->getValue('coid') ? TRUE : FALSE,
-            '#required' => TRUE,
+            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
+            '#title' => $this->t('company'),
+            '#disabled' => $form_state->getValue('coid') ? true : false,
+            '#required' => true,
             '#prefix' => "<div class='container-inline'>",
         );
 
-        if ($form_state->getValue('coid') == NULL) {
+        if ($form_state->getValue('coid') == null) {
             $form['next'] = array(
                 '#type' => 'submit',
-                '#value' => t('Next') . ' >>',
+                '#value' => $this->t('Next') . ' >>',
                 '#states' => array(
                     // Hide data fieldset when class is empty.
                     'invisible' => array(
@@ -77,7 +75,6 @@ class JournalEntry extends FormBase {
         }
 
         if ($form_state->getValue('coid')) {
-
             $form_state->set('step', 2);
 
             if ($form_state->get('num_items') == '') {
@@ -86,16 +83,16 @@ class JournalEntry extends FormBase {
 
             $CurrencyOptions = CurrencyData::listcurrency(1);
             $accountOptions = array('0' => '');
-            $accountOptions += AidList::listaid($form_state->getValue('coid'), array(0,1, 2, 3, 4, 5, 6, 7, 8, 9), 1);
+            $accountOptions += AidList::listaid($form_state->getValue('coid'), array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 1);
 
 
             $form['currency'] = array(
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $CurrencyOptions,
-                '#required' => TRUE,
-                '#default_value' => ($form_state->getValue('currency')) ? $form_state->getValue('currency') : NULL,
-                '#title' => t('Currency'),
+                '#required' => true,
+                '#default_value' => ($form_state->getValue('currency')) ? $form_state->getValue('currency') : null,
+                '#title' => $this->t('Currency'),
                 '#ajax' => array(
                     'callback' => array($this, 'fx_rate'),
                     'wrapper' => 'credit',
@@ -107,9 +104,9 @@ class JournalEntry extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 15,
                 '#maxlength' => 15,
-                '#default_value' => ($form_state->getValue('fx_rate')) ? $form_state->getValue('fx_rate') : NULL,
-                '#required' => FALSE,
-                '#title' => t('Exchange rate'),
+                '#default_value' => ($form_state->getValue('fx_rate')) ? $form_state->getValue('fx_rate') : null,
+                '#required' => false,
+                '#title' => $this->t('Exchange rate'),
                 '#description' => '',
                 '#prefix' => "<div id='credit'>",
                 '#suffix' => '</div></div>',
@@ -118,9 +115,9 @@ class JournalEntry extends FormBase {
             $form["date"] = array(
                 '#type' => 'date',
                 '#size' => 12,
-                '#required' => TRUE,
+                '#required' => true,
                 '#default_value' => ($form_state->getValue("date")) ? $form_state->getValue("date") : date('Y-m-d'),
-                '#title' => t('Record date'),
+                '#title' => $this->t('Record date'),
                 '#prefix' => "",
                 '#suffix' => '',
             );
@@ -144,7 +141,7 @@ class JournalEntry extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $accountOptions,
-                '#default_value' => ($form_state->getValue('d-account1')) ? $form_state->getValue('d-account1') : NULL,
+                '#default_value' => ($form_state->getValue('d-account1')) ? $form_state->getValue('d-account1') : null,
                 '#attributes' => array('style' => array('width:150px;white-space:nowrap')),
                 '#prefix' => "<div class='row'><div class='cell'>",
                 '#suffix' => '</div>',
@@ -156,8 +153,8 @@ class JournalEntry extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 255,
                 '#description' => '',
-                '#default_value' => ($form_state->getValue('debit1')) ? $form_state->getValue('debit1') : NULL,
-                '#attributes' => array('placeholder' => t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                '#default_value' => ($form_state->getValue('debit1')) ? $form_state->getValue('debit1') : null,
+                '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
             );
@@ -168,8 +165,8 @@ class JournalEntry extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 255,
                 '#description' => '',
-                '#default_value' => ($form_state->getValue('credit1')) ? $form_state->getValue('credit1') : NULL,
-                '#attributes' => array('placeholder' => t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                '#default_value' => ($form_state->getValue('credit1')) ? $form_state->getValue('credit1') : null,
+                '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
             );
@@ -178,7 +175,7 @@ class JournalEntry extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $accountOptions,
-                '#default_value' => ($form_state->getValue('c-account')) ? $form_state->getValue('c-account') : NULL,
+                '#default_value' => ($form_state->getValue('c-account')) ? $form_state->getValue('c-account') : null,
                 '#attributes' => array('style' => array('width:150px;white-space:nowrap')),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
@@ -188,8 +185,8 @@ class JournalEntry extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 30,
                 '#maxlength' => 255,
-                '#default_value' => ($form_state->getValue('comment1')) ? $form_state->getValue('comment1') : NULL,
-                '#attributes' => array('placeholder' => t('comment'),),
+                '#default_value' => ($form_state->getValue('comment1')) ? $form_state->getValue('comment1') : null,
+                '#attributes' => array('placeholder' => $this->t('comment'),),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div></div>',
             );
@@ -208,12 +205,11 @@ class JournalEntry extends FormBase {
             }
 
             for ($i = $n; $i <= $max; $i++) {
-
                 $form['items']["d-account$i"] = array(
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $accountOptions,
-                    '#default_value' => ($form_state->getValue("d-account$i")) ? $form_state->getValue("d-account$i") : NULL,
+                    '#default_value' => ($form_state->getValue("d-account$i")) ? $form_state->getValue("d-account$i") : null,
                     '#attributes' => array('style' => array('width:150px;white-space:nowrap')),
                     '#prefix' => "<div class='row'><div class='cell'>",
                     '#suffix' => '</div>',
@@ -225,8 +221,8 @@ class JournalEntry extends FormBase {
                     '#size' => 12,
                     '#maxlength' => 255,
                     '#description' => '',
-                    '#default_value' => ($form_state->getValue("debit$i")) ? $form_state->getValue("debit$i") : NULL,
-                    '#attributes' => array('placeholder' => t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                    '#default_value' => ($form_state->getValue("debit$i")) ? $form_state->getValue("debit$i") : null,
+                    '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div>',
                 );
@@ -237,8 +233,8 @@ class JournalEntry extends FormBase {
                     '#size' => 12,
                     '#maxlength' => 255,
                     '#description' => '',
-                    '#default_value' => ($form_state->getValue("credit$i")) ? $form_state->getValue("credit$i") : NULL,
-                    '#attributes' => array('placeholder' => t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                    '#default_value' => ($form_state->getValue("credit$i")) ? $form_state->getValue("credit$i") : null,
+                    '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div>',
                 );
@@ -247,7 +243,7 @@ class JournalEntry extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $accountOptions,
-                    '#default_value' => ($form_state->getValue("c-account$i")) ? $form_state->getValue("c-account$i") : NULL,
+                    '#default_value' => ($form_state->getValue("c-account$i")) ? $form_state->getValue("c-account$i") : null,
                     '#attributes' => array('style' => array('width:150px;white-space:nowrap')),
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div>',
@@ -257,8 +253,8 @@ class JournalEntry extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 30,
                     '#maxlength' => 255,
-                    '#default_value' => ($form_state->getValue("comment$i")) ? $form_state->getValue("comment$i") : NULL,
-                    '#attributes' => array('placeholder' => t('comment'),),
+                    '#default_value' => ($form_state->getValue("comment$i")) ? $form_state->getValue("comment$i") : null,
+                    '#attributes' => array('placeholder' => $this->t('comment'),),
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div></div>',
                 );
@@ -268,7 +264,7 @@ class JournalEntry extends FormBase {
                 //$totalDT += $form_state->getValue("debit$i");
             }
 
-//loop added rows
+            //loop added rows
 
             if ($form_state->get('totalCT') == $form_state->get('totalDT')) {
                 $style = "";
@@ -276,7 +272,7 @@ class JournalEntry extends FormBase {
                 $style = "delete";
             }
 
-//footer
+            //footer
 
 
             $form['items']["footer1"] = array(
@@ -315,7 +311,7 @@ class JournalEntry extends FormBase {
                 '#value' => $form_state->get('num_items'),
             );
 
-            if (!NULL == $form_state->getValue('confirm_box')) {
+            if (!null == $form_state->getValue('confirm_box')) {
                 $form['confirm'] = array(
                     '#type' => 'checkbox',
                     '#default_value' => 0,
@@ -372,10 +368,10 @@ class JournalEntry extends FormBase {
 
         if ($fx <> 1) {
             $form['fx_rate']['#value'] = $fx;
-            $form['fx_rate']['#required'] = TRUE;
+            $form['fx_rate']['#required'] = true;
             $form['credit']['fx_rate']['#description'] = '';
         } else {
-            $form['fx_rate']['#required'] = False;
+            $form['fx_rate']['#required'] = false;
             $form['fx_rate']['#value'] = 1;
             $form['fx_rate']['#description'] = '';
         }
@@ -387,7 +383,6 @@ class JournalEntry extends FormBase {
      * Callback to add item to form
      */
     public function addForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->get('num_items') == '') {
             $form_state->set('num_items', 2);
         } else {
@@ -413,14 +408,12 @@ class JournalEntry extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == 1) {
             $form_state->setValue('coid', $form_state->getValue('coid'));
             $form_state->setRebuild();
         }
 
         if ($form_state->get('step') == 2) {
-
             if ($form_state->getValue('fx_rate') == '') {
                 $form_state->setErrorByName("fx_rate", $this->t('exchange rate must be indicated'));
             }
@@ -434,13 +427,14 @@ class JournalEntry extends FormBase {
             $accounts = [];
 
             for ($i = 1; $i <= $form_state->getValue('rows'); $i++) {
-
                 $debit = str_replace(',', '', $form_state->getValue("debit$i"));
-                if ($debit == '')
+                if ($debit == '') {
                     $debit = 0;
+                }
                 $credit = str_replace(',', '', $form_state->getValue("credit$i"));
-                if ($credit == '')
+                if ($credit == '') {
                     $credit = 0;
+                }
 
                 if (!is_numeric($debit)) {
                     $form_state->setErrorByName("debit$i", $this->t('input value error'));
@@ -468,7 +462,6 @@ class JournalEntry extends FormBase {
             $form_state->set('totalCT', $totalCT);
 
             if ($totalCT <> $totalDT) {
-
                 $form['items']["footer2"] = array(
                     '#type' => 'item',
                     '#prefix' => "<div class='cell cellborder delete' id='totald'>"
@@ -517,9 +510,6 @@ class JournalEntry extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
-
         if ($form_state->get('step') == 2) {
             $journal = new Journal();
 
@@ -530,8 +520,6 @@ class JournalEntry extends FormBase {
                     ->fetchField();
             $ref++;
             for ($i = 1; $i <= $form_state->getValue('rows'); $i++) {
-
-
                 $debit = str_replace(',', '', $form_state->getValue("debit$i"));
                 if ($debit <> '') {
                     $rec[$i] = $journal->record(
@@ -568,11 +556,11 @@ class JournalEntry extends FormBase {
                 }
             }
 
-            if($journal->credit <> $journal->debit) {
+            if ($journal->credit <> $journal->debit) {
                 $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
-                \Drupal::messenger()->addError(t('Error journal record (@aid)',['@aid' => $msg]));
+                \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }
-            
+
             \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
             $url = Url::fromRoute('ek_finance.manage.journal_edit', array('id' => $rec[1]), array())->toString();
             \Drupal::messenger()->addStatus(t('Data updated. <a href="@url">Edit</a>', ['@url' => $url]));

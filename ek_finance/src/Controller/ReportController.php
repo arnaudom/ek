@@ -21,7 +21,8 @@ use Drupal\ek_admin\CompanySettings;
 /**
  * Controller routines for ek module routes.
  */
-class ReportController extends ControllerBase {
+class ReportController extends ControllerBase
+{
 
     /**
      * The module handler.
@@ -40,7 +41,8 @@ class ReportController extends ControllerBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('form_builder'), $container->get('module_handler')
         );
@@ -54,7 +56,8 @@ class ReportController extends ControllerBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler)
+    {
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
         $this->settings = new FinanceSettings();
@@ -62,63 +65,62 @@ class ReportController extends ControllerBase {
 
     /**
      *  Generate a monthly management report filter by company and year
-     * 
+     *
      * @return array
      *  Render Html
      *
      */
-    public function reporting(Request $request) {
-
+    public function reporting(Request $request)
+    {
         $items = array();
         //The chart structure is as follow
-        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 
+        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
 
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterReporting', 'report');
 
         if (isset($_SESSION['repfilter']['filter']) && $_SESSION['repfilter']['filter'] == 1) {
-
             $coid = $_SESSION['repfilter']['coid'];
             $year = $_SESSION['repfilter']['year'];
             
             $settings = new FinanceSettings();
-                $baseCurrency = $settings->get('baseCurrency');
-                $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
-                if ($settings->get('budgetUnit') == 2) {
-                    $budgetUnit = "'000";
-                    $divide = 1000;
-                } elseif ($settings->get('budgetUnit') == 3) {
-                    $budgetUnit = "'000,000";
-                    $divide = 1000000;
-                } else {
-                    $budgetUnit = '';
-                    $divide = 1;
-                }
+            $baseCurrency = $settings->get('baseCurrency');
+            $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
+            if ($settings->get('budgetUnit') == 2) {
+                $budgetUnit = "'000";
+                $divide = 1000;
+            } elseif ($settings->get('budgetUnit') == 3) {
+                $budgetUnit = "'000,000";
+                $divide = 1000000;
+            } else {
+                $budgetUnit = '';
+                $divide = 1;
+            }
             $items['year'] = $_SESSION['repfilter']['year'];
             $items['baseCurrency'] = $baseCurrency;
             $items['budgetUnit'] = $budgetUnit;
             $items['rounding'] = $rounding;
-            if($coid != 'all') {
+            if ($coid != 'all') {
                 $viewS = 'allocation';
                 $viewE = 'allocation';
-                if($_SESSION['repfilter']['view'] == '1') {
+                if ($_SESSION['repfilter']['view'] == '1') {
                     //actual data view selected
                     $viewS = 'head';
-                    $viewE = 'company';   
+                    $viewE = 'company';
                 } else {
                     //control error
-                    //allocation view may be wrong if aid accounts from allocation source 
+                    //allocation view may be wrong if aid accounts from allocation source
                     //are not active in allocated destination
                     $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
-                     //select all aid accounts that are used in journal from other companies
+                    //select all aid accounts that are used in journal from other companies
                     $or = $query->orConditionGroup();
-                    $or->condition('aid', $chart['cos'] . '%' , 'like');
-                    $or->condition('aid', $chart['expenses'] . '%' , 'like');
-                    $or->condition('aid', $chart['other_expenses'] . '%' , 'like');
-                    $or->condition('aid', $chart['income'] . '%' , 'like');
-                    $or->condition('aid', $chart['other_income'] . '%' , 'like');
+                    $or->condition('aid', $chart['cos'] . '%', 'like');
+                    $or->condition('aid', $chart['expenses'] . '%', 'like');
+                    $or->condition('aid', $chart['other_expenses'] . '%', 'like');
+                    $or->condition('aid', $chart['income'] . '%', 'like');
+                    $or->condition('aid', $chart['other_income'] . '%', 'like');
                     $query->fields('j', ['aid'])
                             ->distinct()
                             ->condition('coid', $coid, '<>')
@@ -126,16 +128,16 @@ class ReportController extends ControllerBase {
                             ->orderBy('aid');
                     $control = $query->execute();
                     $error = [];
-                    while($c = $control->fetchObject()) {
+                    while ($c = $control->fetchObject()) {
                         $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_accounts', 'a');
                         $query->fields('a', ['aid','astatus'])
                                 ->condition('aid', $c->aid, '=')
                                 ->condition('a.coid', $coid, '=');
                         $Obj = $query->execute()->fetchObject();
-                        if((!$Obj && $c->aid != 0) || $Obj->astatus == '0'){
-                           $error[] =  $c->aid;
-                        } 
+                        if ((!$Obj && $c->aid != 0) || $Obj->astatus == '0') {
+                            $error[] =  $c->aid;
+                        }
                     }
                     $items['error'] = $error;
                 }
@@ -143,7 +145,7 @@ class ReportController extends ControllerBase {
                 include_once drupal_get_path('module', 'ek_finance') . '/reporting.inc';
 
                 $param = serialize(
-                        array(
+                    array(
                             'coid' => $coid,
                             'year' => $year,
                             'baseCurrency' => $baseCurrency,
@@ -189,7 +191,7 @@ class ReportController extends ControllerBase {
                                 ->query($query)
                                 ->fetchAllKeyed();
                 $p = serialize(
-                        array(
+                    array(
                             'compilation' => $coid,
                             'year' => $year,
                             'baseCurrency' => $baseCurrency,
@@ -210,31 +212,30 @@ class ReportController extends ControllerBase {
                         'tags' => ['reporting'],
                     ],
                 );
-                
             }
         } else {
             return $items['form'];
         }
-
     }
 
     /**
-     *  Generate a monthly management report in excel format 
+     *  Generate a monthly management report in excel format
      *  filter by company and year
-     * 
+     *
      * @return Object
      *  PhpExcel object download
      *  or markup if error
      *
      */
-    public function excelreporting(Request $request, $param) {
+    public function excelreporting(Request $request, $param)
+    {
         $markup = array();
         //The chart structure is as follow
-        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 
+        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
         $p = unserialize($param);
-        if(isset($p['coid'])){
+        if (isset($p['coid'])) {
             include_once drupal_get_path('module', 'ek_finance') . '/excel_reporting.inc';
         } else {
             include_once drupal_get_path('module', 'ek_finance') . '/excel_reporting_compilation.inc';
@@ -248,17 +249,16 @@ class ReportController extends ControllerBase {
      *      Render Html
      *
      */
-    public function budgeting(Request $request) {
-
+    public function budgeting(Request $request)
+    {
         $items = array();
         //The chart structure is as follow
-        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 
+        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterReporting');
 
         if (isset($_SESSION['repfilter']['filter']) && $_SESSION['repfilter']['filter'] == 1) {
-
             $coid = $_SESSION['repfilter']['coid'];
             $year = $_SESSION['repfilter']['year'];
             $settings = new FinanceSettings();
@@ -274,7 +274,7 @@ class ReportController extends ControllerBase {
             include_once drupal_get_path('module', 'ek_finance') . '/budgeting.inc';
 
             $param = serialize(
-                    array(
+                array(
                         'coid' => $coid,
                         'year' => $year,
                         'baseCurrency' => $baseCurrency,
@@ -305,12 +305,12 @@ class ReportController extends ControllerBase {
     /**
      *  Callback function for budget editing
      *  param = array (reference, value)
-     * 
-     *  @return json response    
+     *
+     *  @return json response
      *
      */
-    public function updatebudget(Request $request) {
-
+    public function updatebudget(Request $request)
+    {
         $reference = $_POST['reference'];
         $value = $_POST['value'];
         str_replace(',', '', $value);
@@ -321,7 +321,7 @@ class ReportController extends ControllerBase {
                     ->key(array('reference' => $reference))
                     ->fields(array('reference' => $reference, 'value_base' => $value))
                     ->execute();
-            return new JsonResponse(array('data' => TRUE));
+            return new JsonResponse(array('data' => true));
         }
     }
 
@@ -329,19 +329,20 @@ class ReportController extends ControllerBase {
      *  file Generate a monthly management report in excel format
      *  @param array $param
      *      serialized array
-     *      Keys: coid (int company id), year (string YYYY), baseCurrency (string code) 
+     *      Keys: coid (int company id), year (string YYYY), baseCurrency (string code)
      *  @return Object
      *      PhpExcel object download
      *      or markup if error
-     *  
+     *
      */
-    public function excelbudgeting($param) {
+    public function excelbudgeting($param)
+    {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
             //The chart structure is as follow
-            // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 
+            // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
             // 'other_liabilities', 'other_income', 'other_expenses'
             $chart = $this->settings->get('chart');
             include_once drupal_get_path('module', 'ek_finance') . '/excel_budgeting.inc';
@@ -351,22 +352,21 @@ class ReportController extends ControllerBase {
 
     /**
      *  profit & loss report for current year and company
-     * 
+     *
      * @return array
      *  render Html
      *
      */
-    public function profitloss(Request $request) {
-
+    public function profitloss(Request $request)
+    {
         $items = array();
         //The chart structure is as follow
-        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 
+        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterBalance');
 
         if (isset($_SESSION['bsfilter']['filter']) && $_SESSION['bsfilter']['filter'] == 1) {
-
             $coid = $_SESSION['bsfilter']['coid'];
             $year = $_SESSION['bsfilter']['year'];
             $month = $_SESSION['bsfilter']['month'];
@@ -376,7 +376,7 @@ class ReportController extends ControllerBase {
             include_once drupal_get_path('module', 'ek_finance') . '/profitloss.inc';
 
             $param = serialize(
-                    array(
+                array(
                         'coid' => $coid,
                         'year' => $year,
                         'month' => $month,
@@ -393,7 +393,6 @@ class ReportController extends ControllerBase {
             $items['post'] = array(
                 '#markup' => "<a href='" . $post . "' >" . t('Start new year') . "</a>",
             );
-
         }
 
 
@@ -408,7 +407,7 @@ class ReportController extends ControllerBase {
 
     /**
      *  Generate a PL report in pdf format
-     * 
+     *
      * @param array
      *  serialized array
      *  Keys: coid (int company id), year (string YYY)
@@ -418,14 +417,15 @@ class ReportController extends ControllerBase {
      *  Pdf object download
      *
      */
-    public function pdfprofitloss(Request $request, $param) {
+    public function pdfprofitloss(Request $request, $param)
+    {
         //output is controlled by pdf.inc where data are extracted
-        //base on document generated      
+        //base on document generated
         $type = 4;
         $markup = array();
         $params = unserialize($param);
         //The chart structure is as follow
-        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 
+        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
         $settings = new CompanySettings($params['coid']);
@@ -438,21 +438,20 @@ class ReportController extends ControllerBase {
 
     /**
      * Generate a balance sheet report
-     * 
+     *
      * @return array
      *  render Html
      */
-    public function balancesheet(Request $request) {
-
+    public function balancesheet(Request $request)
+    {
         $items = array();
         //The chart structure is as follow
-        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 
+        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterBalance');
 
         if (isset($_SESSION['bsfilter']['filter']) && $_SESSION['bsfilter']['filter'] == 1) {
-
             $coid = $_SESSION['bsfilter']['coid'];
             $year = $_SESSION['bsfilter']['year'];
             $month = $_SESSION['bsfilter']['month'];
@@ -462,7 +461,7 @@ class ReportController extends ControllerBase {
             include_once drupal_get_path('module', 'ek_finance') . '/balancesheet.inc';
 
             $param = serialize(
-                    array(
+                array(
                         'coid' => $coid,
                         'year' => $year,
                         'month' => $month,
@@ -476,7 +475,7 @@ class ReportController extends ControllerBase {
                 '#markup' => "<a href='" . $pdf . "' title='" . t('Export to pdf') . "' target='_blank'><span class='ico pdf red'/></a>",
             );
 
-            if (strtotime(date("Y-m-d")) > strtotime($dates["fiscal_year"]) && $dates['archive'] == FALSE ) {
+            if (strtotime(date("Y-m-d")) > strtotime($dates["fiscal_year"]) && $dates['archive'] == false) {
                 $post = Url::fromRoute('ek_finance.admin.new_year', array(), array())->toString();
                 $items['post'] = array(
                     '#markup' => "<a href='" . $post . "' >" . t('Start new year') . "</a>",
@@ -484,7 +483,6 @@ class ReportController extends ControllerBase {
             } else {
                 $items['post'] = '';
             }
-            
         }
 
         return array(
@@ -506,7 +504,8 @@ class ReportController extends ControllerBase {
      * @return Object
      *  Pdf object download
      */
-    public function pdfbalancesheet(Request $request, $param) {
+    public function pdfbalancesheet(Request $request, $param)
+    {
 
         //output is controlled by pdf.inc where data are extracted
         //base on document generated
@@ -514,7 +513,7 @@ class ReportController extends ControllerBase {
         $markup = array();
         $params = unserialize($param);
         //The chart structure is as follow
-        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 
+        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
         $settings = new CompanySettings($params['coid']);
@@ -526,26 +525,25 @@ class ReportController extends ControllerBase {
 
     /**
      *  Generate a cash analysis report
-     * 
+     *
      * @return array
      *  render Html
      *
      */
-    public function cashflow() {
-
+    public function cashflow()
+    {
         $items = array();
-        $amortization = NULL;
+        $amortization = null;
         //The chart structure is as follow
-        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 
+        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterCashflow');
         if ($this->moduleHandler->moduleExists('ek_assets')) {
-            $amortization = TRUE;
+            $amortization = true;
         }
 
         if (isset($_SESSION['cashflowfilter']['filter']) && $_SESSION['cashflowfilter']['filter'] == 1) {
-
             $coid = $_SESSION['cashflowfilter']['coid'];
             $settings = new FinanceSettings();
             $items['baseCurrency'] = $settings->get('baseCurrency');
@@ -554,7 +552,7 @@ class ReportController extends ControllerBase {
             include_once drupal_get_path('module', 'ek_finance') . '/cashflow_statement.inc';
 
             $param = serialize(
-                    array(
+                array(
                         'coid' => $coid,
                         'amortization' => $amortization,
                     )
@@ -582,13 +580,14 @@ class ReportController extends ControllerBase {
      * @param array $param
      *   serialized array
      *  Keys: coid (int company if), amortization (bool)
-     * 
+     *
      * @return Object
      *  PhpExcel object download
-     *  or markup if error 
-     *  
+     *  or markup if error
+     *
      */
-    public function excelcashflow($param) {
+    public function excelcashflow($param)
+    {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
@@ -603,5 +602,4 @@ class ReportController extends ControllerBase {
         }
         return ['#markup' => $markup];
     }
-
 }

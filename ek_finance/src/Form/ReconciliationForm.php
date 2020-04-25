@@ -45,7 +45,7 @@ class ReconciliationForm extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler,EntityStorageInterface $file_storage) {
+    public function __construct(ModuleHandler $module_handler, EntityStorageInterface $file_storage) {
         $this->moduleHandler = $module_handler;
         $this->fileStorage = $file_storage;
         $this->settings = new FinanceSettings();
@@ -57,8 +57,7 @@ class ReconciliationForm extends FormBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler'),
-                $container->get('entity_type.manager')->getStorage('file')
+                $container->get('module_handler'), $container->get('entity_type.manager')->getStorage('file')
         );
     }
 
@@ -73,10 +72,8 @@ class ReconciliationForm extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
         $from = date('Y-m') . '-' . cal_days_in_month(CAL_GREGORIAN, date('m'), date('Y'));
         if ($form_state->get('step') == '') {
-
             $form_state->set('step', 1);
         }
         $company = AccessCheck::CompanyListByUid();
@@ -87,7 +84,7 @@ class ReconciliationForm extends FormBase {
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Filter'),
-            '#open' => TRUE,
+            '#open' => true,
             '#attributes' => array('class' => array('container-inline')),
         );
         $form['filters']['filter'] = array(
@@ -98,7 +95,7 @@ class ReconciliationForm extends FormBase {
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => $from,
-            '#title' => t('date'),
+            '#title' => $this->t('date'),
         );
 
 
@@ -106,8 +103,8 @@ class ReconciliationForm extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#required' => TRUE,
-            '#title' => t('company'),
+            '#required' => true,
+            '#title' => $this->t('company'),
             '#ajax' => array(
                 'callback' => array($this, 'get_accounts'),
                 'wrapper' => 'accounts_',
@@ -115,7 +112,6 @@ class ReconciliationForm extends FormBase {
         );
 
         if ($form_state->getValue('coid')) {
-
             $coid = ($form_state->getValue('coid')) ? $form_state->getValue('coid') : $_SESSION['lfilter']['coid'];
             $list = AidList::listaid($coid, array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 1);
         }
@@ -124,9 +120,9 @@ class ReconciliationForm extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => isset($list) ? $list : array(),
-            '#required' => TRUE,
+            '#required' => true,
             '#default_value' => ($form_state->getValue('account')) ? $form_state->getValue('account') : array(),
-            '#title' => t('account'),
+            '#title' => $this->t('account'),
             //'#attributes' => array('style' => array('width:150px;')),
             '#prefix' => "<div id='accounts_'>",
             '#suffix' => '</div>',
@@ -146,7 +142,6 @@ class ReconciliationForm extends FormBase {
         );
 
         if ($form_state->get('step') == 2) {
-
             $param = serialize(
                     [
                         'account' => $form_state->getValue('account'),
@@ -157,7 +152,7 @@ class ReconciliationForm extends FormBase {
             $xlink = Url::fromRoute('ek_finance_reconciliation_excel', ['param' => $param])->toString();
             $form['excel'] = array(
                 '#type' => 'item',
-                '#markup' => "<a title='" . t('Excel download') . "' href='" . $xlink . "'><span class='ico excel green'/></a>",
+                '#markup' => "<a title='" . $this->t('Excel download') . "' href='" . $xlink . "'><span class='ico excel green'/></a>",
             );
 
             //retreive exchange value when inter accounts transfer with different currencies
@@ -165,7 +160,7 @@ class ReconciliationForm extends FormBase {
             $currencies = CurrencyData::listcurrency(1);
             //verify settings for currency accounts
             $companysettings = new CompanySettings($form_state->getValue('coid'));
-            $account_currency = NULL;
+            $account_currency = null;
             foreach ($currencies as $key => $value) {
 
                 //check cash accounts
@@ -211,7 +206,6 @@ class ReconciliationForm extends FormBase {
             // sum transaction currency
             // remove filter with 'exchange' flag for case where journal has records
             // with internal currency transfers - applies to base currency
-
             //$settings = new FinanceSettings();
             $baseCurrency = $this->settings->get('baseCurrency');
 
@@ -233,7 +227,7 @@ class ReconciliationForm extends FormBase {
                 ':dateopen' => $account->balance_date,
                 ':reco' => 0
             );
-
+            dpm($a);
             $credit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
             $a = array(
                 ':exc' => $exchange,
@@ -250,10 +244,12 @@ class ReconciliationForm extends FormBase {
 
             $debit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
 
-            if ($debit == NULL)
+            if ($debit == null) {
                 $debit = 0;
-            if ($credit == NULL)
+            }
+            if ($credit == null) {
                 $credit = 0;
+            }
             $balance = $account->balance + $credit - $debit;
             if ($balance < 0) {
                 $ab = 'dt';
@@ -284,16 +280,16 @@ class ReconciliationForm extends FormBase {
 
 
 
-// top bar displaying the total
+            // top bar displaying the total
             $form['bar']["debits"] = array(
                 '#type' => 'textfield',
                 '#id' => 'debits',
                 '#title' => t("Debits"),
                 '#title_display' => 'before',
-                '#required' => FALSE,
+                '#required' => false,
                 '#size' => 15,
                 '#default_value' => number_format($debit, 2),
-                '#attributes' => array('title' => t('total debits') . " " . t('from') . " " . $account->balance_date,
+                '#attributes' => array('title' => $this->t('total debits') . " " . $this->t('from') . " " . $account->balance_date,
                     'readonly' => 'readonly',
                     'class' => array('amount')
                 ),
@@ -306,10 +302,10 @@ class ReconciliationForm extends FormBase {
                 '#id' => 'credits',
                 '#title' => t("Credits"),
                 '#title_display' => 'before',
-                '#required' => FALSE,
+                '#required' => false,
                 '#size' => 15,
                 '#default_value' => number_format($credit, 2),
-                '#attributes' => array('title' => t('total credits') . " " . t('from') . " " . $account->balance_date,
+                '#attributes' => array('title' => $this->t('total credits') . " " . $this->t('from') . " " . $account->balance_date,
                     'readonly' => 'readonly',
                     'class' => array('amount')
                 ),
@@ -329,10 +325,10 @@ class ReconciliationForm extends FormBase {
                 '#id' => 'statement',
                 '#title' => t("Statement"),
                 '#title_display' => 'before',
-                '#required' => TRUE,
+                '#required' => true,
                 '#size' => 15,
                 '#default_value' => abs(round($balance, $this->rounding)),
-                '#attributes' => array('title' => t('statement value'),
+                '#attributes' => array('title' => $this->t('statement value'),
                     'class' => array('calculate amount'),
                 ),
                 '#prefix' => '<div class="cell cell150">',
@@ -344,15 +340,15 @@ class ReconciliationForm extends FormBase {
                 '#id' => 'difference',
                 '#title' => t("Difference"),
                 '#title_display' => 'before',
-                '#required' => TRUE,
+                '#required' => true,
                 '#size' => 15,
                 '#default_value' => 0,
-                '#attributes' => array('title' => t('difference between system and balance value'), 'readonly' => 'readonly', 'class' => array('amount')),
+                '#attributes' => array('title' => $this->t('difference between system and balance value'), 'readonly' => 'readonly', 'class' => array('amount')),
                 '#prefix' => '<div class="cell cell150">',
                 '#suffix' => '</div></div></div>',
             );
 
-// listing of journal data
+            // listing of journal data
             $headerline = "<div class='table'>
                   <div class='row'>
                       <div class='cell cell50' id='tour-item1'>" . t("ID") . "</div>
@@ -372,7 +368,7 @@ class ReconciliationForm extends FormBase {
                    ";
 
 
-            $form['items']['#tree'] = TRUE;
+            $form['items']['#tree'] = true;
 
             $form['items']["headerline"] = array(
                 '#type' => 'item',
@@ -381,7 +377,6 @@ class ReconciliationForm extends FormBase {
 
             $i = 0;
             while ($r = $result->fetchObject()) {
-
                 $j = Journal::journalEntryDetails($r->id);
 
                 //Fix a bug to retreive exchange value when inter accounts transfer with different currencies
@@ -412,7 +407,7 @@ class ReconciliationForm extends FormBase {
                 $form['items'][$i]['id'] = array(
                     '#type' => 'item',
                     '#markup' => $r->id,
-                    '#prefix' => "<div class='row'><div class='cell cell50 $back' title='" . t('journal entry') . "'>",
+                    '#prefix' => "<div class='row'><div class='cell cell50 $back' title='" . $this->t('journal entry') . "'>",
                     '#suffix' => '</div>',
                 );
 
@@ -452,7 +447,6 @@ class ReconciliationForm extends FormBase {
                 );
 
                 if ($j['type'] == 'debit') {
-
                     $form['items'][$i]['debit'] = array(
                         '#type' => 'item',
                         '#markup' => number_format($j['value'], 2),
@@ -467,7 +461,6 @@ class ReconciliationForm extends FormBase {
                         '#suffix' => '</div>',
                     );
                 } else {
-
                     $form['items'][$i]['debit'] = array(
                         '#type' => 'item',
                         '#markup' => ' - ',
@@ -521,11 +514,11 @@ class ReconciliationForm extends FormBase {
         }//step 2
 
         $form['#attached'] = [
-            'library' => ['ek_finance/ek_finance.reco_form','ek_admin/ek_admin_css'],
+            'library' => ['ek_finance/ek_finance.reco_form', 'ek_admin/ek_admin_css'],
             'drupalSettings' => ['rounding' => $this->rounding],
         ];
-        
-        
+
+
         return $form;
     }
 
@@ -548,7 +541,6 @@ class ReconciliationForm extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == 1) {
             if ($form_state->getValue('date') > date('Y-m-d')) {
                 $form_state->setErrorByName("date", $this->t('Future date not allowed'));
@@ -556,9 +548,6 @@ class ReconciliationForm extends FormBase {
         }
 
         if ($form_state->get('step') == 2) {
-
-
-
             if ($form_state->getValue('difference') <> 0) {
                 $form_state->setErrorByName("difference", $this->t('Reconciliation discrepancy'));
             }
@@ -566,7 +555,6 @@ class ReconciliationForm extends FormBase {
             $select = 0;
             $items = $form_state->getValue('items');
             for ($i = 0; $i < $form_state->getValue('rows'); $i++) {
-
                 $select += $items[$i]['select' . $i];
             }
 
@@ -578,7 +566,7 @@ class ReconciliationForm extends FormBase {
             $validators = array('file_validate_extensions' => array('png jpg jpeg pdf'));
             $field = "upload_doc";
             // Check for uploaded file.
-            $file = file_save_upload($field, $validators, FALSE, 0);
+            $file = file_save_upload($field, $validators, false, 0);
             if (isset($file)) {
                 // File upload was attempted.
                 if ($file) {
@@ -598,9 +586,7 @@ class ReconciliationForm extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == 2) {
-
             $reco_lines = array();
             $error = 0;
             $reco_lines[0] = array(
@@ -616,9 +602,7 @@ class ReconciliationForm extends FormBase {
 
             $items = $form_state->getValue('items');
             for ($i = 0; $i < $form_state->getValue('rows'); $i++) {
-
                 if ($items[$i]['select' . $i] <> 0) {
-
                     $journal_id = $items[$i]['journal_id'];
 
 
@@ -682,7 +666,7 @@ class ReconciliationForm extends FormBase {
                     $year = explode("-", $j['date']);
 
                     if (is_array($j['comment'])) {
-                        //remove the hyperlink tag 
+                        //remove the hyperlink tag
                         preg_match("'>(.*?)</a>'si", $j['comment']['#markup'], $match);
                         $j['comment'] = $j['reference'] . " - " . $match[1];
                     } else {
@@ -719,7 +703,7 @@ class ReconciliationForm extends FormBase {
                         $error,
                     );
                 }
-            } //for 
+            } //for
             //save report data
 
             if (!$form_state->getValue('upload_doc') == 0) {

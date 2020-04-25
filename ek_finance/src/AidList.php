@@ -6,15 +6,16 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\Core\Database\Database;
 
 /**
- * generate accounts id arrays 
+ * generate accounts id arrays
  *
- * 
+ *
  *  An associative array containing:
  *  - aid aname by coid, class
  *  - class + header list by company /  entity id
- *  
+ *
  */
-class AidList {
+class AidList
+{
 
     /**
      * list accounts id from chart of accounts by class -> detail
@@ -24,8 +25,8 @@ class AidList {
      * @param $type = header, class, detail
      * @param $status 1 or 0
      */
-    public static function listaid($coid = NULL, $type = array(), $status = NULL) {
-
+    public static function listaid($coid = null, $type = array(), $status = null)
+    {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_accounts', 'a');
         $query->fields('a', ['aid', 'aname']);
@@ -33,7 +34,7 @@ class AidList {
         $query->condition('atype', 'class', '=');
         $query->condition('coid', $coid, '=');
 
-        if ($status != NULL) {
+        if ($status != null) {
             $query->condition('astatus', 1, '=');
         }
 
@@ -62,7 +63,7 @@ class AidList {
             $query2->condition('coid', $coid, '=');
             $query2->condition('aid', $class . '%', 'like');
 
-            if ($status != NULL) {
+            if ($status != null) {
                 $query2->condition('astatus', 1, '=');
             }
             $query2->orderBy('aid');
@@ -79,13 +80,13 @@ class AidList {
     }
 
     /**
-     * list accounts id from chart of acounts by header -> class 
+     * list accounts id from chart of acounts by header -> class
      * @param $coid = company / entity id
      * @param $type = header, class, detail
-     * @param $status 1 or 0   
+     * @param $status 1 or 0
      */
-    public static function listclass($coid = NULL, $type = array(), $status = NULL) {
-
+    public static function listclass($coid = null, $type = array(), $status = null)
+    {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_accounts', 'a');
         $query->fields('a', ['aid', 'aname']);
@@ -93,7 +94,7 @@ class AidList {
         $query->condition('atype', 'header', '=');
         $query->condition('coid', $coid, '=');
 
-        if ($status != NULL) {
+        if ($status != null) {
             $query->condition('astatus', 1, '=');
         }
 
@@ -122,7 +123,7 @@ class AidList {
             $query2->condition('coid', $coid, '=');
             $query2->condition('aid', $head . '%', 'like');
 
-            if ($status != NULL) {
+            if ($status != null) {
                 $query2->condition('astatus', 1, '=');
             }
             $query2->orderBy('aid');
@@ -140,31 +141,31 @@ class AidList {
     }
 
     /**
-     * Get aid name 
+     * Get aid name
      * @param $coid = company / entity id
      * @param $aid = account
-     * @Return string  
+     * @Return string
      */
-    public static function aname($coid = NULL, $aid = NULL) {
-        
+    public static function aname($coid = null, $aid = null)
+    {
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_accounts', 'a')
                     ->fields('a', ['aname'])
-                    ->condition('aid',$aid)
-                    ->condition('coid',$coid)
+                    ->condition('aid', $aid)
+                    ->condition('coid', $coid)
                     ->execute();
         return $query->fetchField();
     }
 
     /**
-     * List of all accounts 
+     * List of all accounts
      * @param coid
-     * @return array [coid][aid][aname]  
+     * @return array [coid][aid][aname]
      */
-    public static function chartList($coid = NULL) {
-
+    public static function chartList($coid = null)
+    {
         $list = [];
-        if ($coid == NULL) {
+        if ($coid == null) {
             $query = "SELECT * FROM {ek_accounts} ORDER by coid,aid";
             $data = Database::getConnection('external_db', 'external_db')
                     ->query($query);
@@ -173,11 +174,10 @@ class AidList {
             $data = Database::getConnection('external_db', 'external_db')
                     ->query($query, [':c' => $coid]);
         }
-        While ($d = $data->fetchObject()) {
+        while ($d = $data->fetchObject()) {
             $list[$d->coid][$d->aid] = $d->aname;
         }
 
         return $list;
     }
-
 }

@@ -33,33 +33,32 @@ class NewCurrencyForm extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
         $form['alert'] = array(
             '#type' => 'item',
             '#prefix' => "<div id='alert'></div>",
         );
-        
+
         $form['code'] = array(
             '#type' => 'textfield',
-            '#title' => t('Currency code'),
+            '#title' => $this->t('Currency code'),
             '#size' => 8,
             '#maxlength' => 3,
-            '#required' => TRUE,
+            '#required' => true,
             '#suffix' => '',
         );
 
         $form['name'] = array(
             '#type' => 'textfield',
             '#size' => 30,
-            '#title' => t('Currency name'),
+            '#title' => $this->t('Currency name'),
             '#maxlength' => 100,
-            '#required' => TRUE,
+            '#required' => true,
         );
 
         $form['rate'] = array(
             '#type' => 'textfield',
             '#size' => 8,
-            '#title' => t('Exchange rate'),
+            '#title' => $this->t('Exchange rate'),
             '#maxlength' => 10,
             '#default_value' => 0,
         );
@@ -67,8 +66,8 @@ class NewCurrencyForm extends FormBase {
         $form['active'] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#options' => [0 => t('no'), 1 => t('yes')],
-            '#title' => t('Active'),
+            '#options' => [0 => $this->t('no'), 1 => $this->t('yes')],
+            '#title' => $this->t('Active'),
             '#default_value' => 1,
         );
 
@@ -76,7 +75,7 @@ class NewCurrencyForm extends FormBase {
         $form['actions']['save'] = array(
             '#id' => 'buttonid',
             '#type' => 'submit',
-            '#value' => t('Record'),
+            '#value' => $this->t('Record'),
             '#attributes' => array('class' => array('button--record')),
             '#ajax' => [
                 'callback' => [$this, 'saveForm'],
@@ -87,29 +86,24 @@ class NewCurrencyForm extends FormBase {
     }
 
     public function saveForm(array &$form, FormStateInterface $form_state) {
-
         $error = 0;
         $response = new AjaxResponse();
         if (strlen($form_state->getValue('code')) < 3) {
             $error = 1;
             $command = new ReplaceCommand('#alert', "<div class='messages messages--error'>" . $this->t('Error: code invalid') . "</div>");
             return $response->addCommand($command);
-       
-            
         } else {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_currency', 'c');
             $data = $query
-                        ->fields('c', ['id'])
-                        ->condition('c.currency', $form_state->getValue('code'), '=')
-                        ->execute()->fetchField();
+                            ->fields('c', ['id'])
+                            ->condition('c.currency', $form_state->getValue('code'), '=')
+                            ->execute()->fetchField();
 
             if ($data) {
                 $error = 1;
                 $command = new ReplaceCommand('#alert', "<div class='messages messages--error'>" . $this->t('Error: code exists') . "</div>");
                 return $response->addCommand($command);
-               
-              
             }
         }
 
@@ -117,10 +111,9 @@ class NewCurrencyForm extends FormBase {
             $error = 1;
             $command = new ReplaceCommand('#alert', "<div class='messages messages--error'>" . $this->t('Error: rate invalid') . "</div>");
             return $response->addCommand($command);
-            
         }
-        
-        if($error != 1) {
+
+        if ($error != 1) {
             $name = Xss::filter($form_state->getValue('name'));
 
             $fields = array(
@@ -131,40 +124,33 @@ class NewCurrencyForm extends FormBase {
                 'date' => date('Y-m-d H:i:s')
             );
             $insert = Database::getConnection('external_db', 'external_db')
-                    ->insert('ek_currency')
-                    ->fields($fields)->execute();
-            
-           
-          if (isset($insert)) {
+                            ->insert('ek_currency')
+                            ->fields($fields)->execute();
+
+
+            if (isset($insert)) {
                 \Drupal::messenger()->addStatus(t('Currency @c recorded', ['@c' => strtoupper($form_state->getValue('code'))]));
                 $response = new AjaxResponse();
                 $url = Url::fromRoute('ek_finance.currencies')->toString();
                 $response->addCommand(new RedirectCommand($url));
                 $response->addCommand(new CloseDialogCommand());
                 return $response;
-                
-          }
+            }
         }
-
     }
-    
-    
+
     /**
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
-
+        
     }
 
     /**
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-     
         
     }
-    
-
 
 }

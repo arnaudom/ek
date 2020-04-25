@@ -21,7 +21,8 @@ use Drupal\ek_admin\CompanySettings;
 /**
  * Controller routines for ek module routes.
  */
-class TaxController extends ControllerBase {
+class TaxController extends ControllerBase
+{
 
     /**
      * The module handler.
@@ -40,7 +41,8 @@ class TaxController extends ControllerBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('form_builder'), $container->get('module_handler')
         );
@@ -54,24 +56,24 @@ class TaxController extends ControllerBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler)
+    {
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
     }
 
     /**
-     *  retrieve tax collected and paid per company and period 
+     *  retrieve tax collected and paid per company and period
      * @return array
      *  render Html
      *
      */
-    public function report(Request $request) {
-
+    public function report(Request $request)
+    {
         $items = array();
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterTax');
 
         if (isset($_SESSION['taxfilter']['filter']) && $_SESSION['taxfilter']['filter'] == 1) {
-
             $show = 1;
             $coid = $_SESSION['taxfilter']['coid'];
             $from = $_SESSION['taxfilter']['from'];
@@ -103,7 +105,7 @@ class TaxController extends ControllerBase {
                 include_once drupal_get_path('module', 'ek_finance') . '/taxes.inc';
 
                 $param = serialize(
-                        array(
+                    array(
                             'coid' => $coid,
                             'from' => $from,
                             'to' => $to,
@@ -116,7 +118,7 @@ class TaxController extends ControllerBase {
                             'wtaxd' => $wtaxd,
                         )
                 );
-                if($show == 1) {
+                if ($show == 1) {
                     $excel = Url::fromRoute('ek_finance_tax_excel', array('param' => $param), array())->toString();
                     $items['excel'] = array(
                         '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>",
@@ -127,7 +129,7 @@ class TaxController extends ControllerBase {
                     $items['table_2'] = $table_2;
                 }
                 
-                //verify if localized module is installed and include link to 
+                //verify if localized module is installed and include link to
                 //custom forms
                 $query = "SELECT code, status FROM {ek_country} c INNER JOIN "
                         . "{ek_company} co ON co.country = c.name "
@@ -137,13 +139,12 @@ class TaxController extends ControllerBase {
                         ->fetchObject();
                 
                 $try_module = "ek_finance_" . strtolower($data->code);
-                    if (\Drupal::moduleHandler()->moduleExists($try_module)) {
-                       $local = Url::fromRoute('ek_finance_tax_' . strtolower($data->code), array('param' => $param), array())->toString();
-                       $items['local'] =  array(
+                if (\Drupal::moduleHandler()->moduleExists($try_module)) {
+                    $local = Url::fromRoute('ek_finance_tax_' . strtolower($data->code), array('param' => $param), array())->toString();
+                    $items['local'] =  array(
                             '#markup' => "<a href='" . $local . "'>" . t('Custom tax forms') . "</a>",
                         );
-                    }
-                
+                }
             }
         }
 
@@ -158,7 +159,7 @@ class TaxController extends ControllerBase {
 
     /**
      *  @return file extract tax collected and paid in excel format
-     * 
+     *
      *  @param array $param
      *      serialized array
      *      Keys:   'coid' (int company id), 'from' (string date),
@@ -166,13 +167,14 @@ class TaxController extends ControllerBase {
      *              'stax1' (int account number), 'stax2' (int account number),
      *              'staxc' (int account number),'staxd' (int account number),
      *              'wtaxc' => (int account number), 'wtaxd' (int account number)
-     * 
+     *
      *  @return Object
      *      PhpExcel object download
      *      or markup if error
      */
-    public function exceltax($param) {
-        $markup = array();    
+    public function exceltax($param)
+    {
+        $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
@@ -180,7 +182,6 @@ class TaxController extends ControllerBase {
         }
         return ['#markup' => $markup];
     }
-
 }
 
 //class

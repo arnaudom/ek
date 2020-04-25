@@ -26,7 +26,8 @@ use Drupal\ek_projects\ProjectData;
 /**
  * Controller routines for ek module routes.
  */
-class MemoExpensesController extends ControllerBase {
+class MemoExpensesController extends ControllerBase
+{
 
     /**
      * The module handler.
@@ -45,7 +46,8 @@ class MemoExpensesController extends ControllerBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('form_builder'), $container->get('module_handler')
         );
@@ -57,35 +59,36 @@ class MemoExpensesController extends ControllerBase {
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler service 
+     *   The module handler service
      */
-    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler)
+    {
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
     }
 
     /**
      *  form to create internal memo
-     * 
+     *
      *  @param int $id
      *  memo id
-     * 
+     *
      *  @return Object
      *  form
      *
      */
-    public function createInternalMemo(Request $request, $id) {
+    public function createInternalMemo(Request $request, $id)
+    {
 
         //the attachment are uploded before the main memo form is submitted
         //therefore, a temporary serial ref. is attributed
         //once the main form is submitted, the temporary serial is updated with the permanent serial ref.
-        //a cleanup of temporary file must be done for file uploaded but main form not submitted  
+        //a cleanup of temporary file must be done for file uploaded but main form not submitted
 
         $query = "SELECT id,uri,doc_date FROM {ek_expenses_memo_documents} WHERE serial like :s";
         $list = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => 'temp%'));
 
         while ($l = $list->fetchObject()) {
-
             if ((time() - $l->doc_date) > 60) {
                 unset($l->uri);
                 Database::getConnection('external_db', 'external_db')->delete('ek_expenses_memo_documents')
@@ -94,33 +97,33 @@ class MemoExpensesController extends ControllerBase {
             }
         }
         
-        $clone = ($request->query->get('action') == 'clone') ? TRUE : FALSE;
+        $clone = ($request->query->get('action') == 'clone') ? true : false;
         $tempSerial = 'temp' .  hash('crc32b', \Drupal::currentUser()->getAccountName());
         
-        // filter edition access 
+        // filter edition access
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
         $memo = Database::getConnection('external_db', 'external_db')
                 ->query('SELECT entity, status FROM {ek_expenses_memo} WHERE id=:id AND category<:c ', array(':id' => $id, ':c' => 5))
                 ->fetchObject();
-        if ($id == NULL) {
+        if ($id == null) {
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewMemo', $id, 'internal', $tempSerial, $clone);
         } elseif (((\Drupal::currentUser()->hasPermission('admin_memos') || in_array($memo->entity, $access)) &&  $memo->status == 0)
-                || ($memo->status > 0 && $clone == TRUE)
+                || ($memo->status > 0 && $clone == true)
                 ) {
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewMemo', $id, 'internal', $tempSerial, $clone);
         } else {
-            $url = Url::fromRoute('ek_finance_manage_list_memo_internal', [],[])->toString();
-                $items['type'] = 'access';
-                $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
-                $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
-                $build = [
+            $url = Url::fromRoute('ek_finance_manage_list_memo_internal', [], [])->toString();
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
                     '#attached' => array(
                         'library' => array('ek_admin/ek_admin_css'),
                     ),
                     '#cache' => ['max-age' => 0,],
-                ]; 
+                ];
         }
 
         return $build;
@@ -128,22 +131,21 @@ class MemoExpensesController extends ControllerBase {
 
     /**
      *  form to create personal memo
-     * 
+     *
      *  @param int $id
      *  memo id
-     * 
+     *
      *  @return Object
      *  form
      *
      */
-    public function createPersonalMemo(Request $request, $id) {
-
+    public function createPersonalMemo(Request $request, $id)
+    {
         $query = "SELECT id,uri,doc_date FROM {ek_expenses_memo_documents} WHERE serial like :s";
         $list = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':s' => 'temp%'));
 
         while ($l = $list->fetchObject()) {
-
             if ((time() - $l->doc_date) > 60) {
                 unset($l->uri);
                 Database::getConnection('external_db', 'external_db')->delete('ek_expenses_memo_documents')
@@ -152,33 +154,33 @@ class MemoExpensesController extends ControllerBase {
             }
         }
         $tempSerial = 'temp' .  hash('crc32b', \Drupal::currentUser()->getAccountName());
-        $clone = ($request->query->get('action') == 'clone') ? TRUE : FALSE;
+        $clone = ($request->query->get('action') == 'clone') ? true : false;
 
-        // filter edition access 
+        // filter edition access
         $memo = Database::getConnection('external_db', 'external_db')
                         ->query('SELECT entity,status FROM {ek_expenses_memo} WHERE id=:id AND category=:c ', array(':id' => $id, ':c' => 5))
                         ->fetchObject();
 
-        if ($id == NULL)  {
+        if ($id == null) {
             //edit allowed
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewMemo', $id, 'personal', $tempSerial, $clone);
         } elseif (((\Drupal::currentUser()->hasPermission('admin_memos') || $memo->entity == \Drupal::currentUser()->id()) &&  $memo->status == 0)
-                || ($memo->status > 0 && $clone == TRUE)
-                ){
+                || ($memo->status > 0 && $clone == true)
+                ) {
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewMemo', $id, 'personal', $tempSerial, $clone);
         } else {
-            $url = Url::fromRoute('ek_finance_manage_list_memo_personal', [],[])->toString();
-                $items['type'] = 'access';
-                $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
-                $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
-                $build = [
+            $url = Url::fromRoute('ek_finance_manage_list_memo_personal', [], [])->toString();
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
                     '#attached' => array(
                         'library' => array('ek_admin/ek_admin_css'),
                     ),
                     '#cache' => ['max-age' => 0,],
-                ]; 
+                ];
         }
 
         return $build;
@@ -188,17 +190,18 @@ class MemoExpensesController extends ControllerBase {
      *  Attach image file to any memo
      *  @param int $id
      *  memo id
-     * 
+     *
      *  @return Object
      *  form
      */
-    public function attachMemo($id) {
+    public function attachMemo($id)
+    {
 
-// filter edition access 
-        $memo = FALSE;
+// filter edition access
+        $memo = false;
 
-        if(\Drupal::currentUser()->hasPermission('admin_memos')){
-            $memo = TRUE;
+        if (\Drupal::currentUser()->hasPermission('admin_memos')) {
+            $memo = true;
         } else {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_expenses_memo', 'm');
@@ -206,16 +209,16 @@ class MemoExpensesController extends ControllerBase {
             $query->condition('id', $id);
             $Obj = $query->execute()->fetchObject();
 
-            if($Obj->category < 5){
+            if ($Obj->category < 5) {
                 $route = 'ek_finance_manage_list_memo_internal';
                 $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
                 if (in_array($Obj->entity, $access)) {
-                    $memo = TRUE;
+                    $memo = true;
                 }
             } else {
                 $route = 'ek_finance_manage_list_memo_personal';
                 if ($Obj->entity == \Drupal::currentUser()->id()) {
-                    $memo = TRUE;
+                    $memo = true;
                 }
             }
         }
@@ -224,18 +227,18 @@ class MemoExpensesController extends ControllerBase {
             $tempSerial = 'temp' .  hash('crc32b', \Drupal::currentUser()->getAccountName());
             $build['memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\AttachFileMemo', $id, $tempSerial);
         } else {
-            $url = Url::fromRoute($route, [],[])->toString();
-                $items['type'] = 'access';
-                $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
-                $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
-                $build = [
+            $url = Url::fromRoute($route, [], [])->toString();
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
                     '#attached' => array(
                         'library' => array('ek_admin/ek_admin_css'),
                     ),
                     '#cache' => ['max-age' => 0,],
-                ]; 
+                ];
         }
 
         return $build;
@@ -243,13 +246,12 @@ class MemoExpensesController extends ControllerBase {
 
     /**
      *  build a list of current internal memos filtered
-     * 
-     *  @return array 
+     *
+     *  @return array
      *  rendered html
      */
-    public function listMemoInternal(Request $request) {
-
-
+    public function listMemoInternal(Request $request)
+    {
         $build['filter_imemos'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterMemo', 'internal');
 
         $settings = new FinanceSettings();
@@ -297,26 +299,23 @@ class MemoExpensesController extends ControllerBase {
         $sort = $request->get('sort') ? $request->get('sort') : 'ASC';
         $options = [];
 
-        if (isset($_SESSION['memfilter']['keyword']) && $_SESSION['memfilter']['keyword'] != '' 
+        if (isset($_SESSION['memfilter']['keyword']) && $_SESSION['memfilter']['keyword'] != ''
                 && $_SESSION['memfilter']['keyword'] <> '%') {
-
             $keyword1 = '%' . $_SESSION['memfilter']['keyword'];
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_expenses_memo', 'm');
-                $query->fields('m');
+            $query->fields('m');
                 
-                $or = $query->orConditionGroup();
-                    $or->condition('entity', $access, 'IN');
-                    $or->condition('entity_to', $access, 'IN');
-                    $or->condition('auth', '%|' . \Drupal::currentUser()->id(), 'like');
-                $query->condition('category', 5, '<')
+            $or = $query->orConditionGroup();
+            $or->condition('entity', $access, 'IN');
+            $or->condition('entity_to', $access, 'IN');
+            $or->condition('auth', '%|' . \Drupal::currentUser()->id(), 'like');
+            $query->condition('category', 5, '<')
                         ->condition('serial', $keyword1, 'like')
                         ->condition($or)
-                        ->orderBy($order, $sort);    
-           
+                        ->orderBy($order, $sort);
         } else {
-            
-            if (isset($_SESSION['memfilter']['pcode']) && $_SESSION['memfilter']['pcode'] == 'Any'){
+            if (isset($_SESSION['memfilter']['pcode']) && $_SESSION['memfilter']['pcode'] == 'Any') {
                 $_SESSION['memfilter']['pcode'] = '%';
             }
             
@@ -327,9 +326,9 @@ class MemoExpensesController extends ControllerBase {
                 $query->fields('m');
                 
                 $or = $query->orConditionGroup();
-                    $or->condition('entity', $access, 'IN');
-                    $or->condition('entity_to', $access, 'IN');
-                    $or->condition('auth', '%|' . \Drupal::currentUser()->id(), 'like');
+                $or->condition('entity', $access, 'IN');
+                $or->condition('entity_to', $access, 'IN');
+                $or->condition('auth', '%|' . \Drupal::currentUser()->id(), 'like');
                 $query->condition('category', 5, '<')
                         ->condition('date', $_SESSION['memfilter']['from'], '>=')
                         ->condition('date', $_SESSION['memfilter']['to'], '<=')
@@ -338,17 +337,16 @@ class MemoExpensesController extends ControllerBase {
                         ->condition('pcode', $_SESSION['memfilter']['pcode'], 'like')
                         ->condition('status', $_SESSION['memfilter']['status'], 'like')
                         ->condition($or)
-                        ->orderBy($order, $sort);                
-
+                        ->orderBy($order, $sort);
             } else {
                 $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_expenses_memo', 'm');
                 $query->fields('m');
                 
                 $or = $query->orConditionGroup();
-                    $or->condition('entity', $access, 'IN');
-                    $or->condition('entity_to', $access, 'IN');
-                    $or->condition('auth', '%|' . \Drupal::currentUser()->id(), 'like');
+                $or->condition('entity', $access, 'IN');
+                $or->condition('entity_to', $access, 'IN');
+                $or->condition('auth', '%|' . \Drupal::currentUser()->id(), 'like');
                 $query->condition('category', 5, '<')
                         ->condition('date', date('Y-m') . '-01', '>=')
                         ->condition('date', date('Y-m-d'), '<=')
@@ -446,7 +444,6 @@ class MemoExpensesController extends ControllerBase {
                     'title' => $this->t('Reset'),
                     'url' => Url::fromRoute('ek_finance_manage_reset_pay_memo', ['id' => $r->id]),
                 );
-                
             }
             $links['clone'] = array(
                 'title' => $this->t('Clone'),
@@ -497,12 +494,12 @@ class MemoExpensesController extends ControllerBase {
 
     /**
      *  build list of personal claim
-     * 
-     *  @return array 
+     *
+     *  @return array
      *  rendered html
      */
-    public function listMemoPersonal(Request $request) {
-
+    public function listMemoPersonal(Request $request)
+    {
         $build['filter_imemos'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterMemo', 'personal');
 
         $settings = new FinanceSettings();
@@ -553,29 +550,28 @@ class MemoExpensesController extends ControllerBase {
         $order = $request->get('order') ? $request->get('order') : 'id';
         $sort = $request->get('sort') ? $request->get('sort') : 'ASC';
         $options = [];
-        if (isset($_SESSION['memfilter']['keyword']) && $_SESSION['memfilter']['keyword'] != '' 
+        if (isset($_SESSION['memfilter']['keyword']) && $_SESSION['memfilter']['keyword'] != ''
                 && $_SESSION['memfilter']['keyword'] <> '%') {
-
             $keyword1 = '%' . $_SESSION['memfilter']['keyword'];
-               $query = Database::getConnection('external_db', 'external_db')
+            $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_expenses_memo', 'm');
-                $query->fields('m');
+            $query->fields('m');
                 
  
             
             if (\Drupal::currentUser()->hasPermission('admin_memos')) {
-                    $or = $query->orConditionGroup();
-                    $or->condition('entity', \Drupal::currentUser()->id(), '=');
-                    $or->condition('entity_to', $access, 'IN');
+                $or = $query->orConditionGroup();
+                $or->condition('entity', \Drupal::currentUser()->id(), '=');
+                $or->condition('entity_to', $access, 'IN');
                     
                 $query->condition('category', 5, '=')
                         ->condition('serial', $keyword1, 'like')
                         ->condition($or)
                         ->orderBy($order, $sort);
-                /*
-                $query = "SELECT * from {ek_expenses_memo}  
-                WHERE (entity =:e  OR FIND_IN_SET (entity_to, :coid )) 
-                AND category = :c AND serial like :s";*/
+            /*
+            $query = "SELECT * from {ek_expenses_memo}
+            WHERE (entity =:e  OR FIND_IN_SET (entity_to, :coid ))
+            AND category = :c AND serial like :s";*/
             } else {
                 $query->condition('category', 5, '=')
                         ->condition('serial', $keyword1, 'like')
@@ -583,13 +579,11 @@ class MemoExpensesController extends ControllerBase {
                         ->condition('entity_to', $access, 'IN')
                         ->condition('entity', \Drupal::currentUser()->id(), '=')
                         ->orderBy($order, $sort);
-                
             }
-
-        } elseif(isset($_SESSION['memfilter']['from'])) {
+        } elseif (isset($_SESSION['memfilter']['from'])) {
             //not keyword , filter by tags
             if (isset($_SESSION['memfilter']['pcode']) && $_SESSION['memfilter']['pcode'] == 'Any') {
-                    $_SESSION['memfilter']['pcode'] = '%';
+                $_SESSION['memfilter']['pcode'] = '%';
             }
 
             if (\Drupal::currentUser()->hasPermission('admin_memos')) {
@@ -598,8 +592,8 @@ class MemoExpensesController extends ControllerBase {
                 $query->fields('m');
                 
                 $or = $query->orConditionGroup();
-                    $or->condition('entity', \Drupal::currentUser()->id(), '=');
-                    $or->condition('entity_to', $access, 'IN');
+                $or->condition('entity', \Drupal::currentUser()->id(), '=');
+                $or->condition('entity_to', $access, 'IN');
                 $query->condition('category', 5)
                         ->condition('date', $_SESSION['memfilter']['from'], '>=')
                         ->condition('date', $_SESSION['memfilter']['to'], '<=')
@@ -609,10 +603,8 @@ class MemoExpensesController extends ControllerBase {
                         ->condition('status', $_SESSION['memfilter']['status'], 'like')
                         ->condition($or)
                         ->orderBy($order, $sort);
-                        
             } else {
-                
-               $query = Database::getConnection('external_db', 'external_db')
+                $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_expenses_memo', 'm');
                 $query->fields('m');
                 $query->condition('category', 5)
@@ -624,12 +616,11 @@ class MemoExpensesController extends ControllerBase {
                         ->condition('entity_to', $_SESSION['memfilter']['coid2'], 'like')
                         ->condition('pcode', $_SESSION['memfilter']['pcode'], 'like')
                         ->condition('status', $_SESSION['memfilter']['status'], 'like')
-                        ->condition($or) 
+                        ->condition($or)
                         ->orderBy($order, $sort);
             }
-            
         }
-        if(isset($query)){
+        if (isset($query)) {
             $data = $query->execute();
             $total = 0;
             $row = 0;
@@ -710,7 +701,6 @@ class MemoExpensesController extends ControllerBase {
                     );
                 }
                 if ($r->status == 0) {
-
                     $links['delete'] = array(
                         'title' => $this->t('Delete'),
                         'url' => Url::fromRoute('ek_finance_manage_delete_memo', ['id' => $r->id]),
@@ -738,7 +728,7 @@ class MemoExpensesController extends ControllerBase {
                         'title' => $this->t('Reset'),
                         'url' => Url::fromRoute('ek_finance_manage_reset_pay_memo', ['id' => $r->id]),
                     );
-                }            
+                }
 
                 $options[$row]['operations']['data'] = array(
                     '#type' => 'operations',
@@ -782,16 +772,16 @@ class MemoExpensesController extends ControllerBase {
 
     /**
      *  Record a memo payment by payor
-     * 
+     *
      *  @param int $id
      *  memo id
-     * 
+     *
      *  @return Object
      *  form
      *
      */
-    public function payMemo(Request $request, $id = NULL) {
-
+    public function payMemo(Request $request, $id = null)
+    {
         $query = "SELECT entity_to FROM {ek_expenses_memo} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $id))
@@ -801,7 +791,7 @@ class MemoExpensesController extends ControllerBase {
 
         if (!in_array($data->entity_to, $access)) {
             $del = 0;
-        } elseif (\Drupal::currentUser()->hasPermission('pay_memos') == FALSE) {
+        } elseif (\Drupal::currentUser()->hasPermission('pay_memos') == false) {
             $del = 0;
         }
 
@@ -813,21 +803,22 @@ class MemoExpensesController extends ControllerBase {
         }
     }
 
-   /**
-     *  Record a memo reset payment by payor
-     * 
-     *  @param int $id
-     *  memo id
-     * 
-     *  @return Object
-     *  form
-     *
-     */
-    public function resetPay($id = NULL) {
+    /**
+      *  Record a memo reset payment by payor
+      *
+      *  @param int $id
+      *  memo id
+      *
+      *  @return Object
+      *  form
+      *
+      */
+    public function resetPay($id = null)
+    {
         $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_expenses_memo', 'm')
                             ->fields('m', ['entity_to','status','post'])
-                            ->condition('id', $id , '=');
+                            ->condition('id', $id, '=');
         $data = $query->execute()->fetchObject();
         $del = 1;
         $access = AccessCheck::GetCompanyByUser();
@@ -844,21 +835,20 @@ class MemoExpensesController extends ControllerBase {
         } else {
             return array('#markup' => t('You cannot reset payment for this memo.'));
         }
-        
     }
     
     /**
      *  Record a memo receipt by payee
-     * 
+     *
      *  @param int $id
      *  memo id
-     * 
+     *
      *  @return Object
      *  form
      *
      */
-    public function receiveMemo(Request $request, $id = NULL) {
-
+    public function receiveMemo(Request $request, $id = null)
+    {
         $query = "SELECT entity FROM {ek_expenses_memo} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $id))
@@ -868,7 +858,7 @@ class MemoExpensesController extends ControllerBase {
         /**/
         if (!in_array($data->entity, $access)) {
             $del = 0;
-        } elseif (\Drupal::currentUser()->hasPermission('receive_memos') == FALSE) {
+        } elseif (\Drupal::currentUser()->hasPermission('receive_memos') == false) {
             $del = 0;
         }
 
@@ -882,13 +872,13 @@ class MemoExpensesController extends ControllerBase {
 
     /**
      *  Page to print memo in Pdf and send by email
-     *  @param int $id 
+     *  @param int $id
      *      id of the memo
-     * 
+     *
      *  @return mixed
      */
-    public function printMemo(Request $request, $id = NULL) {
-
+    public function printMemo(Request $request, $id = null)
+    {
         $format = 'pdf';
         $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterPrint', $id, 'expenses_memo', $format);
 
@@ -896,7 +886,7 @@ class MemoExpensesController extends ControllerBase {
             $id = explode('-', $_SESSION['printfilter']['for_id']);
 
             $param = serialize(
-                    array(
+                array(
                         $id[0], //id
                         $id[1], //source
                         $_SESSION['printfilter']['signature'],
@@ -922,22 +912,21 @@ class MemoExpensesController extends ControllerBase {
 
     /**
      *  Print a range of memos per date and company
-     * 
+     *
      *  @param string $category
      *  category of memo set to 'internal' (default)
-     * 
+     *
      *  @return mixed
      *  rendered html
-     *  
+     *
      *
      */
-    public function printMemoRange($category = 'internal') {
+    public function printMemoRange($category = 'internal')
+    {
         $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterPrintRange', $category);
         if ($_SESSION['memrgfilter']['filter'] == 1) {
-
-
             $param = serialize(
-                    array(
+                array(
                         'memo_range',
                     )
             );
@@ -962,28 +951,30 @@ class MemoExpensesController extends ControllerBase {
      *
      * @param array $param
      *  document id int, source string, signature bool,
-     *   stamp bool, template string, mode string 
+     *   stamp bool, template string, mode string
      * @retun mixed
      *  rendered html
-     */    
+     */
     
-    public function printMemoPdf(Request $request, $param) {
+    public function printMemoPdf(Request $request, $param)
+    {
         $markup = array();
         $format = 'pdf';
         include_once drupal_get_path('module', 'ek_finance') . '/manage_print_output.inc';
         return $markup;
     }
 
-    /**     
+    /**
      * display of memo in html format
-     * @param INT $id 
+     * @param INT $id
      *  document id
-     * 
+     *
      * @retun rendered Html
-     *  
+     *
      *
      */
-    public function Html($id) {
+    public function Html($id)
+    {
 
         //filter access to document
         $query = "SELECT `serial`, `category`, `entity`, `entity_to`, `auth` FROM {ek_expenses_memo} "
@@ -1004,18 +995,16 @@ class MemoExpensesController extends ControllerBase {
             }
             //for personal memos
         } else {
-
             $auth = explode("|", $data->auth);
-            if ($data->entity == \Drupal::currentUser()->id() 
-                    || \Drupal::currentUser()->hasPermission('admin_memos') 
+            if ($data->entity == \Drupal::currentUser()->id()
+                    || \Drupal::currentUser()->hasPermission('admin_memos')
                     || $auth[1] == \Drupal::currentUser()->id()) {
                 $flag = 1;//user has access this personal data
                 $edit = 1;
                 
-                if ($data->entity == \Drupal::currentUser()->id() && $auth[0] == 2){
-                   $edit = 0; 
+                if ($data->entity == \Drupal::currentUser()->id() && $auth[0] == 2) {
+                    $edit = 0;
                 }
-                
             }
         }
 
@@ -1025,11 +1014,10 @@ class MemoExpensesController extends ControllerBase {
             $document = '';
 
             if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
-
                 $id = explode('-', $_SESSION['printfilter']['for_id']);
                 $doc_id = $id[0];
                 $param = serialize(
-                        array(
+                    array(
                             $id[0], //id
                             $id[1], //source
                             $_SESSION['printfilter']['signature'],
@@ -1046,7 +1034,7 @@ class MemoExpensesController extends ControllerBase {
                     $url_edit = Url::fromRoute('ek_finance_manage_internal_memo', ['id' => $doc_id], [])->toString();
                 } else {
                     $url = Url::fromRoute('ek_finance_manage_list_memo_personal')->toString();
-                    if($edit == 1) {
+                    if ($edit == 1) {
                         $url_edit = Url::fromRoute('ek_finance_manage_personal_memo', ['id' => $doc_id], [])->toString();
                     }
                 }
@@ -1061,39 +1049,38 @@ class MemoExpensesController extends ControllerBase {
             }
             return array($build);
         } else {
-
             if ($data->category < 5) {
                 $url = Url::fromRoute('ek_finance_manage_list_memo_internal')->toString();
             } else {
                 $url = Url::fromRoute('ek_finance_manage_list_memo_personal')->toString();
             }
             
-                $items['type'] = 'access';
-                $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-                $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
-                $build = [
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
                     '#attached' => array(
                         'library' => array('ek_admin/ek_admin_css'),
                     ),
                     '#cache' => ['max-age' => 0,],
-                ];  
+                ];
             return $build;
         }
     }
 
     /**
-     * delete memo 
-     * 
-     * @param INT $id 
+     * delete memo
+     *
+     * @param INT $id
      *  document id
-     * 
+     *
      * @return Object
      *  form
      */
-    public function deleteMemo(Request $request, $id = NULL) {
-
+    public function deleteMemo(Request $request, $id = null)
+    {
         $build['delete_memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\DeleteMemo', $id);
 
         return $build;
@@ -1102,8 +1089,9 @@ class MemoExpensesController extends ControllerBase {
     /**
      * AJAX callback handler for AjaxTestDialogForm.
      */
-    public function modal($id) {
-        return $this->dialog(TRUE, $id);
+    public function modal($id)
+    {
+        return $this->dialog(true, $id);
     }
 
     /**
@@ -1115,8 +1103,8 @@ class MemoExpensesController extends ControllerBase {
      * @return \Drupal\Core\Ajax\AjaxResponse
      *   An ajax response object.
      */
-    protected function dialog($is_modal = FALSE, $id = NULL) {
-
+    protected function dialog($is_modal = false, $id = null)
+    {
         $query = "SELECT d.id,uri FROM {ek_expenses_memo_documents} d "
                 . " INNER JOIN {ek_expenses_memo} m ON d.serial=m.serial WHERE m.id=:s";
         $attach = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $id));
@@ -1124,7 +1112,6 @@ class MemoExpensesController extends ControllerBase {
         $content = array();
 
         while ($l = $attach->fetchObject()) {
-
             $parts = explode('/', $l->uri);
             $fname = array_pop($parts);
             $markup .= "<li><a href='" . file_create_url($l->uri) . "' target='_blank'>" . $fname . "</a></li>";
@@ -1154,30 +1141,26 @@ class MemoExpensesController extends ControllerBase {
      *   (optional) Null for total transactions, Int for company id
      *
      */
-    public function transactions($id = NULL) {
-
+    public function transactions($id = null)
+    {
         $form = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterTransactions');
 
         if ($_SESSION['transfilter']['filter'] == 1) {
-
             $companyList = AccessCheck::CompanyList(1);
             $companyAccess = AccessCheck::CompanyListByUid();
             $year = $_SESSION['transfilter']['year'];
             $settings = new FinanceSettings();
 
 
-            if ($id == NULL) {
+            if ($id == null) {
                 //display global transactions summary
                 $cross_tbl = array();
                 $due = array();
                 $sum = array();
 
                 foreach ($companyAccess as $coid1 => $name1) {
-
                     foreach ($companyList as $coid2 => $name2) {
-
                         if ($coid1 <> $coid2) {
-
                             $k1 = '_' . $coid2 . '-' . $coid1;
                             $k2 = '_' . $coid1 . '-' . $coid2;
                             //calculate total credit between entities
@@ -1244,12 +1227,11 @@ class MemoExpensesController extends ControllerBase {
                 );
             }//global
             else {
-                //transaction per company 
+                //transaction per company
                 $sumCredit = [];
                 $sumDebit = [];
                 $transactions = array();
                 foreach ($companyAccess as $coid2 => $name2) {
-
                     if ($id != $coid2) {
                         $query = "SELECT id,serial,value_base,pcode,mission,date FROM {ek_expenses_memo} WHERE
                         entity = :id AND
@@ -1314,6 +1296,4 @@ class MemoExpensesController extends ControllerBase {
             return $form;
         }
     }
-
 }
-

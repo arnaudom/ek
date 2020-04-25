@@ -49,7 +49,7 @@ function ek_finance_update_8001() {
         $schema->addField('ek_journal', 'count', $spec);
     }
 
-    return t('Table updated') . ". " . t('Run migration') . ".";
+    return $this->t('Table updated') . ". " . t('Run migration') . ".";
 }
 
 /**
@@ -1230,4 +1230,85 @@ function ek_finance_update_8018() {
  */
 function ek_finance_update_8019() {
     \Drupal::service('router.builder')->rebuild();
+}
+
+
+/**
+ * Create new table
+ */
+function ek_finance_update_8020() {
+ $schema = Database::getConnection('external_db', 'external_db')->schema();
+    if (!$schema->tableExists('ek_address_book_bank')) {
+        $table = [
+            'description' => 'Store address book bank info.',
+            'fields' => [
+                'id' => [
+                    'description' => 'Primary Key: Unique ID',
+                    'type' => 'serial',
+                    'unsigned' => TRUE,
+                    'not null' => TRUE,
+                ],
+                'abid' => [
+                    'description' => 'address book primary ID',
+                    'type' => 'int',
+                    'unsigned' => TRUE,
+                    'not null' => TRUE,
+                ],
+                'name' => [
+                    'description' => 'bank name',
+                    'type' => 'varchar',
+                    'length' => 255,
+                    'not null' => FALSE,
+                ],
+                'address1' => [
+                    'description' => 'address',
+                    'type' => 'varchar',
+                    'length' => 255,
+                    'not null' => FALSE,
+                ],
+                'address2' => [
+                    'description' => 'address',
+                    'type' => 'varchar',
+                    'length' => 255,
+                    'not null' => FALSE,
+                ],
+                'postcode' => [
+                    'description' => 'postcode',
+                    'type' => 'varchar',
+                    'length' => 45,
+                    'not null' => FALSE,
+                ],
+                'country' => [
+                    'description' => 'country',
+                    'type' => 'varchar',
+                    'length' => 45,
+                    'not null' => FALSE,
+                ],
+                'account' => [
+                    'description' => 'account',
+                    'type' => 'varchar',
+                    'length' => 45,
+                    'not null' => FALSE,
+                ],
+                'swift' => [
+                    'description' => 'swift',
+                    'type' => 'varchar',
+                    'length' => 45,
+                    'not null' => FALSE,
+                ],
+                'bank_code' => [
+                    'description' => 'bank_code',
+                    'type' => 'varchar',
+                    'length' => 45,
+                    'not null' => FALSE,
+                ],
+                
+            ],
+            'primary key' => ['id'],
+        ];
+
+        $schema->createTable('ek_address_book_bank', $table);
+
+        return t('New table created');
+    } 
 }

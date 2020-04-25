@@ -18,221 +18,329 @@ use Drupal\ek_finance\FinanceSettings;
  */
 class Currencies extends FormBase {
 
-  
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'ek_manage_currencies';
-  }
-  
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form,  FormStateInterface $form_state, $id = NULL) {
-    
-    $param = serialize(['id' => 'currency']);
-    $url = Url::fromRoute('ek_finance_modal',array('param' => $param));
-    
-    $form['add'] = array(
-                '#type' => 'link', 
-                '#title' => $this->t('New currency'),
-                '#attributes' => ['class' => ['button','use-ajax']],
-                '#url' => $url,     
-           );
-    
-    $settings = new FinanceSettings(); 
-    $baseCurrency = $settings->get('baseCurrency'); 
-
-    $query = "SELECT * from {ek_currency} order by currency";
-    $data = Database::getConnection('external_db', 'external_db')->query($query);
-
-          $form['1'] = array(
-                '#type' => 'details', 
-                '#title' => t('Active'), 
-                '#collapsible' => TRUE, 
-                '#open' => TRUE,
-                '#prefix' => "<div class='table'>",
-            
-           );
- 
-          $form['0'] = array(
-                '#type' => 'details', 
-                '#title' => t('Non Active'), 
-                '#collapsible' => TRUE, 
-                '#open' => FALSE,
-                '#prefix' => "<div class='table'>",
-            
-           );  
-
-    while($r = $data->fetchObject()) {
-    
-    $id = $r->id;
-    if($baseCurrency == $r->currency) {
-    $value = 1;
-    $disabled = TRUE;
-    $description = t('selected base currency');
-    } else {
-    $value = $r->rate;
-    $disabled = FALSE;
-    $description ='';
-    }    
-      if ($r->active == 1) { 
-      
-          $form['1']['id'.$id] = array(
-                '#type' => 'hidden', 
-                '#value' => $r->id , 
-            
-           );           
-
-          $form['1']['currency'.$id] = array(
-              '#type' => 'item',
-              '#markup' => $r->currency,
-              '#prefix' => "<div class='row'><div class='cell100'>",
-              '#suffix' => " </div>",
-
-          );   
-
-      
-          $form['1']['name'.$id] = array(
-                '#type' => 'item',
-                '#markup' => $r->name,
-                '#prefix' => "<div class='cell150'>",
-                '#suffix' => "</div>",            
-           );
-
-          $form['1']['fx'.$id] = array(
-              '#type' => 'textfield',
-              '#size' => 15,
-              '#disabled' => $disabled,
-              '#maxlength' => 30,
-              '#default_value' => $r->rate,
-              '#attributes' => array('placeholder'=>t('rate')),
-              '#description' => $description,
-              '#prefix' => "<div class='cell'>",
-              '#suffix' => "</div>",
-
-          );
-                   
-          $form['1']['active'.$id] = array(
-              '#type' => 'checkbox',
-              '#default_value' => 1,
-              '#prefix' => "<div class='cell'>",
-              '#suffix' => "</div></div>",
-              '#title' => t('active'),
-
-          );              
-      
-      } else {
-      
-          $form['0']['id'.$id] = array(
-                '#type' => 'hidden', 
-                '#value' => $r->id , 
-            
-           );           
-
-          $form['0']['currency'.$id] = array(
-              '#type' => 'item',
-              '#markup' => $r->currency,
-              '#prefix' => "<div class='row'><div class='cell100'>",
-              '#suffix' => " </div>",
-
-          );       
-          $form['0']['name'.$id] = array(
-                '#type' => 'item',
-                '#markup' => $r->name,
-                '#prefix' => "<div class='cell150'>",
-                '#suffix' => "</div>",            
-           );
-  
-
-          $form['0']['fx'.$id] = array(
-              '#type' => 'textfield',
-              '#size' => 15,
-              '#disabled' => $disabled,
-              '#maxlength' => 30,
-              '#default_value' => $r->rate,
-              '#attributes' => array('placeholder'=>t('rate')),
-              '#description' => $description,
-              '#prefix' => "<div class='cell'>",
-              '#suffix' => "</div>",
-
-          );
-                   
-          $form['0']['active'.$id] = array(
-              '#type' => 'checkbox',
-              '#default_value' => 0,
-              '#prefix' => "<div class='cell'>",
-              '#suffix' => "</div></div>",
-              '#title' => t('select to activate'), 
-          );     
-      }
-    
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId() {
+        return 'ek_manage_currencies';
     }
-    
-          $form['1']['close'] = array(
-                '#type' => 'item', 
-                '#markup' =>  '' , 
-                '#suffix' => "</div>",            
-           );
-           
-          $form['0']['close'] = array(
-                '#type' => 'item', 
-                '#markup' =>  '' , 
-                '#suffix' => "</div>",            
-           );
-    
-    $form['actions'] = array('#type' => 'actions');
-    $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
 
-    $form['#attached']['library'][] = 'ek_finance/ek_finance.dialog';
-    
-        return $form;    
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $request = null) {
+        $param = serialize(['id' => 'currency']);
+        $url = Url::fromRoute('ek_finance_modal', array('param' => $param));
 
-  /**
-   * {@inheritdoc}
-   * 
-   */
-  public function validateForm(array &$form,  FormStateInterface $form_state) {
-  
-  
-  }
-  
-  /**
-   * {@inheritdoc}
-   */  
-  public function submitForm(array &$form,  FormStateInterface $form_state) {
-  
-    $query = "SELECT * from {ek_currency}";
-    $data = Database::getConnection('external_db', 'external_db')->query($query);
+        $form['add'] = array(
+            '#type' => 'link',
+            '#title' => $this->t('New currency'),
+            '#attributes' => ['class' => ['button', 'use-ajax']],
+            '#url' => $url,
+        );
 
-    while($r = $data->fetchAssoc()) {
-   
-    $fx = 'fx'.$r['id'];
-    if(is_numeric($form_state->getValue($fx))) {
-        $rate = round($form_state->getValue($fx), 4); 
-    } else {
-        $rate = 0;
+        $settings = new FinanceSettings();
+        $baseCurrency = $settings->get('baseCurrency');
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_currency', 'c')
+                ->fields('c');
+        if(!null == $request->get('sort')) {
+             $query->orderBy($request->get('order'), $request->get('sort'));
+        } else {
+            $query->orderBy('currency');
+        }
+               
+        $data = $query->execute();
+        $this->cur = $data;
+        $header = array(
+                'currency' => array(
+                    'data' => $this->t('Currency'),
+                    'field' => 'code',
+                    'sort' => 'asc',
+                    'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                ),
+                'name' => array(
+                    'data' => $this->t('Name'),
+                ),
+                'rate' => array(
+                    'data' => $this->t('Exchange rate'),
+                ),
+                'active' => $this->t('Active'),
+        );
+
+
+        $form['1'] = array(
+            '#type' => 'details',
+            '#title' => $this->t('Active'),
+            '#collapsible' => true,
+            '#open' => true,
+            //'#prefix' => "<div class='table'>",
+        );
+
+        $form['0'] = array(
+            '#type' => 'details',
+            '#title' => $this->t('Non Active'),
+            '#collapsible' => true,
+            '#open' => false,
+            //'#prefix' => "<div class='table'>",
+        );
+        
+        $form['1']['active-table'] = array(
+                '#tree' => true,
+                '#theme' => 'table',
+                '#header' => $header,
+                '#rows' => array(),
+                '#attributes' => array('id' => 'active-table'),
+                '#empty' => $this->t('No active currency'),
+        );
+        
+        $form['0']['available-table'] = array(
+                '#tree' => true,
+                '#theme' => 'table',
+                '#header' => $header,
+                '#rows' => array(),
+                '#attributes' => array('id' => 'available-table'),
+                '#empty' => $this->t('Available currencies'),
+        );
+        
+        while ($r = $data->fetchObject()) {
+            $id = $r->id;
+            if ($baseCurrency == $r->currency) {
+                $value = 1;
+                $disabled = true;
+                $description = $this->t('selected base currency');
+            } else {
+                $value = $r->rate;
+                $disabled = false;
+                $description = '';
+            }
+            if ($r->active == 1) {
+                $form['id'] = array(
+                    '#type' => 'hidden',
+                    '#value' => $r->id,
+                );
+                
+                $form['currency_'] = array(
+                    '#type' => 'hidden',
+                    '#value' => $r->currency
+                );
+                        
+                $form['fx_'] = array(
+                    '#type' => 'hidden',
+                    '#value' => $r->rate,
+                );
+                $form['active_'] = array(
+                    '#type' => 'hidden',
+                    '#value' => $r->active,
+                );
+
+                $form['currency'] = array(
+                    '#type' => 'item',
+                    '#markup' => $r->currency,
+                );
+
+
+                $form['name'] = array(
+                    '#type' => 'item',
+                    '#markup' => $r->name,
+                );
+
+                $form['fx'] = array(
+                    '#type' => 'textfield',
+                    '#size' => 15,
+                    '#disabled' => $disabled,
+                    '#maxlength' => 30,
+                    '#default_value' => $r->rate,
+                    '#attributes' => array('placeholder' => $this->t('rate')),
+                    '#description' => $description,
+                );
+
+                $form['active'] = array(
+                    '#type' => 'checkbox',
+                    '#default_value' => 1,
+                    '#attributes' => array('title' => $this->t('uncheck to remove')),
+                );
+                
+                
+                $form['1']['active-table'][$id] = array(
+                    'currency' => &$form['currency'],
+                    'name' => &$form['name'],
+                    'rate' => &$form['fx'],
+                    'active' => &$form['active'],
+                    'id' => $form['id'],
+                    'rate_' => &$form['fx_'],
+                    'active_' => &$form['active_'],
+                    'currency_' => &$form['currency_'],
+                );
+
+                $form['1']['active-table']['#rows'][] = array(
+                    'data' => array(
+                        array('data' => &$form['currency']),
+                        array('data' => &$form['name']),
+                        array('data' => &$form['fx']),
+                        array('data' => &$form['active']),
+                    ),
+                    'id' => array($id)
+                );
+
+                unset($form['currency']);
+                unset($form['name']);
+                unset($form['fx']);
+                unset($form['active']);
+                unset($form['id']);
+                unset($form['fx_']);
+                unset($form['active_']);
+                unset($form['currency_']);
+                
+                
+                
+            } else {
+                $form['id'] = array(
+                    '#type' => 'hidden',
+                    '#value' => $r->id,
+                );
+                
+                $form['fx_'] = array(
+                    '#type' => 'hidden',
+                    '#value' => $r->rate,
+                );
+                
+                $form['currency_'] = array(
+                    '#type' => 'hidden',
+                    '#value' => $r->currency,
+                );
+                
+                $form['active_'] = array(
+                    '#type' => 'hidden',
+                    '#value' => $r->active,
+                );
+                
+                $form['currency'] = array(
+                    '#type' => 'item',
+                    '#markup' => $r->currency,
+                );
+                $form['name'] = array(
+                    '#type' => 'item',
+                    '#markup' => $r->name,
+                );
+
+
+                $form['fx'] = array(
+                    '#type' => 'textfield',
+                    '#size' => 15,
+                    '#disabled' => $disabled,
+                    '#maxlength' => 30,
+                    '#default_value' => $r->rate,
+                    '#attributes' => array('placeholder' => $this->t('rate')),
+                    '#description' => $description,
+                );
+
+                $form['active'] = array(
+                    '#type' => 'checkbox',
+                    '#default_value' => 0,
+                    '#attributes' => array('title' => $this->t('select to activate')),
+                );
+                
+                $form['0']['available-table'][$id] = array(
+                    'currency' => &$form['currency'],
+                    'name' => &$form['name'],
+                    'rate' => &$form['fx'],
+                    'active' => &$form['active'],
+                    'id' => $form['id'],
+                    'rate_' => &$form['fx_'],
+                    'active_' => &$form['active_'],
+                    'currency_' => &$form['currency_'],
+                );
+
+                $form['0']['available-table']['#rows'][] = array(
+                    'data' => array(
+                        array('data' => &$form['currency']),
+                        array('data' => &$form['name']),
+                        array('data' => &$form['fx']),
+                        array('data' => &$form['active']),
+                    ),
+                    'id' => array($id)
+                );
+
+                unset($form['currency']);
+                unset($form['name']);
+                unset($form['fx']);
+                unset($form['active']);
+                unset($form['id']);
+                unset($form['fx_']);
+                unset($form['active_']);
+                unset($form['currency_']);
+            }
+        }
+
+        $form['actions'] = array('#type' => 'actions');
+        $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
+
+        $form['#attached']['library'][] = 'ek_finance/ek_finance.dialog';
+
+        return $form;
     }
-    $status = 'active'.$r['id'];
-    
-      $update = Database::getConnection('external_db', 'external_db')->update('ek_currency')
-               ->condition('id', $r['id'])
-               ->fields(array('rate' => $rate , 'active' => $form_state->getValue($status)) )
-               ->execute(); 
-    
 
+    /**
+     * {@inheritdoc}
+     *
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state) {
+        
     }
-    
-    \Drupal::messenger()->addStatus(t('Currency data updated'));
-    if($_SESSION['install'] == 1){
-                unset($_SESSION['install']);
-                $form_state->setRedirect('ek_admin.main');
-    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state) {
+        
+        $update = '';
+        $list = $form_state->getValue('active-table');
+        
+        foreach ($list as $key => $value) {
+            
+            if( $value['rate_'] != $value['rate'] || $value['active_'] != $value['active']) {
           
- 
-  }
-  
-  
+                if (is_numeric($value['rate'])) {
+                    $rate = round($value['rate'], 4);
+                } else {
+                    $rate = 0;
+                }
+
+                Database::getConnection('external_db', 'external_db')->update('ek_currency')
+                        ->condition('id', $key)
+                        ->fields(['rate' => $rate, 'active' => $value['active']])
+                        ->execute();
+                
+                $update .= $value['currency_'] . ' ';
+            }
+        }
+        
+        $list = $form_state->getValue('available-table');
+        
+        foreach ($list as $key => $value) {
+            
+            if( $value['rate_'] != $value['rate'] || $value['active_'] != $value['active']) {
+                if (is_numeric($value['rate'])) {
+                    $rate = round($value['rate'], 4);
+                } else {
+                    $rate = 0;
+                }
+
+                Database::getConnection('external_db', 'external_db')->update('ek_currency')
+                        ->condition('id', $key)
+                        ->fields(['rate' => $rate, 'active' => $value['active']])
+                        ->execute();
+                
+                $update .= $value['currency_'] . ' ';
+            }
+        }
+        
+        \Drupal::messenger()->addStatus( $this->t('Currency updated @c', ['@c' => $update]));
+        if ($_SESSION['install'] == 1) {
+            unset($_SESSION['install']);
+            $form_state->setRedirect('ek_admin.main');
+        } 
+    }
 }

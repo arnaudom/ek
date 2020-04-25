@@ -22,7 +22,8 @@ use Drupal\ek_finance\Journal;
 /**
  * Controller routines for ek module routes.
  */
-class JournalController extends ControllerBase {
+class JournalController extends ControllerBase
+{
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -47,7 +48,8 @@ class JournalController extends ControllerBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -63,7 +65,8 @@ class JournalController extends ControllerBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
+    {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -71,18 +74,18 @@ class JournalController extends ControllerBase {
 
     /**
      *  Display journal entries filter by date and company
-     * 
+     *
      * @return array
      *  render Html
      *
      */
-    public function journal(Request $request) {
-
+    public function journal(Request $request)
+    {
         $items = array();
-        $jid = ($request->query->get('jid')) ? $request->query->get('jid'):NULL;
+        $jid = ($request->query->get('jid')) ? $request->query->get('jid'):null;
         $items['filter_journal'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterJournal', $jid);
         $items['data'] = array();
-        $settings = new \Drupal\ek_finance\FinanceSettings(); 
+        $settings = new \Drupal\ek_finance\FinanceSettings();
         $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
         
         //todo filter by module
@@ -94,34 +97,32 @@ class JournalController extends ControllerBase {
 
 
         if (isset($_SESSION['jfilter']['filter']) && $_SESSION['jfilter']['filter'] == 1) {
-            
-            if(isset( $_SESSION['jfilter']['jid']) &&  $_SESSION['jfilter']['jid'] != "") {
+            if (isset($_SESSION['jfilter']['jid']) &&  $_SESSION['jfilter']['jid'] != "") {
                 //retrieve data by journal id
                 $details = $journal->journalEntryDetails($_SESSION['jfilter']['jid']);
               
-                if($details['id'] == '') {
-                    $items['#markup'] = "<div class='messages messages--warning'>" 
+                if ($details['id'] == '') {
+                    $items['#markup'] = "<div class='messages messages--warning'>"
                              . t('No data available')
                              . '</div>';
-                     return $items;
+                    return $items;
                 }
                 
                 $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
-                 if(in_array($details['coid'], $access)) {
-                     $items['data'] = $journal->data_by_jid($_SESSION['jfilter']['jid']);
-                     $items['rounding'] = $rounding;
-                     return array(
+                if (in_array($details['coid'], $access)) {
+                    $items['data'] = $journal->data_by_jid($_SESSION['jfilter']['jid']);
+                    $items['rounding'] = $rounding;
+                    return array(
                         '#theme' => 'ek_finance_journal_by_id',
                         '#items' => $items,
                         '#attached' => array(
                             'library' => array('ek_finance/ek_finance_css', 'ek_finance/ek_finance.journal','ek_admin/ek_admin_css'),
                         ),
                     );
-                     
-                 } else {
-                     //no access
-                     $query = "SELECT name from {ek_company} WHERE id=:id";
-                     $name = Database::getConnection('external_db', 'external_db')
+                } else {
+                    //no access
+                    $query = "SELECT name from {ek_company} WHERE id=:id";
+                    $name = Database::getConnection('external_db', 'external_db')
                         ->query($query, [':id' => $details['coid']])
                         ->fetchField();
                     
@@ -134,17 +135,15 @@ class JournalController extends ControllerBase {
                             'library' => array('ek_admin/ek_admin_css'),
                         ),
                         '#cache' => ['max-age' => 0,],
-                    ]; 
-                     return $items;
-                 }
-     
-                
-            
+                    ];
+                    return $items;
+                }
             } else {
                 foreach ($folders as $folder) {
                     $data = array();
 
-                    $data[$folder] = $journal->display(array(
+                    $data[$folder] = $journal->display(
+                        array(
                         'date1' => $_SESSION['jfilter']['from'],
                         'date2' => $_SESSION['jfilter']['to'],
                         'company' => $_SESSION['jfilter']['coid'],
@@ -157,7 +156,7 @@ class JournalController extends ControllerBase {
                 }
 
                 $param = serialize(
-                        array(
+                    array(
                             'date1' => $_SESSION['jfilter']['from'],
                             'date2' => $_SESSION['jfilter']['to'],
                             'company' => $_SESSION['jfilter']['coid'],
@@ -183,16 +182,17 @@ class JournalController extends ControllerBase {
 
     /**
      * Extract journal in excel format filter by date and company
-     * 
+     *
      * @param array $param
      *  serialized array
-     *  keys : date1 (string), date2 (string), company (int, company id) 
+     *  keys : date1 (string), date2 (string), company (int, company id)
      * @return Object
      *  PhpExcel object download
      *
      */
-    public function exceljournal($param = NULL) {
-        $markup = array();    
+    public function exceljournal($param = null)
+    {
+        $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
@@ -205,7 +205,7 @@ class JournalController extends ControllerBase {
 
     /**
      * Extract transaction history of given account and period
-     * 
+     *
      * @param array $param
      *  aid = account id
      *  coid = company id
@@ -215,8 +215,8 @@ class JournalController extends ControllerBase {
      *  render Html
      *
      */
-    public function history($param) {
-
+    public function history($param)
+    {
         $journal = new Journal();
         $history = $journal->history($param);
         return array(
@@ -231,7 +231,7 @@ class JournalController extends ControllerBase {
     
     /**
      * Generate audit data for journal data records
-     * 
+     *
      * @param string $audit
      *  the data that is audited
      * @return string - array $param
@@ -239,8 +239,8 @@ class JournalController extends ControllerBase {
      *  render Html
      *
      */
-    public function audit($audit, $param) {
-
+    public function audit($audit, $param)
+    {
         $journal = new Journal();
         switch ($audit) {
             case 'currency':
@@ -262,4 +262,3 @@ class JournalController extends ControllerBase {
         );
     }
 }
-

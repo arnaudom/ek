@@ -22,7 +22,8 @@ use Drupal\ek_finance\Journal;
 /**
  * Controller routines for ek module routes.
  */
-class BalanceTrialController extends ControllerBase {
+class BalanceTrialController extends ControllerBase
+{
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -47,7 +48,8 @@ class BalanceTrialController extends ControllerBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -63,7 +65,8 @@ class BalanceTrialController extends ControllerBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
+    {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -71,19 +74,18 @@ class BalanceTrialController extends ControllerBase {
 
     /**
      *  Finance trial balance by account and date
-     * 
+     *
      *  @return array
      *      rendered Html
      *
      */
-    public function trialbalance(Request $request) {
-
+    public function trialbalance(Request $request)
+    {
         $items['filter_trial'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterTrial');
         $items['data'] = array();
         $journal = new Journal();
 
         if (isset($_SESSION['tfilter']['filter']) && $_SESSION['tfilter']['filter'] == 1) {
-
             $param = array(
                 'coid' => $_SESSION['tfilter']['coid'],
                 'year' => $_SESSION['tfilter']['year'],
@@ -98,15 +100,12 @@ class BalanceTrialController extends ControllerBase {
 
             $items['excel'] = "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>";
             
-            if($items['data']['total']['error1'] == '1') {
+            if ($items['data']['total']['error1'] == '1') {
                 //try to identify balances errors
                 $start = $_SESSION['tfilter']['year'] . '-01-01';
                 $dates = $journal->getFiscalDates($_SESSION['tfilter']['coid'], $_SESSION['tfilter']['year'], $_SESSION['tfilter']['month']);
                 $items['error'] = $journal->traceError(['coid' => $_SESSION['tfilter']['coid'], 'from' => $start, 'to' => $dates['to']]);
-
             }
-            
-            
         }
         return array(
             '#theme' => 'ek_finance_trial',
@@ -119,15 +118,16 @@ class BalanceTrialController extends ControllerBase {
 
     /**
      * Trial balance in excel format
-     * 
+     *
      * @param array
      *  serialized array with keys
      *  coid (int), year (int), month (int), active (bool), null (bool)
      * @return Object
      *  PhpExcel object
      */
-    public function exceltrial($param = NULL) {
-        $markup = array();    
+    public function exceltrial($param = null)
+    {
+        $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
@@ -135,5 +135,4 @@ class BalanceTrialController extends ControllerBase {
         }
         return ['#markup' => $markup];
     }
-
 }

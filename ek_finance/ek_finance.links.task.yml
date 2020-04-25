@@ -128,13 +128,13 @@ ek_finance.task.reconciliation_reports:
 #reporting
 ek_finance.task.reporting:
   route_name: ek_finance_reporting
-  base_route: ek_finance_reporing
+  base_route: ek_finance_reporting
   title: 'Monthly reporting'
   weight: 1
   
 ek_finance.task.budgeting:
   route_name: ek_finance_budgeting
-  base_route: ek_finance_reporing
+  base_route: c
   title: 'Budget'
   weight: 2
   
@@ -151,4 +151,11 @@ ek_finance.task.purchase.ledger:
   route_name: ek_finance.purchase.ledger
   base_route: ek_sales.purchases.list
   title: 'Ledger'
+  weight: 4
+  
+#address book
+ek_finance.task.address_book:
+  route_name: ek_finance.address_book.bank
+  base_route: ek_address_book.view
+  title: 'Bank info'
   weight: 4

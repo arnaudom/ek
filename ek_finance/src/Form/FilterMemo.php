@@ -54,12 +54,11 @@ class FilterMemo extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $category = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $category = null) {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_expenses_memo', 'm');
-        $query->fields('m',['date']);
-        $query->range(0,1);
+        $query->fields('m', ['date']);
+        $query->range(0, 1);
         $query->OrderBy('date', 'DESC');
         $to = $query->execute()->fetchObject();
 
@@ -75,16 +74,15 @@ class FilterMemo extends FormBase {
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Filter'),
-            '#open' => isset($_SESSION['memfilter']['filter']) ? FALSE : TRUE,
+            '#open' => isset($_SESSION['memfilter']['filter']) ? false : true,
         );
-        
-        $coid = array('%' => t('Any'));
+
+        $coid = array('%' => $this->t('Any'));
         $coid += \Drupal\ek_admin\Access\AccessCheck::CompanyListByUid();
 
         if ($category != 'internal') {
-
-            if(\Drupal::currentUser()->hasPermission('admin_memos')) {
-                $entity = array('%' => t('Any'));
+            if (\Drupal::currentUser()->hasPermission('admin_memos')) {
+                $entity = array('%' => $this->t('Any'));
                 $entity += \Drupal\ek_admin\Access\AccessCheck::listUsers();
                 $category = 'personal';
             } else {
@@ -117,8 +115,8 @@ class FilterMemo extends FormBase {
             '#type' => 'textfield',
             '#maxlength' => 100,
             '#size' => 30,
-            '#attributes' => array('placeholder' => t('Search with ref No.')),
-            '#default_value' => isset($_SESSION['memfilter']['keyword']) ? $_SESSION['memfilter']['keyword'] : NULL,
+            '#attributes' => array('placeholder' => $this->t('Search with ref No.')),
+            '#default_value' => isset($_SESSION['memfilter']['keyword']) ? $_SESSION['memfilter']['keyword'] : null,
         );
 
 
@@ -127,11 +125,11 @@ class FilterMemo extends FormBase {
             '#size' => 1,
             '#options' => $entity,
             '#default_value' => isset($_SESSION['memfilter']['coid']) ? $_SESSION['memfilter']['coid'] : '%',
-            '#title' => t('Issuer'),
+            '#title' => $this->t('Issuer'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell cellfloat'>",
             '#suffix' => '</div>',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -141,12 +139,12 @@ class FilterMemo extends FormBase {
             '#size' => 1,
             '#options' => $coid,
             '#default_value' => isset($_SESSION['memfilter']['coid2']) ? $_SESSION['memfilter']['coid2'] : 0,
-            '#title' => t('Payor'),
+            '#title' => $this->t('Payor'),
             '#attributes' => array('style' => array('width:150px;')),
             '#prefix' => "<div class='cell cellfloat'>",
             '#suffix' => '</div></div>',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -158,9 +156,9 @@ class FilterMemo extends FormBase {
             '#default_value' => isset($_SESSION['memfilter']['from']) ? $_SESSION['memfilter']['from'] : $from,
             '#prefix' => "<div class='row'><div class='cell cellfloat'>",
             '#suffix' => '</div>',
-            '#title' => t('from'),
+            '#title' => $this->t('from'),
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -169,11 +167,11 @@ class FilterMemo extends FormBase {
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['memfilter']['to']) ? $_SESSION['memfilter']['to'] : $to,
-            '#title' => t('to'),
+            '#title' => $this->t('to'),
             '#prefix' => "<div class='cell cellfloat'>",
             '#suffix' => '</div></div>',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -181,20 +179,20 @@ class FilterMemo extends FormBase {
 
         $form['filters'][3]['status'] = array(
             '#type' => 'select',
-            '#options' => array('%' => t('Any'), 0 => t('Not paid'), 1 => t('Partial'), 2 => t('Paid')),
+            '#options' => array('%' => $this->t('Any'), 0 => $this->t('Not paid'), 1 => $this->t('Partial'), 2 => $this->t('Paid')),
             '#default_value' => isset($_SESSION['memfilter']['status']) ? $_SESSION['memfilter']['status'] : '%',
-            '#title' => t('status'),
+            '#title' => $this->t('status'),
             '#suffix' => '</div>',
             '#prefix' => "<div class='row'><div class='cell cellfloat'>",
             '#suffix' => '</div>',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
 
         if ($this->moduleHandler->moduleExists('ek_projects')) {
-            $pcode = array('%' => t('Any'));
+            $pcode = array('%' => $this->t('Any'));
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_expenses_memo', 'm');
             $query->fields('m', ['id', 'pcode']);
@@ -209,17 +207,16 @@ class FilterMemo extends FormBase {
                 '#size' => 1,
                 '#options' => array_combine($pcode, $pcode),
                 '#default_value' => isset($_SESSION['memfilter']['pcode']) ? $_SESSION['memfilter']['pcode'] : '%',
-                '#title' => t('project'),
+                '#title' => $this->t('project'),
                 '#attributes' => array('style' => array('width:150px;')),
                 '#prefix' => "<div class='cell cellfloat'>",
                 '#suffix' => '</div></div>',
                 '#states' => array(
-                    'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                    'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                     ),
                 ),
             );
         } else {
-
             $form['filters'][3]['pcode'] = array(
                 '#type' => 'hidden',
                 '#value' => '%',
@@ -255,12 +252,10 @@ class FilterMemo extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if (!$form_state->getValue('keyword') == '') {
             //check input if filter not by keyword
 
             if (!is_numeric($form_state->getValue('keyword'))) {
-
                 $form_state->setErrorByName("keyword", $this->t('Reference must be numeric value.'));
             }
         }
@@ -270,7 +265,6 @@ class FilterMemo extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $_SESSION['memfilter']['category'] = $form_state->getValue('category');
         $_SESSION['memfilter']['from'] = $form_state->getValue('from');
         $_SESSION['memfilter']['to'] = $form_state->getValue('to');

@@ -55,12 +55,11 @@ class BankAccountForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-        if ($id != NULL || $form_state->get('id') != NULL) {
-
-            if ($id == NULL)
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
+        if ($id != null || $form_state->get('id') != null) {
+            if ($id == null) {
                 $id = $form_state->getValue('id');
+            }
             $form_state->set('step', 2);
 
             if ($id > 0) {
@@ -94,17 +93,17 @@ class BankAccountForm extends FormBase {
                     . "WHERE FIND_IN_SET(coid, :c ) ORDER by a.id";
             $list = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $company));
             $options = array();
-            While ($l = $list->fetchObject()) {
+            while ($l = $list->fetchObject()) {
                 $options[$l->id] = $l->account_ref . ' - ' . $l->name;
             }
-            $options['0'] = t('create a new account');
+            $options['0'] = $this->t('create a new account');
 
             $form['id'] = array(
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $options,
-                '#title' => t('Bank account'),
-                '#required' => TRUE,
+                '#title' => $this->t('Bank account'),
+                '#required' => true,
                 '#prefix' => "<div class='container-inline'>",
             );
 
@@ -122,28 +121,27 @@ class BankAccountForm extends FormBase {
         }
 
         if ($form_state->get('step') == 2) {
-
             $back = Url::fromRoute('ek_finance.manage.bank_accounts_manage', array(), array())->toString();
             $table = Url::fromRoute('ek_finance.manage.bank_accounts_list', array(), array())->toString();
 
             $form_state->set('step', 3);
 
             $form["back"] = array(
-                '#markup' => "<a href='" . $back . "' >" . t('select another account') . "</a> " . t('or') . '  ',
+                '#markup' => "<a href='" . $back . "' >" . $this->t('select another account') . "</a> " . $this->t('or') . '  ',
                 '#prefix' => '<div class="container-inline">',
             );
             $form["list"] = array(
-                '#markup' => "<a href='" . $table . "' >" . t('view list') . "</a>",
+                '#markup' => "<a href='" . $table . "' >" . $this->t('view list') . "</a>",
                 '#suffix' => '</div>'
             );
 
             $form['active'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => ['0' => t('inactive'), '1' => t('active')],
-                '#required' => TRUE,
-                '#default_value' => isset($data->active) ? $data->active : NULL,
-                '#title' => t('Active'),
+                '#options' => ['0' => $this->t('inactive'), '1' => $this->t('active')],
+                '#required' => true,
+                '#default_value' => isset($data->active) ? $data->active : null,
+                '#title' => $this->t('Active'),
             );
 
             $form["account_ref"] = array(
@@ -152,8 +150,8 @@ class BankAccountForm extends FormBase {
                 '#default_value' => $data->account_ref,
                 '#maxlength' => 100,
                 '#description' => '',
-                '#required' => TRUE,
-                '#attributes' => array('placeholder' => t('Account No., IBAN')),
+                '#required' => true,
+                '#attributes' => array('placeholder' => $this->t('Account No., IBAN')),
             );
 
             $form["beneficiary"] = array(
@@ -162,16 +160,16 @@ class BankAccountForm extends FormBase {
                 '#default_value' => $data->beneficiary,
                 '#maxlength' => 250,
                 '#description' => '',
-                '#title' => t('Beneficiary'),
+                '#title' => $this->t('Beneficiary'),
             );
 
             $form['currency'] = array(
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => CurrencyData::listcurrency(1),
-                '#required' => TRUE,
-                '#default_value' => isset($data->currency) ? $data->currency : NULL,
-                '#title' => t('Currency'),
+                '#required' => true,
+                '#default_value' => isset($data->currency) ? $data->currency : null,
+                '#title' => $this->t('Currency'),
             );
 
 
@@ -179,9 +177,9 @@ class BankAccountForm extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => BankData::listBank(),
-                '#default_value' => isset($data->bid) ? $data->bid : NULL,
-                '#required' => TRUE,
-                '#title' => t('Bank reference'),
+                '#default_value' => isset($data->bid) ? $data->bid : null,
+                '#required' => true,
+                '#title' => $this->t('Bank reference'),
                 '#attributes' => array('style' => array()),
                 '#ajax' => array(
                     'callback' => array($this, 'aid'),
@@ -189,7 +187,7 @@ class BankAccountForm extends FormBase {
                 ),
             );
 
-            if ($form_state->getValue('bid') != NULL) {
+            if ($form_state->getValue('bid') != null) {
                 $query = "SELECT coid FROM {ek_bank} WHERE id=:id";
                 $coid = Database::getConnection('external_db', 'external_db')
                                 ->query($query, array(':id' => $form_state->getValue('bid')))->fetchField();
@@ -200,7 +198,7 @@ class BankAccountForm extends FormBase {
             $settings = new FinanceSettings();
             $chart = $settings->get('chart');
             if (empty($chart)) {
-                $alert = "<div id='fx' class='messages messages--warning'>" . t('You did not set the accounts chart structure. Go to <a href="@url">settings</a>.', array('@url' => Url::fromRoute('ek_finance.admin.settings', array(), array())->toString())) . "</div>";
+                $alert = "<div id='fx' class='messages messages--warning'>" . $this->t('You did not set the accounts chart structure. Go to <a href="@url">settings</a>.', array('@url' => Url::fromRoute('ek_finance.admin.settings', array(), array())->toString())) . "</div>";
                 $form['alert'] = array(
                     '#type' => 'item',
                     '#weight' => -17,
@@ -211,10 +209,10 @@ class BankAccountForm extends FormBase {
             $form['aid'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#title' => t('Journal reference'),
+                '#title' => $this->t('Journal reference'),
                 '#options' => AidList::listaid($coid, [$chart['assets']], 1),
-                '#required' => TRUE,
-                '#default_value' => isset($data->aid) ? $data->aid : NULL,
+                '#required' => true,
+                '#default_value' => isset($data->aid) ? $data->aid : null,
                 '#prefix' => "<div id='aidwrap' >",
                 '#suffix' => '</div>',
             );
@@ -237,16 +235,14 @@ class BankAccountForm extends FormBase {
      * callback functions
      */
     public function aid(array &$form, FormStateInterface $form_state) {
-
         return $form['aid'];
     }
 
     /**
      * {@inheritdoc}
-     * 
+     *
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == 1) {
             $form_state->set('step', 2);
             $form_state->set('id', $form_state->getValue('id'));
@@ -276,12 +272,10 @@ class BankAccountForm extends FormBase {
 
     /**
      * {@inheritdoc}
-     * 
+     *
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == 3) {
-
             $fields = array(
                 'account_ref' => Xss::filter(trim($form_state->getValue('account_ref'))),
                 'beneficiary' => Xss::filter(trim($form_state->getValue('beneficiary'))),

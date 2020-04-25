@@ -21,7 +21,8 @@ use Drupal\ek_admin\CompanySettings;
 /**
  * Controller routines for ek module routes.
  */
-class YearNewController extends ControllerBase {
+class YearNewController extends ControllerBase
+{
 
     /**
      * The module handler.
@@ -40,7 +41,8 @@ class YearNewController extends ControllerBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('form_builder'), $container->get('module_handler')
         );
@@ -54,7 +56,8 @@ class YearNewController extends ControllerBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler)
+    {
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
     }
@@ -64,11 +67,10 @@ class YearNewController extends ControllerBase {
      *  @return array
      *      form
      */
-    public function newyear(Request $request) {
-
+    public function newyear(Request $request)
+    {
         $build['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\PostNewYear');
 
         return $build;
     }
-
 }

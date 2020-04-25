@@ -6,6 +6,7 @@
  */
 
 namespace Drupal\ek_finance\Plugin\Block;
+
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Access\AccessResult;
@@ -19,45 +20,46 @@ use Drupal\Core\Access\AccessResult;
  *   category = @Translation("Ek Finance block")
  * )
  */
-class ImportExcelChartBlock extends BlockBase {
+class ImportExcelChartBlock extends BlockBase
+{
   
   
 
   /**
    * {@inheritdoc}
    */
-  public function build() {
- 
-  $items = array();
-  $items['#title'] = t("Import chart");
-  $items['content'] = \Drupal::formBuilder()->getForm('Drupal\ek_finance\Form\UploadChart');
+    public function build()
+    {
+        $items = array();
+        $items['#title'] = t("Import chart");
+        $items['content'] = \Drupal::formBuilder()->getForm('Drupal\ek_finance\Form\UploadChart');
 
-  return $items;
-  /*
-  return array(
-    '#items' => $items,
-  );
-  */
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function blockAccess(AccountInterface $account) {
-    if (!$account->isAnonymous() && $account->hasPermission('administrate_finance') ) {
-      return AccessResult::allowed();
+        return $items;
+        /*
+        return array(
+          '#items' => $items,
+        );
+        */
     }
-    return AccessResult::forbidden();
-    
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function blockAccess(AccountInterface $account)
+    {
+        if (!$account->isAnonymous() && $account->hasPermission('administrate_finance')) {
+            return AccessResult::allowed();
+        }
+        return AccessResult::forbidden();
+    }
   
-  /**
-   * {@inheritdoc}
-   *
-   * @todo Make cacheable once https://www.drupal.org/node/2351015 lands.
-   */
-  public function getCacheMaxAge() {
-    return 0;
-  }
- 
+    /**
+     * {@inheritdoc}
+     *
+     * @todo Make cacheable once https://www.drupal.org/node/2351015 lands.
+     */
+    public function getCacheMaxAge()
+    {
+        return 0;
+    }
 }

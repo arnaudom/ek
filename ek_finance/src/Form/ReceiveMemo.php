@@ -3,7 +3,7 @@
 /**
  * @file
  * Contains \Drupal\ek_finance\Form\ReceiveMemo
- * 
+ *
 
  */
 
@@ -43,20 +43,19 @@ class ReceiveMemo extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $data = Database::getConnection('external_db', 'external_db')
                         ->query("SELECT * from {ek_expenses_memo} where id=:id", array(':id' => $id))->fetchObject();
 
 
         $form['ref'] = array(
             '#type' => 'item',
-            '#markup' => t('Memo ref. @p', array('@p' => $data->serial)),
+            '#markup' => $this->t('Memo ref. @p', array('@p' => $data->serial)),
         );
 
         $form['pay'] = array(
             '#type' => 'item',
-            '#markup' => t('Recorded value @p', array('@p' => number_format($data->value, 2) . ' ' . $data->currency)),
+            '#markup' => $this->t('Recorded value @p', array('@p' => number_format($data->value, 2) . ' ' . $data->currency)),
         );
 
 
@@ -69,9 +68,9 @@ class ReceiveMemo extends FormBase {
             '#type' => 'date',
             '#id' => 'edit-from',
             '#size' => 12,
-            '#required' => TRUE,
+            '#required' => true,
             '#default_value' => date('Y-m-d'),
-            '#title' => t('Receive date'),
+            '#title' => $this->t('Receive date'),
         );
 
 
@@ -95,16 +94,16 @@ class ReceiveMemo extends FormBase {
             $cash += array($key => $name);
         }
 
-        $options[(string) t('cash')] = $cash;
-        $options[(string) t('bank')] = BankData::listbankaccountsbyaid($data->entity);
+        $options[(string) $this->t('cash')] = $cash;
+        $options[(string) $this->t('bank')] = BankData::listbankaccountsbyaid($data->entity);
 
         $form['bank_account'] = array(
             '#type' => 'select',
             '#size' => 1,
             '#options' => $options,
-            '#required' => TRUE,
-            '#default_value' => NULL,
-            '#title' => t('Account to be debited'),
+            '#required' => true,
+            '#default_value' => null,
+            '#title' => $this->t('Account to be debited'),
             '#ajax' => array(
                 'callback' => array($this, 'fx_rate'),
                 'wrapper' => 'fx',
@@ -116,8 +115,8 @@ class ReceiveMemo extends FormBase {
             '#size' => 15,
             '#maxlength' => 255,
             '#default_value' => 0,
-            '#required' => TRUE,
-            '#title' => t('Exchange rate'),
+            '#required' => true,
+            '#title' => $this->t('Exchange rate'),
             '#description' => '',
             '#prefix' => "<div id='fx'>",
             '#suffix' => '</div>',
@@ -138,10 +137,10 @@ class ReceiveMemo extends FormBase {
         $form["aid"] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#title' => t('Credit account'),
+            '#title' => $this->t('Credit account'),
             '#options' => $AidOptions,
-            '#required' => TRUE,
-            '#default_value' => NULL,
+            '#required' => true,
+            '#default_value' => null,
             '#attributes' => array('style' => array('width:130px;')),
             '#prefix' => "<div class=''>",
             '#suffix' => '</div>',
@@ -150,11 +149,11 @@ class ReceiveMemo extends FormBase {
         $form["grandtotal"] = array(
             '#type' => 'textfield',
             '#id' => 'grandtotal',
-            '#title' => t('Value'),
+            '#title' => $this->t('Value'),
             '#size' => 25,
             '#maxlength' => 255,
             '#default_value' => $data->amount_paid,
-            '#attributes' => array('placeholder' => t('total'), 'title' => t('value received expressed in debited account currency')),
+            '#attributes' => array('placeholder' => $this->t('total'), 'title' => $this->t('value received expressed in debited account currency')),
             '#prefix' => "<div class=''>",
             '#suffix' => '</div>',
         );
@@ -200,8 +199,7 @@ class ReceiveMemo extends FormBase {
 
 
         if ($baseCurrency != $currency2) {
-
-            $form['debit_fx_rate']['#required'] = TRUE;
+            $form['debit_fx_rate']['#required'] = true;
 
             //$purchase_rate = CurrencyData::rate($currency);
             $pay_rate = CurrencyData::rate($currency2);
@@ -209,17 +207,17 @@ class ReceiveMemo extends FormBase {
                 $form['debit_fx_rate']['#value'] = $pay_rate;
                 $amount = str_replace(',', '', $form_state->getValue('grandtotal'));
                 $credit = round($amount * $pay_rate, 4);
-                $form['debit_fx_rate']['#description'] = t('Estimated amount debited @c @a', array('@c' => $currency2, '@a' => $credit));
-                $form['debit_fx_rate']['#title'] = t('Exchange rate against') . ' ' . $baseCurrency;
+                $form['debit_fx_rate']['#description'] = $this->t('Estimated amount debited @c @a', array('@c' => $currency2, '@a' => $credit));
+                $form['debit_fx_rate']['#title'] = $this->t('Exchange rate against') . ' ' . $baseCurrency;
             } else {
                 $form['debit_fx_rate']['#value'] = 0;
                 $form['debit_debit_fx_rate']['#description'] = '';
             }
         } else {
-            $form['debit_fx_rate']['#required'] = False;
+            $form['debit_fx_rate']['#required'] = false;
             $form['debit_fx_rate']['#value'] = 1;
             $form['debit_fx_rate']['#description'] = '';
-            $form['debit_fx_rate']['#title'] = t('Exchange rate');
+            $form['debit_fx_rate']['#title'] = $this->t('Exchange rate');
         }
 
         return $form['debit_fx_rate'];
@@ -229,7 +227,6 @@ class ReceiveMemo extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->getValue('debit_fx_rate') <= 0 || !is_numeric($form_state->getValue('debit_fx_rate'))) {
             $form_state->setErrorByName("fx_rate", $this->t('the exchange rate value input is wrong'));
         }
@@ -242,7 +239,6 @@ class ReceiveMemo extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $journal = new Journal();
 
         $query = "SELECT * from {ek_expenses_memo} where id=:id";
@@ -279,7 +275,7 @@ class ReceiveMemo extends FormBase {
                     'date' => $form_state->getValue('date'),
                     'value' => $form_state->getValue('grandtotal'),
                     'currency' => $currency,
-                    'comment' => t('Receipt memo') . ' ' . $memo->serial,
+                    'comment' => $this->t('Receipt memo') . ' ' . $memo->serial,
                     'fxRate' => $form_state->getValue('debit_fx_rate'),
                 )
         );
@@ -294,7 +290,7 @@ class ReceiveMemo extends FormBase {
                     'date' => $form_state->getValue('date'),
                     'value' => $form_state->getValue('grandtotal'),
                     'currency' => $currency,
-                    'comment' => t('Receipt memo') . ' ' . $memo->serial,
+                    'comment' => $this->t('Receipt memo') . ' ' . $memo->serial,
                     'fxRate' => $form_state->getValue('debit_fx_rate'),
                 )
         );

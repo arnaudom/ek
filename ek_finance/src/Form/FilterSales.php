@@ -36,16 +36,14 @@ class FilterSales extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-
-        $title = isset($_SESSION['salesledger']['from']) ? t('from') . ': ' . $_SESSION['salesledger']['from'] . ' ' : t('Filter');
-        $title .= isset($_SESSION['salesledger']['to']) ? t('to') . ': ' . $_SESSION['salesledger']['to'] : '';
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
+        $title = isset($_SESSION['salesledger']['from']) ? $this->t('from') . ': ' . $_SESSION['salesledger']['from'] . ' ' : $this->t('Filter');
+        $title .= isset($_SESSION['salesledger']['to']) ? $this->t('to') . ': ' . $_SESSION['salesledger']['to'] : '';
 
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $title,
-            '#open' => isset($_SESSION['postransfilter']['filter']) ? FALSE : TRUE,
+            '#open' => isset($_SESSION['postransfilter']['filter']) ? false : true,
         );
 
 
@@ -66,7 +64,7 @@ class FilterSales extends FormBase {
                 '#size' => 1,
                 '#options' => $coid,
                 '#default_value' => isset($_SESSION['salesledger']['coid']) ? $_SESSION['salesledger']['coid'] : 0,
-                '#title' => t('company'),
+                '#title' => $this->t('company'),
             );
         } else {
             $form['filters'][1]['coid'] = array(
@@ -79,7 +77,7 @@ class FilterSales extends FormBase {
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['salesledger']['from']) ? $_SESSION['salesledger']['from'] : date('Y-m') . "-01",
-            '#title' => t('from'),
+            '#title' => $this->t('from'),
             '#prefix' => "<div class='container-inline'>"
         );
 
@@ -87,13 +85,13 @@ class FilterSales extends FormBase {
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['salesledger']['to']) ? $_SESSION['salesledger']['to'] : date('Y-m-d'),
-            '#title' => t('to'),
+            '#title' => $this->t('to'),
             '#suffix' => '</div>'
         );
 
 
         if ($id == 'purchase') {
-            $supplier = array('%' => t('All'));
+            $supplier = array('%' => $this->t('All'));
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'ab');
             $query->fields('ab', ['id', 'name']);
@@ -102,10 +100,10 @@ class FilterSales extends FormBase {
             $query->orderBy('name');
             $supplier += $query->execute()->fetchAllKeyed();
             /*
-            $supplier += Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT DISTINCT ab.id,name FROM {ek_address_book} ab "
-                            . "INNER JOIN {ek_sales_purchase} p ON p.client = ab.id order by name")
-                    ->fetchAllKeyed();*/
+              $supplier += Database::getConnection('external_db', 'external_db')
+              ->query("SELECT DISTINCT ab.id,name FROM {ek_address_book} ab "
+              . "INNER JOIN {ek_sales_purchase} p ON p.client = ab.id order by name")
+              ->fetchAllKeyed(); */
 
 
             $form['filters'][3]['client'] = array(
@@ -113,11 +111,11 @@ class FilterSales extends FormBase {
                 '#size' => 1,
                 '#options' => $supplier,
                 '#default_value' => isset($_SESSION['salesledger']['client']) ? $_SESSION['salesledger']['client'] : '%',
-                '#title' => t('supplier'),
+                '#title' => $this->t('supplier'),
                 '#attributes' => array('style' => array('width:200px;')),
             );
         } else {
-            $client = array('%' => t('All'));
+            $client = array('%' => $this->t('All'));
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'ab');
             $query->fields('ab', ['id', 'name']);
@@ -126,17 +124,17 @@ class FilterSales extends FormBase {
             $query->orderBy('name');
             $client += $query->execute()->fetchAllKeyed();
             /*
-            $client += Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT DISTINCT ab.id,name FROM {ek_address_book} ab "
-                            . "INNER JOIN {ek_sales_invoice} i ON i.client = ab.id order by name")
-                    ->fetchAllKeyed();*/
+              $client += Database::getConnection('external_db', 'external_db')
+              ->query("SELECT DISTINCT ab.id,name FROM {ek_address_book} ab "
+              . "INNER JOIN {ek_sales_invoice} i ON i.client = ab.id order by name")
+              ->fetchAllKeyed(); */
 
             $form['filters'][3]['client'] = array(
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $client,
                 '#default_value' => isset($_SESSION['salesledger']['client']) ? $_SESSION['salesledger']['client'] : '%',
-                '#title' => t('client'),
+                '#title' => $this->t('client'),
                 '#attributes' => array('style' => array('width:200px;')),
             );
         }
@@ -167,12 +165,10 @@ class FilterSales extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
-        if (Null == $form_state->getValue('coid') ) {
+        if (null == $form_state->getValue('coid')) {
             $form_state->setErrorByName("coid", $this->t('No company selected'));
         }
         if ($form_state->getValue('to') < $form_state->getValue('from')) {
-
             $form_state->setErrorByName("to", $this->t('Error dates range'));
         }
     }
@@ -181,7 +177,6 @@ class FilterSales extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $_SESSION['salesledger']['from'] = $form_state->getValue('from');
         $_SESSION['salesledger']['to'] = $form_state->getValue('to');
         $_SESSION['salesledger']['coid'] = $form_state->getValue('coid');

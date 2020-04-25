@@ -494,7 +494,14 @@ ek_finance.manage.bank_account_delete:
   requirements:
     _permission: 'delete_bank' 
     id: \d*   
-    
+
+ek_finance.address_book.bank:
+  path: '/address-book-bank/{abid}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\BankController::addressBook'
+  requirements:
+    _permission: 'view_address_book' 
+    abid: \d* 
            
 #memos
 ek_finance_manage_internal_memo:
@@ -523,7 +530,6 @@ ek_finance_manage_personal_memo:
     id: NULL
   requirements:
     _permission: 'edit_claim_memos' 
-    
        
 ek_finance_manage_list_memo_internal:
   path: '/finance/list-memo/internal'

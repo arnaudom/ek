@@ -21,7 +21,8 @@ use Drupal\Core\Routing\RouteMatchInterface;
 /**
  * Controller routines for ek module routes.
  */
-class BalanceLedgerController extends ControllerBase {
+class BalanceLedgerController extends ControllerBase
+{
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -46,7 +47,8 @@ class BalanceLedgerController extends ControllerBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -62,7 +64,8 @@ class BalanceLedgerController extends ControllerBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
+    {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -70,22 +73,21 @@ class BalanceLedgerController extends ControllerBase {
 
     /**
      *  Finance ledger by account and date
-     * 
+     *
      *  @return array
      *      rendered Html
      *
      */
-    public function ledgerbalance(Request $request) {
-
+    public function ledgerbalance(Request $request)
+    {
         $items['filter_ledger'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterLedger');
         $items['data'] = array();
         $journal = new Journal();
-        $settings = new \Drupal\ek_finance\FinanceSettings(); 
+        $settings = new \Drupal\ek_finance\FinanceSettings();
         $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
 
 
         if (isset($_SESSION['lfilter']['filter']) && $_SESSION['lfilter']['filter'] == 1) {
-
             $param = array(
                 'coid' => $_SESSION['lfilter']['coid'],
                 'aid1' => $_SESSION['lfilter']['account_from'],
@@ -98,11 +100,10 @@ class BalanceLedgerController extends ControllerBase {
 
             $items['data'] = $journal->ledger($param);
             $items['rounding'] = $rounding;
-            if($items['data']['archive'] != 2){
+            if ($items['data']['archive'] != 2) {
                 $excel = Url::fromRoute('ek_finance.extract.excel-ledger', array('param' => serialize($param)), array())->toString();
-                $items['excel'] = "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>"; 
+                $items['excel'] = "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>";
             }
-            
         }
 
         return array(
@@ -115,23 +116,23 @@ class BalanceLedgerController extends ControllerBase {
 
     /**
      * Finance ledger by account and date in excel format
-     * 
+     *
      * @param array $param
      *  array of exctration filters
      *  for 'accounts'
-     *  int coid, int aid1, int aid2, string date1, 
+     *  int coid, int aid1, int aid2, string date1,
      *  string date2, string type (accounts)
-     * 
+     *
      *  for 'sales'
      *  int coid, array references (array of client's id),
-     *  int source1 ('purchase|invoice'), int source2 ('payment|receipt'), 
+     *  int source1 ('purchase|invoice'), int source2 ('payment|receipt'),
      *  string date1, string date2,string type ('sales')
-     * 
+     *
      * @return Object
      *  PhpExcel object
      */
-    public function excelledger($param = NULL) {
-
+    public function excelledger($param = null)
+    {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
@@ -157,8 +158,8 @@ class BalanceLedgerController extends ControllerBase {
      *      supplier|client
      *  @return array html display
      */
-    public function sales(RouteMatchInterface $route_match, Request $request) {
-
+    public function sales(RouteMatchInterface $route_match, Request $request)
+    {
         $path = $route_match->getRouteObject()->getPath();
 
         $path = explode('/', $path);
@@ -166,16 +167,15 @@ class BalanceLedgerController extends ControllerBase {
         $items = [];
 
         if (isset($_SESSION['salesledger']['route']) && $_SESSION['salesledger']['route'] != $id) {
-            $_SESSION['salesledger']['client'] = NULL;
+            $_SESSION['salesledger']['client'] = null;
             $_SESSION['salesledger']['filter'] = 0;
         }
 
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterSales', $id);
 
         if (isset($_SESSION['salesledger']['filter']) && $_SESSION['salesledger']['filter'] == 1) {
-
             $journal = new Journal();
-            $settings = new \Drupal\ek_finance\FinanceSettings(); 
+            $settings = new \Drupal\ek_finance\FinanceSettings();
             $items['rounding'] = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
 
             if ($id == 'purchase') {
@@ -192,7 +192,7 @@ class BalanceLedgerController extends ControllerBase {
                     $query->innerJoin('ek_sales_purchase', 'p', 'ab.id = p.client');
                     $query->orderBy('ab.name', 'ASC');
                     $data = $query->execute()->fetchCol();
-                    $clients = array_unique($data); 
+                    $clients = array_unique($data);
                 } else {
                     $clients = [0 => $_SESSION['salesledger']['client']];
                 }
@@ -210,8 +210,7 @@ class BalanceLedgerController extends ControllerBase {
                     $query->innerJoin('ek_sales_invoice', 'i', 'ab.id = i.client');
                     $query->orderBy('ab.name', 'ASC');
                     $data = $query->execute()->fetchCol();
-                    $clients = array_unique($data); 
-                    
+                    $clients = array_unique($data);
                 } else {
                     $clients = [0 => $_SESSION['salesledger']['client']];
                 }
@@ -237,7 +236,6 @@ class BalanceLedgerController extends ControllerBase {
                 $row['client_name'] = $items['book'][$clientId];
 
                 if (!empty($ids)) {
- 
                     $param = [
                         'coid' => $_SESSION['salesledger']['coid'],
                         'references' => $ids,
@@ -252,10 +250,7 @@ class BalanceLedgerController extends ControllerBase {
                     $row['journal'] = $journal->salesledger($param);
                     
                     $items['data'][] = $row;
-                
                 }
-                
-                
             }
 
             $param['type'] = 'sales';
@@ -278,5 +273,4 @@ class BalanceLedgerController extends ControllerBase {
             return $items['form'];
         }
     }
-
 }
