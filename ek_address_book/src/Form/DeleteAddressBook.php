@@ -18,21 +18,22 @@ use Drupal\ek_admin\Access\AccessCheck;
 /**
  * Provides a form to delete address book main entry.
  */
-class DeleteAddressBook extends FormBase {
+class DeleteAddressBook extends FormBase
+{
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_address_book_delete_';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $abid = NULL) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state, $abid = null)
+    {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_address_book', 'ab');
         $query->fields('ab', ['name', 'type']);
@@ -40,7 +41,7 @@ class DeleteAddressBook extends FormBase {
         $data = $query->execute()->fetchObject();
 
 
-        $types = [1 => t('client'), 2 => t('supplier'), 3 => t('other')];
+        $types = [1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other')];
         $form['delete'] = array(
             '#type' => 'item',
             '#markup' => '<h2>' . $data->name . ' (' . $types[$data->type] . ')</h2>',
@@ -62,17 +63,15 @@ class DeleteAddressBook extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-        
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
-       
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         $delete = Database::getConnection('external_db', 'external_db')
                 ->delete('ek_address_book')
                 ->condition('id', $form_state->getValue('abid'))
@@ -93,5 +92,4 @@ class DeleteAddressBook extends FormBase {
             $form_state->setRedirect("ek_address_book.search");
         }
     }
-
 }

@@ -14,28 +14,28 @@ use Drupal\Core\Database\Database;
 /**
  * Provides a new address book contact form.
  */
-class NewAddressBookCardForm extends FormBase {
+class NewAddressBookCardForm extends FormBase
+{
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_edit_address_book_card_form';
     }
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $abid = NULL) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state, $abid = null)
+    {
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => '<a href="' . $_SERVER['HTTP_REFERER'] . '" >' . t('Back to address book') . '</a>',
+            '#markup' => '<a href="' . $_SERVER['HTTP_REFERER'] . '" >' . $this->t('Back to address book') . '</a>',
         );
 
 
         if (isset($abid)) {
-
             $form['for_id'] = array(
                 '#type' => 'hidden',
                 '#default_value' => $abid,
@@ -46,8 +46,8 @@ class NewAddressBookCardForm extends FormBase {
         $form['copy'] = array(
             '#type' => 'details',
             '#title' => $this->t('Copy existing card'),
-            '#collapsible' => TRUE,
-            '#open' => TRUE,
+            '#collapsible' => true,
+            '#open' => true,
         );
 
         $form['copy']['names'] = array(
@@ -60,22 +60,22 @@ class NewAddressBookCardForm extends FormBase {
             ),
         );
         
-        $salutation = array('-', t('Mr.'), t('Mrs.'), t('Miss.'));
+        $salutation = array('-', $this->t('Mr.'), $this->t('Mrs.'), $this->t('Miss.'));
        
         if ($vocabulary = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadTree('salutation', 0, 1)) {
             foreach ($vocabulary as $item) {
                 array_push($salutation, $item->name);
             }
-        } 
-    // @TODO keep this format for future 'add card option' on single form 
+        }
+        // @TODO keep this format for future 'add card option' on single form
         $i = 0;
 
 
         $form[$i] = array(
             '#type' => 'details',
             '#title' => $this->t('New contact card'),
-            '#collapsible' => TRUE,
-            '#open' => TRUE,
+            '#collapsible' => true,
+            '#open' => true,
         );
 
         $form[$i]['id' . $i] = array(
@@ -94,7 +94,7 @@ class NewAddressBookCardForm extends FormBase {
         $form[$i]['salutation' . $i] = array(
             '#type' => 'select',
             '#options' => array_combine($salutation, $salutation),
-            '#required' => FALSE,
+            '#required' => false,
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -107,7 +107,7 @@ class NewAddressBookCardForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
-            '#required' => FALSE,
+            '#required' => false,
             '#attributes' => array('placeholder' => $this->t('Title or function')),
             '#states' => array(
                 // Hide data fieldset when field is empty.
@@ -147,7 +147,7 @@ class NewAddressBookCardForm extends FormBase {
             '#type' => 'email',
             '#size' => 50,
             '#maxlength' => 100,
-            '#attributes' => array('placeholder' => t('Email address')),
+            '#attributes' => array('placeholder' => $this->t('Email address')),
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -158,7 +158,7 @@ class NewAddressBookCardForm extends FormBase {
 
         $form[$i]['image' . $i] = array(
             '#type' => 'file',
-            '#title' => t('Upload a name card image'),
+            '#title' => $this->t('Upload a name card image'),
             '#maxlength' => 100,
             '#states' => array(
                 // Hide data fieldset when field is empty.
@@ -172,7 +172,7 @@ class NewAddressBookCardForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 50,
             '#maxlength' => 100,
-            '#attributes' => array('placeholder' => t('Department or office')),
+            '#attributes' => array('placeholder' => $this->t('Department or office')),
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -185,7 +185,7 @@ class NewAddressBookCardForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 50,
             '#maxlength' => 100,
-            '#attributes' => array('placeholder' => t('Social network')),
+            '#attributes' => array('placeholder' => $this->t('Social network')),
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -223,17 +223,18 @@ class NewAddressBookCardForm extends FormBase {
 
     /**
      * {@inheritdoc}
-     * 
+     *
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         parent::validateForm($form, $form_state);
         
         //validate copies
-        if($form_state->getValue('names')) {
+        if ($form_state->getValue('names')) {
             $parts = explode(",", $form_state->getValue('names'));
             $invalid = [];
             $ids = [];
-            foreach($parts as $key => $name) {
+            foreach ($parts as $key => $name) {
                 $str = explode("[", $name);
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_address_book_contacts', 'abc');
@@ -241,24 +242,22 @@ class NewAddressBookCardForm extends FormBase {
                 $query->condition('contact_name', trim($str[0]), '=');
                 $data = $query->execute()->fetchObject();
                 
-                if(!$data->id) {
+                if (!$data->id) {
                     $invalid[] = $name;
                 } else {
                     $ids[] = $data->id;
                 }
-                
             }
-            if(!empty($ids)) {
+            if (!empty($ids)) {
                 $form_state->set('ids', $ids);
             }
             
-            if(!empty($invalid)) {
-                $form_state->setErrorByName('names', $this->t('Unknown name(s) to copy: @n', array('@n' => implode(',',$invalid))));
+            if (!empty($invalid)) {
+                $form_state->setErrorByName('names', $this->t('Unknown name(s) to copy: @n', array('@n' => implode(',', $invalid))));
             }
-            
         }
 
-        if($form_state->getValue('contact_name0')) {
+        if ($form_state->getValue('contact_name0')) {
             for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
                 if ($form_state->getValue('contact_name' . $i) <> '') {
 
@@ -267,8 +266,8 @@ class NewAddressBookCardForm extends FormBase {
                     $validators = array('file_validate_is_image' => array());
                     $field = "image" . $i;
                     // Check for a new uploaded logo.
-                    $file = file_save_upload($field, $validators, FALSE, 0);
-                    if ($file != NULL && !empty($file)) {
+                    $file = file_save_upload($field, $validators, false, 0);
+                    if ($file != null && !empty($file)) {
                         // File upload was attempted.
                         if ($file) {
                             // Put the temporary file in form_values so we can save it on submit.
@@ -288,12 +287,12 @@ class NewAddressBookCardForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
 
         //copy cards
         if ($form_state->get('ids')) {
-            foreach($form_state->get('ids') as $key => $id) {
-                
+            foreach ($form_state->get('ids') as $key => $id) {
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_address_book_contacts', 'abc');
                 $query->fields('abc');
@@ -316,14 +315,12 @@ class NewAddressBookCardForm extends FormBase {
                         'stamp' => strtotime("now"),
                     );
 
-                    $insert = Database::getConnection('external_db', 'external_db')
+                $insert = Database::getConnection('external_db', 'external_db')
                             ->insert('ek_address_book_contacts')->fields($fields)->execute();
-                
-                
             }
         }
 
-    //update contact card
+        //update contact card
         if ($form_state->getValue('contact_name0')) {
             //update cards
             for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
@@ -336,7 +333,6 @@ class NewAddressBookCardForm extends FormBase {
                     $card = '';
 
                     if (!$form_state->getValue('image' . $i) == 0) {
-
                         $file = $form_state->getValue('image' . $i);
                         $dir = "private://address_book/cards/" . $form_state->getValue('for_id');
                         \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
@@ -375,8 +371,7 @@ class NewAddressBookCardForm extends FormBase {
             \Drupal::messenger()->addStatus(t('The address book card is recorded'));
         }
 
-       \Drupal\Core\Cache\Cache::invalidateTags(['address_book_card']);
-       $form_state->setRedirect('ek_address_book.view', array('abid' => $form_state->getValue('for_id')));
+        \Drupal\Core\Cache\Cache::invalidateTags(['address_book_card']);
+        $form_state->setRedirect('ek_address_book.view', array('abid' => $form_state->getValue('for_id')));
     }
-
 }

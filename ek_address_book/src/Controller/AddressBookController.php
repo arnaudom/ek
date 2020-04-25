@@ -21,7 +21,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 /**
  * Controller routines for ek module routes.
  */
-class AddressBookController extends ControllerBase {
+class AddressBookController extends ControllerBase
+{
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -32,7 +33,8 @@ class AddressBookController extends ControllerBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler')
         );
@@ -43,16 +45,17 @@ class AddressBookController extends ControllerBase {
      *
      *   The moduleexist service.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler)
+    {
         $this->moduleHandler = $module_handler;
     }
 
     /**
-     * Return lookup address form 
+     * Return lookup address form
      *
      */
-    public function searchaddressbook(Request $request) {
-
+    public function searchaddressbook(Request $request)
+    {
         $form_builder = $this->formBuilder();
         $response = $form_builder->getForm('Drupal\ek_address_book\Form\SearchAddressBookForm');
         
@@ -70,11 +73,11 @@ class AddressBookController extends ControllerBase {
      * Return lookup address form page and display address book data.
      *
      */
-    public function viewaddressbook(Request $request, $abid = NULL) {
+    public function viewaddressbook(Request $request, $abid = null)
+    {
 
         //if no id, get the search form
-        if ($abid == NULL || $abid == 0) {
-            
+        if ($abid == null || $abid == 0) {
         } else {
             //return the data
             $items = array();
@@ -100,21 +103,21 @@ class AddressBookController extends ControllerBase {
                     ->select('ek_address_book', 'ab');
             $query->fields('ab', ['id', 'type']);
             $query->condition('name', $r['name']);
-            $query->condition('type', $r['type'],'<>');
+            $query->condition('type', $r['type'], '<>');
             $check = $query->execute()->fetchObject();
             
             if (isset($check->type) && $check->type == '1') {
-                $clone = FALSE;
+                $clone = false;
             } elseif (isset($check->type) && $check->type == '2') {
-                $clone = FALSE;
+                $clone = false;
             } elseif (isset($check->type) && $check->type == '3') {
-                $clone = TRUE;
+                $clone = true;
                 $into = t('client');
             } else {
-                $clone = TRUE;      
+                $clone = true;
             }
             $into = ($r['type'] == '1') ? t('supplier') : t('client');
-            if ($clone == TRUE) {
+            if ($clone == true) {
                 $url_clone = Url::fromRoute('ek_address_book.clone', array('abid' => $r['id']), array())->toString();
                 $items['clone'] = t('<a href="@url" title="@i">Clone</a>', array('@url' => $url_clone, '@i' => $into));
             } else {
@@ -155,7 +158,6 @@ class AddressBookController extends ControllerBase {
                 $items['logo_url'] = file_create_url($r['logo']);
                 $items['logo_img'] = "<img class='thumbnail' src='"
                         . file_create_url($r['logo']) . "'>";
-                
             } else {
                 $items['logo_url'] = '';
                 $items['logo_img'] = '';
@@ -222,9 +224,10 @@ class AddressBookController extends ControllerBase {
     }
 
     /**
-     * AJAX callback handler 
+     * AJAX callback handler
      */
-    public function modal($js = 'nojs', $abid = NULL) {
+    public function modal($js = 'nojs', $abid = null)
+    {
         if ($js == 'ajax') {
             $options = array('width' => '30%');
             $query = Database::getConnection('external_db', 'external_db')
@@ -242,7 +245,8 @@ class AddressBookController extends ControllerBase {
             $content['#attached']['library'][] = 'core/drupal.dialog.ajax';
             $response = new AjaxResponse();
             $response->addCommand(
-                    new OpenModalDialogCommand(t('Card'), $content, $options));
+                new OpenModalDialogCommand(t('Card'), $content, $options)
+            );
             return $response;
         } else {
             return t('You need javascript to be enabled.');
@@ -253,7 +257,8 @@ class AddressBookController extends ControllerBase {
      * Return list of names.
      * access addresses from list
      */
-    public function listaddressbook(Request $request) {
+    public function listaddressbook(Request $request)
+    {
         return array();
     }
 
@@ -261,7 +266,8 @@ class AddressBookController extends ControllerBase {
      * Return list by contact names.
      * access addresses from list
      */
-    public function contactsaddressbook(Request $request) {
+    public function contactsaddressbook(Request $request)
+    {
         return array();
     }
 
@@ -270,9 +276,8 @@ class AddressBookController extends ControllerBase {
      * @param
      *  id: main address book id
      */
-    public function newaddressbook(Request $request, $abid = NULL) {
-
-
+    public function newaddressbook(Request $request, $abid = null)
+    {
         $form_builder = $this->formBuilder();
         $response = $form_builder->getForm('Drupal\ek_address_book\Form\NewAddressBookForm', $abid);
 
@@ -291,35 +296,35 @@ class AddressBookController extends ControllerBase {
      * When an entity is both a client and supplier the entry can be cloned
      * * under different type
      */
-    public function cloneaddressbook(Request $request, $abid = NULL) {
-
+    public function cloneaddressbook(Request $request, $abid = null)
+    {
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'ab');
-            $query->fields('ab');
-            $query->condition('id', $abid);
-            $r = $query->execute()->fetchObject();
+        $query->fields('ab');
+        $query->condition('id', $abid);
+        $r = $query->execute()->fetchObject();
             
         //check the entry has not been cloned already
         // there should be only 3 types per name
-        $clone = TRUE;
+        $clone = true;
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'ab');
-            $query->fields('ab',['type']);
-            $query->condition('name', $r->name);
-            $query->condition('type', $r->type,'<>');
-            $check = $query->execute()->fetchField();
+        $query->fields('ab', ['type']);
+        $query->condition('name', $r->name);
+        $query->condition('type', $r->type, '<>');
+        $check = $query->execute()->fetchField();
         
         if ($check == '1') {
-            $clone = FALSE;
+            $clone = false;
         } elseif ($check == '2') {
-            $clone = FALSE;
+            $clone = false;
         } elseif ($check == '3') {
             $newtype = 1;
         } else {
             $newtype = ($r->type == '1') ? 2 : 1;
         }
 
-        if ($clone == TRUE) {
+        if ($clone == true) {
             //copy main data
             $fields = array(
                 'name' => $r->name,
@@ -344,16 +349,15 @@ class AddressBookController extends ControllerBase {
                             ->insert('ek_address_book')
                             ->fields($fields)->execute();
             //copy contacts
-             $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_address_book_contacts', 'c');        
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_address_book_contacts', 'c');
       
             $data = $query
                 ->fields('c')
-                ->condition('c.abid', $abid , '=')
+                ->condition('c.abid', $abid, '=')
                 ->execute();
             
             while ($r = $data->fetchObject()) {
-
                 $fields = array(
                     'abid' => $newid,
                     'contact_name' => $r->contact_name,
@@ -382,9 +386,8 @@ class AddressBookController extends ControllerBase {
 
             $url = Url::fromRoute('ek_address_book.edit', ['abid' => $newid])->toString();
             return new RedirectResponse($url);
-             
         } else {
-            //cannot clone this entry  
+            //cannot clone this entry
             
             return array('#markup' => t('This entry cannot be cloned.'));
         }
@@ -395,9 +398,8 @@ class AddressBookController extends ControllerBase {
      * @return add name card form page object.
      *
      */
-    public function newaddressbookcard(Request $request, $abid = NULL) {
-
-
+    public function newaddressbookcard(Request $request, $abid = null)
+    {
         $form_builder = $this->formBuilder();
         $response = $form_builder->getForm('Drupal\ek_address_book\Form\NewAddressBookCardForm', $abid);
 
@@ -409,7 +411,8 @@ class AddressBookController extends ControllerBase {
      * @return array the delete organization form page object.
      *
      */
-    public function deleteaddressbook($abid = NULL) {
+    public function deleteaddressbook($abid = null)
+    {
 
         //filter usage of address book entry before deletion
         //finance
@@ -423,10 +426,9 @@ class AddressBookController extends ControllerBase {
             $query->condition($condition);
             $data = $query->countQuery()->execute()->fetchField();
             
-            if($data > 0){
-               $usage[] = t('finance'); 
+            if ($data > 0) {
+                $usage[] = t('finance');
             }
-                
         }
         if ($this->moduleHandler->moduleExists('ek_products')) {
             $query = Database::getConnection('external_db', 'external_db')
@@ -434,8 +436,8 @@ class AddressBookController extends ControllerBase {
             $query->condition('supplier', $abid, '=');
             $data = $query->countQuery()->execute()->fetchField();
             
-            if($data > 0){
-               $usage[] = t('products & services'); 
+            if ($data > 0) {
+                $usage[] = t('products & services');
             }
         }
         if ($this->moduleHandler->moduleExists('ek_logistics')) {
@@ -449,8 +451,8 @@ class AddressBookController extends ControllerBase {
             $query->condition('supplier', $abid, '=');
             $data2 = $query->countQuery()->execute()->fetchField();
             
-            if($data > 0 || $data2 > 0){
-               $usage[] = t('logistics'); 
+            if ($data > 0 || $data2 > 0) {
+                $usage[] = t('logistics');
             }
         }
         if ($this->moduleHandler->moduleExists('ek_sales')) {
@@ -469,28 +471,28 @@ class AddressBookController extends ControllerBase {
             $query->condition('client', $abid, '=');
             $data3 = $query->countQuery()->execute()->fetchField();
             
-            if($data > 0 || $data2 > 0 || $data3 > 0){
-               $usage[] = t('sales'); 
+            if ($data > 0 || $data2 > 0 || $data3 > 0) {
+                $usage[] = t('sales');
             }
-        }        
+        }
         if ($this->moduleHandler->moduleExists('ek_projects')) {
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_project', 't');
             $query->condition('client_id', $abid, '=');
             $data = $query->countQuery()->execute()->fetchField();
             
-            if($data > 0){
-               $usage[] = t('projects'); 
+            if ($data > 0) {
+                $usage[] = t('projects');
             }
         }
         
-        if(!empty($usage)) {
+        if (!empty($usage)) {
             $modules = implode(', ', $usage);
             $items['type'] = 'delete';
             $items['message'] = ['#markup' => t('This address book entry cannot be deleted.')];
             $items['description'] = ['#markup' => t('Used in @m', ['@m' => $modules])];
-            $url = Url::fromRoute('ek_address_book.view', ['abid' => $abid],[])->toString();
-            $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>",['@url' => $url])];
+            $url = Url::fromRoute('ek_address_book.view', ['abid' => $abid], [])->toString();
+            $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>", ['@url' => $url])];
             
             $response = [
                 '#items' => $items,
@@ -499,10 +501,8 @@ class AddressBookController extends ControllerBase {
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
                 '#cache' => ['max-age' => 0,],
-            ]; 
-            
+            ];
         } else {
-        
             $form_builder = $this->formBuilder();
             $response = $form_builder->getForm('Drupal\ek_address_book\Form\DeleteAddressBook', $abid);
         }
@@ -516,17 +516,16 @@ class AddressBookController extends ControllerBase {
      * @return \Symfony\Component\HttpFoundation\JsonResponse;
      *   A Json response object.
      */
-    public function ajaxlookupcontact(Request $request, $type) {
-
+    public function ajaxlookupcontact(Request $request, $type)
+    {
         $text = (null !==$request->query->get('q')) ? $request->query->get('q') : $request->query->get('term');
         $option = $request->query->get('option');
         $name = array();
-        if(strpos($text,'%') >= 0) {
+        if (strpos($text, '%') >= 0) {
             $text = str_replace('%', '', $text);
         }
        
-        if($type == 'tip') {
-            
+        if ($type == 'tip') {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'ab')
                     ->fields('ab', ['id','name','logo']);
@@ -546,9 +545,7 @@ class AddressBookController extends ControllerBase {
             );
             $card = \Drupal::service('renderer')->render($render);
             return new JsonResponse(['card' => $card]);
-               
-            
-        } elseif($type < 4 || $type == '%') {
+        } elseif ($type < 4 || $type == '%') {
             
             //pull company names
             $types = array(1 => t('client'), 2 => t('supplier'), 3 => t('other'));
@@ -562,40 +559,37 @@ class AddressBookController extends ControllerBase {
                 ->condition('shortname', $text . "%", 'like')
                 ->condition('contact_name', $text . "%", 'like')
                 ->condition('activity', "%" . $text . "%", 'like');
-             $query->condition($or);
+            $query->condition($or);
 
             if ($type != '%') {
                 $query->condition('type', $type, '=');
-            } 
+            }
             $data = $query->execute();
             $result = [];
-            if($option == 'image') {
-                    
-                    while($r = $data->fetchObject()){
-                        $line = [];
+            if ($option == 'image') {
+                while ($r = $data->fetchObject()) {
+                    $line = [];
 
-                        if ($r->logo) {
-                                 $pic = "<img class='abook_thumbnail'' src='"
+                    if ($r->logo) {
+                        $pic = "<img class='abook_thumbnail'' src='"
                                 . file_create_url($r->logo) . "'>";
-                        } else {
-                                $default = file_create_url(drupal_get_path('module', 'ek_address_book') . '/art/default.jpg');
-                                $pic = "<img  class='abook_thumbnail' src='"
+                    } else {
+                        $default = file_create_url(drupal_get_path('module', 'ek_address_book') . '/art/default.jpg');
+                        $pic = "<img  class='abook_thumbnail' src='"
                                 . $default . "'>";
-                        }
-                            $line['picture'] = isset($pic) ? $pic : '';
-                            $line['type'] = $types[$r->type];
-                            $line['name'] = $r->name;
-                            $line['id'] = $r->id;
-
-                            $result[] = $line;
                     }
+                    $line['picture'] = isset($pic) ? $pic : '';
+                    $line['type'] = $types[$r->type];
+                    $line['name'] = $r->name;
+                    $line['id'] = $r->id;
 
-                } else {
-                    while($r = $data->fetchObject()){
-                        $result[] = $r->name;
-                    }
+                    $result[] = $line;
                 }
-            
+            } else {
+                while ($r = $data->fetchObject()) {
+                    $result[] = $r->name;
+                }
+            }
         } else {
             //pull name cards
             $types = [1 => t('client'), 2 => t('supplier'), 3 => t('other')];
@@ -610,11 +604,9 @@ class AddressBookController extends ControllerBase {
             $query->condition($or);
 
             $data = $query->execute();
-                while($r = $data->fetchObject()){
-                        $result[] = $r->contact_name . " [" . $r->name . " | ". $types[$r->type] ."]";
-                }
-            
-            
+            while ($r = $data->fetchObject()) {
+                $result[] = $r->contact_name . " [" . $r->name . " | ". $types[$r->type] ."]";
+            }
         }
         
         return new JsonResponse($result);
@@ -626,8 +618,8 @@ class AddressBookController extends ControllerBase {
      * @return \Symfony\Component\HttpFoundation\JsonResponse;
      *   A Json response object.
      */
-    public function ajaxlookupemail(Request $request, $type) {
-
+    public function ajaxlookupemail(Request $request, $type)
+    {
         $text = $request->query->get('term') . "%";
         $name = array();
         if ($type == '%') {
@@ -667,9 +659,8 @@ class AddressBookController extends ControllerBase {
             $query->condition('status', 0, '>');
             $query->distinct();
             $name = $query->execute()->fetchCol();
-            
         } elseif ($type == 'book') {
-            //look in  book   
+            //look in  book
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book_contacts', 'a');
             $query->fields('a', ['email']);
@@ -679,7 +670,6 @@ class AddressBookController extends ControllerBase {
             $query->condition($condition);
             $query->distinct();
             $name = $query->execute()->fetchCol();
-            
         }
 
         return new JsonResponse($name);
@@ -690,8 +680,8 @@ class AddressBookController extends ControllerBase {
      * @return \Symfony\Component\HttpFoundation\JsonResponse;
      *   An Json response object.
      */
-    public function ajaxsnbuilt(Request $request) {
-
+    public function ajaxsnbuilt(Request $request)
+    {
         $text = $request->query->get('term');
 
         $entry = explode(' ', $text);
@@ -704,7 +694,7 @@ class AddressBookController extends ControllerBase {
             for ($i = 0; $i <= 3; $i++) {
                 if (!isset($entry[$i])) {
                     $short_name .= '-';
-                } elseif(substr($entry[$i], 0, 1) == '/') {
+                } elseif (substr($entry[$i], 0, 1) == '/') {
                     $short_name .= '|';
                 } else {
                     $short_name .= substr($entry[$i], 0, 1);
@@ -720,13 +710,13 @@ class AddressBookController extends ControllerBase {
 
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'ab');
-            //$query->fields('ab');
-            $query->condition('name', $valid, 'LIKE');
-            $query->addExpression('Count(name)', 'count');
-            $Obj = $query->execute();
-            $count = $Obj->fetchObject()->count;
+        //$query->fields('ab');
+        $query->condition('name', $valid, 'LIKE');
+        $query->addExpression('Count(name)', 'count');
+        $Obj = $query->execute();
+        $count = $Obj->fetchObject()->count;
         
-        $alert = NULL;
+        $alert = null;
         if ($count >= 1) {
             $alert = t('This name already exist in the records');
         }
@@ -738,8 +728,8 @@ class AddressBookController extends ControllerBase {
      * @return \Symfony\Component\HttpFoundation\JsonResponse;
      *   An Json response object.
      */
-    public function ajaxactivity(Request $request) {
-
+    public function ajaxactivity(Request $request)
+    {
         $text = $request->query->get('term');
         $result = [];
         $query = Database::getConnection('external_db', 'external_db')
@@ -753,10 +743,10 @@ class AddressBookController extends ControllerBase {
         
         $data = $query->execute();
        
-        while($string = $data->fetchObject()) {
+        while ($string = $data->fetchObject()) {
             $parts = explode(",", $string->activity);
-            foreach($parts as $key => $word) {
-                if(stristr ($word, $request->query->get('term'))) {
+            foreach ($parts as $key => $word) {
+                if (stristr($word, $request->query->get('term'))) {
                     $result[] = $word;
                 }
             }
@@ -769,10 +759,10 @@ class AddressBookController extends ControllerBase {
      * Return contact names in pdf file.
      * @return pdf document
      */
-    public function pdfaddressbook(Request $request, $abid, $cid) {
+    public function pdfaddressbook(Request $request, $abid, $cid)
+    {
         $markup = array();
         include_once drupal_get_path('module', 'ek_address_book') . '/contact_pdf.inc';
         return $markup;
     }
-
 }

@@ -19,7 +19,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a new organization form.
  */
-class NewAddressBookForm extends FormBase {
+class NewAddressBookForm extends FormBase
+{
 
     /**
      * The country manager.
@@ -28,14 +29,16 @@ class NewAddressBookForm extends FormBase {
      */
     protected $countryManager;
 
-    public function __construct(CountryManagerInterface $country_manager) {
+    public function __construct(CountryManagerInterface $country_manager)
+    {
         $this->countryManager = $country_manager;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('country_manager')
         );
@@ -44,44 +47,43 @@ class NewAddressBookForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_edit_address_book_form';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $abid = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $abid = null)
+    {
         if (isset($abid)) {
-
             $form['for_id'] = array(
                 '#type' => 'hidden',
-                '#default_value' => $abid,
+                '#value' => $abid,
             );
 
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_address_book', 'ab');
-                $query->fields('ab');
-                $query->condition('id', $abid, '=');
-                $r = $query->execute()->fetchAssoc();
+            $query->fields('ab');
+            $query->condition('id', $abid, '=');
+            $r = $query->execute()->fetchAssoc();
             
 
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_address_book_contacts', 'abc');
-                $query->condition('abid', $abid);
-                $rc = $query->countQuery()->execute()->fetchField();
-            
+            $query->condition('abid', $abid);
+            $rc = $query->countQuery()->execute()->fetchField();
         }
 
         $form['name'] = array(
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
-            '#description' => isset($abid) ? t('Organization name') : '',
+            '#description' => isset($abid) ? $this->t('Organization name') : '',
             '#required' => true,
             '#default_value' => isset($r['name']) ? $r['name'] : null,
-            '#attributes' => array('placeholder' => t('Organization name')),
+            '#attributes' => array('placeholder' => $this->t('Organization name')),
             '#attached' => array(
                 'library' => array(
                     'ek_address_book/ek_address_book.script.sn',
@@ -92,57 +94,57 @@ class NewAddressBookForm extends FormBase {
         $form['shortname'] = array(
             '#type' => 'textfield',
             '#id' => 'short_name',
-            '#description' => isset($abid) ? t('Short name') : '',
+            '#description' => isset($abid) ? $this->t('Short name') : '',
             '#size' => 10,
             '#maxlength' => 5,
             '#required' => true,
             '#default_value' => isset($r['shortname']) ? $r['shortname'] : null,
-            '#attributes' => array('placeholder' => t('Short name')),
+            '#attributes' => array('placeholder' => $this->t('Short name')),
         );
 
         $form['address'] = array(
             '#type' => 'textfield',
             '#size' => 60,
-            '#description' => isset($abid) ? t('Address line 1') : '',
+            '#description' => isset($abid) ? $this->t('Address line 1') : '',
             '#maxlength' => 255,
             '#default_value' => isset($r['address']) ? $r['address'] : null,
-            '#attributes' => array('placeholder' => t('Address line 1')),
+            '#attributes' => array('placeholder' => $this->t('Address line 1')),
         );
 
         $form['address2'] = array(
             '#type' => 'textfield',
             '#size' => 60,
-            '#description' => isset($abid) ? t('Address line 2') : '',
+            '#description' => isset($abid) ? $this->t('Address line 2') : '',
             '#maxlength' => 255,
             '#default_value' => isset($r['address2']) ? $r['address2'] : null,
-            '#attributes' => array('placeholder' => t('Address line 2')),
+            '#attributes' => array('placeholder' => $this->t('Address line 2')),
         );
         
         $form['state'] = array(
             '#type' => 'textfield',
             '#size' => 30,
-            '#description' => isset($abid) ? t('State') : '',
+            '#description' => isset($abid) ? $this->t('State') : '',
             '#maxlength' => 50,
             '#default_value' => isset($r['state']) ? $r['state'] : null,
-            '#attributes' => array('placeholder' => t('State')),
+            '#attributes' => array('placeholder' => $this->t('State')),
         );
 
         $form['postcode'] = array(
             '#type' => 'textfield',
             '#size' => 12,
-            '#description' => isset($abid) ? t('Postcode') : '',
+            '#description' => isset($abid) ? $this->t('Postcode') : '',
             '#maxlength' => 20,
             '#default_value' => isset($r['postcode']) ? $r['postcode'] : null,
-            '#attributes' => array('placeholder' => t('Postcode')),
+            '#attributes' => array('placeholder' => $this->t('Postcode')),
         );
 
         $form['city'] = array(
             '#type' => 'textfield',
-            '#description' => isset($abid) ? t('City') : '',
+            '#description' => isset($abid) ? $this->t('City') : '',
             '#size' => 30,
             '#maxlength' => 100,
             '#default_value' => isset($r['city']) ? $r['city'] : null,
-            '#attributes' => array('placeholder' => t('City')),
+            '#attributes' => array('placeholder' => $this->t('City')),
         );
 
 
@@ -151,68 +153,68 @@ class NewAddressBookForm extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => array_combine($countries, $countries),
-            '#required' => TRUE,
-            '#default_value' => isset($r['country']) ? $r['country'] : NULL,
+            '#required' => true,
+            '#default_value' => isset($r['country']) ? $r['country'] : null,
         );
         
         $form['reg'] = array(
             '#type' => 'textfield',
             '#size' => 15,
-            '#description' => isset($abid) ? t('registration number') : '',
+            '#description' => isset($abid) ? $this->t('registration number') : '',
             '#maxlength' => 30,
             '#default_value' => isset($r['reg']) ? $r['reg'] : null,
-            '#attributes' => array('placeholder' => t('reg. number')),
+            '#attributes' => array('placeholder' => $this->t('reg. number')),
         );
         
         $form['telephone'] = array(
             '#type' => 'textfield',
             '#size' => 30,
-            '#description' => isset($abid) ? t('Telephone') : '',
+            '#description' => isset($abid) ? $this->t('Telephone') : '',
             '#maxlength' => 30,
             '#default_value' => isset($r['telephone']) ? $r['telephone'] : null,
-            '#attributes' => array('placeholder' => t('Telephone')),
+            '#attributes' => array('placeholder' => $this->t('Telephone')),
         );
 
         $form['fax'] = array(
             '#type' => 'textfield',
             '#size' => 30,
-            '#description' => isset($abid) ? t('Fax No.') : '',
+            '#description' => isset($abid) ? $this->t('Fax No.') : '',
             '#maxlength' => 30,
             '#default_value' => isset($r['fax']) ? $r['fax'] : null,
-            '#attributes' => array('placeholder' => t('Fax No.')),
+            '#attributes' => array('placeholder' => $this->t('Fax No.')),
         );
 
         $form['website'] = array(
             '#type' => 'textfield',
             '#size' => 30,
-            '#description' => isset($abid) ? t('Web site') : '',
+            '#description' => isset($abid) ? $this->t('Web site') : '',
             '#maxlength' => 100,
             '#default_value' => isset($r['website']) ? $r['website'] : null,
-            '#attributes' => array('placeholder' => t('Web site')),
+            '#attributes' => array('placeholder' => $this->t('Web site')),
         );
 
         $form['type'] = array(
             '#type' => 'select',
-            '#options' => array(1 => t('client'), 2 => t('supplier'), 3 => t('other')),
+            '#options' => array(1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other')),
             '#default_value' => isset($r['type']) ? $r['type'] : null,
-            '#description' => t('Organization type'),
-            '#required' => TRUE,
+            '#description' => $this->t('Organization type'),
+            '#required' => true,
         );
 
         $form['category'] = array(
             '#type' => 'select',
-            '#options' => array(1 => t('Head office'), 2 => t('Store'), 3 => t('Factory'), 4 => t('Other')),
+            '#options' => array(1 => $this->t('Head office'), 2 => $this->t('Store'), 3 => $this->t('Factory'), 4 => $this->t('Other')),
             '#default_value' => isset($r['category']) ? $r['category'] : null,
-            '#description' => t('Organization category'),
-            '#required' => TRUE,
+            '#description' => $this->t('Organization category'),
+            '#required' => true,
         );
 
         $form['status'] = array(
             '#type' => 'select',
-            '#options' => array(0 => t('inactive'), 1 => t('active')),
+            '#options' => array(0 => $this->t('inactive'), 1 => $this->t('active')),
             '#default_value' => isset($r['status']) ? $r['status'] : '1',
-            //'#title' => t('Status'),
-            '#required' => TRUE,
+            //'#title' => $this->t('Status'),
+            '#required' => true,
         );
 
 
@@ -220,8 +222,8 @@ class NewAddressBookForm extends FormBase {
             '#type' => 'textfield',
             '#default_value' => isset($r['activity']) ? $r['activity'] : null,
             '#attributes' => array('class' => ['form-select-tag'], 'style' => array('width:200px;')),
-            '#description' => t('Tags'),
-            '#required' => FALSE,
+            '#description' => $this->t('Tags'),
+            '#required' => false,
             '#maxlength' => 200,
             '#attached' => array(
                 'library' => array('ek_admin/ek_admin_tageditor'),
@@ -230,11 +232,11 @@ class NewAddressBookForm extends FormBase {
         );
 
         //current logo if any
-        if (isset ($r['logo']) && $r['logo'] <> '') {
+        if (isset($r['logo']) && $r['logo'] <> '') {
             $logo = "<a href='" . file_create_url($r['logo']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['logo']) . "></a>";
             $form['delete_logo'] = array(
                 '#type' => 'checkbox',
-                '#title' => t('delete logo'),
+                '#title' => $this->t('delete logo'),
                 '#attributes' => array('onclick' => "jQuery('#logo ').toggleClass( 'delete');"),
                 '#prefix' => "<div class='container-inline'>",
             );
@@ -242,29 +244,29 @@ class NewAddressBookForm extends FormBase {
                 '#markup' => "<p id='logo'style='padding:2px;'>" . $logo . "</p>",
                 '#suffix' => '</div>',
             );
-            //use to delete if upload new when submit   
+            //use to delete if upload new when submit
             $form["logo_uri"] = array(
                     '#type' => "hidden",
                     '#value' => $r['logo'],
             );
         } else {
-            $form['delete_logo'] = NULL;
-            $form["currentlogo"] = NULL;
+            $form['delete_logo'] = null;
+            $form["currentlogo"] = null;
         }
         $form['logo'] = array(
             '#type' => 'file',
-            '#title' => t('Upload logo'),
+            '#title' => $this->t('Upload logo'),
             '#maxlength' => 200,
         );
 
-// insert the name cards
+        // insert the name cards
         $i = 0;
-        $salutation = array('-', t('Mr.'), t('Mrs.'), t('Miss.'));
+        $salutation = array('-', $this->t('Mr.'), $this->t('Mrs.'), $this->t('Miss.'));
         if ($vocabulary = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadTree('salutation', 0, 1)) {
             foreach ($vocabulary as $item) {
                 array_push($salutation, $item->name);
             }
-        } 
+        }
         if (isset($rc) && $rc > 0) {
 
             //namecard exist
@@ -278,12 +280,11 @@ class NewAddressBookForm extends FormBase {
             $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid));*/
 
             while ($rc = $data->fetchAssoc()) {
-
                 $form[$i] = array(
                     '#type' => 'details',
-                    '#title' => t('Contact card No. @i', array('@i' => $i + 1)),
-                    '#collapsible' => TRUE,
-                    '#collapsed' => FALSE,
+                    '#title' => $this->t('Contact card No. @i', array('@i' => $i + 1)),
+                    '#collapsible' => true,
+                    '#collapsed' => false,
                         //'#attributes' => ($rc['main'] == 1) ? array('class' => array('select')) : array(),
                 );
 
@@ -294,22 +295,22 @@ class NewAddressBookForm extends FormBase {
 
                 $form[$i]['delete' . $i] = array(
                     '#type' => 'checkbox',
-                    '#title' => t('Delete card'),
+                    '#title' => $this->t('Delete card'),
                     '#attributes' => array('onclick' => "jQuery('#edit-$i summary').toggleClass( 'delete');"),
                 );
 
                 $form[$i]['main' . $i] = array(
                     '#type' => 'checkbox',
-                    '#title' => t('Set as primary'),
+                    '#title' => $this->t('Set as primary'),
                     '#default_value' => isset($rc['main']) ? $rc['main'] : 0,
-                    '#attributes' => array('title' => t('Set as primary'), 'onclick' => "jQuery('#edit-$i summary').toggleClass( 'select');"),
+                    '#attributes' => array('title' => $this->t('Set as primary'), 'onclick' => "jQuery('#edit-$i summary').toggleClass( 'select');"),
                 );
 
                 $form[$i]['salutation' . $i] = array(
                     '#type' => 'select',
                     '#options' => array_combine($salutation, $salutation),
                     '#maxlength' => 255,
-                    '#required' => FALSE,
+                    '#required' => false,
                     '#default_value' => isset($rc['salutation']) ? $rc['salutation'] : null,
                     '#prefix' => "<div class='container-inline'>",
                 );
@@ -320,50 +321,50 @@ class NewAddressBookForm extends FormBase {
                     '#maxlength' => 255,
                     //'#required' => TRUE,
                     '#default_value' => isset($rc['contact_name']) ? $rc['contact_name'] : null,
-                    '#attributes' => array('placeholder' => t('Contact name')),
+                    '#attributes' => array('placeholder' => $this->t('Contact name')),
                     '#suffix' => "</div>"
                 );
 
                 $form[$i]['title' . $i] = array(
                     '#type' => 'textfield',
                     '#size' => 60,
-                    '#title' => t('title'),
+                    '#title' => $this->t('title'),
                     '#maxlength' => 255,
-                    '#required' => FALSE,
+                    '#required' => false,
                     '#default_value' => isset($rc['title']) ? $rc['title'] : null,
-                    '#attributes' => array('placeholder' => t('Title or function')),
+                    '#attributes' => array('placeholder' => $this->t('Title or function')),
                 );
 
                 $form[$i]['ctelephone' . $i] = array(
                     '#type' => 'textfield',
                     '#size' => 30,
-                    '#title' => t('Telephone'),
+                    '#title' => $this->t('Telephone'),
                     '#maxlength' => 30,
                     '#default_value' => isset($rc['telephone']) ? $rc['telephone'] : null,
-                    '#attributes' => array('placeholder' => t('Telephone')),
+                    '#attributes' => array('placeholder' => $this->t('Telephone')),
                 );
 
                 $form[$i]['cmobilephone' . $i] = array(
                     '#type' => 'textfield',
                     '#size' => 30,
-                    '#title' => t('Mobile phone'),
+                    '#title' => $this->t('Mobile phone'),
                     '#maxlength' => 30,
                     '#default_value' => isset($rc['mobilephone']) ? $rc['mobilephone'] : null,
-                    '#attributes' => array('placeholder' => t('Mobile phone')),
+                    '#attributes' => array('placeholder' => $this->t('Mobile phone')),
                 );
 
                 $form[$i]['email' . $i] = array(
                     '#type' => 'email',
                     '#size' => 50,
-                    '#title' => t('Email'),
+                    '#title' => $this->t('Email'),
                     '#maxlength' => 100,
                     '#default_value' => isset($rc['email']) ? $rc['email'] : null,
-                    '#attributes' => array('placeholder' => t('Email address')),
+                    '#attributes' => array('placeholder' => $this->t('Email address')),
                 );
 
                 $form[$i]['image' . $i] = array(
                     '#type' => 'file',
-                    '#title' => t('Upload a name card image'),
+                    '#title' => $this->t('Upload a name card image'),
                     '#maxlength' => 40,
                 );
 
@@ -372,7 +373,7 @@ class NewAddressBookForm extends FormBase {
                     $image = "<a href='" . file_create_url($rc['card']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($rc['card']) . "></a>";
                     $form[$i]['image_delete' . $i] = array(
                         '#type' => 'checkbox',
-                        '#title' => t('delete image'),
+                        '#title' => $this->t('delete image'),
                         '#attributes' => array('onclick' => "jQuery('#current$i ').toggleClass( 'delete');"),
                         '#prefix' => "<div class='container-inline'>",
                     );
@@ -386,25 +387,25 @@ class NewAddressBookForm extends FormBase {
                 $form[$i]['department' . $i] = array(
                     '#type' => 'textfield',
                     '#size' => 60,
-                    '#title' => t('Department'),
+                    '#title' => $this->t('Department'),
                     '#maxlength' => 100,
                     '#default_value' => isset($rc['department']) ? $rc['department'] : null,
-                    '#attributes' => array('placeholder' => t('Department or office')),
+                    '#attributes' => array('placeholder' => $this->t('Department or office')),
                 );
 
                 $form[$i]['link' . $i] = array(
                     '#type' => 'textfield',
                     '#size' => 60,
-                    '#title' => t('Social network'),
+                    '#title' => $this->t('Social network'),
                     '#maxlength' => 100,
                     '#default_value' => isset($rc['link']) ? $rc['link'] : null,
-                    '#attributes' => array('placeholder' => t('Social network')),
+                    '#attributes' => array('placeholder' => $this->t('Social network')),
                 );
 
                 $form[$i]['ccomment' . $i] = array(
                     '#type' => 'textarea',
                     '#default_value' => isset($rc['comment']) ? $rc['comment'] : null,
-                    '#attributes' => array('placeholder' => t('Add note')),
+                    '#attributes' => array('placeholder' => $this->t('Add note')),
                     '#rows' => 1
                 );
 
@@ -414,9 +415,9 @@ class NewAddressBookForm extends FormBase {
 
         $form[$i] = array(
             '#type' => 'details',
-            '#title' => t('New contact card No. @i', array('@i' => $i + 1)),
-            '#collapsible' => TRUE,
-            '#open' => TRUE,
+            '#title' => $this->t('New contact card No. @i', array('@i' => $i + 1)),
+            '#collapsible' => true,
+            '#open' => true,
         );
 
         $form[$i]['id' . $i] = array(
@@ -430,14 +431,14 @@ class NewAddressBookForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
-            '#attributes' => array('placeholder' => t('Contact name')),
+            '#attributes' => array('placeholder' => $this->t('Contact name')),
         );
 
         $form[$i]['main' . $i] = array(
             '#type' => 'checkbox',
-            '#title' => t('Set as primary'),
+            '#title' => $this->t('Set as primary'),
             '#default_value' => 0,
-            '#attributes' => array('title' => t('Set as primary')),
+            '#attributes' => array('title' => $this->t('Set as primary')),
             // Hide data fieldset when field is empty.
             '#states' => array(
                 'invisible' => array(
@@ -449,7 +450,7 @@ class NewAddressBookForm extends FormBase {
         $form[$i]['salutation' . $i] = array(
             '#type' => 'select',
             '#options' => array_combine($salutation, $salutation),
-            '#required' => FALSE,
+            '#required' => false,
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -462,8 +463,8 @@ class NewAddressBookForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
-            '#required' => FALSE,
-            '#attributes' => array('placeholder' => t('Title or function')),
+            '#required' => false,
+            '#attributes' => array('placeholder' => $this->t('Title or function')),
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -476,7 +477,7 @@ class NewAddressBookForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 30,
-            '#attributes' => array('placeholder' => t('Telephone')),
+            '#attributes' => array('placeholder' => $this->t('Telephone')),
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -489,7 +490,7 @@ class NewAddressBookForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 30,
-            '#attributes' => array('placeholder' => t('Mobile phone')),
+            '#attributes' => array('placeholder' => $this->t('Mobile phone')),
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -502,7 +503,7 @@ class NewAddressBookForm extends FormBase {
             '#type' => 'email',
             '#size' => 50,
             '#maxlength' => 50,
-            '#attributes' => array('placeholder' => t('Email address')),
+            '#attributes' => array('placeholder' => $this->t('Email address')),
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -513,7 +514,7 @@ class NewAddressBookForm extends FormBase {
 
         $form[$i]['image' . $i] = array(
             '#type' => 'file',
-            '#title' => t('Upload a name card image'),
+            '#title' => $this->t('Upload a name card image'),
             '#maxlength' => 100,
             '#states' => array(
                 // Hide data fieldset when field is empty.
@@ -527,7 +528,7 @@ class NewAddressBookForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 50,
             '#maxlength' => 100,
-            '#attributes' => array('placeholder' => t('Department or office')),
+            '#attributes' => array('placeholder' => $this->t('Department or office')),
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -540,7 +541,7 @@ class NewAddressBookForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 50,
             '#maxlength' => 100,
-            '#attributes' => array('placeholder' => t('Social network')),
+            '#attributes' => array('placeholder' => $this->t('Social network')),
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
@@ -576,31 +577,30 @@ class NewAddressBookForm extends FormBase {
 
     /**
      * {@inheritdoc}
-     * 
+     *
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         parent::validateForm($form, $form_state);
 
         // Check for a new uploaded logo.
-            $field = "logo";
-            $validators = array('file_validate_is_image' => array());
-            $file = file_save_upload($field , $validators, FALSE, 0);
+        $field = "logo";
+        $validators = array('file_validate_is_image' => array());
+        $file = file_save_upload($field, $validators, false, 0);
 
-                if ($file != NULL && !empty($file)) {
-                    $res = file_validate_image_resolution($file, '400x400');
-                      // File upload was attempted.
-                      if ($file) {
-                        // Put the temporary file in form_values so we can save it on submit.
-                        $form_state->setValue($field, $file) ;
-                      }
-                      else {
-                        // File upload failed.
-                       $form_state->setErrorByName($field, $this->t('Logo could not be uploaded'));
-                      }
-                } else {
-                  $form_state->setValue($field, 0);
-                  
-                }
+        if ($file != null && !empty($file)) {
+            $res = file_validate_image_resolution($file, '400x400');
+            // File upload was attempted.
+            if ($file) {
+                // Put the temporary file in form_values so we can save it on submit.
+                $form_state->setValue($field, $file) ;
+            } else {
+                // File upload failed.
+                $form_state->setErrorByName($field, $this->t('Logo could not be uploaded'));
+            }
+        } else {
+            $form_state->setValue($field, 0);
+        }
                 
         for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
             if ($form_state->getValue('contact_name' . $i) <> '') {
@@ -609,8 +609,8 @@ class NewAddressBookForm extends FormBase {
                 $validators = array('file_validate_is_image' => array());
                 $field = "image" . $i;
                 // Check for a new uploaded .
-                $file = file_save_upload($field, $validators, FALSE, 0);
-                if ($file != NULL && !empty($file)) {
+                $file = file_save_upload($field, $validators, false, 0);
+                if ($file != null && !empty($file)) {
                     // File upload was attempted.
                     if ($file) {
                         $form_state->setValue($field, $file);
@@ -625,22 +625,23 @@ class NewAddressBookForm extends FormBase {
         } //loop
         $primary = 0;
         for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
-
             if ($form_state->getValue('contact_name' . $i) <> '') {
                 $primary += $form_state->getValue('main' . $i);
             }
         }
-        if ($primary == 0)
+        if ($primary == 0) {
             $form_state->setErrorByName('main', $this->t('There is not primary card. Please select one.'));
-        if ($primary > 1)
+        }
+        if ($primary > 1) {
             $form_state->setErrorByName('main', $this->t('You can only have 1 primary card.'));
+        }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         $fields = array(
             'name' => $form_state->getValue('name'),
             'shortname' => str_replace('/', '|', $form_state->getValue('shortname')),
@@ -683,58 +684,55 @@ class NewAddressBookForm extends FormBase {
 
             $id = $form_state->getValue('for_id');
         }
-//logo
-            //first delete current if requested
-            $del = FALSE;
-            if ($form_state->getValue('delete_logo') == 1) {
-
-                \Drupal::service('file_system')->delete($form_state->getValue('logo_uri'));
-                \Drupal::messenger()->addStatus(t("Old logo deleted"));
-                $logo = '';
-                $del = TRUE;
-            } else {
-                $logo = $form_state->getValue('logo_uri');
-            }
+        //logo
+        //first delete current if requested
+        $del = false;
+        if ($form_state->getValue('delete_logo') == 1) {
+            \Drupal::service('file_system')->delete($form_state->getValue('logo_uri'));
+            \Drupal::messenger()->addStatus(t("Old logo deleted"));
+            $logo = '';
+            $del = true;
+        } else {
+            $logo = $form_state->getValue('logo_uri');
+        }
             
-            //second, upload if any image is available
-            if (!$form_state->getValue('logo') == 0) {
-                if ($file = $form_state->getValue('logo')) {
-
-                    $dir = "private://address_book/cards/" . $id;
-                    \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                    $logo = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
-                    //Resize after copy
-                    $image_factory = \Drupal::service('image.factory');
-                    $image = $image_factory->get($logo);
-                    $image->scale(60);
-                    $image->save();
-                    \Drupal::messenger()->addStatus(t("New logo uploaded"));
+        //second, upload if any image is available
+        if (!$form_state->getValue('logo') == 0) {
+            if ($file = $form_state->getValue('logo')) {
+                $dir = "private://address_book/cards/" . $id;
+                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                $logo = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
+                //Resize after copy
+                $image_factory = \Drupal::service('image.factory');
+                $image = $image_factory->get($logo);
+                $image->scale(60);
+                $image->save();
+                \Drupal::messenger()->addStatus(t("New logo uploaded"));
                   
-                    //remove old if any
-                    if(!isset($del) && $form_state->getValue('logo_uri') != '') {
-                        \Drupal::service('file_system')->delete($form_state->getValue('logo_uri'));
-                    }
+                //remove old if any
+                if (!isset($del) && $form_state->getValue('logo_uri') != '') {
+                    \Drupal::service('file_system')->delete($form_state->getValue('logo_uri'));
                 }
-             }
+            }
+        }
              
-             Database::getConnection('external_db', 'external_db')
+        Database::getConnection('external_db', 'external_db')
                     ->update('ek_address_book')
                     ->condition('id', $id)
                     ->fields(['logo' => $logo])
                     ->execute();
              
              
-//update contact card
+        //update contact card
         if ($form_state->getValue('cards') >= 0) {
             //update cards
 
             for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
                 //Check first for deletion
                 if ($form_state->getValue('delete' . $i) == 1) {
-
                     $query = Database::getConnection('external_db', 'external_db')
                       ->select('ek_address_book_contacts', 'abc');
-                    $query->fields('abc',['card']);
+                    $query->fields('abc', ['card']);
                     $query->condition('id', $form_state->getValue('id' . $i), '=');
                     $file = $query->execute()->fetchField();
                    
@@ -763,7 +761,7 @@ class NewAddressBookForm extends FormBase {
                         if (!$form_state->getValue('id' . $i) <> 'new') {
                             $query = Database::getConnection('external_db', 'external_db')
                                 ->select('ek_address_book_contacts', 'abc');
-                            $query->fields('abc',['card']);
+                            $query->fields('abc', ['card']);
                             $query->condition('id', $form_state->getValue('id' . $i), '=');
                             $filename = $query->execute()->fetchField();
                             
@@ -780,7 +778,6 @@ class NewAddressBookForm extends FormBase {
 
 
                         if (!$form_state->getValue('image' . $i) == 0) {
-
                             $file = $form_state->getValue('image' . $i);
                             //unset($file);
                             $dir = "private://address_book/cards/" . $id;
@@ -809,7 +806,6 @@ class NewAddressBookForm extends FormBase {
 
                         //verify if it is an existing or new entry
                         if ($form_state->getValue('id' . $i) == 'new') {
-
                             $insert2 = Database::getConnection('external_db', 'external_db')
                                     ->insert('ek_address_book_contacts')
                                     ->fields($fields)
@@ -840,5 +836,4 @@ class NewAddressBookForm extends FormBase {
             $form_state->setRedirect('ek_address_book.view', array('abid' => $id));
         }
     }
-
 }

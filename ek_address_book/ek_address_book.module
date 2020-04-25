@@ -18,12 +18,15 @@
  */
 function ek_address_book_ek_home() {
     $build = [];
-    $build['ab']['name'] = 'ab_1';
-    $build['ab']['module'] = 'address_book';
-    $build['ab']['stamp'] = 1586604000;
-    $build['ab']['type'] = "new";
-    $build['ab']['content'] = '<a href="/address_book">Address book</a>: new fields available for State and company registration number.';
-    $build['ab']['footer'] = 'April 2020';
+    $build[] = [
+        'name' => 'address_book',
+        'module' => 'Address book',
+        'stamp' => 1586604000,
+        'type' => 'new',
+        'content' => '<a href="/address_book">Address book</a>: new fields available for State and company registration number.',
+        'footer' => 'April 2020',
+    ];
+
     return $build;
 }
 

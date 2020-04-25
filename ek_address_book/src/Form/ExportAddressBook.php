@@ -15,62 +15,58 @@ use Drupal\Core\Url;
 /**
  * Provides a data export form.
  */
-class ExportAddressBook extends FormBase {
+class ExportAddressBook extends FormBase
+{
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
-    return 'ek_address_book_export';
-  }
+    public function getFormId()
+    {
+        return 'ek_address_book_export';
+    }
   
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-
-
-         
-          $form['type'] = array(
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['type'] = array(
               '#type' => 'select',
               '#size' => 1,
-              '#options' => ['%' => t('All types'),'1' => t('Clients'),'2' => t('Suppliers'),'3' => t('Others')],
+              '#options' => ['%' => $this->t('All types'),'1' => $this->t('Clients'),'2' => $this->t('Suppliers'),'3' => $this->t('Others')],
               '#required' => true,
-              '#attributes' => array('title' => t('Select type')),
+              '#attributes' => array('title' => $this->t('Select type')),
 
             );
-          $form['source'] = array(
+        $form['source'] = array(
               '#type' => 'select',
               '#size' => 1,
-              '#options' => ['0' => t('Entities'),'1' => t('Contacts')],
+              '#options' => ['0' => $this->t('Entities'),'1' => $this->t('Contacts')],
               '#required' => true,
-              '#attributes' => array('title' => t('Select source')),
+              '#attributes' => array('title' => $this->t('Select source')),
             );
           
-          $form['info'] = array(
+        $form['info'] = array(
               '#type' => 'item',
-              '#markup' => t('The export format is in excel. You can re-use the export file structure to import new data in csv format. '),
+              '#markup' => $this->t('The export format is in excel. You can re-use the export file structure to import new data in csv format. '),
 
-            );          
-    $form['actions'] = array('#type' => 'actions');
-    $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Export'));
+            );
+        $form['actions'] = array('#type' => 'actions');
+        $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Export'));
 
        
-    return $form;  
-         
-  
-  }
+        return $form;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
- 
-       
-            
-      switch ($form_state->getValue('source')) {
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        switch ($form_state->getValue('source')) {
           
-      case '0': 
+      case '0':
             $source = 'Address_book';
             $query = Database::getConnection('external_db', 'external_db')
                       ->select('ek_address_book', 'ab');
@@ -92,11 +88,8 @@ class ExportAddressBook extends FormBase {
           
       }
       
-      $data = $query->execute();
-      include_once drupal_get_path('module', 'ek_address_book').'/excel_export.inc';
-      return $markup;
-      
-  }
-
-
+        $data = $query->execute();
+        include_once drupal_get_path('module', 'ek_address_book').'/excel_export.inc';
+        return $markup;
+    }
 }

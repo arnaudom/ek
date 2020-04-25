@@ -15,38 +15,38 @@ use Drupal\Core\Url;
 /**
  * Provides a data import form.
  */
-class ImportAddressBook extends FormBase {
+class ImportAddressBook extends FormBase
+{
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_address_book_import';
     }
 
-    public function buildForm(array $form, FormStateInterface $form_state) {
-
-
-
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
         $form['source'] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#options' => ['0' => t('Entities'), '1' => t('Contacts')],
+            '#options' => ['0' => $this->t('Entities'), '1' => $this->t('Contacts')],
             '#required' => true,
-            '#title' => t('Select source'),
+            '#title' => $this->t('Select source'),
         );
         $form['mode'] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#options' => ['0' => t('Replace (delete existing)'), '1' => t('Insert (add to existing)')],
+            '#options' => ['0' => $this->t('Replace (delete existing)'), '1' => $this->t('Insert (add to existing)')],
             '#required' => true,
-            '#title' => t('Select mode'),
+            '#title' => $this->t('Select mode'),
         );
 
         $form['alert'] = array(
             '#type' => 'item',
             '#markup' => "<div id='fx' class='messages messages--error'>"
-            . t('You are going to delete current data. Do a backup first or contact administrator if you are not sure.') . "</div>",
+            . $this->t('You are going to delete current data. Do a backup first or contact administrator if you are not sure.') . "</div>",
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'visible' => array(
@@ -58,27 +58,27 @@ class ImportAddressBook extends FormBase {
         $form['delimiter'] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#options' => [',' => t(', : comma'), ';' => t('; : semicolon')],
+            '#options' => [',' => $this->t(', : comma'), ';' => $this->t('; : semicolon')],
             '#required' => true,
-            '#attributes' => array('title' => t('Select format')),
-            '#description' => t('delimiter character'),
+            '#attributes' => array('title' => $this->t('Select format')),
+            '#description' => $this->t('delimiter character'),
         );
         $form['enclose'] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#options' => [',' => t(" ' : quote"), ';' => t(' " : double quote')],
+            '#options' => [',' => $this->t(" ' : quote"), ';' => $this->t(' " : double quote')],
             '#required' => true,
-            '#attributes' => array('title' => t('Select enclosure')),
-            '#description' => t('enclose character'),
+            '#attributes' => array('title' => $this->t('Select enclosure')),
+            '#description' => $this->t('enclose character'),
         );
 
         $form['file'] = array(
             '#type' => 'file',
-            '#title' => t('Upload data file'),
+            '#title' => $this->t('Upload data file'),
         );
         $form['info'] = array(
             '#type' => 'item',
-            '#markup' => t('The import format should be a text csv file. '
+            '#markup' => $this->t('The import format should be a text csv file. '
                     . 'You can re-use the export file structure to import new data. '),
         );
         $form['actions'] = array('#type' => 'actions');
@@ -91,10 +91,11 @@ class ImportAddressBook extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         $extensions = 'csv';
         $validators = array('file_validate_extensions' => array($extensions));
-        $file = file_save_upload("file", $validators, FALSE, 0);
+        $file = file_save_upload("file", $validators, false, 0);
 
         if ($file) {
             $form_state->set('data', $file);
@@ -106,10 +107,9 @@ class ImportAddressBook extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('data')) {
-
             $file = $form_state->get('data');
             $path = "temporary://" . $file->getFileName();
 
@@ -136,7 +136,6 @@ class ImportAddressBook extends FormBase {
                         $error = '';
                         do {
                             if ($data[0]) {
-
                                 if ($data[0] != 'id' && is_numeric($data[0])) {
 
                                     //skip the header line if any
@@ -204,7 +203,6 @@ class ImportAddressBook extends FormBase {
                         $error = '';
                         do {
                             if ($data[0]) {
-
                                 if ($data[0] != 'id' && is_numeric($data[0])) {
 
                                     //skip the header line if any
@@ -269,7 +267,6 @@ class ImportAddressBook extends FormBase {
                         $abid = '';
                         do {
                             if ($data[0]) {
-
                                 if ($data[0] != 'id' && is_numeric($data[0])) {
 
                                     //skip the header line if any
@@ -297,7 +294,7 @@ class ImportAddressBook extends FormBase {
                                         $source = 'Address_book';
                                         $query = Database::getConnection('external_db', 'external_db')
                                                 ->select('ek_address_book', 'ab');
-                                        $query->fields('ab',['name']);
+                                        $query->fields('ab', ['name']);
                                         $query->condition('id', $data[1], '=');
                                         $name = $query->execute()->fetchField();
                                         
@@ -330,7 +327,6 @@ class ImportAddressBook extends FormBase {
                         $abid = '';
                         do {
                             if ($data[0]) {
-
                                 if ($data[0] != 'id' && is_numeric($data[0])) {
 
                                     //skip the header line if any
@@ -357,7 +353,7 @@ class ImportAddressBook extends FormBase {
                                         $values +=1;
                                         $query = Database::getConnection('external_db', 'external_db')
                                                 ->select('ek_address_book', 'ab');
-                                        $query->fields('ab',['name']);
+                                        $query->fields('ab', ['name']);
                                         $query->condition('id', $data[1], '=');
                                         $name = $query->execute()->fetchField();
                                         
@@ -385,7 +381,6 @@ class ImportAddressBook extends FormBase {
 
                     break;
             }//switch
-        }//if data  
+        }//if data
     }
-
 }

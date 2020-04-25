@@ -15,29 +15,29 @@ use Drupal\Core\Url;
 /**
  * Provides a search form.
  */
-class SearchAddressBookForm extends FormBase {
+class SearchAddressBookForm extends FormBase
+{
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_address_book_search';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state) {
-
-
-
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
         $form['name'] = array(
             '#type' => 'textfield',
-            //'#title' => t('Search'),
+            //'#title' => $this->t('Search'),
             '#id' => 'abook-search-form',
             '#size' => 35,
             '#required' => true,
-            '#attributes' => array('placeholder' => t('Enter name or contact')),
+            '#attributes' => array('placeholder' => $this->t('Enter name or contact')),
             '#attached' => ['library' => array('ek_address_book/ek_address_book.search')],
             
         );
@@ -54,9 +54,7 @@ class SearchAddressBookForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
     }
-
 }
