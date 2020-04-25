@@ -18,19 +18,22 @@ use Drupal\ek_assets\Amortization;
 /**
  * Provides a form to manage amortization schedule of assets.
  */
-class AmortizationSchedule extends FormBase {
+class AmortizationSchedule extends FormBase
+{
 
   /**
    * {@inheritdoc}
    */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_amortization_schedule_asset';
     }
 
-  /**
-   * {@inheritdoc}
-   */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
+    {
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
 
@@ -60,17 +63,14 @@ class AmortizationSchedule extends FormBase {
                 '#markup' => $this->t('You cannot edit this asset amortization schedule.'),
             );
         } else {
-            
-            
-
-            if ($data->amort_record && NULL == $form_state->get('calcul') ) {
+            if ($data->amort_record && null == $form_state->get('calcul')) {
                 $form_state->set('schedule', unserialize($data->amort_record));
-                $no_record = FALSE;
-            } elseif($form_state->get('schedule')) {
-                $no_record = TRUE;
+                $no_record = false;
+            } elseif ($form_state->get('schedule')) {
+                $no_record = true;
             } else {
-                $form_state->set('schedule', NULL);
-                $no_record = TRUE;
+                $form_state->set('schedule', null);
+                $no_record = true;
             }
             
             $form['for_id'] = array(
@@ -169,8 +169,8 @@ class AmortizationSchedule extends FormBase {
             $form['i'] = array(
                 '#type' => 'details',
                 '#title' => $this->t('Schedule'),
-                '#collapsible' => TRUE,
-                '#open' => TRUE,
+                '#collapsible' => true,
+                '#open' => true,
                 '#prefix' => "<div id='schedule'>",
                 '#suffix' => "</div>",
             );
@@ -189,19 +189,18 @@ class AmortizationSchedule extends FormBase {
                 );
 
                 foreach ($schedule['a'] as $key => $value) {
-                    
-                    if($value['journal_reference'] != '') {
-                        $status = t('expense') . ': ' . $value['journal_reference']['expense'] . '<br/>';
-                        $status .= t('journal') . ': ' . $value['journal_reference']['journal'];
+                    if ($value['journal_reference'] != '') {
+                        $status = $this->t('expense') . ': ' . $value['journal_reference']['expense'] . '<br/>';
+                        $status .= $this->t('journal') . ': ' . $value['journal_reference']['journal'];
                         $action = '';
                         $record++;
-                    } elseif($value['journal_reference'] == '' && $flag == '0' && !$no_record)  {
-                        $status =  t('No record');
+                    } elseif ($value['journal_reference'] == '' && $flag == '0' && !$no_record) {
+                        $status =  $this->t('No record');
                         $url = Url::fromRoute('ek_assets.record_amortization', ['id' => $id, 'ref' => $i], [])->toString();
                         $action = t("<a href='@url'>Record</a>", ['@url' => $url]);
                         $flag = '1';
                     } else {
-                        $status =  t('No record');
+                        $status =  $this->t('No record');
                         $action = '';
                     }
 
@@ -236,7 +235,7 @@ class AmortizationSchedule extends FormBase {
 
                 $form['i']['table_foot1'] = array(
                     '#type' => 'item',
-                    '#markup' => t('Records') . ': ' . $schedule['years'],
+                    '#markup' => $this->t('Records') . ': ' . $schedule['years'],
                     '#prefix' => "<div class='row'><div class='cell cellborder'>",
                     '#suffix' => "</div>",
                 );
@@ -288,16 +287,17 @@ class AmortizationSchedule extends FormBase {
     /**
      * callback functions
      */
-    public function calculate_schedule(array &$form, FormStateInterface $form_state) {
-
-        
+    public function calculate_schedule(array &$form, FormStateInterface $form_state)
+    {
         $form_state->set('schedule', Amortization::schedule(
-                        $form_state->getValue('method'), 
-                        $form_state->getValue('term_unit'), 
-                        $form_state->getValue('term'), 
-                        $form_state->getValue('asset_value') - $form_state->getValue('amort_salvage'), $form_state->getValue('date_purchase'), $form_state->getValue('coid')
+            $form_state->getValue('method'),
+            $form_state->getValue('term_unit'),
+            $form_state->getValue('term'),
+            $form_state->getValue('asset_value') - $form_state->getValue('amort_salvage'),
+            $form_state->getValue('date_purchase'),
+            $form_state->getValue('coid')
         ));
-        $form_state->set('calcul',1);
+        $form_state->set('calcul', 1);
         $form_state->setRebuild();
         
         return $form['i'];
@@ -305,27 +305,27 @@ class AmortizationSchedule extends FormBase {
 
     /**
      * {@inheritdoc}
-     * 
+     *
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-        if(!is_numeric($form_state->getValue('term'))) {
-            $form_state->setErrorByName('term',  $this->t('Non numeric value inserted: @v', ['@v' => $form_state->getValue('term')]));
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
+        if (!is_numeric($form_state->getValue('term'))) {
+            $form_state->setErrorByName('term', $this->t('Non numeric value inserted: @v', ['@v' => $form_state->getValue('term')]));
         }
-        if(!is_numeric($form_state->getValue('amort_salvage'))) {
-            $form_state->setErrorByName('amort_salvage',  $this->t('Non numeric value inserted: @v', ['@v' => $form_state->getValue('term')]));
+        if (!is_numeric($form_state->getValue('amort_salvage'))) {
+            $form_state->setErrorByName('amort_salvage', $this->t('Non numeric value inserted: @v', ['@v' => $form_state->getValue('term')]));
         }
     }
 
     /**
      * {@inheritdoc}
-     * 
+     *
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-        
-        if(NULL == $form_state->getValue('edit')) {
-            
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        if (null == $form_state->getValue('edit')) {
             $fields = array(
-            'term_unit' => $form_state->getValue('term_unit'), 
+            'term_unit' => $form_state->getValue('term_unit'),
             'term' => $form_state->getValue('term'),
             'method' => $form_state->getValue('method'),
             'amort_salvage' => $form_state->getValue('amort_salvage'),
@@ -334,13 +334,9 @@ class AmortizationSchedule extends FormBase {
             
             $update = Database::getConnection('external_db', 'external_db')
                     ->update('ek_assets_amortization')
-                    ->condition('asid',$form_state->getValue('for_id'))
+                    ->condition('asid', $form_state->getValue('for_id'))
                     ->fields($fields)
                     ->execute();
-    
         }
-    
-        
     }
-
 }

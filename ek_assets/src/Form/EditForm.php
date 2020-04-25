@@ -22,7 +22,8 @@ use Drupal\ek_assets\Amortization;
 /**
  * Provides a form to create and edit assets.
  */
-class EditForm extends FormBase {
+class EditForm extends FormBase
+{
 
     /**
      * The module handler.
@@ -35,14 +36,16 @@ class EditForm extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler)
+    {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler')
         );
@@ -51,14 +54,16 @@ class EditForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_edit_asset';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
+    {
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
         $aid = array();
@@ -72,7 +77,6 @@ class EditForm extends FormBase {
         );
 
         if ($id != '' && $id != 0) {
-
             $query = "SELECT * from {ek_assets} a INNER JOIN {ek_assets_amortization} b "
                     . "ON a.id = b.asid "
                     . "WHERE id=:id "
@@ -96,7 +100,7 @@ class EditForm extends FormBase {
                 ->condition('id', $data->eid, '=')
                 ->execute()
                 ->fetchObject();
-                if($check->name){
+                if ($check->name) {
                     $data->eid = $check->id . ' | ' . $check->name;
                 }
             }
@@ -114,8 +118,8 @@ class EditForm extends FormBase {
             '#size' => 1,
             '#options' => AccessCheck::CompanyListByUid(),
             '#default_value' => isset($data->coid) ? $data->coid : null,
-            '#title' => t('Registered under'),
-            '#required' => TRUE,
+            '#title' => $this->t('Registered under'),
+            '#required' => true,
             '#ajax' => array(
                 'callback' => array($this, 'get_category'),
                 'wrapper' => 'category',
@@ -127,8 +131,8 @@ class EditForm extends FormBase {
             '#size' => 40,
             '#default_value' => isset($data->asset_name) ? $data->asset_name : null,
             '#maxlength' => 200,
-            '#title' => t('Name'),
-            '#attributes' => array('placeholder' => t('asset name')),
+            '#title' => $this->t('Name'),
+            '#attributes' => array('placeholder' => $this->t('asset name')),
         );
 
         $form["asset_brand"] = array(
@@ -136,8 +140,8 @@ class EditForm extends FormBase {
             '#size' => 40,
             '#default_value' => isset($data->asset_brand) ? $data->asset_brand : null,
             '#maxlength' => 255,
-            '#title' => t('Brand'),
-            '#attributes' => array('placeholder' => t('asset brand')),
+            '#title' => $this->t('Brand'),
+            '#attributes' => array('placeholder' => $this->t('asset brand')),
         );
 
         $form["asset_ref"] = array(
@@ -145,8 +149,8 @@ class EditForm extends FormBase {
             '#size' => 40,
             '#default_value' => isset($data->asset_ref) ? $data->asset_ref : null,
             '#maxlength' => 255,
-            '#title' => t('Reference'),
-            '#attributes' => array('placeholder' => t('reference')),
+            '#title' => $this->t('Reference'),
+            '#attributes' => array('placeholder' => $this->t('reference')),
         );
 
         $form["unit"] = array(
@@ -154,37 +158,37 @@ class EditForm extends FormBase {
             '#size' => 10,
             '#default_value' => isset($data->unit) ? $data->unit : null,
             '#maxlength' => 255,
-            '#title' => t('Quantity'),
-            '#attributes' => array('placeholder' => t('unit(s)')),
+            '#title' => $this->t('Quantity'),
+            '#attributes' => array('placeholder' => $this->t('unit(s)')),
         );
 
         $form["asset_comment"] = array(
             '#type' => 'textarea',
             '#default_value' => isset($data->asset_comment) ? $data->asset_comment : null,
             '#description' => '',
-            '#attributes' => array('placeholder' => t('description')),
+            '#attributes' => array('placeholder' => $this->t('description')),
         );
 
         //allocate asset to employee ID
         if ($this->moduleHandler->moduleExists('ek_hr')) {
             $form['e'] = array(
                 '#type' => 'details',
-                '#title' => t('HR link'),
-                '#collapsible' => TRUE,
-                '#open' => TRUE,
+                '#title' => $this->t('HR link'),
+                '#collapsible' => true,
+                '#open' => true,
             );
             $form['e']["eid"] = array(
                 '#type' => 'textfield',
                 '#size' => 30,
                 '#default_value' => isset($data->eid) ? $data->eid : null,
                 '#maxlength' => 255,
-                '#title' => t('Allocation'),
-                '#attributes' => array('placeholder' => t('employee')),
+                '#title' => $this->t('Allocation'),
+                '#attributes' => array('placeholder' => $this->t('employee')),
                 '#autocomplete_route_name' => 'ek_hr.employee.autocomplete',
             );
             $form['e']['eid_global'] = array(
                 '#type' => 'checkbox',
-                '#title' => t('Allow global allocation'),
+                '#title' => $this->t('Allow global allocation'),
                 
             );
         }
@@ -203,10 +207,10 @@ class EditForm extends FormBase {
         $form["aid"] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#required' => TRUE,
+            '#required' => true,
             '#options' => $aid,
             '#disabled' => $current_amortization,
-            '#title' => t('Category'),
+            '#title' => $this->t('Category'),
             '#default_value' => isset($data->aid) ? $data->aid : array(),
             '#attributes' => array(),
             '#prefix' => "<div id='category'  class='row'>",
@@ -219,18 +223,18 @@ class EditForm extends FormBase {
             '#disabled' => $current_amortization,
             '#options' => array_combine($currency, $currency),
             '#default_value' => isset($data->currency) ? $data->currency : null,
-            '#title' => t('Currency'),
+            '#title' => $this->t('Currency'),
         );
 
         $form["asset_value"] = array(
             '#type' => 'textfield',
             '#size' => 25,
             '#disabled' => $current_amortization,
-            '#default_value' => isset($data->asset_value) ? number_format($data->asset_value) : Null,
+            '#default_value' => isset($data->asset_value) ? number_format($data->asset_value) : null,
             '#maxlength' => 30,
-            '#title' => t('Value'),
+            '#title' => $this->t('Value'),
             '#attributes' => array(
-                'placeholder' => t('value'),
+                'placeholder' => $this->t('value'),
                 'class' => array('amount'),
                 'onKeyPress' => "return(number_format(this,',','.', event))"
             ),
@@ -240,22 +244,22 @@ class EditForm extends FormBase {
             '#type' => 'date',
             '#size' => 12,
             '#disabled' => $current_amortization,
-            '#required' => TRUE,
-            '#default_value' => isset($data->date_purchase) ? number_format($data->date_purchase) : Null,
-            '#title' => t('Date of purchase')
+            '#required' => true,
+            '#default_value' => isset($data->date_purchase) ? number_format($data->date_purchase) : null,
+            '#title' => $this->t('Date of purchase')
         );
 
 
         $form['i'] = array(
             '#type' => 'details',
-            '#title' => t('Attachments'),
-            '#collapsible' => TRUE,
-            '#open' => (isset($data->asset_pic) || isset($data->asset_doc)) ? TRUE : FALSE,
+            '#title' => $this->t('Attachments'),
+            '#collapsible' => true,
+            '#open' => (isset($data->asset_pic) || isset($data->asset_doc)) ? true : false,
         );
 
         $form['i']['asset_pic'] = array(
             '#type' => 'file',
-            '#title' => t('Upload picture'),
+            '#title' => $this->t('Upload picture'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => "</div>",
         );
@@ -266,7 +270,7 @@ class EditForm extends FormBase {
                     . "' target='_blank'><img class='thumbnail' src=" . file_create_url($data->asset_pic) . "></a>";
             $form['i']['picture_delete'] = array(
                 '#type' => 'checkbox',
-                '#title' => t('Delete picture'),
+                '#title' => $this->t('Delete picture'),
                 '#attributes' => array('onclick' => "jQuery('#currentPicture').toggleClass('delete');"),
                 '#prefix' => "<div class='cell300 cellcenter'>",
             );
@@ -283,7 +287,7 @@ class EditForm extends FormBase {
 
         $form['i']['asset_doc'] = array(
             '#type' => 'file',
-            '#title' => t('Upload attachment'),
+            '#title' => $this->t('Upload attachment'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => "</div>",
         );
@@ -297,7 +301,7 @@ class EditForm extends FormBase {
                     . "' target='_blank'><p>" . $name . "</p></a>";
             $form['i']['doc_delete'] = array(
                 '#type' => 'checkbox',
-                '#title' => t('Delete attachment'),
+                '#title' => $this->t('Delete attachment'),
                 '#attributes' => array('onclick' => "jQuery('#currentAttachment').toggleClass('delete');"),
                 '#prefix' => "<div class='cell300 cellcenter'>",
             );
@@ -313,7 +317,7 @@ class EditForm extends FormBase {
         }
 
 
-        $redirect = array(0 => t('view list'), 1 => t('set amotization'));
+        $redirect = array(0 => $this->t('view list'), 1 => $this->t('set amotization'));
 
         $form['actions'] = array(
             '#type' => 'actions',
@@ -321,7 +325,7 @@ class EditForm extends FormBase {
         );
         $form['actions']['redirect'] = array(
             '#type' => 'radios',
-            '#title' => t('Next'),
+            '#title' => $this->t('Next'),
             '#default_value' => 0,
             '#options' => $redirect,
         );
@@ -338,7 +342,8 @@ class EditForm extends FormBase {
     /**
      * callback functions
      */
-    public function get_category(array &$form, FormStateInterface $form_state) {
+    public function get_category(array &$form, FormStateInterface $form_state)
+    {
 
         //return aid list
         return $form['aid'];
@@ -346,10 +351,10 @@ class EditForm extends FormBase {
 
     /**
      * {@inheritdoc}
-     * 
+     *
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         if (!is_numeric($form_state->getValue('unit'))) {
             $form_state->setErrorByName('unit', $this->t('Quantity must be a numeric value'));
         }
@@ -361,8 +366,8 @@ class EditForm extends FormBase {
         
         //HR
         if ($this->moduleHandler->moduleExists('ek_hr')) {
-            if($form_state->getValue('eid') != '') {
-              //check if employee exist
+            if ($form_state->getValue('eid') != '') {
+                //check if employee exist
                 
                 $eid = explode('|', $form_state->getValue('eid'));
                 $check = Database::getConnection('external_db', 'external_db')
@@ -371,25 +376,22 @@ class EditForm extends FormBase {
                 ->condition('id', trim($eid[0]), '=')
                 ->execute()
                 ->fetchObject();
-                $form_state->setValue('eid', NULL);
+                $form_state->setValue('eid', null);
                 
-                if($check->name == NULL) {
+                if ($check->name == null) {
                     $form_state->setErrorByName('eid', $this->t('This employee does not exist in the records.'));
-                    
                 } else {
-                    $form_state->setValue('eid', $eid[0]); 
-                        if($form_state->getValue('eid_global') == 0) {
-                            //verify that the eid matches the company id
-                            if($check->company_id != $form_state->getValue('coid')) {
-                                $form_state->setErrorByName('eid', $this->t('This employee is not working for the company the asset is attached to.'
+                    $form_state->setValue('eid', $eid[0]);
+                    if ($form_state->getValue('eid_global') == 0) {
+                        //verify that the eid matches the company id
+                        if ($check->company_id != $form_state->getValue('coid')) {
+                            $form_state->setErrorByName('eid', $this->t('This employee is not working for the company the asset is attached to.'
                                         . 'Check global allocation box if you want to allocate this asset.'));
-
-                            } 
                         }
+                    }
                 }
-                
-            } 
-        }    
+            }
+        }
         
         
         //Attachments
@@ -399,7 +401,7 @@ class EditForm extends FormBase {
         $field = "asset_pic";
 
         // Check for a new uploaded logo.
-        $file = file_save_upload($field, $validators, FALSE, 0);
+        $file = file_save_upload($field, $validators, false, 0);
 
         if (isset($file)) {
             $res = file_validate_image_resolution($file, '800x800', '100x100');
@@ -420,7 +422,7 @@ class EditForm extends FormBase {
         $extensions = 'png gif jpg jpeg bmp txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip';
         $validators = array('file_validate_extensions' => array($extensions));
         // Check for a new uploaded logo.
-        $file = file_save_upload($field, $validators, FALSE, 0);
+        $file = file_save_upload($field, $validators, false, 0);
         if (isset($file)) {
             // File upload was attempted.
             if ($file) {
@@ -437,11 +439,10 @@ class EditForm extends FormBase {
 
     /**
      * {@inheritdoc}
-     * 
+     *
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         $asset_value = str_replace(',', '', $form_state->getValue("asset_value"));
 
         $fields = array(
@@ -490,20 +491,17 @@ class EditForm extends FormBase {
 
         if ($form_state->getValue('asset_pic') != 0) {
             if ($file = $form_state->getValue('asset_pic')) {
-
                 $dir = "private://assets/" . $form_state->getValue('coid');
                 \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
                 $picture = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                 
                 \Drupal::messenger()->addStatus(t("Picture uploaded"));
                 $fields['asset_pic'] = $picture;
-            
             }
         }
 
         if ($form_state->getValue('asset_doc') != 0) {
             if ($file = $form_state->getValue('asset_doc')) {
-
                 $dir = "private://assets/" . $form_state->getValue('coid');
                 \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
                 $doc = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
@@ -538,13 +536,12 @@ class EditForm extends FormBase {
         \Drupal\Core\Cache\Cache::invalidateTags(['assets']);
 
         switch ($form_state->getValue('redirect')) {
-            case 0 :
+            case 0:
                 $form_state->setRedirect('ek_assets.list');
                 break;
-            case 1 :
+            case 1:
                 $form_state->setRedirect('ek_assets.set_amortization', ['id' => $ref]);
                 break;
         }
     }
-
 }

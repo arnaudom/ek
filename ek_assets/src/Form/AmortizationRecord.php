@@ -21,28 +21,31 @@ use Drupal\ek_finance\FinanceSettings;
 /**
  * Provides a form to manage assets amortization record
  */
-class AmortizationRecord extends FormBase {
+class AmortizationRecord extends FormBase
+{
 
     /**
      * Constructs a AmortizationRecord object
-     *   
+     *
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->settings = new FinanceSettings();
     }
 
-  /**
-   * {@inheritdoc}
-   */
-    public function getFormId() {
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
         return 'journal_amortization_record';
     }
 
-  /**
-   * {@inheritdoc}
-   */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $ref = NULL) {
-
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $ref = null)
+    {
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
         $baseCurrency = $this->settings->get('baseCurrency');
@@ -55,7 +58,7 @@ class AmortizationRecord extends FormBase {
         $url = Url::fromRoute('ek_assets.set_amortization', array('id' => $id), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t("<a href='@url'>Schedule</a>", ['@url' => $url]),
+            '#markup' => $this->t("<a href='@url'>Schedule</a>", ['@url' => $url]),
         );
 
         $query = "SELECT * from {ek_assets} a INNER JOIN {ek_assets_amortization} b "
@@ -116,9 +119,9 @@ class AmortizationRecord extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $CurrencyOptions,
-                '#required' => TRUE,
+                '#required' => true,
                 '#default_value' => $data->currency,
-                '#title' => t('Currency'),
+                '#title' => $this->t('Currency'),
                 '#ajax' => array(
                     'callback' => array($this, 'fx_rate'),
                     'wrapper' => 'credit',
@@ -130,9 +133,9 @@ class AmortizationRecord extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 15,
                 '#maxlength' => 15,
-                '#default_value' => ($data->currency == $baseCurrency) ? 1 : NULL,
-                '#required' => FALSE,
-                '#title' => t('Exchange rate'),
+                '#default_value' => ($data->currency == $baseCurrency) ? 1 : null,
+                '#required' => false,
+                '#title' => $this->t('Exchange rate'),
                 '#description' => '',
                 '#prefix' => "<div id='credit'>",
                 '#suffix' => '</div></div>',
@@ -141,9 +144,9 @@ class AmortizationRecord extends FormBase {
             $form["date"] = array(
                 '#type' => 'date',
                 '#size' => 12,
-                '#required' => TRUE,
+                '#required' => true,
                 '#default_value' => $schedule['a'][$ref]['record_date'],
-                '#title' => t('record date'),
+                '#title' => $this->t('record date'),
             );
 
             $headerline = "<div class='table'><div class='row'><div class='cell cellborder'>" . t("Debit account") . "</div><div class='cell cellborder'>" . t("Debit") . "</div><div class='cell cellborder'>" . t("Credit") . "</div><div class='cell cellborder'>" . t("Credit account") . "</div><div class='cell cellborder'>" . t("Comment") . "</div>";
@@ -170,7 +173,7 @@ class AmortizationRecord extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $DebitOptions,
-                '#default_value' => NULL,
+                '#default_value' => null,
                 '#attributes' => array('style' => array('width:150px;white-space:nowrap')),
                 '#prefix' => "<div class='row'><div class='cell'>",
                 '#suffix' => '</div>',
@@ -183,7 +186,7 @@ class AmortizationRecord extends FormBase {
                 '#maxlength' => 60,
                 '#description' => '',
                 '#default_value' => number_format($schedule['a'][$ref]['value'], 2),
-                '#attributes' => array('placeholder' => t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
             );
@@ -195,7 +198,7 @@ class AmortizationRecord extends FormBase {
                 '#maxlength' => 60,
                 '#description' => '',
                 '#default_value' => number_format($schedule['a'][$ref]['value'], 2),
-                '#attributes' => array('placeholder' => t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
             );
@@ -204,21 +207,21 @@ class AmortizationRecord extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $CreditOptions,
-                '#default_value' => NULL,
+                '#default_value' => null,
                 '#attributes' => array('style' => array('width:150px;white-space:nowrap')),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
             );
 
             $no = $ref + 1;
-            $comment = t('Depreciation') . ' (' . t('schedule') . ' ' . $no . ') '
+            $comment = $this->t('Depreciation') . ' (' . $this->t('schedule') . ' ' . $no . ') '
                     . $data->asset_name . ', ' . $data->asset_ref;
             $form['items']["comment"] = array(
                 '#type' => 'textfield',
                 '#size' => 30,
                 '#maxlength' => 255,
                 '#default_value' => $comment,
-                '#attributes' => array('placeholder' => t('comment'),),
+                '#attributes' => array('placeholder' => $this->t('comment'),),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div></div>',
             );
@@ -273,7 +276,7 @@ class AmortizationRecord extends FormBase {
 
             $form['actions']['submit'] = array(
                 '#type' => 'submit',
-                '#value' => $this->t('Save'),
+                '#value' => $this->$this->t('Save'),
                 '#suffix' => ''
             );
         }
@@ -284,16 +287,17 @@ class AmortizationRecord extends FormBase {
         return $form;
     }
 
-    public function fx_rate(array &$form, FormStateInterface $form_state) {
+    public function fx_rate(array &$form, FormStateInterface $form_state)
+    {
         $currency = $form_state->getValue('currency');
         $fx = CurrencyData::rate($currency);
 
         if ($fx <> 1) {
             $form['fx_rate']['#value'] = $fx;
-            $form['fx_rate']['#required'] = TRUE;
+            $form['fx_rate']['#required'] = true;
             $form['credit']['fx_rate']['#description'] = '';
         } else {
-            $form['fx_rate']['#required'] = False;
+            $form['fx_rate']['#required'] = false;
             $form['fx_rate']['#value'] = 1;
             $form['fx_rate']['#description'] = '';
         }
@@ -304,20 +308,20 @@ class AmortizationRecord extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
-
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         $totalcredit = 0;
         $totaldebit = 0;
 
         for ($i = 1; $i <= $form_state->getValue('rows'); $i++) {
-
             $debit = str_replace(',', '', $form_state->getValue("debit$i"));
-            if ($debit == '')
+            if ($debit == '') {
                 $debit = 0;
+            }
             $credit = str_replace(',', '', $form_state->getValue("credit$i"));
-            if ($credit == '')
+            if ($credit == '') {
                 $credit = 0;
+            }
 
             if (!is_numeric($debit)) {
                 $form_state->setErrorByName("debit$i", $this->t('input value error'));
@@ -348,9 +352,8 @@ class AmortizationRecord extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-        
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         $journal = new Journal();
 
         $class = substr($form_state->getValue('d-account1'), 0, 2);
@@ -389,19 +392,19 @@ class AmortizationRecord extends FormBase {
             'attachment' => '',
         );
         
-/**/
+        /**/
         $insert = Database::getConnection('external_db', 'external_db')
                 ->insert('ek_expenses')
                 ->fields($fields)
                 ->execute();
 
            
-          $debit = str_replace(',', '', $form_state->getValue('debit1'));
-          $credit = str_replace(',', '', $form_state->getValue('credit1'));
-          /**/ 
-          if ($debit == $credit) {
-                $rec1 = $journal->record(
-                    array(
+        $debit = str_replace(',', '', $form_state->getValue('debit1'));
+        $credit = str_replace(',', '', $form_state->getValue('credit1'));
+        /**/
+        if ($debit == $credit) {
+            $rec1 = $journal->record(
+                array(
                     'source' => "expense amortization",
                     'coid' => $form_state->getValue('coid'),
                     'aid' => $form_state->getValue("d-account1"),
@@ -413,9 +416,9 @@ class AmortizationRecord extends FormBase {
                     'comment' => Xss::filter($form_state->getValue("comment")),
                     'fxRate' => $form_state->getValue('fx_rate')
                     )
-                );
-                $rec2 = $journal->record(
-                    array(
+            );
+            $rec2 = $journal->record(
+                array(
                     'source' => "expense amortization",
                     'coid' => $form_state->getValue('coid'),
                     'aid' => $form_state->getValue("c-account1"),
@@ -427,35 +430,32 @@ class AmortizationRecord extends FormBase {
                     'comment' => Xss::filter($form_state->getValue("comment")),
                     'fxRate' => $form_state->getValue('fx_rate')
                     )
-                );
-          }
+            );
+        }
                    
-            if($journal->credit <> $journal->debit) {
-                $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
-                \Drupal::messenger()->addError(t('Error journal record (@aid)', array('@aid' => $msg)));
-            }
+        if ($journal->credit <> $journal->debit) {
+            $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+            \Drupal::messenger()->addError(t('Error journal record (@aid)', array('@aid' => $msg)));
+        }
             
-          $status = 0;
-          $schedule = unserialize($form_state->getValue('amort_record'));
-          $ct_ref = $form_state->getValue('for_ref')+1;
-          if(count($schedule['a']) == $ct_ref ) {
-              $status = 1;
-          } 
-          $schedule['a'][$form_state->getValue('for_ref')]['journal_reference'] = ['expense' => $insert, 'journal' => $rec1 .'|'. $rec2];
+        $status = 0;
+        $schedule = unserialize($form_state->getValue('amort_record'));
+        $ct_ref = $form_state->getValue('for_ref')+1;
+        if (count($schedule['a']) == $ct_ref) {
+            $status = 1;
+        }
+        $schedule['a'][$form_state->getValue('for_ref')]['journal_reference'] = ['expense' => $insert, 'journal' => $rec1 .'|'. $rec2];
 
-          /**/
-          Database::getConnection('external_db', 'external_db')
+        /**/
+        Database::getConnection('external_db', 'external_db')
                     ->update('ek_assets_amortization')
-                    ->condition('asid',$form_state->getValue('for_id'))
+                    ->condition('asid', $form_state->getValue('for_id'))
                     ->fields(['amort_record' => serialize($schedule), 'amort_status' => $status])
                     ->execute();
           
-          $url = Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString();
-          \Drupal::messenger()->addStatus(t('Data updated. <a href="@url">Go to expenses</a>.', ['@url' => $url]));
+        $url = Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString();
+        \Drupal::messenger()->addStatus(t('Data updated. <a href="@url">Go to expenses</a>.', ['@url' => $url]));
           
-          $form_state->setRedirect('ek_assets.set_amortization', ['id' => $form_state->getValue('for_id')]) ;
-
-        
+        $form_state->setRedirect('ek_assets.set_amortization', ['id' => $form_state->getValue('for_id')]) ;
     }
-
 }

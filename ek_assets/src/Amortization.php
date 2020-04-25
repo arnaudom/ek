@@ -16,9 +16,10 @@ use DatePeriod;
 /**
  * Amortization and depreciation schedule formulas
  *
- * 
+ *
  */
-class Amortization {
+class Amortization
+{
 
     /**
      * Database Service Object.
@@ -30,9 +31,10 @@ class Amortization {
     /**
      * Constructs.
      *
-     * 
+     *
      */
-    public function __construct(Database $database) {
+    public function __construct(Database $database)
+    {
         $this->appdata = $database->getConnection('external_db', 'external_db');
         $this->finance = new FinanceSettings();
     }
@@ -40,7 +42,7 @@ class Amortization {
     /**
      * return an array of amortization schedule
      *
-     * @param method : 1 = straight line 
+     * @param method : 1 = straight line
      * @param term_unit : y = year, m = month
      * @param term : number of units
      * @param value : asset value minus salvage
@@ -48,9 +50,8 @@ class Amortization {
      * @param coid : company id
      *
      */
-    public static function schedule($method = 1, $term_unit = NULL, $term = NULL, $value = NULL, $date = NULL, $coid = NULL) {
-
-
+    public static function schedule($method = 1, $term_unit = null, $term = null, $value = null, $date = null, $coid = null)
+    {
         $time = strtotime($date);
         $day = date('j', $time);
         $month = date('n', $time);
@@ -67,7 +68,6 @@ class Amortization {
         if (date('j', $time) <= 15) {
             $start = date('Y', $time) . '-' . date('m', $time) . '-01' ;
         } else {
-            
             $month += 1;
             if ($month == 13) {
                 $month = 1;
@@ -81,7 +81,7 @@ class Amortization {
 
             case '1':
                 //Yearly Straight Line depreciation is calculated using the following formula:
-                //Net Value x (Number of Periods to Depreciate / Remaining Life)  
+                //Net Value x (Number of Periods to Depreciate / Remaining Life)
 
                 if ($term_unit == 'Y') {
                     $periods = 12 * $term;
@@ -98,10 +98,8 @@ class Amortization {
                 $sum = 0;
                 
                 while ($periods > 0) {
-                    
-                    
                     $NPeriods = self::months_count($start, $next_closing);
-                    if($NPeriods > $periods) {
+                    if ($NPeriods > $periods) {
                         $NPeriods = $periods;
                     }
                     $amortisation = round($value * ($NPeriods / $periods));
@@ -136,7 +134,8 @@ class Amortization {
 
     
     
-    public static function months_count($date1, $date2) {
+    public static function months_count($date1, $date2)
+    {
         $begin = new DateTime($date1);
         $end = new DateTime($date2);
         //$end = $end->modify('+1 month');
@@ -155,29 +154,28 @@ class Amortization {
     /**
      * verify if an assets is under maortization
      *
-     * @param id : asset id 
+     * @param id : asset id
      * @return : TRUE or FALSE
      */
-    public static function is_amortized($id) {
+    public static function is_amortized($id)
+    {
         $query = "SELECT id,amort_record from {ek_assets} a INNER JOIN {ek_assets_amortization} b "
                 . "ON a.id = b.asid WHERE id = :id ORDER by id";
                
         $data = Database::getConnection('external_db', 'external_db')
-                ->query($query , [':id' => $id]);
+                ->query($query, [':id' => $id]);
                 
         $r = $data->fetchObject();
         $schedule = unserialize($r->amort_record);
-        $ref = FALSE;
-            foreach ($schedule['a'] as $key => $value) {
-                if($value['journal_reference'] != '') {
-                   $ref = TRUE;
-                }
+        $ref = false;
+        foreach ($schedule['a'] as $key => $value) {
+            if ($value['journal_reference'] != '') {
+                $ref = true;
             }
+        }
         
         return $ref;
-        
     }
-
 }
 
 // class

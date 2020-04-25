@@ -1,0 +1,32 @@
+uuid: 61f511ce-bab3-4c2f-b9a8-cf49b3d59019
+langcode: en
+status: true
+dependencies:
+  module:
+    - ek_assets
+    - system
+    - user
+id: assetsamortizationstatuslist
+region: content
+weight: 0
+provider: null
+plugin: amortization_status_block
+settings:
+  id: amortization_status_block
+  label: 'Assets amortization status list'
+  provider: ek_assets
+  label_display: '0'
+visibility:
+  request_path:
+    id: request_path
+    pages: /finance
+    negate: false
+    context_mapping: {  }
+  user_role:
+    id: user_role
+    roles:
+      authenticated: authenticated
+    negate: false
+    context_mapping:
+      user: '@user.current_user_context:current_user'
+
