@@ -4,6 +4,3 @@ use Drupal\Core\Database\Database;
 use Drupal\ek_hr\HrSettings;
 
 $markup = '';
-
-
-

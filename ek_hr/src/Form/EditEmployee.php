@@ -24,7 +24,8 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to create or edit employee
  */
-class EditEmployee extends FormBase {
+class EditEmployee extends FormBase
+{
     
     /**
      * The file storage service.
@@ -44,7 +45,8 @@ class EditEmployee extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler, EntityStorageInterface $file_storage) {
+    public function __construct(ModuleHandler $module_handler, EntityStorageInterface $file_storage)
+    {
         $this->moduleHandler = $module_handler;
         $this->fileStorage = $file_storage;
     }
@@ -52,7 +54,8 @@ class EditEmployee extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler'),
                 $container->get('entity_type.manager')->getStorage('file')
@@ -62,21 +65,21 @@ class EditEmployee extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'employee_edit';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
+    {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
 
-        if (isset($id) && !$id == NULL) {
-
+        if (isset($id) && !$id == null) {
             $form_state->set('step', 2);
             
             $form['for_id'] = array(
@@ -90,9 +93,7 @@ class EditEmployee extends FormBase {
             $query->condition('id', $id, '=');
             $r = $query->execute()->fetchObject();
             $form_state->set('coid', $r->company_id);
-            
         } else {
-
             $form['new'] = array(
                 '#type' => 'hidden',
                 '#default_value' => 1,
@@ -101,15 +102,15 @@ class EditEmployee extends FormBase {
         
         $company = AccessCheck::CompanyListByUid();
         
-        if($form_state->get('step') == '1') {
+        if ($form_state->get('step') == '1') {
             $form['coid'] = array(
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $company,
-                '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : NULL,
+                '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
                 '#title' => t('company'),
-                '#disabled' => $form_state->getValue('coid') ? TRUE : FALSE,
-                '#required' => TRUE,
+                '#disabled' => $form_state->getValue('coid') ? true : false,
+                '#required' => true,
             );
 
             if ($form_state->getValue('coid') == '') {
@@ -127,7 +128,6 @@ class EditEmployee extends FormBase {
         }
 
         if ($form_state->get('step') == '2') {
-            
             $user = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
             if ($user->hasRole('administrator')) {
                 $form['coid'] = array(
@@ -136,7 +136,7 @@ class EditEmployee extends FormBase {
                     '#options' => $company,
                     '#default_value' => $form_state->get('coid'),
                     '#title' => t('company'),
-                    '#required' => TRUE,
+                    '#required' => true,
                 );
                 $form['current_coid'] = array(
                     '#type' => 'hidden',
@@ -154,7 +154,7 @@ class EditEmployee extends FormBase {
                     '#type' => 'item',
                     '#markup' => '<h1>' . $company[$form_state->get('coid')] . '</h1>',
 
-                );            
+                );
             }
             $form['active'] = array(
                 '#type' => 'select',
@@ -162,19 +162,18 @@ class EditEmployee extends FormBase {
                 '#options' => array('working' => t('Working'), 'resigned' => t('Resigned'), 'absent' => t('Absent')),
                 '#default_value' => isset($r->active) ? $r->active : 'working',
                 '#title' => t('Working status'),
-                '#required' => TRUE,
+                '#required' => true,
                 '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             );
 
             if (isset($id)) {
-
                 $form['archive'] = array(
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => array('no' => t('no'), 'yes' => t('yes')),
                     '#default_value' => isset($r->archive) ? $r->archive : 'no',
                     '#title' => t('Archive'),
-                    '#required' => TRUE,
+                    '#required' => true,
                 );
             } else {
                 $form['archive'] = array(
@@ -184,7 +183,7 @@ class EditEmployee extends FormBase {
             }
 
             
-                $form['image'] = [
+            $form['image'] = [
                   '#title' => $this->t('Image'),
                   '#type' => 'managed_file',
                   '#description' => t('Employee picture (image type allowed: png, jpg, gif)'),
@@ -209,7 +208,7 @@ class EditEmployee extends FormBase {
                     '#prefix' => "<div class='container-inline cell'>",
                 );
 
-                //use to delete if upload new when submit   
+                //use to delete if upload new when submit
                 $form["uri"] = array(
                     '#type' => "hidden",
                     '#value' => $r->picture,
@@ -224,18 +223,17 @@ class EditEmployee extends FormBase {
                     '#type' => 'item',
                     '#suffix' => '</div></div></div>',
                 ];
-               
             }
 
-            if (isset($id) && !$id == NULL) {
+            if (isset($id) && !$id == null) {
                 $admin = explode(',', $r->administrator);
                 if (in_array(\Drupal::currentUser()->id(), $admin) || in_array('administrator', \Drupal::currentUser()->getRoles())) {
-                    $disable = FALSE;
+                    $disable = false;
                 } else {
-                    $disable = TRUE;
+                    $disable = true;
                 }
             } else {
-                $disable = FALSE;
+                $disable = false;
                 $admin = [];
             }
 
@@ -249,24 +247,24 @@ class EditEmployee extends FormBase {
             $form['note'] = array(
                 '#type' => 'textarea',
                 '#rows' => 2,
-                '#default_value' => isset($r->note) ? $r->note : NULL,
+                '#default_value' => isset($r->note) ? $r->note : null,
                 '#title' => t('Note'),
             );
             
             $form['admin'] = array(
                 '#type' => 'details',
                 '#title' => t('administrators'),
-                '#collapsible' => TRUE,
-                '#open' => FALSE,
-                '#tree' => TRUE,
+                '#collapsible' => true,
+                '#open' => false,
+                '#tree' => true,
             );
             
             $users =\Drupal\ek_admin\Access\AccessCheck::listUsers(0);
             if (isset($users)) {
-                foreach($users as $k => $v) {
+                foreach ($users as $k => $v) {
                     $class = in_array($k, $admin) ? 'select' : '';
                     $obj = \Drupal\user\Entity\User::load($k);
-                    if($k > 1 && $obj->hasPermission('new_employee')) {
+                    if ($k > 1 && $obj->hasPermission('new_employee')) {
                         //restrict choice to permission
                         $role = '';
                         if ($obj) {
@@ -290,37 +288,37 @@ class EditEmployee extends FormBase {
             $form[1] = array(
                 '#type' => 'details',
                 '#title' => t('name and contact'),
-                '#collapsible' => TRUE,
-                '#open' => TRUE,
+                '#collapsible' => true,
+                '#open' => true,
             );
             $form[1]['name'] = array(
                 '#type' => 'textfield',
                 '#size' => 50,
                 '#maxlength' => 255,
-                '#default_value' => isset($r->name) ? $r->name : NULL,
+                '#default_value' => isset($r->name) ? $r->name : null,
                 '#attributes' => array('placeholder' => t('full name')),
                 '#title' => t('Name'),
-                '#required' => TRUE,
+                '#required' => true,
             );
 
             $form[1]['address'] = array(
                 '#type' => 'textfield',
                 '#size' => 80,
                 '#maxlength' => 255,
-                '#default_value' => isset($r->address) ? $r->address : NULL,
+                '#default_value' => isset($r->address) ? $r->address : null,
                 '#attributes' => array('placeholder' => t('address')),
                 '#title' => t('Address'),
-                '#required' => TRUE,
+                '#required' => true,
             );
 
             $form[1]['email'] = array(
                 '#type' => 'textfield',
                 '#size' => 40,
                 '#maxlength' => 255,
-                '#default_value' => isset($r->email) ? $r->email : NULL,
+                '#default_value' => isset($r->email) ? $r->email : null,
                 '#attributes' => array('placeholder' => t('@')),
                 '#title' => t('Email'),
-                '#required' => TRUE,
+                '#required' => true,
                 '#prefix' => "<div class='container-inline'>",
             );
 
@@ -328,32 +326,32 @@ class EditEmployee extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 20,
                 '#maxlength' => 25,
-                '#default_value' => isset($r->telephone) ? $r->telephone : NULL,
+                '#default_value' => isset($r->telephone) ? $r->telephone : null,
                 '#attributes' => array('placeholder' => t('phone')),
                 '#title' => t('Telephone'),
-                '#required' => TRUE,
+                '#required' => true,
                 '#suffix' => '</div>',
             );
 
             $form[2] = array(
                 '#type' => 'details',
                 '#title' => t('identification references'),
-                '#collapsible' => TRUE,
+                '#collapsible' => true,
             );
             $form[2]['sex'] = array(
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => array('M' => t('Male'), 'F' => t('female')),
-                '#default_value' => isset($r->sex) ? $r->sex : NULL,
+                '#default_value' => isset($r->sex) ? $r->sex : null,
                 '#title' => t('Sex'),
-                '#required' => TRUE,
+                '#required' => true,
             );
 
             $form[2]['birth'] = array(
                 '#type' => 'date',
                 '#size' => 12,
-                '#default_value' => isset($r->birth) ? $r->birth : NULL,
-                '#required' => TRUE,
+                '#default_value' => isset($r->birth) ? $r->birth : null,
+                '#required' => true,
                 '#title' => t('Birth date'),
                 '#prefix' => "<div class='container-inline'>",
             );
@@ -362,10 +360,10 @@ class EditEmployee extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 20,
                 '#maxlength' => 50,
-                '#default_value' => isset($r->ic_no) ? $r->ic_no : NULL,
+                '#default_value' => isset($r->ic_no) ? $r->ic_no : null,
                 '#attributes' => array('placeholder' => t('IC')),
                 '#title' => t('Identification No.'),
-                '#required' => TRUE,
+                '#required' => true,
                 '#suffix' => '</div>',
             );
 
@@ -373,7 +371,7 @@ class EditEmployee extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 20,
                 '#maxlength' => 50,
-                '#default_value' => isset($r->epf_no) ? $r->epf_no : NULL,
+                '#default_value' => isset($r->epf_no) ? $r->epf_no : null,
                 '#attributes' => array('placeholder' => t('Retirement')),
                 '#title' => t('Retirement fund No.'),
                 '#prefix' => "<div class='container-inline'>",
@@ -383,7 +381,7 @@ class EditEmployee extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 20,
                 '#maxlength' => 50,
-                '#default_value' => isset($r->socso_no) ? $r->socso_no : NULL,
+                '#default_value' => isset($r->socso_no) ? $r->socso_no : null,
                 '#attributes' => array('placeholder' => t('Social')),
                 '#title' => t('Social security No.'),
             );
@@ -392,7 +390,7 @@ class EditEmployee extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 20,
                 '#maxlength' => 50,
-                '#default_value' => isset($r->itax_no) ? $r->itax_no : NULL,
+                '#default_value' => isset($r->itax_no) ? $r->itax_no : null,
                 '#attributes' => array('placeholder' => t('Tax')),
                 '#title' => t('Income tax No.'),
             );
@@ -402,27 +400,27 @@ class EditEmployee extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => array_combine($itaxCat, $itaxCat),
-                '#default_value' => isset($r->itax_c) ? $r->itax_c : NULL,
+                '#default_value' => isset($r->itax_c) ? $r->itax_c : null,
                 //'#title' => t(''),
-                '#required' => FALSE,
+                '#required' => false,
                 '#suffix' => '</div>',
             );
 
 
 
 
-//////////
-//   3  //
-//////////
+            //////////
+            //   3  //
+            //////////
             $form[3] = array(
                 '#type' => 'details',
                 '#title' => t('work status'),
-                '#collapsible' => TRUE,
+                '#collapsible' => true,
             );
 
             //$origin = array(0 => '');
             $origin = [];
-            $category = NEW HrSettings($form_state->get('coid'));
+            $category = new HrSettings($form_state->get('coid'));
             if (!empty($category->HrCat[$form_state->get('coid')])) {
                 $origin += $category->HrCat[$form_state->get('coid')];
             }
@@ -431,9 +429,9 @@ class EditEmployee extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $origin,
-                '#default_value' => isset($r->origin) ? $r->origin : NULL,
+                '#default_value' => isset($r->origin) ? $r->origin : null,
                 '#title' => t('Category'),
-                '#required' => TRUE,
+                '#required' => true,
                 //'#prefix' => "<div class='container-inline'>",
             );
 
@@ -442,9 +440,9 @@ class EditEmployee extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => array('not confirmed' => t('not confirmed'), 'confirmed' => t('confirmed')),
-                '#default_value' => isset($r->e_status) ? $r->e_status : NULL,
+                '#default_value' => isset($r->e_status) ? $r->e_status : null,
                 '#title' => t('Status'),
-                '#required' => FALSE,
+                '#required' => false,
                 //'#suffix' => '</div>',
             );
 
@@ -459,7 +457,7 @@ class EditEmployee extends FormBase {
                 '#options' => array_combine($loc, $loc),
                 '#default_value' => isset($r->location) ? $r->location : 0,
                 '#title' => t('Location'),
-                '#required' => FALSE,
+                '#required' => false,
                 '#prefix' => "<div class='container-inline'>",
             );
 
@@ -468,8 +466,7 @@ class EditEmployee extends FormBase {
             $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
             $service = array();
             $service[0] = '';
-            While ($d = $data->fetchObject()) {
-
+            while ($d = $data->fetchObject()) {
                 $service[$d->sid] = $d->service_name . " - " . $d->name;
             }
 
@@ -479,7 +476,7 @@ class EditEmployee extends FormBase {
                 '#options' => $service,
                 '#default_value' => isset($r->service) ? $r->service : 0,
                 '#title' => t('Service'),
-                '#required' => FALSE,
+                '#required' => false,
                 '#suffix' => '</div>',
             );
 
@@ -487,21 +484,21 @@ class EditEmployee extends FormBase {
             if (file_exists($dir)) {
                 $ranks = file_get_contents($dir);
                 $ranks = str_replace("\r\n", "", $ranks);
-              //  $rank = explode(",", $ranks);
+                //  $rank = explode(",", $ranks);
                 $chapters = explode("@", $ranks);
                 $opt = array();
-                foreach($chapters as $title) {
-                    //title = ADMINISTRATION, A1 General manager,  A2 Executive,  A3 Clerk, 
+                foreach ($chapters as $title) {
+                    //title = ADMINISTRATION, A1 General manager,  A2 Executive,  A3 Clerk,
                     $selects = explode(",", $title);
-                     $s =  Xss::filter(trim($selects[0]));
-                     $opt[$s] = [];
-                     $rows = [];
-                     foreach($selects as $key => $row) {
-                         if($key != 0 && $row != null) {
-                             $rows[] = Xss::filter(trim($row));
-                         }
-                     }
-                     $opt[$selects[0]] = $rows;
+                    $s =  Xss::filter(trim($selects[0]));
+                    $opt[$s] = [];
+                    $rows = [];
+                    foreach ($selects as $key => $row) {
+                        if ($key != 0 && $row != null) {
+                            $rows[] = Xss::filter(trim($row));
+                        }
+                    }
+                    $opt[$selects[0]] = $rows;
                 }
  
                 $form[3]['rank'] = array(
@@ -510,7 +507,7 @@ class EditEmployee extends FormBase {
                     '#options' => $opt,
                     '#default_value' => isset($r->rank) ? $r->rank : 0,
                     '#title' => t('Rank'),
-                    '#required' => FALSE,
+                    '#required' => false,
                     '#attributes' => array('style' => array('width:150px;')),
                     //'#suffix' => '</div>',
                 );
@@ -521,7 +518,7 @@ class EditEmployee extends FormBase {
                     '#options' => array(),
                     '#default_value' => '',
                     '#title' => t('Rank'),
-                    '#required' => FALSE,
+                    '#required' => false,
                     //'#suffix' => '</div>',
                 );
             }
@@ -530,29 +527,29 @@ class EditEmployee extends FormBase {
             $form[3]['start'] = array(
                 '#type' => 'date',
                 '#size' => 12,
-                '#default_value' => isset($r->start) ? $r->start : NULL,
-                '#required' => TRUE,
+                '#default_value' => isset($r->start) ? $r->start : null,
+                '#required' => true,
                 '#title' => t('Start date'),
                 '#prefix' => "<div class='container-inline'>",
             );
             $form[3]['resign'] = array(
                 '#type' => 'date',
                 '#size' => 12,
-                '#default_value' => isset($r->resign) ? $r->resign : NULL,
+                '#default_value' => isset($r->resign) ? $r->resign : null,
                 '#title' => t('Resign date'),
                 '#suffix' => '</div>',
             );
             $form[3]['contract_expiration'] = array(
                 '#type' => 'date',
                 '#size' => 12,
-                '#default_value' => isset($r->contract_expiration) ? $r->contract_expiration : NULL,
+                '#default_value' => isset($r->contract_expiration) ? $r->contract_expiration : null,
                 '#title' => t('Contract expiration'),
             );
             $form[3]['aleave'] = array(
                 '#type' => 'textfield',
                 '#size' => 6,
                 '#maxlength' => 20,
-                '#default_value' => isset($r->aleave) ? $r->aleave : NULL,
+                '#default_value' => isset($r->aleave) ? $r->aleave : null,
                 '#attributes' => array('placeholder' => t('days')),
                 '#title' => t('Annual leaves'),
                 '#prefix' => "<div class='container-inline'>",
@@ -562,20 +559,20 @@ class EditEmployee extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 6,
                 '#maxlength' => 20,
-                '#default_value' => isset($r->mcleave) ? $r->mcleave : NULL,
+                '#default_value' => isset($r->mcleave) ? $r->mcleave : null,
                 '#attributes' => array('placeholder' => t('days')),
                 '#title' => t('medical leaves'),
                 '#suffix' => "</div>",
             );
 
 
-//////////
-//   4  //
-//////////
+            //////////
+            //   4  //
+            //////////
             $form[4] = array(
                 '#type' => 'details',
                 '#title' => t('salary and payment'),
-                '#collapsible' => TRUE,
+                '#collapsible' => true,
             );
 
 
@@ -583,8 +580,8 @@ class EditEmployee extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 15,
                 '#maxlength' => 20,
-                '#default_value' => isset($r->salary) ? $r->salary : NULL,
-                '#required' => TRUE,
+                '#default_value' => isset($r->salary) ? $r->salary : null,
+                '#required' => true,
                 '#attributes' => array('placeholder' => t('value'), 'class' => array('amount')),
                 '#title' => t('Gross salary'),
                 '#prefix' => "<div class='container-inline'>",
@@ -594,7 +591,7 @@ class EditEmployee extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 15,
                 '#maxlength' => 20,
-                '#default_value' => isset($r->th_salary) ? $r->th_salary : NULL,
+                '#default_value' => isset($r->th_salary) ? $r->th_salary : null,
                 '#attributes' => array('placeholder' => t('value'), 'class' => array('amount')),
                 '#title' => t('Other base salary'),
             );
@@ -605,21 +602,20 @@ class EditEmployee extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $CurrencyOptions,
-                    '#required' => TRUE,
-                    '#default_value' => isset($r->currency) ? $r->currency : NULL,
+                    '#required' => true,
+                    '#default_value' => isset($r->currency) ? $r->currency : null,
                     '#title' => t('currency'),
                     '#suffix' => "</div>",
                 );
             } else {
-
                 $currency = array('ALL' => 'Albania Lek', 'AFN' => 'Afghanistan Afghani', 'ARS' => 'Argentina Peso', 'AWG' => 'Aruba Guilder', 'AUD' => 'Australia Dollar', 'AZN' => 'Azerbaijan New Manat', 'BSD' => 'Bahamas Dollar', 'BBD' => 'Barbados Dollar', 'BDT' => 'Bangladeshi taka', 'BYR' => 'Belarus Ruble', 'BZD' => 'Belize Dollar', 'BMD' => 'Bermuda Dollar', 'BOB' => 'Bolivia Boliviano', 'BAM' => 'Bosnia and Herzegovina Convertible Marka', 'BWP' => 'Botswana Pula', 'BGN' => 'Bulgaria Lev', 'BRL' => 'Brazil Real', 'BND' => 'Brunei Darussalam Dollar', 'KHR' => 'Cambodia Riel', 'CAD' => 'Canada Dollar', 'KYD' => 'Cayman Islands Dollar', 'CLP' => 'Chile Peso', 'CNY' => 'China Yuan Renminbi', 'COP' => 'Colombia Peso', 'CRC' => 'Costa Rica Colon', 'HRK' => 'Croatia Kuna', 'CUP' => 'Cuba Peso', 'CZK' => 'Czech Republic Koruna', 'DKK' => 'Denmark Krone', 'DOP' => 'Dominican Republic Peso', 'XCD' => 'East Caribbean Dollar', 'EGP' => 'Egypt Pound', 'SVC' => 'El Salvador Colon', 'EEK' => 'Estonia Kroon', 'EUR' => 'Euro', 'FKP' => 'Falkland Islands (Malvinas) Pound', 'FJD' => 'Fiji Dollar', 'GHC' => 'Ghana Cedis', 'GIP' => 'Gibraltar Pound', 'GTQ' => 'Guatemala Quetzal', 'GGP' => 'Guernsey Pound', 'GYD' => 'Guyana Dollar', 'HNL' => 'Honduras Lempira', 'HKD' => 'Hong Kong Dollar', 'HUF' => 'Hungary Forint', 'ISK' => 'Iceland Krona', 'INR' => 'India Rupee', 'IDR' => 'Indonesia Rupiah', 'IRR' => 'Iran Rial', 'IMP' => 'Isle of Man Pound', 'ILS' => 'Israel Shekel', 'JMD' => 'Jamaica Dollar', 'JPY' => 'Japan Yen', 'JEP' => 'Jersey Pound', 'KZT' => 'Kazakhstan Tenge', 'KPW' => 'Korea (North) Won', 'KRW' => 'Korea (South) Won', 'KGS' => 'Kyrgyzstan Som', 'LAK' => 'Laos Kip', 'LVL' => 'Latvia Lat', 'LBP' => 'Lebanon Pound', 'LRD' => 'Liberia Dollar', 'LTL' => 'Lithuania Litas', 'MKD' => 'Macedonia Denar', 'MYR' => 'Malaysia Ringgit', 'MUR' => 'Mauritius Rupee', 'MXN' => 'Mexico Peso', 'MNT' => 'Mongolia Tughrik', 'MZN' => 'Mozambique Metical', 'NAD' => 'Namibia Dollar', 'NPR' => 'Nepal Rupee', 'ANG' => 'Netherlands Antilles Guilder', 'NZD' => 'New Zealand Dollar', 'NIO' => 'Nicaragua Cordoba', 'NGN' => 'Nigeria Naira', 'NOK' => 'Norway Krone', 'OMR' => 'Oman Rial', 'PKR' => 'Pakistan Rupee', 'PAB' => 'Panama Balboa', 'PYG' => 'Paraguay Guarani', 'PEN' => 'Peru Nuevo Sol', 'PHP' => 'Philippines Peso', 'PLN' => 'Poland Zloty', 'QAR' => 'Qatar Riyal', 'RON' => 'Romania New Leu', 'RUB' => 'Russia Ruble', 'SHP' => 'Saint Helena Pound', 'SAR' => 'Saudi Arabia Riyal', 'RSD' => 'Serbia Dinar', 'SCR' => 'Seychelles Rupee', 'SGD' => 'Singapore Dollar', 'SBD' => 'Solomon Islands Dollar', 'SOS' => 'Somalia Shilling', 'ZAR' => 'South Africa Rand', 'LKR' => 'Sri Lanka Rupee', 'SEK' => 'Sweden Krona', 'CHF' => 'Switzerland Franc', 'SRD' => 'Suriname Dollar', 'SYP' => 'Syria Pound', 'TWD' => 'Taiwan New Dollar', 'THB' => 'Thailand Baht', 'TTD' => 'Trinidad and Tobago Dollar', 'TRY' => 'Turkey Lira', 'TRL' => 'Turkey Lira', 'TVD' => 'Tuvalu Dollar', 'UAH' => 'Ukraine Hryvna', 'GBP' => 'United Kingdom Pound', 'USD' => 'United States Dollar', 'UYU' => 'Uruguay Peso', 'UZS' => 'Uzbekistan Som', 'VEF' => 'Venezuela Bolivar', 'VND' => 'Viet Nam Dong', 'YER' => 'Yemen Rial', 'ZWD' => 'Zimbabwe Dollar');
 
                 $form[4]['currency'] = array(
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $currency,
-                    '#required' => TRUE,
-                    '#default_value' => isset($r->currency) ? $r->currency : NULL,
+                    '#required' => true,
+                    '#default_value' => isset($r->currency) ? $r->currency : null,
                     '#title' => t('currency'),
                     '#suffix' => "</div>",
                 );
@@ -630,7 +626,7 @@ class EditEmployee extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 20,
                 '#maxlength' => 50,
-                '#default_value' => isset($r->bank) ? $r->bank : NULL,
+                '#default_value' => isset($r->bank) ? $r->bank : null,
                 '#attributes' => array('placeholder' => t('Bank name for payment')),
                 '#title' => t('Bank'),
                 '#prefix' => "<div class='container-inline'>",
@@ -641,7 +637,7 @@ class EditEmployee extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 20,
                 '#maxlength' => 50,
-                '#default_value' => isset($r->bank_account) ? $r->bank_account : NULL,
+                '#default_value' => isset($r->bank_account) ? $r->bank_account : null,
                 '#attributes' => array('placeholder' => t('Bank account for payment')),
                 '#title' => t('Bank account'),
                 '#suffix' => '</div>',
@@ -651,9 +647,9 @@ class EditEmployee extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => array('own' => t('own'), 'x' => t('third party')),
-                '#default_value' => isset($r->bank_account_status) ? $r->bank_account_status : NULL,
+                '#default_value' => isset($r->bank_account_status) ? $r->bank_account_status : null,
                 '#title' => t('Type of account'),
-                '#required' => FALSE,
+                '#required' => false,
                 '#prefix' => "<div class='container-inline'>",
             );
 
@@ -661,7 +657,7 @@ class EditEmployee extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 50,
                 '#maxlength' => 100,
-                '#default_value' => isset($r->thirdp) ? $r->thirdp : NULL,
+                '#default_value' => isset($r->thirdp) ? $r->thirdp : null,
                 '#attributes' => array('placeholder' => t('name of account')),
                 '#title' => t('Name of account payment'),
                 '#states' => array(
@@ -674,11 +670,11 @@ class EditEmployee extends FormBase {
             );
 
 
-          $form['actions'] = array(
+            $form['actions'] = array(
                 '#type' => 'actions',
                 '#attributes' => array('class' => array('container-inline')),
             );
-          $form['actions']['submit'] = array(
+            $form['actions']['submit'] = array(
                 '#type' => 'submit',
                 '#value' => $this->t('Save'),
                 '#suffix' => ''
@@ -694,124 +690,115 @@ class EditEmployee extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         $triggering_element = $form_state->getTriggeringElement();
         //don't validate form on tpm image submit
-        if($triggering_element['#name'] != 'image_upload_button' 
+        if ($triggering_element['#name'] != 'image_upload_button'
                 && $triggering_element['#name'] != 'image_remove_button') {
-            
-        if ($form_state->get('step') == 1) {
-                                       
-            $form_state->set('step', 2);
-            $form_state->set('coid', $form_state->getValue('coid'));
-            $form_state->setRebuild();
-            
-        } elseif ($form_state->get('step') == 2) {
+            if ($form_state->get('step') == 1) {
+                $form_state->set('step', 2);
+                $form_state->set('coid', $form_state->getValue('coid'));
+                $form_state->setRebuild();
+            } elseif ($form_state->get('step') == 2) {
 
             //check name / id
-            if ($form_state->getValue('new') == 1) {
-                $query = "SELECT id FROM {ek_hr_workforce} WHERE company_id=:id AND name = :n";
-                $a = array(':id' => $form_state->getValue('coid'), ':n' => $form_state->getValue('name'));
-                $data = Database::getConnection('external_db', 'external_db')
+                if ($form_state->getValue('new') == 1) {
+                    $query = "SELECT id FROM {ek_hr_workforce} WHERE company_id=:id AND name = :n";
+                    $a = array(':id' => $form_state->getValue('coid'), ':n' => $form_state->getValue('name'));
+                    $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, $a)->fetchField();
 
-                if ($data > 0) {
-                    $form_state->setErrorByName('name', $this->t('The employee name already exist for this company.'));
+                    if ($data > 0) {
+                        $form_state->setErrorByName('name', $this->t('The employee name already exist for this company.'));
+                    }
+                
+                    $query = "SELECT custom_id FROM {ek_hr_workforce} WHERE custom_id=:id ";
+                    $a = array(':id' => $form_state->getValue('custom_id'));
+                    $data = Database::getConnection('external_db', 'external_db')
+                        ->query($query, $a)->fetchField();
+
+                    if ($data > 0) {
+                        $form_state->setErrorByName('custom_id', $this->t('The given ID already exist.'));
+                    }
+                } else {
+                    $query = "SELECT custom_id FROM {ek_hr_workforce} WHERE custom_id=:cid and id<>:id";
+                    $a = array(':cid' => $form_state->getValue('custom_id'), ':id' => $form_state->getValue('for_id'));
+                    $data = Database::getConnection('external_db', 'external_db')
+                        ->query($query, $a)->fetchField();
+
+                    if ($data > 0) {
+                        $form_state->setErrorByName('custom_id', $this->t('The given ID already exist.'));
+                    }
                 }
                 
-                $query = "SELECT custom_id FROM {ek_hr_workforce} WHERE custom_id=:id ";
-                $a = array(':id' => $form_state->getValue('custom_id'));
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, $a)->fetchField();
+            
+            
+            
 
-                if ($data > 0) {
-                    $form_state->setErrorByName('custom_id', $this->t('The given ID already exist.'));
+                if (!filter_var($form_state->getValue('email'), FILTER_VALIDATE_EMAIL)) {
+                    $form_state->setErrorByName('email', $this->t('Invalid email'));
                 }
-            } else {
-                $query = "SELECT custom_id FROM {ek_hr_workforce} WHERE custom_id=:cid and id<>:id";
-                $a = array(':cid' => $form_state->getValue('custom_id'), ':id' => $form_state->getValue('for_id'));
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, $a)->fetchField();
+                if (!is_numeric($form_state->getValue('salary'))) {
+                    $form_state->setErrorByName("salary", $this->t('incorrect value for salary'));
+                }
+                if (!is_numeric($form_state->getValue('th_salary'))) {
+                    $form_state->setErrorByName("th_salary", $this->t('incorrect value for average salary'));
+                }
 
-                if ($data > 0) {
-                    $form_state->setErrorByName('custom_id', $this->t('The given ID already exist.'));
+                if (!is_numeric($form_state->getValue('aleave'))) {
+                    $form_state->setErrorByName("aleave", $this->t('incorrect value for leaves'));
+                }
+                if (!is_numeric($form_state->getValue('mcleave'))) {
+                    $form_state->setErrorByName("mcleave", $this->t('incorrect value for medical leaves'));
                 }
             }
-                
-            
-            
-            
-
-            if (!filter_var($form_state->getValue('email'), FILTER_VALIDATE_EMAIL)) {
-                $form_state->setErrorByName('email', $this->t('Invalid email'));
-            }
-            if (!is_numeric($form_state->getValue('salary'))) {
-                $form_state->setErrorByName("salary", $this->t('incorrect value for salary'));
-            }
-            if (!is_numeric($form_state->getValue('th_salary'))) {
-                $form_state->setErrorByName("th_salary", $this->t('incorrect value for average salary'));
-            }
-
-            if (!is_numeric($form_state->getValue('aleave'))) {
-                $form_state->setErrorByName("aleave", $this->t('incorrect value for leaves'));
-            }
-            if (!is_numeric($form_state->getValue('mcleave'))) {
-                $form_state->setErrorByName("mcleave", $this->t('incorrect value for medical leaves'));
-            }
-            
-            }            
- 
         }
-        
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == 2) {
             
             //image
             //first delete current if requested
-            $del = FALSE;
+            $del = false;
             if ($form_state->getValue('image_delete') == 1) {
-
                 \Drupal::service('file_system')->delete($form_state->getValue('uri'));
                 $thumb = "private://hr/pictures/" . $form_state->getValue('coid') . "/40/40x40_" . basename($form_state->getValue('uri'));
-                if(file_exists($thumb)) {
-                     \Drupal::service('file_system')->delete($thumb);
+                if (file_exists($thumb)) {
+                    \Drupal::service('file_system')->delete($thumb);
                 }
                 \Drupal::messenger()->addStatus(t("Old picture deleted"));
                 $image = '';
-                $del = TRUE;
+                $del = true;
             } else {
                 $image = $form_state->getValue('uri');
             }
             
             //second, upload if any image is available
             $fid = $form_state->getValue(['image', 0]);
-                if (!empty($fid)) {
-                    $file = $this->fileStorage->load($fid);
-                    $name = $file->getFileName();
-                    $dir = "private://hr/pictures/" . $form_state->getValue('coid');
-                    \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                    $image = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
+            if (!empty($fid)) {
+                $file = $this->fileStorage->load($fid);
+                $name = $file->getFileName();
+                $dir = "private://hr/pictures/" . $form_state->getValue('coid');
+                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                $image = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                     
-                    \Drupal::messenger()->addStatus(t("New Picture uploaded"));
-                    //remove old if any
-                    if(!$del && $form_state->getValue('uri') != '') {
-                      \Drupal::service('file_system')->delete($form_state->getValue('uri'));
-                    }
-            
-                }         
+                \Drupal::messenger()->addStatus(t("New Picture uploaded"));
+                //remove old if any
+                if (!$del && $form_state->getValue('uri') != '') {
+                    \Drupal::service('file_system')->delete($form_state->getValue('uri'));
+                }
+            }
            
             /**/
             $admin = array();
 
             foreach ($form_state->getValue('admin') as $key => $value) {
-
                 if ($value == 1) {
                     $admin[] = $key;
                 }
@@ -876,7 +863,6 @@ class EditEmployee extends FormBase {
                 
                 $url = \Drupal\Core\Url::fromRoute('ek_hr.employee.view', array('id' => $db), array())->toString();
                 \Drupal::messenger()->addStatus(t('Data updated. <a href="@url">View</a>', ['@url' => $url]));
-                
             } else {
                 //update
                 $db = Database::getConnection('external_db', 'external_db')
@@ -886,13 +872,12 @@ class EditEmployee extends FormBase {
                         ->execute();
                 
                 $url = \Drupal::messenger()->addStatus(t("Data updated"));
-                $form_state->setRedirect('ek_hr.employee.view',['id' => $form_state->getValue('for_id')]);
+                $form_state->setRedirect('ek_hr.employee.view', ['id' => $form_state->getValue('for_id')]);
                 
-                if(null !== $form_state->getValue('current_coid')) {
-                    if($form_state->getValue('current_coid') != $form_state->getValue('coid')){
+                if (null !== $form_state->getValue('current_coid')) {
+                    if ($form_state->getValue('current_coid') != $form_state->getValue('coid')) {
                         \Drupal::messenger()->addWarning(t('Company was changed'));
                     }
-                    
                 }
             }
             Cache::invalidateTags(['payroll_stat_block','employee_data_view']);
@@ -902,7 +887,8 @@ class EditEmployee extends FormBase {
     /**
      * Callback
      */
-    public function ajaxlookupbank(Request $request) {
+    public function ajaxlookupbank(Request $request)
+    {
         //autocomplete bank name if available
         $query = "SELECT DISTINCT bank from {ek_hr_workforce} WHERE bank like :b order by bank";
         $text = $request->query->get('q') . '%';
@@ -911,5 +897,4 @@ class EditEmployee extends FormBase {
                 ->query($query, array(':b' => $text))->fetchCol();
         return new JsonResponse($data);
     }
-
 }

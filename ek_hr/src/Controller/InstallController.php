@@ -6,7 +6,6 @@
 
 namespace Drupal\ek_hr\Controller;
 
-
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
@@ -19,74 +18,78 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-
 /**
 * Controller routines for ek module routes.
 */
-class InstallController extends ControllerBase {
+class InstallController extends ControllerBase
+{
 
    /* The module handler.
    *
    * @var \Drupal\Core\Extension\ModuleHandler
    */
-  protected $moduleHandler;
-  /**
-   * The database service.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-  /**
-   * The form builder service.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
+    protected $moduleHandler;
+    /**
+     * The database service.
+     *
+     * @var \Drupal\Core\Database\Connection
+     */
+    protected $database;
+    /**
+     * The form builder service.
+     *
+     * @var \Drupal\Core\Form\FormBuilderInterface
+     */
+    protected $formBuilder;
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container)
+    {
+        return new static(
       $container->get('database'),
       $container->get('form_builder'),
       $container->get('module_handler')
     );
-  }
+    }
 
-  /**
-   * Constructs a  object.
-   *
-   * @param \Drupal\Core\Database\Connection $database
-   *   A database connection.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-   *   The form builder service.
-   */
-  public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
-    $this->database = $database;
-    $this->formBuilder = $form_builder;
-    $this->moduleHandler = $module_handler;
-  }
+    /**
+     * Constructs a  object.
+     *
+     * @param \Drupal\Core\Database\Connection $database
+     *   A database connection.
+     * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+     *   The form builder service.
+     */
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
+    {
+        $this->database = $database;
+        $this->formBuilder = $form_builder;
+        $this->moduleHandler = $module_handler;
+    }
 
 
-/**
-   * update version
-   *
-*/
-  public function update() {
+    /**
+       * update version
+       *
+    */
+    public function update()
+    {
   
   //update and conversion of DB
-  include_once drupal_get_path('module', 'ek_hr') . '/' . 'update.php';
-   return  array('#markup' => $markup) ;
-  }
+        include_once drupal_get_path('module', 'ek_hr') . '/' . 'update.php';
+        return  array('#markup' => $markup) ;
+    }
  
-/**
-   * install required tables in a separate database
-   *
-*/
+    /**
+       * install required tables in a separate database
+       *
+    */
 
- public function install() {
-/**/ 
-    $query = "CREATE TABLE IF NOT EXISTS `ek_hr_workforce_settings` (
+    public function install()
+    {
+        /**/
+        $query = "CREATE TABLE IF NOT EXISTS `ek_hr_workforce_settings` (
               `coid` SMALLINT(6) NOT NULL DEFAULT '0' COMMENT 'company ID',
               `ad` TEXT NULL COMMENT 'allowances deductions',
               `cat` TEXT NULL COMMENT 'categories',
@@ -100,10 +103,12 @@ class InstallController extends ControllerBase {
             ENGINE=InnoDB;
             ";
     
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup = 'Settings table created <br/>';
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup = 'Settings table created <br/>';
+        }
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_hr_documents` (
+        $query = "CREATE TABLE IF NOT EXISTS `ek_hr_documents` (
                 `id` INT(8) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `employee_id` MEDIUMINT(8) UNSIGNED NULL DEFAULT NULL,
                 `fid` INT(5) NULL DEFAULT NULL COMMENT 'file managed id',
@@ -122,11 +127,13 @@ class InstallController extends ControllerBase {
               ENGINE=InnoDB
               AUTO_INCREMENT=1";
    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Documents table created <br/>';
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Documents table created <br/>';
+        }
 
 
-    $query = "CREATE TABLE IF NOT EXISTS `ek_hr_location` (
+        $query = "CREATE TABLE IF NOT EXISTS `ek_hr_location` (
                 `id` MEDIUMINT(3) NOT NULL AUTO_INCREMENT,
                 `coid` MEDIUMINT(3) NOT NULL DEFAULT '1',
                 `location` VARCHAR(50) NULL DEFAULT '0',
@@ -139,11 +146,13 @@ class InstallController extends ControllerBase {
               AUTO_INCREMENT=1
                 ";
 
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Locations table created <br/>';
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Locations table created <br/>';
+        }
     
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_hr_payroll_cycle` (
+        $query = "CREATE TABLE IF NOT EXISTS `ek_hr_payroll_cycle` (
                 `coid` INT(11) NOT NULL,
                 `current` VARCHAR(255) NULL DEFAULT NULL,
                 UNIQUE INDEX `Index 1` (`coid`)
@@ -152,10 +161,12 @@ class InstallController extends ControllerBase {
               COLLATE='utf8_general_ci'
               ENGINE=InnoDB;";
 
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Payroll cycles table created <br/>';
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Payroll cycles table created <br/>';
+        }
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_hr_post_data` (
+        $query = "CREATE TABLE IF NOT EXISTS `ek_hr_post_data` (
                 `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `emp_id` INT(10) NULL DEFAULT '0',
                 `month` VARCHAR(25) NULL DEFAULT NULL,
@@ -218,10 +229,12 @@ class InstallController extends ControllerBase {
               ";
     
     
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Posted data table created <br/>';
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Posted data table created <br/>';
+        }
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_hr_service` (
+        $query = "CREATE TABLE IF NOT EXISTS `ek_hr_service` (
                 `sid` INT(10) NOT NULL AUTO_INCREMENT,
                 `service_name` VARCHAR(250) NOT NULL COLLATE 'latin1_general_cs',
                 `lib_service` LONGTEXT NULL COLLATE 'latin1_general_cs',
@@ -242,10 +255,12 @@ class InstallController extends ControllerBase {
               AUTO_INCREMENT=1";
     
     
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Services table created <br/>';
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Services table created <br/>';
+        }
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_hr_workforce` (
+        $query = "CREATE TABLE IF NOT EXISTS `ek_hr_workforce` (
                 `id` INT(11) NOT NULL AUTO_INCREMENT,
                 `custom_id` VARCHAR(15) NOT NULL DEFAULT '0' COMMENT 'Custom ID' COLLATE 'utf8mb4_unicode_ci',
                 `company_id` INT(3) NULL DEFAULT NULL COMMENT 'Id of company employee is attached to',
@@ -293,10 +308,12 @@ class InstallController extends ControllerBase {
               AUTO_INCREMENT=1
               ";
     
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Workforce table created <br/>';
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Workforce table created <br/>';
+        }
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_hr_workforce_pay` (
+        $query = "CREATE TABLE IF NOT EXISTS `ek_hr_workforce_pay` (
                 `id` INT(10) UNSIGNED NOT NULL DEFAULT '0',
                 `month` VARCHAR(25) NULL DEFAULT '0',
                 `d_pay` MEDIUMINT(5) NULL DEFAULT '0',
@@ -356,10 +373,12 @@ class InstallController extends ControllerBase {
               ENGINE=InnoDB;
               ";
     
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Workforce pay table created <br/>';
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Workforce pay table created <br/>';
+        }
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_hr_workforce_ph` (
+        $query = "CREATE TABLE IF NOT EXISTS `ek_hr_workforce_ph` (
                 `id` INT(10) NOT NULL AUTO_INCREMENT,
                 `coid` INT(2) NULL DEFAULT '0' COMMENT 'company id',
                 `date` VARCHAR(50) NULL DEFAULT '0' COMMENT 'holidays date',
@@ -372,10 +391,12 @@ class InstallController extends ControllerBase {
               AUTO_INCREMENT=1;";
     
     
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Public Holidays table created <br/>';
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Public Holidays table created <br/>';
+        }
     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_hr_workforce_roster` (
+        $query = "CREATE TABLE IF NOT EXISTS `ek_hr_workforce_roster` (
                 `id` INT(10) NOT NULL AUTO_INCREMENT,
                 `period` VARCHAR(50) NULL DEFAULT '0' COMMENT 'month - year reference',
                 `emp_id` VARCHAR(50) NULL DEFAULT '0',
@@ -391,20 +412,18 @@ class InstallController extends ControllerBase {
               AUTO_INCREMENT=1";
     
    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Roster table created <br/>';
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Roster table created <br/>';
+        }
     
     
-    $link =  Url::fromRoute('ek_admin.main', array(), array())->toString();
-    $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
+        $link =  Url::fromRoute('ek_admin.main', array(), array())->toString();
+        $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
    
-    return  array(
+        return  array(
       '#title'=> t('Installation of Ek_hr module'),
       '#markup' => $markup
       ) ;
- 
- }
-
-
-   
+    }
 } //class

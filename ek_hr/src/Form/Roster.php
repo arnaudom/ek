@@ -3,7 +3,7 @@
 /**
  * @file
  * Contains \Drupal\ek_hr\Form\Roster.
- * 
+ *
  */
 
 namespace Drupal\ek_hr\Form;
@@ -21,7 +21,8 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to display roster data
  */
-class Roster extends FormBase {
+class Roster extends FormBase
+{
 
     /**
      * The module handler.
@@ -34,7 +35,8 @@ class Roster extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler)
+    {
         $this->moduleHandler = $module_handler;
         $this->roster = new \Drupal\ek_hr\RosterManager();
     }
@@ -42,7 +44,8 @@ class Roster extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler')
         );
@@ -51,15 +54,16 @@ class Roster extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'hr_roster';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
+    {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
@@ -69,17 +73,17 @@ class Roster extends FormBase {
             $settings = '';
         }
         if (!isset($_SESSION['m'])) {
-            $_SESSION['m'] = NULL;
+            $_SESSION['m'] = null;
         }
         $company = AccessCheck::CompanyListByUid();
         $form['coid'] = array(
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : NULL,
+            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
             '#title' => t('company'),
-            '#disabled' => ($form_state->getValue('coid')) ? TRUE : FALSE,
-            '#required' => TRUE,
+            '#disabled' => ($form_state->getValue('coid')) ? true : false,
+            '#required' => true,
             '#prefix' => "<div class='container-inline'>",
         );
 
@@ -98,7 +102,6 @@ class Roster extends FormBase {
         }
 
         if ($form_state->get('step') == 2) {
-
             $form_state->set('step', 3);
             $monthnames = array('months', 'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC');
             $query = Database::getConnection('external_db', 'external_db')
@@ -121,7 +124,7 @@ class Roster extends FormBase {
                 '#options' => $options,
                 '#default_value' => ($form_state->getValue('month')) ? $form_state->getValue('month') : $_SESSION['m'],
                 '#title' => t('Month'),
-                '#required' => TRUE,
+                '#required' => true,
             );
             
             $form['cutoff'] = array(
@@ -130,9 +133,9 @@ class Roster extends FormBase {
                 '#max' => 31,
                 '#step' => 1,
                 '#size' => 2,
-                '#default_value' => ($form_state->getValue('cutoff')) ? $form_state->getValue('cutoff') : NULL,
+                '#default_value' => ($form_state->getValue('cutoff')) ? $form_state->getValue('cutoff') : null,
                 '#title' => t('Cut-off day'),
-                '#required' => TRUE,
+                '#required' => true,
                 '#prefix' => "<div class='container-inline'>",
             );
 
@@ -154,14 +157,14 @@ class Roster extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => array_combine($options, $options),
-                '#default_value' => ($form_state->getValue('location')) ? $form_state->getValue('location') : NULL,
+                '#default_value' => ($form_state->getValue('location')) ? $form_state->getValue('location') : null,
                 '#title' => t('Location'),
-                '#required' => TRUE,
+                '#required' => true,
                 '#suffix' => "</div></div>"
             );
-            $param = NEW HrSettings($form_state->getValue('coid'));
+            $param = new HrSettings($form_state->getValue('coid'));
             $check = $param->HrRoster[$form_state->getValue('coid')];
-            if(empty($check)){
+            if (empty($check)) {
                 //alert missing settings
                 $link = Url::fromRoute('ek_hr.roster_settings', array(), array())->toString();
                 $form['alert'] = array(
@@ -194,7 +197,6 @@ class Roster extends FormBase {
         }//if step 2
 
         if ($form_state->get('step') == 4) {
-
             $input = $form_state->getValue('month');
             $c = $form_state->getValue('cutoff');
             $date = date_create($input . '-01');
@@ -244,7 +246,7 @@ class Roster extends FormBase {
             );
             //location table buttons
             $param = serialize(
-                    array(
+                array(
                         'coid' => $form_state->getValue('coid'),
                         'cutoff' => $form_state->getValue('cutoff'),
                         'month' => $form_state->getValue('month'),
@@ -286,11 +288,10 @@ class Roster extends FormBase {
             $locations = $query->execute()->fetchCol();
 
 
-//build table header inner with days
+            //build table header inner with days
             $headline_inner = '';
 
             for ($i = $s0; $i <= $c0; $i++) {
-
                 $cal_description = '';
                 $class = '';
                 $w = '';
@@ -314,7 +315,6 @@ class Roster extends FormBase {
             }
 
             for ($i = $s; $i <= $c; $i++) {
-
                 $cal_description = '';
                 $class = '';
                 $w = '';
@@ -336,7 +336,7 @@ class Roster extends FormBase {
               <td class='slide  d$i' title='" . $title . "'>" . $i . "</td>";
             }
 
-//build employee array
+            //build employee array
             $emp_array = array();
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_hr_workforce', 'w')
@@ -352,14 +352,14 @@ class Roster extends FormBase {
                 $cnt++;
                 $emp_array[$e->id] = [
                     'custom_id' => $e->custom_id,
-                    'name' => $e->name, 
-                    'origin' => $e->origin, 
-                    'ic_no' => $e->ic_no, 
+                    'name' => $e->name,
+                    'origin' => $e->origin,
+                    'ic_no' => $e->ic_no,
                     'location' => $e->location];
             }
 
                         
-//build roster data array in 1 single query
+            //build roster data array in 1 single query
             $roster_array = array();
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_hr_workforce_roster', 'r')
@@ -379,7 +379,7 @@ class Roster extends FormBase {
                 $roster_array[$p->period][$p->emp_id] = ['roster' => $p->roster, 'status' => $p->status, 'note' => $p->note];
             }
 
-//loop the locations
+            //loop the locations
             $tr = 0;
             foreach ($locations as $key => $location) {
 
@@ -404,9 +404,7 @@ class Roster extends FormBase {
 
                 //loop employees list per location and extract the roster values to display
                 foreach ($emp_array as $key => $val) {
-
                     if ($val['location'] == $location) {
-                        
                         $eid = ($val['custom_id'] != '') ? $val['custom_id']:$key;
                         $form['roster']["startrow" . $key] = array(
                             '#type' => 'item',
@@ -418,7 +416,6 @@ class Roster extends FormBase {
 
 
                         for ($i = $s0; $i <= $c0; $i++) {
-
                             $class = '';
                             if ($dayType[$i] == 'n') {
                                 $class = 'week';
@@ -436,8 +433,8 @@ class Roster extends FormBase {
                                 $time = $roster_array[$this_date];
                                 $roster_time = $time[$key]['roster'];
                                 $status = $time[$key]['status'];
-                                if(isset($roster_array[$this_date][$key]) 
-                                        &&$roster_array[$this_date][$key]['note'] != ''){
+                                if (isset($roster_array[$this_date][$key])
+                                        &&$roster_array[$this_date][$key]['note'] != '') {
                                     $note_class = 'info_on';
                                 }
                             } else {
@@ -449,8 +446,9 @@ class Roster extends FormBase {
                                 $flag_rec = 1;
                                 $time = explode(',', $roster_time);
                                 $this_time = $this->roster->timed($roster_time);
-                                if ($this_time == '00:00')
+                                if ($this_time == '00:00') {
                                     $this_time = $status;
+                                }
                             } else {
                                 //$time = array($shift1,$shift1,$shift2,$shift2,$shift3,$shift3);
                                 $time = array('0.00', '0.00', '8.00', '8.00', '16.00', '16.00');
@@ -466,7 +464,7 @@ class Roster extends FormBase {
                             $opt = 'roster_note|'. $val['name'] . '_' . $ref;
                             $opt = serialize($opt);
                             $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
-                            $mark = "<a class='use-ajax' title = '" . t('note') . "' " . "href='" 
+                            $mark = "<a class='use-ajax' title = '" . t('note') . "' " . "href='"
                                     . $link . "'><span class='$note_class'></span></a>";
                             
                         
@@ -502,12 +500,9 @@ class Roster extends FormBase {
                                 '#prefix' => "<td class='slide status d$i'>",
                                 '#suffix' => "</td>",
                             );
-                            
-                            
                         } //cut-off to 1st
 
                         for ($i = $s; $i <= $c; $i++) {
-
                             $class = '';
                             if ($dayType[$i] == 'n') {
                                 $class = 'week';
@@ -526,8 +521,8 @@ class Roster extends FormBase {
                                 $time = $roster_array[$this_date];
                                 $roster_time = $time[$key]['roster'];
                                 $status = $time[$key]['status'];
-                                if(isset($roster_array[$this_date][$key]) 
-                                        && $roster_array[$this_date][$key]['note'] != ''){
+                                if (isset($roster_array[$this_date][$key])
+                                        && $roster_array[$this_date][$key]['note'] != '') {
                                     $note_class = 'info_on';
                                 }
                             } else {
@@ -539,8 +534,9 @@ class Roster extends FormBase {
                                 $flag_rec = 1;
                                 $time = explode(',', $roster_time);
                                 $this_time = $this->roster->timed($roster_time);
-                                if ($this_time == '00:00')
+                                if ($this_time == '00:00') {
                                     $this_time = $status;
+                                }
                             } else {
                                 $time = array('0.00', '0.00', '8.00', '8.00', '16.00', '16.00');
                                 $this_time = 0;
@@ -555,7 +551,7 @@ class Roster extends FormBase {
                             $opt = 'roster_note|'. $val['name'] . '_' . $ref;
                             $opt = serialize($opt);
                             $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
-                            $mark = "<a class='use-ajax' title = '" . t('note') . "' " . "href='" 
+                            $mark = "<a class='use-ajax' title = '" . t('note') . "' " . "href='"
                                     . $link . "'><span class='$note_class'></span></a>";
                             
                             $form['roster']["day" . $ref] = array(
@@ -646,7 +642,7 @@ class Roster extends FormBase {
 
 
 
-        $form['#tree'] = TRUE;
+        $form['#tree'] = true;
         $form['#attached']['drupalSettings']['roster'] = $settings;
         $form['#attached']['library'][] = 'ek_hr/ek_hr.roster';
         $form['#attached']['library'][] = 'ek_admin/ek_admin_css';
@@ -657,8 +653,8 @@ class Roster extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == 1) {
             $form_state->set('step', 2);
             $form_state->setRebuild();
@@ -678,10 +674,9 @@ class Roster extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == 4) {
-
             $data = $form_state->getValue('roster');
             $fields = [];
             $audit = \Drupal::currentUser()->getAccountName() . "|" . date('U');
@@ -725,36 +720,30 @@ class Roster extends FormBase {
                     }
                 }
                 
-                if($clone == 0){
+                if ($clone == 0) {
                     \Drupal::messenger()->addWarning(t('No record copied to @d; Data already exist for that period.', ['@d' => date('m-Y', strtotime("+1 month", strtotime($period)))]));
-                 
                 } else {
                     \Drupal::messenger()->addStatus(t('@r record(s) copied to roster for @d', ['@r' => $clone,'@d' => date('m-Y', strtotime("+1 month", strtotime($period)))]));
                 }
-            
-                
             } else {
-                
                 if ($triggering_element['#id'] == 'edit-actions-post') {
-                        //post total hours to payroll
-                        //this will only update days in table for normal and public holidays
-                        //will not calculate values.
-                        $total = [];
-                        $dayType = $form_state->getValue('daytype');
-                        //Get settings
-                        $param = NEW HrSettings($form_state->getValue('coid'));
-                        $settings = $param->HrRoster[$form_state->getValue('coid')];
-                        if(!isset($settings['hours_day'])) {
-                            $hours_day = 60*60*8;
-                        } else {
-                            $hours_day = 60*60*$settings['hours_day'];
-                        }
+                    //post total hours to payroll
+                    //this will only update days in table for normal and public holidays
+                    //will not calculate values.
+                    $total = [];
+                    $dayType = $form_state->getValue('daytype');
+                    //Get settings
+                    $param = new HrSettings($form_state->getValue('coid'));
+                    $settings = $param->HrRoster[$form_state->getValue('coid')];
+                    if (!isset($settings['hours_day'])) {
+                        $hours_day = 60*60*8;
+                    } else {
+                        $hours_day = 60*60*$settings['hours_day'];
+                    }
                 }
 
                 foreach ($data as $key => $value) {
-
                     if (strstr($key, 'roster-')) {
-
                         $string = str_replace('roster-', '', $key);
                         $id = explode('_', $string);
 
@@ -787,63 +776,58 @@ class Roster extends FormBase {
                    
                     
                         if ($triggering_element['#id'] == 'edit-actions-post') {
-                            //collect total hours                         
+                            //collect total hours
                             $eid = $id[1];
                             $parts = explode('-', $id[0]);
-                            if(!isset($total[$eid])){
+                            if (!isset($total[$eid])) {
                                 $total[$eid]['normal'] = 0;
                                 $total[$eid]['ph'] = 0;
                             }
 
                             //calculate total hours
                             if ($value != '') {
-                                
-                                    if($dayType[$parts[2]] == 's' || $dayType[$parts[2]] == 'n') {
-                                        $total[$eid]['normal'] = $total[$eid]['normal'] + $this->roster->timed($value, TRUE) / $hours_day;
-                                    } else {
-                                        $total[$eid]['ph'] = $total[$eid]['ph'] + $this->roster->timed($value, TRUE) / $hours_day;
-                                    }
-
+                                if ($dayType[$parts[2]] == 's' || $dayType[$parts[2]] == 'n') {
+                                    $total[$eid]['normal'] = $total[$eid]['normal'] + $this->roster->timed($value, true) / $hours_day;
+                                } else {
+                                    $total[$eid]['ph'] = $total[$eid]['ph'] + $this->roster->timed($value, true) / $hours_day;
+                                }
                             }
-                        }   
+                        }
                     }
                 }//for each
                 
                 if ($triggering_element['#id'] == 'edit-actions-post') {
                     //loop total to push data to payroll
-                        foreach($total as $eid => $day){
-                            if(!isset($day['normal'])) {
-                                $day['normal'] = 0;
-                            }
-                            if(!isset($day['ph'])) {
-                                $day['ph'] = 0;
-                            }
-                            $query = Database::getConnection('external_db', 'external_db')
+                    foreach ($total as $eid => $day) {
+                        if (!isset($day['normal'])) {
+                            $day['normal'] = 0;
+                        }
+                        if (!isset($day['ph'])) {
+                            $day['ph'] = 0;
+                        }
+                        $query = Database::getConnection('external_db', 'external_db')
                                 ->select('ek_hr_workforce_pay', 'p')
                                 ->fields('p', ['id'])
                                 ->condition('id', $eid);
                             
-                            if($rec = $query->execute()->fetchField()){
-                                Database::getConnection('external_db', 'external_db')
+                        if ($rec = $query->execute()->fetchField()) {
+                            Database::getConnection('external_db', 'external_db')
                                         ->update('ek_hr_workforce_pay')
                                         ->fields(['month' => $form_state->getValue('cycle'),'n_days' => $day['normal'],'ph_day' => $day['ph']])
                                         ->condition('id', $eid)
                                         ->execute();
-                            } else {
-                                Database::getConnection('external_db', 'external_db')
+                        } else {
+                            Database::getConnection('external_db', 'external_db')
                                         ->insert('ek_hr_workforce_pay')
                                         ->fields(['id' => $eid, 'month' => $form_state->getValue('cycle'),'n_days' => $day['normal'],'ph_day' => $day['ph']])
                                         ->execute();
-                            }
-
                         }
-                        \Drupal::messenger()->addStatus(t('Roster data pushed to payroll @c', ['@c' => $form_state->getValue('cycle')]));
-                        
+                    }
+                    \Drupal::messenger()->addStatus(t('Roster data pushed to payroll @c', ['@c' => $form_state->getValue('cycle')]));
                 }
                 $_SESSION['m'] = $form_state->getValue('cycle');
                 \Drupal::messenger()->addStatus(t('Roster recorded'));
             }
         }
     }
-
 }

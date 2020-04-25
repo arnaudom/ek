@@ -18,119 +18,120 @@ use Drupal\ek_admin\Access\AccessCheck;
 /**
  * Provides a form to filter companies.
  */
-class FilterCompanyList extends FormBase {
+class FilterCompanyList extends FormBase
+{
 
   /**
    * The module handler.
    *
    * @var \Drupal\Core\Extension\ModuleHandler
    */
-  protected $moduleHandler;
+    protected $moduleHandler;
 
-  /**
-   * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-   *   The module handler.
-   */
-  public function __construct(ModuleHandler $module_handler) {
-    $this->moduleHandler = $module_handler;
-  }
+    /**
+     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+     *   The module handler.
+     */
+    public function __construct(ModuleHandler $module_handler)
+    {
+        $this->moduleHandler = $module_handler;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container)
+    {
+        return new static(
       $container->get('module_handler')
     );
-  }
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'employee_list_filter';
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
+        return 'employee_list_filter';
+    }
 
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-  
-  $company = AccessCheck::CompanyListByUid();
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $company = AccessCheck::CompanyListByUid();
 
-    $form['filters'] = array(
+        $form['filters'] = array(
       '#type' => 'details',
       '#title' => $this->t('Filter'),
-      '#open' => TRUE,
+      '#open' => true,
       '#attributes' => array('class' => array('container-inline')),
-    );  
-            $form['filters']['filter'] = array(
+    );
+        $form['filters']['filter'] = array(
               '#type' => 'hidden',
               '#value' => 'filter',
               
             );
-            $form['filters']['coid'] = array(
+        $form['filters']['coid'] = array(
               '#type' => 'select',
               '#size' => 1,
               '#options' => $company,
-              '#default_value' => isset($_SESSION['hrlfilter']['coid']) ? $_SESSION['hrlfilter']['coid'] : NULL,
+              '#default_value' => isset($_SESSION['hrlfilter']['coid']) ? $_SESSION['hrlfilter']['coid'] : null,
               '#title' => t('company'),
-              '#required' => TRUE,
+              '#required' => true,
               '#prefix' => "",
-              '#suffix' => '',   
-              );           
+              '#suffix' => '',
+              );
 
   
           
             
 
-    $form['filters']['actions'] = array(
+        $form['filters']['actions'] = array(
       '#type' => 'actions',
       '#attributes' => array('class' => array('container-inline')),
     );
     
-    $form['filters']['actions']['submit'] = array(
+        $form['filters']['actions']['submit'] = array(
       '#type' => 'submit',
       '#value' => $this->t('Apply'),
       //'#suffix' => "</div>",
     );
 
-    if (!empty($_SESSION['hrlfilter'])) {
-      $form['filters']['actions']['reset'] = array(
+        if (!empty($_SESSION['hrlfilter'])) {
+            $form['filters']['actions']['reset'] = array(
         '#type' => 'submit',
         '#value' => $this->t('Reset'),
         '#limit_validation_errors' => array(),
         '#submit' => array(array($this, 'resetForm')),
-      ); 
-    } 
-  return $form;
+      );
+        }
+        return $form;
+    }
   
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
+    }
   
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        $_SESSION['hrlfilter']['coid'] = $form_state->getValue('coid');
+        $_SESSION['hrlfilter']['filter'] = 1;
+    }
   
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-
-  }
-  
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  
-  $_SESSION['hrlfilter']['coid'] = $form_state->getValue('coid');
-  $_SESSION['hrlfilter']['filter'] = 1;
-
-  }
-  
-  /**
-   * Resets the filter form.
-   */
-  public function resetForm(array &$form, FormStateInterface $form_state) {
-    $_SESSION['hrlfilter'] = array();
-  }
-  
+    /**
+     * Resets the filter form.
+     */
+    public function resetForm(array &$form, FormStateInterface $form_state)
+    {
+        $_SESSION['hrlfilter'] = array();
+    }
 }

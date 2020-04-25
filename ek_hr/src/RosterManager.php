@@ -7,13 +7,14 @@ use Drupal\Core\Database\Database;
 /**
  * Defines an RostertManager service.
  */
-class RosterManager implements RosterManagerInterface {
+class RosterManager implements RosterManagerInterface
+{
 
     /**
      * {@inheritdoc}
      */
-    function timed($roster, $raw = FALSE, $format = '1') {
-
+    public function timed($roster, $raw = false, $format = '1')
+    {
         $r = explode(",", $roster);
         $t0 = explode(".", $r[0]);
         $s = is_numeric($t0[0]) ? $t0[0] : 0;
@@ -42,7 +43,7 @@ class RosterManager implements RosterManagerInterface {
 
         $total = ($tb - $ta) + ($td - $tc) + ($tf - $te);
 
-        if ($raw == TRUE) {
+        if ($raw == true) {
             return $total;
         } else {
             if ($format == '1') {
@@ -56,10 +57,11 @@ class RosterManager implements RosterManagerInterface {
     /**
      * {@inheritdoc}
      */
-    public function shift($roster) {
+    public function shift($roster)
+    {
         $r = explode(",", $roster);
         $shift = '';
-        if ($r[1] - $r[0] == 8 && $r[3] - $r[2] == 8 && $r[5] - $r[4] == 8 ) {
+        if ($r[1] - $r[0] == 8 && $r[3] - $r[2] == 8 && $r[5] - $r[4] == 8) {
             $shift .= "S1=from $r[0] to $r[5] \r\n";
         } elseif ($r[1] - $r[0] > 0 && $r[3] - $r[2] > 0 && $r[5] - $r[4] == 0 && $r[1] == $r[2]) {
             $shift .= "S1=from $r[0] to $r[3] \r\n";
@@ -140,16 +142,15 @@ class RosterManager implements RosterManagerInterface {
     /**
      * {@inheritdoc}
      */
-    public function dayType($month_0, $month_1, $start_0, $start_1, $cut_0, $cut_1, $coid) {
-
+    public function dayType($month_0, $month_1, $start_0, $start_1, $cut_0, $cut_1, $coid)
+    {
         $dayType = [];
         $query = "SELECT * FROM {ek_hr_workforce_ph} WHERE date=:d AND coid=:coid";
-        $roster = NEW \Drupal\ek_hr\HrSettings($coid);
+        $roster = new \Drupal\ek_hr\HrSettings($coid);
         $settings = $roster->HrRoster[$coid];
         $last_day = isset($settings['last_day']) ? $settings['last_day'] : 7;
 
         for ($i = $start_0; $i <= $cut_0; $i++) {
-
             $date = $month_0 . '-' . $i;
             $a = [':d' => $date, ':coid' => $coid];
             $ph = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
@@ -169,7 +170,6 @@ class RosterManager implements RosterManagerInterface {
         }
 
         for ($i = $start_1; $i <= $cut_1; $i++) {
-
             $date = $month_1 . '-' . $i;
             $a = [':d' => $date, ':coid' => $coid];
             $ph = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
@@ -194,7 +194,8 @@ class RosterManager implements RosterManagerInterface {
     /**
      * {@inheritdoc}
      */
-    public function to_hms($seconds, $format = 'H:m') {
+    public function to_hms($seconds, $format = 'H:m')
+    {
         $hours = floor($seconds / 3600);
         $mins = floor(($seconds - ($hours * 3600)) / 60);
         $secs = floor($seconds % 60);
@@ -206,7 +207,8 @@ class RosterManager implements RosterManagerInterface {
     /**
      * {@inheritdoc}
      */
-    public function to_second($hms) {
+    public function to_second($hms)
+    {
         $t_ = explode(":", $hms);
         $s = 0;
         $m = 0;
@@ -222,24 +224,26 @@ class RosterManager implements RosterManagerInterface {
     /**
      * {@inheritdoc}
      */
-    public function filter_shift($roster){
-        
-        if($roster == ''){
+    public function filter_shift($roster)
+    {
+        if ($roster == '') {
             return $roster;
         }
         $r = explode(",", $roster);
         
         if ($r[0] == '8.00' && $r[1] == '8.00') {
-            $r[0] = '0.00' ; $r[1] = '0.00';
+            $r[0] = '0.00' ;
+            $r[1] = '0.00';
         }
         if ($r[2] == '16.00' && $r[3] == '16.00') {
-            $r[2] = '8.00' ; $r[3] = '8.00';
+            $r[2] = '8.00' ;
+            $r[3] = '8.00';
         }
         if ($r[4] == '24.00' && $r[5] == '24.00') {
-            $r[4] = '16.00' ; $r[5] = '16.00';
+            $r[4] = '16.00' ;
+            $r[5] = '16.00';
         }
         
-        return implode(',',$r);
-        
+        return implode(',', $r);
     }
 }

@@ -19,7 +19,8 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to create or edit locations
  */
-class EditLocation extends FormBase {
+class EditLocation extends FormBase
+{
 
     /**
      * The module handler.
@@ -32,14 +33,16 @@ class EditLocation extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler)
+    {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler')
         );
@@ -48,16 +51,16 @@ class EditLocation extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'location_edit';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
+    {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
@@ -68,10 +71,10 @@ class EditLocation extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : NULL,
+            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
             '#title' => t('company'),
-            '#disabled' => ($form_state->getValue('coid')) ? TRUE : FALSE,
-            '#required' => TRUE,
+            '#disabled' => ($form_state->getValue('coid')) ? true : false,
+            '#required' => true,
         );
 
         if (($form_state->getValue('coid')) == '') {
@@ -88,7 +91,6 @@ class EditLocation extends FormBase {
         }
 
         if ($form_state->get('step') == 2) {
-
             $form_state->set('step', 3);
             $query = "SELECT * from {ek_hr_location} where coid=:c";
             $a = array(':c' => $form_state->getValue('coid'));
@@ -112,7 +114,7 @@ class EditLocation extends FormBase {
             );
 
             $form['l-table'] = array(
-                '#tree' => TRUE,
+                '#tree' => true,
                 '#theme' => 'table',
                 '#header' => $header,
                 '#rows' => array(),
@@ -121,9 +123,7 @@ class EditLocation extends FormBase {
             );
 
 
-            While ($r = $data->fetchObject()) {
-
-
+            while ($r = $data->fetchObject()) {
                 $id = $r->id;
 
                 $form['name'] = array(
@@ -133,7 +133,7 @@ class EditLocation extends FormBase {
                     '#maxlength' => 255,
                     '#default_value' => $r->location,
                     '#attributes' => array('placeholder' => t('location name')),
-                    '#required' => TRUE,
+                    '#required' => true,
                 );
                 
                 $form['nameold'] = array(
@@ -272,17 +272,14 @@ class EditLocation extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
-
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == 1) {
-
             $form_state->set('step', 2);
             $form_state->setRebuild();
         }
 
         if ($form_state->get('step') == 3) {
-
             if ($form_state->getValue('description') <> '') {
                 if ($form_state->getValue('name') == '') {
                     $form_state->setErrorByName('newname', $this->t('You need to enter a name'));
@@ -294,21 +291,16 @@ class EditLocation extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == 3) {
-
             $list = $form_state->getValue('l-table');
             foreach ($list as $key => $value) {
-                
                 if (!is_numeric($value['turnover'])) {
                     $value['turnover'] = 0;
                 }
 
                 if ($key <> 'new') {
-                    
                     $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_hr_workforce', 'w');
                     $query->addExpression('Count(id)', 'count');
@@ -319,7 +311,6 @@ class EditLocation extends FormBase {
                     
                             
                     if ($value['del'] == 1) {
-
                         if ($count > 0) {
                             \Drupal::messenger()->addWarning(t('Location \'@l\' cannot be deleted because it is used.', ['@l' => $value['nameold']]));
                         } else {
@@ -329,16 +320,15 @@ class EditLocation extends FormBase {
                                     ->execute();
                             \Drupal::messenger()->addWarning(t('Location \'@l\'  deleted', ['@l' => $value['nameold']]));
                         }
-                        
                     } else {
                         //edit
                        
-                        $loc = str_replace('/','_', $value['name']);
+                        $loc = str_replace('/', '_', $value['name']);
                         
-                        if($value['name'] != $value['nameold']){
+                        if ($value['name'] != $value['nameold']) {
                             //edit location name
                             //update existing
-                            if ($count > 0) { 
+                            if ($count > 0) {
                                 //update workforce
                                 Database::getConnection('external_db', 'external_db')
                                 ->update('ek_hr_workforce')
@@ -346,7 +336,6 @@ class EditLocation extends FormBase {
                                 ->condition('location', $value['nameold'])
                                 ->execute();
                             }
-                            
                         }
                         
                         //update location table
@@ -362,12 +351,10 @@ class EditLocation extends FormBase {
                                 ->condition('id', $key)
                                 ->execute();
                     }
-                    
                 } else {
                     //new
                     if ($value['name'] <> '') {
-                        
-                        $loc = str_replace('/','_', $value['name']);
+                        $loc = str_replace('/', '_', $value['name']);
                         $fields = array(
                             'coid' => $form_state->getValue('coid'),
                             'location' => Xss::filter($loc),
@@ -388,5 +375,4 @@ class EditLocation extends FormBase {
             \Drupal::messenger()->addStatus(t('Data updated'));
         }//step 3
     }
-
 }

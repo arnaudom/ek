@@ -17,12 +17,14 @@ use Drupal\Core\Ajax\CloseDialogCommand;
 /**
  * Provides a form to edit note in roster.
  */
-class RosterNoteEdit extends FormBase {
+class RosterNoteEdit extends FormBase
+{
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_hr_edit_roster_note';
     }
 
@@ -31,10 +33,10 @@ class RosterNoteEdit extends FormBase {
      * @param period : the note date
      * @param eid :employee id
      * @param name :employee name
-     * 
+     *
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $period = NULL, $eid = NULL, $name = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $period = null, $eid = null, $name = null)
+    {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_hr_workforce_roster', 'r')
                 ->fields('r', ['note']);
@@ -93,10 +95,11 @@ class RosterNoteEdit extends FormBase {
         return $form;
     }
 
-   /**
-   * @return \Drupal\Core\Ajax\AjaxResponse
-   */
-    public function closeModal(array &$form, FormStateInterface $form_state) {
+    /**
+    * @return \Drupal\Core\Ajax\AjaxResponse
+    */
+    public function closeModal(array &$form, FormStateInterface $form_state)
+    {
         $response = new AjaxResponse();
         $response->addCommand(new CloseModalDialogCommand());
         return $response;
@@ -105,14 +108,15 @@ class RosterNoteEdit extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-        
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
 
         /**/
         $query = Database::getConnection('external_db', 'external_db')
@@ -152,5 +156,4 @@ class RosterNoteEdit extends FormBase {
             $form_state->setRebuild();
         }
     }
-
 }

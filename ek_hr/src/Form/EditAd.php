@@ -21,7 +21,8 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to edit allowances and deductions
  */
-class EditAd extends FormBase {
+class EditAd extends FormBase
+{
 
     /**
      * The module handler.
@@ -34,14 +35,16 @@ class EditAd extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler)
+    {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler')
         );
@@ -50,18 +53,17 @@ class EditAd extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ad_edit';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == '') {
-
             $form_state->set('step', 1);
         }
 
@@ -71,11 +73,11 @@ class EditAd extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : NULL,
+            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
             '#title' => t('company'),
-            '#disabled' => ($form_state->getValue('coid')) ? TRUE : FALSE,
-            '#required' => TRUE,
-            '#disabled' => ($form_state->get('step') > 1) ? TRUE : FALSE,
+            '#disabled' => ($form_state->getValue('coid')) ? true : false,
+            '#required' => true,
+            '#disabled' => ($form_state->get('step') > 1) ? true : false,
             '#ajax' => array(
                 'callback' => array($this, 'categories'),
                 'wrapper' => 'category',
@@ -83,20 +85,18 @@ class EditAd extends FormBase {
         );
 
         if ($form_state->get('step') <> 2) {
-
             $form['category'] = array(
                 '#type' => 'select',
                 '#options' => ($form_state->get('opt')) ? $form_state->get('opt') : array(),
-                '#default_value' => ($form_state->get('opt')) ? $form_state->getValue('category') : NULL,
+                '#default_value' => ($form_state->get('opt')) ? $form_state->getValue('category') : null,
                 '#title' => t('category'),
-                '#required' => TRUE,
+                '#required' => true,
                 '#prefix' => "<div id='category'>",
                 '#suffix' => '</div>',
-                '#validated' => TRUE,
+                '#validated' => true,
             );
         } else {
-
-            $param = NEW HrSettings($form_state->getValue('coid'));
+            $param = new HrSettings($form_state->getValue('coid'));
             $categories = $param->HrCat[$form_state->getValue('coid')];
 
             $form['selected'] = array(
@@ -114,9 +114,7 @@ class EditAd extends FormBase {
         }
 
         if ($form_state->get('step') == 2) {
-
-
-            $param = NEW HrSettings($form_state->getValue('coid'));
+            $param = new HrSettings($form_state->getValue('coid'));
             $list = $param->HrAd[$form_state->getValue('coid')];
             $cat = $form_state->getValue('category');
 
@@ -272,7 +270,7 @@ class EditAd extends FormBase {
                         ->condition('coid', $form_state->getValue('coid'))
                         ->execute();
 
-                $category = NEW HrSettings($form_state->getValue('coid'));
+                $category = new HrSettings($form_state->getValue('coid'));
                 $list = $category->HrAd[$form_state->getValue('coid')];
             }
 
@@ -292,8 +290,8 @@ class EditAd extends FormBase {
             $form['AF'] = array(
                 '#type' => 'details',
                 '#title' => t('Fixed allowances'),
-                '#collapsible' => TRUE,
-                '#open' => TRUE,
+                '#collapsible' => true,
+                '#open' => true,
             );
 
             $form['AF']["headerline"] = array(
@@ -304,8 +302,8 @@ class EditAd extends FormBase {
             $form['AC'] = array(
                 '#type' => 'details',
                 '#title' => t('Custom allowances'),
-                '#collapsible' => TRUE,
-                '#open' => TRUE,
+                '#collapsible' => true,
+                '#open' => true,
             );
 
             $form['AC']["headerline"] = array(
@@ -316,8 +314,8 @@ class EditAd extends FormBase {
             $form['DF'] = array(
                 '#type' => 'details',
                 '#title' => t('Fixed deductions'),
-                '#collapsible' => TRUE,
-                '#open' => TRUE,
+                '#collapsible' => true,
+                '#open' => true,
             );
 
             $form['DF']["headerline"] = array(
@@ -328,8 +326,8 @@ class EditAd extends FormBase {
             $form['DC'] = array(
                 '#type' => 'details',
                 '#title' => t('Custom deductions'),
-                '#collapsible' => TRUE,
-                '#open' => TRUE,
+                '#collapsible' => true,
+                '#open' => true,
             );
 
             $form['DC']["headerline"] = array(
@@ -338,16 +336,13 @@ class EditAd extends FormBase {
             );
 
             foreach ($list as $key => $value) {
-
                 if (strpos($key, '-' . $cat)) {
-
-
                     $group = substr($key, 1, 2);
 
                     if (substr($group, 1, 1) == 'F') {
-                        $read = FALSE;
+                        $read = false;
                     } else {
-                        $read = TRUE;
+                        $read = true;
                     }
 
 
@@ -429,8 +424,8 @@ class EditAd extends FormBase {
     /**
      * Callback
      */
-    public function step_2(array &$form, FormStateInterface $form_state) {
-
+    public function step_2(array &$form, FormStateInterface $form_state)
+    {
         $form_state->set('step', 2);
         $form_state->setRebuild();
     }
@@ -438,8 +433,8 @@ class EditAd extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == 3) {
             //TODO insert numeric validation for value
         }
@@ -448,17 +443,14 @@ class EditAd extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == 3) {
-
-            $category = NEW HrSettings($form_state->getValue('coid'));
+            $category = new HrSettings($form_state->getValue('coid'));
             $list = $category->HrAd[$form_state->getValue('coid')];
 
             foreach ($list as $key => $value) {
                 if (strpos($key, '-' . $form_state->getValue('selected_category'))) {
-
                     $v = array(
                         'value' => Xss::filter($form_state->getValue($key . '-value')),
                         'type' => $value['type'],
@@ -468,7 +460,9 @@ class EditAd extends FormBase {
                     );
 
                     $category->set(
-                            'ad', $key, $v
+                        'ad',
+                        $key,
+                        $v
                     );
                 }
             }
@@ -482,14 +476,13 @@ class EditAd extends FormBase {
     /**
      * Callback
      */
-    public function categories(array &$form, FormStateInterface $form_state) {
-
-        $param = NEW HrSettings($form_state->getValue('coid'));
+    public function categories(array &$form, FormStateInterface $form_state)
+    {
+        $param = new HrSettings($form_state->getValue('coid'));
         $cat = $param->HrCat[$form_state->getValue('coid')];
         $form['category']['#options'] = $cat;
         $form_state->set('opt', $cat);
         //$form_state->setRebuild();
         return $form['category'];
     }
-
 }

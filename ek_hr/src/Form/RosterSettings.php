@@ -19,7 +19,8 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to edit roster settings
  */
-class RosterSettings extends FormBase {
+class RosterSettings extends FormBase
+{
 
     /**
      * The module handler.
@@ -32,15 +33,16 @@ class RosterSettings extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler)
+    {
         $this->moduleHandler = $module_handler;
-        
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler')
         );
@@ -49,18 +51,17 @@ class RosterSettings extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'roster_settings';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == '') {
-
             $form_state->set('step', 1);
         }
 
@@ -70,10 +71,10 @@ class RosterSettings extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : NULL,
+            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
             '#title' => t('Company'),
-            '#disabled' => ($form_state->getValue('coid')) ? TRUE : FALSE,
-            '#required' => TRUE,
+            '#disabled' => ($form_state->getValue('coid')) ? true : false,
+            '#required' => true,
         );
 
         if ($form_state->getValue('coid') == '') {
@@ -89,7 +90,6 @@ class RosterSettings extends FormBase {
         }
 
         if ($form_state->get('step') == 2) {
-
             $form_state->set('step', 3);
 
             //verify if the settings table has the company
@@ -99,7 +99,6 @@ class RosterSettings extends FormBase {
                     ->fetchField();
 
             if ($row != 1) {
-
                 Database::getConnection('external_db', 'external_db')
                         ->insert('ek_hr_workforce_settings')
                         ->fields(array('coid' => $form_state->getValue('coid')))
@@ -107,7 +106,7 @@ class RosterSettings extends FormBase {
             }
 
 
-            $roster = NEW HrSettings($form_state->getValue('coid'));
+            $roster = new HrSettings($form_state->getValue('coid'));
             $settings = $roster->HrRoster[$form_state->getValue('coid')];
 
             /*
@@ -152,7 +151,7 @@ class RosterSettings extends FormBase {
                 '#size' => 2,
                 '#default_value' => isset($settings['hours_day']) ? $settings['hours_day'] : 8,
                 '#title' => t('Worked hours per day'),
-                '#required' => TRUE,
+                '#required' => true,
                 
             );
 
@@ -161,7 +160,7 @@ class RosterSettings extends FormBase {
                 '#options' => ['1' => 'hh:mm', '2' => 'decimal point'],
                 '#default_value' => isset($settings['roster_hours_format']) ? $settings['roster_hours_format'] : 8,
                 '#title' => t('Hours format in roster export'),
-                '#required' => TRUE,
+                '#required' => true,
                 
             );
             
@@ -170,7 +169,7 @@ class RosterSettings extends FormBase {
                 '#options' => ['1' => t('Monday'), '2' => t('Tuesday'),'3' => t('Wednesday'),'4' => t('Thursday'),'5' => t('Friday'),'6' => t('Saturday'),'7' => t('Sunday'),],
                 '#default_value' => isset($settings['last_day']) ? $settings['last_day'] : 7,
                 '#title' => t('Last day of the week'),
-                '#required' => TRUE,
+                '#required' => true,
                 
             );
 
@@ -195,8 +194,8 @@ class RosterSettings extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == 1) {
             $form_state->set('step', 2);
             $form_state->setRebuild();
@@ -210,12 +209,10 @@ class RosterSettings extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == 3) {
-
-            $roster = NEW HrSettings($form_state->getValue('coid'));
+            $roster = new HrSettings($form_state->getValue('coid'));
             $settings = $roster->HrRoster[$form_state->getValue('coid')];
 
             $roster->set('roster', 'hours_day', $form_state->getValue('hours_day'));
@@ -234,5 +231,4 @@ class RosterSettings extends FormBase {
             $roster->save();
         }//step 3
     }
-
 }

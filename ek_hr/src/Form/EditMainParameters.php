@@ -19,7 +19,8 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to create or edit HR main parameters
  */
-class EditMainParameters extends FormBase {
+class EditMainParameters extends FormBase
+{
 
     /**
      * The module handler.
@@ -32,14 +33,16 @@ class EditMainParameters extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler)
+    {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler')
         );
@@ -48,18 +51,17 @@ class EditMainParameters extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'main_parameters_edit';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
+    {
         if ($form_state->get('step') == '') {
-
             $form_state->set('step', 1);
         }
 
@@ -69,10 +71,10 @@ class EditMainParameters extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : NULL,
+            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
             '#title' => t('company'),
-            '#disabled' => ($form_state->getValue('coid')) ? TRUE : FALSE,
-            '#required' => TRUE,
+            '#disabled' => ($form_state->getValue('coid')) ? true : false,
+            '#required' => true,
         );
 
         if ($form_state->getValue('coid') == '') {
@@ -89,7 +91,6 @@ class EditMainParameters extends FormBase {
         }
 
         if ($form_state->get('step') == 2) {
-
             $form_state->set('step', 3);
 
             //verify if the settings table has the company
@@ -97,14 +98,13 @@ class EditMainParameters extends FormBase {
             $row = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $form_state->getValue('coid')))->fetchField();
 
             if (!$row == 1) {
-
                 Database::getConnection('external_db', 'external_db')
                         ->insert('ek_hr_workforce_settings')
                         ->fields(array('coid' => $form_state->getValue('coid')))
                         ->execute();
             }
 
-            $param = NEW HrSettings($form_state->getValue('coid'));
+            $param = new HrSettings($form_state->getValue('coid'));
             $list = $param->HrParam;
 
 
@@ -161,17 +161,16 @@ class EditMainParameters extends FormBase {
                         ->condition('coid', $form_state->getValue('coid'))
                         ->execute();
 
-                $category = NEW HrSettings($form_state->getValue('coid'));
+                $category = new HrSettings($form_state->getValue('coid'));
                 $list = $category->HrParam;
             }
 
             foreach ($list as $key => $value) {
-
                 $form[$key] = array(
                     '#type' => 'details',
                     '#title' => str_replace('_', ' ', $key),
-                    '#open' => TRUE,
-                    '#tree' => TRUE,
+                    '#open' => true,
+                    '#tree' => true,
                 );
 
                 $form[$key]['name'] = array(
@@ -239,8 +238,8 @@ class EditMainParameters extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == 1) {
             $form_state->set('step', 2);
             $form_state->setRebuild();
@@ -250,26 +249,27 @@ class EditMainParameters extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == 3) {
-            $settings = NEW HrSettings($form_state->getValue('coid'));
+            $settings = new HrSettings($form_state->getValue('coid'));
             $params = $settings->HrParam;
 
             foreach ($params as $key => $values) {
                 $data = Xss::filter($form_state->getValue($key));
-                foreach($data as $param => $val)
-                $settings->set(
-                        'param', $key, [$param, $val]
-                );
-                
+                foreach ($data as $param => $val) {
+                    $settings->set(
+                        'param',
+                        $key,
+                        [$param, $val]
+                    );
+                }
             }
 
-           $save = $settings->save();
-           if($save) {
-               \Drupal::messenger()->addStatus('Data saved');
-           }
+            $save = $settings->save();
+            if ($save) {
+                \Drupal::messenger()->addStatus('Data saved');
+            }
         }//step 3
     }
-
 }

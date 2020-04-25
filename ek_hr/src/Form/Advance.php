@@ -19,7 +19,8 @@ use Drupal\ek_admin\Access\AccessCheck;
 /**
  * Provides a form to record salary advance
  */
-class Advance extends FormBase {
+class Advance extends FormBase
+{
 
     /**
      * The module handler.
@@ -32,14 +33,16 @@ class Advance extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler)
+    {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler')
         );
@@ -48,15 +51,16 @@ class Advance extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'hr_advance_payroll';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
+    {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
@@ -67,10 +71,10 @@ class Advance extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : NULL,
+            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
             '#title' => t('company'),
-            '#disabled' => ($form_state->getValue('coid')) ? TRUE : FALSE,
-            '#required' => TRUE,
+            '#disabled' => ($form_state->getValue('coid')) ? true : false,
+            '#required' => true,
         );
 
         if ($form_state->getValue('coid') == '') {
@@ -87,10 +91,9 @@ class Advance extends FormBase {
         }
 
         if ($form_state->get('step') == 2) {
-
             $form_state->set('step', 3);
 
-                $query = Database::getConnection('external_db', 'external_db')
+            $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_hr_workforce', 'w')
                             ->fields('w', ['id','custom_id' ,'name','currency'])
                             ->condition('company_id', $form_state->getValue('coid'), '=')
@@ -119,14 +122,14 @@ class Advance extends FormBase {
             );
             
             $form['items']['itemTable'] = array(
-                '#tree' => TRUE,
+                '#tree' => true,
                 '#theme' => 'table',
                 '#header' => $header,
                 '#rows' => array(),
                 '#attributes' => array('id' => 'itemTable'),
                 '#empty' => '',
             );
-            While ($e = $employees->fetchObject()) {
+            while ($e = $employees->fetchObject()) {
                 $i++;
                 $eid = ($e->custom_id != '') ? $e->custom_id : $e->id;
                 $query = "SELECT advance FROM {ek_hr_workforce_pay} WHERE id=:id";
@@ -149,13 +152,13 @@ class Advance extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 20,
                     '#maxlength' => 30,
-                    '#default_value' => (!NULL == $adv) ? $adv : 0, 
+                    '#default_value' => (!null == $adv) ? $adv : 0,
                     '#field_suffix' => "<span class=''>" . $e->currency . "</span>" ,
-                );   
+                );
                 $form['eid'] = array(
                     '#type' => 'hidden',
                     '#value' => $e->id,
-                );                 
+                );
                 //built edit rows for table
                 $form['items']['itemTable'][$i] = array(
                     'name' => &$form['name'],
@@ -178,7 +181,6 @@ class Advance extends FormBase {
                 unset($form['id']);
                 unset($form['advance']);
                 unset($form['eid']);
-                
             }
 
             $query = Database::getConnection('external_db', 'external_db')
@@ -205,7 +207,6 @@ class Advance extends FormBase {
             );
             
             $form['#attached']['library'][] = ['ek_hr/ek_hr_css'];
-            
         }
         
         return $form;
@@ -214,39 +215,34 @@ class Advance extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == 1) {
             $form_state->set('step', 2);
             $form_state->setRebuild();
         }
-         if ($form_state->get('step') == 3) {
-             
+        if ($form_state->get('step') == 3) {
             $rows = $form_state->getValue('itemTable');
             if (!empty($rows)) {
                 foreach ($rows as $key => $row) {
-                    if ($row['advance'] != NULL && !is_numeric($row['advance'])) {
+                    if ($row['advance'] != null && !is_numeric($row['advance'])) {
                         $form_state->setErrorByName("itemTable][$key][advance", $this->t('Non numeric value inserted: @v', ['@v' => $key]));
                     }
-
                 }
             }
-
-         }
+        }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->get('step') == 3) {
-
             $rows = $form_state->getValue('itemTable');
             if (!empty($rows)) {
                 foreach ($rows as $key => $row) {
-                    if ($row['advance'] != NULL ) {
-                        
+                    if ($row['advance'] != null) {
                         $query = "SELECT id FROM {ek_hr_workforce_pay} WHERE id=:id";
                         $eid = Database::getConnection('external_db', 'external_db')
                             ->query($query, [':id' => $row['eid']])
@@ -257,20 +253,16 @@ class Advance extends FormBase {
                                     ->fields(['advance' => $row['advance'], 'month' => $form_state->getValue('current')])
                                     ->condition('id', $row['eid'])
                                     ->execute();
-
                         } else {
                             Database::getConnection('external_db', 'external_db')
                                     ->insert('ek_hr_workforce_pay')
                                     ->fields(['id' => $row['eid'], 'advance' => $row['advance'], 'month' => $form_state->getValue('current')])
                                     ->execute();
-                       }
+                        }
                     }
-
                 }
             }
             \Drupal::messenger()->addStatus(t('Data recorded'));
-
         }
     }
-
 }

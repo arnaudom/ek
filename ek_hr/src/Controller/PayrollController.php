@@ -25,7 +25,8 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Controller routines for ek module routes.
  */
-class PayrollController extends ControllerBase {
+class PayrollController extends ControllerBase
+{
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -50,7 +51,8 @@ class PayrollController extends ControllerBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -64,7 +66,8 @@ class PayrollController extends ControllerBase {
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
+    {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -73,44 +76,43 @@ class PayrollController extends ControllerBase {
      * Return advance payroll form
      *
      */
-    public function Advance(Request $request) {
-
+    public function Advance(Request $request)
+    {
         $build['payrolladvance'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\Advance');
-        Return [
+        return [
             $build ,
             '#attached' => array(
                     'library' => array('ek_hr/ek_hr_css','ek_hr/ek_hr_tip','ek_admin/ek_admin_css'),
             ),
         ];
-        
     }
     /**
      * Return payroll form
      *
      */
-    public function payroll(Request $request) {
+    public function payroll(Request $request)
+    {
         $flag = 1;
-        if(!null == $request->query->get('coid')) {
-            $flag = (in_array($request->query->get('coid'),AccessCheck::GetCompanyByUser())) ? 1 : 0;
+        if (!null == $request->query->get('coid')) {
+            $flag = (in_array($request->query->get('coid'), AccessCheck::GetCompanyByUser())) ? 1 : 0;
         }
-        if(!null == $request->query->get('eid')) {
+        if (!null == $request->query->get('eid')) {
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_hr_workforce', 'h');
-                $query->fields('h', ['administrator'])
+            $query->fields('h', ['administrator'])
                         ->condition('id', $request->query->get('eid'), '=');
-                $e = $query->execute()->fetchField();
-                if($e != 0) {
-                    $admins = explode(',',$e);
-                    $flag = (in_array(\Drupal::currentUser()->id(),$admins)) ? 1 : 0;
-                }
-                
+            $e = $query->execute()->fetchField();
+            if ($e != 0) {
+                $admins = explode(',', $e);
+                $flag = (in_array(\Drupal::currentUser()->id(), $admins)) ? 1 : 0;
+            }
         }
-        if($flag == 0){
+        if ($flag == 0) {
             $url = Url::fromRoute('ek_hr.parameters', array(), array())->toString();
             $items['type'] = 'edit';
             $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('payroll')))];
             $items['description'] = ['#markup' => t('no access')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -118,59 +120,56 @@ class PayrollController extends ControllerBase {
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
                 '#cache' => ['max-age' => 0,],
-            ];  
-            
+            ];
         }
-        $build['payroll'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\PayrollRecord',$request->query->get('coid'),$request->query->get('eid'));
-        Return $build;
+        $build['payroll'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\PayrollRecord', $request->query->get('coid'), $request->query->get('eid'));
+        return $build;
     }
     
     /**
      * Callback for payroll form for tax/fund computation
      */
-    public function readTable(Request $request) {
-
+    public function readTable(Request $request)
+    {
         $coid = $request->query->get('coid');
         $type = $request->query->get('type');
         $value = $request->query->get('value');
-        $tax_category = (NULL != $request->query->get('tax_category')) ? $request->query->get('tax_category') : 0;
-        $ad_category = (NULL != $request->query->get('ad_category')) ? $request->query->get('ad_category') : 0;
-        $form_data = (NULL != $request->query->get('form_data')) ? $request->query->get('form_data') : [];
-        $field2 = (NULL != $request->query->get('field2')) ? $request->query->get('field2') : NULL;
-        $eid = (NULL != $request->query->get('eid')) ? $request->query->get('eid') : 0;
-        $current_month = (NULL != $request->query->get('eid')) ? $request->query->get('current_month') : 0;
+        $tax_category = (null != $request->query->get('tax_category')) ? $request->query->get('tax_category') : 0;
+        $ad_category = (null != $request->query->get('ad_category')) ? $request->query->get('ad_category') : 0;
+        $form_data = (null != $request->query->get('form_data')) ? $request->query->get('form_data') : [];
+        $field2 = (null != $request->query->get('field2')) ? $request->query->get('field2') : null;
+        $eid = (null != $request->query->get('eid')) ? $request->query->get('eid') : 0;
+        $current_month = (null != $request->query->get('eid')) ? $request->query->get('current_month') : 0;
         $param = ['coid' => $coid,'value' => $value,'ad_category' => $ad_category,'tax_category' => $tax_category,
                 'type' => $type,'eid' => $eid, 'current_month' => $current_month,'form_data' => $form_data,
-                ];       
+                ];
         if ($type != 'income_tax') {
             //call for funds table
-            if($this->moduleHandler->invokeAll('payroll_fund',[$param])){
-                $fund = $this->moduleHandler->invokeAll('payroll_fund',[$param]);
-                    return new JsonResponse($fund);
+            if ($this->moduleHandler->invokeAll('payroll_fund', [$param])) {
+                $fund = $this->moduleHandler->invokeAll('payroll_fund', [$param]);
+                return new JsonResponse($fund);
             } else {
                 return new JsonResponse(['amount1' => 0, 'amount2' => 0]);
             }
-            
         } else {
             //call for tax table
-            if($this->moduleHandler->invokeAll('payroll_tax', [$param])){
+            if ($this->moduleHandler->invokeAll('payroll_tax', [$param])) {
                 $tax = $this->moduleHandler->invokeAll('payroll_tax', [$param]);
-                    return new JsonResponse($tax);
+                return new JsonResponse($tax);
             } else {
                 return new JsonResponse(['amount1' => 0, 'amount2' => 0]);
             }
         }
         
         return [];
-
     }
 
     /**
      * Return current payroll list by company
      *
      */
-    public function payrollcurrent(Request $request) {
-
+    public function payrollcurrent(Request $request)
+    {
         $build['payrollcurrent'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\FilterCompanyList');
 
         $header = array(
@@ -226,14 +225,13 @@ class PayrollController extends ControllerBase {
         
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_hr_workforce_pay', 'wp');
-            $query->fields('wp');
-            $query->leftJoin('ek_hr_workforce', 'w', 'wp.id = w.id');
-            $query->orderBy('w.id');
-            $query->fields('w');
-            //$query->condition('active', 'resigned', '<>');
+        $query->fields('wp');
+        $query->leftJoin('ek_hr_workforce', 'w', 'wp.id = w.id');
+        $query->orderBy('w.id');
+        $query->fields('w');
+        //$query->condition('active', 'resigned', '<>');
             
         if (isset($_SESSION['hrlfilter']['filter']) && $_SESSION['hrlfilter']['filter'] == 1) {
-
             $query->condition('company_id', $_SESSION['hrlfilter']['coid'], '=');
             $query->condition('company_id', $access, 'IN');
             
@@ -256,7 +254,7 @@ class PayrollController extends ControllerBase {
                             '#links' => array(
                                 'edit' => array(
                                     'title' => $this->t('Edit pay'),
-                                    'url' => Url::fromRoute('ek_hr.payroll',['coid' => $_SESSION['hrlfilter']['coid'], 'eid' => $r->id]),
+                                    'url' => Url::fromRoute('ek_hr.payroll', ['coid' => $_SESSION['hrlfilter']['coid'], 'eid' => $r->id]),
                                 ),
                                 'change' => array(
                                     'title' => $this->t('Edit profile'),
@@ -284,9 +282,9 @@ class PayrollController extends ControllerBase {
                     'library' => array('ek_hr/ek_hr_css', 'ek_hr/ek_hr_help','ek_hr/ek_hr_tip','ek_admin/ek_admin_css'),
                 ),
             );
-        } 
+        }
 
-        Return $build;
+        return $build;
     }
 
     /*
@@ -294,8 +292,9 @@ class PayrollController extends ControllerBase {
      * @param array $param coid
      */
 
-    public function extractcurrent($param = NULL) {
-        $markup = array();    
+    public function extractcurrent($param = null)
+    {
+        $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = t('Excel library not available, please contact administrator.');
         } else {
@@ -303,7 +302,7 @@ class PayrollController extends ControllerBase {
 
             $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
             $company = implode(',', $access);
-            $opt = NEW HrSettings($param['coid']);
+            $opt = new HrSettings($param['coid']);
 
             $fund = [
                 'fund1' => $opt->get('param', 'c', 'value'),
@@ -332,15 +331,15 @@ class PayrollController extends ControllerBase {
      * call for for outputing payslips
      *
      */
-    public function payslip(Request $request) {
-
+    public function payslip(Request $request)
+    {
         $build['payslip'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\Payslip');
 
         if (isset($_SESSION['printpayslip']['filter']) && $_SESSION['printpayslip']['filter'] == 1) {
             $_SESSION['printpayslip']['filter'] = 0;
 
             $param = serialize(
-                    array(
+                array(
                         $_SESSION['printpayslip']['coid'],
                         $_SESSION['printpayslip']['month'],
                         $_SESSION['printpayslip']['template'],
@@ -368,26 +367,24 @@ class PayrollController extends ControllerBase {
      * call for for outputing forms
      *
      */
-    public function HrForms(Request $request) {
-
+    public function HrForms(Request $request)
+    {
         $build['payslip'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\FormSelect');
 
         if ($_SESSION['printforms']['filter'] == 1) {
             $param = serialize(
-                    array(
+                array(
                         $_SESSION['printforms']['coid'],
                         $_SESSION['printforms']['month'],
                         $_SESSION['printforms']['template'],
                     )
             );
 
-            if (strpos($_SESSION['printforms']['template'], '_xls') != FALSE) {
+            if (strpos($_SESSION['printforms']['template'], '_xls') != false) {
                 $_SESSION['printforms'] = array();
 
                 include_once drupal_get_path('module', 'ek_hr') . '/manage_output_form.inc';
-                
-            } elseif (strpos($_SESSION['printforms']['template'], '_pdf') != FALSE) {
-
+            } elseif (strpos($_SESSION['printforms']['template'], '_pdf') != false) {
                 $_SESSION['printforms'] = array();
                 $path = $GLOBALS['base_url'] . "/human-resources/print/output-form/" . $param;
                 $build['iframe'] = array(
@@ -396,14 +393,15 @@ class PayrollController extends ControllerBase {
             }
         }
 
-        Return $build;
+        return $build;
     }
 
     /**
      * manage output format of payslip selected
      *
      */
-    public function OutputPayslip(Request $request, $param) {
+    public function OutputPayslip(Request $request, $param)
+    {
         $markup = array();
         include_once drupal_get_path('module', 'ek_hr') . '/manage_output.inc';
         return ['#markup' => $markup];
@@ -413,7 +411,8 @@ class PayrollController extends ControllerBase {
      * manage output form selected
      *
      */
-    public function OutputForm(Request $request, $param) {
+    public function OutputForm(Request $request, $param)
+    {
         $markup = array();
         include_once drupal_get_path('module', 'ek_hr') . '/manage_output_form.inc';
         return ['#markup' => $markup];
@@ -423,12 +422,11 @@ class PayrollController extends ControllerBase {
      * post current data to archive
      *
      */
-    public function post(Request $request) {
-
+    public function post(Request $request)
+    {
         $build['post_payroll'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\PostData');
-        Return $build;
+        return $build;
     }
-
 }
 
 //class
