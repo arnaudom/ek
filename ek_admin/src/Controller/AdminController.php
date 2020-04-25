@@ -34,7 +34,8 @@ use Drupal\ek_admin\GlobalSettings;
 /**
  * Controller routines for ek module routes.
  */
-class AdminController extends ControllerBase {
+class AdminController extends ControllerBase
+{
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -77,7 +78,8 @@ class AdminController extends ControllerBase {
      */
     protected $state;
 
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('database'),
                 $container->get('form_builder'),
@@ -100,7 +102,8 @@ class AdminController extends ControllerBase {
      * @param \Drupal\Core\Entity\Query\QueryFactory $entity_query
      *   The entity query factory.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler, EntityTypeManager  $entity_manager, StateInterface $state) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler, EntityTypeManager  $entity_manager, StateInterface $state)
+    {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -114,13 +117,13 @@ class AdminController extends ControllerBase {
      * In order to use this function setup a server with a cron task to call admin task function
      * i.e. in Linux server
      *      0 0 * * *  wget --no-check-certificate https://[domain]/cron/task/[key]
-     * where key is drupal cron key you can get from /ek_admin/settings or /admin/config/system/cron 
+     * where key is drupal cron key you can get from /ek_admin/settings or /admin/config/system/cron
      * cron_get_tasks.php is a custom PHP file that will do tasks checking according to requirements and send emails
      * @return \Symfony\Component\HttpFoundation\Response
      *   A Symfony response object.
      */
-    public function run_task_cron($key) {
-
+    public function run_task_cron($key)
+    {
         if ($this->state->get('system.cron_key') == $key) {
             $stamp = date('U');
             $log = 'start tasks checking at: ' . date('Y-m-d h:i', $stamp);
@@ -140,12 +143,12 @@ class AdminController extends ControllerBase {
      * In order to use this function setup a server with a cron task to call admin task function
      * i.e. in Linux server
      *      0 0 * * *  wget --no-check-certificate https://[domain]/cron/backup/[key]
-     * where key is drupal cron key you can get from /ek_admin/settings or /admin/config/system/cron 
+     * where key is drupal cron key you can get from /ek_admin/settings or /admin/config/system/cron
      * @return \Symfony\Component\HttpFoundation\Response
      *   A Symfony response object.
      */
-    public function run_backup_cron($key) {
-
+    public function run_backup_cron($key)
+    {
         if ($this->state->get('system.cron_key') == $key) {
             $stamp = date('U');
             $log = 'send backup file to recipient: ' . date('Y-m-d h:i', $stamp);
@@ -164,10 +167,9 @@ class AdminController extends ControllerBase {
                         You are advised to download, verify and store your backup in a safe place.</p>");
             //scan settings root directory for configuration with backup files in separate sub directories
             $scan = scandir($backupDir);
-            foreach($scan as $directory) {
+            foreach ($scan as $directory) {
                 foreach ($backupFiles as $backupFile) {
                     if (file_exists($backupDir . "/" . $directory . "/" . $backupFile)) {
-                        
                         mail_attachment($recipients, $backupDir . "/" . $directory . "/" . $backupFile, $message, $options);
                     }
                 }
@@ -179,51 +181,50 @@ class AdminController extends ControllerBase {
     }
 
     /**
-     * Return default 
+     * Return default
      *
      */
-    public function isDefault() {
-        
+    public function isDefault()
+    {
         $site_config = \Drupal::config('system.site');
         $build = [];
-        if(!\Drupal::currentUser()->isAuthenticated() && \Drupal::service('theme_handler')->themeExists('ek_login')) {
+        if (!\Drupal::currentUser()->isAuthenticated() && \Drupal::service('theme_handler')->themeExists('ek_login')) {
             $build['img'] = drupal_get_path('module', 'ek_admin') . "/css/images/";
             $build['form'] = \Drupal::formBuilder()->getForm('Drupal\user\Form\UserLoginForm');
             $build['name'] = $site_config->get('name');
             return array(
                 '#theme' => 'ek_login',
                 '#items' => $build,
-                '#title' => t('login'),
+                '#title' => $this->t('login'),
                 '#attached' => array(
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
-            ); 
-            
+            );
         } else {
             $build['welcome'] = array(
-                 '#markup' => '<h2>' . t('Welcome to @s management site.', array('@s' => $site_config->get('name'))) . '</h2>',
+                 '#markup' => '<h2>' . $this->t('Welcome to @s management site.', array('@s' => $site_config->get('name'))) . '</h2>',
             );
 
-            $build['api']['0'] = [
+            $build['api']['adm'] = [
                 'name' => 'default_homepage',
                 'module' => 'Admin',
                 'stamp' => 1582532880,
                 'type' => "info",
-                'content' => t('This is your home page. You will find here updates and news about application features. Click on the start to mark it as read.'),
+                'content' => $this->t('This is your home page. You will find here updates and news about application features. Click on the start to mark it as read.'),
             ];
             $api = \Drupal::moduleHandler()->invokeAll('ek_home');
             $userData = \Drupal::service('user.data');
             foreach ($api as $k => $v) {
                 $page  = $v['module'] . "_" . $v['name'];
-                if(!$userData->get('ek_admin', \Drupal::currentUser()->id(), $page)) {
-                    $build['api'][$k] = $v; 
+                if (!$userData->get('ek_admin', \Drupal::currentUser()->id(), $page)) {
+                    $build['api'][$k] = $v;
                 }
             }
 
             return [
                 '#theme' => 'ek_admin_home',
                 '#items' => $build,
-                '#title' => t('Back office management'),
+                '#title' => $this->t('Back office management'),
                 '#attached' => array(
                     'library' => array('ek_admin/ek_admin_css','ek_admin/frontpage'),
                 ),
@@ -231,17 +232,16 @@ class AdminController extends ControllerBase {
                     'tags' => ['home'],
                     'contexts' => ['user'],
                 ],
-            ]; 
+            ];
         }
-        
-        
     }
 
     /**
-     * Return main 
+     * Return main
      *
      */
-    public function Admin() {
+    public function Admin()
+    {
 
         //verify proper setup of the external database
         //all data tables will be generated by the admin module outside from the system database
@@ -251,18 +251,16 @@ class AdminController extends ControllerBase {
         try {
             $external = Database::getConnectionInfo('external_db');
             if (!empty($external)) {
-                $db = TRUE;
+                $db = true;
             } else {
-                $db = FALSE;
+                $db = false;
             }
         } catch (Exception $e) {
-            
         }
 
-        if ($db == FALSE) {
-
+        if ($db == false) {
             $build['alert_db'] = array(
-                '#markup' => '<h3>' . t('You do not have external data database defined yet. You need to create one. '
+                '#markup' => '<h3>' . $this->t('You do not have external data database defined yet. You need to create one. '
                         . 'Data will be stored in this database and must exists before you validate these settings.') . '</h3>',
             );
             $build['form'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\SiteSettingsForm');
@@ -283,7 +281,7 @@ class AdminController extends ControllerBase {
                  */
                 $master = $this->currentUser()->hasPermission('administer site configuration');
                 if ($master) {
-                    $build['updatephp'] = ['#markup' => '<p>' . t('Always run the <a href=":update-php">update script</a> each time a module is updated.', [':update-php' => Url::fromRoute('system.db_update')->toString(),]) . '</p>'];
+                    $build['updatephp'] = ['#markup' => '<p>' . $this->t('Always run the <a href=":update-php">update script</a> each time a module is updated.', [':update-php' => Url::fromRoute('system.db_update')->toString(),]) . '</p>'];
                 }
                 //countries
                 $query = Database::getConnection('external_db', 'external_db')
@@ -296,7 +294,7 @@ class AdminController extends ControllerBase {
                     $_SESSION['install'] = 1;
                     $link = Url::fromRoute('ek_admin.country.list', array(), array())->toString();
                     $build['country'] = array(
-                        '#markup' => t('You have not activated any country yet. Go <a href="@c">here</a> to activate countries.', array('@c' => $link)) . '<br/>',
+                        '#markup' => $this->t('You have not activated any country yet. Go <a href="@c">here</a> to activate countries.', array('@c' => $link)) . '<br/>',
                     );
                 }
 
@@ -310,7 +308,7 @@ class AdminController extends ControllerBase {
                     $_SESSION['install'] = 1;
                     $link = Url::fromRoute('ek_admin.company.new', array(), array())->toString();
                     $build['company'] = array(
-                        '#markup' => t('You have not created any company yet. Go <a href="@c">here</a> to create one.', array('@c' => $link)) . '<br/>',
+                        '#markup' => $this->t('You have not created any company yet. Go <a href="@c">here</a> to create one.', array('@c' => $link)) . '<br/>',
                     );
                 }
 
@@ -329,7 +327,7 @@ class AdminController extends ControllerBase {
                     $build['privateStream'] = t("Set private data folder in <a href='@c'>configuration</a>.", ['@c' => './admin/config/media/file-system']);
                     $build['space'] = 'n/a';
                 }
-                //libraries 
+                //libraries
                 $build['excel'] = (class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) ? 1 : 0;
                 $build['tcpdf'] = (class_exists('TCPDF')) ? 1 : 0;
 
@@ -479,10 +477,10 @@ class AdminController extends ControllerBase {
                     $settings = new FinanceSettings();
                     $baseCurrency = $settings->get('baseCurrency');
 
-                    if ($baseCurrency == NULL) {
+                    if ($baseCurrency == null) {
                         $link = Url::fromRoute('ek_finance.admin.settings', array(), array())->toString();
                         $build['currency'] = array(
-                            '#markup' => t('No base currency selected. Go <a href="@c">here</a> to select a base currency.<br/>', array('@c' => $link)),
+                            '#markup' => $this->t('No base currency selected. Go <a href="@c">here</a> to select a base currency.<br/>', array('@c' => $link)),
                         );
                     }
                 }
@@ -513,7 +511,7 @@ class AdminController extends ControllerBase {
         return [
             '#theme' => 'ek_admin_settings',
             '#items' => $build,
-            '#title' => t('Administrate system data and settings'),
+            '#title' => $this->t('Administrate system data and settings'),
             '#attached' => array(
                 'library' => array('ek_admin/ek_admin_css'),
             ),
@@ -522,15 +520,15 @@ class AdminController extends ControllerBase {
     }
 
     /**
-     * @return 
+     * @return
      *    settings form
-     * @param int coid : optional company id ref (0 = global settings). 
-     * 
+     * @param int coid : optional company id ref (0 = global settings).
+     *
      */
-    public function AdminSettings($coid = 0) {
-
+    public function AdminSettings($coid = 0)
+    {
         $build['form'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\SettingsForm', $coid);
-        $build['#title'] = t('Global settings');
+        $build['#title'] = $this->t('Global settings');
         return $build;
     }
 
@@ -539,8 +537,8 @@ class AdminController extends ControllerBase {
      * @return company list
      *
      */
-    public function ListCompany(Request $request) {
-
+    public function ListCompany(Request $request)
+    {
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
 
@@ -586,7 +584,7 @@ class AdminController extends ControllerBase {
             $options[$i] = array(
                 'id' => $r->id,
                 'name' => ['data' => ['#markup' => '<a href="' . $lk . '" class="use-ajax clipboard_add"></a>' . $r->name . '']],
-                'status' => ($r->active == '0') ? t('non active') : t('active'),
+                'status' => ($r->active == '0') ? $this->t('non active') : $this->t('active'),
             );
 
             $links = array();
@@ -631,15 +629,15 @@ class AdminController extends ControllerBase {
 
     /**
      * @return company docs ajax list
-     * 
+     *
      */
-    public function CompanyDocuments($id) {
-
+    public function CompanyDocuments($id)
+    {
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\UploadForm', $id);
 
         $link = Url::fromRoute('ek_admin.company.list', array(), array())->toString();
 
-        $items['back'] = t('<a href="@c">List</a>', array('@c' => $link));
+        $items['back'] = $this->t('<a href="@c">List</a>', array('@c' => $link));
 
 
         return array(
@@ -656,8 +654,8 @@ class AdminController extends ControllerBase {
      * @return html list
      *
      */
-    public function load(Request $request) {
-
+    public function load(Request $request)
+    {
         $query = "SELECT * FROM {ek_company_documents} WHERE coid = :c order by id";
         $list = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':c' => $request->get('coid')));
@@ -673,8 +671,7 @@ class AdminController extends ControllerBase {
                 $share = explode(',', $l->share);
                 $deny = explode(',', $l->deny);
 
-                if ($l->share == '0' || ( in_array(\Drupal::currentUser()->id(), $share) && !in_array(\Drupal::currentUser()->id(), $deny) )) {
-
+                if ($l->share == '0' || (in_array(\Drupal::currentUser()->id(), $share) && !in_array(\Drupal::currentUser()->id(), $deny))) {
                     $items[$i]['id'] = $l->id;
                     $items[$i]['fid'] = 0; //default file status off
                     $items[$i]['ico'] = '_doc_list';
@@ -697,19 +694,19 @@ class AdminController extends ControllerBase {
                         $items[$i]['fid'] = 1;
                         if (!file_exists($l->uri)) {
                             //file not on server (archived?) TODO ERROR file path not detected
-                            $items[$i]['comment'] = t('Document not available. Please contact administrator');
+                            $items[$i]['comment'] = $this->t('Document not available. Please contact administrator');
                             $items[$i]['url'] = 0;
                         } else {
                             //file exist
                             $items[$i]['del_button'] = Url::fromRoute('ek_admin_confirm_delete_file', ['id' => $l->id])->toString();
                             $items[$i]['url'] = file_create_url($l->uri);
 
-                            //$del_button = "<a id='d$i' href=" . $route . " class='use-ajax red fa fa-trash-o' title='" . t('delete the file') . "'></a>";
+                            //$del_button = "<a id='d$i' href=" . $route . " class='use-ajax red fa fa-trash-o' title='" . $this->t('delete the file') . "'></a>";
                             //$doc = "<a href='" . file_create_url($uri) . "' target='_blank' >" . $l->filename . "</a>";
                             $param_access = 'access|' . $l->id . '|company_doc';
                             $link = Url::fromRoute('ek_admin_modal', ['param' => $param_access])->toString();
                             $items[$i]['share_button'] = Url::fromRoute('ek_admin_modal', ['param' => $param_access])->toString();
-                            //$share_button = t('<a href="@url" class="@c"  > access </a>', array('@url' => $link, '@c' => 'use-ajax red fa fa-lock'));
+                            //$share_button = $this->t('<a href="@url" class="@c"  > access </a>', array('@url' => $link, '@c' => 'use-ajax red fa fa-lock'));
                         }
                     }
                 } //in array
@@ -723,15 +720,17 @@ class AdminController extends ControllerBase {
     /**
      * AJAX callback handler for AjaxTestDialogForm.
      */
-    public function modal($param) {
-        return $this->dialog(TRUE, $param);
+    public function modal($param)
+    {
+        return $this->dialog(true, $param);
     }
 
     /**
      * AJAX callback handler for AjaxTestDialogForm.
      */
-    public function nonModal($param) {
-        return $this->dialog(FALSE, $param);
+    public function nonModal($param)
+    {
+        return $this->dialog(false, $param);
     }
 
     /**
@@ -743,22 +742,22 @@ class AdminController extends ControllerBase {
      * @return \Drupal\Core\Ajax\AjaxResponse
      *   An ajax response object.
      */
-    protected function dialog($is_modal = FALSE, $param = NULL) {
-
+    protected function dialog($is_modal = false, $param = null)
+    {
         $param = explode('|', $param);
         $content = [];
         switch ($param[0]) {
 
-            case 'access' :
+            case 'access':
                 $id = $param[1];
                 $type = $param[2];
                 $content = $this->formBuilder->getForm('Drupal\ek_admin\Form\DocAccessEdit', $id, $type);
                 $options = array('width' => '25%',);
                 break;
 
-            case 'clipboard' :
+            case 'clipboard':
 
-                $title = t('Copy address');
+                $title = $this->t('Copy address');
                 $options = array('width' => '50%',);
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_company', 'c')
@@ -773,10 +772,10 @@ class AdminController extends ControllerBase {
                         . $data->city . "<br/>"
                         . $data->postcode . "<br/>"
                         . $data->country . "<br/>"
-                        . t('telephone') . " " . $data->telephone . "<br/>"
-                        . t('fax') . ": " . $data->fax . "<br/>"
-                        . t('email') . ": " . $data->email . "<br/>"
-                        . t('contact') . ": " . $data->contact . "<br/></p>";
+                        . $this->t('telephone') . " " . $data->telephone . "<br/>"
+                        . $this->t('fax') . ": " . $data->fax . "<br/>"
+                        . $this->t('email') . ": " . $data->email . "<br/>"
+                        . $this->t('contact') . ": " . $data->contact . "<br/></p>";
                 if (isset($data->address3) && $data->address3 != $data->address1) {
                     $markup .= "<p>"
                             . $data->address3 . "<br/>"
@@ -784,8 +783,8 @@ class AdminController extends ControllerBase {
                             . $data->city2 . "<br/>"
                             . $data->postcode2 . "<br/>"
                             . $data->country2 . "<br/>"
-                            . t('telephone') . ": " . $data->telephone2 . "<br/>"
-                            . t('fax') . ": " . $data->fax2 . "</p>";
+                            . $this->t('telephone') . ": " . $data->telephone2 . "<br/>"
+                            . $this->t('fax') . ": " . $data->fax2 . "</p>";
                 }
 
                 $content['#markup'] = $markup;
@@ -810,7 +809,8 @@ class AdminController extends ControllerBase {
      * @param $id document id
      * @return ajax response
      */
-    public function confirmDeleteFile($id) {
+    public function confirmDeleteFile($id)
+    {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_company_documents', 'd')
                 ->fields('d', ['filename'])
@@ -820,7 +820,7 @@ class AdminController extends ControllerBase {
         $content = array('content' =>
             array('#markup' =>
                 "<div><a href='" . $url . "' class='use-ajax'>"
-                . t('delete') . "</a> " . $file . "</div>")
+                . $this->t('delete') . "</a> " . $file . "</div>")
         );
 
         $response = new AjaxResponse();
@@ -833,19 +833,19 @@ class AdminController extends ControllerBase {
     }
 
     /**
-     * delete a file from list 
+     * delete a file from list
      * @return Ajax response
      *
      */
-    public function deleteFile($id) {
-
+    public function deleteFile($id)
+    {
         $p = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT * from {ek_company_documents} WHERE id=:f", array(':f' => $id))
                 ->fetchObject();
         $fields = array(
             'fid' => 0,
             'uri' => date('U'),
-            'comment' => t('deleted by') . ' ' . \Drupal::currentUser()->getAccountName(),
+            'comment' => $this->t('deleted by') . ' ' . \Drupal::currentUser()->getAccountName(),
             'date' => time()
         );
         $delete = Database::getConnection('external_db', 'external_db')
@@ -860,7 +860,7 @@ class AdminController extends ControllerBase {
             //$query = "SELECT * FROM {file_managed} WHERE uri=:u";
             //$file = db_query($query, [':u' => $p->uri])->fetchObject();
             //file_delete($file->fid);
-            if($file->fid) {
+            if ($file->fid) {
                 $obj = \Drupal\file\Entity\File::load($file->fid);
                 $obj->setTemporary();
                 $obj->save();
@@ -879,17 +879,17 @@ class AdminController extends ControllerBase {
 
     /**
      * Create new business entity
-     * 
+     *
      */
-    public function AdminCompanyNew() {
-
+    public function AdminCompanyNew()
+    {
         $form_builder = $this->formBuilder();
         $response = $form_builder->getForm('Drupal\ek_admin\Form\EditCompanyForm');
 
         return array(
             '#theme' => 'ek_admin_company_form',
             '#items' => $response,
-            '#title' => t('New company'),
+            '#title' => $this->t('New company'),
             '#attached' => array(
                 'library' => array('ek_admin/ek_admin_css'),
             ),
@@ -901,7 +901,8 @@ class AdminController extends ControllerBase {
      * @param int id
      * @return array Form or content access denied
      */
-    public function AdminCompanyEdit($id) {
+    public function AdminCompanyEdit($id)
+    {
         $access = AccessCheck::GetCompanyAccess($id);
 
         if (in_array(\Drupal::currentUser()->id(), $access[$id])) {
@@ -914,7 +915,7 @@ class AdminController extends ControllerBase {
             return array(
                 '#theme' => 'ek_admin_company_form',
                 '#items' => $response,
-                '#title' => t('Edit company  - <small>@id</small>', array('@id' => $company)),
+                '#title' => $this->t('Edit company  - <small>@id</small>', array('@id' => $company)),
                 '#attached' => array(
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
@@ -922,8 +923,8 @@ class AdminController extends ControllerBase {
         } else {
             $url = Url::fromRoute('ek_admin.company.list', [], [])->toString();
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('Access denied')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('Access denied')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -940,7 +941,8 @@ class AdminController extends ControllerBase {
      * @param int id
      * @return Form
      */
-    public function AdminCompanyEditSettings($id) {
+    public function AdminCompanyEditSettings($id)
+    {
         $access = AccessCheck::GetCompanyAccess($id);
         if (in_array(\Drupal::currentUser()->id(), $access[$id])) {
             $form_builder = $this->formBuilder();
@@ -952,8 +954,8 @@ class AdminController extends ControllerBase {
         } else {
             $url = Url::fromRoute('ek_admin.company.list', [], [])->toString();
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('Access denied')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('Access denied')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -967,7 +969,7 @@ class AdminController extends ControllerBase {
         return array(
             '#theme' => 'ek_admin_company_form',
             '#items' => $response,
-            '#title' => t('Edit company settings - <small>@id</small>', array('@id' => $company)),
+            '#title' => $this->t('Edit company settings - <small>@id</small>', array('@id' => $company)),
             '#attached' => array(
                 'library' => array('ek_admin/ek_admin_css'),
             ),
@@ -978,13 +980,14 @@ class AdminController extends ControllerBase {
      * Business entities excel list
      * @param int id
      * @return File download
-     * 
+     *
      *
      */
-    public function excelcompany($id = NULL) {
+    public function excelcompany($id = null)
+    {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             include_once drupal_get_path('module', 'ek_admin') . '/excel_list.inc';
         }
@@ -996,8 +999,8 @@ class AdminController extends ControllerBase {
      * @param int id
      * @return File download
      */
-    public function pdfcompany($id = NULL) {
-
+    public function pdfcompany($id = null)
+    {
         $markup = array();
         include_once drupal_get_path('module', 'ek_admin') . '/company_pdf.inc';
         return $markup;
@@ -1005,19 +1008,19 @@ class AdminController extends ControllerBase {
 
     /**
      * Edit settings for countries
-     * @param 
+     * @param
      * @return Form
      *
      */
-    public function AdminCountry() {
-
+    public function AdminCountry()
+    {
         $form_builder = $this->formBuilder();
         $response = $form_builder->getForm('Drupal\ek_admin\Form\EditCountryForm');
 
         return array(
             '#theme' => 'ek_admin_country_form',
             '#items' => $response,
-            '#title' => t('List and edit countries'),
+            '#title' => $this->t('List and edit countries'),
             '#attached' => array(
                 'library' => array('ek_admin/ek_admin_css'),
             ),
@@ -1029,15 +1032,15 @@ class AdminController extends ControllerBase {
      * @return Form
      *
      */
-    public function AccessCompany() {
-
+    public function AccessCompany()
+    {
         Cache::invalidateTags(['ek_access_control_form']);
         $form_builder = $this->formBuilder();
         $build['form'] = $form_builder->getForm('Drupal\ek_admin\Form\CompanyAccessForm');
         $build['#attached'] = array(
             'library' => array('ek_admin/ek_admin_css'),
         );
-        $build['#title'] = t('Edit company access by user');
+        $build['#title'] = $this->t('Edit company access by user');
         $build['#cache']['max-age'] = -1;
         return $build;
     }
@@ -1045,10 +1048,10 @@ class AdminController extends ControllerBase {
     /**
      * Manage country access form
      * @return Form
-     * 
+     *
      */
-    public function AccessCountry() {
-
+    public function AccessCountry()
+    {
         Cache::invalidateTags(['ek_access_control_form']);
         $form_builder = $this->formBuilder();
         $build['form'] = $form_builder->getForm('Drupal\ek_admin\Form\CountryAccessForm');
@@ -1056,7 +1059,7 @@ class AdminController extends ControllerBase {
         $build['#attached'] = array(
             'library' => array('ek_admin/ek_admin_css'),
         );
-        $build['#title'] = t('Edit country access by user');
+        $build['#title'] = $this->t('Edit country access by user');
         $build['#cache']['max-age'] = -1;
         return $build;
     }
@@ -1064,17 +1067,15 @@ class AdminController extends ControllerBase {
     /**
      * View access to companies and countries by user
      * @return html
-     * 
+     *
      */
-    public function AccessByUser() {
-
-
+    public function AccessByUser()
+    {
         $form_builder = $this->formBuilder();
         $items['form'] = $form_builder->getForm('Drupal\ek_admin\Form\UserSelect');
 
 
         if (isset($_SESSION['admin_user_select'])) {
-
             $items['company'] = AccessCheck::CompanyListByUid($_SESSION['admin_user_id_select']);
             $items['country'] = AccessCheck::CountryListByUid($_SESSION['admin_user_id_select']);
         }
@@ -1092,8 +1093,8 @@ class AdminController extends ControllerBase {
      * @param request
      * @return Json response
      */
-    public function ajaxcsnbuilt(Request $request) {
-
+    public function ajaxcsnbuilt(Request $request)
+    {
         $text = $request->query->get('term');
         $a = explode(' ', $text);
         $terms = count($a);
@@ -1103,9 +1104,7 @@ class AdminController extends ControllerBase {
         if ($terms == 1) {
             $sn .= substr($text, 0, 4);
         } elseif ($terms > 1) {
-
             for ($i = 0; $i <= 3; $i++) {
-
                 if ($a[$i] == '') {
                     $sn .= '-';
                 } else {
@@ -1128,7 +1127,7 @@ class AdminController extends ControllerBase {
         $count = $Obj->fetchObject()->count;
 
         if ($count == 1) {
-            $alert = t('This name already exists in the records');
+            $alert = $this->t('This name already exists in the records');
         }
 
         return new JsonResponse(array('sn' => $sn, 'name' => $count, 'alert' => $alert));
@@ -1139,7 +1138,8 @@ class AdminController extends ControllerBase {
      * @param request
      * @return Json response
      */
-    public function userAutocomplete(Request $request) {
+    public function userAutocomplete(Request $request)
+    {
         $q = $request->query->get('q');
         $matches = [];
         $uids = $this->entityTypeManager->getStorage('user')->getQuery()
@@ -1161,14 +1161,14 @@ class AdminController extends ControllerBase {
      * function to send an email notification for tasks (cron)
      */
 
-    private function send_mail($params) {
-
+    private function send_mail($params)
+    {
         $u = \Drupal\user\Entity\User::load($params['uid']);
         //$query = "SELECT name, mail FROM `users_field_data` WHERE uid=:uid";
         //$a = array(':uid' => $params['uid']);
         //$data = db_query($query, $a);
         //$row = $data->fetchObject();
-        if($u) {
+        if ($u) {
             $params['options']['name'] = $u->getAccountName();
             $mail = $u->getEmail();
 
@@ -1193,11 +1193,9 @@ class AdminController extends ControllerBase {
 
                 $a = \Drupal\user\Entity\User::load($params['uid']);
                 $params['options']['assign_name'] = '';
-                if($a) {
+                if ($a) {
                     $params['options']['assign_name'] = $a->getAccountName();
                 }
-                
-                
             }
 
             if ($mail) {
@@ -1207,29 +1205,33 @@ class AdminController extends ControllerBase {
                     $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
                 }
                 $send = \Drupal::service('plugin.manager.mail')->mail(
-                        'ek_admin', $template, trim($mail), $target_langcode, $params, "do_not_reply@" . $_SERVER['HTTP_HOST'], TRUE
+                    'ek_admin',
+                    $template,
+                    trim($mail),
+                    $target_langcode,
+                    $params,
+                    "do_not_reply@" . $_SERVER['HTTP_HOST'],
+                    true
                 );
             } else {
-                return FALSE;
+                return false;
             }
-        
         }
     }
     
     /**
-     * reset read feature for home 
+     * reset read feature for home
      * @return Ajax response
      *
      */
-    public function featureReset(Request $request) {
+    public function featureReset(Request $request)
+    {
         $userData = \Drupal::service('user.data');
         $q = $request->query->get('q');
-        if(!$userData->get('ek_admin', \Drupal::currentUser()->id(), $q)) {
+        if (!$userData->get('ek_admin', \Drupal::currentUser()->id(), $q)) {
             $userData->set('ek_admin', \Drupal::currentUser()->id(), $q, 1);
             return new JsonResponse(['action' => 1]);
-            
         }
         return new JsonResponse(['action' => 0]);
     }
-
 }

@@ -17,7 +17,8 @@ use Drupal\user\Entity\User;
 /**
  * Provides form to manage access.
  */
-class CountryAccessForm extends FormBase {
+class CountryAccessForm extends FormBase
+{
 
 /**
      * The module handler.
@@ -30,42 +31,46 @@ class CountryAccessForm extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler)
+    {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler')
         );
     }
     
-  /**
-   * {@inheritdoc}
-   */
-    public function getFormId() {
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId()
+    {
         return 'ek_country_access_form';
     }
 
-  /**
-   * {@inheritdoc}
-   */
-    public function buildForm(array $form, FormStateInterface $form_state) {
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
 
         // @todo Evaluate this again in https://www.drupal.org/node/2503009.
         $form['#cache']['max-age'] = -1;
         $form['#cache']['tags'] = ['ek_access_control_form'];
 
         $option = array();
-        $t = (string) t('active');
+        $t = (string) $this->t('active');
         $query = "SELECT id,name from {ek_country} where status=:s order by name";
         $r1 = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => 1))->fetchAllKeyed();
         $option[$t] = $r1;
 
-        $t = (string) t('non active');
+        $t = (string) $this->t('non active');
         $query = "SELECT id,name from {ek_country}  where status=:s order by name";
         $r2 = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => 0))->fetchAllKeyed();
         $option[$t] = $r2;
@@ -73,8 +78,8 @@ class CountryAccessForm extends FormBase {
         $form['cid'] = array(
             '#type' => 'select',
             '#options' => $option,
-            '#default_value' => NULL,
-            '#required' => TRUE,
+            '#default_value' => null,
+            '#required' => true,
             '#ajax' => array(
                 'callback' => array($this, 'user_select_callback'),
                 'wrapper' => 'replace_textfield_div',
@@ -82,7 +87,6 @@ class CountryAccessForm extends FormBase {
         );
         
         if ($form_state->getValue('cid') <> '') {
-            
             $query = Database::getConnection('external_db', 'external_db')->select('ek_country', 'c');
             $query->fields('c', ['access']);
             $query->condition('id', $form_state->getValue('cid'));
@@ -99,9 +103,9 @@ class CountryAccessForm extends FormBase {
         $form['list'] = array(
             '#type' => 'details',
             '#title' => t("Select users with access "),
-            '#collapsible' => TRUE,
-            '#open' => isset($users) ? TRUE : FALSE,
-            '#tree' => TRUE,
+            '#collapsible' => true,
+            '#open' => isset($users) ? true : false,
+            '#tree' => true,
             '#prefix' => '<div id="replace_textfield_div">',
             '#suffix' => '</div>',
         );
@@ -130,15 +134,16 @@ class CountryAccessForm extends FormBase {
         return $form;
     }
 
-    function user_select_callback($form, FormStateInterface $form_state) {
+    public function user_select_callback($form, FormStateInterface $form_state)
+    {
         return $form['list'];
     }
 
-  /**
-   * {@inheritdoc}
-   */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         if (!is_numeric($form_state->getValue('cid'))) {
             $form_state->setErrorByName('cid', $this->t('No country selected'));
         }
@@ -158,19 +163,19 @@ class CountryAccessForm extends FormBase {
                         ->condition('share', "%," . $key . "%", 'like');
                     $query->condition($or);
                     $data = $query->execute();
-                    while($d = $data->fetchObject()) {
+                    while ($d = $data->fetchObject()) {
                         $sort[$key][] = $d->pcode;
                     }
                 }
             }
             
-            if(!empty($sort)) {
+            if (!empty($sort)) {
                 $list = "";
-                foreach($sort as $k => $v) {
+                foreach ($sort as $k => $v) {
                     $u = User::load($k);
                     $pcode = "";
-                    foreach($v as $c => $code) {
-                        $pcode .= \Drupal\ek_projects\ProjectData::geturl($code,0,0,1) . " ";
+                    foreach ($v as $c => $code) {
+                        $pcode .= \Drupal\ek_projects\ProjectData::geturl($code, 0, 0, 1) . " ";
                     }
                     $list .= "<li>" . $u->getAccountName() . ": " . $pcode . "</li>";
                 }
@@ -178,18 +183,19 @@ class CountryAccessForm extends FormBase {
                     '#markup' =>"<ul>" . $list . "</ul>",
                 ];
                 $list = \Drupal::service('renderer')->render($render);
-                $form_state->setErrorByName('cid', 
-                        $this->t('Some users need to be removed from project(s) before country access @l', ['@l' => $list]));
+                $form_state->setErrorByName(
+                    'cid',
+                    $this->t('Some users need to be removed from project(s) before country access @l', ['@l' => $list])
+                );
             }
-            
         }
     }
 
-  /**
-   * {@inheritdoc}
-   */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         $list = $form_state->getValue('list');
         $access = array();
         foreach ($list[$form_state->getValue('cid')] as $key => $value) {
@@ -221,6 +227,4 @@ class CountryAccessForm extends FormBase {
         $log = t("User @u has given access to country @c for users id @d", $a);
         \Drupal::logger('ek_admin')->notice($log);
     }
-
-
 }

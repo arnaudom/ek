@@ -16,72 +16,67 @@ use Drupal\ek_admin\Access\AccessCheck;
 /**
  * Provides a standard form to filter companies by id.
  */
-class FilterCompany extends FormBase {
+class FilterCompany extends FormBase
+{
 
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
-    return 'company_filter';
-  }
+    public function getFormId()
+    {
+        return 'company_filter';
+    }
 
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-  
-  
-
-    $form['filters'] = array(
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $form['filters'] = array(
       '#type' => 'details',
       '#title' => $this->t('Filter'),
-      '#open' => isset($_SESSION['coidfilter']['filter'] ) ? FALSE : TRUE,
+      '#open' => isset($_SESSION['coidfilter']['filter']) ? false : true,
 
-    ); 
+    );
            
-            $form['filters']['coid'] = array(
+        $form['filters']['coid'] = array(
               '#type' => 'select',
               '#size' => 1,
               '#options' => AccessCheck::CompanyListByUid(),
               '#default_value' => isset($_SESSION['coidfilter']['coid']) ? $_SESSION['coidfilter']['coid'] : 0,
               '#prefix' => "<div>",
               '#suffix' => '</div>',
-            ); 
+            );
 
-    $form['filters']['actions'] = array(
+        $form['filters']['actions'] = array(
       '#type' => 'actions',
       '#attributes' => array('class' => array('container-inline')),
     );
     
-    $form['filters']['actions']['submit'] = array(
+        $form['filters']['actions']['submit'] = array(
       '#type' => 'submit',
       '#value' => $this->t('Apply'),
       //'#suffix' => "</div>",
     );
 
-  return $form;
+        return $form;
+    }
   
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
+    }
   
-  }
-  
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-
-  }
-  
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-  
-  $_SESSION['coidfilter']['coid'] = $form_state->getValue('coid');
-  $_SESSION['coidfilter']['filter'] = 1;
-
-  }
-
-  
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        $_SESSION['coidfilter']['coid'] = $form_state->getValue('coid');
+        $_SESSION['coidfilter']['filter'] = 1;
+    }
 }

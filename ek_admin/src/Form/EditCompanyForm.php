@@ -17,7 +17,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides an company form.
  */
-class EditCompanyForm extends FormBase {
+class EditCompanyForm extends FormBase
+{
 
     /**
      * The module handler.
@@ -30,14 +31,16 @@ class EditCompanyForm extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler)
+    {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler')
         );
@@ -46,25 +49,25 @@ class EditCompanyForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_edit_company_form';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
+    {
         $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_country', 'c')
-                        ->fields('c',['id','name'])
+                        ->fields('c', ['id','name'])
                         ->condition('status', 1)
                         ->orderBy('name');
        
         $country = $query->execute()->fetchAllKeyed();
 
-        if (isset($id) && !$id == NULL) {
-
+        if (isset($id) && !$id == null) {
             $form['for_id'] = array(
                 '#type' => 'hidden',
                 '#default_value' => $id,
@@ -76,9 +79,7 @@ class EditCompanyForm extends FormBase {
                         ->fields('c');
             $r = $query->execute()->fetchAssoc();
             $query = "SELECT * from {ek_company} WHERE id=:id";
-            
         } else {
-
             $form['new_company'] = array(
                 '#type' => 'hidden',
                 '#default_value' => 1,
@@ -87,18 +88,18 @@ class EditCompanyForm extends FormBase {
 
         $form['active'] = array(
             '#type' => 'select',
-            '#options' => array(0 => t('non active'), 1 => t('active')),
+            '#options' => array(0 => $this->t('non active'), 1 => $this->t('active')),
             '#default_value' => isset($r['active']) ? $r['active'] : '1',
-            '#required' => TRUE,
+            '#required' => true,
         );
 
         $form['name'] = array(
             '#type' => 'textfield',
             '#size' => 50,
             '#default_value' => isset($r['name']) ? $r['name'] : null,
-            '#attributes' => array('placeholder' => t('Name')),
-            '#required' => TRUE,
-            '#description' => t('name'),
+            '#attributes' => array('placeholder' => $this->t('Name')),
+            '#required' => true,
+            '#description' => $this->t('name'),
             '#prefix' => "<div class='container-inline'>",
             '#attached' => array(
                 'library' => array(
@@ -114,7 +115,7 @@ class EditCompanyForm extends FormBase {
             '#maxlength' => 5,
             '#required' => true,
             '#default_value' => isset($r['short']) ? $r['short'] : null,
-            '#attributes' => array('placeholder' => t('Short name')),
+            '#attributes' => array('placeholder' => $this->t('Short name')),
             '#suffix' => '</div>',
         );
 
@@ -127,8 +128,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($r['reg_number']) ? $r['reg_number'] : null,
-            '#attributes' => array('placeholder' => t('registration number')),
-            '#description' => t('registration number'),
+            '#attributes' => array('placeholder' => $this->t('registration number')),
+            '#description' => $this->t('registration number'),
         );
 
         $form['address1'] = array(
@@ -136,8 +137,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 60,
             '#maxlength' => 255,
             '#default_value' => isset($r['address1']) ? $r['address1'] : null,
-            '#attributes' => array('placeholder' => t('address line 1')),
-            '#description' => t('address line 1'),
+            '#attributes' => array('placeholder' => $this->t('address line 1')),
+            '#description' => $this->t('address line 1'),
         );
 
         $form['address2'] = array(
@@ -145,8 +146,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 60,
             '#maxlength' => 255,
             '#default_value' => isset($r['address2']) ? $r['address2'] : null,
-            '#attributes' => array('placeholder' => t('address line 2')),
-            '#description' => t('address line 2'),
+            '#attributes' => array('placeholder' => $this->t('address line 2')),
+            '#description' => $this->t('address line 2'),
         );
 
 
@@ -155,9 +156,9 @@ class EditCompanyForm extends FormBase {
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['city']) ? $r['city'] : null,
-            '#attributes' => array('placeholder' => t('city')),
+            '#attributes' => array('placeholder' => $this->t('city')),
             '#prefix' => "<div class='container-inline'>",
-            '#description' => t('city'),
+            '#description' => $this->t('city'),
         );
 
         $form['postcode'] = array(
@@ -165,15 +166,15 @@ class EditCompanyForm extends FormBase {
             '#size' => 10,
             '#maxlength' => 255,
             '#default_value' => isset($r['postcode']) ? $r['postcode'] : null,
-            '#attributes' => array('placeholder' => t('post code')),
-            '#description' => t('post code'),
+            '#attributes' => array('placeholder' => $this->t('post code')),
+            '#description' => $this->t('post code'),
         );
 
         $form['country'] = array(
             '#type' => 'select',
             '#options' => array_combine($country, $country),
             '#default_value' => isset($r['country']) ? $r['country'] : null,
-            '#description' => t('country'),
+            '#description' => $this->t('country'),
             '#suffix' => "</div>",
         );
 
@@ -182,8 +183,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['telephone']) ? $r['telephone'] : null,
-            '#attributes' => array('placeholder' => t('telephone')),
-            '#description' => t('telephone'),
+            '#attributes' => array('placeholder' => $this->t('telephone')),
+            '#description' => $this->t('telephone'),
         );
 
         $form['fax'] = array(
@@ -191,8 +192,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['fax']) ? $r['fax'] : null,
-            '#attributes' => array('placeholder' => t('fax')),
-            '#description' => t('fax'),
+            '#attributes' => array('placeholder' => $this->t('fax')),
+            '#description' => $this->t('fax'),
         );
 
         $form['mobile'] = array(
@@ -200,8 +201,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['mobile']) ? $r['mobile'] : null,
-            '#attributes' => array('placeholder' => t('mobile')),
-            '#description' => t('mobile phone'),
+            '#attributes' => array('placeholder' => $this->t('mobile')),
+            '#description' => $this->t('mobile phone'),
         );
 
         $form['email'] = array(
@@ -209,8 +210,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 50,
             '#maxlength' => 255,
             '#default_value' => isset($r['email']) ? $r['email'] : null,
-            '#attributes' => array('placeholder' => t('email')),
-            '#description' => t('email'),
+            '#attributes' => array('placeholder' => $this->t('email')),
+            '#description' => $this->t('email'),
         );
 
         $form['contact'] = array(
@@ -218,8 +219,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 60,
             '#maxlength' => 255,
             '#default_value' => isset($r['contact']) ? $r['contact'] : null,
-            '#attributes' => array('placeholder' => t('contact name')),
-            '#description' => t('contact'),
+            '#attributes' => array('placeholder' => $this->t('contact name')),
+            '#description' => $this->t('contact'),
         );
 
 
@@ -227,9 +228,9 @@ class EditCompanyForm extends FormBase {
 
         $form['2'] = array(
             '#type' => 'details',
-            '#title' => t('Correspondance address'),
-            '#collapsible' => TRUE,
-            '#collapsed' => FALSE,
+            '#title' => $this->t('Correspondance address'),
+            '#collapsible' => true,
+            '#collapsed' => false,
         );
 
         $form['2']['address3'] = array(
@@ -237,8 +238,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 60,
             '#maxlength' => 255,
             '#default_value' => isset($r['address3']) ? $r['address3'] : null,
-            '#attributes' => array('placeholder' => t('address line 1')),
-            '#description' => t('address line 1'),
+            '#attributes' => array('placeholder' => $this->t('address line 1')),
+            '#description' => $this->t('address line 1'),
         );
 
         $form['2']['address4'] = array(
@@ -246,8 +247,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 60,
             '#maxlength' => 255,
             '#default_value' => isset($r['address4']) ? $r['address4'] : null,
-            '#attributes' => array('placeholder' => t('address line 2')),
-            '#description' => t('address line 2'),
+            '#attributes' => array('placeholder' => $this->t('address line 2')),
+            '#description' => $this->t('address line 2'),
         );
 
 
@@ -256,9 +257,9 @@ class EditCompanyForm extends FormBase {
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['city2']) ? $r['city2'] : null,
-            '#attributes' => array('placeholder' => t('city')),
+            '#attributes' => array('placeholder' => $this->t('city')),
             '#prefix' => "<div class='container-inline'>",
-            '#description' => t('city'),
+            '#description' => $this->t('city'),
         );
 
         $form['2']['postcode2'] = array(
@@ -266,15 +267,15 @@ class EditCompanyForm extends FormBase {
             '#size' => 10,
             '#maxlength' => 255,
             '#default_value' => isset($r['postcode2']) ? $r['postcode2'] : null,
-            '#attributes' => array('placeholder' => t('post code')),
-            '#description' => t('post code'),
+            '#attributes' => array('placeholder' => $this->t('post code')),
+            '#description' => $this->t('post code'),
         );
 
         $form['2']['country2'] = array(
             '#type' => 'select',
             '#options' => array_combine($country, $country),
             '#default_value' => isset($r['country2']) ? $r['country2'] : null,
-            '#description' => t('country'),
+            '#description' => $this->t('country'),
             '#suffix' => "</div>",
         );
 
@@ -283,8 +284,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['telephone2']) ? $r['telephone2'] : null,
-            '#attributes' => array('placeholder' => t('telephone')),
-            '#description' => t('telephone'),
+            '#attributes' => array('placeholder' => $this->t('telephone')),
+            '#description' => $this->t('telephone'),
         );
 
         $form['2']['fax2'] = array(
@@ -292,8 +293,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['fax2']) ? $r['fax2'] : null,
-            '#attributes' => array('placeholder' => t('fax')),
-            '#description' => t('fax'),
+            '#attributes' => array('placeholder' => $this->t('fax')),
+            '#description' => $this->t('fax'),
         );
 
 
@@ -302,14 +303,14 @@ class EditCompanyForm extends FormBase {
 
         $form['i'] = array(
             '#type' => 'details',
-            '#title' => t('Images'),
-            '#collapsible' => TRUE,
-            '#collapsed' => FALSE,
+            '#title' => $this->t('Images'),
+            '#collapsible' => true,
+            '#collapsed' => false,
         );
         if (null !== \Drupal\Core\StreamWrapper\PrivateStream::basePath()) {
             $form['i']['logo'] = array(
                 '#type' => 'file',
-                '#title' => t('Upload a logo image'),
+                '#title' => $this->t('Upload a logo image'),
                 '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
                 '#suffix' => "</div>",
             );
@@ -319,7 +320,7 @@ class EditCompanyForm extends FormBase {
                 $image = "<a href='" . file_create_url($r['logo']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['logo']) . "></a>";
                 $form['i']['logo_delete'] = array(
                     '#type' => 'checkbox',
-                    '#title' => t('delete logo'),
+                    '#title' => $this->t('delete logo'),
                     '#attributes' => array('onclick' => "jQuery('#currentLogo').toggleClass( 'delete');"),
                     '#prefix' => "<div class='cell'>",
                 );
@@ -336,7 +337,7 @@ class EditCompanyForm extends FormBase {
 
             $form['i']['sign'] = array(
                 '#type' => 'file',
-                '#title' => t('Upload a signature image'),
+                '#title' => $this->t('Upload a signature image'),
                 '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
                 '#suffix' => "</div>",
             );
@@ -346,7 +347,7 @@ class EditCompanyForm extends FormBase {
                 $image = "<a href='" . file_create_url($r['sign']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['sign']) . "></a>";
                 $form['i']['sign_delete'] = array(
                     '#type' => 'checkbox',
-                    '#title' => t('delete signature'),
+                    '#title' => $this->t('delete signature'),
                     '#attributes' => array('onclick' => "jQuery('#currentSign').toggleClass('delete');"),
                     '#prefix' => "<div class='cell'>",
                 );
@@ -370,9 +371,9 @@ class EditCompanyForm extends FormBase {
         //admin data
         $form['f'] = array(
             '#type' => 'details',
-            '#title' => t('Other settings'),
-            '#collapsible' => TRUE,
-            '#collapsed' => FALSE,
+            '#title' => $this->t('Other settings'),
+            '#collapsible' => true,
+            '#collapsed' => false,
         );
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             //choice to load standard account or use othe company accunts
@@ -380,19 +381,19 @@ class EditCompanyForm extends FormBase {
 
             if (!isset($id)) {
                 //new company
-                $option = [0 => t('Default standard')];
-                $t = t('Copy from') . ":";
+                $option = [0 => $this->t('Default standard')];
+                $t = $this->t('Copy from') . ":";
                 $option[$t] = Database::getConnection('external_db', 'external_db')
                         ->query("SELECT id,name from {ek_company} order by name")
                         ->fetchAllKeyed();
 
                 $form['f']['use_chart'] = array(
                     '#type' => 'select',
-                    '#title' => t('Select chart of accounts'),
+                    '#title' => $this->t('Select chart of accounts'),
                     '#options' => $option,
-                    '#default_value' => NULL,
-                    '#required' => TRUE,
-                    '#description' => t('chart selection from other company will be copied into new entity'),
+                    '#default_value' => null,
+                    '#required' => true,
+                    '#description' => $this->t('chart selection from other company will be copied into new entity'),
                 );
             }
         }
@@ -402,8 +403,8 @@ class EditCompanyForm extends FormBase {
                 '#size' => 6,
                 '#maxlength' => 4,
                 '#default_value' => isset($r['accounts_year']) ? $r['accounts_year'] : null,
-                '#attributes' => array('placeholder' => t('year')),
-                '#description' => t('financial year'),
+                '#attributes' => array('placeholder' => $this->t('year')),
+                '#description' => $this->t('financial year'),
             );
 
             $form['f']['accounts_month'] = array(
@@ -411,27 +412,27 @@ class EditCompanyForm extends FormBase {
                 '#size' => 6,
                 '#maxlength' => 2,
                 '#default_value' => isset($r['accounts_month']) ? $r['accounts_month'] : null,
-                '#attributes' => array('placeholder' => t('month. ex.12')),
-                '#description' => t('financial month'),
+                '#attributes' => array('placeholder' => $this->t('month. ex.12')),
+                '#description' => $this->t('financial month'),
             );
         } else {
             $settings = new \Drupal\ek_admin\CompanySettings($id);
             $form['f']['accounts_year'] = array(
                 '#type' => 'textfield',
                 '#size' => 6,
-                '#disabled' => TRUE,
+                '#disabled' => true,
                 '#maxlength' => 4,
                 '#default_value' => $settings->get('fiscal_year'),
-                '#description' => t('financial year'),
+                '#description' => $this->t('financial year'),
             );
 
             $form['f']['accounts_month'] = array(
                 '#type' => 'textfield',
                 '#size' => 6,
-                '#disabled' => TRUE,
+                '#disabled' => true,
                 '#maxlength' => 2,
                 '#default_value' => $settings->get('fiscal_month'),
-                '#description' => t('financial month'),
+                '#description' => $this->t('financial month'),
             );
         }
         $form['f']['itax_no'] = array(
@@ -439,8 +440,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($r['itax_no']) ? $r['itax_no'] : null,
-            '#attributes' => array('placeholder' => t('tax no.')),
-            '#description' => t('income tax no.'),
+            '#attributes' => array('placeholder' => $this->t('tax no.')),
+            '#description' => $this->t('income tax no.'),
         );
 
         $form['f']['pension_no'] = array(
@@ -448,8 +449,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($r['pension_no']) ? $r['pension_no'] : null,
-            '#attributes' => array('placeholder' => t('pension no.')),
-            '#description' => t('pension no.'),
+            '#attributes' => array('placeholder' => $this->t('pension no.')),
+            '#description' => $this->t('pension no.'),
         );
 
         $form['f']['social_no'] = array(
@@ -457,8 +458,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($r['social_no']) ? $r['social_no'] : null,
-            '#attributes' => array('placeholder' => t('social no.')),
-            '#description' => t('social security no.'),
+            '#attributes' => array('placeholder' => $this->t('social no.')),
+            '#description' => $this->t('social security no.'),
         );
 
         $form['f']['vat_no'] = array(
@@ -466,8 +467,8 @@ class EditCompanyForm extends FormBase {
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($r['vat_no']) ? $r['vat_no'] : null,
-            '#attributes' => array('placeholder' => t('vat ref. no.')),
-            '#description' => t('vat ref. no.'),
+            '#attributes' => array('placeholder' => $this->t('vat ref. no.')),
+            '#description' => $this->t('vat ref. no.'),
         );
 
 
@@ -479,14 +480,13 @@ class EditCompanyForm extends FormBase {
 
     /**
      * {@inheritdoc}
-     * 
+     *
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         parent::validateForm($form, $form_state);
 
         if (!filter_var($form_state->getValue('email'), FILTER_VALIDATE_EMAIL)) {
-
             $form_state->setErrorByName('email', $this->t('Invalid email'));
         }
         if ($form_state->getValue('accounts_year') <> '') {
@@ -502,11 +502,11 @@ class EditCompanyForm extends FormBase {
 
         $validators = array('file_validate_is_image' => array());
         $destination =  "private://admin/company" . $form_state->getValue('for_id') . "/images";
-        \Drupal::service('file_system')->prepareDirectory($destination, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);        
+        \Drupal::service('file_system')->prepareDirectory($destination, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
         //LOGO
         $field = "logo";
         // Check for a new uploaded logo.
-        $file = file_save_upload($field, $validators,$destination,0,FILE_EXISTS_RENAME);
+        $file = file_save_upload($field, $validators, $destination, 0, FILE_EXISTS_RENAME);
 
         if (isset($file)) {
             $res = file_validate_image_resolution($file, '300x300', '100x100');
@@ -525,7 +525,7 @@ class EditCompanyForm extends FormBase {
         //SIGN
         $field = "sign";
         // Check for a new uploaded signature.
-        $file = file_save_upload($field, $validators,$destination,0,FILE_EXISTS_RENAME);
+        $file = file_save_upload($field, $validators, $destination, 0, FILE_EXISTS_RENAME);
 
         if (isset($file)) {
             $res = file_validate_image_resolution($file, '300x300', '100x100');
@@ -545,9 +545,8 @@ class EditCompanyForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         $fields = array(
             'name' => $form_state->getValue('name'),
             'short' => $form_state->getValue('short'),
@@ -595,7 +594,6 @@ class EditCompanyForm extends FormBase {
         }
 
         if ($this->moduleHandler->moduleExists('ek_finance') && $form_state->getValue('for_id') == '') {
-
             if ($form_state->getValue('use_chart') == 0) {
                 //load standard accounts
                 $file = drupal_get_path('module', 'ek_finance') . '/ek_standard_accounts.sql';
@@ -702,15 +700,12 @@ class EditCompanyForm extends FormBase {
 
         if (isset($insert) || isset($update)) {
             \Drupal::messenger()->addStatus(t("The company is recorded"));
-            if($_SESSION['install'] == 1){
+            if ($_SESSION['install'] == 1) {
                 unset($_SESSION['install']);
                 $form_state->setRedirect('ek_admin.main');
             } else {
                 $form_state->setRedirect('ek_admin.company.list');
             }
-            
         }
-            
     }
-
 }

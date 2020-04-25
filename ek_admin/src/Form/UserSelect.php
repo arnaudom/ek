@@ -11,28 +11,28 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 
-
 /**
  * Provides a search form.
  */
-class UserSelect extends FormBase {
+class UserSelect extends FormBase
+{
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_admin_user_select';
     }
 
-    public function buildForm(array $form, FormStateInterface $form_state) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
         $form['name'] = array(
             '#type' => 'textfield',
             '#size' => 70,
             '#required' => true,
-            '#default_value' => isset($_SESSION['admin_user_select']) ? $_SESSION['admin_user_select'] : NULL,
-            '#attributes' => array('placeholder' => t('Enter user name')),
+            '#default_value' => isset($_SESSION['admin_user_select']) ? $_SESSION['admin_user_select'] : null,
+            '#attributes' => array('placeholder' => $this->t('Enter user name')),
             '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
         );
 
@@ -42,11 +42,11 @@ class UserSelect extends FormBase {
         return $form;
     }
 
-  /**
-   * {@inheritdoc}
-   */    
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-        
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         $query = Database::getConnection()->select('users_field_data', 'u');
         $query->fields('u', ['uid']);
         $query->condition('name', $form_state->getValue('name'));
@@ -58,13 +58,12 @@ class UserSelect extends FormBase {
         }
     }
 
-  /**
-   * {@inheritdoc}
-   */    
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         $_SESSION['admin_user_select'] = $form_state->getValue('name');
         $_SESSION['admin_user_id_select'] = $form_state->getValue('id');
     }
-
 }

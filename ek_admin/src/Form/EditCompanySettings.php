@@ -22,12 +22,14 @@ use Drupal\ek_finance\FinanceSettings;
  * Provides an company settings form.
  * Includes finance parameters
  */
-class EditCompanySettings extends FormBase {
+class EditCompanySettings extends FormBase
+{
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_edit_company_settings_form';
     }
 
@@ -42,14 +44,16 @@ class EditCompanySettings extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler)
+    {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler')
         );
@@ -58,20 +62,18 @@ class EditCompanySettings extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-
-        
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
+    {
         $form['coid'] = array(
             '#type' => 'hidden',
             '#value' => $id,
         );
 
         //add settings used by accounts (finance).
-        if ($this->moduleHandler->moduleExists('ek_finance') && !$id == NULL) {
+        if ($this->moduleHandler->moduleExists('ek_finance') && !$id == null) {
 
             //check option to create chart if not exists (use case: module activated after company)
-            $chart = NULL;
+            $chart = null;
             if (isset($id)) {
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_accounts', 'a');
@@ -80,33 +82,30 @@ class EditCompanySettings extends FormBase {
                 $obj = $query->execute();
 
                 if ($obj->fetchField()) {
-                    $chart = TRUE;
+                    $chart = true;
                 }
             }
 
-            if ($chart == NULL) {
-
-                $option = [0 => t('Default standard')];
-                $t = t('Copy from') . ":";
+            if ($chart == null) {
+                $option = [0 => $this->t('Default standard')];
+                $t = $this->t('Copy from') . ":";
                 $option[$t] = Database::getConnection('external_db', 'external_db')
                         ->query("SELECT id,name from {ek_company} order by name")
                         ->fetchAllKeyed();
 
                 $form['chart'] = array(
                     '#type' => 'select',
-                    '#title' => t('Select chart of accounts'),
+                    '#title' => $this->t('Select chart of accounts'),
                     '#options' => $option,
-                    '#default_value' => NULL,
-                    '#required' => TRUE,
-                    '#description' => t('chart selection from other company will be copied into new entity'),
+                    '#default_value' => null,
+                    '#required' => true,
+                    '#description' => $this->t('chart selection from other company will be copied into new entity'),
                 );
                 $form['edit_chart'] = array(
                     '#type' => 'hidden',
                     '#value' => 1,
                 );
-                
             } else {
-
                 $settings = new CompanySettings($id);
                 $Currencies = CurrencyData::listcurrency(1);
                 //list of accounts chart is defined in the general finance settings
@@ -121,69 +120,68 @@ class EditCompanySettings extends FormBase {
                 $i = 0;
 
                 if ($settings->get('fiscal_year') == '') {
-                    $miss['fiscal_year'] = t('Fiscal year settings');
+                    $miss['fiscal_year'] = $this->t('Fiscal year settings');
                 }
                 if ($settings->get('fiscal_month') == '') {
-                    $miss['fiscal_month'] = t('Fiscal month settings');
+                    $miss['fiscal_month'] = $this->t('Fiscal month settings');
                 }
                 if ($settings->get('stax_collect_aid') == '') {
-                    $miss['stax_collect_aid'] = t('Collection account for sales tax');
+                    $miss['stax_collect_aid'] = $this->t('Collection account for sales tax');
                 }
                 if ($settings->get('stax_deduct_aid') == '') {
-                    $miss['stax_deduct_aid'] = t('Deduction account for sales tax');
+                    $miss['stax_deduct_aid'] = $this->t('Deduction account for sales tax');
                 }
                 if ($settings->get('stax_rate') == '') {
-                    $miss['stax_rate'] = t('Rate of sales tax');
+                    $miss['stax_rate'] = $this->t('Rate of sales tax');
                 }
                 if ($settings->get('stax_name') == '') {
-                    $miss['stax_name'] = t('Default name of sales tax');
+                    $miss['stax_name'] = $this->t('Default name of sales tax');
                 }
                 if ($settings->get('wtax_collect_aid') == '') {
-                    $miss['wtax_collect_aid'] = t('Secondary collection account for tax');
+                    $miss['wtax_collect_aid'] = $this->t('Secondary collection account for tax');
                 }
                 if ($settings->get('wtax_deduct_aid') == '') {
-                    $miss['wtax_deduct_aid'] = t('Secondary deduction account for tax');
+                    $miss['wtax_deduct_aid'] = $this->t('Secondary deduction account for tax');
                 }
                 if ($settings->get('wtax_rate') == '') {
-                    $miss['wtax_rate'] = t('Secondary rate of tax');
+                    $miss['wtax_rate'] = $this->t('Secondary rate of tax');
                 }
                 if ($settings->get('wtax_name') == '') {
-                    $miss['wtax_name'] = t('Default name of secondary tax');
+                    $miss['wtax_name'] = $this->t('Default name of secondary tax');
                 }
                 if ($settings->get('CurrencyGainLoss') == '') {
-                    $miss['CurrencyGainLoss'] = t('Account to compute currency gain or loss');
+                    $miss['CurrencyGainLoss'] = $this->t('Account to compute currency gain or loss');
                 }
 
 
                 foreach ($Currencies as $currency => $name) {
                     $i++;
                     if ($settings->get('cash_account', $currency) == '') {
-                        $miss['cash' . $currency] = t('Main cash account for @c', array('@c' => $currency));
+                        $miss['cash' . $currency] = $this->t('Main cash account for @c', array('@c' => $currency));
                     } else {
                         $holder[1][$settings->get('cash_account', $currency)] = $currency;
                     }
                     if ($settings->get('cash2_account', $currency) == '') {
-                        $miss['cash2' . $currency] = t('Secondary cash account for @c', array('@c' => $currency));
+                        $miss['cash2' . $currency] = $this->t('Secondary cash account for @c', array('@c' => $currency));
                     } else {
                         $holder[2][$settings->get('cash2_account', $currency)] = $currency;
                     }
                     if ($settings->get('asset_account', $currency) == '') {
-                        $miss['asset_account' . $currency] = t('receivable account, debtor account for @c', array('@c' => $currency));
+                        $miss['asset_account' . $currency] = $this->t('receivable account, debtor account for @c', array('@c' => $currency));
                     } else {
                         $holder[3][$settings->get('asset_account', $currency)] = $currency;
                     }
                     if ($settings->get('liability_account', $currency) == '') {
-                        $miss['liability_account' . $currency] = t('liability account, creditor account for @c', array('@c' => $currency));
+                        $miss['liability_account' . $currency] = $this->t('liability account, creditor account for @c', array('@c' => $currency));
                     } else {
                         $holder[4][$settings->get('liability_account', $currency)] = $currency;
                     }
                 }
 
-                $label = ['1' => t('cash main'), '2' => t('cash other'), '3' => t('receivable'), '4' => t('liability')];
+                $label = ['1' => $this->t('cash main'), '2' => $this->t('cash other'), '3' => $this->t('receivable'), '4' => $this->t('liability')];
                 for ($n = 1; $n < 5; $n++) {
                     if (count($holder[$n]) <> $i) {
-
-                        $miss[$n] = t('You are using same account for different currencies') . " (<a href='#currency'>" . $label[$n] . "</a>)";
+                        $miss[$n] = $this->t('You are using same account for different currencies') . " (<a href='#currency'>" . $label[$n] . "</a>)";
                     }
                 }
 
@@ -193,17 +191,17 @@ class EditCompanySettings extends FormBase {
                 }
 
                 if ($list == '') {
-                    $list = '<li>' . t('All parameters are set') . '</li>';
+                    $list = '<li>' . $this->t('All parameters are set') . '</li>';
                 }
 
                 $form['info'] = array(
                     '#type' => 'details',
                     '#title' => $this->t('Settings verification'),
-                    '#open' => (empty($miss)) ? FALSE : TRUE,
+                    '#open' => (empty($miss)) ? false : true,
                 );
                 $form['info']['miss'] = array(
                     '#type' => 'item',
-                    '#markup' => t('Missing settings') . ':' . "<ul>" . $list . "</ul>",
+                    '#markup' => $this->t('Missing settings') . ':' . "<ul>" . $list . "</ul>",
                 );
 
                 $fiscal_year = $settings->get('fiscal_year');
@@ -213,10 +211,10 @@ class EditCompanySettings extends FormBase {
                 $form['fiscal_year'] = array(
                     '#type' => 'select',
                     '#size' => 1,
-                    '#disabled' => isset($fiscal_year) ? TRUE : FALSE,
+                    '#disabled' => isset($fiscal_year) ? true : false,
                     '#options' => array_combine($options, $options),
                     '#default_value' => isset($fiscal_year) ? $fiscal_year : $year,
-                    '#title' => t('Fiscal year'),
+                    '#title' => $this->t('Fiscal year'),
                     '#prefix' => "<div class='container-inline'>",
                 );
 
@@ -225,16 +223,16 @@ class EditCompanySettings extends FormBase {
                     '#size' => 1,
                     '#options' => array('01' => '01', '02' => '02', '03' => '03', '04' => '04', '05' => '05', '06' => '06', '07' => '07', '08' => '08', '09' => '09', '10' => '10', '11' => '11', '12' => '12'),
                     '#default_value' => isset($fiscal_month) ? $fiscal_month : 12,
-                    '#title' => t('Month'),
+                    '#title' => $this->t('Month'),
                     '#suffix' => '</div>',
                 );
 
                 $form['g']['stax_collect'] = array(
                     '#type' => 'select',
-                    '#options' => array('0' => t('no'), '1' => t('yes')),
+                    '#options' => array('0' => $this->t('no'), '1' => $this->t('yes')),
                     '#size' => 1,
                     '#default_value' => $settings->get('stax_collect'),
-                    '#description' => t('Collectible sales tax'),
+                    '#description' => $this->t('Collectible sales tax'),
                 );
 
                 $form['g']['stax_collect_aid'] = array(
@@ -242,16 +240,16 @@ class EditCompanySettings extends FormBase {
                     '#size' => 1,
                     '#options' => AidList::listaid($id, [$chart['liabilities']], 1),
                     '#default_value' => $settings->get('stax_collect_aid'),
-                    '#description' => t('Sales tax collection account'),
+                    '#description' => $this->t('Sales tax collection account'),
                 );
 
 
                 $form['g']['stax_deduct'] = array(
                     '#type' => 'select',
-                    '#options' => array('0' => t('no'), '1' => t('yes')),
+                    '#options' => array('0' => $this->t('no'), '1' => $this->t('yes')),
                     '#size' => 1,
                     '#default_value' => $settings->get('stax_deduct'),
-                    '#description' => t('Deductible sales tax'),
+                    '#description' => $this->t('Deductible sales tax'),
                 );
 
                 $form['g']['stax_deduct_aid'] = array(
@@ -259,7 +257,7 @@ class EditCompanySettings extends FormBase {
                     '#options' => AidList::listaid($id, [$chart['assets']], 1),
                     '#size' => 1,
                     '#default_value' => $settings->get('stax_deduct_aid'),
-                    '#description' => t('Sales tax deduction account'),
+                    '#description' => $this->t('Sales tax deduction account'),
                 );
 
                 $form['g']['stax_rate'] = array(
@@ -267,8 +265,8 @@ class EditCompanySettings extends FormBase {
                     '#size' => 20,
                     '#maxlength' => 255,
                     '#default_value' => $settings->get('stax_rate'),
-                    '#attributes' => array('placeholder' => t('Sales tax rate')),
-                    '#description' => t('Sales tax rate'),
+                    '#attributes' => array('placeholder' => $this->t('Sales tax rate')),
+                    '#description' => $this->t('Sales tax rate'),
                 );
 
                 $form['g']['stax_name'] = array(
@@ -276,8 +274,8 @@ class EditCompanySettings extends FormBase {
                     '#size' => 20,
                     '#maxlength' => 50,
                     '#default_value' => $settings->get('stax_name'),
-                    '#attributes' => array('placeholder' => t('defaultname')),
-                    '#description' => t('Sales tax default name'),
+                    '#attributes' => array('placeholder' => $this->t('defaultname')),
+                    '#description' => $this->t('Sales tax default name'),
                 );
 
                 $form['g']['wtax_collect_aid'] = array(
@@ -285,14 +283,14 @@ class EditCompanySettings extends FormBase {
                     '#options' => AidList::listaid($id, [$chart['liabilities']], 1),
                     '#size' => 1,
                     '#default_value' => $settings->get('wtax_collect_aid'),
-                    '#description' => t('Other  tax collection account'),
+                    '#description' => $this->t('Other  tax collection account'),
                 );
                 $form['g']['wtax_deduct_aid'] = array(
                     '#type' => 'select',
                     '#options' => AidList::listaid($id, [$chart['assets']], 1),
                     '#size' => 1,
                     '#default_value' => $settings->get('wtax_deduct_aid'),
-                    '#description' => t('Other tax deduction account'),
+                    '#description' => $this->t('Other tax deduction account'),
                 );
 
                 $form['g']['wtax_rate'] = array(
@@ -300,8 +298,8 @@ class EditCompanySettings extends FormBase {
                     '#size' => 20,
                     '#maxlength' => 255,
                     '#default_value' => $settings->get('wtax_rate'),
-                    '#attributes' => array('placeholder' => t('other tax rate')),
-                    '#description' => t('Other tax rate'),
+                    '#attributes' => array('placeholder' => $this->t('other tax rate')),
+                    '#description' => $this->t('Other tax rate'),
                 );
 
                 $form['g']['wtax_name'] = array(
@@ -309,8 +307,8 @@ class EditCompanySettings extends FormBase {
                     '#size' => 20,
                     '#maxlength' => 50,
                     '#default_value' => $settings->get('wtax_name'),
-                    '#attributes' => array('placeholder' => t('default name')),
-                    '#description' => t('Other tax default name'),
+                    '#attributes' => array('placeholder' => $this->t('default name')),
+                    '#description' => $this->t('Other tax default name'),
                 );
 
                 $form['g']['CurrencyGainLoss'] = array(
@@ -318,16 +316,16 @@ class EditCompanySettings extends FormBase {
                     '#size' => 1,
                     '#options' => AidList::listaid($id, [$chart['income'], $chart['other_income']], 1),
                     '#default_value' => $settings->get('CurrencyGainLoss') ? $settings->get('CurrencyGainLoss') : '49001',
-                    '#description' => t('currency gain, loss account'),
+                    '#description' => $this->t('currency gain, loss account'),
                 );
 
 
                 $header = array(
                     'name' => '',
-                    'cash_account' => t('main cash account'),
-                    'cash2_account' => t('other cash account'),
-                    'asset_account' => t('receivable account, debtor'),
-                    'liability_account' => t('liability account, creditor'),
+                    'cash_account' => $this->t('main cash account'),
+                    'cash2_account' => $this->t('other cash account'),
+                    'asset_account' => $this->t('receivable account, debtor'),
+                    'liability_account' => $this->t('liability account, creditor'),
                 );
 
 
@@ -335,7 +333,7 @@ class EditCompanySettings extends FormBase {
                 $form['currency_settings'] = array(
                     '#prefix' => '<div id="currency">',
                     '#suffix' => '</div>',
-                    '#tree' => TRUE,
+                    '#tree' => true,
                     '#theme' => 'table',
                     '#header' => $header,
                     '#rows' => array(),
@@ -345,7 +343,6 @@ class EditCompanySettings extends FormBase {
 
 
                 foreach ($Currencies as $currency => $name) {
-
                     $cname = array(
                         '#id' => 'name-' . $currency . "-$name",
                         '#type' => 'item',
@@ -359,7 +356,7 @@ class EditCompanySettings extends FormBase {
                         '#options' => AidList::listaid($id, [$chart['assets']], 1),
                         '#default_value' => $settings->get('cash_account', $currency),
                         '#attributes' => array('style' => array('width:120px; white-space:nowrap')),
-                        '#disabled' => ($settings->get('cash_account', $currency) && $perm) ? TRUE : FALSE,
+                        '#disabled' => ($settings->get('cash_account', $currency) && $perm) ? true : false,
                     );
 
 
@@ -369,7 +366,7 @@ class EditCompanySettings extends FormBase {
                         '#options' => AidList::listaid($id, [$chart['assets']], 1),
                         '#default_value' => $settings->get('cash2_account', $currency),
                         '#attributes' => array('style' => array('width:120px; white-space:nowrap')),
-                        '#disabled' => ($settings->get('cash2_account', $currency) && $perm) ? TRUE : FALSE,
+                        '#disabled' => ($settings->get('cash2_account', $currency) && $perm) ? true : false,
                     );
 
                     $asset_account = array(
@@ -378,7 +375,7 @@ class EditCompanySettings extends FormBase {
                         '#options' => AidList::listaid($id, [$chart['assets']], 1),
                         '#default_value' => $settings->get('asset_account', $currency),
                         '#attributes' => array('style' => array('width:120px; white-space:nowrap')),
-                        '#disabled' => ($settings->get('asset_account', $currency) && $perm) ? TRUE : FALSE,
+                        '#disabled' => ($settings->get('asset_account', $currency) && $perm) ? true : false,
                     );
 
                     $liability_account = array(
@@ -387,7 +384,7 @@ class EditCompanySettings extends FormBase {
                         '#options' => AidList::listaid($id, [$chart['liabilities']], 1),
                         '#default_value' => $settings->get('liability_account', $currency),
                         '#attributes' => array('style' => array('width:120px; white-space:nowrap')),
-                        '#disabled' => ($settings->get('liability_account', $currency) && $perm) ? TRUE : FALSE,
+                        '#disabled' => ($settings->get('liability_account', $currency) && $perm) ? true : false,
                     );
 
                     $form['currency_settings'][] = array(
@@ -417,20 +414,18 @@ class EditCompanySettings extends FormBase {
             $form['actions'] = array('#type' => 'actions');
             $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
         } else {
-
             $form['alert'] = array(
                 '#type' => 'item',
-                '#markup' => t('Required finance module is not enabled. Please contact administrator'),
+                '#markup' => $this->t('Required finance module is not enabled. Please contact administrator'),
             );
         }
 
-        if ($this->moduleHandler->moduleExists('ek_finance') && !$id == NULL) {
+        if ($this->moduleHandler->moduleExists('ek_finance') && !$id == null) {
             /* TODO */
         } else {
-
             $form['alert2'] = array(
                 '#type' => 'item',
-                '#markup' => t('Required sales module is not enabled. Please contact administrator'),
+                '#markup' => $this->t('Required sales module is not enabled. Please contact administrator'),
             );
         }
 
@@ -440,8 +435,8 @@ class EditCompanySettings extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->getValue('stax_rate') != '') {
             if (!is_numeric($form_state->getValue('stax_rate')) || $form_state->getValue('stax_rate') == 0) {
                 $form_state->setErrorByName('stax_rate', $this->t('Wrong sales tax value input'));
@@ -457,27 +452,27 @@ class EditCompanySettings extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-        if(!NULL == $form_state->getValue('edit_chart')) {
-                if($form_state->getValue('chart') == 0) {
-                    //load standard accounts
-                    $file = drupal_get_path('module', 'ek_finance') . '/ek_standard_accounts.sql';  
-                    $query = file_get_contents($file);
-                    $acc = Database::getConnection('external_db', 'external_db')->query($query);
-                    $balance_date = date('Y') . '-01-01';
-                    $acc = Database::getConnection('external_db', 'external_db')->update('ek_accounts')
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        if (!null == $form_state->getValue('edit_chart')) {
+            if ($form_state->getValue('chart') == 0) {
+                //load standard accounts
+                $file = drupal_get_path('module', 'ek_finance') . '/ek_standard_accounts.sql';
+                $query = file_get_contents($file);
+                $acc = Database::getConnection('external_db', 'external_db')->query($query);
+                $balance_date = date('Y') . '-01-01';
+                $acc = Database::getConnection('external_db', 'external_db')->update('ek_accounts')
                                 ->condition('coid', 'x')
                                 ->fields(['coid' => $form_state->getValue('coid'), 'balance_date' => $balance_date])
                                 ->execute();
-                } else {
-                    //copy chart from other account
-                    $query = "SELECT * from {ek_accounts} WHERE coid=:c ORDER by aid";
-                    $acc = Database::getConnection('external_db', 'external_db')
+            } else {
+                //copy chart from other account
+                $query = "SELECT * from {ek_accounts} WHERE coid=:c ORDER by aid";
+                $acc = Database::getConnection('external_db', 'external_db')
                             ->query($query, [':c' => $form_state->getValue('chart')]);
-                    $date = date('Y') . '-01-01';
-                    while ($a = $acc->fetchObject()) {
-                        $fields = [
+                $date = date('Y') . '-01-01';
+                while ($a = $acc->fetchObject()) {
+                    $fields = [
                             'aid' => $a->aid,
                             'aname' => $a->aname,
                             'atype' => $a->atype,
@@ -489,16 +484,14 @@ class EditCompanySettings extends FormBase {
                             'balance_date' => $date,
 
                         ];
-                     Database::getConnection('external_db', 'external_db')
+                    Database::getConnection('external_db', 'external_db')
                              ->insert('ek_accounts')
                                 ->fields($fields)
-                                ->execute();   
-
-                    }
+                                ->execute();
                 }
+            }
                 
-                \Drupal::messenger()->addStatus(t('Chart structure saved'));
-                
+            \Drupal::messenger()->addStatus(t('Chart structure saved'));
         } else {
             $settings = new CompanySettings($form_state->getValue('coid'));
 
@@ -517,12 +510,10 @@ class EditCompanySettings extends FormBase {
             $settings->set('CurrencyGainLoss', $form_state->getValue('CurrencyGainLoss'));
 
             foreach ($form_state->getValue('currency_settings') as $c) {
-
                 $currency = $c['cname'];
                 array_shift($c);
 
                 foreach ($c as $name => $value) {
-
                     $settings->set($name, $value, $currency);
                 }
             }
@@ -533,5 +524,4 @@ class EditCompanySettings extends FormBase {
             \Drupal::messenger()->addStatus(t('Settings saved. Go back to <a href="@h">list</a>', ['@h' => $h]));
         }
     }
-
 }

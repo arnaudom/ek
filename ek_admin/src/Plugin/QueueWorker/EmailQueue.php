@@ -5,6 +5,7 @@
  * Contains \Drupal\ek_admin\Plugin\QueueWorker\EmailQueue.
  */
 namespace Drupal\ek_admin\Plugin\QueueWorker;
+
 use Drupal\Core\Queue\QueueWorkerBase;
 
 /**
@@ -17,13 +18,15 @@ use Drupal\Core\Queue\QueueWorkerBase;
  *   cron = {"time" = 60}
  * )
  */
-class EmailQueue extends QueueWorkerBase {
-  /**
-   * {@inheritdoc}
-   */
-  public function processItem($data) {
-    $mailManager = \Drupal::service('plugin.manager.mail');
-    $params = $data;
-    $mailManager->mail($data['module'], $data['key'], $data['email'], $data['lang'], $data['params'] , $send = TRUE);
-  }
+class EmailQueue extends QueueWorkerBase
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function processItem($data)
+    {
+        $mailManager = \Drupal::service('plugin.manager.mail');
+        $params = $data;
+        $mailManager->mail($data['module'], $data['key'], $data['email'], $data['lang'], $data['params'], $send = true);
+    }
 }

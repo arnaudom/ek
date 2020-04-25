@@ -16,20 +16,22 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 /**
  * Provides a form to post docs to project pages.
  */
-class FilterPostDoc extends FormBase {
+class FilterPostDoc extends FormBase
+{
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_admin_doc_post_filter';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $param = NULL, $pcode = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $param = null, $pcode = null)
+    {
         $param = unserialize($param);
 
         $form['source'] = array(
@@ -53,7 +55,7 @@ class FilterPostDoc extends FormBase {
         $form['postdoc'] = array(
             '#type' => 'fieldset',
             '#title' => $this->t('Copy document to project') . " " . $pcode,
-            '#open' => isset($param['open']) ? $param['open'] : FALSE,
+            '#open' => isset($param['open']) ? $param['open'] : false,
             '#attributes' => array('class' => ''),
         );
 
@@ -61,7 +63,7 @@ class FilterPostDoc extends FormBase {
         $form['postdoc']['actions']['copy'] = array(
             '#id' => 'copybuttonid',
             '#type' => 'button',
-            '#value' => t('Copy'),
+            '#value' => $this->t('Copy'),
             //'#limit_validation_errors' => array(),
             '#ajax' => array(
                 'callback' => array($this, 'ProcessPost'),
@@ -82,43 +84,44 @@ class FilterPostDoc extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-        
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         // Nothing to submit.
     }
 
     /**
      * process mail
      */
-    public function ProcessPost(array &$form, FormStateInterface $form_state) {
-
+    public function ProcessPost(array &$form, FormStateInterface $form_state)
+    {
         $param = $form_state->getValue('param');
         switch ($form_state->getValue('source')) {
             //generate the pdf file and save in tmp dir
-            case 'expenses_memo' :
+            case 'expenses_memo':
                 include_once drupal_get_path('module', 'ek_finance') . '/manage_pdf_output.inc';
                 $fileName = $head->serial . ".pdf";
                 $file = \Drupal::config('system.file')->get('path.temporary') . "/" . $fileName;
                 $sec = "fi";
                 break;
 
-            case 'invoice' :
-            case 'purchase' :
-            case 'quotation' :
+            case 'invoice':
+            case 'purchase':
+            case 'quotation':
                 include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
                 $fileName = $head->serial . ".pdf";
                 $file = \Drupal::config('system.file')->get('path.temporary') . "/" . $fileName;
                 $sec = "fi";
                 break;
 
-            case 'delivery' :
-            case 'logi_delivery' :
+            case 'delivery':
+            case 'logi_delivery':
             case 'receiving':
             case 'logi_receiving':
                 include_once drupal_get_path('module', 'ek_logistics') . '/manage_pdf_output.inc';
@@ -154,16 +157,15 @@ class FilterPostDoc extends FormBase {
         if ($insert) {
             $lk = ['#markup' => \Drupal\ek_projects\ProjectData::geturl($form_state->getValue('pcode'))];
             $render = \Drupal::service('renderer')->render($lk);
-            $message = t('Document posted to @t.', array('@t' => $render));
+            $message = $this->t('Document posted to @t.', array('@t' => $render));
             $form['postdoc']['alert']['#prefix'] = "<div id='PostMessage' class='messages messages--status'>";
             $form['postdoc']['alert']['#markup'] = $message;
         } else {
             $form['postdoc']['alert']['#prefix'] = "<div id='PostMessage' class='messages messages--error'>";
-            $form['postdoc']['alert']['#markup'] = t('Error copy to @t', array('@t' => $form_state->getValue('pcode')));
+            $form['postdoc']['alert']['#markup'] = $this->t('Error copy to @t', array('@t' => $form_state->getValue('pcode')));
         }
 
         unlink($file);
         return $form['postdoc']['alert'];
     }
-
 }

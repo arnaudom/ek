@@ -18,12 +18,14 @@ use Drupal\ek_admin\GlobalSettings;
 /**
  * Provides an global settings form.
  */
-class SettingsForm extends FormBase {
+class SettingsForm extends FormBase
+{
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_edit_global_settings_form';
     }
     
@@ -45,7 +47,8 @@ class SettingsForm extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler, StateInterface $state) {
+    public function __construct(ModuleHandler $module_handler, StateInterface $state)
+    {
         $this->moduleHandler = $module_handler;
         $this->state = $state;
     }
@@ -53,7 +56,8 @@ class SettingsForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler'),
                 $container->get('state')
@@ -63,8 +67,8 @@ class SettingsForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $coid = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $coid = null)
+    {
         $settings = new GlobalSettings($coid);
 
         $form['coid'] = array(
@@ -74,29 +78,29 @@ class SettingsForm extends FormBase {
             
         $form['cronkey'] = array(
             '#type' => 'item',
-            '#markup' => t('Use key for cron') . ': <b>' . $this->state->get('system.cron_key') . '</b>', 
+            '#markup' => $this->t('Use key for cron') . ': <b>' . $this->state->get('system.cron_key') . '</b>',
                 );
         
         $master = $this->currentUser()->hasPermission('administer site configuration');
         
-        if($master){
+        if ($master) {
             $form['installation_id'] = array(
                 '#type' => 'textfield',
-                '#required' => TRUE,
+                '#required' => true,
                 '#size' => 30,
                 '#maxlength' => 50,
                 '#default_value' => ($settings->get('installation_id') != '') ? $settings->get('installation_id') : 'ek_default_validation',
-                '#attributes' => array('placeholder' => t('installation id')),
-                '#description' => t('system installation id'),
+                '#attributes' => array('placeholder' => $this->t('installation id')),
+                '#description' => $this->t('system installation id'),
             );
             $form['validation_url'] = array(
                 '#type' => 'textfield',
-                '#required' => TRUE,
+                '#required' => true,
                 '#size' => 50,
                 '#maxlength' => 150,
                 '#default_value' => $settings->get('validation_url'),
-                '#attributes' => array('placeholder' => t('validation url')),
-                '#description' => t('validation url address for support and installation'),
+                '#attributes' => array('placeholder' => $this->t('validation url')),
+                '#description' => $this->t('validation url address for support and installation'),
             );
                 
             $form['backup_directory'] = array(
@@ -104,7 +108,7 @@ class SettingsForm extends FormBase {
                 '#size' => 30,
                 '#maxlength' => 200,
                 '#default_value' => $settings->get('backup_directory'),
-                '#description' => t('Backup full path to directory'),
+                '#description' => $this->t('Backup full path to directory'),
             );
 
             $form['backup_filename'] = array(
@@ -112,7 +116,7 @@ class SettingsForm extends FormBase {
                 '#size' => 60,
                 '#maxlength' => 200,
                 '#default_value' => $settings->get('backup_filename'),
-                '#description' => t('Backup file name(s) separated by comma'),
+                '#description' => $this->t('Backup file name(s) separated by comma'),
             );
         }
         
@@ -121,58 +125,58 @@ class SettingsForm extends FormBase {
             '#size' => 1,
             '#options' => array('https' => 'https', 'http' => 'http'),
             '#default_value' => $settings->get('protocol'),
-            '#description' => t('Connection type'),
+            '#description' => $this->t('Connection type'),
         );
          
         $form['backup_recipients'] = array(
             '#type' => 'textfield',
             '#size' => 60,
              '#default_value' => $settings->get('backup_recipients'),
-            '#description' => t('Backup recipients email addresses separated by comma'),
-        );  
+            '#description' => $this->t('Backup recipients email addresses separated by comma'),
+        );
         
         
         $form['cron'] = array(
             '#type' => 'details',
-            '#title' => t('Cron tasks'),
-            '#open' => TRUE,
+            '#title' => $this->t('Cron tasks'),
+            '#open' => true,
         );
         
         $form['cron']['sale_tasks'] = array(
                 '#type' => 'checkbox',
-                '#title' => t('Sales tasks'),
+                '#title' => $this->t('Sales tasks'),
                 '#default_value' => $settings->get('sale_tasks'),
             );
         
         $form['cron']['sale_status'] = array(
                 '#type' => 'checkbox',
-                '#title' => t('Sales status'),
+                '#title' => $this->t('Sales status'),
                 '#default_value' => $settings->get('sale_status'),
             );
         
         $form['cron']['purchase_tasks'] = array(
                 '#type' => 'checkbox',
-                '#title' => t('Purchases tasks'),
+                '#title' => $this->t('Purchases tasks'),
                 '#default_value' => $settings->get('purchase_tasks'),
-            );        
+            );
         
         $form['cron']['project_tasks'] = array(
                 '#type' => 'checkbox',
-                '#title' => t('Project tasks'),
+                '#title' => $this->t('Project tasks'),
                 '#default_value' => $settings->get('project_tasks'),
             );
         
         $form['cron']['project_status'] = array(
                 '#type' => 'checkbox',
-                '#title' => t('Projects status'),
+                '#title' => $this->t('Projects status'),
                 '#default_value' => $settings->get('project_status'),
-            );             
+            );
         
         $form['cron']['hr_tasks'] = array(
                 '#type' => 'checkbox',
-                '#title' => t('HR tasks'),
+                '#title' => $this->t('HR tasks'),
                 '#default_value' => $settings->get('hr_tasks'),
-            );         
+            );
         
         $form['actions'] = array('#type' => 'actions');
         $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
@@ -183,19 +187,16 @@ class SettingsForm extends FormBase {
     
     /**
      * {@inheritdoc}
-     */    
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
-        
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         $addresses = explode(',', $form_state->getValue('backup_recipients'));
         foreach ($addresses as $email) {
-            if ($email != NULL) {
-              $email = trim($email);
-              if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-
-                $form_state->setErrorByName('backup_recipients', $this->t('Invalid email format "@mail"' , ['@mail' => $email]));
-
-              }
+            if ($email != null) {
+                $email = trim($email);
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $form_state->setErrorByName('backup_recipients', $this->t('Invalid email format "@mail"', ['@mail' => $email]));
+                }
             }
         }
     }
@@ -203,12 +204,12 @@ class SettingsForm extends FormBase {
 
     /**
      * {@inheritdoc}
-     */    
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         $settings = new GlobalSettings($form_state->getValue('coid'));
         $master = $this->currentUser()->hasPermission('administer site configuration');
-        if($master){
+        if ($master) {
             $settings->set('installation_id', $form_state->getValue('installation_id'));
             $settings->set('validation_url', $form_state->getValue('validation_url'));
             $settings->set('backup_directory', rtrim($form_state->getValue('backup_directory'), "/"));
@@ -228,5 +229,4 @@ class SettingsForm extends FormBase {
         
         \Drupal::messenger()->addStatus(t('Data updated'));
     }
-
 }

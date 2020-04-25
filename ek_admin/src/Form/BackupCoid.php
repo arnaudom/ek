@@ -19,7 +19,8 @@ use Drupal\ek_admin\Access\AccessCheck;
 /**
  * Provides a form.
  */
-class BackupCoid extends FormBase {
+class BackupCoid extends FormBase
+{
 
     /**
      * The module handler.
@@ -32,14 +33,16 @@ class BackupCoid extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler)
+    {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('module_handler')
         );
@@ -48,23 +51,22 @@ class BackupCoid extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_admin_backup_by_coid';
     }
 
     /**
-     * 
+     *
      * id structure : pcode|query|type
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $coid = NULL) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state, $coid = null)
+    {
         $company = AccessCheck::CompanyListByUid();
 
 
-        if (!$coid == NULL && !$company[$coid] == '') {
-
+        if (!$coid == null && !$company[$coid] == '') {
             $form['coid'] = array(
                 '#type' => 'hidden',
                 '#value' => $coid,
@@ -76,19 +78,19 @@ class BackupCoid extends FormBase {
                 ->fetchObject();
             $form['company'] = array(
                 '#type' => 'item',
-                '#markup' => '<h2>' . t('Company') . ': ' . $c->name . '</h2>',
+                '#markup' => '<h2>' . $this->t('Company') . ': ' . $c->name . '</h2>',
             );
             $form['eof'] = array(
                 '#type' => 'select',
-                '#options' => ['0' => t('none'), 'chr' => 'chr', 'PHP_EOL' => 'PHP_EOL', '\n' => '\n', '\r' => '\r', '\r\n' => '\r\n'],
-                '#required' => TRUE,
-                '#title' => t('End of file mark'),
+                '#options' => ['0' => $this->t('none'), 'chr' => 'chr', 'PHP_EOL' => 'PHP_EOL', '\n' => '\n', '\r' => '\r', '\r\n' => '\r\n'],
+                '#required' => true,
+                '#title' => $this->t('End of file mark'),
             );
             $form['actions'] = array('#type' => 'actions');
             $form['actions']['upload'] = array(
                 '#id' => 'upbuttonid1',
                 '#type' => 'submit',
-                '#value' => t('Backup @c data', ['@c' => $company[$coid]]),
+                '#value' => $this->t('Backup @c data', ['@c' => $company[$coid]]),
                 '#ajax' => array(
                     'callback' => array($this, 'backup'),
                     'wrapper' => 'message',
@@ -104,7 +106,7 @@ class BackupCoid extends FormBase {
             $form['section']['sql'] = array(
                 '#type' => 'item',
                 
-                '#markup' => NULL,
+                '#markup' => null,
             );
 
             $form['section']['/div'] = array(
@@ -116,18 +118,18 @@ class BackupCoid extends FormBase {
         return $form;
     }
     
-  /**
-   * {@inheritdoc}
-   */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-        
+    /**
+     * {@inheritdoc}
+     */
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
     }
 
-  /**
-   * {@inheritdoc}
-   */
-    public function backup(array &$form, FormStateInterface $form_state) {
-
+    /**
+     * {@inheritdoc}
+     */
+    public function backup(array &$form, FormStateInterface $form_state)
+    {
         $file = '';
         $coid = $form_state->getValue('coid');
         $lineEnd = ($form_state->getValue('eof') == '0') ? '' : $form_state->getValue('eof');
@@ -135,37 +137,37 @@ class BackupCoid extends FormBase {
   
             
             
-            ////////////////
-            //company
-            ////////////////
-            $table = 'ek_company';
+        ////////////////
+        //company
+        ////////////////
+        $table = 'ek_company';
             
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            $file .= " # Table  " . $table . $lineEnd;
-            $file .= " #--------------------------------------------------------" . $lineEnd;
+        $file .= " #--------------------------------------------------------" . $lineEnd;
+        $file .= " # Table  " . $table . $lineEnd;
+        $file .= " #--------------------------------------------------------" . $lineEnd;
 
-            $fields = "`id`,`access`,`settings`,`name`,`reg_number`,`address1`,`address2`,`address3`,`address4`,`city`,"
+        $fields = "`id`,`access`,`settings`,`name`,`reg_number`,`address1`,`address2`,`address3`,`address4`,`city`,"
                     . "`city2`,`postcode`,`postcode2`,`country`,`country2`,`telephone`,"
                     . "`telephone2`,`fax`,`fax2`,`email`,`contact`,`mobile`,`logo`,"
                     . "`favicon`,`sign`,`short`,`accounts_year`,`accounts_month`,"
                     . "`active`,`itax_no`,`pension_no`,`social_no`,`vat_no`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE id=:c';
+        $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE id=:c';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
+        $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
           
-            ////////////////
-            //company docs
-            ////////////////
-            $table = 'ek_company_documents';
+        ////////////////
+        //company docs
+        ////////////////
+        $table = 'ek_company_documents';
             
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            $file .= " # Table  " . $table . $lineEnd;
-            $file .= " #--------------------------------------------------------" . $lineEnd;
+        $file .= " #--------------------------------------------------------" . $lineEnd;
+        $file .= " # Table  " . $table . $lineEnd;
+        $file .= " #--------------------------------------------------------" . $lineEnd;
 
-            $fields = "`id`,`coid`,`fid`,`filename`,`uri`,`comment`,`date`,`size`,`share`,`deny`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ORDER by id';
+        $fields = "`id`,`coid`,`fid`,`filename`,`uri`,`comment`,`date`,`size`,`share`,`deny`";
+        $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ORDER by id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
+        $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
         if ($this->moduleHandler->moduleExists('ek_finance')) {
 
@@ -262,7 +264,7 @@ class BackupCoid extends FormBase {
                     . 'LEFT JOIN {ek_bank} b ON '
                     . 'ba.bid = b.id '
                     . 'WHERE coid=:c ORDER by ' . $table . '.id';
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd); 
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             ///////////////
             //cash
@@ -357,7 +359,7 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' INNER JOIN {ek_expenses_memo} b ON '
                     . ''. $table .'.serial = b.serial WHERE entity=:c ORDER by ' . $table . '.id';
             
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
            
             ////////////////////
             //finance settings
@@ -372,7 +374,7 @@ class BackupCoid extends FormBase {
             $fields = "`id`,`settings`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' ';
             
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
            
             ////////////////////
@@ -389,7 +391,7 @@ class BackupCoid extends FormBase {
                     . "`collection`, `department`, `family`, `size`, `color`,`supplier`,`stamp`,`format`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ORDER by ' . $table . '.id';
             
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);              
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
            
             ////////////////////////
             //item barcodes
@@ -406,7 +408,7 @@ class BackupCoid extends FormBase {
                     . 'LEFT join {ek_items} ON ek_items.itemcode = ' . $table . '.itemcode '
                     . 'WHERE coid=:c ORDER by ' . $table . '.id ';
             
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd); 
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
            
             ////////////////////////
             //item barcodes
@@ -423,7 +425,7 @@ class BackupCoid extends FormBase {
                     . 'LEFT join {ek_items} ON ek_items.itemcode = ' . $table . '.itemcode '
                     . 'WHERE coid=:c ORDER by ' . $table . '.id ';
             
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd); 
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
                                       
             ////////////////////
             //item images
@@ -435,12 +437,12 @@ class BackupCoid extends FormBase {
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
             
-           $fields = "" . $table . ".id," . $table . ".itemcode,`uri`";
+            $fields = "" . $table . ".id," . $table . ".itemcode,`uri`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' '
                     . 'LEFT join {ek_items} ON ek_items.itemcode = ' . $table . '.itemcode '
                     . 'WHERE coid=:c ORDER by ' . $table . '.id ';
             
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
                                       
             ////////////////////
             //item packing
@@ -452,13 +454,13 @@ class BackupCoid extends FormBase {
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
             
-           $fields = "" . $table . ".id," . $table . ".itemcode,`units`,`unit_measure`,"
+            $fields = "" . $table . ".id," . $table . ".itemcode,`units`,`unit_measure`,"
                    . "`item_size`,`pack_size`,`qty_pack`,`c20`,`c40`,`min_order`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' '
                     . 'LEFT join {ek_items} ON ek_items.itemcode = ' . $table . '.itemcode '
                     . 'WHERE coid=:c ORDER by ' . $table . '.id ';
             
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
            
                                       
             ////////////////////
@@ -471,14 +473,14 @@ class BackupCoid extends FormBase {
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
             
-           $fields = "" . $table . ".id," . $table . ".itemcode,`purchase_price`,`currency`,`date_purchase`,"
+            $fields = "" . $table . ".id," . $table . ".itemcode,`purchase_price`,`currency`,`date_purchase`,"
                    . "`selling_price`,`promo_price`,`discount_price`,`exp_selling_price`,`exp_promo_price`,`exp_discount_price`,"
                    . "`loc_currency`,`exp_currency`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' '
                     . 'LEFT join {ek_items} ON ek_items.itemcode = ' . $table . '.itemcode '
                     . 'WHERE coid=:c ORDER by ' . $table . '.id ';
             
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
            
                                       
             ////////////////////
@@ -491,13 +493,13 @@ class BackupCoid extends FormBase {
             $file .= " # Table  " . $table . $lineEnd;
             $file .= " #--------------------------------------------------------" . $lineEnd;
             
-           $fields = "" . $table . ".id," . $table . ".itemcode,`date`,`price`,`currency`,"
+            $fields = "" . $table . ".id," . $table . ".itemcode,`date`,`price`,`currency`,"
                    . "" . $table . ".`type`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' '
                     . 'LEFT join {ek_items} ON ek_items.itemcode = ' . $table . '.itemcode '
                     . 'WHERE coid=:c ORDER by ' . $table . '.id ';
             
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
                        
             ////////////////////////
             //journal reconciliation
@@ -512,7 +514,7 @@ class BackupCoid extends FormBase {
             $fields = "`id`,`type`,`date`,`aid`,`coid`,`data`,`uri`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ORDER by id';
             
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);              
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
            
             ////////////////////////
             //journal trail
@@ -529,20 +531,20 @@ class BackupCoid extends FormBase {
                     . 'LEFT join {ek_journal} ON ek_journal.id = ' . $table . '.jid '
                     . 'WHERE coid=:c ORDER by ' . $table . '.id ';
             
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd); 
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
-            /* check if there are archive tables 
+            /* check if there are archive tables
              * to do this we arbitrary browse 20 years back
              */
             $year = date('Y');
-            for($past = 1; $past <= 20; $past++) {
+            for ($past = 1; $past <= 20; $past++) {
                 $y = $year - $past;
                 $archive = "ek_journal_" . $y . "_" . $coid;
                 $query = "SHOW TABLES LIKE '" . $archive . "'";
                 $table = Database::getConnection('external_db', 'external_db')
                             ->query($query)->fetchField();
                 
-                if($table == $archive) {
+                if ($table == $archive) {
                     $file .= " #--------------------------------------------------------" . $lineEnd;
                     $file .= " # Table  " . $table . $lineEnd;
                     $file .= " #--------------------------------------------------------" . $lineEnd;
@@ -551,7 +553,7 @@ class BackupCoid extends FormBase {
                             . "`date`, `value`, `reconcile`, `currency`, `comment`";
                     $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ORDER by ' . $table . '.id';
 
-                    $file .= self::querydb($coid, $table, $fields, $query, $lineEnd); 
+                    $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
                 }
             }
             
@@ -569,12 +571,10 @@ class BackupCoid extends FormBase {
             $fields = "`reference`,`value_base`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE reference like :c ';
             $condition = '%-' . $coid . '-%';
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, $condition);  
-          
-            
-       } //finance 
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, $condition);
+        } //finance
 
-        if ($this->moduleHandler->moduleExists('ek_sales')) {  
+        if ($this->moduleHandler->moduleExists('ek_sales')) {
             ////////////////////
             //invoice
             ////////////////////
@@ -591,7 +591,7 @@ class BackupCoid extends FormBase {
                     . "`due`,`bank`,`tax`,`taxvalue`,`reconcile`,`alert`,`alert_who`,`balance_post`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE head=:c ';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);             
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
         
            
             ////////////////////
@@ -609,7 +609,7 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_sales_invoice} b ON '
                     . ''. $table .'.serial = b.serial WHERE head=:c ORDER by ' . $table . '.id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
 
                        
             ////////////////////
@@ -646,7 +646,7 @@ class BackupCoid extends FormBase {
                     . "`terms`,`due`,`pdate`,`pay_ref`,`reconcile`,`alert`,`alert_who`,`uri`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE head=:c ';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);             
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
         
            
             ////////////////////
@@ -699,7 +699,7 @@ class BackupCoid extends FormBase {
                     . "`incoterm`,`tax`,`bank`,`principal`,`type`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE head=:c ';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);             
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
         
        
             ////////////////////
@@ -717,7 +717,7 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_sales_quotation} b ON '
                     . ''. $table .'.serial = b.serial WHERE head=:c ORDER by ' . $table . '.id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);     
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             ////////////////////
             //quotation settings
@@ -732,7 +732,7 @@ class BackupCoid extends FormBase {
             $fields = $table .".`id`,`field`,`name`,`active`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table ;
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);  
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             ////////////////
             //sales docs
@@ -755,7 +755,7 @@ class BackupCoid extends FormBase {
          
             $abid_sales = array_merge((array)$abid1, (array)$abid2, (array)$abid3);
             
-            $condition = implode(',', $abid_sales);  
+            $condition = implode(',', $abid_sales);
         
             $table = 'ek_sales_documents';
             
@@ -766,7 +766,7 @@ class BackupCoid extends FormBase {
             $fields = "`id`,`abid`,`fid`,`filename`,`uri`,`comment`,`date`,`size`,`share`,`deny`,`folder`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE  FIND_IN_SET (abid, :c ) ORDER by id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, $condition);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, $condition);
        
             ////////////////////
             //sales settings
@@ -781,8 +781,8 @@ class BackupCoid extends FormBase {
             $fields = "`coid`,`settings`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);              
-        }//sales     
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
+        }//sales
        
         if ($this->moduleHandler->moduleExists('ek_hr')) {
        
@@ -804,7 +804,7 @@ class BackupCoid extends FormBase {
                     . "`mcleave`,`archive`,`picture`,`administrator`,`default_ps`,`note`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE company_id=:c ORDER by id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
                     
             ////////////////////
             //hr workforce pay
@@ -829,7 +829,7 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_hr_workforce} b ON '
                     . ''. $table .'.id = b.id WHERE company_id=:c ORDER by ' . $table . '.id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);              
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             
             ////////////////////
@@ -855,7 +855,7 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_hr_workforce} b ON '
                     . ''. $table .'.emp_id = b.id WHERE company_id=:c ORDER by ' . $table . '.id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);              
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             
             ///////////////////////
@@ -871,7 +871,7 @@ class BackupCoid extends FormBase {
             $fields = $table .".`id`,`coid`,`location`,`description`,`turnover`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ORDER by id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);             
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             ///////////////////////
             //hr document
@@ -887,7 +887,7 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_hr_workforce} b ON '
                     . ''. $table .'.employee_id = b.id WHERE company_id=:c ORDER by ' . $table . '.id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             
             ///////////////////////
@@ -903,7 +903,7 @@ class BackupCoid extends FormBase {
             $fields = "`coid`,`current`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);             
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             ///////////////////////
             //hr service
@@ -920,7 +920,7 @@ class BackupCoid extends FormBase {
                     . "`display_vertical_service`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ORDER by sid';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd); 
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
                       
             ///////////////////////
             //hr workforce ph
@@ -935,7 +935,7 @@ class BackupCoid extends FormBase {
             $fields = $table .".`id`,`coid`,`date`,`description`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ORDER by id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);  
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             ///////////////////////
             //hr workforce roster
@@ -951,7 +951,7 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_hr_workforce} b ON '
                     . ''. $table .'.emp_id = b.id WHERE company_id=:c ORDER by ' . $table . '.id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             ///////////////////////
             //hr settings
@@ -966,10 +966,7 @@ class BackupCoid extends FormBase {
             $fields = $table .".`coid`,`ad`,`cat`,`param`,`accounts`,`roster`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd); 
-            
-            
-
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
         }//hr
       
         if ($this->moduleHandler->moduleExists('ek_products')) {
@@ -1004,7 +1001,7 @@ class BackupCoid extends FormBase {
                     . "`stamp`,`format`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd); 
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             ///////////////////////
             //items barcode
@@ -1020,7 +1017,7 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_items} b ON '
                     . ''. $table .'.itemcode = b.itemcode WHERE coid=:c ORDER by ' . $table . '.id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             ///////////////////////
             //items images
@@ -1036,7 +1033,7 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_items} b ON '
                     . ''. $table .'.itemcode = b.itemcode WHERE coid=:c ORDER by ' . $table . '.id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);             
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             ///////////////////////
             //items packing
@@ -1053,7 +1050,7 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_items} b ON '
                     . ''. $table .'.itemcode = b.itemcode WHERE coid=:c ORDER by ' . $table . '.id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd); 
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             ///////////////////////
             //items prices
@@ -1095,25 +1092,20 @@ class BackupCoid extends FormBase {
             $abid_items = Database::getConnection('external_db', 'external_db')
                     ->query($query, [':c' => $coid])
                     ->fetchCol();
-         
-            
-        } //products    
+        } //products
         
-        if ($this->moduleHandler->moduleExists('ek_projects')) { 
+        if ($this->moduleHandler->moduleExists('ek_projects')) {
             
             //keep references to extract address book data
             $query = "SELECT distinct client_id FROM {ek_project}";
             $abid_projects = Database::getConnection('external_db', 'external_db')
                     ->query($query, [':c' => $coid])
                     ->fetchCol();
-            
-            
-        }       
+        }
         
         
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
-            
-            $abid = array_merge((array)$abid_sales, (array)$abid_items, (array)$abid_projects); 
+            $abid = array_merge((array)$abid_sales, (array)$abid_items, (array)$abid_projects);
             $condition = implode(',', $abid);
             
             ///////////////////////
@@ -1131,7 +1123,7 @@ class BackupCoid extends FormBase {
                     . "`type`,`category`,`status`,`stamp`,`activity`,`logo`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE  FIND_IN_SET (id, :c ) ORDER by ' . $table . '.id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, $condition);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, $condition);
 
                         
             ///////////////////////
@@ -1166,10 +1158,8 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_address_book} b ON '
                     . ''. $table .'.abid = b.id WHERE  FIND_IN_SET (b.id, :c ) ORDER by ' . $table . '.abid';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, $condition); 
-            
-            
-            }     
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, $condition);
+        }
         
         if ($this->moduleHandler->moduleExists('ek_logistics')) {
             ////////////////////
@@ -1187,7 +1177,7 @@ class BackupCoid extends FormBase {
                     . "`status`,`amount`,`ordered_quantity`,`post`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE head=:c ';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);             
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
         
            
             ////////////////////////////
@@ -1205,7 +1195,7 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_logi_delivery} b ON '
                     . ''. $table .'.serial = b.serial WHERE head=:c ORDER by ' . $table . '.id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);    
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
         
             ////////////////////
             //Logistics receive
@@ -1222,7 +1212,7 @@ class BackupCoid extends FormBase {
                     . "`status`,`amount`,`type`,`logistic_cost`,`post`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE head=:c ';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);             
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
         
            
             ////////////////////////////
@@ -1240,7 +1230,7 @@ class BackupCoid extends FormBase {
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_logi_receiving} b ON '
                     . ''. $table .'.serial = b.serial WHERE head=:c ORDER by ' . $table . '.id';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
             
             ////////////////////
             //logistics settings
@@ -1255,95 +1245,87 @@ class BackupCoid extends FormBase {
             $fields = "`coid`,`settings`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);            
-            
-            
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
         }
          
         $name = md5(date('U')) . '.sql';
-        $sql = file_save_data($file, 'private://tmp/' . $name, NULL);
+        $sql = file_save_data($file, 'private://tmp/' . $name, null);
         
         if ($sql) {
-   
             $id = \Drupal::currentUser()->id();
-        if ($id) {
-            $user = User::load($id);
-            $sql->setOwner($user);
-            
-          }
-          else {
-            $sql->setOwner($this->adminUser);
-          }
-          // Change the file status to be temporary.
-          $sql->setTemporary();
-          // Save the changes.
-          $sql->save();
+            if ($id) {
+                $user = User::load($id);
+                $sql->setOwner($user);
+            } else {
+                $sql->setOwner($this->adminUser);
+            }
+            // Change the file status to be temporary.
+            $sql->setTemporary();
+            // Save the changes.
+            $sql->save();
         }
         
-        $form['section']['sql']['#markup'] = "<a href='". file_create_url($sql->getFileUri()) 
-                . "'>" . t('download') . "</a>"; 
+        $form['section']['sql']['#markup'] = "<a href='". file_create_url($sql->getFileUri())
+                . "'>" . $this->t('download') . "</a>";
         return $form['section'];
     }
     
-  /**
-   * {@inheritdoc}
-   */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-        
+    /**
+     * {@inheritdoc}
+     */
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
     }
     
-    public static function querydb($coid = NULL, $table = NULL, $fields = NULL, $query = NULL, $lineEnd = NULL, $condition = NULL) {
-        
-            $file = '';
-            $create = 'SHOW CREATE TABLE ' . $table;
+    public static function querydb($coid = null, $table = null, $fields = null, $query = null, $lineEnd = null, $condition = null)
+    {
+        $file = '';
+        $create = 'SHOW CREATE TABLE ' . $table;
 
-            $data = Database::getConnection('external_db', 'external_db')
+        $data = Database::getConnection('external_db', 'external_db')
                     ->query($create)
                     ->fetchAssoc();
 
-            $file .= str_replace('"', '`', $data['Create Table']) . ';' . $lineEnd;
+        $file .= str_replace('"', '`', $data['Create Table']) . ';' . $lineEnd;
             
-            if($condition) {
-                $a = [':c' => $condition];
-            } else {
-                $a = [':c' => $coid];
-            }
+        if ($condition) {
+            $a = [':c' => $condition];
+        } else {
+            $a = [':c' => $coid];
+        }
 
-            $data = Database::getConnection('external_db', 'external_db')
+        $data = Database::getConnection('external_db', 'external_db')
                     ->query($query, $a);
         
-            $rows = '';
-            $i = 0;
-                    While ($r = $data->fetchAssoc()) {
-
-                        $i++;
-                        if ($i > 500) {
-                            $rows = substr($rows, 0, -3) . ';';
-                            $i = 1;
-                            $rows .= "INSERT INTO `" . $table . "` (" . $fields . ") VALUES ";
-                        }
-                        $values = '';
-                        foreach($r as $key => $val) {
-                            $values .= '"' . addslashes($val) . '",';
-                        }
-                        $values = rtrim($values, ',');
-                        //$rows .= '("' . @implode('","', $r) . '"),' . $lineEnd;
-                        $rows .= '(' . $values . '),' . $lineEnd;
-                    }
+        $rows = '';
+        $i = 0;
+        while ($r = $data->fetchAssoc()) {
+            $i++;
+            if ($i > 500) {
+                $rows = substr($rows, 0, -3) . ';';
+                $i = 1;
+                $rows .= "INSERT INTO `" . $table . "` (" . $fields . ") VALUES ";
+            }
+            $values = '';
+            foreach ($r as $key => $val) {
+                $values .= '"' . addslashes($val) . '",';
+            }
+            $values = rtrim($values, ',');
+            //$rows .= '("' . @implode('","', $r) . '"),' . $lineEnd;
+            $rows .= '(' . $values . '),' . $lineEnd;
+        }
                     
-                    if($i > 0) {
-                        $file .= "INSERT INTO `" . $table . "` (" . $fields . ") VALUES ";
-                        $file .= $rows;
-                        $file = substr($file, 0, -3) . ';' . $lineEnd ; 
-                    } else {
-                        $file .= '# No data ------------------------------------' . $lineEnd;
-                    }
+        if ($i > 0) {
+            $file .= "INSERT INTO `" . $table . "` (" . $fields . ") VALUES ";
+            $file .= $rows;
+            $file = substr($file, 0, -3) . ';' . $lineEnd ;
+        } else {
+            $file .= '# No data ------------------------------------' . $lineEnd;
+        }
                     
                     
             
             
-            return $file;
+        return $file;
     }
-
-
 }

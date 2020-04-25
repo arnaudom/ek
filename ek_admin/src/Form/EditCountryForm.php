@@ -16,12 +16,14 @@ use Drupal\Core\Database\Database;
 /**
  * Provides an item form.
  */
-class EditCountryForm extends FormBase {
+class EditCountryForm extends FormBase
+{
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('country_manager')
         );
@@ -33,7 +35,8 @@ class EditCountryForm extends FormBase {
      * @param \Drupal\Core\Locale\CountryManagerInterface $country_manager
      *   The country manager.
      */
-    public function __construct(CountryManagerInterface $country_manager) {
+    public function __construct(CountryManagerInterface $country_manager)
+    {
         $this->countryManager = $country_manager;
     }
 
@@ -41,15 +44,16 @@ class EditCountryForm extends FormBase {
      * {@inheritdoc}
      */
 
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_edit_country_form';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state) {
-
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
         $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_country', 'c')
                         ->fields('c')
@@ -83,11 +87,9 @@ class EditCountryForm extends FormBase {
         $options = [];
 
         while ($r = $data->fetchAssoc()) {
-
             $id = $r['id'];
 
             if ($r['status'] == 1) {
-
                 $form['active'][$id]['name'] = array(
                     '#type' => 'item',
                     '#markup' => $r['name'],
@@ -98,7 +100,7 @@ class EditCountryForm extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 30,
                     '#maxlength' => 255,
-                    '#default_value' => isset($r['entity']) ? $r['entity'] : NULL,
+                    '#default_value' => isset($r['entity']) ? $r['entity'] : null,
                     
                 );
 
@@ -108,7 +110,6 @@ class EditCountryForm extends FormBase {
                     
                 );
             } else {
-
                 $form['non_active'][$id]['name'] = array(
                     '#type' => 'item',
                     '#markup' => $r['name'],
@@ -119,7 +120,7 @@ class EditCountryForm extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 30,
                     '#maxlength' => 255,
-                    '#default_value' => isset($r['entity']) ? $r['entity'] : NULL,
+                    '#default_value' => isset($r['entity']) ? $r['entity'] : null,
                     
                 );
 
@@ -131,7 +132,7 @@ class EditCountryForm extends FormBase {
             }
         }
 
-        $form['#tree'] = TRUE;
+        $form['#tree'] = true;
         
         
         $countries = $this->countryManager->getList();
@@ -155,20 +156,18 @@ class EditCountryForm extends FormBase {
 
     /**
      * {@inheritdoc}
-     * 
+     *
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-        
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-        
-        foreach($form_state->getValue('active') as $key => $data) {
-            
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
+        foreach ($form_state->getValue('active') as $key => $data) {
             $fields = [
                 'entity' => $data['entity'],
                 'status' => $data['status'],
@@ -179,10 +178,8 @@ class EditCountryForm extends FormBase {
                     ->condition('id', $key)
                     ->fields($fields)
                     ->execute();
-            
         }
-        foreach($form_state->getValue('non_active') as $key => $data) {
-            
+        foreach ($form_state->getValue('non_active') as $key => $data) {
             $fields = [
                 'entity' => $data['entity'],
                 'status' => $data['status'],
@@ -193,11 +190,10 @@ class EditCountryForm extends FormBase {
                     ->condition('id', $key)
                     ->fields($fields)
                     ->execute();
-            
         }
         
         
-        if(!null == $form_state->getValue('new_country')) {
+        if (!null == $form_state->getValue('new_country')) {
             $newCountry = $form_state->getValue('new_country');
             $countries = $this->countryManager->getList();
             $countryName = (string) $countries[$newCountry];
@@ -206,26 +202,23 @@ class EditCountryForm extends FormBase {
             $data = Database::getConnection('external_db', 'external_db')
                     ->query($query, [':code' => $newCountry])
                     ->fetchField();
-                    if($data) {
-                        \Drupal::messenger()->addWarning(t('New selected country already exists'));
-                    } else {
-                        $insert = Database::getConnection('external_db', 'external_db')
+            if ($data) {
+                \Drupal::messenger()->addWarning(t('New selected country already exists'));
+            } else {
+                $insert = Database::getConnection('external_db', 'external_db')
                             ->insert('ek_country')
                             ->fields(['access' => '', 'status' => 1, 'entity' => '', 'code' => $newCountry, 'name' => $countryName])
                             ->execute();
-                    }
+            }
         }
 
         \Drupal::messenger()->addStatus(t('Country data updated'));
         
-        if($_SESSION['install'] == 1){
+        if ($_SESSION['install'] == 1) {
             unset($_SESSION['install']);
             $form_state->setRedirect('ek_admin.main');
         } else {
             $form_state->setRedirect('ek_admin.country.list');
         }
-        
-            
     }
-
 }

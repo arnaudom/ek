@@ -17,10 +17,10 @@ use Drupal\Core\Url;
  * @param array $coids
  *   The companies ids list.
  * @see \Drupal\ek_admin\Controller\AdminController::Admin()
- * 
+ *
  */
-function hook_ek_settings($coids) {
-
+function hook_ek_settings($coids)
+{
     $query = Database::getConnection('external_db', 'external_db')
             ->select('module_settings', 'm');
     $query->fields('m', ['id', 'settings']);
@@ -44,9 +44,10 @@ function hook_ek_settings($coids) {
  * type : 'info' or 'new'
  * content : text to display
  * footer : footer content
- * 
+ *
  */
-function hook_ek_home() {
+function hook_ek_home()
+{
     $build = [];
     $build['ek']['name'] = 'feature_1';
     $build['ek']['module'] = 'ek_module';
@@ -62,10 +63,10 @@ function hook_ek_home() {
  * @param array $list
  *   array list ids,names.
  * @see \Drupal\ek_admin\Controller\AccessCheck::listUsers()
- * 
+ *
  */
-function hook_list_users($list) {
-
+function hook_list_users($list)
+{
     $new_list = [];
     foreach ($list as $id => $name) {
         $user = \Drupal\user\Entity\User::loadMultiple([$id]);
@@ -78,4 +79,3 @@ function hook_list_users($list) {
 /**
  * @} End of "addtogroup hooks".
  */
-
