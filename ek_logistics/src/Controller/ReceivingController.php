@@ -73,7 +73,6 @@ class ReceivingController extends ControllerBase {
      *
      */
     public function listdata(Request $request) {
-
         $build['filter_receiving'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Filter');
         $header = array(
             'serial' => array(
@@ -144,7 +143,6 @@ class ReceivingController extends ControllerBase {
             $from = $_SESSION['lofilter']['from'];
             $to = $_SESSION['lofilter']['to'];
         } else {
-
             $status = '%';
             $client = '%';
             $from = date('Y-m') . '-01';
@@ -172,13 +170,12 @@ class ReceivingController extends ControllerBase {
 
         $options = array();
         while ($r = $data->fetchObject()) {
-
             $settings = new LogisticsSettings($r->head);
-            $client = \Drupal\ek_address_book\AddressBookData::geturl($r->supplier,['short' => 8]);
+            $client = \Drupal\ek_address_book\AddressBookData::geturl($r->supplier, ['short' => 8]);
             $number = "<a title='" . t('view') . "' href='"
                     . Url::fromRoute('ek_logistics.receiving.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
-            
+
             if ($r->pcode <> 'n/a') {
                 if ($this->moduleHandler->moduleExists('ek_projects')) {
                     $reference = $client . "<br/>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode);
@@ -198,7 +195,7 @@ class ReceivingController extends ControllerBase {
             if ($r->status == 2) {
                 $status = "<i class='fa fa-circle red' aria-hidden='true'></i> " . t('posted');
             }
-            
+
             $options[$r->id] = array(
                 'number' => ['data' => ['#markup' => $number], 'title' => t('view in browser')],
                 'reference' => ['data' => ['#markup' => $reference]],
@@ -210,14 +207,14 @@ class ReceivingController extends ControllerBase {
 
             $links = array();
 
-            if ($r->status == 0 || ($settings->get('edit') == 1 && $r->status == 1 ) || ($settings->get('edit') == 2 && $r->status == 2 )
+            if ($r->status == 0 || ($settings->get('edit') == 1 && $r->status == 1) || ($settings->get('edit') == 2 && $r->status == 2)
             ) {
                 $links['edit'] = array(
                     'title' => $this->t('Edit'),
                     'url' => Url::fromRoute($edit_route, ['id' => $r->id]),
                 );
             }
-            
+
             $links['clone'] = array(
                 'title' => $this->t('Clone'),
                 'url' => Url::fromRoute('ek_logistics_receiving_clone', ['id' => $r->id]),
@@ -229,9 +226,8 @@ class ReceivingController extends ControllerBase {
                     'url' => Url::fromRoute('ek_logistics_receiving_post', ['id' => $r->id]),
                 );
             }
-           
-            if (\Drupal::currentUser()->hasPermission('print_share_receiving')) {
 
+            if (\Drupal::currentUser()->hasPermission('print_share_receiving')) {
                 $links['rprint'] = array(
                     'title' => $this->t('Print and share'),
                     'url' => Url::fromRoute('ek_logistics_receiving_print_share', ['id' => $r->id]),
@@ -247,7 +243,6 @@ class ReceivingController extends ControllerBase {
                 );
             }
             if (\Drupal::currentUser()->hasPermission('delete_receiving') && $r->status == 0) {
-
                 $links['delete'] = array(
                     'title' => $this->t('Delete'),
                     'url' => Url::fromRoute('ek_logistics_receiving_delete', ['id' => $r->id]),
@@ -273,7 +268,7 @@ class ReceivingController extends ControllerBase {
             '#attributes' => array('id' => 'logistics_table'),
             '#empty' => $this->t('No receiving order available.'),
             '#attached' => array(
-                'library' => array('ek_logistics/ek_logistics_css','ek_admin/ek_admin_css'),
+                'library' => array('ek_logistics/ek_logistics_css', 'ek_admin/ek_admin_css'),
             ),
         );
 
@@ -287,17 +282,16 @@ class ReceivingController extends ControllerBase {
     public function edit(Request $request, $id) {
 
         //filter edit
-        if($id){
+        if ($id) {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_logi_receiving', 'd')
-                    ->fields('d', ['head','status','type'])
-                    ->condition('id', $id , '=');
+                    ->fields('d', ['head', 'status', 'type'])
+                    ->condition('id', $id, '=');
             $d = $query->execute()->fetchObject();
-            $settings = new LogisticsSettings($d->head); 
-            if ( $d->status == 0 || ($settings->get('edit') == 1 && $d->status == 1 ) 
-                    || ($settings->get('edit') == 2 && $d->status == 2)
-                ) {
-                  $build['receive'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Receiving', $id); 
+            $settings = new LogisticsSettings($d->head);
+            if ($d->status == 0 || ($settings->get('edit') == 1 && $d->status == 1) || ($settings->get('edit') == 2 && $d->status == 2)
+            ) {
+                $build['receive'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Receiving', $id);
             } else {
                 if ($d->type = 'RR') {
                     $route = 'ek_logistics_list_receiving';
@@ -306,7 +300,7 @@ class ReceivingController extends ControllerBase {
                 }
                 $url = Url::fromRoute($route)->toString();
                 $build['back'] = array(
-                    '#markup' => t('Document not editable. Go to <a href="@url">List</a>.', array('@url' => $url ) ) ,
+                    '#markup' => t('Document not editable. Go to <a href="@url">List</a>.', array('@url' => $url)),
                 );
             }
         } else {
@@ -332,8 +326,8 @@ class ReceivingController extends ControllerBase {
     /**
      * @retun
      *  a display receiving order in html format
-     * 
-     * @param 
+     *
+     * @param
      *  INT $id document id
      */
     public function Html($id) {
@@ -344,23 +338,20 @@ class ReceivingController extends ControllerBase {
                 ->query($query, [':id' => $id])
                 ->fetchObject();
         $access = AccessCheck::GetCompanyByUser();
-        
-        if($data->type == 'RR') {
+
+        if ($data->type == 'RR') {
             $type = 'receiving';
             $edit_route = 'ek_logistics_receiving_edit';
         } else {
             $type = 'returning';
             $edit_route = 'ek_logistics_returning_edit';
         }
-     
+
         if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
-            $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\FilterPrint', $id, $type , 'html');
+            $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\FilterPrint', $id, $type, 'html');
             $document = '';
 
-            if (isset($_SESSION['logisticprintfilter']['filter']) 
-                    && $_SESSION['logisticprintfilter']['filter'] == $id
-                    && $_SESSION['logisticprintfilter']['format'] == 'html') {
-
+            if (isset($_SESSION['logisticprintfilter']['filter']) && $_SESSION['logisticprintfilter']['filter'] == $id && $_SESSION['logisticprintfilter']['format'] == 'html') {
                 $id = explode('_', $_SESSION['logisticprintfilter']['for_id']);
                 $doc_id = $id[0];
                 $param = serialize(
@@ -376,18 +367,18 @@ class ReceivingController extends ControllerBase {
 
                 $format = 'html';
                 if ($this->moduleHandler->moduleExists('ek_products')) {
-                    $product = TRUE;
+                    $product = true;
                 }
                 $url_pdf = Url::fromRoute('ek_logistics_receiving_print_share', ['id' => $doc_id], [])->toString();
-                $url_excel = Url::fromRoute('ek_logistics_receiving_excel', ['param' => serialize([$doc_id,'logi_delivery',0,0])], [])->toString();
+                $url_excel = Url::fromRoute('ek_logistics_receiving_excel', ['param' => serialize([$doc_id, 'logi_delivery', 0, 0])], [])->toString();
                 $url_edit = Url::fromRoute($edit_route, ['id' => $doc_id], [])->toString();
-                
+
                 include_once drupal_get_path('module', 'ek_logistics') . '/manage_print_output.inc';
 
                 $build['receiving'] = [
                     '#markup' => $document,
                     '#attached' => array(
-                        'library' => array('ek_logistics/ek_logistics_html_documents_css','ek_admin/ek_admin_css'),
+                        'library' => array('ek_logistics/ek_logistics_html_documents_css', 'ek_admin/ek_admin_css'),
                     ),
                 ];
             }
@@ -396,7 +387,7 @@ class ReceivingController extends ControllerBase {
             $url = Url::fromRoute('ek_logistics_list_' . $type)->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -405,7 +396,6 @@ class ReceivingController extends ControllerBase {
                 ),
                 '#cache' => ['max-age' => 0,],
             ];
-            
         }
     }
 
@@ -417,11 +407,9 @@ class ReceivingController extends ControllerBase {
      */
 
     public function printshare(Request $request, $id) {
-
         $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\FilterPrint', $id, 'receiving', 'pdf');
 
         if (isset($_SESSION['logisticprintfilter']['filter']) && $_SESSION['logisticprintfilter']['filter'] == $id) {
-
             $id = explode('_', $_SESSION['logisticprintfilter']['for_id']);
             $param = serialize(
                     array(
@@ -455,7 +443,7 @@ class ReceivingController extends ControllerBase {
         $markup = array();
         $format = 'pdf';
         if ($this->moduleHandler->moduleExists('ek_products')) {
-            $product = TRUE;
+            $product = true;
         }
         include_once drupal_get_path('module', 'ek_logistics') . '/manage_print_output.inc';
         return $markup;
@@ -464,8 +452,8 @@ class ReceivingController extends ControllerBase {
     public function excel(Request $request, $param) {
         $markup = array();
         if ($this->moduleHandler->moduleExists('ek_products')) {
-            $product = TRUE;
-        }        
+            $product = true;
+        }
         include_once drupal_get_path('module', 'ek_logistics') . '/manage_excel_output.inc';
         return $markup;
     }
@@ -477,25 +465,24 @@ class ReceivingController extends ControllerBase {
     }
 
     public function delete(Request $request, $id) {
-        
         $query = "SELECT status,serial,type FROM {ek_logi_receiving} WHERE id=:id";
         $table = 'receiving';
         $opt = [0 => t('open'), 1 => t('printed'), 2 => t('invoiced'), 3 => t('posted')];
         $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $id))->fetchObject();
-        if ($data->type == 'RR'){
-            $route = "ek_logistics_list_receiving"; 
+                        ->query($query, array(':id' => $id))->fetchObject();
+        if ($data->type == 'RR') {
+            $route = "ek_logistics_list_receiving";
             $doc = t('Receiving');
         } else {
             $route = "ek_logistics_list_returning";
             $doc = t('Returning');
-        } 
-        if($data->status > 0){
+        }
+        if ($data->status > 0) {
             $items['type'] = 'delete';
-            $items['message'] = ['#markup' => t('@document cannot be deleted.' , array('@document' => $doc))];
+            $items['message'] = ['#markup' => t('@document cannot be deleted.', array('@document' => $doc))];
             $items['description'] = ['#markup' => $opt[$data->status]];
-            $url = Url::fromRoute($route, [],[])->toString();            
-            $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>",['@url' => $url])];
+            $url = Url::fromRoute($route, [], [])->toString();
+            $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>", ['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -503,13 +490,13 @@ class ReceivingController extends ControllerBase {
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
                 '#cache' => ['max-age' => 0,],
-            ];  
+            ];
         } else {
-            $build['delete_delivery'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Delete', $id, $table,$data->type);
-        }        
-        
-         return $build;
+            $build['delete_delivery'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Delete', $id, $table, $data->type);
+        }
+
+        return $build;
     }
 
-//end class  
+    //end class
 }

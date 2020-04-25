@@ -27,21 +27,25 @@ class FilterPrint extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $source = NULL, $format = NULL) {
-       
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $source = null, $format = null) {
         if ($source == 'delivery') {
-            $query = "SELECT head,serial,client from {ek_logi_delivery} WHERE id=:id";
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_logi_delivery', 's');
             $route = 'delivery';
         } else {
-            $query = "SELECT head,serial,supplier,type from {ek_logi_receiving} WHERE id=:id";
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_logi_receiving', 's');
         }
-
-        $doc = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $id))->fetchObject();
         
-        if($route != 'delivery') {
-            if($doc->type == 'RR') {
+        $query->fields('s');
+        $query->condition('s.id', $id);
+        $query->leftJoin('ek_company', 'c', 'c.id = s.head');
+        $query->fields('c', ['sign']);
+        $doc = $query->execute()->fetchObject();
+
+
+        if ($route != 'delivery') {
+            if ($doc->type == 'RR') {
                 $route = 'receiving';
             } else {
                 $route = 'returning';
@@ -49,7 +53,7 @@ class FilterPrint extends FormBase {
         }
         $back = Url::fromRoute('ek_logistics_list_' . $route, array(), array())->toString();
         $form["back"] = array(
-            '#markup' => "<a href='" . $back . "' >" . t('list') . "</a>" ,
+            '#markup' => "<a href='" . $back . "' >" . $this->t('list') . "</a>",
         );
         $form['serial'] = array(
             '#type' => 'item',
@@ -70,26 +74,57 @@ class FilterPrint extends FormBase {
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Options'),
-            '#open' => TRUE,
+            '#open' => true,
             '#attributes' => array('class' => array('container-inline')),
         );
 
+        if ($doc->sign != null && file_exists($doc->sign)) {
+            $form['filters']['signature'] = array(
+                '#type' => 'checkbox',
+                '#default_value' => isset($_SESSION['logisticprintfilter']['signature'][0]) ? $_SESSION['logisticprintfilter']['signature'][0] : 0,
+                '#attributes' => array('title' => t('signature')),
+                '#title' => t('signature'),
+                '#states' => array(
+                    'invisible' => array(':input[name="output_format"]' => array('value' => 2),
+                    ),
+                )
+            );
 
-        $form['filters']['signature'] = array(
+            $form['filters']['s_pos'] = [
+                '#type' => 'number',
+                '#default_value' => isset($_SESSION['logisticprintfilter']['signature'][1]) ? $_SESSION['logisticprintfilter']['signature'][1] : 40,
+                '#description' => t('Adjust vertical position'),
+                '#min' => 10,
+                '#max' => 100,
+                '#step' => 10,
+                '#states' => array(
+                    'visible' => array(":input[name='signature']" => ['checked' => true]),
+                ),
+            ];
+        } else {
+            $form['filters']['signature'] = array(
+                '#type' => 'hidden',
+                '#value' => 0,
+            );
+            $form['filters']['signature_alert'] = array(
+                '#markup' => \Drupal\Core\Link::createFromRoute(t('Upload signature'), 'ek_admin.company.edit', ['id' => $doc->head], ['fragment' => 'edit-i'])->toString(),
+            );
+        }
+        /*$form['filters']['signature'] = array(
             '#type' => 'checkbox',
             '#default_value' => 0,
-            '#attributes' => array('title' => t('signature')),
-            '#title' => t('signature'),
-        );
+            '#attributes' => array('title' => $this->t('signature')),
+            '#title' => $this->t('signature'),
+        );*/
 
-        $stamps = array('0' => t('no'), '1' => t('original'), '2' => t('copy'));
+        $stamps = array('0' => $this->t('no'), '1' => $this->t('original'), '2' => $this->t('copy'));
 
         $form['filters']['stamp'] = array(
             '#type' => 'radios',
             '#options' => $stamps,
             '#default_value' => 0,
-            '#attributes' => array('title' => t('stamp')),
-            '#title' => t('stamp'),
+            '#attributes' => array('title' => $this->t('stamp')),
+            '#title' => $this->t('stamp'),
         );
         //
         // provide selector for templates
@@ -97,7 +132,7 @@ class FilterPrint extends FormBase {
         $list = array(0 => 'default');
         $handle = opendir('private://logistics/templates/' . $doc->head . '/' . $format . '/');
         while ($file = readdir($handle)) {
-            if ($file != '.' AND $file != '..') {
+            if ($file != '.' and $file != '..') {
                 $list[$file] = $file;
             }
         }
@@ -106,7 +141,7 @@ class FilterPrint extends FormBase {
             '#type' => 'select',
             '#options' => $list,
             '#default_value' => $_SESSION['logisticprintfilter']['template'],
-            '#title' => t('template'),
+            '#title' => $this->t('template'),
         );
 
         //if client has multiple contact, provide a filter for choice
@@ -119,7 +154,7 @@ class FilterPrint extends FormBase {
                 '#type' => 'select',
                 '#options' => $contacts,
                 '#default_value' => $_SESSION['logisticprintfilter']['contact'],
-                '#title' => t('addressed to'),
+                '#title' => $this->t('addressed to'),
             );
         }
 
@@ -128,11 +163,11 @@ class FilterPrint extends FormBase {
             '#attributes' => array('class' => array('container-inline')),
         );
 
-        if($format == 'html') {
+        if ($format == 'html') {
             $form['filters']['actions']['submit'] = array(
                 '#type' => 'submit',
                 '#value' => $this->t('Display'),
-            );            
+            );
         } else {
             $form['filters']['actions']['submit'] = array(
                 '#type' => 'submit',
@@ -155,9 +190,8 @@ class FilterPrint extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $_SESSION['logisticprintfilter']['for_id'] = $form_state->getValue('for_id');
-        $_SESSION['logisticprintfilter']['signature'] = $form_state->getValue('signature');
+        $_SESSION['logisticprintfilter']['signature'] = [$form_state->getValue('signature'), $form_state->getValue('s_pos')];
         $_SESSION['logisticprintfilter']['stamp'] = $form_state->getValue('stamp');
         $_SESSION['logisticprintfilter']['template'] = $form_state->getValue('template');
         $filter = explode('_', $form_state->getValue('for_id'));

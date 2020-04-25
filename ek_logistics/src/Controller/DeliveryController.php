@@ -72,7 +72,6 @@ class DeliveryController extends ControllerBase {
      *
      */
     public function listdata(Request $request) {
-
         $build['filter_delivery'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Filter');
         $header = array(
             'serial' => array(
@@ -128,7 +127,6 @@ class DeliveryController extends ControllerBase {
         $or->condition('allocation', $access, 'IN');
 
         if (isset($_SESSION['lofilter']['filter']) && $_SESSION['lofilter']['filter'] == 1) {
-
             $status = $_SESSION['lofilter']['status'];
             $client = $_SESSION['lofilter']['client'];
             $from = $_SESSION['lofilter']['from'];
@@ -159,7 +157,6 @@ class DeliveryController extends ControllerBase {
                 ->execute();
 
         while ($r = $data->fetchObject()) {
-
             $settings = new LogisticsSettings($r->head);
             $client = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
             $number = "<a title='" . t('view') . "' href='"
@@ -198,14 +195,14 @@ class DeliveryController extends ControllerBase {
 
             $links = array();
 
-            if ($r->status == 0 || ($settings->get('edit') == 1 && $r->status == 1 ) || ($settings->get('edit') == 2 && $r->status == 2 )
+            if ($r->status == 0 || ($settings->get('edit') == 1 && $r->status == 1) || ($settings->get('edit') == 2 && $r->status == 2)
             ) {
                 $links['edit'] = array(
                     'title' => $this->t('Edit'),
                     'url' => Url::fromRoute('ek_logistics_delivery_edit', ['id' => $r->id]),
                 );
             }
-            
+
             $links['clone'] = array(
                 'title' => $this->t('Clone'),
                 'url' => Url::fromRoute('ek_logistics_delivery_clone', ['id' => $r->id]),
@@ -227,7 +224,6 @@ class DeliveryController extends ControllerBase {
 
 
             if (\Drupal::currentUser()->hasPermission('print_share_delivery')) {
-
                 $links['dprint'] = array(
                     'title' => $this->t('Print and share'),
                     'url' => Url::fromRoute('ek_logistics_delivery_print_share', ['id' => $r->id]),
@@ -243,7 +239,6 @@ class DeliveryController extends ControllerBase {
                 );
             }
             if (\Drupal::currentUser()->hasPermission('delete_delivery') && $r->status == 0) {
-
                 $links['delete'] = array(
                     'title' => $this->t('Delete'),
                     'url' => Url::fromRoute('ek_logistics_delivery_delete', ['id' => $r->id]),
@@ -291,7 +286,7 @@ class DeliveryController extends ControllerBase {
                     ->condition('id', $id, '=');
             $d = $query->execute()->fetchObject();
             $settings = new LogisticsSettings($d->head);
-            if ($d->status == 0 || ($settings->get('edit') == 1 && $d->status == 1 ) || ($settings->get('edit') == 2 && $d->status == 2 )
+            if ($d->status == 0 || ($settings->get('edit') == 1 && $d->status == 1) || ($settings->get('edit') == 2 && $d->status == 2)
             ) {
                 $build['delivery'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Delivery', $id);
             } else {
@@ -312,12 +307,11 @@ class DeliveryController extends ControllerBase {
 
     /*
      * Upload a delivery orders from external source
-     * 
+     *
      * @return array form
      */
 
     public function upload() {
-
         $build['delivery'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\DeliveryUpload');
 
         return $build;
@@ -350,8 +344,8 @@ class DeliveryController extends ControllerBase {
     /**
      * @retun
      *  a display delivery in html format
-     * 
-     * @param 
+     *
+     * @param
      *  INT $id document id
      */
     public function Html($id) {
@@ -366,10 +360,7 @@ class DeliveryController extends ControllerBase {
             $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\FilterPrint', $id, 'delivery', 'html');
             $document = '';
 
-            if (isset($_SESSION['logisticprintfilter']['filter']) 
-                    && $_SESSION['logisticprintfilter']['filter'] == $id
-                    && $_SESSION['logisticprintfilter']['format'] == 'html') {
-
+            if (isset($_SESSION['logisticprintfilter']['filter']) && $_SESSION['logisticprintfilter']['filter'] == $id && $_SESSION['logisticprintfilter']['format'] == 'html') {
                 $id = explode('_', $_SESSION['logisticprintfilter']['for_id']);
                 $doc_id = $id[0];
                 $param = serialize(
@@ -394,7 +385,7 @@ class DeliveryController extends ControllerBase {
                         'library' => array('ek_logistics/ek_logistics_html_documents_css', 'ek_admin/ek_admin_css'),
                     ),
                 ];
-            } 
+            }
             return array($build);
         } else {
             $url = Url::fromRoute('ek_logistics_list_delivery')->toString();
@@ -429,12 +420,10 @@ class DeliveryController extends ControllerBase {
         $access = AccessCheck::GetCompanyByUser();
 
         if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
-
             $format = 'pdf';
             $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\FilterPrint', $id, 'delivery', $format);
 
             if (isset($_SESSION['logisticprintfilter']['filter']) && $_SESSION['logisticprintfilter']['filter'] == $id) {
-
                 $id = explode('_', $_SESSION['logisticprintfilter']['for_id']);
 
                 $param = serialize(
@@ -483,14 +472,14 @@ class DeliveryController extends ControllerBase {
      * Generate Pdf document
      * @param serialized string $param
      * @return array of data
-     * 
+     *
      */
 
     public function pdf(Request $request, $param) {
         $markup = array();
         $format = 'pdf';
         if ($this->moduleHandler->moduleExists('ek_products')) {
-            $product = TRUE;
+            $product = true;
         }
         include_once drupal_get_path('module', 'ek_logistics') . '/manage_print_output.inc';
         return $markup;
@@ -500,13 +489,13 @@ class DeliveryController extends ControllerBase {
      * Generate Excel document
      * @param serialized string $param
      * @return array of data
-     * 
+     *
      */
 
     public function excel(Request $request, $param) {
         $markup = array();
         if ($this->moduleHandler->moduleExists('ek_products')) {
-            $product = TRUE;
+            $product = true;
         }
         include_once drupal_get_path('module', 'ek_logistics') . '/manage_excel_output.inc';
         return $markup;
@@ -516,7 +505,7 @@ class DeliveryController extends ControllerBase {
      * Post data from delivery to stock
      * @param int $id document id
      * @return array form
-     * 
+     *
      */
 
     public function post(Request $request, $id) {
@@ -526,14 +515,13 @@ class DeliveryController extends ControllerBase {
     }
 
     /*
-     * Delete data 
+     * Delete data
      * @param int $id document id
      * @return array form
-     * 
+     *
      */
 
     public function delete(Request $request, $id) {
-
         $query = "SELECT status,serial FROM {ek_logi_delivery} WHERE id=:id";
         $table = 'delivery';
         $opt = [0 => t('open'), 1 => t('printed'), 2 => t('invoiced'), 3 => t('posted')];

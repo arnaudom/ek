@@ -20,7 +20,8 @@ $source = $param[1];
         //revert to default record table
         $source = 'logi_receiving';
     }
-$signature = $param[2];
+$signature = $param[2][0];
+$s_pos = $param[2][1];
 $stamp = $param[3];
 $template = $param[4];
 $contact = $param[5];

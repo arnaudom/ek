@@ -1,11 +1,11 @@
 <?php
+
 /**
-* @file
-* Contains \Drupal\ek\Controller\
-*/
+ * @file
+ * Contains \Drupal\ek\Controller\
+ */
 
 namespace Drupal\ek_logistics\Controller;
-
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
@@ -19,76 +19,81 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-
 /**
-* Controller routines for ek module routes.
-*/
+ * Controller routines for ek module routes.
+ */
 class InstallController extends ControllerBase {
+    /* The module handler.
+     *
+     * @var \Drupal\Core\Extension\ModuleHandler
+     */
 
-   /* The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandler
-   */
-  protected $moduleHandler;
-  /**
-   * The database service.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-  /**
-   * The form builder service.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('database'),
-      $container->get('form_builder'),
-      $container->get('module_handler')
-    );
-  }
+    protected $moduleHandler;
 
-  /**
-   * Constructs a  object.
-   *
-   * @param \Drupal\Core\Database\Connection $database
-   *   A database connection.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-   *   The form builder service.
-   */
-  public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
-    $this->database = $database;
-    $this->formBuilder = $form_builder;
-    $this->moduleHandler = $module_handler;
-  }
+    /**
+     * The database service.
+     *
+     * @var \Drupal\Core\Database\Connection
+     */
+    protected $database;
 
+    /**
+     * The form builder service.
+     *
+     * @var \Drupal\Core\Form\FormBuilderInterface
+     */
+    protected $formBuilder;
 
-/**
-   * install required tables in a separate database
-   *
-*/
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
+        );
+    }
 
- public function install() {
+    /**
+     * Constructs a  object.
+     *
+     * @param \Drupal\Core\Database\Connection $database
+     *   A database connection.
+     * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+     *   The form builder service.
+     */
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+        $this->database = $database;
+        $this->formBuilder = $form_builder;
+        $this->moduleHandler = $module_handler;
+    }
 
-    $query = "CREATE TABLE IF NOT EXISTS `ek_logi_settings` (
+    /**
+     * install required tables in a separate database
+     *
+     */
+    public function install() {
+        $query = "CREATE TABLE IF NOT EXISTS `ek_logi_settings` (
                 `coid` INT(11) NULL DEFAULT NULL COMMENT 'company ID',
-                `settings` VARCHAR(255) NULL DEFAULT NULL COMMENT 'serialized settings',
+                `settings` BLOB NULL COMMENT 'serialized settings',
                 UNIQUE INDEX `Index 1` (`coid`)
               )
               COMMENT='holds settings by company'
               COLLATE='utf8_general_ci'
-              ENGINE=InnoDB
-              ROW_FORMAT=COMPACT";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Logistics settings table installed <br/>';
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_logi_delivery` (
+              ENGINE=InnoDB";
+
+        try {
+            $query = "INSERT INTO `ek_logi_settings` (`coid`, `settings`) VALUES  (0, '')";           
+            $db = Database::getConnection('external_db', 'external_db')->query($query);
+        } catch (Exception $e) {
+            $markup .= '<br/><b>Caught exception for settings: ' . $e->getMessage() . "</b>\n";
+        }
+        
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Logistics settings table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_logi_delivery` (
               `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
               `serial` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'a unique constructed serial reference',
               `head` VARCHAR(5) NOT NULL DEFAULT '1' COMMENT 'entity id issuing the order (company)',
@@ -109,11 +114,13 @@ class InstallController extends ControllerBase {
             COLLATE='utf8_general_ci'
             ENGINE=InnoDB
             AUTO_INCREMENT=1";
-            
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Delivery table installed <br/>';
 
-    $query = "CREATE TABLE IF NOT EXISTS  `ek_logi_delivery_details` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Delivery table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS  `ek_logi_delivery_details` (
               `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
               `serial` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'serial ref. from main delivery',
               `itemcode` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'item code reference',
@@ -127,10 +134,12 @@ class InstallController extends ControllerBase {
             COLLATE='utf8_general_ci'
             ENGINE=InnoDB
             AUTO_INCREMENT=1";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Delivery items table installed <br/>';            
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Delivery items table installed <br/>';
+        }
 
-    $query = "CREATE TABLE IF NOT EXISTS `ek_logi_receiving` (
+        $query = "CREATE TABLE IF NOT EXISTS `ek_logi_receiving` (
                 `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `serial` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'a unique constructed serial reference',
                 `head` VARCHAR(5) NOT NULL DEFAULT '1' COMMENT 'entity id issuing the order (company)',
@@ -152,12 +161,14 @@ class InstallController extends ControllerBase {
               COLLATE='utf8_general_ci'
               ENGINE=InnoDB
               AUTO_INCREMENT=1";
-              
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Receiving table installed <br/>';            
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Receiving table installed <br/>';
+        }
 
 
-    $query = "CREATE TABLE IF NOT EXISTS  `ek_logi_receiving_details` (
+        $query = "CREATE TABLE IF NOT EXISTS  `ek_logi_receiving_details` (
               `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
               `serial` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'serial ref. from main table',
               `itemcode` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'item code reference',
@@ -171,35 +182,36 @@ class InstallController extends ControllerBase {
             COLLATE='utf8_general_ci'
             ENGINE=InnoDB
             AUTO_INCREMENT=1";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Receiving items table installed <br/>';                 
 
-    if(!$this->moduleHandler->moduleExists('ek_admin')) {
-      $markup .= '<br/><b class="messages messages--warning">Main administration module is not installed. Please install this module in order to use Ek_logistics module.</b> <br/>';    
-    } 
-    
-    if(!$this->moduleHandler->moduleExists('ek_address_book')) {
-      $markup .= '<br/><b class="messages messages--warning">Address book module is not installed. Please install this module in order to use Ek_logistics module.</b> <br/>';    
-    } 
-    
-    if(!$this->moduleHandler->moduleExists('ek_products')) {
-      $markup .= '<br/><b class="messages messages--warning">Products and services module is not installed. Please install this module in order to use Ek_logistics module.</b> <br/>';    
-    }      
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Receiving items table installed <br/>';
+        }
 
-    //$url = Url::fromRoute('ek_logistics_majour', array())->toString();   
-    //$markup .= "<br/>If you are migrating from a previous installation, you may need to update current tables and settings. <a title='" . t('link') . "' href='". $url ."'> You can run the migration script here.</a>";
+        if (!$this->moduleHandler->moduleExists('ek_admin')) {
+            $markup .= '<br/><b class="messages messages--warning">Main administration module is not installed. Please install this module in order to use Ek_logistics module.</b> <br/>';
+        }
 
-    $link =  Url::fromRoute('ek_admin.main', array(), array())->toString();
-    $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
+        if (!$this->moduleHandler->moduleExists('ek_address_book')) {
+            $markup .= '<br/><b class="messages messages--warning">Address book module is not installed. Please install this module in order to use Ek_logistics module.</b> <br/>';
+        }
 
-    return  array(
-      '#title'=> t('Installation of Ek_logistics module'),
-      '#markup' => $markup
-      ) ;
- 
- }
+        if (!$this->moduleHandler->moduleExists('ek_products')) {
+            $markup .= '<br/><b class="messages messages--warning">Products and services module is not installed. Please install this module in order to use Ek_logistics module.</b> <br/>';
+        }
 
+        //$url = Url::fromRoute('ek_logistics_majour', array())->toString();
+        //$markup .= "<br/>If you are migrating from a previous installation, you may need to update current tables and settings. <a title='" . t('link') . "' href='". $url ."'> You can run the migration script here.</a>";
 
-   
-} //class
+        $link = Url::fromRoute('ek_admin.main', array(), array())->toString();
+        $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
+
+        return array(
+            '#title' => t('Installation of Ek_logistics module'),
+            '#markup' => $markup
+        );
+    }
+
+}
+
+//class

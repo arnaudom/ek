@@ -22,13 +22,14 @@ use Drupal\Core\Url;
  *   category = @Translation("Ek Logistics block")
  * )
  */
-class TodayDeliveryBlock extends BlockBase {
+class TodayDeliveryBlock extends BlockBase
+{
 
     /**
      * {@inheritdoc}
      */
-    public function build() {
-
+    public function build()
+    {
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
 
@@ -49,7 +50,6 @@ class TodayDeliveryBlock extends BlockBase {
         $content = '';
 
         while ($r = $data->fetchObject()) {
-
             $client = \Drupal\ek_address_book\AddressBookData::geturl($r->client);
             $link = "<a title='" . t('view') . "' href='"
                     . Url::fromRoute('ek_logistics.delivery.print_html', ['id' => $r->id], [])->toString() . "'>"
@@ -57,8 +57,9 @@ class TodayDeliveryBlock extends BlockBase {
             $content .= "<li>" . $link . ":  " . $client . "</li>";
         }
 
-        if ($content == '')
+        if ($content == '') {
             $content = "<li>" . t('No delivery for today') . "</li>";
+        }
         $list = "<ul>" . $content . "</ul>";
 
 
@@ -83,11 +84,11 @@ class TodayDeliveryBlock extends BlockBase {
     /**
      * {@inheritdoc}
      */
-    public function blockAccess(AccountInterface $account) {
+    public function blockAccess(AccountInterface $account)
+    {
         if (!$account->isAnonymous() && $account->hasPermission('logistics_dashboard')) {
             return AccessResult::allowed();
         }
         return AccessResult::forbidden();
     }
-
 }

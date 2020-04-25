@@ -19,7 +19,22 @@ ek_logistics_settings:
     _controller: '\Drupal\ek_logistics\Controller\SettingsController::settings'
   requirements:
     _permission: 'administrate_logistics'
-    
+
+ek_logistics_settings_custom_forms:
+  path: '/ek_logistics/admin/settings-form-customize'
+  defaults:
+    _title: 'Design document'
+    _controller: '\Drupal\ek_logistics\Controller\SettingsController::settingsFormCustomize'
+  requirements:
+    _permission: 'print_share_delivery'
+
+ek_logistics_settings_custom_forms_preview:
+  path: '/ek_logistics/admin/settings-form-preview'
+  defaults:
+    _controller: '\Drupal\ek_logistics\Controller\SettingsController::settingsFormPreview'
+  requirements:
+    _permission: 'print_share_delivery' 
+     
 ek_logistics_main:
   path: '/ek_logistics/dashboard'
   defaults:

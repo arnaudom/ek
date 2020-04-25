@@ -57,9 +57,8 @@ class receiving extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $clone = NULL) {
-
-        if (isset($id) && !$id == NULL) {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $clone = null) {
+        if (isset($id) && !$id == null) {
 
             //edit existing DO
 
@@ -74,10 +73,10 @@ class receiving extends FormBase {
             $doc_type = $data->type;
             $route = ($doc_type == 'RR') ? 'ek_logistics_list_receiving' : 'ek_logistics_list_returning';
 
-            If ($clone != 'clone') {
+            if ($clone != 'clone') {
                 $form['edit_receiving'] = array(
                     '#type' => 'item',
-                    '#markup' => t('Receiving order ref. @p', array('@p' => $data->serial)),
+                    '#markup' => $this->t('Receiving order ref. @p', array('@p' => $data->serial)),
                 );
 
                 $form['serial'] = array(
@@ -87,7 +86,7 @@ class receiving extends FormBase {
             } else {
                 $form['clone_doc'] = array(
                     '#type' => 'item',
-                    '#markup' => t('Template receiving order based on ref. @p . A new order will be generated.', array('@p' => $data->serial)),
+                    '#markup' => $this->t('Template receiving order based on ref. @p . A new order will be generated.', array('@p' => $data->serial)),
                 );
 
                 $data->date = date('Y-m-d');
@@ -107,7 +106,6 @@ class receiving extends FormBase {
             if (!$form_state->getValue('head')) {
                 $form_state->setValue('head', $data->head);
             }
-
         } else {
             //new
             $form['new_receiving'] = array(
@@ -117,10 +115,10 @@ class receiving extends FormBase {
 
             $grandtotal = 0;
             $n = 0;
-            $detail = NULL;
-            $data = NULL;
+            $detail = null;
+            $data = null;
         }
-        if(!isset($doc_type)){
+        if (!isset($doc_type)) {
             if (strpos(\Drupal::request()->getRequestUri(), 'receiving')) {
                 $doc_type = 'RR';
                 $route = 'ek_logistics_list_receiving';
@@ -136,12 +134,12 @@ class receiving extends FormBase {
         $url = Url::fromRoute($route)->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url">List</a>', array('@url' => $url)),
+            '#markup' => $this->t('<a href="@url">List</a>', array('@url' => $url)),
         );
         $form['options'] = array(
             '#type' => 'details',
             '#title' => $this->t('Options'),
-            '#open' => ($id != NULL || $form_state->get('num_items') > 0) ? FALSE : TRUE,
+            '#open' => ($id != null || $form_state->get('num_items') > 0) ? false : true,
         );
 
         $company = AccessCheck::CompanyListByUid();
@@ -149,9 +147,9 @@ class receiving extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#required' => TRUE,
-            '#default_value' => isset($data->head) ? $data->head : NULL,
-            '#title' => t('Header'),
+            '#required' => true,
+            '#default_value' => isset($data->head) ? $data->head : null,
+            '#title' => $this->t('Header'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
         );
@@ -161,23 +159,22 @@ class receiving extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#required' => TRUE,
-            '#default_value' => isset($data->allocation) ? $data->allocation : NULL,
-            '#title' => t('Allocated'),
-            '#description' => t('select an entity for which the receiving is done'),
+            '#required' => true,
+            '#default_value' => isset($data->allocation) ? $data->allocation : null,
+            '#title' => $this->t('Allocated'),
+            '#description' => $this->t('select an entity for which the receiving is done'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
         );
 
 
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
-
             if (strpos(\Drupal::request()->getRequestUri(), 'receiving')) {
                 $client = \Drupal\ek_address_book\AddressBookData::addresslist(2);
-                $parent = t('supplier');
+                $parent = $this->t('supplier');
             } else {
                 $client = \Drupal\ek_address_book\AddressBookData::addresslist(1);
-                $parent = t('client');
+                $parent = $this->t('client');
             }
 
             if (!empty($client)) {
@@ -185,25 +182,23 @@ class receiving extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $client,
-                    '#required' => TRUE,
-                    '#default_value' => isset($data->supplier) ? $data->supplier : NULL,
+                    '#required' => true,
+                    '#default_value' => isset($data->supplier) ? $data->supplier : null,
                     '#title' => $parent,
                     '#attributes' => array('style' => array('width:300px;white-space:nowrap')),
                 );
             } else {
                 $link = Url::fromRoute('ek_address_book.new', array())->toString();
-                $new = "<a title='" . t('new') . "' href='" . $link . "'>" . $parent . "</a>";
+                $new = "<a title='" . $this->t('new') . "' href='" . $link . "'>" . $parent . "</a>";
                 $form['options']['supplier'] = array(
-                    '#markup' => t("You do not have any <a title='create' href='@cl'>@p</a> in your record.", ['@cl' => $link, '@p' => $parent]),
+                    '#markup' => $this->t("You do not have any <a title='create' href='@cl'>@p</a> in your record.", ['@cl' => $link, '@p' => $parent]),
                     '#prefix' => "<div class='messages messages--warning'>",
                     '#suffix' => '</div>',
                 );
             }
         } else {
-
             $form['options']['supplier'] = array(
-                '#markup' => t('You do not have any @p list.', array('@p' => $parent)),
-                
+                '#markup' => $this->t('You do not have any @p list.', array('@p' => $parent)),
             );
         }
 
@@ -213,31 +208,29 @@ class receiving extends FormBase {
         $form['options']['date'] = array(
             '#type' => 'date',
             '#size' => 12,
-            '#required' => TRUE,
+            '#required' => true,
             '#default_value' => isset($data->ddate) ? $data->ddate : date('Y-m-d'),
-            '#title' => t('receiving date'),
+            '#title' => $this->t('receiving date'),
         );
 
 
         $form['options']['title'] = array(
             '#type' => 'textfield',
             '#size' => 25,
-            '#default_value' => isset($data->title) ? $data->title : NULL,
-            '#attributes' => array('placeholder' => t('comment')),
+            '#default_value' => isset($data->title) ? $data->title : null,
+            '#attributes' => array('placeholder' => $this->t('comment')),
         );
 
 
 
         if ($this->moduleHandler->moduleExists('ek_projects')) {
-
-
             $form['options']['pcode'] = array(
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => \Drupal\ek_projects\ProjectData::listprojects(0),
-                '#required' => TRUE,
-                '#default_value' => isset($data->pcode) ? $data->pcode : NULL,
-                '#title' => t('Project'),
+                '#required' => true,
+                '#default_value' => isset($data->pcode) ? $data->pcode : null,
+                '#title' => $this->t('Project'),
             );
         } // project
 
@@ -245,15 +238,15 @@ class receiving extends FormBase {
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 255,
-            '#default_value' => isset($data->do) ? $data->do : NULL,
-            '#title' => t('DO ref.'),
+            '#default_value' => isset($data->do) ? $data->do : null,
+            '#title' => $this->t('DO ref.'),
             '#prefix' => "<div class='container-inline'>",
         );
 
         $form['items'] = array(
             '#type' => 'details',
             '#title' => $this->t('Items'),
-            '#open' => TRUE,
+            '#open' => true,
         );
 
 
@@ -273,22 +266,22 @@ class receiving extends FormBase {
         );
 
         $header = array(
-                'description' => array(
-                    'data' => $this->t('Items'),
-                    'id' => ['tour-item1'],
-                ),
-                'quantity' => array(
-                    'data' => $this->t('Quantity'),
-                    'id' => ['tour-item2'],
-                ),
-                'delete' => array(
-                    'data' => $this->t('Delete'),
-                    'id' => ['tour-item3'],
-                ),
-            );
+            'description' => array(
+                'data' => $this->t('Items'),
+                'id' => ['tour-item1'],
+            ),
+            'quantity' => array(
+                'data' => $this->t('Quantity'),
+                'id' => ['tour-item2'],
+            ),
+            'delete' => array(
+                'data' => $this->t('Delete'),
+                'id' => ['tour-item3'],
+            ),
+        );
 
         $form['items']['itemTable'] = array(
-            '#tree' => TRUE,
+            '#tree' => true,
             '#theme' => 'table',
             '#header' => $header,
             '#rows' => array(),
@@ -298,23 +291,22 @@ class receiving extends FormBase {
 
         $rows = $form_state->getValue('itemTable');
         $z = 0;
-        
+
         if (isset($detail)) {
-        //edition mode
-        //list current items
+            //edition mode
+            //list current items
 
             while ($d = $detail->fetchObject()) {
-
                 $n++;
                 $z++;
-                $link = NULL;
+                $link = null;
                 $grandtotal += $d->quantity;
                 $rowClass = ($rows[$n]['delete'] == 1) ? 'delete' : 'current';
                 $trClass = 'tr' . $n;
-                if ($this->moduleHandler->moduleExists('ek_products') && 
-                    $name = \Drupal\ek_products\ItemData::item_bycode($d->itemcode)) {
+                if ($this->moduleHandler->moduleExists('ek_products') &&
+                        $name = \Drupal\ek_products\ItemData::item_bycode($d->itemcode)) {
                     //item exist in database
-                    $link = \Drupal\ek_products\ItemData::geturl_bycode($d->itemcode, TRUE);
+                    $link = \Drupal\ek_products\ItemData::geturl_bycode($d->itemcode, true);
                 } else {
                     $name = $d->itemcode;
                     $link = '';
@@ -326,34 +318,34 @@ class receiving extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 60,
                     '#maxlength' => 255,
-                    '#attributes' => array('placeholder' => t('item')),
+                    '#attributes' => array('placeholder' => $this->t('item')),
                     '#default_value' => $name,
                     '#field_prefix' => "<span class='badge'>" . $n . "</span>",
                     '#field_suffix' => isset($link) ? "<span class='badge'>" . $link . "</span>" : '',
                     '#autocomplete_route_name' => $this->moduleHandler->moduleExists('ek_products') ? 'ek.look_up_item_ajax' : '',
                 );
-                
+
                 $form['quantity'] = array(
                     '#id' => 'quantity' . $n,
                     '#type' => 'textfield',
                     '#size' => 12,
                     '#maxlength' => 40,
-                    '#attributes' => array('placeholder' => t('units'), 'class' => array('amount')),
+                    '#attributes' => array('placeholder' => $this->t('units'), 'class' => array('amount')),
                     '#default_value' => $d->quantity,
-                    '#required' => TRUE,
+                    '#required' => true,
                 );
-                
+
                 $form['delete'] = array(
                     '#id' => 'del' . $n,
                     '#type' => 'checkbox',
                     '#default_value' => 0,
                     '#attributes' => array(
-                        'title' => t('delete on save'),
+                        'title' => $this->t('delete on save'),
                         'onclick' => "jQuery('#" . $n . "').toggleClass('delete');",
                         'class' => array('amount')
                     ),
                 );
-                
+
                 //built edit rows for table
                 $form['items']['itemTable'][$n] = array(
                     'description' => &$form['description'],
@@ -373,19 +365,18 @@ class receiving extends FormBase {
                 unset($form['description']);
                 unset($form['quantity']);
                 unset($form['delete']);
-                
             }
         } //details of current records
 
 
-    if(isset($detail)) {
-        // reset the new rows items
-        $max = $form_state->get('num_items')+$n;
-        $n++;
-      } else {
-        $max = $form_state->get('num_items');
-        $n = 1;
-      }
+        if (isset($detail)) {
+            // reset the new rows items
+            $max = $form_state->get('num_items') + $n;
+            $n++;
+        } else {
+            $max = $form_state->get('num_items');
+            $n = 1;
+        }
 
 
         for ($i = $n; $i <= $max; $i++) {
@@ -395,7 +386,7 @@ class receiving extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 60,
                 '#maxlength' => 255,
-                '#attributes' => array('placeholder' => t('item')),
+                '#attributes' => array('placeholder' => $this->t('item')),
                 '#default_value' => '',
                 '#field_prefix' => "<span class='badge'>" . $z . "</span>",
                 '#autocomplete_route_name' => $this->moduleHandler->moduleExists('ek_products') ? 'ek.look_up_item_ajax' : '',
@@ -405,9 +396,9 @@ class receiving extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 12,
                 '#maxlength' => 30,
-                '#attributes' => array('placeholder' => t('units'), 'class' => array('amount')),
+                '#attributes' => array('placeholder' => $this->t('units'), 'class' => array('amount')),
                 '#default_value' => '',
-                '#required' => TRUE,
+                '#required' => true,
             );
             $form['delete'] = array(
                 '#item' => '',
@@ -431,21 +422,19 @@ class receiving extends FormBase {
             unset($form['quantity']);
             unset($form['delete']);
             $n++;
-
         }
 
         $form['items']['count'] = array(
             '#type' => 'hidden',
-            '#value' => $n-1,
+            '#value' => $n - 1,
             '#attributes' => array('id' => 'itemsCount'),
         );
 
 //
-// FOOTER
+        // FOOTER
 //
 
         if (($form_state->get('num_items') > 0) || isset($detail)) {
-
             if ($form_state->get('num_items') > 0) {
                 $form['items']['remove'] = array(
                     '#type' => 'submit',
@@ -462,19 +451,19 @@ class receiving extends FormBase {
             $n = $n + 2;
             $form['description'] = array(
                 '#type' => 'item',
-                '#markup' => t('Total'),
+                '#markup' => $this->t('Total'),
             );
-            
+
             $form['quantity'] = array(
                 '#id' => 'itemsTotal',
                 '#type' => 'textfield',
                 '#size' => 12,
                 '#maxlength' => 40,
                 '#default_value' => isset($grandtotal) ? number_format($grandtotal, 2) : 0,
-                '#attributes' => array('placeholder' => t('total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
+                '#attributes' => array('placeholder' => $this->t('total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['value'] = array('#type' => 'hidden', '#value' => 'footer', '#attributes' => ['id' => ['value' . $n]],);
-            
+
             $form['delete'] = array(
                 '#item' => "",
             );
@@ -501,23 +490,23 @@ class receiving extends FormBase {
 
 
             $form['actions'] = array(
-              '#type' => 'actions',
+                '#type' => 'actions',
             );
 
-            $redirect = array(0 => t('preview'),1 => t('list'), 2 => t('print'));
+            $redirect = array(0 => $this->t('preview'), 1 => $this->t('list'), 2 => $this->t('print'));
 
             $form['actions']['redirect'] = array(
                 '#type' => 'radios',
-                '#title' => t('Next'),
+                '#title' => $this->t('Next'),
                 '#default_value' => 0,
                 '#options' => $redirect,
-            );        
+            );
 
             $form['actions']['record'] = array(
                 '#type' => 'submit',
                 '#value' => $this->t('Record'),
                 '#attributes' => array('class' => array('button--record')),
-            );      
+            );
         }
 
         $form['#attached']['library'][] = 'ek_logistics/ek_logistics';
@@ -545,7 +534,6 @@ class receiving extends FormBase {
      * Callback : Remove item from form
      */
     public function removeForm(array &$form, FormStateInterface $form_state) {
-
         $c = $form_state->get('num_items') - 1;
         $form_state->set('num_items', $c);
         $form_state->setRebuild();
@@ -555,7 +543,6 @@ class receiving extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         $rows = $form_state->getValue('itemTable');
         if (!empty($rows)) {
             foreach ($rows as $key => $row) {
@@ -567,7 +554,6 @@ class receiving extends FormBase {
                     if ($row['quantity'] == '' || !is_numeric($row['quantity'])) {
                         $form_state->setErrorByName("itemTable][$key][quantity", $this->t('there is no quantity for item @n', array('@n' => $key)));
                     }
-                    
                 }
             }
         }
@@ -577,7 +563,6 @@ class receiving extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->getValue('new_receiving') == 1) {
             //create new serial No
             $iid = Database::getConnection('external_db', 'external_db')
@@ -611,7 +596,7 @@ class receiving extends FormBase {
         }
 
 
-// Items  
+        // Items
         $sum = 0;
         $rows = $form_state->getValue('itemTable');
         if (!empty($rows)) {
@@ -649,7 +634,7 @@ class receiving extends FormBase {
             }//for
         }
 
-//main
+        //main
         if ($form_state->getValue('pcode') == '') {
             $pcode = 'n/a';
         } else {
@@ -702,19 +687,18 @@ class receiving extends FormBase {
         if ($form_state->getValue('type') == 'RT') {
             $route = 'ek_logistics_list_returning';
         }
-        
-        switch($form_state->getValue('redirect')) {
-                case 0 :
-                    $form_state->setRedirect('ek_logistics.receiving.print_html', ['id' => $reference]);
-                    break;
-                case 1 :
-                    $form_state->setRedirect($route);
-                    break;
-                case 2 :
-                    $form_state->setRedirect('ek_logistics_receiving_print_share', ['id' => $reference]);
-                    break;
-                
-            }    
+
+        switch ($form_state->getValue('redirect')) {
+            case 0:
+                $form_state->setRedirect('ek_logistics.receiving.print_html', ['id' => $reference]);
+                break;
+            case 1:
+                $form_state->setRedirect($route);
+                break;
+            case 2:
+                $form_state->setRedirect('ek_logistics_receiving_print_share', ['id' => $reference]);
+                break;
+        }
     }
 
 }

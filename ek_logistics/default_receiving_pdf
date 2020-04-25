@@ -5,52 +5,100 @@ class EKPDF extends TCPDF {
     public function Header() {
         $data = $this->getHeaderData();
         $this->company = $data['title'];
+        $format = $data['text_color'];
         if ($this->company->logo != '') {
-            $logo = \Drupal::service('file_system')->realpath($this->company->logo);
-            if (file_exists($logo)) {
-                $this->Image($logo, 20, 10, 43);
+            if (file_exists($this->company->logo)) {
+                $logo = file_create_url($this->company->logo);
+                $this->Image($logo, $format['header']['logo_x'], $format['header']['logo_y'], $format['header']['logo_z']);
             }
         }
-
-        $this->SetTextColor(53, 53, 53);
-        $lm = 1;
-        $c1 = 45;
-        $c2 = 70;
-        $c3 = 30;
-        $c4 = 35;
+        $this->SetTextColor($format['header']['color']['red'], $format['header']['color']['green'], $format['header']['color']['blue']);
+        $lm = $format['header']['left_margin'];
+        $b = $format['header']['border'];
+        $h1 = $format['header']['col_1'];
+        $h2 = $format['header']['col_2'];
+        $h3 = $format['header']['col_3'];
+        $h4 = $format['header']['col_4'];
+        $font1 = $format['header']['font'];
+        $font2 = $format['header']['font'] - 2;
+        $font3 = $format['header']['font'] - 4;
 
         $this->Ln(10);
-        $this->SetFont('helvetica', '', 12);
-        $this->Cell($c2 + $c3);
-        $this->Cell($c3, 5, $this->company->name, 0, 1);
+        $this->SetFont('helvetica', '', $font1);
+        $this->Cell($lm);
+        $this->Cell($h1 + $h2);
+        $this->Cell($h3 + $h4, 5, $this->company->name, $b, 1);
         if ($this->company->reg_number) {
-            $this->SetFont('helvetica', '', 8);
-            $this->Cell($c2 + $c3);
-            $this->Cell($c3, 5, '(' . $this->company->reg_number . ')', 0, 1);
+            $this->SetFont('helvetica', '', $font3);
+            $this->Cell($lm);
+            $this->Cell($h1 + $h2);
+            $this->Cell($h3 + $h4, 3, '(' . $this->company->reg_number . ')', $b, 1);
         }
-        $this->SetFont('helvetica', '', 9);
-        $this->Cell($c2 + $c3);
-        $this->Cell($c3, 4, $this->company->address1, 0, 1);
-        $this->Cell($c2 + $c3);
-        $this->Cell($c3, 4, $this->company->address2, 0, 1);
-        $this->Cell($c2 + $c3);
-        $this->Cell($c3, 5, $this->company->postcode . ',' . $this->company->country, 0, 1);
-        $this->SetFont('helvetica', '', 8);
-        $this->Cell($c2 + $c3);
+        $this->SetFont('helvetica', '', $font2);
+        $this->Cell($lm);
+        $this->Cell($h1 + $h2);
+        $this->Cell($h3 + $h4, 4, $this->company->address1, $b, 1);
+        if ($this->company->address2) {
+            $this->Cell($lm);
+            $this->Cell($h1 + $h2);
+            $this->Cell($h3 + $h4, 4, $this->company->address2, $b, 1);
+        }
+
+        if ($this->company->postcode != '' || $this->company->city) {
+            $n = '';
+            if ($this->company->postcode) {
+                $n = $this->company->postcode;
+            }
+            if ($this->company->city) {
+                $n = $this->company->city . ", " . $n;
+            }
+            $this->Cell($lm);
+            $this->Cell($h1 + $h2);
+            $this->Cell($h3 + $h4, 4, $n, $b, 1);
+        }
+        if ($this->company->state != '' || $this->company->country) {
+            $n = '';
+            if ($this->company->country) {
+                $n = $this->company->country;
+            }
+            if ($this->company->state) {
+                $n = $this->company->state . ", " . $n;
+            }
+            $this->Cell($lm);
+            $this->Cell($h1 + $h2);
+            $this->Cell($h3 + $h4, 4, $n, $b, 1);
+        }
+
+        $this->SetFont('helvetica', '', $font3);
+
         if ($this->company->telephone <> '') {
-            $this->Cell($c3, 3, t("tel:") . $this->company->telephone, 0, 1);
+            $this->Cell($lm);
+            $this->Cell($h1 + $h2);
+            $this->Cell($h3 + $h4, 3, t("tel:") . $this->company->telephone, $b, 1);
         }
         if ($this->company->fax <> '') {
-            $this->Cell($c2 + $c3);
-            $this->Cell($c3, 4, t("fax:") . $this->company->fax, 0, 1);
+            $this->Cell($lm);
+            $this->Cell($h1 + $h2);
+            $this->Cell($h3 + $h4, 4, t("fax:") . $this->company->fax, $b, 1);
         }
     }
 
-   //Page footer
+    // Page footer
     function Footer() {
-        $this->SetTextColor(53, 53, 53);
-        $this->SetY(-25);
-        $this->SetFont('helvetica', '', 8);
+        $data = $this->getHeaderData();
+        $this->company = $data['title'];
+        $format = $data['text_color'];
+        $lm = $format['footer']['left_margin'];
+        $b = $format['footer']['border'];
+        $f1 = $format['footer']['col_1'];
+        $f2 = $format['footer']['col_2'];
+        $f3 = $format['footer']['col_3'];
+        $f4 = $format['footer']['col_4'];
+        $font1 = $format['footer']['font'];
+
+        $this->SetTextColor($format['footer']['color']['red'], $format['footer']['color']['green'], $format['footer']['color']['blue']);
+        $this->SetY($format['footer']['w_page']);
+        $this->SetFont('helvetica', '', $font1);
         if ($this->company->address3 != "") {
             $c = $this->company->address3;
             if ($this->company->address4 <> '') {
@@ -65,48 +113,83 @@ class EKPDF extends TCPDF {
             if ($this->company->country2 <> '') {
                 $c .= ", " . $this->company->country2;
             }
-            $this->Cell(0, 3, t('Correspondence address') . ':', 0, 1, 'C');
-            $this->SetFont('helvetica', 'I', 8);
-            $this->Cell(0, 3, $c, 0, 1, 'C');
-            $c = "";
+            $this->Cell(0, 4, t('Correspondence address'), 'T', 1, 'C');
+
+            $this->Cell(0, 3, $c, $b, 1, 'C');
+            $t = "";
             if ($this->company->telephone2 <> '') {
-                $c .= t('Tel') . ': ' . $this->company->telephone2 . " ";
+                $t .= t('Tel') . ': ' . $this->company->telephone2 . " ";
             }
             if ($this->company->fax2 <> '') {
-                $c .= t('Fax') . ':' . $this->company->fax2;
+                $t .= t('Fax') . ':' . $this->company->fax2;
             }
-            $this->Cell(0, 3, $c, 0, 1, 'C');
+            $this->Cell(0, 3, $t, $b, 1, 'C');
         }
-
-        //Position at 1.5 cm from bottom
+        // Position at 15 mm from bottom
+        $this->SetY(-15);
+        // Set font
         $this->SetFont('helvetica', 'I', 8);
-        //Page number
+        // Page number
         $this->Cell(0, 5, t('Page') . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, 1, 'R');
     }
 
 }
 
 // create new PDF document
-$pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+if (isset($custom)) {
+    $format_doc = $custom['doc'];
+    $format_header = $custom['header'];
+    $format_footer = $custom['footer'];
+    $format_feature = $custom['feature'];
+    $format_body = $custom['body'];
+} else {
+    $format_doc = ['orientation' => 'P', 'format' => 'A4', 'margin_left' => 15,
+        'margin_top' => 60, 'margin_right' => 15, 'margin_bottom' => 25,
+        'margin_header' => 5, 'margin_footer' => 10,];
+
+    // set default header data
+    $format_header = ['left_margin' => 2, 'col_1' => 50, 'col_2' => 50,
+        'col_3' => 30, 'col_4' => 35, 'border' => 0, 'logo_x' => 20, 'logo_y' => 10,
+        'logo_z' => 43, 'color' => ['red' => 128, 'green' => 128, 'blue' => 128], 'font' => 12];
+
+    // set default footer data
+    $format_footer = ['left_margin' => 2, 'col_1' => 15, 'col_2' => 30,
+        'col_3' => 60, 'col_4' => 80, 'border' => 0, 'w_data' => -45, 'w_page' => -25,
+        'color' => ['red' => 128, 'green' => 128, 'blue' => 128], 'font' => 8];
+
+    // set format for feature
+    $format_feature = ['left_margin' => 1, 'col_1' => 50, 'col_2' => 50,
+        'col_3' => 30, 'col_4' => 35, 'border' => 0, 'color' => ['red' => 128, 'green' => 128, 'blue' => 128],
+        'colortitle' => ['red' => 120, 'green' => 150, 'blue' => 190], 'font' => 14,
+        'stamp_x' => 110, 'stamp_y' => 90, 'stamp_z' => 35,];
+
+    // set format for body
+    $format_body = ['border' => 0, 'left_margin' => 1, 'col_1' => 7, 'col_2' => 15,
+        'col_3' => 68, 'col_4' => 25, 'col_5' => 25, 'col_6' => 15, 'col_7' => 12,
+        'col_8' => 12, 'col_9' => 10, 'cut' => 230, 'font' => 10,
+        'color' => ['red' => 128, 'green' => 128, 'blue' => 128]];
+}
+
+$pdf = new EKPDF($format_doc['orientation'], PDF_UNIT, $format_doc['format'], true, 'UTF-8', false);
 
 // set document information
 $no = array_reverse(explode("-", $head->serial));
 $pdf->SetCreator($company->name);
 $pdf->SetAuthor(\Drupal::currentUser()->getAccountName());
-$pdf->SetTitle(t('Receiving') . ' ' . $no[0]);
-$pdf->SetSubject(t('Receiving'));
-$pdf->SetKeywords(t('Receiving') . ", " . $head->serial);
+$pdf->SetTitle(strtolower($head->type) . ' ' . $no[0]);
+$pdf->SetSubject(strtolower($head->type));
+$pdf->SetKeywords(strtolower($head->type) . ", " . $head->serial);
 
 // set default header data
-$pdf->SetHeaderData('', '', $company, '');
+$pdf->SetHeaderData('', '', $company, '', ['header' => $format_header, 'footer' => $format_footer]);
 
 // set default monospaced font
 $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
 // set margins
-$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+$pdf->SetMargins($format_doc['margin_left'], $format_doc['margin_top'], $format_doc['margin_right']);
+$pdf->SetHeaderMargin($format_doc['margin_header']);
+$pdf->SetFooterMargin($format_doc['margin_footer']);
 
 // set auto page breaks
 $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
@@ -114,101 +197,150 @@ $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 // set image scale factor
 $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 
-$pdf->AddPage('P', 'A4');
-$pdf->SetLineStyle(['width' => 0.1, 'cap' => 'square', 'join' => 'miter', 'dash' => 0, 'color' => [128, 128, 128]]);
-$pdf->setMargins(10, 60);
-$pdf->Ln(25);
+// style
+$pdf->SetLineStyle(['width' => 0.1, 'cap' => 'square', 'join' => 'miter', 'dash' => 0,
+    'color' => [$format_body['color']['red'], $format_body['color']['green'], $format_body['color']['blue']]]);
 
-// header details
-$pdf->SetFont('helvetica', 'B', 16);
-$pdf->SetTextColor(187, 208, 211);
-$pdf->Cell(104);
-$pdf->Cell(10, 10, $head->type, 0, 1);
-$pdf->Ln(2);
-$pdf->SetTextColor(0, 0, 0);
-$pdf->SetFont('helvetica', 'B', 10);
-$pdf->Cell(104);
-$pdf->Cell(28, 5, t('Receiving No:'), 0, 0);
-$pdf->SetFont('helvetica', '', 10);
-$pdf->Cell(20, 5, $head->serial, 0, 1);
-$pdf->SetFont('helvetica', 'B', 10);
-$pdf->Cell(104);
-$pdf->Cell(28, 5, t('Receiving date') . ':', 0, 0);
-$pdf->SetFont('helvetica', '', 10);
-$pdf->Cell(80, 5, $head->ddate, 0, 1);
+// add a page
+$pdf->AddPage($format_doc['orientation'], $format_doc['format']);
+$pdf->SetAutoPageBreak(1);
 
+// feature =======================================================
+$lm = $format_feature['left_margin'];
+$b = $format_feature['border'];
+$c1 = $format_feature['col_1'];
+$c2 = $format_feature['col_2'];
+$c3 = $format_feature['col_3'];
+$c4 = $format_feature['col_4'];
+$font1 = $format_feature['font'];
+$font2 = $format_feature['font'] - 4;
+$font3 = $format_feature['font'] - 6;
 
-$pdf->SetFont('helvetica', 'B', 9);
-$pdf->Cell(25, 5, t('Received from') . ':', 0, 0);
-$pdf->SetFont('helvetica', '', 10);
-$pdf->Cell(20, 5, $client->name, 0, 1);
-$pdf->Cell(25);
-$pdf->Cell(20, 5, $client->address, 0, 1);
-$pdf->Cell(25);
-if (isset($client->address2)) {
-    $pdf->Cell(20, 5, $client->address2, 0, 1);
+$pdf->SetFont('helvetica', 'B', $font1);
+$pdf->Cell($lm);
+$pdf->Cell($c1 + $c2);
+$pdf->SetTextColor($format_feature['colortitle']['red'], $format_feature['colortitle']['green'], $format_feature['colortitle']['blue']);
+$pdf->Cell($c3, 10, strtoupper($head->type), $b, 1);
+$pdf->SetTextColor($format_feature['color']['red'], $format_feature['color']['green'], $format_feature['color']['blue']);
+$pdf->SetFont('helvetica', '', $font2);
+$pdf->Cell($lm);
+$pdf->Cell($c1 + $c2);
+$pdf->Cell($c3, 3, t('Receiving No:'), $b, 0);
+$pdf->Cell($c4, 3, $head->serial, $b, 1);
+$pdf->Cell($lm);
+$pdf->Cell($c1 + $c2);
+$pdf->Cell($c3, 3, t('Receiving date') . ':', $b, 0);
+$pdf->Cell($c4, 3, $head->ddate, $b, 1);
+$pdf->Ln(5);
+
+// CLIENT ======================================================== 
+$pdf->SetFont('helvetica', 'UB', $font2);
+$pdf->Cell($lm);
+$pdf->Cell($c1, 5, t('Received from') . ':', $b, 1);
+$pdf->SetFont('helvetica', '', $font2);
+$pdf->Cell($lm);
+$pdf->Cell($c1, 5, utf8_decode($client->name), $b, 1);
+
+if ($client->reg) {
+    $pdf->Cell($lm);
+    $pdf->SetFont('helvetica', '', $font3);
+    $pdf->Cell($c1, 3, '(' . $client->reg . ')', $b, 1);
 }
-$pdf->Cell(25);
-if (isset($client->city)) {
-    $next = $client->city;
+$pdf->SetFont('helvetica', '', $font2);
+$pdf->Cell($lm);
+$pdf->Cell($c1, 5, $client->address, $b, 1);
+if ($client->address2 != '') {
+    $pdf->SetFont('helvetica', '', $font2);
+    $pdf->Cell($lm);
+    $pdf->Cell($c1, 5, $client->address2, $b, 1);
 }
-if (isset($client->postcode)) {
-    $next .= ', ' . $client->postcode;
+$p = '';
+if ($client->postcode) {
+    $p = $client->postcode;
 }
-if (isset($client->country)) {
-    $next .= ', ' . $client->country;
+if ($client->city) {
+    if ($client->postcode) {
+        $p .= ", " . $client->city;
+    } else {
+        $p = $client->city;
+    }
+    $pdf->Cell($lm);
+    $pdf->Cell($c1, 5, $p, $b, 1);
 }
-$pdf->Cell(20, 5, $next, 0, 1);
-$pdf->SetFont('helvetica', '', 8);
-$pdf->Cell(25);
-if (isset($client->telephone)) {
-    $next = t('Tel') . ': ' . $client->telephone . ' ';
+if ($client->state != '' || $client->country) {
+    $p = '';
+    if ($client->country) {
+        $p = $client->country;
+    }
+    if ($client->state) {
+        $p = $client->state . ", " . $p;
+    }
+    $pdf->Cell($lm);
+    $pdf->Cell($c1, 5, $p, $b, 1);
 }
-if (isset($client->fax)) {
-    $next .= t('Fax') . ': ' . $client->fax;
+if ($client->telephone != '' || $client->fax) {
+    $p = '';
+    if ($client->telephone) {
+        $p = t('Tel') . " : " . $client->telephone;
+    }
+    if ($client->fax) {
+        $p = $p  . ", " . t('Fax') . " : " . $client->fax;
+    }
+    $pdf->Cell($lm);
+    $pdf->Cell($c1, 5, $p, $b, 1);
 }
-$pdf->Cell(20, 5, $next, 0, 1);
+if ($client->email) {
+    $pdf->Cell($lm);
+    $pdf->Cell($c1, 5,$client->email, $b, 1);
+}
 
-$pdf->SetFont('helvetica', 'B', 10);
-$pdf->ln(1);
-$pdf->SetFont('helvetica', '', 9);
-$pdf->Cell(25, 5, '', 0, 0);
-$pdf->Cell(150, 5, $head->title, 'T', 1);
-$pdf->Cell(25, 5, '', 0, 0);
-$pdf->Cell(150, 5, $head->po, 0, 1);
+$pdf->Ln(5);
+$pdf->SetFont('helvetica', '', $font3);
+$pdf->Cell($lm);
+$pdf->Cell(0, 5, t('Document No.') . " : " . $head->po, 'T', 1);
 
-$pdf->Ln(10);
+$pdf->Ln(5);
 
 
-//BODY OF receiving
-////////////////
+// BODY ==========================================================
 include_once drupal_get_path('module', 'ek_logistics') . "/barcode.inc.php";
 
 $bar = new BARCODES();
 if ($bar == false) {
     die($bar->error());
 }
-////////////////
 
-$pdf->SetFont('helvetica', 'B', 8);
-$pdf->Cell(1);
-$pdf->Cell(8, 5, '', 1, 0);
-$pdf->Cell(15, 5, t('Item code'), 1, 0);
-$pdf->Cell(70, 5, t('Description'), 1, 0);
-$pdf->Cell(50, 5, t('Barcode'), 1, 0);
-$pdf->Cell(17, 5, t('Ref. code'), 1, 0);
-//$pdf->Cell(20,5,'',1,0);
-//$pdf->Cell(20,5,'',1,0);
-$pdf->Cell(25, 5, t('Qties delivered'), 1, 1);
-//$pdf->Cell(10,5,'',1,1);
+$lm = $format_body['left_margin'];
+$b1 = $format_body['col_1'];
+$b2 = $format_body['col_2'];
+$b3 = $format_body['col_3'];
+$b4 = $format_body['col_4'];
+$b5 = $format_body['col_5'];
+$b6 = $format_body['col_6'];
+$b7 = $format_body['col_7'];
+$b8 = $format_body['col_8'];
+$b9 = $format_body['col_9'];
+$font1 = $format_body['font'];
+$font2 = $format_body['font'] - 2;
+$font3 = $format_body['font'] - 3;
+
+$pdf->SetFont('helvetica', 'B', $font2);
+$pdf->Cell($lm);
+$pdf->Cell($b1, 5, '', 1, 0);
+$pdf->Cell($b2, 5, t('Item code'), 1, 0);
+$pdf->Cell($b3, 5, t('Description'), 1, 0);
+$pdf->Cell($b4 + $b5, 5, t('Barcode'), 1, 0);
+$pdf->Cell($b6, 5, t('Ref. code'), 1, 0);
+$pdf->Cell($b7 + $b8, 5, t('Qties delivered'), 1, 1);
 
 $i = 1;
-$pdf->SetFont('helvetica', '', 8);
+$t_quantity = 0;
+$pdf->SetFont('helvetica', '', $font2);
 
 foreach ($items as $detail) {
 
-    $pdf->Cell(1);
-    $pdf->Cell(8, 6, $i, 1, 0);
+    $pdf->Cell($lm);
+    $pdf->Cell($b1, 5, $i, 1, 0);
 
     /*
       $encode=$row3["encode1"];
@@ -227,96 +359,96 @@ foreach ($items as $detail) {
       $return = $bar->genBarCode($bdata,$type,$file);
       if($return==false) {$bar->error(true);}
      */
-    $pdf->Cell(15, 6, $detail['itemcode'], 1, 0);
-
+    $pdf->Cell($b2, 5, $detail['itemcode'], 1, 0);
+    // coordinate start
     $x = $pdf->GetX();
     $y = $pdf->GetY();
 
-    $pdf->MultiCell(70, 6, $detail['item'], 1, 'J');
-
+    $pdf->MultiCell($b3, 5, $detail['item'], 1, 'L');
+    // coordinate end
     $y2 = $pdf->GetY();
-
     $pdf->SetXY($x, $y);
     $h = $y2 - $y;
     $h2 = $h / 2;
 
-    $pdf->Cell(70);
-    $pdf->Cell(25, $h, $detail['barcode1'], 1, 0, 'L');
-
-
-    $x1 = $pdf->GetX() + 1;
-    $y1 = $pdf->GetY() + $h / 3 - 4;
-
-
-    $pdf->Cell(25, $h, $detail['barcode2'], 1, 0, 'L');
-    $pdf->Cell(17, $h, $detail['supplier_code'], 1, 0);
-    $pdf->Cell(15, $h, $detail['quantity'], 1, 0);
-    $pdf->Cell(10, $h, $detail['unit_measure'], 1, 1, 'R');
-
-    if ($i == 1) {
-        $t_quantity = $detail['quantity'];
+    $pdf->Cell($b3);
+    if (!isset($detail['barcode2'])) {
+        $pdf->Cell($b4 + $b5, $h, $detail['barcode1'], 1, 0, 'L');
     } else {
-        $t_quantity = $t_quantity + $detail['quantity'];
+        $pdf->Cell($b4, $h, $detail['barcode1'], 1, 0, 'L');
+        $pdf->Cell($b5, $h, $detail['barcode2'], 1, 0, 'L');
     }
+    
+    $pdf->Cell($b6, $h, $detail['supplier_code'], 1, 0, 'C');
+    $pdf->Cell($b7, $h, $detail['quantity'], 1, 0, 'C');
+    $pdf->Cell($b8, $h, $detail['unit_measure'], 1, 1, 'R');
+    $t_quantity = $t_quantity + $detail['quantity'];
     $i++;
-    //check position for a break
-    $here = $pdf->GetY();
-    if ($here >= 250) {
-        $pdf->AddPage("P", "A4");
-        $pdf->SetTextColor(0, 0, 0);
-        $pdf->SetFont('helvetica', 'B', 8);
-        $pdf->Cell(25, 4, t('Delivery date:'), 0, 0);
-        $pdf->SetFont('helvetica', '', 8);
-        $pdf->Cell(80, 4, $head->ddate, 0, 0);
-        $pdf->SetFont('helvetica', 'B', 8);
-        $pdf->Cell(25, 4, 'Report No.:', 0, 0);
-        $pdf->SetFont('helvetica', '', 8);
-        $pdf->Cell(20, 5, $head->serial, 0, 1);
-        $pdf->SetFont('helvetica', 'B', 8);
-        $pdf->Cell(25, 4, 'To:', 0, 0);
-        $pdf->SetFont('helvetica', '', 8);
-        $pdf->Cell(20, 4, $client->name, 0, 1);
-        $pdf->SetFont('helvetica', 'B', 8);
-        $pdf->Cell(30, 5, '', 0, 0);
-        $pdf->Cell(150, 5, $head->title, 0, 1);
-        $pdf->Cell(30, 5, '', 0, 0);
-        $pdf->Cell(300, 5, $head->po, 0, 1);
-        $pdf->Ln(2);
+    // check position for a break
+    if ($pdf->GetY() > $format_body['cut']) {
+        $pdf->AddPage($format_doc['orientation'], $format_doc['format']);
+        $font1 = $format_feature['font'];
+        $font2 = $format_feature['font'] - 4;
+        $font3 = $format_feature['font'] - 6;
+        $pdf->SetFont('helvetica', 'B', $font1);
+        $pdf->Cell($lm);
+        $pdf->Cell($c1 + $c2);
+        $pdf->SetTextColor($format_feature['colortitle']['red'], $format_feature['colortitle']['green'], $format_feature['colortitle']['blue']);
+        $pdf->Cell($c3, 10, strtoupper($head->type), $b, 1);
+        $pdf->SetTextColor($format_feature['color']['red'], $format_feature['color']['green'], $format_feature['color']['blue']);
+        $pdf->SetFont('helvetica', '', $font2);
+        $pdf->Cell($lm);
+        $pdf->Cell($c1 + $c2);
+        $pdf->Cell($c3, 3, t('D.O. No:'), $b, 0);
+        $pdf->Cell($c4, 3, $head->serial, $b, 1);
+        $pdf->Cell($lm);
+        $pdf->Cell($c1 + $c2);
+        $pdf->Cell($c3, 3, t('Delivery date') . ':', $b, 0);
+        $pdf->Cell($c4, 3, $head->ddate, $b, 1);
+        $pdf->Ln(5);
+        $font1 = $format_body['font'];
+        $font2 = $format_body['font'] - 2;
+        $pdf->SetFont('helvetica', 'B', $font2);
+        $pdf->Cell($lm);
+        $pdf->Cell($b1, 5, '', 1, 0);
+        $pdf->Cell($b2, 5, t('Item code'), 1, 0);
+        $pdf->Cell($b3, 5, t('Description'), 1, 0);
+        $pdf->Cell($b4 + $b5, 5, t('Barcode'), 1, 0);
+        $pdf->Cell($b6, 5, t('Ref. code'), 1, 0);
+        $pdf->Cell($b7 + $b8, 5, t('Qties delivered'), 1, 1);
     }
 }
-$pdf->Cell(1);
-$pdf->Cell(160, 5, t("TOTAL QUANTITIES") . ':', 1, 0);
-$pdf->Cell(15, 5, $t_quantity, 1, 0);
-$pdf->Cell(10, 5, $detail['unit_measure'], 1, 1, 'R');
+$pdf->Cell($lm);
+$pdf->Cell($b1 + $b2 + $b3 + $b4 + $b5 + $b6, 5, t("TOTAL QUANTITIES") . ':', 1, 0, 'L');
+$pdf->Cell($b7, 5, $t_quantity, 1, 0, 'C');
+$pdf->Cell($b8, 5, '', 1, 1);
 
 
-
-// stamps===============================================================
-
+// stamps ========================================================
 if ($stamp == "2") {
-
     $copy = drupal_get_path('module', 'ek_logistics') . "/art/copy.png";
     if (file_exists($copy)) {
-        $pdf->Image($copy, 115, 80, 30);
+        $pdf->Image($copy, $format_feature['stamp_x'], $format_feature['stamp_y'], $format_feature['stamp_z']);
     }
 } elseif ($stamp == "1") {
     $original = drupal_get_path('module', 'ek_logistics') . "/art/original.png";
     if (file_exists($original)) {
-        $pdf->Image($original, 115, 80, 30);
+        $pdf->Image($original, $format_feature['stamp_x'], $format_feature['stamp_y'], $format_feature['stamp_z']);
     }
 }
-//SIGNATURE============================================================ 
-$x = $pdf->GetX();
-$y = $pdf->GetY();
-$bottom = $y + 40 > 268 ? 268 : $y + 40;
 
-if ($signature == 1) {
-    if (isset($company->sign) && file_exists($company->sign)) {
+ //SIGNATURE============================================================ 
+$x= $pdf->GetX(); 
+$y= $pdf->GetY();
+$adj = ($s_pos > 0) ? $s_pos : 40;
+$bottom = ($y + $adj) > 268 ? 268: $y + $adj;
+    if($signature == 1) {
+        if(isset($company->sign)) {
         $sign = \Drupal::service('file_system')->realpath($company->sign);
-        $pdf->Image($sign, 20, $bottom - 20, 70);
+            if(file_exists($sign)) {
+                $pdf->Image($sign,20,$bottom-20,$format_feature['stamp_z']);
+            }
+        }
+        $pdf->SetXY(20,$bottom);
+        $pdf->Cell(60,3,t("Authorized signatory") ,'T',1);
     }
-}
-
-
-$pdf->SetXY(20, $bottom);
-$pdf->Cell(60, 3, t("Authorized signatory"), 'T', 1);

@@ -58,14 +58,13 @@ class Delivery extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $clone = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $clone = null) {
         $url = Url::fromRoute('ek_logistics_list_delivery', array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
             '#markup' => t('<a href="@url">List</a>', array('@url' => $url)),
         );
-        if (isset($id) && $id != NULL) {
+        if (isset($id) && $id != null) {
 
             //edit existing DO
             $query = "SELECT * from {ek_logi_delivery} where id=:id";
@@ -77,10 +76,10 @@ class Delivery extends FormBase {
                     ->query($query, array(':id' => $data->serial));
 
 
-            If ($clone != 'clone') {
+            if ($clone != 'clone') {
                 $form['edit_delivery'] = array(
                     '#type' => 'item',
-                    '#markup' => t('Delivery order ref. @p', array('@p' => $data->serial)),
+                    '#markup' => $this->t('Delivery order ref. @p', array('@p' => $data->serial)),
                 );
 
                 $form['serial'] = array(
@@ -90,7 +89,7 @@ class Delivery extends FormBase {
             } else {
                 $form['clone_invoice'] = array(
                     '#type' => 'item',
-                    '#markup' => t('Template delivery order based on ref. @p . A new DO will be generated.', array('@p' => $data->serial)),
+                    '#markup' => $this->t('Template delivery order based on ref. @p . A new DO will be generated.', array('@p' => $data->serial)),
                 );
 
                 $data->date = date('Y-m-d');
@@ -123,8 +122,8 @@ class Delivery extends FormBase {
             );
             $grandtotal = 0;
             $n = 0;
-            $detail = NULL;
-            $data = NULL;
+            $detail = null;
+            $data = null;
         }
 
 
@@ -132,8 +131,7 @@ class Delivery extends FormBase {
         $form['options'] = array(
             '#type' => 'details',
             '#title' => $this->t('Options'),
-            '#open' => ($id != NULL || $form_state->get('num_items') > 0) ? FALSE : TRUE,
-            
+            '#open' => ($id != null || $form_state->get('num_items') > 0) ? false : true,
         );
 
         $company = AccessCheck::CompanyListByUid();
@@ -141,8 +139,8 @@ class Delivery extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#required' => TRUE,
-            '#default_value' => isset($data->head) ? $data->head : NULL,
+            '#required' => true,
+            '#default_value' => isset($data->head) ? $data->head : null,
             '#title' => t('Header'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
@@ -153,10 +151,10 @@ class Delivery extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#required' => TRUE,
-            '#default_value' => isset($data->allocation) ? $data->allocation : NULL,
-            '#title' => t('Allocated'),
-            '#description' => t('select an entity for which the delivery is done'),
+            '#required' => true,
+            '#default_value' => isset($data->allocation) ? $data->allocation : null,
+            '#title' => $this->t('Allocated'),
+            '#description' => $this->t('select an entity for which the delivery is done'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
         );
@@ -170,24 +168,23 @@ class Delivery extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $client,
-                    '#required' => TRUE,
-                    '#default_value' => isset($data->client) ? $data->client : NULL,
-                    '#title' => t('Client'),
+                    '#required' => true,
+                    '#default_value' => isset($data->client) ? $data->client : null,
+                    '#title' => $this->t('Client'),
                     '#attributes' => array('style' => array('width:300px;white-space:nowrap')),
                 );
             } else {
                 $link = Url::fromRoute('ek_address_book.new', array())->toString();
 
                 $form['options']['client'] = array(
-                    '#markup' => t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
+                    '#markup' => $this->t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
                     '#prefix' => "<div class='messages messages--warning'>",
                     '#suffix' => '</div>',
                 );
             }
         } else {
-
             $form['options']['client'] = array(
-                '#markup' => t('You do not have any client list.'),
+                '#markup' => $this->t('You do not have any client list.'),
                 '#prefix' => "<div class='messages messages--warning'>",
                 '#suffix' => '</div>',
             );
@@ -199,7 +196,7 @@ class Delivery extends FormBase {
         $form['options']['date'] = array(
             '#type' => 'date',
             '#size' => 12,
-            '#required' => TRUE,
+            '#required' => true,
             '#default_value' => isset($data->ddate) ? $data->ddate : date('Y-m-d'),
             '#title' => t('Delivery date'),
         );
@@ -208,22 +205,20 @@ class Delivery extends FormBase {
         $form['options']['title'] = array(
             '#type' => 'textfield',
             '#size' => 25,
-            '#default_value' => isset($data->title) ? $data->title : NULL,
-            '#attributes' => array('placeholder' => t('comment')),
+            '#default_value' => isset($data->title) ? $data->title : null,
+            '#attributes' => array('placeholder' => $this->t('comment')),
         );
 
 
 
         if ($this->moduleHandler->moduleExists('ek_projects')) {
-
-
             $form['options']['pcode'] = array(
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => ProjectData::listprojects(0),
-                '#required' => TRUE,
-                '#default_value' => isset($data->pcode) ? $data->pcode : NULL,
-                '#title' => t('Project'),
+                '#required' => true,
+                '#default_value' => isset($data->pcode) ? $data->pcode : null,
+                '#title' => $this->t('Project'),
             );
         } // project
 
@@ -231,8 +226,8 @@ class Delivery extends FormBase {
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 255,
-            '#default_value' => isset($data->po) ? $data->po : NULL,
-            '#title' => t('Client PO ref.'),
+            '#default_value' => isset($data->po) ? $data->po : null,
+            '#title' => $this->t('Client PO ref.'),
             '#prefix' => "<div class='container-inline'>",
         );
 
@@ -241,9 +236,9 @@ class Delivery extends FormBase {
             '#type' => 'textfield',
             '#size' => 6,
             '#maxlength' => 10,
-            '#default_value' => isset($data->ordered_quantity) ? $data->ordered_quantity : NULL,
-            '#title' => t('Ordered quantities'),
-            '#attributes' => array('placeholder' => t('units')),
+            '#default_value' => isset($data->ordered_quantity) ? $data->ordered_quantity : null,
+            '#title' => $this->t('Ordered quantities'),
+            '#attributes' => array('placeholder' => $this->t('units')),
             '#suffix' => '</div>',
         );
 
@@ -251,7 +246,7 @@ class Delivery extends FormBase {
         $form['items'] = array(
             '#type' => 'details',
             '#title' => $this->t('Items'),
-            '#open' => TRUE,
+            '#open' => true,
         );
 
 
@@ -272,7 +267,6 @@ class Delivery extends FormBase {
 
 
         if ($this->moduleHandler->moduleExists('ek_products')) {
-
             $header = array(
                 'description' => array(
                     'data' => $this->t('Items'),
@@ -311,7 +305,6 @@ class Delivery extends FormBase {
                 6 => $itemSettings->get('exp_discount_price_label'),
             ];
         } else {
-
             $header = array(
                 'description' => array(
                     'data' => $this->t('Items'),
@@ -343,7 +336,7 @@ class Delivery extends FormBase {
 
 
         $form['items']['itemTable'] = array(
-            '#tree' => TRUE,
+            '#tree' => true,
             '#theme' => 'table',
             '#header' => $header,
             '#rows' => array(),
@@ -355,12 +348,11 @@ class Delivery extends FormBase {
         $z = 0;
         if (isset($detail)) {
             //edition mode - list current items
-            
-            while ($d = $detail->fetchObject()) {
 
+            while ($d = $detail->fetchObject()) {
                 $n++;
                 $z++;
-                $link = NULL;
+                $link = null;
                 $rowClass = ($rows[$n]['delete'] == 1) ? 'delete' : 'current';
                 $trClass = 'tr' . $n;
 
@@ -371,7 +363,7 @@ class Delivery extends FormBase {
                     $item = \Drupal\ek_products\ItemData::item_bycode($d->itemcode);
                     if (isset($item)) {
                         $name = $item;
-                        $link = \Drupal\ek_products\ItemData::geturl_bycode($d->itemcode, TRUE);
+                        $link = \Drupal\ek_products\ItemData::geturl_bycode($d->itemcode, true);
                     } else {
                         $name = $d->itemcode;
                     }
@@ -384,7 +376,7 @@ class Delivery extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 40,
                     '#maxlength' => 255,
-                    '#attributes' => array('placeholder' => t('item')),
+                    '#attributes' => array('placeholder' => $this->t('item')),
                     '#default_value' => $name,
                     '#field_prefix' => "<span class='badge'>" . $n . "</span>",
                     '#field_suffix' => isset($link) ? "<span class='badge'>" . $link . "</span>" : '',
@@ -414,10 +406,10 @@ class Delivery extends FormBase {
 
                     if ($priceType != 0) {
                         $sellPrice = \Drupal\ek_products\ItemData::item_sell_price($thisItemId, $priceType);
-                        $disabled = TRUE;
+                        $disabled = true;
                     } else {
                         $sellPrice = isset($rows[$n]['value']) ? $rows[$n]['value'] : $d->value;
-                        $disabled = FALSE;
+                        $disabled = false;
                     }
                     $form['price_type'] = array(
                         '#id' => 'price_type-' . $n,
@@ -426,7 +418,7 @@ class Delivery extends FormBase {
                         '#options' => $options,
                         '#attributes' => array('style' => array('width:110px;'), 'class' => array('amount')),
                         '#default_value' => $priceType,
-                        '#required' => TRUE,
+                        '#required' => true,
                         '#ajax' => array(
                             'callback' => array($this, 'put_price'),
                             'wrapper' => 'v' . $n,
@@ -440,9 +432,9 @@ class Delivery extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 8,
                     '#maxlength' => 30,
-                    '#attributes' => array('placeholder' => t('units'), 'class' => array('amount')),
+                    '#attributes' => array('placeholder' => $this->t('units'), 'class' => array('amount')),
                     '#default_value' => $d->quantity,
-                    '#required' => TRUE,
+                    '#required' => true,
                 );
                 $form['value'] = array(
                     '#id' => 'value' . $n,
@@ -450,7 +442,7 @@ class Delivery extends FormBase {
                     '#size' => 12,
                     '#maxlength' => 250,
                     '#default_value' => isset($sellPrice) ? $sellPrice : $d->value,
-                    '#attributes' => array('placeholder' => t('price'), 'class' => array('amount')),
+                    '#attributes' => array('placeholder' => $this->t('price'), 'class' => array('amount')),
                     '#disabled' => $disabled,
                     '#prefix' => "<div id='v$n'>",
                     '#suffix' => '</div>',
@@ -462,14 +454,14 @@ class Delivery extends FormBase {
                     '#size' => 12,
                     '#maxlength' => 250,
                     '#default_value' => $total,
-                    '#attributes' => array('placeholder' => t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
+                    '#attributes' => array('placeholder' => $this->t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
                 );
                 $form['delete'] = array(
                     '#id' => 'del' . $n,
                     '#type' => 'checkbox',
                     '#default_value' => 0,
                     '#attributes' => array(
-                        'title' => t('delete on save'),
+                        'title' => $this->t('delete on save'),
                         'onclick' => "jQuery('#" . $n . "').toggleClass('delete');",
                         'class' => array('amount')
                     ),
@@ -502,23 +494,21 @@ class Delivery extends FormBase {
                 unset($form['value']);
                 unset($form['total']);
                 unset($form['delete']);
-                
             }
         } //details of current records
 
 
 
-    if(isset($detail)) {
-    // reset the new rows items
-    $max = $form_state->get('num_items')+$n;
-    $n++;
-      } else {
-        $max = $form_state->get('num_items');
-        $n = 1;
-      }
+        if (isset($detail)) {
+            // reset the new rows items
+            $max = $form_state->get('num_items') + $n;
+            $n++;
+        } else {
+            $max = $form_state->get('num_items');
+            $n = 1;
+        }
 
         for ($i = $n; $i <= $max; $i++) {
-            
             $z++;
 
             $form['description'] = array(
@@ -526,7 +516,7 @@ class Delivery extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 40,
                 '#maxlength' => 255,
-                '#attributes' => array('placeholder' => t('item')),
+                '#attributes' => array('placeholder' => $this->t('item')),
                 '#default_value' => '',
                 '#field_prefix' => "<span class='badge'>" . $z . "</span>",
                 '#autocomplete_route_name' => $this->moduleHandler->moduleExists('ek_products') ? 'ek.look_up_item_ajax' : '',
@@ -540,10 +530,10 @@ class Delivery extends FormBase {
                 $priceType = $rows[$n]['price_type'];
                 if ($priceType != 0) {
                     $sellPrice = \Drupal\ek_products\ItemData::item_sell_price($thisItemId, $priceType);
-                    $disabled = TRUE;
+                    $disabled = true;
                 } else {
                     $sellPrice = isset($rows[$n]['value']) ? $rows[$n]['value'] : 0;
-                    $disabled = FALSE;
+                    $disabled = false;
                 }
 
                 $form['price_type'] = array(
@@ -553,7 +543,7 @@ class Delivery extends FormBase {
                     '#options' => $options,
                     '#attributes' => array('style' => array('width:110px;'), 'class' => array('amount')),
                     '#default_value' => '',
-                    '#required' => TRUE,
+                    '#required' => true,
                     '#ajax' => array(
                         'callback' => array($this, 'put_price'),
                         'wrapper' => 'v' . $n,
@@ -567,9 +557,9 @@ class Delivery extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 8,
                 '#maxlength' => 30,
-                '#attributes' => array('placeholder' => t('units'), 'class' => array('amount')),
+                '#attributes' => array('placeholder' => $this->t('units'), 'class' => array('amount')),
                 '#default_value' => '',
-                '#required' => TRUE,
+                '#required' => true,
             );
             $form['value'] = array(
                 '#id' => 'value' . $n,
@@ -578,7 +568,7 @@ class Delivery extends FormBase {
                 '#maxlength' => 50,
                 '#default_value' => isset($sellPrice) ? $sellPrice : 0,
                 '#disabled' => $disabled,
-                '#attributes' => array('placeholder' => t('unit price'), 'class' => array('amount')),
+                '#attributes' => array('placeholder' => $this->t('unit price'), 'class' => array('amount')),
                 '#prefix' => "<div id='v$n'>",
                 '#suffix' => '</div>',
             );
@@ -589,7 +579,7 @@ class Delivery extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => '',
-                '#attributes' => array('placeholder' => t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
+                '#attributes' => array('placeholder' => $this->t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['delete'] = array(
                 '#item' => '',
@@ -625,16 +615,15 @@ class Delivery extends FormBase {
         }
 
         $form['items']['count'] = array(
-        '#type' => 'hidden',
-        '#value' => $n-1,
-        '#attributes' => array('id' => 'itemsCount'),
+            '#type' => 'hidden',
+            '#value' => $n - 1,
+            '#attributes' => array('id' => 'itemsCount'),
         );
 
 
-// FOOTER
+        // FOOTER
 
         if (($form_state->get('num_items') > 0) || isset($detail)) {
-
             if ($form_state->get('num_items') > 0) {
                 $form['items']['remove'] = array(
                     '#type' => 'submit',
@@ -651,7 +640,7 @@ class Delivery extends FormBase {
             $n = $n + 2;
             $form['description'] = array(
                 '#type' => 'item',
-                '#markup' => t('Total'),
+                '#markup' => $this->t('Total'),
             );
             $form['price_type'] = ['#type' => 'item'];
             $form['quantity'] = ['#type' => 'item'];
@@ -662,7 +651,7 @@ class Delivery extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => isset($grandtotal) ? number_format($grandtotal, 2) : 0,
-                '#attributes' => array('placeholder' => t('total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
+                '#attributes' => array('placeholder' => $this->t('total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['delete'] = array(
                 '#item' => "",
@@ -694,28 +683,27 @@ class Delivery extends FormBase {
             unset($form['value']);
             unset($form['total']);
             unset($form['delete']);
-            
+
             $form['actions'] = array(
-              '#type' => 'actions',
+                '#type' => 'actions',
             );
 
-            $redirect = array(0 => t('preview'),1 => t('list'), 2 => t('print'));
+            $redirect = array(0 => $this->t('preview'), 1 => $this->t('list'), 2 => $this->t('print'));
 
             $form['actions']['redirect'] = array(
                 '#type' => 'radios',
-                '#title' => t('Next'),
+                '#title' => $this->t('Next'),
                 '#default_value' => 0,
                 '#options' => $redirect,
-            );        
+            );
 
             $form['actions']['record'] = array(
                 '#type' => 'submit',
                 '#value' => $this->t('Record'),
                 '#attributes' => array('class' => array('button--record')),
-            );             
-            
+            );
         }
-       
+
         $form['#attached']['library'][] = 'ek_logistics/ek_logistics';
 
 
@@ -752,7 +740,6 @@ class Delivery extends FormBase {
      * Callback : Remove item from form
      */
     public function removeForm(array &$form, FormStateInterface $form_state) {
-
         $c = $form_state->get('num_items') - 1;
         $form_state->set('num_items', $c);
         $form_state->setRebuild();
@@ -762,8 +749,8 @@ class Delivery extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
-        if ($form_state->getValue('ordered_quantity') != "" && (!is_numeric($form_state->getValue('ordered_quantity')) || $form_state->getValue('ordered_quantity') < 0
+        if ($form_state->getValue('ordered_quantity') != "" && (
+                !is_numeric($form_state->getValue('ordered_quantity')) || $form_state->getValue('ordered_quantity') < 0
                 )
         ) {
             $form_state->setErrorByName('ordered_quantity', $this->t('Input a positive numeric value for quantity.'));
@@ -791,7 +778,6 @@ class Delivery extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->getValue('new_delivery') == 1) {
             //create new serial No
             $iid = Database::getConnection('external_db', 'external_db')
@@ -819,7 +805,7 @@ class Delivery extends FormBase {
         }
 
 
-// Items  
+        // Items
 
         $rows = $form_state->getValue('itemTable');
         if (!empty($rows)) {
@@ -860,8 +846,8 @@ class Delivery extends FormBase {
                 }//if not footer
             }//for
         }
-       
-//main
+
+        //main
         if ($form_state->getValue('pcode') == '') {
             $pcode = 'n/a';
         } else {
@@ -905,18 +891,17 @@ class Delivery extends FormBase {
         if (isset($insert) || isset($update)) {
             \Drupal::messenger()->addStatus(t('The delivery is recorded. Ref. @r', ['@r' => $serial]));
             Cache::invalidateTags(['logistics_delivery_block']);
-            switch($form_state->getValue('redirect')) {
-                case 0 :
+            switch ($form_state->getValue('redirect')) {
+                case 0:
                     $form_state->setRedirect('ek_logistics.delivery.print_html', ['id' => $reference]);
                     break;
-                case 1 :
+                case 1:
                     $form_state->setRedirect('ek_logistics_list_delivery');
                     break;
-                case 2 :
+                case 2:
                     $form_state->setRedirect('ek_logistics_delivery_print_share', ['id' => $reference]);
                     break;
-                
-            }           
+            }
         }
     }
 

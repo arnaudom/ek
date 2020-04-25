@@ -28,9 +28,7 @@ class Settings extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
@@ -41,17 +39,17 @@ class Settings extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : NULL,
-            '#title' => t('company'),
-            '#disabled' => ($form_state->getValue('coid')) ? TRUE : FALSE,
-            '#required' => TRUE,
+            '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
+            '#title' => $this->t('company'),
+            '#disabled' => ($form_state->getValue('coid')) ? true : false,
+            '#required' => true,
             '#prefix' => "<div class='container-inline'>",
         );
 
         if (($form_state->getValue('coid')) == '') {
             $form['next'] = array(
                 '#type' => 'submit',
-                '#value' => t('Next') . ' >>',
+                '#value' => $this->t('Next') . ' >>',
                 '#suffix' => '</div>',
                 '#states' => array(
                     'invisible' => array(
@@ -62,7 +60,6 @@ class Settings extends FormBase {
         }
 
         if ($form_state->get('step') == 2) {
-
             $form_state->set('step', 3);
             $settings = new LogisticsSettings($form_state->getValue('coid'));
 
@@ -74,8 +71,8 @@ class Settings extends FormBase {
             $form['edit'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#required' => TRUE,
-                '#options' => array(0 => t('before print only'), 1 => t('after print only'), 2 => t('after invoicing')),
+                '#required' => true,
+                '#options' => array(0 => $this->t('before print only'), 1 => $this->t('after print only'), 2 => $this->t('after invoicing')),
                 '#default_value' => $settings->get('edit'),
                 '#title' => t('Edit orders'),
             );
@@ -96,7 +93,7 @@ class Settings extends FormBase {
                 $list_pdf_forms = array();
                 $handle = opendir('private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/');
                 while ($file = readdir($handle)) {
-                    if ($file != '.' AND $file != '..') {
+                    if ($file != '.' and $file != '..') {
                         $list_pdf_forms[$file] = $file;
                     }
                 }
@@ -104,13 +101,12 @@ class Settings extends FormBase {
                 $i = 0;
 
                 foreach ($list_pdf_forms as $key => $name) {
-
                     $form['pdf']['template_pdf' . $i] = array(
                         '#type' => 'checkbox',
                         '#default_value' => 0,
                         '#return_value' => $name,
-                        '#attributes' => array('title' => t('delete')),
-                        '#title' => t('Delete pdf template <b>"@n"</b>', array('@n' => $name)),
+                        '#attributes' => array('title' => $this->t('delete')),
+                        '#title' => $this->t('Delete pdf template <b>"@n"</b>', array('@n' => $name)),
                     );
                     $i++;
                 }
@@ -120,7 +116,7 @@ class Settings extends FormBase {
                 $list_xls_forms = array();
                 $handle = opendir('private://logistics/templates/' . $form_state->getValue('coid') . '/xls/');
                 while ($file = readdir($handle)) {
-                    if ($file != '.' AND $file != '..') {
+                    if ($file != '.' and $file != '..') {
                         $list_pdf_forms[$file] = $file;
                     }
                 }
@@ -128,20 +124,19 @@ class Settings extends FormBase {
                 $i = 0;
 
                 foreach ($list_xls_forms as $key => $name) {
-
                     $form['xls']['template_xls' . $i] = array(
                         '#type' => 'checkbox',
                         '#default_value' => 0,
                         '#return_value' => $name,
-                        '#attributes' => array('title' => t('delete')),
-                        '#title' => t('Delete excel template <b>"@n"</b>', array('@n' => $name)),
+                        '#attributes' => array('title' => $this->t('delete')),
+                        '#title' => $this->t('Delete excel template <b>"@n"</b>', array('@n' => $name)),
                     );
                     $i++;
                 }
             }
 
 
-            $form['#tree'] = TRUE;
+            $form['#tree'] = true;
             $form['actions'] = array('#type' => 'actions');
             $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
         }
@@ -181,7 +176,6 @@ class Settings extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == 3) {
 
             //verify coid exist first
@@ -209,7 +203,7 @@ class Settings extends FormBase {
             $save = $settings->save();
 
             if ($save) {
-                \Drupal::messenger()->addStatus(t('The settings are recorded'));
+                \Drupal::messenger()->addStatus($this->t('The settings are recorded'));
             }
 
 
@@ -227,7 +221,7 @@ class Settings extends FormBase {
                     } else {
                         $file = \Drupal\file\Entity\File::load($fid);
                         $file->delete();
-                        \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
+                        \Drupal::messenger()->addStatus($this->t("Template @t deleted", ['@t' => $value]));
                     }
                 }
             }
@@ -244,7 +238,7 @@ class Settings extends FormBase {
                     } else {
                         $file = \Drupal\file\Entity\File::load($fid);
                         $file->delete();
-                        \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
+                        \Drupal::messenger()->addStatus($this->t("Template @t deleted", ['@t' => $value]));
                     }
                 }
             }

@@ -33,3 +33,16 @@ ek_logistics_task_returning_edit:
   base_route: ek_logistics_list_returning
   title: 'New return order'
   weight: 2
+
+ek_logistics_settings:
+  route_name: ek_logistics_settings
+  base_route: ek_logistics_settings
+  title: 'Settings'
+  weight: 1  
+  
+ek_logistics_settings_forms_custom:
+  route_name: ek_logistics_settings_custom_forms
+  base_route: ek_logistics_settings
+  title: 'Design'
+  weight: 2 
+  

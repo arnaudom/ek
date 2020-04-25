@@ -55,14 +55,13 @@ class Filter extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
         $to = date('Y-m-d');
         $from = date('Y-m-d', strtotime($to . " -30 days"));
 
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Filter'),
-            '#open' => (isset($_SESSION['lofilter']['filter']) && $_SESSION['lofilter']['filter'] == 1) ? FALSE : TRUE,
+            '#open' => (isset($_SESSION['lofilter']['filter']) && $_SESSION['lofilter']['filter'] == 1) ? false : true,
             '#attributes' => array('class' => array('container-inline')),
         );
         $form['filters']['filter'] = array(
@@ -73,60 +72,58 @@ class Filter extends FormBase {
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['lofilter']['from']) ? $_SESSION['lofilter']['from'] : $from,
-            '#title' => t('from'),
+            '#title' => $this->t('from'),
         );
 
         $form['filters']['to'] = array(
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['lofilter']['to']) ? $_SESSION['lofilter']['to'] : $to,
-            '#title' => t('to'),
+            '#title' => $this->t('to'),
         );
 
 
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
-            $client = array('%' => t('Any'));
+            $client = array('%' => $this->t('Any'));
 
             if (strpos(\Drupal::request()->getRequestUri(), 'receiving')) {
                 $client += \Drupal\ek_address_book\AddressBookData::addresslist(2);
-                $parent = t('supplier');
+                $parent = $this->t('supplier');
             } elseif (strpos(\Drupal::request()->getRequestUri(), 'delivery')) {
                 $client += \Drupal\ek_address_book\AddressBookData::addresslist(1);
-                $parent = t('client');
+                $parent = $this->t('client');
             } else {
                 $client += \Drupal\ek_address_book\AddressBookData::addresslist(1);
-                $parent = t('client');
+                $parent = $this->t('client');
             }
-
-
 
             if (!empty($client)) {
                 $form['filters']['client'] = array(
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $client,
-                    '#required' => TRUE,
-                    '#default_value' => isset($_SESSION['lofilter']['client']) ? $_SESSION['lofilter']['client'] : NULL,
+                    '#required' => true,
+                    '#default_value' => isset($_SESSION['lofilter']['client']) ? $_SESSION['lofilter']['client'] : null,
                     '#title' => $parent,
                 );
             } else {
                 $link = Url::fromRoute('ek_address_book.new', array())->toString();
-                $new = "<a title='" . t('new') . "' href='" . $link . "'>" . $parent . "</a>";
+                $new = "<a title='" . $this->t('new') . "' href='" . $link . "'>" . $parent . "</a>";
                 $form['options']['client'] = array(
                     '#markup' => t("You do not have any @n in your record.", ['@n' => $new]),
                 );
             }
         } else {
-
             $form['filters']['client'] = array(
-                '#markup' => t('You do not have any client list.'),
+                '#markup' => $this->t('You do not have any client list.'),
                 '#default_value' => 0,
             );
         }
 
         $form['filters']['status'] = array(
             '#type' => 'select',
-            '#options' => array('%' => t('Any'), 0 => t('Open'), 1 => t('Printed'), 2 => t('Invoiced'), 3 => t('Posted')),
+            '#options' => array('%' => $this->t('Any'), 0 => $this->t('Open'), 
+                1 => $this->t('Printed'), 2 => $this->t('Invoiced'), 3 => $this->t('Posted')),
             '#default_value' => isset($_SESSION['lofilter']['status']) ? $_SESSION['lofilter']['status'] : '0',
         );
 
@@ -138,7 +135,6 @@ class Filter extends FormBase {
         $form['filters']['actions']['submit'] = array(
             '#type' => 'submit',
             '#value' => $this->t('Apply'),
-                //'#suffix' => "</div>",
         );
 
         if (!empty($_SESSION['lofilter'])) {
@@ -165,7 +161,6 @@ class Filter extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $_SESSION['lofilter']['from'] = $form_state->getValue('from');
         $_SESSION['lofilter']['to'] = $form_state->getValue('to');
         $_SESSION['lofilter']['status'] = $form_state->getValue('status');

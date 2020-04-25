@@ -28,27 +28,25 @@ class DeliveryUpload extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
-        if (NULL == $form_state->get('step')) {
+        if (null == $form_state->get('step')) {
             $form_state->set('step', 1);
         }
         $form['csv'] = array(
             '#type' => 'details',
             '#title' => $this->t('Upload'),
-            '#open' => ($form_state->get('step') == 1) ? TRUE : FALSE,
+            '#open' => ($form_state->get('step') == 1) ? true : false,
         );
         if ($form_state->get('step') == 1) {
             $form['csv']['file'] = array(
                 '#type' => 'file',
                 '#title' => t('Upload'),
-                '#description' => t('Select file to upload'),
-                    //'#required' => TRUE,
+                '#description' => $this->t('Select file to upload'),
             );
 
 
             $form['csv']['info'] = array(
                 '#type' => 'item',
-                '#markup' => t('The import format should be a text csv file.'),
+                '#markup' => $this->t('The import format should be a text csv file.'),
             );
         } else {
             $file = $form_state->get('data');
@@ -63,23 +61,22 @@ class DeliveryUpload extends FormBase {
             '#type' => 'select',
             '#options' => ['1' => 'Lazada'],
             '#default_value' => $form_state->getValue('source'),
-            '#required' => TRUE,
-            '#title' => t('Data source'),
+            '#required' => true,
+            '#title' => $this->t('Data source'),
         );
 
         if ($form_state->get('step') == 1) {
             $form['csv']['actions']['next'] = array(
                 '#type' => 'submit',
-                '#value' => t('Next') . ' >>',
+                '#value' => $this->t('Next') . ' >>',
                 '#submit' => array(array($this, 'step_2')),
             );
         }
 
 
         if ($form_state->get('step') == 2) {
-
-            Switch ($form_state->getValue('source')) {
-                case '1' : //Lazada
+            switch ($form_state->getValue('source')) {
+                case '1': //Lazada
                     $delimiter = ';';
                     //$enclose = '';
                     $ignore = 'IGNORE 1 LINES';
@@ -113,24 +110,22 @@ class DeliveryUpload extends FormBase {
             //$fp = fopen($path, 'w');
             //$written = fwrite($fp, $raw);
             //fclose($fp);
+            //$text = fgetcsv($handle, 1000, ';');
+            //dpm($text);
+            //preg_replace('/\r\n|\n\r|\n|\r/', '\n', $subject);
 
-//$text = fgetcsv($handle, 1000, ';');
-//dpm($text);   
-//preg_replace('/\r\n|\n\r|\n|\r/', '\n', $subject);
-            
-            
 
-            if (($handle = fopen($path, "r")) !== FALSE) {
+
+            if (($handle = fopen($path, "r")) !== false) {
                 # Set the parent multidimensional array key to 0.
                 $nn = 0;
-                while (($data = fgetcsv($handle, 1000, $delimiter)) !== FALSE) {
-                    
+                while (($data = fgetcsv($handle, 1000, $delimiter)) !== false) {
+
                     # skip
-                    if($nn == 0 ) {
+                    if ($nn == 0) {
                         //$nn++; continue;
                     }
                     # Count the total keys in the row.
-                   
                     # Populate the multidimensional array.
                     for ($x = 0; $x < 55; $x++) {
                         $csvarray[$nn][$x] = $data[$x];
@@ -142,31 +137,31 @@ class DeliveryUpload extends FormBase {
             }
 
 
-/*
+            /*
 
-            do {
+              do {
 
-                if ($data[0]) {
+              if ($data[0]) {
 
-                    //if (is_numeric($data[0])) { dpm($data[0]);
-                    //first field is an item ID
-                    $list = '<ul>items';
-                    for ($i = 0; $i < count($data); $i++) {
+              //if (is_numeric($data[0])) { dpm($data[0]);
+              //first field is an item ID
+              $list = '<ul>items';
+              for ($i = 0; $i < count($data); $i++) {
 
-                        $list .= '<li>' . $header[$i] . ':         ' . $data[$i] . '</li>';
-                    }
-                    $list .= '</ul>';
+              $list .= '<li>' . $header[$i] . ':         ' . $data[$i] . '</li>';
+              }
+              $list .= '</ul>';
 
-                    $form[$item] = array(
-                        '#type' => 'item',
-                        '#markup' => $list,
-                    );
-                    // }
-                }
+              $form[$item] = array(
+              '#type' => 'item',
+              '#markup' => $list,
+              );
+              // }
+              }
 
-                $item++;
-            } while ($data = fgetcsv($handle, 1000, $delimiter));
-*/
+              $item++;
+              } while ($data = fgetcsv($handle, 1000, $delimiter));
+             */
             $form['actions'] = array('#type' => 'actions');
             $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Import'));
         }
@@ -176,20 +171,16 @@ class DeliveryUpload extends FormBase {
 
         return $form;
     }
-    
-    
-
 
     /**
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == 1) {
             /**/
             $extensions = 'csv';
             $validators = array('file_validate_extensions' => array($extensions));
-            $file = file_save_upload("file", $validators, FALSE, 0);
+            $file = file_save_upload("file", $validators, false, 0);
 
             if ($file) {
                 $form_state->set('data', $file);

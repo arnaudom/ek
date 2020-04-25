@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\Core\Database\Database;
+
 /**
  * @file
  * Install, update and uninstall functions for the ek_logistics module.
@@ -24,5 +26,28 @@ function ek_logistics_uninstall() {
  * Add new function for displaying document in browser in html format
  */
 function ek_logistics_update_8001() {
+   \Drupal::service('router.builder')->rebuild(); 
+}
+
+/**
+ * Add new function for form design
+ */
+function ek_logistics_update_8002() {
+    
+    $schema = Database::getConnection('external_db','external_db')->schema();
+    if ($schema->tableExists('ek_logi_settings')) {
+        $query = "ALTER TABLE `ek_logi_settings`
+	CHANGE COLUMN `settings` `settings` BLOB NULL COMMENT 'serialized settings' AFTER `coid`";
+        Database::getConnection('external_db', 'external_db')->query($query);
+        $query = "ALTER TABLE `ek_logi_settings`
+	CHANGE COLUMN `coid` `coid` SMALLINT(10) NOT NULL COMMENT 'company ID' FIRST";
+        Database::getConnection('external_db', 'external_db')->query($query);
+    }
+    
+    Database::getConnection('external_db', 'external_db')
+            ->insert('ek_logi_settings')
+            ->fields(['coid' => '0', 'settings' => ''])
+            ->execute(); 
+   
    \Drupal::service('router.builder')->rebuild(); 
 }
