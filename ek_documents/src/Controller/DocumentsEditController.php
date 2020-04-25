@@ -26,7 +26,8 @@ use Drupal\ek_documents\DocumentsData;
 /**
  * Controller routines for ek module routes.
  */
-class DocumentsEditController extends ControllerBase {
+class DocumentsEditController extends ControllerBase
+{
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -51,7 +52,8 @@ class DocumentsEditController extends ControllerBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container) {
+    public static function create(ContainerInterface $container)
+    {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -65,7 +67,8 @@ class DocumentsEditController extends ControllerBase {
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
+    {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -75,7 +78,8 @@ class DocumentsEditController extends ControllerBase {
      * Return ajax load / display docs
      *
      */
-    public function load(Request $request) {
+    public function load(Request $request)
+    {
 
 
         //verify if the folder structure exist and create
@@ -129,10 +133,9 @@ class DocumentsEditController extends ControllerBase {
         }
 
 
-        if ($data) {  
+        if ($data) {
             $modules = [];
             if ($this->moduleHandler->moduleExists('ek_projects')) {
-                
                 $modules['project'] = 1;
             }
             
@@ -143,7 +146,7 @@ class DocumentsEditController extends ControllerBase {
             
             $render = ['#theme' => $template, '#items' => $data, '#modules' => $modules];
             $list =  \Drupal::service('renderer')->render($render);
-        } 
+        }
         
         $response = new JsonResponse();
         $response->setEncodingOptions(JSON_UNESCAPED_UNICODE);
@@ -153,10 +156,11 @@ class DocumentsEditController extends ControllerBase {
 
 
     /**
-     * Return ajax upload 
+     * Return ajax upload
      *
      */
-    public function upload(Request $request, $id) {
+    public function upload(Request $request, $id)
+    {
         return array();
     }
 
@@ -164,8 +168,8 @@ class DocumentsEditController extends ControllerBase {
      * Return ajax delete confirmation alert
      * My documents
      */
-    public function delete(Request $request, $id) {
-
+    public function delete(Request $request, $id)
+    {
         $query = 'SELECT filename FROM {ek_documents} WHERE id=:id';
         $file = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $id))
@@ -191,8 +195,8 @@ class DocumentsEditController extends ControllerBase {
      * Return ajax delete actions after confirmation
      * My documents
      */
-    public function deleteConfirmed(Request $request, $id) {
-
+    public function deleteConfirmed(Request $request, $id)
+    {
         if (DocumentsData::validate_owner($id)) {
             $query = 'SELECT uri FROM {ek_documents} WHERE id=:id';
             $uri = Database::getConnection('external_db', 'external_db')
@@ -211,19 +215,19 @@ class DocumentsEditController extends ControllerBase {
                 $query->fields('f', ['fid']);
                 $query->condition('uri', $uri);
                 $fid = $query->execute()->fetchField();
-                    if(!$fid){
-                        unlink($uri);
-                    } else {
-                        $file = \Drupal\file\Entity\File::load($fid);
-                        $file->delete();
-                    }
+                if (!$fid) {
+                    unlink($uri);
+                } else {
+                    $file = \Drupal\file\Entity\File::load($fid);
+                    $file->delete();
+                }
 
                 $response = new AjaxResponse();
                 $response->addCommand(new CloseDialogCommand());
                 $response->addCommand(new RemoveCommand('#div-' . $id));
                 return $response;
             } else {
-               return new Response('', 204); 
+                return new Response('', 204);
             }
         } else {
             return new Response('', 204);
@@ -231,11 +235,11 @@ class DocumentsEditController extends ControllerBase {
     }
 
     /**
-     * Return ajax remove 
+     * Return ajax remove
      * Remove shared document from display in list
      */
-    public function remove($id) {
-
+    public function remove($id)
+    {
         $query = 'SELECT share_uid FROM {ek_documents} WHERE id=:id';
         $share_uid = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
         $uid = ',' . \Drupal::currentUser()->id() . ',';
@@ -254,24 +258,23 @@ class DocumentsEditController extends ControllerBase {
 
     /**
      * Return ajax share
-     * 
+     *
      */
-    public function share(Request $request, $id) {
-
-        return $this->dialog(TRUE, 'share|' . $id);
+    public function share(Request $request, $id)
+    {
+        return $this->dialog(true, 'share|' . $id);
     }
 
     /**
      * Return ajax move
      * From share to my
      */
-    public function move(Request $request, $id) {
-
-        
+    public function move(Request $request, $id)
+    {
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_documents', 'd');
-            $query->fields('d');
-            $query->condition('id', $id, '=');
+        $query->fields('d');
+        $query->condition('id', $id, '=');
         $doc = $query->execute()->fetchObject();
         
         $uri = "private://documents/users/" . \Drupal::currentUser()->id() . '/' . basename($doc->uri);
@@ -294,9 +297,9 @@ class DocumentsEditController extends ControllerBase {
         );
 
         $insert = Database::getConnection('external_db', 'external_db')->insert('ek_documents')->fields($fields)->execute();
-        if($insert){
+        if ($insert) {
             self::remove($id);
-        } 
+        }
         
         
         return new Response('', 204);
@@ -306,17 +309,17 @@ class DocumentsEditController extends ControllerBase {
      * Return ajax project post
      * send a document to a project
      */
-    public function project(Request $request, $id) {
-
-        return $this->dialog(TRUE, 'project|' . $id);
+    public function project(Request $request, $id)
+    {
+        return $this->dialog(true, 'project|' . $id);
     }
 
     /**
      * Return ajax drag & drop
      *
      */
-    public function dragdrop(Request $request) {
-
+    public function dragdrop(Request $request)
+    {
         $from = explode("-", $request->get('from'));
         $fields = array('folder' => $request->get('to'));
         $result = Database::getConnection('external_db', 'external_db')
@@ -331,8 +334,9 @@ class DocumentsEditController extends ControllerBase {
     /**
      * AJAX callback handler for AjaxTestDialogForm.
      */
-    public function modal($param) {
-        return $this->dialog(TRUE, $param);
+    public function modal($param)
+    {
+        return $this->dialog(true, $param);
     }
 
     /**
@@ -344,8 +348,8 @@ class DocumentsEditController extends ControllerBase {
      * @return \Drupal\Core\Ajax\AjaxResponse
      *   An ajax response object.
      */
-    protected function dialog($is_modal = FALSE, $param = NULL) {
-
+    protected function dialog($is_modal = false, $param = null)
+    {
         $param = explode('|', $param);
         $content = [];
         switch ($param[0]) {
@@ -382,10 +386,10 @@ class DocumentsEditController extends ControllerBase {
      * @param request
      * @return Json response
      */
-    public function lookupfolders(Request $request) {
-        
+    public function lookupfolders(Request $request)
+    {
         $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_documents'); 
+                ->select('ek_documents');
         $data = $query
               ->fields('ek_documents', array('folder'))
               ->distinct()
@@ -396,5 +400,4 @@ class DocumentsEditController extends ControllerBase {
 
         return new JsonResponse($data);
     }
-
 }

@@ -14,24 +14,26 @@ use DateTime;
 /**
  * Provides a form to filter documents.
  */
-class FilterDoc extends FormBase {
+class FilterDoc extends FormBase
+{
 
   /**
    * {@inheritdoc}
    */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'documents_filter';
     }
 
-  /**
-   * {@inheritdoc}
-   */
-    public function buildForm(array $form, FormStateInterface $form_state) {
-
-        $open = FALSE;
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state)
+    {
+        $open = false;
         $title = $this->t('Filter');
         if (isset($_SESSION['documentfilter']['filter']) && $_SESSION['documentfilter']['filter'] == 1) {
-            $open = TRUE;
+            $open = true;
             $title = ['#markup' => "<strong>" . $this->t('Filter on') . "</strong>"];
         }
         if (isset($_SESSION['documentfilter']['to'])) {
@@ -56,18 +58,18 @@ class FilterDoc extends FormBase {
         $form['filters'][0]['keyword'] = array(
             '#type' => 'textfield',
             '#maxlength' => 150,
-            '#attributes' => array('placeholder' => t('Search with keyword')),
-            '#default_value' => isset($_SESSION['documentfilter']['keyword']) ? $_SESSION['documentfilter']['keyword'] : NULL,
+            '#attributes' => array('placeholder' => $this->t('Search with keyword')),
+            '#default_value' => isset($_SESSION['documentfilter']['keyword']) ? $_SESSION['documentfilter']['keyword'] : null,
         );
 
 
         $form['filters'][2]['from'] = array(
             '#type' => 'date',
             '#size' => 12,
-            '#default_value' => isset($_SESSION['documentfilter']['from']) ? $_SESSION['documentfilter']['from'] : NULL,
+            '#default_value' => isset($_SESSION['documentfilter']['from']) ? $_SESSION['documentfilter']['from'] : null,
             '#title' => $this->t('from'),
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -78,7 +80,7 @@ class FilterDoc extends FormBase {
             '#default_value' => $to,
             '#title' => $this->t('to'),
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -108,8 +110,8 @@ class FilterDoc extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->getValue('keyword') == '') {
             //check input if filter not by keyword
 
@@ -117,19 +119,19 @@ class FilterDoc extends FormBase {
                 $form_state->setErrorByName("from", $this->t('No date input'));
             }
             if (!DateTime::createFromFormat('Y-m-d', $form_state->getValue('from'))) {
-             $form_state->setErrorByName("from", $this->t('Wrong date format input.') . ": " . $form_state->getValue('from') );
+                $form_state->setErrorByName("from", $this->t('Wrong date format input.') . ": " . $form_state->getValue('from'));
             }
             if (!DateTime::createFromFormat('Y-m-d', $form_state->getValue('to'))) {
-             $form_state->setErrorByName("to", $this->t('Wrong date format input.'). ": " . $form_state->getValue('to') );
-            }            
+                $form_state->setErrorByName("to", $this->t('Wrong date format input.'). ": " . $form_state->getValue('to'));
+            }
         }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         $_SESSION['documentfilter']['from'] = $form_state->getValue('from');
         if ($_SESSION['documentfilter']['to'] != '') {
             $_SESSION['documentfilter']['to'] = $form_state->getValue('to');
@@ -143,8 +145,8 @@ class FilterDoc extends FormBase {
     /**
      * Resets the filter form.
      */
-    public function resetForm(array &$form, FormStateInterface $form_state) {
+    public function resetForm(array &$form, FormStateInterface $form_state)
+    {
         $_SESSION['documentfilter'] = array();
     }
-
 }

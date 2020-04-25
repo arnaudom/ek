@@ -4,9 +4,11 @@
  * Contains \Drupal\ek_documents\Plugin\Block\QuickUploadBlock.
  */
 namespace Drupal\ek_documents\Plugin\Block;
+
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Access\AccessResult;
+
 /**
  * Provides a 'Quick upload form for personal documents' .
  *
@@ -16,39 +18,39 @@ use Drupal\Core\Access\AccessResult;
  *   category = @Translation("Ek Documents block")
  * )
  */
-class QuickUpload extends BlockBase {
+class QuickUpload extends BlockBase
+{
   
 
   /**
    * {@inheritdoc}
    */
-  public function build() {
- 
-    $items = array();
-    $items['content'] = \Drupal::formBuilder()->getForm('Drupal\ek_documents\Form\UploadForm');
+    public function build()
+    {
+        $items = array();
+        $items['content'] = \Drupal::formBuilder()->getForm('Drupal\ek_documents\Form\UploadForm');
 
-    return $items;
-
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function blockAccess(AccountInterface $account) {
-    if (!$account->isAnonymous() && $account->hasPermission('manage_documents') ) {
-      return AccessResult::allowed();
+        return $items;
     }
-    return AccessResult::forbidden();
-    
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function blockAccess(AccountInterface $account)
+    {
+        if (!$account->isAnonymous() && $account->hasPermission('manage_documents')) {
+            return AccessResult::allowed();
+        }
+        return AccessResult::forbidden();
+    }
   
-  /**
-   * {@inheritdoc}
-   *
-   * @todo Make cacheable once https://www.drupal.org/node/2351015 lands.
-   */
-  public function getCacheMaxAge() {
-    return 0;
-  }
- 
+    /**
+     * {@inheritdoc}
+     *
+     * @todo Make cacheable once https://www.drupal.org/node/2351015 lands.
+     */
+    public function getCacheMaxAge()
+    {
+        return 0;
+    }
 }

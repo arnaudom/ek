@@ -16,21 +16,22 @@ use Drupal\ek_projects\ProjectData;
 /**
  * Provides a form to post documents into projects.
  */
-class PostProject extends FormBase {
+class PostProject extends FormBase
+{
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId() {
+    public function getFormId()
+    {
         return 'ek_documents_post_project';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
+    {
         $query = "SELECT filename from {ek_documents} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))->fetchField();
@@ -49,36 +50,36 @@ class PostProject extends FormBase {
             '#type' => 'textfield',
             '#size' => 50,
             '#maxlength' => 150,
-            '#required' => TRUE,
-            '#default_value' => NULL,
-            '#attributes' => array('placeholder' => t('Ex. 123')),
-            '#title' => t('Project'),
+            '#required' => true,
+            '#default_value' => null,
+            '#attributes' => array('placeholder' => $this->t('Ex. 123')),
+            '#title' => $this->t('Project'),
             '#autocomplete_route_name' => 'ek_look_up_projects',
         );
 
-        $folder = array('com' => t('communication'), 'fi' => t('finance'),);
+        $folder = array('com' => $this->t('communication'), 'fi' => $this->t('finance'),);
         $form['folder'] = array(
             '#type' => 'select',
             '#options' => $folder,
             '#size' => 4,
-            '#attributes' => array('placeholder' => t('folder')),
-            '#required' => TRUE,
+            '#attributes' => array('placeholder' => $this->t('folder')),
+            '#required' => true,
         );
 
         $form['comment'] = array(
             '#type' => 'textfield',
             '#size' => 24,
-            '#attributes' => array('placeholder' => t('comment')),
+            '#attributes' => array('placeholder' => $this->t('comment')),
         );
 
         $form['actions'] = array('#type' => 'actions');
         $form['actions']['upload'] = array(
             '#id' => 'upbuttonid1',
             '#type' => 'submit',
-            '#value' => t('Post'),
+            '#value' => $this->t('Post'),
             '#attributes' => array('class' => array('use-ajax-submit')),
                 //'#ajax' => array(
-                //'callback' => array($this, 'submitForm'), 
+                //'callback' => array($this, 'submitForm'),
                 //'wrapper' => 'message',
                 // ),
         );
@@ -92,7 +93,7 @@ class PostProject extends FormBase {
 
         if ($form_state->get('message') <> '') {
             $form['message'] = array(
-                '#markup' => "<div class='red'>" . t('Posting') . ": " . $form_state->get('message') . "</div>",
+                '#markup' => "<div class='red'>" . $this->t('Posting') . ": " . $form_state->get('message') . "</div>",
             );
             $form_state->set('message', '');
             $form_state->setRebuild();
@@ -104,8 +105,8 @@ class PostProject extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    public function validateForm(array &$form, FormStateInterface $form_state)
+    {
         if ($form_state->getValue('pcode') == '') {
             $form_state->setErrorByName("pcode", $this->t('You need to select a project'));
         }
@@ -114,9 +115,8 @@ class PostProject extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
+    public function submitForm(array &$form, FormStateInterface $form_state)
+    {
         $string = explode(" ", $form_state->getValue('pcode'));
 
         //verify project access
@@ -127,7 +127,7 @@ class PostProject extends FormBase {
             $query->condition('id', $form_state->getValue('id'));
             $doc = $query->execute()->fetchObject();
             
-            $code = array_reverse(explode('-',$string[1]));
+            $code = array_reverse(explode('-', $string[1]));
             $pcode = $code[0];
             $to = "private://projects/documents/" . $pcode;
 
@@ -141,7 +141,7 @@ class PostProject extends FormBase {
                 'filename' => $doc->filename,
                 'uri' => $move,
                 'folder' => $form_state->getValue('folder'),
-                'comment' => $form_state->getValue('comment') ? Xss::filter($form_state->getValue('comment')) : t('Posted from documents'),
+                'comment' => $form_state->getValue('comment') ? Xss::filter($form_state->getValue('comment')) : $this->t('Posted from documents'),
                 'date' => date('U'),
                 'size' => filesize($move),
                 'share' => 0,
@@ -158,18 +158,15 @@ class PostProject extends FormBase {
                         . $form_state->getValue('pcode');
                 \Drupal::logger('ek_documents')->notice($log);
 
-                $form_state->set('message', t('success'));
+                $form_state->set('message', $this->t('success'));
                 $form_state->setRebuild();
             } else {
-                $form_state->set('message', t('failed'));
+                $form_state->set('message', $this->t('failed'));
                 $form_state->setRebuild();
             }
-            
+        } else {//no acess
+            $form_state->set('message', $this->t('access denied'));
+            $form_state->setRebuild();
         }
-            else {//no acess
-                $form_state->set('message', t('access denied'));
-                $form_state->setRebuild();
-            }
     }
-
 }

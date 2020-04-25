@@ -6,7 +6,6 @@
 
 namespace Drupal\ek_documents\Controller;
 
-
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
@@ -19,74 +18,77 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-
 /**
 * Controller routines for ek module routes.
 */
-class InstallController extends ControllerBase {
+class InstallController extends ControllerBase
+{
 
    /* The module handler.
    *
    * @var \Drupal\Core\Extension\ModuleHandler
    */
-  protected $moduleHandler;
-  /**
-   * The database service.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-  /**
-   * The form builder service.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
+    protected $moduleHandler;
+    /**
+     * The database service.
+     *
+     * @var \Drupal\Core\Database\Connection
+     */
+    protected $database;
+    /**
+     * The form builder service.
+     *
+     * @var \Drupal\Core\Form\FormBuilderInterface
+     */
+    protected $formBuilder;
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container)
+    {
+        return new static(
       $container->get('database'),
       $container->get('form_builder'),
       $container->get('module_handler')
     );
-  }
+    }
 
-  /**
-   * Constructs a  object.
-   *
-   * @param \Drupal\Core\Database\Connection $database
-   *   A database connection.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-   *   The form builder service.
-   */
-  public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
-    $this->database = $database;
-    $this->formBuilder = $form_builder;
-    $this->moduleHandler = $module_handler;
-  }
+    /**
+     * Constructs a  object.
+     *
+     * @param \Drupal\Core\Database\Connection $database
+     *   A database connection.
+     * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+     *   The form builder service.
+     */
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
+    {
+        $this->database = $database;
+        $this->formBuilder = $form_builder;
+        $this->moduleHandler = $module_handler;
+    }
 
 
-/**
-   * data update
-   *
-*/
+    /**
+       * data update
+       *
+    */
 
- public function update() {
-   include_once drupal_get_path('module', 'ek_documents') . '/' . 'update.php';
-    return  array('#markup' => $markup) ;
- 
- }
+    public function update()
+    {
+        include_once drupal_get_path('module', 'ek_documents') . '/' . 'update.php';
+        return  array('#markup' => $markup) ;
+    }
 
-/**
-   * install required tables in a separate database
-   *
-*/
+    /**
+       * install required tables in a separate database
+       *
+    */
 
- public function install() {
-/**/ 
-    $query = "CREATE TABLE IF NOT EXISTS `ek_documents` (
+    public function install()
+    {
+        /**/
+        $query = "CREATE TABLE IF NOT EXISTS `ek_documents` (
                 `id` INT(10) NOT NULL AUTO_INCREMENT,
                 `uid` INT(10) NULL DEFAULT NULL COMMENT 'user id',
                 `fid` INT(5) NULL DEFAULT NULL COMMENT 'file managed id',
@@ -109,10 +111,12 @@ class InstallController extends ControllerBase {
               ENGINE=InnoDB
               AUTO_INCREMENT=1";
     
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup = 'Users documents table installed <br/>';
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup = 'Users documents table installed <br/>';
+        }
     
-    $query = "CREATE TABLE `ek_document_settings` (
+        $query = "CREATE TABLE `ek_document_settings` (
                 `id` INT(11) NOT NULL,
                 `settings` BLOB NULL,
                 INDEX `Index 1` (`id`)
@@ -120,30 +124,28 @@ class InstallController extends ControllerBase {
             COMMENT='Keep admin settings for documents'
             ENGINE=InnoDB
             ;";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) {
-        $markup = 'Documents settings table installed <br/>';
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup = 'Documents settings table installed <br/>';
     
-        $db = Database::getConnection('external_db', 'external_db')
+            $db = Database::getConnection('external_db', 'external_db')
                 ->insert('ek_document_settings')
                 ->fields(array(
                   'id' => 0,
                   'settings' => '',
                 ))
-                ->execute();  
-        if($db) {$markup = 'Documents settings table updated <br/>';}
-    }
+                ->execute();
+            if ($db) {
+                $markup = 'Documents settings table updated <br/>';
+            }
+        }
    
-    $link =  Url::fromRoute('ek_admin.main', array(), array())->toString();
-    $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
+        $link =  Url::fromRoute('ek_admin.main', array(), array())->toString();
+        $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
     
-    return  array(
+        return  array(
       '#title'=> t('Installation of Ek_documents module'),
       '#markup' => $markup
       ) ;
- 
- }
-
-
-   
+    }
 } //class
