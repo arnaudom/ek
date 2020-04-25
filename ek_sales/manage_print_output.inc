@@ -10,7 +10,7 @@ use Drupal\Core\StreamWrapper\PrivateStream;
 use Drupal\Core\StreamWrapper\PublicStream;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\ek_products\ItemData;
-
+use Drupal\ek_sales\SalesSettings;
  
 $param = unserialize($param);
 
@@ -22,6 +22,8 @@ $stamp = $param[3];
 $template = $param[4];
 $contact = $param[5];
 $mode = (isset($param[6])) ? $param[6] : NULL; 
+$sales = new SalesSettings();
+$customSettings = $sales->get('custom_form');
 
 /*
 * data
@@ -318,25 +320,37 @@ Switch ($source) {
   /* 
   * get template data from settings based on source
   * output document based on format or mode 
-   * mode 1 = save file for emailing (pdf)
+  * mode 1 = save file for emailing (pdf)
   */
 
 if((isset($format) && $format == 'pdf') || $mode == 1) {
   if( $template == '0' ) {
       
-      $template = drupal_get_path('module', 'ek_sales') . "/default_" . $source . "_pdf";
+    $template = drupal_get_path('module', 'ek_sales') . "/default_" . $source . "_pdf";
+    if(!empty($customSettings["default_" . $source . "_pdf"])){
+        $custom = $customSettings["default_" . $source . "_pdf"];
+    }
+      
   
   } elseif($template == 'default_receipt_invoice_pdf') {
       
-      $template = drupal_get_path('module', 'ek_sales') . '/default_receipt_invoice_pdf';
-     
+    $template = drupal_get_path('module', 'ek_sales') . '/default_receipt_invoice_pdf';
+    if(!empty($customSettings["default_receipt_invoice_pdf"])){
+        $custom = $customSettings["default_receipt_invoice_pdf"];
+    }
+    
   } else {
-      //if print template is a custom file, copy from private to public before include
-      //use this feature when storage of data is remote.
-      $filesystem = \Drupal::service('file_system');
-      $path = PublicStream::basePath() . "/" . $template;
-      $filesystem->copy("private://sales/templates/". $source . '/' . $template, $path, FileSystemInterface::EXISTS_REPLACE );
-      $template = $path ;
+    // if print template is a custom file, copy from private to public before include
+    // use this feature when storage of data is remote.
+    $filesystem = \Drupal::service('file_system');
+    $path = PublicStream::basePath() . "/" . $template;
+    $filesystem->copy("private://sales/templates/". $source . '/' . $template, $path, FileSystemInterface::EXISTS_REPLACE );
+    
+    if(!empty($customSettings[$template])){
+        $custom = $customSettings[$template];
+    }
+    
+    $template = $path;
   }
   
   $fileName = $head->serial;

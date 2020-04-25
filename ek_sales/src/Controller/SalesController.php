@@ -48,6 +48,7 @@ class SalesController extends ControllerBase {
      * @var \Drupal\Core\Form\FormBuilderInterface
      */
     protected $formBuilder;
+
     //protected $uuidService;
 
     /**
@@ -74,11 +75,10 @@ class SalesController extends ControllerBase {
     }
 
     /**
-     * Return main 
+     * Return main
      *
      */
     public function ManageSales(Request $request) {
-
         return array('#markup' => '');
     }
 
@@ -89,7 +89,6 @@ class SalesController extends ControllerBase {
      *  id of address book
      */
     public function DataSales(Request $request, $abid) {
-
         $theme = 'ek_sales_data';
         $items = array();
 
@@ -128,7 +127,6 @@ class SalesController extends ControllerBase {
                         ->query($query, array(':abid' => $abid));
                 $items['projects'] = array();
                 while ($d = $data->fetchObject()) {
-
                     $items['projects'][] = array(
                         'link' => \Drupal\ek_projects\ProjectData::geturl($d->id),
                         'pcode' => $d->pcode,
@@ -171,7 +169,7 @@ class SalesController extends ControllerBase {
                 $items['category_statistics']['completed'] = 0;
                 $items['category_statistics']['closed'] = 0;
                 while ($d = $data->fetchObject()) {
-                    if ($d->sum == NULL) {
+                    if ($d->sum == null) {
                         $d->sum = '0';
                     }
                     $total += $d->sum;
@@ -192,7 +190,7 @@ class SalesController extends ControllerBase {
 
                     $seriesData = [
                         [
-                            "data" => [ $items['category_statistics']['open'], $items['category_statistics']['awarded'], $items['category_statistics']['completed'], $items['category_statistics']['closed']],
+                            "data" => [$items['category_statistics']['open'], $items['category_statistics']['awarded'], $items['category_statistics']['completed'], $items['category_statistics']['closed']],
                             "colors" => [$chartSettings['colors'][0], $chartSettings['colors'][1], $chartSettings['colors'][2], $chartSettings['colors'][3]]
                         ]
                     ];
@@ -304,7 +302,6 @@ class SalesController extends ControllerBase {
             }
 
             if (isset($chartSettings)) {
-
                 $options = [];
                 $options['type'] = 'bar';
                 $options['title'] = ($ab->type == 1) ? t('Sales structure') : t('Purchases structure');
@@ -346,7 +343,7 @@ class SalesController extends ControllerBase {
                 $options['title_position'] = 'top';
                 $categories = [date('Y') - 6, date('Y') - 5, date('Y') - 4, date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y')];
                 $seriesData = [
-                    [ "name" => t('Transactions') . " " . $items['baseCurrency'],
+                    ["name" => t('Transactions') . " " . $items['baseCurrency'],
                         "type" => 'line',
                         "data" => [
                             (int) $items['sales_year'][date('Y') - 6],
@@ -388,7 +385,7 @@ class SalesController extends ControllerBase {
                 $long = round((strtotime($d->pay_date) - strtotime($d->date)) / (24 * 60 * 60), 0);
                 array_push($af, $long);
             }
-            if(count($af) > 0){
+            if (count($af) > 0) {
                 $items['payment_performance'] = array(
                     'max' => (int) max($af),
                     'min' => (int) min($af),
@@ -401,7 +398,7 @@ class SalesController extends ControllerBase {
                     'avg' => 0
                 );
             }
-            
+
 
             if (isset($chartSettings)) {
                 $options = [];
@@ -437,7 +434,7 @@ class SalesController extends ControllerBase {
         } else {
             $items['abidname'] = t('No data');
             $items['abidlink'] = Url::fromRoute('ek_address_book.search')->toString();
-            $items['data'] = NULL;
+            $items['data'] = null;
         }
 
         return array(
@@ -462,16 +459,15 @@ class SalesController extends ControllerBase {
      *  id of address book
      */
     public function DataBookDocuments(Request $request, $abid) {
-        
         $items['abidlink'] = ['#markup' => \Drupal\ek_address_book\AddressBookData::geturl($abid)];
         //upload form for documents
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\UploadForm', $abid);
         $query = "SELECT count(id) FROM {ek_sales_documents} WHERE "
-                        . "abid=:abid";
+                . "abid=:abid";
         $items['document'] = Database::getConnection('external_db', 'external_db')
-                    ->query($query, [':abid' => $abid])
-                    ->fetchField();
-        
+                ->query($query, [':abid' => $abid])
+                ->fetchField();
+
         return array(
             '#title' => t('Documents'),
             '#items' => $items,
@@ -486,7 +482,6 @@ class SalesController extends ControllerBase {
                 'tags' => ['sales_data']
             ],
         );
-        
     }
 
     /**
@@ -494,27 +489,25 @@ class SalesController extends ControllerBase {
      * @param request
      * @return Json response
      */
-    public function lookupFolders(Request $request,$abid = NULL) {
-        
+    public function lookupFolders(Request $request, $abid = null) {
         $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_sales_documents'); 
+                ->select('ek_sales_documents');
         $data = $query
-              ->fields('ek_sales_documents', ['folder'])
-              ->distinct()
-              ->condition('abid', $abid)
-              ->condition('folder', $request->query->get('q') . '%', 'LIKE')
-              ->execute()
-              ->fetchCol();
+                ->fields('ek_sales_documents', ['folder'])
+                ->distinct()
+                ->condition('abid', $abid)
+                ->condition('folder', $request->query->get('q') . '%', 'LIKE')
+                ->execute()
+                ->fetchCol();
 
         return new JsonResponse($data);
-    }    
-    
+    }
+
     /**
      * Return data called to update documents for sales data
      *
      */
     public function load(Request $request) {
-
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_documents', 'd');
         $query->fields('d');
@@ -527,7 +520,7 @@ class SalesController extends ControllerBase {
         $t = '';
         $i = 0;
         $items = [];
-        $data = NULL;
+        $data = null;
         if (isset($list)) {
             while ($l = $list->fetchObject()) {
                 $i++;
@@ -536,7 +529,7 @@ class SalesController extends ControllerBase {
                 $items[$l->folder][$i]['id'] = $l->id;
                 $items[$l->folder][$i]['fid'] = 1; //default file status on
                 $items[$l->folder][$i]['delete'] = 1; //default delete action is on
-                $items[$l->folder][$i]['icon'] = 'file'; //default icon 
+                $items[$l->folder][$i]['icon'] = 'file'; //default icon
                 $items[$l->folder][$i]['file_url'] = ''; //default
                 $items[$l->folder][$i]['access_url'] = 0; //default access management if off
 
@@ -544,12 +537,11 @@ class SalesController extends ControllerBase {
                 $share = explode(',', $l->share);
                 $deny = explode(',', $l->deny);
 
-                if ($l->share == '0' || ( in_array(\Drupal::currentUser()->id(), $share) 
-                        && !in_array(\Drupal::currentUser()->id(), $deny) )) {
+                if ($l->share == '0' || (in_array(\Drupal::currentUser()->id(), $share) && !in_array(\Drupal::currentUser()->id(), $deny))) {
                     $items[$l->folder][$i]['uri'] = $l->uri;
                     $extension = explode(".", $l->filename);
                     $extension = strtolower(array_pop($extension));
-                    $items[$l->folder][$i]['icon']  = '_doc_list';  
+                    $items[$l->folder][$i]['icon'] = '_doc_list';
                     if (ek_admin_filter_ico($extension)) {
                         $items[$l->folder][$i]['icon'] = $extension . '_doc_list';
                     }
@@ -597,11 +589,11 @@ class SalesController extends ControllerBase {
                 } //built list of accessible files by user
             }
         }
-        if($i > 0){
+        if ($i > 0) {
             $render = ['#theme' => 'ek_sales_doc_view', '#items' => $items];
             $data = \Drupal::service('renderer')->render($render);
         }
-        
+
         return new JsonResponse(array('data' => $data));
     }
 
@@ -610,7 +602,6 @@ class SalesController extends ControllerBase {
      *
      */
     public function dragDrop(Request $request) {
-
         $from = explode("-", $request->get('from'));
         $fields = array('folder' => $request->get('to'));
         $result = Database::getConnection('external_db', 'external_db')
@@ -618,22 +609,22 @@ class SalesController extends ControllerBase {
                 ->condition('id', $from[1])
                 ->fields($fields)
                 ->execute();
-        
+
         return new Response('', 204);
     }
-    
+
     /**
      * AJAX callback handler for AjaxTestDialogForm.
      */
     public function modal($param) {
-        return $this->dialog(TRUE, $param);
+        return $this->dialog(true, $param);
     }
 
     /**
      * AJAX callback handler for AjaxTestDialogForm.
      */
     public function nonModal($param) {
-        return $this->dialog(FALSE, $param);
+        return $this->dialog(false, $param);
     }
 
     /**
@@ -645,20 +636,19 @@ class SalesController extends ControllerBase {
      * @return \Drupal\Core\Ajax\AjaxResponse
      *   An ajax response object.
      */
-    protected function dialog($is_modal = FALSE, $param = NULL) {
-
+    protected function dialog($is_modal = false, $param = null) {
         $param = explode('|', $param);
         $content = [];
         switch ($param[0]) {
 
-            case 'access' :
+            case 'access':
                 $id = $param[1];
                 $type = $param[2];
                 $content = $this->formBuilder->getForm('Drupal\ek_sales\Form\DocAccessEdit', $id, $type);
                 $options = array('width' => '30%',);
                 break;
 
-            case 'comment' :
+            case 'comment':
                 $content = $this->formBuilder->getForm('Drupal\ek_sales\Form\SalesFieldEdit', $param[1], 'comment');
                 $options = array('width' => $param[3],);
 
@@ -693,7 +683,7 @@ class SalesController extends ControllerBase {
                 if ($this->moduleHandler->moduleExists('ek_finance')) {
                     //extract journal transactions;
                     $journal = new Journal();
-                    $content['#markup'].= $journal->entity_history(array('entity' => 'invoice', 'id' => $id));
+                    $content['#markup'] .= $journal->entity_history(array('entity' => 'invoice', 'id' => $id));
                 }
                 break;
 
@@ -725,7 +715,7 @@ class SalesController extends ControllerBase {
 
                 if ($this->moduleHandler->moduleExists('ek_finance')) {
                     //extract journal transactions;
-                    $content['#markup'].= Journal::entity_history(array('entity' => 'purchase', 'id' => $id));
+                    $content['#markup'] .= Journal::entity_history(array('entity' => 'purchase', 'id' => $id));
                 }
                 break;
 
@@ -800,7 +790,6 @@ class SalesController extends ControllerBase {
         $response->addCommand(new CloseDialogCommand());
 
         if ($data->share != '0') {
-
             if (in_array($user, $share) and ! in_array($user, $deny)) {
                 //user has access
                 $del = 1;
@@ -829,13 +818,12 @@ class SalesController extends ControllerBase {
                 $query->fields('f', ['fid']);
                 $query->condition('uri', $p->uri);
                 $fid = $query->execute()->fetchField();
-                if(!$fid){
+                if (!$fid) {
                     unlink($p->uri);
                 } else {
                     $file = \Drupal\file\Entity\File::load($fid);
                     $file->delete();
                 }
-                
             }
             \Drupal\Core\Cache\Cache::invalidateTags(['sales_data']);
             $log = 'sales document|user|' . \Drupal::currentUser()->id() . '|delete|' . $data->filename;
@@ -860,14 +848,14 @@ class SalesController extends ControllerBase {
      */
     public function userautocomplete(Request $request) {
         /*
-        $text = $request->query->get('term');
-        $name = array();
+          $text = $request->query->get('term');
+          $name = array();
 
-        $query = "SELECT distinct name from {users_field_data} WHERE mail like :t1 or name like :t2 ";
-        $a = array(':t1' => "$text%", ':t2' => "$text%");
-        //$name = db_query($query, $a)->fetchCol();
+          $query = "SELECT distinct name from {users_field_data} WHERE mail like :t1 or name like :t2 ";
+          $a = array(':t1' => "$text%", ':t2' => "$text%");
+          //$name = db_query($query, $a)->fetchCol();
 
-        return new JsonResponse($name);*/
+          return new JsonResponse($name); */
     }
 
     /**
@@ -877,14 +865,13 @@ class SalesController extends ControllerBase {
      *
      */
     public function ResetPayment($doc, $id) {
-
         $build = [];
         switch ($doc) {
             case 'invoice':
                 $tb = "ek_sales_invoice";
                 $route = 'ek_sales.invoices.list';
                 break;
-            case 'purchase' :
+            case 'purchase':
                 $tb = "ek_sales_purchase";
                 $route = 'ek_sales.purchases.list';
                 break;

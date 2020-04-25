@@ -53,20 +53,19 @@ class ResetPay extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $doc = NULL, $id = NULL, $head = NULL, $serial = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $doc = null, $id = null, $head = null, $serial = null) {
         switch ($doc) {
             case 'invoice':
                 $route = 'ek_sales.invoices.list';
                 break;
-            case 'purchase' :
+            case 'purchase':
                 $route = 'ek_sales.purchases.list';
                 break;
         }
-        
+
         $form['list'] = array(
-          '#type' => 'item',
-          '#markup' => t('<a href="@url">List</a>', array('@url' => \Drupal\Core\Url::fromRoute($route,[],[])->toString())) ,
+            '#type' => 'item',
+            '#markup' => $this->t('<a href="@url">List</a>', array('@url' => \Drupal\Core\Url::fromRoute($route, [], [])->toString())),
         );
 
         $form['edit'] = array(
@@ -92,7 +91,7 @@ class ResetPay extends FormBase {
 
         $form['alert'] = array(
             '#type' => 'item',
-            '#markup' => t('Are you sure you want to reset payment for this @doc ?', ['@doc' => $doc]),
+            '#markup' => $this->t('Are you sure you want to reset payment for this @doc ?', ['@doc' => $doc]),
         );
 
         $form['actions']['record'] = array(
@@ -116,7 +115,6 @@ class ResetPay extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         switch ($form_state->getValue('for_doc')) {
             case 'invoice':
                 $query = "SELECT amountbase from {ek_sales_invoice} where id=:id";
@@ -148,7 +146,7 @@ class ResetPay extends FormBase {
 
                 break;
 
-            case 'purchase' :
+            case 'purchase':
                 $query = "SELECT amountbc from {ek_sales_purchase} where id=:id";
                 $ab = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $form_state->getValue('for_id')))

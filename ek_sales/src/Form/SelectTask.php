@@ -22,19 +22,17 @@ class SelectTask extends FormBase {
         return 'ek_sales_select_task';
     }
 
-
     /**
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
-        $options = [ 0 => t('All'), 1 => t('Completed'), 2 => t('Pending'),
-            3 => t('My tasks'), 4 => t('Expired'),
+        $options = [0 => $this->t('All'), 1 => $this->t('Completed'), 2 => $this->t('Pending'),
+            3 => $this->t('My tasks'), 4 => $this->t('Expired'),
         ];
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Filter'),
-            '#open' => TRUE,
+            '#open' => true,
             '#attributes' => array('class' => array('container-inline')),
         );
         $form['filters']['filter'] = array(
@@ -46,7 +44,7 @@ class SelectTask extends FormBase {
             '#id' => 'filtercalendar',
             '#options' => $options,
             '#default_value' => isset($_SESSION['taskfilter']['type']) ? $_SESSION['taskfilter']['type'] : 0,
-            '#attributes' => array('title' => t('display options'), 'class' => array()),
+            '#attributes' => array('title' => $this->t('display options'), 'class' => array()),
         );
 
         $form['filters']['actions'] = array(
@@ -82,7 +80,6 @@ class SelectTask extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $_SESSION['taskfilter']['type'] = $form_state->getValue('type');
         $_SESSION['taskfilter']['filter'] = 1;
     }
@@ -93,6 +90,5 @@ class SelectTask extends FormBase {
     public function resetForm(array &$form, FormStateInterface $form_state) {
         $_SESSION['taskfilter'] = array();
     }
-
 
 }

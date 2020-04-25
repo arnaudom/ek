@@ -68,17 +68,15 @@ class QuotationsController extends ControllerBase {
     }
 
     /**
-     * Return quotes 
+     * Return quotes
      *
      */
     public function SettingsQuotations(Request $request) {
-
         $build['settings'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\SettingsQuotation');
         return $build;
     }
 
     public function ListQuotations(Request $request) {
-
         $build['filter_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterQuotation');
         $header = array(
             'number' => array(
@@ -90,11 +88,11 @@ class QuotationsController extends ControllerBase {
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
                 'id' => 'revision',
             ),
-             'reference' => array(
+            'reference' => array(
                 'data' => $this->t('Reference'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
-                'id' => 'reference', 
-            ),           
+                'id' => 'reference',
+            ),
             'issuer' => array(
                 'data' => $this->t('Issued by'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
@@ -137,14 +135,13 @@ class QuotationsController extends ControllerBase {
 
 
         if (isset($_SESSION['qfilter']['filter']) && $_SESSION['qfilter']['filter'] == 1) {
-            
             if ($_SESSION['pfilter']['keyword'] != '') {
                 //search based on keyword
                 $or2 = $query->orConditionGroup();
                 $or2->condition('q.serial', '%' . $_SESSION['qfilter']['keyword'] . '%', 'like');
                 $or2->condition('q.pcode', '%' . $_SESSION['qfilter']['keyword'] . '%', 'like');
                 $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date',
-                        'amount', 'pcode', 'incoterm', 'tax','type');
+                    'amount', 'pcode', 'incoterm', 'tax', 'type');
                 $data = $query
                         ->fields('q', $f)
                         ->condition($or1)
@@ -154,33 +151,28 @@ class QuotationsController extends ControllerBase {
                         ->limit(20)
                         ->orderBy('id', 'ASC')
                         ->execute();
-            
-                
             } else {
-                 //search based on input fields
+                //search based on input fields
                 $or2 = $query->orConditionGroup();
                 $or2->condition('head', $_SESSION['qfilter']['coid']);
                 $or2->condition('allocation', $_SESSION['qfilter']['coid']);
                 $data = $query
-                    ->fields('q')
-                    ->condition($or1)
-                    ->condition($or2)
-                    ->condition('status', $_SESSION['qfilter']['status'], 'like')
-                    ->condition('client', $_SESSION['qfilter']['client'], 'like')
-                    ->condition('date', $_SESSION['qfilter']['from'], '>=')
-                    ->condition('date', $_SESSION['qfilter']['to'], '<=')
-                    ->extend('Drupal\Core\Database\Query\TableSortExtender')
-                    ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                    ->limit(20)
-                    ->orderBy('id', 'ASC')
-                    ->execute();
+                        ->fields('q')
+                        ->condition($or1)
+                        ->condition($or2)
+                        ->condition('status', $_SESSION['qfilter']['status'], 'like')
+                        ->condition('client', $_SESSION['qfilter']['client'], 'like')
+                        ->condition('date', $_SESSION['qfilter']['from'], '>=')
+                        ->condition('date', $_SESSION['qfilter']['to'], '<=')
+                        ->extend('Drupal\Core\Database\Query\TableSortExtender')
+                        ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+                        ->limit(20)
+                        ->orderBy('id', 'ASC')
+                        ->execute();
             }
-            
-            
         } else {
-            
             $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_sales_quotation', 'q');
+                    ->select('ek_sales_quotation', 'q');
             $query->fields('q', ['date']);
             $query->condition('status', 0);
             $query->orderBy('date', "DESC");
@@ -201,40 +193,39 @@ class QuotationsController extends ControllerBase {
 
         //store company data
         $companies = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT id,name from {ek_company}")
-                    ->fetchAllKeyed();
+                ->query("SELECT id,name from {ek_company}")
+                ->fetchAllKeyed();
         //store a. book data
         $abook = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT id,name from {ek_address_book}")
-                    ->fetchAllKeyed();
-        
-        while ($r = $data->fetchObject()) {
+                ->query("SELECT id,name from {ek_address_book}")
+                ->fetchAllKeyed();
 
+        while ($r = $data->fetchObject()) {
             $number = "<a title='" . t('view') . "' href='"
                     . Url::fromRoute('ek_sales.quotations.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
-            
-            if(isset($abook[$r->client])) {
+
+            if (isset($abook[$r->client])) {
                 $client_name = $abook[$r->client];
                 $reference = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
             }
-            
+
             $co = $companies[$r->head];
-            if($r->head <> $r->allocation) {
+            if ($r->head <> $r->allocation) {
                 $for = isset($companies[$r->allocation]) ? "<br/>" . t('for') . ": " . $companies[$r->allocation] : '';
                 $co = $co . $for;
             }
-            
+
             if ($r->pcode <> 'n/a') {
                 if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $reference .= "<div>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, NULL, NULL, TRUE) . "</div>";
+                    $reference .= "<div>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, null, null, true) . "</div>";
                 }
-            } 
+            }
 
             $value = $r->currency . ' ' . number_format($r->amount, 2);
-            
+
             $incoterm = explode('|', $r->incoterm);
-            if ($incoterm[0] != '0') {                
+            if ($incoterm[0] != '0') {
                 $value .= '<br/>' . $incoterm[0] . ' ' . $r->currency . ' ' . number_format(($r->amount * $incoterm[1] / 100), 2);
                 $term = $r->amount * $incoterm[1] / 100;
             } else {
@@ -255,8 +246,7 @@ class QuotationsController extends ControllerBase {
 
             $revision_numbers = array();
 
-            WHILE ($revs = $revisions->fetchObject()) {
-
+            while ($revs = $revisions->fetchObject()) {
                 $revision_numbers[] = $revs->revision;
                 $last = $revs->revision;
             }
@@ -268,13 +258,13 @@ class QuotationsController extends ControllerBase {
             //$tax = $taxable*$r->taxvalue/100;
 
 
-            if ($r->status == 0){
+            if ($r->status == 0) {
                 $status = t('open');
             }
-            if ($r->status == 1){
+            if ($r->status == 1) {
                 $status = t('printed');
             }
-            if ($r->status == 2){
+            if ($r->status == 2) {
                 $status = t('invoiced');
             }
 
@@ -291,7 +281,6 @@ class QuotationsController extends ControllerBase {
             $links = array();
 
             if ($r->status <> 2) {
-                
                 $param = 'quick_edit|' . $r->id . '|quotation';
                 $links['qedit'] = array(
                     'title' => $this->t('Quick edit'),
@@ -326,14 +315,13 @@ class QuotationsController extends ControllerBase {
                     'attributes' => ['class' => ['ico', 'excel']]
                 );
             }
-            
-            $links['clone'] = array(
-                    'title' => $this->t('Clone'),
-                    'url' => Url::fromRoute('ek_sales.quotations.edit', ['id' => $r->id], ['query' => ['action' => 'clone']]),
-            );
-            
-            if (\Drupal::currentUser()->hasPermission('delete_quotation') && $r->status == 0) {
 
+            $links['clone'] = array(
+                'title' => $this->t('Clone'),
+                'url' => Url::fromRoute('ek_sales.quotations.edit', ['id' => $r->id], ['query' => ['action' => 'clone']]),
+            );
+
+            if (\Drupal::currentUser()->hasPermission('delete_quotation') && $r->status == 0) {
                 $links['delete'] = array(
                     'title' => $this->t('Delete'),
                     'url' => Url::fromRoute('ek_sales.quotations.delete', ['id' => $r->id]),
@@ -367,7 +355,6 @@ class QuotationsController extends ControllerBase {
     }
 
     public function NewQuotations(Request $request) {
-
         $build['new_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Quotation');
 
         return $build;
@@ -375,21 +362,20 @@ class QuotationsController extends ControllerBase {
 
     public function EditQuotation(Request $request, $id) {
         $query = Database::getConnection('external_db', 'external_db')
-            ->select('ek_sales_quotation', 'q')
-            ->fields('q', ['status'])
-            ->condition('id', $id , '=');
+                ->select('ek_sales_quotation', 'q')
+                ->fields('q', ['status'])
+                ->condition('id', $id, '=');
         $status = $query->execute()->fetchField();
-        $clone = ($request->query->get('action') == 'clone') ? TRUE : FALSE;
-        if($clone == TRUE || $status <> 2) {
+        $clone = ($request->query->get('action') == 'clone') ? true : false;
+        if ($clone == true || $status <> 2) {
             $build['edit_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Quotation', $id, $clone);
         } else {
-            
-            $opt =['0' => t('open'),1 => t('printed'), 2 => t('invoiced')];
+            $opt = ['0' => t('open'), 1 => t('printed'), 2 => t('invoiced')];
             $url = Url::fromRoute('ek_sales.quotations.list', array(), array())->toString();
             $items['type'] = 'edit';
             $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Qotation')))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -397,29 +383,28 @@ class QuotationsController extends ControllerBase {
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
                 '#cache' => ['max-age' => 0,],
-            ];              
+            ];
         }
-        
+
 
         return $build;
     }
 
     public function InvoiceQuotation(Request $request, $id) {
         $query = Database::getConnection('external_db', 'external_db')
-            ->select('ek_sales_quotation', 'q')
-            ->fields('q', ['status'])
-            ->condition('id', $id , '=');
+                ->select('ek_sales_quotation', 'q')
+                ->fields('q', ['status'])
+                ->condition('id', $id, '=');
         $status = $query->execute()->fetchField();
-        if($status < 2) {    
+        if ($status < 2) {
             $build['edit_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\ConvertQuotation', $id);
         } else {
-            
-            $opt =['0' => t('open'),1 => t('printed'), 2 => t('invoiced')];
+            $opt = ['0' => t('open'), 1 => t('printed'), 2 => t('invoiced')];
             $url = Url::fromRoute('ek_sales.quotations.list', array(), array())->toString();
             $items['type'] = 'edit';
             $items['message'] = ['#markup' => t('@document cannot be converted.', array('@document' => t('Qotation')))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -427,29 +412,27 @@ class QuotationsController extends ControllerBase {
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
                 '#cache' => ['max-age' => 0,],
-            ];              
+            ];
         }
-        
+
         return $build;
     }
 
     public function PrintShareQuotations($id) {
-        
+
         //filter access to document
         $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_quotation', 'q');
-            $query->fields('q',['head','allocation', 'pcode']);
-            $query->condition('q.id', $id);
+                ->select('ek_sales_quotation', 'q');
+        $query->fields('q', ['head', 'allocation', 'pcode']);
+        $query->condition('q.id', $id);
         $data = $query->execute()->fetchObject();
-        
+
         $access = AccessCheck::GetCompanyByUser();
-        
-        if(in_array($data->head, $access) || in_array($data->allocation, $access)) {
-            
+
+        if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
             $format = 'pdf';
             $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'quotation', $format);
-            if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id){
-                
+            if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
                 $id = explode('_', $_SESSION['printfilter']['for_id']);
 
                 $param = serialize(
@@ -464,8 +447,8 @@ class QuotationsController extends ControllerBase {
                 );
 
                 $build['filter_mail'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterMailDoc', $param);
-                if($data->pcode != NULL && $data->pcode != 'n/a') {
-                    $build['filter_post'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterPostDoc', $param,$data->pcode);
+                if ($data->pcode != null && $data->pcode != 'n/a') {
+                    $build['filter_post'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterPostDoc', $param, $data->pcode);
                 }
                 $path = $GLOBALS['base_url'] . "/quotations/print/pdf/" . $param;
 
@@ -477,14 +460,14 @@ class QuotationsController extends ControllerBase {
                 '#items' => $build,
                 '#theme' => 'iframe',
                 '#attached' => array(
-                    'library' => array('ek_sales/ek_sales_print','ek_admin/ek_admin_css'),
+                    'library' => array('ek_sales/ek_sales_print', 'ek_admin/ek_admin_css'),
                 ),
             );
         } else {
             $url = Url::fromRoute('ek_sales.quotations.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -492,25 +475,22 @@ class QuotationsController extends ControllerBase {
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
                 '#cache' => ['max-age' => 0,],
-            ];     
+            ];
         }
     }
 
     public function PdfQuotations(Request $request, $param) {
-
         $markup = array();
         $format = 'pdf';
         include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
         return new Response($markup);
     }
 
-    
-
     /**
      * @retun
      *  a display of quotation in html format
-     * 
-     * @param 
+     *
+     * @param
      *  INT $id document id
      */
     public function Html($id) {
@@ -526,7 +506,6 @@ class QuotationsController extends ControllerBase {
             $document = '';
 
             if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
-                
                 $id = explode('_', $_SESSION['printfilter']['for_id']);
                 $doc_id = $id[0];
                 $param = serialize(
@@ -541,7 +520,7 @@ class QuotationsController extends ControllerBase {
                 );
 
                 $format = 'html';
-                
+
                 $url_pdf = Url::fromRoute('ek_sales.quotations.print_share', ['id' => $doc_id], [])->toString();
                 $url_edit = Url::fromRoute('ek_sales.quotations.edit', ['id' => $doc_id], [])->toString();
                 include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
@@ -550,7 +529,7 @@ class QuotationsController extends ControllerBase {
                 $build['quotation'] = [
                     '#markup' => $document,
                     '#attached' => array(
-                        'library' => array('ek_sales/ek_sales_html_documents_css','ek_admin/ek_admin_css'),
+                        'library' => array('ek_sales/ek_sales_html_documents_css', 'ek_admin/ek_admin_css'),
                     ),
                 ];
             }
@@ -559,7 +538,7 @@ class QuotationsController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.quotations.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -569,13 +548,13 @@ class QuotationsController extends ControllerBase {
                 '#cache' => ['max-age' => 0,],
             ];
         }
-    }    
-    
+    }
+
     /**
      * @retun
      *  a form to download quotation in excel format
-     * 
-     * @param 
+     *
+     * @param
      *  INT $id document id
      */
     public function Excel($id) {
@@ -610,12 +589,11 @@ class QuotationsController extends ControllerBase {
             }
 
             return array($build);
-            
         } else {
             $url = Url::fromRoute('ek_sales.quotations.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -626,24 +604,24 @@ class QuotationsController extends ControllerBase {
             ];
         }
     }
-    
+
     public function DeleteQuotations(Request $request, $id) {
         //filter del
         $query = Database::getConnection('external_db', 'external_db')
-            ->select('ek_sales_quotation', 'q')
-            ->fields('q', ['status'])
-            ->condition('id', $id , '=');
+                ->select('ek_sales_quotation', 'q')
+                ->fields('q', ['status'])
+                ->condition('id', $id, '=');
         $status = $query->execute()->fetchField();
-        if($status == '0') {    
+        if ($status == '0') {
             $build['delete_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\DeleteQuotation', $id);
         } else {
             $items = [];
-            $opt =['0' => t('Open'),1 => t('Printed'), 2 => t('Invoiced')];
+            $opt = ['0' => t('Open'), 1 => t('Printed'), 2 => t('Invoiced')];
             $url = Url::fromRoute('ek_sales.purchases.list', array(), array())->toString();
             $items['type'] = 'delete';
-            $items['message'] = ['#markup' => t('@document cannot be deleted.' , array('@document' => t('Quotation') ))];
+            $items['message'] = ['#markup' => t('@document cannot be deleted.', array('@document' => t('Quotation')))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build['delete_quotation'] = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -651,12 +629,10 @@ class QuotationsController extends ControllerBase {
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
                 '#cache' => ['max-age' => 0,],
-            ];    
-            
+            ];
         }
-        
+
         return $build;
     }
 
-  
 }

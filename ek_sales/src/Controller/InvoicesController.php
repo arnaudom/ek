@@ -74,7 +74,6 @@ class InvoicesController extends ControllerBase {
      *
      */
     public function ListInvoices(Request $request) {
-
         $build['filter_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterInvoice');
         $header = array(
             'number' => array(
@@ -137,7 +136,6 @@ class InvoicesController extends ControllerBase {
         $or1->condition('allocation', $access, 'IN');
 
         if (isset($_SESSION['ifilter']['filter']) && $_SESSION['ifilter']['filter'] == 1) {
-
             if ($_SESSION['ifilter']['keyword'] == '') {
                 //search via options fields
                 //build the export link
@@ -150,7 +148,7 @@ class InvoicesController extends ControllerBase {
                 ));
                 $excel = Url::fromRoute('ek_sales.invoices.excel', array('param' => $param))->toString();
                 $build['excel'] = array(
-                    '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'></span></a>",
+                    '#markup' => "<a href='" . $excel . "' title='" . t('Excel download') . "'><span class='ico excel green'></span></a>",
                 );
 
                 $or2 = $query->orConditionGroup();
@@ -237,7 +235,6 @@ class InvoicesController extends ControllerBase {
         $options = [];
 
         while ($r = $data->fetchObject()) {
-
             $settings = new SalesSettings($r->head);
             $client_name = '';
             $client = '';
@@ -247,7 +244,7 @@ class InvoicesController extends ControllerBase {
             $doctype = '';
             $total_value = 0;
 
-            if(isset($abook[$r->client])) {
+            if (isset($abook[$r->client])) {
                 $client_name = $abook[$r->client];
                 $client = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
             }
@@ -256,27 +253,27 @@ class InvoicesController extends ControllerBase {
                 $for = isset($companies[$r->allocation]) ? "<br/>" . t('for') . ": " . $companies[$r->allocation] : '';
                 $co = $co . $for;
             }
-            
+
             if ($r->type == 4) {
                 $doctype = 'red';
             }
-            
+
             $number = "<a class='" . $doctype . "' title='" . t('view') . "' href='"
                     . Url::fromRoute('ek_sales.invoices.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
 
             if ($r->pcode <> 'n/a') {
                 if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $reference = $client . "<div>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, NULL, NULL, TRUE) . "</div>";
+                    $reference = $client . "<div>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, null, null, true) . "</div>";
                 } else {
                     $reference = $client;
                 }
             } else {
                 $reference = $client;
             }
-            
+
             $due = date('Y-m-d', strtotime(date("Y-m-d", strtotime($r->date)) . "+" . $r->due . "days"));
-            
+
             if ($r->status != '1') {
                 $delta = round((strtotime(date('Y-m-d')) - strtotime($due)) / (24 * 60 * 60), 0);
                 if ($delta <= $settings->get('shortdue')) {
@@ -285,7 +282,7 @@ class InvoicesController extends ControllerBase {
                 } elseif ($delta > $settings->get('shortdue') && $delta <= $settings->get('longdue')) {
                     $due = " <i class='fa fa-circle orange' aria-hidden='true'></i> " . $due;
                     $link = 2;
-                } elseif ($delta > $settings->get('longdue') )  {
+                } elseif ($delta > $settings->get('longdue')) {
                     $due = " <i class='fa fa-circle red' aria-hidden='true'></i> " . $due;
                     $weight = 0;
                 }
@@ -338,14 +335,13 @@ class InvoicesController extends ControllerBase {
                 'date' => $r->date,
                 'due' => ['data' => ['#markup' => $due], 'title' => $duetitle],
                 'value' => ['data' => ['#markup' => $value]],
-                'paid' => ( $r->pay_date != '' ) ? $r->pay_date : '-',
+                'paid' => ($r->pay_date != '') ? $r->pay_date : '-',
                 'status' => ['data' => ['#markup' => $more]],
             );
 
             $links = array();
 
             if ($r->status == 0) {
-
                 if (\Drupal::currentUser()->hasPermission('create_invoice')) {
                     $param = 'quick_edit|' . $r->id . '|invoice';
                     $links['qedit'] = array(
@@ -380,10 +376,12 @@ class InvoicesController extends ControllerBase {
                 }
             }
 
-            if ($r->alert == 1)
+            if ($r->alert == 1) {
                 $alert = t('on');
-            if ($r->alert == 0)
+            }
+            if ($r->alert == 0) {
                 $alert = t('off');
+            }
 
             $links['alert'] = array(
                 'title' => $this->t('Set alert [@a]', array('@a' => $alert)),
@@ -396,7 +394,6 @@ class InvoicesController extends ControllerBase {
             );
 
             if (\Drupal::currentUser()->hasPermission('print_share_invoice')) {
-
                 $links['iprint'] = array(
                     'title' => $this->t('Print and share'),
                     'url' => Url::fromRoute('ek_sales.invoices.print_share', ['id' => $r->id]),
@@ -409,14 +406,12 @@ class InvoicesController extends ControllerBase {
                 );
             }
             if (\Drupal::currentUser()->hasPermission('delete_invoice') && $r->status == 0) {
-
                 $links['delete'] = array(
                     'title' => $this->t('Delete'),
                     'url' => Url::fromRoute('ek_sales.invoices.delete', ['id' => $r->id]),
                 );
             }
             if (\Drupal::currentUser()->hasPermission('reset_pay') && $r->status == 1) {
-
                 $links['reset'] = array(
                     'title' => $this->t('Reset'),
                     'url' => Url::fromRoute('ek_sales.reset_payment', ['doc' => 'invoice', 'id' => $r->id]),
@@ -433,7 +428,7 @@ class InvoicesController extends ControllerBase {
                 '#links' => $links,
             );
         } //while
-        
+
         $build['invoices_table'] = array(
             '#type' => 'table',
             '#header' => $header,
@@ -456,12 +451,10 @@ class InvoicesController extends ControllerBase {
      * Render excel form for invoices list
      *
      * @param array $param coid,from,to,client,status
-     *   
+     *
      *
      */
     public function ExportExcel($param) {
-
-
         $markup = array();
 
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
@@ -521,12 +514,9 @@ class InvoicesController extends ControllerBase {
      *
      */
     public function AgingInvoices() {
-
         $build['filter_coid'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterCompany');
 
         if (isset($_SESSION['coidfilter']['coid'])) {
-
-
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_sales_invoice', 'i');
             $fields = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
@@ -600,7 +590,6 @@ class InvoicesController extends ControllerBase {
 
 
             while ($r = $data->fetchObject()) {
-
                 $due = date('Y-m-d', strtotime(date("Y-m-d", strtotime($r->date)) . "+" . $r->due . "days"));
                 $age = round((strtotime($today) - strtotime($due)) / (24 * 60 * 60), 0);
 
@@ -613,7 +602,7 @@ class InvoicesController extends ControllerBase {
 
                 if ($r->pcode <> 'n/a') {
                     if ($this->moduleHandler->moduleExists('ek_projects')) {
-                        $reference = $client . "<br/>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, NULL, NULL, TRUE);
+                        $reference = $client . "<br/>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, null, null, true);
                     } else {
                         $reference = $client;
                     }
@@ -657,7 +646,6 @@ class InvoicesController extends ControllerBase {
                     $past_120_value += $basevalue;
                 }
                 if ($age > 90 && $age <= 120) {
-
                     if ($past_90 == 0) {
                         $options['b'][$r->id]['period'] = ['data' => t("Between 90 & 120 days aging")];
                         $past_90_id = $r->id;
@@ -848,7 +836,7 @@ class InvoicesController extends ControllerBase {
 
     /**
      * @retun
-     *  Invoice form 
+     *  Invoice form
      *
      */
     public function NewInvoices(Request $request) {
@@ -865,19 +853,19 @@ class InvoicesController extends ControllerBase {
     public function EditInvoice(Request $request, $id) {
         //filter edit
         $query = Database::getConnection('external_db', 'external_db')
-            ->select('ek_sales_invoice', 'i')
-            ->fields('i', ['status'])
-            ->condition('id', $id , '=');
+                ->select('ek_sales_invoice', 'i')
+                ->fields('i', ['status'])
+                ->condition('id', $id, '=');
         $status = $query->execute()->fetchField();
-        if($status == '0') {    
+        if ($status == '0') {
             $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Invoice', $id);
         } else {
-            $opt =['0' => t('Unpaid'),1 => t('Paid'), 2 => t('Partially paid')];
+            $opt = ['0' => t('Unpaid'), 1 => t('Paid'), 2 => t('Partially paid')];
             $url = Url::fromRoute('ek_sales.invoices.list', array(), array())->toString();
             $items['type'] = 'edit';
             $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Invoice')))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -885,7 +873,7 @@ class InvoicesController extends ControllerBase {
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
                 '#cache' => ['max-age' => 0,],
-            ];  
+            ];
         }
         return $build;
     }
@@ -912,20 +900,20 @@ class InvoicesController extends ControllerBase {
         //convert a delivery order into invoice
         //require logisticsmodule
         if ($this->moduleHandler->moduleExists('ek_logistics')) {
-                $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_logi_delivery', 'd')
-                ->fields('d', ['status'])
-                ->condition('id', $id , '=');
-                $status = $query->execute()->fetchField();
-            if($status < '2' ) {    
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_logi_delivery', 'd')
+                    ->fields('d', ['status'])
+                    ->condition('id', $id, '=');
+            $status = $query->execute()->fetchField();
+            if ($status < '2') {
                 $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Invoice', $id, 'delivery');
             } else {
-                $opt =['0' => t('open'),1 => t('printed'), 2 => t('invoiced'),3 => t('posted')];
+                $opt = ['0' => t('open'), 1 => t('printed'), 2 => t('invoiced'), 3 => t('posted')];
                 $url = Url::fromRoute('ek_logistics_list_delivery', array(), array())->toString();
                 $items['type'] = 'edit';
                 $items['message'] = ['#markup' => t('@document cannot be converted.', array('@document' => t('Delivery')))];
                 $items['description'] = ['#markup' => $opt[$status]];
-                $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+                $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
                 $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
@@ -933,7 +921,7 @@ class InvoicesController extends ControllerBase {
                         'library' => array('ek_admin/ek_admin_css'),
                     ),
                     '#cache' => ['max-age' => 0,],
-                ];  
+                ];
             }
         }
         return $build;
@@ -996,23 +984,21 @@ class InvoicesController extends ControllerBase {
     /**
      * @retun
      *  a list invoices tasks
-     * 
+     *
      *
      */
     public function ListTaskInvoices() {
-
         $build['filter'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\SelectTask');
 
         if (isset($_SESSION['taskfilter']['filter'])) {
-
             $stamp = date('U');
             $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_sales_invoice_tasks','t');
+                    ->select('ek_sales_invoice_tasks', 't');
             $query->fields('t');
             $query->leftJoin('ek_sales_invoice', 'i', 'i.serial=t.serial');
             $query->fields('i', ['id']);
             $query->orderBy('t.id');
-            
+
             switch ($_SESSION['taskfilter']['type']) {
 
                 case 0:
@@ -1055,7 +1041,7 @@ class InvoicesController extends ControllerBase {
                 }
                 $acc = \Drupal\user\Entity\User::load($r->uid);
                 $username = '';
-                if($acc){
+                if ($acc) {
                     $username = $acc->getAccountName();
                 }
                 $who = '';
@@ -1064,7 +1050,7 @@ class InvoicesController extends ControllerBase {
                 foreach ($notify_who as $value) {
                     if ($value != '') {
                         $acc = \Drupal\user\Entity\User::load($value);
-                        if($acc){
+                        if ($acc) {
                             $who .= $acc->getAccountName();
                             $who .= ',';
                         }
@@ -1072,15 +1058,15 @@ class InvoicesController extends ControllerBase {
                 }
                 $who = rtrim($who, ',');
                 $number = "<a title='" . t('view') . "' href='"
-                    . Url::fromRoute('ek_sales.invoices.print_html', ['id' => $r->id], [])->toString() . "'>"
-                    . $r->serial . "</a>";
+                        . Url::fromRoute('ek_sales.invoices.print_html', ['id' => $r->id], [])->toString() . "'>"
+                        . $r->serial . "</a>";
                 $url = Url::fromRoute('ek_sales.invoices.task', ['id' => $r->id])->toString();
                 $link = "<a href='" . $url . "'>" . t('edit') . '</a>';
 
                 $data['list'][] = [
                     'serial' => ['data' => ['#markup' => $number]],
                     'username' => $username,
-                    'task' => ['data' => ['#markup' => $r->task ], 'style' => ['background-color:' . $r->color]],
+                    'task' => ['data' => ['#markup' => $r->task], 'style' => ['background-color:' . $r->color]],
                     'period' => date('Y-m-d', $r->start) . ' -> ' . date('Y-m-d', $r->end),
                     'expired' => $expired,
                     'rate' => $r->completion_rate . ' %',
@@ -1135,8 +1121,8 @@ class InvoicesController extends ControllerBase {
                     'id' => 'edit',
                 ),
             );
-            
-            
+
+
             $build['invoices_tasks_table'] = array(
                 '#type' => 'table',
                 '#header' => $header,
@@ -1155,26 +1141,24 @@ class InvoicesController extends ControllerBase {
     /**
      * @retun
      *  a form and printing and sharing pdf document
-     * 
+     *
      *
      */
     public function PrintShareInvoices($id) {
 
         //filter access to document
         $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_invoice', 's');
-            $query->fields('s',['head','allocation', 'pcode']);
-            $query->condition('s.id', $id);
+                ->select('ek_sales_invoice', 's');
+        $query->fields('s', ['head', 'allocation', 'pcode']);
+        $query->condition('s.id', $id);
         $data = $query->execute()->fetchObject();
-        
+
         $access = AccessCheck::GetCompanyByUser();
         if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
-
             $format = 'pdf';
             $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'invoice', $format);
 
             if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
-
                 $id = explode('_', $_SESSION['printfilter']['for_id']);
 
                 $param = serialize(
@@ -1190,8 +1174,8 @@ class InvoicesController extends ControllerBase {
 
                 $build['filter_mail'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterMailDoc', $param);
 
-                if($data->pcode != NULL && $data->pcode != 'n/a') {
-                    $build['filter_post'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterPostDoc', $param,$data->pcode);
+                if ($data->pcode != null && $data->pcode != 'n/a') {
+                    $build['filter_post'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterPostDoc', $param, $data->pcode);
                 }
 
                 $path = $GLOBALS['base_url'] . "/invoices/print/pdf/" . $param;
@@ -1212,7 +1196,7 @@ class InvoicesController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.invoices.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -1221,14 +1205,13 @@ class InvoicesController extends ControllerBase {
                 ),
                 '#cache' => ['max-age' => 0,],
             ];
-           
         }
     }
 
     /**
      * @retun
      *  a display of invoice in pdf format
-     * 
+     *
      *
      */
     public function PdfInvoices(Request $request, $param) {
@@ -1241,8 +1224,8 @@ class InvoicesController extends ControllerBase {
     /**
      * @retun
      *  a display of invoice in html format
-     * 
-     * @param 
+     *
+     * @param
      *  INT $id document id
      */
     public function Html($id) {
@@ -1273,16 +1256,16 @@ class InvoicesController extends ControllerBase {
                 );
 
                 $format = 'html';
-                
+
                 $url_pdf = Url::fromRoute('ek_sales.invoices.print_share', ['id' => $doc_id], [])->toString();
                 $url_excel = Url::fromRoute('ek_sales.invoices.print_excel', ['id' => $doc_id], [])->toString();
                 $url_edit = Url::fromRoute('ek_sales.invoices.edit', ['id' => $doc_id], [])->toString();
-                
+
                 include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
                 $build['invoice'] = [
                     '#markup' => $document,
                     '#attached' => array(
-                        'library' => array('ek_sales/ek_sales_html_documents_css','ek_admin/ek_admin_css'),
+                        'library' => array('ek_sales/ek_sales_html_documents_css', 'ek_admin/ek_admin_css'),
                     ),
                 ];
             }
@@ -1291,7 +1274,7 @@ class InvoicesController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.invoices.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -1305,7 +1288,7 @@ class InvoicesController extends ControllerBase {
 
     /**
      * @retun  array form or denied content
-     * 
+     *
      * @param  INT $id document id
      */
     public function Excel($id) {
@@ -1345,7 +1328,7 @@ class InvoicesController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.invoices.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -1365,20 +1348,20 @@ class InvoicesController extends ControllerBase {
     public function DeleteInvoices(Request $request, $id) {
         //filter del
         $query = Database::getConnection('external_db', 'external_db')
-            ->select('ek_sales_invoice', 'i')
-            ->fields('i', ['status'])
-            ->condition('id', $id , '=');
+                ->select('ek_sales_invoice', 'i')
+                ->fields('i', ['status'])
+                ->condition('id', $id, '=');
         $status = $query->execute()->fetchField();
-        if($status == '0') {    
+        if ($status == '0') {
             $build['delete_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\DeleteInvoice', $id);
         } else {
             $items = [];
-            $opt =['0' => t('Unpaid'),1 => t('Paid'), 2 => t('Partially paid')];
+            $opt = ['0' => t('Unpaid'), 1 => t('Paid'), 2 => t('Partially paid')];
             $url = Url::fromRoute('ek_sales.invoices.list', array(), array())->toString();
             $items['type'] = 'delete';
-            $items['message'] = ['#markup' => t('@document cannot be deleted.' , array('@document' => t('Invoice') ))];
+            $items['message'] = ['#markup' => t('@document cannot be deleted.', array('@document' => t('Invoice')))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build['content'] = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -1386,13 +1369,10 @@ class InvoicesController extends ControllerBase {
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
                 '#cache' => ['max-age' => 0,],
-            ];    
-            
+            ];
         }
-        
-        return $build;
 
+        return $build;
     }
 
- 
 }

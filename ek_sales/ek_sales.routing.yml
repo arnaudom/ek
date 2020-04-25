@@ -28,6 +28,21 @@ ek_sales_settings_forms:
   requirements:
     _permission: 'administrate_sales'
 
+ek_sales_settings_custom_forms:
+  path: '/ek_sales/admin/settings-form-customize'
+  defaults:
+    _title: 'Design document'
+    _controller: '\Drupal\ek_sales\Controller\SettingsController::settingsFormCustomize'
+  requirements:
+    _permission: 'print_share_invoice'
+
+ek_sales_settings_custom_forms_preview:
+  path: '/ek_sales/admin/settings-form-preview'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\SettingsController::settingsFormPreview'
+  requirements:
+    _permission: 'print_share_invoice' 
+    
 ek_sales_settings_serial:
   path: '/ek_sales/admin/settings-serial'
   defaults:

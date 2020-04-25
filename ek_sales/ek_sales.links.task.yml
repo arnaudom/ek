@@ -16,11 +16,17 @@ ek_sales_settings_forms:
   title: 'Forms'
   weight: 3
   
+ek_sales_settings_forms_custom:
+  route_name: ek_sales_settings_custom_forms
+  base_route: ek_sales_settings
+  title: 'Design'
+  weight: 4  
+  
 ek_sales_settings_quotations:
   route_name: ek_sales.quotations.settings
   base_route: ek_sales_settings
   title: 'Quotations'
-  weight: 3
+  weight: 5
 
 ek_sales.purchase.task.list:
   route_name: ek_sales.purchases.list

@@ -35,7 +35,6 @@ class Invoice extends FormBase {
      *   The module handler.
      */
     public function __construct(ModuleHandler $module_handler) {
-
         $this->salesSettings = new \Drupal\ek_sales\SalesSettings();
         $this->moduleHandler = $module_handler;
         if ($this->moduleHandler->moduleExists('ek_finance')) {
@@ -62,20 +61,19 @@ class Invoice extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $clone = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $clone = null) {
         $url = Url::fromRoute('ek_sales.invoices.list', array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url">List</a>', array('@url' => $url)),
+            '#markup' => $this->t('<a href="@url">List</a>', array('@url' => $url)),
         );
 
 
-        if (isset($id) && $id != NULL) {
+        if (isset($id) && $id != null) {
 
             //edit existing invoice
 
-            If ($clone != 'delivery') {
+            if ($clone != 'delivery') {
                 $query = "SELECT * from {ek_sales_invoice} where id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
@@ -86,12 +84,12 @@ class Invoice extends FormBase {
                 $fx_rate = round($data->amount / $data->amountbase, 4);
                 $form_state->set('fx_rate', $fx_rate);
                 if ($fx_rate != '1') {
-                    $form_state->set('fx_rate_require', TRUE);
+                    $form_state->set('fx_rate_require', true);
                 } else {
-                    $form_state->set('fx_rate_require', FALSE);
+                    $form_state->set('fx_rate_require', false);
                 }
 
-                $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'), '4' => t('Credit note'));
+                $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'), '4' => $this->t('Credit note'));
             } elseif ($clone == 'delivery' && $this->moduleHandler->moduleExists('ek_logistics')) {
                 //convert delivery order into invoice with new serial No
 
@@ -103,16 +101,15 @@ class Invoice extends FormBase {
                 $detail = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $data->serial));
 
-                $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'));
+                $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'));
             }
 
 
-            If ($clone != 'clone' && $clone != 'delivery') {
-
-                $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'), '4' => t('Credit note'));
+            if ($clone != 'clone' && $clone != 'delivery') {
+                $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'), '4' => $this->t('Credit note'));
                 $form['edit_invoice'] = array(
                     '#type' => 'item',
-                    '#markup' => t('Invoice ref. @p', array('@p' => $data->serial)),
+                    '#markup' => $this->t('Invoice ref. @p', array('@p' => $data->serial)),
                 );
 
                 $form['serial'] = array(
@@ -121,12 +118,12 @@ class Invoice extends FormBase {
                 );
             } elseif ($clone == 'clone') {
                 //duplicate existing invoice with new serial No
-                $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'), '4' => t('Credit note'));
+                $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'), '4' => $this->t('Credit note'));
                 $form['clone_invoice'] = array(
                     '#type' => 'item',
                     '#markup' => "<div class='messages messages--warning'>"
-                        . t('Template invoice based on ref. @p . A new invoice will be generated.', ['@p' => $data->serial])
-                        . "</div>",
+                    . $this->t('Template invoice based on ref. @p . A new invoice will be generated.', ['@p' => $data->serial])
+                    . "</div>",
                 );
 
                 $data->date = date('Y-m-d');
@@ -137,11 +134,11 @@ class Invoice extends FormBase {
                 );
             } elseif ($clone == 'delivery') {
                 //convert delivery order into invoice with new serial No
-                $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'));
+                $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'));
 
                 $form['clone_invoice'] = array(
                     '#type' => 'item',
-                    '#markup' => t('Convert delivery order ref. @p .', array('@p' => $data->serial)),
+                    '#markup' => $this->t('Convert delivery order ref. @p .', array('@p' => $data->serial)),
                 );
 
                 $form['do'] = array(
@@ -178,9 +175,9 @@ class Invoice extends FormBase {
                 $AidOptions = \Drupal\ek_finance\AidList::listaid($data->head, array($chart['income'], $chart['other_income']), 1);
                 $baseCurrency = $this->Financesettings->get('baseCurrency');
                 if ($baseCurrency <> $data->currency) {
-                    $requireFx = TRUE;
+                    $requireFx = true;
                 } else {
-                    $requireFx = FALSE;
+                    $requireFx = false;
                 }
             }
         } else {
@@ -194,10 +191,10 @@ class Invoice extends FormBase {
             $taxable = 0;
             $n = 0;
             $AidOptions = array();
-            $form_state->set('fx_rate_require', FALSE);
-            $detail = NULL;
-            $data = NULL;
-            $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'), '4' => t('Credit note'));
+            $form_state->set('fx_rate_require', false);
+            $detail = null;
+            $data = null;
+            $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'), '4' => $this->t('Credit note'));
         }
 
 
@@ -209,7 +206,7 @@ class Invoice extends FormBase {
             $currenciesList = \Drupal\ek_finance\CurrencyData::currencyRates();
             $chart = $this->Financesettings->get('chart');
             if (empty($chart)) {
-                $alert = "<div id='fx' class='messages messages--warning'>" . t('You did not set the accounts chart structure. Go to <a href="@url">settings</a>.', array('@url' => Url::fromRoute('ek_finance.admin.settings', array(), array())->toString())) . "</div>";
+                $alert = "<div id='fx' class='messages messages--warning'>" . $this->t('You did not set the accounts chart structure. Go to <a href="@url">settings</a>.', array('@url' => Url::fromRoute('ek_finance.admin.settings', array(), array())->toString())) . "</div>";
                 $form['alert'] = array(
                     '#type' => 'item',
                     '#weight' => -17,
@@ -221,7 +218,7 @@ class Invoice extends FormBase {
         $form['options'] = array(
             '#type' => 'details',
             '#title' => $this->t('Options'),
-            '#open' => (isset($id) || $form_state->get('num_items') > 0) ? FALSE : TRUE,
+            '#open' => (isset($id) || $form_state->get('num_items') > 0) ? false : true,
         );
 
         $company = AccessCheck::CompanyListByUid();
@@ -229,9 +226,9 @@ class Invoice extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#required' => TRUE,
-            '#default_value' => isset($data->head) ? $data->head : NULL,
-            '#title' => t('Header'),
+            '#required' => true,
+            '#default_value' => isset($data->head) ? $data->head : null,
+            '#title' => $this->t('Header'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
             '#ajax' => array(
@@ -246,10 +243,10 @@ class Invoice extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $company,
-                '#required' => TRUE,
-                '#default_value' => isset($data->allocation) ? $data->allocation : NULL,
-                '#title' => t('Allocated'),
-                '#description' => t('select an entity for which the invoice is done'),
+                '#required' => true,
+                '#default_value' => isset($data->allocation) ? $data->allocation : null,
+                '#title' => $this->t('Allocated'),
+                '#description' => $this->t('select an entity for which the invoice is done'),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div></div>',
             );
@@ -270,9 +267,9 @@ class Invoice extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $client,
-                    '#required' => TRUE,
-                    '#default_value' => isset($data->client) ? $data->client : NULL,
-                    '#title' => t('Client'),
+                    '#required' => true,
+                    '#default_value' => isset($data->client) ? $data->client : null,
+                    '#title' => $this->t('Client'),
                     '#prefix' => "<div class='row'><div class='cell'>",
                     '#suffix' => '</div></div></div>',
                     '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
@@ -288,9 +285,8 @@ class Invoice extends FormBase {
                 );
             }
         } else {
-
             $form['options']['client'] = array(
-                '#markup' => t('You do not have any client list.'),
+                '#markup' => $this->t('You do not have any client list.'),
                 '#default_value' => 0,
                 '#prefix' => "<div class='row'><div class='cell'>",
                 '#suffix' => '</div></div></div>',
@@ -300,9 +296,9 @@ class Invoice extends FormBase {
         $form['options']['date'] = array(
             '#type' => 'date',
             '#size' => 12,
-            '#required' => TRUE,
+            '#required' => true,
             '#default_value' => isset($data->date) ? $data->date : date('Y-m-d'),
-            '#title' => t('Date'),
+            '#title' => $this->t('Date'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
         );
@@ -312,9 +308,9 @@ class Invoice extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $options,
-            '#required' => TRUE,
+            '#required' => true,
             '#default_value' => isset($data->type) ? $data->type : 1,
-            '#title' => t('Title'),
+            '#title' => $this->t('Title'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
         );
@@ -324,9 +320,9 @@ class Invoice extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => \Drupal\ek_projects\ProjectData::listprojects(0),
-                '#required' => TRUE,
-                '#default_value' => isset($data->pcode) ? $data->pcode : NULL,
-                '#title' => t('Project'),
+                '#required' => true,
+                '#default_value' => isset($data->pcode) ? $data->pcode : null,
+                '#title' => $this->t('Project'),
                 '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
@@ -338,9 +334,9 @@ class Invoice extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $CurrencyOptions,
-                '#required' => TRUE,
-                '#default_value' => isset($data->currency) ? $data->currency : NULL,
-                '#title' => t('Currency'),
+                '#required' => true,
+                '#default_value' => isset($data->currency) ? $data->currency : null,
+                '#title' => $this->t('Currency'),
                 '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
                 '#suffix' => '</div>',
                 '#ajax' => array(
@@ -359,13 +355,13 @@ class Invoice extends FormBase {
                 //'#value' =>  $fx_rate,
                 '#default_value' => $form_state->get('fx_rate'),
                 '#required' => $form_state->get('fx_rate_require'),
-                '#title' => t('Exchange rate'),
+                '#title' => $this->t('Exchange rate'),
                 '#description' => $form_state->get('fx_rate_desc'),
                 '#prefix' => "<div id='fx' class='cell'>",
                 '#suffix' => '</div>',
             );
 
-//bank account
+            //bank account
             if ($form_state->getValue('head')) {
                 $options['bank'] = \Drupal\ek_finance\BankData::listbankaccountsbyaid($form_state->getValue('head'));
             }
@@ -376,8 +372,8 @@ class Invoice extends FormBase {
                 '#size' => 1,
                 '#options' => isset($options['bank']) ? $options['bank'] : array(),
                 '#default_value' => isset($data->bank) ? $data->bank : $form_state->getValue('bank_account'),
-                '#required' => TRUE,
-                '#title' => t('Account payment'),
+                '#required' => true,
+                '#title' => $this->t('Account payment'),
                 '#prefix' => "<div id='debit' class='cell'>",
                 '#suffix' => '</div></div></div>',
                 '#description' => '',
@@ -399,9 +395,9 @@ class Invoice extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $currency,
-                '#required' => TRUE,
-                '#default_value' => isset($data->currency) ? $data->currency : NULL,
-                '#title' => t('Currency'),
+                '#required' => true,
+                '#default_value' => isset($data->currency) ? $data->currency : null,
+                '#title' => $this->t('Currency'),
                 '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
                 '#suffix' => '</div></div></div>',
             );
@@ -421,10 +417,10 @@ class Invoice extends FormBase {
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 255,
-            '#default_value' => isset($data->tax) ? $data->tax : NULL,
-            '#title' => t('Tax'),
+            '#default_value' => isset($data->tax) ? $data->tax : null,
+            '#title' => $this->t('Tax'),
             '#prefix' => "<div class='container-inline'>",
-            '#attributes' => array('placeholder' => t('ex. sales tax')),
+            '#attributes' => array('placeholder' => $this->t('ex. sales tax')),
         );
 
         $form['options']['taxvalue'] = array(
@@ -432,20 +428,20 @@ class Invoice extends FormBase {
             '#id' => 'taxvalue',
             '#size' => 10,
             '#maxlength' => 6,
-            '#default_value' => isset($data->taxvalue) ? $data->taxvalue : NULL,
+            '#default_value' => isset($data->taxvalue) ? $data->taxvalue : null,
             '#description' => '%',
             '#title_display' => 'after',
             '#prefix' => "<div id='taxwrap'>",
             '#suffix' => "</div></div>",
-            '#attributes' => array('placeholder' => t('%'), 'class' => array('amount')),
+            '#attributes' => array('placeholder' => '%', 'class' => array('amount')),
         );
 
         $form['options']['terms'] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#options' => array(t('on receipt'), t('due days')),
-            '#default_value' => isset($data->terms) ? $data->terms : NULL,
-            '#title' => t('Terms'),
+            '#options' => array(t('on receipt'), $this->t('due days')),
+            '#default_value' => isset($data->terms) ? $data->terms : null,
+            '#title' => $this->t('Terms'),
             '#prefix' => "<div class='container-inline'>",
             '#ajax' => array(
                 'callback' => array($this, 'check_day'),
@@ -458,8 +454,8 @@ class Invoice extends FormBase {
             '#type' => 'textfield',
             '#size' => 5,
             '#maxlength' => 3,
-            '#default_value' => isset($data->due) ? $data->due : NULL,
-            '#attributes' => array('placeholder' => t('days')),
+            '#default_value' => isset($data->due) ? $data->due : null,
+            '#attributes' => array('placeholder' => $this->t('days')),
             '#ajax' => array(
                 'callback' => array($this, 'check_day'),
                 'wrapper' => 'calday',
@@ -477,24 +473,24 @@ class Invoice extends FormBase {
             '#type' => 'textfield',
             '#maxlength' => 50,
             '#size' => 25,
-            '#default_value' => isset($data->po_no) ? $data->po_no : NULL,
-            '#description' => t('optional purchase order number'),
-            '#attributes' => array('placeholder' => t('PO No.')),
+            '#default_value' => isset($data->po_no) ? $data->po_no : null,
+            '#description' => $this->t('optional purchase order number'),
+            '#attributes' => array('placeholder' => $this->t('PO No.')),
         );
         $form['options']['comment'] = array(
             '#type' => 'textarea',
             '#rows' => 1,
-            '#default_value' => isset($data->comment) ? $data->comment : NULL,
+            '#default_value' => isset($data->comment) ? $data->comment : null,
             '#prefix' => "<div class='container-inline'>",
             '#suffix' => "</div>",
-            '#attributes' => array('placeholder' => t('comment')),
+            '#attributes' => array('placeholder' => $this->t('comment')),
         );
 
 
         $form['items'] = array(
             '#type' => 'details',
             '#title' => $this->t('Items'),
-            '#open' => TRUE,
+            '#open' => true,
         );
 
 
@@ -509,43 +505,43 @@ class Invoice extends FormBase {
         );
 
         $header = array(
-                'description' => array(
-                    'data' => $this->t('Description'),
-                    'id' => ['tour-item1'],
-                ),
-                'account' => array(
-                    'data' => $this->t('Account'),
-                    'id' => ['tour-item2'],
-                    'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
-                ),
-                'quantity' => array(
-                    'data' => $this->t('Quantity'),
-                    'id' => ['tour-item3'],
-                ),
-                'value' => array(
-                    'data' => $this->t('Value'),
-                    'id' => ['tour-item4'],
-                ),
-                'tax' => array(
-                    'data' => $this->t('Tax'),
-                    'id' => ['tour-item6'],
-                ),
-                'total' => array(
-                    'data' => $this->t('Total'),
-                    'id' => ['tour-item7'],
-                ),
-                'delete' => array(
-                    'data' => $this->t('Delete'),
-                    'id' => ['tour-item5'],
-                ),
-            );
+            'description' => array(
+                'data' => $this->t('Description'),
+                'id' => ['tour-item1'],
+            ),
+            'account' => array(
+                'data' => $this->t('Account'),
+                'id' => ['tour-item2'],
+                'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+            ),
+            'quantity' => array(
+                'data' => $this->t('Quantity'),
+                'id' => ['tour-item3'],
+            ),
+            'value' => array(
+                'data' => $this->t('Value'),
+                'id' => ['tour-item4'],
+            ),
+            'tax' => array(
+                'data' => $this->t('Tax'),
+                'id' => ['tour-item6'],
+            ),
+            'total' => array(
+                'data' => $this->t('Total'),
+                'id' => ['tour-item7'],
+            ),
+            'delete' => array(
+                'data' => $this->t('Delete'),
+                'id' => ['tour-item5'],
+            ),
+        );
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $header['account']['data'] = $this->t('Account');
         }
-        
+
         $form['items']['itemTable'] = array(
-            '#tree' => TRUE,
+            '#tree' => true,
             '#theme' => 'table',
             '#header' => $header,
             '#rows' => array(),
@@ -556,19 +552,17 @@ class Invoice extends FormBase {
 
         $rows = $form_state->getValue('itemTable');
         if (isset($detail)) {
-//edition mode
-//list current items
+            //edition mode
+            //list current items
             $taxable = 0;
             $grandtotal = 0;
 
             while ($d = $detail->fetchObject()) {
-
                 $n++;
                 $c = $form_state->get('current_items') + 1;
                 $form_state->set('current_items', $c);
-                $link = NULL;
+                $link = null;
                 if ($clone == 'delivery') {
-
                     if ($d->itemcode != "" && $this->moduleHandler->moduleExists('ek_products')) {
                         $name = \Drupal\ek_products\ItemData::item_bycode($d->itemcode);
                     } else {
@@ -579,7 +573,7 @@ class Invoice extends FormBase {
                         $item = \Drupal\ek_products\ItemData::item_byid($d->itemdetail);
                         if (isset($item)) {
                             $name = $item;
-                            $link = \Drupal\ek_products\ItemData::geturl_byId($d->itemdetail, TRUE);
+                            $link = \Drupal\ek_products\ItemData::geturl_byId($d->itemdetail, true);
                         } else {
                             $name = $d->item;
                         }
@@ -600,7 +594,7 @@ class Invoice extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 40,
                     '#maxlength' => 255,
-                    '#attributes' => array('placeholder' => t('item')),
+                    '#attributes' => array('placeholder' => $this->t('item')),
                     '#default_value' => $name,
                     '#field_prefix' => "<span class='badge'>" . $n . "</span>",
                     '#field_suffix' => isset($link) ? "<span class='badge'>" . $link . "</span>" : '',
@@ -614,7 +608,7 @@ class Invoice extends FormBase {
                         '#options' => $AidOptions,
                         '#attributes' => array('style' => array('width:110px;')),
                         '#default_value' => $d->aid,
-                        '#required' => TRUE,
+                        '#required' => true,
                     );
                 } else {
                     $form['account'] = '';
@@ -624,9 +618,9 @@ class Invoice extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 8,
                     '#maxlength' => 30,
-                    '#attributes' => array('placeholder' => t('units'), 'class' => array('amount')),
+                    '#attributes' => array('placeholder' => $this->t('units'), 'class' => array('amount')),
                     '#default_value' => $d->quantity,
-                    '#required' => TRUE,
+                    '#required' => true,
                 );
                 $form['value'] = array(
                     '#id' => 'value' . $n,
@@ -634,14 +628,14 @@ class Invoice extends FormBase {
                     '#size' => 12,
                     '#maxlength' => 250,
                     '#default_value' => $d->value,
-                    '#attributes' => array('placeholder' => t('unit price'), 'class' => array('amount')),
+                    '#attributes' => array('placeholder' => $this->t('unit price'), 'class' => array('amount')),
                 );
                 $form['tax'] = array(
                     '#id' => 'optax' . $n,
                     '#type' => 'checkbox',
                     '#default_value' => $d->opt,
                     '#attributes' => array(
-                        'title' => t('tax include'),
+                        'title' => $this->t('tax include'),
                         'class' => array('amount'),
                     ),
                 );
@@ -651,14 +645,14 @@ class Invoice extends FormBase {
                     '#size' => 12,
                     '#maxlength' => 250,
                     '#default_value' => $total,
-                    '#attributes' => array('placeholder' => t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
+                    '#attributes' => array('placeholder' => $this->t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
                 );
                 $form['delete'] = array(
                     '#id' => 'del' . $n,
                     '#type' => 'checkbox',
                     '#default_value' => 0,
                     '#attributes' => array(
-                        'title' => t('delete on save'),
+                        'title' => $this->t('delete on save'),
                         'onclick' => "jQuery('#" . $n . "').toggleClass('delete');",
                         'class' => array('amount')
                     ),
@@ -714,7 +708,7 @@ class Invoice extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 40,
                 '#maxlength' => 255,
-                '#attributes' => array('placeholder' => t('item')),
+                '#attributes' => array('placeholder' => $this->t('item')),
                 '#field_prefix' => "<span class='badge'>" . $i . "</span>",
                 '#autocomplete_route_name' => 'ek.look_up_item_ajax',
             );
@@ -725,7 +719,7 @@ class Invoice extends FormBase {
                     '#size' => 1,
                     '#options' => $form_state->get('AidOptions'),
                     '#attributes' => array('style' => array('width:110px;')),
-                    '#required' => TRUE,
+                    '#required' => true,
                 );
             } else {
                 $form['account'] = '';
@@ -735,21 +729,21 @@ class Invoice extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 8,
                 '#maxlength' => 30,
-                '#attributes' => array('placeholder' => t('units'), 'class' => array('amount')),
-                '#required' => TRUE,
+                '#attributes' => array('placeholder' => $this->t('units'), 'class' => array('amount')),
+                '#required' => true,
             );
             $form['value'] = array(
                 '#id' => 'value' . $i,
                 '#type' => 'textfield',
                 '#size' => 12,
                 '#maxlength' => 250,
-                '#attributes' => array('placeholder' => t('unit price'), 'class' => array('amount')),
+                '#attributes' => array('placeholder' => $this->t('unit price'), 'class' => array('amount')),
             );
             $form['tax'] = array(
                 '#id' => 'optax' . $i,
                 '#type' => 'checkbox',
                 '#attributes' => array(
-                    'title' => t('tax include'),
+                    'title' => $this->t('tax include'),
                     'class' => array('amount'),
                 ),
             );
@@ -758,13 +752,13 @@ class Invoice extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 12,
                 '#maxlength' => 250,
-                '#attributes' => array('placeholder' => t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
+                '#attributes' => array('placeholder' => $this->t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['delete'] = array(
                 '#type' => 'hidden',
                 '#value' => 0,
             );
-            
+
             //built edit rows for table
             $form['items']['itemTable'][$i] = array(
                 'description' => &$form['description'],
@@ -806,7 +800,6 @@ class Invoice extends FormBase {
 
 
         if (($form_state->get('num_items') && $form_state->get('num_items') > 0) || isset($detail)) {
-
             if ($form_state->get('num_items') > 0) {
                 $form['items']['remove'] = array(
                     '#type' => 'submit',
@@ -830,7 +823,7 @@ class Invoice extends FormBase {
             $n++;
             $form['description'] = array(
                 '#type' => 'item',
-                '#markup' => t('Total') . " " . "<span id='convertedValue' class='badge'>" . $converted . "</span>"
+                '#markup' => $this->t('Total') . " " . "<span id='convertedValue' class='badge'>" . $converted . "</span>"
             );
             $form['account'] = array(
                 '#type' => 'item',
@@ -851,7 +844,7 @@ class Invoice extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => isset($grandtotal) ? number_format($grandtotal, 2) : 0,
-                '#attributes' => array('placeholder' => t('total'), 'readonly' => 'readonly', 'class' => array('amount')),
+                '#attributes' => array('placeholder' => $this->t('total'), 'readonly' => 'readonly', 'class' => array('amount')),
             );
             $form['delete'] = array(
                 '#type' => 'item',
@@ -889,10 +882,10 @@ class Invoice extends FormBase {
 
             //tax row
             $n++;
-            $taxamount = isset($data->taxvalue) ? round($taxable * $data->taxvalue / 100, 2) : NULL;
+            $taxamount = isset($data->taxvalue) ? round($taxable * $data->taxvalue / 100, 2) : null;
             $form['description'] = array(
                 '#type' => 'item',
-                '#markup' => t('Tax payable'),
+                '#markup' => $this->t('Tax payable'),
             );
             $form['account'] = array(
                 '#type' => 'item',
@@ -913,7 +906,7 @@ class Invoice extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => number_format($taxamount, 2),
-                '#attributes' => array('placeholder' => t('tax'), 'readonly' => 'readonly', 'class' => array('amount')),
+                '#attributes' => array('placeholder' => $this->t('tax'), 'readonly' => 'readonly', 'class' => array('amount')),
             );
             $form['delete'] = array(
                 '#type' => 'item',
@@ -953,7 +946,7 @@ class Invoice extends FormBase {
             $n++;
             $form['description'] = array(
                 '#type' => 'item',
-                '#markup' => t('Total invoice'),
+                '#markup' => $this->t('Total invoice'),
             );
             $form['account'] = array(
                 '#type' => 'item',
@@ -974,7 +967,7 @@ class Invoice extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => number_format($grandtotal + $taxamount, 2),
-                '#attributes' => array('placeholder' => t('total invoice'), 'readonly' => 'readonly', 'class' => array('amount')),
+                '#attributes' => array('placeholder' => $this->t('total invoice'), 'readonly' => 'readonly', 'class' => array('amount')),
             );
             $form['delete'] = array(
                 '#type' => 'item',
@@ -1015,11 +1008,11 @@ class Invoice extends FormBase {
                 '#type' => 'actions',
             );
 
-            $redirect = array(0 => t('view list'), 1 => t('print'), 2 => t('record payment'));
+            $redirect = array(0 => $this->t('view list'), 1 => $this->t('print'), 2 => $this->t('record payment'));
 
             $form['actions']['redirect'] = array(
                 '#type' => 'radios',
-                '#title' => t('Next'),
+                '#title' => $this->t('Next'),
                 '#default_value' => 0,
                 '#options' => $redirect,
             );
@@ -1043,7 +1036,6 @@ class Invoice extends FormBase {
      * callback functions
      */
     public function set_coid(array &$form, FormStateInterface $form_state) {
-
         return $form['options']['bank_account'];
     }
 
@@ -1051,18 +1043,14 @@ class Invoice extends FormBase {
      * Callback
      */
     public function check_aid(array &$form, FormStateInterface $form_state) {
-
         $description = '';
         $fx_rate = '';
-        $required = FALSE;
+        $required = false;
         if ($form_state->getValue('currency')) {
-
             if (!$form_state->getValue('head')) {
-
                 $description = "<div id='fx' class='messages messages--warning'>"
-                        . t('You need to select header first. You cannot proceed.') . "</div>";
+                        . $this->t('You need to select header first. You cannot proceed.') . "</div>";
             } else {
-
                 $description = '';
                 $settings = new CompanySettings($form_state->getValue('head'));
                 $aid = $settings->get('asset_account', $form_state->getValue('currency'));
@@ -1070,19 +1058,18 @@ class Invoice extends FormBase {
                 if ($aid == '') {
                     $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
                     $description = "<div id='fx' class='messages messages--warning'>"
-                            . t("There is no assets account defined for currency. Please <a href='@l'>edit settings</a> or contact administrator.",['@l' => $l]) . "</div>";
+                            . t("There is no assets account defined for currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]) . "</div>";
                 } else {
-
                     $fx_rate = \Drupal\ek_finance\CurrencyData::rate($form_state->getValue('currency'));
                     //$input = $form_state->getUserInput();
                     if ($fx_rate == '1') {
                         //$required  = FALSE;
-                        $form['options']['fx_rate']['#required'] = FALSE;
+                        $form['options']['fx_rate']['#required'] = false;
                     }
-                    // not base currency 
+                    // not base currency
                     else {
                         //$required  = TRUE;
-                        $form['options']['fx_rate']['#required'] = TRUE;
+                        $form['options']['fx_rate']['#required'] = true;
                     }
                 } //else -> aid
             }// else -> coid
@@ -1113,11 +1100,10 @@ class Invoice extends FormBase {
     }
 
     /**
-     * Callback : calculate due date 
+     * Callback : calculate due date
      */
     public function check_day(array &$form, FormStateInterface $form_state) {
-
-        if ($form_state->getValue('terms') == '1' && $form_state->getValue('due') != NULL) {
+        if ($form_state->getValue('terms') == '1' && $form_state->getValue('due') != null) {
             $form['options']['day']["#markup"] = date('Y-m-d', strtotime(date("Y-m-d", strtotime($form_state->getValue('date'))) . "+" . $form_state->getValue('due') . ' ' . t("days")));
         } else {
             $form['options']['day']["#markup"] = '';
@@ -1152,7 +1138,6 @@ class Invoice extends FormBase {
      * Callback: Remove item to form
      */
     public function removeForm(array &$form, FormStateInterface $form_state) {
-
         $c = $form_state->get('num_items') - 1;
         $form_state->set('num_items', $c);
         $form_state->setRebuild();
@@ -1162,14 +1147,13 @@ class Invoice extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $settings = new CompanySettings($form_state->getValue('head'));
             $aid = $settings->get('asset_account', $form_state->getValue('currency'));
-            
+
             if ($aid == '') {
                 $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
-                $form_state->setErrorByName('currency', t("There is no assets account defined for currency. Please <a href='@l'>edit settings</a> or contact administrator.",['@l' => $l]));
+                $form_state->setErrorByName('currency', t("There is no assets account defined for currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]));
             }
         }
 
@@ -1216,7 +1200,7 @@ class Invoice extends FormBase {
                     //if($this->moduleHandler->moduleExists('ek_finance')) {
                     // validate account
                     // @TODO
-                    //}          
+                    //}
                 }
             }
         }
@@ -1226,7 +1210,6 @@ class Invoice extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $options = array('1' => 'Invoice', '2' => 'Commercial invoice', '4' => 'Credit note');
 
         if ($form_state->getValue('new_invoice') == 1) {
@@ -1247,20 +1230,20 @@ class Invoice extends FormBase {
             $sup = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT shortname from {ek_address_book} where id=:id", array(':id' => $form_state->getValue('client')))
                     ->fetchField();
-            
+
             $format = $this->salesSettings->get('serialFormat');
-            if($format['code'] == '') {
-                $format['code'] = [1,2,3,4,5];
+            if ($format['code'] == '') {
+                $format['code'] = [1, 2, 3, 4, 5];
             }
             if ($format['increment'] == '' || $format['increment'] < 1) {
                 $format['increment'] = 0;
             }
-            
+
             $iid = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT count(id) from {ek_sales_invoice}")
                     ->fetchField();
-                      
-            $iid = $iid +1 +$format['increment'];
+
+            $iid = $iid + 1 + $format['increment'];
             $query = "SELECT id FROM {ek_sales_invoice} WHERE serial like :s";
             while (Database::getConnection('external_db', 'external_db')->query($query, [':s' => '%-' . $iid])->fetchField()) {
                 //to prevent serial duplication after document have been deleted, increment until no match is found
@@ -1268,29 +1251,27 @@ class Invoice extends FormBase {
             }
 
             $serial = '';
-            foreach($format['code'] as $k => $v) {
-                    switch ($v) {
-                        case 0 :
-                            break;
-                        case 1 :
-                            $serial .= ucwords(str_replace('-', '', $short)) . '-';
-                            break;
-                        case 2 :
-                            $serial .= $type . '-';
-                            break;
-                        case 3 :
-                            $serial .= $date . '-';
-                            break;
-                        case 4 :
-                            $serial .= ucwords(str_replace('-', '', $sup)) . '-';
-                            break;
-                        case 5 :
-                            $serial .= $iid;
-                            break;
-                        
-                    }
+            foreach ($format['code'] as $k => $v) {
+                switch ($v) {
+                    case 0:
+                        break;
+                    case 1:
+                        $serial .= ucwords(str_replace('-', '', $short)) . '-';
+                        break;
+                    case 2:
+                        $serial .= $type . '-';
+                        break;
+                    case 3:
+                        $serial .= $date . '-';
+                        break;
+                    case 4:
+                        $serial .= ucwords(str_replace('-', '', $sup)) . '-';
+                        break;
+                    case 5:
+                        $serial .= $iid;
+                        break;
+                }
             }
-            
         } else {
             //edit
             $serial = $form_state->getValue('serial');
@@ -1299,13 +1280,12 @@ class Invoice extends FormBase {
                     ->condition('serial', $serial)
                     ->execute();
             $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_sales_invoice', 's')
-                ->fields('s')
-                ->condition('serial', $serial)
-                ->execute();
+                    ->select('ek_sales_invoice', 's')
+                    ->fields('s')
+                    ->condition('serial', $serial)
+                    ->execute();
             $init_data = $query->fetchAssoc();
             $iid = $init_data['id'];
-            
         }
 
         $fx_rate = round($form_state->getValue('fx_rate'), 4);
@@ -1315,7 +1295,6 @@ class Invoice extends FormBase {
             // and linebase
             $baseCurrency = $this->Financesettings->get('baseCurrency');
             if ($baseCurrency != $form_state->getValue('currency')) {
-
                 if ($fx_rate <> '' && is_numeric($fx_rate)) {
                     $currencyRate = $fx_rate;
                 } else {
@@ -1326,7 +1305,7 @@ class Invoice extends FormBase {
             }
         }
 
-        // Items  
+        // Items
         $line = 0;
         $total = 0;
         $taxable = 0;
@@ -1464,7 +1443,7 @@ class Invoice extends FormBase {
         //
         // Edit delivery in DO conversion mode
         //
-      if ($form_state->getValue('do') != NULL) {
+        if ($form_state->getValue('do') != null) {
             //change  status
             Database::getConnection('external_db', 'external_db')->update('ek_logi_delivery')
                     ->fields(array('status' => 2))
@@ -1475,13 +1454,13 @@ class Invoice extends FormBase {
         //
         // Record the accounting journal
         // Credit  notes are not recorded in journal, only once assigned to sales
-        // (a CN is deduction of receivable) 
+        // (a CN is deduction of receivable)
         //
-      if ($form_state->getValue('title') < 4 && $this->moduleHandler->moduleExists('ek_finance')) {
+        if ($form_state->getValue('title') < 4 && $this->moduleHandler->moduleExists('ek_finance')) {
 
             //
             // delete first
-            //          
+            //
             if (!$form_state->getValue('new_invoice') == 1) {
                 $delete = Database::getConnection('external_db', 'external_db')
                         ->delete('ek_journal')
@@ -1493,7 +1472,6 @@ class Invoice extends FormBase {
 
             foreach ($rows as $key => $row) {
                 if ($row['value'] != 'footer') {
-
                     if ($row['delete'] != 1) {
                         if ($form_state->getValue('taxvalue') > 0 && $row['tax'] == 1) {
                             $tax = round($row['value'] * $row['quantity'] * $form_state->getValue('taxvalue') / 100, 2);
@@ -1516,7 +1494,7 @@ class Invoice extends FormBase {
                         );
                     }
                 }
-            } 
+            }
 
             $rec = $journal->recordtax(
                     array(
@@ -1548,8 +1526,8 @@ class Invoice extends FormBase {
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])
                             ->fetchField();
                     $inputs = [];
-                    if(isset($init_data)){
-                        foreach($fields1 as $key => $value) {
+                    if (isset($init_data)) {
+                        foreach ($fields1 as $key => $value) {
                             if ($value != $init_data[$key]) {
                                 $inputs[] = $key;
                             }
@@ -1567,19 +1545,19 @@ class Invoice extends FormBase {
                     \Drupal\ek_projects\ProjectData::notify_user($param);
                 }
             }
-            if(isset($_SESSION['ifilter']['to'])) {
+            if (isset($_SESSION['ifilter']['to'])) {
                 //if filter is set for list adjust date to last created date to enforce document display
                 $_SESSION['ifilter']['to'] = $form_state->getValue('date');
             }
 
             switch ($form_state->getValue('redirect')) {
-                case 0 :
+                case 0:
                     $form_state->setRedirect('ek_sales.invoices.list');
                     break;
-                case 1 :
+                case 1:
                     $form_state->setRedirect('ek_sales.invoices.print_share', ['id' => $reference]);
                     break;
-                case 2 :
+                case 2:
                     $form_state->setRedirect('ek_sales.invoices.pay', ['id' => $reference]);
                     break;
             }

@@ -75,7 +75,6 @@ class PurchasesController extends ControllerBase {
      *
      */
     public function ListPurchases(Request $request) {
-
         $build['filter_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPurchase');
         $header = array(
             'number' => array(
@@ -137,7 +136,6 @@ class PurchasesController extends ControllerBase {
         $or1->condition('allocation', $access, 'IN');
 
         if (isset($_SESSION['pfilter']) && $_SESSION['pfilter']['filter'] == 1) {
-            
             if ($_SESSION['pfilter']['keyword'] == '') {
                 //search based on input fields
                 $param = serialize(array(
@@ -149,9 +147,9 @@ class PurchasesController extends ControllerBase {
                 ));
                 $excel = Url::fromRoute('ek_sales.purchases.excel', array('param' => $param))->toString();
                 $build['excel'] = array(
-                    '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'></span></a>"
+                    '#markup' => "<a href='" . $excel . "' title='" . t('Excel download') . "'><span class='ico excel green'></span></a>"
                 );
-                
+
                 $or2 = $query->orConditionGroup();
                 if ($_SESSION['pfilter']['status'] == 3) {
                     //any status
@@ -181,27 +179,24 @@ class PurchasesController extends ControllerBase {
                         ->limit(20)
                         ->orderBy('id', 'ASC')
                         ->execute();
-
-                } else { 
-                    //search based on keyword
-                    $or2 = $query->orConditionGroup();
-                    $or2->condition('p.serial', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
-                    $or2->condition('p.pcode', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
-                    $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                            'amount', 'amountpaid', 'pcode', 'taxvalue', 'pdate', 'alert', 'alert_who', 'uri', 'type');
-                    $data = $query
-                            ->fields('p', $f)
-                            ->condition($or1)
-                            ->condition($or2)
-                            ->extend('Drupal\Core\Database\Query\TableSortExtender')
-                            ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                            ->limit(20)
-                            ->orderBy('id', 'ASC')
-                            ->execute();
-                }
-            
+            } else {
+                //search based on keyword
+                $or2 = $query->orConditionGroup();
+                $or2->condition('p.serial', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
+                $or2->condition('p.pcode', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
+                $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
+                    'amount', 'amountpaid', 'pcode', 'taxvalue', 'pdate', 'alert', 'alert_who', 'uri', 'type');
+                $data = $query
+                        ->fields('p', $f)
+                        ->condition($or1)
+                        ->condition($or2)
+                        ->extend('Drupal\Core\Database\Query\TableSortExtender')
+                        ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+                        ->limit(20)
+                        ->orderBy('id', 'ASC')
+                        ->execute();
+            }
         } else {
-
             $from = Database::getConnection('external_db', 'external_db')
                             ->query("SELECT date from {ek_sales_purchase} order by date limit 1")->fetchField();
 
@@ -214,7 +209,7 @@ class PurchasesController extends ControllerBase {
             ));
             $excel = Url::fromRoute('ek_sales.purchases.excel', array('param' => $param))->toString();
             $build['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'></span></a>"
+                '#markup' => "<a href='" . $excel . "' title='" . t('Excel download') . "'><span class='ico excel green'></span></a>"
             );
 
             $or2 = $or2 = $query->orConditionGroup();
@@ -247,7 +242,6 @@ class PurchasesController extends ControllerBase {
                 ->fetchAllKeyed();
 
         while ($r = $data->fetchObject()) {
-
             $settings = new SalesSettings($r->head);
             $supplier_name = '';
             $supplier = '';
@@ -255,27 +249,27 @@ class PurchasesController extends ControllerBase {
             $duetitle = '';
             $weight = '';
             $doctype = '';
-            
-            if(isset($abook[$r->client])) {
+
+            if (isset($abook[$r->client])) {
                 $supplier_name = $abook[$r->client];
                 $supplier = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
-            } 
-            
+            }
+
             $co = $companies[$r->head];
             if ($r->head <> $r->allocation) {
                 $for = isset($companies[$r->allocation]) ? "<br/>" . t('for') . ": " . $companies[$r->allocation] : '';
                 $co = $co . $for;
             }
-            
-            if($r->type == 4) {
+
+            if ($r->type == 4) {
                 $doctype = 'green';
             }
-            $number = "<a class='". $doctype ."' title='" . t('view') . "' href='"
+            $number = "<a class='" . $doctype . "' title='" . t('view') . "' href='"
                     . Url::fromRoute('ek_sales.purchases.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
             if ($r->pcode <> 'n/a') {
                 if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $reference = $supplier . "<div>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, NULL, NULL, TRUE) . "</div>";
+                    $reference = $supplier . "<div>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, null, null, true) . "</div>";
                 } else {
                     $reference = $supplier;
                 }
@@ -296,20 +290,20 @@ class PurchasesController extends ControllerBase {
                 } elseif ($delta > (0 - $settings->get('shortdue')) && $delta < 0) {
                     $due = " <i class='fa fa-circle orange' aria-hidden='true'></i> " . $due;
                     $link = 2;
-                } elseif ($delta >= 0)  {
+                } elseif ($delta >= 0) {
                     $due = " <i class='fa fa-circle red' aria-hidden='true'></i> " . $due;
                     $weight = 0;
                 }
                 $duetitle = t('due') . ' ' . $delta . ' ' . t('day(s)');
             }
-            
-            
-            if($r->type < 4) {
+
+
+            if ($r->type < 4) {
                 $value = $r->currency . ' ' . number_format($r->amount, 2);
             } else {
                 $value = $r->currency . ' (' . number_format($r->amount, 2) . ')';
             }
-            
+
             $query = 'SELECT sum(total) from {ek_sales_purchase_details} WHERE serial=:s and opt=:o';
             $taxable = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':s' => $r->serial, ':o' => 1))
@@ -338,7 +332,7 @@ class PurchasesController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.modal_more', ['param' => $param])->toString();
 
             $more = '<a href="' . $url . '" '
-                    . 'class="use-ajax ' . $status_class .'"  data-accepts="application/vnd.drupal-modal"  >' . $status . '</a>';
+                    . 'class="use-ajax ' . $status_class . '"  data-accepts="application/vnd.drupal-modal"  >' . $status . '</a>';
 
             $options[$r->id] = array(
                 'number' => ['data' => ['#markup' => $number]],
@@ -365,32 +359,33 @@ class PurchasesController extends ControllerBase {
                             'data-dialog-options' => Json::encode(['width' => 700,]),
                         ],
                     );
-                }                
+                }
                 $links['edit'] = array(
                     'title' => $this->t('Edit'),
                     'url' => Url::fromRoute('ek_sales.purchases.edit', ['id' => $r->id]),
                 );
             }
             if ($r->status != 1) {
-                if($r->type < 3) {
+                if ($r->type < 3) {
                     $links['pay'] = array(
                         'title' => $this->t('Pay'),
                         'url' => Url::fromRoute('ek_sales.purchases.pay', ['id' => $r->id]),
                         'weight' => $weight,
                     );
-                } elseif($r->type == 4) {
+                } elseif ($r->type == 4) {
                     $links['pay'] = array(
                         'title' => $this->t('Assign debit note'),
                         'url' => Url::fromRoute('ek_sales.purchases.assign.dn', ['id' => $r->id]),
                         'weight' => $weight,
-                    );                    
-                }                
-
+                    );
+                }
             }
-            if ($r->alert == 1)
+            if ($r->alert == 1) {
                 $alert = t('on');
-            if ($r->alert == 0)
+            }
+            if ($r->alert == 0) {
                 $alert = t('off');
+            }
 
             $links['alert'] = array(
                 'title' => $this->t('Set alert [@a]', array('@a' => $alert)),
@@ -402,7 +397,6 @@ class PurchasesController extends ControllerBase {
             );
 
             if (\Drupal::currentUser()->hasPermission('print_share_purchase')) {
-
                 $links['pprint'] = array(
                     'title' => $this->t('Print and share'),
                     'url' => Url::fromRoute('ek_sales.purchases.print_share', ['id' => $r->id]),
@@ -416,7 +410,6 @@ class PurchasesController extends ControllerBase {
                 );
             }
             if (\Drupal::currentUser()->hasPermission('delete_purchase') && $r->status == '0') {
-
                 $links['delete'] = array(
                     'title' => $this->t('Delete'),
                     'url' => Url::fromRoute('ek_sales.purchases.delete', ['id' => $r->id]),
@@ -424,7 +417,6 @@ class PurchasesController extends ControllerBase {
                 );
             }
             if (\Drupal::currentUser()->hasPermission('reset_pay') && $r->status == 1) {
-
                 $links['reset'] = array(
                     'title' => $this->t('Reset'),
                     'url' => Url::fromRoute('ek_sales.reset_payment', ['doc' => 'purchase', 'id' => $r->id]),
@@ -465,12 +457,9 @@ class PurchasesController extends ControllerBase {
      *
      */
     public function AgingPurchases() {
-
         $build['filter_coid'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterCompany');
 
         if (isset($_SESSION['coidfilter']['coid'])) {
-
-
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_sales_purchase', 'p');
             $fields = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
@@ -542,7 +531,6 @@ class PurchasesController extends ControllerBase {
             $next_120 = 0;
 
             while ($r = $data->fetchObject()) {
-
                 $due = date('Y-m-d', strtotime(date("Y-m-d", strtotime($r->date)) . "+" . $r->due . "days"));
                 $age = round((strtotime($today) - strtotime($due)) / (24 * 60 * 60), 0);
 
@@ -555,7 +543,7 @@ class PurchasesController extends ControllerBase {
 
                 if ($r->pcode <> 'n/a') {
                     if ($this->moduleHandler->moduleExists('ek_projects')) {
-                        $reference = $client . "<br/>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, NULL, NULL, TRUE);
+                        $reference = $client . "<br/>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, null, null, true);
                     } else {
                         $reference = $client;
                     }
@@ -598,7 +586,6 @@ class PurchasesController extends ControllerBase {
                     $past_120_value += $basevalue;
                 }
                 if ($age > 90 && $age <= 120) {
-
                     if ($past_90 == 0) {
                         $options['b'][$r->id]['period'] = ['data' => t("Between 90 & 120 days aging")];
                         $past_90_id = $r->id;
@@ -791,12 +778,10 @@ class PurchasesController extends ControllerBase {
      * Render excel form for purchases list
      *
      * @param array $param coid,from,to,client,status
-     *   
+     *
      *
      */
     public function ExportExcel($param) {
-
-
         $markup = array();
 
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
@@ -815,19 +800,19 @@ class PurchasesController extends ControllerBase {
                     ->select('ek_sales_purchase', 'p');
             $query->leftJoin('ek_address_book', 'b', 'p.client=b.id');
             $query->leftJoin('ek_company', 'c', 'p.head=c.id');
-            
+
             $or = $or2 = $query->orConditionGroup();
             if ($options['status'] == 3) {
-                    //any status
-                    $or->condition('p.status', $_SESSION['pfilter']['status'], '<');
-                } elseif ($options['status'] == 0) {
-                    //unpaid
-                    $or->condition('p.status', 0, '=');
-                    $or->condition('p.status', 2, '=');
-                } else {
-                    //paid
-                    $or->condition('p.status', 1, '=');
-                }
+                //any status
+                $or->condition('p.status', $_SESSION['pfilter']['status'], '<');
+            } elseif ($options['status'] == 0) {
+                //unpaid
+                $or->condition('p.status', 0, '=');
+                $or->condition('p.status', 2, '=');
+            } else {
+                //paid
+                $or->condition('p.status', 1, '=');
+            }
 
             $or1 = $or2 = $query->orConditionGroup();
             $or1->condition('head', $access, 'IN');
@@ -851,11 +836,10 @@ class PurchasesController extends ControllerBase {
 
     /**
      * @retun
-     *  Purchase form 
+     *  Purchase form
      *
      */
     public function NewPurchases(Request $request) {
-
         $build['new_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Purchase');
         return $build;
     }
@@ -869,20 +853,19 @@ class PurchasesController extends ControllerBase {
     public function EditPurchases(Request $request, $id) {
         //filter edit
         $query = Database::getConnection('external_db', 'external_db')
-            ->select('ek_sales_purchase', 'p')
-            ->fields('p', ['status'])
-            ->condition('id', $id , '=');
+                ->select('ek_sales_purchase', 'p')
+                ->fields('p', ['status'])
+                ->condition('id', $id, '=');
         $status = $query->execute()->fetchField();
-        if($status == '0') {    
+        if ($status == '0') {
             $build['edit_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Purchase', $id);
         } else {
-            
-            $opt =['0' => t('Unpaid'),1 => t('Paid'), 2 => t('Partially paid')];
+            $opt = ['0' => t('Unpaid'), 1 => t('Paid'), 2 => t('Partially paid')];
             $url = Url::fromRoute('ek_sales.purchases.list', array(), array())->toString();
             $items['type'] = 'edit';
             $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Purchase')))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -890,9 +873,9 @@ class PurchasesController extends ControllerBase {
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
                 '#cache' => ['max-age' => 0,],
-            ];              
+            ];
         }
-        
+
         return $build;
     }
 
@@ -928,11 +911,11 @@ class PurchasesController extends ControllerBase {
      */
     public function AssignDebitNote($id) {
         $build['assign_debit_note'] = $this->formBuilder
-                ->getForm('Drupal\ek_sales\Form\AssignNote','DT', $id);
+                ->getForm('Drupal\ek_sales\Form\AssignNote', 'DT', $id);
 
         return $build;
     }
-    
+
     /**
      * @retun
      *  Form for setting a cron alert
@@ -963,23 +946,21 @@ class PurchasesController extends ControllerBase {
     /**
      * @retun
      *  a list purchases tasks
-     * 
+     *
      *
      */
     public function ListTaskPurchases() {
-
         $build['filter'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\SelectTask');
 
         if (isset($_SESSION['taskfilter']) && $_SESSION['taskfilter']['filter'] == 1) {
-
             $stamp = date('U');
             $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_sales_purchase_tasks','t');
+                    ->select('ek_sales_purchase_tasks', 't');
             $query->fields('t');
             $query->leftJoin('ek_sales_purchase', 'p', 'p.serial=t.serial');
             $query->fields('p', ['id']);
             $query->orderBy('t.id');
-            
+
             switch ($_SESSION['taskfilter']['type']) {
 
                 case 0:
@@ -1013,7 +994,7 @@ class PurchasesController extends ControllerBase {
                 '3' => t('3 days before dealine'),
                 '4' => t('1 day before dealine'),
             );
-            
+
             while ($r = $result->fetchObject()) {
                 if ($r->end < $stamp) {
                     $expired = t('yes');
@@ -1022,7 +1003,7 @@ class PurchasesController extends ControllerBase {
                 }
                 $acc = \Drupal\user\Entity\User::load($r->uid);
                 $username = '';
-                if($acc){
+                if ($acc) {
                     $username = $acc->getAccountName();
                 }
 
@@ -1032,23 +1013,23 @@ class PurchasesController extends ControllerBase {
                 foreach ($notify_who as $value) {
                     if ($value != '') {
                         $acc = \Drupal\user\Entity\User::load($value);
-                        if($acc){
+                        if ($acc) {
                             $who .= $acc->getAccountName();
                             $who .= ',';
                         }
                     }
                 }
-                $who = rtrim($who, ',');    
+                $who = rtrim($who, ',');
                 $number = "<a title='" . t('view') . "' href='"
-                    . Url::fromRoute('ek_sales.purchases.print_html', ['id' => $r->id], [])->toString() . "'>"
-                    . $r->serial . "</a>";
+                        . Url::fromRoute('ek_sales.purchases.print_html', ['id' => $r->id], [])->toString() . "'>"
+                        . $r->serial . "</a>";
                 $url = Url::fromRoute('ek_sales.purchases.task', ['id' => $r->id])->toString();
                 $link = "<a href='" . $url . "'>" . t('edit') . '</a>';
 
                 $data['list'][] = [
                     'serial' => ['data' => ['#markup' => $number]],
                     'username' => $username,
-                    'task' => ['data' => ['#markup' => $r->task ], 'style' => ['background-color:' . $r->color]],
+                    'task' => ['data' => ['#markup' => $r->task], 'style' => ['background-color:' . $r->color]],
                     'period' => date('Y-m-d', $r->start) . ' -> ' . date('Y-m-d', $r->end),
                     'expired' => $expired,
                     'rate' => $r->completion_rate . ' %',
@@ -1128,20 +1109,18 @@ class PurchasesController extends ControllerBase {
 
         //filter access to document
         $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_purchase', 'p');
-            $query->fields('p',['head','allocation', 'pcode']);
-            $query->condition('p.id', $id);
+                ->select('ek_sales_purchase', 'p');
+        $query->fields('p', ['head', 'allocation', 'pcode']);
+        $query->condition('p.id', $id);
         $data = $query->execute()->fetchObject();
-        
-        $access = AccessCheck::GetCompanyByUser();
-        
-        if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
 
+        $access = AccessCheck::GetCompanyByUser();
+
+        if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
             $format = 'pdf';
             $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'purchase', $format);
 
             if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
-
                 $id = explode('_', $_SESSION['printfilter']['for_id']);
 
                 $param = serialize(
@@ -1156,8 +1135,8 @@ class PurchasesController extends ControllerBase {
                 );
 
                 $build['filter_mail'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterMailDoc', $param);
-                if($data->pcode != NULL && $data->pcode != 'n/a') {
-                    $build['filter_post'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterPostDoc', $param,$data->pcode);
+                if ($data->pcode != null && $data->pcode != 'n/a') {
+                    $build['filter_post'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterPostDoc', $param, $data->pcode);
                 }
                 $path = $GLOBALS['base_url'] . "/purchases/print/pdf/" . $param;
 
@@ -1177,7 +1156,7 @@ class PurchasesController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.purchases.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -1191,11 +1170,10 @@ class PurchasesController extends ControllerBase {
 
     /**
      * @retun array content
-     * 
+     *
      *
      */
     public function pdfPurchases(Request $request, $param) {
-
         $markup = array();
         $format = 'pdf';
         include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
@@ -1205,8 +1183,8 @@ class PurchasesController extends ControllerBase {
     /**
      * @retun
      *  a display of puchasee in html format
-     * 
-     * @param 
+     *
+     * @param
      *  INT $id document id
      */
     public function Html($id) {
@@ -1240,13 +1218,13 @@ class PurchasesController extends ControllerBase {
                 $url_pdf = Url::fromRoute('ek_sales.purchases.print_share', ['id' => $doc_id], [])->toString();
                 $url_excel = Url::fromRoute('ek_sales.purchases.print_excel', ['id' => $doc_id], [])->toString();
                 $url_edit = Url::fromRoute('ek_sales.purchases.edit', ['id' => $doc_id], [])->toString();
-                                
-                
+
+
                 include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
                 $build['purchase'] = [
                     '#markup' => $document,
                     '#attached' => array(
-                        'library' => array('ek_sales/ek_sales_html_documents_css','ek_admin/ek_admin_css'),
+                        'library' => array('ek_sales/ek_sales_html_documents_css', 'ek_admin/ek_admin_css'),
                     ),
                 ];
             }
@@ -1255,7 +1233,7 @@ class PurchasesController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.purchases.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -1264,15 +1242,14 @@ class PurchasesController extends ControllerBase {
                 ),
                 '#cache' => ['max-age' => 0,],
             ];
-            
         }
     }
 
     /**
      * @retun
      *  a form to download purchase in excel format
-     * 
-     * @param 
+     *
+     * @param
      *  INT $id document id
      */
     public function Excel($id) {
@@ -1312,7 +1289,7 @@ class PurchasesController extends ControllerBase {
             $url = Url::fromRoute('ek_sales.purchases.list')->toString();
             $items['type'] = 'access';
             $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -1332,20 +1309,20 @@ class PurchasesController extends ControllerBase {
     public function DeletePurchases(Request $request, $id) {
         //filter del
         $query = Database::getConnection('external_db', 'external_db')
-            ->select('ek_sales_purchase', 'p')
-            ->fields('p', ['status'])
-            ->condition('id', $id , '=');
+                ->select('ek_sales_purchase', 'p')
+                ->fields('p', ['status'])
+                ->condition('id', $id, '=');
         $status = $query->execute()->fetchField();
-        if($status == '0') {    
+        if ($status == '0') {
             $build['delete_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\DeletePurchase', $id);
         } else {
             $items = [];
-            $opt =['0' => t('Unpaid'),1 => t('Paid'), 2 => t('Partially paid')];
+            $opt = ['0' => t('Unpaid'), 1 => t('Paid'), 2 => t('Partially paid')];
             $url = Url::fromRoute('ek_sales.purchases.list', array(), array())->toString();
             $items['type'] = 'delete';
-            $items['message'] = ['#markup' => t('@document cannot be deleted.' , array('@document' => t('Purchase') ))];
+            $items['message'] = ['#markup' => t('@document cannot be deleted.', array('@document' => t('Purchase')))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.',['@url' => $url])];
+            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build['content'] = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -1353,12 +1330,11 @@ class PurchasesController extends ControllerBase {
                     'library' => array('ek_admin/ek_admin_css'),
                 ),
                 '#cache' => ['max-age' => 0,],
-            ];    
-            
+            ];
         }
-        
+
         return $build;
     }
 
-//end class  
+    //end class
 }

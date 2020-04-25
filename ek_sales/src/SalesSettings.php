@@ -3,89 +3,86 @@
 /**
  * @file
  * Contains \Drupal\ek_admin\SalesSettings.
- * 
+ *
  */
 
 namespace Drupal\ek_sales;
 
-
 use Drupal\Core\Database\Database;
+
 /**
  * Set and retrieve settings parameters used in sales
  */
-  class SalesSettings  {
+  class SalesSettings
+  {
 
 
   /**
-   * company id. 
+   * company id.
    */
-  protected $coid;
+      protected $coid;
 
 
 
-  public function __construct($coid = NULL) {
+      public function __construct($coid = null)
+      {
+          if ($coid == null) {
+              $coid = 0;
+          }
     
-    if($coid == NULL) {
-        $coid = 0;
-    }
-    
-    $this->settings = NULL;
-    $this->coid = $coid;
-    $query = Database::getConnection('external_db', 'external_db')
+          $this->settings = null;
+          $this->coid = $coid;
+          $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_sales_settings', 's');
-    $query->fields('s');
-    $query->condition('coid', $this->coid, '=');
-    $data = $query->execute()->fetchObject();
-    if($data){
-        $this->settings = unserialize($data->settings);
-    }
-  }
+          $query->fields('s');
+          $query->condition('coid', $this->coid, '=');
+          $data = $query->execute()->fetchObject();
+          if ($data) {
+              $this->settings = unserialize($data->settings);
+          }
+      }
  
-  /**
-   * Get setting values by name
-   *
-   * 
-   * @param key key of array
-   */    
+      /**
+       * Get setting values by name
+       *
+       *
+       * @param key key of array
+       */
   
-  public function get($key) {
-  
-    return isset($this->settings[$key]) ? $this->settings[$key] : NULL;
+      public function get($key)
+      {
+          return isset($this->settings[$key]) ? $this->settings[$key] : null;
+      }
 
-  }
+      /**
+       * Set setting values by name(key)
+       *
+       *
+       * @param key key of array
+       * @param value = key value
+       */
 
-  /**
-   * Set setting values by name(key)
-   *
-   * 
-   * @param key key of array
-   * @param value = key value
-   */    
+      public function set($key, $value)
+      {
+          return  $this->settings[$key] = $value;
+      }
 
-  public function set($key, $value) {
-    return  $this->settings[$key] = $value;
-  }
-
-  /**
-   * Save settings 
-   *
-   */     
-  public function save() {
-  
-    $save = Database::getConnection('external_db', 'external_db')
+      /**
+       * Save settings
+       *
+       */
+      public function save()
+      {
+          $save = Database::getConnection('external_db', 'external_db')
       ->update('ek_sales_settings')
-      ->condition('coid' , $this->coid)
+      ->condition('coid', $this->coid)
       ->fields(array(
-        'settings' => serialize($this->settings ) ,
+        'settings' => serialize($this->settings) ,
       ))
-      ->execute();    
+      ->execute();
   
-    if($save) {
-        return TRUE;
-    }
-  
-  }  
-
-
-}
-
+          if ($save) {
+              return true;
+          }
+      }
+  }

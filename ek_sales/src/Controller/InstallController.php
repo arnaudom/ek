@@ -1,11 +1,11 @@
 <?php
+
 /**
-* @file
-* Contains \Drupal\ek\Controller\
-*/
+ * @file
+ * Contains \Drupal\ek\Controller\
+ */
 
 namespace Drupal\ek_sales\Controller;
-
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
@@ -15,76 +15,72 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-
 /**
-* Controller routines for ek module routes.
-*/
+ * Controller routines for ek module routes.
+ */
 class InstallController extends ControllerBase {
+    /* The module handler.
+     *
+     * @var \Drupal\Core\Extension\ModuleHandler
+     */
 
-   /* The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandler
-   */
-  protected $moduleHandler;
-  /**
-   * The database service.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-  /**
-   * The form builder service.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('database'),
-      $container->get('form_builder'),
-      $container->get('module_handler')
-    );
-  }
+    protected $moduleHandler;
 
-  /**
-   * Constructs a  object.
-   *
-   * @param \Drupal\Core\Database\Connection $database
-   *   A database connection.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-   *   The form builder service.
-   */
-  public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
-    $this->database = $database;
-    $this->formBuilder = $form_builder;
-    $this->moduleHandler = $module_handler;
-  }
+    /**
+     * The database service.
+     *
+     * @var \Drupal\Core\Database\Connection
+     */
+    protected $database;
 
+    /**
+     * The form builder service.
+     *
+     * @var \Drupal\Core\Form\FormBuilderInterface
+     */
+    protected $formBuilder;
 
-/**
-   * data update
-   *
-*/
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
+        );
+    }
 
- public function update() {
-   include_once drupal_get_path('module', 'ek_sales') . '/' . 'update.php';
-    return  array('#markup' => $markup) ;
- 
- }
- 
-/**
-   * install required tables in a separate database
-   *
-*/
+    /**
+     * Constructs a  object.
+     *
+     * @param \Drupal\Core\Database\Connection $database
+     *   A database connection.
+     * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+     *   The form builder service.
+     */
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+        $this->database = $database;
+        $this->formBuilder = $form_builder;
+        $this->moduleHandler = $module_handler;
+    }
 
- public function install() {
-/**/ 
-    $markup = '';
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_purchase` (
+    /**
+     * data update
+     *
+     */
+    public function update() {
+        include_once drupal_get_path('module', 'ek_sales') . '/' . 'update.php';
+        return array('#markup' => $markup);
+    }
+
+    /**
+     * install required tables in a separate database
+     *
+     */
+    public function install() {
+        /**/
+        $markup = '';
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_sales_purchase` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '',
 	`head` TINYINT(3) UNSIGNED NULL DEFAULT NULL,
@@ -117,10 +113,12 @@ class InstallController extends ControllerBase {
         COMMENT='Record of purchases'
         COLLATE='utf8_unicode_ci'
         ENGINE=InnoDB";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'purchases table created <br/>'; 
-    
-    $query = "CREATE TABLE IF NOT EXISTS  `ek_sales_purchase_details` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'purchases table created <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS  `ek_sales_purchase_details` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '',
 	`item` TEXT NOT NULL,
@@ -135,11 +133,13 @@ class InstallController extends ControllerBase {
         COMMENT='Record purchases items lines'
         COLLATE='utf8_unicode_ci'
         ENGINE=InnoDB ";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'purchases details table created <br/>';    
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_purchase_tasks` (
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'purchases details table created <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_sales_purchase_tasks` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(50) NULL DEFAULT NULL COMMENT 'serial reference of invoice',
 	`event` VARCHAR(50) NOT NULL COMMENT 'event name',
@@ -159,13 +159,15 @@ class InstallController extends ControllerBase {
         COMMENT='tasks, alerts per purchase'
         COLLATE='utf8_unicode_ci'
         ENGINE=InnoDB
-        ROW_FORMAT=COMPACT ";       
+        ROW_FORMAT=COMPACT ";
 
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'purchases tasks table created <br/>'; 
-    
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_quotation` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'purchases tasks table created <br/>';
+        }
+
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_sales_quotation` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '',
 	`head` TINYINT(3) UNSIGNED NULL DEFAULT NULL,
@@ -188,10 +190,12 @@ class InstallController extends ControllerBase {
         COMMENT='Record of quotations'
         COLLATE='utf8_unicode_ci'
         ENGINE=InnoDB";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'quotations table created <br/>';  
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_quotation_details` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'quotations table created <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_sales_quotation_details` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '',
 	`itemid` TEXT NULL,
@@ -209,12 +213,14 @@ class InstallController extends ControllerBase {
         COMMENT='Record quotations items lines'
         COLLATE='utf8_unicode_ci'
         ENGINE=InnoDB";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'quotations details table created <br/>';      
-   
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_invoice` (
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'quotations details table created <br/>';
+        }
+
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_sales_invoice` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'unique serial number' COLLATE 'utf8_unicode_ci',
 	`do_no` VARCHAR(50) NULL DEFAULT NULL COMMENT 'delivery order ref' COLLATE 'utf8_unicode_ci',
@@ -249,10 +255,12 @@ class InstallController extends ControllerBase {
         COMMENT='Main invoice ref table'
         COLLATE='utf8_unicode_ci'
         ENGINE=InnoDB";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'invoices table created <br/>';      
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_invoice_details` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'invoices table created <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_sales_invoice_details` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'main invoice table ref' COLLATE 'utf8_unicode_ci',
 	`item` TEXT NULL COMMENT 'item' COLLATE 'utf8_unicode_ci',
@@ -268,13 +276,15 @@ class InstallController extends ControllerBase {
         ) 
         COMMENT='Record invoices items lines'
         COLLATE='utf8_unicode_ci'
-        ENGINE=InnoDB";    
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'invoices details table created <br/>'; 
-    
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_invoice_tasks` (
+        ENGINE=InnoDB";
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'invoices details table created <br/>';
+        }
+
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_sales_invoice_tasks` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`serial` VARCHAR(50) NULL DEFAULT NULL COMMENT 'serial reference of invoice',
 	`event` VARCHAR(50) NOT NULL COMMENT 'event name',
@@ -294,13 +304,15 @@ class InstallController extends ControllerBase {
         COMMENT='tasks, alerts per invoice'
         COLLATE='utf8_unicode_ci'
         ENGINE=InnoDB
-        ROW_FORMAT=COMPACT ";       
+        ROW_FORMAT=COMPACT ";
 
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'invoices tasks table created <br/>'; 
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'invoices tasks table created <br/>';
+        }
 
 
-    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_settings` (
+        $query = "CREATE TABLE IF NOT EXISTS `ek_sales_settings` (
 	`coid` INT(11) NULL DEFAULT NULL COMMENT 'company ID',
 	`settings` BLOB NULL COMMENT 'serialized settings',
 	UNIQUE INDEX `Index 1` (`coid`)
@@ -309,10 +321,12 @@ class InstallController extends ControllerBase {
         COLLATE='utf8_unicode_ci'
         ENGINE=InnoDB";
 
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'sales settings table created <br/>'; 
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_sales_documents` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'sales settings table created <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_sales_documents` (
 	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`abid` INT(11) UNSIGNED NULL DEFAULT NULL COMMENT 'address book id',
 	`fid` INT(11) UNSIGNED NULL DEFAULT NULL COMMENT 'file managed id, option',
@@ -331,18 +345,19 @@ class InstallController extends ControllerBase {
         COLLATE='utf8mb4_unicode_ci'
         ENGINE=InnoDB";
 
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'sales documents table created <br/>'; 
-    
-    $link =  Url::fromRoute('ek_admin.main', array(), array())->toString();
-    $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));  
-    return  array(
-      '#title'=> t('Installation of Ek_sales module'),
-      '#markup' => $markup
-      ) ;
- 
- }
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'sales documents table created <br/>';
+        }
 
+        $link = Url::fromRoute('ek_admin.main', array(), array())->toString();
+        $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
+        return array(
+            '#title' => t('Installation of Ek_sales module'),
+            '#markup' => $markup
+                );
+    }
 
-   
-} //class
+}
+
+//class

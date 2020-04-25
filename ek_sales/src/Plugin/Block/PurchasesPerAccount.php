@@ -23,14 +23,15 @@ use Drupal\ek_finance\FinanceSettings;
  *   category = @Translation("Ek sales block")
  * )
  */
-class PurchasesPerAccount extends BlockBase {
+class PurchasesPerAccount extends BlockBase
+{
 
 
   /**
    * {@inheritdoc}
    */
-    public function build() {
-
+    public function build()
+    {
         $items = array();
 
         $items['title'] = t('Purchases per account');
@@ -44,13 +45,12 @@ class PurchasesPerAccount extends BlockBase {
 
         $months = array('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12');
         $years = array(date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3 );
-        $content = '';            
+        $content = '';
         $query = "SELECT sum(amountbc) as total,name FROM {ek_sales_purchase} i "
                     . "INNER JOIN {ek_address_book} b ON i.client=b.id WHERE "
                     . "date like :d GROUP BY b.name order by total DESC ";
         
-        foreach($years as $year) {
-
+        foreach ($years as $year) {
             $data = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':d' => $year . '%'));
 
@@ -58,7 +58,6 @@ class PurchasesPerAccount extends BlockBase {
             $content .= '<div>' . $year . '</div><table><tbody class="">';
             
             while ($d = $data->fetchObject()) {
-
                 $content .= "<tr><td class='' title=''>" . $d->name . ":</td>"
                         . "<td class='' title='');'>" . number_format($d->total, 2) . " " . $baseCurrency . "</td></tr>";
             }
@@ -79,10 +78,11 @@ class PurchasesPerAccount extends BlockBase {
     }
 
 
-  /**
-   * {@inheritdoc}
-   */
-    protected function blockAccess(AccountInterface $account) {
+    /**
+     * {@inheritdoc}
+     */
+    protected function blockAccess(AccountInterface $account)
+    {
         if (!$account->isAnonymous() && $account->hasPermission('sales_data')) {
             return AccessResult::allowed();
         }
@@ -94,8 +94,8 @@ class PurchasesPerAccount extends BlockBase {
      *
      * @todo Make cacheable once https://www.drupal.org/node/2351015 lands.
      */
-    public function getCacheMaxAge() {
+    public function getCacheMaxAge()
+    {
         return 0;
     }
-
 }

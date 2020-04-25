@@ -63,20 +63,18 @@ class ReceiveInvoice extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-        
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_invoice', 'i');
-            $query->fields('i');
-            $query->leftJoin('ek_company', 'c', 'c.id = i.head');
-            $query->fields('c' , ['name']);
-            $query->condition('i.id', $id, '=');
-            
-            $data = $query->execute()->fetchObject();
-            
-            $form_state->set('invoiceCurrency', $data->currency);
-       
+                ->select('ek_sales_invoice', 'i');
+        $query->fields('i');
+        $query->leftJoin('ek_company', 'c', 'c.id = i.head');
+        $query->fields('c', ['name']);
+        $query->condition('i.id', $id, '=');
+
+        $data = $query->execute()->fetchObject();
+
+        $form_state->set('invoiceCurrency', $data->currency);
+
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $baseCurrency = $this->settings->get('baseCurrency');
@@ -85,63 +83,66 @@ class ReceiveInvoice extends FormBase {
             $asset_account = $companysettings->get('asset_account', $data->currency);
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal', 'j');
-            $query->fields('j',['id']);
+            $query->fields('j', ['id']);
             $query->condition('coid', $data->head, '=');
             $query->condition('source', 'invoice', '=');
             $query->condition('reference', $data->id, '=');
-            $query->condition('aid',$asset_account , '=');
+            $query->condition('aid', $asset_account, '=');
             $query->condition('type', 'debit', '=');
-            
-            if($query->execute()->fetchObject() == NULL) {
-                $alert = "<div class='messages messages--warning'>" 
-                        . t('Invoice was recorded with a different @acc account than the one currently selected in your settings. Verify <a href="@url">settings</a>.', 
-                                ['@acc' => t('account receivable'),'@url' => Url::fromRoute('ek_admin.company_settings.edit',['id' => $data->head])->toString()]) . "</div>";
+
+            if ($query->execute()->fetchObject() == null) {
+                $alert = "<div class='messages messages--warning'>"
+                        . t(
+                                'Invoice was recorded with a different @acc account than the one currently selected in your settings. '
+                                . 'Verify <a href="@url">settings</a>.', ['@acc' => $this->t('account receivable'), 
+                                    '@url' => Url::fromRoute('ek_admin.company_settings.edit', ['id' => $data->head])->toString()]
+                        ) . "</div>";
                 $form['alert1'] = array(
                     '#type' => 'item',
                     '#markup' => $alert,
                 );
             }
-            
-            if($data->taxvalue > 0){
-                //Invoice includes taxes, verify the tax collection account settings 
+
+            if ($data->taxvalue > 0) {
+                //Invoice includes taxes, verify the tax collection account settings
                 $stax_collect_aid = $companysettings->get('stax_collect_aid');
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
-                $query->fields('j',['id']);
+                $query->fields('j', ['id']);
                 $query->condition('coid', $data->head, '=');
                 $query->condition('source', 'invoice', '=');
                 $query->condition('reference', $data->id, '=');
-                $query->condition('aid',$stax_collect_aid , '=');
+                $query->condition('aid', $stax_collect_aid, '=');
                 $query->condition('type', 'credit', '=');
 
-                if($query->execute()->fetchObject() == NULL) {
-                    $alert = "<div class='messages messages--warning'>" 
-                            . t('Invoice was recorded with a different @acc account than the one currently selected in your settings. Verify <a href="@url">settings</a>.', 
-                                    ['@acc' => t('tax collection'),'@url' => Url::fromRoute('ek_admin.company_settings.edit',['id' => $data->head])->toString()]) . "</div>";
+                if ($query->execute()->fetchObject() == null) {
+                    $alert = "<div class='messages messages--warning'>"
+                            . t(
+                                    'Invoice was recorded with a different @acc account than the one currently selected in your settings. '
+                                    . 'Verify <a href="@url">settings</a>.', ['@acc' => $this->t('tax collection'), 
+                                        '@url' => Url::fromRoute('ek_admin.company_settings.edit', ['id' => $data->head])->toString()]
+                            ) . "</div>";
                     $form['alert2'] = array(
                         '#type' => 'item',
                         '#markup' => $alert,
                     );
-                } 
+                }
             }
-            
-            
         }
 
         $url = Url::fromRoute('ek_sales.invoices.list', array(), array())->toString();
         $form['back'] = array(
-          '#type' => 'item',
-          '#markup' => t('<a href="@url">List</a>', array('@url' => $url ) ) ,
-
+            '#type' => 'item',
+            '#markup' => $this->t('<a href="@url">List</a>', array('@url' => $url)),
         );
-        
+
         $form['edit_invoice'] = array(
             '#type' => 'item',
-            '#markup' => t('Invoice ref. @p', array('@p' => $data->serial)),
+            '#markup' => $this->t('Invoice ref. @p', array('@p' => $data->serial)),
         );
         $form['company'] = array(
             '#type' => 'item',
-            '#markup' => "<p>" . $data->name. "</p>",
+            '#markup' => "<p>" . $data->name . "</p>",
         );
 
         $form['for_id'] = array(
@@ -153,9 +154,9 @@ class ReceiveInvoice extends FormBase {
             '#type' => 'date',
             '#id' => 'edit-from',
             '#size' => 12,
-            '#required' => TRUE,
+            '#required' => true,
             '#default_value' => date('Y-m-d'),
-            '#title' => t('Payment date'),
+            '#title' => $this->t('Payment date'),
         );
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
@@ -166,29 +167,28 @@ class ReceiveInvoice extends FormBase {
             $aid = $settings->get('cash_account', $data->currency);
             if ($aid <> '') {
                 $query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";
-                /*$name = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':c' => $data->head, ':a' => $aid))
-                        ->fetchField();*/
+                /* $name = Database::getConnection('external_db', 'external_db')
+                  ->query($query, array(':c' => $data->head, ':a' => $aid))
+                  ->fetchField(); */
                 $key = $data->currency . "-" . $aid;
                 $cash = array($key => AidList::aname($data->head, $aid));
             }
             $aid = $settings->get('cash2_account', $data->currency);
             if ($aid <> '') {
-               
                 $key = $data->currency . "-" . $aid;
                 $cash += array($key => AidList::aname($data->head, $aid));
             }
 
-            $options[(string) t('cash')] = $cash;
-            $options[(string) t('bank')] = BankData::listbankaccountsbyaid($data->head);
+            $options[(string) $this->t('cash')] = $cash;
+            $options[(string) $this->t('bank')] = BankData::listbankaccountsbyaid($data->head);
 
             $form['bank_account'] = array(
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $options,
-                '#required' => TRUE,
+                '#required' => true,
                 '#default_value' => $data->bank,
-                '#title' => t('Account receiving payment'),
+                '#title' => $this->t('Account receiving payment'),
                 '#ajax' => array(
                     'callback' => array($this, 'debit_fx_rate'),
                     'wrapper' => 'fx',
@@ -201,12 +201,12 @@ class ReceiveInvoice extends FormBase {
             $details = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':s' => $data->serial, ':o' => 1))
                     ->fetchField();
-            $amount = ($details * (1+($data->taxvalue / 100)) - $data->amountreceived) ;
-            
-            $title = t('Amount with taxes (@c)', array('@c' => $data->currency));
+            $amount = ($details * (1 + ($data->taxvalue / 100)) - $data->amountreceived);
+
+            $title = $this->t('Amount with taxes (@c)', array('@c' => $data->currency));
         } else {
             $amount = $data->amount - $data->amountreceived;
-            $title = t('Amount (@c)', array('@c' => $data->currency));
+            $title = $this->t('Amount (@c)', array('@c' => $data->currency));
         }
 
         $form['balance'] = array(
@@ -218,7 +218,7 @@ class ReceiveInvoice extends FormBase {
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 255,
-            '#required' => TRUE,
+            '#required' => true,
             '#default_value' => number_format($amount, 2),
             '#title' => $title,
             '#attributes' => array('class' => array('amount')),
@@ -238,8 +238,8 @@ class ReceiveInvoice extends FormBase {
                     '#size' => 15,
                     '#maxlength' => 255,
                     '#default_value' => CurrencyData::rate($data->currency),
-                    '#required' => TRUE,
-                    '#title' => t('Base currency exchange rate'),
+                    '#required' => true,
+                    '#title' => $this->t('Base currency exchange rate'),
                     '#description' => '',
                     '#attributes' => array('class' => array('amount')),
                     '#prefix' => "<div class='cell'>",
@@ -263,7 +263,7 @@ class ReceiveInvoice extends FormBase {
         }
 
         //calculate short payments
-        if(!NULL == $form_state->getValue('amount')) {
+        if (!null == $form_state->getValue('amount')) {
             $balance = $form_state->getValue('balance') - str_replace(',', '', $form_state->getValue('amount'));
         } else {
             $balance = 0;
@@ -274,18 +274,18 @@ class ReceiveInvoice extends FormBase {
             '#size' => 15,
             '#maxlength' => 255,
             '#value' => number_format($balance, 2),
-            '#required' => FALSE,
-            '#title' => t('Short payment'),
+            '#required' => false,
+            '#title' => $this->t('Short payment'),
             '#description' => '',
             '#attributes' => array('class' => array('amount')),
-            '#disabled' => TRUE,
+            '#disabled' => true,
             '#prefix' => "<div id='short'>",
             '#suffix' => '</div>',
         );
         $form['close'] = array(
             '#type' => 'checkbox',
-            '#title' => t('Force close invoice'),
-            '#description' => t('Select to close invoice when amount is not fully received'),
+            '#title' => $this->t('Force close invoice'),
+            '#description' => $this->t('Select to close invoice when amount is not fully received'),
             '#prefix' => "<div id='close' >",
             '#suffix' => '</div>',
             '#states' => array(
@@ -296,28 +296,28 @@ class ReceiveInvoice extends FormBase {
         );
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-            $options = array('n/a' => t('not applicable'));
+            $options = array('n/a' => $this->t('not applicable'));
             $chart = $this->settings->get('chart');
             $options += AidList::listaid($data->head, array($chart['expenses'], $chart['other_expenses']), 1);
             $form['aid'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#title' => t('Select short payment debit account (apply to charges)'),
+                '#title' => $this->t('Select short payment debit account (apply to charges)'),
                 '#options' => $options,
-                '#required' => FALSE,
+                '#required' => false,
                 '#attributes' => array(),
                 '#prefix' => "<div id='aid'>",
                 '#suffix' => '</div>',
                 '#states' => array(
                     'invisible' => array(
-                        "input[name='close']" => array('checked' => FALSE),
+                        "input[name='close']" => array('checked' => false),
                     ),
                 ),
             );
 
 
-// Force the input of debit exchange rate if payment is received
-// on account with different currency
+            // Force the input of debit exchange rate if payment is received
+            // on account with different currency
             if (strpos($data->bank, "-")) {
                 //the currency is in the form value
                 $ct = explode("-", $data->bank);
@@ -326,18 +326,17 @@ class ReceiveInvoice extends FormBase {
                 // bank account
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_bank_accounts', 'b');
-                $query->fields('b',['currency']);
+                $query->fields('b', ['currency']);
                 $query->condition('id', $data->bank, '=');
                 $currency2 = $query->execute()->fetchField();
                 $form_state->set('bankAccountCurrency', $currency2);
-                
             }
 
             if ($data->currency <> $currency2) {
-                $required = TRUE;
+                $required = true;
                 $default = '';
             } else {
-                $required = FALSE;
+                $required = false;
                 $default = 1;
             }
             $form['debit_fx_rate'] = array(
@@ -346,7 +345,7 @@ class ReceiveInvoice extends FormBase {
                 '#maxlength' => 255,
                 '#default_value' => $default,
                 '#required' => $required,
-                '#title' => t('Debit exchange rate'),
+                '#title' => $this->t('Debit exchange rate'),
                 '#description' => '',
                 '#prefix' => "<div id='fx'>",
                 '#suffix' => '</div>',
@@ -383,9 +382,8 @@ class ReceiveInvoice extends FormBase {
      * Callback: if selected bank account is not in the invoice currency, provide a choice for exchange rate
      */
     public function debit_fx_rate(array &$form, FormStateInterface $form_state) {
-
         $currency = $form_state->get('invoiceCurrency');
-        
+
         // FILTER cash account
         if (strpos($form_state->getValue('bank_account'), "-")) {
             //the currency is in the form value
@@ -394,16 +392,15 @@ class ReceiveInvoice extends FormBase {
         } else {
             // bank account
             $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_bank_accounts', 'b');
-                $query->fields('b',['currency']);
-                $query->condition('id', $form_state->getValue('bank_account', '='));
-                $currency2 = $query->execute()->fetchField();
+                    ->select('ek_bank_accounts', 'b');
+            $query->fields('b', ['currency']);
+            $query->condition('id', $form_state->getValue('bank_account', '='));
+            $currency2 = $query->execute()->fetchField();
         }
 
 
         if ($currency <> $currency2) {
-
-            $form['debit_fx_rate']['#required'] = TRUE;
+            $form['debit_fx_rate']['#required'] = true;
 
             $purchase_rate = CurrencyData::rate($currency);
             $pay_rate = CurrencyData::rate($currency2);
@@ -411,13 +408,13 @@ class ReceiveInvoice extends FormBase {
                 $form['debit_fx_rate']['#value'] = round($pay_rate / $purchase_rate, 4);
                 $amount = str_replace(',', '', $form_state->getValue('amount'));
                 $credit = round($amount * $pay_rate / $purchase_rate, 4);
-                $form['debit_fx_rate']['#description'] = t('Amount debited @c @a', array('@c' => $currency2, '@a' => $credit));
+                $form['debit_fx_rate']['#description'] = $this->t('Amount debited @c @a', array('@c' => $currency2, '@a' => $credit));
             } else {
                 $form['debit_fx_rate']['#value'] = 0;
                 $form['debit_debit_fx_rate']['#description'] = '';
             }
         } else {
-            $form['debit_fx_rate']['#required'] = False;
+            $form['debit_fx_rate']['#required'] = false;
             $form['debit_fx_rate']['#value'] = 1;
             $form['debit_fx_rate']['#description'] = '';
         }
@@ -429,7 +426,6 @@ class ReceiveInvoice extends FormBase {
      * Callback: update credit amount estimated when manual fx change
      */
     public function credit_amount(array &$form, FormStateInterface $form_state) {
-
         $currency = $form_state->get('invoiceCurrency');
 
         // FILTER cash account
@@ -439,26 +435,25 @@ class ReceiveInvoice extends FormBase {
             $currency2 = $data[0];
         } else {
             // bank account
-            
+
             $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_bank_accounts', 'b');
-                $query->fields('b',['currency']);
-                $query->condition('id', $form_state->getValue('bank_account', '='));
-                $currency2 = $query->execute()->fetchField();
+                    ->select('ek_bank_accounts', 'b');
+            $query->fields('b', ['currency']);
+            $query->condition('id', $form_state->getValue('bank_account', '='));
+            $currency2 = $query->execute()->fetchField();
         }
 
 
         if ($currency <> $currency2) {
-
             if ($form_state->getValue('debit_fx_rate')) {
                 $amount = str_replace(',', '', $form_state->getValue('amount'));
                 $credit = round($amount * $form_state->getValue('debit_fx_rate'), 4);
-                $form['debit_fx_rate']['#description'] = t('Amount debited @c @a', array('@c' => $currency2, '@a' => $credit));
+                $form['debit_fx_rate']['#description'] = $this->t('Amount debited @c @a', array('@c' => $currency2, '@a' => $credit));
             } else {
                 $form['debit_fx_rate']['#description'] = '';
             }
         } else {
-            $form['debit_fx_rate']['#required'] = False;
+            $form['debit_fx_rate']['#required'] = false;
             $form['debit_fx_rate']['#value'] = 1;
             $form['debit_fx_rate']['#description'] = '';
         }
@@ -470,7 +465,6 @@ class ReceiveInvoice extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             if ($form_state->getValue('debit_fx_rate') <= 0 || !is_numeric($form_state->getValue('debit_fx_rate'))) {
                 $form_state->setErrorByName("debit_fx_rate", $this->t('the exchange rate value input is wrong'));
@@ -479,36 +473,34 @@ class ReceiveInvoice extends FormBase {
                 $form_state->setErrorByName("fx_rate", $this->t('the base exchange rate value input is wrong'));
             }
         }
-        
+
         //verify amount paid does not exceed amount due or partially paid
         $this_pay = str_replace(",", "", $form_state->getValue('amount'));
         $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_invoice', 'i');
-            $query->fields('i');
-            $query->condition('i.id', $form_state->getValue('for_id'), '=');
-            
-            $data = $query->execute()->fetchObject();
-                        
-            $query = "SELECT sum(quantity*value) FROM {ek_sales_invoice_details} WHERE serial=:s ";
-            $details = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':s' => $data->serial))
-                    ->fetchField();
-            //max payment is calculated from recorded total amount +
-            //optional taxes applied per item line
-            //$max_pay = round($data->amount + ($details * $data->taxvalue / 100), 2);
-            $max_pay = ($details * (1+($data->taxvalue / 100)) - $data->amountreceived) ;
-            //store data
-            $form_state->set('max_pay', $max_pay);
-            $form_state->set('details', $details);   
-            
+                ->select('ek_sales_invoice', 'i');
+        $query->fields('i');
+        $query->condition('i.id', $form_state->getValue('for_id'), '=');
+
+        $data = $query->execute()->fetchObject();
+
+        $query = "SELECT sum(quantity*value) FROM {ek_sales_invoice_details} WHERE serial=:s ";
+        $details = Database::getConnection('external_db', 'external_db')
+                ->query($query, array(':s' => $data->serial))
+                ->fetchField();
+        //max payment is calculated from recorded total amount +
+        //optional taxes applied per item line
+        //$max_pay = round($data->amount + ($details * $data->taxvalue / 100), 2);
+        $max_pay = ($details * (1 + ($data->taxvalue / 100)) - $data->amountreceived);
+        //store data
+        $form_state->set('max_pay', $max_pay);
+        $form_state->set('details', $details);
+
         if (!$this->moduleHandler->moduleExists('ek_finance')) {
-      
             if ($this_pay > $max_pay) {
                 $form_state->setErrorByName('amount', $this->t('payment exceeds invoice amount (@a, @b)', ['@a' => $this_pay, '@b' => $max_pay]));
-            }            
-            
+            }
         } else {
-          
+
             //check from journal
             $companysettings = new CompanySettings($data->head);
             $assetacc = $companysettings->get('asset_account', $data->currency);
@@ -521,15 +513,14 @@ class ReceiveInvoice extends FormBase {
                 'reference' => $form_state->getValue('for_id'),
                 'account' => $assetacc,
             );
-            
+
             $value = round($this->journal->checkTransactionCredit($a), 4);
             $form_state->set('max_pay', abs($value));
-            
-                if ($value == 0 || round($value + $this_pay, 4) > 0) {
-                    $a = ['@a' => $value, '@b' => $this_pay, '@c' => $assetacc];
-                    $form_state->setErrorByName('amount', $this->t('this payment exceeds receivable balance amount in journal (@a, @b, @c).', $a));
-                }            
-                      
+
+            if ($value == 0 || round($value + $this_pay, 4) > 0) {
+                $a = ['@a' => $value, '@b' => $this_pay, '@c' => $assetacc];
+                $form_state->setErrorByName('amount', $this->t('this payment exceeds receivable balance amount in journal (@a, @b, @c).', $a));
+            }
         }
     }
 
@@ -537,13 +528,12 @@ class ReceiveInvoice extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_invoice', 'i');
-            $query->fields('i');
-            $query->condition('i.id', $form_state->getValue('for_id'), '=');
-            
-            $data = $query->execute()->fetchObject();
+                ->select('ek_sales_invoice', 'i');
+        $query->fields('i');
+        $query->condition('i.id', $form_state->getValue('for_id'), '=');
+
+        $data = $query->execute()->fetchObject();
 
         $this_pay = str_replace(",", "", $form_state->getValue('amount'));
         $max_pay = round($form_state->get('max_pay'), 2);
@@ -569,11 +559,11 @@ class ReceiveInvoice extends FormBase {
                         'fxRate2' => $form_state->getValue('debit_fx_rate'),
                     )
             );
-            
-            if($this->journal->credit <> $this->journal->debit) {
+
+            if ($this->journal->credit <> $this->journal->debit) {
                 $msg = 'debit: ' . $this->journal->debit . ' <> ' . 'credit: ' . $this->journal->credit;
                 \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
-            } 
+            }
         }
 
         $amountpaid = $data->amountreceived + $this_pay;
@@ -605,7 +595,7 @@ class ReceiveInvoice extends FormBase {
             $paid = 2; // partial payment (can't edit anymore)
         }
 
-        
+
         //the balance base recorded is without tax
         //$balancebase = round($data->balancebase - ($this_pay / $rate), 2);
         $balancebase = round($data->balancebase - ($this_pay / (1 + $data->taxvalue / 100) / $rate), 2);
@@ -641,7 +631,6 @@ class ReceiveInvoice extends FormBase {
             }
             $form_state->setRedirect('ek_sales.invoices.list');
         }
-
     }
 
 }

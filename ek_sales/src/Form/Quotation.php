@@ -60,12 +60,11 @@ class Quotation extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $clone = FALSE) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $clone = false) {
         $quotationSettings = $this->salesSettings->get('quotation');
-        $revision = NULL;
+        $revision = null;
 
-        if (isset($id) && !$id == NULL) {
+        if (isset($id) && !$id == null) {
             //edit
             $data = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT * FROM {ek_sales_quotation} where id=:id", array(':id' => $id))
@@ -82,18 +81,18 @@ class Quotation extends FormBase {
             if ($clone) {
                 $form['clone_quotation'] = array(
                     '#type' => 'item',
-                    '#markup' => "<div class='messages messages--warning'>" 
-                        . t('Template quotation based on ref. @p . A new quotation will be generated.', array('@p' => $data->serial))
-                        . "</div>",
+                    '#markup' => "<div class='messages messages--warning'>"
+                    . $this->t('Template quotation based on ref. @p . A new quotation will be generated.', array('@p' => $data->serial))
+                    . "</div>",
                 );
                 $form['clone'] = array(
                     '#type' => 'hidden',
-                    '#value' => TRUE,
+                    '#value' => true,
                 );
             } else {
                 $form['edit_quotation'] = array(
                     '#type' => 'item',
-                    '#markup' => t('Quotation ref. @q', array('@q' => $data->serial)),
+                    '#markup' => $this->t('Quotation ref. @q', array('@q' => $data->serial)),
                 );
             }
 
@@ -104,8 +103,9 @@ class Quotation extends FormBase {
 
             $n = 0;
             $form_state->set('current_items', 0);
-            if (!$form_state->get('num_items'))
+            if (!$form_state->get('num_items')) {
                 $form_state->set('num_items', 0);
+            }
 
             $form_state->setValue('head', $data->head);
 
@@ -163,12 +163,12 @@ class Quotation extends FormBase {
         $url = Url::fromRoute('ek_sales.quotations.list', array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url">List</a>', array('@url' => $url)),
+            '#markup' => $this->t('<a href="@url">List</a>', array('@url' => $url)),
         );
         $form['options'] = array(
             '#type' => 'details',
             '#title' => $this->t('Options'),
-            '#open' => (isset($id) || $form_state->get('num_items') > 0) ? FALSE : TRUE,
+            '#open' => (isset($id) || $form_state->get('num_items') > 0) ? false : true,
         );
 
         $company = AccessCheck::CompanyListByUid();
@@ -176,9 +176,9 @@ class Quotation extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
-            '#required' => TRUE,
-            '#default_value' => isset($data->head) ? $data->head : NULL,
-            '#title' => t('Header'),
+            '#required' => true,
+            '#default_value' => isset($data->head) ? $data->head : null,
+            '#title' => $this->t('Header'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
             '#ajax' => array(
@@ -192,10 +192,10 @@ class Quotation extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $company,
-                '#required' => TRUE,
-                '#default_value' => isset($data->allocation) ? $data->allocation : NULL,
-                '#title' => t('Allocated'),
-                '#description' => t('select an entity for which the quotation is done'),
+                '#required' => true,
+                '#default_value' => isset($data->allocation) ? $data->allocation : null,
+                '#title' => $this->t('Allocated'),
+                '#description' => $this->t('select an entity for which the quotation is done'),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div></div></div>',
             );
@@ -217,9 +217,9 @@ class Quotation extends FormBase {
                     '#size' => 1,
                     '#options' => $client,
                     '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
-                    '#required' => TRUE,
-                    '#default_value' => isset($data->client) ? $data->client : NULL,
-                    '#title' => t('Client'),
+                    '#required' => true,
+                    '#default_value' => isset($data->client) ? $data->client : null,
+                    '#title' => $this->t('Client'),
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div>',
                 );
@@ -232,9 +232,8 @@ class Quotation extends FormBase {
                 );
             }
         } else {
-
             $form['options']['client'] = array(
-                '#markup' => t('You do not have any client list.'),
+                '#markup' => $this->t('You do not have any client list.'),
                 '#default_value' => 0,
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
@@ -244,10 +243,10 @@ class Quotation extends FormBase {
         $form['options']['date'] = array(
             '#type' => 'date',
             '#size' => 12,
-            '#required' => TRUE,
+            '#required' => true,
             '#default_value' => isset($data->date) ? $data->date : date('Y-m-d'),
             //'#prefix' => "<div class='container-inline'>",
-            '#title' => t('Date'),
+            '#title' => $this->t('Date'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
         );
@@ -257,8 +256,8 @@ class Quotation extends FormBase {
             '#type' => 'textfield',
             '#size' => 35,
             '#maxlength' => 255,
-            '#default_value' => isset($data->title) ? $data->title : NULL,
-            '#title' => t('Title'),
+            '#default_value' => isset($data->title) ? $data->title : null,
+            '#title' => $this->t('Title'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
         );
@@ -268,9 +267,9 @@ class Quotation extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => \Drupal\ek_projects\ProjectData::listprojects(0),
-                '#required' => TRUE,
-                '#default_value' => isset($data->pcode) ? $data->pcode : NULL,
-                '#title' => t('Project'),
+                '#required' => true,
+                '#default_value' => isset($data->pcode) ? $data->pcode : null,
+                '#title' => $this->t('Project'),
                 '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
@@ -282,15 +281,14 @@ class Quotation extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $CurrencyOptions,
-                '#required' => TRUE,
-                '#default_value' => isset($data->currency) ? $data->currency : NULL,
-                '#title' => t('currency'),
+                '#required' => true,
+                '#default_value' => isset($data->currency) ? $data->currency : null,
+                '#title' => $this->t('currency'),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
             );
         } // finance
         else {
-
             $l = explode(',', file_get_contents(drupal_get_path('module', 'ek_sales') . '/currencies.inc'));
             foreach ($l as $key => $val) {
                 $val = explode(':', $val);
@@ -300,15 +298,15 @@ class Quotation extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $currency,
-                '#required' => TRUE,
-                '#default_value' => isset($data->currency) ? $data->currency : NULL,
-                '#title' => t('currency'),
+                '#required' => true,
+                '#default_value' => isset($data->currency) ? $data->currency : null,
+                '#title' => $this->t('currency'),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
             );
         }
 
-        $select_incoterm = ['0' => t('not applicable'), 'FOB' => 'FOB', 'CFR' => 'CFR', 'CIF' => 'CIF', 'EXW' => 'EXW'];
+        $select_incoterm = ['0' => $this->t('not applicable'), 'FOB' => 'FOB', 'CFR' => 'CFR', 'CIF' => 'CIF', 'EXW' => 'EXW'];
         if ($vocabulary = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadTree('incoterm', 0, 1)) {
             foreach ($vocabulary as $item) {
                 $select_incoterm[$item->name] = $item->name;
@@ -317,7 +315,7 @@ class Quotation extends FormBase {
         $form['options']['incoterm'] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#title' => t('Incoterms'),
+            '#title' => $this->t('Incoterms'),
             '#options' => $select_incoterm,
             '#default_value' => isset($incoterm_name) ? $incoterm_name : '0',
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
@@ -331,7 +329,7 @@ class Quotation extends FormBase {
             '#default_value' => $incoterm_rate,
             '#maxlength' => 10,
             '#title' => '%',
-            '#attributes' => array('placeholder' => t('rate') . ' (%)', 'title' => t('rate') . ' (%)', 'class' => array('amount')),
+            '#attributes' => array('placeholder' => $this->t('rate') . ' (%)', 'title' => $this->t('rate') . ' (%)', 'class' => array('amount')),
             '#prefix' => "<div class='cell' id='term'>",
             '#suffix' => '</div></div></div>',
             '#states' => array(
@@ -345,9 +343,9 @@ class Quotation extends FormBase {
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 50,
-            '#title' => t('Add tax'),
-            '#default_value' => isset($tax_name) ? $tax_name : NULL,
-            '#attributes' => array('placeholder' => t('description, ex. VAT')),
+            '#title' => $this->t('Add tax'),
+            '#default_value' => isset($tax_name) ? $tax_name : null,
+            '#attributes' => array('placeholder' => $this->t('description, ex. VAT')),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
         );
@@ -359,7 +357,7 @@ class Quotation extends FormBase {
             '#maxlength' => 10,
             '#title' => '%',
             '#default_value' => isset($tax_rate) ? $tax_rate : 0,
-            '#attributes' => array('placeholder' => t('rate') . ' (%)', 'title' => t('rate') . ' (%)', 'class' => array('amount')),
+            '#attributes' => array('placeholder' => $this->t('rate') . ' (%)', 'title' => $this->t('rate') . ' (%)', 'class' => array('amount')),
             '#prefix' => "<div class='cell' id='tax_'>",
             '#suffix' => '</div></div></div>',
             '#states' => array(
@@ -372,28 +370,28 @@ class Quotation extends FormBase {
         $form['options']['comment'] = array(
             '#type' => 'textarea',
             '#rows' => 2,
-            '#default_value' => isset($data->comment) ? $data->comment : NULL,
+            '#default_value' => isset($data->comment) ? $data->comment : null,
             '#prefix' => "<div class='container-inline'>",
             '#suffix' => "</div>",
-            '#attributes' => array('placeholder' => t('comment')),
+            '#attributes' => array('placeholder' => $this->t('comment')),
         );
 
 
-        if ($revision <> NULL) {
+        if ($revision <> null) {
             $form['options']['revision'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => array($revision => $revision, 'new' => t('new revision')),
-                '#required' => TRUE,
+                '#options' => array($revision => $revision, 'new' => $this->t('new revision')),
+                '#required' => true,
                 '#default_value' => $revision,
-                '#title' => t('current revision'),
+                '#title' => $this->t('current revision'),
             );
         }
 
         $form['items'] = array(
             '#type' => 'details',
             '#title' => $this->t('Items'),
-            '#open' => TRUE,
+            '#open' => true,
         );
 
 
@@ -448,7 +446,7 @@ class Quotation extends FormBase {
                     'id' => ['tour-item8'],
                 ),
             );
-            
+
             $itemSettings = new \Drupal\ek_products\ItemSettings();
             $prices_options = [
                 0 => '-',
@@ -493,7 +491,7 @@ class Quotation extends FormBase {
         }
 
         $form['items']['itemTable'] = array(
-            '#tree' => TRUE,
+            '#tree' => true,
             '#theme' => 'table',
             '#header' => $header,
             '#rows' => array(),
@@ -511,7 +509,7 @@ class Quotation extends FormBase {
             while ($d = $detail->fetchObject()) {
                 $n++;
                 $z++;
-                $link = NULL;
+                $link = null;
                 $rowClass = ($rows[$n]['delete'] == 1) ? 'delete' : 'current';
                 $rowClass .= ' move';
                 $trClass = 'tr' . $n;
@@ -525,7 +523,7 @@ class Quotation extends FormBase {
                     $item = \Drupal\ek_products\ItemData::item_bycode($d->itemid);
                     if (isset($item)) {
                         $name = $item;
-                        $link = \Drupal\ek_products\ItemData::geturl_bycode($d->itemid, TRUE);
+                        $link = \Drupal\ek_products\ItemData::geturl_bycode($d->itemid, true);
                     } else {
                         $name = $d->itemdetails;
                     }
@@ -538,7 +536,7 @@ class Quotation extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 35,
                     '#maxlength' => 255,
-                    '#attributes' => array('placeholder' => t('item')),
+                    '#attributes' => array('placeholder' => $this->t('item')),
                     '#default_value' => $name,
                     '#field_prefix' => "<span class='badge'>" . $z . "</span>",
                     '#field_suffix' => isset($link) ? "<span class='badge'>" . $link . "</span>" : '',
@@ -569,10 +567,10 @@ class Quotation extends FormBase {
 
                     if ($priceType != 0) {
                         $sellPrice = \Drupal\ek_products\ItemData::item_sell_price($thisItemId, $priceType);
-                        $disabled = TRUE;
+                        $disabled = true;
                     } else {
                         $sellPrice = isset($rows[$n]['value']) ? $rows[$n]['value'] : $d->value;
-                        $disabled = FALSE;
+                        $disabled = false;
                     }
                     $form['priceType'] = array(
                         '#id' => 'priceType-' . $n,
@@ -595,9 +593,9 @@ class Quotation extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 8,
                     '#maxlength' => 30,
-                    '#attributes' => array('placeholder' => t('units'), 'class' => array('amount')),
+                    '#attributes' => array('placeholder' => $this->t('units'), 'class' => array('amount')),
                     '#default_value' => $d->unit,
-                    '#required' => TRUE,
+                    '#required' => true,
                 );
                 $form['value'] = array(
                     '#id' => 'value' . $n,
@@ -605,7 +603,7 @@ class Quotation extends FormBase {
                     '#size' => 12,
                     '#maxlength' => 250,
                     '#default_value' => isset($sellPrice) ? $sellPrice : $d->value,
-                    '#attributes' => array('placeholder' => t('price'), 'class' => array('amount')),
+                    '#attributes' => array('placeholder' => $this->t('price'), 'class' => array('amount')),
                     '#disabled' => $disabled,
                     '#prefix' => "<div class='cell' id='v$n'>",
                     '#suffix' => '</div>',
@@ -615,7 +613,7 @@ class Quotation extends FormBase {
                     '#type' => 'checkbox',
                     '#default_value' => $d->opt,
                     '#attributes' => array(
-                        'title' => t('tax include'),
+                        'title' => $this->t('tax include'),
                         'class' => array('amount'),
                     ),
                 );
@@ -625,14 +623,14 @@ class Quotation extends FormBase {
                     '#size' => 12,
                     '#maxlength' => 250,
                     '#default_value' => $total,
-                    '#attributes' => array('placeholder' => t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
+                    '#attributes' => array('placeholder' => $this->t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
                 );
                 $form['delete'] = array(
                     '#id' => 'del' . $n,
                     '#type' => 'checkbox',
                     '#default_value' => 0,
                     '#attributes' => array(
-                        'title' => t('delete on save'),
+                        'title' => $this->t('delete on save'),
                         'onclick' => "jQuery('.tr" . $n . "').toggleClass('delete');",
                         'class' => array('amount'),
                     ),
@@ -766,7 +764,7 @@ class Quotation extends FormBase {
                 '#size' => 40,
                 '#maxlength' => 255,
                 '#field_prefix' => "<span class='badge'>" . $z . "</span>",
-                '#attributes' => array('placeholder' => t('item')),
+                '#attributes' => array('placeholder' => $this->t('item')),
                 '#autocomplete_route_name' => 'ek.look_up_item_ajax',
             );
             if ($this->moduleHandler->moduleExists('ek_products')) {
@@ -779,10 +777,10 @@ class Quotation extends FormBase {
                 $priceType = $rows[$n]['priceType'];
                 if ($priceType != 0) {
                     $sellPrice = \Drupal\ek_products\ItemData::item_sell_price($thisItemId, $priceType);
-                    $disabled = TRUE;
+                    $disabled = true;
                 } else {
                     $sellPrice = isset($rows[$n]['value']) ? $rows[$n]['value'] : 0;
-                    $disabled = FALSE;
+                    $disabled = false;
                 }
                 $form['priceType'] = array(
                     '#id' => 'priceType-' . $n,
@@ -803,8 +801,8 @@ class Quotation extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 8,
                 '#maxlength' => 30,
-                '#attributes' => array('placeholder' => t('units'), 'class' => array('amount')),
-                '#required' => TRUE,
+                '#attributes' => array('placeholder' => $this->t('units'), 'class' => array('amount')),
+                '#required' => true,
             );
             $form['value'] = array(
                 '#id' => 'value' . $n,
@@ -812,7 +810,7 @@ class Quotation extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => isset($sellPrice) ? $sellPrice : 0,
-                '#attributes' => array('placeholder' => t('price'), 'class' => array('amount')),
+                '#attributes' => array('placeholder' => $this->t('price'), 'class' => array('amount')),
                 '#disabled' => $disabled,
                 '#prefix' => "<div class='cell' id='v$n'>",
                 '#suffix' => '</div>',
@@ -821,7 +819,7 @@ class Quotation extends FormBase {
                 '#id' => 'optax' . $n,
                 '#type' => 'checkbox',
                 '#attributes' => array(
-                    'title' => t('tax include'),
+                    'title' => $this->t('tax include'),
                     'class' => array('amount'),
                 ),
             );
@@ -830,7 +828,7 @@ class Quotation extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 12,
                 '#maxlength' => 250,
-                '#attributes' => array('placeholder' => t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
+                '#attributes' => array('placeholder' => $this->t('line total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['delete'] = array();
             $form['weight'] = array(
@@ -940,10 +938,9 @@ class Quotation extends FormBase {
         );
 
 
-// FOOTER
+        // FOOTER
 
         if (($form_state->get('num_items') > 0) || isset($detail)) {
-
             if ($form_state->get('num_items') > 0) {
                 $form['items']['remove'] = array(
                     '#type' => 'submit',
@@ -960,7 +957,7 @@ class Quotation extends FormBase {
             $n = $n + 2;
             $form['description'] = array(
                 '#type' => 'item',
-                '#markup' => t('Total') . " " . "<span id='convertedValue' class='badge'></span>"
+                '#markup' => $this->t('Total') . " " . "<span id='convertedValue' class='badge'></span>"
             );
             $form['priceType'] = ['#type' => 'item'];
             $form['quantity'] = ['#type' => 'item'];
@@ -972,7 +969,7 @@ class Quotation extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => isset($grandtotal) ? number_format($grandtotal, 2) : 0,
-                '#attributes' => array('placeholder' => t('total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
+                '#attributes' => array('placeholder' => $this->t('total'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['delete'] = array(
                 '#item' => "",
@@ -1014,11 +1011,11 @@ class Quotation extends FormBase {
             unset($form['delete']);
             unset($form['weight']);
 
-            //incoterm       
+            //incoterm
             $n++;
             $form['description'] = array(
                 '#type' => 'item',
-                '#markup' => ($incoterm_name != 0) ? t('Incoterm applied') . " " . $incoterm_name : t('Incoterm applied'),
+                '#markup' => ($incoterm_name != 0) ? $this->t('Incoterm applied') . " " . $incoterm_name : $this->t('Incoterm applied'),
             );
             $form['priceType'] = ['#type' => 'item'];
             $form['quantity'] = array('#type' => 'hidden', '#value' => '1', '#attributes' => ['id' => ['quantity' . $n]],);
@@ -1027,7 +1024,7 @@ class Quotation extends FormBase {
                 '#id' => 'optax' . $n,
                 '#type' => 'checkbox',
                 '#attributes' => array(
-                    'title' => t('tax include'),
+                    'title' => $this->t('tax include'),
                     'class' => array('amount'),
                 ),
             );
@@ -1037,7 +1034,7 @@ class Quotation extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => number_format($grandtotal * $incoterm_rate / 100, 2),
-                '#attributes' => array('placeholder' => t('incoterm'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
+                '#attributes' => array('placeholder' => $this->t('incoterm'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['delete'] = ['#type' => 'item'];
             $form['weight'] = ['#type' => 'item'];
@@ -1076,12 +1073,12 @@ class Quotation extends FormBase {
             unset($form['delete']);
             unset($form['weight']);
 
-            //tax   
+            //tax
             $n++;
             $taxamount = round(($taxable * $tax_rate / 100), 2);
             $form['description'] = array(
                 '#type' => 'item',
-                '#markup' => t('Tax applied')
+                '#markup' => $this->t('Tax applied')
             );
             $form['priceType'] = ['#type' => 'item'];
             $form['quantity'] = ['#type' => 'item'];
@@ -1092,7 +1089,7 @@ class Quotation extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => number_format($taxamount, 2),
-                '#attributes' => array('placeholder' => t('tax'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
+                '#attributes' => array('placeholder' => $this->t('tax'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['delete'] = ['#type' => 'item'];
             $form['weight'] = ['#type' => 'item'];
@@ -1135,7 +1132,7 @@ class Quotation extends FormBase {
             $n++;
             $form['description'] = array(
                 '#type' => 'item',
-                '#markup' => t('Total quotation value')
+                '#markup' => $this->t('Total quotation value')
             );
             $form['priceType'] = ['#type' => 'item'];
             $form['quantity'] = ['#type' => 'item'];
@@ -1146,7 +1143,7 @@ class Quotation extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => number_format($grandtotal + ($grandtotal * $incoterm_rate / 100) + $taxamount, 2),
-                '#attributes' => array('placeholder' => t('total quotation'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
+                '#attributes' => array('placeholder' => $this->t('total quotation'), 'readonly' => 'readonly', 'class' => array('amount', 'right')),
             );
             $form['delete'] = ['#type' => 'item'];
             $form['weight'] = ['#type' => 'item'];
@@ -1185,10 +1182,10 @@ class Quotation extends FormBase {
             unset($form['delete']);
             unset($form['weight']);
 
-            $redirect = array(0 => t('view list'), 1 => t('print'));
+            $redirect = array(0 => $this->t('view list'), 1 => $this->t('print'));
             $form['actions']['redirect'] = array(
                 '#type' => 'radios',
-                '#title' => t('Next'),
+                '#title' => $this->t('Next'),
                 '#default_value' => 0,
                 '#options' => $redirect,
             );
@@ -1258,7 +1255,6 @@ class Quotation extends FormBase {
      * Callback : Add item to form
      */
     public function addForm(array &$form, FormStateInterface $form_state) {
-
         if (!$form_state->get('num_items')) {
             $form_state->set('num_items', 1);
         } else {
@@ -1274,7 +1270,6 @@ class Quotation extends FormBase {
      * Callback: Remove item to form
      */
     public function removeForm(array &$form, FormStateInterface $form_state) {
-
         $c = $form_state->get('num_items') - 1;
         $form_state->set('num_items', $c);
         $form_state->setRebuild();
@@ -1284,8 +1279,6 @@ class Quotation extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
-
         if ($form_state->getValue('incoterm') != '0' && ($form_state->getValue('term_rate') == '' || !is_numeric($form_state->getValue('term_rate')))) {
             $form_state->setErrorByName('term_rate', $this->t('Incoterm rate error'));
         }
@@ -1316,10 +1309,8 @@ class Quotation extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $settings = unserialize($form_state->getValue('settings'));
-        if (($form_state->getValue('new_quotation') && $form_state->getValue('new_quotation') == 1)
-                || $form_state->getValue('clone') == TRUE) {
+        if (($form_state->getValue('new_quotation') && $form_state->getValue('new_quotation') == 1) || $form_state->getValue('clone') == true) {
             //create new serial No
             $type = 'QU';
             $short = Database::getConnection('external_db', 'external_db')
@@ -1352,21 +1343,21 @@ class Quotation extends FormBase {
             $revision = 0;
             foreach ($format['code'] as $k => $v) {
                 switch ($v) {
-                    case 0 :
+                    case 0:
                         break;
-                    case 1 :
+                    case 1:
                         $serial .= ucwords(str_replace('-', '', $short)) . '-';
                         break;
-                    case 2 :
+                    case 2:
                         $serial .= $type . '-';
                         break;
-                    case 3 :
+                    case 3:
                         $serial .= $date . '-';
                         break;
-                    case 4 :
+                    case 4:
                         $serial .= ucwords(str_replace('-', '', $sup)) . '-';
                         break;
-                    case 5 :
+                    case 5:
                         $serial .= $quid;
                         break;
                 }
@@ -1387,18 +1378,17 @@ class Quotation extends FormBase {
                         ->condition('serial', $serial)
                         ->execute();
                 $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_quotation', 'q')
-                    ->fields('q')
-                    ->condition('serial', $serial)
-                    ->execute();
+                        ->select('ek_sales_quotation', 'q')
+                        ->fields('q')
+                        ->condition('serial', $serial)
+                        ->execute();
                 $init_data = $query->fetchAssoc();
                 $quid = $init_data['id'];
-                
             }
         }
 
 
-// Items  
+        // Items
 
         $line = 0;
         $total = 0;
@@ -1412,7 +1402,7 @@ class Quotation extends FormBase {
                     if ($row['delete'] != 1) {
                         $itemId = '';
                         $itemDetails = Xss::filter($row['description']);
-                        $check = NULL;
+                        $check = null;
                         $column_2 = '';
                         $column_3 = '';
                         if ($this->moduleHandler->moduleExists('ek_products')) {
@@ -1437,7 +1427,7 @@ class Quotation extends FormBase {
                         }
 
                         $fields = array('serial' => $serial,
-                            'itemid' => $itemId, // code if item exist 
+                            'itemid' => $itemId, // code if item exist
                             'itemdetails' => $itemDetails,
                             'unit' => $row['quantity'],
                             'value' => $row['value'],
@@ -1493,8 +1483,7 @@ class Quotation extends FormBase {
             'type' => '',
         );
 
-        if (($form_state->getValue('new_quotation') && $form_state->getValue('new_quotation') == 1)
-                || $form_state->getValue('clone') == TRUE) {
+        if (($form_state->getValue('new_quotation') && $form_state->getValue('new_quotation') == 1) || $form_state->getValue('clone') == true) {
             $insert = Database::getConnection('external_db', 'external_db')
                     ->insert('ek_sales_quotation')
                     ->fields($fields1)
@@ -1519,8 +1508,8 @@ class Quotation extends FormBase {
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])
                             ->fetchField();
                     $inputs = [];
-                    if(isset($init_data)){
-                        foreach($fields1 as $key => $value) {
+                    if (isset($init_data)) {
+                        foreach ($fields1 as $key => $value) {
                             if ($value != $init_data[$key]) {
                                 $inputs[] = $key;
                             }
@@ -1538,15 +1527,15 @@ class Quotation extends FormBase {
                     \Drupal\ek_projects\ProjectData::notify_user($param);
                 }
             }
-            if(isset($_SESSION['qfilter']['to'])) {
+            if (isset($_SESSION['qfilter']['to'])) {
                 //if filter is set for list adjust date to last created date to enforce document display
                 $_SESSION['qfilter']['to'] = $form_state->getValue('date');
             }
             switch ($form_state->getValue('redirect')) {
-                case 0 :
+                case 0:
                     $form_state->setRedirect('ek_sales.quotations.list');
                     break;
-                case 1 :
+                case 1:
                     $form_state->setRedirect('ek_sales.quotations.print_share', ['id' => $reference]);
                     break;
             }

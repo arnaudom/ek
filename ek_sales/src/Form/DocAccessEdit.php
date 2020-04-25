@@ -27,9 +27,9 @@ class DocAccessEdit extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $type = NULL) {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $type = null) {
 
-        //if($type == 'sales_doc') {} 
+        //if($type == 'sales_doc') {}
 
         $query = "SELECT share,deny,abid FROM {ek_sales_documents} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
@@ -55,18 +55,18 @@ class DocAccessEdit extends FormBase {
 
         $form['item'] = array(
             '#type' => 'item',
-            '#markup' => '<span class="help">' . t('By default access is given to users who have access to the address book unless custom access has been defined by owner. Use "Ctrl C" to select multiple users in the box below.') . '</span>',
+            '#markup' => '<span class="help">' . $this->t('By default access is given to users who have access to the address book unless custom access has been defined by owner. Use "Ctrl C" to select multiple users in the box below.') . '</span>',
         );
 
         $form['users'] = array(
             '#type' => 'select',
             '#options' => $users,
-            '#multiple' => TRUE,
+            '#multiple' => true,
             '#size' => 8,
             '#default_value' => $default_users,
             '#attributes' => array('class' => ['form-select-multiple']),
             '#attached' => array(
-                'drupalSettings' => array('left' => t('Restricted'), 'right' => t('Allowed')),
+                'drupalSettings' => array('left' => $this->t('Restricted'), 'right' => $this->t('Allowed')),
                 'library' => array('ek_admin/ek_admin_multi-select'),
             ),
         );
@@ -86,7 +86,7 @@ class DocAccessEdit extends FormBase {
         $form['actions']['access'] = array(
             '#id' => 'accessbutton',
             '#type' => 'submit',
-            '#value' => t('Save'),
+            '#value' => $this->t('Save'),
             '#attributes' => array('class' => array('use-ajax-submit')),
         );
 
@@ -142,8 +142,9 @@ class DocAccessEdit extends FormBase {
             }
         }
 
-        if (empty($new_deny))
+        if (empty($new_deny)) {
             $new_deny = '0';
+        }
 
         $fields = array(
             'share' => implode(',', $new_share),
@@ -159,10 +160,10 @@ class DocAccessEdit extends FormBase {
         }
 
         if ($update) {
-            $form_state->set('message', t('saved'));
+            $form_state->set('message', $this->t('saved'));
             $form_state->setRebuild();
         } else {
-            $form_state->set('message', t('error'));
+            $form_state->set('message', $this->t('error'));
             $form_state->setRebuild();
         }
     }

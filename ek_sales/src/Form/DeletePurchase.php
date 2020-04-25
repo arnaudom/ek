@@ -52,34 +52,32 @@ class DeletePurchase extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-        
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $query = Database::getConnection('external_db', 'external_db')
-                      ->select('ek_sales_purchase', 'p');
-              $query->fields('p', ['status','serial', 'title', 'head']);
-              $query->condition('id', $id, '=');
+                ->select('ek_sales_purchase', 'p');
+        $query->fields('p', ['status', 'serial', 'title', 'head']);
+        $query->condition('id', $id, '=');
 
         $data = $query->execute()->fetchObject();
-        
+
         $form['edit_purchase'] = array(
             '#type' => 'item',
-            '#markup' => t('Purchase ref. @p', array('@p' => $data->serial)),
+            '#markup' => $this->t('Purchase ref. @p', array('@p' => $data->serial)),
         );
 
 
 
         if ($data->status == 0) {
-
             $form['for_id'] = array(
                 '#type' => 'hidden',
                 '#value' => $id,
             );
-        
+
             $form['coid'] = array(
-              '#type' => 'hidden',
-              '#value' => $data->head,
+                '#type' => 'hidden',
+                '#value' => $data->head,
             );
-            
+
             $form['serial'] = array(
                 '#type' => 'hidden',
                 '#value' => $data->serial,
@@ -87,7 +85,7 @@ class DeletePurchase extends FormBase {
 
             $form['alert'] = array(
                 '#type' => 'item',
-                '#markup' => t('Are you sure you want to delete this purchase ?'),
+                '#markup' => $this->t('Are you sure you want to delete this purchase ?'),
             );
 
             $form['actions']['record'] = array(
@@ -95,10 +93,9 @@ class DeletePurchase extends FormBase {
                 '#value' => $this->t('Delete'),
             );
         } else {
-
             $form['alert'] = array(
                 '#type' => 'item',
-                '#markup' => t('This purchase cannot be deleted because it has been fully or partially paid'),
+                '#markup' => $this->t('This purchase cannot be deleted because it has been fully or partially paid'),
             );
         }
         return $form;
@@ -115,8 +112,6 @@ class DeletePurchase extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
         $delete = Database::getConnection('external_db', 'external_db')
                 ->delete('ek_sales_purchase')
                 ->condition('id', $form_state->getValue('for_id'))
@@ -128,18 +123,16 @@ class DeletePurchase extends FormBase {
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $journal = new \Drupal\ek_finance\Journal();
-            $journalId = $journal->delete('purchase', $form_state->getValue('for_id'),$form_state->getValue('coid'));
-            //count field sequence must be restored 
+            $journalId = $journal->delete('purchase', $form_state->getValue('for_id'), $form_state->getValue('coid'));
+            //count field sequence must be restored
             $journal->resetCount($form_state->getValue('coid'), $journalId[1]);
         }
 
         if ($delete) {
-            \Drupal::messenger()->addStatus(t('The purchase has been deleted'));
+            \Drupal::messenger()->addStatus($this->t('The purchase has been deleted'));
             \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
             $form_state->setRedirect("ek_sales.purchases.list");
         }
     }
 
 }
-
-//class

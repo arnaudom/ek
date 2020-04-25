@@ -54,7 +54,7 @@ class AlertPurchase extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $query = "SELECT serial,alert,alert_who from {ek_sales_purchase} where id=:id";
         $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
 
@@ -76,24 +76,23 @@ class AlertPurchase extends FormBase {
 
 
         if ($data) {
-
             $alert_who = explode(',', $data->alert_who);
             $list = array();
             foreach ($alert_who as $k => $uid) {
                 $acc = \Drupal\user\Entity\User::load($uid);
-                if($acc){
+                if ($acc) {
                     $list[] = $acc->getAccountName();
                 }
             }
 
             $form['edit_purchase'] = array(
                 '#type' => 'item',
-                '#markup' => t('Purchase ref. @p', array('@p' => $data->serial)),
+                '#markup' => $this->t('Purchase ref. @p', array('@p' => $data->serial)),
             );
 
             $form['info'] = array(
                 '#type' => 'item',
-                '#markup' => t('Automatic alert will be send to the list of users for purchase not paid or payment made'),
+                '#markup' => $this->t('Automatic alert will be send to the list of users for purchase not paid or payment made'),
             );
 
             $form['for_id'] = array(
@@ -103,16 +102,15 @@ class AlertPurchase extends FormBase {
 
             $form['status'] = array(
                 '#type' => 'select',
-                '#options' => array('0' => t('off'), '1' => t('on')),
+                '#options' => array('0' => $this->t('off'), '1' => $this->t('on')),
                 '#default_value' => $data->alert,
             );
             if ($this->moduleHandler->moduleExists('ek_address_book')) {
-
                 $form['users'] = array(
                     '#type' => 'textarea',
                     '#rows' => 2,
-                    '#attributes' => array('placeholder' => t('enter users separated by comma (autocomplete enabled).')),
-                    '#default_value' => (!empty($list)) ? implode(',', $list) . ',' : NULL,
+                    '#attributes' => array('placeholder' => $this->t('enter users separated by comma (autocomplete enabled).')),
+                    '#default_value' => (!empty($list)) ? implode(',', $list) . ',' : null,
                     '#attached' => array(
                         'library' => array(
                             'ek_admin/ek_admim.users_autocomplete'
@@ -123,9 +121,9 @@ class AlertPurchase extends FormBase {
                 $form['users'] = array(
                     '#type' => 'textarea',
                     '#rows' => 2,
-                    '#default_value' => (!empty($list)) ? implode(',', $list) . ',' : NULL,
-                    '#required' => TRUE,
-                    '#attributes' => array('placeholder' => t('enter email addresses separated by comma.')),
+                    '#default_value' => (!empty($list)) ? implode(',', $list) . ',' : null,
+                    '#required' => true,
+                    '#attributes' => array('placeholder' => $this->t('enter email addresses separated by comma.')),
                 );
             }
 
@@ -135,17 +133,16 @@ class AlertPurchase extends FormBase {
             );
 
             $form['actions']['cancel'] = array(
-                '#markup' => "<a href='" . Url::fromRoute('ek_sales.purchases.list')->toString() . "' >" . t('Cancel') . "</a>",
+                '#markup' => "<a href='" . Url::fromRoute('ek_sales.purchases.list')->toString() . "' >" . $this->t('Cancel') . "</a>",
             );
         } else {
-
             $form['info'] = array(
                 '#type' => 'item',
                 '#markup' => $this->t('You cannot edit this purchase alert.'),
             );
 
             $form['cancel'] = array(
-                '#markup' => "<a href='" . Url::fromRoute('ek_sales.purchases.list')->toString() . "' >" . t('Return') . "</a>",
+                '#markup' => "<a href='" . Url::fromRoute('ek_sales.purchases.list')->toString() . "' >" . $this->t('Return') . "</a>",
             );
         }
 
@@ -166,15 +163,15 @@ class AlertPurchase extends FormBase {
             $error = '';
             $list = '';
             foreach ($users as $u) {
-                if (trim($u) != NULL) {
-                    //check it is a registered user 
+                if (trim($u) != null) {
+                    //check it is a registered user
                     $uname = trim($u);
                     $query = Database::getConnection()->select('users_field_data', 'u');
                     $query->fields('u', ['uid']);
                     $query->condition('name', $uname);
                     $id = $query->execute()->fetchField();
                     if (!$id) {
-                        $error.= $uname . ' ';
+                        $error .= $uname . ' ';
                     } else {
                         $list .= $id . ',';
                     }
@@ -184,7 +181,7 @@ class AlertPurchase extends FormBase {
                 $form_state->set('list', rtrim($list, ","));
             }
             if ($error != '') {
-                $form_state->setErrorByName("users", t('Invalid user(s)') . ': ' . $error);
+                $form_state->setErrorByName("users", $this->t('Invalid user(s)') . ': ' . $error);
             }
         }
     }
@@ -193,7 +190,6 @@ class AlertPurchase extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $fields = array(
             'alert' => $form_state->getValue('status'),
             'alert_who' => $form_state->get('list'),

@@ -14,7 +14,7 @@ use Drupal\Core\Extension\ModuleHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a form to reecord and edit purchase email alerts.
+ * Provides a form to record and edit purchase email alerts.
  */
 class DeleteQuotation extends FormBase {
 
@@ -52,19 +52,17 @@ class DeleteQuotation extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $query = "SELECT status,serial from {ek_sales_quotation} where id=:id";
         $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
 
 
         $form['edit_invoice'] = array(
             '#type' => 'item',
-            '#markup' => t('Quotation ref. @p', array('@p' => $data->serial)),
+            '#markup' => $this->t('Quotation ref. @p', array('@p' => $data->serial)),
         );
 
         if ($data->status == 0) {
-
             $form['for_id'] = array(
                 '#type' => 'hidden',
                 '#value' => $id,
@@ -77,7 +75,7 @@ class DeleteQuotation extends FormBase {
 
             $form['alert'] = array(
                 '#type' => 'item',
-                '#markup' => t('Are you sure you want to delete this quotation ?'),
+                '#markup' => $this->t('Are you sure you want to delete this quotation ?'),
             );
 
             $form['actions']['record'] = array(
@@ -85,10 +83,9 @@ class DeleteQuotation extends FormBase {
                 '#value' => $this->t('Delete'),
             );
         } else {
-
             $form['alert'] = array(
                 '#type' => 'item',
-                '#markup' => t('This quotation cannot be deleted because it has been already printed or invoiced'),
+                '#markup' => $this->t('This quotation cannot be deleted because it has been already printed or invoiced'),
             );
         }
         return $form;
@@ -105,14 +102,18 @@ class DeleteQuotation extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
-        $delete = Database::getConnection('external_db', 'external_db')->delete('ek_sales_quotation')->condition('id', $form_state->getValue('for_id'))->execute();
-        $delete = Database::getConnection('external_db', 'external_db')->delete('ek_sales_quotation_details')->condition('serial', $form_state->getValue('serial'))->execute();
+        $delete = Database::getConnection('external_db', 'external_db')
+                ->delete('ek_sales_quotation')
+                ->condition('id', $form_state->getValue('for_id'))
+                ->execute();
+        $delete = Database::getConnection('external_db', 'external_db')
+                ->delete('ek_sales_quotation_details')
+                ->condition('serial', $form_state->getValue('serial'))
+                ->execute();
 
 
         if ($delete) {
-            \Drupal::messenger()->addStatus(t('The quotation has been deleted'));
+            \Drupal::messenger()->addStatus($this->t('The quotation has been deleted'));
             \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
             $form_state->setRedirect("ek_sales.quotations.list");
         }

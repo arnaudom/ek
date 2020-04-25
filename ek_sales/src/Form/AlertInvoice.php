@@ -54,8 +54,7 @@ class AlertInvoice extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $access = AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_invoice', 'i');
@@ -72,12 +71,11 @@ class AlertInvoice extends FormBase {
                 ->fetchObject();
 
         if ($data) {
-
             $alert_who = explode(',', $data->alert_who);
             $list = [];
             foreach ($alert_who as $k => $uid) {
                 $acc = \Drupal\user\Entity\User::load($uid);
-                if($acc){
+                if ($acc) {
                     $list[] = $acc->getAccountName();
                 }
             }
@@ -86,11 +84,11 @@ class AlertInvoice extends FormBase {
 
             $form['edit_invoice'] = array(
                 '#type' => 'item',
-                '#markup' => t('Invoice ref. @p', array('@p' => $data->serial)),
+                '#markup' => $this->t('Invoice ref. @p', array('@p' => $data->serial)),
             );
             $form['info'] = array(
                 '#type' => 'item',
-                '#markup' => t('Automatic alert will be send to the list of users for invoices not paid or payment received'),
+                '#markup' => $this->t('Automatic alert will be send to the list of users for invoices not paid or payment received'),
             );
 
             $form['for_id'] = array(
@@ -100,16 +98,15 @@ class AlertInvoice extends FormBase {
 
             $form['status'] = array(
                 '#type' => 'select',
-                '#options' => array('0' => t('off'), '1' => t('on')),
+                '#options' => array('0' => $this->t('off'), '1' => $this->t('on')),
                 '#default_value' => $data->alert,
             );
             if ($this->moduleHandler->moduleExists('ek_admin')) {
-
                 $form['users'] = array(
                     '#type' => 'textarea',
                     '#rows' => 2,
-                    '#attributes' => array('placeholder' => t('enter users separated by comma (autocomplete enabled).')),
-                    '#default_value' => (!empty($list)) ? implode(',', $list) . ',' : NULL,
+                    '#attributes' => array('placeholder' => $this->t('enter users separated by comma (autocomplete enabled).')),
+                    '#default_value' => (!empty($list)) ? implode(',', $list) . ',' : null,
                     '#attached' => array(
                         'library' => array(
                             'ek_admin/ek_admim.users_autocomplete'
@@ -120,9 +117,9 @@ class AlertInvoice extends FormBase {
                 $form['users'] = array(
                     '#type' => 'textarea',
                     '#rows' => 2,
-                    '#default_value' => (!empty($list)) ? implode(',', $list) . ',' : NULL,
-                    '#required' => TRUE,
-                    '#attributes' => array('placeholder' => t('enter email addresses separated by comma.')),
+                    '#default_value' => (!empty($list)) ? implode(',', $list) . ',' : null,
+                    '#required' => true,
+                    '#attributes' => array('placeholder' => $this->t('enter email addresses separated by comma.')),
                 );
             }
 
@@ -131,17 +128,16 @@ class AlertInvoice extends FormBase {
                 '#value' => $this->t('Record'),
             );
             $form['actions']['cancel'] = array(
-                '#markup' => "<a href='" . Url::fromRoute('ek_sales.invoices.list')->toString() . "' >" . t('Cancel') . "</a>",
+                '#markup' => "<a href='" . Url::fromRoute('ek_sales.invoices.list')->toString() . "' >" . $this->t('Cancel') . "</a>",
             );
         } else {
-
             $form['info'] = array(
                 '#type' => 'item',
                 '#markup' => $this->t('You cannot edit this invoice alert.'),
             );
 
             $form['cancel'] = array(
-                '#markup' => "<a href='" . Url::fromRoute('ek_sales.invoices.list')->toString() . "' >" . t('Return') . "</a>",
+                '#markup' => "<a href='" . Url::fromRoute('ek_sales.invoices.list')->toString() . "' >" . $this->t('Return') . "</a>",
             );
         }
 
@@ -153,7 +149,6 @@ class AlertInvoice extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->getValue('users') == '' && $form_state->getValue('status') == 1) {
             $form_state->setErrorByName('email', $this->t('there is no user'));
         } else {
@@ -161,8 +156,8 @@ class AlertInvoice extends FormBase {
             $error = '';
             $list = '';
             foreach ($users as $u) {
-                if (trim($u) != NULL) {
-                    //check it is a registered user 
+                if (trim($u) != null) {
+                    //check it is a registered user
                     //$query = "SELECT uid from {users_field_data} WHERE name=:u";
                     //$id = db_query($query, array(':u' => $uname))->fetchField();
                     $uname = trim($u);
@@ -171,7 +166,7 @@ class AlertInvoice extends FormBase {
                     $query->condition('name', $uname);
                     $id = $query->execute()->fetchField();
                     if (!$id) {
-                        $error.= $uname . ' ';
+                        $error .= $uname . ' ';
                     } else {
                         $list .= $id . ',';
                     }
@@ -181,7 +176,7 @@ class AlertInvoice extends FormBase {
                 $form_state->set('list', rtrim($list, ","));
             }
             if ($error != '') {
-                $form_state->setErrorByName("users", t('Invalid user(s)') . ': ' . $error);
+                $form_state->setErrorByName("users", $this->t('Invalid user(s)') . ': ' . $error);
             }
         }
     }
@@ -190,8 +185,6 @@ class AlertInvoice extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
         $fields = array(
             'alert' => $form_state->getValue('status'),
             'alert_who' => $form_state->get('list'),

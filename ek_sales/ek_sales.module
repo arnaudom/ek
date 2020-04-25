@@ -63,17 +63,32 @@ function ek_sales_file_download($uri) {
         }
   }
 }
+
 /**
  * Implementation hook ek_home.
  */
 function ek_sales_ek_home() {
     $build = [];
-    $build['ek']['name'] = 'feature_1';
-    $build['ek']['module'] = 'Sales';
-    $build['ek']['stamp'] = 1583374000;
-    $build['ek']['type'] = "new";
-    $build['ek']['content'] = '<a href="/quotations/list">Quotations</a> filter has now extended options by keyword and companies.';
-    $build['ek']['footer'] = 'March 2020';
+    $build[] = [
+        'name' => 'feature_1',
+        'module' => 'Sales',
+        'stamp' => 1583374000,
+        'type' => "new",
+        'content' => '<a href="/quotations/list">Quotations</a> filter has now extended options by keyword and companies.',
+        'footer' => 'March 2020',
+    ];
+    $build[] = [
+        'name' => 'feature_2',
+        'module' => 'Sales',
+        'stamp' => 1583374000,
+        'type' => "new",
+        'content' => '<a href="/ek_sales/admin/settings-form-customize">Design</a> '
+            . 'pdf documents forms interface.',
+        'footer' => 'April 2020',
+    ];
+    
+   
+    
     return $build;
 }
 

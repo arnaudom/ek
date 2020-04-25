@@ -56,9 +56,6 @@ class FilterQuotation extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
-
-
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_quotation', 'q');
         $query->fields('q', ['date']);
@@ -71,7 +68,7 @@ class FilterQuotation extends FormBase {
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Filter'),
-            '#open' => isset($_SESSION['qfilter']['filter']) ? FALSE : TRUE,
+            '#open' => isset($_SESSION['qfilter']['filter']) ? false : true,
                 //'#attributes' => array('class' => array('container-inline')),
         );
         $form['filters']['filter'] = array(
@@ -83,8 +80,8 @@ class FilterQuotation extends FormBase {
             '#type' => 'textfield',
             '#maxlength' => 75,
             '#size' => 30,
-            '#attributes' => array('placeholder' => t('Search with keyword, ref No.')),
-            '#default_value' => isset($_SESSION['qfilter']['keyword']) ? $_SESSION['qfilter']['keyword'] : NULL,
+            '#attributes' => array('placeholder' => $this->t('Search with keyword, ref No.')),
+            '#default_value' => isset($_SESSION['qfilter']['keyword']) ? $_SESSION['qfilter']['keyword'] : null,
         );
         $form['filters']['coid'] = array(
             '#type' => 'select',
@@ -94,7 +91,7 @@ class FilterQuotation extends FormBase {
             '#prefix' => "<div>",
             '#suffix' => '</div>',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -102,10 +99,10 @@ class FilterQuotation extends FormBase {
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['qfilter']['from']) ? $_SESSION['qfilter']['from'] : $from,
-            '#title' => t('from'),
+            '#title' => $this->t('from'),
             '#prefix' => "<div class='container-inline'>",
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -114,10 +111,10 @@ class FilterQuotation extends FormBase {
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['qfilter']['to']) ? $_SESSION['qfilter']['to'] : $to,
-            '#title' => t('to'),
+            '#title' => $this->t('to'),
             '#suffix' => '</div>',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),),
             ),
         );
 
@@ -125,17 +122,17 @@ class FilterQuotation extends FormBase {
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
             $client = \Drupal\ek_address_book\AddressBookData::addresslist(1);
             if (!empty($client)) {
-                $client = array('%' => t('Any')) + $client;
+                $client = array('%' => $this->t('Any')) + $client;
                 $form['filters']['client'] = array(
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $client,
-                    '#required' => TRUE,
-                    '#default_value' => isset($_SESSION['qfilter']['client']) ? $_SESSION['qfilter']['client'] : NULL,
+                    '#required' => true,
+                    '#default_value' => isset($_SESSION['qfilter']['client']) ? $_SESSION['qfilter']['client'] : null,
                     '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
-                    '#title' => t('client'),
+                    '#title' => $this->t('client'),
                     '#states' => array(
-                        'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),),
+                        'invisible' => array(':input[name="keyword"]' => array('filled' => true),),
                     ),
                 );
             } else {
@@ -145,27 +142,26 @@ class FilterQuotation extends FormBase {
                     '#prefix' => "<div class='messages messages--warning'>",
                     '#suffix' => '</div>',
                     '#states' => array(
-                        'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),),
+                        'invisible' => array(':input[name="keyword"]' => array('filled' => true),),
                     ),
                 );
             }
         } else {
-
             $form['filters']['client'] = array(
-                '#markup' => t('You do not have any client list.'),
+                '#markup' => $this->t('You do not have any client list.'),
                 '#default_value' => 0,
                 '#states' => array(
-                    'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),),
+                    'invisible' => array(':input[name="keyword"]' => array('filled' => true),),
                 ),
             );
         }
 
         $form['filters']['status'] = array(
             '#type' => 'select',
-            '#options' => array('%' => t('All'), 0 => t('Open'), 1 => t('Printed'), 2 => t('Invoiced')),
+            '#options' => array('%' => $this->t('All'), 0 => $this->t('Open'), 1 => $this->t('Printed'), 2 => $this->t('Invoiced')),
             '#default_value' => isset($_SESSION['qfilter']['status']) ? $_SESSION['qfilter']['status'] : '0',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),),
             ),
         );
 
@@ -204,7 +200,6 @@ class FilterQuotation extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $_SESSION['qfilter']['keyword'] = Xss::filter($form_state->getValue('keyword'));
         $_SESSION['qfilter']['coid'] = $form_state->getValue('coid');
         $_SESSION['qfilter']['from'] = $form_state->getValue('from');

@@ -35,7 +35,6 @@ class QuickEdit extends FormBase {
      *   The module handler.
      */
     public function __construct(ModuleHandler $module_handler) {
-
         $this->moduleHandler = $module_handler;
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $this->settings = new FinanceSettings();
@@ -61,9 +60,7 @@ class QuickEdit extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $doc = NULL) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $doc = null) {
         $query = "SELECT * from {ek_sales_" . $doc . "} where id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $id))
@@ -110,9 +107,9 @@ class QuickEdit extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $company,
-                    '#required' => TRUE,
-                    '#default_value' => isset($data->head) ? $data->head : NULL,
-                    '#title' => t('Header'),
+                    '#required' => true,
+                    '#default_value' => isset($data->head) ? $data->head : null,
+                    '#title' => $this->t('Header'),
                     '#prefix' => "",
                     '#suffix' => '',
                     '#ajax' => array(
@@ -126,9 +123,9 @@ class QuickEdit extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $company,
-                    '#required' => TRUE,
-                    '#default_value' => isset($data->head) ? $data->head : NULL,
-                    '#title' => t('Header'),
+                    '#required' => true,
+                    '#default_value' => isset($data->head) ? $data->head : null,
+                    '#title' => $this->t('Header'),
                 );
             }
 
@@ -136,23 +133,22 @@ class QuickEdit extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $company,
-                '#required' => TRUE,
-                '#default_value' => isset($data->allocation) ? $data->allocation : NULL,
-                '#title' => t('Allocated'),
-                '#description' => t('select an entity for which the @doc is done', ['@doc' => $doc]),
+                '#required' => true,
+                '#default_value' => isset($data->allocation) ? $data->allocation : null,
+                '#title' => $this->t('Allocated'),
+                '#description' => $this->t('select an entity for which the @doc is done', ['@doc' => $doc]),
                 '#prefix' => "",
                 '#suffix' => '',
             );
 
 
             if ($this->moduleHandler->moduleExists('ek_address_book')) {
-
                 if ($doc == 'invoice' || $doc == 'quotation') {
                     $type = 1;
-                    $title = t('Client');
+                    $title = $this->t('Client');
                 } else {
                     $type = 2;
-                    $title = t('Supplier');
+                    $title = $this->t('Supplier');
                 }
                 $client = \Drupal\ek_address_book\AddressBookData::addresslist($type);
 
@@ -160,17 +156,16 @@ class QuickEdit extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $client,
-                    '#required' => TRUE,
-                    '#default_value' => isset($data->client) ? $data->client : NULL,
+                    '#required' => true,
+                    '#default_value' => isset($data->client) ? $data->client : null,
                     '#title' => $title,
                     '#prefix' => "",
                     '#suffix' => '',
                     '#attributes' => array('style' => array('width:300px;white-space:nowrap')),
                 );
             } else {
-
                 $form['options']['client'] = array(
-                    '#markup' => t('You do not have any client list.'),
+                    '#markup' => $this->t('You do not have any client list.'),
                     '#default_value' => 0,
                     '#prefix' => "",
                     '#suffix' => '',
@@ -180,35 +175,32 @@ class QuickEdit extends FormBase {
             $form['options']['date'] = array(
                 '#type' => 'date',
                 '#size' => 12,
-                '#required' => TRUE,
+                '#required' => true,
                 '#default_value' => isset($data->date) ? $data->date : date('Y-m-d'),
-                '#title' => t('Date'),
+                '#title' => $this->t('Date'),
                 '#prefix' => "",
                 '#suffix' => '',
             );
 
 
             if ($this->moduleHandler->moduleExists('ek_projects')) {
-
-
                 $form['options']['pcode'] = array(
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => ProjectData::listprojects(0),
-                    '#required' => TRUE,
-                    '#default_value' => isset($data->pcode) ? $data->pcode : NULL,
-                    '#title' => t('Project'),
+                    '#required' => true,
+                    '#default_value' => isset($data->pcode) ? $data->pcode : null,
+                    '#title' => $this->t('Project'),
                     '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
                 );
             } // project
 
             if ($this->moduleHandler->moduleExists('ek_finance') && $doc == 'invoice') {
-
                 $options['bank'] = \Drupal\ek_finance\BankData::listbankaccountsbyaid($form_state->getValue('head'));
 
                 $form['options']['_currency'] = array(
                     '#type' => 'item',
-                    '#markup' => t('Currency') . " : <strong>" . $data->currency . "</strong>",
+                    '#markup' => $this->t('Currency') . " : <strong>" . $data->currency . "</strong>",
                 );
 
                 $form['options']['currency'] = array(
@@ -221,8 +213,8 @@ class QuickEdit extends FormBase {
                     '#size' => 1,
                     '#options' => isset($options['bank']) ? $options['bank'] : array(),
                     '#default_value' => isset($data->bank) ? $data->bank : $form_state->getValue('bank_account'),
-                    '#required' => TRUE,
-                    '#title' => t('Account payment'),
+                    '#required' => true,
+                    '#title' => $this->t('Account payment'),
                     '#prefix' => "<div id='debit'>",
                     '#suffix' => '</div>',
                     '#description' => '',
@@ -243,9 +235,9 @@ class QuickEdit extends FormBase {
                 $form['options']['terms'] = array(
                     '#type' => 'select',
                     '#size' => 1,
-                    '#options' => array(t('on receipt'), t('due days')),
-                    '#default_value' => isset($data->terms) ? $data->terms : NULL,
-                    '#title' => t('Terms'),
+                    '#options' => array(t('on receipt'), $this->t('due days')),
+                    '#default_value' => isset($data->terms) ? $data->terms : null,
+                    '#title' => $this->t('Terms'),
                     '#prefix' => "<div class='container-inline'>",
                     '#ajax' => array(
                         'callback' => array($this, 'check_day'),
@@ -258,8 +250,8 @@ class QuickEdit extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 5,
                     '#maxlength' => 3,
-                    '#default_value' => isset($data->due) ? $data->due : NULL,
-                    '#attributes' => array('placeholder' => t('days')),
+                    '#default_value' => isset($data->due) ? $data->due : null,
+                    '#attributes' => array('placeholder' => $this->t('days')),
                     '#ajax' => array(
                         'callback' => array($this, 'check_day'),
                         'wrapper' => 'calday',
@@ -284,17 +276,17 @@ class QuickEdit extends FormBase {
                     '#type' => 'textfield',
                     '#maxlength' => 50,
                     '#size' => 25,
-                    '#default_value' => isset($data->po_no) ? $data->po_no : NULL,
-                    '#attributes' => array('placeholder' => t('PO No.')),
+                    '#default_value' => isset($data->po_no) ? $data->po_no : null,
+                    '#attributes' => array('placeholder' => $this->t('PO No.')),
                 );
             }
             $form['options']['comment'] = array(
                 '#type' => 'textarea',
                 '#rows' => 1,
-                '#default_value' => isset($data->comment) ? $data->comment : NULL,
+                '#default_value' => isset($data->comment) ? $data->comment : null,
                 '#prefix' => "<div class='container-inline'>",
                 '#suffix' => "</div>",
-                '#attributes' => array('placeholder' => t('comment')),
+                '#attributes' => array('placeholder' => $this->t('comment')),
             );
 
 
@@ -322,13 +314,11 @@ class QuickEdit extends FormBase {
      * callback functions
      */
     public function set_coid(array &$form, FormStateInterface $form_state) {
-
         return $form['options']['bank_account'];
     }
 
     public function check_day(array &$form, FormStateInterface $form_state) {
-
-        if ($form_state->getValue('terms') == '1' && $form_state->getValue('due') != NULL) {
+        if ($form_state->getValue('terms') == '1' && $form_state->getValue('due') != null) {
             $form['options']['day']["#markup"] = date('Y-m-d', strtotime(date("Y-m-d", strtotime($form_state->getValue('date'))) . "+" . $form_state->getValue('due') . ' ' . t("days")));
         } else {
             $form['options']['day']["#markup"] = '';
@@ -340,8 +330,6 @@ class QuickEdit extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
-
         if ($form_state->getValue('terms') == 1 && $form_state->getValue('due') == '') {
             $form_state->setErrorByName('due', $this->t('Terms days is empty'));
         }
@@ -355,7 +343,6 @@ class QuickEdit extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $serial = $form_state->getValue('serial');
         $doc = $form_state->getValue('doc');
         $query = Database::getConnection('external_db', 'external_db')
@@ -366,7 +353,6 @@ class QuickEdit extends FormBase {
         $init_data = $query->fetchAssoc();
 
         if ($doc == 'quotation') {
-
             if ($form_state->getValue('pcode') == 'n/a') {
                 $pcode = '';
             } else {

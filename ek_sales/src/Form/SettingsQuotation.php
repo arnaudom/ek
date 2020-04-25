@@ -18,15 +18,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class SettingsQuotation extends FormBase {
 
-
     /**
      *
      */
     public function __construct() {
         $this->salesSettings = new \Drupal\ek_sales\SalesSettings();
-        
     }
-
 
     /**
      * {@inheritdoc}
@@ -39,17 +36,15 @@ class SettingsQuotation extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
         $quote = $this->salesSettings->get('quotation');
-        $form['setting']['#tree'] = TRUE;
-        $name = [1 => 'Item', 2 => 'Origin', 3 => 'Reference', 4 => 'Quantities', 5 => 'Price', 6 => 'Total' ];
+        $form['setting']['#tree'] = true;
+        $name = [1 => 'Item', 2 => 'Origin', 3 => 'Reference', 4 => 'Quantities', 5 => 'Price', 6 => 'Total'];
 
-        for($i = 1; $i <= 6; $i++) {
-
+        for ($i = 1; $i <= 6; $i++) {
             $form['setting'][$i]['field'] = array(
                 '#type' => 'textfield',
-                '#value' => t('column') .' '. $i,
-                '#disabled' => TRUE,
+                '#value' => $this->t('column') . ' ' . $i,
+                '#disabled' => true,
                 '#size' => 20,
                 '#prefix' => "<div class='container-inline'>",
             );
@@ -59,12 +54,12 @@ class SettingsQuotation extends FormBase {
                 '#default_value' => isset($quote[$i]['name']) ? $quote[$i]['name'] : $name[$i],
                 '#size' => 20,
                 '#maxlength' => 50,
-                '#required' => TRUE,
+                '#required' => true,
             );
 
             $form['setting'][$i]['active'] = array(
                 '#type' => 'select',
-                '#options' => array('0' => t('hide'), '1' => t('display')),
+                '#options' => array('0' => $this->t('hide'), '1' => $this->t('display')),
                 '#default_value' => isset($quote[$i]['active']) ? $quote[$i]['active'] : 1,
                 '#suffix' => '</div>',
             );
@@ -91,7 +86,6 @@ class SettingsQuotation extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $quotation = [];
         $i = 0;
         foreach ($form_state->getValue('setting') as $key => $data) {
@@ -103,11 +97,10 @@ class SettingsQuotation extends FormBase {
 
         $this->salesSettings->set('quotation', $quotation);
         $save = $this->salesSettings->save();
-      
-        if ($save){
-           \Drupal::messenger()->addStatus(t('The settings are recorded'));
+
+        if ($save) {
+            \Drupal::messenger()->addStatus(t('The settings are recorded'));
         }
-        
     }
 
 }

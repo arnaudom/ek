@@ -56,9 +56,7 @@ class TaskPurchase extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $access = AccessCheck::GetCompanyByUser();
 
         $query = Database::getConnection('external_db', 'external_db')
@@ -78,17 +76,16 @@ class TaskPurchase extends FormBase {
 
 
         if ($data) {
-
             $form['edit_purchase'] = array(
                 '#type' => 'item',
-                '#markup' => t('Purchase ref. @p', array('@p' => $data->serial)),
+                '#markup' => $this->t('Purchase ref. @p', array('@p' => $data->serial)),
             );
 
             $b = Url::fromRoute('ek_sales.purchases.tasks_list', array(), array())->toString();
             $form['back'] = array(
-                '#markup' => t('<a href="@url">List</a>', array('@url' => $b)),
+                '#markup' => $this->t('<a href="@url">List</a>', array('@url' => $b)),
             );
-            
+
             $form['for_serial'] = array(
                 '#type' => 'hidden',
                 '#value' => $data->serial,
@@ -119,8 +116,8 @@ class TaskPurchase extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => \Drupal\ek_admin\Access\AccessCheck::listUsers(1),
-                '#required' => TRUE,
-                '#default_value' => isset($data->uid) ? $data->uid : NULL,
+                '#required' => true,
+                '#default_value' => isset($data->uid) ? $data->uid : null,
                 '#title' => $this->t('Assigned to'),
             );
 
@@ -129,7 +126,7 @@ class TaskPurchase extends FormBase {
                 '#title' => $this->t('Task description'),
                 '#size' => 25,
                 '#maxlength' => 150,
-                '#default_value' => isset($data->task) ? $data->task : NULL,
+                '#default_value' => isset($data->task) ? $data->task : null,
             );
 
 
@@ -137,7 +134,7 @@ class TaskPurchase extends FormBase {
                 '#type' => 'date',
                 '#id' => 'edit-from',
                 '#size' => 12,
-                '#required' => TRUE,
+                '#required' => true,
                 '#default_value' => isset($data->start) ? date('Y-m-d', $data->start) : date('Y-m-d'),
                 '#title' => $this->t('Starting'),
                 '#prefix' => "<div class='container-inline'>",
@@ -148,7 +145,7 @@ class TaskPurchase extends FormBase {
                 '#type' => 'date',
                 '#id' => 'edit-to',
                 '#size' => 12,
-                '#default_value' => isset($data->end) ? date('Y-m-d', $data->end) : NULL,
+                '#default_value' => isset($data->end) ? date('Y-m-d', $data->end) : null,
                 '#title' => $this->t('ending'),
                 '#suffix' => '</div>',
             );
@@ -158,15 +155,15 @@ class TaskPurchase extends FormBase {
                 '#title' => $this->t('Color'),
                 '#default_value' => isset($data->color) ? $data->color : '#80ff80',
             );
-            
+
             $notify = array(
-                '0' => t('Never'),
-                '1' => t('Weekly'),
-                '2' => t('5 days before deadline'),
-                '3' => t('3 days before dealine'),
-                '4' => t('1 day before dealine'),
-                '5' => t('Daily'),
-                '6' => t('Monthly')
+                '0' => $this->t('Never'),
+                '1' => $this->t('Weekly'),
+                '2' => $this->t('5 days before deadline'),
+                '3' => $this->t('3 days before dealine'),
+                '4' => $this->t('1 day before dealine'),
+                '5' => $this->t('Daily'),
+                '6' => $this->t('Monthly')
             );
 
             $form['notify'] = array(
@@ -176,17 +173,17 @@ class TaskPurchase extends FormBase {
                 '#default_value' => $data->notify,
             );
 
-            if ($data->notify_who != NULL) {
+            if ($data->notify_who != null) {
                 $who = explode(',', $data->notify_who);
                 $list = '';
 
                 foreach ($who as $w) {
-                    if (trim($w) != NULL) {
-                    $acc = \Drupal\user\Entity\User::load($w);
-                     if($acc){
-                         $list .= $acc->getAccountName();
-                     }
-                   }
+                    if (trim($w) != null) {
+                        $acc = \Drupal\user\Entity\User::load($w);
+                        if ($acc) {
+                            $list .= $acc->getAccountName();
+                        }
+                    }
                 }
             } else {
                 $list = '';
@@ -197,14 +194,13 @@ class TaskPurchase extends FormBase {
                 '#type' => 'textarea',
                 '#title' => $this->t('Notification recipients'),
                 '#rows' => 2,
-                '#attributes' => array('placeholder' => t('enter users names separated by comma (autocomplete enabled).')),
+                '#attributes' => array('placeholder' => $this->t('enter users names separated by comma (autocomplete enabled).')),
                 '#default_value' => $list,
                 '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
             );
 
 
             if (isset($data->id)) {
-
                 $rate = array(
                     '0' => 0,
                     '10' => 10,
@@ -226,7 +222,6 @@ class TaskPurchase extends FormBase {
                     '#default_value' => $data->completion_rate,
                 );
             } else {
-
                 $form['rate'] = array(
                     '#type' => 'hidden',
                     '#value' => 0,
@@ -238,17 +233,16 @@ class TaskPurchase extends FormBase {
                 '#value' => $this->t('Record'),
             );
             $form['actions']['cancel'] = array(
-                '#markup' => "<a href='" . Url::fromRoute('ek_sales.purchases.list')->toString() . "' >" . t('Cancel') . "</a>",
+                '#markup' => "<a href='" . Url::fromRoute('ek_sales.purchases.list')->toString() . "' >" . $this->t('Cancel') . "</a>",
             );
         } else {
-
             $form['info'] = array(
                 '#type' => 'item',
                 '#markup' => $this->t('You cannot edit this purchase task.'),
             );
 
             $form['cancel'] = array(
-                '#markup' => "<a href='" . Url::fromRoute('ek_sales.purchases.list')->toString() . "' >" . t('Return') . "</a>",
+                '#markup' => "<a href='" . Url::fromRoute('ek_sales.purchases.list')->toString() . "' >" . $this->t('Return') . "</a>",
             );
         }
 
@@ -262,22 +256,20 @@ class TaskPurchase extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->getValue('delete') != 1) {
             if ($form_state->getValue('notify_who') != '') {
-
                 $users = explode(',', $form_state->getValue('notify_who'));
                 $error = '';
                 $notify_who = '';
                 foreach ($users as $u) {
                     if (trim($u) != '') {
-                        //check it is a registered user 
+                        //check it is a registered user
                         $query = Database::getConnection()->select('users_field_data', 'u');
                         $query->fields('u', ['uid']);
                         $query->condition('name', trim($u));
                         $id = $query->execute()->fetchField();
                         if ($id == '') {
-                            $error.= $u . ',';
+                            $error .= $u . ',';
                         } else {
                             $notify_who .= $id . ',';
                         }
@@ -286,15 +278,15 @@ class TaskPurchase extends FormBase {
 
                 if ($error <> '') {
                     $error = rtrim($error, ',');
-                    $form_state->setErrorByName("notify_who", t('Invalid user(s)') . ': ' . $error);
+                    $form_state->setErrorByName("notify_who", $this->t('Invalid user(s)') . ': ' . $error);
                 } else {
                     $form_state->setValue('notify_who', $notify_who);
                 }
             }
             $or = $form_state->getValue('notify') == 2 || $form_state->getValue('notify') == 3 || $form_state->getValue('notify') == 4;
 
-            if ($form_state->getValue('end') == '' && ( $or )) {
-                $form_state->setErrorByName("end", t('You need a deadline for the selected period.') . ': ' . $error);
+            if ($form_state->getValue('end') == '' && ($or)) {
+                $form_state->setErrorByName("end", $this->t('You need a deadline for the selected period.') . ': ' . $error);
             }
         }
     }
@@ -303,19 +295,16 @@ class TaskPurchase extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->getValue('delete') == 1) {
             $update = Database::getConnection('external_db', 'external_db')
                     ->delete('ek_sales_purchase_tasks')
                     ->condition('id', $form_state->getValue('for_id'))
                     ->execute();
         } else {
-
             if ($form_state->getValue('notify_who') != '') {
-
                 $notify_who = rtrim($form_state->getValue('notify_who'), ',');
             } else {
-                $notify_who = NULL;
+                $notify_who = null;
             }
 
 
@@ -332,14 +321,12 @@ class TaskPurchase extends FormBase {
                 'color' => $form_state->getValue('color'),
             );
 
-            if ($form_state->getValue('for_id') != NULL) {
-
+            if ($form_state->getValue('for_id') != null) {
                 $update = Database::getConnection('external_db', 'external_db')
                         ->update('ek_sales_purchase_tasks')->fields($fields)
                         ->condition('id', $form_state->getValue('for_id'))
                         ->execute();
             } else {
-
                 $update = Database::getConnection('external_db', 'external_db')
                         ->insert('ek_sales_purchase_tasks')->fields($fields)
                         ->execute();

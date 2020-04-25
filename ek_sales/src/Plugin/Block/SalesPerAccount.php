@@ -23,14 +23,15 @@ use Drupal\ek_finance\FinanceSettings;
  *   category = @Translation("Ek sales block")
  * )
  */
-class SalesPerAccount extends BlockBase {
+class SalesPerAccount extends BlockBase
+{
 
 
   /**
    * {@inheritdoc}
    */
-    public function build() {
-
+    public function build()
+    {
         $items = array();
 
         $items['title'] = t('Sales per account');
@@ -44,25 +45,23 @@ class SalesPerAccount extends BlockBase {
 
         $months = array('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12');
         $years = array(date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3 );
-        $content = '';  
+        $content = '';
 
         $query = "SELECT sum(amountbase) as total,name FROM {ek_sales_invoice} i "
                 . "INNER JOIN {ek_address_book} b ON i.client=b.id WHERE "
                 . "date like :d GROUP BY b.name order by total DESC ";
 
-        foreach($years as $year) {
-            
-        $data = Database::getConnection('external_db', 'external_db')
+        foreach ($years as $year) {
+            $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':d' => $year . '%'));
 
-        $content .= '<div>' . $year . '</div><table><tbody class="">';
+            $content .= '<div>' . $year . '</div><table><tbody class="">';
        
-        while ($d = $data->fetchObject()) {
-
-            $content .= "<tr><td class='' title=''>" . $d->name . ":</td>"
+            while ($d = $data->fetchObject()) {
+                $content .= "<tr><td class='' title=''>" . $d->name . ":</td>"
                     . "<td class='' title='');'>" . number_format($d->total, 2) . " " . $baseCurrency . "</td></tr>";
-        }
-        $content .= "</tbody></table>";
+            }
+            $content .= "</tbody></table>";
         }
         
         $items['content'] = '<div>' . $content . '</div>';
@@ -80,16 +79,14 @@ class SalesPerAccount extends BlockBase {
     }
 
 
-  /**
-   * {@inheritdoc}
-   */
-    protected function blockAccess(AccountInterface $account) {
+    /**
+     * {@inheritdoc}
+     */
+    protected function blockAccess(AccountInterface $account)
+    {
         if (!$account->isAnonymous() && $account->hasPermission('sales_data')) {
             return AccessResult::allowed();
         }
         return AccessResult::forbidden();
     }
-
-
-
 }
