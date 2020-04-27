@@ -216,9 +216,10 @@ class SettingsController extends ControllerBase {
         ];
         $items['taxable'] = 200;
         $items['taxamount'] = 10;
-        
+
         // quotation
-        if($_SESSION['prev'][key($_SESSION['prev'])]['source'] == 'quotation') {
+        if( strstr(key($_SESSION['prev']), 'quotation')) {
+            $items['reference'] = 'ABC-01-01-123';
             $items['column_active2'] = 1;
             $items['column_name2'] = 'col 6';
             $items['column_active3'] = 1;

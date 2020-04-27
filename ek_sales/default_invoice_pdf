@@ -26,33 +26,33 @@ class EKPDF extends TCPDF {
         $this->Ln(20);
         $this->SetFont('helvetica','',$font1);
         $this->Cell($lm);   
-        $this->Cell($h2+$h3);
+        $this->Cell($h1+$h2);
         $this->Cell($h3,5,$this->company->name,$b,1);
         if($this->company->reg_number) {
             $this->SetFont('helvetica','',$font3);
             $this->Cell($lm);  
-            $this->Cell($h2+$h3);
+            $this->Cell($h1+$h2);
             $this->Cell($h3,5,'(' . $this->company->reg_number . ')',$b,1);
         }
         $this->SetFont('helvetica','',$font2);
         $this->Cell($lm);  
-        $this->Cell($h2+$h3);    
+        $this->Cell($h1+$h2);    
         $this->Cell($c3,4, $this->company->address1,$b,1);
         $this->Cell($lm);  
-        $this->Cell($h2+$h3);    
+        $this->Cell($h1+$h2);    
         $this->Cell($h3,4, $this->company->address2,$b,1);
         $this->Cell($lm);  
-        $this->Cell($h2+$h3);
+        $this->Cell($h1+$h2);
         $this->Cell($h3,5, $this->company->postcode . ',' . $this->company->country ,$b,1);
         $this->SetFont('helvetica','',$font3);
         $this->Cell($lm);  
-        $this->Cell($h2+$h3);
+        $this->Cell($h1+$h2);
         if ($this->company->telephone <> '') {
          $this->Cell($h3,3,t("tel:").$this->company->telephone,$b,1);
         }
         if ($this->company->fax <> '') {
          $this->Cell($lm);  
-         $this->Cell($h2+$h3);
+         $this->Cell($h1+$h2);
          $this->Cell($h3,4,t("fax:").$this->company->fax,$b,1);
         }
         //Line break
@@ -251,13 +251,13 @@ $due = date('Y-m-d',strtotime(date("Y-m-d", strtotime($head->date) ) . "+".$head
 // HIGHLIGHT =====================================================
 $pdf->SetFont('helvetica','B',$font1);   
 $pdf->Cell($lm);
-$pdf->Cell($c2+$c3);
+$pdf->Cell($c1+$c2);
 $pdf->SetTextColor($format_feature['colortitle']['red'], $format_feature['colortitle']['green'], $format_feature['colortitle']['blue']);
 $pdf->Cell($c3,10, strtoupper($head->title) ,$b,1);
 $pdf->SetTextColor($format_feature['color']['red'], $format_feature['color']['green'], $format_feature['color']['blue']);
 $pdf->SetFont('helvetica','B',$font2);  
 $pdf->Cell($lm);
-$pdf->Cell($c2+$c3);
+$pdf->Cell($c1+$c2);
 $pdf->Cell($c3,10, $head->serial ,$b,1);
 
 // DATE ==========================================================
