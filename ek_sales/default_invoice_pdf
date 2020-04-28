@@ -555,20 +555,20 @@ $bottom = ($y + $adj) > 268 ? 268: $y + $adj;
    
  //Receipt printing =====================================================
  if ($head->status == 1 && $stamp != 2 && $stamp != 1 ) {
-$pdf->SetXY(10,$y); 
-    $pdf->Cell($left);
-    $pdf->SetTextColor(239,58,68);
-    $pdf->SetFont('helvetica','B',16);          
-    $pdf->Cell(65,8,t('RECEIVED'),'LTR',1);
-    $pdf->Cell($left);   
-    $pdf->SetFont('helvetica','',8);          
-    $pdf->Cell(20,7,t('date') . ':','L',0);
-    $pdf->Cell(45,5,$head->pay_date,'R',1);
-    $pdf->Cell($left);
-    $pdf->Cell(20,7,'by:','L',0);
-    $pdf->Cell(45,5,$company->name,'R',1);
-    $pdf->Cell($left);
-    $pdf->Cell(65,5,'--------------------------------','LBR',1, 'R');
+    $pdf->Ln(2);
+    $pdf->Cell($lm);
+    $pdf->SetTextColor(239, 58, 68);
+    $pdf->SetFont('helvetica', 'B', 16);
+    $pdf->Cell($c1 + $c2, 8, t('RECEIVED'), 'LTR', 1);
+    $pdf->Cell($lm);
+    $pdf->SetFont('helvetica', '', 8);
+    $pdf->Cell($c1, 7, t('date') . ':', 'L', 0);
+    $pdf->Cell($c2, 5, $head->pay_date, 'R', 1);
+    $pdf->Cell($lm);
+    $pdf->Cell($c1, 7, 'by:', 'L', 0);
+    $pdf->Cell($c2, 5, $company->name, 'R', 1);
+    $pdf->Cell($lm);
+    $pdf->Cell($c1 + $c2, 5, '', 'LBR', 1, 'R');
 
 
 }
