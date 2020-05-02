@@ -98,7 +98,7 @@ class BalanceTrialController extends ControllerBase
 
             $excel = Url::fromRoute('ek_finance.extract.excel-trial', array('param' => serialize($param)), array())->toString();
 
-            $items['excel'] = "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>";
+            $items['excel'] = "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>";
             
             if ($items['data']['total']['error1'] == '1') {
                 //try to identify balances errors
@@ -129,7 +129,7 @@ class BalanceTrialController extends ControllerBase
     {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             include_once drupal_get_path('module', 'ek_finance') . '/excel_trial.inc';
         }

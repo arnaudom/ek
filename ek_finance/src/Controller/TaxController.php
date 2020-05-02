@@ -87,15 +87,15 @@ class TaxController extends ControllerBase
             $wtaxd = $settings->get('wtax_deduct_aid');//not yet implemented
 
             if ($staxc == '' && $staxd == '' && $wtaxc == '' && $wtaxd == '') {
-                $items['alert1'] = t('You do not have any tax account set.');
+                $items['alert1'] = $this->t('You do not have any tax account set.');
                 $show = 0;
             } elseif ($stax1 == '0' || $stax2 == '0') {
                 $show = 0;
                 if ($stax1 == '0') {
-                    $items['alert2'] = t('Taxes are not collectible.');
+                    $items['alert2'] = $this->t('Taxes are not collectible.');
                 }
                 if ($stax2 == '0') {
-                    $items['alert3'] = t('Taxes are not deductible.');
+                    $items['alert3'] = $this->t('Taxes are not deductible.');
                 }
             }
 
@@ -121,7 +121,7 @@ class TaxController extends ControllerBase
                 if ($show == 1) {
                     $excel = Url::fromRoute('ek_finance_tax_excel', array('param' => $param), array())->toString();
                     $items['excel'] = array(
-                        '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>",
+                        '#markup' => "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>",
                     );
 
 
@@ -142,7 +142,7 @@ class TaxController extends ControllerBase
                 if (\Drupal::moduleHandler()->moduleExists($try_module)) {
                     $local = Url::fromRoute('ek_finance_tax_' . strtolower($data->code), array('param' => $param), array())->toString();
                     $items['local'] =  array(
-                            '#markup' => "<a href='" . $local . "'>" . t('Custom tax forms') . "</a>",
+                            '#markup' => "<a href='" . $local . "'>" . $this->t('Custom tax forms') . "</a>",
                         );
                 }
             }
@@ -176,7 +176,7 @@ class TaxController extends ControllerBase
     {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             include_once drupal_get_path('module', 'ek_finance') . '/excel_tax.inc';
         }

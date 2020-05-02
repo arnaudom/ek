@@ -115,8 +115,8 @@ class JournalEntryController extends ControllerBase
         } else {
             $url = Url::fromRoute('ek_finance.extract.general_journal', array(), array())->toString();
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('This journal entry is not editable or was deleted.')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url" >Journal</a>', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('This journal entry is not editable or was deleted.')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url" >Journal</a>', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',

@@ -30,7 +30,7 @@ class SettingsController extends ControllerBase
         return array(
             '#theme' => 'ek_finance_settings_form',
             '#items' => $response,
-            '#title' => t('Edit finance settings'),
+            '#title' => $this->t('Edit finance settings'),
             '#attached' => array(
                 'library' => array('ek_finance/ek_finance'),
             ),
@@ -48,7 +48,7 @@ class SettingsController extends ControllerBase
         
         if (isset($_SESSION['moveLog'])) {
             $url = file_create_url($_SESSION['moveLog']);
-            $items['log'] = ['#markup' => "<a target='_blank' href='". $url ."'>" . t('View last log') . "</a>"];
+            $items['log'] = ['#markup' => "<a target='_blank' href='". $url ."'>" . $this->t('View last log') . "</a>"];
             $_SESSION['moveLog'] = null;
         }
         

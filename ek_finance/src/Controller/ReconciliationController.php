@@ -150,15 +150,15 @@ class ReconciliationController extends ControllerBase
                 $company_name = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $r->coid))->fetchField();
                 $url = Url::fromRoute('ek_finance_reconciliation.pdf', ['id' => $r->id])->toString();
 
-                $report = '<a href="' . $url . '" target="_blank"  title="' . t('report') . '">' . $r->id . '</a>';
+                $report = '<a href="' . $url . '" target="_blank"  title="' . $this->t('report') . '">' . $r->id . '</a>';
 
                 if ($r->uri <> '') {
-                    $attachment = "<a class='blue' href='" . file_create_url($r->uri) . "' target='_blank'>" . t('Attachment') . "</a>";
+                    $attachment = "<a class='blue' href='" . file_create_url($r->uri) . "' target='_blank'>" . $this->t('Attachment') . "</a>";
                 } else {
                     $attachment = 'upload';
                     $param = 'upload-' . $r->id . '-statement';
                     $modal_route = Url::fromRoute('ek_finance.manage.modal_expense', ['param' => $param])->toString();
-                    $attachment = t('<a href="@url" class="@c"  data-accepts=@a  >upload</a>', array('@url' => $modal_route, '@c' => 'use-ajax red', '@a' => "application/vnd.drupal-modal",));
+                    $attachment = $this->t('<a href="@url" class="@c"  data-accepts=@a  >upload</a>', array('@url' => $modal_route, '@c' => 'use-ajax red', '@a' => "application/vnd.drupal-modal",));
                 }
 
                 $options[$r->id] = array(
@@ -220,7 +220,7 @@ class ReconciliationController extends ControllerBase
         $rounding = (!null == $this->financeSettings->get('rounding')) ? $this->financeSettings->get('rounding'):2;
         
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $data = array();
             $markup = array();

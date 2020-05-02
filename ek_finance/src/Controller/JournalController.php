@@ -8,7 +8,6 @@
 namespace Drupal\ek_finance\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\user\UserInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Database\Connection;
@@ -16,7 +15,6 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\ek_finance\Journal;
 
 /**
@@ -103,7 +101,7 @@ class JournalController extends ControllerBase
               
                 if ($details['id'] == '') {
                     $items['#markup'] = "<div class='messages messages--warning'>"
-                             . t('No data available')
+                             . $this->t('No data available')
                              . '</div>';
                     return $items;
                 }
@@ -127,7 +125,7 @@ class JournalController extends ControllerBase
                         ->fetchField();
                     
                     $buil['type'] = 'access';
-                    $build['message'] = ['#markup' => t('Denied access for @e to @p', ['@e' => $name, '@p' => \Drupal::currentUser()->getAccountName()])];
+                    $build['message'] = ['#markup' => $this->t('Denied access for @e to @p', ['@e' => $name, '@p' => \Drupal::currentUser()->getAccountName()])];
                     $items['alert'] = [
                         '#items' => $build,
                         '#theme' => 'ek_admin_message',
@@ -167,7 +165,7 @@ class JournalController extends ControllerBase
 
                 $items['rounding'] = $rounding;
                 $excel = Url::fromRoute('ek_finance.extract.excel-journal', array('param' => $param), array())->toString();
-                $items['excel'] = "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>";
+                $items['excel'] = "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>";
             }
         }
 
@@ -194,7 +192,7 @@ class JournalController extends ControllerBase
     {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $param = unserialize($param);
             $markup = array();
@@ -250,7 +248,7 @@ class JournalController extends ControllerBase
             case 'chart':
                 $audit = $journal->audit_chart($param);
                 $audit['layout'] = 'chart';
-                $audit['title'] = t('Chart structure in journal');
+                $audit['title'] = $this->t('Chart structure in journal');
         }
         
         return array(

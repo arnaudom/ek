@@ -167,7 +167,7 @@ class CashController extends ControllerBase
     {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             //$settings = new FinanceSettings();
             //$data['baseCurrency'] = $settings->get('baseCurrency');
@@ -332,7 +332,7 @@ class CashController extends ControllerBase
             $month = explode("-", $row['pay_date']);
             $url = Url::fromRoute('ek_finance_voucher.pdf', ['type' => 2, 'id' => $row['id']])->toString();
 
-            $voucher = '<a href="'. $url .'" target="_blank"  title="'. t('voucher') .'">'. $row['id'] .'</a>';
+            $voucher = '<a href="'. $url .'" target="_blank"  title="'. $this->t('voucher') .'">'. $row['id'] .'</a>';
             $total_credit_amount += $row['amount'];
             $total_credit_base += $row['cashamount'];
 
@@ -356,7 +356,7 @@ class CashController extends ControllerBase
             $month = explode("-", $row['pay_date']);
             $url = Url::fromRoute('ek_finance_voucher.pdf', ['type' => 2, 'id' => $row['id']])->toString();
 
-            $voucher = '<a href="'. $url .'" target="_blank"  title="'. t('voucher') .'">'. $row['id'] .'</a>';
+            $voucher = '<a href="'. $url .'" target="_blank"  title="'. $this->t('voucher') .'">'. $row['id'] .'</a>';
             $total_debit_amount += $row['amount'];
             $total_debit_base += $row['cashamount'];
 
@@ -378,7 +378,7 @@ class CashController extends ControllerBase
             $comment = str_replace("'", "", $comment);
             $month = explode("-", $row['pdate']);
             $url = Url::fromRoute('ek_finance_voucher.pdf', ['type' => 1, 'id' => $row['id']])->toString();
-            $voucher = '<a href="'. $url .'" target="_blank"  title="'. t('voucher') .'">'. $row['id'] .'</a>';
+            $voucher = '<a href="'. $url .'" target="_blank"  title="'. $this->t('voucher') .'">'. $row['id'] .'</a>';
             $total_debit_amount += $row['localcurrency'];
             $total_debit_base += $row['amount'];
 

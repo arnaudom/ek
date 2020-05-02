@@ -68,7 +68,7 @@ class BankController extends ControllerBase {
     public function banklist(Request $request) {
         $new = Url::fromRoute('ek_finance.manage.bank_manage', array('id' => 0), array())->toString();
         $build["new"] = array(
-            '#markup' => "<a href='" . $new . "' >" . t('new') . "</a>",
+            '#markup' => "<a href='" . $new . "' >" . $this->t('new') . "</a>",
         );
 
         $header = array(
@@ -181,7 +181,7 @@ class BankController extends ControllerBase {
             if (isset($_SESSION['statfilter']) && $_SESSION['statfilter']['filter'] == 1) {
                 $list = Url::fromRoute('ek_finance.manage.bank_accounts_list', array(), array())->toString();
                 $build["list"] = array(
-                    '#markup' => "<div><a href='" . $list . "' >" . t('list') . "</a>",
+                    '#markup' => "<div><a href='" . $list . "' >" . $this->t('list') . "</a>",
                     '#suffix' => '</div>'
                 );
                 $build['company'] = ['#markup' => '<b>' . $acc->name . '</b><br/>'];
@@ -242,7 +242,7 @@ class BankController extends ControllerBase {
                 );
             }
         } else {
-            $build['bank'] = ['#markup' => t('You cannot view this account statement.')];
+            $build['bank'] = ['#markup' => $this->t('You cannot view this account statement.')];
         }
         return $build;
     }
@@ -272,7 +272,7 @@ class BankController extends ControllerBase {
      */
     public function deletebank(Request $request, $id) {
         //ToDo
-        return array('#markup' => t('Under construction'));
+        return array('#markup' => $this->t('Under construction'));
     }
 
     /**
@@ -286,7 +286,7 @@ class BankController extends ControllerBase {
         unset($_SESSION['statfilter']);
         $new = Url::fromRoute('ek_finance.manage.bank_accounts_manage', array('id' => 0), array())->toString();
         $build["new"] = array(
-            '#markup' => "<a href='" . $new . "' >" . t('new') . "</a>",
+            '#markup' => "<a href='" . $new . "' >" . $this->t('new') . "</a>",
         );
 
         $build['filter'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterCompany');
@@ -341,7 +341,7 @@ class BankController extends ControllerBase {
         $list = $query->execute();
 
         $row = 0;
-        $status = ['0' => t('inactive'), '1' => t('active')];
+        $status = ['0' => $this->t('inactive'), '1' => $this->t('active')];
         $options = [];
         while ($l = $list->fetchObject()) {
             $row++;
@@ -432,7 +432,7 @@ class BankController extends ControllerBase {
      */
     public function deletebankaccount(Request $request, $id) {
         //ToDo
-        return array('#markup' => t('Under construction'));
+        return array('#markup' => $this->t('Under construction'));
     }
 
     /**

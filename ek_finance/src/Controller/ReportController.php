@@ -155,7 +155,7 @@ class ReportController extends ControllerBase
                 );
                 $excel = Url::fromRoute('ek_finance_reporting_excel', array('param' => $param), array())->toString();
                 $items['excel'] = array(
-                    '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>",
+                    '#markup' => "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>",
                 );
 
                 
@@ -200,7 +200,7 @@ class ReportController extends ControllerBase
                 );
                 $excel = Url::fromRoute('ek_finance_reporting_excel', array('param' => $p), array())->toString();
                 $items['excel'] = array(
-                    '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>",
+                    '#markup' => "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>",
                 );
                 return array(
                     '#theme' => 'ek_finance_reporting_compilation',
@@ -283,7 +283,7 @@ class ReportController extends ControllerBase
             );
             $excel = Url::fromRoute('ek_finance_budgeting_excel', array('param' => $param), array())->toString();
             $items['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' target='_blank'>" . t('Export') . "</a>",
+                '#markup' => "<a href='" . $excel . "' target='_blank'>" . $this->t('Export') . "</a>",
             );
 
 
@@ -339,7 +339,7 @@ class ReportController extends ControllerBase
     {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             //The chart structure is as follow
             // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
@@ -387,11 +387,11 @@ class ReportController extends ControllerBase
 
             $pdf = Url::fromRoute('ek_finance_extract.profit_loss_pdf', array('param' => $param), array())->toString();
             $items['pdf'] = array(
-                '#markup' => "<a href='" . $pdf . "' title='" . t('Export to pdf') . "' target='_blank'><span class='ico pdf red'/></a>",
+                '#markup' => "<a href='" . $pdf . "' title='" . $this->t('Export to pdf') . "' target='_blank'><span class='ico pdf red'/></a>",
             );
             $post = Url::fromRoute('ek_finance.admin.new_year', array(), array())->toString();
             $items['post'] = array(
-                '#markup' => "<a href='" . $post . "' >" . t('Start new year') . "</a>",
+                '#markup' => "<a href='" . $post . "' >" . $this->t('Start new year') . "</a>",
             );
         }
 
@@ -472,13 +472,13 @@ class ReportController extends ControllerBase
 
             $pdf = Url::fromRoute('ek_finance_extract.balance_sheet_pdf', array('param' => $param), array())->toString();
             $items['pdf'] = array(
-                '#markup' => "<a href='" . $pdf . "' title='" . t('Export to pdf') . "' target='_blank'><span class='ico pdf red'/></a>",
+                '#markup' => "<a href='" . $pdf . "' title='" . $this->t('Export to pdf') . "' target='_blank'><span class='ico pdf red'/></a>",
             );
 
             if (strtotime(date("Y-m-d")) > strtotime($dates["fiscal_year"]) && $dates['archive'] == false) {
                 $post = Url::fromRoute('ek_finance.admin.new_year', array(), array())->toString();
                 $items['post'] = array(
-                    '#markup' => "<a href='" . $post . "' >" . t('Start new year') . "</a>",
+                    '#markup' => "<a href='" . $post . "' >" . $this->t('Start new year') . "</a>",
                 );
             } else {
                 $items['post'] = '';
@@ -560,7 +560,7 @@ class ReportController extends ControllerBase
 
             $excel = Url::fromRoute('ek_finance.extract.cashflow_statement', array('param' => $param), array())->toString();
             $items['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' title='". t('Excel download') ."'><span class='ico excel green'/></a>",
+                '#markup' => "<a href='" . $excel . "' title='". $this->t('Excel download') ."'><span class='ico excel green'/></a>",
             );
         }
 
@@ -590,7 +590,7 @@ class ReportController extends ControllerBase
     {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $chart = $this->settings->get('chart');
             $settings = new FinanceSettings();

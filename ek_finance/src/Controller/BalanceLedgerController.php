@@ -102,7 +102,7 @@ class BalanceLedgerController extends ControllerBase
             $items['rounding'] = $rounding;
             if ($items['data']['archive'] != 2) {
                 $excel = Url::fromRoute('ek_finance.extract.excel-ledger', array('param' => serialize($param)), array())->toString();
-                $items['excel'] = "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>";
+                $items['excel'] = "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>";
             }
         }
 
@@ -135,7 +135,7 @@ class BalanceLedgerController extends ControllerBase
     {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $p = unserialize($param);
             $company = Database::getConnection('external_db', 'external_db')

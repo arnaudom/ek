@@ -8,7 +8,6 @@ namespace Drupal\ek_finance\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Database;
-use Drupal\user\UserInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -173,13 +172,13 @@ class FinanceController extends ControllerBase
                                   <a href='" . file_create_url($doc->uri)  ."' target='_blank'>". array_pop($name) ."</a>
                                 </div>
                                 <div class='cell'>
-                                <a  class='button delButton' id='" . $doc->id ."' name='attachment-" . $doc->id ."'>" . t('delete attachment') . "</a>                                </div>
+                                <a  class='button delButton' id='" . $doc->id ."' name='attachment-" . $doc->id ."'>" . $this->t('delete attachment') . "</a>                                </div>
                                </div>";
                 }
                 if ($output == '') {
                     $output = "<div class='row'>
                                 <div class='cell'>
-                                  " . t('no attachment'). "
+                                  " . $this->t('no attachment'). "
                                 </div>";
                 }
                 

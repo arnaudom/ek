@@ -18,7 +18,6 @@ use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\OpenDialogCommand;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_projects\ProjectData;
@@ -114,8 +113,8 @@ class MemoExpensesController extends ControllerBase
         } else {
             $url = Url::fromRoute('ek_finance_manage_list_memo_internal', [], [])->toString();
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('You are not authorized to edit this memo')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
@@ -171,8 +170,8 @@ class MemoExpensesController extends ControllerBase
         } else {
             $url = Url::fromRoute('ek_finance_manage_list_memo_personal', [], [])->toString();
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('You are not authorized to edit this memo')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
@@ -229,8 +228,8 @@ class MemoExpensesController extends ControllerBase
         } else {
             $url = Url::fromRoute($route, [], [])->toString();
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('You are not authorized to edit this memo')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('You are not authorized to edit this memo')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
@@ -359,7 +358,7 @@ class MemoExpensesController extends ControllerBase
         $data = $query->execute();
         $total = 0;
         $row = 0;
-        $status = array('0' => t('not paid'), '1' => t('partial paid'), '2' => t('paid'),);
+        $status = array('0' => $this->t('not paid'), '1' => $this->t('partial paid'), '2' => $this->t('paid'),);
         //store company data
         $companies = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT id,name from {ek_company}")
@@ -393,7 +392,7 @@ class MemoExpensesController extends ControllerBase
 
             if ($attach > 0) {
                 $url = Url::fromRoute('ek_finance_manage_modal_memo', ['id' => $r->id])->toString();
-                $docs = t('<a href="@url" class="@c" >attachments</a>', array('@url' => $url, '@c' => 'use-ajax blue'));
+                $docs = $this->t('<a href="@url" class="@c" >attachments</a>', array('@url' => $url, '@c' => 'use-ajax blue'));
             } else {
                 $docs = '';
             }
@@ -466,7 +465,7 @@ class MemoExpensesController extends ControllerBase
 
 
         $options[$row + 1] = array(
-            'company' => t('Total'),
+            'company' => $this->t('Total'),
             'reference' => '',
             'date' => '',
             'value' => '',
@@ -624,7 +623,7 @@ class MemoExpensesController extends ControllerBase
             $data = $query->execute();
             $total = 0;
             $row = 0;
-            $status = array('0' => t('not paid'), '1' => t('partial paid'), '2' => t('paid'));
+            $status = array('0' => $this->t('not paid'), '1' => $this->t('partial paid'), '2' => $this->t('paid'));
             //store company data
             $companies = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT id,name from {ek_company}")
@@ -661,16 +660,16 @@ class MemoExpensesController extends ControllerBase
                 }
                 if ($attach > 0) {
                     $url = Url::fromRoute('ek_finance_manage_modal_memo', ['id' => $r->id])->toString();
-                    $docs = t('<a href="@url" class="@c" >attachments</a>', array('@url' => $url, '@c' => 'use-ajax blue'));
+                    $docs = $this->t('<a href="@url" class="@c" >attachments</a>', array('@url' => $url, '@c' => 'use-ajax blue'));
                 } else {
                     $docs = '';
                 }
 
                 $auth = explode('|', $r->auth);
                 if ($r->auth == '0|0') {
-                    $autho = t('n/a');
+                    $autho = $this->t('n/a');
                 } else {
-                    $auth_status = array(0 => t('not required'), 1 => t('pending'), 2 => t('authorized'), 3 => t('rejected'));
+                    $auth_status = array(0 => $this->t('not required'), 1 => $this->t('pending'), 2 => $this->t('authorized'), 3 => $this->t('rejected'));
                     $autho = $userData[$auth[1]] . '<br/>' . $auth_status[$auth[0]];
                 }
 
@@ -740,7 +739,7 @@ class MemoExpensesController extends ControllerBase
 
             $total = '<h4>' . number_format($total, 2) . " " . $baseCurrency . '</h4>';
             $options[$row + 1] = array(
-                'company' => t('Total'),
+                'company' => $this->t('Total'),
                 'reference' => '',
                 'date' => '',
                 'value' => '',
@@ -799,7 +798,7 @@ class MemoExpensesController extends ControllerBase
             $build['pay'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\PayMemo', $id);
             return $build;
         } else {
-            return array('#markup' => t('You cannot record payment for this memo.'));
+            return array('#markup' => $this->t('You cannot record payment for this memo.'));
         }
     }
 
@@ -833,7 +832,7 @@ class MemoExpensesController extends ControllerBase
             $build['pay'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\resetPayMemo', $id);
             return $build;
         } else {
-            return array('#markup' => t('You cannot reset payment for this memo.'));
+            return array('#markup' => $this->t('You cannot reset payment for this memo.'));
         }
     }
     
@@ -866,7 +865,7 @@ class MemoExpensesController extends ControllerBase
             $build['pay'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\ReceiveMemo', $id);
             return $build;
         } else {
-            return array('#markup' => t('You cannot record receipt for this memo.'));
+            return array('#markup' => $this->t('You cannot record receipt for this memo.'));
         }
     }
 
@@ -1056,8 +1055,8 @@ class MemoExpensesController extends ControllerBase
             }
             
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
@@ -1214,7 +1213,7 @@ class MemoExpensesController extends ControllerBase
 
                 return array(
                     '#theme' => 'ek_finance_memo_transactions',
-                    '#title' => t('Summary of internal transactions for year @y', ['@y' => $year]),
+                    '#title' => $this->t('Summary of internal transactions for year @y', ['@y' => $year]),
                     '#form' => $form,
                     '#companies' => $companyList,
                     '#company_access' => $companyAccess,
@@ -1278,7 +1277,7 @@ class MemoExpensesController extends ControllerBase
 
                 return array(
                     '#theme' => 'ek_finance_memo_transactions_bycoid',
-                    '#title' => t('Internal transactions for year @y - @c', ['@y' => $year, '@c' => $companyList[$id]]),
+                    '#title' => $this->t('Internal transactions for year @y - @c', ['@y' => $year, '@c' => $companyList[$id]]),
                     '#form' => $form,
                     '#coid' => $id,
                     '#companies' => $companyAccess,

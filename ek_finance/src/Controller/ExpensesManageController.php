@@ -437,9 +437,9 @@ class ExpensesManageController extends ControllerBase
 
                     if ($r->tax > 0) {
                         $value = number_format($value, 2) . " " . $currency
-                                . "<br/>(" . t('Tax') . ' ' . number_format($stax_deduct_aid_value[0], 2) . ")";
+                                . "<br/>(" . $this->t('Tax') . ' ' . number_format($stax_deduct_aid_value[0], 2) . ")";
                         $evalue = number_format($evalue, 2) . " " . $baseCurrency
-                                . "<br/>(" . t('Tax') . ' ' . number_format($stax_deduct_aid_value[0] + $stax_deduct_aid_value[1], 2) . ')';
+                                . "<br/>(" . $this->t('Tax') . ' ' . number_format($stax_deduct_aid_value[0] + $stax_deduct_aid_value[1], 2) . ')';
                     } else {
                         $value = number_format($value, 2) . " " . $currency;
                         $evalue = number_format($evalue, 2) . " " . $baseCurrency;
@@ -457,8 +457,8 @@ class ExpensesManageController extends ControllerBase
                     $total = $total + $evalue;
 
                     if ($r->taxvalue > 0) {
-                        $value = number_format($value, 2) . " " . $currency . "<br/>(" . t('Tax') . ' ' . number_format($value * $r->taxvalue / 100, 2) . ")";
-                        $evalue = number_format($evalue, 2) . " " . $baseCurrency . "<br/>(" . t('Tax') . ' ' . number_format($evalue * $r->taxvalue / 100, 2) . ')';
+                        $value = number_format($value, 2) . " " . $currency . "<br/>(" . $this->t('Tax') . ' ' . number_format($value * $r->taxvalue / 100, 2) . ")";
+                        $evalue = number_format($evalue, 2) . " " . $baseCurrency . "<br/>(" . $this->t('Tax') . ' ' . number_format($evalue * $r->taxvalue / 100, 2) . ')';
                     } else {
                         $value = number_format($value, 2) . " " . $currency;
                         $evalue = number_format($evalue, 2) . " " . $baseCurrency;
@@ -491,17 +491,17 @@ class ExpensesManageController extends ControllerBase
                     }
 
                     if ($r->attachment <> '') {
-                        $receipt = "<a href='" . file_create_url($r->attachment) . "' target='_blank'>" . t('open') . "</a>";
+                        $receipt = "<a href='" . file_create_url($r->attachment) . "' target='_blank'>" . $this->t('open') . "</a>";
                         $edit = 'upload-' . $r->e_id . '-expense';
                     } else {
                         $param = 'upload-' . $r->e_id . '-expense';
                         $modal_route = Url::fromRoute('ek_finance.manage.modal_expense', ['param' => $param])->toString();
-                        $receipt = t('<a href="@url" class="@c"  data-accepts=@a  >upload</a>', array('@url' => $modal_route, '@c' => 'use-ajax red', '@a' => "application/vnd.drupal-modal",));
+                        $receipt = $this->t('<a href="@url" class="@c"  data-accepts=@a  >upload</a>', array('@url' => $modal_route, '@c' => 'use-ajax red', '@a' => "application/vnd.drupal-modal",));
                     }
 
                     //voucher
                     $url = Url::fromRoute('ek_finance_voucher.pdf', ['type' => 1, 'id' => $r->reference])->toString();
-                    $voucher = '<a href="' . $url . '" target="_blank"  title="' . t('voucher')
+                    $voucher = '<a href="' . $url . '" target="_blank"  title="' . $this->t('voucher')
                             . ' - ' . $r->e_id . ' ' . strip_tags($r->comment) . '">' . $r->e_id . '</a>';
                     //save array for print range
                     array_push($filteredIds, $r->e_id);
@@ -517,16 +517,16 @@ class ExpensesManageController extends ControllerBase
                         }
                     }
                     if ($r->uri != '') {
-                        $receipt = "<a href='" . file_create_url($r->uri) . "' target='_blank'>" . t('open') . "</a>";
+                        $receipt = "<a href='" . file_create_url($r->uri) . "' target='_blank'>" . $this->t('open') . "</a>";
                     }
                     //voucher
                     $url = Url::fromRoute('ek_sales.purchases.print_share', ['id' => $r->p_id])->toString();
-                    $voucher = '<a href="' . $url . '" target="_blank"  title="' . t('purchase')
+                    $voucher = '<a href="' . $url . '" target="_blank"  title="' . $this->t('purchase')
                             . ' - ' . $r->p_id . ' ' . $r->title . '">' . $r->p_id . '</a>';
                 }
                 if ($r->coid != $r->allocation) {
                     $companies = $company_array[$r->coid] . '<br/><small class="grey">(' . $company_array[$r->allocation] . ')</small>';
-                    $t = t('Allocation');
+                    $t = $this->t('Allocation');
                 } else {
                     $companies = $company_array[$r->coid];
                     $t = '';
@@ -610,7 +610,7 @@ class ExpensesManageController extends ControllerBase
                 $i++;
                 $options[$i] = array(
                     'id' => '',
-                    'type' => t('Total'),
+                    'type' => $this->t('Total'),
                     'reference' => '',
                     'company' => '',
                     'date' => '',
@@ -643,7 +643,7 @@ class ExpensesManageController extends ControllerBase
 
                 $excel = Url::fromRoute('ek_finance.manage.excel_expense', array('param' => $param), [])->toString();
                 $build['excel'] = array(
-                    '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>",
+                    '#markup' => "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>",
                 );
             }
         }
@@ -652,7 +652,7 @@ class ExpensesManageController extends ControllerBase
             $s = serialize($filteredIds);
             $url = Url::fromRoute('ek_finance_voucher.pdf', array('type' => 1, 'id' => $s), array())->toString();
             $build['print_range'] = array(
-                    '#markup' => "<a href='" . $url . "' title='". t('Pdf download') . "' target='_blank'><span class='ico pdf red'/></a>",
+                    '#markup' => "<a href='" . $url . "' title='". $this->t('Pdf download') . "' target='_blank'><span class='ico pdf red'/></a>",
                 );
         }
         
@@ -673,7 +673,7 @@ class ExpensesManageController extends ControllerBase
 
         return array(
                     '#theme' => 'ek_finance_list_expenses',
-                    '#title' => t('List expenses'),
+                    '#title' => $this->t('List expenses'),
                     '#items' => $build,
                     '#attached' => array(
                         'library' => array('ek_finance/ek_finance','ek_admin/admin_css'),
@@ -695,7 +695,7 @@ class ExpensesManageController extends ControllerBase
     {
         $build['filter_expenses'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterExpenses');
 
-        $build['alert'] = ['#markup' => "<div class='messages messages--warning'>" . t('This is not an extract built from journal records. Data may not be accurate.') . "</div>"];
+        $build['alert'] = ['#markup' => "<div class='messages messages--warning'>" . $this->t('This is not an extract built from journal records. Data may not be accurate.') . "</div>"];
 
 
         $sort = 'asc';
@@ -830,9 +830,9 @@ class ExpensesManageController extends ControllerBase
 
                 if ($r->tax > 0) {
                     $value = number_format($r->localcurrency, 2) . " " . $currency
-                            . "<br/>(" . t('Tax') . ' ' . number_format(($r->localcurrency * $r->tax / 100), 2) . ")";
+                            . "<br/>(" . $this->t('Tax') . ' ' . number_format(($r->localcurrency * $r->tax / 100), 2) . ")";
                     $evalue = number_format($r->amount, 2) . " " . $baseCurrency
-                            . "<br/>(" . t('Tax') . ' ' . number_format(($r->amount * $r->tax / 100), 2) . ')';
+                            . "<br/>(" . $this->t('Tax') . ' ' . number_format(($r->amount * $r->tax / 100), 2) . ')';
                 } else {
                     $value = number_format($r->localcurrency, 2) . " " . $currency;
                     $evalue = number_format($r->amount, 2) . " " . $baseCurrency;
@@ -856,17 +856,17 @@ class ExpensesManageController extends ControllerBase
                 }
 
                 if ($r->attachment <> '') {
-                    $receipt = "<a href='" . file_create_url($r->attachment) . "' target='_blank'>" . t('open') . "</a>";
+                    $receipt = "<a href='" . file_create_url($r->attachment) . "' target='_blank'>" . $this->t('open') . "</a>";
                     $edit = 'upload-' . $r->e_id . '-expense';
                 } else {
                     $param = 'upload-' . $r->e_id . '-expense';
                     $modal_route = Url::fromRoute('ek_finance.manage.modal_expense', ['param' => $param])->toString();
-                    $receipt = t('<a href="@url" class="@c"  data-accepts=@a  >upload</a>', array('@url' => $modal_route, '@c' => 'use-ajax red', '@a' => "application/vnd.drupal-modal",));
+                    $receipt = $this->t('<a href="@url" class="@c"  data-accepts=@a  >upload</a>', array('@url' => $modal_route, '@c' => 'use-ajax red', '@a' => "application/vnd.drupal-modal",));
                 }
 
                 //voucher
                 $url = Url::fromRoute('ek_finance_voucher.pdf', ['type' => 1, 'id' => $r->id])->toString();
-                $voucher = '<a href="' . $url . '" target="_blank"  title="' . t('voucher')
+                $voucher = '<a href="' . $url . '" target="_blank"  title="' . $this->t('voucher')
                         . ' - ' . $r->id . ' ' . $r->comment . '">' . $r->id . '</a>';
 
 
@@ -892,7 +892,7 @@ class ExpensesManageController extends ControllerBase
                 $i++;
                 $options[$i] = array(
                     'id' => '',
-                    'type' => t('Total'),
+                    'type' => $this->t('Total'),
                     'reference' => '',
                     'company' => '',
                     'date' => '',
@@ -1035,9 +1035,9 @@ class ExpensesManageController extends ControllerBase
         if ($flag != true) {
             $url = Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString();
             $items['type'] = 'edit';
-            $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Expense')))];
+            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', array('@document' => $this->t('Expense')))];
             $items['description'] = ['#markup' => $markup];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
@@ -1074,7 +1074,7 @@ class ExpensesManageController extends ControllerBase
     {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $settings = new FinanceSettings();
             $baseCurrency = $settings->get('baseCurrency');
@@ -1171,9 +1171,9 @@ class ExpensesManageController extends ControllerBase
         if ($flag != true) {
             $url = Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString();
             $items['type'] = 'edit';
-            $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Expense')))];
+            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', array('@document' => $this->t('Expense')))];
             $items['description'] = ['#markup' => $markup];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
@@ -1203,9 +1203,9 @@ class ExpensesManageController extends ControllerBase
         
         if ($j == 1) {
             $items['type'] = 'delete';
-            $items['message'] = ['#markup' => t('This entry cannot be deleted because it has been reconciled.')];
+            $items['message'] = ['#markup' => $this->t('This entry cannot be deleted because it has been reconciled.')];
             $url = Url::fromRoute('ek_finance.manage.list_expense', array(), array())->toString();
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             
             $build = [
                 '#items' => $items,
