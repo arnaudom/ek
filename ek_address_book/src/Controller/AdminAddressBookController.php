@@ -61,7 +61,7 @@ class AdminAddressBookController extends ControllerBase
     public function export(Request $request, $id = null)
     {
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $response = ['#markup' => t('Excel library not available, please contact administrator.')];
+            $response = ['#markup' => $this->t('Excel library not available, please contact administrator.')];
         } else {
             $form_builder = $this->formBuilder();
             $response = $form_builder->getForm('Drupal\ek_address_book\Form\ExportAddressBook');
@@ -78,7 +78,7 @@ class AdminAddressBookController extends ControllerBase
     public function import(Request $request, $id = null)
     {
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $response = ['#markup' => t('Excel library not available, please contact administrator.')];
+            $response = ['#markup' => $this->t('Excel library not available, please contact administrator.')];
         } else {
             $form_builder = $this->formBuilder();
             $response = $form_builder->getForm('Drupal\ek_address_book\Form\ImportAddressBook');

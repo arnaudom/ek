@@ -156,11 +156,11 @@ class InstallController extends ControllerBase
             $markup .= '<br/><b class="messages messages--warning">Main administration module is not installed. Please install this module in order to use Ek_logistics module.</b> <br/>';
         } else {
             $link =  Url::fromRoute('ek_admin.main', array(), array())->toString();
-            $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
+            $markup .= '<br/>' . $this->t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
         }
     
         return  array(
-      '#title'=> t('Installation of Ek_address_book module'),
+      '#title'=> $this->t('Installation of Ek_address_book module'),
       '#markup' => $markup
       ) ;
     }

@@ -43,7 +43,7 @@ class AddressBookController extends ControllerBase
     /**
      * Constructs a  object.
      *
-     *   The moduleexist service.
+     *   The module exist service.
      */
     public function __construct(ModuleHandler $module_handler)
     {
@@ -62,7 +62,7 @@ class AddressBookController extends ControllerBase
         return array(
             '#theme' => 'ek_address_book_search_form',
             '#items' => $response,
-            '#title' => t('Address book'),
+            '#title' => $this->t('Address book'),
             '#attached' => array(
                 'library' => array('ek_address_book/ek_address_book_css'),
             ),
@@ -96,7 +96,7 @@ class AddressBookController extends ControllerBase
 
             if ($this->moduleHandler->moduleExists('ek_sales')) {
                 $url_sales = Url::fromRoute('ek_sales.data', array('abid' => $r['id']), array())->toString();
-                $items['sales'] = t('<a href="@url" >Sales data</a>', array('@url' => $url_sales));
+                $items['sales'] = $this->t('<a href="@url" >Sales data</a>', array('@url' => $url_sales));
             }
 
             $query = Database::getConnection('external_db', 'external_db')
@@ -112,23 +112,23 @@ class AddressBookController extends ControllerBase
                 $clone = false;
             } elseif (isset($check->type) && $check->type == '3') {
                 $clone = true;
-                $into = t('client');
+                $into = $this->t('client');
             } else {
                 $clone = true;
             }
-            $into = ($r['type'] == '1') ? t('supplier') : t('client');
+            $into = ($r['type'] == '1') ? $this->t('supplier') : $this->t('client');
             if ($clone == true) {
                 $url_clone = Url::fromRoute('ek_address_book.clone', array('abid' => $r['id']), array())->toString();
-                $items['clone'] = t('<a href="@url" title="@i">Clone</a>', array('@url' => $url_clone, '@i' => $into));
+                $items['clone'] = $this->t('<a href="@url" title="@i">Clone</a>', array('@url' => $url_clone, '@i' => $into));
             } else {
                 $url_clone = Url::fromRoute('ek_address_book.view', array('abid' => $check->id), array())->toString();
-                $items['clone'] = t('<a href="@url" title="@i"><-></a>', array('@url' => $url_clone, '@i' => $into));
+                $items['clone'] = $this->t('<a href="@url" title="@i"><-></a>', array('@url' => $url_clone, '@i' => $into));
             }
             $items['stamp'] = date('Y-m-d', $r['stamp']);
             $items['id'] = $r['id'];
-            $items['search'] = t('<a href="@url" >New search</a>', array('@url' => $url_search));
+            $items['search'] = $this->t('<a href="@url" >New search</a>', array('@url' => $url_search));
 
-            $items['add'] = t('<a href="@url" >Add contact</a>', array('@url' => $url_add));
+            $items['add'] = $this->t('<a href="@url" >Add contact</a>', array('@url' => $url_add));
             $items['name'] = ucwords($r['name']);
             $items['shortname'] = $r['shortname'];
             $items['address'] = ucwords($r['address']);
@@ -142,12 +142,12 @@ class AddressBookController extends ControllerBase
             $items['website'] = $r['website'];
             $items['reg'] = $r['reg'];
             $items['activity'] = ucwords($r['activity']);
-            $t = array(1 => t('client'), 2 => t('supplier'), 3 => t('other'));
+            $t = array(1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other'));
             $items['type'] = $t[$r['type']];
 
 
 
-            $c = array(1 => t('Head office'), 2 => t('Store'), 3 => t('Factory'), 4 => t('Other'));
+            $c = array(1 => $this->t('Head office'), 2 => $this->t('Store'), 3 => $this->t('Factory'), 4 => $this->t('Other'));
             $items['category'] = $c[$r['category']];
 
             if (\Drupal::currentUser()->hasPermission('sales_data')) {
@@ -163,7 +163,7 @@ class AddressBookController extends ControllerBase
                 $items['logo_img'] = '';
             }
 
-            $s = array(0 => t('inactive'), 1 => t('active'));
+            $s = array(0 => $this->t('inactive'), 1 => $this->t('active'));
             $items['status'] = $s[$r['status']];
             $id = $r['id'];
             $items['contacts'] = array();
@@ -203,7 +203,7 @@ class AddressBookController extends ControllerBase
                 $contact['comment'] = $r['comment'];
 
                 $url_pdf = Url::fromRoute('ek_address_book.pdf', array('abid' => $abid, 'cid' => $r['id']), array())->toString();
-                $contact['pdf'] = t('<a href="@url" target="_blank">Pdf</a>', array('@url' => $url_pdf));
+                $contact['pdf'] = $this->t('<a href="@url" target="_blank">Pdf</a>', array('@url' => $url_pdf));
 
                 array_push($items['contacts'], $contact);
             }
@@ -249,7 +249,7 @@ class AddressBookController extends ControllerBase
             );
             return $response;
         } else {
-            return t('You need javascript to be enabled.');
+            return $this->t('You need javascript to be enabled.');
         }
     }
 
@@ -284,7 +284,7 @@ class AddressBookController extends ControllerBase
         return array(
             '#theme' => 'ek_address_book_form',
             '#items' => $response,
-            '#title' => t('Edit address book'),
+            '#title' => $this->t('Edit address book'),
             '#attached' => array(
                 'library' => array('ek_address_book/ek_address_book_css'),
             ),
@@ -389,7 +389,7 @@ class AddressBookController extends ControllerBase
         } else {
             //cannot clone this entry
             
-            return array('#markup' => t('This entry cannot be cloned.'));
+            return array('#markup' => $this->t('This entry cannot be cloned.'));
         }
     }
 
@@ -427,7 +427,7 @@ class AddressBookController extends ControllerBase
             $data = $query->countQuery()->execute()->fetchField();
             
             if ($data > 0) {
-                $usage[] = t('finance');
+                $usage[] = $this->t('finance');
             }
         }
         if ($this->moduleHandler->moduleExists('ek_products')) {
@@ -437,7 +437,7 @@ class AddressBookController extends ControllerBase
             $data = $query->countQuery()->execute()->fetchField();
             
             if ($data > 0) {
-                $usage[] = t('products & services');
+                $usage[] = $this->t('products & services');
             }
         }
         if ($this->moduleHandler->moduleExists('ek_logistics')) {
@@ -452,7 +452,7 @@ class AddressBookController extends ControllerBase
             $data2 = $query->countQuery()->execute()->fetchField();
             
             if ($data > 0 || $data2 > 0) {
-                $usage[] = t('logistics');
+                $usage[] = $this->t('logistics');
             }
         }
         if ($this->moduleHandler->moduleExists('ek_sales')) {
@@ -472,7 +472,7 @@ class AddressBookController extends ControllerBase
             $data3 = $query->countQuery()->execute()->fetchField();
             
             if ($data > 0 || $data2 > 0 || $data3 > 0) {
-                $usage[] = t('sales');
+                $usage[] = $this->t('sales');
             }
         }
         if ($this->moduleHandler->moduleExists('ek_projects')) {
@@ -482,15 +482,15 @@ class AddressBookController extends ControllerBase
             $data = $query->countQuery()->execute()->fetchField();
             
             if ($data > 0) {
-                $usage[] = t('projects');
+                $usage[] = $this->t('projects');
             }
         }
         
         if (!empty($usage)) {
             $modules = implode(', ', $usage);
             $items['type'] = 'delete';
-            $items['message'] = ['#markup' => t('This address book entry cannot be deleted.')];
-            $items['description'] = ['#markup' => t('Used in @m', ['@m' => $modules])];
+            $items['message'] = ['#markup' => $this->t('This address book entry cannot be deleted.')];
+            $items['description'] = ['#markup' => $this->t('Used in @m', ['@m' => $modules])];
             $url = Url::fromRoute('ek_address_book.view', ['abid' => $abid], [])->toString();
             $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>", ['@url' => $url])];
             
@@ -548,7 +548,7 @@ class AddressBookController extends ControllerBase
         } elseif ($type < 4 || $type == '%') {
             
             //pull company names
-            $types = array(1 => t('client'), 2 => t('supplier'), 3 => t('other'));
+            $types = array(1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other'));
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_address_book', 'ab');
             $query->fields('ab', ['id', 'name', 'type','logo'])->distinct();
@@ -592,7 +592,7 @@ class AddressBookController extends ControllerBase
             }
         } else {
             //pull name cards
-            $types = [1 => t('client'), 2 => t('supplier'), 3 => t('other')];
+            $types = [1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other')];
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_address_book_contacts', 'abc');
             $query->fields('abc', ['id', 'contact_name', 'salutation','abid']);
@@ -718,7 +718,7 @@ class AddressBookController extends ControllerBase
         
         $alert = null;
         if ($count >= 1) {
-            $alert = t('This name already exist in the records');
+            $alert = $this->t('This name already exist in the records');
         }
         return new JsonResponse(array('sn' => $short_name, 'name' => $count, 'alert' => $alert));
     }
