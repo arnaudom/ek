@@ -78,7 +78,7 @@ class AssetsController extends ControllerBase
     {
         $new = Url::fromRoute('ek_assets.new')->toString();
         $build["new"] = array(
-            '#markup' => "<a href='" . $new . "' >" . t('New asset') . "</a>",
+            '#markup' => "<a href='" . $new . "' >" . $this->t('New asset') . "</a>",
         );
         $build['filter_assets_list'] = $this->formBuilder->getForm('Drupal\ek_assets\Form\FilterAssets');
         
@@ -131,11 +131,11 @@ class AssetsController extends ControllerBase
             );
             $excel = Url::fromRoute('ek_assets.excel', array('param' => $param))->toString();
             $build['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>",
+                '#markup' => "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>",
             );
             $qrcode = Url::fromRoute('ek_assets.print-qrcode', array('param' => $param))->toString();
             $build['qrcode'] = array(
-                '#markup' => "<a href='" . $qrcode . "' title='". t('Qr codes') . "' target='_blank'><span class='ico barcode'/></a>",
+                '#markup' => "<a href='" . $qrcode . "' title='". $this->t('Qr codes') . "' target='_blank'><span class='ico barcode'/></a>",
             );
             //get data base on criteria
             $query = "SELECT * from {ek_assets} a INNER JOIN {ek_assets_amortization} b "
@@ -238,13 +238,13 @@ class AssetsController extends ControllerBase
             );
         } else {
             $build['assets_table'] = array(
-                '#markup' => t('Use filter to search assets'),
+                '#markup' => $this->t('Use filter to search assets'),
             );
         }
         
         return array(
             '#theme' => 'ek_assets_list',
-            '#title' => t('List assets'),
+            '#title' => $this->t('List assets'),
             '#items' => $build,
             '#attached' => array(
                 'library' => array('ek_assets/ek_assets_css','ek_admin/admin_css'),
@@ -302,7 +302,7 @@ class AssetsController extends ControllerBase
         $items['amort_rate'] = $data->amort_rate;
         $items['amort_value'] = $data->amort_value;
         $items['amort_yearly'] = $data->amort_yearly;
-        $status = array(0 => t('not amortized'), 1 => t('amortized'));
+        $status = array(0 => $this->t('not amortized'), 1 => $this->t('amortized'));
         $items['amort_status'] = $status[$data->amort_status];
         $items['picture'] = '';
         if ($data->asset_pic != '') {
@@ -318,11 +318,11 @@ class AssetsController extends ControllerBase
         /**/
         if (class_exists('TCPDF2DBarcode')) {
             include_once drupal_get_path('module', 'ek_assets') . '/code.inc';
-            $qr_text = t('ID') . ': ' . $data->id . ', ' . t('Name') . ': '
-                       . $data->asset_name . ', ' . t('Company') . ': ' . $company_name . ', '
-                       . t('Date of purchase') . ': ' . $data->date_purchase . ', '
-                       . t('Reference') . ': ' . $data->asset_ref . ', '
-                       . t('Category') . ': ' . $aname;
+            $qr_text = $this->t('ID') . ': ' . $data->id . ', ' . $this->t('Name') . ': '
+                       . $data->asset_name . ', ' . $this->t('Company') . ': ' . $company_name . ', '
+                       . $this->t('Date of purchase') . ': ' . $data->date_purchase . ', '
+                       . $this->t('Reference') . ': ' . $data->asset_ref . ', '
+                       . $this->t('Category') . ': ' . $aname;
            
             $items['qr_code_html'] = qr_code($qr_text, 'QRCODE,H', '2', 'black', 'html');
             $items['qr_code_svg'] = qr_code($qr_text, 'QRCODE,H', '3', 'black', 'svg');//"<IMG src ='data:image,".  . "' />";
@@ -392,10 +392,10 @@ class AssetsController extends ControllerBase
         //if(!in_array(\Drupal::currentUser()->id(), $access)) {
         if (!in_array($data->coid, $access)) {
             $del = '0';
-            $message = t('You are not authorized to delete this item.');
+            $message = $this->t('You are not authorized to delete this item.');
         } elseif ($data->amort_record != '') {
             $del = '0';
-            $message = t('This asset is not amortized. It cannot be deleted.');
+            $message = $this->t('This asset is not amortized. It cannot be deleted.');
         }
 
         if ($del == '1') {
@@ -405,7 +405,7 @@ class AssetsController extends ControllerBase
             $items['type'] = 'delete';
             $items['message'] = ['#markup' => $message];
             $url = Url::fromRoute('ek_assets.list', array(), array())->toString();
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -426,7 +426,7 @@ class AssetsController extends ControllerBase
     {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $options = unserialize($param);
             $markup = array();
@@ -469,7 +469,7 @@ class AssetsController extends ControllerBase
     public function assetsPrint($id)
     {
         if (!class_exists('TCPDF')) {
-            $markup = ['#markup' => t('Pdf library not available, please contact administrator.')];
+            $markup = ['#markup' => $this->t('Pdf library not available, please contact administrator.')];
             return $markup;
         } else {
             $access = AccessCheck::GetCompanyByUser();
@@ -514,7 +514,7 @@ class AssetsController extends ControllerBase
             $items['amort_rate'] = $data->amort_rate;
             $items['amort_value'] = $data->amort_value;
             $items['amort_yearly'] = $data->amort_yearly;
-            $status = array(0 => t('not amortized'), 1 => t('amortized'));
+            $status = array(0 => $this->t('not amortized'), 1 => $this->t('amortized'));
             $items['amort_status'] = $status[$data->amort_status];
             if ($data->asset_pic != '' && file_exists($data->asset_pic)) {
                 $items['picture'] = $data->asset_pic;
@@ -531,9 +531,9 @@ class AssetsController extends ControllerBase
                 $items['doc'] = '';
             }
             /*qr_code*/
-            $qr_text = t('ID') . ': ' . $data->id . ', ' . t('Name') . ': '
-                       . $data->asset_name . ', ' . t('Company') . ': ' . $company->name . ', '
-                       . t('Date of purchase') . ': ' . $data->date_purchase;
+            $qr_text = $this->t('ID') . ': ' . $data->id . ', ' . $this->t('Name') . ': '
+                       . $data->asset_name . ', ' . $this->t('Company') . ': ' . $company->name . ', '
+                       . $this->t('Date of purchase') . ': ' . $data->date_purchase;
                
             $items['qr_text'] = $qr_text;
                
@@ -597,11 +597,11 @@ class AssetsController extends ControllerBase
                 $query->condition('aid', $d->aid, '=');
                 $account = $query->execute()->fetchField();
                     
-                $qrcode = t('ID') . ': ' . $d->id . ', ' . t('Name') . ': '
-                       . $d->asset_name . ', ' . t('Company') . ': ' . $d->name . ', '
-                       . t('Date of purchase') . ': ' . $d->date_purchase . ', '
-                       . t('Reference') . ': ' . $d->asset_ref . ', '
-                       . t('Category') . ': ' . $account;
+                $qrcode = $this->t('ID') . ': ' . $d->id . ', ' . $this->t('Name') . ': '
+                       . $d->asset_name . ', ' . $this->t('Company') . ': ' . $d->name . ', '
+                       . $this->t('Date of purchase') . ': ' . $d->date_purchase . ', '
+                       . $this->t('Reference') . ': ' . $d->asset_ref . ', '
+                       . $this->t('Category') . ': ' . $account;
                 $assigned = isset($d->eid) ? 1 :0;
                     
                 $print[] = [
@@ -619,8 +619,8 @@ class AssetsController extends ControllerBase
         } else {
             $url = Url::fromRoute('ek_assets.listl', [], [])->toString();
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('You are not authorized to print this information')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('You are not authorized to print this information')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
