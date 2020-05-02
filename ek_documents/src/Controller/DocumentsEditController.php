@@ -177,7 +177,7 @@ class DocumentsEditController extends ControllerBase
         $content = array('content' =>
             array('#markup' =>
                 "<div><a href='documents/delete-confirm/" . $id . "' class='use-ajax'>"
-                . t('delete') . "</a> " . $file . "</div>")
+                . $this->t('delete') . "</a> " . $file . "</div>")
         );
 
         $response = new AjaxResponse();
@@ -286,7 +286,7 @@ class DocumentsEditController extends ControllerBase
             'type' => $doc->type,
             'filename' => $doc->filename,
             'uri' => $move,
-            'folder' => t('moved from share folder'),
+            'folder' => $this->t('moved from share folder'),
             'comment' => $doc->comment,
             'date' => time(),
             'size' => $doc->size,

@@ -42,13 +42,12 @@ class SettingsController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
-      $container->get('database'),
-      $container->get('form_builder'),
-      $container->get('module_handler')
-    );
+            $container->get('database'),
+            $container->get('form_builder'),
+            $container->get('module_handler')
+        );
     }
 
     /**
@@ -59,8 +58,7 @@ class SettingsController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -74,8 +72,7 @@ class SettingsController extends ControllerBase
        *
     */
 
-    public function settings(Request $request)
-    {
+    public function settings(Request $request) {
         $build['form'] = $this->formBuilder->getForm('Drupal\ek_documents\Form\SettingsForm');
         return $build;
     }

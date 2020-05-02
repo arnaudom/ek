@@ -141,10 +141,10 @@ class InstallController extends ControllerBase
         }
    
         $link =  Url::fromRoute('ek_admin.main', array(), array())->toString();
-        $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
+        $markup .= '<br/>' . $this->t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
     
         return  array(
-      '#title'=> t('Installation of Ek_documents module'),
+      '#title'=> $this->t('Installation of Ek_documents module'),
       '#markup' => $markup
       ) ;
     }
