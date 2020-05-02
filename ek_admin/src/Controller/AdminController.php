@@ -15,7 +15,6 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityTypeManager;
-use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\OpenDialogCommand;

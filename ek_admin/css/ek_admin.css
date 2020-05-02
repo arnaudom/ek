@@ -363,7 +363,11 @@ App
     -moz-border-radius:8px 8px 0px 0px; -webkit-border-radius:8px 8px 0px 0px;
 }
 
-.home-title span,h1,h2{
+.home-title span{
+    display: inline;
+}
+
+.home-title h1{
     display: inline;
 }
 
