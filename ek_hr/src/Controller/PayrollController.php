@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\ek\Controller\EkController.
+ * Contains \Drupal\ek_hr\Controller\EkController.
  */
 
 namespace Drupal\ek_hr\Controller;
@@ -11,15 +11,12 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Response;
 use Drupal\ek_admin\Access\AccessCheck;
-use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_hr\HrSettings;
 
 /**
@@ -110,9 +107,9 @@ class PayrollController extends ControllerBase
         if ($flag == 0) {
             $url = Url::fromRoute('ek_hr.parameters', array(), array())->toString();
             $items['type'] = 'edit';
-            $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('payroll')))];
-            $items['description'] = ['#markup' => t('no access')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', array('@document' => $this->t('payroll')))];
+            $items['description'] = ['#markup' => $this->t('no access')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -269,7 +266,7 @@ class PayrollController extends ControllerBase
             $param = serialize(array('coid' => $_SESSION['hrlfilter']['coid']));
             $excel = Url::fromRoute('ek_hr.current-payroll-excel', array('param' => $param), array())->toString();
             $build['excel'] = array(
-                 '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'></span></a>"
+                 '#markup' => "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'></span></a>"
             );
 
             $build['hr_table'] = array(
@@ -296,7 +293,7 @@ class PayrollController extends ControllerBase
     {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $param = unserialize($param);
 
@@ -350,7 +347,7 @@ class PayrollController extends ControllerBase
 
             $path = $GLOBALS['base_url'] . "/human-resources/print/output/" . $param;
 
-            $iframe = "<p>" . t('Month') . ': ' . $_SESSION['printpayslip']['month'] . "</p>"
+            $iframe = "<p>" . $this->t('Month') . ': ' . $_SESSION['printpayslip']['month'] . "</p>"
                     . "<iframe src ='" . $path . "' width='100%' height='800px' id='view' name='view'></iframe>";
             $build['iframe'] = $iframe;
         }

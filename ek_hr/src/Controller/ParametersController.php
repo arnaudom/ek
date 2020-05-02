@@ -15,15 +15,11 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
-use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Ajax\RemoveCommand;
-use Drupal\Component\Utility\Xss;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
-
 use Drupal\ek_admin\Access\AccessCheck;
-use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_hr\HrSettings;
 
 /**
@@ -172,7 +168,7 @@ class ParametersController extends ControllerBase
             $param = serialize(['coid' => $coid, 'status' => $status]);
             $excel = Url::fromRoute('ek_hr.parameters-excel', array('param' => $param), array())->toString();
             $build['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'></span></a>"
+                '#markup' => "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'></span></a>"
             );
 
             $build['hr_table'] = array(
@@ -201,7 +197,7 @@ class ParametersController extends ControllerBase
     {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $param = unserialize($param);
 
@@ -309,7 +305,7 @@ class ParametersController extends ControllerBase
             return array(
                 '#theme' => 'ek_hr_data',
                 '#items' => $data,
-                '#title' => t('Employee data'),
+                '#title' => $this->t('Employee data'),
                 '#attached' => array(
                     'library' => array('ek_hr/ek_hr_data_css'),
                 ),
@@ -320,8 +316,8 @@ class ParametersController extends ControllerBase
         } else {
             $url = Url::fromRoute("ek_hr.parameters", [], [])->toString();
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('<a href="@url" >Back</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => $this->t('<a href="@url" >Back</a>.', ['@url' => $url])];
             return $build = [
                     '#items' => $items,
                     '#theme' => 'ek_admin_message',
@@ -384,7 +380,7 @@ class ParametersController extends ControllerBase
                 $allowance = $h->custom_aw1 + $h->custom_aw2 + $h->custom_aw3 + $h->custom_aw4 + $h->custom_aw5 + $h->custom_aw6 + $h->custom_aw7 + $h->custom_aw8 + $h->custom_aw9 + $h->custom_aw10 + $h->custom_aw11 + $h->custom_aw12 + $h->custom_aw13;
                 $deductions = $h->less_hours_val + $h->custom_d2 + $h->custom_d3 + $h->custom_d4 + $h->custom_d5 + $h->custom_d6 + $h->custom_d7;
                 $link = Url::fromRoute('ek_hr.employee.history_pay', ['id' => $h->id])->toString();
-                $view = '<a href="' . $link . '">' . t('view') . '</a>';
+                $view = '<a href="' . $link . '">' . $this->t('view') . '</a>';
                 $data['salary'][$h->month] = array(
                     $h->gross,
                     $h->nett,
@@ -402,13 +398,13 @@ class ParametersController extends ControllerBase
             return array(
                 '#theme' => 'ek_hr_history',
                 '#items' => $data,
-                '#title' => t('Employee history'),
+                '#title' => $this->t('Employee history'),
                 '#attached' => array(
                     'library' => array('ek_hr/ek_hr_data_css'),
                 ),
             );
         } else {
-            return array('#markup' => t('Restricted access'));
+            return array('#markup' => $this->t('Restricted access'));
         }
     }
 
@@ -434,7 +430,7 @@ class ParametersController extends ControllerBase
             }
             $link = Url::fromRoute('ek_hr.employee.history', ['id' => $data['salary']->emp_id])
                     ->toString();
-            $data['back'] = '<a href="' . $link . '">' . t('back') . '</a>';
+            $data['back'] = '<a href="' . $link . '">' . $this->t('back') . '</a>';
             // get allowance aparameters for the coid
             $param = new HrSettings($data['salary']->company_id);
             $ad = $param->HrAd[$data['salary']->company_id];
@@ -513,13 +509,13 @@ class ParametersController extends ControllerBase
             return array(
                 '#theme' => 'ek_hr_history_pay',
                 '#items' => $data,
-                '#title' => t('Employee pay history'),
+                '#title' => $this->t('Employee pay history'),
                 '#attached' => array(
                     'library' => array('ek_hr/ek_hr_data_css'),
                 ),
             );
         } else {
-            return array('#markup' => t('Restricted access'));
+            return array('#markup' => $this->t('Restricted access'));
         }
     }
 
@@ -542,7 +538,7 @@ class ParametersController extends ControllerBase
             $build['edit_employee'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\EditEmployee', $id);
             return $build;
         } else {
-            return array('#markup' => t('Restricted access'));
+            return array('#markup' => $this->t('Restricted access'));
         }
     }
 
@@ -765,7 +761,7 @@ class ParametersController extends ControllerBase
             $i++;
 
             $vid = str_replace('.', '___', $v);
-            $link = "<a href='#' class='deleteButton red' id='" . $vid . "' title='" . t('delete') . "' >[x]</a>";
+            $link = "<a href='#' class='deleteButton red' id='" . $vid . "' title='" . $this->t('delete') . "' >[x]</a>";
 
             $options[$i] = array(
                 'data' => array(
@@ -829,7 +825,7 @@ class ParametersController extends ControllerBase
             $doc = "<a href='" . file_create_url("private://hr/forms/" . $v) . "'>" . $v . "</a>";
             $vid = str_replace('.', '___', $v);
 
-            $link = "<a href='#' class='use-ajax deleteButton red' id='" . $vid . "' title='" . t('delete') . "' >[x]</a>";
+            $link = "<a href='#' class='use-ajax deleteButton red' id='" . $vid . "' title='" . $this->t('delete') . "' >[x]</a>";
 
             $options[$i] = array(
                 'data' => array(
@@ -910,7 +906,7 @@ class ParametersController extends ControllerBase
         return array(
             '#theme' => 'ek_hr_fund',
             '#items' => $build,
-            '#title' => t('Funds management'),
+            '#title' => $this->t('Funds management'),
             
         );
     }
@@ -976,11 +972,11 @@ class ParametersController extends ControllerBase
                 $ad = new HrSettings($param[1]);
                 $formula = $ad->get('ad', $param[2], 'formula');
                 if ($formula == '') {
-                    $formula = t('no formula set for this parameter');
+                    $formula = $this->t('no formula set for this parameter');
                 }
                 $content = array(
                     'content' => array('#markup' => "<p>" .
-                        t('Formula can be set by parameter for value calculation. Go to "edit parameters" '
+                        $this->t('Formula can be set by parameter for value calculation. Go to "edit parameters" '
                                 . 'to change the formula.') . "</p><br/>" . '{ ' . $formula . ' }')
                 );
                 $options = array('width' => '25%',);

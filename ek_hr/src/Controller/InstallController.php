@@ -9,13 +9,9 @@ namespace Drupal\ek_hr\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
-use Drupal\user\UserInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -419,10 +415,10 @@ class InstallController extends ControllerBase
     
     
         $link =  Url::fromRoute('ek_admin.main', array(), array())->toString();
-        $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
+        $markup .= '<br/>' . $this->t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
    
         return  array(
-      '#title'=> t('Installation of Ek_hr module'),
+      '#title'=> $this->t('Installation of Ek_hr module'),
       '#markup' => $markup
       ) ;
     }

@@ -1,4 +1,5 @@
 <?php
+
 /**
 * @file
 * Contains \Drupal\ek\Controller\EkController.
@@ -7,16 +8,10 @@ namespace Drupal\ek_hr\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Database\Database;
-use Drupal\user\UserInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\Core\Form\FormBuilderInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Extension\ModuleHandler;
-
-use Drupal\ek_admin\src\Access\AccessCheck;
-use Drupal\ek_admin\CompanySettings;
 
 /**
 * Controller routines for ek module routes.
