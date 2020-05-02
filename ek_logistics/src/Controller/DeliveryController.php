@@ -16,7 +16,6 @@ use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
-use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_logistics\LogisticsSettings;
 
 /**
@@ -159,7 +158,7 @@ class DeliveryController extends ControllerBase {
         while ($r = $data->fetchObject()) {
             $settings = new LogisticsSettings($r->head);
             $client = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
-            $number = "<a title='" . t('view') . "' href='"
+            $number = "<a title='" . $this->t('view') . "' href='"
                     . Url::fromRoute('ek_logistics.delivery.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
             if ($r->pcode <> 'n/a') {
@@ -173,19 +172,19 @@ class DeliveryController extends ControllerBase {
             }
 
             if ($r->status == 0) {
-                $status = "<i class='fa fa-circle green' aria-hidden='true'></i> " . t('open');
+                $status = "<i class='fa fa-circle green' aria-hidden='true'></i> " . $this->t('open');
             }
             if ($r->status == 1) {
-                $status = "<i class='fa fa-circle blue' aria-hidden='true'></i> " . t('printed');
+                $status = "<i class='fa fa-circle blue' aria-hidden='true'></i> " . $this->t('printed');
             }
             if ($r->status == 2) {
-                $status = "<i class='fa fa-circle yellow' aria-hidden='true'></i> " . t('invoiced');
+                $status = "<i class='fa fa-circle yellow' aria-hidden='true'></i> " . $this->t('invoiced');
             }
             if ($r->status == 3) {
-                $status = "<i class='fa fa-circle red' aria-hidden='true'></i> " . t('posted');
+                $status = "<i class='fa fa-circle red' aria-hidden='true'></i> " . $this->t('posted');
             }
             $options[$r->id] = array(
-                'number' => ['data' => ['#markup' => $number], 'title' => t('view in browser')],
+                'number' => ['data' => ['#markup' => $number], 'title' => $this->t('view in browser')],
                 'reference' => ['data' => ['#markup' => $reference]],
                 'issuer' => array('data' => $company_array[$r->head], 'title' => $r->title),
                 'date' => $r->date,
@@ -292,7 +291,7 @@ class DeliveryController extends ControllerBase {
             } else {
                 $url = Url::fromRoute('ek_logistics_list_delivery', array(), array())->toString();
                 $build['back'] = array(
-                    '#markup' => t('Document not editable. Go to <a href="@url">List</a>.', array('@url' => $url)),
+                    '#markup' => $this->t('Document not editable. Go to <a href="@url">List</a>.', array('@url' => $url)),
                 );
             }
         } else {
@@ -390,8 +389,8 @@ class DeliveryController extends ControllerBase {
         } else {
             $url = Url::fromRoute('ek_logistics_list_delivery')->toString();
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -455,8 +454,8 @@ class DeliveryController extends ControllerBase {
         } else {
             $url = Url::fromRoute('ek_logistics_list_delivery')->toString();
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -524,13 +523,13 @@ class DeliveryController extends ControllerBase {
     public function delete(Request $request, $id) {
         $query = "SELECT status,serial FROM {ek_logi_delivery} WHERE id=:id";
         $table = 'delivery';
-        $opt = [0 => t('open'), 1 => t('printed'), 2 => t('invoiced'), 3 => t('posted')];
+        $opt = [0 => $this->t('open'), 1 => $this->t('printed'), 2 => $this->t('invoiced'), 3 => $this->t('posted')];
         $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))->fetchObject();
 
         if ($data->status > 0) {
             $items['type'] = 'delete';
-            $items['message'] = ['#markup' => t('@document cannot be deleted.', array('@document' => t('Delivery')))];
+            $items['message'] = ['#markup' => $this->t('@document cannot be deleted.', array('@document' => $this->t('Delivery')))];
             $items['description'] = ['#markup' => $opt[$data->status]];
             $url = Url::fromRoute('ek_logistics_list_delivery', [], [])->toString();
             $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>", ['@url' => $url])];

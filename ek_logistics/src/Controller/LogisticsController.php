@@ -16,7 +16,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Url;
 use Drupal\ek_admin\Access\AccessCheck;
-use Drupal\ek_admin\CompanySettings;
 
 /**
  * Controller routines for ek module routes.
@@ -194,7 +193,7 @@ class LogisticsController extends ControllerBase {
             $extract = serialize($extract);
             $excel = Url::fromRoute('ek_logistics_excel_stock', array('param' => $extract), array())->toString();
             $build['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' title='" . t('Excel download') . "'><span class='ico excel green'></span></a>"
+                '#markup' => "<a href='" . $excel . "' title='" . $this->t('Excel download') . "'><span class='ico excel green'></span></a>"
             );
             $build['items_table'] = array(
                 '#type' => 'table',
@@ -226,7 +225,7 @@ class LogisticsController extends ControllerBase {
     public function excelItemsStock($param = null) {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $extract = unserialize($param);
 
@@ -255,7 +254,7 @@ class LogisticsController extends ControllerBase {
                 $markup = array();
                 include_once drupal_get_path('module', 'ek_logistics') . '/excel_items_stock.inc';
             } else {
-                $markup = t('No data available');
+                $markup = $this->t('No data available');
             }
         }
         return ['#markup' => $markup];
