@@ -201,7 +201,7 @@ class QuotationsController extends ControllerBase {
                 ->fetchAllKeyed();
 
         while ($r = $data->fetchObject()) {
-            $number = "<a title='" . t('view') . "' href='"
+            $number = "<a title='" . $this->t('view') . "' href='"
                     . Url::fromRoute('ek_sales.quotations.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
 
@@ -212,7 +212,7 @@ class QuotationsController extends ControllerBase {
 
             $co = $companies[$r->head];
             if ($r->head <> $r->allocation) {
-                $for = isset($companies[$r->allocation]) ? "<br/>" . t('for') . ": " . $companies[$r->allocation] : '';
+                $for = isset($companies[$r->allocation]) ? "<br/>" . $this->t('for') . ": " . $companies[$r->allocation] : '';
                 $co = $co . $for;
             }
 
@@ -259,13 +259,13 @@ class QuotationsController extends ControllerBase {
 
 
             if ($r->status == 0) {
-                $status = t('open');
+                $status = $this->t('open');
             }
             if ($r->status == 1) {
-                $status = t('printed');
+                $status = $this->t('printed');
             }
             if ($r->status == 2) {
-                $status = t('invoiced');
+                $status = $this->t('invoiced');
             }
 
             $options[$r->id] = array(
@@ -370,12 +370,12 @@ class QuotationsController extends ControllerBase {
         if ($clone == true || $status <> 2) {
             $build['edit_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Quotation', $id, $clone);
         } else {
-            $opt = ['0' => t('open'), 1 => t('printed'), 2 => t('invoiced')];
+            $opt = ['0' => $this->t('open'), 1 => $this->t('printed'), 2 => $this->t('invoiced')];
             $url = Url::fromRoute('ek_sales.quotations.list', array(), array())->toString();
             $items['type'] = 'edit';
-            $items['message'] = ['#markup' => t('@document cannot be edited.', array('@document' => t('Qotation')))];
+            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', array('@document' => $this->t('Qotation')))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -399,12 +399,12 @@ class QuotationsController extends ControllerBase {
         if ($status < 2) {
             $build['edit_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\ConvertQuotation', $id);
         } else {
-            $opt = ['0' => t('open'), 1 => t('printed'), 2 => t('invoiced')];
+            $opt = ['0' => $this->t('open'), 1 => $this->t('printed'), 2 => $this->t('invoiced')];
             $url = Url::fromRoute('ek_sales.quotations.list', array(), array())->toString();
             $items['type'] = 'edit';
-            $items['message'] = ['#markup' => t('@document cannot be converted.', array('@document' => t('Qotation')))];
+            $items['message'] = ['#markup' => $this->t('@document cannot be converted.', array('@document' => $this->t('Qotation')))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -466,8 +466,8 @@ class QuotationsController extends ControllerBase {
         } else {
             $url = Url::fromRoute('ek_sales.quotations.list')->toString();
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -537,8 +537,8 @@ class QuotationsController extends ControllerBase {
         } else {
             $url = Url::fromRoute('ek_sales.quotations.list')->toString();
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -592,8 +592,8 @@ class QuotationsController extends ControllerBase {
         } else {
             $url = Url::fromRoute('ek_sales.quotations.list')->toString();
             $items['type'] = 'access';
-            $items['message'] = ['#markup' => t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
@@ -616,12 +616,12 @@ class QuotationsController extends ControllerBase {
             $build['delete_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\DeleteQuotation', $id);
         } else {
             $items = [];
-            $opt = ['0' => t('Open'), 1 => t('Printed'), 2 => t('Invoiced')];
+            $opt = ['0' => $this->t('Open'), 1 => $this->t('Printed'), 2 => $this->t('Invoiced')];
             $url = Url::fromRoute('ek_sales.purchases.list', array(), array())->toString();
             $items['type'] = 'delete';
-            $items['message'] = ['#markup' => t('@document cannot be deleted.', array('@document' => t('Quotation')))];
+            $items['message'] = ['#markup' => $this->t('@document cannot be deleted.', array('@document' => $this->t('Quotation')))];
             $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build['delete_quotation'] = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',

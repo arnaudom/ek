@@ -112,7 +112,7 @@ class SalesController extends ControllerBase {
             $items['comment'] = html_entity_decode($ab->comment, ENT_QUOTES, "utf-8");
             $param_edit = 'comment|' . $abid . '|address_book|50%';
             $items['url_comment'] = Url::fromRoute('ek_sales_modal', ['param' => $param_edit])->toString();
-            $items['edit_comment'] = t('<a href="@url" class="@c"  >[ edit ]</a>', array('@url' => $items['url_comment'], '@c' => 'use-ajax red '));
+            $items['edit_comment'] = $this->t('<a href="@url" class="@c"  >[ edit ]</a>', array('@url' => $items['url_comment'], '@c' => 'use-ajax red '));
 
 
             //projects linked
@@ -183,10 +183,10 @@ class SalesController extends ControllerBase {
 
                     $options = [];
                     $options['type'] = 'donut';
-                    $options['title'] = t('Projects');
+                    $options['title'] = $this->t('Projects');
                     $options['xaxis_title'] = $items['baseCurrency'];
                     $options['title_position'] = 'in';
-                    $categories = [t('open'), t('awarded'), t('completed'), t('closed')];
+                    $categories = [t('open'), $this->t('awarded'), $this->t('completed'), $this->t('closed')];
 
                     $seriesData = [
                         [
@@ -304,7 +304,7 @@ class SalesController extends ControllerBase {
             if (isset($chartSettings)) {
                 $options = [];
                 $options['type'] = 'bar';
-                $options['title'] = ($ab->type == 1) ? t('Sales structure') : t('Purchases structure');
+                $options['title'] = ($ab->type == 1) ? $this->t('Sales structure') : $this->t('Purchases structure');
                 $options['yaxis_title'] = t($source);
                 $options['yaxis_min'] = '';
                 $options['yaxis_max'] = '';
@@ -313,9 +313,9 @@ class SalesController extends ControllerBase {
                 $options['title_position'] = 'top';
                 $categories = [];
                 $seriesData = [
-                    ["name" => t('Highest'), "color" => $chartSettings['colors'][0], "type" => "bar", "data" => [$items['invoices']['max']]],
-                    ["name" => t('Lowest'), "color" => $chartSettings['colors'][1], "type" => "bar", "data" => [$items['invoices']['min']]],
-                    ["name" => t('Average'), "color" => $chartSettings['colors'][2], "type" => "bar", "data" => [$items['invoices']['avg']]]
+                    ["name" => $this->t('Highest'), "color" => $chartSettings['colors'][0], "type" => "bar", "data" => [$items['invoices']['max']]],
+                    ["name" => $this->t('Lowest'), "color" => $chartSettings['colors'][1], "type" => "bar", "data" => [$items['invoices']['min']]],
+                    ["name" => $this->t('Average'), "color" => $chartSettings['colors'][2], "type" => "bar", "data" => [$items['invoices']['avg']]]
                 ];
 
                 $uuid_service = \Drupal::service('uuid');
@@ -334,16 +334,16 @@ class SalesController extends ControllerBase {
 
                 $options = [];
                 $options['type'] = 'line';
-                $options['title'] = ($ab->type == 1) ? t('Sales per year') : t('Purchases per year');
+                $options['title'] = ($ab->type == 1) ? $this->t('Sales per year') : $this->t('Purchases per year');
                 $options['yaxis_title'] = $items['baseCurrency'];
                 $options['yaxis_min'] = '';
                 $options['yaxis_max'] = '';
-                $options['xaxis_title'] = t('Years');
+                $options['xaxis_title'] = $this->t('Years');
                 $options['legend_position'] = 'bottom';
                 $options['title_position'] = 'top';
                 $categories = [date('Y') - 6, date('Y') - 5, date('Y') - 4, date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y')];
                 $seriesData = [
-                    ["name" => t('Transactions') . " " . $items['baseCurrency'],
+                    ["name" => $this->t('Transactions') . " " . $items['baseCurrency'],
                         "type" => 'line',
                         "data" => [
                             (int) $items['sales_year'][date('Y') - 6],
@@ -403,8 +403,8 @@ class SalesController extends ControllerBase {
             if (isset($chartSettings)) {
                 $options = [];
                 $options['type'] = 'bar';
-                $options['title'] = t('Payments performance');
-                $options['yaxis_title'] = t('terms');
+                $options['title'] = $this->t('Payments performance');
+                $options['yaxis_title'] = $this->t('terms');
                 $options['yaxis_min'] = '';
                 $options['yaxis_max'] = '';
                 $options['xaxis_title'] = '';
@@ -413,9 +413,9 @@ class SalesController extends ControllerBase {
 
                 $categories = ['days'];
                 $seriesData = [
-                    ["name" => t('Highest'), "color" => $chartSettings['colors'][0], "type" => "bar", "data" => [$items['payment_performance']['max']]],
-                    ["name" => t('Lowest'), "color" => $chartSettings['colors'][1], "type" => "bar", "data" => [$items['payment_performance']['min']]],
-                    ["name" => t('Average'), "color" => $chartSettings['colors'][2], "type" => "bar", "data" => [$items['payment_performance']['avg']]]
+                    ["name" => $this->t('Highest'), "color" => $chartSettings['colors'][0], "type" => "bar", "data" => [$items['payment_performance']['max']]],
+                    ["name" => $this->t('Lowest'), "color" => $chartSettings['colors'][1], "type" => "bar", "data" => [$items['payment_performance']['min']]],
+                    ["name" => $this->t('Average'), "color" => $chartSettings['colors'][2], "type" => "bar", "data" => [$items['payment_performance']['avg']]]
                 ];
 
                 $uuid_service = \Drupal::service('uuid');
@@ -432,14 +432,14 @@ class SalesController extends ControllerBase {
                 $items['payment_performance_chart'] = \Drupal::service('renderer')->render($element);
             }
         } else {
-            $items['abidname'] = t('No data');
+            $items['abidname'] = $this->t('No data');
             $items['abidlink'] = Url::fromRoute('ek_address_book.search')->toString();
             $items['data'] = null;
         }
 
         return array(
             '#items' => $items,
-            '#title' => t('Sales data'),
+            '#title' => $this->t('Sales data'),
             '#theme' => $theme,
             '#attached' => array(
                 'drupalSettings' => array('abid' => $abid),
@@ -469,7 +469,7 @@ class SalesController extends ControllerBase {
                 ->fetchField();
 
         return array(
-            '#title' => t('Documents'),
+            '#title' => $this->t('Documents'),
             '#items' => $items,
             '#theme' => 'ek_sales_documents',
             '#attached' => array(
@@ -566,7 +566,7 @@ class SalesController extends ControllerBase {
                             $items[$l->folder][$i]['delete'] = 0;
                             $items[$l->folder][$i]['email'] = 0;
                             $items[$l->folder][$i]['extranet'] = 0;
-                            $items[$l->folder][$i]['comment'] = t('Document not available. Please contact administrator');
+                            $items[$l->folder][$i]['comment'] = $this->t('Document not available. Please contact administrator');
                         } else {
                             //file exist
                             $route = Url::fromRoute('ek_sales_delete_file', array('id' => $l->id))->toString();
@@ -671,13 +671,13 @@ class SalesController extends ControllerBase {
                 $content['#markup'] = "<table>"
                         . "<tbody>"
                         . "<tr>"
-                        . "<td>" . t('Receivable') . "</td><td>" . $data->currency . " " . number_format($gross, 2) . "<td>"
+                        . "<td>" . $this->t('Receivable') . "</td><td>" . $data->currency . " " . number_format($gross, 2) . "<td>"
                         . "</tr>"
                         . "<tr>"
-                        . "<td>" . t('Received') . "</td><td>" . $data->currency . " " . number_format($data->amountreceived, 2) . "<td>"
+                        . "<td>" . $this->t('Received') . "</td><td>" . $data->currency . " " . number_format($data->amountreceived, 2) . "<td>"
                         . "</tr>"
                         . "<tr>"
-                        . "<td>" . t('Balance') . "</td><td>" . $data->currency . " " . number_format($bal, 2) . "<td>"
+                        . "<td>" . $this->t('Balance') . "</td><td>" . $data->currency . " " . number_format($bal, 2) . "<td>"
                         . "</tbody></table><br/>";
 
                 if ($this->moduleHandler->moduleExists('ek_finance')) {
@@ -704,13 +704,13 @@ class SalesController extends ControllerBase {
                 $content['#markup'] = "<table>"
                         . "<tbody>"
                         . "<tr>"
-                        . "<td>" . t('Payable') . "</td><td>" . $data->currency . " " . number_format($gross, 2) . "<td>"
+                        . "<td>" . $this->t('Payable') . "</td><td>" . $data->currency . " " . number_format($gross, 2) . "<td>"
                         . "</tr>"
                         . "<tr>"
-                        . "<td>" . t('Paid') . "</td><td>" . $data->currency . " " . number_format($data->amountpaid, 2) . "<td>"
+                        . "<td>" . $this->t('Paid') . "</td><td>" . $data->currency . " " . number_format($data->amountpaid, 2) . "<td>"
                         . "</tr>"
                         . "<tr>"
-                        . "<td>" . t('Balance') . "</td><td>" . $data->currency . " " . number_format($bal, 2) . "<td>"
+                        . "<td>" . $this->t('Balance') . "</td><td>" . $data->currency . " " . number_format($bal, 2) . "<td>"
                         . "</tbody></table><br/>";
 
                 if ($this->moduleHandler->moduleExists('ek_finance')) {
@@ -756,7 +756,7 @@ class SalesController extends ControllerBase {
         $content = array('content' =>
             array('#markup' =>
                 "<div><a href='" . $url . "' class='use-ajax'>"
-                . t('delete') . "</a> " . $file . "</div>")
+                . $this->t('delete') . "</a> " . $file . "</div>")
         );
 
         $response = new AjaxResponse();
@@ -803,7 +803,7 @@ class SalesController extends ControllerBase {
             $fields = array(
                 'uri' => date('U'),
                 'fid' => 0,
-                'comment' => t('deleted by') . ' ' . \Drupal::currentUser()->getAccountName(),
+                'comment' => $this->t('deleted by') . ' ' . \Drupal::currentUser()->getAccountName(),
                 'date' => time()
             );
 
@@ -831,7 +831,7 @@ class SalesController extends ControllerBase {
             $response->addCommand(new RemoveCommand('#row' . $id));
         } else {
             $content = array('content' =>
-                array('#markup' => "<div>" . t('access denied') . "</div>")
+                array('#markup' => "<div>" . $this->t('access denied') . "</div>")
             );
             $log = 'sales document|user|' . \Drupal::currentUser()->id() . '|error delete|' . $data->filename;
             \Drupal::logger('ek_sales')->notice($log);
@@ -887,7 +887,7 @@ class SalesController extends ControllerBase {
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
         if (!in_array($data->head, $access)) {
             $read = 0;
-            $message = t('You are not authorized to view this content');
+            $message = $this->t('You are not authorized to view this content');
         }
 
         $reco = 0;
@@ -908,18 +908,18 @@ class SalesController extends ControllerBase {
 
             $reco = $query->execute()->fetchField();
             if ($reco > 0) {
-                $message = t('This entry cannot be deleted because it has been reconciled.');
+                $message = $this->t('This entry cannot be deleted because it has been reconciled.');
             }
         }
 
         if ($read == 0 || $reco > 0 || $data->status != 1) {
             if (!isset($message)) {
-                $message = t('This @doc cannot be reset because it has not been paid', ['@doc' => $doc]);
+                $message = $this->t('This @doc cannot be reset because it has not been paid', ['@doc' => $doc]);
             }
             $url = Url::fromRoute($route)->toString();
             $items['type'] = 'edit';
             $items['message'] = ['#markup' => $message];
-            $items['link'] = ['#markup' => t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
