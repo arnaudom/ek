@@ -482,6 +482,7 @@ function ek_finance_form_ek_edit_address_book_form_alter(&$form, \Drupal\Core\Fo
         );
        
         $form['bank']['new']['bank_country'] = $form['country'];
+        $form['bank']['new']['bank_country']['#required'] = false;
         $form['bank']['new']['bank_country']['#states'] = [
                 'invisible' => [
                     "input[name='bname']" => ['value' => ''],
@@ -556,6 +557,7 @@ function ek_finance_ab_bank_validate(&$form, \Drupal\Core\Form\FormStateInterfac
  */
 function ek_fiance_ab_bank_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
     
+    
     if($form_state->getValue('count') > 0) {
         for($i = 1; $i <= $form_state->getValue('count'); $i++) {
             $fields = array(
@@ -581,6 +583,15 @@ function ek_fiance_ab_bank_submit(&$form, \Drupal\Core\Form\FormStateInterface $
     
     
     if($form_state->getValue('bname') != NULL) {
+        if($form_state->getValue('for_id') == '') {
+            //retrieve the last id record
+             $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_address_book', 'a');
+             $query->fields('a',['id']);
+             $query->range(0,1);
+             $query->orderBy('id', 'DESC');
+             $id = $query->execute()->fetchField();
+        }
         $fields = array(
                     'name' => Xss::filter($form_state->getValue('bname')),
                     'address1' => Xss::filter($form_state->getValue('baddress1')),
@@ -590,7 +601,7 @@ function ek_fiance_ab_bank_submit(&$form, \Drupal\Core\Form\FormStateInterface $
                     'account' => Xss::filter($form_state->getValue('account')),
                     'bank_code' => Xss::filter($form_state->getValue('bank_code')),
                     'swift' => Xss::filter($form_state->getValue('swift')),
-                    'abid' => $form_state->getValue('for_id'),
+                    'abid' => $id,
         );
         $query = Database::getConnection('external_db', 'external_db')
                 ->insert('ek_address_book_bank')
