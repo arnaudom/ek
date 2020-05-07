@@ -196,7 +196,7 @@ class ConvertQuotation extends FormBase {
             '#suffix' => '</div>',
         );
 
-        $options = array('1' => t('Invoice'), '2' => t('Commercial invoice'), '4' => t('Credit note'));
+        $options = ['1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'), '4' => $this->t('Credit note')];
         $form['options']['title'] = array(
             '#type' => 'select',
             '#size' => 1,
@@ -384,6 +384,15 @@ class ConvertQuotation extends FormBase {
             '#attributes' => array('placeholder' => $this->t('days')),
         );
 
+        $form['options']['po_no'] = array(
+            '#type' => 'textfield',
+            '#maxlength' => 50,
+            '#size' => 25,
+            '#default_value' => null,
+            '#description' => $this->t('optional purchase order number'),
+            '#attributes' => array('placeholder' => $this->t('PO No.')),
+        );        
+        
         $form['options']['comment'] = array(
             '#type' => 'textarea',
             '#rows' => 1,
@@ -1322,7 +1331,7 @@ class ConvertQuotation extends FormBase {
                 $amountbc = $sumwithtax;
             }
         }
-
+        $options = array('1' => 'Invoice', '2' => 'Commercial invoice', '4' => 'Credit note');
         $fields1 = array(
             'serial' => $serial,
             'head' => $form_state->getValue('head'),
@@ -1331,9 +1340,10 @@ class ConvertQuotation extends FormBase {
             'amount' => $sum,
             'currency' => $form_state->getValue('currency'),
             'date' => $form_state->getValue('date'),
-            'title' => $form_state->getValue('title'),
+            'title' => $options[$form_state->getValue('title')],
             'pcode' => $pcode,
             'comment' => Xss::filter($form_state->getValue('comment')),
+            'po_no' => Xss::filter($form_state->getValue('po_no')),
             'client' => $form_state->getValue('client'),
             'amountreceived' => 0,
             'pay_date' => '',

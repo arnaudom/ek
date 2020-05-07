@@ -271,6 +271,7 @@ class SettingsController extends ControllerBase {
         if($custom['body']['border'] == 1) {
             // force sign display with border for visual adjustment
             $signature = 1;
+            $s_pos = 10;
         }
  
         include_once $template;  
