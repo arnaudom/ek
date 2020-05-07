@@ -227,7 +227,7 @@ class ReconciliationForm extends FormBase {
                 ':dateopen' => $account->balance_date,
                 ':reco' => 0
             );
-            dpm($a);
+            
             $credit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
             $a = array(
                 ':exc' => $exchange,
