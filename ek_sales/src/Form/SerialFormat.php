@@ -53,8 +53,7 @@ class SerialFormat extends FormBase {
             1 => $this->t('company'),
             2 => $this->t('document type'),
             3 => $this->t('date'),
-            4 => $this->t('client code'),
-            5 => $this->t('sequence number')
+            4 => $this->t('client code')
         ];
 
         $form['first'] = array(
@@ -96,10 +95,10 @@ class SerialFormat extends FormBase {
         $form['last'] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#options' => [6 => $this->t('sequence number')],
+            '#options' => [5 => $this->t('sequence number')],
             '#required' => true,
             '#title' => $this->t('Last element'),
-            '#default_value' => isset($s['code'][6]) ? $s['code'][6] : 6,
+            '#default_value' => 5,
             '#description' => $this->t('The sequence cannot be changed.'),
         );
 
@@ -132,7 +131,7 @@ class SerialFormat extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
         if (!is_numeric($form_state->getValue('increment')) || $form_state->getValue('increment') < 0) {
-            $form_state->setErrorByName("increment", $this->t('The increment value is should be a positive number.'));
+            $form_state->setErrorByName("increment", $this->t('The increment value should be a positive number.'));
         }
     }
 
@@ -169,7 +168,7 @@ class SerialFormat extends FormBase {
         $save = $this->settings->save();
 
         if ($save) {
-            \Drupal::messenger()->addStatus(t('The settings are recorded'));
+            \Drupal::messenger()->addStatus($this->t('The settings are recorded'));
         }
     }
 
