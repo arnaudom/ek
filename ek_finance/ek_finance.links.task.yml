@@ -134,7 +134,7 @@ ek_finance.task.reporting:
   
 ek_finance.task.budgeting:
   route_name: ek_finance_budgeting
-  base_route: c
+  base_route: ek_finance_reporting
   title: 'Budget'
   weight: 2
   
