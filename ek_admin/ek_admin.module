@@ -365,6 +365,24 @@ function mail_attachment($email, $file, $message = null , $options = null) {
                 }
             }
             
+            // self copy
+            if($options['copy'] == 1) {
+                if ($target_user = user_load_by_mail(\Drupal::currentUser()->getEmail())) {
+                   $target_langcode = $target_user->getPreferredLangcode();
+                } else {
+                    $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
+                }
+                $params['subject'] = "[copy]" . $params['subject'];
+                \Drupal::service('plugin.manager.mail')->mail(
+                    'ek_admin',
+                    'attachment',
+                    \Drupal::currentUser()->getEmail(),
+                    $target_langcode,
+                    $params,
+                    $currentuserMail,
+                    TRUE
+                );
+            }
               
             Return array('send' => $send, 'error' => $error);
         
