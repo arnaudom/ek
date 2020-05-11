@@ -37,7 +37,7 @@ class EKPDF extends TCPDF {
         $this->SetFont('helvetica','',$font2);
         $this->Cell($lm);  
         $this->Cell($h1+$h2);    
-        $this->Cell($c3,4, $this->company->address1,$b,1);
+        $this->Cell($h3,4, $this->company->address1,$b,1);
         $this->Cell($lm);  
         $this->Cell($h1+$h2);    
         $this->Cell($h3,4, $this->company->address2,$b,1);
@@ -181,24 +181,26 @@ if(isset($custom)) {
       'margin_header' => 5, 'margin_footer' => 10, ];
 
   // set default header data
-  $format_header = ['left_margin' => 2, 'col_1' => 45, 'col_2' => 70, 
-      'col_3' => 30, 'col_4' => 35, 'border' => 0, 'logo_x' => 20, 'logo_y' => 10, 
-      'logo_z' => 43,'color' => [128,128,128],'font' => 12];
-
+  $format_header = ['left_margin' => 2, 'col_1' => 50, 'col_2' => 50,
+        'col_3' => 50, 'col_4' => 50, 'border' => 0, 'logo_x' => 20, 'logo_y' => 10,
+        'logo_z' => 43, 'color' => ['red'=>128,'green'=>128,'blue'=>128], 'font' => 12];
+  
   // set default footer data
   $format_footer = ['left_margin' => 2, 'col_1' => 15, 'col_2' => 30, 
       'col_3' => 60, 'col_4' => 80, 'border' => 0, 'w_data' => -45, 'w_page' => -25,
-      'color' => [128,128,128],'font' => 8];
+      'color' => ['red'=>128,'green'=>128,'blue'=>128],'font' => 8];
 
   // set format for feature
-  $format_feature = ['left_margin' => 1, 'col_1' => 45, 'col_2' => 70, 
-      'col_3' => 30, 'col_4' => 35, 'border' => 0, 'color' => [120,150,190],'font' => 14,
+  $format_feature = ['left_margin' => 1, 'col_1' => 50, 'col_2' => 50,
+        'col_3' => 50, 'col_4' => 50, 'border' => 0,'color' => ['red' => 128,'green' => 128,'blue' => 128],  
+        'colortitle' => ['red' => 120,'green' => 150,'blue' => 190],'font' => 14,
         'stamp_x' => 110, 'stamp_y' => 90, 'stamp_z' => 35,];
 
   // set format for body
-  $format_body = ['left_margin' => 1, 'col_1' => 7, 'col_2' => 110, 
-      'col_3' => 20, 'col_4' => 20, 'col_5' => 25,'border' => 0, 'cut' => 230,
-    'font' => 10,'color' => [128,128,128]];
+  $format_body = ['left_margin' => 1, 'col_1' => 7, 'col_2' => 110,
+        'col_3' => 20, 'col_4' => 20, 'col_5' => 25, 'border' => 0, 'cut' => 230,
+        'font' => 10, 'color' => ['red'=> 128,'green' => 128,'blue' => 128],
+        'fillcolor' => ['red'=> 238,'green'=> 238,'blue'=> 238]];
 }
 
 $pdf = new EKPDF($format_doc['orientation'], PDF_UNIT, $format_doc['format'], true, 'UTF-8', false);
@@ -212,7 +214,7 @@ $pdf->SetSubject(strtolower($head->title));
 $pdf->SetKeywords(strtolower($head->title) . ", " . $head->serial);
 
 
-$pdf->SetHeaderData('','',$company,$bank,['header' => $format_header, 'footer' => $format_footer]);
+$pdf->SetHeaderData('','',$company,$bank,['header' => $format_header, 'footer' => $format_footer,'body' => $format_body]);
 
 // set default monospaced font
 $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
