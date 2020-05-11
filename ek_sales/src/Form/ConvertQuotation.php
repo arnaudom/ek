@@ -35,6 +35,7 @@ class ConvertQuotation extends FormBase {
      */
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
+        $this->salesSettings = new \Drupal\ek_sales\SalesSettings();
         $this->settings = new \Drupal\ek_finance\FinanceSettings();
     }
 
@@ -1200,7 +1201,18 @@ class ConvertQuotation extends FormBase {
         $iid = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT count(id) from {ek_sales_invoice}")
                 ->fetchField();
-        $iid++;
+        $format = $this->salesSettings->get('serialFormat');
+        if ($format['increment'] == '' || $format['increment'] < 1) {
+                $format['increment'] = 0;
+        }
+            
+        $iid = $iid + 1 + $format['increment'];
+        $query = "SELECT id FROM {ek_sales_invoice} WHERE serial like :s";
+        while (Database::getConnection('external_db', 'external_db')->query($query, [':s' => '%-' . $iid])->fetchField()) {
+            //to prevent serial duplication after document have been deleted, increment until no match is found
+            $iid++;
+        }
+        
         $short = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT short from {ek_company} where id=:id", array(':id' => $form_state->getValue('head')))
                 ->fetchField();
