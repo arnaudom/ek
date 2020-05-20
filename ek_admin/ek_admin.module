@@ -311,7 +311,7 @@ function mail_attachment($email, $file, $message = null , $options = null) {
             $params['files'][] = $attachments;
             //$params['attachments']['fileurl'] = $file['fileurl'];
             $params['subject'] = $filename;
-            $params['body'] = Xss::filter($message, ['p', 'br', 'li', 'ul']);
+            $params['body'] = nl2br(Xss::filter($message, ['p', 'br', 'li', 'ul']));
             $params['options']['user'] = $options['user'];
             $params['options']['filename'] =  $filename;
             $theme = theme_get_setting('logo');
