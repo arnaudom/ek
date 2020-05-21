@@ -203,7 +203,7 @@ class InvoicesController extends ControllerBase {
             //no filter
 
             $from = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT SQL_CACHE date from {ek_sales_invoice} order by date limit 1")
+                    ->query("SELECT date from {ek_sales_invoice} order by date limit 1")
                     ->fetchField();
             $or2 = $query->orConditionGroup();
             $or2->condition('i.status', 0, '=');
