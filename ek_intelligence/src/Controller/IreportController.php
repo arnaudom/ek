@@ -16,7 +16,6 @@ use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\ek_admin\Access\AccessCheck;
 
 /**
@@ -72,11 +71,10 @@ class IreportController extends ControllerBase {
      *
      */
     public function reports() {
-
         if (\Drupal::currentUser()->hasPermission('generate_i_report')) {
             $new = Url::fromRoute('ek_intelligence.new')->toString();
             $build["new"] = array(
-                '#markup' => "<a href='" . $new . "' >" . t('New report') . "</a>",
+                '#markup' => "<a href='" . $new . "' >" . $this->t('New report') . "</a>",
             );
         }
 
@@ -127,15 +125,14 @@ class IreportController extends ControllerBase {
                     ->limit(20)->orderBy('i.id', 'ASC')
                     ->execute();
 
-            $type = array(1 => t('briefing'), 2 => t('report'), 3 => t('training'));
-            $status = array(1 => t('active'), 0 => t('closed'));
+            $type = array(1 => $this->t('briefing'), 2 => $this->t('report'), 3 => $this->t('training'));
+            $status = array(1 => $this->t('active'), 0 => $this->t('closed'));
 
             while ($r = $data->fetchObject()) {
-
                 if ($r->assign > 1) {
                     $user = User::load($r->assign)->getAccountName();
                 } else {
-                    $user = t('not assigned');
+                    $user = $this->t('not assigned');
                 }
                 $url = Url::fromRoute('ek_intelligence.read', array('id' => $r->id))
                         ->toString();
@@ -181,26 +178,24 @@ class IreportController extends ControllerBase {
                 ),
             );
             $build['pager'] = array(
-            '#type' => 'pager',
+                '#type' => 'pager',
             );
         } else {
-
             $build['alert'] = array(
-                '#markup' => t('Use filter to search reports'),
+                '#markup' => $this->t('Use filter to search reports'),
             );
         }
-        Return $build;
+        return $build;
     }
 
     /**
-     * Return a write form with management option for manager access 
+     * Return a write form with management option for manager access
      * with generate_i_report privilege
      *
      */
     public function write(Request $request, $id) {
-
         $build['ireport_write'] = $this->formBuilder->getForm('Drupal\ek_intelligence\Form\WriteReport', $id);
-        Return $build;
+        return $build;
     }
 
     /**
@@ -208,18 +203,16 @@ class IreportController extends ControllerBase {
      *
      */
     public function newReport(Request $request) {
-
         $build['ireport_new'] = $this->formBuilder->getForm('Drupal\ek_intelligence\Form\NewReport');
-        Return $build;
+        return $build;
     }
 
     /**
      * Return a read report page
-     * 
+     *
      *
      */
     public function readReport(Request $request, $id) {
-
         $items = array();
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
@@ -248,35 +241,35 @@ class IreportController extends ControllerBase {
             $items['serial'] = $data->serial;
             $items['pcode'] = $data->pcode;
             $items['description'] = $data->description;
-            $type = array(1 => t('briefing'), 2 => t('report'), 3 => t('training'));
-            $status = array(1 => t('active'), 0 => t('closed'));
+            $type = array(1 => $this->t('briefing'), 2 => $this->t('report'), 3 => $this->t('training'));
+            $status = array(1 => $this->t('active'), 0 => $this->t('closed'));
             $items['status'] = $status[$data->status];
             $items['type'] = $type[$data->type];
             if ($data->assign > 1) {
                 $items['assign'] = User::load($data->assign)->getAccountName();
             } else {
-                $items['assign'] = t('not assigned');
+                $items['assign'] = $this->t('not assigned');
             }
             if ($data->owner > 1) {
                 $items['owner'] = User::load($data->owner)->getAccountName();
             } else {
-                $items['owner'] = t('no data');
+                $items['owner'] = $this->t('no data');
             }
             if ($data->edit) {
                 $items['edit'] = date('Y-m-d h:i', $data->edit);
             } else {
-                $items['edit'] = t('not edited');
+                $items['edit'] = $this->t('not edited');
             }
             $items['report'] = nl2br(unserialize($data->report));
             //$items['report'] = nl2br($data->report);
             $link = Url::fromRoute('ek_intelligence.write', ['id' => $id])->toString();
-            $items['write'] = t('<a href="@url" >write</a>', array('@url' => $link));
+            $items['write'] = $this->t('<a href="@url" >write</a>', array('@url' => $link));
             $link = Url::fromRoute('ek_intelligence.export', ['id' => $id])->toString();
-            $items['export'] = t('<a href="@url" >export</a>', array('@url' => $link));
+            $items['export'] = $this->t('<a href="@url" >export</a>', array('@url' => $link));
 
             return array(
                 '#items' => $items,
-                '#title' => t('Report'),
+                '#title' => $this->t('Report'),
                 '#theme' => 'ek_ireport_data',
                 '#attached' => array(
                     'library' => array('ek_intelligence/ek_intelligence_css'),
@@ -284,7 +277,7 @@ class IreportController extends ControllerBase {
             );
         } else {
             return array(
-                '#markup' => t('Report access restricted'),
+                '#markup' => $this->t('Report access restricted'),
             );
         }
     }
@@ -294,7 +287,6 @@ class IreportController extends ControllerBase {
      *
      */
     public function delete(Request $request, $id) {
-
         $build['form_ireport_del'] = $this->formBuilder->getForm('Drupal\ek_intelligence\Form\DeleteForm', $id);
         $build['#attached']['library'] = array('ek_intelligence/ek_intelligence_css');
         return $build;
@@ -305,7 +297,6 @@ class IreportController extends ControllerBase {
      *
      */
     public function reportExport(Request $request, $id) {
-
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
         $u = \Drupal::currentUser()->id();
@@ -328,7 +319,6 @@ class IreportController extends ControllerBase {
                 ->fetchField();
 
         if ($u == $edit) {
-
             $query = "SELECT * from {ek_ireports} WHERE id=:id ";
             $a = array(':id' => $id);
             $data = Database::getConnection('external_db', 'external_db')
@@ -337,40 +327,37 @@ class IreportController extends ControllerBase {
             if ($data->assign > 0) {
                 $account = \Drupal\user\Entity\User::load($data->assign);
                 $assign = '';
-                if($account) {
+                if ($account) {
                     $assign = $account->getAccountName();
                 }
-                
             } else {
-                $assign = t('not assigned');
+                $assign = $this->t('not assigned');
             }
             if ($data->owner > 0) {
                 $account = \Drupal\user\Entity\User::load($data->owner);
                 $owner = '';
-                if($account) {
-                    $owner =  $account->getAccountName();
+                if ($account) {
+                    $owner = $account->getAccountName();
                 }
-                
             } else {
-                $owner = t('no data');
+                $owner = $this->t('no data');
             }
             $temp = \Drupal::config('system.file')->get('path.temporary');
-            
+
             $fileName = $data->serial . '_' . 'report.docx';
-            $path = "private://intelligence/reports/" . $data->coid ;
+            $path = "private://intelligence/reports/" . $data->coid;
             \Drupal::service('file_system')->prepareDirectory($path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-           
+
 
             $markup = array();
             include_once drupal_get_path('module', 'ek_intelligence') . '/word_report.inc';
             return $markup;
-            
         } else {
             return array(
-                '#markup' => t('You cannot export this report'),
+                '#markup' => $this->t('You cannot export this report'),
             );
         }
     }
 
-//end class
+    //end class
 }
