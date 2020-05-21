@@ -56,11 +56,8 @@ class EditProductsForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $clone = NULL) {
-
-
-        if (isset($id) && !$id == NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $clone = null) {
+        if (isset($id) && !$id == null) {
             $form['for_id'] = array(
                 '#type' => 'hidden',
                 '#default_value' => $id,
@@ -85,34 +82,32 @@ class EditProductsForm extends FormBase {
                 '#type' => 'hidden',
                 '#default_value' => $r['itemcode'],
             );
-            
-                if(!NULL == $clone) {
-                    $form['clone'] = array(
-                       '#type' => 'hidden',
-                       '#default_value' => 1,
-                    );    
-                    $form['info'] = array(
-                       '#type' => 'item',
-                       '#markup' => "<div class='messages messages--warning'>" . t('Item will be duplicated under different itemcode') . '</div>',
-                    );                      
-                    
-                }
-        } else {
 
+            if (!null == $clone) {
+                $form['clone'] = array(
+                    '#type' => 'hidden',
+                    '#default_value' => 1,
+                );
+                $form['info'] = array(
+                    '#type' => 'item',
+                    '#markup' => "<div class='messages messages--warning'>" . t('Item will be duplicated under different itemcode') . '</div>',
+                );
+            }
+        } else {
             $form['new_item'] = array(
                 '#type' => 'hidden',
                 '#default_value' => 1,
             );
 
-            $rb_data = NULL;
-            $ri_data = NULL;
+            $rb_data = null;
+            $ri_data = null;
         }
 
         $form['active'] = array(
             '#type' => 'select',
             '#options' => array(0 => t('stop'), 1 => t('active')),
             '#default_value' => isset($r['active']) ? $r['active'] : '1',
-            '#required' => TRUE,
+            '#required' => true,
         );
 
         if ($this->moduleHandler->moduleExists('ek_admin')) {
@@ -121,14 +116,13 @@ class EditProductsForm extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $coid,
-                '#required' => TRUE,
-                '#default_value' => isset($r['coid']) ? $r['coid'] : NULL,
+                '#required' => true,
+                '#default_value' => isset($r['coid']) ? $r['coid'] : null,
             );
         } else {
-
             $form['coid'] = array(
                 '#type' => 'hidden',
-                '#required' => TRUE,
+                '#required' => true,
                 '#default_value' => 1,
             );
         }
@@ -139,8 +133,8 @@ class EditProductsForm extends FormBase {
             '#maxlength' => 150,
             '#default_value' => isset($r['type']) ? $r['type'] : null,
             '#description' => isset($r['type']) ? t('Item type') : t('Item type. The first 3 letters of the type will be used to generate an item code for new item.'),
-            '#required' => TRUE,
-            '#disabled' => isset($r['type']) ? TRUE : FALSE,
+            '#required' => true,
+            '#disabled' => isset($r['type']) ? true : false,
             '#autocomplete_route_name' => 'ek_look_up_item_type',
         );
 
@@ -180,7 +174,7 @@ class EditProductsForm extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $supplier,
-                    '#default_value' => isset($r['supplier']) ? $r['supplier'] : NULL,
+                    '#default_value' => isset($r['supplier']) ? $r['supplier'] : null,
                     '#title' => t('supplier name'),
                 );
             } else {
@@ -191,7 +185,6 @@ class EditProductsForm extends FormBase {
                 );
             }
         } else {
-
             $form['supplier'] = array(
                 '#markup' => t('You do not have any supplier list.'),
                 '#default_value' => 0,
@@ -247,14 +240,14 @@ class EditProductsForm extends FormBase {
 
 
 //
-//logistic data
+        //logistic data
 //
 
         $form['logistic'] = array(
             '#type' => 'details',
             '#title' => t('Logistics'),
-            '#collapsible' => TRUE,
-            '#collapsed' => FALSE,
+            '#collapsible' => true,
+            '#collapsed' => false,
         );
 
         $form['logistic']['units'] = array(
@@ -344,14 +337,14 @@ class EditProductsForm extends FormBase {
          */
 
 //
-//prices data
+        //prices data
 //
 
         $form['price'] = array(
             '#type' => 'details',
             '#title' => t('Prices'),
-            '#collapsible' => TRUE,
-            '#collapsed' => FALSE,
+            '#collapsible' => true,
+            '#collapsed' => false,
         );
 
         $form['price']['purchase_price'] = array(
@@ -372,7 +365,7 @@ class EditProductsForm extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => array_combine($currency, $currency),
-                '#default_value' => isset($rs['currency']) ? $rs['currency'] : NULL,
+                '#default_value' => isset($rs['currency']) ? $rs['currency'] : null,
                 '#title' => t('purchase currency'),
                 '#suffix' => '</div>',
             );
@@ -383,7 +376,7 @@ class EditProductsForm extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $currency,
-                '#default_value' => isset($rs['currency']) ? $rs['currency'] : NULL,
+                '#default_value' => isset($rs['currency']) ? $rs['currency'] : null,
                 '#title' => t('purchase currency'),
                 '#suffix' => '</div>',
             );
@@ -394,7 +387,6 @@ class EditProductsForm extends FormBase {
             '#size' => 12,
             '#default_value' => isset($rs['date_purchase']) ? date('Y-m-d', $rs['date_purchase']) : date('Y-m-d'),
             '#description' => t('date purchase'),
-            
         );
 
 
@@ -403,7 +395,7 @@ class EditProductsForm extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => array_combine($currency, $currency),
-            '#default_value' => isset($rs['loc_currency']) ? $rs['loc_currency'] : NULL,
+            '#default_value' => isset($rs['loc_currency']) ? $rs['loc_currency'] : null,
             '#title' => t('local prices currency'),
         );
 
@@ -443,7 +435,7 @@ class EditProductsForm extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => array_combine($currency, $currency),
-            '#default_value' => isset($rs['exp_currency']) ? $rs['exp_currency'] : NULL,
+            '#default_value' => isset($rs['exp_currency']) ? $rs['exp_currency'] : null,
             '#title' => t('export currency'),
         );
 
@@ -483,20 +475,20 @@ class EditProductsForm extends FormBase {
 
 
 //
-//barcode data
+        //barcode data
 //
-        $encode = array('EAN-13', 'UPC-A', 'EAN-8','EAN5','EAN2', 'UPC-E', 
-            'S205', 'I2O5', 'I25','I25 with checksum', 'S25', 'POSTNET', 'CODABAR', 
-            'CODE11', 'CODE128','CODE128 A','CODE128 B','CODE128 C', 'CODE39','PLANET', 
-            'CODE39 EXTENDED', 'CODE39 with checksum','CODE39 EXTENDED + CHECKSUM', 
+        $encode = array('EAN-13', 'UPC-A', 'EAN-8', 'EAN5', 'EAN2', 'UPC-E',
+            'S205', 'I2O5', 'I25', 'I25 with checksum', 'S25', 'POSTNET', 'CODABAR',
+            'CODE11', 'CODE128', 'CODE128 A', 'CODE128 B', 'CODE128 C', 'CODE39', 'PLANET',
+            'CODE39 EXTENDED', 'CODE39 with checksum', 'CODE39 EXTENDED + CHECKSUM',
             'CODE93', 'MSI', 'MSI with checksum', 'PHARMACODE', 'PHARMACODE TWO-TRACKS',
             'IMB - Onecode - USPS-B-3200', 'KIX', 'RMS4CC', 'CBC');
 
         $form['bc'] = array(
             '#type' => 'details',
             '#title' => t('Barcodes'),
-            '#collapsible' => TRUE,
-            '#collapsed' => FALSE,
+            '#collapsible' => true,
+            '#collapsed' => false,
         );
 
 
@@ -533,8 +525,8 @@ class EditProductsForm extends FormBase {
                 $form['bc']['bcvalue' . $i] = array(
                     '#type' => 'hidden',
                     '#default_value' => $rb['barcode'],
-                );//used to validate only new entry
-                
+                ); //used to validate only new entry
+
                 $form['bc']['barcode_delete' . $i] = array(
                     '#type' => 'checkbox',
                     '#title' => t('delete barcode'),
@@ -555,7 +547,7 @@ class EditProductsForm extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => array_combine($encode, $encode),
-                    '#default_value' => isset($rb['encode']) ? $rb['encode'] : NULL,
+                    '#default_value' => isset($rb['encode']) ? $rb['encode'] : null,
                     '#title' => t('encoding'),
                 );
 
@@ -571,18 +563,18 @@ class EditProductsForm extends FormBase {
 
 
 //
-//image data / can delete only , upload ajax via item card
-//non new item only
+        //image data / can delete only , upload ajax via item card
+        //non new item only
 //
 
 
-        if (isset($id) && !$id == NULL) {
+        if (isset($id) && !$id == null) {
             $i = 0;
             $form['images'] = array(
                 '#type' => 'details',
                 '#title' => t('Images'),
-                '#collapsible' => TRUE,
-                '#collapsed' => FALSE,
+                '#collapsible' => true,
+                '#collapsed' => false,
             );
             if ($ri_data) {
                 while ($ri = $ri_data->fetchAssoc()) {
@@ -593,10 +585,10 @@ class EditProductsForm extends FormBase {
                         '#type' => 'hidden',
                         '#default_value' => $ri['id'],
                     );
-                    
-                    $mod = serialize(['content' => 'img', 'id' => $ri['id'],'width' => '50%']);
+
+                    $mod = serialize(['content' => 'img', 'id' => $ri['id'], 'width' => '50%']);
                     $route = Url::fromRoute('ek_products_modal', ['param' => $mod])->toString();
-                    
+
                     $image = "<a href='" . $route . "'  class='use-ajax'>"
                             . "<img class='thumbnail' src=" . file_create_url($ri['uri']) . "></a>";
 
@@ -620,9 +612,9 @@ class EditProductsForm extends FormBase {
 
         $form['actions'] = array('#type' => 'actions');
         $form['actions']['submit'] = array(
-                '#type' => 'submit', 
-                '#value' => $clone ? $this->t('Clone') : $this->t('Record'),
-            );
+            '#type' => 'submit',
+            '#value' => $clone ? $this->t('Clone') : $this->t('Record'),
+        );
 
 
 
@@ -633,7 +625,6 @@ class EditProductsForm extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         parent::validateForm($form, $form_state);
 
         //check prices are numeric
@@ -663,13 +654,12 @@ class EditProductsForm extends FormBase {
                     ->query($query, array(':b' => $form_state->getValue('barcode' . $i)))
                     ->fetchField();
             if (is_numeric($check)) {
-                $form_state->setErrorByName('barcode', $this->t('Barcode already exist'). ' ' . $form_state->getValue('barcode' . $i));
+                $form_state->setErrorByName('barcode', $this->t('Barcode already exist') . ' ' . $form_state->getValue('barcode' . $i));
             }
         }
 
         for ($i = 0; $i <= $form_state->getValue('barcodes'); $i++) {
-            if ($form_state->getValue('barcode_delete' . $i) != 1 
-                    && $form_state->getValue('barcode' . $i) != $form_state->getValue('bcvalue' . $i)) {
+            if ($form_state->getValue('barcode_delete' . $i) != 1 && $form_state->getValue('barcode' . $i) != $form_state->getValue('bcvalue' . $i)) {
                 $query = "SELECT id from {ek_item_barcodes} where barcode = :b and id<>:id";
                 $check = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':b' => $form_state->getValue('barcode' . $i), ':id' => $form_state->getValue('bcid' . $i)))
@@ -686,21 +676,19 @@ class EditProductsForm extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
-        if ( ($form_state->getValue('new_item') && $form_state->getValue('new_item') == 1)
-                || $form_state->getValue('clone') == 1
-                ) {
+        if (($form_state->getValue('new_item') && $form_state->getValue('new_item') == 1) || $form_state->getValue('clone') == 1
+        ) {
             //create new itemcode
             $id = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT count(id) from {ek_items}")
                     ->fetchField();
             $id++;
-            $t_code = str_replace(" ", "", $form_state->getValue('type'));//remove blank space if any
-            $itemcode = strtoupper(substr($t_code, 0, 3)) . $id;//take 3 first letters
+            $t_code = str_replace(" ", "", $form_state->getValue('type')); //remove blank space if any
+            $itemcode = strtoupper(substr($t_code, 0, 3)) . $id; //take 3 first letters
         }
 
-//main
-        
+        //main
+
         $dsc2 = $form_state->getValue('description2');
         $fields1 = array(
             'coid' => $form_state->getValue('coid'),
@@ -719,7 +707,7 @@ class EditProductsForm extends FormBase {
             'format' => $dsc2['format'],
         );
 
-// item logistic
+        // item logistic
         $fields2 = array(
             'units' => Xss::filter($form_state->getValue('units')),
             'unit_measure' => Xss::filter($form_state->getValue('unit_measure')),
@@ -730,7 +718,7 @@ class EditProductsForm extends FormBase {
             'c40' => Xss::filter($form_state->getValue('c40')),
             'min_order' => Xss::filter($form_state->getValue('min_order')),
         );
-// item prices
+        // item prices
         $fields3 = array(
             'purchase_price' => Xss::filter($form_state->getValue('purchase_price')),
             'currency' => $form_state->getValue('currency'),
@@ -747,7 +735,6 @@ class EditProductsForm extends FormBase {
 
 
         if (!$form_state->getValue('for_id') || $form_state->getValue('clone') == 1) {
-
             $fields1['itemcode'] = $itemcode;
             $fields2['itemcode'] = $itemcode;
             $fields3['itemcode'] = $itemcode;
@@ -766,61 +753,67 @@ class EditProductsForm extends FormBase {
                     ->execute();
 
             $insert = Database::getConnection('external_db', 'external_db')
-                    ->insert('ek_item_price_history')
-                    ->fields(
-                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                        'price' => $form_state->getValue('purchase_price'),
-                        'currency' => $form_state->getValue('currency'),
-                        'type' => 'pp'))->execute();
+                            ->insert('ek_item_price_history')
+                            ->fields(
+                                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                        'price' => $form_state->getValue('purchase_price'),
+                                        'currency' => $form_state->getValue('currency'),
+                                        'type' => 'pp')
+                            )->execute();
 
             $insert = Database::getConnection('external_db', 'external_db')
-                    ->insert('ek_item_price_history')
-                    ->fields(
-                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                        'price' => $form_state->getValue('selling_price'),
-                        'currency' => $form_state->getValue('loc_currency'),
-                        'type' => 'sp'))->execute();
+                            ->insert('ek_item_price_history')
+                            ->fields(
+                                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                        'price' => $form_state->getValue('selling_price'),
+                                        'currency' => $form_state->getValue('loc_currency'),
+                                        'type' => 'sp')
+                            )->execute();
 
             $insert = Database::getConnection('external_db', 'external_db')
-                    ->insert('ek_item_price_history')
-                    ->fields(
-                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                        'price' => $form_state->getValue('promo_price'),
-                        'currency' => $form_state->getValue('loc_currency'),
-                        'type' => 'prp'))->execute();
+                            ->insert('ek_item_price_history')
+                            ->fields(
+                                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                        'price' => $form_state->getValue('promo_price'),
+                                        'currency' => $form_state->getValue('loc_currency'),
+                                        'type' => 'prp')
+                            )->execute();
 
             $insert = Database::getConnection('external_db', 'external_db')
-                    ->insert('ek_item_price_history')
-                    ->fields(
-                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                        'price' => $form_state->getValue('discount_price'),
-                        'currency' => $form_state->getValue('loc_currency'),
-                        'type' => 'dp'))->execute();
+                            ->insert('ek_item_price_history')
+                            ->fields(
+                                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                        'price' => $form_state->getValue('discount_price'),
+                                        'currency' => $form_state->getValue('loc_currency'),
+                                        'type' => 'dp')
+                            )->execute();
 
             $insert = Database::getConnection('external_db', 'external_db')
-                    ->insert('ek_item_price_history')
-                    ->fields(
-                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                        'price' => $form_state->getValue('exp_selling_price'),
-                        'currency' => $form_state->getValue('exp_currency'),
-                        'type' => 'esp'))->execute();
+                            ->insert('ek_item_price_history')
+                            ->fields(
+                                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                        'price' => $form_state->getValue('exp_selling_price'),
+                                        'currency' => $form_state->getValue('exp_currency'),
+                                        'type' => 'esp')
+                            )->execute();
 
             $insert = Database::getConnection('external_db', 'external_db')
-                    ->insert('ek_item_price_history')
-                    ->fields(
-                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                        'price' => $form_state->getValue('exp_promo_price'),
-                        'currency' => $form_state->getValue('exp_currency'),
-                        'type' => 'eprp'))->execute();
+                            ->insert('ek_item_price_history')
+                            ->fields(
+                                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                        'price' => $form_state->getValue('exp_promo_price'),
+                                        'currency' => $form_state->getValue('exp_currency'),
+                                        'type' => 'eprp')
+                            )->execute();
 
             $insert = Database::getConnection('external_db', 'external_db')
-                    ->insert('ek_item_price_history')
-                    ->fields(
-                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                        'price' => $form_state->getValue('exp_discount_price'),
-                        'currency' => $form_state->getValue('exp_currency'),
-                        'type' => 'edp'))->execute();
-            
+                            ->insert('ek_item_price_history')
+                            ->fields(
+                                    array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                        'price' => $form_state->getValue('exp_discount_price'),
+                                        'currency' => $form_state->getValue('exp_currency'),
+                                        'type' => 'edp')
+                            )->execute();
         } else {
             //update
             $itemcode = $form_state->getValue('itemcode');
@@ -844,83 +837,80 @@ class EditProductsForm extends FormBase {
 
 
             if ($current['purchase_price'] <> $form_state->getValue('purchase_price')) {
-
                 $insert = Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_item_price_history')
-                        ->fields(
-                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                            'price' => $form_state->getValue('purchase_price'),
-                            'currency' => $form_state->getValue('currency'),
-                            'type' => 'pp'))->execute();
+                                ->insert('ek_item_price_history')
+                                ->fields(
+                                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                            'price' => $form_state->getValue('purchase_price'),
+                                            'currency' => $form_state->getValue('currency'),
+                                            'type' => 'pp')
+                                )->execute();
             }
 
             if ($current['selling_price'] <> $form_state->getValue('selling_price')) {
-
                 $insert = Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_item_price_history')
-                        ->fields(
-                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                            'price' => $form_state->getValue('selling_price'),
-                            'currency' => $form_state->getValue('loc_currency'),
-                            'type' => 'sp'))->execute();
+                                ->insert('ek_item_price_history')
+                                ->fields(
+                                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                            'price' => $form_state->getValue('selling_price'),
+                                            'currency' => $form_state->getValue('loc_currency'),
+                                            'type' => 'sp')
+                                )->execute();
             }
 
             if ($current['promo_price'] <> $form_state->getValue('promo_price')) {
-
                 $insert = Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_item_price_history')
-                        ->fields(
-                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                            'price' => $form_state->getValue('promo_price'),
-                            'currency' => $form_state->getValue('loc_currency'),
-                            'type' => 'prp'))->execute();
+                                ->insert('ek_item_price_history')
+                                ->fields(
+                                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                            'price' => $form_state->getValue('promo_price'),
+                                            'currency' => $form_state->getValue('loc_currency'),
+                                            'type' => 'prp')
+                                )->execute();
             }
 
             if ($current['discount_price'] <> $form_state->getValue('discount_price')) {
-
                 $insert = Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_item_price_history')
-                        ->fields(
-                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                            'price' => $form_state->getValue('discount_price'),
-                            'currency' => $form_state->getValue('loc_currency'),
-                            'type' => 'dp'))->execute();
+                                ->insert('ek_item_price_history')
+                                ->fields(
+                                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                            'price' => $form_state->getValue('discount_price'),
+                                            'currency' => $form_state->getValue('loc_currency'),
+                                            'type' => 'dp')
+                                )->execute();
             }
 
             if ($current['exp_discount_price'] <> $form_state->getValue('exp_discount_price')) {
-
                 $insert = Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_item_price_history')
-                        ->fields(
-                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                            'price' => $form_state->getValue('exp_discount_price'),
-                            'currency' => $form_state->getValue('exp_currency'),
-                            'type' => 'edp')
-                )->execute();
+                                ->insert('ek_item_price_history')
+                                ->fields(
+                                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                            'price' => $form_state->getValue('exp_discount_price'),
+                                            'currency' => $form_state->getValue('exp_currency'),
+                                            'type' => 'edp')
+                                )->execute();
             }
 
             if ($current['exp_promo_price'] <> $form_state->getValue('exp_promo_price')) {
-
                 $insert = Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_item_price_history')
-                        ->fields(
-                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                            'price' => $form_state->getValue('exp_promo_price'),
-                            'currency' => $form_state->getValue('exp_currency'),
-                            'type' => 'eprp')
-                )->execute();
+                                ->insert('ek_item_price_history')
+                                ->fields(
+                                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                            'price' => $form_state->getValue('exp_promo_price'),
+                                            'currency' => $form_state->getValue('exp_currency'),
+                                            'type' => 'eprp')
+                                )->execute();
             }
 
             if ($current['exp_selling_price'] <> $form_state->getValue('exp_selling_price')) {
-
                 $insert = Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_item_price_history')
-                        ->fields(
-                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
-                            'price' => $form_state->getValue('exp_selling_price'),
-                            'currency' => $form_state->getValue('exp_currency'),
-                            'type' => 'esp')
-                )->execute();
+                                ->insert('ek_item_price_history')
+                                ->fields(
+                                        array('itemcode' => $itemcode, 'date' => date('Y-m-d'),
+                                            'price' => $form_state->getValue('exp_selling_price'),
+                                            'currency' => $form_state->getValue('exp_currency'),
+                                            'type' => 'esp')
+                                )->execute();
             }
 
             $update = Database::getConnection('external_db', 'external_db')
@@ -947,11 +937,8 @@ class EditProductsForm extends FormBase {
 
         //old
         if (($form_state->getValue('barcodes')) && $form_state->getValue('barcodes') >= 0) {
-
             for ($i = 0; $i <= $form_state->getValue('barcodes'); $i++) {
-
                 if ($form_state->getValue('barcode_delete' . $i) == 1) {
-
                     Database::getConnection('external_db', 'external_db')
                             ->delete('ek_item_barcodes')
                             ->condition('id', $form_state->getValue('bcid' . $i))
@@ -972,24 +959,21 @@ class EditProductsForm extends FormBase {
 
         // images
         if (($form_state->getValue('images_count')) && $form_state->getValue('images_count') >= 0) {
-
             for ($i = 0; $i <= $form_state->getValue('images_count'); $i++) {
-
                 if ($form_state->getValue('image_delete' . $i) == 1) {
-
                     $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_item_images', 'i');
+                            ->select('ek_item_images', 'i');
                     $query->fields('i', ['uri']);
                     $query->condition('id', $form_state->getValue('imageid' . $i), '=');
                     $uri = $query->execute()->fetchField();
-                    
+
                     \Drupal::service('file_system')->delete($uri);
                     $img = "private://products/images/" . $form_state->getValue('for_id') . "/40/40x40_" . basename($uri);
-                    if(file_exists($img)) {
+                    if (file_exists($img)) {
                         \Drupal::service('file_system')->delete($img);
                     }
                     $img = "private://products/images/" . $form_state->getValue('for_id') . "/100/100x100_" . basename($uri);
-                    if(file_exists($img)) {
+                    if (file_exists($img)) {
                         \Drupal::service('file_system')->delete($img);
                     }
 
@@ -1001,10 +985,10 @@ class EditProductsForm extends FormBase {
             }
         }
 
-        if(isset($update)) {
-            \Drupal\Core\Cache\Cache::invalidateTags(['item_card:'.$id]);
+        if (isset($update)) {
+            \Drupal\Core\Cache\Cache::invalidateTags(['item_card:' . $id]);
         }
-        if (isset($insert) || isset($update)){
+        if (isset($insert) || isset($update)) {
             \Drupal::messenger()->addStatus(t('The item is recorded'));
             $form_state->setRedirect('ek_products.view', array('id' => $id));
         }

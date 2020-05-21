@@ -2,13 +2,12 @@
 
 /**
  * @file
- * Contains \Drupal\ek\Controller\EkController.
+ * Contains \Drupal\ek_products\Controller\EkController.
  */
 
 namespace Drupal\ek_products\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\user\UserInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Extension\ModuleHandler;
@@ -61,18 +60,17 @@ class ProductsController extends ControllerBase {
     }
 
     /**
-     * Return lookup item form 
+     * Return lookup item form
      *
      */
     public function searchproducts(Request $request) {
-
         $form_builder = $this->formBuilder();
         $response = $form_builder->getForm('Drupal\ek_products\Form\SearchProductsForm');
 
         return array(
             '#theme' => 'ek_products_search_form',
             '#items' => $response,
-            '#title' => t('Items'),
+            '#title' => $this->t('Items'),
             '#attached' => array(
                 'library' => array('ek_products/ek_products_css'),
             ),
@@ -80,7 +78,6 @@ class ProductsController extends ControllerBase {
     }
 
     public function listproducts(Request $request) {
-
         $form_builder = $this->formBuilder();
         $build['filter_items'] = $form_builder->getForm('Drupal\ek_products\Form\FilterItemsList');
 
@@ -115,7 +112,6 @@ class ProductsController extends ControllerBase {
 
 
         if (isset($_SESSION['itemfilter']['filter']) && $_SESSION['itemfilter']['filter'] == 1) {
-
             if ($_SESSION['itemfilter']['coid'] == '%') {
                 $access = AccessCheck::GetCompanyByUser();
             } else {
@@ -127,23 +123,23 @@ class ProductsController extends ControllerBase {
                 //filter by tag.
                 switch ($_SESSION['itemfilter']['tag']) {
 
-                    case 'type' :
+                    case 'type':
                         $query->condition('type', $_SESSION['itemfilter']['tagvalue'], '=');
                         break;
 
-                    case 'department' :
+                    case 'department':
                         $query->condition('department', $_SESSION['itemfilter']['tagvalue'], '=');
                         break;
 
-                    case 'family' :
+                    case 'family':
                         $query->condition('family', $_SESSION['itemfilter']['tagvalue'], '=');
                         break;
 
-                    case 'collection' :
+                    case 'collection':
                         $query->condition('collection', $_SESSION['itemfilter']['tagvalue'], '=');
                         break;
 
-                    case 'color' :
+                    case 'color':
                         $query->condition('color', $_SESSION['itemfilter']['tagvalue'], '=');
                         break;
                 }
@@ -165,15 +161,14 @@ class ProductsController extends ControllerBase {
             $extract = array();
 
             while ($r = $data->fetchObject()) {
-                
                 $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_item_images', 'i');
+                        ->select('ek_item_images', 'i');
                 $query->fields('i');
                 $query->condition('itemcode', $r->itemcode, '=');
                 $query->orderBy('id', 'ASC');
-                $query->range(Null, 1);
+                $query->range(null, 1);
                 $item_img = $query->execute()->fetchObject();
-                
+
                 $img = '';
                 if (isset($item_img->uri) && $item_img->uri != '' && file_exists($item_img->uri)) {
                     $thumb = "private://products/images/" . $r->id . "/40/40x40_" . basename($item_img->uri);
@@ -189,9 +184,9 @@ class ProductsController extends ControllerBase {
                         $image->save();
                     }
 
-                    $mod = serialize(['content' => 'img', 'id' => $item_img->id,'width' => '50%']);
+                    $mod = serialize(['content' => 'img', 'id' => $item_img->id, 'width' => '50%']);
                     $route = Url::fromRoute('ek_products_modal', ['param' => $mod])->toString();
-                    
+
                     $img = "<a href='" . $route . "' class='use-ajax'>"
                             . "<img class='thumbnail' src=" . file_create_url($thumb) . "></a>";
                 }
@@ -233,7 +228,7 @@ class ProductsController extends ControllerBase {
             $extract = serialize($extract);
             $excel = Url::fromRoute('ek_products.excel_items', array('param' => $extract), array())->toString();
             $build['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' title='". t('Excel download') . "'><span class='ico excel green'/></a>",
+                '#markup' => "<a href='" . $excel . "' title='" . $this->t('Excel download') . "'><span class='ico excel green'/></a>",
             );
             $build['items_table'] = array(
                 '#type' => 'table',
@@ -242,7 +237,7 @@ class ProductsController extends ControllerBase {
                 '#attributes' => array('id' => 'items_table'),
                 '#empty' => $this->t('No item found'),
                 '#attached' => array(
-                    'library' => array('ek_products/ek_products_css','ek_admin/admin_css'),
+                    'library' => array('ek_products/ek_products_css', 'ek_admin/admin_css'),
                 ),
             );
 
@@ -261,10 +256,10 @@ class ProductsController extends ControllerBase {
      *
      * @param array $param id list
      */
-    public function excelItemsList($param = NULL) {
+    public function excelItemsList($param = null) {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $extract = unserialize($param);
             $query = Database::getConnection('external_db', 'external_db')
@@ -304,7 +299,6 @@ class ProductsController extends ControllerBase {
     }
 
     public function deleteproducts(Request $request, $id) {
-
         $query = "SELECT coid,i.itemcode,description1, active,units from {ek_items} i "
                 . "INNER JOIN {ek_item_packing} p on i.itemcode=p.itemcode where i.id=:id";
         $data = Database::getConnection('external_db', 'external_db')
@@ -317,12 +311,11 @@ class ProductsController extends ControllerBase {
         $del = 0;
         if (!in_array($data->coid, $access)) {
             $del = 1;
-            $message = t('You are not authorized to delete this item.');
+            $message = $this->t('You are not authorized to delete this item.');
         } elseif ($data->units <> 0) {
             $del = 1;
-            $message = t('The stock value for this item is not null: @u units. It cannot be deleted.', array('@u' => $data->units));
+            $message = $this->t('The stock value for this item is not null: @u units. It cannot be deleted.', array('@u' => $data->units));
         } elseif ($this->moduleHandler->moduleExists('ek_sales') || $this->moduleHandler->moduleExists('ek_logistics')) {
-
             $usage = [];
             if ($this->moduleHandler->moduleExists('ek_sales')) {
                 $query = 'SELECT count(id) from {ek_sales_invoice_details} WHERE itemdetail=:id';
@@ -331,7 +324,7 @@ class ProductsController extends ControllerBase {
                         ->fetchField();
                 if ($invoice > 0) {
                     $del = 2;
-                    $usage[] = t('Invoice');
+                    $usage[] = $this->t('Invoice');
                 }
                 $query = 'SELECT count(id) from {ek_sales_purchase_details} WHERE itemdetail=:id';
                 $purchase = Database::getConnection('external_db', 'external_db')
@@ -339,7 +332,7 @@ class ProductsController extends ControllerBase {
                         ->fetchField();
                 if ($purchase > 0) {
                     $del = 2;
-                    $usage[] = t('Purchase');
+                    $usage[] = $this->t('Purchase');
                 }
                 $query = 'SELECT count(id) from {ek_sales_quotation_details} WHERE itemid=:itemcode';
                 $quotation = Database::getConnection('external_db', 'external_db')
@@ -347,7 +340,7 @@ class ProductsController extends ControllerBase {
                         ->fetchField();
                 if ($quotation > 0) {
                     $del = 2;
-                    $usage[] = t('Quotation');
+                    $usage[] = $this->t('Quotation');
                 }
             }
 
@@ -358,7 +351,7 @@ class ProductsController extends ControllerBase {
                         ->fetchField();
                 if ($delivery > 0) {
                     $del = 2;
-                    $usage[] = t('Delivery');
+                    $usage[] = $this->t('Delivery');
                 }
                 $query = 'SELECT count(id) FROM {ek_logi_receiving_details} WHERE itemcode=:itemcode';
                 $delivery = Database::getConnection('external_db', 'external_db')
@@ -366,7 +359,7 @@ class ProductsController extends ControllerBase {
                         ->fetchField();
                 if ($delivery > 0) {
                     $del = 2;
-                    $usage[] = t('Receiving');
+                    $usage[] = $this->t('Receiving');
                 }
             }
         }
@@ -377,8 +370,8 @@ class ProductsController extends ControllerBase {
             if ($del == 1) {
                 $items['message'] = ['#markup' => $message];
             } else {
-                $items['message'] = ['#markup' => t('@document cannot be deleted.', array('@document' => t('Item')))];
-                $items['description'] = ['#markup' => t('Used in @m', ['@m' => $modules])];
+                $items['message'] = ['#markup' => $this->t('@document cannot be deleted.', array('@document' => $this->t('Item')))];
+                $items['description'] = ['#markup' => $this->t('Used in @m', ['@m' => $modules])];
             }
 
             $url = Url::fromRoute('ek_products.view', ['id' => $id], [])->toString();
@@ -410,12 +403,12 @@ class ProductsController extends ControllerBase {
         $items = array();
 
         $url_search = Url::fromRoute('ek_products.search', array(), array())->toString();
-        $items['search'] = t('<a href="@url">New search</a>', array('@url' => $url_search));
+        $items['search'] = $this->t('<a href="@url">New search</a>', array('@url' => $url_search));
         $url_list = Url::fromRoute('ek_products.list', array(), array())->toString();
-        $items['list'] = t('<a href="@url">List</a>', array('@url' => $url_list));
+        $items['list'] = $this->t('<a href="@url">List</a>', array('@url' => $url_list));
 
         $url_pdf = Url::fromRoute('ek_item.pdf', array('id' => $id), array())->toString();
-        $items['pdf'] = t('<a href="@url" target="_blank">Print</a>', array('@url' => $url_pdf));
+        $items['pdf'] = $this->t('<a href="@url" target="_blank">Print</a>', array('@url' => $url_pdf));
 
         $query = "SELECT * from {ek_items} where id=:id";
         $r = Database::getConnection('external_db', 'external_db')
@@ -432,7 +425,7 @@ class ProductsController extends ControllerBase {
         $items['description1'] = $r['description1'];
         $items['description2'] = $r['description2'];
         $items['supplier_code'] = $r['supplier_code'];
-        $s = array(0 => t('active'), 1 => t('active'));
+        $s = array(0 => $this->t('active'), 1 => $this->t('active'));
         $items['active'] = $r['active'];
         $items['collection'] = $r['collection'];
         $items['department'] = $r['department'];
@@ -499,18 +492,16 @@ class ProductsController extends ControllerBase {
             $data = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':id' => $items['itemcode']));
             if (class_exists('TCPDF2DBarcode')) {
-                $add_barcode = TRUE;
+                $add_barcode = true;
                 include_once drupal_get_path('module', 'ek_products') . '/code.inc';
             }
             $barcodes = array();
             while ($r = $data->fetchAssoc()) {
-
                 $barcodes['id'] = $r['id'];
                 $barcodes['barcode'] = $r['barcode'];
                 $barcodes['encode'] = $r['encode'];
 
                 if ($add_barcode) {
-
                     $barcodes['image'] = barcode($r['barcode'], $r['encode'], [1, 20], 'black', 'html');
                 }
 
@@ -518,19 +509,18 @@ class ProductsController extends ControllerBase {
             }
         }
         $items['pictures'] = array();
-        
+
         $query = "SELECT count(id) from {ek_item_images} where itemcode=:id";
         $i = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $items['itemcode']))
                 ->fetchField();
         if ($i > 0) {
-            
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_item_images', 'i');
-                $query->fields('i');
-                $query->condition('itemcode', $items['itemcode'], '=');
-                $query->orderBy('id', 'ASC');
-            $data = $query->execute();    
+            $query->fields('i');
+            $query->condition('itemcode', $items['itemcode'], '=');
+            $query->orderBy('id', 'ASC');
+            $data = $query->execute();
             $picture = array();
             while ($i = $data->fetchAssoc()) {
                 $thumb = "private://products/images/" . $items['id'] . "/100/100x100_" . basename($i['uri']);
@@ -547,7 +537,7 @@ class ProductsController extends ControllerBase {
                     $image->save();
                 }
                 if ($i['uri'] <> '') {
-                    $mod = serialize(['content' => 'img', 'id' => $i['id'],'width' => '50%']);
+                    $mod = serialize(['content' => 'img', 'id' => $i['id'], 'width' => '50%']);
                     $route = Url::fromRoute('ek_products_modal', ['param' => $mod])->toString();
                     $picture['element'] = "<a href='" . $route . "' class='use-ajax'><img class='thumbnail' src="
                             . file_create_url($thumb) . "></a>";
@@ -571,23 +561,21 @@ class ProductsController extends ControllerBase {
                 'library' => array('ek_products/ek_products_card'),
             ),
             '#cache' => [
-                'tags' => ['item_card:'.$items['id']],
+                'tags' => ['item_card:' . $items['id']],
                 'max-age' => 'PERMANENT',
             ],
         );
     }
 
     /**
-     * @return 
+     * @return
      * the item edition page.
      *
      */
-    public function editproducts(Request $request, $id = NULL) {
-
-
+    public function editproducts(Request $request, $id = null) {
         $form_builder = $this->formBuilder();
-        $response = $form_builder->getForm('Drupal\ek_products\Form\EditProductsForm', $id, NULL);
-        $title = t('Edit item  <small>@id</small>', array('@id' => $id));
+        $response = $form_builder->getForm('Drupal\ek_products\Form\EditProductsForm', $id, null);
+        $title = $this->t('Edit item  <small>@id</small>', array('@id' => $id));
 
         return array(
             '#theme' => 'ek_products_form',
@@ -600,16 +588,14 @@ class ProductsController extends ControllerBase {
     }
 
     /**
-     * @return 
+     * @return
      * the clone item edition page.
      *
      */
-    public function cloneproducts(Request $request, $id = NULL) {
-
-
+    public function cloneproducts(Request $request, $id = null) {
         $form_builder = $this->formBuilder();
         $response = $form_builder->getForm('Drupal\ek_products\Form\EditProductsForm', $id, 'clone');
-        $title = t('Clone item <small>@id</small>', array('@id' => $id));
+        $title = $this->t('Clone item <small>@id</small>', array('@id' => $id));
 
         return array(
             '#theme' => 'ek_products_form',
@@ -622,21 +608,19 @@ class ProductsController extends ControllerBase {
     }
 
     /**
-     * @Return 
+     * @Return
      * the new item form page.
      *
      */
-    public function newproducts(Request $request, $id = NULL) {
-
-
+    public function newproducts(Request $request, $id = null) {
         $form_builder = $this->formBuilder();
-        $response = $form_builder->getForm('Drupal\ek_products\Form\EditProductsForm', $id, NULL);
+        $response = $form_builder->getForm('Drupal\ek_products\Form\EditProductsForm', $id, null);
 
 
         return array(
             '#theme' => 'ek_products_form',
             '#items' => $response,
-            '#title' => t('Create item'),
+            '#title' => $this->t('Create item'),
             '#attached' => array(
                 'library' => array('ek_products/ek_products_css'),
             ),
@@ -647,26 +631,25 @@ class ProductsController extends ControllerBase {
      * Return tags and classification of items.
      *
      */
-    public function tags(Request $request, $opt = NULL) {
-
+    public function tags(Request $request, $opt = null) {
         switch ($opt) {
-            case 'type' :
-            default :
+            case 'type':
+            default:
                 $query = "SELECT DISTINCT type FROM {ek_items} WHERE type like :text";
                 break;
-            case 'department' :
+            case 'department':
                 $query = "SELECT DISTINCT department FROM {ek_items} WHERE department like :text";
                 break;
-            case 'family' :
+            case 'family':
                 $query = "SELECT DISTINCT family FROM {ek_items} WHERE family like :text";
                 break;
-            case 'collection' :
+            case 'collection':
                 $query = "SELECT DISTINCT collection FROM {ek_items} WHERE collection like :text";
                 break;
-            case 'color' :
+            case 'color':
                 $query = "SELECT DISTINCT color FROM {ek_items} WHERE color like :text";
                 break;
-            case 'measure' :
+            case 'measure':
                 $query = "SELECT DISTINCT unit_measure FROM {ek_item_packing} WHERE unit_measure like :text";
                 break;
         }
@@ -683,7 +666,7 @@ class ProductsController extends ControllerBase {
      */
     public function pdfitem($id) {
         if (!class_exists('TCPDF')) {
-            $markup = ['#markup' => t('Pdf library not available, please contact administrator.')];
+            $markup = ['#markup' => $this->t('Pdf library not available, please contact administrator.')];
             return $markup;
         } else {
             $access = AccessCheck::GetCompanyByUser();
@@ -711,7 +694,7 @@ class ProductsController extends ControllerBase {
             $items['description1'] = $result->description1;
             $items['description2'] = $result->description2;
             $items['supplier_code'] = $result->supplier_code;
-            $s = array(0 => t('active'), 1 => t('active'));
+            $s = array(0 => $this->t('active'), 1 => $this->t('active'));
             $items['active'] = $result->active;
             $items['collection'] = $result->collection;
             $items['department'] = $result->department;
@@ -739,7 +722,7 @@ class ProductsController extends ControllerBase {
             $items['c40'] = $result->c40;
             $items['min_order'] = $result->min_order;
 
-            //prices    
+            //prices
 
             $items['purchase_price'] = $result->purchase_price;
             $items['currency'] = $result->currency;
@@ -771,12 +754,11 @@ class ProductsController extends ControllerBase {
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $result->itemcode));
                 if (class_exists('TCPDF2DBarcode')) {
-                    $add_barcode = TRUE;
+                    $add_barcode = true;
                     include_once drupal_get_path('module', 'ek_products') . '/code.inc';
                 }
                 $barcodes = array();
                 while ($r = $data->fetchAssoc()) {
-
                     $barcodes['id'] = $r['id'];
                     $barcodes['barcode'] = $r['barcode'];
                     $barcodes['encode'] = $r['encode'];
@@ -800,8 +782,6 @@ class ProductsController extends ControllerBase {
                         ->query($query, array(':id' => $items['itemcode']));
                 $picture = array();
                 while ($r = $data->fetchAssoc()) {
-
-
                     if ($r['uri'] != '') {
                         $picture['uri'] = $r['uri'];
                     }
@@ -810,7 +790,7 @@ class ProductsController extends ControllerBase {
                 }
             }
 
-            //insert pdf 
+            //insert pdf
             include_once drupal_get_path('module', 'ek_products') . '/pdf_item.inc';
             return new \Symfony\Component\HttpFoundation\Response('', 204);
         }
@@ -821,7 +801,7 @@ class ProductsController extends ControllerBase {
      * @param string $param
      */
     public function modal($param) {
-        return $this->dialog(TRUE, $param);
+        return $this->dialog(true, $param);
     }
 
     /**
@@ -829,7 +809,7 @@ class ProductsController extends ControllerBase {
      * @param string $param
      */
     public function nonModal($param) {
-        return $this->dialog(FALSE, $param);
+        return $this->dialog(false, $param);
     }
 
     /**
@@ -842,29 +822,27 @@ class ProductsController extends ControllerBase {
      * @return \Drupal\Core\Ajax\AjaxResponse
      *   An ajax response object.
      */
-    protected function dialog($is_modal = FALSE, $param = NULL) {
-
+    protected function dialog($is_modal = false, $param = null) {
         $opt = unserialize($param);
         $content = [];
         $options = '';
         switch ($opt['content']) {
-            
+
             case 'img':
                 $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_item_images', 'i');
-                $query->fields('i',['uri']);
+                        ->select('ek_item_images', 'i');
+                $query->fields('i', ['uri']);
                 $query->condition('id', $opt['id'], '=');
                 $url = $query->execute()->fetchField();
                 $title = $this->t('Image');
-                $options = array( 'width' => $opt['width'], );
+                $options = array('width' => $opt['width'],);
                 $content['#markup'] = "<img src=" . file_create_url($url) . ">";
-            break;
-        
+                break;
         }
-        
+
         $content['#attached']['library'][] = 'core/drupal.dialog.ajax';
         $response = new AjaxResponse();
-        
+
 
         if ($is_modal) {
             $response->addCommand(new OpenModalDialogCommand($title, $content, $options));

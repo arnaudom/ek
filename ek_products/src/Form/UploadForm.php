@@ -28,9 +28,7 @@ class UploadForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $form['upload_image'] = array('#type' => 'file');
 
         $form['for_id'] = array(
@@ -64,11 +62,10 @@ class UploadForm extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $validators = array('file_validate_is_image' => array());
         $field = "upload_image";
 
-        $file = file_save_upload($field, $validators, FALSE, 0);
+        $file = file_save_upload($field, $validators, false, 0);
         if (isset($file)) {
             // File upload was attempted.
             if ($file) {
@@ -97,7 +94,7 @@ class UploadForm extends FormBase {
                         ->insert('ek_item_images')
                         ->fields(array('itemcode' => $itemcode, 'uri' => $filename))
                         ->execute();
-                
+
                 //create thumbs
                 $thumb = "private://products/images/" . $form_state->getValue('for_id') . "/40/40x40_" . basename($filename);
                 $dir = "private://products/images/" . $form_state->getValue('for_id') . "/40/";
@@ -108,7 +105,7 @@ class UploadForm extends FormBase {
                 $image = $image_factory->get($thumb);
                 $image->scale(40);
                 $image->save();
-                
+
                 $thumb = "private://products/images/" . $form_state->getValue('for_id') . "/100/100x100_" . basename($filename);
                 $dir = "private://products/images/" . $form_state->getValue('for_id') . "/100/";
                 $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
