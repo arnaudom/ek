@@ -57,7 +57,7 @@ class FilterExpenses extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-        $query = "SELECT SQL_CACHE date from {ek_journal} order by date DESC limit 1";
+        $query = "SELECT date from {ek_journal} order by date DESC limit 1";
         $to = Database::getConnection('external_db', 'external_db')->query($query)->fetchObject();
         $from = date('Y-m') . "-01";
         $open = true;
@@ -92,17 +92,16 @@ class FilterExpenses extends FormBase {
             '#options' => $coid,
             '#default_value' => isset($_SESSION['efilter']['coid']) ? $_SESSION['efilter']['coid'] : null,
             '#title' => $this->t('company'),
-            '#required' => true,
             '#ajax' => array(
                 'callback' => array($this, 'set_coid'),
                 'wrapper' => 'add',
             ),
             '#prefix' => "<div class='table'><div class='row'><div class='cell cellfloat'>",
             '#suffix' => '</div>',
-            '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
-                ),
-            ),
+            '#states' => [
+                'invisible' => [':input[name="keyword"]' => ['filled' => true]],
+                'required' => [':input[name="keyword"]' => ['filled' => false]],
+            ],
         );
 
         if ($form_state->getValue('coid')) {

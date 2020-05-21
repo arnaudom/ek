@@ -56,7 +56,7 @@ class FilterPrintRange extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $category = null) {
-        $query = "SELECT SQL_CACHE date from {ek_expenses_memo} order by date DESC limit 1";
+        $query = "SELECT date from {ek_expenses_memo} order by date DESC limit 1";
         $to = Database::getConnection('external_db', 'external_db')->query($query)->fetchObject();
 
         if (!$to) {

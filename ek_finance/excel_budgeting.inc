@@ -87,7 +87,7 @@ $objPHPExcel->getActiveSheet()->getStyle('A1:N1')->applyFromArray(
 
 if ($coid <> 'all') {
 
-    $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
+    $query = "SELECT aid,aname FROM {ek_accounts} "
             . "WHERE atype=:t "
             . "and ( aid like :a1 or aid like :a2 or aid like :a3 ) "
             . "AND astatus=:s "
@@ -103,7 +103,7 @@ if ($coid <> 'all') {
 }
 
 if ($coid == 'all') {
-    $query = "SELECT SQL_CACHE aid,aname "
+    $query = "SELECT aid,aname "
             . "FROM {ek_accounts} "
             . "WHERE atype=:t and "
             . "( aid like :a1 or aid like :a2 or aid like :a3 ) "
@@ -140,7 +140,7 @@ while ($line = $data->fetchObject()) {
     // Get the account type
     if ($coid <> 'all') {
 
-        $query = "SELECT SQL_CACHE aid,aname "
+        $query = "SELECT aid,aname "
                 . "FROM {ek_accounts} "
                 . "WHERE aid like :cl "
                 . "AND atype=:t AND astatus=:s AND coid=:c ORDER by aid";
@@ -153,7 +153,7 @@ while ($line = $data->fetchObject()) {
     }
 
     if ($coid == 'all') {
-        $query = "SELECT SQL_CACHE aid,aname "
+        $query = "SELECT aid,aname "
                 . "FROM {ek_accounts} "
                 . "WHERE aid like :cl "
                 . "AND atype=:t AND astatus=:s  ORDER by aid";
@@ -369,7 +369,7 @@ $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
 
 // Get the class 
 if ($coid <> 'all') {
-    $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
+    $query = "SELECT aid,aname FROM {ek_accounts} "
             . "WHERE atype=:t and (aid like :a1 or aid like :a2) "
             . "AND astatus=:s AND coid=:c order by aid";
     $a = array(
@@ -381,7 +381,7 @@ if ($coid <> 'all') {
     );
 }
 if ($coid == 'all') {
-    $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
+    $query = "SELECT aid,aname FROM {ek_accounts} "
             . "WHERE atype=:t and (aid like :a1 or aid like :a2)  "
             . "AND astatus=:s order by aid";
     $a = array(
@@ -408,7 +408,7 @@ while ($line = $data->fetchObject()) {
     // Get the account type
     if ($coid != 'all') {
 
-        $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
+        $query = "SELECT aid,aname FROM {ek_accounts} "
                 . "WHERE aid like :cl AND atype=:t AND astatus=:s AND coid=:c ORDER by aid";
         $a = array(
             ':cl' => $class . '%',
@@ -419,7 +419,7 @@ while ($line = $data->fetchObject()) {
     }
 
     if ($coid == 'all') {
-        $query = "SELECT SQL_CACHE aid,aname FROM {ek_accounts} "
+        $query = "SELECT aid,aname FROM {ek_accounts} "
                 . "WHERE aid like :cl AND atype=:t AND astatus=:s  ORDER by aid";
         $a = array(
             ':cl' => $class . '%',
