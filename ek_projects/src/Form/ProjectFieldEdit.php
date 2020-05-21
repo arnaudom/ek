@@ -34,11 +34,9 @@ class ProjectFieldEdit extends FormBase {
      * {@inheritdoc}
      * @param id : the project id
      * @param field : the field to be updated
-     * 
+     *
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $field = NULL) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $field = null) {
         $pcode = Database::getConnection('external_db', 'external_db')
                         ->query('SELECT pcode FROM {ek_project} WHERE id=:id', array(':id' => $id))->fetchField();
         $form['pcode'] = array(
@@ -58,7 +56,7 @@ class ProjectFieldEdit extends FormBase {
 
         switch ($field) {
 
-            case 'owner' :
+            case 'owner':
                 $query = "SELECT owner FROM {ek_project} WHERE id=:id";
                 $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
                 $users = \Drupal\ek_admin\Access\AccessCheck::listUsers(1);
@@ -72,7 +70,7 @@ class ProjectFieldEdit extends FormBase {
                 );
                 break;
 
-            case 'client_id' :
+            case 'client_id':
 
                 $form['value'] = array(
                     '#type' => 'select',
@@ -82,7 +80,7 @@ class ProjectFieldEdit extends FormBase {
                 );
                 break;
 
-            case 'pname' :
+            case 'pname':
                 $query = "SELECT pname FROM {ek_project} WHERE id=:id";
                 $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
 
@@ -96,7 +94,7 @@ class ProjectFieldEdit extends FormBase {
 
                 break;
 
-            case 'status' :
+            case 'status':
                 $query = "SELECT status FROM {ek_project} WHERE id=:id";
                 $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
 
@@ -108,7 +106,7 @@ class ProjectFieldEdit extends FormBase {
                 );
                 break;
 
-            case 'priority' :
+            case 'priority':
                 $query = "SELECT priority FROM {ek_project} WHERE id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
@@ -122,38 +120,38 @@ class ProjectFieldEdit extends FormBase {
                 );
                 break;
 
-            case 'submission' :
-            case 'deadline' :
-            case 'start_date' :
-            case 'validation' :
-            case 'completion' :
+            case 'submission':
+            case 'deadline':
+            case 'start_date':
+            case 'validation':
+            case 'completion':
                 $query = "SELECT " . $field . " FROM {ek_project_description} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
+                        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
 
-                $form['date'] = array (
-                '#type' => 'date',
-                '#id' => 'edit-date',
-                '#size' => 11,
-                '#title' => t('date'),
-                '#default_value' => $data,
-                ); 
+                $form['date'] = array(
+                    '#type' => 'date',
+                    '#id' => 'edit-date',
+                    '#size' => 11,
+                    '#title' => t('date'),
+                    '#default_value' => $data,
+                );
 
                 break;
 
-            case 'perso_1' :
-            case 'perso_2' :
-            case 'perso_2' :
+            case 'perso_1':
+            case 'perso_2':
+            case 'perso_2':
                 $query = "SELECT " . $field . " FROM {ek_project_description} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
+                        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
                 $users = \Drupal\ek_admin\Access\AccessCheck::listUsers(1);
                 $list = array();
-                foreach($users as $uid => $name) {
+                foreach ($users as $uid => $name) {
                     if (ProjectData::validate_access($id, $uid)) {
                         $list[$name] = $name;
                     }
@@ -167,11 +165,11 @@ class ProjectFieldEdit extends FormBase {
                 );
                 break;
 
-            case 'repo_1' :
-            case 'repo_2' :
-            case 'repo_3' :
+            case 'repo_1':
+            case 'repo_2':
+            case 'repo_3':
                 $query = "SELECT " . $field . " FROM {ek_project_description} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
+                        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
@@ -197,11 +195,11 @@ class ProjectFieldEdit extends FormBase {
                 );
                 break;
 
-            case 'task_1' :
-            case 'task_2' :
-            case 'task_3' :
+            case 'task_1':
+            case 'task_2':
+            case 'task_3':
                 $query = "SELECT " . $field . " FROM {ek_project_description} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
+                        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
@@ -215,10 +213,10 @@ class ProjectFieldEdit extends FormBase {
 
                 break;
 
-            case 'project_description' :
-            case 'project_comment' :
+            case 'project_description':
+            case 'project_comment':
                 $query = "SELECT " . $field . " FROM {ek_project_description} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
+                        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
@@ -230,14 +228,14 @@ class ProjectFieldEdit extends FormBase {
                 );
                 break;
 
-            case 'first_ship' :
-            case 'second_ship' :
-            case 'third_ship' :
-            case 'four_ship' :
-            case 'last_delivery' :
+            case 'first_ship':
+            case 'second_ship':
+            case 'third_ship':
+            case 'four_ship':
+            case 'last_delivery':
 
                 $query = "SELECT " . $field . " FROM {ek_project_shipment} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
+                        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
@@ -248,23 +246,22 @@ class ProjectFieldEdit extends FormBase {
                     '#size' => 11,
                     '#title' => t('date'),
                     '#default_value' => $data,
-                    
                 );
                 break;
             case 'supplier_offer':
 
                 $query = "SELECT supplier_offer FROM {ek_project_description} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
+                        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
-                
+
                 $supplier = AddressBookData::addresslist(2);
 
                 $form['value'] = array(
                     '#type' => 'select',
                     '#size' => 1,
-                    '#multiple' => TRUE, 
+                    '#multiple' => true,
                     '#options' => $supplier,
                     '#title' => t('suppliers'),
                     '#default_value' => explode(',', $data),
@@ -272,14 +269,13 @@ class ProjectFieldEdit extends FormBase {
                     '#attached' => array(
                         'library' => array('ek_admin/ek_admin_chosen'),
                     ),
-                    
                 );
                 break;
-            
+
             case 'ship_status':
 
                 $query = "SELECT " . $field . " FROM {ek_project_shipment} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
+                        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
@@ -292,9 +288,9 @@ class ProjectFieldEdit extends FormBase {
                 );
                 break;
 
-            case 'currency' :
+            case 'currency':
                 $query = "SELECT " . $field . " FROM {ek_project_finance} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
+                        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
@@ -307,13 +303,13 @@ class ProjectFieldEdit extends FormBase {
                 );
                 break;
 
-            case 'tender_offer' :
-            case 'project_amount' :
-            case 'purchase_value' :
-            case 'payment' :
-            case 'discount_offer' :
+            case 'tender_offer':
+            case 'project_amount':
+            case 'purchase_value':
+            case 'payment':
+            case 'discount_offer':
                 $query = "SELECT " . $field . " FROM {ek_project_finance} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
+                        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
@@ -327,12 +323,12 @@ class ProjectFieldEdit extends FormBase {
 
                 break;
 
-            case 'payment_terms' :
-            case 'incoterm' :
+            case 'payment_terms':
+            case 'incoterm':
             case 'lc_revision':
-            case 'lc_status' :
+            case 'lc_status':
                 $query = "SELECT " . $field . " FROM {ek_project_finance} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
+                        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
@@ -346,11 +342,11 @@ class ProjectFieldEdit extends FormBase {
 
                 break;
 
-            case 'offer_validity' :
-            case 'offer_delivery' :
+            case 'offer_validity':
+            case 'offer_delivery':
             case 'lc_expiry':
                 $query = "SELECT " . $field . " FROM {ek_project_finance} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
+                        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
@@ -361,14 +357,13 @@ class ProjectFieldEdit extends FormBase {
                     '#size' => 11,
                     '#title' => t('date'),
                     '#default_value' => $data,
-                    
                 );
 
                 break;
 
-            case 'comment' :
+            case 'comment':
                 $query = "SELECT " . $field . " FROM {ek_project_finance} d "
-                    . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
+                        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE p.id=:id";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchField();
@@ -400,7 +395,7 @@ class ProjectFieldEdit extends FormBase {
             $form_state->set('message', '');
             $form_state->setRebuild();
         }
-        
+
         if ($form_state->get('error') == '0') {
             $response = new AjaxResponse();
             $response->addCommand(new CloseDialogCommand());
@@ -408,8 +403,6 @@ class ProjectFieldEdit extends FormBase {
         }
 
         return $form;
-
-
     }
 
     /**
@@ -423,11 +416,9 @@ class ProjectFieldEdit extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
         switch ($form_state->getValue('field')) {
 
-            case 'status' :
+            case 'status':
             case 'owner':
             case 'client_id':
             case 'priority':
@@ -454,11 +445,11 @@ class ProjectFieldEdit extends FormBase {
                 $value = $form_state->getValue('value');
                 break;
 
-            case 'submission' :
-            case 'deadline' :
-            case 'start_date' :
-            case 'validation' :
-            case 'completion' :
+            case 'submission':
+            case 'deadline':
+            case 'start_date':
+            case 'validation':
+            case 'completion':
 
                 $text = Xss::filter($form_state->getValue('date'));
                 $fields = array(
@@ -466,20 +457,20 @@ class ProjectFieldEdit extends FormBase {
                 );
                 if (DateTime::createFromFormat('Y-m-d', $text)) {
                     $update = Database::getConnection('external_db', 'external_db')
-                            ->update('ek_project_description')
-                            ->fields($fields)
-                            ->condition('pcode', $form_state->getValue('pcode'))->execute();
+                                    ->update('ek_project_description')
+                                    ->fields($fields)
+                                    ->condition('pcode', $form_state->getValue('pcode'))->execute();
                 }
                 $value = $text;
 
                 break;
 
-            case 'perso_1' :
-            case 'perso_2' :
-            case 'perso_2' :
-            case 'repo_1' :
-            case 'repo_2' :
-            case 'repo_3' :
+            case 'perso_1':
+            case 'perso_2':
+            case 'perso_2':
+            case 'repo_1':
+            case 'repo_2':
+            case 'repo_3':
                 $fields = array(
                     $form_state->getValue('field') => $form_state->getValue('value')
                 );
@@ -491,9 +482,9 @@ class ProjectFieldEdit extends FormBase {
 
                 break;
 
-            case 'task_1' :
-            case 'task_2' :
-            case 'task_3' :
+            case 'task_1':
+            case 'task_2':
+            case 'task_3':
 
                 $text = Xss::filter($form_state->getValue('task'));
                 $fields = array(
@@ -507,8 +498,8 @@ class ProjectFieldEdit extends FormBase {
                 break;
 
 
-            case 'project_description' :
-            case 'project_comment' :
+            case 'project_description':
+            case 'project_comment':
 
                 $text = Xss::filter($form_state->getValue('text')) . ' [' . \Drupal::currentUser()->getAccountName() . '] - ' . date('Y-m-d');
                 $fields = array(
@@ -523,7 +514,7 @@ class ProjectFieldEdit extends FormBase {
                 break;
 
             case 'supplier_offer':
-                
+
                 $fields = array(
                     'supplier_offer' => implode(',', $form_state->getValue('value'))
                 );
@@ -532,17 +523,17 @@ class ProjectFieldEdit extends FormBase {
                         ->fields($fields)
                         ->condition('pcode', $form_state->getValue('pcode'))
                         ->execute();
-                $value = '';            
-                
-                
+                $value = '';
+
+
                 break;
-            
-            
-            case 'first_ship' :
-            case 'second_ship' :
-            case 'third_ship' :
-            case 'four_ship' :
-            case 'last_delivery' :
+
+
+            case 'first_ship':
+            case 'second_ship':
+            case 'third_ship':
+            case 'four_ship':
+            case 'last_delivery':
             case 'ship_status':
 
                 $text = Xss::filter($form_state->getValue('value'));
@@ -550,15 +541,15 @@ class ProjectFieldEdit extends FormBase {
                     $form_state->getValue('field') => $text
                 );
                 if (DateTime::createFromFormat('Y-m-d', $text) || $form_state->getValue('field') == 'ship_status') {
-                $update = Database::getConnection('external_db', 'external_db')
-                        ->update('ek_project_shipment')->fields($fields)
-                        ->condition('pcode', $form_state->getValue('pcode'))->execute();
+                    $update = Database::getConnection('external_db', 'external_db')
+                                    ->update('ek_project_shipment')->fields($fields)
+                                    ->condition('pcode', $form_state->getValue('pcode'))->execute();
                 }
                 $value = $text;
                 break;
 
 
-            case 'currency' :
+            case 'currency':
                 $fields = array(
                     $form_state->getValue('field') => $form_state->getValue('value')
                 );
@@ -569,11 +560,11 @@ class ProjectFieldEdit extends FormBase {
                 $value = $form_state->getValue('value');
                 break;
 
-            case 'tender_offer' :
-            case 'project_amount' :
-            case 'purchase_value' :
-            case 'payment' :
-            case 'discount_offer' :
+            case 'tender_offer':
+            case 'project_amount':
+            case 'purchase_value':
+            case 'payment':
+            case 'discount_offer':
                 if (is_numeric($form_state->getValue('value'))) {
                     $fields = array(
                         $form_state->getValue('field') => Xss::filter($form_state->getValue('value'))
@@ -586,10 +577,10 @@ class ProjectFieldEdit extends FormBase {
                 }
                 break;
 
-            case 'payment_terms' :
-            case 'incoterm' :
+            case 'payment_terms':
+            case 'incoterm':
             case 'lc_revision':
-            case 'lc_status' :
+            case 'lc_status':
                 $text = Xss::filter($form_state->getValue('value'));
                 $fields = array(
                     $form_state->getValue('field') => $text
@@ -602,8 +593,8 @@ class ProjectFieldEdit extends FormBase {
                 break;
 
 
-            case 'offer_validity' :
-            case 'offer_delivery' :
+            case 'offer_validity':
+            case 'offer_delivery':
             case 'lc_expiry':
 
                 $text = Xss::filter($form_state->getValue('date'));
@@ -619,7 +610,7 @@ class ProjectFieldEdit extends FormBase {
                 $value = $text;
                 break;
 
-            case 'comment' :
+            case 'comment':
                 $text = Xss::filter($form_state->getValue('text')) . ' [' . \Drupal::currentUser()->getAccountName() . '] - ' . date('Y-m-d');
                 $fields = array(
                     $form_state->getValue('field') => $text
@@ -633,7 +624,6 @@ class ProjectFieldEdit extends FormBase {
         }
 
         if ($update) {
-
             $action = 'edit' . ' ' . str_replace('_', " ", $form_state->getValue('field'));
             $fields = array(
                 'pcode' => $form_state->getValue('pcode'),
@@ -660,15 +650,11 @@ class ProjectFieldEdit extends FormBase {
                     )
             );
             ProjectData::notify_user($param);
-            
         } else {
             $form_state->set('error', 1);
             $form_state->set('message', t('error'));
             $form_state->setRebuild();
         }
-
-      
     }
-
 
 }

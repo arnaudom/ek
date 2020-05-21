@@ -23,12 +23,10 @@ use Drupal\Core\Access\AccessResult;
  */
 class TrackBlock extends BlockBase {
 
-
-  /**
-   * {@inheritdoc}
-   */
+    /**
+     * {@inheritdoc}
+     */
     public function build() {
-
         $sound = '../../' . drupal_get_path('module', 'ek_projects') . '/art/beep.wav';
 
         return array(
@@ -40,10 +38,9 @@ class TrackBlock extends BlockBase {
         );
     }
 
-
-  /**
-   * {@inheritdoc}
-   */
+    /**
+     * {@inheritdoc}
+     */
     protected function blockAccess(AccountInterface $account) {
         if (!$account->isAnonymous()) {
             return AccessResult::allowed();

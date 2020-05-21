@@ -55,8 +55,7 @@ class Notification extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $query = "SELECT pcode,owner from {ek_project} WHERE id=:id";
         $p = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
         $currentusername = \Drupal::currentUser()->getAccountName();
@@ -69,7 +68,7 @@ class Notification extends FormBase {
             '#type' => 'hidden',
             '#value' => $id,
         );
-  
+
 
         $form['email'] = array(
             '#type' => 'textarea',
@@ -123,7 +122,7 @@ class Notification extends FormBase {
                 ),
             ),
         );
-//, 'core/jquery.form', 'core/drupal.form', 'core/drupal.ajax'];
+        //, 'core/jquery.form', 'core/drupal.form', 'core/drupal.ajax'];
 
         return $form;
     }
@@ -132,28 +131,26 @@ class Notification extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->getValue('email') == '') {
             $form_state->set('alert', t('there is no receipient'));
             $form_state->setRebuild();
             //$form_state->setErrorByName('email', $this->t('there is no receipient'));
-            
         } else {
             $users = explode(',', $form_state->getValue('email'));
             $error = '';
             $notify_who = '';
             foreach ($users as $u) {
                 if (trim($u) != '') {
-                    //check it is a registered user 
+                    //check it is a registered user
                     $query = Database::getConnection()->select('users_field_data', 'u');
-                    $query->fields('u', ['uid','mail']);
+                    $query->fields('u', ['uid', 'mail']);
                     $query->condition('name', trim($u));
                     $id = $query->execute()->fetchObject();
-                    
+
                     //$query = "SELECT uid,mail from {users_field_data} WHERE name=:u";
                     //$result = db_query($query, array(':u' => trim($u)))->fetchObject();
                     if (!$id) {
-                        $error.= $u . ',';
+                        $error .= $u . ',';
                     } else {
                         $notify_who .= $id->mail . ',';
                     }
@@ -165,7 +162,7 @@ class Notification extends FormBase {
                 $form_state->set('alert', t('Invalid user(s)') . ': ' . rtrim($error, ','));
                 $form_state->setRebuild();
             } else {
-                $form_state->setValue('notify_who', rtrim($notify_who,','));
+                $form_state->setValue('notify_who', rtrim($notify_who, ','));
             }
         }
     }
@@ -174,7 +171,6 @@ class Notification extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $params = array();
         $query = "SELECT pcode,owner from {ek_project} WHERE id=:id";
         $p = Database::getConnection('external_db', 'external_db')
@@ -184,21 +180,22 @@ class Notification extends FormBase {
         //$to = db_query($query, array(':u' => $p->owner))->fetchField();
         $acc = \Drupal\user\Entity\User::load($p->owner);
         $to = '';
-        if($acc) {
+        if ($acc) {
             $to = $acc->getEmail();
         }
         $params['text'] = Xss::filter($form_state->getValue('message'));
         $params['options']['pcode'] = $p->pcode;
-        $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), TRUE);
+        $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), true);
         $params['options']['priority'] = $form_state->getValue('priority');
         $priority = array('3' => t('low'), '2' => t('normal'), '1' => t('high'));
-        
+
         $code = explode("-", $p->pcode);
         $code = array_reverse($code);
         if ($form_state->getValue('priority') == 1) {
-            $params['subject'] = '[' . t('urgent') . '] ' . t("Notification") . ": " . $code[0] . ' | ' . $p->pcode;            
+            $params['subject'] = '[' . t('urgent') . '] ' . t("Notification") . ": " . $code[0] . ' | ' . $p->pcode;
         } else {
-            $params['subject'] = t("Notification") . ": " . $code[0] . ' | ' . $p->pcode;;
+            $params['subject'] = t("Notification") . ": " . $code[0] . ' | ' . $p->pcode;
+            ;
         }
 
         //$currentuserid = \Drupal::currentUser()->id();
@@ -206,7 +203,7 @@ class Notification extends FormBase {
         //$from = db_query($query, array(':u' => $currentuserid))->fetchField();
         $acc2 = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
         $from = '';
-        if($acc2) {
+        if ($acc2) {
             $from = $acc2->getEmail();
         }
         $addresses = explode(',', $form_state->getValue('notify_who'));
@@ -216,10 +213,9 @@ class Notification extends FormBase {
         // System message record
         //
         if ($this->moduleHandler->moduleExists('ek_messaging')) {
-
             $inbox = ',';
             foreach ($addresses as $key => $email) {
-                if (trim($email) != NULL) {
+                if (trim($email) != null) {
                     //convert emails address into uid
                     $query = Database::getConnection()->select('users_field_data', 'u');
                     $query->fields('u', ['uid']);
@@ -230,11 +226,11 @@ class Notification extends FormBase {
                     $inbox .= $to . ',';
                 }
             }
-            
+
             $text = $params['text'] . '<br/>'
-                . t('Project ref.') . ': '
-                . $params['options']['url'];
-            
+                    . t('Project ref.') . ': '
+                    . $params['options']['url'];
+
             ek_message_register(
                     array(
                         'uid' => \Drupal::currentUser()->id(),
@@ -256,25 +252,21 @@ class Notification extends FormBase {
         //
         
         $text = $params['text'];
-        $text .= "<br>" . t('Project ref.') . ': ' .  $code[0] . ' | ' . $p->pcode;     
+        $text .= "<br>" . t('Project ref.') . ': ' . $code[0] . ' | ' . $p->pcode;
         $params['body'] = $text;
-        $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'),NULL,1,NULL, t('Open'));
+        $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), null, 1, null, t('Open'));
         foreach ($addresses as $email) {
-            if (trim($email) != NULL) {
+            if (trim($email) != null) {
                 if ($target_user = user_load_by_mail($email)) {
                     $target_langcode = $target_user->getPreferredLangcode();
-                  } else {
+                } else {
                     $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
-                  }
+                }
                 $send = \Drupal::service('plugin.manager.mail')->mail(
-                        'ek_projects', 
-                        'project_note', 
-                        trim($email), 
-                        $target_langcode, 
-                        $params, $from, TRUE
+                        'ek_projects', 'project_note', trim($email), $target_langcode, $params, $from, true
                 );
 
-                if ($send['result'] == FALSE) {
+                if ($send['result'] == false) {
                     $error .= $email . ' ';
                 }
             }

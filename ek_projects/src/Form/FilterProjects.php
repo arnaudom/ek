@@ -28,8 +28,6 @@ class FilterProjects extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
-
         $access = AccessCheck::GetCountryByUser();
         $cid = implode(',', $access);
         $query = "SELECT id,name from {ek_country} where status=:t AND FIND_IN_SET (id, :c ) order by name";
@@ -47,7 +45,7 @@ class FilterProjects extends FormBase {
             '#type' => 'textfield',
             '#maxlength' => 150,
             '#attributes' => array('placeholder' => t('Search with keyword, ref No.')),
-            '#default_value' => isset($_SESSION['pjfilter']['keyword']) ? $_SESSION['pjfilter']['keyword'] : NULL,
+            '#default_value' => isset($_SESSION['pjfilter']['keyword']) ? $_SESSION['pjfilter']['keyword'] : null,
         );
 
 
@@ -60,7 +58,7 @@ class FilterProjects extends FormBase {
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -79,7 +77,7 @@ class FilterProjects extends FormBase {
         $form['filters'][3]['client'] = array(
             '#type' => 'select',
             '#size' => 4,
-            '#multiple' => TRUE,
+            '#multiple' => true,
             '#options' => $client,
             '#default_value' => isset($_SESSION['pjfilter']['client']) ? $_SESSION['pjfilter']['client'] : '%',
             '#title' => t('client'),
@@ -87,7 +85,7 @@ class FilterProjects extends FormBase {
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div>',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -98,7 +96,7 @@ class FilterProjects extends FormBase {
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, [':s' => '']);
         $l = '';
-        While ($s = $data->fetchObject()) {
+        while ($s = $data->fetchObject()) {
             $l .= $s->supplier_offer . ',';
         }
         $list = array_unique(explode(',', $l));
@@ -112,7 +110,7 @@ class FilterProjects extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#size' => 4,
-            '#multiple' => TRUE,
+            '#multiple' => true,
             '#options' => $suppliers,
             '#default_value' => isset($_SESSION['pjfilter']['supplier']) ? $_SESSION['pjfilter']['supplier'] : '%',
             '#title' => t('supplier'),
@@ -120,7 +118,7 @@ class FilterProjects extends FormBase {
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div>',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -143,7 +141,7 @@ class FilterProjects extends FormBase {
             '#prefix' => "<div class='row'><div class='cell'>",
             '#suffix' => '</div>',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -158,7 +156,7 @@ class FilterProjects extends FormBase {
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -171,7 +169,7 @@ class FilterProjects extends FormBase {
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
             '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => TRUE),
+                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
                 ),
             ),
         );
@@ -180,15 +178,14 @@ class FilterProjects extends FormBase {
             '#type' => 'date',
             '#size' => 14,
             //'#required' => TRUE,
-            '#default_value' => isset($_SESSION['pjfilter']['start']) ? $_SESSION['pjfilter']['start'] : date('Y'). '-01-01',
+            '#default_value' => isset($_SESSION['pjfilter']['start']) ? $_SESSION['pjfilter']['start'] : date('Y') . '-01-01',
             '#title' => $this->t('Starting'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div>',
             '#states' => array(
-                'visible' =>  array(":input[name='date']" => ['checked' => TRUE]),
-                'invisible' =>  array(':input[name="keyword"]' => ['filled' => TRUE]),
+                'visible' => array(":input[name='date']" => ['checked' => true]),
+                'invisible' => array(':input[name="keyword"]' => ['filled' => true]),
             ),
-            
         );
 
 
@@ -200,8 +197,8 @@ class FilterProjects extends FormBase {
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
             '#states' => array(
-                'visible' =>  array(":input[name='date']" => ['checked' => TRUE]),
-                'invisible' =>  array(':input[name="keyword"]' => ['filled' => TRUE]),
+                'visible' => array(":input[name='date']" => ['checked' => true]),
+                'invisible' => array(':input[name="keyword"]' => ['filled' => true]),
             ),
         );
 
@@ -231,13 +228,12 @@ class FilterProjects extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->getValue('keyword') == '%') {
             //do not allow character
             $form_state->setErrorByName('keyword', $this->t('input value error'));
         }
-        
-        if($form_state->getValue('date') == '1') {
+
+        if ($form_state->getValue('date') == '1') {
             if (strtotime($form_state->getValue('end')) < strtotime($form_state->getValue('start'))) {
                 $form_state->setErrorByName("start", $this->t('Start date is higher than ending date'));
             }
@@ -252,7 +248,6 @@ class FilterProjects extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $_SESSION['pjfilter']['cid'] = $form_state->getValue('cid');
         $_SESSION['pjfilter']['status'] = $form_state->getValue('status');
         $_SESSION['pjfilter']['type'] = $form_state->getValue('type');

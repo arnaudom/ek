@@ -24,29 +24,26 @@ use Drupal\ek_projects\ProjectData;
  */
 class LastCreatedProjectsBlock extends BlockBase {
 
-
-  /**
-   * {@inheritdoc}
-   */
+    /**
+     * {@inheritdoc}
+     */
     public function build() {
-
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_project', 'p');
-                    $query->leftJoin('ek_country', 'c', 'p.cid=c.id');
-                    $query->leftJoin('ek_address_book', 'b', 'p.client_id=b.id');
-                    $query->fields('p', array('id', 'pcode', 'pname', 'date', 'notify'));
-                    $query->fields('c', array('name'));
-                    $query->fields('b', array('name'));
-                    $query->range(0,30);
-                    $query->orderBy('p.id', 'DESC');
+        $query->leftJoin('ek_country', 'c', 'p.cid=c.id');
+        $query->leftJoin('ek_address_book', 'b', 'p.client_id=b.id');
+        $query->fields('p', array('id', 'pcode', 'pname', 'date', 'notify'));
+        $query->fields('c', array('name'));
+        $query->fields('b', array('name'));
+        $query->range(0, 30);
+        $query->orderBy('p.id', 'DESC');
         $data = $query->execute();
-  
+
         $list = '<ul>';
 
         while ($d = $data->fetchObject()) {
-            
             $notify = explode(',', $d->notify);
-            if(!\Drupal\ek_projects\ProjectData::validate_access($d->id)){
+            if (!\Drupal\ek_projects\ProjectData::validate_access($d->id)) {
                 $cls = "disabled-square";
                 $detail = '';
                 $title = '';
@@ -60,8 +57,8 @@ class LastCreatedProjectsBlock extends BlockBase {
                 $detail = $d->pname . '-' . $d->b_name;
             }
 
-            $list .= '<li title="' . $detail . '" class="project_title">' 
-                    . '<span title='.$title.' id="'.$d->id.'" class="ico '. $cls .'"></span> '
+            $list .= '<li title="' . $detail . '" class="project_title">'
+                    . '<span title=' . $title . ' id="' . $d->id . '" class="ico ' . $cls . '"></span> '
                     . $d->name . ' - '
                     . ProjectData::geturl($d->id) . ' - [' . $d->date . ']</li>';
         }
@@ -79,7 +76,7 @@ class LastCreatedProjectsBlock extends BlockBase {
             '#items' => $items,
             '#theme' => 'ek_projects_dashboard',
             '#attached' => array(
-                'library' => ['ek_projects/ek_projects.dashboard','ek_admin/ek_admin_css'],
+                'library' => ['ek_projects/ek_projects.dashboard', 'ek_admin/ek_admin_css'],
             ),
             '#cache' => [
                 'tags' => ['project_last_block'],
@@ -87,10 +84,9 @@ class LastCreatedProjectsBlock extends BlockBase {
         );
     }
 
-
-  /**
-   * {@inheritdoc}
-   */
+    /**
+     * {@inheritdoc}
+     */
     protected function blockAccess(AccountInterface $account) {
         if (!$account->isAnonymous() && $account->hasPermission('view_project')) {
             return AccessResult::allowed();

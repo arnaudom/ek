@@ -25,56 +25,47 @@ use Drupal\user\Entity\User;
  */
 class ProjectMessagesBlock extends BlockBase {
 
-
-  /**
-   * {@inheritdoc}
-   */
+    /**
+     * {@inheritdoc}
+     */
     public function build() {
-        
         $items = array();
         $items['content'] = '';
         $items['title'] = '';
         $items['id'] = 'project_messages';
 
-        if(\Drupal::moduleHandler()->moduleExists('ek_messaging')) {
-            
+        if (\Drupal::moduleHandler()->moduleExists('ek_messaging')) {
             $path = \Drupal::service('path.current')->getPath();
-            $parts = explode('/',$path);
+            $parts = explode('/', $path);
             $id = array_pop($parts);
             $query = "SELECT pcode FROM {ek_project} WHERE id=:id";
             $pcode = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $id))->fetchField();
-           
+                            ->query($query, array(':id' => $id))->fetchField();
+
             $query = "SELECT m.id,`subject`,`stamp`,`from_uid`,`to`,`text` "
                     . "FROM {ek_messaging} m "
                     . "INNER JOIN {ek_messaging_text} t ON m.id=t.id "
                     . "WHERE text like :text order by m.id";
-        
+
             $data = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':text' => '%' . $pcode . '%'));
-                      
+
             $list = '<ul class="projectMessagesList">';
 
             while ($d = $data->fetchObject()) {
-
                 $to = explode(',', $d->to);
-                if(in_array(\Drupal::currentUser()->id(), $to) 
-                        || $d->from_uid == \Drupal::currentUser()->id()) {
-                    
+                if (in_array(\Drupal::currentUser()->id(), $to) || $d->from_uid == \Drupal::currentUser()->id()) {
                     $from = User::load($d->from_uid);
                     $link = Url::fromRoute('ek_messaging_read', array('id' => $d->id))->toString();
-                    $read = "<a href='". $link . "'>" . t('open') . "</a>";
-                    $list .= '<li title="'.$from->getAccountName.'" >' 
-                            .  substr($d->subject, 0, 20) . ' - ' . date('Y-m-d', $d->stamp) . ' [' . $read . ']</li>';
-                    
+                    $read = "<a href='" . $link . "'>" . t('open') . "</a>";
+                    $list .= '<li title="' . $from->getAccountName . '" >'
+                            . substr($d->subject, 0, 20) . ' - ' . date('Y-m-d', $d->stamp) . ' [' . $read . ']</li>';
                 }
-                
             }
 
             $list .= '</ul>';
             $items['title'] = t('Messages');
-            $items['content'] = $list;        
-        
+            $items['content'] = $list;
         }
 
 
@@ -90,10 +81,9 @@ class ProjectMessagesBlock extends BlockBase {
         );
     }
 
-
-  /**
-   * {@inheritdoc}
-   */
+    /**
+     * {@inheritdoc}
+     */
     protected function blockAccess(AccountInterface $account) {
         if (!$account->isAnonymous() && $account->hasPermission('view_project')) {
             return AccessResult::allowed();

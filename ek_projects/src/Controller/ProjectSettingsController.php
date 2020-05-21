@@ -8,19 +8,11 @@
 namespace Drupal\ek_projects\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\user\UserInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Form\FormBuilderInterface;
-use Drupal\Core\Url;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\OpenModalDialogCommand;
-use Drupal\Core\Ajax\OpenDialogCommand;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\ek_projects\ProjectData;
 
 /**
@@ -75,7 +67,6 @@ class ProjectSettingsController extends ControllerBase {
      * define specific access to project sections by users
      */
     public function users() {
-
         $form_builder = $this->formBuilder();
         $response = $form_builder->getForm('Drupal\ek_projects\Form\SettingsUsers');
 
@@ -83,7 +74,7 @@ class ProjectSettingsController extends ControllerBase {
         return array(
             '#theme' => 'ek_projects_default',
             '#items' => $response,
-            '#title' => t('Users sections access control'),
+            '#title' => $this->t('Users sections access control'),
             '#attached' => array(
                 'library' => 'ek_projects/ek_projects_css',
             ),
@@ -96,7 +87,7 @@ class ProjectSettingsController extends ControllerBase {
     public function serial() {
         $form_builder = $this->formBuilder();
         $response = $form_builder->getForm('Drupal\ek_projects\Form\SerialFormat');
-        $response['#title'] = t('Serial format');
+        $response['#title'] = $this->t('Serial format');
         return $response;
     }
 
@@ -104,14 +95,11 @@ class ProjectSettingsController extends ControllerBase {
      * List projects per user
      */
     public function access_admin() {
-
-
         $build = array();
         $form_builder = $this->formBuilder();
         $build['filter_project'] = $form_builder->getForm('Drupal\ek_projects\Form\AccessAdmin');
 
         if (isset($_SESSION['paccessadmin']) && $_SESSION['paccessadmin']['filter'] == 1) {
-
             if ($_SESSION['paccessadmin']['cid'] == 0) {
                 $cid = '%';
             } else {
@@ -150,18 +138,18 @@ class ProjectSettingsController extends ControllerBase {
                     ->query("SELECT id,type FROM {ek_project_type}")
                     ->fetchAllKeyed();
             $i = 0;
-            while ($r = $data->fetchObject()) { 
+            while ($r = $data->fetchObject()) {
                 if (in_array($r->cid, $UserAccess)) {//filter access by country
                     $i++;
                     $pcode = ProjectData::geturl($r->id);
                     $share = explode(',', $r->share);
                     $deny = explode(',', $r->deny);
-                    
-                    $default = t('access');
-                    if($uid == $r->owner) {
-                        $default = t('owner');
-                    } elseif(($r->share != 0 && $r->deny != 0) && (!in_array($uid, $share) || in_array($uid, $deny))) {
-                        $default = t('access denied');
+
+                    $default = $this->t('access');
+                    if ($uid == $r->owner) {
+                        $default = $this->t('owner');
+                    } elseif (($r->share != 0 && $r->deny != 0) && (!in_array($uid, $share) || in_array($uid, $deny))) {
+                        $default = $this->t('access denied');
                     }
 
                     $options[$i] = array(
@@ -207,22 +195,20 @@ class ProjectSettingsController extends ControllerBase {
                     'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
                 ),
             );
-            
-        $build['project_list'] = array(
-            '#type' => 'table',
-            '#header' => $header,
-            '#rows' => $options,
-            '#attributes' => array('id' => 'projects_access_table'),
-            '#empty' => $this->t('No search result'),
-            '#attached' => array(
-                'library' => array('ek_projects/ek_projects_css'),
-            ),
-        );  
-            
-            
+
+            $build['project_list'] = array(
+                '#type' => 'table',
+                '#header' => $header,
+                '#rows' => $options,
+                '#attributes' => array('id' => 'projects_access_table'),
+                '#empty' => $this->t('No search result'),
+                '#attached' => array(
+                    'library' => array('ek_projects/ek_projects_css'),
+                ),
+            );
         }
-        
-        $build['#title'] = t('Users access by project');
+
+        $build['#title'] = $this->t('Users access by project');
         return $build;
     }
 

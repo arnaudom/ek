@@ -1,94 +1,85 @@
 <?php
+
 /**
-* @file
-* Contains \Drupal\ek\Controller\
-*/
+ * @file
+ * Contains \Drupal\ek\Controller\
+ */
 
 namespace Drupal\ek_projects\Controller;
-
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
-use Drupal\user\UserInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-
 /**
-* Controller routines for ek module routes.
-*/
+ * Controller routines for ek module routes.
+ */
 class InstallController extends ControllerBase {
+    /* The module handler.
+     *
+     * @var \Drupal\Core\Extension\ModuleHandler
+     */
 
-   /* The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandler
-   */
-  protected $moduleHandler;
-  /**
-   * The database service.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-  /**
-   * The form builder service.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('database'),
-      $container->get('form_builder'),
-      $container->get('module_handler')
-    );
-  }
+    protected $moduleHandler;
 
-  /**
-   * Constructs a  object.
-   *
-   * @param \Drupal\Core\Database\Connection $database
-   *   A database connection.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-   *   The form builder service.
-   */
-  public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
-    $this->database = $database;
-    $this->formBuilder = $form_builder;
-    $this->moduleHandler = $module_handler;
-  }
+    /**
+     * The database service.
+     *
+     * @var \Drupal\Core\Database\Connection
+     */
+    protected $database;
 
-/**
-   * data update
-   *
-*/
-  public function update() {
-  
-  //update and conversion of DB
-  include_once drupal_get_path('module', 'ek_projects') . '/' . 'update.php';
-  return  array('#markup' => $markup) ;
-  }
+    /**
+     * The form builder service.
+     *
+     * @var \Drupal\Core\Form\FormBuilderInterface
+     */
+    protected $formBuilder;
 
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
+        );
+    }
 
- 
-/**
-   * install required tables in a separate database
-   *
-*/
+    /**
+     * Constructs a  object.
+     *
+     * @param \Drupal\Core\Database\Connection $database
+     *   A database connection.
+     * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+     *   The form builder service.
+     */
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+        $this->database = $database;
+        $this->formBuilder = $form_builder;
+        $this->moduleHandler = $module_handler;
+    }
 
- public function install() {
+    /**
+     * data update
+     *
+     */
+    public function update() {
 
-     
-    $query = "CREATE TABLE IF NOT EXISTS `ek_project` (
+        //update and conversion of DB
+        include_once drupal_get_path('module', 'ek_projects') . '/' . 'update.php';
+        return array('#markup' => $markup);
+    }
+
+    /**
+     * install required tables in a separate database
+     *
+     */
+    public function install() {
+        $query = "CREATE TABLE IF NOT EXISTS `ek_project` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`pname` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'Given name by owner',
 	`client_id` VARCHAR(200) NOT NULL DEFAULT '' COMMENT 'Address book id',
@@ -114,11 +105,13 @@ class InstallController extends ControllerBase {
         COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB
         AUTO_INCREMENT=1";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup = 'Projects table installed <br/>';
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_project_actionplan` (
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup = 'Projects table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_project_actionplan` (
 	`pcode` VARCHAR(45) NOT NULL DEFAULT '',
 	`ap_doc` TEXT NULL,
 	`what_1` TEXT NULL,
@@ -138,10 +131,12 @@ class InstallController extends ControllerBase {
         COMMENT='action plan data'
         COLLATE='utf8_general_ci'
         ENGINE=InnoDB";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Projects AP table installed <br/>';
-    
-    $query ="CREATE TABLE IF NOT EXISTS `ek_project_description` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Projects AP table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_project_description` (
 	`pcode` VARCHAR(45) NOT NULL DEFAULT '',
 	`submission` VARCHAR(20) NULL DEFAULT NULL COMMENT 'date of proposal',
 	`deadline` VARCHAR(20) NULL DEFAULT NULL COMMENT 'deadline',
@@ -167,10 +162,12 @@ class InstallController extends ControllerBase {
         )
         COLLATE='utf8_general_ci'
         ENGINE=InnoDB";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Projects description table installed <br/>';  
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_project_documents` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Projects description table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_project_documents` (
 	`id` INT(5) NOT NULL AUTO_INCREMENT,
 	`pcode` VARCHAR(45) NULL DEFAULT NULL,
 	`fid` INT(10) NULL DEFAULT NULL COMMENT 'file managed ID',
@@ -189,10 +186,12 @@ class InstallController extends ControllerBase {
         COMMENT='documents attached to projects'
         COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Projects documents table installed <br/>';    
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_project_finance` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Projects documents table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_project_finance` (
 	`pcode` VARCHAR(45) NOT NULL DEFAULT '',
 	`payment_terms` VARCHAR(45) NULL DEFAULT '',
 	`purchase_value` DOUBLE NULL DEFAULT '0',
@@ -216,10 +215,12 @@ class InstallController extends ControllerBase {
         )
         COLLATE='utf8_general_ci'
         ENGINE=InnoDB";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Projects finance table installed <br/>';   
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_project_shipment` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Projects finance table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_project_shipment` (
 	`pcode` VARCHAR(45) NOT NULL DEFAULT '',
 	`first_ship` VARCHAR(20) NOT NULL DEFAULT '0000-00-00',
 	`second_ship` VARCHAR(20) NOT NULL DEFAULT '0000-00-00',
@@ -232,10 +233,12 @@ class InstallController extends ControllerBase {
         COMMENT='logistic data'
         COLLATE='utf8_general_ci'
         ENGINE=InnoDB";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Projects logistics table installed <br/>';    
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_project_tasks` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Projects logistics table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_project_tasks` (
 	`id` TINYINT(3) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`pcode` VARCHAR(50) NULL DEFAULT NULL COMMENT 'project code reference',
 	`event` VARCHAR(50) NULL DEFAULT NULL COMMENT 'event group name',
@@ -256,10 +259,12 @@ class InstallController extends ControllerBase {
         COMMENT='tasks per project'
         COLLATE='utf8_general_ci'
         ENGINE=InnoDB";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Projects tasks table installed <br/>';   
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_project_tracker` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Projects tasks table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_project_tracker` (
 	`pcode` VARCHAR(50) NULL DEFAULT NULL,
 	`uid` INT(10) NULL DEFAULT NULL,
 	`stamp` INT(10) NULL DEFAULT NULL,
@@ -268,10 +273,12 @@ class InstallController extends ControllerBase {
         )
         COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Projects trackers table installed <br/>';      
-    
-    $query ="CREATE TABLE IF NOT EXISTS `ek_project_type` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Projects trackers table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_project_type` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`short` VARCHAR(5) NULL DEFAULT NULL,
 	`gp` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'group',
@@ -282,10 +289,12 @@ class InstallController extends ControllerBase {
         COMMENT='categories of projects'
         COLLATE='utf8mb4_general_ci'
         ENGINE=InnoDB";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Projects types table installed <br/>'; 
-    
-    $query = "CREATE TABLE IF NOT EXISTS `ek_project_users` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Projects types table installed <br/>';
+        }
+
+        $query = "CREATE TABLE IF NOT EXISTS `ek_project_users` (
 	`uid` INT(11) NOT NULL COMMENT 'user id',
 	`section_1` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '0 = no access 1 = access',
 	`section_2` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '0 = no access 1 = access',
@@ -296,10 +305,12 @@ class InstallController extends ControllerBase {
         COMMENT='sections access data per user'
         COLLATE='utf8_general_ci'
         ENGINE=InnoDB";
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Projects users access table installed <br/>';     
-    
-    $query = "CREATE TABLE `ek_project_settings` (
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Projects users access table installed <br/>';
+        }
+
+        $query = "CREATE TABLE `ek_project_settings` (
 	`coid` INT(11) NULL DEFAULT NULL COMMENT 'value 0 for global',
 	`settings` BLOB NULL,
 	UNIQUE INDEX `Index 1` (`coid`)
@@ -307,24 +318,25 @@ class InstallController extends ControllerBase {
         COMMENT='settings variables for projects module'
         COLLATE='utf8_general_ci'
         ENGINE=InnoDB";
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    $query = "INSERT into {ek_project_settings} (`coid`) VALUES (0) ";
-    
-    
-    $db = Database::getConnection('external_db', 'external_db')->query($query);
-    if($db) $markup .= 'Projects settings installed <br/>';
-    
-    $link =  Url::fromRoute('ek_admin.main', array(), array())->toString();
-    $markup .= '<br/>' . t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
-        
-    return  array(
-      '#title'=> t('Installation of Ek_projects module'),
-      '#markup' => $markup
-      ) ;
- 
- }
+
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        $query = "INSERT into {ek_project_settings} (`coid`) VALUES (0) ";
 
 
-   
-} //class
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'Projects settings installed <br/>';
+        }
+
+        $link = Url::fromRoute('ek_admin.main', array(), array())->toString();
+        $markup .= '<br/>' . $this->t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
+
+        return array(
+            '#title' => $this->t('Installation of Ek_projects module'),
+            '#markup' => $markup
+        );
+    }
+
+}
+
+//class

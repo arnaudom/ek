@@ -29,13 +29,11 @@ class SearchProject extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
-
         $form['p']['search'] = array(
             '#type' => 'textfield',
             '#size' => 30,
             '#attributes' => array('placeholder' => t('I.e. "123" or keyword'), 'class' => array()),
-            '#required' => TRUE,
+            '#required' => true,
             '#prefix' => '<div class="container-inline">',
         );
 
@@ -81,7 +79,6 @@ class SearchProject extends FormBase {
             $query = 'SELECT id,pcode,pname from {ek_project} WHERE pcode like :id1 or id like :id2';
             $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
         } else {
-
             $key = '%' . Xss::filter(trim($form_state->getValue('search'))) . '%';
             $a = array(':key' => $key);
             $query = 'SELECT id,pcode,pname FROM {ek_project} WHERE pname like :key';
@@ -114,7 +111,7 @@ class SearchProject extends FormBase {
         if ($i == 1) {
             $form_state->setRedirect('ek_projects_view', array('id' => $id));
         } else {
-            $list .='</ul>';
+            $list .= '</ul>';
             $form_state->set('message', $list);
             $form_state->setRebuild();
         }
@@ -125,5 +122,5 @@ class SearchProject extends FormBase {
         //submitForm
     }
 
-//end class
+    //end class
 }

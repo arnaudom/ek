@@ -59,16 +59,13 @@ class ProjectController extends ControllerBase {
      * @var \Drupal\Core\Entity\EntityTypeManager
      */
     protected $entityTypeManager;
-    
+
     /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('database'), 
-                $container->get('form_builder'), 
-                $container->get('module_handler'),
-                $container->get('entity_type.manager')
+                $container->get('database'), $container->get('form_builder'), $container->get('module_handler'), $container->get('entity_type.manager')
         );
     }
 
@@ -82,7 +79,7 @@ class ProjectController extends ControllerBase {
      * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
      *   The entity manager.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler, EntityTypeManager  $entity_manager) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler, EntityTypeManager $entity_manager) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -90,7 +87,7 @@ class ProjectController extends ControllerBase {
     }
 
     /**
-     * Return project dashboard 
+     * Return project dashboard
      *
      */
     public function dashboard() {
@@ -102,7 +99,6 @@ class ProjectController extends ControllerBase {
      *
      */
     public function search(Request $request) {
-
         $build['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\FilterProjects');
 
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCountryByUser();
@@ -111,12 +107,8 @@ class ProjectController extends ControllerBase {
         $options = array();
 
         if (isset($_SESSION['pjfilter']['filter'])) {
-
-            if (isset($_SESSION['pjfilter']['keyword']) && $_SESSION['pjfilter']['keyword'] != NULL 
-                    && $_SESSION['pjfilter']['keyword'] != '%') {
-
+            if (isset($_SESSION['pjfilter']['keyword']) && $_SESSION['pjfilter']['keyword'] != null && $_SESSION['pjfilter']['keyword'] != '%') {
                 if (is_numeric($_SESSION['pjfilter']['keyword'])) {
-
                     $id1 = '%-' . trim($_SESSION['pjfilter']['keyword']) . '%';
                     $id2 = '%-' . trim($_SESSION['pjfilter']['keyword']) . '-sub%';
 
@@ -126,14 +118,13 @@ class ProjectController extends ControllerBase {
                     $or->condition('pcode', $id1, 'like');
                     $or->condition('pcode', $id2, 'like');
                     $data = $query
-                            ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date','archive'))
+                            ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'))
                             ->condition($or)
                             ->extend('Drupal\Core\Database\Query\TableSortExtender')
                             ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
                             ->limit(10)->orderBy('id', 'ASC')
                             ->execute();
                 } else {
-
                     $key = Xss::filter($_SESSION['pjfilter']['keyword']);
                     $keyword1 = trim($key) . '%';
                     $keyword2 = '%' . trim($key) . '%';
@@ -146,7 +137,7 @@ class ProjectController extends ControllerBase {
                     $or->condition('t.project_description', $keyword2, 'like');
                     $or->condition('t.project_comment', $keyword2, 'like');
                     $data = $query
-                            ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date','archive'))
+                            ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'))
                             ->condition($or)
                             ->extend('Drupal\Core\Database\Query\TableSortExtender')
                             ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
@@ -160,48 +151,47 @@ class ProjectController extends ControllerBase {
                 } else {
                     $cid = $_SESSION['pjfilter']['cid'];
                 }
-                if(in_array('%', $_SESSION['pjfilter']['supplier'])) {
+                if (in_array('%', $_SESSION['pjfilter']['supplier'])) {
                     $_SESSION['pjfilter']['supplier'] = '%';
                 }
-                if(in_array('%', $_SESSION['pjfilter']['client'])) {
+                if (in_array('%', $_SESSION['pjfilter']['client'])) {
                     $_SESSION['pjfilter']['client'] = '%';
                 }
 
                 $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
                 $query->leftJoin('ek_project_description', 'd', 'd.pcode=p.pcode');
-                    $query
-                        ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date','archive'))
+                $query
+                        ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'))
                         ->condition('cid', $cid, 'like')
                         ->condition('category', $_SESSION['pjfilter']['type'], 'like')
                         ->condition('status', $_SESSION['pjfilter']['status'], 'like');
-                
-                if($_SESSION['pjfilter']['client'] != '%') {
+
+                if ($_SESSION['pjfilter']['client'] != '%') {
                     $query->condition('client_id', $_SESSION['pjfilter']['client'], 'IN');
                 }
-                
-                if( $_SESSION['pjfilter']['date'] == '1') {
+
+                if ($_SESSION['pjfilter']['date'] == '1') {
                     $query->condition('date', $_SESSION['pjfilter']['start'], '>=');
                     $query->condition('date', $_SESSION['pjfilter']['end'], '<=');
-                }                     
-                    
-                if( $_SESSION['pjfilter']['supplier'] != '%') {
+                }
+
+                if ($_SESSION['pjfilter']['supplier'] != '%') {
                     //a project can have multiple suppliers
-                    
-                        $or = $query->orConditionGroup();
-                        foreach($_SESSION['pjfilter']['supplier'] as $key => $id) {
-                            $or->condition('supplier_offer', $id . ',%', 'like');
-                            $or->condition('supplier_offer', '%,' . $id . ',%', 'like');
-                            $or->condition('supplier_offer', '%,' . $id , 'like');
-                            $or->condition('supplier_offer', $id , '=');
-                        }
-                        
-                        $query->condition($or);
-                        
+
+                    $or = $query->orConditionGroup();
+                    foreach ($_SESSION['pjfilter']['supplier'] as $key => $id) {
+                        $or->condition('supplier_offer', $id . ',%', 'like');
+                        $or->condition('supplier_offer', '%,' . $id . ',%', 'like');
+                        $or->condition('supplier_offer', '%,' . $id, 'like');
+                        $or->condition('supplier_offer', $id, '=');
+                    }
+
+                    $query->condition($or);
                 } else {
                     
                 }
 
-                    
+
                 $data = $query
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
@@ -210,21 +200,21 @@ class ProjectController extends ControllerBase {
             }
 
             $i = 0;
-            $archive = [0 => t('no'), 1 => t('yes')];
+            $archive = [0 => $this->t('no'), 1 => $this->t('yes')];
             $excel = [];
             while ($r = $data->fetchObject()) {
-                if(in_array($r->cid, $access)) {//filter access by country
-                $i++;
-                array_push($excel, $r->id);
-                $pcode = ProjectData::geturl($r->id);
-                $country = Database::getConnection('external_db', 'external_db')
-                                ->query("SELECT name FROM {ek_country} WHERE id=:cid", array(':cid' => $r->cid))->fetchField();
-                $category = Database::getConnection('external_db', 'external_db')
-                                ->query("SELECT type FROM {ek_project_type} WHERE id=:t", array(':t' => $r->category))->fetchField();
+                if (in_array($r->cid, $access)) {//filter access by country
+                    $i++;
+                    array_push($excel, $r->id);
+                    $pcode = ProjectData::geturl($r->id);
+                    $country = Database::getConnection('external_db', 'external_db')
+                                    ->query("SELECT name FROM {ek_country} WHERE id=:cid", array(':cid' => $r->cid))->fetchField();
+                    $category = Database::getConnection('external_db', 'external_db')
+                                    ->query("SELECT type FROM {ek_project_type} WHERE id=:t", array(':t' => $r->category))->fetchField();
 
-                $route = Url::fromRoute('ek_projects_archive', ['id' => $r->id], array())->toString();
-                $archive_button = "<a id='arch".$r->id."' title='" . t('change archive status') . "' href='" . $route . "' class='use-ajax'>" . $archive[$r->archive] . '</a>';
-                                        
+                    $route = Url::fromRoute('ek_projects_archive', ['id' => $r->id], array())->toString();
+                    $archive_button = "<a id='arch" . $r->id . "' title='" . $this->t('change archive status') . "' href='" . $route . "' class='use-ajax'>" . $archive[$r->archive] . '</a>';
+
                     $options[$i] = array(
                         'reference' => ['data' => ['#markup' => $pcode]],
                         'date' => $r->date,
@@ -237,11 +227,11 @@ class ProjectController extends ControllerBase {
                 }
             }
             $url = Url::fromRoute('ek_projects_excel_list', array('param' => serialize($excel)), array())->toString();
-            $build['excel'] = ['#markup' => "<br/><a href='" . $url . "'>" . t('Excel') . "</a>"];
+            $build['excel'] = ['#markup' => "<br/><a href='" . $url . "'>" . $this->t('Excel') . "</a>"];
         }
 
-        
-        
+
+
         $header = array(
             'reference' => array(
                 'data' => $this->t('Reference'),
@@ -267,9 +257,9 @@ class ProjectController extends ControllerBase {
             ),
             'archive' => array(
                 'data' => $this->t('Archive'),
-            ),            
+            ),
         );
-        
+
         $build['project_list'] = array(
             '#type' => 'table',
             '#header' => $header,
@@ -288,16 +278,16 @@ class ProjectController extends ControllerBase {
 
         return $build;
     }
-    
+
     /**
-     * Output a list of project as search result in excel format 
+     * Output a list of project as search result in excel format
      * @param param = array list of project ID
      */
     public function list_excel($param) {
         $markup = array();
-        
+
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = t('Excel library not available, please contact administrator.');
+            $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $param = unserialize($param);
             $query = "SELECT * FROM {ek_project} p "
@@ -305,44 +295,40 @@ class ProjectController extends ControllerBase {
                     . "LEFT JOIN {ek_project_finance} f on p.pcode=f.pcode "
                     . "WHERE FIND_IN_SET (id, :c ) ORDER by p.id";
             $data = Database::getConnection('external_db', 'external_db')
-                                ->query($query, [':c' => implode(',', $param)]);
+                    ->query($query, [':c' => implode(',', $param)]);
 
             include_once drupal_get_path('module', 'ek_projects') . '/excel_list.inc';
         }
         return ['#markup' => $markup];
-        
     }
-    
+
     /**
-     * Return project dashboard 
+     * Return project dashboard
      *
      */
     public function newproject() {
-
         return $items['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\NewProject');
     }
 
     /**
      * Return project page and data
-     * 
+     *
      * @see hook_project_view()
-     * 
+     *
      * @param $id
      *  The project id
      * @return array
      */
     public function project_view(Request $request, $id) {
-
         $items = array();
         Cache::invalidateTags(['project_view_block']);
 
 
         $edit_icon = "&nbsp<span class='ico pencil-edit'></span>";
-        
+
         if (!ProjectData::validate_access($id)) {
             return $items['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\AccessRequest', $id);
         } else {
- 
             $items['data'] = array();
 
             $pcode = Database::getConnection('external_db', 'external_db')
@@ -354,8 +340,9 @@ class ProjectController extends ControllerBase {
             $data = array();
 
             for ($i = 1; $i < 6; $i++) {
-                if (in_array($i, $sections))
+                if (in_array($i, $sections)) {
                     $data['section_' . $i] = 1;
+                }
             }
 
 
@@ -365,54 +352,53 @@ class ProjectController extends ControllerBase {
 
             $query = "SELECT * from {ek_project} WHERE id=:id";
             $data['project'] = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $id))->fetchAll();
+                            ->query($query, array(':id' => $id))->fetchAll();
 
             $query = "SELECT type from {ek_project_type} WHERE id=:id";
             $data['type'] = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $data['project'][0]->category))->fetchField();
+                            ->query($query, array(':id' => $data['project'][0]->category))->fetchField();
 
             $code = str_replace('/', '-', $pcode);
             $code = explode("-", $code);
             $code = array_reverse($code);
             $code_serial = $code[0];
-            $sub = NULL;
-            
+            $sub = null;
+
             if ($data['project'][0]->level == 'Main project' && $data['project'][0]->subcount > 0) {
                 $query = "SELECT id, pname from {ek_project} WHERE main = :id and pcode <> :c2 order by id";
                 $sub = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id, ':c2' => $pcode));
-                    while ($l = $sub->fetchObject()) {
-                        $data['sub'][] = ProjectData::geturl($l->id) . " - " . $l->pname;
-                    }
+                while ($l = $sub->fetchObject()) {
+                    $data['sub'][] = ProjectData::geturl($l->id) . " - " . $l->pname;
+                }
             } elseif ($data['project'][0]->level == 'Sub project') {
                 $data['sub'][] = ProjectData::geturl($data['project'][0]->main);
             }
 
             /*
-             * manage the edit mode 
+             * manage the edit mode
              */
             if ($data['project'][0]->editor == 0 || $data['project'][0]->editor == \Drupal::currentUser()->id()) {
-                $data['project'][0]->edit_mode = '<button class="btn _edit" id="edit_mode"><span >' . t('edit mode') . '</span>'
+                $data['project'][0]->edit_mode = '<button class="btn _edit" id="edit_mode"><span >' . $this->t('edit mode') . '</span>'
                         . ' <span class="ico pencil"></span></button>';
             }
 
             /*
-             * manage the notify mode 
+             * manage the notify mode
              */
             $notify = explode(',', $data['project'][0]->notify);
             if (in_array(\Drupal::currentUser()->id(), $notify)) {
                 $val = 'follow';
                 $cl = 'follow';
                 $cl2 = "check-square";
-                
             } else {
                 $cl = '_follow';
                 $cl2 = 'square';
             }
 
-            $data['project'][0]->keep_notify = '<button class="btn ' 
-                    . $cl . '" id="edit_notify" /> ' . t('follow') . ' '
-                    . '<span  id="edit_notify_i" class="ico '. $cl2 .'"></span>'
+            $data['project'][0]->keep_notify = '<button class="btn '
+                    . $cl . '" id="edit_notify" /> ' . $this->t('follow') . ' '
+                    . '<span  id="edit_notify_i" class="ico ' . $cl2 . '"></span>'
                     . '</button>';
 
 
@@ -424,11 +410,11 @@ class ProjectController extends ControllerBase {
             //$name = db_query($query, array(':uid' => $last[1]))->fetchField();
             $acc = \Drupal\user\Entity\User::load($last[1]);
             $name = '';
-            if($acc) {
+            if ($acc) {
                 $name = $acc->getDisplayName();
             }
             $on = date('l jS \of F Y h:i A', $last[0]);
-            $data['project'][0]->last_modified = $name . ' (' . t('on') . ' ' . $on . ')';
+            $data['project'][0]->last_modified = $name . ' (' . $this->t('on') . ' ' . $on . ')';
             //update new last view
             $last_modified = time() . '|' . \Drupal::currentUser()->id();
             Database::getConnection('external_db', 'external_db')
@@ -452,7 +438,7 @@ class ProjectController extends ControllerBase {
             \Drupal::logger('ek_projects')->notice($log);
 
 
-            $prio = array(0 => t('not set'), 1 => t('low'), 2 => t('medium'), 3 => t('high'));
+            $prio = array(0 => $this->t('not set'), 1 => $this->t('low'), 2 => $this->t('medium'), 3 => $this->t('high'));
             $data['project'][0]->priority = $prio[$data['project'][0]->priority];
 
             /*
@@ -461,15 +447,15 @@ class ProjectController extends ControllerBase {
             if (\Drupal::currentUser()->hasPermission('admin_projects')) {
                 $param_edit = 'field|pname|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['project'][0]->edit_pname = ( '<a title="' . t('edit name') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['project'][0]->edit_pname = ('<a title="' . $this->t('edit name') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 $param_edit = 'field|owner|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['project'][0]->edit_owner = ( '<a title="' . t('edit owner') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['project'][0]->edit_owner = ('<a title="' . $this->t('edit owner') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 $param_edit = 'field|client_id|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['project'][0]->edit_client_id = ( '<a title="' . t('edit client') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['project'][0]->edit_client_id = ('<a title="' . $this->t('edit client') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
             }
 
             /*
@@ -478,7 +464,7 @@ class ProjectController extends ControllerBase {
             if (\Drupal::currentUser()->id() == $data['project'][0]->owner || \Drupal::currentUser()->hasPermission('admin_projects')) {
                 $param_access = 'access|' . $id . '|project';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_access])->toString();
-                $data['project'][0]->access = t('<a href="@url" class="@c" >manage access</a>', array('@url' => $link, '@c' => 'use-ajax red '));
+                $data['project'][0]->access = $this->t('<a href="@url" class="@c" >manage access</a>', array('@url' => $link, '@c' => 'use-ajax red '));
             }
 
             /*
@@ -486,13 +472,13 @@ class ProjectController extends ControllerBase {
              */
             $param_note = 'notification|' . $id;
             $link = Url::fromRoute('ek_projects_modal', ['param' => $param_note])->toString();
-            $data['project'][0]->notification = t('<a href="@url" class="@c" >notification</a>', array('@url' => $link, '@c' => 'use-ajax blue notification'));
+            $data['project'][0]->notification = $this->t('<a href="@url" class="@c" >notification</a>', array('@url' => $link, '@c' => 'use-ajax blue notification'));
             /*
              * create a link to create a task
              */
             $param_edit = 'task|' . $id;
             $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-            $data['project'][0]->new_project_task = t('<a href="@url" class="@c" >New task</a>', array('@url' => $link, '@c' => 'use-ajax blue notification'));
+            $data['project'][0]->new_project_task = $this->t('<a href="@url" class="@c" >New task</a>', array('@url' => $link, '@c' => 'use-ajax blue notification'));
 
             $data['project'][0]->task_list = self::TaskList($pcode);
             /*
@@ -511,14 +497,14 @@ class ProjectController extends ControllerBase {
             $param_edit = 'field|status|' . $id;
             $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
             $data['project'][0]->edit_statusUrl = $link;
-            $data['project'][0]->edit_status = ( '<a title="' . t('edit status') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+            $data['project'][0]->edit_status = ('<a title="' . $this->t('edit status') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
             /*
              * create a link to edit priority
              */
             $param_edit = 'field|priority|' . $id;
             $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-            $data['project'][0]->edit_priority = ( '<a title="' . t('edit priority') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+            $data['project'][0]->edit_priority = ('<a title="' . $this->t('edit priority') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
 
             /*
@@ -527,14 +513,14 @@ class ProjectController extends ControllerBase {
             //$query = "SELECT * from {users_field_data} WHERE uid=:uid";
             //$data['user'] = db_query($query, array(':uid' => $data['project'][0]->owner))->fetchAll();
             $acc = \Drupal\user\Entity\User::load($data['project'][0]->owner);
-            if($acc) {
+            if ($acc) {
                 $data['user']['name'] = $acc->getDisplayName();
             }
             $param_edit = 'followers|' . $id;
             $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
             $data['followers'][0] = new \stdClass;
             $data['followers'][0]->url = $link;
-            $data['followers'][0]->list = ( '<a href="' . $link . '" class="use-ajax blue" >' . t('Followers') . '</a>');
+            $data['followers'][0]->list = ('<a href="' . $link . '" class="use-ajax blue" >' . $this->t('Followers') . '</a>');
 
             /*
              * description table
@@ -547,25 +533,24 @@ class ProjectController extends ControllerBase {
 
                 $data['description'][0]->project_description = html_entity_decode($data['description'][0]->project_description, ENT_QUOTES, "utf-8");
                 $data['description'][0]->project_comment = html_entity_decode($data['description'][0]->project_comment, ENT_QUOTES, "utf-8");
-                
-                
+
+
                 /*
                  * suppliers
                  */
-                
+
                 $data['suppliers'] = [];
-                if($data['description'][0]->supplier_offer){
+                if ($data['description'][0]->supplier_offer) {
                     $query = "SELECT id,name FROM {ek_address_book} WHERE FIND_IN_SET (id, :s )";
                     $suppliers = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':s' => $data['description'][0]->supplier_offer));
-                   
-                    WHILE($s = $suppliers->fetchObject()){
+                            ->query($query, array(':s' => $data['description'][0]->supplier_offer));
+
+                    while ($s = $suppliers->fetchObject()) {
                         /**/
                         $data['suppliers'][] = [
                             'name' => $s->name,
                             'url' => \Drupal\ek_address_book\AddressBookData::geturl($s->id),
                         ];
-                        
                     }
                     $data['description'][0]->supplier_offer = $data['suppliers'];
                 }
@@ -574,58 +559,58 @@ class ProjectController extends ControllerBase {
                  */
                 $param_edit = 'field|supplier_offer|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_supplier_offer = ( '<a title="' . t('edit supplier') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_supplier_offer = ('<a title="' . $this->t('edit supplier') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
                 /*
                  * create a link to edit date submission
                  */
                 $param_edit = 'field|submission|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_submission = ( '<a title="' . t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_submission = ('<a title="' . $this->t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
                 /*
                  * create a link to edit date validation
                  */
                 $param_edit = 'field|validation|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_validation = ( '<a title="' . t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_validation = ('<a title="' . $this->t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
                 /*
                  * create a link to edit date deadline
                  */
                 $param_edit = 'field|deadline|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_deadline = ( '<a title="' . t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_deadline = ('<a title="' . $this->t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
                 /*
                  * create a link to edit date start_date
                  */
                 $param_edit = 'field|start_date|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_start_date = ( '<a title="' . t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_start_date = ('<a title="' . $this->t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
                 /*
                  * create a link to edit date completion
                  */
                 $param_edit = 'field|completion|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_completion = ( '<a title="' . t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_completion = ('<a title="' . $this->t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit perso_1
                  */
                 $param_edit = 'field|perso_1|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_perso_1 = ( '<a title="' . t('edit in charge') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_perso_1 = ('<a title="' . $this->t('edit in charge') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit perso_2
                  */
                 $param_edit = 'field|perso_1|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_perso_2 = ( '<a title="' . t('edit in charge') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_perso_2 = ('<a title="' . $this->t('edit in charge') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit perso_3
                  */
                 $param_edit = 'field|perso_3|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_perso_3 = ( '<a title="' . t('edit in charge') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_perso_3 = ('<a title="' . $this->t('edit in charge') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
 
                 /*
@@ -633,21 +618,21 @@ class ProjectController extends ControllerBase {
                  */
                 $param_edit = 'field|repo_1|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_repo_1 = ( '<a title="' . t('edit reponsibility') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_repo_1 = ('<a title="' . $this->t('edit reponsibility') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit repo_2
                  */
                 $param_edit = 'field|repo_2|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_repo_2 = ( '<a title="' . t('edit reponsibility') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_repo_2 = ('<a title="' . $this->t('edit reponsibility') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit repo_3
                  */
                 $param_edit = 'field|repo_3|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_repo_3 = ( '<a title="' . t('edit reponsibility') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_repo_3 = ('<a title="' . $this->t('edit reponsibility') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
 
                 /*
@@ -655,35 +640,35 @@ class ProjectController extends ControllerBase {
                  */
                 $param_edit = 'field|task_1|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_task_1 = ( '<a title="' . t('edit task') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_task_1 = ('<a title="' . $this->t('edit task') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit task_2
                  */
                 $param_edit = 'field|task_2|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_task_2 = ( '<a title="' . t('edit task') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_task_2 = ('<a title="' . $this->t('edit task') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit task_3
                  */
                 $param_edit = 'field|task_3|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_task_3 = ( '<a title="' . t('edit task') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_task_3 = ('<a title="' . $this->t('edit task') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit project_description
                  */
                 $param_edit = 'field|project_description|' . $id . '|50%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_project_description = ( '<a title="' . t('edit description') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_project_description = ('<a title="' . $this->t('edit description') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit project_comment
                  */
                 $param_edit = 'field|project_comment|' . $id . '|50%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['description'][0]->edit_project_comment = ( '<a title="' . t('edit comment') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['description'][0]->edit_project_comment = ('<a title="' . $this->t('edit comment') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
             } //if section_1
 
             /*
@@ -703,14 +688,14 @@ class ProjectController extends ControllerBase {
                 /*
                  * create a link to upload a file
                  */
-//the param to pass to modal follow the structure action|pcode|query|type
-// action is used by modal to select form, other params are passed to the form
+                //the param to pass to modal follow the structure action|pcode|query|type
+                // action is used by modal to select form, other params are passed to the form
                 $data['communication'][0] = (object) array();
                 $param_upload = 'upload|' . $pcode . '|doc|com|';
-                
+
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_upload])->toString();
                 $data['communication'][0]->uploadUrl = $link;
-                $data['communication'][0]->upload = t('<a href="@url" class="@c" >upload new file</a>', array('@url' => $link, '@c' => 'use-ajax red '));
+                $data['communication'][0]->upload = $this->t('<a href="@url" class="@c" >upload new file</a>', array('@url' => $link, '@c' => 'use-ajax red '));
             }
 
             /*
@@ -745,42 +730,42 @@ class ProjectController extends ControllerBase {
                  */
                 $param_edit = 'field|first_ship|' . $id . '|25%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['logistic'][0]->edit_first_ship = ( '<a title="' . t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['logistic'][0]->edit_first_ship = ('<a title="' . $this->t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit second_ship
                  */
                 $param_edit = 'field|second_ship|' . $id . '|25%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['logistic'][0]->edit_second_ship = ( '<a title="' . t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['logistic'][0]->edit_second_ship = ('<a title="' . $this->t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit third_ship
                  */
                 $param_edit = 'field|third_ship|' . $id . '|25%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['logistic'][0]->edit_third_ship = ( '<a title="' . t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['logistic'][0]->edit_third_ship = ('<a title="' . $this->t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit four_ship
                  */
                 $param_edit = 'field|four_ship|' . $id . '|25%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['logistic'][0]->edit_four_ship = ( '<a title="' . t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['logistic'][0]->edit_four_ship = ('<a title="' . $this->t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit status
                  */
                 $param_edit = 'field|ship_status|' . $id . '|25%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['logistic'][0]->edit_ship_status = ( '<a title="' . t('edit status') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['logistic'][0]->edit_ship_status = ('<a title="' . $this->t('edit status') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit last_delivery
                  */
                 $param_edit = 'field|last_delivery|' . $id . '|25%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['logistic'][0]->edit_last_delivery = ( '<a title="' . t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['logistic'][0]->edit_last_delivery = ('<a title="' . $this->t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
 
                 if ($this->moduleHandler->moduleExists('ek_logistics')) {
@@ -792,12 +777,11 @@ class ProjectController extends ControllerBase {
 
                     $delivery_list = array();
                     $i = 0;
-                    $delivery_status = array('0' => t('open'), '1' => t('printed'), '2' => t('invoiced'), '3' => t('posted'));
+                    $delivery_status = array('0' => $this->t('open'), '1' => $this->t('printed'), '2' => $this->t('invoiced'), '3' => $this->t('posted'));
 
                     while ($delivery = $deliveries->fetchObject()) {
-
                         $href = Url::fromRoute('ek_logistics_receiving_print_share', ['id' => $delivery->id])->toString();
-                        $link = ( '<a title="' . t('pdf') . '" href="' . $href . '" class="blue" >' . t('print') . '</a>');
+                        $link = ('<a title="' . $this->t('pdf') . '" href="' . $href . '" class="blue" >' . $this->t('print') . '</a>');
                         $client = Database::getConnection('external_db', 'external_db')
                                         ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $delivery->supplier))->fetchField();
 
@@ -820,12 +804,11 @@ class ProjectController extends ControllerBase {
 
                     $delivery_list = array();
                     $i = 0;
-                    $delivery_status = array('0' => t('open'), '1' => t('printed'), '2' => t('invoiced'), '3' => t('posted'));
+                    $delivery_status = array('0' => $this->t('open'), '1' => $this->t('printed'), '2' => $this->t('invoiced'), '3' => $this->t('posted'));
 
                     while ($delivery = $deliveries->fetchObject()) {
-
                         $href = Url::fromRoute('ek_logistics_delivery_print_share', ['id' => $delivery->id])->toString();
-                        $link = ( '<a title="' . t('pdf') . '" href="' . $href . '" class="blue" >' . t('print') . '</a>');
+                        $link = ('<a title="' . $this->t('pdf') . '" href="' . $href . '" class="blue" >' . $this->t('print') . '</a>');
                         $client = Database::getConnection('external_db', 'external_db')
                                         ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $delivery->client))->fetchField();
 
@@ -847,8 +830,6 @@ class ProjectController extends ControllerBase {
              * finance table
              */
             if (in_array(5, $sections)) {
-
-
                 $query = "SELECT * from {ek_project_finance} WHERE pcode=:p";
                 $data['finance'] = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':p' => $pcode))
@@ -872,12 +853,12 @@ class ProjectController extends ControllerBase {
                     $pos = Database::getConnection('external_db', 'external_db')->query($query, array(':p' => $pcode));
                     $po_list = array();
                     $i = 0;
-                    $po_status = array(t('unpaid'), t('paid'), t('partially paid'));
+                    $po_status = array(t('unpaid'), $this->t('paid'), $this->t('partially paid'));
                     $sum_a = 0;
                     $sum_abc = 0;
                     while ($p = $pos->fetchObject()) {
                         $href = Url::fromRoute('ek_sales.purchases.print_html', ['id' => $p->id])->toString();
-                        $link = '<a title="' . t('view') . '" href="' . $href . '" class="blue" target="_blank">' . t('view') . '</a>';
+                        $link = '<a title="' . $this->t('view') . '" href="' . $href . '" class="blue" target="_blank">' . $this->t('view') . '</a>';
                         $sum_a = $sum_a + $p->amount;
                         $sum_abc = $sum_abc + $p->amountbc;
                         $more = Url::fromRoute('ek_sales.modal_more', ['param' => 'purchase|' . $p->id])->toString();
@@ -894,7 +875,7 @@ class ProjectController extends ControllerBase {
                             } else {
                                 $due = 'red';
                             }
-                            $duetitle = t('past due') . ' ' . -1*$long . ' ' . t('day(s)');
+                            $duetitle = $this->t('past due') . ' ' . -1 * $long . ' ' . $this->t('day(s)');
                         }
                         $po_list[$i] = array(
                             'serial' => $p->serial,
@@ -924,13 +905,12 @@ class ProjectController extends ControllerBase {
                     $quotes = Database::getConnection('external_db', 'external_db')->query($query, array(':p' => $pcode));
                     $quote_list = array();
                     $i = 0;
-                    $quote_status = array(t('open'), t('printed'), t('invoiced'));
+                    $quote_status = array(t('open'), $this->t('printed'), $this->t('invoiced'));
 
 
                     while ($q = $quotes->fetchObject()) {
-
                         $href = Url::fromRoute('ek_sales.quotations.print_share', ['id' => $q->id])->toString();
-                        $link = ( '<a title="' . t('pdf') . '" href="' . $href . '" class="blue" >' . t('print') . '</a>');
+                        $link = ('<a title="' . $this->t('pdf') . '" href="' . $href . '" class="blue" >' . $this->t('print') . '</a>');
 
                         $quote_list[$i] = array(
                             'serial' => $q->serial,
@@ -956,15 +936,13 @@ class ProjectController extends ControllerBase {
                             ->query($query, array(':p' => $pcode));
                     $invoice_list = array();
                     $i = 0;
-                    $invoice_status = array(t('unpaid'), t('paid'), t('partially paid'));
+                    $invoice_status = array(t('unpaid'), $this->t('paid'), $this->t('partially paid'));
                     $sum_a = 0;
                     $sum_abc = 0;
 
                     while ($in = $invoices->fetchObject()) {
-                        
-                        
                         $href = Url::fromRoute('ek_sales.invoices.print_html', ['id' => $in->id])->toString();
-                        $link = '<a title="' . t('view') . '" href="' . $href . '" class="blue" target="_blank">' . t('view') . '</a>';
+                        $link = '<a title="' . $this->t('view') . '" href="' . $href . '" class="blue" target="_blank">' . $this->t('view') . '</a>';
                         $sum_a = $sum_a + $in->amount;
                         $sum_abc = $sum_abc + $in->amountbase;
                         $more = Url::fromRoute('ek_sales.modal_more', ['param' => 'invoice|' . $in->id])->toString();
@@ -981,7 +959,7 @@ class ProjectController extends ControllerBase {
                             } else {
                                 $due = 'red';
                             }
-                            $duetitle = t('past due') . ' ' . -1*$long . ' ' . t('day(s)');
+                            $duetitle = $this->t('past due') . ' ' . -1 * $long . ' ' . $this->t('day(s)');
                         }
                         $invoice_list[$i] = array(
                             'serial' => $in->serial,
@@ -1031,15 +1009,14 @@ class ProjectController extends ControllerBase {
 
                     $memo_list = array();
                     $i = 0;
-                    $memo_status = array('0' => t('unpaid'), '1' => t('partially paid'), '2' => t('paid'));
+                    $memo_status = array('0' => $this->t('unpaid'), '1' => $this->t('partially paid'), '2' => $this->t('paid'));
                     $stc = array('0' => 'red', '1' => 'orange', '2' => 'green');
                     $sum_a = 0;
                     $sum_abc = 0;
 
                     while ($memo = $memos->fetchObject()) {
-
                         $href = Url::fromRoute('ek_finance_manage_print_html', ['id' => $memo->id])->toString();
-                        $link = ( '<a title="' . t('pdf') . '" href="' . $href . '" class="blue" >' . t('print') . '</a>');
+                        $link = ('<a title="' . $this->t('pdf') . '" href="' . $href . '" class="blue" >' . $this->t('print') . '</a>');
                         $sum_a = $sum_a + $memo->value;
                         $sum_abc = $sum_abc + $memo->value_base;
 
@@ -1058,7 +1035,7 @@ class ProjectController extends ControllerBase {
                     }
                     if ($i > 0) {
                         $data['finance'][0]->memo = $memo_list;
-                        $data['finance'][0]->memo_sum = array('sum' =>  number_format($sum_a, 2),
+                        $data['finance'][0]->memo_sum = array('sum' => number_format($sum_a, 2),
                             'sum_bc' => $baseCurrency . ' ' . number_format($sum_abc, 2));
                     }
                 }
@@ -1069,96 +1046,96 @@ class ProjectController extends ControllerBase {
                  */
                 $param_edit = 'field|currency|' . $id . '|20%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_currency = ( '<a title="' . t('edit currency') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_currency = ('<a title="' . $this->t('edit currency') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit proposed value
                  */
                 $param_edit = 'field|tender_offer|' . $id . '|20%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_tender_offer = ( '<a title="' . t('edit offer value') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_tender_offer = ('<a title="' . $this->t('edit offer value') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit agreed value
                  */
                 $param_edit = 'field|project_amount|' . $id . '|20%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_project_amount = ( '<a title="' . t('edit project value') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_project_amount = ('<a title="' . $this->t('edit project value') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit payment terms
                  */
                 $param_edit = 'field|payment_terms|' . $id . '|30%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_payment_terms = ( '<a title="' . t('edit payment terms') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_payment_terms = ('<a title="' . $this->t('edit payment terms') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
                 /*
                  * create a link to edit discount
                  */
                 $param_edit = 'field|discount_offer|' . $id . '|30%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_discount_offer = ( '<a title="' . t('edit discount') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_discount_offer = ('<a title="' . $this->t('edit discount') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
                 /*
                  * create a link to edit offer validity
                  */
                 $param_edit = 'field|offer_validity|' . $id . '|30%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_offer_validity = ( '<a title="' . t('edit validity') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_offer_validity = ('<a title="' . $this->t('edit validity') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit offer delivery
                  */
                 $param_edit = 'field|offer_delivery|' . $id . '|30%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_offer_delivery = ( '<a title="' . t('edit deadline') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_offer_delivery = ('<a title="' . $this->t('edit deadline') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit incoterm
                  */
                 $param_edit = 'field|incoterm|' . $id . '|30%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_incoterm = ( '<a title="' . t('edit incoterm') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_incoterm = ('<a title="' . $this->t('edit incoterm') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit purchase value
                  */
                 $param_edit = 'field|purchase_value|' . $id . '|30%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_purchase_value = ( '<a title="' . t('edit purchase value') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_purchase_value = ('<a title="' . $this->t('edit purchase value') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit lc status
                  */
                 $param_edit = 'field|lc_status|' . $id . '|30%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_lc_status = ( '<a title="' . t('edit LC status') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_lc_status = ('<a title="' . $this->t('edit LC status') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit lc revision
                  */
                 $param_edit = 'field|lc_revision|' . $id . '|30%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_lc_revision = ( '<a title="' . t('edit LC revision/ref.') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_lc_revision = ('<a title="' . $this->t('edit LC revision/ref.') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit lc expiry
                  */
                 $param_edit = 'field|lc_expiry|' . $id . '|30%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_lc_expiry = ( '<a title="' . t('edit LC expiry.') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_lc_expiry = ('<a title="' . $this->t('edit LC expiry.') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit payment
                  */
                 $param_edit = 'field|payment|' . $id . '|30%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_payment = ( '<a title="' . t('edit payment.') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_payment = ('<a title="' . $this->t('edit payment.') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
                  * create a link to edit comments
                  */
                 $param_edit = 'field|comment|' . $id . '|50%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['finance'][0]->edit_comment = ( '<a title="' . t('edit comment.') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['finance'][0]->edit_comment = ('<a title="' . $this->t('edit comment.') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
 
                 /*
@@ -1169,24 +1146,22 @@ class ProjectController extends ControllerBase {
                 $param_upload = 'upload|' . $pcode . '|doc|fi|';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_upload])->toString();
                 $data['finance'][0]->uploadUrl = $link;
-                $data['finance'][0]->upload = t('<a href="@url" class="@c" >upload new file</a>', array('@url' => $link, '@c' => 'use-ajax red '));
+                $data['finance'][0]->upload = $this->t('<a href="@url" class="@c" >upload new file</a>', array('@url' => $link, '@c' => 'use-ajax red '));
             } //if section_5
-
             // Let other modules add data to the page.
-            if($invoke = $this->moduleHandler()->invokeAll('project_view', [$data], $pcode)){
+            if ($invoke = $this->moduleHandler()->invokeAll('project_view', [$data], $pcode)) {
                 $data = $invoke;
             }
-            
+
             $data['#theme'] = 1;
 
             return array(
                 '#theme' => 'ek_projects_view',
                 '#items' => $data,
-                '#title' => $code_serial . ' | ' .t('Reference') . ': ' . $pcode,
+                '#title' => $code_serial . ' | ' . t('Reference') . ': ' . $pcode,
                 '#attached' => array(
                     'drupalSettings' => array('ek_projects' => $settings),
                     'library' => array('ek_projects/ek_projects_view', 'ek_admin/ek_admin_css'),
-                    
                 ),
                 '#cache' => [
                     'tags' => ['project_page_view'],
@@ -1195,37 +1170,36 @@ class ProjectController extends ControllerBase {
             );
         }
     }
-           
+
     /**
      * Return data called from periodical updater
      *
      */
     public function periodicalupdater(Request $request) {
-
         $id = $request->query->get('id');
-        $qfield = $request->query->get('query'); 
-        // filter user to avoid direct access to data by entering the link in address bar 
+        $qfield = $request->query->get('query');
+        // filter user to avoid direct access to data by entering the link in address bar
         $access = ProjectData::validate_access($id);
         $sections = ProjectData::validate_section_access(\Drupal::currentUser()->id());
 
         if ($access) {
-        
-        //doc query
-        $querydoc = Database::getConnection('external_db', 'external_db')
+
+            //doc query
+            $querydoc = Database::getConnection('external_db', 'external_db')
                     ->select('ek_project_documents', 'd');
-            $querydoc->fields('d', ['id','fid','filename', 'sub_folder', 'uri', 'date', 'comment', 'size']);
+            $querydoc->fields('d', ['id', 'fid', 'filename', 'sub_folder', 'uri', 'date', 'comment', 'size']);
             $querydoc->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
             $querydoc->fields('p', ['pcode', 'owner']);
             $querydoc->condition('p.id', $id);
             $querydoc->orderBy('d.date', 'ASC');
-            
-        
+
+
 
             switch ($qfield) {
 
-                case 'fields' :
+                case 'fields':
                     $fields = array();
-                    $prio = array(0 => '', 1 => t('low'), 2 => t('medium'), 3 => t('high'));
+                    $prio = array(0 => '', 1 => $this->t('low'), 2 => $this->t('medium'), 3 => $this->t('high'));
                     $query = "SELECT status,priority from {ek_project} WHERE id=:id";
                     $data = Database::getConnection('external_db', 'external_db')
                             ->query($query, array(':id' => $id))
@@ -1236,15 +1210,14 @@ class ProjectController extends ControllerBase {
                     $fields['priority'] = $prio[$data->priority];
 
                     if (in_array(1, $sections)) {
-                        
                         $queryfield = Database::getConnection('external_db', 'external_db')
-                                    ->select('ek_project_description', 'd');
+                                ->select('ek_project_description', 'd');
                         $queryfield->fields('d');
                         $queryfield->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
                         $queryfield->fields('p');
                         $queryfield->condition('p.id', $id);
                         $data = $queryfield->execute()->fetchObject();
-                        
+
                         if ($data) {
                             $fields['submission'] = $data->submission;
                             $fields['deadline'] = $data->deadline;
@@ -1262,17 +1235,17 @@ class ProjectController extends ControllerBase {
                             $fields['task_1'] = $data->task_1;
                             $fields['task_2'] = $data->task_2;
                             $fields['task_3'] = $data->task_3;
-                            if($data->supplier_offer != ''){
-                                $array = explode(',',$data->supplier_offer);
+                            if ($data->supplier_offer != '') {
+                                $array = explode(',', $data->supplier_offer);
                                 $query = Database::getConnection('external_db', 'external_db')
-                                    ->select('ek_address_book', 'ab');
-                                $query->fields('ab',['id', 'name']);
-                                $query->condition('id',$array , 'IN');
+                                        ->select('ek_address_book', 'ab');
+                                $query->fields('ab', ['id', 'name']);
+                                $query->condition('id', $array, 'IN');
                                 $suppliers = $query->execute();
-                                
+
                                 $fields['suppliers'] = "<ul>";
-                                WHILE($s = $suppliers->fetchObject()){ 
-                                    $fields['suppliers'] .= '<li>'.\Drupal\ek_address_book\AddressBookData::geturl($s->id) . '</li>';
+                                while ($s = $suppliers->fetchObject()) {
+                                    $fields['suppliers'] .= '<li>' . \Drupal\ek_address_book\AddressBookData::geturl($s->id) . '</li>';
                                 }
                                 $fields['suppliers'] .= "</ul>";
                             }
@@ -1280,46 +1253,44 @@ class ProjectController extends ControllerBase {
                     }
 
                     if (in_array(5, $sections)) {
-                        
                         $queryfield = Database::getConnection('external_db', 'external_db')
-                                    ->select('ek_project_finance', 'd');
+                                ->select('ek_project_finance', 'd');
                         $queryfield->fields('d');
                         $queryfield->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
                         $queryfield->fields('p');
                         $queryfield->condition('p.id', $id);
-                        
+
                         $data = $queryfield->execute()->fetchObject();
                         if ($data) {
                             $fields['payment_terms'] = $data->payment_terms;
-                            $fields['purchase_value'] = is_numeric($v = $data->purchase_value) ? number_format($v,2) : $v;
-                            $fields['discount_offer'] = is_numeric($v = $data->discount_offer) ? number_format($v,2) : $v;
+                            $fields['purchase_value'] = is_numeric($v = $data->purchase_value) ? number_format($v, 2) : $v;
+                            $fields['discount_offer'] = is_numeric($v = $data->discount_offer) ? number_format($v, 2) : $v;
                             $fields['paymentdate_i'] = $data->paymentdate_i;
                             $fields['paymentdate_d'] = $data->paymentdate_d;
-                            $fields['project_amount'] = is_numeric($v = $data->project_amount) ? number_format($v,2) : $v;
+                            $fields['project_amount'] = is_numeric($v = $data->project_amount) ? number_format($v, 2) : $v;
                             $fields['lc_status'] = $data->lc_status;
                             $fields['lc_revision'] = $data->lc_revision;
                             $fields['lc_expiry'] = $data->lc_expiry;
-                            $fields['tender_offer'] = is_numeric($v = $data->tender_offer) ? number_format($v,2) : $v;
-                            $fields['down_payment'] = is_numeric($v = $data->down_payment) ? number_format($v,2) : $v;
+                            $fields['tender_offer'] = is_numeric($v = $data->tender_offer) ? number_format($v, 2) : $v;
+                            $fields['down_payment'] = is_numeric($v = $data->down_payment) ? number_format($v, 2) : $v;
                             $fields['offer_delivery'] = $data->offer_delivery;
                             $fields['offer_validity'] = $data->offer_validity;
-                            $fields['invoice'] = is_numeric($v = $data->invoice) ? number_format($v,2) : $v;
+                            $fields['invoice'] = is_numeric($v = $data->invoice) ? number_format($v, 2) : $v;
                             $fields['incoterm'] = $data->incoterm;
                             $fields['currency'] = $data->currency;
-                            $fields['payment'] = is_numeric($v = $data->payment) ? number_format($v,2) : $v;
+                            $fields['payment'] = is_numeric($v = $data->payment) ? number_format($v, 2) : $v;
                             $fields['comment'] = nl2br($data->comment);
                         }
                     }
                     if (in_array(4, $sections)) {
-                        
                         $queryfield = Database::getConnection('external_db', 'external_db')
-                                    ->select('ek_project_shipment', 'd');
+                                ->select('ek_project_shipment', 'd');
                         $queryfield->fields('d');
                         $queryfield->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
                         $queryfield->fields('p');
                         $queryfield->condition('p.id', $id);
                         $data = $queryfield->execute()->fetchObject();
-                        
+
                         if ($data) {
                             $fields['first_ship'] = $data->first_ship;
                             $fields['second_ship'] = $data->second_ship;
@@ -1336,19 +1307,19 @@ class ProjectController extends ControllerBase {
 
 
 
-                case 'com_docs' :
+                case 'com_docs':
                     if (in_array(3, $sections)) {
                         $querydoc->condition('folder', 'com');
                     }
                     break;
 
-                case 'fi_docs' :
+                case 'fi_docs':
                     if (in_array(5, $sections)) {
                         $querydoc->condition('folder', 'fi');
                     }
                     break;
 
-                case 'ap_docs' :
+                case 'ap_docs':
                     if (in_array(2, $sections)) {
                         $querydoc->condition('folder', 'ap');
                     }
@@ -1360,32 +1331,32 @@ class ProjectController extends ControllerBase {
             $t = '';
             $i = 0;
             $items = [];
-            
+
             if (isset($list)) {
                 while ($l = $list->fetchObject()) {
                     $i++;
-                    
+
                     /* default values */
                     $items[$l->sub_folder][$i]['pcode'] = $l->pcode; //used in hooks to extend data
                     $items[$l->sub_folder][$i]['id'] = $l->id; //db id
                     $items[$l->sub_folder][$i]['fid'] = 1; //default file status on
                     $items[$l->sub_folder][$i]['delete'] = 1; //default delete action is on
                     $items[$l->sub_folder][$i]['email'] = 1; //default email action is on
-                    $items[$l->sub_folder][$i]['extranet'] = 0;//default extranet action is of
-                    $items[$l->sub_folder][$i]['icon'] = 'file';//default icon 
+                    $items[$l->sub_folder][$i]['extranet'] = 0; //default extranet action is of
+                    $items[$l->sub_folder][$i]['icon'] = 'file'; //default icon
                     $items[$l->sub_folder][$i]['file_url'] = ''; //default
                     $items[$l->sub_folder][$i]['access_url'] = 0; //default access management if off
-                    
+
                     $items[$l->sub_folder][$i]['uri'] = $l->uri;
-                    
+
                     $extension = explode(".", $l->filename);
                     $extension = array_pop($extension);
-                    
+
                     $items[$l->sub_folder][$i]['icon_path'] = drupal_get_path('module', 'ek_projects') . '/art/icons/';
-                    
+
                     if (file_exists(drupal_get_path('module', 'ek_projects') . '/art/icons/' . $extension . ".png")) {
                         $items[$l->sub_folder][$i]['icon'] = strtolower($extension);
-                    } 
+                    }
 
                     //filename formating
                     if (strlen($l->filename) > 30) {
@@ -1393,23 +1364,22 @@ class ProjectController extends ControllerBase {
                     } else {
                         $items[$l->sub_folder][$i]['doc_name'] = $l->filename;
                     }
-                    
-                    
+
+
                     if ($l->fid == '0') { //file was deleted
                         $items[$l->sub_folder][$i]['fid'] = 0;
                         $items[$l->sub_folder][$i]['delete'] = 0;
                         $items[$l->sub_folder][$i]['email'] = 0;
                         $items[$l->sub_folder][$i]['extranet'] = 0;
                         $items[$l->sub_folder][$i]['comment'] = $l->comment . " " . date('Y-m-d', $l->date);
-                        
                     } else {
-                        if (!file_exists($l->uri)) { 
+                        if (!file_exists($l->uri)) {
                             //file not on server (archived?) TODO ERROR file path not detected
                             $items[$l->sub_folder][$i]['fid'] = 2;
                             $items[$l->sub_folder][$i]['delete'] = 0;
                             $items[$l->sub_folder][$i]['email'] = 0;
                             $items[$l->sub_folder][$i]['extranet'] = 0;
-                            $items[$l->sub_folder][$i]['comment'] = t('Document not available. Please contact administrator');
+                            $items[$l->sub_folder][$i]['comment'] = $this->t('Document not available. Please contact administrator');
                         } else {
                             //file exist
                             if (ProjectData::validate_file_access($l->id)) {
@@ -1425,13 +1395,12 @@ class ProjectController extends ControllerBase {
                                 $items[$l->sub_folder][$i]['comment'] = ['#markup' => $l->comment];
                                 $items[$l->sub_folder][$i]['date'] = date('Y-m-d', $l->date);
                                 $items[$l->sub_folder][$i]['size'] = round($l->size / 1000, 0) . " Kb";
-                                
-                            } else {  
+                            } else {
                                 //file exist but access not authorized
                                 $items[$l->sub_folder][$i]['delete'] = 0;
                                 $items[$l->sub_folder][$i]['email'] = 0;
                                 $items[$l->sub_folder][$i]['fid'] = 0;
-                                $items[$l->sub_folder][$i]['comment'] = t('Restricted access');
+                                $items[$l->sub_folder][$i]['comment'] = $this->t('Restricted access');
                             }
                         }
                     }
@@ -1439,35 +1408,31 @@ class ProjectController extends ControllerBase {
                     //disable because not using file_managed table (TO implement in project table?)
                     //$owner = ProjectData::file_owner($l->id);
                     // use project owner instead
-           
-                    if (($l->owner == \Drupal::currentUser()->id() 
-                            || \Drupal::currentUser()->hasPermission('admin_projects')) && $l->fid != '0') {
+
+                    if (($l->owner == \Drupal::currentUser()->id() || \Drupal::currentUser()->hasPermission('admin_projects')) && $l->fid != '0') {
                         $param_access = 'access|' . $l->id . '|project_doc';
                         $link = Url::fromRoute('ek_projects_modal', ['param' => $param_access])->toString();
                         $items[$l->sub_folder][$i]['access_url'] = $link;
-                    } 
-
-
+                    }
                 }
-                
+
                 // Let other modules add data to the list.
-                if($invoke = $this->moduleHandler()->invokeAll('project_doc_view', [$items])){
+                if ($invoke = $this->moduleHandler()->invokeAll('project_doc_view', [$items])) {
                     $items = $invoke;
                 }
-                
+
                 $render = ['#theme' => 'ek_projects_doc_view', '#items' => $items];
-                $data =  \Drupal::service('renderer')->render($render);               
+                $data = \Drupal::service('renderer')->render($render);
             }
             return new JsonResponse(array('data' => $data));
-            
         } else {
             // no access
-            return new JsonResponse(array('data' => NULL));
+            return new JsonResponse(array('data' => null));
         }
     }
 
     /**
-     * Return project edit 
+     * Return project edit
      *
      */
     public function edit(Request $request, $id) {
@@ -1475,16 +1440,15 @@ class ProjectController extends ControllerBase {
     }
 
     /**
-     * Return project tracker data 
+     * Return project tracker data
      *
      */
     public function tracker(Request $request) {
-
         $id = $request->query->get('id');
-        $first = NULL;
+        $first = null;
         $today = time('U') - 86400;
         if (isset($id)) {
-            
+
             //$query = "SELECT uid,name from {users_field_data}";
             //$users = db_query($query)->fetchAllKeyed();
             $query = Database::getConnection()->select('users_field_data', 'u');
@@ -1497,36 +1461,36 @@ class ProjectController extends ControllerBase {
                     . 'WHERE id =:i ORDER by stamp DESC';
             $a = array(':i' => $id);
             $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
-            $t1 = "<div><b>--- [" . t('Today') . "] ---</b></div>" ;
-            $t2 = "<div><b>--- [" . t('Earlier') . "] ---</b></div>" ;
+            $t1 = "<div><b>--- [" . $this->t('Today') . "] ---</b></div>";
+            $t2 = "<div><b>--- [" . $this->t('Earlier') . "] ---</b></div>";
             $first = '';
             $i = 0;
 
             while ($d = $data->fetchObject()) {
-                if($d->uid != $uid) {
-                    isset($users[$d->uid]) ? $name = $users[$d->uid] : $name = t('Unknown');
+                if ($d->uid != $uid) {
+                    isset($users[$d->uid]) ? $name = $users[$d->uid] : $name = $this->t('Unknown');
                 } else {
-                    $name = t('You');
+                    $name = $this->t('You');
                 }
-                
+
                 $on = date('l jS \of F Y h:i A', $d->stamp);
                 //$t.= '<li>' . $d->action . ' <span title="' . $on . '">(' . $name . ')</span></li>';
 
                 if ($i == 0) {
                     $first = str_replace('edit', '', $d->action);
                     $first = str_replace(' ', '_', trim($first));
-                } 
-                
-                if($d->stamp >= $today){
-                    $t1.= '<li>' . $d->action . ' <span title="' . $on . '">(' . $name . ')</span></li>';
+                }
+
+                if ($d->stamp >= $today) {
+                    $t1 .= '<li>' . $d->action . ' <span title="' . $on . '">(' . $name . ')</span></li>';
                 } else {
-                    $t2.= '<li>' . $d->action . ' <span title="' . $on . '">(' . $name . ')</span></li>';
+                    $t2 .= '<li>' . $d->action . ' <span title="' . $on . '">(' . $name . ')</span></li>';
                 }
                 $i++;
             }
         }
 
-        return new JsonResponse(array('data' => $t1.$t2, 'field' => $first));
+        return new JsonResponse(array('data' => $t1 . $t2, 'field' => $first));
     }
 
     /**
@@ -1535,21 +1499,20 @@ class ProjectController extends ControllerBase {
      *
      */
     public function DragDrop(Request $request) {
-
         $from = explode("-", $request->get('from'));
-        
-        if($request->get('move') == 'folder') {
 
-            switch($request->get('to')) {
-                case 's1' :
-                case 'ps1' :
-                    $folder = 'ap';            
-                case 's3' :
-                case 'ps3' :
+        if ($request->get('move') == 'folder') {
+            switch ($request->get('to')) {
+                case 's1':
+                case 'ps1':
+                    $folder = 'ap';
+                // no break
+                case 's3':
+                case 'ps3':
                     $folder = 'com';
                     break;
-                case 's5' :
-                case 'ps5' :
+                case 's5':
+                case 'ps5':
                     $folder = 'fi';
                     break;
             }
@@ -1559,42 +1522,40 @@ class ProjectController extends ControllerBase {
                     ->condition('id', $from[1])
                     ->fields($fields)
                     ->execute();
-            if($move){
+            if ($move) {
                 $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_project_documents', 'd');        
+                        ->select('ek_project_documents', 'd');
 
                 $data = $query
-                      ->fields('d', array('pcode', 'filename'))
-                      ->condition('d.id', $from[1] , '=')
-                      ->execute()
-                      ->fetchObject();
+                        ->fields('d', array('pcode', 'filename'))
+                        ->condition('d.id', $from[1], '=')
+                        ->execute()
+                        ->fetchObject();
                 $fields = array(
-                            'pcode' => $data->pcode,
-                            'uid' => \Drupal::currentUser()->id(),
-                            'stamp' => time(),
-                            'action' => 'move' . ' ' . $data->filename
-                    );
-                    Database::getConnection('external_db', 'external_db')
-                            ->insert('ek_project_tracker')
-                            ->fields($fields)->execute();
+                    'pcode' => $data->pcode,
+                    'uid' => \Drupal::currentUser()->id(),
+                    'stamp' => time(),
+                    'action' => 'move' . ' ' . $data->filename
+                );
+                Database::getConnection('external_db', 'external_db')
+                        ->insert('ek_project_tracker')
+                        ->fields($fields)->execute();
             }
         }
-        
-        if($request->get('move') == 'subfolder') {
+
+        if ($request->get('move') == 'subfolder') {
             $fields = array('sub_folder' => $request->get('to'));
             $move = Database::getConnection('external_db', 'external_db')
                     ->update('ek_project_documents')
                     ->condition('id', $from[1])
                     ->fields($fields)
                     ->execute();
-            
         }
         return new Response('', 204);
     }
-    
-    
+
     /**
-     * delete a file from project 
+     * delete a file from project
      * Return ajax delete confirmation alert
      * @param
      *  id: file id
@@ -1603,14 +1564,14 @@ class ProjectController extends ControllerBase {
      *
      */
     public function deletefile($id) {
-       $query = 'SELECT filename FROM {ek_project_documents} WHERE id=:id';
+        $query = 'SELECT filename FROM {ek_project_documents} WHERE id=:id';
         $file = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $id))
                 ->fetchField();
         $content = array('content' =>
             array('#markup' =>
                 "<p><a href='delete_file_confirmed/" . $id . "' class='use-ajax'>"
-                . t('delete') . "</a> " . $file . "</p>")
+                . $this->t('delete') . "</a> " . $file . "</p>")
         );
 
         $response = new AjaxResponse();
@@ -1621,38 +1582,36 @@ class ProjectController extends ControllerBase {
         $response->addCommand(new OpenModalDialogCommand($title, $content));
 
 
-        return $response; 
+        return $response;
     }
-    
-     /**
-     * delete a file from project 
+
+    /**
+     * delete a file from project
      * Return ajax delete confirmation alert
      * @param
      *  id: file id
-     * @return 
+     * @return
      *  Json response true if file is deleted
-     */   
+     */
     public function deleteConfirmed($id) {
+        $response = new Response('', 204); //default return response
 
-        $response = new Response('', 204);//default return response
-        
         $query = "SELECT d.pcode,filename,uri,d.deny, p.id from {ek_project_documents} d "
                 . "LEFT JOIN {ek_project} p "
                 . "ON d.pcode = p.pcode WHERE d.id=:f";
-        
+
         $p = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':f' => $id))
                 ->fetchObject();
-        //control project access 
-        if(ProjectData::validate_access($p->id)) {
-            
+        //control project access
+        if (ProjectData::validate_access($p->id)) {
+
             //control deny access
-            if(!in_array(\Drupal::currentUser()->id(), explode(',', $p->deny))) {          
-            
+            if (!in_array(\Drupal::currentUser()->id(), explode(',', $p->deny))) {
                 $fields = array(
                     'fid' => 0,
                     'uri' => date('U'),
-                    'comment' => t('deleted by') . ' ' . \Drupal::currentUser()->getAccountName(),
+                    'comment' => $this->t('deleted by') . ' ' . \Drupal::currentUser()->getAccountName(),
                     'date' => time()
                 );
                 //delete from main data DB
@@ -1670,21 +1629,20 @@ class ProjectController extends ControllerBase {
                     $fid = $query->execute()->fetchField();
                     //$query = "SELECT fid FROM {file_managed} WHERE uri=:u";
                     //$file = db_query($query, [':u' => $p->uri])->fetchObject();
-                    if($fid) {
+                    if ($fid) {
                         $obj = \Drupal\file\Entity\File::load($fid);
                         $obj->setTemporary();
                         $obj->save();
                     }
-                    
                 }
-                
-                $this->moduleHandler()->invokeAll('project_doc_delete', [['pcode' => $p->pcode ,'id' => $id]]);
-                        
+
+                $this->moduleHandler()->invokeAll('project_doc_delete', [['pcode' => $p->pcode, 'id' => $id]]);
+
                 $log = $p->pcode . '|' . \Drupal::currentUser()->id() . '|delete|' . $p->filename;
                 \Drupal::logger('ek_projects')->notice($log);
                 $action = 'delete' . ' ' . $p->filename;
-                if(strlen($action) > 255) {
-                    $action = substr($action,0,250) . "..."; 
+                if (strlen($action) > 255) {
+                    $action = substr($action, 0, 250) . "...";
                 }
                 $fields = array(
                     'pcode' => $p->pcode,
@@ -1697,10 +1655,9 @@ class ProjectController extends ControllerBase {
 
                 $response = new AjaxResponse();
                 $response->addCommand(new CloseDialogCommand());
-                
-                }
             }
-            
+        }
+
         return $response;
     }
 
@@ -1708,14 +1665,14 @@ class ProjectController extends ControllerBase {
      * AJAX callback handler for Ajax Dialog Form.
      */
     public function modal($param) {
-        return $this->dialog(TRUE, $param);
+        return $this->dialog(true, $param);
     }
 
     /**
      * AJAX callback handler for AjaxTestDialogForm.
      */
     public function nonModal($param) {
-        return $this->dialog(FALSE, $param);
+        return $this->dialog(false, $param);
     }
 
     /**
@@ -1727,8 +1684,7 @@ class ProjectController extends ControllerBase {
      * @return \Drupal\Core\Ajax\AjaxResponse
      *   An ajax response object.
      */
-    protected function dialog($is_modal = FALSE, $param = NULL) {
-
+    protected function dialog($is_modal = false, $param = null) {
         $param = explode('|', $param);
         $content = [];
         switch ($param[0]) {
@@ -1742,11 +1698,12 @@ class ProjectController extends ControllerBase {
 
             case 'task':
                 $title = ucfirst($this->t($param[0]));
-                if ($param[2] == '')
+                if ($param[2] == '') {
                     $param[2] = 0;
+                }
                 $content['content'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\TaskProject', $param[1], $param[2]);
                 $options = array('width' => '40%',);
-                
+
                 break;
 
             case 'mail':
@@ -1754,7 +1711,7 @@ class ProjectController extends ControllerBase {
                 $data = array(
                     $param[1], //doc id
                     $param[2], //tb ref
-                    'open' => TRUE,
+                    'open' => true,
                 );
                 $data = serialize($data);
                 $content['content'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterMailDoc', $data);
@@ -1762,7 +1719,7 @@ class ProjectController extends ControllerBase {
 
                 break;
 
-            case 'access' :
+            case 'access':
                 $title = ucfirst($this->t($param[0]));
                 $id = $param[1];
                 $type = $param[2];
@@ -1770,13 +1727,13 @@ class ProjectController extends ControllerBase {
                 $options = array('width' => '25%',);
                 break;
 
-            case 'notification' :
+            case 'notification':
                 $title = ucfirst($this->t($param[0]));
                 $id = $param[1];
                 $content['content'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\Notification', $id);
                 $options = array('width' => '30%',);
                 break;
-            case 'field' :
+            case 'field':
                 $title = ucfirst($this->t($param[0]));
                 $id = $param[2];
                 $field = $param[1];
@@ -1784,21 +1741,21 @@ class ProjectController extends ControllerBase {
                 $content['content'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\ProjectFieldEdit', $id, $field);
                 $options = array('width' => $width, 'height' => '300');
                 break;
-            case 'extranet' :
+            case 'extranet':
                 $title = ucfirst($this->t($param[0]));
                 $id = $param[1];
                 $width = isset($param[2]) ? $param[2] : '50%';
                 $content['content'] = $this->formBuilder->getForm('Drupal\ek_extranet\Form\Edit', $id);
                 $options = array('width' => $width);
                 break;
-            case 'followers' :
+            case 'followers':
                 $title = ucfirst($this->t($param[0]));
                 $id = $param[1];
                 $width = isset($param[2]) ? $param[2] : '30%';
-                
+
                 $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_project', 'p');
-                $query->fields('p' , ['notify']);
+                        ->select('ek_project', 'p');
+                $query->fields('p', ['notify']);
                 $query->condition('id', $id, '=');
                 $data = $query->execute();
                 $notify = explode(',', $data->fetchField());
@@ -1808,22 +1765,22 @@ class ProjectController extends ControllerBase {
                 $query = Database::getConnection()->select('users_field_data', 'u');
                 $query->fields('u', ['uid', 'name']);
                 $users = $query->execute()->fetchAllKeyed();
-                foreach($notify as  $value) {
+                foreach ($notify as $value) {
                     if ($value == \Drupal::currentUser()->id()) {
-                        $list .= '<li>' . t('Me') . '</li>';
+                        $list .= '<li>' . $this->t('Me') . '</li>';
                     } else {
-                        $username = isset($users[$value]) && $users[$value] != ''  ? $users[$value] : t('Unknown') . ' ' . $value;
+                        $username = isset($users[$value]) && $users[$value] != '' ? $users[$value] : $this->t('Unknown') . ' ' . $value;
                         $list .= '<li>' . $username . '</li>';
                     }
                 }
                 $content['content'] = ['#markup' => '<ul>' . $list . '</ul>'];
                 $options = array('width' => $width);
-                $is_modal == TRUE;
+                $is_modal == true;
                 break;
         }
 
         $response = new AjaxResponse();
-        
+
         $content['cancel'] = array(
             '#type' => 'link',
             '#title' => 'Cancel',
@@ -1852,17 +1809,16 @@ class ProjectController extends ControllerBase {
      * @return array 1 = follow 0 = do not follow
      */
     public function edit_notify_me() {
-
         $query = "SELECT notify FROM {ek_project} WHERE id=:id";
         $notify = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $_POST['id']))->fetchField();
-        $action =  0;
-        if($notify == NULL){
+                        ->query($query, array(':id' => $_POST['id']))->fetchField();
+        $action = 0;
+        if ($notify == null) {
             $notify = \Drupal::currentUser()->id();
             $action = 1;
         } else {
             $notify = explode(',', $notify);
-            
+
             if (in_array(\Drupal::currentUser()->id(), $notify)) {
                 if (($key = array_search(\Drupal::currentUser()->id(), $notify)) !== false) {
                     unset($notify[$key]);
@@ -1873,7 +1829,7 @@ class ProjectController extends ControllerBase {
             }
             $notify = implode(',', $notify);
         }
-        
+
         $update = Database::getConnection('external_db', 'external_db')
                 ->update('ek_project')
                 ->fields(array('notify' => $notify))
@@ -1888,28 +1844,28 @@ class ProjectController extends ControllerBase {
 
     /**
      * Edit the archive field in project
-     * 
+     *
      */
     public function edit_archive($id) {
-
         $query = "SELECT archive FROM {ek_project} WHERE id=:id";
         $archive = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $id))->fetchField();
+                        ->query($query, array(':id' => $id))->fetchField();
 
         $status = ($archive == 0) ? 1 : 0;
-       
-        $update = Database::getConnection('external_db', 'external_db')
-                ->update('ek_project')
-                ->fields(array('archive' => $status))
-                ->condition('id', $id)->execute();
 
-        if ($update)
+        $update = Database::getConnection('external_db', 'external_db')
+                        ->update('ek_project')
+                        ->fields(array('archive' => $status))
+                        ->condition('id', $id)->execute();
+
+        if ($update) {
             $response = new AjaxResponse();
-            $a = ['0' => t('no'), '1' => t('yes')];
-            return $response->addCommand(new HtmlCommand('#arch'.$id , $a[$status]));
-            //return new JsonResponse(TRUE);
+        }
+        $a = ['0' => $this->t('no'), '1' => $this->t('yes')];
+        return $response->addCommand(new HtmlCommand('#arch' . $id, $a[$status]));
+        //return new JsonResponse(TRUE);
     }
-    
+
     /**
      * Return ajax search autocomplete data
      * used in forms
@@ -1917,47 +1873,45 @@ class ProjectController extends ControllerBase {
      * @param $status : 0(all) | 1(open) | 2(awarded) | 3(completed) | 4(closed)
      * @return array json format
      */
-    public function lookupProject(Request $request, $level = NULL, $status = 0) {
-
+    public function lookupProject(Request $request, $level = null, $status = 0) {
         $text = '%' . $request->query->get('q') . '%';
-        
-        if($level == "main") {
+
+        if ($level == "main") {
             $level = 'Main project';
-        } elseif($level == "sub"){
+        } elseif ($level == "sub") {
             $level = 'Sub project';
         } else {
             $level = '%';
         }
-        
-        if($status == "1") {
+
+        if ($status == "1") {
             $status = 'open';
-        } elseif($status == "2") {
+        } elseif ($status == "2") {
             $status = 'awarded';
-        } elseif($status == "3") {
+        } elseif ($status == "3") {
             $status = 'completed';
-        } elseif($status == "4") {
+        } elseif ($status == "4") {
             $status = 'closed';
         } else {
             $status = '%';
         }
-        
+
         $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
 
-            $or = $query->orConditionGroup();
-            $or->condition('pcode', $text, 'like');
-            $or->condition('pname', $text, 'like');
-            
-            
-            $data = $query
-                    ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date','archive'))
-                    ->condition($or)
-                    ->condition('level', $level, 'like')
-                    ->condition('status', $status, 'like')
-                    ->execute();
-                    
+        $or = $query->orConditionGroup();
+        $or->condition('pcode', $text, 'like');
+        $or->condition('pname', $text, 'like');
+
+
+        $data = $query
+                ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'))
+                ->condition($or)
+                ->condition('level', $level, 'like')
+                ->condition('status', $status, 'like')
+                ->execute();
+
         $name = array();
         while ($r = $data->fetchAssoc()) {
-
             if (strlen($r['pname']) > 15) {
                 $desc = substr($r['pname'], 0, 15) . "...";
             } else {
@@ -1978,12 +1932,11 @@ class ProjectController extends ControllerBase {
 
     /**
      * List current tasks per project
-     * 
+     *
      */
-    //todo: add filter to project 
+    //todo: add filter to project
 
     public function TaskList($pcode) {
-
         $header = array(
             'event' => array(
                 'data' => $this->t('Event'),
@@ -2011,7 +1964,7 @@ class ProjectController extends ControllerBase {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_project_tasks', 't');
         $query->join('ek_project', 'p', 'p.pcode=t.pcode');
-        $data = $query->fields('t', array('id', 'event', 'task', 'start', 'end', 'uid', 'gid', 'completion_rate','color'))
+        $data = $query->fields('t', array('id', 'event', 'task', 'start', 'end', 'uid', 'gid', 'completion_rate', 'color'))
                 ->fields('p', array('id'))
                 ->condition('t.pcode', $pcode, '=')
                 ->extend('Drupal\Core\Database\Query\TableSortExtender')
@@ -2020,29 +1973,28 @@ class ProjectController extends ControllerBase {
                 ->execute();
 
         while ($r = $data->fetchObject()) {
-
             $period = date('Y-m-d', $r->start) . ' <br/>' . date('Y-m-d', $r->end);
             if (\Drupal::currentUser()->id() == $r->uid) {
-                $name = t('Myself');
+                $name = $this->t('Myself');
             } else {
                 //$query = "SELECT name from {users_field_data} WHERE uid=:u";
                 //$name = db_query($query, array(':u' => $r->uid))->fetchField();
                 $acc = \Drupal\user\Entity\User::load($r->uid);
                 $name = '';
-                if($acc) {
-                   $name = $acc->getDisplayName();
+                if ($acc) {
+                    $name = $acc->getDisplayName();
                 }
             }
 
-            if ($r->end != NULL && date('U') > $r->end && $r->completion_rate < 100) {
-                $status = "<span class='red'>" . t('expired') . "</span>";
+            if ($r->end != null && date('U') > $r->end && $r->completion_rate < 100) {
+                $status = "<span class='red'>" . $this->t('expired') . "</span>";
             } else {
-                $status = t('done') . ': ' . $r->completion_rate . ' %';
+                $status = $this->t('done') . ': ' . $r->completion_rate . ' %';
             }
 
             $options[$r->id] = array(
                 'event' => array('data' => ['#markup' => $r->event]),
-                'task' => ['data' => ['#markup' => $r->task ], 'style' => ['background-color:' . $r->color]],
+                'task' => ['data' => ['#markup' => $r->task], 'style' => ['background-color:' . $r->color]],
                 'period' => ['data' => ['#markup' => $period]],
                 'user' => $name,
                 'status' => ['data' => ['#markup' => $status]],
@@ -2073,7 +2025,7 @@ class ProjectController extends ControllerBase {
 
         $build['tasks_table'] = array(
             '#type' => 'table',
-            '#title' => t('Tasks') . ' ' . $pcode,
+            '#title' => $this->t('Tasks') . ' ' . $pcode,
             '#header' => $header,
             '#rows' => $options,
             '#attributes' => array('id' => 'tasks_table'),
@@ -2092,7 +2044,7 @@ class ProjectController extends ControllerBase {
 
     /**
      * Delete tasks per project
-     * 
+     *
      */
     public function DeleteTask(Request $request, $id) {
         return $items['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\DeleteTaskForm', $id);
@@ -2103,10 +2055,9 @@ class ProjectController extends ControllerBase {
      * deprecated: use default ek_admin resources
      */
     public function userautocomplete(Request $request) {
-
         $text = $request->query->get('term');
         $matches = [];
-        
+
         $query = $this->entityTypeManager->getStorage('user')->getQuery();
         $or = $query->orConditionGroup();
         $or->condition('name', $text, 'STARTS_WITH');
@@ -2114,7 +2065,7 @@ class ProjectController extends ControllerBase {
         $query->condition($or);
         $query->range(0, 10);
         $uids = $query->execute();
-        
+
         $controller = $this->entityTypeManager->getStorage('user');
         foreach ($controller->loadMultiple($uids) as $account) {
             if (!$account->isAnonymous()) {

@@ -30,14 +30,12 @@ class ProjectAccessEdit extends FormBase {
      * @param id : project id
      * @param type: project|NULL
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL, $type = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $type = null) {
         if ($type == 'project') {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_project', 'p');
-            $query->fields('p', ['share', 'deny','cid','pcode','owner']);
+            $query->fields('p', ['share', 'deny', 'cid', 'pcode', 'owner']);
             $query->condition('id', $id);
-            
         } else {
             //select data from documents
             $query = Database::getConnection('external_db', 'external_db')
@@ -46,25 +44,23 @@ class ProjectAccessEdit extends FormBase {
             $query->leftJoin('ek_project', 'p', 'p.pcode = d.pcode');
             $query->fields('p', ['cid', 'owner']);
             $query->condition('d.id', $id);
-            
-            
         }
-        
+
         $data = $query->execute()->fetchObject();
-        
+
         $users = [];
-            foreach (\Drupal\user\Entity\User::loadMultiple() as $account) {
-                if($account->isActive() && $account->id() != $data->owner && $account->hasPermission('view_project')) {                 
-                        $roles = $account->getRoles();
-                        $users[$account->id()] = $account->getAccountName() . " [" . $roles[1] . "]";
-                    }
+        foreach (\Drupal\user\Entity\User::loadMultiple() as $account) {
+            if ($account->isActive() && $account->id() != $data->owner && $account->hasPermission('view_project')) {
+                $roles = $account->getRoles();
+                $users[$account->id()] = $account->getAccountName() . " [" . $roles[1] . "]";
             }
+        }
 
         if (\Drupal::currentUser()->id() == $data->owner) {
-            $disabled = FALSE;
+            $disabled = false;
             $info = '';
         } else {
-            $disabled = TRUE;
+            $disabled = true;
             $info = '<p class="red">' . t('Only project owner can edit access.') . '</p>';
         }
 
@@ -90,7 +86,7 @@ class ProjectAccessEdit extends FormBase {
             '#type' => 'select',
             '#options' => $users,
             '#disabled' => $disabled,
-            '#multiple' => TRUE,
+            '#multiple' => true,
             '#size' => 8,
             '#default_value' => $default_users,
             '#attributes' => array('class' => ['form-select-multiple']),
@@ -159,8 +155,8 @@ class ProjectAccessEdit extends FormBase {
             //owner can edit data
             $owner = 1;
             $query = Database::getConnection()->select('users_field_data', 'u');
-            $query->fields('u', ['uid','name']);
-            $query->condition('uid',0,'<>');
+            $query->fields('u', ['uid', 'name']);
+            $query->condition('uid', 0, '<>');
             $users = $query->execute();
             $share = explode(',', $data->share);
             $deny = explode(',', $data->deny);
@@ -168,7 +164,6 @@ class ProjectAccessEdit extends FormBase {
             $new_deny = array();
 
             while ($u = $users->fetchObject()) {
-
                 if (in_array($u->uid, $form_state->getValue('users')) || $data->owner == $u->uid) {
                     array_push($new_share, $u->uid);
                 } else {

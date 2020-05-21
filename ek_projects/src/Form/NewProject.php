@@ -58,9 +58,7 @@ class NewProject extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
@@ -81,7 +79,7 @@ class NewProject extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $type,
-                '#required' => TRUE,
+                '#required' => true,
                 '#title' => t('Category'),
                 '#description' => t('<a href="@t" >edit categories</a>', array('@t' => $link)),
             );
@@ -105,7 +103,6 @@ class NewProject extends FormBase {
 
 
         if ($form_state->get('step') == 2) {
-
             $form_state->set('step', 3);
             $country = AccessCheck::CountryListByUid();
 
@@ -113,7 +110,7 @@ class NewProject extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $country,
-                '#required' => TRUE,
+                '#required' => true,
                 '#title' => t('Country'),
             );
 
@@ -125,7 +122,7 @@ class NewProject extends FormBase {
                         '#type' => 'select',
                         '#size' => 1,
                         '#options' => $client,
-                        '#required' => TRUE,
+                        '#required' => true,
                         '#title' => t('Client'),
                         '#attributes' => array('style' => array('width:300px;')),
                     );
@@ -136,7 +133,6 @@ class NewProject extends FormBase {
                     );
                 }
             } else {
-
                 $form['client'] = array(
                     '#markup' => t('You do not have any client list.'),
                 );
@@ -146,7 +142,7 @@ class NewProject extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 35,
                 '#maxlength' => 50,
-                '#required' => TRUE,
+                '#required' => true,
                 '#title' => t('Project name'),
                     //'#description' => t('project name'),
             );
@@ -192,7 +188,7 @@ class NewProject extends FormBase {
                 '#default_value' => 1,
                 '#states' => array(
                     'unchecked' => array(
-                        ':input[name="access"]' => array('checked' => TRUE),
+                        ':input[name="access"]' => array('checked' => true),
                     ),
                 ),
             );
@@ -221,21 +217,17 @@ class NewProject extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == 1) {
-
             $form_state->set('step', 2);
             $form_state->setRebuild();
         }
 
         if ($form_state->get('step') == 3) {
-
             if ($form_state->getValue('client') == '') {
                 $form_state->setErrorByName("client", $this->t('You must have a client to create a project.'));
             }
 
             if ($form_state->getValue('level') == 'Sub project') {
-
                 $main = explode(' ', $form_state->getValue('main'));
                 $query = 'SELECT pcode from {ek_project} WHERE id=:id';
                 $pcode = Database::getConnection('external_db', 'external_db')
@@ -254,9 +246,6 @@ class NewProject extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
-
         if ($form_state->get('step') == 3) {
             //create the project
             //tag
@@ -292,7 +281,7 @@ class NewProject extends FormBase {
             $count = Database::getConnection('external_db', 'external_db')->query($query)->fetchField();
 
             $ref = $count + $s['increment'];
-            $main = NULL;
+            $main = null;
 
             //client
             $query = 'SELECT shortname from {ek_address_book} WHERE id=:id';
@@ -302,29 +291,27 @@ class NewProject extends FormBase {
             $client = str_replace('/', '|', $client);
 
             if ($form_state->getValue('level') == 'Main project') {
-
                 $pcode = '';
                 foreach ($s['code'] as $k => $v) {
-
                     switch ($v) {
-                        case 0 :
+                        case 0:
                             break;
-                        case 1 :
+                        case 1:
                             $pcode .= $tag . '-';
                             break;
-                        case 2 :
+                        case 2:
                             $pcode .= $type . '-';
                             break;
-                        case 3 :
+                        case 3:
                             $pcode .= $cdata->code . '-';
                             break;
-                        case 4 :
+                        case 4:
                             $pcode .= date('Y_m') . '-';
                             break;
-                        case 5 :
+                        case 5:
                             $pcode .= $client . '-';
                             break;
-                        case 6 :
+                        case 6:
                             $pcode .= $ref;
                             break;
                     }
@@ -354,7 +341,7 @@ class NewProject extends FormBase {
             $pname = Xss::filter(strip_tags($form_state->getValue('name')));
             $pname = strtolower($pname);
             $pname = ucfirst($pname);
-            //main table 
+            //main table
             $fields = array(
                 'pname' => $pname,
                 'client_id' => $form_state->getValue('client'),

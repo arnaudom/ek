@@ -52,25 +52,22 @@ class UploadForm extends FormBase {
         $this->moduleHandler = $module_handler;
     }
 
-
-  /**
-   * {@inheritdoc}
-   */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-
+    /**
+     * {@inheritdoc}
+     */
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $form['upload_doc'] = array(
             '#type' => 'file',
             '#title' => t('Select file'),
         );
-        
+
         $form['sub_folder'] = array(
-          '#type' => 'textfield',
-          '#size' => 25,
-          '#maxlength' => 30,
-          '#attributes' => array('placeholder' => t('tag or folder') ),
+            '#type' => 'textfield',
+            '#size' => 25,
+            '#maxlength' => 30,
+            '#attributes' => array('placeholder' => t('tag or folder')),
         );
-        
+
         $form['comment'] = array(
             '#type' => 'textfield',
             '#size' => 25,
@@ -103,35 +100,31 @@ class UploadForm extends FormBase {
         );
 
         return $form;
-
-
-        
     }
 
-  /**
-   * {@inheritdoc}
-   */
+    /**
+     * {@inheritdoc}
+     */
     public function validateForm(array &$form, FormStateInterface $form_state) {
         
     }
 
-  /**
-   * {@inheritdoc}
-   */
+    /**
+     * {@inheritdoc}
+     */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         
     }
 
-  /**
-   * Callback
-   */
+    /**
+     * Callback
+     */
     public function saveFile(array &$form, FormStateInterface $form_state) {
-
         $ref = explode('|', $form_state->getValue('for_id'));
 
         switch ($ref[1]) {
 
-            case 'doc' :
+            case 'doc':
 
                 $pcode = explode('-', $ref[0]);
                 $pcode_parts = array_reverse($pcode);
@@ -145,7 +138,6 @@ class UploadForm extends FormBase {
                 $file = file_save_upload("upload_doc", $validators, $dir, 0, FILE_EXISTS_RENAME);
 
                 if ($file) {
-
                     $file->setPermanent();
                     $file->save();
                     $uri = $file->getFileUri();
@@ -167,11 +159,10 @@ class UploadForm extends FormBase {
                             ->execute();
 
                     if ($this->moduleHandler->moduleExists('ek_extranet')) {
-                        if ($ref[3] == 'extranet') { 
+                        if ($ref[3] == 'extranet') {
                             //file uploaded from extranet user
                             //add file to content
                             $save = ek_extranet_save_content($insert, $ref[0]);
-
                         }
                     }
                 }
@@ -181,7 +172,6 @@ class UploadForm extends FormBase {
 
 
         if ($insert) {
-
             $log = $ref[0] . '|' . \Drupal::currentUser()->id() . '|upload|' . $filename;
             \Drupal::logger('ek_projects')->notice($log);
 
@@ -194,24 +184,23 @@ class UploadForm extends FormBase {
             Database::getConnection('external_db', 'external_db')
                     ->insert('ek_project_tracker')
                     ->fields($fields)->execute();
-            
+
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_project', 'p');
-            $query->fields('p',['id']);
+            $query->fields('p', ['id']);
             $query->condition('pcode', $ref[0], '=');
-            
+
             $id = $query->execute()->fetchField();
-            $param = serialize (
-            array (
-              'id' => $id,
-              'field' => t('File attachment'),
-              'value' => $filename,
-              'pcode' => $ref[0]
-            )
-           );
+            $param = serialize(
+                    array(
+                        'id' => $id,
+                        'field' => t('File attachment'),
+                        'value' => $filename,
+                        'pcode' => $ref[0]
+                    )
+            );
             ProjectData::notify_user($param);
             $form['doc_upload_message']['#markup'] = t('file uploaded @f', array('@f' => $filename));
-            
         } else {
             $form['doc_upload_message']['#markup'] = t('error copying file');
         }

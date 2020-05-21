@@ -10,10 +10,10 @@ use Drupal\user\Entity\User;
 use Drupal\ek_admin\Access\AccessCheck;
 
 /**
- * data interface  
+ * data interface
  *
- * 
- *  
+ *
+ *
  */
 class ProjectData {
 
@@ -22,16 +22,15 @@ class ProjectData {
     }
 
     /*
-     * @return 
-     *  an array of projects by user access - country / company 
+     * @return
+     *  an array of projects by user access - country / company
      *  classified projects per staus and return array $key => $description
-     * 
+     *
      * where $key = project code
      * $descritopn = extended description parameters (ie code, name, status)
      */
 
     public static function listprojects($archive = '%') {
-
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
 
@@ -46,7 +45,7 @@ class ProjectData {
 
         //$query = "SELECT id, type from {ek_project_type} order by type";
         //$result = Database::getConnection('external_db', 'external_db')->query($query);
-        
+
         $optgrouptype = array();
         $optgrouptype['-'] = array('n/a' => t('not applicable'));
 
@@ -58,8 +57,7 @@ class ProjectData {
                     AND archive like :a
                     ORDER by status,date";
 
-        while($r = $result->fetchObject()) {
-
+        while ($r = $result->fetchObject()) {
             $a = array(
                 ':cat' => $r->id,
                 ':stat1' => 'open',
@@ -76,8 +74,9 @@ class ProjectData {
                 $pname = substr($r2->pname, 0, 75) . '...';
                 $pcode_parts = explode("-", $r2->pcode);
                 $pcode = array_reverse($pcode_parts);
-                if (!isset($pcode[4]))
+                if (!isset($pcode[4])) {
                     $pcode[4] = '-';
+                }
                 $option1[$r2->pcode] = $pcode[0] . " | " . $r2->status . " | "
                         . $pcode[4] . "-" . $pcode[3] . '-' . $pcode[2] . "-"
                         . $pcode[1] . " | " . $pname;
@@ -101,8 +100,9 @@ class ProjectData {
                 $pname = substr($r3->pname, 0, 75) . '...';
                 $pcode_parts = explode("-", $r3->pcode);
                 $pcode = array_reverse($pcode_parts);
-                if (!isset($pcode[4]))
+                if (!isset($pcode[4])) {
                     $pcode[4] = '-';
+                }
                 $option2[$r3->pcode] = $pcode[0] . " | " . $r2->status . " | "
                         . $pcode[4] . "-" . $pcode[3] . '-' . $pcode[2] . "-"
                         . $pcode[1] . " | " . $pname;
@@ -115,24 +115,23 @@ class ProjectData {
     }
 
     /*
-     * @return 
-     *  array of formated project list for select field 
+     * @return
+     *  array of formated project list for select field
      *  pcode => description
      * @param
      *  param = array of project code
-     * 
+     *
      */
 
     public static function format_project_list($param) {
-
         $list = array();
         foreach ($param as $key => $code) {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_project', 'p');
             $query->fields('p', ['id', 'status', 'pname']);
             $query->condition('pcode', $code);
-            $p = $query->execute()->fetchObject();  
-            if($p) {
+            $p = $query->execute()->fetchObject();
+            if ($p) {
                 $pname = substr($p->pname, 0, 75) . '...';
                 $pcode_parts = explode("-", $code);
                 $pcode = array_reverse($pcode_parts);
@@ -144,14 +143,13 @@ class ProjectData {
                 $string .= " | " . $pname;
                 $list[$code] = $string;
             }
-
         }
 
         return $list;
     }
 
     /*
-     * @param mix id 
+     * @param mix id
      *  project id or project serial code
      * @param bolean ext
      *  flag to open link in new window
@@ -162,11 +160,10 @@ class ProjectData {
      * @return html link or empty string
      *  a project code view url from id or serial
      *  generate internal/external link to the project
-     * 
+     *
      */
 
-    public static function geturl($id, $ext = NULL, $base = NULL, $short = NULL, $text = NULL) {
-
+    public static function geturl($id, $ext = null, $base = null, $short = null, $text = null) {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_project', 'p');
         $query->fields('p', ['id', 'pcode', 'pname']);
@@ -179,22 +176,22 @@ class ProjectData {
         $p = $query->execute()->fetchObject();
 
         if ($p) {
-            if ($ext == TRUE) {
-                $link = Url::fromRoute('ek_projects_view', array('id' => $p->id), ['absolute' => TRUE])->toString();
+            if ($ext == true) {
+                $link = Url::fromRoute('ek_projects_view', array('id' => $p->id), ['absolute' => true])->toString();
             } else {
                 $link = Url::fromRoute('ek_projects_view', array('id' => $p->id), [])->toString();
             }
 
-            if ($base != NULL) {
+            if ($base != null) {
                 $link = $GLOBALS['base_url'] . $link;
             }
 
-            if ($short != NULL) {
+            if ($short != null) {
                 $p->pcode = str_replace('/', '-', $p->pcode); //old format
                 $parts = explode('-', $p->pcode);
                 $code = array_reverse($parts);
                 $pcode = $code[0];
-            } elseif ($text != NULL) {
+            } elseif ($text != null) {
                 $pcode = $text;
             } else {
                 $pcode = $p->pcode;
@@ -206,13 +203,12 @@ class ProjectData {
     }
 
     /*
-     * @return 
-     *  a project name from id 
-     *  
+     * @return
+     *  a project name from id
+     *
      */
 
     public static function getname($id) {
-
         $query = "SELECT pname from {ek_project} where id=:id";
         $name = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
 
@@ -220,15 +216,14 @@ class ProjectData {
     }
 
     /*
-     * @return 
-     *  access validation to a project by uid 
-     * @param int  $id project id, 
+     * @return
+     *  access validation to a project by uid
+     * @param int  $id project id,
      * @param int $uid  user id provided if not current user to be checked
      */
 
-    public static function validate_access($id, $uid = NULL) {
-
-        if ($uid == NULL) {
+    public static function validate_access($id, $uid = null) {
+        if ($uid == null) {
             $uid = \Drupal::currentUser()->id();
         }
 
@@ -245,33 +240,32 @@ class ProjectData {
             //check access by country
 
             if (in_array($uid, $access)) {
-                return TRUE;
+                return true;
             } else {
-                return FALSE;
+                return false;
             }
         } else {
             //restricted
-            //use share / deny data    
+            //use share / deny data
             $share = explode(',', $data->share);
             $deny = explode(',', $data->deny);
             if (in_array($uid, $share) && !in_array($uid, $deny)) {
-                return TRUE;
+                return true;
             } else {
-                return FALSE;
+                return false;
             }
         }
     }
 
     /*
-     * @return 
+     * @return
      *  access validation to a file in a project by uid
-     * @param 
+     * @param
      *  id = file id
      *
      */
 
     public static function validate_file_access($id) {
-
         $query = "SELECT settings from {ek_project_settings} WHERE coid=:c";
         $settings = Database::getConnection('external_db', 'external_db')
                         ->query($query, [':c' => 0])->fetchField();
@@ -284,7 +278,7 @@ class ProjectData {
 
         //if settings are set to block all at page level, and page is blocked, return False
         if ($s['access_level'] == 1 && !self::validate_access($data->id)) {
-            return FALSE;
+            return false;
         }
 
 
@@ -297,56 +291,60 @@ class ProjectData {
 
         if ($data->share == '0') {
             //no special restriction.
-            //check access by country  or owner     
+            //check access by country  or owner
             if (in_array($uid, $access) || $uid == $data->owner) {
-                return TRUE;
+                return true;
             } else {
-                return FALSE;
+                return false;
             }
         } else {
             //restricted
-            //use share / deny data    
+            //use share / deny data
             $share = explode(',', $data->share);
             $deny = explode(',', $data->deny);
             if (in_array($uid, $share) && !in_array($uid, $deny)) {
-                return TRUE;
+                return true;
             } else {
-                return FALSE;
+                return false;
             }
         }
     }
 
     /*
-     * @return 
+     * @return
      *  access to section by user
      *  return an array of accessible sections i.e (1,2,5) => access to section 1, 2 and 5
      * @param
      *  uid = user id
-     * 
+     *
      */
 
     public static function validate_section_access($uid) {
-
         $query = 'SELECT * from {ek_project_users} wHERE uid=:u';
         $access = Database::getConnection('external_db', 'external_db')->query($query, array(':u' => $uid))->fetchobject();
 
         $sections = array();
-        if ($access->section_1 == 1)
+        if ($access->section_1 == 1) {
             array_push($sections, 1);
-        if ($access->section_2 == 1)
+        }
+        if ($access->section_2 == 1) {
             array_push($sections, 2);
-        if ($access->section_3 == 1)
+        }
+        if ($access->section_3 == 1) {
             array_push($sections, 3);
-        if ($access->section_4 == 1)
+        }
+        if ($access->section_4 == 1) {
             array_push($sections, 4);
-        if ($access->section_5 == 1)
+        }
+        if ($access->section_5 == 1) {
             array_push($sections, 5);
+        }
 
         return $sections;
     }
 
     /*
-     * @return 
+     * @return
      *  array (uid , owner) of a file attached in a project
      * @param
      *  id = file id
@@ -368,13 +366,12 @@ class ProjectData {
      *  email notification about changes in project
      * @param
      *  param = serialize data
-     *  id = project id, field = field edited, value = new value, 
+     *  id = project id, field = field edited, value = new value,
      */
 
     public static function notify_user($param) {
-
         $param = unserialize($param);
-        if (!isset($param['mail']) || $param['mail'] == NULL) {
+        if (!isset($param['mail']) || $param['mail'] == null) {
             $param['mail'] = 'nomail';
         }
         $data = [];
@@ -394,13 +391,12 @@ class ProjectData {
         }
 
         if (!empty($notify)) {
-
             $currentuserid = \Drupal::currentUser()->id();
             $query = "SELECT mail,name from {users_field_data} WHERE uid=:u OR mail=:m";
             $from = Database::getConnection('default', 'default')
                             ->query($query, array(':u' => $currentuserid, ':m' => $param['mail']))->fetchObject();
             $params = [];
-            $params['options']['url'] = self::geturl($param['id'], NULL,1,NULL, t('Open'));
+            $params['options']['url'] = self::geturl($param['id'], null, 1, null, t('Open'));
             switch ($param['field']) {
 
                 case 'invoice_payment':
@@ -451,8 +447,8 @@ class ProjectData {
                     $text .= '<br/>' . t('Field : @f', array('@f' => str_replace('_', ' ', $param['field'])));
                     if ($param['value']) {
                         $text .= '<br/>' . t('Value : @v', array('@v' => $param['value']));
-                    } 
-                    $text .= '<br/>' . t('By : @b', array('@b' => $from->name));                    
+                    }
+                    $text .= '<br/>' . t('By : @b', array('@b' => $from->name));
                     $params['subject'] = t("Project Edited");
                     break;
             }
@@ -474,7 +470,7 @@ class ProjectData {
             }
 
             return new Response('', 204);
-        } //if>0 
+        } //if>0
 
         return new Response('', 204);
     }

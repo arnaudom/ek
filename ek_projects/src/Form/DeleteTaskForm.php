@@ -54,8 +54,7 @@ class DeleteTaskForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $query = "SELECT p.id FROM {ek_project} p "
                 . "LEFT JOIN {ek_project_tasks} t "
                 . "ON p.pcode=t.pcode WHERE t.id=:id";
@@ -98,7 +97,6 @@ class DeleteTaskForm extends FormBase {
 
 
         if ($del != 0) {
-
             $form['for_id'] = array(
                 '#type' => 'hidden',
                 '#value' => $id,
@@ -117,7 +115,6 @@ class DeleteTaskForm extends FormBase {
                 '#value' => $this->t('Delete'),
             );
         } else {
-
             $form['alert'] = array(
                 '#type' => 'item',
                 '#markup' => $message,
@@ -137,7 +134,6 @@ class DeleteTaskForm extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $query = "SELECT task FROM {ek_project_tasks} WHERE id=:id";
         $task = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form_state->getValue('for_id')))
@@ -152,12 +148,11 @@ class DeleteTaskForm extends FormBase {
 
 
         if ($delete) {
-            
             $acc = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
-            if($acc) {
+            if ($acc) {
                 $name = $acc->getAccountName();
             }
-            
+
             $param = serialize(
                     array(
                         'id' => $form_state->getValue('for_pid'),

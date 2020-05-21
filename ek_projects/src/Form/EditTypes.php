@@ -55,17 +55,16 @@ class EditTypes extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $link = Url::fromRoute('ek_projects_new', array(), array())->toString();
         $query = Database::getConnection('external_db', 'external_db')
-                            ->select('ek_project_type', 'pt')
-                            ->fields('pt');
+                ->select('ek_project_type', 'pt')
+                ->fields('pt');
         $query->orderBy('id');
         $data = $query->execute();
         $query = Database::getConnection('external_db', 'external_db')
-                            ->select('ek_project', 'p')
-                            ->fields('p',['category']);
+                ->select('ek_project', 'p')
+                ->fields('p', ['category']);
         $query->distinct();
         $categories = $query->execute()->fetchCol();
 
@@ -95,7 +94,7 @@ class EditTypes extends FormBase {
         );
 
         $form['l-table'] = array(
-            '#tree' => TRUE,
+            '#tree' => true,
             '#theme' => 'table',
             '#header' => $header,
             '#rows' => array(),
@@ -104,8 +103,7 @@ class EditTypes extends FormBase {
         );
 
 
-        While ($r = $data->fetchObject()) {
-
+        while ($r = $data->fetchObject()) {
             $id = $r->id;
 
             $form['id'] = array(
@@ -120,7 +118,7 @@ class EditTypes extends FormBase {
                 '#maxlength' => 45,
                 '#default_value' => $r->gp,
                 '#attributes' => array('placeholder' => t('group'), 'title' => t('A group tag')),
-                '#required' => TRUE,
+                '#required' => true,
             );
             $form['type'] = array(
                 '#id' => 'type-' . $id,
@@ -129,8 +127,8 @@ class EditTypes extends FormBase {
                 '#maxlength' => 45,
                 '#default_value' => $r->type,
                 '#attributes' => array('placeholder' => t('project type name')),
-                '#required' => TRUE,
-                '#disabled' => in_array($id,$categories) ? TRUE:FALSE,
+                '#required' => true,
+                '#disabled' => in_array($id, $categories) ? true : false,
             );
 
             $form['comment'] = array(
@@ -148,9 +146,9 @@ class EditTypes extends FormBase {
                 '#size' => 15,
                 '#maxlength' => 5,
                 '#default_value' => $r->short,
-                '#required' => TRUE,
+                '#required' => true,
                 '#attributes' => array('class' => array('short name')),
-                '#disabled' => in_array($id,$categories) ? TRUE:FALSE,
+                '#disabled' => in_array($id, $categories) ? true : false,
             );
 
             $form['del'] = array(
@@ -257,9 +255,9 @@ class EditTypes extends FormBase {
         unset($form['del']);
 
         $form['categories'] = array(
-                '#type' => 'hidden',
-                '#value' => $categories,
-            );
+            '#type' => 'hidden',
+            '#value' => $categories,
+        );
 
         $form['actions'] = array(
             '#type' => 'actions',
@@ -284,7 +282,6 @@ class EditTypes extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->getValue('comment') != '' || $form_state->getValue('short') != '') {
             if ($form_state->getValue('type') == '') {
                 $form_state->setErrorByName('newtype', $this->t('You need to enter a type'));
@@ -296,16 +293,12 @@ class EditTypes extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
-
         $list = $form_state->getValue('l-table');
         $categories = $form_state->getValue('categories');
         foreach ($list as $key => $value) {
-
             if ($key != 'new') {
                 if ($value['del'] == 1) {
-
-                    if (in_array($value['id'],$categories)) {
+                    if (in_array($value['id'], $categories)) {
                         \Drupal::messenger()->addWarning(t('Project type \'@l\' cannot be deleted because it is used.', ['@l' => $value['type']]));
                     } else {
                         Database::getConnection('external_db', 'external_db')
@@ -315,18 +308,17 @@ class EditTypes extends FormBase {
                         \Drupal::messenger()->addWarning(t('Project type \'@l\' deleted', ['@l' => $value['type']]));
                     }
                 } else {
-
-                    if (in_array($value['id'],$categories)) { //In use only update description
+                    if (in_array($value['id'], $categories)) { //In use only update description
                         $fields = array(
                             'comment' => Xss::filter($value['comment']),
                             'gp' => Xss::filter($value['group']),
                         );
-                    } else { 
+                    } else {
                         //not in use can update all data
                         //check if field is less than 6 char
                         $short = Xss::filter($value['short']);
-                        if(count_chars($short,3) > 5) {
-                            $short = substr($short,0,5);
+                        if (count_chars($short, 3) > 5) {
+                            $short = substr($short, 0, 5);
                         }
                         $fields = array(
                             'type' => Xss::filter($value['type']),
@@ -346,12 +338,12 @@ class EditTypes extends FormBase {
             } else {
                 if ($value['type'] != '') {
                     $short = Xss::filter($value['short']);
-                        if($short == '') {
-                            $short = substr(Xss::filter($value['type']),0,5);
-                        }
-                        if(count_chars($short,3) > 5) {
-                            $short = substr($short,0,5);
-                        }
+                    if ($short == '') {
+                        $short = substr(Xss::filter($value['type']), 0, 5);
+                    }
+                    if (count_chars($short, 3) > 5) {
+                        $short = substr($short, 0, 5);
+                    }
                     $fields = array(
                         'type' => Xss::filter($value['type']),
                         'gp' => Xss::filter($value['group']),

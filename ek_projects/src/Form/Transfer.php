@@ -54,7 +54,6 @@ class Transfer extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
@@ -64,41 +63,38 @@ class Transfer extends FormBase {
             '#type' => 'textfield',
             '#size' => 50,
             '#required' => true,
-            '#default_value' => $form_state->getValue('username') ? $form_state->getValue('username') : NULL,
+            '#default_value' => $form_state->getValue('username') ? $form_state->getValue('username') : null,
             '#attributes' => array('placeholder' => t('Enter user name')),
             '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
             '#prefix' => '<div class="container-inline">',
         );
 
-        
-            $form['next'] = array(
-                '#type' => 'submit',
-                '#value' => t('Select') ,
-                '#suffix' => '</div>',
-            );
-        
+
+        $form['next'] = array(
+            '#type' => 'submit',
+            '#value' => t('Select'),
+            '#suffix' => '</div>',
+        );
+
 
         if ($form_state->get('step') == 2) {
-
             $form_state->set('step', 3);
 
             //verify any data to post
             $query = "SELECT p.id,pname,pcode,name FROM {ek_project} p INNER JOIN {ek_country} c ON p.cid=c.id WHERE owner = :o";
             $projects = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':o' => $form_state->getValue('uid')));
-            $projects->allowRowCount = TRUE;
+            $projects->allowRowCount = true;
             if ($projects->rowcount() < 1) {
-
                 $form['info'] = array(
                     '#type' => 'item',
                     '#markup' => t('There is no data to transfer for this user'),
                 );
             } else {
-
                 $form['list'] = array(
                     '#type' => 'details',
                     '#title' => $this->t('List'),
-                    '#open' => TRUE,
+                    '#open' => true,
                     '#attributes' => array('class' => array()),
                 );
 
@@ -111,7 +107,7 @@ class Transfer extends FormBase {
 
                 $options = [];
 
-                While ($p = $projects->fetchObject()) {
+                while ($p = $projects->fetchObject()) {
                     $options[$p->id] = ['pcode' => $p->pcode, 'pname' => $p->pname, 'cid' => $p->name];
                 }
 
@@ -132,12 +128,11 @@ class Transfer extends FormBase {
                     '#title' => t('Transfer to'),
                     '#size' => 50,
                     '#required' => true,
-                    '#default_value' => NULL,
+                    '#default_value' => null,
                     '#attributes' => array('placeholder' => t('Enter user name')),
                     '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
-                    
                 );
-        
+
                 $form['actions']['submit'] = array(
                     '#type' => 'submit',
                     '#value' => $this->t('Confirm transfer'),
@@ -145,7 +140,7 @@ class Transfer extends FormBase {
                 );
             }
         }//if stp 2
-        
+
 
 
 
@@ -158,7 +153,6 @@ class Transfer extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == 1) {
 
             //$query = "SELECT uid FROM {users_field_data} WHERE name = :n";
@@ -168,7 +162,7 @@ class Transfer extends FormBase {
             $query->fields('u', ['uid']);
             $query->condition('name', $form_state->getValue('username'));
             $data = $query->execute()->fetchField();
-            
+
             if ($data) {
                 $form_state->setValue('uid', $data);
                 $form_state->set('step', 2);
@@ -177,13 +171,12 @@ class Transfer extends FormBase {
                 $form_state->setErrorByName('username', $this->t('Unknown user'));
             }
         }
-        
+
         if ($form_state->get('step') == 3) {
-            
-            if($form_state->getValue('tousername') == $form_state->getValue('username')) {
+            if ($form_state->getValue('tousername') == $form_state->getValue('username')) {
                 $form_state->setErrorByName('tousername', $this->t('Same user selected'));
             }
-            
+
             //$query = "SELECT uid FROM {users_field_data} WHERE name = :n";
             //$data = db_query($query, [':n' => $form_state->getValue('tousername')])
             //        ->fetchField();
@@ -196,8 +189,6 @@ class Transfer extends FormBase {
             } else {
                 $form_state->setErrorByName('tousername', $this->t('Unknown user'));
             }
-        
-         
         }
     }
 
@@ -205,27 +196,24 @@ class Transfer extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->get('step') == 3) {
             $i = 0;
-            foreach($form_state->getValue('table') as $id => $val) {
-                if($val != 0) {
+            foreach ($form_state->getValue('table') as $id => $val) {
+                if ($val != 0) {
                     $i++;
                     Database::getConnection('external_db', 'external_db')
-                        ->update('ek_project')
-                        ->fields(['owner' => $form_state->getValue('touid')])
-                        ->condition('id', $val)
-                        ->execute();
-
+                            ->update('ek_project')
+                            ->fields(['owner' => $form_state->getValue('touid')])
+                            ->condition('id', $val)
+                            ->execute();
                 }
             }
-            
-            if($i > 0) {
+
+            if ($i > 0) {
                 \Drupal::messenger()->addStatus(t('@n project(s) transferred to @u', ['@n' => $i, '@u' => $form_state->getValue('tousername')]));
             } else {
                 \Drupal::messenger()->addWarning(t('No project to transfer'));
             }
-            
         }//step 3
     }
 
