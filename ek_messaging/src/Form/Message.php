@@ -29,10 +29,8 @@ class Message extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = NULL) {
-
-
-        if ($id != NULL) {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
+        if ($id != null) {
             //this is a reply / forward form
 
             $form['id'] = array(
@@ -41,47 +39,46 @@ class Message extends FormBase {
             );
 
             $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_messaging', 'm'); 
+                    ->select('ek_messaging', 'm');
             $query->fields('m');
             $query->innerJoin('ek_messaging_text', 't', 'm.id=t.id');
             $query->fields('t');
             $query->condition('t.id', $id);
-            $data = $query->execute()->fetchObject();            
+            $data = $query->execute()->fetchObject();
             $account = \Drupal\user\Entity\User::load($data->from_uid);
             $to = '';
-            if($account) {
+            if ($account) {
                 $to = $account->getDisplayName();
             }
             $subject = t('Re') . ': ' . $data->subject;
             $from = \Drupal\user\Entity\User::load($data->from_uid);
             $quote = t('On @date, @user wrote', ['@date' => date('l jS \of F Y h:i:s A', $data->stamp), '@user' => $from->getAccountName()]);
-            if($data->format == 'restricted_html'){
+            if ($data->format == 'restricted_html') {
                 $text = "\r\n\r\n\r\n\r\n ------- " . $quote . " ------- \r\n\r\n" . $data->text;
             } else {
                 $text = "<br><p> ------- " . $quote . " -------</p><p>" . $data->text . "</p>";
             }
-            
         }
         $form['users'] = array(
             '#type' => 'textarea',
             '#rows' => 2,
             '#attributes' => array('placeholder' => t('enter recipients name separated by comma (autocomplete enabled).')),
-            '#required' => TRUE,
-            '#default_value' => isset($to) ? $to : NULL,
+            '#required' => true,
+            '#default_value' => isset($to) ? $to : null,
         );
 
         $form['priority'] = array(
             '#type' => 'select',
             '#options' => array('3' => t('low'), '2' => t('normal'), '1' => t('high')),
             '#title' => t('priority'),
-            '#default_value' => isset($data->priority) ? $data->priority : NULL,
+            '#default_value' => isset($data->priority) ? $data->priority : null,
         );
 
         $form['subject'] = array(
             '#type' => 'textfield',
             '#default_value' => '',
-            '#required' => TRUE,
-            '#default_value' => isset($subject) ? $subject : NULL,
+            '#required' => true,
+            '#default_value' => isset($subject) ? $subject : null,
             '#attributes' => array('placeholder' => t('subject')),
         );
 
@@ -89,7 +86,7 @@ class Message extends FormBase {
             '#type' => 'text_format',
             '#rows' => 10,
             '#attributes' => array('placeholder' => t('your message')),
-            '#default_value' => isset($text) ? $text : NULL,
+            '#default_value' => isset($text) ? $text : null,
             '#format' => isset($data->format) ? $data->format : 'restricted_html',
         );
 
@@ -120,7 +117,6 @@ class Message extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
         if ($form_state->getValue('users') == '') {
             $form_state->setErrorByName('users', $this->t('there is no recipient'));
         } else {
@@ -128,7 +124,7 @@ class Message extends FormBase {
             $error = '';
             $list_ids = '';
             foreach ($users as $u) {
-                if (trim($u) != NULL) {
+                if (trim($u) != null) {
                     //check it is a registered user
                     $uname = trim($u);
                     $query = Database::getConnection()->select('users_field_data', 'u');
@@ -136,7 +132,7 @@ class Message extends FormBase {
                     $query->condition('name', $uname);
                     $id = $query->execute()->fetchField();
                     if (!$id) {
-                        $error.= $uname . ' ';
+                        $error .= $uname . ' ';
                     } else {
                         $list_ids .= $id . ',';
                     }
@@ -158,7 +154,6 @@ class Message extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
         $message = $form_state->getValue('message');
         $priority = array('3' => t('low'), '2' => t('normal'), '1' => t('high'));
         if ($form_state->getValue('priority') == 1) {
@@ -185,18 +180,19 @@ class Message extends FormBase {
          * from messages
          * serialize(Xss::filter($message['value'])) or serialize($message['value'])?
          */
-        $m = ek_message_register(array(
-            'uid' => $currentuserId,
-            'to' => $inbox,
-            'to_group' => 0,
-            'type' => 2,
-            'status' => '',
-            'inbox' => $inbox,
-            'archive' => '',
-            'subject' => $subject,
-            'body' => serialize($message['value']),
-            'format' => $message['format'],
-            'priority' => $form_state->getValue('priority'),
+        $m = ek_message_register(
+                array(
+                    'uid' => $currentuserId,
+                    'to' => $inbox,
+                    'to_group' => 0,
+                    'type' => 2,
+                    'status' => '',
+                    'inbox' => $inbox,
+                    'archive' => '',
+                    'subject' => $subject,
+                    'body' => serialize($message['value']),
+                    'format' => $message['format'],
+                    'priority' => $form_state->getValue('priority'),
                 )
         );
 
@@ -204,7 +200,7 @@ class Message extends FormBase {
          * email sending record
          */
         if ($form_state->getValue('email') == 1) {
-            //send a full copy message to email address    
+            //send a full copy message to email address
             $params = [
                 'subject' => $subject,
                 'body' => $message['value'],
@@ -215,7 +211,7 @@ class Message extends FormBase {
         } else {
             //send only a notification
 
-            $link = Url::fromRoute('ek_messaging_read', array('id' => $m), ['absolute' => TRUE])->toString();
+            $link = Url::fromRoute('ek_messaging_read', array('id' => $m), ['absolute' => true])->toString();
             $params = [
                 'subject' => t('You have a new message'),
                 'body' => "<a href='" . $link . "'>" . t('read') . "</a>",
@@ -230,17 +226,11 @@ class Message extends FormBase {
 
         foreach (User::loadMultiple($list_ids) as $account) {
             if ($account->isActive()) {
-
                 $send = \Drupal::service('plugin.manager.mail')->mail(
-                        'ek_messaging', 'ek_message', 
-                        $account->getEmail(), 
-                        $account->getPreferredLangcode(), 
-                        $params, 
-                        $currentuserMail, 
-                        TRUE
+                        'ek_messaging', 'ek_message', $account->getEmail(), $account->getPreferredLangcode(), $params, $currentuserMail, true
                 );
 
-                if ($send['result'] == FALSE) {
+                if ($send['result'] == false) {
                     $error .= $account->getEmail() . ' ';
                 }
             }

@@ -50,8 +50,7 @@ class MessageMenuLink extends MenuLinkDefault {
      */
     public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
         return new static(
-                $configuration, $plugin_id, $plugin_definition, $container->get('menu_link.static.overrides'), 
-                $container->get('current_user')
+                $configuration, $plugin_id, $plugin_definition, $container->get('menu_link.static.overrides'), $container->get('current_user')
         );
     }
 
@@ -59,26 +58,24 @@ class MessageMenuLink extends MenuLinkDefault {
      * {@inheritdoc}
      */
     public function getTitle() {
-
-        $db = FALSE;
+        $db = false;
         try {
             //verify that the database have been installed first to prevent error upon module install
             $external = Database::getConnectionInfo('external_db');
             if (!empty($external)) {
-                $db = TRUE;
+                $db = true;
             }
         } catch (Exception $e) {
             return null;
         }
 
-        if ($db == TRUE) {
+        if ($db == true) {
             if ($this->currentUser->isAuthenticated()) {
                 $query = "SHOW TABLES LIKE 'ek_messaging'";
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query)
                         ->fetchField();
                 if ($data == 'ek_messaging') {
-
                     $me = $this->currentUser->id();
                     $user = "%," . $me . ",%";
                     $query = Database::getConnection('external_db', 'external_db')
@@ -96,7 +93,6 @@ class MessageMenuLink extends MenuLinkDefault {
                             '#attached' => [
                                 'library' => ['ek_messaging/ek_messaging_css'],
                             ],
-                            
                         ];
                     }
 
@@ -120,12 +116,12 @@ class MessageMenuLink extends MenuLinkDefault {
     public function getCacheContexts() {
         return ['user'];
     }
-    
-      /**
-   * {@inheritdoc}
-   */
-  public function getCacheTags() {
-    return ['ek_message_inbox'];
-  }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCacheTags() {
+        return ['ek_message_inbox'];
+    }
 
 }
