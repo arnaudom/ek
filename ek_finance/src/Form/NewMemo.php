@@ -262,7 +262,7 @@ class NewMemo extends FormBase {
                 $link = Url::fromRoute('ek_address_book.new', array())->toString();
 
                 $form['options']['client'] = array(
-                    '#markup' => t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
+                    '#markup' => $this->t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
                     '#default_value' => 0,
                 );
             }
@@ -1066,7 +1066,7 @@ class NewMemo extends FormBase {
 
             $action = array(1 => $this->t('pending approval'), 2 => $this->t('authorized'), 3 => $this->t('rejected'));
 
-            $params['subject'] = t("Authorization notification") . ' - ' . $action[$form_state->getValue('action')];
+            $params['subject'] = $this->t("Authorization notification") . ' - ' . $action[$form_state->getValue('action')];
             $url = $GLOBALS['base_url'] . Url::fromRoute('ek_finance_manage_personal_memo', array('id' => $reference))->toString();
             $params['options']['url'] = "<a href='" . $url . "'>" . $serial . "</a>";
             $params['options']['user'] = $user_memo->getAccountName();
@@ -1147,7 +1147,7 @@ class NewMemo extends FormBase {
             $entity_to = $query->execute()->fetchObject();
 
             if (isset($insert) && isset($entity_mail) && isset($entity_to->email)) {
-                $params['subject'] = t("New memo") . ': ' . $serial;
+                $params['subject'] = $this->t("New memo") . ': ' . $serial;
                 $url = $GLOBALS['base_url'] . Url::fromRoute('ek_finance_manage_print_html', array('id' => $reference))->toString();
                 $params['options']['url'] = "<a title='" . $serial . "' href='" . $url . "'>" . $this->t('Open') . "</a>";
                 $params['options']['user'] = $entity->name;
@@ -1164,7 +1164,7 @@ class NewMemo extends FormBase {
                 $queue = \Drupal::queue('ek_email_queue');
                 $queue->createQueue();
                 $queue->createItem($data);
-                $data['subject'] = t("New memo") . ': ' . $serial . " (" . $this->t('copy') . ")";
+                $data['subject'] = $this->t("New memo") . ': ' . $serial . " (" . $this->t('copy') . ")";
                 $data['email'] = $entity_mail;
                 $queue->createItem($data);
             }

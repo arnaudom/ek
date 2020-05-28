@@ -227,7 +227,6 @@ class ReconciliationForm extends FormBase {
                 ':dateopen' => $account->balance_date,
                 ':reco' => 0
             );
-            
             $credit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
             $a = array(
                 ':exc' => $exchange,
@@ -284,7 +283,7 @@ class ReconciliationForm extends FormBase {
             $form['bar']["debits"] = array(
                 '#type' => 'textfield',
                 '#id' => 'debits',
-                '#title' => t("Debits"),
+                '#title' => $this->t("Debits"),
                 '#title_display' => 'before',
                 '#required' => false,
                 '#size' => 15,
@@ -300,7 +299,7 @@ class ReconciliationForm extends FormBase {
             $form['bar']["credits"] = array(
                 '#type' => 'textfield',
                 '#id' => 'credits',
-                '#title' => t("Credits"),
+                '#title' => $this->t("Credits"),
                 '#title_display' => 'before',
                 '#required' => false,
                 '#size' => 15,
@@ -323,7 +322,7 @@ class ReconciliationForm extends FormBase {
             $form['bar']["statement"] = array(
                 '#type' => 'textfield',
                 '#id' => 'statement',
-                '#title' => t("Statement"),
+                '#title' => $this->t("Statement"),
                 '#title_display' => 'before',
                 '#required' => true,
                 '#size' => 15,
@@ -338,7 +337,7 @@ class ReconciliationForm extends FormBase {
             $form['bar']["difference"] = array(
                 '#type' => 'textfield',
                 '#id' => 'difference',
-                '#title' => t("Difference"),
+                '#title' => $this->t("Difference"),
                 '#title_display' => 'before',
                 '#required' => true,
                 '#size' => 15,
@@ -351,12 +350,12 @@ class ReconciliationForm extends FormBase {
             // listing of journal data
             $headerline = "<div class='table'>
                   <div class='row'>
-                      <div class='cell cell50' id='tour-item1'>" . t("ID") . "</div>
-                      <div class='cell cell100' id='tour-item2'>" . t("Date") . "</div>
-                      <div class='cell cell300' id='tour-item3'>" . t("Object") . "</div>
-                      <div class='cell cell100' id='tour-item4'>" . t("Debit") . "</div>
-                      <div class='cell cell100' id='tour-item5'>" . t("Credit") . "</div>
-                      <div class='cell cell50' id='tour-item6'>" . t("Select") . "</div>
+                      <div class='cell cell50' id='tour-item1'>" . $this->t("ID") . "</div>
+                      <div class='cell cell100' id='tour-item2'>" . $this->t("Date") . "</div>
+                      <div class='cell cell300' id='tour-item3'>" . $this->t("Object") . "</div>
+                      <div class='cell cell100' id='tour-item4'>" . $this->t("Debit") . "</div>
+                      <div class='cell cell100' id='tour-item5'>" . $this->t("Credit") . "</div>
+                      <div class='cell cell50' id='tour-item6'>" . $this->t("Select") . "</div>
                    </div>
                    <div class='row'>
                       <div class='cell cell50' id=''></div>

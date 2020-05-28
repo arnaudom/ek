@@ -53,7 +53,7 @@ class PayMemo extends FormBase {
         $attachments = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT id,uri FROM {ek_expenses_memo_documents} where serial=:s", array(':s' => $data->serial))
                 ->fetchAllKeyed();
-        $attachment = ["0" => t("No attachment")];
+        $attachment = ["0" => $this->t("No attachment")];
         foreach ($attachments as $key => $val) {
             $str = explode("/", $val);
             $str = array_reverse($str);

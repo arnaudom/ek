@@ -53,7 +53,7 @@ class JournalEdit extends FormBase {
         $url = Url::fromRoute('ek_finance.extract.general_journal', array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t("<a href='@url'>Back</a>", ['@url' => $url]),
+            '#markup' => $this->t("<a href='@url'>Back</a>", ['@url' => $url]),
         );
 
         $form['company'] = array(
@@ -81,11 +81,11 @@ class JournalEdit extends FormBase {
         );
 
         $headerline = "<div class='table'><div class='row'><div class='cell cellborder'>"
-                . t("Debit account") . "</div><div class='cell cellborder'>"
-                . t("Debit") . "</div><div class='cell cellborder'>"
-                . t("Credit") . "</div><div class='cell cellborder'>"
-                . t("Credit account") . "</div><div class='cell cellborder'>"
-                . t("Comment") . "</div>";
+                . $this->t("Debit account") . "</div><div class='cell cellborder'>"
+                . $this->t("Debit") . "</div><div class='cell cellborder'>"
+                . $this->t("Credit") . "</div><div class='cell cellborder'>"
+                . $this->t("Credit account") . "</div><div class='cell cellborder'>"
+                . $this->t("Comment") . "</div>";
 
         $totalcredit = 0;
         $totalcredit_exchange = 0;

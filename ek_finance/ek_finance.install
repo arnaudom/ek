@@ -49,7 +49,7 @@ function ek_finance_update_8001() {
         $schema->addField('ek_journal', 'count', $spec);
     }
 
-    return $this->t('Table updated') . ". " . t('Run migration') . ".";
+    return t('Table updated') . ". " . t('Run migration') . ".";
 }
 
 /**

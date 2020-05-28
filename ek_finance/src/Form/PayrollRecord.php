@@ -74,7 +74,7 @@ class PayrollRecord extends FormBase {
         if (empty($list) || $list['pay_account'] == '') {
             $error = 1;
             $url = Url::fromRoute('ek_hr.parameters-accounts', array(), array())->toString();
-            $markup = "<div class='messages messages--error'>" . t("You do not have payroll accounts recorded. 
+            $markup = "<div class='messages messages--error'>" . $this->t("You do not have payroll accounts recorded. 
           Go to <a href='@s' target='_blank'>settings</a> first.", ['@s' => $url]) . '</div>';
             $form['error'] = array(
                 '#type' => 'item',

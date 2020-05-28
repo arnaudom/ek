@@ -80,7 +80,7 @@ class ChartAccounts extends FormBase {
 
         if ($form_state->getValue('coid')) {
             $coid = $form_state->getValue('coid');
-            $Extract = ['pdf' => t("Print in Pdf"), 'excel' => $this->t('Excel download')];
+            $Extract = ['pdf' => $this->t("Print in Pdf"), 'excel' => $this->t('Excel download')];
             $classoptions = AidList::listclass($coid, array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), null);
             array_unshift($classoptions, 'Pdf');
             array_unshift($classoptions, 'Excel');
