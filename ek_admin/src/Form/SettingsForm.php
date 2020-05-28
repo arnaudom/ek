@@ -135,7 +135,12 @@ class SettingsForm extends FormBase
             '#description' => $this->t('Backup recipients email addresses separated by comma'),
         );
         
-        
+        $form['mail_receipt'] = array(
+            '#type' => 'checkbox',
+            '#title' => $this->t('Insert receipt in mail attachment'),
+            '#default_value' => $settings->get('mail_receipt'),
+        );
+         
         $form['cron'] = array(
             '#type' => 'details',
             '#title' => $this->t('Cron tasks'),
@@ -216,6 +221,7 @@ class SettingsForm extends FormBase
             $settings->set('backup_filename', $form_state->getValue('backup_filename'));
         }
         
+        $settings->set('mail_receipt', $form_state->getValue('mail_receipt'));
         $settings->set('backup_recipients', $form_state->getValue('backup_recipients'));
         $settings->set('protocol', $form_state->getValue('protocol'));
         $settings->set('sale_tasks', $form_state->getValue('sale_tasks'));

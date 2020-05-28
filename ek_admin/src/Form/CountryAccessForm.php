@@ -102,7 +102,7 @@ class CountryAccessForm extends FormBase
 
         $form['list'] = array(
             '#type' => 'details',
-            '#title' => t("Select users with access "),
+            '#title' => $this->t("Select users with access "),
             '#collapsible' => true,
             '#open' => isset($users) ? true : false,
             '#tree' => true,
@@ -160,7 +160,7 @@ class CountryAccessForm extends FormBase
                     $query->condition('cid', $form_state->getValue('cid'));
                     $or = $query->orConditionGroup()
                         ->condition('owner', $key)
-                        ->condition('share', "%," . $key . "%", 'like');
+                        ->condition('share', "%," . $key . "%,", 'like');
                     $query->condition($or);
                     $data = $query->execute();
                     while ($d = $data->fetchObject()) {
@@ -224,7 +224,7 @@ class CountryAccessForm extends FormBase
                 ->fetchField();
         $name = \Drupal::currentUser()->getAccountName();
         $a = array('@u' => $name, '@c' => $cuntry, '@d' => $access);
-        $log = t("User @u has given access to country @c for users id @d", $a);
+        $log = $this->t("User @u has given access to country @c for users id @d", $a);
         \Drupal::logger('ek_admin')->notice($log);
     }
 }

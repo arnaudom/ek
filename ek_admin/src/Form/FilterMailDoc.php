@@ -100,7 +100,7 @@ class FilterMailDoc extends FormBase {
         }
         $form['maildoc']['copy'] = [
             '#type' => 'checkbox',
-            '#title' => t('Send me a copy'),
+            '#title' => $this->t('Send me a copy'),
             '#default_value' => 1,
         ];
 
@@ -242,7 +242,7 @@ class FilterMailDoc extends FormBase {
                 }
 
                 $options['copy'] = $form_state->getValue('copy');
-                $message = Xss::filter($form_state->getValue('message'));
+                $message = $form_state->getValue('message');
                 $send = mail_attachment($recipients, $file, $message, $options);
 
 

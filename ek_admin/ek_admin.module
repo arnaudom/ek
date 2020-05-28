@@ -13,6 +13,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
 use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\ek_admin\GlobalSettings;
 
 /**
  * @file
@@ -245,8 +246,10 @@ function ek_admin_mail($key, &$message, $params) {
         case 'project_status':
         case 'sales_alert':
         case 'hr_date':
+        case 'receipt':
 
         $message['subject'] = $params['options']['subject'];
+        $message['body'][] = $params['body'];
         $message['options'] = $params['options'];       
         
         break;
@@ -291,11 +294,12 @@ function mail_attachment($email, $file, $message = null , $options = null) {
         
     if (\Drupal::moduleHandler()->moduleExists('swiftmailer')) {
         //Swift mailer contribution module is available
-
+        $settings = new GlobalSettings(0);
+        $receipt = $settings->get('mail_receipt');
         $currentuserMail = \Drupal::currentUser()->getEmail();
         if($currentuserMail == NULL) {
             $dom = explode("/" , $GLOBALS['base_url']);
-            $currentuserMail = "no_reply@" . $dom[2];
+            $currentuserMail = "no-reply@" . $dom[2];
         } else {
             $name = \Drupal::currentUser()->getAccountName();
         }
@@ -321,6 +325,7 @@ function mail_attachment($email, $file, $message = null , $options = null) {
             if(isset($options['stripe']) && $options['stripe'] == 1){
                 $params['options']['checkout'] = $options['checkout'];
             }
+            
             switch($options['origin']) {
                 case 'project_documents':
                     $params['options']['origin'] = t('Project');
@@ -340,7 +345,11 @@ function mail_attachment($email, $file, $message = null , $options = null) {
 
             foreach ($email as $value) {
                 if($value != '') {
-                    
+                    //insert receipt log
+                    if($receipt){
+                        $params['options']['receipt'] = "<img src='".\Drupal::request()->getSchemeAndHttpHost()."/ek_admin_receipt/mail"
+                        . "?org=".$currentuserMail."&ts=".time()."&r=".$value."&c=".$filename."' class='receipt' />";
+                    }
                     if ($target_user = user_load_by_mail($value)) {
                         $target_langcode = $target_user->getPreferredLangcode();
                     } else {

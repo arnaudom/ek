@@ -364,7 +364,7 @@ class EditCompanyForm extends FormBase
         } else {
             $form['i']['path'] = array(
                 '#type' => 'item',
-                '#markup' => t("Set private data folder in <a href='@c'>configuration</a> before uploading files", ['@c' => '../../../admin/config/media/file-system']),
+                '#markup' => $this->t("Set private data folder in <a href='@c'>configuration</a> before uploading files", ['@c' => '../../../admin/config/media/file-system']),
             );
         }
 

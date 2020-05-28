@@ -71,7 +71,7 @@ class CompanyAccessForm extends FormBase
         
         $form['list'] = array(
             '#type' => 'details',
-            '#title' => t("Select users with access "),
+            '#title' => $this->t("Select users with access "),
             '#collapsible' => true,
             '#open' => isset($users) ? true : false,
             '#tree' => true,
@@ -156,7 +156,7 @@ class CompanyAccessForm extends FormBase
                 ->fetchField();
         $name = \Drupal::currentUser()->getAccountName();
         $a = array('@u' => $name, '@c' => $company, '@d' => $access);
-        $log = t("User @u has given access to company @c for users id @d", $a);
+        $log = $this->t("User @u has given access to company @c for users id @d", $a);
         \Drupal::logger('ek_admin')->notice($log);
     }
 }
