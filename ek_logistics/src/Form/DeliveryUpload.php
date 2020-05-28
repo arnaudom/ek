@@ -39,7 +39,7 @@ class DeliveryUpload extends FormBase {
         if ($form_state->get('step') == 1) {
             $form['csv']['file'] = array(
                 '#type' => 'file',
-                '#title' => t('Upload'),
+                '#title' => $this->t('Upload'),
                 '#description' => $this->t('Select file to upload'),
             );
 

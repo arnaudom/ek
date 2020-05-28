@@ -312,7 +312,10 @@ class receiving extends FormBase {
                     $link = '';
                 }
 
-
+                $form['value'] = array(
+                    '#type' => 'hidden',
+                    '#value' => 'row',
+                );
                 $form['description'] = array(
                     '#id' => 'description-' . $n,
                     '#type' => 'textfield',
@@ -351,6 +354,7 @@ class receiving extends FormBase {
                     'description' => &$form['description'],
                     'quantity' => &$form['quantity'],
                     'delete' => &$form['delete'],
+                    'value' => &$form['value'],
                 );
 
                 $form['items']['itemTable']['#rows'][$n] = array(
@@ -365,6 +369,7 @@ class receiving extends FormBase {
                 unset($form['description']);
                 unset($form['quantity']);
                 unset($form['delete']);
+                unset($form['value']);
             }
         } //details of current records
 
@@ -381,6 +386,10 @@ class receiving extends FormBase {
 
         for ($i = $n; $i <= $max; $i++) {
             $z++;
+            $form['value'] = array(
+                    '#type' => 'hidden',
+                    '#value' => 'row',
+            );
             $form['description'] = array(
                 '#id' => 'description-' . $n,
                 '#type' => 'textfield',
@@ -408,6 +417,7 @@ class receiving extends FormBase {
                 'description' => &$form['description'],
                 'quantity' => &$form['quantity'],
                 'delete' => &$form['delete'],
+                'value' => &$form['value'],
             );
 
             $form['items']['itemTable']['#rows'][$n] = array(
@@ -415,12 +425,14 @@ class receiving extends FormBase {
                     array('data' => &$form['description']),
                     array('data' => &$form['quantity']),
                     array('data' => &$form['delete']),
+                    
                 ),
                 'id' => array($n),
             );
             unset($form['description']);
             unset($form['quantity']);
             unset($form['delete']);
+            unset($form['value']);
             $n++;
         }
 
@@ -430,9 +442,9 @@ class receiving extends FormBase {
             '#attributes' => array('id' => 'itemsCount'),
         );
 
-//
+        //
         // FOOTER
-//
+        //
 
         if (($form_state->get('num_items') > 0) || isset($detail)) {
             if ($form_state->get('num_items') > 0) {

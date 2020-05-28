@@ -110,7 +110,7 @@ class Filter extends FormBase {
                 $link = Url::fromRoute('ek_address_book.new', array())->toString();
                 $new = "<a title='" . $this->t('new') . "' href='" . $link . "'>" . $parent . "</a>";
                 $form['options']['client'] = array(
-                    '#markup' => t("You do not have any @n in your record.", ['@n' => $new]),
+                    '#markup' => $this->t("You do not have any @n in your record.", ['@n' => $new]),
                 );
             }
         } else {

@@ -3,14 +3,14 @@ ek_logistics_update:
   defaults:
     _controller: '\Drupal\ek_logistics\Controller\SettingsController::update'
   requirements:
-    _permission: 'access administration pages'
+    _permission: 'administer site configuration'
 
 ek_logistics_install:
   path: '/ek_logistics/install'
   defaults:
     _controller: '\Drupal\ek_logistics\Controller\InstallController::install'
   requirements:
-    _permission: 'access administration pages'
+    _permission: 'administer site configuration'
     
 ek_logistics_settings:
   path: '/ek_logistics/admin/settings'

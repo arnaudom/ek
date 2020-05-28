@@ -62,7 +62,7 @@ class Delivery extends FormBase {
         $url = Url::fromRoute('ek_logistics_list_delivery', array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url">List</a>', array('@url' => $url)),
+            '#markup' => $this->t('<a href="@url">List</a>', array('@url' => $url)),
         );
         if (isset($id) && $id != null) {
 
@@ -141,7 +141,7 @@ class Delivery extends FormBase {
             '#options' => $company,
             '#required' => true,
             '#default_value' => isset($data->head) ? $data->head : null,
-            '#title' => t('Header'),
+            '#title' => $this->t('Header'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
         );
@@ -198,7 +198,7 @@ class Delivery extends FormBase {
             '#size' => 12,
             '#required' => true,
             '#default_value' => isset($data->ddate) ? $data->ddate : date('Y-m-d'),
-            '#title' => t('Delivery date'),
+            '#title' => $this->t('Delivery date'),
         );
 
 
@@ -808,6 +808,7 @@ class Delivery extends FormBase {
         // Items
 
         $rows = $form_state->getValue('itemTable');
+        $sum = 0;
         if (!empty($rows)) {
             foreach ($rows as $key => $row) {
                 if ($row['value'] != 'footer') {

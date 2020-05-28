@@ -51,20 +51,20 @@ class TodayReceivingBlock extends BlockBase
 
         while ($r = $data->fetchObject()) {
             $client = \Drupal\ek_address_book\AddressBookData::geturl($r->supplier);
-            $link = "<a title='" . t('view') . "' href='"
+            $link = "<a title='" . $this->t('view') . "' href='"
                     . Url::fromRoute('ek_logistics.receiving.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
             $content .= "<li>" . $link . ":  " . $client . "</li>";
         }
 
         if ($content == '') {
-            $content = "<li>" . t('No receiving for today') . "</li>";
+            $content = "<li>" . $this->t('No receiving for today') . "</li>";
         }
         $list = "<ul>" . $content . "</ul>";
 
 
         $items = array();
-        $items['title'] = t('Today receiving');
+        $items['title'] = $this->t('Today receiving');
         $items['content'] = $list;
         $items['id'] = 'todayreceiving';
 

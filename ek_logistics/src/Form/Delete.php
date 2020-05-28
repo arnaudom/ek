@@ -42,7 +42,7 @@ class Delete extends FormBase {
         }
         $form['del_logistics'] = array(
             '#type' => 'item',
-            '#markup' => t('Record ref. @p', array('@p' => $data->serial)),
+            '#markup' => $this->t('Record ref. @p', array('@p' => $data->serial)),
         );
 
 
@@ -62,7 +62,7 @@ class Delete extends FormBase {
 
         $form['alert'] = array(
             '#type' => 'item',
-            '#markup' => t('Are you sure you want to delete this record ?'),
+            '#markup' => $this->t('Are you sure you want to delete this record ?'),
         );
 
         $form['actions'] = array(
@@ -77,7 +77,7 @@ class Delete extends FormBase {
 
         $form['actions']['cancel'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url" >Cancel</a>', array('@url' => Url::fromRoute($route, [], [])->toString())),
+            '#markup' => $this->t('<a href="@url" >Cancel</a>', array('@url' => Url::fromRoute($route, [], [])->toString())),
         );
 
         return $form;

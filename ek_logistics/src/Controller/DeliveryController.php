@@ -532,7 +532,7 @@ class DeliveryController extends ControllerBase {
             $items['message'] = ['#markup' => $this->t('@document cannot be deleted.', array('@document' => $this->t('Delivery')))];
             $items['description'] = ['#markup' => $opt[$data->status]];
             $url = Url::fromRoute('ek_logistics_list_delivery', [], [])->toString();
-            $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>", ['@url' => $url])];
+            $items['link'] = ['#markup' => $this->t("<a href=\"@url\">Back</a>", ['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',

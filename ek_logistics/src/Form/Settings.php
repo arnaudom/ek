@@ -74,17 +74,17 @@ class Settings extends FormBase {
                 '#required' => true,
                 '#options' => array(0 => $this->t('before print only'), 1 => $this->t('after print only'), 2 => $this->t('after invoicing')),
                 '#default_value' => $settings->get('edit'),
-                '#title' => t('Edit orders'),
+                '#title' => $this->t('Edit orders'),
             );
 
             $form['custom_pdf_form'] = array(
                 '#type' => 'file',
-                '#description' => t('Upload a new pdf form template. Only files with a ".inc" extension is allowed.'),
+                '#description' => $this->t('Upload a new pdf form template. Only files with a ".inc" extension is allowed.'),
             );
 
             $form['custom_excel_form'] = array(
                 '#type' => 'file',
-                '#description' => t('Upload a new excel form template. Only files with a ".inc" extension is allowed.'),
+                '#description' => $this->t('Upload a new excel form template. Only files with a ".inc" extension is allowed.'),
             );
 
 

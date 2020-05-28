@@ -51,20 +51,20 @@ class TodayDeliveryBlock extends BlockBase
 
         while ($r = $data->fetchObject()) {
             $client = \Drupal\ek_address_book\AddressBookData::geturl($r->client);
-            $link = "<a title='" . t('view') . "' href='"
+            $link = "<a title='" . $this->t('view') . "' href='"
                     . Url::fromRoute('ek_logistics.delivery.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
             $content .= "<li>" . $link . ":  " . $client . "</li>";
         }
 
         if ($content == '') {
-            $content = "<li>" . t('No delivery for today') . "</li>";
+            $content = "<li>" . $this->t('No delivery for today') . "</li>";
         }
         $list = "<ul>" . $content . "</ul>";
 
 
         $items = array();
-        $items['title'] = t('Today deliveries');
+        $items['title'] = $this->t('Today deliveries');
         $items['content'] = $list;
         $items['id'] = 'todaydeliveries';
 

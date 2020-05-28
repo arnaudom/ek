@@ -82,8 +82,8 @@ class FilterPrint extends FormBase {
             $form['filters']['signature'] = array(
                 '#type' => 'checkbox',
                 '#default_value' => isset($_SESSION['logisticprintfilter']['signature'][0]) ? $_SESSION['logisticprintfilter']['signature'][0] : 0,
-                '#attributes' => array('title' => t('signature')),
-                '#title' => t('signature'),
+                '#attributes' => array('title' => $this->t('signature')),
+                '#title' => $this->t('signature'),
                 '#states' => array(
                     'invisible' => array(':input[name="output_format"]' => array('value' => 2),
                     ),
@@ -93,7 +93,7 @@ class FilterPrint extends FormBase {
             $form['filters']['s_pos'] = [
                 '#type' => 'number',
                 '#default_value' => isset($_SESSION['logisticprintfilter']['signature'][1]) ? $_SESSION['logisticprintfilter']['signature'][1] : 40,
-                '#description' => t('Adjust vertical position'),
+                '#description' => $this->t('Adjust vertical position'),
                 '#min' => 10,
                 '#max' => 100,
                 '#step' => 10,

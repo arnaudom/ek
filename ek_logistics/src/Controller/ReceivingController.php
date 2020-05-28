@@ -480,7 +480,7 @@ class ReceivingController extends ControllerBase {
             $items['message'] = ['#markup' => $this->t('@document cannot be deleted.', array('@document' => $doc))];
             $items['description'] = ['#markup' => $opt[$data->status]];
             $url = Url::fromRoute($route, [], [])->toString();
-            $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>", ['@url' => $url])];
+            $items['link'] = ['#markup' => $this->t("<a href=\"@url\">Back</a>", ['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
