@@ -492,7 +492,7 @@ class AddressBookController extends ControllerBase
             $items['message'] = ['#markup' => $this->t('This address book entry cannot be deleted.')];
             $items['description'] = ['#markup' => $this->t('Used in @m', ['@m' => $modules])];
             $url = Url::fromRoute('ek_address_book.view', ['abid' => $abid], [])->toString();
-            $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>", ['@url' => $url])];
+            $items['link'] = ['#markup' => $this->t("<a href=\"@url\">Back</a>", ['@url' => $url])];
             
             $response = [
                 '#items' => $items,

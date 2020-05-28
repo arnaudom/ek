@@ -87,6 +87,13 @@ class DeleteAddressBook extends FormBase
                 ->condition('abid', $form_state->getValue('abid'))
                 ->execute();
         
+        $schema = Database::getConnection('external_db', 'external_db')->schema();
+        if ($schema->tableExists('ek_address_book_bank')) {
+            Database::getConnection('external_db', 'external_db')
+                    ->delete('ek_address_book_bank')
+                    ->condition('abid', $form_state->getValue('abid'))
+                    ->execute();
+        }
         if ($delete) {
             \Drupal::messenger()->addStatus(t('The address book entry has been deleted'));
             $form_state->setRedirect("ek_address_book.search");
