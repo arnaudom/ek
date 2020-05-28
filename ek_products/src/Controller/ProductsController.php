@@ -309,6 +309,7 @@ class ProductsController extends ControllerBase {
         $coid = implode(',', $access);
 
         $del = 0;
+        $usage = [];
         if (!in_array($data->coid, $access)) {
             $del = 1;
             $message = $this->t('You are not authorized to delete this item.');
@@ -316,7 +317,7 @@ class ProductsController extends ControllerBase {
             $del = 1;
             $message = $this->t('The stock value for this item is not null: @u units. It cannot be deleted.', array('@u' => $data->units));
         } elseif ($this->moduleHandler->moduleExists('ek_sales') || $this->moduleHandler->moduleExists('ek_logistics')) {
-            $usage = [];
+            
             if ($this->moduleHandler->moduleExists('ek_sales')) {
                 $query = 'SELECT count(id) from {ek_sales_invoice_details} WHERE itemdetail=:id';
                 $invoice = Database::getConnection('external_db', 'external_db')
@@ -375,7 +376,7 @@ class ProductsController extends ControllerBase {
             }
 
             $url = Url::fromRoute('ek_products.view', ['id' => $id], [])->toString();
-            $items['link'] = ['#markup' => t("<a href=\"@url\">Back</a>", ['@url' => $url])];
+            $items['link'] = ['#markup' => $this->t("<a href=\"@url\">Back</a>", ['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',

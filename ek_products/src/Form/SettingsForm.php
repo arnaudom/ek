@@ -39,12 +39,12 @@ class SettingsForm extends FormBase {
          * when user wishes to have different types denominations
          */
         $default_price_labels = [
-            'selling_price_label' => t('normal price'),
-            'promo_price_label' => t('promotion price'),
-            'discount_price_label' => t('discount price'),
-            'exp_selling_price_label' => t('export normal price'),
-            'exp_promo_price_label' => t('export promotion price'),
-            'exp_discount_price_label' => t('export discount price'),
+            'selling_price_label' => $this->t('normal price'),
+            'promo_price_label' => $this->t('promotion price'),
+            'discount_price_label' => $this->t('discount price'),
+            'exp_selling_price_label' => $this->t('export normal price'),
+            'exp_promo_price_label' => $this->t('export promotion price'),
+            'exp_discount_price_label' => $this->t('export discount price'),
         ];
 
         $form['price'] = array(
@@ -57,32 +57,32 @@ class SettingsForm extends FormBase {
             '#type' => 'textfield',
             '#required' => true,
             '#default_value' => ($this->settings->get('selling_price_label')) ? $this->settings->get('selling_price_label') : $default_price_labels['selling_price_label'],
-            '#title' => t('1st price label'),
-            '#description' => t('I.e. "normal price"'),
+            '#title' => $this->t('1st price label'),
+            '#description' => $this->t('I.e. "normal price"'),
         );
 
         $form['price']['promo_price_label'] = array(
             '#type' => 'textfield',
             '#required' => true,
             '#default_value' => ($this->settings->get('promo_price_label')) ? $this->settings->get('promo_price_label') : $default_price_labels['promo_price_label'],
-            '#title' => t('2nd price label'),
-            '#description' => t('I.e. "promotion price"'),
+            '#title' => $this->t('2nd price label'),
+            '#description' => $this->t('I.e. "promotion price"'),
         );
 
         $form['price']['discount_price_label'] = array(
             '#type' => 'textfield',
             '#required' => true,
             '#default_value' => ($this->settings->get('discount_price_label')) ? $this->settings->get('discount_price_label') : $default_price_labels['discount_price_label'],
-            '#title' => t('3rd price label'),
-            '#description' => t('I.e. "discount price"'),
+            '#title' => $this->t('3rd price label'),
+            '#description' => $this->t('I.e. "discount price"'),
         );
 
         $form['price']['exp_selling_price_label'] = array(
             '#type' => 'textfield',
             '#required' => true,
             '#default_value' => ($this->settings->get('exp_selling_price_label')) ? $this->settings->get('exp_selling_price_label') : $default_price_labels['exp_selling_price_label'],
-            '#title' => t('4th price label'),
-            '#description' => t('I.e. "export normal price"'),
+            '#title' => $this->t('4th price label'),
+            '#description' => $this->t('I.e. "export normal price"'),
         );
 
 
@@ -90,16 +90,16 @@ class SettingsForm extends FormBase {
             '#type' => 'textfield',
             '#required' => true,
             '#default_value' => ($this->settings->get('exp_promo_price_label')) ? $this->settings->get('exp_promo_price_label') : $default_price_labels['exp_promo_price_label'],
-            '#title' => t('5th price label'),
-            '#description' => t('I.e. "export promotion price"'),
+            '#title' => $this->t('5th price label'),
+            '#description' => $this->t('I.e. "export promotion price"'),
         );
 
         $form['price']['exp_discount_price_label'] = array(
             '#type' => 'textfield',
             '#required' => true,
             '#default_value' => ($this->settings->get('exp_discount_price_label')) ? $this->settings->get('exp_discount_price_label') : $default_price_labels['exp_discount_price_label'],
-            '#title' => t('6th price label'),
-            '#description' => t('I.e. "export discount price"'),
+            '#title' => $this->t('6th price label'),
+            '#description' => $this->t('I.e. "export discount price"'),
         );
 
 
@@ -117,22 +117,22 @@ class SettingsForm extends FormBase {
         $form['format']['barcode'] = array(
             '#type' => 'checkbox',
             '#default_value' => ($this->settings->get('auto_barcode')) ? $this->settings->get('auto_barcode') : 0,
-            '#title' => t('barcode'),
+            '#title' => $this->t('barcode'),
         );
         $form['format']['main_description'] = array(
             '#type' => 'checkbox',
             '#default_value' => ($this->settings->get('auto_main_description')) ? $this->settings->get('auto_main_description') : 0,
-            '#title' => t('main description'),
+            '#title' => $this->t('main description'),
         );
         $form['format']['supplier_code'] = array(
             '#type' => 'checkbox',
             '#default_value' => ($this->settings->get('auto_supplier_code')) ? $this->settings->get('auto_supplier_code') : 0,
-            '#title' => t('supplier code'),
+            '#title' => $this->t('supplier code'),
         );
         $form['format']['other_description'] = array(
             '#type' => 'checkbox',
             '#default_value' => ($this->settings->get('auto_other_description')) ? $this->settings->get('auto_other_description') : 0,
-            '#title' => t('other description'),
+            '#title' => $this->t('other description'),
         );
 
         $form['actions'] = array('#type' => 'actions');

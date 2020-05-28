@@ -90,7 +90,7 @@ class EditProductsForm extends FormBase {
                 );
                 $form['info'] = array(
                     '#type' => 'item',
-                    '#markup' => "<div class='messages messages--warning'>" . t('Item will be duplicated under different itemcode') . '</div>',
+                    '#markup' => "<div class='messages messages--warning'>" . $this->t('Item will be duplicated under different itemcode') . '</div>',
                 );
             }
         } else {
@@ -105,7 +105,7 @@ class EditProductsForm extends FormBase {
 
         $form['active'] = array(
             '#type' => 'select',
-            '#options' => array(0 => t('stop'), 1 => t('active')),
+            '#options' => array(0 => $this->t('stop'), 1 => $this->t('active')),
             '#default_value' => isset($r['active']) ? $r['active'] : '1',
             '#required' => true,
         );
@@ -132,7 +132,7 @@ class EditProductsForm extends FormBase {
             '#size' => 30,
             '#maxlength' => 150,
             '#default_value' => isset($r['type']) ? $r['type'] : null,
-            '#description' => isset($r['type']) ? t('Item type') : t('Item type. The first 3 letters of the type will be used to generate an item code for new item.'),
+            '#description' => isset($r['type']) ? $this->t('Item type') : $this->t('Item type. The first 3 letters of the type will be used to generate an item code for new item.'),
             '#required' => true,
             '#disabled' => isset($r['type']) ? true : false,
             '#autocomplete_route_name' => 'ek_look_up_item_type',
@@ -144,7 +144,7 @@ class EditProductsForm extends FormBase {
             '#type' => 'textarea',
             '#default_value' => isset($r['description1']) ? $r['description1'] : null,
             '#rows' => 3,
-            '#attributes' => array('placeholder' => t('Main description')),
+            '#attributes' => array('placeholder' => $this->t('Main description')),
         );
 
         //second description can be used to add formatted text
@@ -153,7 +153,7 @@ class EditProductsForm extends FormBase {
             '#type' => 'text_format',
             '#default_value' => isset($r['description2']) ? $r['description2'] : null,
             '#rows' => 2,
-            '#attributes' => array('placeholder' => t('Extended description')),
+            '#attributes' => array('placeholder' => $this->t('Extended description')),
             '#format' => isset($r->format) ? $r->format : 'restricted_html',
         );
 
@@ -162,12 +162,12 @@ class EditProductsForm extends FormBase {
             '#size' => 50,
             '#maxlength' => 255,
             '#default_value' => isset($r['supplier_code']) ? $r['supplier_code'] : null,
-            '#attributes' => array('placeholder' => t('supplier item code if any')),
-            '#title' => t('supplier item code'),
+            '#attributes' => array('placeholder' => $this->t('supplier item code if any')),
+            '#title' => $this->t('supplier item code'),
         );
 
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
-            $supplier = array('' => t('Not applicable'));
+            $supplier = array('' => $this->t('Not applicable'));
             $supplier += \Drupal\ek_address_book\AddressBookData::addresslist(2);
             if (!empty($supplier)) {
                 $form['supplier'] = array(
@@ -175,18 +175,18 @@ class EditProductsForm extends FormBase {
                     '#size' => 1,
                     '#options' => $supplier,
                     '#default_value' => isset($r['supplier']) ? $r['supplier'] : null,
-                    '#title' => t('supplier name'),
+                    '#title' => $this->t('supplier name'),
                 );
             } else {
                 $new = l(t('supplier'), 'new_contact');
                 $form['supplier'] = array(
-                    '#markup' => t("You do not have any $new in your record."),
+                    '#markup' => $this->t("You do not have any $new in your record."),
                     '#default_value' => 0,
                 );
             }
         } else {
             $form['supplier'] = array(
-                '#markup' => t('You do not have any supplier list.'),
+                '#markup' => $this->t('You do not have any supplier list.'),
                 '#default_value' => 0,
             );
         }
@@ -196,7 +196,7 @@ class EditProductsForm extends FormBase {
             '#size' => 30,
             '#maxlength' => 150,
             '#default_value' => isset($r['department']) ? $r['department'] : null,
-            '#description' => t('item department'),
+            '#description' => $this->t('item department'),
             '#autocomplete_route_name' => 'ek_look_up_item_department',
         );
 
@@ -205,7 +205,7 @@ class EditProductsForm extends FormBase {
             '#size' => 30,
             '#maxlength' => 150,
             '#default_value' => isset($r['family']) ? $r['family'] : null,
-            '#description' => t('item family'),
+            '#description' => $this->t('item family'),
             '#autocomplete_route_name' => 'ek_look_up_item_family',
         );
 
@@ -215,7 +215,7 @@ class EditProductsForm extends FormBase {
             '#size' => 30,
             '#maxlength' => 150,
             '#default_value' => isset($r['collection']) ? $r['collection'] : null,
-            '#description' => t('item collection'),
+            '#description' => $this->t('item collection'),
             '#autocomplete_route_name' => 'ek_look_up_item_collection',
         );
 
@@ -225,7 +225,7 @@ class EditProductsForm extends FormBase {
             '#size' => 30,
             '#maxlength' => 150,
             '#default_value' => isset($r['color']) ? $r['color'] : null,
-            '#description' => t('item color'),
+            '#description' => $this->t('item color'),
             '#autocomplete_route_name' => 'ek_look_up_item_color',
         );
 
@@ -235,7 +235,7 @@ class EditProductsForm extends FormBase {
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['size']) ? $r['size'] : null,
-            '#description' => t('item size'),
+            '#description' => $this->t('item size'),
         );
 
 
@@ -245,7 +245,7 @@ class EditProductsForm extends FormBase {
 
         $form['logistic'] = array(
             '#type' => 'details',
-            '#title' => t('Logistics'),
+            '#title' => $this->t('Logistics'),
             '#collapsible' => true,
             '#collapsed' => false,
         );
@@ -255,8 +255,8 @@ class EditProductsForm extends FormBase {
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rp['units']) ? $rp['units'] : null,
-            '#attributes' => array('placeholder' => t('stock in units')),
-            '#description' => t('stock in units'),
+            '#attributes' => array('placeholder' => $this->t('stock in units')),
+            '#description' => $this->t('stock in units'),
             '#prefix' => '<div class="container-inline">',
         );
 
@@ -265,7 +265,7 @@ class EditProductsForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 15,
             '#default_value' => isset($rp['unit_measure']) ? $rp['unit_measure'] : null,
-            '#description' => t('unit measure'),
+            '#description' => $this->t('unit measure'),
             '#autocomplete_route_name' => 'ek_look_up_item_measure',
             '#suffix' => '</div>',
         );
@@ -276,8 +276,8 @@ class EditProductsForm extends FormBase {
             '#size' => 25,
             '#maxlength' => 255,
             '#default_value' => isset($rp['item_size']) ? $rp['item_size'] : null,
-            '#attributes' => array('placeholder' => t('item size')),
-            '#description' => t('item size'),
+            '#attributes' => array('placeholder' => $this->t('item size')),
+            '#description' => $this->t('item size'),
         );
 
         $form['logistic']['pack_size'] = array(
@@ -285,8 +285,8 @@ class EditProductsForm extends FormBase {
             '#size' => 25,
             '#maxlength' => 255,
             '#default_value' => isset($rp['pack_size']) ? $rp['pack_size'] : null,
-            '#attributes' => array('placeholder' => t('pack size')),
-            '#description' => t('pack size'),
+            '#attributes' => array('placeholder' => $this->t('pack size')),
+            '#description' => $this->t('pack size'),
         );
 
         $form['logistic']['qty_pack'] = array(
@@ -294,8 +294,8 @@ class EditProductsForm extends FormBase {
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rp['qty_pack']) ? $rp['qty_pack'] : null,
-            '#attributes' => array('placeholder' => t('quantity per pack')),
-            '#description' => t('quantity per pack'),
+            '#attributes' => array('placeholder' => $this->t('quantity per pack')),
+            '#description' => $this->t('quantity per pack'),
         );
 
         $form['logistic']['c20'] = array(
@@ -303,8 +303,8 @@ class EditProductsForm extends FormBase {
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rp['c20']) ? $rp['c20'] : null,
-            '#attributes' => array('placeholder' => t('20ft quantity')),
-            '#description' => t('quantity per 20ft container'),
+            '#attributes' => array('placeholder' => $this->t('20ft quantity')),
+            '#description' => $this->t('quantity per 20ft container'),
         );
 
         $form['logistic']['c40'] = array(
@@ -312,8 +312,8 @@ class EditProductsForm extends FormBase {
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rp['c40']) ? $rp['c40'] : null,
-            '#attributes' => array('placeholder' => t('40ft quantity')),
-            '#description' => t('quantity per 40ft container'),
+            '#attributes' => array('placeholder' => $this->t('40ft quantity')),
+            '#description' => $this->t('quantity per 40ft container'),
         );
 
         $form['logistic']['min_order'] = array(
@@ -321,8 +321,8 @@ class EditProductsForm extends FormBase {
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rp['min_order']) ? $rp['min_order'] : null,
-            '#attributes' => array('placeholder' => t('minimum order')),
-            '#description' => t('minimum order quantity'),
+            '#attributes' => array('placeholder' => $this->t('minimum order')),
+            '#description' => $this->t('minimum order quantity'),
         );
 
         /*
@@ -332,7 +332,7 @@ class EditProductsForm extends FormBase {
           '#maxlength' => 255,
           '#default_value' => isset($rp['logistic_cost']) ? $rp['logistic_cost'] :null,
           '#attributes' => array('placeholder'=>t('cost')),
-          '#description' => t('logistic cost'),
+          '#description' => $this->t('logistic cost'),
           );
          */
 
@@ -342,7 +342,7 @@ class EditProductsForm extends FormBase {
 
         $form['price'] = array(
             '#type' => 'details',
-            '#title' => t('Prices'),
+            '#title' => $this->t('Prices'),
             '#collapsible' => true,
             '#collapsed' => false,
         );
@@ -353,7 +353,7 @@ class EditProductsForm extends FormBase {
             '#maxlength' => 255,
             '#default_value' => isset($rs['purchase_price']) ? $rs['purchase_price'] : 0,
             '#attributes' => array(),
-            '#title' => t('purchase price'),
+            '#title' => $this->t('purchase price'),
             '#prefix' => '<div class="container-inline">',
         );
 
@@ -366,7 +366,7 @@ class EditProductsForm extends FormBase {
                 '#size' => 1,
                 '#options' => array_combine($currency, $currency),
                 '#default_value' => isset($rs['currency']) ? $rs['currency'] : null,
-                '#title' => t('purchase currency'),
+                '#title' => $this->t('purchase currency'),
                 '#suffix' => '</div>',
             );
         } else {
@@ -377,7 +377,7 @@ class EditProductsForm extends FormBase {
                 '#size' => 1,
                 '#options' => $currency,
                 '#default_value' => isset($rs['currency']) ? $rs['currency'] : null,
-                '#title' => t('purchase currency'),
+                '#title' => $this->t('purchase currency'),
                 '#suffix' => '</div>',
             );
         }
@@ -386,7 +386,7 @@ class EditProductsForm extends FormBase {
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($rs['date_purchase']) ? date('Y-m-d', $rs['date_purchase']) : date('Y-m-d'),
-            '#description' => t('date purchase'),
+            '#description' => $this->t('date purchase'),
         );
 
 
@@ -396,7 +396,7 @@ class EditProductsForm extends FormBase {
             '#size' => 1,
             '#options' => array_combine($currency, $currency),
             '#default_value' => isset($rs['loc_currency']) ? $rs['loc_currency'] : null,
-            '#title' => t('local prices currency'),
+            '#title' => $this->t('local prices currency'),
         );
 
         $form['price']['selling_price'] = array(
@@ -436,7 +436,7 @@ class EditProductsForm extends FormBase {
             '#size' => 1,
             '#options' => array_combine($currency, $currency),
             '#default_value' => isset($rs['exp_currency']) ? $rs['exp_currency'] : null,
-            '#title' => t('export currency'),
+            '#title' => $this->t('export currency'),
         );
 
         $form['price']['exp_selling_price'] = array(
@@ -455,7 +455,7 @@ class EditProductsForm extends FormBase {
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rs['promo_price']) ? $rs['exp_promo_price'] : 0,
-            '#attributes' => array('placeholder' => t('promotion price'), 'class' => array('amount')),
+            '#attributes' => array('placeholder' => $this->t('promotion price'), 'class' => array('amount')),
             '#title' => $this->settings->get('exp_promo_price_label'),
         );
 
@@ -486,7 +486,7 @@ class EditProductsForm extends FormBase {
 
         $form['bc'] = array(
             '#type' => 'details',
-            '#title' => t('Barcodes'),
+            '#title' => $this->t('Barcodes'),
             '#collapsible' => true,
             '#collapsed' => false,
         );
@@ -496,8 +496,8 @@ class EditProductsForm extends FormBase {
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 255,
-            '#attributes' => array('placeholder' => t('new barcode')),
-            '#description' => t('add new barcode'),
+            '#attributes' => array('placeholder' => $this->t('new barcode')),
+            '#description' => $this->t('add new barcode'),
         );
 
 
@@ -505,7 +505,7 @@ class EditProductsForm extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#options' => array_combine($encode, $encode),
-            '#title' => t('encoding'),
+            '#title' => $this->t('encoding'),
         );
 
 
@@ -529,7 +529,7 @@ class EditProductsForm extends FormBase {
 
                 $form['bc']['barcode_delete' . $i] = array(
                     '#type' => 'checkbox',
-                    '#title' => t('delete barcode'),
+                    '#title' => $this->t('delete barcode'),
                     '#attributes' => array('onclick' => "jQuery('#edit-barcode$i ').toggleClass( 'delete');"),
                 );
 
@@ -538,8 +538,8 @@ class EditProductsForm extends FormBase {
                     '#size' => 30,
                     '#maxlength' => 255,
                     '#default_value' => isset($rb['barcode']) ? $rb['barcode'] : null,
-                    '#attributes' => array('placeholder' => t('barcode')),
-                    '#description' => t('barcode'),
+                    '#attributes' => array('placeholder' => $this->t('barcode')),
+                    '#description' => $this->t('barcode'),
                 );
 
 
@@ -548,7 +548,7 @@ class EditProductsForm extends FormBase {
                     '#size' => 1,
                     '#options' => array_combine($encode, $encode),
                     '#default_value' => isset($rb['encode']) ? $rb['encode'] : null,
-                    '#title' => t('encoding'),
+                    '#title' => $this->t('encoding'),
                 );
 
                 $i++;
@@ -572,7 +572,7 @@ class EditProductsForm extends FormBase {
             $i = 0;
             $form['images'] = array(
                 '#type' => 'details',
-                '#title' => t('Images'),
+                '#title' => $this->t('Images'),
                 '#collapsible' => true,
                 '#collapsed' => false,
             );
@@ -597,7 +597,7 @@ class EditProductsForm extends FormBase {
                     );
                     $form['images']['image_delete' . $i] = array(
                         '#type' => 'checkbox',
-                        '#title' => t('delete image'),
+                        '#title' => $this->t('delete image'),
                         '#attributes' => array('onclick' => "jQuery('#image$i').toggleClass('delete');"),
                     );
 

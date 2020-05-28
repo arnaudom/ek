@@ -57,7 +57,7 @@ class DeleteItem extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url" >Items list</a>', array('@url' => Url::fromRoute('ek_products.list', [], [])->toString())),
+            '#markup' => $this->t('<a href="@url" >Items list</a>', array('@url' => Url::fromRoute('ek_products.list', [], [])->toString())),
         );
 
 
@@ -72,11 +72,11 @@ class DeleteItem extends FormBase {
 
         $form['edit_item'] = array(
             '#type' => 'item',
-            '#markup' => t('Item ref. @p', array('@p' => $data->itemcode)),
+            '#markup' => $this->t('Item ref. @p', array('@p' => $data->itemcode)),
         );
         $form['edit_item2'] = array(
             '#type' => 'item',
-            '#markup' => t('Item description') . ": " . $data->description1,
+            '#markup' => $this->t('Item description') . ": " . $data->description1,
         );
 
 
@@ -92,7 +92,7 @@ class DeleteItem extends FormBase {
 
         $form['alert'] = array(
             '#type' => 'item',
-            '#markup' => t('Are you sure you want to delete this item ?'),
+            '#markup' => $this->t('Are you sure you want to delete this item ?'),
         );
 
         $form['actions']['record'] = array(

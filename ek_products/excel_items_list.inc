@@ -91,89 +91,92 @@ $objPHPExcel->getActiveSheet()->getStyle('A3:Z3')->applyFromArray(
 // insert from line 4
 $l=3;
 while ($d = $data->fetchObject()){
-$c=0; // column index
-$l++; // line index
+    $c=0; // column index
+    $l++; // line index
 
-if ($l & 1) {
-$row="A".$l.":Z".$l;
-$objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-$objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('e6e6fa');
-}
-
-if($d->active == '0') {
-   $active = (string) t('No');
-} else {
-   $active = (string) t('Yes');
-}
-
-$b=array();
-    foreach($barcode as $v) {
-
-        if($v['itemcode'] == $d->itemcode) {
-            array_push($b,$v['barcode']);
-        }
-
+    if ($l & 1) {
+        $row="A".$l.":Z".$l;
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('e6e6fa');
     }
 
-$bc = implode(',', $b);
+    if($d->active == '0') {
+       $active = (string) t('No');
+    } else {
+       $active = (string) t('Yes');
+    }
+    $dp = '-';
+    if($d->date_purchase != '') {
+        $dp = date('Y-m-d', $d->date_purchase);
+    }
+    $b=array();
+        foreach($barcode as $v) {
+
+            if($v['itemcode'] == $d->itemcode) {
+                array_push($b,$v['barcode']);
+            }
+
+        }
+
+    $bc = implode(',', $b);
 
 
-// insert lines rows 
+    // insert lines rows 
 
-$cell=$columns[$c].$l;
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->itemcode);
+    $cell=$columns[$c].$l;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->itemcode);
 
-$c++;$cell=$columns[$c].$l;
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->name);
-$c++;$cell=$columns[$c].$l;
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->description1);
-$c++;$cell=$columns[$c].$l;
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->description2);
-$c++;$cell=$columns[$c].$l;
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->a_name);
-$c++;$cell=$columns[$c].$l;
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $active);
-$c++;$cell=$columns[$c].$l; 
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->purchase_price);
-$c++;$cell=$columns[$c].$l;        
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->currency);
-$c++;$cell=$columns[$c].$l;  
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, date('Y-m-d', $d->date_purchase) );
-$c++;$cell=$columns[$c].$l; 
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->selling_price);
-$c++;$cell=$columns[$c].$l;  
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->promo_price);
-$c++;$cell=$columns[$c].$l;  
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->discount_price);
-$c++;$cell=$columns[$c].$l; 
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->exp_selling_price);
-$c++;$cell=$columns[$c].$l; 
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->exp_promo_price);
-$c++;$cell=$columns[$c].$l; 
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->exp_discount_price);
-$c++;$cell=$columns[$c].$l; 
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->loc_currency);
-$c++;$cell=$columns[$c].$l; 
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->exp_currency);
-$c++;$cell=$columns[$c].$l;
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->units);
-$c++;$cell=$columns[$c].$l;
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->unit_measure);
-$c++;$cell=$columns[$c].$l; 
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->item_size);
-$c++;$cell=$columns[$c].$l;  
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->pack_size);
-$c++;$cell=$columns[$c].$l; 
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->qty_pack);
-$c++;$cell=$columns[$c].$l; 
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $bc);
-$c++;$cell=$columns[$c].$l;
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->department);
-$c++;$cell=$columns[$c].$l;  
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->family);
-$c++;$cell=$columns[$c].$l; 
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->collection);
-$c++;$cell=$columns[$c].$l; 
+    $c++;$cell=$columns[$c].$l;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->name);
+    $c++;$cell=$columns[$c].$l;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->description1);
+    $c++;$cell=$columns[$c].$l;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->description2);
+    $c++;$cell=$columns[$c].$l;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->a_name);
+    $c++;$cell=$columns[$c].$l;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $active);
+    $c++;$cell=$columns[$c].$l; 
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->purchase_price);
+    $c++;$cell=$columns[$c].$l;        
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->currency);
+    $c++;$cell=$columns[$c].$l;  
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $dp);
+    $c++;$cell=$columns[$c].$l; 
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->selling_price);
+    $c++;$cell=$columns[$c].$l;  
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->promo_price);
+    $c++;$cell=$columns[$c].$l;  
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->discount_price);
+    $c++;$cell=$columns[$c].$l; 
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->exp_selling_price);
+    $c++;$cell=$columns[$c].$l; 
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->exp_promo_price);
+    $c++;$cell=$columns[$c].$l; 
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->exp_discount_price);
+    $c++;$cell=$columns[$c].$l; 
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->loc_currency);
+    $c++;$cell=$columns[$c].$l; 
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->exp_currency);
+    $c++;$cell=$columns[$c].$l;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->units);
+    $c++;$cell=$columns[$c].$l;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->unit_measure);
+    $c++;$cell=$columns[$c].$l; 
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->item_size);
+    $c++;$cell=$columns[$c].$l;  
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->pack_size);
+    $c++;$cell=$columns[$c].$l; 
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->qty_pack);
+    $c++;$cell=$columns[$c].$l; 
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $bc);
+    $c++;$cell=$columns[$c].$l;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->department);
+    $c++;$cell=$columns[$c].$l;  
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->family);
+    $c++;$cell=$columns[$c].$l; 
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d->collection);
+    $c++;$cell=$columns[$c].$l; 
 }
 
 

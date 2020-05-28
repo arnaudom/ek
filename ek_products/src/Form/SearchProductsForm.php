@@ -30,7 +30,7 @@ class SearchProductsForm extends FormBase {
             '#type' => 'textfield',
             '#id' => 'product-search-form',
             '#size' => 50,
-            '#attributes' => array('placeholder' => t('Enter item code, barcode or name')),
+            '#attributes' => array('placeholder' => $this->t('Enter item code, barcode or name')),
             '#attached' => ['library' => array('ek_products/ek_products.autocomplete')],
         );
 

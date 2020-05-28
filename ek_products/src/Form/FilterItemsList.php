@@ -54,7 +54,7 @@ class FilteritemsList extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-        $company = array('%' => t('Any'));
+        $company = array('%' => $this->t('Any'));
         $company += AccessCheck::CompanyListByUid();
 
         $form['filters'] = array(
@@ -71,7 +71,7 @@ class FilteritemsList extends FormBase {
             '#size' => 1,
             '#options' => $company,
             '#default_value' => isset($_SESSION['itemfilter']['coid']) ? $_SESSION['itemfilter']['coid'] : null,
-            '#title' => t('Entity'),
+            '#title' => $this->t('Entity'),
             '#required' => true,
                 //'#prefix' => "<div class='container-inline'>",
         );
@@ -79,8 +79,8 @@ class FilteritemsList extends FormBase {
 
         $form['filters']['tag'] = array(
             '#type' => 'select',
-            '#title' => t('Tags'),
-            '#options' => array('%' => t('Any'), 'type' => t('Type'), 'department' => t('Department'), 'family' => t('Family'), 'collection' => t('Collection'), 'color' => t('Color')),
+            '#title' => $this->t('Tags'),
+            '#options' => array('%' => $this->t('Any'), 'type' => $this->t('Type'), 'department' => $this->t('Department'), 'family' => $this->t('Family'), 'collection' => $this->t('Collection'), 'color' => $this->t('Color')),
             '#default_value' => isset($_SESSION['itemfilter']['tag']) ? $_SESSION['itemfilter']['tag'] : 'working',
             '#ajax' => array(
                 'callback' => array($this, 'tagvalue'),
@@ -120,7 +120,7 @@ class FilteritemsList extends FormBase {
             if (!$query == null) {
                 $options = Database::getConnection('external_db', 'external_db')->query($query)->fetchCol();
             } else {
-                $options = array('%' => t('Any'));
+                $options = array('%' => $this->t('Any'));
             }
         } else {
             $options = array();
@@ -136,13 +136,13 @@ class FilteritemsList extends FormBase {
 
         $form['filters']['status'] = array(
             '#type' => 'select',
-            '#title' => t('Status'),
-            '#options' => array('%' => t('Any'), '1' => t('Active'), '0' => t('Stop')),
+            '#title' => $this->t('Status'),
+            '#options' => array('%' => $this->t('Any'), '1' => $this->t('Active'), '0' => $this->t('Stop')),
             '#default_value' => isset($_SESSION['itemfilter']['status']) ? $_SESSION['itemfilter']['status'] : 'working',
         );
         $form['filters']['paging'] = array(
             '#type' => 'number',
-            '#title' => t('items per page'),
+            '#title' => $this->t('items per page'),
             '#default_value' => isset($_SESSION['itemfilter']['paging']) ? $_SESSION['itemfilter']['paging'] : 25,
             '#min' => 25,
             '#max' => 10000,
