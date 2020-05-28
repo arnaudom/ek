@@ -45,12 +45,7 @@ class ShareForm extends FormBase
             $query->fields('d', ['uid', 'filename', 'share', 'share_uid', 'share_gid', 'expire']);
             $query->condition('id', $id);
             $data = $query->execute()->fetchObject();
-            
-            /*
-            $query = 'SELECT uid, filename,share,share_uid, share_gid,expire FROM {ek_documents} WHERE id=:id';
-            $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
-            */
-            
+                                    
             $users = [];
             foreach (\Drupal\user\Entity\User::loadMultiple() as $account) {
                 if ($account->isActive() && $account->id() != $data->uid) {
@@ -62,11 +57,7 @@ class ShareForm extends FormBase
                     }
                 }
             }
-            /*
-            $users = \Drupal\user\Entity\User::loadMultiple();
-            //$users = db_query('SELECT uid,name FROM {users_field_data} WHERE uid<>:u AND uid<>0 AND status <> :s order by name'
-                    , array(':u' => $data->uid, ':s' => 0))->fetchAllKeyed();
-                    */
+            
             $default = explode(',', $data->share_uid);
 
             $form['item'] = array(
