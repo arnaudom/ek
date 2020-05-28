@@ -34,7 +34,7 @@ class AccessAdmin extends FormBase {
         $country = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':t' => 1, ':c' => $cid))
                 ->fetchAllKeyed();
-        $country_list = array('0' => t('Any'));
+        $country_list = array('0' => $this->t('Any'));
         $country_list += $country;
 
 
@@ -45,7 +45,7 @@ class AccessAdmin extends FormBase {
             '#size' => 50,
             '#required' => true,
             '#default_value' => isset($_SESSION['paccessadmin']['username']) ? $_SESSION['paccessadmin']['username'] : null,
-            '#attributes' => array('placeholder' => t('Enter user name')),
+            '#attributes' => array('placeholder' => $this->t('Enter user name')),
             '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
         );
 
@@ -54,7 +54,7 @@ class AccessAdmin extends FormBase {
             '#size' => 1,
             '#options' => $country_list,
             '#default_value' => isset($_SESSION['paccessadmin']['cid']) ? $_SESSION['paccessadmin']['cid'] : 0,
-            '#title' => t('country'),
+            '#title' => $this->t('country'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
         );
@@ -62,7 +62,7 @@ class AccessAdmin extends FormBase {
 
 
 
-        $client = array('%' => t('Any'));
+        $client = array('%' => $this->t('Any'));
         $query = "SELECT DISTINCT b.id,name from {ek_address_book} b "
                 . "INNER JOIN {ek_project} p "
                 . "ON b.id=p.client_id order by b.name";
@@ -75,7 +75,7 @@ class AccessAdmin extends FormBase {
             '#size' => 1,
             '#options' => $client,
             '#default_value' => isset($_SESSION['paccessadmin']['client']) ? $_SESSION['paccessadmin']['client'] : '%',
-            '#title' => t('client'),
+            '#title' => $this->t('client'),
             '#attributes' => array('style' => array('width:200px;')),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div>',
@@ -85,7 +85,7 @@ class AccessAdmin extends FormBase {
             ),
         );
 
-        $suppliers = array('%' => t('Any'));
+        $suppliers = array('%' => $this->t('Any'));
         $query = "SELECT supplier_offer from {ek_project_description} "
                 . "WHERE supplier_offer <> :s";
         $data = Database::getConnection('external_db', 'external_db')
@@ -106,7 +106,7 @@ class AccessAdmin extends FormBase {
             '#size' => 1,
             '#options' => $suppliers,
             '#default_value' => isset($_SESSION['paccessadmin']['supplier']) ? $_SESSION['paccessadmin']['supplier'] : '%',
-            '#title' => t('supplier'),
+            '#title' => $this->t('supplier'),
             '#attributes' => array('style' => array('width:200px;')),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div>',
@@ -119,7 +119,7 @@ class AccessAdmin extends FormBase {
 
 
 
-        $type = array('%' => t('Any'));
+        $type = array('%' => $this->t('Any'));
         $type += Database::getConnection('external_db', 'external_db')
                 ->query("SELECT id,type from {ek_project_type} order by type")
                 ->fetchAllKeyed();
@@ -130,7 +130,7 @@ class AccessAdmin extends FormBase {
             '#size' => 1,
             '#options' => $type,
             '#default_value' => isset($_SESSION['paccessadmin']['type']) ? $_SESSION['paccessadmin']['type'] : '%',
-            '#title' => t('category'),
+            '#title' => $this->t('category'),
             '#prefix' => "<div class='row'><div class='cell'>",
             '#suffix' => '</div>',
             '#states' => array(
@@ -143,9 +143,9 @@ class AccessAdmin extends FormBase {
         $form['filters'][3]['status'] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#options' => array('%' => t('Any'), 'open' => t('open'), 'awarded' => t('awarded'), 'completed' => t('completed'), 'closed' => t('closed')),
+            '#options' => array('%' => $this->t('Any'), 'open' => $this->t('open'), 'awarded' => $this->t('awarded'), 'completed' => $this->t('completed'), 'closed' => $this->t('closed')),
             '#default_value' => isset($_SESSION['paccessadmin']['status']) ? $_SESSION['paccessadmin']['status'] : '%',
-            '#title' => t('status'),
+            '#title' => $this->t('status'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
             '#states' => array(

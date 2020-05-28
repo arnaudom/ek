@@ -49,11 +49,11 @@ class LastCreatedProjectsBlock extends BlockBase {
                 $title = '';
             } elseif (in_array(\Drupal::currentUser()->id(), $notify)) {
                 $cls = "follow check-square";
-                $title = t("Unfollow");
+                $title = $this->t("Unfollow");
                 $detail = $d->pname . '-' . $d->b_name;
             } else {
                 $cls = 'follow square';
-                $title = t("Follow");
+                $title = $this->t("Follow");
                 $detail = $d->pname . '-' . $d->b_name;
             }
 

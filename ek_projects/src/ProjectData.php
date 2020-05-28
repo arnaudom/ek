@@ -277,7 +277,8 @@ class ProjectData {
                 ->fetchObject();
 
         //if settings are set to block all at page level, and page is blocked, return False
-        if ($s['access_level'] == 1 && !self::validate_access($data->id)) {
+        
+        if (isset($s['access_level']) && $s['access_level'] == 1 && !self::validate_access($data->id)) {
             return false;
         }
 

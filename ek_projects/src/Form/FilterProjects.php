@@ -32,7 +32,7 @@ class FilterProjects extends FormBase {
         $cid = implode(',', $access);
         $query = "SELECT id,name from {ek_country} where status=:t AND FIND_IN_SET (id, :c ) order by name";
         $country = Database::getConnection('external_db', 'external_db')->query($query, array(':t' => 1, ':c' => $cid))->fetchAllKeyed();
-        $country_list = array('0' => t('Any'));
+        $country_list = array('0' => $this->t('Any'));
         $country_list += $country;
 
 
@@ -44,7 +44,7 @@ class FilterProjects extends FormBase {
         $form['filters'][0]['keyword'] = array(
             '#type' => 'textfield',
             '#maxlength' => 150,
-            '#attributes' => array('placeholder' => t('Search with keyword, ref No.')),
+            '#attributes' => array('placeholder' => $this->t('Search with keyword, ref No.')),
             '#default_value' => isset($_SESSION['pjfilter']['keyword']) ? $_SESSION['pjfilter']['keyword'] : null,
         );
 
@@ -54,7 +54,7 @@ class FilterProjects extends FormBase {
             '#size' => 1,
             '#options' => $country_list,
             '#default_value' => isset($_SESSION['pjfilter']['cid']) ? $_SESSION['pjfilter']['cid'] : 0,
-            '#title' => t('country'),
+            '#title' => $this->t('country'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
             '#states' => array(
@@ -66,7 +66,7 @@ class FilterProjects extends FormBase {
 
 
 
-        $client = array('%' => t('Any'));
+        $client = array('%' => $this->t('Any'));
         $query = "SELECT DISTINCT b.id,name from {ek_address_book} b "
                 . "INNER JOIN {ek_project} p "
                 . "ON b.id=p.client_id order by b.name";
@@ -80,7 +80,7 @@ class FilterProjects extends FormBase {
             '#multiple' => true,
             '#options' => $client,
             '#default_value' => isset($_SESSION['pjfilter']['client']) ? $_SESSION['pjfilter']['client'] : '%',
-            '#title' => t('client'),
+            '#title' => $this->t('client'),
             '#attributes' => array('style' => array('width:200px;')),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div>',
@@ -90,7 +90,7 @@ class FilterProjects extends FormBase {
             ),
         );
 
-        $suppliers = array('%' => t('Any'));
+        $suppliers = array('%' => $this->t('Any'));
         $query = "SELECT supplier_offer from {ek_project_description} "
                 . "WHERE supplier_offer <> :s";
         $data = Database::getConnection('external_db', 'external_db')
@@ -113,7 +113,7 @@ class FilterProjects extends FormBase {
             '#multiple' => true,
             '#options' => $suppliers,
             '#default_value' => isset($_SESSION['pjfilter']['supplier']) ? $_SESSION['pjfilter']['supplier'] : '%',
-            '#title' => t('supplier'),
+            '#title' => $this->t('supplier'),
             '#attributes' => array('style' => array('width:200px;')),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div>',
@@ -126,7 +126,7 @@ class FilterProjects extends FormBase {
 
 
 
-        $type = array('%' => t('Any'));
+        $type = array('%' => $this->t('Any'));
         $type += Database::getConnection('external_db', 'external_db')
                 ->query("SELECT id,type from {ek_project_type} order by type")
                 ->fetchAllKeyed();
@@ -137,7 +137,7 @@ class FilterProjects extends FormBase {
             '#size' => 1,
             '#options' => $type,
             '#default_value' => isset($_SESSION['pjfilter']['type']) ? $_SESSION['pjfilter']['type'] : '%',
-            '#title' => t('category'),
+            '#title' => $this->t('category'),
             '#prefix' => "<div class='row'><div class='cell'>",
             '#suffix' => '</div>',
             '#states' => array(
@@ -150,9 +150,9 @@ class FilterProjects extends FormBase {
         $form['filters'][3]['status'] = array(
             '#type' => 'select',
             '#size' => 1,
-            '#options' => array('%' => t('Any'), 'open' => t('open'), 'awarded' => t('awarded'), 'completed' => t('completed'), 'closed' => t('closed')),
+            '#options' => array('%' => $this->t('Any'), 'open' => $this->t('open'), 'awarded' => $this->t('awarded'), 'completed' => $this->t('completed'), 'closed' => $this->t('closed')),
             '#default_value' => isset($_SESSION['pjfilter']['status']) ? $_SESSION['pjfilter']['status'] : '%',
-            '#title' => t('status'),
+            '#title' => $this->t('status'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
             '#states' => array(
@@ -164,8 +164,8 @@ class FilterProjects extends FormBase {
         $form['filters'][4]['date'] = array(
             '#type' => 'checkbox',
             '#default_value' => isset($_SESSION['pjfilter']['date']) ? $_SESSION['pjfilter']['date'] : '1',
-            '#attributes' => array('title' => t('edit date')),
-            '#title' => t('Date'),
+            '#attributes' => array('title' => $this->t('edit date')),
+            '#title' => $this->t('Date'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
             '#states' => array(

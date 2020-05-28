@@ -69,8 +69,8 @@ class Merge extends FormBase {
             '#maxlength' => 150,
             '#required' => true,
             '#default_value' => $form_state->getValue('source_project') ? $form_state->getValue('source_project') : null,
-            '#attributes' => array('placeholder' => t('Ex. 123')),
-            '#title' => t('Project to be merged'),
+            '#attributes' => array('placeholder' => $this->t('Ex. 123')),
+            '#title' => $this->t('Project to be merged'),
             '#autocomplete_route_name' => 'ek_look_up_projects',
             '#autocomplete_route_parameters' => array('level' => 'main', 'status' => '0'),
             '#prefix' => '<div class="container-inline">',
@@ -79,7 +79,7 @@ class Merge extends FormBase {
 
         $form['next'] = array(
             '#type' => 'submit',
-            '#value' => t('Select'),
+            '#value' => $this->t('Select'),
             '#suffix' => '</div>',
         );
 
@@ -108,8 +108,8 @@ class Merge extends FormBase {
                 '#maxlength' => 150,
                 '#required' => true,
                 '#default_value' => $form_state->getValue('destination_project') ? $form_state->getValue('destination_project') : null,
-                '#attributes' => array('placeholder' => t('Ex. 123')),
-                '#title' => t('Project destination'),
+                '#attributes' => array('placeholder' => $this->t('Ex. 123')),
+                '#title' => $this->t('Project destination'),
                 '#autocomplete_route_name' => 'ek_look_up_projects',
                 '#autocomplete_route_parameters' => array('level' => 'main', 'status' => '0'),
             );

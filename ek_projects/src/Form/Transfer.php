@@ -64,7 +64,7 @@ class Transfer extends FormBase {
             '#size' => 50,
             '#required' => true,
             '#default_value' => $form_state->getValue('username') ? $form_state->getValue('username') : null,
-            '#attributes' => array('placeholder' => t('Enter user name')),
+            '#attributes' => array('placeholder' => $this->t('Enter user name')),
             '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
             '#prefix' => '<div class="container-inline">',
         );
@@ -72,7 +72,7 @@ class Transfer extends FormBase {
 
         $form['next'] = array(
             '#type' => 'submit',
-            '#value' => t('Select'),
+            '#value' => $this->t('Select'),
             '#suffix' => '</div>',
         );
 
@@ -88,7 +88,7 @@ class Transfer extends FormBase {
             if ($projects->rowcount() < 1) {
                 $form['info'] = array(
                     '#type' => 'item',
-                    '#markup' => t('There is no data to transfer for this user'),
+                    '#markup' => $this->t('There is no data to transfer for this user'),
                 );
             } else {
                 $form['list'] = array(
@@ -125,11 +125,11 @@ class Transfer extends FormBase {
 
                 $form['tousername'] = array(
                     '#type' => 'textfield',
-                    '#title' => t('Transfer to'),
+                    '#title' => $this->t('Transfer to'),
                     '#size' => 50,
                     '#required' => true,
                     '#default_value' => null,
-                    '#attributes' => array('placeholder' => t('Enter user name')),
+                    '#attributes' => array('placeholder' => $this->t('Enter user name')),
                     '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
                 );
 

@@ -62,7 +62,7 @@ class Notification extends FormBase {
 
         $form['item'] = array(
             '#type' => 'item',
-            '#markup' => t('Send a short notification regarding project @p .', array('@p' => $p->pcode)),
+            '#markup' => $this->t('Send a short notification regarding project @p .', array('@p' => $p->pcode)),
         );
         $form['pid'] = array(
             '#type' => 'hidden',
@@ -74,7 +74,7 @@ class Notification extends FormBase {
             '#type' => 'textarea',
             '#rows' => 2,
             '#id' => 'edit-email',
-            '#attributes' => array('placeholder' => t('enter user(s) separated by comma (autocomplete enabled).')),
+            '#attributes' => array('placeholder' => $this->t('enter user(s) separated by comma (autocomplete enabled).')),
             '#attached' => array(
                 'library' => array(
                     'ek_projects/ek_projects_autocomplete',
@@ -85,8 +85,8 @@ class Notification extends FormBase {
 
         $form['priority'] = array(
             '#type' => 'radios',
-            '#options' => array('3' => t('low'), '2' => t('normal'), '1' => t('high')),
-            '#title' => t('priority'),
+            '#options' => array('3' => $this->t('low'), '2' => $this->t('normal'), '1' => $this->t('high')),
+            '#title' => $this->t('priority'),
             '#default_value' => 2,
             '#attributes' => array('class' => array('container-inline')),
         );
@@ -95,7 +95,7 @@ class Notification extends FormBase {
         $form['message'] = array(
             '#type' => 'textarea',
             '#default_value' => '',
-            '#attributes' => array('placeholder' => t('your message')),
+            '#attributes' => array('placeholder' => $this->t('your message')),
         );
 
         if ($form_state->get('alert') <> '') {
@@ -132,7 +132,7 @@ class Notification extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->getValue('email') == '') {
-            $form_state->set('alert', t('there is no receipient'));
+            $form_state->set('alert', $this->t('there is no receipient'));
             $form_state->setRebuild();
             //$form_state->setErrorByName('email', $this->t('there is no receipient'));
         } else {
@@ -158,8 +158,8 @@ class Notification extends FormBase {
             }
 
             if ($error <> '') {
-                //$form_state->setErrorByName("email", t('Invalid user(s)') . ': ' . $error);
-                $form_state->set('alert', t('Invalid user(s)') . ': ' . rtrim($error, ','));
+                //$form_state->setErrorByName("email", $this->t('Invalid user(s)') . ': ' . $error);
+                $form_state->set('alert', $this->t('Invalid user(s)') . ': ' . rtrim($error, ','));
                 $form_state->setRebuild();
             } else {
                 $form_state->setValue('notify_who', rtrim($notify_who, ','));
@@ -187,14 +187,14 @@ class Notification extends FormBase {
         $params['options']['pcode'] = $p->pcode;
         $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), true);
         $params['options']['priority'] = $form_state->getValue('priority');
-        $priority = array('3' => t('low'), '2' => t('normal'), '1' => t('high'));
+        $priority = array('3' => $this->t('low'), '2' => $this->t('normal'), '1' => $this->t('high'));
 
         $code = explode("-", $p->pcode);
         $code = array_reverse($code);
         if ($form_state->getValue('priority') == 1) {
-            $params['subject'] = '[' . t('urgent') . '] ' . t("Notification") . ": " . $code[0] . ' | ' . $p->pcode;
+            $params['subject'] = '[' . $this->t('urgent') . '] ' . $this->t("Notification") . ": " . $code[0] . ' | ' . $p->pcode;
         } else {
-            $params['subject'] = t("Notification") . ": " . $code[0] . ' | ' . $p->pcode;
+            $params['subject'] = $this->t("Notification") . ": " . $code[0] . ' | ' . $p->pcode;
             ;
         }
 
@@ -228,7 +228,7 @@ class Notification extends FormBase {
             }
 
             $text = $params['text'] . '<br/>'
-                    . t('Project ref.') . ': '
+                    . $this->t('Project ref.') . ': '
                     . $params['options']['url'];
 
             ek_message_register(
@@ -252,9 +252,9 @@ class Notification extends FormBase {
         //
         
         $text = $params['text'];
-        $text .= "<br>" . t('Project ref.') . ': ' . $code[0] . ' | ' . $p->pcode;
+        $text .= "<br>" . $this->t('Project ref.') . ': ' . $code[0] . ' | ' . $p->pcode;
         $params['body'] = $text;
-        $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), null, 1, null, t('Open'));
+        $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), null, 1, null, $this->t('Open'));
         foreach ($addresses as $email) {
             if (trim($email) != null) {
                 if ($target_user = user_load_by_mail($email)) {
@@ -273,9 +273,9 @@ class Notification extends FormBase {
         }
 
         if ($error <> '') {
-            $form_state->set('alert', t('Error sending to') . ': ' . rtrim($error, ','));
+            $form_state->set('alert', $this->t('Error sending to') . ': ' . rtrim($error, ','));
         } else {
-            $form_state->set('alert', t('Message sent'));
+            $form_state->set('alert', $this->t('Message sent'));
         }
         $form_state->setRebuild();
     }

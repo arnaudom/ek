@@ -57,14 +57,14 @@ class ProjectMessagesBlock extends BlockBase {
                 if (in_array(\Drupal::currentUser()->id(), $to) || $d->from_uid == \Drupal::currentUser()->id()) {
                     $from = User::load($d->from_uid);
                     $link = Url::fromRoute('ek_messaging_read', array('id' => $d->id))->toString();
-                    $read = "<a href='" . $link . "'>" . t('open') . "</a>";
+                    $read = "<a href='" . $link . "'>" . $this->t('open') . "</a>";
                     $list .= '<li title="' . $from->getAccountName . '" >'
                             . substr($d->subject, 0, 20) . ' - ' . date('Y-m-d', $d->stamp) . ' [' . $read . ']</li>';
                 }
             }
 
             $list .= '</ul>';
-            $items['title'] = t('Messages');
+            $items['title'] = $this->t('Messages');
             $items['content'] = $list;
         }
 

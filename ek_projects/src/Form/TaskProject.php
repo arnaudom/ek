@@ -359,7 +359,7 @@ class TaskProject extends FormBase {
                 }
 
                 if ($error <> '') {
-                    //$error = t('invalid user(s)') . ': ' .rtrim($error, ',');
+                    //$error = $this->t('invalid user(s)') . ': ' .rtrim($error, ',');
                     $form_state->setErrorByName("notify_who", $this->t('Invalid user(s)') . ': ' . $error);
                 } else {
                     $form_state->setValue('notify_who', $notify_who);
@@ -368,7 +368,7 @@ class TaskProject extends FormBase {
             $or = $form_state->getValue('notify') == 2 || $form_state->getValue('notify') == 3 || $form_state->getValue('notify') == 4;
 
             if ($form_state->getValue('end') == '' && ($or)) {
-                //$error .= '<br/>' . t('You need a deadline for the selected period.');
+                //$error .= '<br/>' . $this->t('You need a deadline for the selected period.');
                 $form_state->setErrorByName("end", $this->t('You need a deadline for the selected period.') . ': ' . $error);
             }
         }

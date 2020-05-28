@@ -72,7 +72,7 @@ class NewProject extends FormBase {
         if (empty($type)) {
             $form['type'] = array(
                 '#type' => 'item',
-                '#markup' => t('You did not set any project type. Create a <a href="@t" >type</a> before proceeding or contact administrator.', array('@t' => $link)),
+                '#markup' => $this->t('You did not set any project type. Create a <a href="@t" >type</a> before proceeding or contact administrator.', array('@t' => $link)),
             );
         } else {
             $form['type'] = array(
@@ -80,15 +80,15 @@ class NewProject extends FormBase {
                 '#size' => 1,
                 '#options' => $type,
                 '#required' => true,
-                '#title' => t('Category'),
-                '#description' => t('<a href="@t" >edit categories</a>', array('@t' => $link)),
+                '#title' => $this->t('Category'),
+                '#description' => $this->t('<a href="@t" >edit categories</a>', array('@t' => $link)),
             );
 
 
             if (($form_state->getValue('type')) == '') {
                 $form['next'] = array(
                     '#type' => 'submit',
-                    '#value' => t('Next') . ' >>',
+                    '#value' => $this->t('Next') . ' >>',
                     '#states' => array(
                         // Hide data fieldset when class is empty.
                         'invisible' => array(
@@ -111,7 +111,7 @@ class NewProject extends FormBase {
                 '#size' => 1,
                 '#options' => $country,
                 '#required' => true,
-                '#title' => t('Country'),
+                '#title' => $this->t('Country'),
             );
 
             if ($this->moduleHandler->moduleExists('ek_address_book')) {
@@ -123,18 +123,18 @@ class NewProject extends FormBase {
                         '#size' => 1,
                         '#options' => $client,
                         '#required' => true,
-                        '#title' => t('Client'),
+                        '#title' => $this->t('Client'),
                         '#attributes' => array('style' => array('width:300px;')),
                     );
                 } else {
                     $link = Url::fromRoute('ek_address_book.new', array())->toString();
                     $form['client'] = array(
-                        '#markup' => t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
+                        '#markup' => $this->t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
                     );
                 }
             } else {
                 $form['client'] = array(
-                    '#markup' => t('You do not have any client list.'),
+                    '#markup' => $this->t('You do not have any client list.'),
                 );
             }
 
@@ -143,8 +143,8 @@ class NewProject extends FormBase {
                 '#size' => 35,
                 '#maxlength' => 50,
                 '#required' => true,
-                '#title' => t('Project name'),
-                    //'#description' => t('project name'),
+                '#title' => $this->t('Project name'),
+                    //'#description' => $this->t('project name'),
             );
 
             $form['level'] = array(
@@ -152,8 +152,8 @@ class NewProject extends FormBase {
                 '#size' => 1,
                 '#options' => array('Main project' => 'Main project', 'Sub project' => 'Sub project'),
                 //'#required' => TRUE,
-                '#title' => t('Project level'),
-                '#description' => t('Main projects can have sub projects. Sub projects must be linked to a main project'),
+                '#title' => $this->t('Project level'),
+                '#description' => $this->t('Main projects can have sub projects. Sub projects must be linked to a main project'),
             );
 
             $form['main'] = array(
@@ -161,11 +161,11 @@ class NewProject extends FormBase {
                 '#size' => 48,
                 '#maxlength' => 150,
                 //'#required' => TRUE,
-                //'#title' => t('main project reference'),
-                '#attributes' => array('placeholder' => t('Ex. 123')),
+                //'#title' => $this->t('main project reference'),
+                '#attributes' => array('placeholder' => $this->t('Ex. 123')),
                 '#autocomplete_route_name' => 'ek_look_up_projects',
                 '#autocomplete_route_parameters' => array('level' => 'main', 'status' => '0'),
-                '#description' => t('main project reference'),
+                '#description' => $this->t('main project reference'),
                 '#states' => array(
                     // Hide data fieldset when class is empty.
                     'invisible' => array(
@@ -176,15 +176,15 @@ class NewProject extends FormBase {
 
             $form['access'] = array(
                 '#type' => 'checkbox',
-                '#title' => t('Access'),
-                '#description' => t('grant access to me only'),
+                '#title' => $this->t('Access'),
+                '#description' => $this->t('grant access to me only'),
                 '#default_value' => 0,
             );
 
 
             $form['notify'] = array(
                 '#type' => 'checkbox',
-                '#title' => t('Notify users'),
+                '#title' => $this->t('Notify users'),
                 '#default_value' => 1,
                 '#states' => array(
                     'unchecked' => array(

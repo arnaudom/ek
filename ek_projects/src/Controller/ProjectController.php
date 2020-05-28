@@ -434,7 +434,7 @@ class ProjectController extends ControllerBase {
 
             //system log view
             $a = array('@u' => \Drupal::currentUser()->getAccountName(), '@d' => $pcode);
-            $log = t("User @u has opened project @d", $a);
+            $log = $this->t("User @u has opened project @d", $a);
             \Drupal::logger('ek_projects')->notice($log);
 
 
@@ -1158,7 +1158,7 @@ class ProjectController extends ControllerBase {
             return array(
                 '#theme' => 'ek_projects_view',
                 '#items' => $data,
-                '#title' => $code_serial . ' | ' . t('Reference') . ': ' . $pcode,
+                '#title' => $code_serial . ' | ' . $this->t('Reference') . ': ' . $pcode,
                 '#attached' => array(
                     'drupalSettings' => array('ek_projects' => $settings),
                     'library' => array('ek_projects/ek_projects_view', 'ek_admin/ek_admin_css'),
@@ -1446,7 +1446,7 @@ class ProjectController extends ControllerBase {
     public function tracker(Request $request) {
         $id = $request->query->get('id');
         $first = null;
-        $today = time('U') - 86400;
+        $today = time() - 86400;
         if (isset($id)) {
 
             //$query = "SELECT uid,name from {users_field_data}";

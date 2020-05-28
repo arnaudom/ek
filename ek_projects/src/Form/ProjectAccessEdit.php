@@ -61,7 +61,7 @@ class ProjectAccessEdit extends FormBase {
             $info = '';
         } else {
             $disabled = true;
-            $info = '<p class="red">' . t('Only project owner can edit access.') . '</p>';
+            $info = '<p class="red">' . $this->t('Only project owner can edit access.') . '</p>';
         }
 
         if ($data->share == 0) {
@@ -74,7 +74,7 @@ class ProjectAccessEdit extends FormBase {
             $deny = explode(',', $data->deny);
         }
 
-        $info .= '<p class="help">' . t('By default access is given to users '
+        $info .= '<p class="help">' . $this->t('By default access is given to users '
                         . 'who have access to the country of the project unless custom access has been defined by owner.') . '</p>';
 
         $form['item'] = array(
@@ -91,7 +91,7 @@ class ProjectAccessEdit extends FormBase {
             '#default_value' => $default_users,
             '#attributes' => array('class' => ['form-select-multiple']),
             '#attached' => array(
-                'drupalSettings' => array('left' => t('Restricted'), 'right' => t('Allowed')),
+                'drupalSettings' => array('left' => $this->t('Restricted'), 'right' => $this->t('Allowed')),
                 'library' => array('ek_admin/ek_admin_multi-select'),
             ),
         );
@@ -112,14 +112,14 @@ class ProjectAccessEdit extends FormBase {
             $form['actions']['access'] = array(
                 '#id' => 'accessbutton',
                 '#type' => 'submit',
-                '#value' => t('Save'),
+                '#value' => $this->t('Save'),
                 '#attributes' => array('class' => array('use-ajax-submit')),
             );
         }
 
         if ($form_state->get('message') <> '') {
             $form['message'] = array(
-                '#markup' => "<div class='red'>" . t('Data record') . ": " . $form_state->get('message') . "</div>",
+                '#markup' => "<div class='red'>" . $this->t('Data record') . ": " . $form_state->get('message') . "</div>",
             );
             $form_state->set('message', '');
             $form_state->setRebuild();
@@ -202,14 +202,14 @@ class ProjectAccessEdit extends FormBase {
 
 
         if ($owner == '0') {
-            $form_state->set('message', t('unchanged'));
+            $form_state->set('message', $this->t('unchanged'));
             $form_state->setRebuild();
         } elseif ($update) {
             Cache::invalidateTags(['project_page_view']);
-            $form_state->set('message', t('saved'));
+            $form_state->set('message', $this->t('saved'));
             $form_state->setRebuild();
         } else {
-            $form_state->set('message', t('error'));
+            $form_state->set('message', $this->t('error'));
             $form_state->setRebuild();
         }
     }

@@ -32,7 +32,7 @@ class SearchProject extends FormBase {
         $form['p']['search'] = array(
             '#type' => 'textfield',
             '#size' => 30,
-            '#attributes' => array('placeholder' => t('I.e. "123" or keyword'), 'class' => array()),
+            '#attributes' => array('placeholder' => $this->t('I.e. "123" or keyword'), 'class' => array()),
             '#required' => true,
             '#prefix' => '<div class="container-inline">',
         );
@@ -96,7 +96,7 @@ class SearchProject extends FormBase {
 
             while ($d = $data2->fetchObject()) {
                 $id = $d->id;
-                $list .= '<li>[' . t('document') . '] ' . $d->pname . ' - ' . ProjectData::geturl($id) . '</li>';
+                $list .= '<li>[' . $this->t('document') . '] ' . $d->pname . ' - ' . ProjectData::geturl($id) . '</li>';
                 $i++;
             }
         }

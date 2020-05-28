@@ -64,7 +64,7 @@ class DeleteTaskForm extends FormBase {
         $url = Url::fromRoute('ek_projects_view', array('id' => $pid), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url" >Project</a>', array('@url' => $url)),
+            '#markup' => $this->t('<a href="@url" >Project</a>', array('@url' => $url)),
         );
 
 
@@ -79,20 +79,20 @@ class DeleteTaskForm extends FormBase {
 
         $form['edit_item'] = array(
             '#type' => 'item',
-            '#markup' => t('Task for project : @p', array('@p' => $data->pcode)),
+            '#markup' => $this->t('Task for project : @p', array('@p' => $data->pcode)),
         );
         $form['edit_item2'] = array(
             '#type' => 'item2',
-            '#markup' => t('Description : @p', array('@p' => $data->task)),
+            '#markup' => $this->t('Description : @p', array('@p' => $data->task)),
         );
 
         $del = 1;
         if (!$access) {
             $del = 0;
-            $message = t('You are not authorized to delete this task from this project');
+            $message = $this->t('You are not authorized to delete this task from this project');
         } elseif (!$perm) {
             $del = 0;
-            $message = t('You are not editor. the task cannot be deleted.');
+            $message = $this->t('You are not editor. the task cannot be deleted.');
         }
 
 
@@ -107,7 +107,7 @@ class DeleteTaskForm extends FormBase {
             );
             $form['alert'] = array(
                 '#type' => 'item',
-                '#markup' => t('Are you sure you want to delete this task ?'),
+                '#markup' => $this->t('Are you sure you want to delete this task ?'),
             );
 
             $form['actions']['record'] = array(
@@ -156,7 +156,7 @@ class DeleteTaskForm extends FormBase {
             $param = serialize(
                     array(
                         'id' => $form_state->getValue('for_pid'),
-                        'field' => t('Task deleted by') . ": " . $name,
+                        'field' => $this->t('Task deleted by') . ": " . $name,
                         'value' => $task
                     )
             );

@@ -70,7 +70,7 @@ class EditTypes extends FormBase {
 
         $form['p'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@t" >new project</a>', array('@t' => $link)),
+            '#markup' => $this->t('<a href="@t" >new project</a>', array('@t' => $link)),
         );
 
         $header = array(
@@ -117,7 +117,7 @@ class EditTypes extends FormBase {
                 '#size' => 15,
                 '#maxlength' => 45,
                 '#default_value' => $r->gp,
-                '#attributes' => array('placeholder' => t('group'), 'title' => t('A group tag')),
+                '#attributes' => array('placeholder' => $this->t('group'), 'title' => $this->t('A group tag')),
                 '#required' => true,
             );
             $form['type'] = array(
@@ -126,7 +126,7 @@ class EditTypes extends FormBase {
                 '#size' => 25,
                 '#maxlength' => 45,
                 '#default_value' => $r->type,
-                '#attributes' => array('placeholder' => t('project type name')),
+                '#attributes' => array('placeholder' => $this->t('project type name')),
                 '#required' => true,
                 '#disabled' => in_array($id, $categories) ? true : false,
             );
@@ -137,7 +137,7 @@ class EditTypes extends FormBase {
                 '#size' => 30,
                 '#maxlength' => 255,
                 '#default_value' => $r->comment,
-                '#attributes' => array('placeholder' => t('description')),
+                '#attributes' => array('placeholder' => $this->t('description')),
             );
 
             $form['short'] = array(
@@ -155,7 +155,7 @@ class EditTypes extends FormBase {
                 '#id' => 'del-' . $id,
                 '#type' => 'checkbox',
                 '#attributes' => array(
-                    'title' => t('delete'),
+                    'title' => $this->t('delete'),
                     'onclick' => "jQuery('#$id').toggleClass('delete');"
                 ),
             );
@@ -195,7 +195,7 @@ class EditTypes extends FormBase {
             '#size' => 15,
             '#maxlength' => 45,
             '#default_value' => '',
-            '#attributes' => array('placeholder' => t('Group'), 'title' => t('A grouping tag')),
+            '#attributes' => array('placeholder' => $this->t('Group'), 'title' => $this->t('A grouping tag')),
         );
         $form['type'] = array(
             '#id' => 'newtype',
@@ -203,7 +203,7 @@ class EditTypes extends FormBase {
             '#size' => 25,
             '#maxlength' => 45,
             '#default_value' => '',
-            '#attributes' => array('placeholder' => t('New type'), 'title' => t('Main category reference')),
+            '#attributes' => array('placeholder' => $this->t('New type'), 'title' => $this->t('Main category reference')),
         );
 
         $form['comment'] = array(
@@ -212,7 +212,7 @@ class EditTypes extends FormBase {
             '#size' => 30,
             '#maxlength' => 255,
             '#default_value' => '',
-            '#attributes' => array('placeholder' => t('Description'), 'title' => t('Meaningful description')),
+            '#attributes' => array('placeholder' => $this->t('Description'), 'title' => $this->t('Meaningful description')),
         );
 
         $form['short'] = array(
@@ -221,7 +221,7 @@ class EditTypes extends FormBase {
             '#size' => 15,
             '#maxlength' => 5,
             '#default_value' => '',
-            '#attributes' => array('class' => array('Short name'), 'title' => t('Used to build case ref. Should no be more than 5 letters')),
+            '#attributes' => array('class' => array('Short name'), 'title' => $this->t('Used to build case ref. Should no be more than 5 letters')),
         );
 
         $form['del'] = array(

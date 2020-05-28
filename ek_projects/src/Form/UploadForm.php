@@ -58,21 +58,21 @@ class UploadForm extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $form['upload_doc'] = array(
             '#type' => 'file',
-            '#title' => t('Select file'),
+            '#title' => $this->t('Select file'),
         );
 
         $form['sub_folder'] = array(
             '#type' => 'textfield',
             '#size' => 25,
             '#maxlength' => 30,
-            '#attributes' => array('placeholder' => t('tag or folder')),
+            '#attributes' => array('placeholder' => $this->t('tag or folder')),
         );
 
         $form['comment'] = array(
             '#type' => 'textfield',
             '#size' => 25,
             '#maxlength' => 200,
-            '#attributes' => array('placeholder' => t('comment')),
+            '#attributes' => array('placeholder' => $this->t('comment')),
         );
 
         $form['for_id'] = array(
@@ -83,7 +83,7 @@ class UploadForm extends FormBase {
         $form['actions']['upload'] = array(
             '#id' => 'upbuttonid',
             '#type' => 'submit',
-            '#value' => t('Upload'),
+            '#value' => $this->t('Upload'),
             '#ajax' => array(
                 'callback' => array($this, 'saveFile'),
                 'wrapper' => 'doc_upload_message',
@@ -194,15 +194,15 @@ class UploadForm extends FormBase {
             $param = serialize(
                     array(
                         'id' => $id,
-                        'field' => t('File attachment'),
+                        'field' => $this->t('File attachment'),
                         'value' => $filename,
                         'pcode' => $ref[0]
                     )
             );
             ProjectData::notify_user($param);
-            $form['doc_upload_message']['#markup'] = t('file uploaded @f', array('@f' => $filename));
+            $form['doc_upload_message']['#markup'] = $this->t('file uploaded @f', array('@f' => $filename));
         } else {
-            $form['doc_upload_message']['#markup'] = t('error copying file');
+            $form['doc_upload_message']['#markup'] = $this->t('error copying file');
         }
 
         return $form['doc_upload_message'];

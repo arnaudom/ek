@@ -35,7 +35,7 @@ class AccessRequest extends FormBase {
 
         $form['item'] = array(
             '#type' => 'item',
-            '#markup' => t('Sorry, you do not have access to this project.<br/> You can request access to the owner of this project @p with the form below.', array('@p' => $p->pcode)),
+            '#markup' => $this->t('Sorry, you do not have access to this project.<br/> You can request access to the owner of this project @p with the form below.', array('@p' => $p->pcode)),
         );
         $form['pid'] = array(
             '#type' => 'hidden',
@@ -45,9 +45,9 @@ class AccessRequest extends FormBase {
 
         $form['message'] = array(
             '#type' => 'textarea',
-            '#default_value' => t('@u is requesting access to project @p owned by you.', array('@u' => $currentusername, '@p' => $p->pcode)),
-            '#attributes' => array('placeholder' => t('optional text message')),
-            '#title' => t('Message to owner'),
+            '#default_value' => $this->t('@u is requesting access to project @p owned by you.', array('@u' => $currentusername, '@p' => $p->pcode)),
+            '#attributes' => array('placeholder' => $this->t('optional text message')),
+            '#title' => $this->t('Message to owner'),
         );
 
 
@@ -92,15 +92,15 @@ class AccessRequest extends FormBase {
             if (\Drupal::moduleHandler()->moduleExists('swiftmailer')) {
                 $params['body'] = Xss::filter($form_state->getValue('message'));
                 $params['options']['pcode'] = $p->pcode;
-                $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), null, 1, null, t('Open'));
+                $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), null, 1, null, $this->t('Open'));
             } else {
                 $params['body'] = Xss::filter($form_state->getValue('message')) . '\r\n'
-                        . t('Project ref.') . ': ' . ProjectData::geturl($form_state->getValue('pid'), 0, 1);
+                        . $this->t('Project ref.') . ': ' . ProjectData::geturl($form_state->getValue('pid'), 0, 1);
                 $params['options'] = '';
             }
             $code = explode("-", $p->pcode);
             $code = array_reverse($code);
-            $params['subject'] = t("Access request") . ": " . $code[0] . ' | ' . $p->pcode;
+            $params['subject'] = $this->t("Access request") . ": " . $code[0] . ' | ' . $p->pcode;
             $acc2 = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
             $from = '';
             if ($acc2) {

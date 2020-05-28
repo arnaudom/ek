@@ -65,7 +65,7 @@ class ProjectFieldEdit extends FormBase {
                 $form['value'] = array(
                     '#type' => 'select',
                     '#options' => $users,
-                    '#title' => t('Users'),
+                    '#title' => $this->t('Users'),
                     '#default_value' => $data
                 );
                 break;
@@ -75,7 +75,7 @@ class ProjectFieldEdit extends FormBase {
                 $form['value'] = array(
                     '#type' => 'select',
                     '#options' => \Drupal\ek_address_book\AddressBookData::addresslist(1),
-                    '#title' => t('client'),
+                    '#title' => $this->t('client'),
                     '#default_value' => ''
                 );
                 break;
@@ -88,7 +88,7 @@ class ProjectFieldEdit extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 30,
                     '#maxlenght' => 150,
-                    '#title' => t('Project name'),
+                    '#title' => $this->t('Project name'),
                     '#default_value' => $data,
                 );
 
@@ -100,8 +100,8 @@ class ProjectFieldEdit extends FormBase {
 
                 $form['value'] = array(
                     '#type' => 'select',
-                    '#options' => array('open' => t('open'), 'awarded' => t('awarded'), 'completed' => t('completed'), 'closed' => t('closed')),
-                    '#title' => t('status'),
+                    '#options' => array('open' => $this->t('open'), 'awarded' => $this->t('awarded'), 'completed' => $this->t('completed'), 'closed' => $this->t('closed')),
+                    '#title' => $this->t('status'),
                     '#default_value' => $data
                 );
                 break;
@@ -114,8 +114,8 @@ class ProjectFieldEdit extends FormBase {
 
                 $form['value'] = array(
                     '#type' => 'select',
-                    '#options' => array('1' => t('low'), '2' => t('medium'), '3' => t('high')),
-                    '#title' => t('priority'),
+                    '#options' => array('1' => $this->t('low'), '2' => $this->t('medium'), '3' => $this->t('high')),
+                    '#title' => $this->t('priority'),
                     '#default_value' => $data
                 );
                 break;
@@ -135,7 +135,7 @@ class ProjectFieldEdit extends FormBase {
                     '#type' => 'date',
                     '#id' => 'edit-date',
                     '#size' => 11,
-                    '#title' => t('date'),
+                    '#title' => $this->t('date'),
                     '#default_value' => $data,
                 );
 
@@ -160,7 +160,7 @@ class ProjectFieldEdit extends FormBase {
                 $form['value'] = array(
                     '#type' => 'select',
                     '#options' => $list,
-                    '#title' => t('Users'),
+                    '#title' => $this->t('Users'),
                     '#default_value' => $data
                 );
                 break;
@@ -190,7 +190,7 @@ class ProjectFieldEdit extends FormBase {
                 $form['value'] = array(
                     '#type' => 'select',
                     '#options' => array_combine($list, $list),
-                    '#title' => t('Responsibility'),
+                    '#title' => $this->t('Responsibility'),
                     '#default_value' => $data
                 );
                 break;
@@ -207,7 +207,7 @@ class ProjectFieldEdit extends FormBase {
                 $form['task'] = array(
                     '#type' => 'textfield',
                     '#size' => 20,
-                    '#title' => t('task'),
+                    '#title' => $this->t('task'),
                     '#default_value' => $data,
                 );
 
@@ -244,7 +244,7 @@ class ProjectFieldEdit extends FormBase {
                     '#type' => 'date',
                     '#id' => 'edit-date',
                     '#size' => 11,
-                    '#title' => t('date'),
+                    '#title' => $this->t('date'),
                     '#default_value' => $data,
                 );
                 break;
@@ -263,7 +263,7 @@ class ProjectFieldEdit extends FormBase {
                     '#size' => 1,
                     '#multiple' => true,
                     '#options' => $supplier,
-                    '#title' => t('suppliers'),
+                    '#title' => $this->t('suppliers'),
                     '#default_value' => explode(',', $data),
                     '#attributes' => array('class' => ['form-select-chosen']),
                     '#attached' => array(
@@ -283,7 +283,7 @@ class ProjectFieldEdit extends FormBase {
                 $form['value'] = array(
                     '#type' => 'textfield',
                     '#size' => 30,
-                    '#title' => t('status'),
+                    '#title' => $this->t('status'),
                     '#default_value' => $data,
                 );
                 break;
@@ -298,7 +298,7 @@ class ProjectFieldEdit extends FormBase {
                 $form['value'] = array(
                     '#type' => 'select',
                     '#options' => CurrencyData::listcurrency(1),
-                    '#title' => t('currency'),
+                    '#title' => $this->t('currency'),
                     '#default_value' => $data
                 );
                 break;
@@ -317,7 +317,7 @@ class ProjectFieldEdit extends FormBase {
                 $form['value'] = array(
                     '#type' => 'textfield',
                     '#size' => 15,
-                    '#title' => t('value'),
+                    '#title' => $this->t('value'),
                     '#default_value' => $data,
                 );
 
@@ -336,7 +336,7 @@ class ProjectFieldEdit extends FormBase {
                 $form['value'] = array(
                     '#type' => 'textfield',
                     '#size' => 20,
-                    '#title' => t('description'),
+                    '#title' => $this->t('description'),
                     '#default_value' => $data,
                 );
 
@@ -355,7 +355,7 @@ class ProjectFieldEdit extends FormBase {
                     '#type' => 'date',
                     '#id' => 'edit-date',
                     '#size' => 11,
-                    '#title' => t('date'),
+                    '#title' => $this->t('date'),
                     '#default_value' => $data,
                 );
 
@@ -370,7 +370,7 @@ class ProjectFieldEdit extends FormBase {
 
                 $form['text'] = array(
                     '#type' => 'textarea',
-                    '#title' => t('comment'),
+                    '#title' => $this->t('comment'),
                     '#default_value' => $data
                 );
                 break;
@@ -380,7 +380,7 @@ class ProjectFieldEdit extends FormBase {
         $form['actions']['btn'] = array(
             '#id' => 'confirmbutton',
             '#type' => 'submit',
-            '#value' => t('Save'),
+            '#value' => $this->t('Save'),
             '#attributes' => array('class' => array('use-ajax-submit')),
         );
 
@@ -389,7 +389,7 @@ class ProjectFieldEdit extends FormBase {
 
         if ($form_state->get('message') != '') {
             $form['message'] = array(
-                '#markup' => "<div class='red'>" . t('Data') . ": " . $form_state->get('message') . "</div>",
+                '#markup' => "<div class='red'>" . $this->t('Data') . ": " . $form_state->get('message') . "</div>",
             );
 
             $form_state->set('message', '');
@@ -637,7 +637,7 @@ class ProjectFieldEdit extends FormBase {
                     ->execute();
 
 
-            $form_state->set('message', t('saved'));
+            $form_state->set('message', $this->t('saved'));
             $form_state->set('error', 0);
             $form_state->setRebuild();
 
@@ -652,7 +652,7 @@ class ProjectFieldEdit extends FormBase {
             ProjectData::notify_user($param);
         } else {
             $form_state->set('error', 1);
-            $form_state->set('message', t('error'));
+            $form_state->set('message', $this->t('error'));
             $form_state->setRebuild();
         }
     }

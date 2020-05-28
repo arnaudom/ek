@@ -35,7 +35,7 @@ class SettingsUsers extends FormBase {
 
         $form['access_level'] = array(
             '#type' => 'checkbox',
-            '#title' => t('Block file access level at page level'),
+            '#title' => $this->t('Block file access level at page level'),
             '#default_value' => ($s['access_level'] == 1) ? 1 : 0,
         );
 
@@ -44,12 +44,12 @@ class SettingsUsers extends FormBase {
 
         $headerline = "<div class='table'  id='users_items'>
                   <div class='row'>
-                      <div class='cell cellborder' id='tour-item1'>" . t("Login") . "</div>
-                      <div class='cell cellborder' id='tour-item2'>" . t("Section 1") . "</div>
-                      <div class='cell cellborder' id='tour-item3'>" . t("Section 2") . "</div>
-                      <div class='cell cellborder' id='tour-item4'>" . t("Section 3") . "</div>
-                      <div class='cell cellborder' id='tour-item5'>" . t("Section 4") . "</div>
-                      <div class='cell cellborder' id='tour-item6'>" . t("Section 5") . "</div>
+                      <div class='cell cellborder' id='tour-item1'>" . $this->t("Login") . "</div>
+                      <div class='cell cellborder' id='tour-item2'>" . $this->t("Section 1") . "</div>
+                      <div class='cell cellborder' id='tour-item3'>" . $this->t("Section 2") . "</div>
+                      <div class='cell cellborder' id='tour-item4'>" . $this->t("Section 3") . "</div>
+                      <div class='cell cellborder' id='tour-item5'>" . $this->t("Section 4") . "</div>
+                      <div class='cell cellborder' id='tour-item6'>" . $this->t("Section 5") . "</div>
                    ";
 
 
@@ -70,7 +70,7 @@ class SettingsUsers extends FormBase {
 
         foreach ($users as $uid => $name) {
             $acc = \Drupal\user\Entity\User::load($uid);
-            $status = ($acc->isBlocked()) ? ' (' . t('Blocked') . ')' : '';
+            $status = ($acc->isBlocked()) ? ' (' . $this->t('Blocked') . ')' : '';
             /**/
             $form['list'][$uid]['user'] = array(
                 '#type' => 'item',
@@ -115,7 +115,7 @@ class SettingsUsers extends FormBase {
         $form['actions']['access'] = array(
             '#id' => 'accessbutton',
             '#type' => 'submit',
-            '#value' => t('Save'),
+            '#value' => $this->t('Save'),
         );
 
         $form['#attached']['library'][] = 'ek_projects/ek_projects_css';

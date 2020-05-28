@@ -29,7 +29,7 @@ class SearchBlock extends BlockBase {
     public function build() {
         $items = array();
         $items['content'] = \Drupal::formBuilder()->getForm('Drupal\ek_projects\Form\SearchProject');
-        $items['title'] = t('Search projects');
+        $items['title'] = $this->t('Search projects');
         $items['id'] = 'search_project';
 
 
