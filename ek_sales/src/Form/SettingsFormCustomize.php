@@ -169,7 +169,7 @@ class SettingsFormCustomize extends FormBase {
             $form['doc']['orientation'] = [
                 '#type' => 'select',
                 '#options' => ['P' => $this->t('Portrait'), 'L' => $this->t('Landscape')],
-                '#default_value' => ($s[$tpl[1]]['doc']['orientation']) ?
+                '#default_value' => isset($s[$tpl[1]]['doc']['orientation']) ? 
                 $s[$tpl[1]]['doc']['orientation'] : 'P',
                 '#title' => $this->t('Orientation'),
                 '#prefix' => "<div class='container-inline'>",
@@ -177,7 +177,7 @@ class SettingsFormCustomize extends FormBase {
             $form['doc']['format'] = [
                 '#type' => 'select',
                 '#options' => ['A1' => 'A1', 'A2' => 'A2', 'A3' => 'A3', 'A4' => 'A4', 'A5' => 'A5'],
-                '#default_value' => ($s[$tpl[1]]['doc']['format']) ?
+                '#default_value' => isset($s[$tpl[1]]['doc']['format']) ?
                 $s[$tpl[1]]['doc']['format'] : 'A4',
                 '#title' => $this->t('Format'),
                 '#suffix' => '</div>'
@@ -186,7 +186,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 90,
-                '#default_value' => ($s[$tpl[1]]['doc']['margin_left']) ?
+                '#default_value' => isset($s[$tpl[1]]['doc']['margin_left']) ?
                 $s[$tpl[1]]['doc']['margin_left'] : 10,
                 '#title' => $this->t('Left margin'),
                 '#prefix' => "<div class='container-inline'>",
@@ -195,7 +195,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['doc']['margin_top']) ?
+                '#default_value' => isset($s[$tpl[1]]['doc']['margin_top']) ?
                 $s[$tpl[1]]['doc']['margin_top'] : 60,
                 '#title' => $this->t('Top margin'),
                 '#suffix' => '</div>'
@@ -204,7 +204,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 50,
-                '#default_value' => ($s[$tpl[1]]['doc']['margin_right']) ?
+                '#default_value' => isset($s[$tpl[1]]['doc']['margin_right']) ?
                 $s[$tpl[1]]['doc']['margin_right'] : 15,
                 '#title' => $this->t('Right margin'),
                 '#prefix' => "<div class='container-inline'>",
@@ -213,7 +213,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['doc']['margin_bottom']) ?
+                '#default_value' => isset($s[$tpl[1]]['doc']['margin_bottom']) ?
                 $s[$tpl[1]]['doc']['margin_bottom'] : 25,
                 '#title' => $this->t('Bottom margin'),
                 '#suffix' => '</div>'
@@ -223,7 +223,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 50,
-                '#default_value' => ($s[$tpl[1]]['doc']['margin_header']) ?
+                '#default_value' => isset($s[$tpl[1]]['doc']['margin_header']) ?
                 $s[$tpl[1]]['doc']['margin_header'] : 5,
                 '#title' => $this->t('Bottom header'),
                 '#prefix' => "<div class='container-inline'>",
@@ -233,7 +233,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 50,
-                '#default_value' => ($s[$tpl[1]]['doc']['margin_footer']) ?
+                '#default_value' => isset($s[$tpl[1]]['doc']['margin_footer']) ?
                 $s[$tpl[1]]['doc']['margin_footer'] : 10,
                 '#title' => $this->t('Bottom footer'),
                 '#suffix' => '</div>'
@@ -251,7 +251,7 @@ class SettingsFormCustomize extends FormBase {
             $form['header']['border'] = [
                 '#type' => 'select',
                 '#options' => ['0' => $this->t('No'), '1' => $this->t('Yes')],
-                '#default_value' => ($s[$tpl[1]]['header']['border']) ?
+                '#default_value' => isset($s[$tpl[1]]['header']['border']) ?
                 $s[$tpl[1]]['header']['border'] : 0,
                 '#title' => $this->t('Border visible'),
             ];
@@ -260,7 +260,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 15,
-                '#default_value' => ($s[$tpl[1]]['header']['left_margin']) ?
+                '#default_value' => isset($s[$tpl[1]]['header']['left_margin']) ?
                 $s[$tpl[1]]['header']['left_margin'] : 2,
                 '#title' => $this->t('Left margin'),
             ];
@@ -269,7 +269,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['header']['col_1']) ?
+                '#default_value' => isset($s[$tpl[1]]['header']['col_1']) ?
                 $s[$tpl[1]]['header']['col_1'] : 50,
                 '#title' => $this->t('Column') . " 1",
                 '#prefix' => "<div class='container-inline'>",
@@ -279,7 +279,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['header']['col_2']) ?
+                '#default_value' => isset($s[$tpl[1]]['header']['col_2']) ?
                 $s[$tpl[1]]['header']['col_2'] : 50,
                 '#title' => $this->t('Column') . " 2",
                 '#suffix' => "</div>"
@@ -289,7 +289,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['header']['col_3']) ?
+                '#default_value' => isset($s[$tpl[1]]['header']['col_3']) ?
                 $s[$tpl[1]]['header']['col_3'] : 50,
                 '#title' => $this->t('Column') . " 3",
                 '#prefix' => "<div class='container-inline'>",
@@ -299,7 +299,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['header']['col_4']) ?
+                '#default_value' => isset($s[$tpl[1]]['header']['col_4']) ?
                 $s[$tpl[1]]['header']['col_4'] : 50,
                 '#title' => $this->t('Column') . " 4",
                 '#suffix' => "</div>"
@@ -309,7 +309,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => -100,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['header']['logo_x']) ?
+                '#default_value' => isset($s[$tpl[1]]['header']['logo_x']) ?
                 $s[$tpl[1]]['header']['logo_x'] : 20,
                 '#title' => $this->t('Logo horizontal offset'),
                 '#prefix' => "<div class='container-inline'>",
@@ -319,7 +319,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => -100,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['header']['logo_y']) ?
+                '#default_value' => isset($s[$tpl[1]]['header']['logo_y']) ?
                 $s[$tpl[1]]['header']['logo_y'] : 10,
                 '#title' => $this->t('Logo vertical offset'),
             ];
@@ -328,7 +328,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['header']['logo_z']) ?
+                '#default_value' => isset($s[$tpl[1]]['header']['logo_z']) ?
                 $s[$tpl[1]]['header']['logo_z'] : 50,
                 '#title' => $this->t('Logo zoom'),
                 '#suffix' => "</div>"
@@ -338,13 +338,13 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 20,
-                '#default_value' => ($s[$tpl[1]]['header']['font']) ?
+                '#default_value' => isset($s[$tpl[1]]['header']['font']) ?
                 $s[$tpl[1]]['header']['font'] : 12,
                 '#title' => $this->t('Max. font size'),
             ];
 
             // convert rgb used color to valid format for form
-            if($s[$tpl[1]]['header']['color']){
+            if(isset($s[$tpl[1]]['header']['color'])){
                 $c = ColorUtility::rgbToHex($s[$tpl[1]]['header']['color']);
             } else {
                 $c = ColorUtility::rgbToHex('128,128,128');
@@ -368,7 +368,7 @@ class SettingsFormCustomize extends FormBase {
             $form['footer']['border'] = [
                 '#type' => 'select',
                 '#options' => ['0' => $this->t('No'), '1' => $this->t('Yes')],
-                '#default_value' => ($s[$tpl[1]]['footer']['border']) ?
+                '#default_value' => isset($s[$tpl[1]]['footer']['border']) ?
                 $s[$tpl[1]]['footer']['border'] : 0,
                 '#title' => $this->t('Border visible'),
             ];
@@ -377,7 +377,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 15,
-                '#default_value' => ($s[$tpl[1]]['footer']['left_margin']) ?
+                '#default_value' => isset($s[$tpl[1]]['footer']['left_margin']) ?
                 $s[$tpl[1]]['footer']['left_margin'] : 2,
                 '#title' => $this->t('Left margin'),
             ];
@@ -386,7 +386,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['footer']['col_1']) ?
+                '#default_value' => isset($s[$tpl[1]]['footer']['col_1']) ?
                 $s[$tpl[1]]['footer']['col_1'] : 15,
                 '#title' => $this->t('Column') . " 1",
                 '#prefix' => "<div class='container-inline'>",
@@ -396,7 +396,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['footer']['col_2']) ?
+                '#default_value' => isset($s[$tpl[1]]['footer']['col_2']) ?
                 $s[$tpl[1]]['footer']['col_2'] : 30,
                 '#title' => $this->t('Column') . " 2",
                 '#suffix' => "</div>",
@@ -406,7 +406,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['footer']['col_3']) ?
+                '#default_value' => isset($s[$tpl[1]]['footer']['col_3']) ?
                 $s[$tpl[1]]['footer']['col_3'] : 60,
                 '#title' => $this->t('Column') . " 3",
                 '#prefix' => "<div class='container-inline'>",
@@ -416,7 +416,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['footer']['col_4']) ?
+                '#default_value' => isset($s[$tpl[1]]['footer']['col_4']) ?
                 $s[$tpl[1]]['footer']['col_4'] : 80,
                 '#title' => $this->t('Column') . " 4",
                 '#suffix' => "</div>",
@@ -426,7 +426,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => -100,
                 '#max' => 100,
-                '#default_value' => ($s[$tpl[1]]['footer']['w_data']) ?
+                '#default_value' => isset($s[$tpl[1]]['footer']['w_data']) ?
                 $s[$tpl[1]]['footer']['w_data'] : -45,
                 '#title' => $this->t('Text offset'),
                 '#prefix' => "<div class='container-inline'>",
@@ -436,7 +436,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => -100,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['footer']['w_page']) ?
+                '#default_value' => isset($s[$tpl[1]]['footer']['w_page']) ?
                 $s[$tpl[1]]['footer']['w_page'] : -25,
                 '#title' => $this->t('Page No. offset'),
                 '#suffix' => "</div>",
@@ -446,14 +446,14 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 20,
-                '#default_value' => ($s[$tpl[1]]['footer']['font']) ?
+                '#default_value' => isset($s[$tpl[1]]['footer']['font']) ?
                 $s[$tpl[1]]['footer']['font'] : 8,
                 '#title' => $this->t('Max. font size'),
             ];
             
             // convert rgb used color to valid format for form
-            if($s[$tpl[1]]['header']['color']){
-                $c = ColorUtility::rgbToHex($s[$tpl[1]]['footer']['color']);
+            if(isset($s[$tpl[1]]['header']['color'])){
+                $c = ColorUtility::rgbToHex(isset($s[$tpl[1]]['footer']['color']));
             } else {
                 $c = ColorUtility::rgbToHex('128,128,128');
             }
@@ -476,7 +476,7 @@ class SettingsFormCustomize extends FormBase {
             $form['feature']['border'] = [
                 '#type' => 'select',
                 '#options' => ['0' => $this->t('No'), '1' => $this->t('Yes')],
-                '#default_value' => ($s[$tpl[1]]['feature']['border']) ?
+                '#default_value' => isset($s[$tpl[1]]['feature']['border']) ?
                 $s[$tpl[1]]['feature']['border'] : 0,
                 '#title' => $this->t('Border visible'),
             ];
@@ -485,7 +485,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 15,
-                '#default_value' => ($s[$tpl[1]]['feature']['left_margin']) ?
+                '#default_value' => isset($s[$tpl[1]]['feature']['left_margin']) ?
                 $s[$tpl[1]]['feature']['left_margin'] : 1,
                 '#title' => $this->t('Left margin'),
             ];
@@ -494,7 +494,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['feature']['col_1']) ?
+                '#default_value' => isset($s[$tpl[1]]['feature']['col_1']) ?
                 $s[$tpl[1]]['feature']['col_1'] : 45,
                 '#title' => $this->t('Column') . " 1",
                 '#prefix' => "<div class='container-inline'>",
@@ -504,7 +504,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['feature']['col_2']) ?
+                '#default_value' => isset($s[$tpl[1]]['feature']['col_2']) ?
                 $s[$tpl[1]]['feature']['col_2'] : 70,
                 '#title' => $this->t('Column') . " 2",
                 '#suffix' => "</div>",
@@ -514,7 +514,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['feature']['col_3']) ?
+                '#default_value' => isset($s[$tpl[1]]['feature']['col_3']) ?
                 $s[$tpl[1]]['feature']['col_3'] : 30,
                 '#title' => $this->t('Column') . " 3",
                 '#prefix' => "<div class='container-inline'>",
@@ -524,7 +524,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['feature']['col_4']) ?
+                '#default_value' => isset($s[$tpl[1]]['feature']['col_4']) ?
                 $s[$tpl[1]]['feature']['col_4'] : 35,
                 '#title' => $this->t('Column') . " 4",
                 '#suffix' => "</div>",
@@ -534,7 +534,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 20,
-                '#default_value' => ($s[$tpl[1]]['feature']['font']) ?
+                '#default_value' => isset($s[$tpl[1]]['feature']['font']) ?
                 $s[$tpl[1]]['feature']['font'] : 14,
                 '#title' => $this->t('Max. font size'),
             ];
@@ -543,7 +543,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => -100,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['feature']['stamp_x']) ?
+                '#default_value' => isset($s[$tpl[1]]['feature']['stamp_x']) ?
                 $s[$tpl[1]]['feature']['stamp_x'] : 110,
                 '#title' => $this->t('Stamp horizontal offset'),
                 '#prefix' => "<div class='container-inline'>",
@@ -553,7 +553,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => -100,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['feature']['stamp_y']) ?
+                '#default_value' => isset($s[$tpl[1]]['feature']['stamp_y']) ?
                 $s[$tpl[1]]['feature']['stamp_y'] : 90,
                 '#title' => $this->t('Stamp vertical offset'),
             ];
@@ -562,15 +562,15 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['feature']['stamp_z']) ?
+                '#default_value' => isset($s[$tpl[1]]['feature']['stamp_z']) ?
                 $s[$tpl[1]]['feature']['stamp_z'] : 35,
                 '#title' => $this->t('Stamp zoom'),
                 '#suffix' => "</div>",
             ];
             
             // convert rgb used color to valid format for form
-            if($s[$tpl[1]]['feature']['colortitle']){
-                $c = ColorUtility::rgbToHex($s[$tpl[1]]['feature']['colortitle']);
+            if(isset($s[$tpl[1]]['feature']['colortitle'])){
+                $c = ColorUtility::rgbToHex(isset($s[$tpl[1]]['feature']['colortitle']));
             } else {
                 $c = ColorUtility::rgbToHex('120,150,190');
             }
@@ -583,8 +583,8 @@ class SettingsFormCustomize extends FormBase {
             ];
             
             // convert rgb used color to valid format for form
-            if($s[$tpl[1]]['feature']['color']){
-                $c = ColorUtility::rgbToHex($s[$tpl[1]]['feature']['color']);
+            if(isset($s[$tpl[1]]['feature']['color'])){
+                $c = ColorUtility::rgbToHex(isset($s[$tpl[1]]['feature']['color']));
             } else {
                 $c = ColorUtility::rgbToHex('128,128,128');
             }
@@ -608,7 +608,7 @@ class SettingsFormCustomize extends FormBase {
             $form['body']['border'] = [
                 '#type' => 'select',
                 '#options' => ['0' => $this->t('No'), '1' => $this->t('Yes')],
-                '#default_value' => ($s[$tpl[1]]['body']['border']) ?
+                '#default_value' => isset($s[$tpl[1]]['body']['border']) ?
                 $s[$tpl[1]]['body']['border'] : 0,
                 '#title' => $this->t('Border visible'),
             ];
@@ -617,7 +617,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 15,
-                '#default_value' => ($s[$tpl[1]]['body']['left_margin']) ?
+                '#default_value' => isset($s[$tpl[1]]['body']['left_margin']) ?
                 $s[$tpl[1]]['body']['left_margin'] : 1,
                 '#title' => $this->t('Left margin'),
             ];
@@ -626,7 +626,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['body']['col_1']) ?
+                '#default_value' => isset($s[$tpl[1]]['body']['col_1']) ?
                 $s[$tpl[1]]['body']['col_1'] : 7,
                 '#title' => $this->t('Column') . " 1",
                 '#prefix' => "<div class='container-inline'>",
@@ -636,7 +636,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['body']['col_2']) ?
+                '#default_value' => isset($s[$tpl[1]]['body']['col_2']) ?
                 $s[$tpl[1]]['body']['col_2'] : 110,
                 '#title' => $this->t('Column') . " 2",
                 '#suffix' => "</div>",
@@ -646,7 +646,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['body']['col_3']) ?
+                '#default_value' => isset($s[$tpl[1]]['body']['col_3']) ?
                 $s[$tpl[1]]['body']['col_3'] : 20,
                 '#title' => $this->t('Column') . " 3",
                 '#prefix' => "<div class='container-inline'>",
@@ -656,7 +656,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['body']['col_4']) ?
+                '#default_value' => isset($s[$tpl[1]]['body']['col_4']) ?
                 $s[$tpl[1]]['body']['col_4'] : 20,
                 '#title' => $this->t('Column') . " 4",
                 
@@ -666,7 +666,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['body']['col_5']) ?
+                '#default_value' => isset($s[$tpl[1]]['body']['col_5']) ?
                 $s[$tpl[1]]['body']['col_5'] : 25,
                 '#title' => $this->t('Column') . " 5",
                 '#suffix' => "</div>",
@@ -677,7 +677,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['body']['col_6']) ?
+                '#default_value' => isset($s[$tpl[1]]['body']['col_6']) ?
                 $s[$tpl[1]]['body']['col_6'] : 30,
                 '#title' => $this->t('Column') . " 6",
                 '#prefix' => "<div class='container-inline'>",
@@ -687,7 +687,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 200,
-                '#default_value' => ($s[$tpl[1]]['body']['col_7']) ?
+                '#default_value' => isset($s[$tpl[1]]['body']['col_7']) ?
                 $s[$tpl[1]]['body']['col_7'] : 35,
                 '#title' => $this->t('Column') . " 7",
                 '#suffix' => "</div>",
@@ -697,14 +697,14 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 20,
-                '#default_value' => ($s[$tpl[1]]['body']['font']) ?
+                '#default_value' => isset($s[$tpl[1]]['body']['font']) ?
                 $s[$tpl[1]]['body']['font'] : 10,
                 '#title' => $this->t('Max. font size'),
             ];
             
             // convert rgb used color to valid format for form
-            if($s[$tpl[1]]['body']['color']){
-                $c = ColorUtility::rgbToHex($s[$tpl[1]]['body']['color']);
+            if(isset($s[$tpl[1]]['body']['color'])){
+                $c = ColorUtility::rgbToHex(isset($s[$tpl[1]]['body']['color']));
             } else {
                 $c = ColorUtility::rgbToHex('128,128,128');
             }
@@ -717,7 +717,7 @@ class SettingsFormCustomize extends FormBase {
             ];
             
             // convert rgb used color to valid format for form
-            if($s[$tpl[1]]['body']['fillcolor']){
+            if(isset($s[$tpl[1]]['body']['fillcolor'])){
                 $c = ColorUtility::rgbToHex($s[$tpl[1]]['body']['fillcolor']);
             } else {
                 $c = ColorUtility::rgbToHex('238,238,238');
@@ -734,7 +734,7 @@ class SettingsFormCustomize extends FormBase {
                 '#type' => 'number',
                 '#min' => 0,
                 '#max' => 350,
-                '#default_value' => ($s[$tpl[1]]['body']['cut']) ?
+                '#default_value' => isset($s[$tpl[1]]['body']['cut']) ?
                 $s[$tpl[1]]['body']['cut'] : 230,
                 '#title' => $this->t('Max. height'),
             ];

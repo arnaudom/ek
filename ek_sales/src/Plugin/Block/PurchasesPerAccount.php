@@ -34,7 +34,7 @@ class PurchasesPerAccount extends BlockBase
     {
         $items = array();
 
-        $items['title'] = t('Purchases per account');
+        $items['title'] = $this->t('Purchases per account');
         $items['id'] = 'purchases-per-account';
 
 

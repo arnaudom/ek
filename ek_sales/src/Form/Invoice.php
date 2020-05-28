@@ -278,7 +278,7 @@ class Invoice extends FormBase {
                 $link = Url::fromRoute('ek_address_book.new', array())->toString();
 
                 $form['options']['client'] = array(
-                    '#markup' => t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
+                    '#markup' => $this->t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
                     '#default_value' => 0,
                     '#prefix' => "<div class='row'><div class='cell'>",
                     '#suffix' => '</div></div></div>',
@@ -1058,7 +1058,7 @@ class Invoice extends FormBase {
                 if ($aid == '') {
                     $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
                     $description = "<div id='fx' class='messages messages--warning'>"
-                            . t("There is no assets account defined for currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]) . "</div>";
+                            . $this->t("There is no assets account defined for currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]) . "</div>";
                 } else {
                     $fx_rate = \Drupal\ek_finance\CurrencyData::rate($form_state->getValue('currency'));
                     //$input = $form_state->getUserInput();
@@ -1104,7 +1104,7 @@ class Invoice extends FormBase {
      */
     public function check_day(array &$form, FormStateInterface $form_state) {
         if ($form_state->getValue('terms') == '1' && $form_state->getValue('due') != null) {
-            $form['options']['day']["#markup"] = date('Y-m-d', strtotime(date("Y-m-d", strtotime($form_state->getValue('date'))) . "+" . $form_state->getValue('due') . ' ' . t("days")));
+            $form['options']['day']["#markup"] = date('Y-m-d', strtotime(date("Y-m-d", strtotime($form_state->getValue('date'))) . "+" . $form_state->getValue('due') . ' ' . $this->t("days")));
         } else {
             $form['options']['day']["#markup"] = '';
         }
@@ -1153,7 +1153,7 @@ class Invoice extends FormBase {
 
             if ($aid == '') {
                 $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
-                $form_state->setErrorByName('currency', t("There is no assets account defined for currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]));
+                $form_state->setErrorByName('currency', $this->t("There is no assets account defined for currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]));
             }
         }
 

@@ -226,7 +226,7 @@ class Quotation extends FormBase {
             } else {
                 $link = Url::fromRoute('ek_address_book.new', array())->toString();
                 $form['options']['client'] = array(
-                    '#markup' => t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
+                    '#markup' => $this->t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
                     '#prefix' => "<div class='messages messages--warning'>",
                     '#suffix' => '</div>',
                 );

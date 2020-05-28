@@ -34,7 +34,7 @@ class SalesPerAccount extends BlockBase
     {
         $items = array();
 
-        $items['title'] = t('Sales per account');
+        $items['title'] = $this->t('Sales per account');
         $items['id'] = 'sales-per-account';
 
 

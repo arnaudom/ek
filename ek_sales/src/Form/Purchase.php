@@ -220,7 +220,7 @@ class Purchase extends FormBase {
             } else {
                 $link = Url::fromRoute('ek_address_book.new', array())->toString();
                 $form['options']['supplier'] = array(
-                    '#markup' => t("You do not have any <a title='create' href='@cl'>supplier</a> in your record.", ['@cl' => $link]),
+                    '#markup' => $this->t("You do not have any <a title='create' href='@cl'>supplier</a> in your record.", ['@cl' => $link]),
                     '#prefix' => "<div class='messages messages--warning'>",
                     '#suffix' => '</div></div>',
                 );
@@ -969,7 +969,7 @@ class Purchase extends FormBase {
         if ($aid == '') {
             $l = "../ek_admin/company/edit-settings/" . $coid;
             $form['options']['alert']['#prefix'] = "<div id='alert' class='messages messages--warning'>";
-            $form['options']['alert']['#markup'] = t("There is no liability account set for this company and currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]);
+            $form['options']['alert']['#markup'] = $this->t("There is no liability account set for this company and currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]);
             $form['options']['alert']['#description'] = '';
         } else {
             $form['options']['alert']['#prefix'] = "<div id='alert' class=''>";
@@ -1004,7 +1004,7 @@ class Purchase extends FormBase {
      */
     public function check_day(array &$form, FormStateInterface $form_state) {
         if ($form_state->getValue('terms') == '1' && $form_state->getValue('due') != null) {
-            $form['options']['day']["#markup"] = date('Y-m-d', strtotime(date("Y-m-d", strtotime($form_state->getValue('date'))) . "+" . $form_state->getValue('due') . ' ' . t("days")));
+            $form['options']['day']["#markup"] = date('Y-m-d', strtotime(date("Y-m-d", strtotime($form_state->getValue('date'))) . "+" . $form_state->getValue('due') . ' ' . $this->t("days")));
         } else {
             $form['options']['day']["#markup"] = '';
         }
@@ -1032,7 +1032,7 @@ class Purchase extends FormBase {
             $aid = $settings->get('liability_account', $form_state->getValue('currency'));
             if ($aid == '') {
                 $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
-                $form_state->setErrorByName('currency', t("There is no liability account set for this company and currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]));
+                $form_state->setErrorByName('currency', $this->t("There is no liability account set for this company and currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]));
             }
         }
 

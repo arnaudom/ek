@@ -70,7 +70,7 @@ class ResetPay extends FormBase {
 
         $form['edit'] = array(
             '#type' => 'item',
-            '#markup' => t("$doc ref. @p", array('@p' => $serial)),
+            '#markup' => $this->t("$doc ref. @p", array('@p' => $serial)),
         );
         $form['for_id'] = array(
             '#type' => 'hidden',

@@ -148,7 +148,7 @@ class FilterPurchase extends FormBase {
                 $link = Url::fromRoute('ek_address_book.new', array())->toString();
 
                 $form['filters']['supplier'] = array(
-                    '#markup' => t("You do not have any <a title='create' href='@cl'>supplier</a> in your record.", ['@cl' => $link]),
+                    '#markup' => $this->t("You do not have any <a title='create' href='@cl'>supplier</a> in your record.", ['@cl' => $link]),
                     '#prefix' => "<div class='messages messages--warning'>",
                     '#suffix' => '</div>',
                 );

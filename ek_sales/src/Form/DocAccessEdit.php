@@ -97,7 +97,7 @@ class DocAccessEdit extends FormBase {
 
         if ($form_state->get('message') <> '') {
             $form['message'] = array(
-                '#markup' => "<div class='red'>" . t('Data') . ": " . $form_state->get('message') . "</div>",
+                '#markup' => "<div class='red'>" . $this->t('Data') . ": " . $form_state->get('message') . "</div>",
             );
             $form_state->set('message', '');
             $form_state->setRebuild();

@@ -525,10 +525,19 @@ class PurchasesController extends ControllerBase {
             $past_60 = 0;
             $past_30 = 0;
             $current = 0;
+            $past_120_value = 0;
+            $past_90_value = 0;
+            $past_60_value = 0;
+            $past_30_value = 0;
+            $current_value = 0;
             $next_30 = 0;
             $next_60 = 0;
             $next_90 = 0;
             $next_120 = 0;
+            $next_30_value = 0;
+            $next_60_value = 0;
+            $next_90_value = 0;
+            $next_120_value = 0;
 
             while ($r = $data->fetchObject()) {
                 $due = date('Y-m-d', strtotime(date("Y-m-d", strtotime($r->date)) . "+" . $r->due . "days"));
@@ -551,7 +560,7 @@ class PurchasesController extends ControllerBase {
                     $reference = $client;
                 }
                 if ($r->status == 2) {
-                    $status = "(" . t("Partially paid") . ")";
+                    $status = "(" . $this->t("Partially paid") . ")";
                     $value = $r->currency . ' ' . number_format($r->amount - $r->amountpaid, 2);
                     $basevalue = $r->balancebc;
                 } else {
@@ -573,7 +582,7 @@ class PurchasesController extends ControllerBase {
                 /* AGE filter */
                 if ($age > 120) {
                     if ($past_120 == 0) {
-                        $options['a'][$r->id]['period'] = ['data' => t("More than 120 days aging")];
+                        $options['a'][$r->id]['period'] = ['data' => $this->t("More than 120 days aging")];
                         $past_120_id = $r->id;
                     }
 
@@ -587,7 +596,7 @@ class PurchasesController extends ControllerBase {
                 }
                 if ($age > 90 && $age <= 120) {
                     if ($past_90 == 0) {
-                        $options['b'][$r->id]['period'] = ['data' => t("Between 90 & 120 days aging")];
+                        $options['b'][$r->id]['period'] = ['data' => $this->t("Between 90 & 120 days aging")];
                         $past_90_id = $r->id;
                     }
 
@@ -602,7 +611,7 @@ class PurchasesController extends ControllerBase {
 
                 if ($age > 60 && $age <= 90) {
                     if ($past_60 == 0) {
-                        $options['c'][$r->id]['period'] = ['data' => t("Between 60 & 90 days aging")];
+                        $options['c'][$r->id]['period'] = ['data' => $this->t("Between 60 & 90 days aging")];
                         $past_60_id = $r->id;
                     }
 
@@ -617,7 +626,7 @@ class PurchasesController extends ControllerBase {
 
                 if ($age > 30 && $age <= 60) {
                     if ($past_30 == 0) {
-                        $options['d'][$r->id]['period'] = ['data' => t("Between 30 & 60 days aging")];
+                        $options['d'][$r->id]['period'] = ['data' => $this->t("Between 30 & 60 days aging")];
                         $past_30_id = $r->id;
                     }
 
@@ -632,7 +641,7 @@ class PurchasesController extends ControllerBase {
 
                 if ($age >= 0 && $age <= 30) { /**/
                     if ($current == 0) {
-                        $options['e'][$r->id]['period'] = ['data' => t("Between 0 & 30 days aging")];
+                        $options['e'][$r->id]['period'] = ['data' => $this->t("Between 0 & 30 days aging")];
                         $current_id = $r->id;
                     }
 
@@ -648,7 +657,7 @@ class PurchasesController extends ControllerBase {
                 if ($age < 0 && $age >= -30) { /* */
 
                     if ($next_30 == 0) {
-                        $options['f'][$r->id]['period'] = ['data' => t("Next 30 days due")];
+                        $options['f'][$r->id]['period'] = ['data' => $this->t("Next 30 days due")];
                         $next_30_id = $r->id;
                     }
 
@@ -663,7 +672,7 @@ class PurchasesController extends ControllerBase {
 
                 if ($age < -30 && $age >= -60) {
                     if ($next_60 == 0) {
-                        $options['g'][$r->id]['period'] = ['data' => t("Between 30 to 60 days due")];
+                        $options['g'][$r->id]['period'] = ['data' => $this->t("Between 30 to 60 days due")];
                         $next_60_id = $r->id;
                     }
 
@@ -678,7 +687,7 @@ class PurchasesController extends ControllerBase {
 
                 if ($age < -60 && $age >= -90) {
                     if ($next_90 == 0) {
-                        $options['h'][$r->id]['period'] = ['data' => t("Between 60 to 90 days due")];
+                        $options['h'][$r->id]['period'] = ['data' => $this->t("Between 60 to 90 days due")];
                         $next_90_id = $r->id;
                     }
 
@@ -693,7 +702,7 @@ class PurchasesController extends ControllerBase {
 
                 if ($age < -90) {
                     if ($next_120 == 0) {
-                        $options['i'][$r->id]['period'] = ['data' => t("More than 90 days due")];
+                        $options['i'][$r->id]['period'] = ['data' => $this->t("More than 90 days due")];
                         $next_120_id = $r->id;
                     }
 
@@ -1080,7 +1089,7 @@ class PurchasesController extends ControllerBase {
                     'id' => 'notify',
                 ),
                 'edit' => array(
-                    'data' => $edit,
+                    'data' => '',
                     'id' => 'edit',
                 ),
             );

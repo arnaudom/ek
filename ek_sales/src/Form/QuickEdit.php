@@ -319,7 +319,7 @@ class QuickEdit extends FormBase {
 
     public function check_day(array &$form, FormStateInterface $form_state) {
         if ($form_state->getValue('terms') == '1' && $form_state->getValue('due') != null) {
-            $form['options']['day']["#markup"] = date('Y-m-d', strtotime(date("Y-m-d", strtotime($form_state->getValue('date'))) . "+" . $form_state->getValue('due') . ' ' . t("days")));
+            $form['options']['day']["#markup"] = date('Y-m-d', strtotime(date("Y-m-d", strtotime($form_state->getValue('date'))) . "+" . $form_state->getValue('due') . ' ' . $this->t("days")));
         } else {
             $form['options']['day']["#markup"] = '';
         }
