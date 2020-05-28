@@ -149,7 +149,7 @@ class AmortizationRecord extends FormBase
                 '#title' => $this->t('record date'),
             );
 
-            $headerline = "<div class='table'><div class='row'><div class='cell cellborder'>" . t("Debit account") . "</div><div class='cell cellborder'>" . t("Debit") . "</div><div class='cell cellborder'>" . t("Credit") . "</div><div class='cell cellborder'>" . t("Credit account") . "</div><div class='cell cellborder'>" . t("Comment") . "</div>";
+            $headerline = "<div class='table'><div class='row'><div class='cell cellborder'>" . $this->t("Debit account") . "</div><div class='cell cellborder'>" . $this->t("Debit") . "</div><div class='cell cellborder'>" . $this->t("Credit") . "</div><div class='cell cellborder'>" .$this->t("Credit account") . "</div><div class='cell cellborder'>" .$this->t("Comment") . "</div>";
 
             $totalcredit = 0;
             $totalcredit_exchange = 0;

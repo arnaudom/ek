@@ -40,7 +40,7 @@ class AmortizationSchedule extends FormBase
         $url = Url::fromRoute('ek_assets.list', array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t("<a href='@url'>List</a>", ['@url' => $url]),
+            '#markup' => $this->t("<a href='@url'>List</a>", ['@url' => $url]),
         );
 
         $query = "SELECT * from {ek_assets} a INNER JOIN {ek_assets_amortization} b "
@@ -159,10 +159,10 @@ class AmortizationSchedule extends FormBase
 
             $table_head = "<div class='table'  id='schedule_table'>
                   <div class='row'>
-                      <div class='cell cellborder' id='tour-item1'>" . t("Date") . "</div>
-                      <div class='cell cellborder' id='tour-item2'>" . t("Value") . "</div>
-                      <div class='cell cellborder' id='tour-item3'>" . t("Status") . "</div>
-                      <div class='cell cellborder' id='tour-item4'>" . t("Action") . "</div>
+                      <div class='cell cellborder' id='tour-item1'>" . $this->t("Date") . "</div>
+                      <div class='cell cellborder' id='tour-item2'>" . $this->t("Value") . "</div>
+                      <div class='cell cellborder' id='tour-item3'>" . $this->t("Status") . "</div>
+                      <div class='cell cellborder' id='tour-item4'>" . $this->t("Action") . "</div>
                   </div>";
 
 
@@ -197,7 +197,7 @@ class AmortizationSchedule extends FormBase
                     } elseif ($value['journal_reference'] == '' && $flag == '0' && !$no_record) {
                         $status =  $this->t('No record');
                         $url = Url::fromRoute('ek_assets.record_amortization', ['id' => $id, 'ref' => $i], [])->toString();
-                        $action = t("<a href='@url'>Record</a>", ['@url' => $url]);
+                        $action = $this->t("<a href='@url'>Record</a>", ['@url' => $url]);
                         $flag = '1';
                     } else {
                         $status =  $this->t('No record');
@@ -270,7 +270,7 @@ class AmortizationSchedule extends FormBase
             } else {
                 $form['alert'] = array(
                     '#type' => 'item',
-                    '#markup' => t("Amortization already recorded in journal. The schedule cannot be changed"),
+                    '#markup' => $this->t("Amortization already recorded in journal. The schedule cannot be changed"),
                 );
 
                 $form['edit'] = array(

@@ -42,7 +42,7 @@ class AmortizationStatus extends BlockBase
         $url = Url::fromRoute('ek_assets.list', array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t("<a href='@url'>List</a>", ['@url' => $url]),
+            '#markup' => $this->t("<a href='@url'>List</a>", ['@url' => $url]),
         );
 
         $query = "SELECT * from {ek_assets} a INNER JOIN {ek_assets_amortization} b "
