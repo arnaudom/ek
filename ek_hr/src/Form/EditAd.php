@@ -74,7 +74,7 @@ class EditAd extends FormBase
             '#size' => 1,
             '#options' => $company,
             '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-            '#title' => t('company'),
+            '#title' => $this->t('company'),
             '#disabled' => ($form_state->getValue('coid')) ? true : false,
             '#required' => true,
             '#disabled' => ($form_state->get('step') > 1) ? true : false,
@@ -89,7 +89,7 @@ class EditAd extends FormBase
                 '#type' => 'select',
                 '#options' => ($form_state->get('opt')) ? $form_state->get('opt') : array(),
                 '#default_value' => ($form_state->get('opt')) ? $form_state->getValue('category') : null,
-                '#title' => t('category'),
+                '#title' => $this->t('category'),
                 '#required' => true,
                 '#prefix' => "<div id='category'>",
                 '#suffix' => '</div>',
@@ -100,14 +100,14 @@ class EditAd extends FormBase
             $categories = $param->HrCat[$form_state->getValue('coid')];
 
             $form['selected'] = array(
-                '#markup' => t('category : @s', array('@s' => $categories[$form_state->getValue('category')])),
+                '#markup' => $this->t('category : @s', array('@s' => $categories[$form_state->getValue('category')])),
             );
         }
 
         if ($form_state->get('step') == 1) {
             $form['next'] = array(
                 '#type' => 'submit',
-                '#value' => t('Next') . ' >>',
+                '#value' => $this->t('Next') . ' >>',
                 //'#limit_validation_errors' => array(array('coid', 'category')),
                 '#submit' => array(array($this, 'step_2')),
             );
@@ -283,13 +283,13 @@ class EditAd extends FormBase
 
             $form_state->set('step', 3);
 
-            $headerline = "<table><tr><td>" . t("Description") . "</td><td>" . t("Value")
-                    . "</td><td>" . t("Formula") . "</td><td>" . t("Include tax") . "</td></tr>";
+            $headerline = "<table><tr><td>" . $this->t("Description") . "</td><td>" . $this->t("Value")
+                    . "</td><td>" . $this->t("Formula") . "</td><td>" . $this->t("Include tax") . "</td></tr>";
 
 
             $form['AF'] = array(
                 '#type' => 'details',
-                '#title' => t('Fixed allowances'),
+                '#title' => $this->t('Fixed allowances'),
                 '#collapsible' => true,
                 '#open' => true,
             );
@@ -301,7 +301,7 @@ class EditAd extends FormBase
 
             $form['AC'] = array(
                 '#type' => 'details',
-                '#title' => t('Custom allowances'),
+                '#title' => $this->t('Custom allowances'),
                 '#collapsible' => true,
                 '#open' => true,
             );
@@ -313,7 +313,7 @@ class EditAd extends FormBase
 
             $form['DF'] = array(
                 '#type' => 'details',
-                '#title' => t('Fixed deductions'),
+                '#title' => $this->t('Fixed deductions'),
                 '#collapsible' => true,
                 '#open' => true,
             );
@@ -325,7 +325,7 @@ class EditAd extends FormBase
 
             $form['DC'] = array(
                 '#type' => 'details',
-                '#title' => t('Custom deductions'),
+                '#title' => $this->t('Custom deductions'),
                 '#collapsible' => true,
                 '#open' => true,
             );
@@ -351,7 +351,7 @@ class EditAd extends FormBase
                         '#size' => 25,
                         '#maxlength' => 100,
                         '#default_value' => $value['description'],
-                        '#attributes' => ($read) ? array('placeholder' => t('description')) : array('readonly' => 'readonly'),
+                        '#attributes' => ($read) ? array('placeholder' => $this->t('description')) : array('readonly' => 'readonly'),
                         '#description' => $value['type'],
                         '#prefix' => "<tr><td>",
                         '#suffix' => '</td>',
@@ -362,7 +362,7 @@ class EditAd extends FormBase
                         '#size' => 15,
                         '#maxlength' => 15,
                         '#default_value' => $value['value'],
-                        '#attributes' => array('placeholder' => t('value')),
+                        '#attributes' => array('placeholder' => $this->t('value')),
                         '#prefix' => "<td>",
                         '#suffix' => '</td>',
                     );
@@ -372,7 +372,7 @@ class EditAd extends FormBase
                         '#size' => 25,
                         '#maxlength' => 255,
                         '#default_value' => $value['formula'],
-                        '#attributes' => array('placeholder' => t('formula')),
+                        '#attributes' => array('placeholder' => $this->t('formula')),
                         '#prefix' => "<td>",
                         '#suffix' => '</td>',
                     );
@@ -380,7 +380,7 @@ class EditAd extends FormBase
                     $form[$group][$key][$key . '-tax'] = array(
                         '#type' => 'select',
                         '#size' => 1,
-                        '#options' => array(0 => t('no'), 1 => t('yes')),
+                        '#options' => array(0 => $this->t('no'), 1 => $this->t('yes')),
                         '#default_value' => $value['tax'],
                         '#prefix' => "<td>",
                         '#suffix' => '</td></tr>',

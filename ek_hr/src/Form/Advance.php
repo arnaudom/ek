@@ -72,7 +72,7 @@ class Advance extends FormBase
             '#size' => 1,
             '#options' => $company,
             '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-            '#title' => t('company'),
+            '#title' => $this->t('company'),
             '#disabled' => ($form_state->getValue('coid')) ? true : false,
             '#required' => true,
         );
@@ -80,7 +80,7 @@ class Advance extends FormBase
         if ($form_state->getValue('coid') == '') {
             $form['next'] = array(
                 '#type' => 'submit',
-                '#value' => t('Next') . ' >>',
+                '#value' => $this->t('Next') . ' >>',
                 '#states' => array(
                     // Hide data fieldset when class is empty.
                     'invisible' => array(

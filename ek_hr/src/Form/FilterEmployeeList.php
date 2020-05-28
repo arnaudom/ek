@@ -79,7 +79,7 @@ class FilterEmployeeList extends FormBase
               '#size' => 1,
               '#options' => $company,
               '#default_value' => isset($_SESSION['hrlfilter']['coid']) ? $_SESSION['hrlfilter']['coid'] : null,
-              '#title' => t('company'),
+              '#title' => $this->t('company'),
               '#required' => true,
               '#prefix' => "",
               '#suffix' => '',
@@ -88,7 +88,7 @@ class FilterEmployeeList extends FormBase
   
         $form['filters']['status'] = array(
               '#type' => 'select',
-              '#options' => array('working' => t('Working'), 'resigned' => t('Resigned'), 'absent' => t('Absent') ),
+              '#options' => array('working' => $this->t('Working'), 'resigned' => $this->t('Resigned'), 'absent' => $this->t('Absent') ),
               '#default_value' => isset($_SESSION['hrlfilter']['status']) ? $_SESSION['hrlfilter']['status'] : 'working' ,
             );
             

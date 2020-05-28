@@ -72,7 +72,7 @@ class EditService extends FormBase
             '#size' => 1,
             '#options' => $company,
             '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-            '#title' => t('company'),
+            '#title' => $this->t('company'),
             '#disabled' => ($form_state->getValue('coid')) ? true : false,
             '#required' => true,
         );
@@ -80,7 +80,7 @@ class EditService extends FormBase
         if ($form_state->getValue('coid') == '') {
             $form['next'] = array(
                 '#type' => 'submit',
-                '#value' => t('Next') . ' >>',
+                '#value' => $this->t('Next') . ' >>',
                 '#states' => array(
                     // Hide data fieldset when class is empty.
                     'invisible' => array(
@@ -98,7 +98,7 @@ class EditService extends FormBase
             $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
 
             $query = "SELECT id,name from {ek_hr_workforce} WHERE company_id=:c";
-            $employee = array(0 => t('none'));
+            $employee = array(0 => $this->t('none'));
             $employee += Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchAllKeyed();
 
             $header = array(
@@ -133,7 +133,7 @@ class EditService extends FormBase
                     '#size' => 25,
                     '#maxlength' => 255,
                     '#default_value' => $r->service_name,
-                    '#attributes' => array('placeholder' => t('service name')),
+                    '#attributes' => array('placeholder' => $this->t('service name')),
                     '#required' => true,
                 );
 
@@ -149,7 +149,7 @@ class EditService extends FormBase
                     '#id' => 'del-' . $id,
                     '#type' => 'checkbox',
                     '#attributes' => array(
-                        'title' => t('delete'),
+                        'title' => $this->t('delete'),
                         'onclick' => "jQuery('#$id').toggleClass('delete');"
                     ),
                 );
@@ -181,7 +181,7 @@ class EditService extends FormBase
                 '#size' => 25,
                 '#maxlength' => 255,
                 '#default_value' => '',
-                '#attributes' => array('placeholder' => t('New service')),
+                '#attributes' => array('placeholder' => $this->t('New service')),
             );
 
             $form['eid'] = array(

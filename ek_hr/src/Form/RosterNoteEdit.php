@@ -56,19 +56,19 @@ class RosterNoteEdit extends FormBase
         );
         $form['note'] = array(
             '#type' => 'textarea',
-            '#title' => t('Roster note for @n on @d', ['@n' => $name, '@d' => $d[2]]) ,
+            '#title' => $this->t('Roster note for @n on @d', ['@n' => $name, '@d' => $d[2]]) ,
             '#default_value' => $note,
             '#maxlength' => 255,
             '#description' => '<span id="count"/>',
             '#id' => 'rosterNote',
-            '#description' => t('maximum 255 characters'),
+            '#description' => $this->t('maximum 255 characters'),
         );
 
         $form['actions'] = array('#type' => 'actions');
         $form['actions']['btn'] = array(
             '#id' => 'confirmbutton',
             '#type' => 'submit',
-            '#value' => t('Save'),
+            '#value' => $this->t('Save'),
             '#attributes' => array('class' => array('use-ajax-submit')),
         );
         
@@ -80,7 +80,7 @@ class RosterNoteEdit extends FormBase
             $form['close'] = array(
                 '#id' => 'closebutton',
                 '#type' => 'button',
-                '#value' => t('Close'),
+                '#value' => $this->t('Close'),
                 '#ajax' => [
                     'callback' => [$this, 'closeModal'],
                     'event' => 'click',
@@ -149,10 +149,10 @@ class RosterNoteEdit extends FormBase
         }
         
         if ($db) {
-            $form_state->set('alert', t('Data saved'));
+            $form_state->set('alert', $this->t('Data saved'));
             $form_state->setRebuild();
         } else {
-            $form_state->set('alert', t('Error'));
+            $form_state->set('alert', $this->t('Error'));
             $form_state->setRebuild();
         }
     }

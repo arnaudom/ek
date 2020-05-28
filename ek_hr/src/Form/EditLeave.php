@@ -38,10 +38,10 @@ class EditLeave extends FormBase
     
         $form['type'] = array(
           '#type' => 'select',
-          '#options' => array('a' => t('annual leave'), 'b' => t('medical leave')),
+          '#options' => array('a' => $this->t('annual leave'), 'b' => $this->t('medical leave')),
           '#required' => true,
           '#prefix' => '<div class="container-inline">',
-          '#title' => t('Edit leave data'),
+          '#title' => $this->t('Edit leave data'),
     );
     
         $query = 'SELECT month from {ek_hr_post_data} WHERE emp_id=:e';

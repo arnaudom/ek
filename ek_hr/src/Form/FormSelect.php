@@ -44,7 +44,7 @@ class FormSelect extends FormBase
     '#size' => 1,
     '#options' => $company,
     '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-    '#title' => t('company'),
+    '#title' => $this->t('company'),
     '#disabled' => ($form_state->getValue('coid')) ? true : false,
     '#required' => true,
     '#prefix' => "<div class='container-inline'>"
@@ -53,7 +53,7 @@ class FormSelect extends FormBase
         if ($form_state->getValue('coid') == '') {
             $form['next'] = array(
     '#type' => 'submit',
-    '#value' => t('Next'). ' >>',
+    '#value' => $this->t('Next'). ' >>',
     '#states' => array(
         // Hide data fieldset when class is empty.
         'invisible' => array(
@@ -74,7 +74,7 @@ class FormSelect extends FormBase
     '#type' => 'select',
     '#size' => 1,
     '#options' => array_combine($month, $month),
-    '#title' => t('month'),
+    '#title' => $this->t('month'),
     '#default_value' => date('m'),
 
     );
@@ -84,7 +84,7 @@ class FormSelect extends FormBase
     '#type' => 'select',
     '#size' => 1,
     '#options' => array_combine($year, $year),
-    '#title' => t('year'),
+    '#title' => $this->t('year'),
   
     );
 
@@ -103,7 +103,7 @@ class FormSelect extends FormBase
     '#type' => 'select',
     '#size' => 1,
     '#options' => $list,
-    '#title' => t('form'),
+    '#title' => $this->t('form'),
     '#prefix' => '',
     '#suffix' => '</div>',
     );

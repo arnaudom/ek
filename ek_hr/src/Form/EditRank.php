@@ -73,7 +73,7 @@ class EditRank extends FormBase
     '#size' => 1,
     '#options' => $company,
     '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-    '#title' => t('company'),
+    '#title' => $this->t('company'),
     '#disabled' => ($form_state->getValue('coid')) ? true : false,
     '#required' => true,
     
@@ -82,7 +82,7 @@ class EditRank extends FormBase
         if (($form_state->getValue('coid')) == '') {
             $form['next'] = array(
     '#type' => 'submit',
-    '#value' => t('Next'). ' >>',
+    '#value' => $this->t('Next'). ' >>',
     '#states' => array(
         // Hide data fieldset when class is empty.
         'invisible' => array(
@@ -102,7 +102,7 @@ class EditRank extends FormBase
 
                 $form['file'] = array(
         '#type' => 'details',
-        '#title' => t('Current file'),
+        '#title' => $this->t('Current file'),
           '#collapsible' => true,
           '#open' => true,
         );
@@ -115,11 +115,11 @@ class EditRank extends FormBase
             } else {
                 $form['info1'] = array(
             '#type' => 'item',
-            '#markup' => t('You do not have any rank definition yet. You can create one directly by typing your structure or alternatively upload a text file.')
+            '#markup' => $this->t('You do not have any rank definition yet. You can create one directly by typing your structure or alternatively upload a text file.')
         );
                 $form['info2'] = array(
             '#type' => 'item',
-            '#markup' => t('1) indicate ranks titles by preceeding the name with character "@" and terminated with comma "," 2) indicate rank within a title separated by comma.')
+            '#markup' => $this->t('1) indicate ranks titles by preceeding the name with character "@" and terminated with comma "," 2) indicate rank within a title separated by comma.')
         );
        
                 $sample = "@ADMINISTRATION,"
@@ -144,13 +144,13 @@ class EditRank extends FormBase
     
             $form['info3'] = array(
       '#type' => 'item',
-      '#markup' => t('You can also upload any text file (with .txt extension) with your structure.')
+      '#markup' => $this->t('You can also upload any text file (with .txt extension) with your structure.')
     
     );
 
             $form['upload'] = array(
       '#type' => 'file',
-      '#description' => t('Upload a new file'),
+      '#description' => $this->t('Upload a new file'),
     );
 
             $form['actions'] = array(

@@ -71,7 +71,7 @@ class PostData extends FormBase
             '#size' => 1,
             '#options' => $company,
             '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-            '#title' => t('company'),
+            '#title' => $this->t('company'),
             '#disabled' => ($form_state->getValue('coid')) ? true : false,
             '#required' => true,
         );
@@ -79,7 +79,7 @@ class PostData extends FormBase
         if ($form_state->getValue('coid') == '') {
             $form['next'] = array(
                 '#type' => 'submit',
-                '#value' => t('Next') . ' >>',
+                '#value' => $this->t('Next') . ' >>',
                 '#states' => array(
                     // Hide data fieldset when class is empty.
                     'invisible' => array(
@@ -101,13 +101,13 @@ class PostData extends FormBase
 
             $form['month'] = array(
                 '#type' => 'item',
-                '#markup' => t('Current payroll month') . ': ' . $current,
+                '#markup' => $this->t('Current payroll month') . ': ' . $current,
             );
 
             if ($row == 0) {
                 $form['info'] = array(
                     '#type' => 'item',
-                    '#markup' => t('There is no data to post for this month.'),
+                    '#markup' => $this->t('There is no data to post for this month.'),
                 );
             } else {
                 $query = "SELECT sum(gross) from {ek_hr_workforce_pay} INNER JOIN {ek_hr_workforce} ON  ek_hr_workforce_pay.id=ek_hr_workforce.id  WHERE company_id=:c";
@@ -117,13 +117,13 @@ class PostData extends FormBase
 
                 $form['info'] = array(
                     '#type' => 'item',
-                    '#markup' => t('There is @n account(s) to be posted with gross value of @v.', array('@n' => $row, '@v' => number_format($gross))),
+                    '#markup' => $this->t('There is @n account(s) to be posted with gross value of @v.', array('@n' => $row, '@v' => number_format($gross))),
                 );
 
                 if ($this->moduleHandler->moduleExists('ek_finance')) {
                     $form['finance'] = array(
                         '#type' => 'checkbox',
-                        '#title' => t('Record payments in accounts'),
+                        '#title' => $this->t('Record payments in accounts'),
                     );
                 }
             }
@@ -308,12 +308,12 @@ class PostData extends FormBase
                     $param['month'] = $current;
                    
                     $param = serialize($param);
-                    $log = t("User @u has posted HR @now data with expenses", ['@u' => \Drupal::currentUser()->getAccountName(), '@now' => $current]);
+                    $log = $this->t("User @u has posted HR @now data with expenses", ['@u' => \Drupal::currentUser()->getAccountName(), '@now' => $current]);
                     \Drupal::logger('ek_hr')->notice($log);
                     $form_state->setRedirect('ek_finance_payroll.record', array('param' => $param));
                 } else {
                     \Drupal::messenger()->addStatus(t('Posting recorded'));
-                    $log = t("User @u has posted HR @now data without expenses", ['@u' => \Drupal::currentUser()->getAccountName(), '@now' => $current]);
+                    $log = $this->t("User @u has posted HR @now data without expenses", ['@u' => \Drupal::currentUser()->getAccountName(), '@now' => $current]);
                     \Drupal::logger('ek_hr')->notice($log);
                 }
             } //if move

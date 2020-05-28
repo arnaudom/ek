@@ -79,7 +79,7 @@ class FilterCompanyList extends FormBase
               '#size' => 1,
               '#options' => $company,
               '#default_value' => isset($_SESSION['hrlfilter']['coid']) ? $_SESSION['hrlfilter']['coid'] : null,
-              '#title' => t('company'),
+              '#title' => $this->t('company'),
               '#required' => true,
               '#prefix' => "",
               '#suffix' => '',

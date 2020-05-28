@@ -53,7 +53,7 @@ class RosterDelete extends FormBase
         $form['content'] = [
                 '#type' => 'checkboxes',
                 '#options' => $like,
-                '#title' => t('Select date(s) to delete (month-year)') . ':'
+                '#title' => $this->t('Select date(s) to delete (month-year)') . ':'
                 
             ];
             

@@ -72,7 +72,7 @@ class EditPh extends FormBase
             '#size' => 1,
             '#options' => $company,
             '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-            '#title' => t('company'),
+            '#title' => $this->t('company'),
             '#disabled' => ($form_state->getValue('coid')) ? true : false,
             '#required' => true,
         );
@@ -80,7 +80,7 @@ class EditPh extends FormBase
         if (($form_state->getValue('coid')) == '') {
             $form['next'] = array(
                 '#type' => 'submit',
-                '#value' => t('Next') . ' >>',
+                '#value' => $this->t('Next') . ' >>',
                 '#states' => array(
                     // Hide data fieldset when class is empty.
                     'invisible' => array(
@@ -128,7 +128,7 @@ class EditPh extends FormBase
                     '#size' => 50,
                     '#maxlength' => 255,
                     '#default_value' => $r->description,
-                    '#attributes' => array('placeholder' => t('description')),
+                    '#attributes' => array('placeholder' => $this->t('description')),
                 );
 
                 $form['date'] = array(
@@ -144,7 +144,7 @@ class EditPh extends FormBase
                     '#id' => 'del-' . $id,
                     '#type' => 'checkbox',
                     '#attributes' => array(
-                        'title' => t('delete'),
+                        'title' => $this->t('delete'),
                         'onclick' => "jQuery('#$id').toggleClass('delete');"
                     ),
                 );
@@ -176,7 +176,7 @@ class EditPh extends FormBase
                 '#size' => 50,
                 '#maxlength' => 255,
                 '#default_value' => '',
-                '#attributes' => array('placeholder' => t('New public holiday')),
+                '#attributes' => array('placeholder' => $this->t('New public holiday')),
             );
 
             $form['date'] = array(
@@ -227,13 +227,13 @@ class EditPh extends FormBase
             );
 
             unset($company[$form_state->getValue('coid')]);
-            $company[0] = t('None');
+            $company[0] = $this->t('None');
             $form['copy'] = array(
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $company,
                 '#default_value' => null,
-                '#title' => t('copy from'),
+                '#title' => $this->t('copy from'),
                 '#default_value' => 0,
             );
             

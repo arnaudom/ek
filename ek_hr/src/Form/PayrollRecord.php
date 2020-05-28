@@ -110,7 +110,7 @@ class PayrollRecord extends FormBase
             '#size' => 1,
             '#options' => AccessCheck::CompanyListByUid(),
             '#default_value' => ($coid) ? $coid : $form_state->getValue('coid'),
-            '#title' => t('company'),
+            '#title' => $this->t('company'),
             '#required' => true,
             '#prefix' => '<div class="container-inline">',
             '#ajax' => array(
@@ -147,7 +147,7 @@ class PayrollRecord extends FormBase
             '#type' => 'select',
             '#size' => 1,
             '#options' => $employees,
-            '#title' => t('employees'),
+            '#title' => $this->t('employees'),
             '#required' => true,
             '#default_value' => (!null == $form_state->getValue('eid')) ? $form_state->getValue('eid') : null,
             '#prefix' => "<div id='employees'",
@@ -194,7 +194,7 @@ class PayrollRecord extends FormBase
             $settings['eid'] = $form_state->getValue('eid');
             $settings['tax_category'] = $e->itax_c;
             $settings['ad_category'] = $e->origin;
-            $settings['error'] = t('Wrong input');
+            $settings['error'] = $this->t('Wrong input');
 
             $query = "SELECT current FROM {ek_hr_payroll_cycle} WHERE coid=:c";
             $a = array(':c' => $form_state->getValue('coid'));
@@ -249,22 +249,22 @@ class PayrollRecord extends FormBase
 
         if ($form_state->getValue('eid')) {
             $markup = "<ul>";
-            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . t('ID') . ': <b>' . $e->id . "</b></li>" : '';
-            $markup .= (!null == $form_state->getValue('eid') && $e->custom_id != '' && $e->custom_id != $e->id) ? "<li>" . t('Given ID') . ': <b>' . $e->custom_id . "</b></li>" : '';
-            $markup .= "<li>" . t('Payroll month') . ': <b>' . $current . '</b></li>';
-            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . t('basic salary') . ': <b>' . number_format($e->salary, 2) . " " . $e->currency . "</b></li>" : '';
-            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . t('category') . ': <b>' . $e->origin . '</b></li>' : '';
-            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . t('rank') . ': <b>' . $e->rank . '</b></li>' : '';
-            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . t('location') . ': <b>' . $e->location . '</b></li>' : '';
-            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . t('start date') . ': <b>' . $e->start . '</b></li>' : '';
-            $markup .= ($e->resign <> '') ? "<li>" . t('resigned date') . ': <b>' . $e->resign . '</b></li>' : '';
-            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . t('status') . ': <b>' . $e->active . ', ' . $e->e_status . '</b></li>' : '';
-            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . t('tax category') . ': <b>' . $e->itax_c . '</b></li></ul>' : '';
+            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . $this->t('ID') . ': <b>' . $e->id . "</b></li>" : '';
+            $markup .= (!null == $form_state->getValue('eid') && $e->custom_id != '' && $e->custom_id != $e->id) ? "<li>" . $this->t('Given ID') . ': <b>' . $e->custom_id . "</b></li>" : '';
+            $markup .= "<li>" . $this->t('Payroll month') . ': <b>' . $current . '</b></li>';
+            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . $this->t('basic salary') . ': <b>' . number_format($e->salary, 2) . " " . $e->currency . "</b></li>" : '';
+            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . $this->t('category') . ': <b>' . $e->origin . '</b></li>' : '';
+            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . $this->t('rank') . ': <b>' . $e->rank . '</b></li>' : '';
+            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . $this->t('location') . ': <b>' . $e->location . '</b></li>' : '';
+            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . $this->t('start date') . ': <b>' . $e->start . '</b></li>' : '';
+            $markup .= ($e->resign <> '') ? "<li>" . $this->t('resigned date') . ': <b>' . $e->resign . '</b></li>' : '';
+            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . $this->t('status') . ': <b>' . $e->active . ', ' . $e->e_status . '</b></li>' : '';
+            $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . $this->t('tax category') . ': <b>' . $e->itax_c . '</b></li></ul>' : '';
             $markup .= (!null == $form_state->getValue('eid')) ? "<p>" . $e->note . "</p>" : '';
         }
 
         $form['hr']['data'] = array(
-            '#title' => (!null == $form_state->getValue('eid')) ? t("Employee data") . ": " . $e->name : t("Employee data"),
+            '#title' => (!null == $form_state->getValue('eid')) ? $this->t("Employee data") . ": " . $e->name : $this->t("Employee data"),
             '#type' => 'details',
             '#open' => (!null == $form_state->getValue('eid')) ? true : false,
         );
@@ -296,7 +296,7 @@ class PayrollRecord extends FormBase
         $form["work_base"] = array(
             '#type' => 'number',
             '#id' => 'work_base',
-            '#title' => t("units work base"),
+            '#title' => $this->t("units work base"),
             '#title_display' => 'after',
             '#required' => true,
             //'#default_value' => isset($post->d_pay) ? $post->d_pay : 0 ,
@@ -306,7 +306,7 @@ class PayrollRecord extends FormBase
         $form["unit_work"] = array(
             '#type' => 'number',
             '#id' => 'unit_work',
-            '#title' => t("units worked"),
+            '#title' => $this->t("units worked"),
             '#title_display' => 'after',
             '#required' => true,
             '#min' => 0,
@@ -316,24 +316,24 @@ class PayrollRecord extends FormBase
         $form["no_pay_day"] = array(
             '#type' => 'number',
             '#id' => 'no_pay_day',
-            '#title' => t("no pay days"),
+            '#title' => $this->t("no pay days"),
             '#title_display' => 'after',
             '#required' => false,
             '#max' => 31,
             '#min' => 0,
             //'#default_value' => isset($post->no_payday) ? $post->no_payday : 0 ,
-            '#attributes' => array('class' => ['calculate', 'form-number-small'], 'title' => t('number of days not paid'), 'value' => isset($post->no_payday) ? $post->no_payday : 0),
+            '#attributes' => array('class' => ['calculate', 'form-number-small'], 'title' => $this->t('number of days not paid'), 'value' => isset($post->no_payday) ? $post->no_payday : 0),
         );
         $form["leave"] = array(
             '#type' => 'number',
             '#id' => 'leave',
-            '#title' => t("leaves"),
+            '#title' => $this->t("leaves"),
             '#title_display' => 'after',
             '#required' => false,
             '#max' => 31,
             '#min' => 0,
             //'#default_value' => isset($post->tleave) ? $post->tleave : 0 ,
-            '#attributes' => array('title' => t('number of days leave'), 'class' => ['calculate', 'form-number-small'], 'value' => isset($post->tleave) ? $post->tleave : 0),
+            '#attributes' => array('title' => $this->t('number of days leave'), 'class' => ['calculate', 'form-number-small'], 'value' => isset($post->tleave) ? $post->tleave : 0),
         );
 
         $ck = (isset($e->currency)) ? $e->currency : null;
@@ -341,7 +341,7 @@ class PayrollRecord extends FormBase
         $form["basic_value"] = array(
             '#type' => 'textfield',
             '#id' => 'basic_value',
-            '#title' => t("basic salary") . " " . $ck,
+            '#title' => $this->t("basic salary") . " " . $ck,
             '#title_display' => 'after',
             '#required' => true,
             '#size' => 15,
@@ -377,7 +377,7 @@ class PayrollRecord extends FormBase
 
         //Table 2 fixed allowances
         $form['hr']['fa'] = [
-            '#title' => t('Fixed allowances'),
+            '#title' => $this->t('Fixed allowances'),
             '#type' => 'fieldset',
         ];
         $form['hr']['fa']['table2'] = array(
@@ -385,7 +385,7 @@ class PayrollRecord extends FormBase
             '#tree' => true,
             '#input' => true,
             '#theme' => 'table',
-            '#title' => t('Fixed allowances'),
+            '#title' => $this->t('Fixed allowances'),
             '#header' => array(
                 'unit' => array(
                     'data' => $this->t('Unit'),
@@ -412,7 +412,7 @@ class PayrollRecord extends FormBase
         $form["overtime_hours"] = array(
             '#type' => 'number',
             '#id' => 'overtime_hours',
-            '#title' => t("Number of hours overtime"),
+            '#title' => $this->t("Number of hours overtime"),
             '#title_display' => 'after',
             '#required' => false,
             '#min' => 0,
@@ -422,7 +422,7 @@ class PayrollRecord extends FormBase
         $form["normal_ot"] = array(
             '#type' => 'textfield',
             '#id' => 'normal_ot',
-            '#title' => t("Normal OT"),
+            '#title' => $this->t("Normal OT"),
             '#title_display' => 'after',
             '#required' => false,
             '#size' => 20,
@@ -432,7 +432,7 @@ class PayrollRecord extends FormBase
         $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAF1-" . $c;
         $opt = serialize($opt);
         $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
-        $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
+        $mark = "<a class='use-ajax' title = '" . $this->t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
         $form['formula_not'] = array(
             '#type' => 'item',
             '#markup' => $mark,
@@ -467,7 +467,7 @@ class PayrollRecord extends FormBase
         $form["rest_hours"] = array(
             '#type' => 'number',
             '#id' => 'rest_hours',
-            '#title' => t("Number of hours rest days"),
+            '#title' => $this->t("Number of hours rest days"),
             '#title_display' => 'after',
             '#required' => false,
             '#min' => 0,
@@ -477,7 +477,7 @@ class PayrollRecord extends FormBase
         $form["rest_day_ot"] = array(
             '#type' => 'textfield',
             '#id' => 'rest_day_ot',
-            '#title' => t("Rest day OT"),
+            '#title' => $this->t("Rest day OT"),
             '#title_display' => 'after',
             '#required' => false,
             '#size' => 20,
@@ -488,7 +488,7 @@ class PayrollRecord extends FormBase
         $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAF2-" . $c;
         $opt = serialize($opt);
         $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
-        $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
+        $mark = "<a class='use-ajax' title = '" . $this->t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
         $form['formula_rdot'] = array(
             '#type' => 'item',
             '#markup' => $mark,
@@ -523,7 +523,7 @@ class PayrollRecord extends FormBase
         $form["ph_hours"] = array(
             '#type' => 'number',
             '#id' => 'ph_hours',
-            '#title' => t("Number of hours on PH"),
+            '#title' => $this->t("Number of hours on PH"),
             '#title_display' => 'after',
             '#required' => false,
             '#min' => 0,
@@ -533,7 +533,7 @@ class PayrollRecord extends FormBase
         $form["ph_ot"] = array(
             '#type' => 'textfield',
             '#id' => 'ph_ot',
-            '#title' => t("PH OT"),
+            '#title' => $this->t("PH OT"),
             '#title_display' => 'after',
             '#required' => false,
             '#size' => 20,
@@ -543,7 +543,7 @@ class PayrollRecord extends FormBase
         $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAF3-" . $c;
         $opt = serialize($opt);
         $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
-        $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
+        $mark = "<a class='use-ajax' title = '" . $this->t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
         $form['formula_phot'] = array(
             '#type' => 'item',
             '#markup' => $mark,
@@ -578,7 +578,7 @@ class PayrollRecord extends FormBase
         $form["mc_days"] = array(
             '#type' => 'number',
             '#id' => 'mc_days',
-            '#title' => t("Number of days medical leave"),
+            '#title' => $this->t("Number of days medical leave"),
             '#title_display' => 'after',
             '#required' => false,
             '#min' => 0,
@@ -588,7 +588,7 @@ class PayrollRecord extends FormBase
         $form["mc_day_val"] = array(
             '#type' => 'textfield',
             '#id' => 'mc_day_val',
-            '#title' => t("Medical leave"),
+            '#title' => $this->t("Medical leave"),
             '#title_display' => 'after',
             '#required' => false,
             '#size' => 20,
@@ -598,7 +598,7 @@ class PayrollRecord extends FormBase
         $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAF4-" . $c;
         $opt = serialize($opt);
         $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
-        $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
+        $mark = "<a class='use-ajax' title = '" . $this->t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
         $form['formula_mcot'] = array(
             '#type' => 'item',
             '#markup' => $mark,
@@ -634,7 +634,7 @@ class PayrollRecord extends FormBase
         $form["x_hours"] = array(
             '#type' => 'number',
             '#id' => 'x_hours',
-            '#title' => t("Number of extra hours"),
+            '#title' => $this->t("Number of extra hours"),
             '#title_display' => 'after',
             '#required' => false,
             '#min' => 0,
@@ -644,7 +644,7 @@ class PayrollRecord extends FormBase
         $form["x_hours_val"] = array(
             '#type' => 'textfield',
             '#id' => 'x_hours_val',
-            '#title' => t("Extra hours"),
+            '#title' => $this->t("Extra hours"),
             '#title_display' => 'after',
             '#required' => false,
             '#size' => 20,
@@ -654,7 +654,7 @@ class PayrollRecord extends FormBase
         $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAF5-" . $c;
         $opt = serialize($opt);
         $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
-        $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
+        $mark = "<a class='use-ajax' title = '" . $this->t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
         $form['formula_xhot'] = array(
             '#type' => 'item',
             '#markup' => $mark,
@@ -689,16 +689,16 @@ class PayrollRecord extends FormBase
         $form["turnover"] = array(
             '#type' => 'textfield',
             '#id' => 'turnover',
-            '#title' => t("Turnover"),
+            '#title' => $this->t("Turnover"),
             '#title_display' => 'after',
             '#required' => false,
             '#size' => 20,
-            '#attributes' => array('title' => t('value to calculate commission'), 'class' => ['calculate'], 'value' => isset($post->turnover) ? $post->turnover : 0),
+            '#attributes' => array('title' => $this->t('value to calculate commission'), 'class' => ['calculate'], 'value' => isset($post->turnover) ? $post->turnover : 0),
         );
         $form["commission"] = array(
             '#type' => 'textfield',
             '#id' => 'commission',
-            '#title' => (!null == $form_state->getValue('eid')) ? $ad["LAF6-" . $c]['description'] : t('commision'),
+            '#title' => (!null == $form_state->getValue('eid')) ? $ad["LAF6-" . $c]['description'] : $this->t('commision'),
             '#title_display' => 'after',
             '#required' => false,
             '#size' => 20,
@@ -708,7 +708,7 @@ class PayrollRecord extends FormBase
         $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAF6-" . $c;
         $opt = serialize($opt);
         $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
-        $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
+        $mark = "<a class='use-ajax' title = '" . $this->t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
         $form['formula_to'] = array(
             '#type' => 'item',
             '#markup' => $mark,
@@ -716,7 +716,7 @@ class PayrollRecord extends FormBase
         $form['tax_commision'] = array(
             '#type' => 'checkbox',
             '#id' => 'commision-tax',
-            '#attributes' => array('title' => t('include tax'), 'class' => ['calculate'], 'value' => (!null == $form_state->getValue('eid')) ? $ad["LAF6-" . $c]['tax'] : 0),
+            '#attributes' => array('title' => $this->t('include tax'), 'class' => ['calculate'], 'value' => (!null == $form_state->getValue('eid')) ? $ad["LAF6-" . $c]['tax'] : 0),
         );
 
 
@@ -744,7 +744,7 @@ class PayrollRecord extends FormBase
 
         //Table 3 custom allowances
         $form['hr']['ca'] = [
-            '#title' => t('Custom allowances'),
+            '#title' => $this->t('Custom allowances'),
             '#type' => 'fieldset',
         ];
         $form['hr']['ca']['table3'] = array(
@@ -752,7 +752,7 @@ class PayrollRecord extends FormBase
             '#tree' => true,
             '#input' => true,
             '#theme' => 'table',
-            '#title' => t('Custom allowances'),
+            '#title' => $this->t('Custom allowances'),
             '#header' => array(
                 'allowance' => array(
                     'data' => $this->t('Allowance'),
@@ -778,16 +778,16 @@ class PayrollRecord extends FormBase
             $tax = 'tax' . $i;
             $formula = 'formula' . $i;
             if (!null == $form_state->getValue('eid')) {
-                $attr = ['title' => t('include tax'), 'class' => ['calculate']];
+                $attr = ['title' => $this->t('include tax'), 'class' => ['calculate']];
                 if ($ad["LAC$i-" . $c]['tax'] == 1) {
-                    $attr = ['title' => t('include tax'), 'class' => ['calculate'], 'checked' => 'checked'];
+                    $attr = ['title' => $this->t('include tax'), 'class' => ['calculate'], 'checked' => 'checked'];
                 }
             }
             
             $form[$custom_aw] = array(
                 '#type' => 'textfield',
                 '#id' => $custom_aw,
-                '#title' => (!null == $form_state->getValue('eid')) ? $ad["LAC$i-" . $c]['description'] : t('Allowance'),
+                '#title' => (!null == $form_state->getValue('eid')) ? $ad["LAC$i-" . $c]['description'] : $this->t('Allowance'),
                 '#title_display' => 'after',
                 '#required' => false,
                 '#size' => 20,
@@ -804,7 +804,7 @@ class PayrollRecord extends FormBase
             $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LAC$i-" . $c;
             $opt = serialize($opt);
             $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
-            $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
+            $mark = "<a class='use-ajax' title = '" . $this->t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
             $form[$formula] = array(
                 '#type' => 'item',
                 '#markup' => $mark,
@@ -833,7 +833,7 @@ class PayrollRecord extends FormBase
         $i++;
         $form["sub_total_gross"] = array(
             '#type' => 'item',
-            '#markup' => t('Total gross salary'),
+            '#markup' => $this->t('Total gross salary'),
         );
         $form["total_gross"] = array(
             '#type' => 'textfield',
@@ -864,12 +864,12 @@ class PayrollRecord extends FormBase
         $form["less_hours"] = array(
             '#type' => 'number',
             '#id' => 'less_hours',
-            '#title' => t("Number of less hours"),
+            '#title' => $this->t("Number of less hours"),
             '#title_display' => 'after',
             '#required' => false,
             '#min' => 0,
             '#step' => 0.5,
-            '#attributes' => array('title' => t('less hours number'), 'class' => ['calculate', 'form-number-small'], 'value' => isset($post->less_hours) ? $post->less_hours : 0),
+            '#attributes' => array('title' => $this->t('less hours number'), 'class' => ['calculate', 'form-number-small'], 'value' => isset($post->less_hours) ? $post->less_hours : 0),
         );
         $form["less_hours_val"] = array(
             '#type' => 'textfield',
@@ -899,7 +899,7 @@ class PayrollRecord extends FormBase
         $i++;
         $form["sub_advance"] = array(
             '#type' => 'item',
-            '#markup' => t('Advance'),
+            '#markup' => $this->t('Advance'),
         );
         $form["advance"] = array(
             '#type' => 'textfield',
@@ -928,7 +928,7 @@ class PayrollRecord extends FormBase
 
         //Table 4 custom deductions
         $form['hr']['cd'] = [
-            '#title' => t('Custom deductions'),
+            '#title' => $this->t('Custom deductions'),
             '#type' => 'fieldset',
         ];
         $form['hr']['cd']['table4'] = array(
@@ -936,7 +936,7 @@ class PayrollRecord extends FormBase
             '#tree' => true,
             '#input' => true,
             '#theme' => 'table',
-            '#title' => t('Custom deductions'),
+            '#title' => $this->t('Custom deductions'),
             '#header' => array(
                 'allowance' => array(
                     'data' => $this->t('Deduction'),
@@ -962,16 +962,16 @@ class PayrollRecord extends FormBase
             $tax = 'tax' . $n;
             $formula = 'formula' . $i;
             if (!null == $form_state->getValue('eid')) {
-                $attr = ['title' => t('include tax'), 'class' => ['calculate']];
+                $attr = ['title' => $this->t('include tax'), 'class' => ['calculate']];
                 if ($ad["LDC$i-" . $c]['tax'] == 1) {
-                    $attr = ['title' => t('include tax'), 'class' => ['calculate'], 'checked' => 'checked'];
+                    $attr = ['title' => $this->t('include tax'), 'class' => ['calculate'], 'checked' => 'checked'];
                 }
             }
 
             $form[$custom_d] = array(
                 '#type' => 'textfield',
                 '#id' => $custom_d,
-                '#title' => (!null == $form_state->getValue('eid')) ? $ad["LDC$i-" . $c]['description'] : t('Deduction'),
+                '#title' => (!null == $form_state->getValue('eid')) ? $ad["LDC$i-" . $c]['description'] : $this->t('Deduction'),
                 '#title_display' => 'after',
                 '#required' => false,
                 '#size' => 20,
@@ -989,7 +989,7 @@ class PayrollRecord extends FormBase
             $opt = 'formula|' . $form_state->getValue('coid') . '|' . "LDC$i-" . $c;
             $opt = serialize($opt);
             $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
-            $mark = "<a class='use-ajax' title = '" . t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
+            $mark = "<a class='use-ajax' title = '" . $this->t('formula') . "' " . "href='" . $link . "'><span class='formula'></span></a>";
             $form[$formula] = array(
                 '#type' => 'item',
                 '#markup' => $mark,
@@ -1017,7 +1017,7 @@ class PayrollRecord extends FormBase
         $i++;
         $form["sub_total_deductions"] = array(
             '#type' => 'item',
-            '#markup' => t('Total deductions'),
+            '#markup' => $this->t('Total deductions'),
         );
         $form["total_deductions"] = array(
             '#type' => 'textfield',
@@ -1046,7 +1046,7 @@ class PayrollRecord extends FormBase
 
         //table 5 contributions
         $form['hr']['co'] = [
-            '#title' => t('Contributions'),
+            '#title' => $this->t('Contributions'),
             '#type' => 'fieldset',
         ];
         $form['hr']['co']['table5'] = array(
@@ -1077,7 +1077,7 @@ class PayrollRecord extends FormBase
         $form["fund1_employer"] = array(
             '#type' => 'textfield',
             '#id' => 'fund1_employer',
-            '#title' => (!null == $form_state->getValue('eid')) ? $param->get('param', 'fund_1', ['name', 'value']) : t('Contribution'),
+            '#title' => (!null == $form_state->getValue('eid')) ? $param->get('param', 'fund_1', ['name', 'value']) : $this->t('Contribution'),
             '#title_display' => 'after',
             '#required' => false,
             '#size' => 20,
@@ -1096,7 +1096,7 @@ class PayrollRecord extends FormBase
             '#type' => 'checkbox',
             '#id' => 'thisepf',
             '#value' => 0,
-            '#attributes' => array('title' => t('include this fund'), 'class' => ['amount', 'calculate']),
+            '#attributes' => array('title' => $this->t('include this fund'), 'class' => ['amount', 'calculate']),
         );
 
         //built edit rows for table
@@ -1121,7 +1121,7 @@ class PayrollRecord extends FormBase
         $form["fund2_employer"] = array(
             '#type' => 'textfield',
             '#id' => 'fund2_employer',
-            '#title' => (!null == $form_state->getValue('eid')) ? $param->get('param', 'fund_2', ['name', 'value']) : t('Contribution'),
+            '#title' => (!null == $form_state->getValue('eid')) ? $param->get('param', 'fund_2', ['name', 'value']) : $this->t('Contribution'),
             '#title_display' => 'after',
             '#required' => false,
             '#size' => 20,
@@ -1141,7 +1141,7 @@ class PayrollRecord extends FormBase
             '#type' => 'checkbox',
             '#id' => 'thissoc',
             '#value' => 0,
-            '#attributes' => array('title' => t('include this fund'), 'class' => ['amount', 'calculate']),
+            '#attributes' => array('title' => $this->t('include this fund'), 'class' => ['amount', 'calculate']),
         );
 
         //built edit rows for table
@@ -1166,7 +1166,7 @@ class PayrollRecord extends FormBase
         $form["fund3_employer"] = array(
             '#type' => 'textfield',
             '#id' => 'fund3_employer',
-            '#title' => (!null == $form_state->getValue('eid')) ? $param->get('param', 'fund_3', ['name', 'value']) : t('Contribution'),
+            '#title' => (!null == $form_state->getValue('eid')) ? $param->get('param', 'fund_3', ['name', 'value']) : $this->t('Contribution'),
             '#title_display' => 'after',
             '#required' => false,
             '#size' => 20,
@@ -1186,7 +1186,7 @@ class PayrollRecord extends FormBase
             '#type' => 'checkbox',
             '#id' => 'thiswith',
             '#value' => 0,
-            '#attributes' => array('title' => t('include this fund'), 'class' => ['amount', 'calculate']),
+            '#attributes' => array('title' => $this->t('include this fund'), 'class' => ['amount', 'calculate']),
         );
 
         //built edit rows for table
@@ -1210,7 +1210,7 @@ class PayrollRecord extends FormBase
 
         $form["tax_employee"] = array(
             '#type' => 'item',
-            '#markup' => (!null == $form_state->getValue('eid')) ? $param->get('param', 'tax', ['name', 'value']) : t('Personal income tax'),
+            '#markup' => (!null == $form_state->getValue('eid')) ? $param->get('param', 'tax', ['name', 'value']) : $this->t('Personal income tax'),
         );
         $form["income_tax"] = array(
             '#type' => 'textfield',
@@ -1224,7 +1224,7 @@ class PayrollRecord extends FormBase
             '#type' => 'checkbox',
             '#id' => 'thisincometax',
             '#value' => 0,
-            '#attributes' => array('title' => t('include personal tax'), 'class' => ['amount', 'calculate']),
+            '#attributes' => array('title' => $this->t('include personal tax'), 'class' => ['amount', 'calculate']),
         );
 
         //built edit rows for table
@@ -1260,7 +1260,7 @@ class PayrollRecord extends FormBase
 
         $form["_total_net"] = array(
             '#type' => 'item',
-            '#markup' => t('Total net salary'),
+            '#markup' => $this->t('Total net salary'),
         );
         $form["total_net"] = array(
             '#type' => 'textfield',

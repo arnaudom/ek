@@ -81,7 +81,7 @@ class Roster extends FormBase
             '#size' => 1,
             '#options' => $company,
             '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-            '#title' => t('company'),
+            '#title' => $this->t('company'),
             '#disabled' => ($form_state->getValue('coid')) ? true : false,
             '#required' => true,
             '#prefix' => "<div class='container-inline'>",
@@ -90,7 +90,7 @@ class Roster extends FormBase
         if ($form_state->getValue('coid') == '') {
             $form['next'] = array(
                 '#type' => 'submit',
-                '#value' => t('Next') . ' >>',
+                '#value' => $this->t('Next') . ' >>',
                 '#states' => array(
                     // Hide data fieldset when class is empty.
                     'invisible' => array(
@@ -123,7 +123,7 @@ class Roster extends FormBase
                 '#size' => 1,
                 '#options' => $options,
                 '#default_value' => ($form_state->getValue('month')) ? $form_state->getValue('month') : $_SESSION['m'],
-                '#title' => t('Month'),
+                '#title' => $this->t('Month'),
                 '#required' => true,
             );
             
@@ -134,7 +134,7 @@ class Roster extends FormBase
                 '#step' => 1,
                 '#size' => 2,
                 '#default_value' => ($form_state->getValue('cutoff')) ? $form_state->getValue('cutoff') : null,
-                '#title' => t('Cut-off day'),
+                '#title' => $this->t('Cut-off day'),
                 '#required' => true,
                 '#prefix' => "<div class='container-inline'>",
             );
@@ -158,7 +158,7 @@ class Roster extends FormBase
                 '#size' => 1,
                 '#options' => array_combine($options, $options),
                 '#default_value' => ($form_state->getValue('location')) ? $form_state->getValue('location') : null,
-                '#title' => t('Location'),
+                '#title' => $this->t('Location'),
                 '#required' => true,
                 '#suffix' => "</div></div>"
             );
@@ -169,7 +169,7 @@ class Roster extends FormBase
                 $link = Url::fromRoute('ek_hr.roster_settings', array(), array())->toString();
                 $form['alert'] = array(
                     '#type' => 'item',
-                    '#markup' => "<div class='messages messages--warning'>" . t('Missing settings') . " <a href='".$link."'>".t('Edit').".</div>",
+                    '#markup' => "<div class='messages messages--warning'>" . $this->t('Missing settings') . " <a href='".$link."'>".t('Edit').".</div>",
                 
                 );
             }
@@ -240,7 +240,7 @@ class Roster extends FormBase
             // recap
             $form['roster']["info"] = array(
                 '#type' => 'item',
-                '#markup' => t('@l for month @m and cut-off date @c', array('@l' => $form_state->getValue('location'), '@m' => date('F', mktime(0, 0, 0, $month, 1, $Y)), '@c' => $c)),
+                '#markup' => $this->t('@l for month @m and cut-off date @c', array('@l' => $form_state->getValue('location'), '@m' => date('F', mktime(0, 0, 0, $month, 1, $Y)), '@c' => $c)),
                 '#prefix' => '</div><h2 class="">',
                 '#suffix' => '</h2>',
             );
@@ -254,12 +254,12 @@ class Roster extends FormBase
                     )
             );
             $link = Url::fromRoute('ek_hr.roster_extract', array('param' => $param), array())->toString();
-            $excel = "<a href='" . $link . "' title='" . t('export') . "'><span id='excel' class='hand export-ico'/></a>";
+            $excel = "<a href='" . $link . "' title='" . $this->t('export') . "'><span id='excel' class='hand export-ico'/></a>";
 
             $buttons = "<div class='table'  id=''>
                       <div class='row'>
                         <div class='cell'>
-                            <span id='calendar' class='hand calendar-ico' title='" . t('return to list view') . "'></span>
+                            <span id='calendar' class='hand calendar-ico' title='" . $this->t('return to list view') . "'></span>
                         </div>
                         <div class='cell'>
                             " . $excel . "
@@ -307,7 +307,7 @@ class Roster extends FormBase
                     $cal_description = ', ' . $dayType[$i];
                 }
 
-                $title = $w . " " . $cal_description . ' (' . t('click to edit roster') . ')';
+                $title = $w . " " . $cal_description . ' (' . $this->t('click to edit roster') . ')';
 
                 $headline_inner .= "
               <td id = 'd$i' class='cellborder $class time day hand'  title='" . $title . "'>" . $i . "</td>
@@ -330,7 +330,7 @@ class Roster extends FormBase
                     $cal_description = ', ' . $dayType[$i];
                 }
 
-                $title = $w . " " . $cal_description . ' (' . t('click to edit roster') . ')';
+                $title = $w . " " . $cal_description . ' (' . $this->t('click to edit roster') . ')';
                 $headline_inner .= "
               <td id = 'd$i' class='cellborder $class time day hand'  title='" . $title . "'>" . $i . "</td>
               <td class='slide  d$i' title='" . $title . "'>" . $i . "</td>";
@@ -464,7 +464,7 @@ class Roster extends FormBase
                             $opt = 'roster_note|'. $val['name'] . '_' . $ref;
                             $opt = serialize($opt);
                             $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
-                            $mark = "<a class='use-ajax' title = '" . t('note') . "' " . "href='"
+                            $mark = "<a class='use-ajax' title = '" . $this->t('note') . "' " . "href='"
                                     . $link . "'><span class='$note_class'></span></a>";
                             
                         
@@ -551,7 +551,7 @@ class Roster extends FormBase
                             $opt = 'roster_note|'. $val['name'] . '_' . $ref;
                             $opt = serialize($opt);
                             $link = Url::fromRoute('ek_hr_modal', ['param' => $opt])->toString();
-                            $mark = "<a class='use-ajax' title = '" . t('note') . "' " . "href='"
+                            $mark = "<a class='use-ajax' title = '" . $this->t('note') . "' " . "href='"
                                     . $link . "'><span class='$note_class'></span></a>";
                             
                             $form['roster']["day" . $ref] = array(

@@ -73,7 +73,7 @@ class Payslip extends FormBase
             '#size' => 1,
             '#options' => $company,
             '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-            '#title' => t('company'),
+            '#title' => $this->t('company'),
             '#disabled' => ($form_state->getValue('coid')) ? true : false,
             '#required' => true,
         );
@@ -81,7 +81,7 @@ class Payslip extends FormBase
         if ($form_state->getValue('coid') == '') {
             $form['next'] = array(
                 '#type' => 'submit',
-                '#value' => t('Next') . ' >>',
+                '#value' => $this->t('Next') . ' >>',
                 '#states' => array(
                     // Hide data fieldset when class is empty.
                     'invisible' => array(
@@ -107,7 +107,7 @@ class Payslip extends FormBase
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $employees,
-                '#title' => t('Print from'),
+                '#title' => $this->t('Print from'),
                 '#prefix' => '<div class="table"><div class="row "><div class="cell">',
                 '#suffix' => '</div>',
             );
@@ -118,7 +118,7 @@ class Payslip extends FormBase
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $employees,
-                '#title' => t('to'),
+                '#title' => $this->t('to'),
                 '#prefix' => '<div class="cell">',
                 '#suffix' => '</div></div>',
             );
@@ -130,7 +130,7 @@ class Payslip extends FormBase
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => array_combine($month, $month),
-                '#title' => t('month'),
+                '#title' => $this->t('month'),
                 '#default_value' => date('m'),
                 '#prefix' => '<div class="row "><div class="cell">',
                 '#suffix' => '</div>',
@@ -141,12 +141,12 @@ class Payslip extends FormBase
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => array_combine($year, $year),
-                '#title' => t('year'),
+                '#title' => $this->t('year'),
                 '#prefix' => '<div class="cell">',
                 '#suffix' => '</div>',
             );
 
-            $list = array('default' => t('Default payslip'));
+            $list = array('default' => $this->t('Default payslip'));
             if (file_exists("private://hr/payslips")) {
                 $handle = opendir("private://hr/payslips");
                 while ($file = readdir($handle)) {
@@ -160,7 +160,7 @@ class Payslip extends FormBase
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $list,
-                '#title' => t('templates'),
+                '#title' => $this->t('templates'),
                 '#prefix' => '<div class="cell">',
                 '#suffix' => '</div></div></div>',
             );

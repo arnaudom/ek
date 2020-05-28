@@ -77,7 +77,7 @@ class FilterFund extends FormBase
             '#size' => 1,
             '#options' => $company,
             '#default_value' => isset($_SESSION['hrfundfilter']['coid']) ? $_SESSION['hrfundfilter']['coid'] : null,
-            '#title' => t('company'),
+            '#title' => $this->t('company'),
             '#required' => true,
             '#ajax' => array(
                 'callback' => array($this, 'type_fund'),

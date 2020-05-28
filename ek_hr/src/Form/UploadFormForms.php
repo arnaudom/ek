@@ -36,7 +36,7 @@ class UploadFormForms extends FormBase
     {
         $form['up'] = array(
       '#type' => 'details',
-      '#title' => t('Upload file'),
+      '#title' => $this->t('Upload file'),
       '#collapsible' => true,
       '#open' => true,
   
@@ -52,7 +52,7 @@ class UploadFormForms extends FormBase
         $form['up']['upload'] = array(
             '#id' => 'sharebuttonid',
             '#type' => 'button',
-            '#value' =>  t('Upload') ,
+            '#value' =>  $this->t('Upload') ,
             '#ajax' => array(
               'callback' => array($this, 'submitForm'),
               'wrapper' => 'hr_table_payslip',
@@ -63,7 +63,7 @@ class UploadFormForms extends FormBase
       );
 
         $form['up']['info'] = array(
-    '#markup' => t("use file format name 'type_format_name.inc'. Ex. form_xls_abc.inc or image file for logo"),
+    '#markup' => $this->t("use file format name 'type_format_name.inc'. Ex. form_xls_abc.inc or image file for logo"),
     
     );
         return $form;

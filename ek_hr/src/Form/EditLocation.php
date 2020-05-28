@@ -72,7 +72,7 @@ class EditLocation extends FormBase
             '#size' => 1,
             '#options' => $company,
             '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-            '#title' => t('company'),
+            '#title' => $this->t('company'),
             '#disabled' => ($form_state->getValue('coid')) ? true : false,
             '#required' => true,
         );
@@ -80,7 +80,7 @@ class EditLocation extends FormBase
         if (($form_state->getValue('coid')) == '') {
             $form['next'] = array(
                 '#type' => 'submit',
-                '#value' => t('Next') . ' >>',
+                '#value' => $this->t('Next') . ' >>',
                 '#states' => array(
                     // Hide data fieldset when class is empty.
                     'invisible' => array(
@@ -132,7 +132,7 @@ class EditLocation extends FormBase
                     '#size' => 25,
                     '#maxlength' => 255,
                     '#default_value' => $r->location,
-                    '#attributes' => array('placeholder' => t('location name')),
+                    '#attributes' => array('placeholder' => $this->t('location name')),
                     '#required' => true,
                 );
                 
@@ -148,7 +148,7 @@ class EditLocation extends FormBase
                     '#size' => 30,
                     '#maxlength' => 255,
                     '#default_value' => $r->description,
-                    '#attributes' => array('placeholder' => t('location description')),
+                    '#attributes' => array('placeholder' => $this->t('location description')),
                 );
 
                 $form['turnover'] = array(
@@ -164,7 +164,7 @@ class EditLocation extends FormBase
                     '#id' => 'del-' . $id,
                     '#type' => 'checkbox',
                     '#attributes' => array(
-                        'title' => t('delete'),
+                        'title' => $this->t('delete'),
                         'onclick' => "jQuery('#$id').toggleClass('delete');"
                     ),
                 );
@@ -202,7 +202,7 @@ class EditLocation extends FormBase
                 '#size' => 25,
                 '#maxlength' => 255,
                 '#default_value' => '',
-                '#attributes' => array('placeholder' => t('New location')),
+                '#attributes' => array('placeholder' => $this->t('New location')),
             );
 
             $form['desc'] = array(
@@ -211,7 +211,7 @@ class EditLocation extends FormBase
                 '#size' => 30,
                 '#maxlength' => 255,
                 '#default_value' => '',
-                '#attributes' => array('placeholder' => t('New location description')),
+                '#attributes' => array('placeholder' => $this->t('New location description')),
             );
 
             $form['turnover'] = array(

@@ -72,7 +72,7 @@ class EditMainParameters extends FormBase
             '#size' => 1,
             '#options' => $company,
             '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-            '#title' => t('company'),
+            '#title' => $this->t('company'),
             '#disabled' => ($form_state->getValue('coid')) ? true : false,
             '#required' => true,
         );
@@ -80,7 +80,7 @@ class EditMainParameters extends FormBase
         if ($form_state->getValue('coid') == '') {
             $form['next'] = array(
                 '#type' => 'submit',
-                '#value' => t('Next') . ' >>',
+                '#value' => $this->t('Next') . ' >>',
                 '#states' => array(
                     // Hide data fieldset when class is empty.
                     'invisible' => array(
@@ -183,7 +183,7 @@ class EditMainParameters extends FormBase
                 $form[$key]['calcul'] = array(
                     '#type' => 'select',
                     '#size' => 1,
-                    '#options' => ['P' => t('percent'), 'T' => t('tabulation')],
+                    '#options' => ['P' => $this->t('percent'), 'T' => $this->t('tabulation')],
                     '#default_value' => $value['calcul']['value'],
                     '#description' => $value['calcul']['description'],
                 );
@@ -202,13 +202,13 @@ class EditMainParameters extends FormBase
                     '#description' => $value['employee']['description'],
                 );
                 $o = [
-                    'C' => t('Contract'),
-                    'B' => t('Basic'),
-                    'A' => t('Other base'),
-                    'G' => t('Gross'),
-                    'BF' => t('Basic + fixed AW'),
-                    'BMF' => t('Basic - fixed AW'),
-                    'GMFC' => t('Gross - fixed AW & com.')
+                    'C' => $this->t('Contract'),
+                    'B' => $this->t('Basic'),
+                    'A' => $this->t('Other base'),
+                    'G' => $this->t('Gross'),
+                    'BF' => $this->t('Basic + fixed AW'),
+                    'BMF' => $this->t('Basic - fixed AW'),
+                    'GMFC' => $this->t('Gross - fixed AW & com.')
                     ];
                 $form[$key]['base'] = array(
                     '#type' => 'select',

@@ -76,7 +76,7 @@ class EditCategory extends FormBase
     '#size' => 1,
     '#options' => $company,
     '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-    '#title' => t('company'),
+    '#title' => $this->t('company'),
     '#disabled' => ($form_state->getValue('coid')) ? true : false,
     '#required' => true,
     
@@ -85,7 +85,7 @@ class EditCategory extends FormBase
         if ($form_state->getValue('coid') == '') {
             $form['next'] = array(
     '#type' => 'submit',
-    '#value' => t('Next'). ' >>',
+    '#value' => $this->t('Next'). ' >>',
     '#states' => array(
         // Hide data fieldset when class is empty.
         'invisible' => array(
@@ -138,7 +138,7 @@ class EditCategory extends FormBase
             $link = Url::fromRoute('ek_hr.parameters-ad', array(), array())->toString();
             $form['info'] = array(
       '#type' => 'item',
-      '#markup' => t('Input the description name for each category used. For each category you can define specific parameters in <a href="@l">Allowances</a>', array('@l' => $link)),
+      '#markup' => $this->t('Input the description name for each category used. For each category you can define specific parameters in <a href="@l">Allowances</a>', array('@l' => $link)),
     );
             foreach ($list as $key => $value) {
                 $form[$key] = array(
@@ -147,7 +147,7 @@ class EditCategory extends FormBase
       '#maxlength' => 100,
       '#default_value' => $value,
       '#attributes' => array('placeholder'=>t('name of category')),
-      '#title' => t('Category @c', array('@c' => $key)),
+      '#title' => $this->t('Category @c', array('@c' => $key)),
     );
             }//for
 

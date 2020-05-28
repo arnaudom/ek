@@ -72,7 +72,7 @@ class RosterSettings extends FormBase
             '#size' => 1,
             '#options' => $company,
             '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-            '#title' => t('Company'),
+            '#title' => $this->t('Company'),
             '#disabled' => ($form_state->getValue('coid')) ? true : false,
             '#required' => true,
         );
@@ -80,7 +80,7 @@ class RosterSettings extends FormBase
         if ($form_state->getValue('coid') == '') {
             $form['next'] = array(
                 '#type' => 'submit',
-                '#value' => t('Next') . ' >>',
+                '#value' => $this->t('Next') . ' >>',
                 '#states' => array(
                     'invisible' => array(
                         "select[name='coid']" => array('value' => ''),
@@ -128,7 +128,7 @@ class RosterSettings extends FormBase
               }
               $form['info'] = array(
               '#type' => 'item',
-              '#markup' => t('set the starting time of 1st shift (in a 3 x 8H shift configuration.)'),
+              '#markup' => $this->t('set the starting time of 1st shift (in a 3 x 8H shift configuration.)'),
               );
 
               foreach ($list as $key => $value) {
@@ -150,7 +150,7 @@ class RosterSettings extends FormBase
                 '#step' => 0.5,
                 '#size' => 2,
                 '#default_value' => isset($settings['hours_day']) ? $settings['hours_day'] : 8,
-                '#title' => t('Worked hours per day'),
+                '#title' => $this->t('Worked hours per day'),
                 '#required' => true,
                 
             );
@@ -159,16 +159,16 @@ class RosterSettings extends FormBase
                 '#type' => 'select',
                 '#options' => ['1' => 'hh:mm', '2' => 'decimal point'],
                 '#default_value' => isset($settings['roster_hours_format']) ? $settings['roster_hours_format'] : 8,
-                '#title' => t('Hours format in roster export'),
+                '#title' => $this->t('Hours format in roster export'),
                 '#required' => true,
                 
             );
             
             $form['last_day'] = array(
                 '#type' => 'select',
-                '#options' => ['1' => t('Monday'), '2' => t('Tuesday'),'3' => t('Wednesday'),'4' => t('Thursday'),'5' => t('Friday'),'6' => t('Saturday'),'7' => t('Sunday'),],
+                '#options' => ['1' => $this->t('Monday'), '2' => $this->t('Tuesday'),'3' => $this->t('Wednesday'),'4' => $this->t('Thursday'),'5' => $this->t('Friday'),'6' => $this->t('Saturday'),'7' => $this->t('Sunday'),],
                 '#default_value' => isset($settings['last_day']) ? $settings['last_day'] : 7,
-                '#title' => t('Last day of the week'),
+                '#title' => $this->t('Last day of the week'),
                 '#required' => true,
                 
             );

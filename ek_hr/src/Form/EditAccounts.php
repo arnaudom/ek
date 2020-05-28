@@ -75,7 +75,7 @@ class EditAccounts extends FormBase
                 '#size' => 1,
                 '#options' => $company,
                 '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-                '#title' => t('company'),
+                '#title' => $this->t('company'),
                 '#disabled' => ($form_state->getValue('coid')) ? true : false,
                 '#required' => true,
             );
@@ -83,7 +83,7 @@ class EditAccounts extends FormBase
             if (($form_state->getValue('coid')) == '') {
                 $form['next'] = array(
                     '#type' => 'submit',
-                    '#value' => t('Next') . ' >>',
+                    '#value' => $this->t('Next') . ' >>',
                     '#states' => array(
                         // Hide data fieldset when class is empty.
                         'invisible' => array(
@@ -146,11 +146,11 @@ class EditAccounts extends FormBase
 
                 $form['info'] = array(
                     '#type' => 'item',
-                    '#markup' => t('Select finance account for each debit type'),
+                    '#markup' => $this->t('Select finance account for each debit type'),
                 );
 
                 $param = [
-                    'pay_account' => t('liability'),
+                    'pay_account' => $this->t('liability'),
                     'fund1_account' => $category->get('param', 'fund_1', ['name', 'value']),
                     'fund2_account' => $category->get('param', 'fund_2', ['name', 'value']),
                     'fund3_account' => $category->get('param', 'fund_3', ['name', 'value']),
@@ -191,7 +191,7 @@ class EditAccounts extends FormBase
         else {
             $form['info'] = array(
                 '#type' => 'item',
-                '#markup' => t('Finance module is not available'),
+                '#markup' => $this->t('Finance module is not available'),
             );
         }
         return $form;

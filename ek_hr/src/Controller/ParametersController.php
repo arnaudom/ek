@@ -134,7 +134,7 @@ class ParametersController extends ControllerBase
 
             while ($r = $data->fetchObject()) {
                 if ($r->archive == 'yes') {
-                    $archive = t("(archived)");
+                    $archive = $this->t("(archived)");
                 } else {
                     $archive = '';
                 }

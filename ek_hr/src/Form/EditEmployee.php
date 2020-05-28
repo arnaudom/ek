@@ -93,11 +93,19 @@ class EditEmployee extends FormBase
             $query->condition('id', $id, '=');
             $r = $query->execute()->fetchObject();
             $form_state->set('coid', $r->company_id);
+            if(isset($r->id)) {
+                $ceid = $r->id;
+                if($r->custom_id != ''){
+                    $ceid = $r->custom_id;
+                }
+            }
         } else {
             $form['new'] = array(
                 '#type' => 'hidden',
                 '#default_value' => 1,
             );
+            $ceid = '';
+            
         }
         
         $company = AccessCheck::CompanyListByUid();
@@ -108,7 +116,7 @@ class EditEmployee extends FormBase
                 '#size' => 1,
                 '#options' => $company,
                 '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-                '#title' => t('company'),
+                '#title' => $this->t('company'),
                 '#disabled' => $form_state->getValue('coid') ? true : false,
                 '#required' => true,
             );
@@ -116,7 +124,7 @@ class EditEmployee extends FormBase
             if ($form_state->getValue('coid') == '') {
                 $form['next'] = array(
                     '#type' => 'submit',
-                    '#value' => t('Next >>'),
+                    '#value' => $this->t('Next >>'),
                     '#states' => array(
                         // Hide data fieldset when class is empty.
                         'invisible' => array(
@@ -135,7 +143,7 @@ class EditEmployee extends FormBase
                     '#size' => 1,
                     '#options' => $company,
                     '#default_value' => $form_state->get('coid'),
-                    '#title' => t('company'),
+                    '#title' => $this->t('company'),
                     '#required' => true,
                 );
                 $form['current_coid'] = array(
@@ -159,9 +167,9 @@ class EditEmployee extends FormBase
             $form['active'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => array('working' => t('Working'), 'resigned' => t('Resigned'), 'absent' => t('Absent')),
+                '#options' => array('working' => $this->t('Working'), 'resigned' => $this->t('Resigned'), 'absent' => $this->t('Absent')),
                 '#default_value' => isset($r->active) ? $r->active : 'working',
-                '#title' => t('Working status'),
+                '#title' => $this->t('Working status'),
                 '#required' => true,
                 '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             );
@@ -170,9 +178,9 @@ class EditEmployee extends FormBase
                 $form['archive'] = array(
                     '#type' => 'select',
                     '#size' => 1,
-                    '#options' => array('no' => t('no'), 'yes' => t('yes')),
+                    '#options' => array('no' => $this->t('no'), 'yes' => $this->t('yes')),
                     '#default_value' => isset($r->archive) ? $r->archive : 'no',
-                    '#title' => t('Archive'),
+                    '#title' => $this->t('Archive'),
                     '#required' => true,
                 );
             } else {
@@ -186,7 +194,7 @@ class EditEmployee extends FormBase
             $form['image'] = [
                   '#title' => $this->t('Image'),
                   '#type' => 'managed_file',
-                  '#description' => t('Employee picture (image type allowed: png, jpg, gif)'),
+                  '#description' => $this->t('Employee picture (image type allowed: png, jpg, gif)'),
                   //'#suffix' => '</div>',
                   '#upload_validators' => [
                     'file_validate_extensions' => ['png jpeg jpg gif'],
@@ -198,12 +206,12 @@ class EditEmployee extends FormBase
             
 
             /* current image if any */
-            if (($r->picture)) {
+            if (isset($r->picture)) {
                 $image = "<a href='" . file_create_url($r->picture) . "' target='_blank'>"
                         . "<img class='thumbnail' src=" . file_create_url($r->picture) . "></a>";
                 $form['image_delete'] = array(
                     '#type' => 'checkbox',
-                    '#title' => t('delete image'),
+                    '#title' => $this->t('delete image'),
                     '#attributes' => array('onclick' => "jQuery('#current').toggleClass('delete');"),
                     '#prefix' => "<div class='container-inline cell'>",
                 );
@@ -240,20 +248,20 @@ class EditEmployee extends FormBase
             $form['custom_id'] = array(
                 '#type' => 'textfield',
                 '#size' => 20,
-                '#default_value' => isset($r->custom_id) ? $r->custom_id : $r->id,
-                '#title' => t('Given ID'),
+                '#default_value' => $ceid,
+                '#title' => $this->t('Given ID'),
             );
                         
             $form['note'] = array(
                 '#type' => 'textarea',
                 '#rows' => 2,
                 '#default_value' => isset($r->note) ? $r->note : null,
-                '#title' => t('Note'),
+                '#title' => $this->t('Note'),
             );
             
             $form['admin'] = array(
                 '#type' => 'details',
-                '#title' => t('administrators'),
+                '#title' => $this->t('administrators'),
                 '#collapsible' => true,
                 '#open' => false,
                 '#tree' => true,
@@ -287,7 +295,7 @@ class EditEmployee extends FormBase
 
             $form[1] = array(
                 '#type' => 'details',
-                '#title' => t('name and contact'),
+                '#title' => $this->t('name and contact'),
                 '#collapsible' => true,
                 '#open' => true,
             );
@@ -296,8 +304,8 @@ class EditEmployee extends FormBase
                 '#size' => 50,
                 '#maxlength' => 255,
                 '#default_value' => isset($r->name) ? $r->name : null,
-                '#attributes' => array('placeholder' => t('full name')),
-                '#title' => t('Name'),
+                '#attributes' => array('placeholder' => $this->t('full name')),
+                '#title' => $this->t('Name'),
                 '#required' => true,
             );
 
@@ -306,8 +314,8 @@ class EditEmployee extends FormBase
                 '#size' => 80,
                 '#maxlength' => 255,
                 '#default_value' => isset($r->address) ? $r->address : null,
-                '#attributes' => array('placeholder' => t('address')),
-                '#title' => t('Address'),
+                '#attributes' => array('placeholder' => $this->t('address')),
+                '#title' => $this->t('Address'),
                 '#required' => true,
             );
 
@@ -316,8 +324,8 @@ class EditEmployee extends FormBase
                 '#size' => 40,
                 '#maxlength' => 255,
                 '#default_value' => isset($r->email) ? $r->email : null,
-                '#attributes' => array('placeholder' => t('@')),
-                '#title' => t('Email'),
+                '#attributes' => array('placeholder' => $this->t('@')),
+                '#title' => $this->t('Email'),
                 '#required' => true,
                 '#prefix' => "<div class='container-inline'>",
             );
@@ -327,23 +335,23 @@ class EditEmployee extends FormBase
                 '#size' => 20,
                 '#maxlength' => 25,
                 '#default_value' => isset($r->telephone) ? $r->telephone : null,
-                '#attributes' => array('placeholder' => t('phone')),
-                '#title' => t('Telephone'),
+                '#attributes' => array('placeholder' => $this->t('phone')),
+                '#title' => $this->t('Telephone'),
                 '#required' => true,
                 '#suffix' => '</div>',
             );
 
             $form[2] = array(
                 '#type' => 'details',
-                '#title' => t('identification references'),
+                '#title' => $this->t('identification references'),
                 '#collapsible' => true,
             );
             $form[2]['sex'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => array('M' => t('Male'), 'F' => t('female')),
+                '#options' => array('M' => $this->t('Male'), 'F' => $this->t('female')),
                 '#default_value' => isset($r->sex) ? $r->sex : null,
-                '#title' => t('Sex'),
+                '#title' => $this->t('Sex'),
                 '#required' => true,
             );
 
@@ -352,7 +360,7 @@ class EditEmployee extends FormBase
                 '#size' => 12,
                 '#default_value' => isset($r->birth) ? $r->birth : null,
                 '#required' => true,
-                '#title' => t('Birth date'),
+                '#title' => $this->t('Birth date'),
                 '#prefix' => "<div class='container-inline'>",
             );
 
@@ -361,8 +369,8 @@ class EditEmployee extends FormBase
                 '#size' => 20,
                 '#maxlength' => 50,
                 '#default_value' => isset($r->ic_no) ? $r->ic_no : null,
-                '#attributes' => array('placeholder' => t('IC')),
-                '#title' => t('Identification No.'),
+                '#attributes' => array('placeholder' => $this->t('IC')),
+                '#title' => $this->t('Identification No.'),
                 '#required' => true,
                 '#suffix' => '</div>',
             );
@@ -372,8 +380,8 @@ class EditEmployee extends FormBase
                 '#size' => 20,
                 '#maxlength' => 50,
                 '#default_value' => isset($r->epf_no) ? $r->epf_no : null,
-                '#attributes' => array('placeholder' => t('Retirement')),
-                '#title' => t('Retirement fund No.'),
+                '#attributes' => array('placeholder' => $this->t('Retirement')),
+                '#title' => $this->t('Retirement fund No.'),
                 '#prefix' => "<div class='container-inline'>",
             );
 
@@ -382,8 +390,8 @@ class EditEmployee extends FormBase
                 '#size' => 20,
                 '#maxlength' => 50,
                 '#default_value' => isset($r->socso_no) ? $r->socso_no : null,
-                '#attributes' => array('placeholder' => t('Social')),
-                '#title' => t('Social security No.'),
+                '#attributes' => array('placeholder' => $this->t('Social')),
+                '#title' => $this->t('Social security No.'),
             );
 
             $form[2]['itax_no'] = array(
@@ -391,8 +399,8 @@ class EditEmployee extends FormBase
                 '#size' => 20,
                 '#maxlength' => 50,
                 '#default_value' => isset($r->itax_no) ? $r->itax_no : null,
-                '#attributes' => array('placeholder' => t('Tax')),
-                '#title' => t('Income tax No.'),
+                '#attributes' => array('placeholder' => $this->t('Tax')),
+                '#title' => $this->t('Income tax No.'),
             );
 
             $itaxCat = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W');
@@ -401,7 +409,7 @@ class EditEmployee extends FormBase
                 '#size' => 1,
                 '#options' => array_combine($itaxCat, $itaxCat),
                 '#default_value' => isset($r->itax_c) ? $r->itax_c : null,
-                //'#title' => t(''),
+                //'#title' => $this->t(''),
                 '#required' => false,
                 '#suffix' => '</div>',
             );
@@ -414,7 +422,7 @@ class EditEmployee extends FormBase
             //////////
             $form[3] = array(
                 '#type' => 'details',
-                '#title' => t('work status'),
+                '#title' => $this->t('work status'),
                 '#collapsible' => true,
             );
 
@@ -430,7 +438,7 @@ class EditEmployee extends FormBase
                 '#size' => 1,
                 '#options' => $origin,
                 '#default_value' => isset($r->origin) ? $r->origin : null,
-                '#title' => t('Category'),
+                '#title' => $this->t('Category'),
                 '#required' => true,
                 //'#prefix' => "<div class='container-inline'>",
             );
@@ -439,9 +447,9 @@ class EditEmployee extends FormBase
             $form[3]['e_status'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => array('not confirmed' => t('not confirmed'), 'confirmed' => t('confirmed')),
+                '#options' => array('not confirmed' => $this->t('not confirmed'), 'confirmed' => $this->t('confirmed')),
                 '#default_value' => isset($r->e_status) ? $r->e_status : null,
-                '#title' => t('Status'),
+                '#title' => $this->t('Status'),
                 '#required' => false,
                 //'#suffix' => '</div>',
             );
@@ -456,7 +464,7 @@ class EditEmployee extends FormBase
                 '#size' => 1,
                 '#options' => array_combine($loc, $loc),
                 '#default_value' => isset($r->location) ? $r->location : 0,
-                '#title' => t('Location'),
+                '#title' => $this->t('Location'),
                 '#required' => false,
                 '#prefix' => "<div class='container-inline'>",
             );
@@ -475,7 +483,7 @@ class EditEmployee extends FormBase
                 '#size' => 1,
                 '#options' => $service,
                 '#default_value' => isset($r->service) ? $r->service : 0,
-                '#title' => t('Service'),
+                '#title' => $this->t('Service'),
                 '#required' => false,
                 '#suffix' => '</div>',
             );
@@ -506,7 +514,7 @@ class EditEmployee extends FormBase
                     '#size' => 1,
                     '#options' => $opt,
                     '#default_value' => isset($r->rank) ? $r->rank : 0,
-                    '#title' => t('Rank'),
+                    '#title' => $this->t('Rank'),
                     '#required' => false,
                     '#attributes' => array('style' => array('width:150px;')),
                     //'#suffix' => '</div>',
@@ -517,7 +525,7 @@ class EditEmployee extends FormBase
                     '#size' => 1,
                     '#options' => array(),
                     '#default_value' => '',
-                    '#title' => t('Rank'),
+                    '#title' => $this->t('Rank'),
                     '#required' => false,
                     //'#suffix' => '</div>',
                 );
@@ -529,29 +537,29 @@ class EditEmployee extends FormBase
                 '#size' => 12,
                 '#default_value' => isset($r->start) ? $r->start : null,
                 '#required' => true,
-                '#title' => t('Start date'),
+                '#title' => $this->t('Start date'),
                 '#prefix' => "<div class='container-inline'>",
             );
             $form[3]['resign'] = array(
                 '#type' => 'date',
                 '#size' => 12,
                 '#default_value' => isset($r->resign) ? $r->resign : null,
-                '#title' => t('Resign date'),
+                '#title' => $this->t('Resign date'),
                 '#suffix' => '</div>',
             );
             $form[3]['contract_expiration'] = array(
                 '#type' => 'date',
                 '#size' => 12,
                 '#default_value' => isset($r->contract_expiration) ? $r->contract_expiration : null,
-                '#title' => t('Contract expiration'),
+                '#title' => $this->t('Contract expiration'),
             );
             $form[3]['aleave'] = array(
                 '#type' => 'textfield',
                 '#size' => 6,
                 '#maxlength' => 20,
                 '#default_value' => isset($r->aleave) ? $r->aleave : null,
-                '#attributes' => array('placeholder' => t('days')),
-                '#title' => t('Annual leaves'),
+                '#attributes' => array('placeholder' => $this->t('days')),
+                '#title' => $this->t('Annual leaves'),
                 '#prefix' => "<div class='container-inline'>",
             );
 
@@ -560,8 +568,8 @@ class EditEmployee extends FormBase
                 '#size' => 6,
                 '#maxlength' => 20,
                 '#default_value' => isset($r->mcleave) ? $r->mcleave : null,
-                '#attributes' => array('placeholder' => t('days')),
-                '#title' => t('medical leaves'),
+                '#attributes' => array('placeholder' => $this->t('days')),
+                '#title' => $this->t('medical leaves'),
                 '#suffix' => "</div>",
             );
 
@@ -571,7 +579,7 @@ class EditEmployee extends FormBase
             //////////
             $form[4] = array(
                 '#type' => 'details',
-                '#title' => t('salary and payment'),
+                '#title' => $this->t('salary and payment'),
                 '#collapsible' => true,
             );
 
@@ -582,8 +590,8 @@ class EditEmployee extends FormBase
                 '#maxlength' => 20,
                 '#default_value' => isset($r->salary) ? $r->salary : null,
                 '#required' => true,
-                '#attributes' => array('placeholder' => t('value'), 'class' => array('amount')),
-                '#title' => t('Gross salary'),
+                '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount')),
+                '#title' => $this->t('Gross salary'),
                 '#prefix' => "<div class='container-inline'>",
             );
 
@@ -592,8 +600,8 @@ class EditEmployee extends FormBase
                 '#size' => 15,
                 '#maxlength' => 20,
                 '#default_value' => isset($r->th_salary) ? $r->th_salary : null,
-                '#attributes' => array('placeholder' => t('value'), 'class' => array('amount')),
-                '#title' => t('Other base salary'),
+                '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount')),
+                '#title' => $this->t('Other base salary'),
             );
 
             if ($this->moduleHandler->moduleExists('ek_finance')) {
@@ -604,7 +612,7 @@ class EditEmployee extends FormBase
                     '#options' => $CurrencyOptions,
                     '#required' => true,
                     '#default_value' => isset($r->currency) ? $r->currency : null,
-                    '#title' => t('currency'),
+                    '#title' => $this->t('currency'),
                     '#suffix' => "</div>",
                 );
             } else {
@@ -616,7 +624,7 @@ class EditEmployee extends FormBase
                     '#options' => $currency,
                     '#required' => true,
                     '#default_value' => isset($r->currency) ? $r->currency : null,
-                    '#title' => t('currency'),
+                    '#title' => $this->t('currency'),
                     '#suffix' => "</div>",
                 );
             }
@@ -627,8 +635,8 @@ class EditEmployee extends FormBase
                 '#size' => 20,
                 '#maxlength' => 50,
                 '#default_value' => isset($r->bank) ? $r->bank : null,
-                '#attributes' => array('placeholder' => t('Bank name for payment')),
-                '#title' => t('Bank'),
+                '#attributes' => array('placeholder' => $this->t('Bank name for payment')),
+                '#title' => $this->t('Bank'),
                 '#prefix' => "<div class='container-inline'>",
                 '#autocomplete_route_name' => 'ek_hr.look_up_bank',
             );
@@ -638,17 +646,17 @@ class EditEmployee extends FormBase
                 '#size' => 20,
                 '#maxlength' => 50,
                 '#default_value' => isset($r->bank_account) ? $r->bank_account : null,
-                '#attributes' => array('placeholder' => t('Bank account for payment')),
-                '#title' => t('Bank account'),
+                '#attributes' => array('placeholder' => $this->t('Bank account for payment')),
+                '#title' => $this->t('Bank account'),
                 '#suffix' => '</div>',
             );
 
             $form[4]['bank_account_status'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => array('own' => t('own'), 'x' => t('third party')),
+                '#options' => array('own' => $this->t('own'), 'x' => $this->t('third party')),
                 '#default_value' => isset($r->bank_account_status) ? $r->bank_account_status : null,
-                '#title' => t('Type of account'),
+                '#title' => $this->t('Type of account'),
                 '#required' => false,
                 '#prefix' => "<div class='container-inline'>",
             );
@@ -658,8 +666,8 @@ class EditEmployee extends FormBase
                 '#size' => 50,
                 '#maxlength' => 100,
                 '#default_value' => isset($r->thirdp) ? $r->thirdp : null,
-                '#attributes' => array('placeholder' => t('name of account')),
-                '#title' => t('Name of account payment'),
+                '#attributes' => array('placeholder' => $this->t('name of account')),
+                '#title' => $this->t('Name of account payment'),
                 '#states' => array(
                     // Hide data fieldset on codition
                     'invisible' => array(

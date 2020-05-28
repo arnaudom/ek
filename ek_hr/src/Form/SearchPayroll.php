@@ -32,7 +32,7 @@ class SearchPayroll extends FormBase
         $form['search_payroll'] = array(
             '#type' => 'textfield',
             '#size' => 30,
-            '#attributes' => array('placeholder' => t('Name')),
+            '#attributes' => array('placeholder' => $this->t('Name')),
             '#required' => false,
             '#id' => 'hr-search-form',
             '#attached' => ['library' => array('ek_hr/ek_hr.autocomplete')],
