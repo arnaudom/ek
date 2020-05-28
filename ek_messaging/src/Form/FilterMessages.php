@@ -40,7 +40,7 @@ class FilterMessages extends FormBase {
         $form['filters']['keyword'] = array(
             '#type' => 'textfield',
             '#default_value' => isset($_SESSION['mefilter']['keyword']) ? $_SESSION['mefilter']['keyword'] : null,
-            '#attributes' => array('placeholder' => t('search by keyword')),
+            '#attributes' => array('placeholder' => $this->t('search by keyword')),
             '#required' => false,
         );
 

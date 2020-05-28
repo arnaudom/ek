@@ -50,9 +50,9 @@ class Message extends FormBase {
             if ($account) {
                 $to = $account->getDisplayName();
             }
-            $subject = t('Re') . ': ' . $data->subject;
+            $subject = $this->t('Re') . ': ' . $data->subject;
             $from = \Drupal\user\Entity\User::load($data->from_uid);
-            $quote = t('On @date, @user wrote', ['@date' => date('l jS \of F Y h:i:s A', $data->stamp), '@user' => $from->getAccountName()]);
+            $quote = $this->t('On @date, @user wrote', ['@date' => date('l jS \of F Y h:i:s A', $data->stamp), '@user' => $from->getAccountName()]);
             if ($data->format == 'restricted_html') {
                 $text = "\r\n\r\n\r\n\r\n ------- " . $quote . " ------- \r\n\r\n" . $data->text;
             } else {
@@ -62,15 +62,15 @@ class Message extends FormBase {
         $form['users'] = array(
             '#type' => 'textarea',
             '#rows' => 2,
-            '#attributes' => array('placeholder' => t('enter recipients name separated by comma (autocomplete enabled).')),
+            '#attributes' => array('placeholder' => $this->t('enter recipients name separated by comma (autocomplete enabled).')),
             '#required' => true,
             '#default_value' => isset($to) ? $to : null,
         );
 
         $form['priority'] = array(
             '#type' => 'select',
-            '#options' => array('3' => t('low'), '2' => t('normal'), '1' => t('high')),
-            '#title' => t('priority'),
+            '#options' => array('3' => $this->t('low'), '2' => $this->t('normal'), '1' => $this->t('high')),
+            '#title' => $this->t('priority'),
             '#default_value' => isset($data->priority) ? $data->priority : null,
         );
 
@@ -79,20 +79,20 @@ class Message extends FormBase {
             '#default_value' => '',
             '#required' => true,
             '#default_value' => isset($subject) ? $subject : null,
-            '#attributes' => array('placeholder' => t('subject')),
+            '#attributes' => array('placeholder' => $this->t('subject')),
         );
 
         $form['message'] = array(
             '#type' => 'text_format',
             '#rows' => 10,
-            '#attributes' => array('placeholder' => t('your message')),
+            '#attributes' => array('placeholder' => $this->t('your message')),
             '#default_value' => isset($text) ? $text : null,
             '#format' => isset($data->format) ? $data->format : 'restricted_html',
         );
 
         $form['email'] = array(
             '#type' => 'checkbox',
-            '#title' => t('Send also via email (note: html formated text may not be fully displayed.)'),
+            '#title' => $this->t('Send also via email (note: html formated text may not be fully displayed.)'),
         );
 
 
@@ -145,7 +145,7 @@ class Message extends FormBase {
             }
 
             if ($error != '') {
-                $form_state->setErrorByName("users", t('Invalid user(s)') . ': ' . $error);
+                $form_state->setErrorByName("users", $this->t('Invalid user(s)') . ': ' . $error);
             }
         }
     }
@@ -155,9 +155,9 @@ class Message extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         $message = $form_state->getValue('message');
-        $priority = array('3' => t('low'), '2' => t('normal'), '1' => t('high'));
+        $priority = array('3' => $this->t('low'), '2' => $this->t('normal'), '1' => $this->t('high'));
         if ($form_state->getValue('priority') == 1) {
-            $subject = '[' . t('urgent') . '] ' . Xss::filter($form_state->getValue('subject'));
+            $subject = '[' . $this->t('urgent') . '] ' . Xss::filter($form_state->getValue('subject'));
         } else {
             $subject = Xss::filter($form_state->getValue('subject'));
         }
@@ -213,8 +213,8 @@ class Message extends FormBase {
 
             $link = Url::fromRoute('ek_messaging_read', array('id' => $m), ['absolute' => true])->toString();
             $params = [
-                'subject' => t('You have a new message'),
-                'body' => "<a href='" . $link . "'>" . t('read') . "</a>",
+                'subject' => $this->t('You have a new message'),
+                'body' => "<a href='" . $link . "'>" . $this->t('read') . "</a>",
                 'from' => $currentuserMail,
                 'priority' => $form_state->getValue('priority'),
                 'link' => 1,
