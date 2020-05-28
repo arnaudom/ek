@@ -104,34 +104,34 @@ class WriteReport extends FormBase {
                 }
                 $form['assign'] = array(
                     '#type' => 'textfield',
-                    '#attributes' => array('placeholder' => t('user assignment')),
+                    '#attributes' => array('placeholder' => $this->t('user assignment')),
                     '#required' => true,
                     '#default_value' => $assign,
-                    '#title' => t('Assignment'),
+                    '#title' => $this->t('Assignment'),
                     '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
                 );
 
 
                 $form['type'] = array(
                     '#type' => 'select',
-                    '#options' => array(1 => t('briefing'), 2 => t('report'), 3 => t('training')),
+                    '#options' => array(1 => $this->t('briefing'), 2 => $this->t('report'), 3 => $this->t('training')),
                     '#required' => true,
                     '#default_value' => $data->type,
-                    '#title' => t('Type'),
+                    '#title' => $this->t('Type'),
                 );
 
                 $form['status'] = array(
                     '#type' => 'select',
-                    '#options' => array(1 => t('active'), 2 => t('close')),
+                    '#options' => array(1 => $this->t('active'), 2 => $this->t('close')),
                     '#required' => true,
                     '#default_value' => $data->status,
-                    '#title' => t('Status'),
+                    '#title' => $this->t('Status'),
                 );
 
                 $form['description'] = array(
                     '#type' => 'textfield',
                     '#default_value' => $data->description,
-                    '#title' => t('Description'),
+                    '#title' => $this->t('Description'),
                 );
 
                 $form['coid'] = array(
@@ -139,7 +139,7 @@ class WriteReport extends FormBase {
                     '#size' => 1,
                     '#options' => AccessCheck::CompanyListByUid(),
                     '#default_value' => $data->coid,
-                    '#title' => t('Company'),
+                    '#title' => $this->t('Company'),
                     '#required' => true,
                 );
 
@@ -149,7 +149,7 @@ class WriteReport extends FormBase {
                         '#size' => 1,
                         '#options' => ProjectData::listprojects(0),
                         '#default_value' => $data->pcode,
-                        '#title' => t('Project'),
+                        '#title' => $this->t('Project'),
                     );
                 } // project
                 if ($this->moduleHandler->moduleExists('ek_address_book')) {
@@ -157,8 +157,8 @@ class WriteReport extends FormBase {
                         '#type' => 'textfield',
                         '#size' => 50,
                         '#default_value' => AddressBookData::getname($data->abid),
-                        '#title' => t('Client'),
-                        '#attributes' => array('placeholder' => t('optional client ref.')),
+                        '#title' => $this->t('Client'),
+                        '#attributes' => array('placeholder' => $this->t('optional client ref.')),
                         '#autocomplete_route_name' => 'ek.look_up_contact_ajax',
                     );
                 } // address book
@@ -166,7 +166,7 @@ class WriteReport extends FormBase {
                 $form['description'] = array(
                     '#type' => 'textfield',
                     '#default_value' => $data->description,
-                    '#title' => t('Description'),
+                    '#title' => $this->t('Description'),
                 );
 
                 $form['report'] = array(
@@ -192,7 +192,7 @@ class WriteReport extends FormBase {
                     '#type' => 'text_format',
                     '#default_value' => '',
                     '#format' => isset($data->format) ? $data->format : 'full_html',
-                    '#title' => t('New content'),
+                    '#title' => $this->t('New content'),
                 );
             }
 
@@ -209,7 +209,7 @@ class WriteReport extends FormBase {
         } else {
             $form['alert'] = array(
                 '#type' => 'item',
-                '#markup' => t('You do not have enough privileges to edit this report'),
+                '#markup' => $this->t('You do not have enough privileges to edit this report'),
             );
         }
 
@@ -243,7 +243,7 @@ class WriteReport extends FormBase {
             }
 
             if ($error <> '') {
-                $form_state->setErrorByName("assign", t('Invalid user(s)') . ': ' . $error);
+                $form_state->setErrorByName("assign", $this->t('Invalid user(s)') . ': ' . $error);
             } else {
                 $form_state->setValue('assign', $list);
             }

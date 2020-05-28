@@ -59,30 +59,30 @@ class NewReport extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state) {
         $form['assign'] = array(
             '#type' => 'textfield',
-            '#attributes' => array('placeholder' => t('user assignment')),
+            '#attributes' => array('placeholder' => $this->t('user assignment')),
             '#required' => true,
-            '#title' => t('Assignment'),
+            '#title' => $this->t('Assignment'),
             '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
         );
 
         $form['type'] = array(
             '#type' => 'select',
-            '#options' => array(1 => t('briefing'), 2 => t('report'), 3 => t('training')),
+            '#options' => array(1 => $this->t('briefing'), 2 => $this->t('report'), 3 => $this->t('training')),
             '#required' => true,
-            '#title' => t('Type'),
+            '#title' => $this->t('Type'),
         );
 
         $form['description'] = array(
             '#type' => 'textfield',
             '#default_value' => '',
-            '#title' => t('Description'),
+            '#title' => $this->t('Description'),
         );
 
         $form['coid'] = array(
             '#type' => 'select',
             '#size' => 1,
             '#options' => AccessCheck::CompanyListByUid(),
-            '#title' => t('Company'),
+            '#title' => $this->t('Company'),
             '#required' => true,
         );
 
@@ -91,22 +91,22 @@ class NewReport extends FormBase {
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => ProjectData::listprojects(0),
-                '#title' => t('Project'),
+                '#title' => $this->t('Project'),
             );
         } // project
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
             $form['abid'] = array(
                 '#type' => 'textfield',
                 '#size' => 50,
-                '#title' => t('Client'),
-                '#attributes' => array('placeholder' => t('optional client ref.')),
+                '#title' => $this->t('Client'),
+                '#attributes' => array('placeholder' => $this->t('optional client ref.')),
                 '#autocomplete_route_name' => 'ek.look_up_contact_ajax',
             );
         } // address book
 
         $form['email'] = array(
             '#type' => 'checkbox',
-            '#title' => t('Notify via email'),
+            '#title' => $this->t('Notify via email'),
         );
 
         $form['actions'] = array(
@@ -151,7 +151,7 @@ class NewReport extends FormBase {
         }
 
         if ($error <> '') {
-            $form_state->setErrorByName('assign', t('Invalid user(s)') . ': ' . $error);
+            $form_state->setErrorByName('assign', $this->t('Invalid user(s)') . ': ' . $error);
         } else {
             $form_state->setValue('assign', $list);
         }
@@ -169,7 +169,7 @@ class NewReport extends FormBase {
         $query = "SELECT count(id) as id FROM {ek_ireports}";
         $count = Database::getConnection('external_db', 'external_db')->query($query)
                 ->fetchField();
-        $type = array(1 => t('BR'), 2 => t('RP'), 3 => t('TR'));
+        $type = array(1 => $this->t('BR'), 2 => $this->t('RP'), 3 => $this->t('TR'));
         $count++;
         $serial = $type[$form_state->getValue('type')] . '-' . $id . '-' . date('m') . '_' . date('y') . '-' . $count;
         if ($form_state->getValue('abid') != null) {

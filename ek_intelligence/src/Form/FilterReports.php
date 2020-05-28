@@ -67,7 +67,7 @@ class FilterReports extends FormBase {
             '#size' => 1,
             '#options' => $company,
             '#default_value' => isset($_SESSION['ireports']['coid']) ? $_SESSION['ireports']['coid'] : null,
-            '#title' => t('Company'),
+            '#title' => $this->t('Company'),
             '#required' => true,
             '#prefix' => "",
             '#suffix' => '',
@@ -78,8 +78,8 @@ class FilterReports extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#required' => true,
-            '#options' => array('%' => t('any'), 1 => t('briefing'), 2 => t('report'), 3 => t('training')),
-            '#title' => t('Category'),
+            '#options' => array('%' => $this->t('any'), 1 => $this->t('briefing'), 2 => $this->t('report'), 3 => $this->t('training')),
+            '#title' => $this->t('Category'),
             '#default_value' => $_SESSION['ireports']['type'],
             '#attributes' => array(),
             '#prefix' => "<div id='category'  class='row'>",
@@ -93,7 +93,7 @@ class FilterReports extends FormBase {
             //'#attributes' => array('placeholder'=>t('YY-mm-dd'), 'class' => array('date')),
             '#prefix' => "",
             '#suffix' => '',
-            '#title' => t('from date'),
+            '#title' => $this->t('from date'),
         );
 
         $form['filters']['actions'] = array(

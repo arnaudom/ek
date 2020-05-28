@@ -58,7 +58,7 @@ class DeleteForm extends FormBase {
         $url = Url::fromRoute('ek_intelligence.report', array(), array())->toString();
         $form['back'] = array(
             '#type' => 'item',
-            '#markup' => t('<a href="@url" >Reports list</a>', array('@url' => $url)),
+            '#markup' => $this->t('<a href="@url" >Reports list</a>', array('@url' => $url)),
         );
 
 
@@ -73,20 +73,20 @@ class DeleteForm extends FormBase {
 
         $form['edit_item'] = array(
             '#type' => 'item',
-            '#markup' => t('Report : @p', array('@p' => $data->serial)),
+            '#markup' => $this->t('Report : @p', array('@p' => $data->serial)),
         );
         $form['edit_item2'] = array(
             '#type' => 'item2',
-            '#markup' => t('Description : @p', array('@p' => $data->description)),
+            '#markup' => $this->t('Description : @p', array('@p' => $data->description)),
         );
 
         $del = 1;
         if (!in_array(\Drupal::currentUser()->id(), $access)) {
             $del = 0;
-            $message = t('You are not authorized to delete the report from this company.');
+            $message = $this->t('You are not authorized to delete the report from this company.');
         } elseif ($data->owner != \Drupal::currentUser()->id()) {
             $del = 0;
-            $message = t('You are not editor. the report cannot be deleted.');
+            $message = $this->t('You are not editor. the report cannot be deleted.');
         }
 
 
@@ -98,7 +98,7 @@ class DeleteForm extends FormBase {
 
             $form['alert'] = array(
                 '#type' => 'item',
-                '#markup' => t('Are you sure you want to delete this report?'),
+                '#markup' => $this->t('Are you sure you want to delete this report?'),
             );
 
             $form['actions']['record'] = array(
