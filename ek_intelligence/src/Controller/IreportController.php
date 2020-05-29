@@ -342,7 +342,7 @@ class IreportController extends ControllerBase {
             } else {
                 $owner = $this->t('no data');
             }
-            $temp = \Drupal::config('system.file')->get('path.temporary');
+            $temp = \Drupal::service('file_system')->getTempDirectory();
 
             $fileName = $data->serial . '_' . 'report.docx';
             $path = "private://intelligence/reports/" . $data->coid;
