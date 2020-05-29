@@ -357,9 +357,8 @@ if((isset($format) && $format == 'pdf') || $mode == 1) {
   include_once $template;  
   
   if ($mode == 1) {
-  //save temp file
-    $path = \Drupal::config('system.file')->get('path.temporary');
-    $fileName = $path ."/" . str_replace("/","_", $head->serial ) . ".pdf";
+    //save temp file
+    $fileName = \Drupal::service('file_system')->getTempDirectory() ."/" . str_replace("/","_", $head->serial ) . ".pdf";dpm($fileName,'p');
     $pdf->Output($fileName,"F"); 
   
   } else {

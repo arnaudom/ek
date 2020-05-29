@@ -272,8 +272,7 @@ if($format == 'pdf') {
   
   if ($mode == 1) {
   //save temp file
-    $path = \Drupal::config('system.file')->get('path.temporary');
-    $fileName = $path ."/" . str_replace("/","_", $head->serial ) . ".pdf";
+    $fileName = \Drupal::service('file_system')->getTempDirectory() ."/" . str_replace("/","_", $head->serial ) . ".pdf";
     $pdf->Output($fileName,"F"); 
   
   } else {
