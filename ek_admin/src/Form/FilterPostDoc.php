@@ -107,7 +107,7 @@ class FilterPostDoc extends FormBase
             case 'expenses_memo':
                 include_once drupal_get_path('module', 'ek_finance') . '/manage_pdf_output.inc';
                 $fileName = $head->serial . ".pdf";
-                $file = \Drupal::config('system.file')->get('path.temporary') . "/" . $fileName;
+                $file = \Drupal::service('file_system')->getTempDirectory() . "/" . $fileName;
                 $sec = "fi";
                 break;
 
@@ -116,7 +116,7 @@ class FilterPostDoc extends FormBase
             case 'quotation':
                 include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
                 $fileName = $head->serial . ".pdf";
-                $file = \Drupal::config('system.file')->get('path.temporary') . "/" . $fileName;
+                $file = \Drupal::service('file_system')->getTempDirectory() . "/" . $fileName;
                 $sec = "fi";
                 break;
 
@@ -126,7 +126,7 @@ class FilterPostDoc extends FormBase
             case 'logi_receiving':
                 include_once drupal_get_path('module', 'ek_logistics') . '/manage_pdf_output.inc';
                 $fileName = $head->serial . ".pdf";
-                $file = \Drupal::config('system.file')->get('path.temporary') . "/" . $fileName;
+                $file = \Drupal::service('file_system')->getTempDirectory() . "/" . $fileName;
                 $sec = "lo";
                 break;
         }

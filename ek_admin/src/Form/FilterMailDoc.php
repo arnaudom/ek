@@ -192,7 +192,7 @@ class FilterMailDoc extends FormBase {
                     //generate the pdf file and save in tmp dir
                     case 'expenses_memo':
                         include_once drupal_get_path('module', 'ek_finance') . '/manage_pdf_output.inc';
-                        $file = \Drupal::config('system.file')->get('path.temporary') . "/" . str_replace("/", "_", $head->serial) . ".pdf";
+                        $file = \Drupal::service('file_system')->getTempDirectory() . "/" . str_replace("/", "_", $head->serial) . ".pdf";
                         $options['user'] = \Drupal::currentUser()->getAccountName();
                         $options['filename'] = str_replace("/", "_", $head->serial) . ".pdf";
                         $options['origin'] = 'memo';
@@ -203,8 +203,7 @@ class FilterMailDoc extends FormBase {
                     case 'quotation':
 
                         include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
-
-                        $file = \Drupal::config('system.file')->get('path.temporary') . "/" . str_replace("/", "_", $head->serial) . ".pdf";
+                        $file = \Drupal::service('file_system')->getTempDirectory() . "/" . str_replace("/", "_", $head->serial) . ".pdf";
                         $options['user'] = \Drupal::currentUser()->getAccountName();
                         $options['filename'] = str_replace("/", "_", $head->serial) . ".pdf";
                         $options['origin'] = 'sales';
@@ -219,8 +218,7 @@ class FilterMailDoc extends FormBase {
                     case 'receiving':
                     case 'logi_receiving':
                         include_once drupal_get_path('module', 'ek_logistics') . '/manage_pdf_output.inc';
-                        $file = \Drupal::config('system.file')->get('path.temporary') . "/" . str_replace("/", "_", $head->serial) . ".pdf";
-
+                        $file = \Drupal::service('file_system')->getTempDirectory() . "/" . str_replace("/", "_", $head->serial) . ".pdf";
                         $options['user'] = \Drupal::currentUser()->getAccountName();
                         $options['filename'] = str_replace("/", "_", $head->serial) . ".pdf";
                         $options['origin'] = 'logistics';
