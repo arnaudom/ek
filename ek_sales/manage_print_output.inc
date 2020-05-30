@@ -358,7 +358,7 @@ if((isset($format) && $format == 'pdf') || $mode == 1) {
   
   if ($mode == 1) {
     //save temp file
-    $fileName = \Drupal::service('file_system')->getTempDirectory() ."/" . str_replace("/","_", $head->serial ) . ".pdf";dpm($fileName,'p');
+    $fileName = \Drupal::service('file_system')->getTempDirectory() ."/" . str_replace("/","_", $head->serial ) . ".pdf";
     $pdf->Output($fileName,"F"); 
   
   } else {
