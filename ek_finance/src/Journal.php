@@ -252,8 +252,13 @@ class Journal
                 self::save($account_aid, '0', $j['coid'], 'debit', $j['source'], $j['reference'], $j['date'], $debit, '0', $j['currency']);
 
                 //exchange
+                //account receiving fund is not in base currency
                 if ($account_currency <> $baseCurrency) {
-                    $exchange = CurrencyData::journalexchange($account_currency, $debit, $j['fxRate']);
+                    $trfx = $j['fxRate'];
+                    if(isset($j['fxRate2']) && $j['fxRate2'] <> 1) {
+                        $trfx = $j['fxRate2'];
+                    }
+                    $exchange = CurrencyData::journalexchange($account_currency, $debit, $trfx);
                     self::save($account_aid, '1', $j['coid'], 'debit', $j['source'], $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                 }
 
@@ -261,8 +266,13 @@ class Journal
                 $asset = $companysettings->get('asset_account', $j['currency']);
                 self::save($asset, '0', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $j['value'], '0', $j['currency']);
                 //exchange
+                //currency of payment is not base currency
                 if ($j['currency'] <> $baseCurrency) {
-                    $exchange = CurrencyData::journalexchange($j['currency'], $j['value'], $j['fxRate']);
+                    $trfx = $j['fxRate'];
+                    if(isset($j['fxRate2']) && $j['fxRate2'] <> 1 && ($account_currency <> $baseCurrency)) {
+                        $trfx = $j['fxRate2'];
+                    }
+                    $exchange = CurrencyData::journalexchange($j['currency'], $j['value'], $trfx);
                     self::save($asset, '1', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                 }
 
