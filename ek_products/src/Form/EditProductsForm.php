@@ -154,7 +154,7 @@ class EditProductsForm extends FormBase {
             '#default_value' => isset($r['description2']) ? $r['description2'] : null,
             '#rows' => 2,
             '#attributes' => array('placeholder' => $this->t('Extended description')),
-            '#format' => isset($r->format) ? $r->format : 'restricted_html',
+            '#format' => isset($r['format']) ? $r['format'] : 'restricted_html',
         );
 
         $form['supplier_code'] = array(
