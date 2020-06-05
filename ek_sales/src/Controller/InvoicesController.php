@@ -205,6 +205,9 @@ class InvoicesController extends ControllerBase {
             $from = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT date from {ek_sales_invoice} order by date limit 1")
                     ->fetchField();
+            if($from == '') {
+                $from = date('Y-m-d');
+            }
             $or2 = $query->orConditionGroup();
             $or2->condition('i.status', 0, '=');
             $or2->condition('i.status', 2, '=');

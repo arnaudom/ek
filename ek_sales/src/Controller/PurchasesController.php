@@ -199,7 +199,9 @@ class PurchasesController extends ControllerBase {
         } else {
             $from = Database::getConnection('external_db', 'external_db')
                             ->query("SELECT date from {ek_sales_purchase} order by date limit 1")->fetchField();
-
+            if($from == '') {
+                $from = date('Y-m-d');
+            }
             $param = serialize(array(
                 'coid' => '%',
                 'from' => $from,

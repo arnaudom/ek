@@ -135,7 +135,7 @@ class QuotationsController extends ControllerBase {
 
 
         if (isset($_SESSION['qfilter']['filter']) && $_SESSION['qfilter']['filter'] == 1) {
-            if ($_SESSION['pfilter']['keyword'] != '') {
+            if ($_SESSION['qfilter']['keyword'] != '') {
                 //search based on keyword
                 $or2 = $query->orConditionGroup();
                 $or2->condition('q.serial', '%' . $_SESSION['qfilter']['keyword'] . '%', 'like');
@@ -174,10 +174,13 @@ class QuotationsController extends ControllerBase {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_sales_quotation', 'q');
             $query->fields('q', ['date']);
-            $query->condition('status', 0);
+            //$query->condition('status', 0);
             $query->orderBy('date', "DESC");
             $query->range(0, 1);
             $from = $query->execute()->fetchField();
+            if($from == '') {
+                $from = date('Y-m-d');
+            }
             $data = $query
                     ->fields('q')
                     ->condition($or1)

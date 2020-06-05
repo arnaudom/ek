@@ -427,9 +427,10 @@ foreach ($items as $detail) {
 
             //include text into justified cell (first column)
             if($detail['description2'] != NULL){
-                $detail['item'] = strip_tags($detail['description2']);
+                $pdf->writeHTMLCell($b2,5,$x,$y,$detail['description2'],"TLR",true,$fill,1,'',0);
+            } else {
+                $pdf->MultiCell($b2,5, $detail['item'],"TLR",'L',$fill);
             }
-            $pdf->MultiCell($b2,5, $detail['item'],"TLR",'L',$fill);
 
             //get ending coordinate Y
             $y2 = $pdf->GetY();    

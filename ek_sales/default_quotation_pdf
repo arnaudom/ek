@@ -174,7 +174,7 @@ if (isset($custom)) {
     $format_body = ['left_margin' => 1, 'col_1' => 7, 'col_2' => 110,
         'col_3' => 20, 'col_4' => 20, 'col_5' => 20, 'col_6' => 35, 'col_7' => 35,
         'border' => 0, 'cut' => 230, 'font' => 10, 'color' => ['red' => 48,'green' => 48,'blue' => 48],  
-        'colortitle' => ['red' => 120,'green' => 150,'blue' => 190],'font' => 14];
+        'fillcolor' => ['red'=> 238,'green'=> 238,'blue'=> 238]];
 }
 
 $pdf = new EKPDF($format_doc['orientation'], PDF_UNIT, $format_doc['format'], true, 'UTF-8', false);
@@ -387,10 +387,14 @@ foreach ($items['lines'] as $detail) {
                 // column 1
                 $x = $pdf->GetX();
                 $y = $pdf->GetY();
-                if ($detail['description2'] != NULL) {
-                    $detail['item'] = strip_tags($detail['description2']);
+                
+                //include text into justified cell (first column)
+                if($detail['description2'] != NULL){
+                    $pdf->writeHTMLCell($b2,5,$x,$y,$detail['description2'],"TLR",true,$fill,1,'',0);
+                } else {
+                    $pdf->MultiCell($b2,5, $detail['item'],"TLR",'L',$fill);
                 }
-                $pdf->MultiCell($b2, 5, $detail['item'], 1, 'L');
+                
                 $y2 = $pdf->GetY();
                 $pdf->SetFont('helvetica', '', $font2);
                 $pdf->SetXY($x, $y);
