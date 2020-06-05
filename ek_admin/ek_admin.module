@@ -343,7 +343,7 @@ function mail_attachment($email, $file, $message = null, $options = null) {
         foreach ($email as $value) {
             if ($value != '') {
                 //insert receipt log
-                if ($receipt) {
+                if ($receipt && $options['origin'] != 'backup_documents') {
                     $params['options']['receipt'] = "<img src='" . \Drupal::request()->getSchemeAndHttpHost() . "/ek_admin_receipt/mail"
                             . "?org=" . $currentuserMail . "&ts=" . time() . "&r=" . $value . "&c=" . $filename . "' class='receipt' />";
                 }

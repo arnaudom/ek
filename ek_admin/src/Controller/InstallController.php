@@ -123,7 +123,7 @@ class InstallController extends ControllerBase
 
         $query = "CREATE TABLE IF NOT EXISTS `ek_company` (
             `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-            `access` VARCHAR(50) NULL DEFAULT NULL COMMENT 'serialized uid list access',
+            `access` BLOB NULL DEFAULT NULL COMMENT 'serialized uid list access',
             `settings` BLOB NULL COMMENT 'holds accounts settings',
             `name` VARCHAR(45) NULL DEFAULT NULL COMMENT 'company name',
             `reg_number` VARCHAR(45) NULL DEFAULT NULL COMMENT 'company registration number',
@@ -192,7 +192,7 @@ class InstallController extends ControllerBase
     
         $query = "CREATE TABLE IF NOT EXISTS `ek_country` (
                 `id` SMALLINT(5) NOT NULL AUTO_INCREMENT,
-                `access` VARCHAR(50) NULL DEFAULT NULL COMMENT 'serialized list uid',
+                `access` BLOB NULL DEFAULT NULL COMMENT 'serialized list uid',
                 `name` VARCHAR(50) NULL DEFAULT NULL COMMENT 'country name',
                 `code` VARCHAR(5) NULL DEFAULT NULL COMMENT 'country code',
                 `entity` VARCHAR(255) NULL DEFAULT NULL COMMENT 'organization entity',
