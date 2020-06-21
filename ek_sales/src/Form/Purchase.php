@@ -378,7 +378,7 @@ class Purchase extends FormBase {
 
         $form['options']['comment'] = array(
             '#type' => 'textarea',
-            '#rows' => 1,
+            '#rows' => 3,
             '#default_value' => isset($data->comment) ? $data->comment : null,
             '#prefix' => "<div class='container-inline'>",
             '#suffix' => "</div>",
