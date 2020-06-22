@@ -19,6 +19,10 @@ $template = $param[2];
 $from = $param[3];
 $to = $param[4];
 
+$query = Database::getConnection('external_db', 'external_db')
+        ->select('ek_hr_payroll_cycle', 'c')
+        ->fields('c',['current']);
+$cycle = $query->execute()->fetchField();
 
 if ($template == NULL || $template == 'default') {
     $template = 'default-payslip_pdf';
@@ -31,32 +35,31 @@ $format = explode("_", $template);
  */
 if ($format[1] == 'pdf') {
 
-    $query = Database::getConnection('external_db', 'external_db')
-            ->select('ek_hr_workforce_pay', 'p');
-    $query->fields('p');
-    $query->innerJoin('ek_hr_workforce', 'w', 'w.id=p.id');
-    $query->fields('w')
-            ->condition('p.id', $from, '>=')
-            ->condition('p.id', $to, '<=')
-            ->condition('company_id', $coid);
-    $data = $query->execute();
-
-//queries
-
-    if (!$data) {
+    if($cycle == $month) {
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_hr_workforce_pay', 'p');
+        $query->fields('p');
+        $query->innerJoin('ek_hr_workforce', 'w', 'w.id=p.id');
+        $query->fields('w')
+                ->condition('p.id', $from, '>=')
+                ->condition('p.id', $to, '<=')
+                ->condition('company_id', $coid)
+                ->condition('month', $month);
+        $data = $query->execute();
+    
+    } else {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_hr_post_data', 'p');
         $query->fields('p');
         $query->innerJoin('ek_hr_workforce', 'w', 'w.id=p.emp_id');
         $query->fields('w')
-                ->condition('p.id', $from, '>=')
-                ->condition('p.id', $to, '<=')
+                ->condition('p.emp_id', $from, '>=')
+                ->condition('p.emp_id', $to, '<=')
                 ->condition('company_id', $coid)
-                ->contition('month', $month);
+                ->condition('month', $month);
         $data = $query->execute();
         $archive = TRUE;
     }
-    //$data = $payroll;
     
     $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_company', 'c');
