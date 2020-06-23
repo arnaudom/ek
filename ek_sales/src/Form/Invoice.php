@@ -71,16 +71,20 @@ class Invoice extends FormBase {
 
         if (isset($id) && $id != null) {
 
-            //edit existing invoice
-
             if ($clone != 'delivery') {
-                $query = "SELECT * from {ek_sales_invoice} where id=:id";
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $id))
-                        ->fetchObject();
-                $query = "SELECT * FROM {ek_sales_invoice_details} where serial=:id ORDER BY id";
-                $detail = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $data->serial));
+            // edit existing invoice
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice', 'i')
+                    ->fields('i')
+                    ->condition('id', $id)
+                    ->execute();
+                $data = $query->fetchObject();
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice_details', 'd')
+                    ->fields('d')
+                    ->condition('serial', $data->serial)
+                    ->OrderBy('id');
+                $detail = $query->execute();
                 $fx_rate = round($data->amount / $data->amountbase, 4);
                 $form_state->set('fx_rate', $fx_rate);
                 if ($fx_rate != '1') {
@@ -88,25 +92,33 @@ class Invoice extends FormBase {
                 } else {
                     $form_state->set('fx_rate_require', false);
                 }
-
-                $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'), '4' => $this->t('Credit note'));
+                if($data->type == 5){
+                    $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'), '4' => $this->t('Credit note'),'5' => $this->t('Proforma invoice'));
+                } else {
+                    // can't change type with receivable
+                    $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'), '4' => $this->t('Credit note'));
+                }
+                
             } elseif ($clone == 'delivery' && $this->moduleHandler->moduleExists('ek_logistics')) {
-                //convert delivery order into invoice with new serial No
-
-                $query = "SELECT * from {ek_logi_delivery} where id=:id";
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $id))
-                        ->fetchObject();
-                $query = "SELECT * FROM {ek_logi_delivery_details} where serial=:id";
-                $detail = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $data->serial));
-
+                // convert delivery order into invoice with new serial No
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_logi_delivery', 'd')
+                    ->fields('d')
+                    ->condition('id', $id)
+                    ->execute();
+                $data = $query->fetchObject();
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_logi_delivery_details', 'dd')
+                    ->fields('dd')
+                    ->condition('serial', $data->serial)
+                    ->OrderBy('id');
+                $detail = $query->execute();
                 $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'));
             }
 
 
             if ($clone != 'clone' && $clone != 'delivery') {
-                $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'), '4' => $this->t('Credit note'));
+                //$options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'), '4' => $this->t('Credit note'));
                 $form['edit_invoice'] = array(
                     '#type' => 'item',
                     '#markup' => $this->t('Invoice ref. @p', array('@p' => $data->serial)),
@@ -117,8 +129,7 @@ class Invoice extends FormBase {
                     '#value' => $data->serial,
                 );
             } elseif ($clone == 'clone') {
-                //duplicate existing invoice with new serial No
-                $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'), '4' => $this->t('Credit note'));
+                // duplicate existing invoice with new serial No
                 $form['clone_invoice'] = array(
                     '#type' => 'item',
                     '#markup' => "<div class='messages messages--warning'>"
@@ -133,7 +144,7 @@ class Invoice extends FormBase {
                     '#value' => 1,
                 );
             } elseif ($clone == 'delivery') {
-                //convert delivery order into invoice with new serial No
+                // convert delivery order into invoice with new serial No
                 $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'));
 
                 $form['clone_invoice'] = array(
@@ -181,12 +192,11 @@ class Invoice extends FormBase {
                 }
             }
         } else {
-            //new
+            // new
             $form['new_invoice'] = array(
                 '#type' => 'hidden',
                 '#value' => 1,
             );
-
             $grandtotal = 0;
             $taxable = 0;
             $n = 0;
@@ -194,7 +204,7 @@ class Invoice extends FormBase {
             $form_state->set('fx_rate_require', false);
             $detail = null;
             $data = null;
-            $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'), '4' => $this->t('Credit note'));
+            $options = array('1' => $this->t('Invoice'), '2' => $this->t('Commercial invoice'), '4' => $this->t('Credit note'), '5' => $this->t('Proforma invoice'));
         }
 
 
@@ -234,7 +244,7 @@ class Invoice extends FormBase {
             '#ajax' => array(
                 'callback' => array($this, 'set_coid'),
                 'wrapper' => 'debit',
-            //will define the list of bank accounts by company below
+            // will define the list of bank accounts by company below
             ),
         );
 
@@ -342,7 +352,7 @@ class Invoice extends FormBase {
                 '#ajax' => array(
                     'callback' => array($this, 'check_aid'),
                     'wrapper' => 'fx',
-                //will define if currency asset account exist and input the exchange rate against
+                // will define if currency asset account exist and input the exchange rate against
                 // base currency
                 ),
             );
@@ -689,7 +699,7 @@ class Invoice extends FormBase {
                 unset($form['total']);
                 unset($form['delete']);
             }
-        } //details of current records
+        } // details of current records
 
 
         if (isset($detail)) {
@@ -812,8 +822,8 @@ class Invoice extends FormBase {
                 );
             }
 
-            //Table footer
-            //total items
+            // Table footer
+            // total items
             if (isset($id) && $baseCurrency != $data->currency) {
                 $c = \Drupal\ek_finance\CurrencyData::currencyRates();
                 $converted = round($grandtotal / $c[$data->currency], 2) . " " . $baseCurrency;
@@ -880,7 +890,7 @@ class Invoice extends FormBase {
             unset($form['total']);
             unset($form['delete']);
 
-            //tax row
+            // tax row
             $n++;
             $taxamount = isset($data->taxvalue) ? round($taxable * $data->taxvalue / 100, 2) : null;
             $form['description'] = array(
@@ -1061,17 +1071,17 @@ class Invoice extends FormBase {
                             . $this->t("There is no assets account defined for currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]) . "</div>";
                 } else {
                     $fx_rate = \Drupal\ek_finance\CurrencyData::rate($form_state->getValue('currency'));
-                    //$input = $form_state->getUserInput();
+                    // $input = $form_state->getUserInput();
                     if ($fx_rate == '1') {
                         //$required  = FALSE;
                         $form['options']['fx_rate']['#required'] = false;
                     }
                     // not base currency
                     else {
-                        //$required  = TRUE;
+                        // $required  = TRUE;
                         $form['options']['fx_rate']['#required'] = true;
                     }
-                } //else -> aid
+                } // else -> aid
             }// else -> coid
         }
 
@@ -1197,7 +1207,7 @@ class Invoice extends FormBase {
                     if ($row['value'] == '' || !is_numeric($row['value'])) {
                         $form_state->setErrorByName("itemTable][$key][value", $this->t('there is no value for item @n', array('@n' => $key)));
                     }
-                    //if($this->moduleHandler->moduleExists('ek_finance')) {
+                    // if($this->moduleHandler->moduleExists('ek_finance')) {
                     // validate account
                     // @TODO
                     //}
@@ -1210,7 +1220,7 @@ class Invoice extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        $options = array('1' => 'Invoice', '2' => 'Commercial invoice', '4' => 'Credit note');
+        $options = array('1' => 'Invoice', '2' => 'Commercial invoice', '4' => 'Credit note', '5' => 'Proforma invoice');
 
         if ($form_state->getValue('new_invoice') == 1) {
             //create new serial No
@@ -1334,7 +1344,7 @@ class Invoice extends FormBase {
                                 $itemdetail = '';
                             }
                         } else {
-                            //use input from user
+                            // use input from user
                             $item = Xss::filter($row["description"]);
                             $itemdetail = '';
                         }
@@ -1366,11 +1376,11 @@ class Invoice extends FormBase {
                                 ->insert('ek_sales_invoice_details')
                                 ->fields($fields)
                                 ->execute();
-                    }//if not delete
-                }//if not footer
-            }//for
+                    }// if not delete
+                }// if not footer
+            }// for
         }
-        //main
+        // main
 
         if ($form_state->getValue('due') == '') {
             $due = 0;
@@ -1546,7 +1556,7 @@ class Invoice extends FormBase {
                 }
             }
             if (isset($_SESSION['ifilter']['to'])) {
-                //if filter is set for list adjust date to last created date to enforce document display
+                // if filter is set for list adjust date to last created date to enforce document display
                 $_SESSION['ifilter']['to'] = $form_state->getValue('date');
             }
 
@@ -1563,5 +1573,4 @@ class Invoice extends FormBase {
             }
         }
     }
-
 }

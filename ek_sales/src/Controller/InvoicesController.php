@@ -258,7 +258,12 @@ class InvoicesController extends ControllerBase {
             }
 
             if ($r->type == 4) {
+                //CN
                 $doctype = 'red';
+            }
+            if ($r->type == 5) {
+                //Proforma
+                $doctype = 'green';
             }
 
             $number = "<a class='" . $doctype . "' title='" . $this->t('view') . "' href='"
@@ -291,46 +296,52 @@ class InvoicesController extends ControllerBase {
                 }
                 $duetitle = $this->t('due') . ' ' . $delta . ' ' . $this->t('day(s)');
             }
-            if ($r->type < 4) {
+            if ($r->type != 4) {
                 $value = $r->currency . ' ' . number_format($r->amount, 2);
             } else {
                 $value = $r->currency . ' (' . number_format($r->amount, 2) . ')';
             }
-            $query = 'SELECT sum(total) from {ek_sales_invoice_details} WHERE serial=:s and opt=:o';
-            $taxable = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':s' => $r->serial, ':o' => 1))
-                    ->fetchField();
-            $tax = $taxable * $r->taxvalue / 100;
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice_details', 'd')
+                    ->condition('serial', $r->serial)
+                    ->condition('opt', 1);
+            $query->addExpression('SUM(total)', 'total');
+            $total = $query->execute();
+            $tax = $total->fetchObject()->total * $r->taxvalue / 100;
 
             if ($tax > 0) {
-                if ($r->type < 4) {
+                if ($r->type != 4) {
                     $value .= '<br/>' . $this->t('tax:') . " " . $r->currency . " " . number_format($tax, 2);
                 } else {
                     $value .= '<br/>' . $this->t('tax:') . " " . $r->currency . " (" . number_format($tax, 2) . ')';
                 }
             }
 
-            if ($r->status == 0) {
-                $status = $this->t('unpaid');
-                $status_class = 'red';
+            if($r->type < 5){
+                if ($r->status == 0) {
+                    $status = $this->t('unpaid');
+                    $status_class = 'red';
+                }
+                if ($r->status == 1) {
+                    $status = $this->t('paid');
+                    $status_class = 'green';
+                }
+                if ($r->status == 2) {
+                    $status = $this->t('partially paid');
+                    $status_class = 'red';
+                }
+
+                //build modal to display extended information
+                $param = 'invoice|' . $r->id;
+                $url = Url::fromRoute('ek_sales.modal_more', ['param' => $param])->toString();
+
+                $more = '<a href="' . $url . '" '
+                        . 'class="use-ajax ' . $status_class . '"  data-accepts="application/vnd.drupal-modal"  >' . $status . '</a>';
+            } else {
+                $more = $this->t('Proforma');
             }
-            if ($r->status == 1) {
-                $status = $this->t('paid');
-                $status_class = 'green';
-            }
-            if ($r->status == 2) {
-                $status = $this->t('partially paid');
-                $status_class = 'red';
-            }
-
-            //build modal to display extended information
-            $param = 'invoice|' . $r->id;
-            $url = Url::fromRoute('ek_sales.modal_more', ['param' => $param])->toString();
-
-            $more = '<a href="' . $url . '" '
-                    . 'class="use-ajax ' . $status_class . '"  data-accepts="application/vnd.drupal-modal"  >' . $status . '</a>';
-
-
+            
             $options[$r->id] = array(
                 'number' => ['data' => ['#markup' => $number]],
                 'reference' => ['data' => ['#markup' => $reference]],

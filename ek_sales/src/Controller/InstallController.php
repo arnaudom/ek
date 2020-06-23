@@ -232,7 +232,7 @@ class InstallController extends ControllerBase {
 	`currency` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'currency' COLLATE 'utf8_unicode_ci',
 	`date` VARCHAR(45) NOT NULL DEFAULT '0000-00-00' COMMENT 'invoice date',
 	`title` VARCHAR(150) NOT NULL COMMENT 'title on the printed doc' COLLATE 'utf8_unicode_ci',
-        `type` TINYINT(4) NOT NULL DEFAULT '1' COMMENT 'type 1 invoice, 2 commercial, 4 credit note',
+        `type` TINYINT(4) NOT NULL DEFAULT '1' COMMENT 'type 1 invoice, 2 commercial, 4 credit note, 5 proforma',
 	`pcode` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'project reference' COLLATE 'utf8_unicode_ci',
 	`comment` TEXT NOT NULL COMMENT 'comment on printed doc' COLLATE 'utf8_unicode_ci',
 	`client` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'client id' COLLATE 'utf8_unicode_ci',
