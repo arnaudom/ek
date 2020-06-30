@@ -149,21 +149,25 @@ class ProjectData {
     }
 
     /*
-     * @param mix id
+     * @param mix $id
      *  project id or project serial code
-     * @param bolean ext
+     * @param bolean $ext
      *  flag to open link in new window
-     * @param bolean short
+     * @param bolean $short
      *  return only last part of serial code (number)
-     * @param string text
+     * @param string $text
      *  custom text for link
+     * @param array $param
+     *  query string option
+     * @param array $fragment
+     *  fragment string option
      * @return html link or empty string
      *  a project code view url from id or serial
      *  generate internal/external link to the project
      *
      */
 
-    public static function geturl($id, $ext = null, $base = null, $short = null, $text = null) {
+    public static function geturl($id, $ext = null, $base = null, $short = null, $text = null, $param = null, $fragment = null) {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_project', 'p');
         $query->fields('p', ['id', 'pcode', 'pname']);
@@ -177,9 +181,9 @@ class ProjectData {
 
         if ($p) {
             if ($ext == true) {
-                $link = Url::fromRoute('ek_projects_view', array('id' => $p->id), ['absolute' => true])->toString();
+                $link = Url::fromRoute('ek_projects_view', array('id' => $p->id), ['absolute' => true, 'query' => $param])->toString();
             } else {
-                $link = Url::fromRoute('ek_projects_view', array('id' => $p->id), [])->toString();
+                $link = Url::fromRoute('ek_projects_view', array('id' => $p->id), ['query' => $param, 'fragment' => $fragment])->toString();
             }
 
             if ($base != null) {

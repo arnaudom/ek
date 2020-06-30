@@ -1,5 +1,5 @@
-<section class="project-head">
 
+<section class="project-head">
     <div id="head">
         <table class='table'>
             <tbody>
@@ -18,7 +18,7 @@
                 <tr>
                     <td id='project-type'>{{ items.type }}</td>
                     <td id='project-client'>
-                        <span class="ico address-card"></span>&nbsp;{{ items.client.0.url|raw }} 
+                        <span class="ico address-card"></span>&nbsp;{{ items.project.0.client_url|raw }} 
                         <span class='field_edit'>{{ items.project.0.edit_client_id|raw }}</span>
                     </td>
                 </tr>
@@ -43,8 +43,8 @@
                         {% if items.project.0.access %}  <span class='ico lock'></span>&nbsp;{{ items.project.0.access }} {% endif %} </td>
                 </tr>
                 <tr>
-                    <td id='project-task'><span class='ico tasks'></span>&nbsp;{{ items.project.0.new_project_task }}</td>
-                    <td id='status_container' class='{{ items.project.0.status }}'>
+                    <td id='project-task'><span class='ico tasks'></span>&nbsp;{{ items.project.0.new_project_task|raw }}</td>
+                    <td id='status_container' class="p_{{ items.project.0.status }}">
                         <a href="{{ items.project.0.edit_statusUrl }}" class="use-ajax blue">{{ 'Status'|t }}</a>: 
                         <span id='status'>{{ items.project.0.status }}</span> 
                         <span class='field_edit'>{{ items.project.0.edit_status|raw }}</span></td>
@@ -66,7 +66,7 @@
             <div class="panel-heading" id='ps0'>
                 
                     <h4 onclick="jQuery('#s0').toggle('fast');jQuery('html, body').animate({ scrollTop: jQuery('#s0').offset().top }, 'slow');" class="panel-title">
-                        {{ 'Linked projects'|t }}
+                        {{ 'Linked projects'|t }} ({{ items.sub|length }})
                     </h4>
 
             </div>
@@ -87,13 +87,13 @@
 
             <div class="panel-heading" id='ps1'>
                 
-                    <h4 onclick="jQuery('#s1').toggle('fast');jQuery('html, body').animate({ scrollTop: jQuery('#s1').offset().top }, 'slow');" class="panel-title">
+                    <h4 onclick="jQuery('#s1').toggle('fast');jQuery('html, body').animate({ scrollTop: jQuery('#ps1').offset().top }, 'slow');" class="panel-title">
                         {{ 'Main data'|t }}
                     </h4>
                 
             </div>
 
-            <div class="panel-body"  style='display:none;' id="s1">
+            <div class="panel-body"  style='display:{{ items.display.s1 }};' id="s1">
 
                 <table class='table'>
                     <tbody>
@@ -176,25 +176,21 @@
                             </tr>
                         </tbody>
                     </table>
-                     
-
             </div>
-
-
         </div>
     {% endif %}  
     {% if items.section_2 %}     
         <div class="panel panel-default">
 
             <div class="panel-heading" id='ps2'>
-                    <h4 onclick="jQuery('#s2').toggle('fast');jQuery('html, body').animate({ scrollTop: jQuery('#s2').offset().top }, 'slow');" class="panel-title">
+                    <h4 onclick="jQuery('#s2').toggle('fast');jQuery('html, body').animate({ scrollTop: jQuery('#ps2').offset().top }, 'slow');" class="panel-title">
                         {{ 'Tasks'|t }}
                     </h4>
             </div>
 
-            <div class="panel-body" style='display:none;' id="s2">
+            <div class="panel-body" style='display:{{ items.display.s2 }};' id="s2">
                 <div class='text-right'>
-                    {{ items.project.0.new_project_task }}
+                    {{ items.project.0.new_project_task|raw }}
                 </div>
                 <div  id='tasks_table'>
                     {{ items.project.0.task_list }}
@@ -209,12 +205,12 @@
         <div class="drop-folder panel panel-default">
 
             <div class="panel-heading" id='ps3'>
-                    <h4 onclick="jQuery('#s3').toggle('fast');jQuery('html, body').animate({ scrollTop: jQuery('#s3').offset().top }, 'slow');" class="panel-title">
+                    <h4 onclick="jQuery('#s3').toggle('fast');jQuery('html, body').animate({ scrollTop: jQuery('#ps3').offset().top }, 'slow');" class="panel-title">
                         {{ 'Communication'|t }}
                     </h4>
             </div>
 
-            <div class="panel-body" style='display:none;' id="s3">
+            <div class="panel-body" style='display:{{ items.display.s3 }};' id="s3">
                 <table class='table'>
                     <tbody>
                         <tr>
@@ -270,12 +266,12 @@
         <div class="panel panel-default">
 
             <div class="panel-heading" id='ps4'>
-                    <h4 onclick="jQuery('#s4').toggle('fast');jQuery('html, body').animate({ scrollTop: jQuery('#s4').offset().top }, 'slow');" class="panel-title">
+                    <h4 onclick="jQuery('#s4').toggle('fast');jQuery('html, body').animate({ scrollTop: jQuery('#ps4').offset().top }, 'slow');" class="panel-title">
                         {{ 'Logistics'|t }}
                     </h4>
             </div>
 
-            <div class="panel-body" style='display:none;' id="s4">
+            <div class="panel-body" style='display:{{ items.display.s4 }};' id="s4">
 
                 <table class='table'>
                     <tbody>
@@ -348,12 +344,12 @@
         <div class="drop-folder panel panel-default">
 
             <div class="panel-heading" id='ps5'>
-                    <h4 onclick="jQuery('#s5').toggle('fast');jQuery('html, body').animate({ scrollTop: jQuery('#s5').offset().top }, 'slow');" class="panel-title">
+                    <h4 onclick="jQuery('#s5').toggle('fast');jQuery('html, body').animate({ scrollTop: jQuery('#ps5').offset().top }, 'slow');" class="panel-title">
                         {{ 'Finance'|t }}
                     </h4>
             </div>
 
-            <div class="panel-body" style='display:none;' id="s5">
+            <div class="panel-body" style='display:{{ items.display.s5 }};' id="s5">
 
                 <table class='table'>
                     <tbody>

@@ -14,4 +14,4 @@ view_project:
   title: 'view project'
   description: 'view project'  
 delete_project_task:
-  title: 'delete project task'
+  title: 'edit or delete project task'

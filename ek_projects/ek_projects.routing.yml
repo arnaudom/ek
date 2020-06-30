@@ -185,8 +185,8 @@ ek_projects_task:
     _controller: '\Drupal\ek_projects\Controller\ProjectController::TaskProject'
   requirements:
     _permission: 'create_projects'
-    pid: \d*
-    id: \d*
+    pid: \d+
+    id: \d+
     
 ek_projects_task_list:
   path: '/projects/task/list/{pcode}'

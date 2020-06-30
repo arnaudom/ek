@@ -1,6 +1,7 @@
 (function ($, Drupal, drupalSettings) {
 
-    var last_update = '';
+    var last_update = 0;
+    var update_count = 0;
     /*
      * Start a periodical update of all fields
      * @returns {undefined}
@@ -11,8 +12,7 @@
         url: drupalSettings.path.baseUrl + 'ek_project/tracker',
         data: {id: drupalSettings.ek_projects.id},
         success: function(remoteData) { 
-                update_users_activity(remoteData)
-
+                update_users_activity(remoteData);
         },
         complete: function(xhr, status) {
                 P1.ajax_complete(xhr, status);
@@ -25,8 +25,11 @@
         
         jQuery(".tracklist ul").html(activity.data);
         if(last_update !== activity.data) {
+                if(update_count > 0) {
+                    tbeep.play();
+                }
+                update_count++;
                 last_update = activity.data;
-                tbeep.play();
                 update_fields(drupalSettings.ek_projects.id);
                 update_documents(drupalSettings.ek_projects.id);
                 adddragdrop();

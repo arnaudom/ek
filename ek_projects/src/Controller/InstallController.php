@@ -241,7 +241,7 @@ class InstallController extends ControllerBase {
         $query = "CREATE TABLE IF NOT EXISTS `ek_project_tasks` (
 	`id` TINYINT(3) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`pcode` VARCHAR(50) NULL DEFAULT NULL COMMENT 'project code reference',
-	`event` VARCHAR(50) NULL DEFAULT NULL COMMENT 'event group name',
+	`event` VARCHAR(100) NULL DEFAULT NULL COMMENT 'event group name',
 	`task` TEXT NULL COMMENT 'task description',
 	`weight` DOUBLE NULL DEFAULT NULL COMMENT 'option',
 	`start` VARCHAR(50) NULL DEFAULT '0000-00-00' COMMENT 'start date',

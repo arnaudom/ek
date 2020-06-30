@@ -91,7 +91,7 @@ function update_fields(pid) {
         success: function (remoteData) {
             for (key in remoteData.data) {
                 if (key == 'status_container') {
-                    jQuery('#status_container').removeClass().addClass(remoteData.data[key]);
+                    jQuery('#status_container').removeClass().addClass("p_" + remoteData.data[key]);
                 } else {
                     jQuery("#" + key).html(remoteData.data[key]);
 

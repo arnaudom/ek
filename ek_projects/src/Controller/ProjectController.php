@@ -7,6 +7,7 @@
 
 namespace Drupal\ek_projects\Controller;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
@@ -25,8 +26,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Drupal\ek_projects\ProjectData;
+use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\FinanceSettings;
+use Drupal\ek_projects\ProjectData;
 
 /**
  * Controller routines for ek module routes.
@@ -84,6 +86,7 @@ class ProjectController extends ControllerBase {
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
         $this->entityTypeManager = $entity_manager;
+        $this->extdb = Database::getConnection('external_db', 'external_db');
     }
 
     /**
@@ -112,7 +115,7 @@ class ProjectController extends ControllerBase {
                     $id1 = '%-' . trim($_SESSION['pjfilter']['keyword']) . '%';
                     $id2 = '%-' . trim($_SESSION['pjfilter']['keyword']) . '-sub%';
 
-                    $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
+                    $query = $this->extdb->select('ek_project', 'p');
 
                     $or = $query->orConditionGroup();
                     $or->condition('pcode', $id1, 'like');
@@ -128,7 +131,7 @@ class ProjectController extends ControllerBase {
                     $key = Xss::filter($_SESSION['pjfilter']['keyword']);
                     $keyword1 = trim($key) . '%';
                     $keyword2 = '%' . trim($key) . '%';
-                    $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
+                    $query = $this->extdb->select('ek_project', 'p');
                     $query->leftJoin('ek_project_documents', 'd', 'p.pcode=d.pcode');
                     $query->leftJoin('ek_project_description', 't', 'p.pcode=t.pcode');
                     $or = $query->orConditionGroup();
@@ -158,7 +161,7 @@ class ProjectController extends ControllerBase {
                     $_SESSION['pjfilter']['client'] = '%';
                 }
 
-                $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
+                $query = $this->extdb->select('ek_project', 'p');
                 $query->leftJoin('ek_project_description', 'd', 'd.pcode=p.pcode');
                 $query
                         ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'))
@@ -207,10 +210,8 @@ class ProjectController extends ControllerBase {
                     $i++;
                     array_push($excel, $r->id);
                     $pcode = ProjectData::geturl($r->id);
-                    $country = Database::getConnection('external_db', 'external_db')
-                                    ->query("SELECT name FROM {ek_country} WHERE id=:cid", array(':cid' => $r->cid))->fetchField();
-                    $category = Database::getConnection('external_db', 'external_db')
-                                    ->query("SELECT type FROM {ek_project_type} WHERE id=:t", array(':t' => $r->category))->fetchField();
+                    $country = $this->extdb->query("SELECT name FROM {ek_country} WHERE id=:cid", array(':cid' => $r->cid))->fetchField();
+                    $category = $this->extdb->query("SELECT type FROM {ek_project_type} WHERE id=:t", array(':t' => $r->category))->fetchField();
 
                     $route = Url::fromRoute('ek_projects_archive', ['id' => $r->id], array())->toString();
                     $archive_button = "<a id='arch" . $r->id . "' title='" . $this->t('change archive status') . "' href='" . $route . "' class='use-ajax'>" . $archive[$r->archive] . '</a>';
@@ -294,8 +295,7 @@ class ProjectController extends ControllerBase {
                     . "LEFT JOIN {ek_project_description} d ON p.pcode=d.pcode "
                     . "LEFT JOIN {ek_project_finance} f on p.pcode=f.pcode "
                     . "WHERE FIND_IN_SET (id, :c ) ORDER by p.id";
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, [':c' => implode(',', $param)]);
+            $data = $this->extdb->query($query, [':c' => implode(',', $param)]);
 
             include_once drupal_get_path('module', 'ek_projects') . '/excel_list.inc';
         }
@@ -320,24 +320,29 @@ class ProjectController extends ControllerBase {
      * @return array
      */
     public function project_view(Request $request, $id) {
-        $items = array();
+        $items = [];
+        $data = [];
         Cache::invalidateTags(['project_view_block']);
-
-
+        $data['display'] = [
+            's1' => (null !== $request->query->get('s1')) ? $request->query->get('s1') : 'none',
+            's2' => (null !== $request->query->get('s2')) ? $request->query->get('s2') : 'none',
+            's3' => (null !== $request->query->get('s3')) ? $request->query->get('s3') : 'none',
+            's4' => (null !== $request->query->get('s4')) ? $request->query->get('s4') : 'none',
+            's5' => (null !== $request->query->get('s5')) ? $request->query->get('s5') : 'none',
+        ];
         $edit_icon = "&nbsp<span class='ico pencil-edit'></span>";
+
+        $ab = $this->extdb
+                        ->select('ek_address_book', 'ab')
+                        ->fields('ab', ['id', 'name'])
+                        ->execute()->fetchAllKeyed();
 
         if (!ProjectData::validate_access($id)) {
             return $items['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\AccessRequest', $id);
         } else {
-            $items['data'] = array();
-
-            $pcode = Database::getConnection('external_db', 'external_db')
-                            ->query("SELECT pcode from {ek_project} WHERE id=:id", array(':id' => $id))->fetchField();
 
             $settings = ['id' => $id,];
-
             $sections = ProjectData::validate_section_access(\Drupal::currentUser()->id());
-            $data = array();
 
             for ($i = 1; $i < 6; $i++) {
                 if (in_array($i, $sections)) {
@@ -345,18 +350,24 @@ class ProjectController extends ControllerBase {
                 }
             }
 
-
             /*
              * main data collection
              */
 
-            $query = "SELECT * from {ek_project} WHERE id=:id";
-            $data['project'] = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':id' => $id))->fetchAll();
+            $query = $this->extdb
+                    ->select('ek_project')
+                    ->fields('ek_project')
+                    ->condition('id', $id)
+                    ->execute();
 
-            $query = "SELECT type from {ek_project_type} WHERE id=:id";
-            $data['type'] = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':id' => $data['project'][0]->category))->fetchField();
+            $data['project'] = $query->fetchAll();
+            $pcode = $data['project'][0]->pcode;
+
+            $data['type'] = $this->extdb
+                            ->select('ek_project_type')
+                            ->fields('ek_project_type', ['type'])
+                            ->condition('id', $id)
+                            ->execute()->fetchField();
 
             $code = str_replace('/', '-', $pcode);
             $code = explode("-", $code);
@@ -365,9 +376,13 @@ class ProjectController extends ControllerBase {
             $sub = null;
 
             if ($data['project'][0]->level == 'Main project' && $data['project'][0]->subcount > 0) {
-                $query = "SELECT id, pname from {ek_project} WHERE main = :id and pcode <> :c2 order by id";
-                $sub = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $id, ':c2' => $pcode));
+                $sub = $this->extdb
+                        ->select('ek_project', 'p')
+                        ->fields('p', ['id', 'pname'])
+                        ->condition('main', $id)
+                        ->condition('pcode', $pcode, '<>')
+                        ->execute();
+
                 while ($l = $sub->fetchObject()) {
                     $data['sub'][] = ProjectData::geturl($l->id) . " - " . $l->pname;
                 }
@@ -406,8 +421,6 @@ class ProjectController extends ControllerBase {
              * convert last view data
              */
             $last = explode('|', $data['project'][0]->last_modified);
-            //$query = "SELECT name from {users_field_data} WHERE uid=:uid";
-            //$name = db_query($query, array(':uid' => $last[1]))->fetchField();
             $acc = \Drupal\user\Entity\User::load($last[1]);
             $name = '';
             if ($acc) {
@@ -417,7 +430,7 @@ class ProjectController extends ControllerBase {
             $data['project'][0]->last_modified = $name . ' (' . $this->t('on') . ' ' . $on . ')';
             //update new last view
             $last_modified = time() . '|' . \Drupal::currentUser()->id();
-            Database::getConnection('external_db', 'external_db')
+            $this->extdb
                     ->update('ek_project')
                     ->fields(array('last_modified' => $last_modified))
                     ->condition('id', $id)
@@ -429,7 +442,7 @@ class ProjectController extends ControllerBase {
                 'stamp' => time(),
                 'action' => 'open'
             );
-            Database::getConnection('external_db', 'external_db')
+            $this->extdb
                     ->insert('ek_project_tracker')->fields($fields)->execute();
 
             //system log view
@@ -477,19 +490,17 @@ class ProjectController extends ControllerBase {
              * create a link to create a task
              */
             $param_edit = 'task|' . $id;
-            $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-            $data['project'][0]->new_project_task = $this->t('<a href="@url" class="@c" >New task</a>', array('@url' => $link, '@c' => 'use-ajax blue notification'));
+            $destination = ['destination' => 'projects/project/' . $id . '?s2=true#ps2'];
+            $link = Url::fromRoute('ek_projects_task', ['pid' => $id, 'id' => '0'], ['query' => $destination])->toString();
+            $size = Json::encode(['width' => '30%', 'resizable' => 1]);
+            $data['project'][0]->new_project_task = '<a href="' . $link . '" class="use-ajax blue notification" data-dialog-type="dialog" data-dialog-renderer="off_canvas" data-dialog-options=' . $size . '>' . $this->t('New task') . '</a>';
 
             $data['project'][0]->task_list = self::TaskList($pcode);
             /*
              * create a link to addresses book
              */
-            $query = "SELECT * from {ek_address_book} WHERE id=:id";
-            $data['client'] = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $data['project'][0]->client_id))
-                    ->fetchAll();
 
-            $data['client'][0]->url = \Drupal\ek_address_book\AddressBookData::geturl($data['client'][0]->id);
+            $data['project'][0]->client_url = \Drupal\ek_address_book\AddressBookData::geturl($data['project'][0]->client_id);
 
             /*
              * create a link to edit status
@@ -510,8 +521,6 @@ class ProjectController extends ControllerBase {
             /*
              * user table
              */
-            //$query = "SELECT * from {users_field_data} WHERE uid=:uid";
-            //$data['user'] = db_query($query, array(':uid' => $data['project'][0]->owner))->fetchAll();
             $acc = \Drupal\user\Entity\User::load($data['project'][0]->owner);
             if ($acc) {
                 $data['user']['name'] = $acc->getDisplayName();
@@ -526,9 +535,11 @@ class ProjectController extends ControllerBase {
              * description table
              */
             if (in_array(1, $sections)) {
-                $query = "SELECT * from {ek_project_description} WHERE pcode=:p";
-                $data['description'] = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':p' => $pcode))
+                //$query = "SELECT * from {ek_project_description} WHERE pcode=:p";
+                $data['description'] = $this->extdb->select('ek_project_description', 'd')
+                        ->fields('d')
+                        ->condition('pcode', $pcode)
+                        ->execute()
                         ->fetchAll();
 
                 $data['description'][0]->project_description = html_entity_decode($data['description'][0]->project_description, ENT_QUOTES, "utf-8");
@@ -541,15 +552,15 @@ class ProjectController extends ControllerBase {
 
                 $data['suppliers'] = [];
                 if ($data['description'][0]->supplier_offer) {
-                    $query = "SELECT id,name FROM {ek_address_book} WHERE FIND_IN_SET (id, :s )";
-                    $suppliers = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':s' => $data['description'][0]->supplier_offer));
-
-                    while ($s = $suppliers->fetchObject()) {
-                        /**/
+                    //$suppliers = $this->extdb->select('ek_address_book','b')
+                    //        ->fields('b',['id','name'])
+                    //        ->condition('id',$data['description'][0]->supplier_offer,'IN')
+                    //        ->execute();
+                    $suppliers = explode(',', $data['description'][0]->supplier_offer);
+                    foreach ($suppliers as $key) {
                         $data['suppliers'][] = [
-                            'name' => $s->name,
-                            'url' => \Drupal\ek_address_book\AddressBookData::geturl($s->id),
+                            'name' => $ab[$key],
+                            'url' => \Drupal\ek_address_book\AddressBookData::geturl($key),
                         ];
                     }
                     $data['description'][0]->supplier_offer = $data['suppliers'];
@@ -702,9 +713,12 @@ class ProjectController extends ControllerBase {
              * reports links
              */
             if ($this->moduleHandler->moduleExists('ek_intelligence')) {
-                $query = "SELECT id,serial,edit,description FROM {ek_ireports} WHERE pcode=:p";
-                $irep = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':p' => $data['project'][0]->pcode));
+                //$query = "SELECT id,serial,edit,description FROM {ek_ireports} WHERE pcode=:p";
+                $irep = $this->extdb->select('ek_ireports', 'r')
+                        ->fields('r', ['id', 'serial', 'edit', 'description'])
+                        ->condition('pcode', $pcode)
+                        ->execute();
+                //->query($query, array(':p' => $data['project'][0]->pcode));
                 $report_list = array();
                 $data['reports'][0] = (object) array();
                 while ($d = $irep->fetchObject()) {
@@ -721,9 +735,10 @@ class ProjectController extends ControllerBase {
              * shipment table
              */
             if (in_array(4, $sections)) {
-                $query = "SELECT * from {ek_project_shipment} WHERE pcode=:p";
-                $data['logistic'] = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':p' => $pcode))->fetchAll();
+                $data['logistic'] = $this->extdb->select('ek_project_shipment', 's')
+                                ->fields('s')
+                                ->condition('pcode', $pcode)
+                                ->execute()->fetchAll();
 
                 /*
                  * create a link to edit first_ship
@@ -772,8 +787,12 @@ class ProjectController extends ControllerBase {
                     /*
                      * extact receiving
                      */
-                    $query = "SELECT id,serial,head,ddate,status,supplier FROM {ek_logi_receiving}  WHERE pcode=:p AND type=:t ";
-                    $deliveries = Database::getConnection('external_db', 'external_db')->query($query, array(':p' => $pcode, ':t' => 'RR'));
+
+                    $deliveries = $this->extdb->select('ek_logi_receiving', 'r')
+                            ->fields('r', ['id', 'serial', 'head', 'ddate', 'status', 'supplier'])
+                            ->condition('pcode', $pcode)
+                            ->condition('type', 'RR')
+                            ->execute();
 
                     $delivery_list = array();
                     $i = 0;
@@ -782,13 +801,11 @@ class ProjectController extends ControllerBase {
                     while ($delivery = $deliveries->fetchObject()) {
                         $href = Url::fromRoute('ek_logistics_receiving_print_share', ['id' => $delivery->id])->toString();
                         $link = ('<a title="' . $this->t('pdf') . '" href="' . $href . '" class="blue" >' . $this->t('print') . '</a>');
-                        $client = Database::getConnection('external_db', 'external_db')
-                                        ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $delivery->supplier))->fetchField();
 
                         $delivery_list[$i] = array(
                             'serial' => $delivery->serial,
                             'status' => $delivery_status[$delivery->status],
-                            'client' => $client,
+                            'client' => $ab[$delivery->supplier],
                             'date' => $delivery->ddate,
                             'url' => $link,
                         );
@@ -799,9 +816,11 @@ class ProjectController extends ControllerBase {
                     /*
                      * extact deliveries
                      */
-                    $query = "SELECT id,serial,head,ddate,status,client FROM {ek_logi_delivery}  WHERE pcode=:p ";
-                    $deliveries = Database::getConnection('external_db', 'external_db')->query($query, array(':p' => $pcode));
 
+                    $deliveries = $this->extdb->select('ek_logi_delivery', 'd')
+                            ->fields('d', ['id', 'serial', 'head', 'ddate', 'status', 'client'])
+                            ->condition('pcode', $pcode)
+                            ->execute();
                     $delivery_list = array();
                     $i = 0;
                     $delivery_status = array('0' => $this->t('open'), '1' => $this->t('printed'), '2' => $this->t('invoiced'), '3' => $this->t('posted'));
@@ -809,13 +828,11 @@ class ProjectController extends ControllerBase {
                     while ($delivery = $deliveries->fetchObject()) {
                         $href = Url::fromRoute('ek_logistics_delivery_print_share', ['id' => $delivery->id])->toString();
                         $link = ('<a title="' . $this->t('pdf') . '" href="' . $href . '" class="blue" >' . $this->t('print') . '</a>');
-                        $client = Database::getConnection('external_db', 'external_db')
-                                        ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $delivery->client))->fetchField();
 
                         $delivery_list[$i] = array(
                             'serial' => $delivery->serial,
                             'status' => $delivery_status[$delivery->status],
-                            'client' => $client,
+                            'client' => $ab[$delivery->client],
                             'date' => $delivery->ddate,
                             'url' => $link,
                         );
@@ -830,9 +847,11 @@ class ProjectController extends ControllerBase {
              * finance table
              */
             if (in_array(5, $sections)) {
-                $query = "SELECT * from {ek_project_finance} WHERE pcode=:p";
-                $data['finance'] = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':p' => $pcode))
+                //$query = "SELECT * from {ek_project_finance} WHERE pcode=:p";
+                $data['finance'] = $this->extdb->select('ek_project_finance', 'f')
+                        ->fields('f')
+                        ->condition('pcode', $pcode)
+                        ->execute()
                         ->fetchAll();
 
                 if ($this->moduleHandler->moduleExists('ek_finance')) {
@@ -847,10 +866,14 @@ class ProjectController extends ControllerBase {
                     /*
                      * extact PO list
                      */
-                    //NOTE: PO are not filtered by COID access here. TODO?
-                    $query = "SELECT id,serial,status,head,currency,date,due,amount,amountbc FROM {ek_sales_purchase} "
-                            . "WHERE pcode=:p order by id";
-                    $pos = Database::getConnection('external_db', 'external_db')->query($query, array(':p' => $pcode));
+                    // @TODO NOTE: PO are not filtered by COID access here
+
+                    $pos = $this->extdb->select('ek_sales_purchase', 'p')
+                            ->fields('p')
+                            ->condition('pcode', $pcode)
+                            ->orderBy('id')
+                            ->execute();
+
                     $po_list = array();
                     $i = 0;
                     $po_status = array(t('unpaid'), $this->t('paid'), $this->t('partially paid'));
@@ -900,9 +923,12 @@ class ProjectController extends ControllerBase {
                     /*
                      * extact Quote list
                      */
-                    $query = "SELECT id,serial,status,currency,date,amount from {ek_sales_quotation} "
-                            . "WHERE pcode=:p order by id";
-                    $quotes = Database::getConnection('external_db', 'external_db')->query($query, array(':p' => $pcode));
+
+                    $quotes = $this->extdb->select('ek_sales_quotation', 'q')
+                            ->fields('q')
+                            ->condition('pcode', $pcode)
+                            ->orderBy('id')
+                            ->execute();
                     $quote_list = array();
                     $i = 0;
                     $quote_status = array(t('open'), $this->t('printed'), $this->t('invoiced'));
@@ -929,11 +955,12 @@ class ProjectController extends ControllerBase {
                     /*
                      * extact Invoice list
                      */
-                    $query = "SELECT id,serial,head,status,currency,date,due,amount,amountbase "
-                            . "FROM {ek_sales_invoice} "
-                            . "WHERE pcode=:p order by id";
-                    $invoices = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':p' => $pcode));
+
+                    $invoices = $this->extdb->select('ek_sales_invoice', 'i')
+                            ->fields('i')
+                            ->condition('pcode', $pcode)
+                            ->orderBy('id')
+                            ->execute();
                     $invoice_list = array();
                     $i = 0;
                     $invoice_status = array(t('unpaid'), $this->t('paid'), $this->t('partially paid'));
@@ -986,26 +1013,33 @@ class ProjectController extends ControllerBase {
                      * extact Expenses
                      */
                     $chart = $fsettings->get('chart');
-                    $query = "SELECT sum(amount) FROM {ek_expenses}  WHERE pcode=:p AND class like :c";
-                    $a = array(':p' => $pcode, ':c' => $chart['cos'] . '%');
-                    $exp5 = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-                    $data['finance'][0]->expenses5 = $baseCurrency . ' ' . number_format($exp5, 2);
-                    $query = "SELECT sum(amount) FROM {ek_expenses}  WHERE pcode=:p AND (class like :c1 or class like :c2)";
-                    $a = array(':p' => $pcode, ':c1' => $chart['expenses'] . '%', ':c2' => $chart['other_expenses'] . '%');
-                    $exp6 = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-                    $data['finance'][0]->expenses6 = $baseCurrency . ' ' . number_format($exp6, 2);
 
+                    $query = $this->extdb->select('ek_expenses', 'e')
+                            ->condition('pcode', $pcode)
+                            ->condition('class', $chart['cos'] . '%', 'LIKE');
+                    $query->addExpression('SUM(amount)', 'sumValue');
+                    $exp5 = $query->execute()->fetchObject()->sumValue;
+                    $data['finance'][0]->expenses5 = $baseCurrency . ' ' . number_format($exp5, 2);
+
+                    $query = $this->extdb->select('ek_expenses', 'e');
+                    $condition = $query->orConditionGroup()
+                            ->condition('class', $chart['expenses'] . '%', 'LIKE')
+                            ->condition('class', $chart['other_expenses'] . '%', 'LIKE');
+                    $query->condition($condition)->condition('pcode', $pcode);
+                    $query->addExpression('SUM(amount)', 'sumValue');
+                    $exp6 = $query->execute()->fetchObject()->sumValue;
+                    $data['finance'][0]->expenses6 = $baseCurrency . ' ' . number_format($exp6, 2);
                     $data['finance'][0]->expenses = $baseCurrency . ' ' . number_format($exp5 + $exp6, 2);
 
 
                     /*
                      * extact Memos
                      */
-                    $query = "SELECT id,serial,entity,date,status,value,currency,value_base,mission "
-                            . "FROM {ek_expenses_memo} "
-                            . "WHERE pcode=:p ";
-                    $memos = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':p' => $pcode));
+
+                    $memos = $this->extdb->select('ek_expenses_memo', 'm')
+                            ->fields('m')
+                            ->condition('pcode', $pcode)
+                            ->execute();
 
                     $memo_list = array();
                     $i = 0;
@@ -1176,6 +1210,7 @@ class ProjectController extends ControllerBase {
      *
      */
     public function periodicalupdater(Request $request) {
+
         $id = $request->query->get('id');
         $qfield = $request->query->get('query');
         // filter user to avoid direct access to data by entering the link in address bar
@@ -1185,8 +1220,7 @@ class ProjectController extends ControllerBase {
         if ($access) {
 
             //doc query
-            $querydoc = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_project_documents', 'd');
+            $querydoc = Database::getConnection('external_db', 'external_db')->select('ek_project_documents', 'd');
             $querydoc->fields('d', ['id', 'fid', 'filename', 'sub_folder', 'uri', 'date', 'comment', 'size']);
             $querydoc->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
             $querydoc->fields('p', ['pcode', 'owner']);
@@ -1200,23 +1234,21 @@ class ProjectController extends ControllerBase {
                 case 'fields':
                     $fields = array();
                     $prio = array(0 => '', 1 => $this->t('low'), 2 => $this->t('medium'), 3 => $this->t('high'));
-                    $query = "SELECT status,priority from {ek_project} WHERE id=:id";
-                    $data = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':id' => $id))
-                            ->fetchObject();
 
+                    $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
+                    $query->fields('p');
+                    $query->leftJoin('ek_project_description', 'd', 'd.pcode = p.pcode');
+                    $query->fields('d');
+                    $query->leftJoin('ek_project_finance', 'f', 'f.pcode = p.pcode');
+                    $query->fields('f');
+                    $query->leftJoin('ek_project_shipment', 's', 's.pcode = p.pcode');
+                    $query->fields('s');
+                    $data = $query->execute()->fetchObject();
                     $fields['status'] = $data->status;
                     $fields['status_container'] = $data->status;
                     $fields['priority'] = $prio[$data->priority];
 
                     if (in_array(1, $sections)) {
-                        $queryfield = Database::getConnection('external_db', 'external_db')
-                                ->select('ek_project_description', 'd');
-                        $queryfield->fields('d');
-                        $queryfield->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
-                        $queryfield->fields('p');
-                        $queryfield->condition('p.id', $id);
-                        $data = $queryfield->execute()->fetchObject();
 
                         if ($data) {
                             $fields['submission'] = $data->submission;
@@ -1237,8 +1269,7 @@ class ProjectController extends ControllerBase {
                             $fields['task_3'] = $data->task_3;
                             if ($data->supplier_offer != '') {
                                 $array = explode(',', $data->supplier_offer);
-                                $query = Database::getConnection('external_db', 'external_db')
-                                        ->select('ek_address_book', 'ab');
+                                $query = Database::getConnection('external_db', 'external_db')->select('ek_address_book', 'ab');
                                 $query->fields('ab', ['id', 'name']);
                                 $query->condition('id', $array, 'IN');
                                 $suppliers = $query->execute();
@@ -1253,14 +1284,7 @@ class ProjectController extends ControllerBase {
                     }
 
                     if (in_array(5, $sections)) {
-                        $queryfield = Database::getConnection('external_db', 'external_db')
-                                ->select('ek_project_finance', 'd');
-                        $queryfield->fields('d');
-                        $queryfield->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
-                        $queryfield->fields('p');
-                        $queryfield->condition('p.id', $id);
 
-                        $data = $queryfield->execute()->fetchObject();
                         if ($data) {
                             $fields['payment_terms'] = $data->payment_terms;
                             $fields['purchase_value'] = is_numeric($v = $data->purchase_value) ? number_format($v, 2) : $v;
@@ -1283,13 +1307,6 @@ class ProjectController extends ControllerBase {
                         }
                     }
                     if (in_array(4, $sections)) {
-                        $queryfield = Database::getConnection('external_db', 'external_db')
-                                ->select('ek_project_shipment', 'd');
-                        $queryfield->fields('d');
-                        $queryfield->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
-                        $queryfield->fields('p');
-                        $queryfield->condition('p.id', $id);
-                        $data = $queryfield->execute()->fetchObject();
 
                         if ($data) {
                             $fields['first_ship'] = $data->first_ship;
@@ -1449,22 +1466,25 @@ class ProjectController extends ControllerBase {
         $today = time() - 86400;
         if (isset($id)) {
 
-            //$query = "SELECT uid,name from {users_field_data}";
-            //$users = db_query($query)->fetchAllKeyed();
+
             $query = Database::getConnection()->select('users_field_data', 'u');
             $query->fields('u', ['uid', 'name']);
             $users = $query->execute()->fetchAllKeyed();
             $uid = \Drupal::currentUser()->id();
-            $query = 'SELECT t.uid,t.stamp,action  '
-                    . 'FROM {ek_project_tracker} t '
-                    . 'INNER JOIN {ek_project} p ON t.pcode=p.pcode '
-                    . 'WHERE id =:i ORDER by stamp DESC';
-            $a = array(':i' => $id);
-            $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
-            $t1 = "<div><b>--- [" . $this->t('Today') . "] ---</b></div>";
-            $t2 = "<div><b>--- [" . $this->t('Earlier') . "] ---</b></div>";
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project_tracker', 't')
+                    ->fields('t', ['uid', 'stamp', 'action'])
+                    ->condition('id', $id);
+            $query->innerJoin('ek_project', 'p', 't.pcode=p.pcode');
+            $query->orderBy('stamp', "DESC");
+            $data = $query->execute();
+
+
+            $t1 = "<h3>--- [" . $this->t('Today') . "] ---</h3>";
+            $t2 = "<h3>--- [" . $this->t('Earlier') . "] ---</h3>";
             $first = '';
             $i = 0;
+            $name_ = '';
 
             while ($d = $data->fetchObject()) {
                 if ($d->uid != $uid) {
@@ -1474,17 +1494,21 @@ class ProjectController extends ControllerBase {
                 }
 
                 $on = date('l jS \of F Y h:i A', $d->stamp);
-                //$t.= '<li>' . $d->action . ' <span title="' . $on . '">(' . $name . ')</span></li>';
 
                 if ($i == 0) {
                     $first = str_replace('edit', '', $d->action);
                     $first = str_replace(' ', '_', trim($first));
                 }
 
-                if ($d->stamp >= $today) {
-                    $t1 .= '<li>' . $d->action . ' <span title="' . $on . '">(' . $name . ')</span></li>';
-                } else {
-                    $t2 .= '<li>' . $d->action . ' <span title="' . $on . '">(' . $name . ')</span></li>';
+                if (strcmp($name, $name_) || strcmp($d->action, $action)) {
+                    //don't show duplicate lines
+                    $name_ = $name;
+                    $action = $d->action;
+                    if ($d->stamp >= $today) {
+                        $t1 .= '<li>' . $action . '  &nbsp<span title="' . $on . '">(' . $name_ . ')</span></li>';
+                    } else {
+                        $t2 .= '<li>' . $action . '  &nbsp<span title="' . $on . '">(' . $name_ . ')</span></li>';
+                    }
                 }
                 $i++;
             }
@@ -1564,15 +1588,18 @@ class ProjectController extends ControllerBase {
      *
      */
     public function deletefile($id) {
-        $query = 'SELECT filename FROM {ek_project_documents} WHERE id=:id';
+
         $file = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $id))
-                ->fetchField();
-        $content = array('content' =>
-            array('#markup' =>
-                "<p><a href='delete_file_confirmed/" . $id . "' class='use-ajax'>"
-                . $this->t('delete') . "</a> " . $file . "</p>")
-        );
+                        ->select('ek_project_documents', 'd')
+                        ->fields('d', ['filename'])
+                        ->condition('id', $id)
+                        ->execute()->fetchField();
+        $content = ['content' =>
+            ['#markup' =>
+                "<p>" . $file . "</p>"
+                . "<a href='delete_file_confirmed/" . $id . "' class='use-ajax'>"
+                . $this->t('delete') . "</a>"]
+        ];
 
         $response = new AjaxResponse();
 
@@ -1596,14 +1623,14 @@ class ProjectController extends ControllerBase {
     public function deleteConfirmed($id) {
         $response = new Response('', 204); //default return response
 
-        $query = "SELECT d.pcode,filename,uri,d.deny, p.id from {ek_project_documents} d "
-                . "LEFT JOIN {ek_project} p "
-                . "ON d.pcode = p.pcode WHERE d.id=:f";
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project_documents', 'd')
+                ->fields('d', ['filename', 'pcode', 'uri', 'deny'])
+                ->condition('d.id', $id);
+        $query->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
+        $query->fields('p', ['id']);
+        $p = $query->execute()->fetchObject();
 
-        $p = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':f' => $id))
-                ->fetchObject();
-        //control project access
         if (ProjectData::validate_access($p->id)) {
 
             //control deny access
@@ -1760,8 +1787,6 @@ class ProjectController extends ControllerBase {
                 $data = $query->execute();
                 $notify = explode(',', $data->fetchField());
                 $list = '';
-                //$query = "SELECT uid,name from {users_field_data}";
-                //$users = db_query($query)->fetchAllKeyed();
                 $query = Database::getConnection()->select('users_field_data', 'u');
                 $query->fields('u', ['uid', 'name']);
                 $users = $query->execute()->fetchAllKeyed();
@@ -1809,9 +1834,11 @@ class ProjectController extends ControllerBase {
      * @return array 1 = follow 0 = do not follow
      */
     public function edit_notify_me() {
-        $query = "SELECT notify FROM {ek_project} WHERE id=:id";
-        $notify = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $_POST['id']))->fetchField();
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project', 'p')
+                    ->fields('p', ['notify'])
+                    ->condition('id', $_POST['id']);
+        $notify = $query->execute()->fetchField();
         $action = 0;
         if ($notify == null) {
             $notify = \Drupal::currentUser()->id();
@@ -1924,10 +1951,62 @@ class ProjectController extends ControllerBase {
 
     /**
      * Create or edit a task
-     * Currently the task form is called via modal dialog
+     * Currently the task form is called via off canvas dialog
      */
-    public function TaskProject(Request $request) {
-        return array();
+    public function TaskProject($pid, $id) {
+        if (ProjectData::validate_access($pid, \Drupal::currentUser()->id())) {
+            $access = AccessCheck::GetCountryByUser();
+            $param = [];
+            $param['pid'] = $pid;
+            $param['id'] = $id;
+            $param['delete'] = \Drupal::currentUser()->hasPermission('delete_project_task');
+            if ($id != null && $id > 0) {
+                // edit
+                $param['edit'] = true;
+
+                $query = $this->extdb->select('ek_project_tasks', 't');
+                $query->leftJoin('ek_project', 'p', 'p.pcode=t.pcode');
+                $or1 = $query->orConditionGroup();
+                $or1->condition('cid', $access, 'IN');
+
+                $param['data'] = $query
+                        ->fields('t')
+                        ->fields('p', ['id', 'pcode'])
+                        ->condition($or1)
+                        ->condition('p.id', $pid, '=')
+                        ->condition('t.id', $id, '=')
+                        ->execute()
+                        ->fetchObject();
+
+                $param['owner'] = (\Drupal::currentUser()->id() == $param['data']->uid) ? 1 : 0;
+            } else {
+                // new
+                $param['edit'] = false;
+                $param['data'] = $this->extdb->select('ek_project', 'p')
+                        ->fields('p', ['pcode'])
+                        ->condition('id', $pid)
+                        ->execute()
+                        ->fetchObject();
+            }
+
+            return $this->formBuilder->getForm('Drupal\ek_projects\Form\TaskProject', $param);
+        } else {
+            $url = Url::fromRoute('ek_projects_view', ['id' => $pid])->toString();
+            $items['type'] = 'edit';
+            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', array('@document' => $this->t('Task')))];
+            $items['description'] = ['#markup' => $this->t('Access denied')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">Project</a>.', ['@url' => $url])];
+            $build = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ];
+
+            return $build;
+        }
     }
 
     /**
@@ -1938,6 +2017,10 @@ class ProjectController extends ControllerBase {
 
     public function TaskList($pcode) {
         $header = array(
+            'color' => array(
+                'data' => '',
+                'class' => array(RESPONSIVE_PRIORITY_LOW),
+            ),
             'event' => array(
                 'data' => $this->t('Event'),
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
@@ -1961,8 +2044,7 @@ class ProjectController extends ControllerBase {
             'operations' => '',
         );
         $options = array();
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_project_tasks', 't');
+        $query = $this->extdb->select('ek_project_tasks', 't');
         $query->join('ek_project', 'p', 'p.pcode=t.pcode');
         $data = $query->fields('t', array('id', 'event', 'task', 'start', 'end', 'uid', 'gid', 'completion_rate', 'color'))
                 ->fields('p', array('id'))
@@ -1977,8 +2059,6 @@ class ProjectController extends ControllerBase {
             if (\Drupal::currentUser()->id() == $r->uid) {
                 $name = $this->t('Myself');
             } else {
-                //$query = "SELECT name from {users_field_data} WHERE uid=:u";
-                //$name = db_query($query, array(':u' => $r->uid))->fetchField();
                 $acc = \Drupal\user\Entity\User::load($r->uid);
                 $name = '';
                 if ($acc) {
@@ -1992,52 +2072,63 @@ class ProjectController extends ControllerBase {
                 $status = $this->t('done') . ': ' . $r->completion_rate . ' %';
             }
 
-            $options[$r->id] = array(
-                'event' => array('data' => ['#markup' => $r->event]),
-                'task' => ['data' => ['#markup' => $r->task], 'style' => ['background-color:' . $r->color]],
+            $task = $r->task;
+            if (strlen($task) > 30) {
+                $task = substr($task, 0, 30) . '...';
+            }
+            $options[$r->id] = [
+                'color' => ['data' => ['#markup' => ''], 'style' => ['background-color:' . $r->color]],
+                'event' => ['data' => ['#markup' => $r->event]],
+                'task' => ['data' => ['#markup' => $task], 'title' => $r->task],
                 'period' => ['data' => ['#markup' => $period]],
                 'user' => $name,
                 'status' => ['data' => ['#markup' => $status]],
-            );
+            ];
 
 
-            $param_edit = 'task|' . $r->p_id . '|' . $r->id;
-            $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit]);
-            /* */
-            $links['edit'] = array(
+            $destination = ['destination' => 'projects/project/' . $r->p_id . '?s2=true#ps2'];
+            $link = Url::fromRoute('ek_projects_task', ['pid' => $r->p_id, 'id' => $r->id], ['query' => $destination]);
+            $links['form'] = [
                 'title' => $this->t('Edit'),
                 'url' => $link,
-                'attributes' => array('class' => array('use-ajax'))
-            );
+                'attributes' => [
+                    'class' => ['use-ajax'],
+                    'data-dialog-type' => 'dialog',
+                    'data-dialog-renderer' => 'off_canvas',
+                    'data-dialog-options' => Json::encode([
+                        'width' => '30%',
+                    ]),
+                ]
+            ];
             if (\Drupal::currentUser()->hasPermission('delete_project_task')) {
-                $links['del'] = array(
+                $links['del'] = [
                     'title' => $this->t('Delete'),
                     'url' => Url::fromRoute('ek_projects_task_delete', ['id' => $r->id]),
-                );
+                ];
             }
 
-            $options[$r->id]['operations']['data'] = array(
+            $options[$r->id]['operations']['data'] = [
                 '#type' => 'operations',
                 '#links' => $links,
-            );
+            ];
         }
 
 
-        $build['tasks_table'] = array(
+        $build['tasks_table'] = [
             '#type' => 'table',
             '#title' => $this->t('Tasks') . ' ' . $pcode,
             '#header' => $header,
             '#rows' => $options,
-            '#attributes' => array('id' => 'tasks_table'),
+            '#attributes' => ['id' => 'tasks_table'],
             '#empty' => $this->t('No task available'),
-            '#attached' => array(
-                'library' => array('ek_projects/ek_projects_css'),
-            ),
-        );
+            '#attached' => [
+                'library' => ['ek_projects/ek_projects_css'],
+            ],
+        ];
 
-        $build['pager'] = array(
+        $build['pager'] = [
             '#type' => 'pager',
-        );
+        ];
 
         return $build;
     }
