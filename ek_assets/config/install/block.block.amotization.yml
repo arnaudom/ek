@@ -6,7 +6,10 @@ dependencies:
     - ek_assets
     - system
     - user
+  theme:
+    - bartik
 id: assetsamortizationstatuslist
+theme: bartik
 region: content
 weight: 0
 provider: null
