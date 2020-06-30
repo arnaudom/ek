@@ -1,8 +1,8 @@
 <?php
 
+use DateTime;
 use Drupal\Core\Database\Database;
 use Drupal\ek_admin\Access\AccessCheck;
-
 
 $param = unserialize($param);
 $coid = $param['coid'];
@@ -157,10 +157,12 @@ foreach($accounts_exp_class as $key => $name) {
         for ($m = 1; $m <= 12; $m++) {
             if ($m < 10) {
                 $date1 = $year . "-0" . $m . "-01";
-                $date2 = $year . "-0" . $m . "-31";
+                $d = new DateTime($date1);
+                $date2 = $d->format('Y-m-t');
             } else {
                 $date1 = $year . "-" . $m . "-01";
-                $date2 = $year . "-" . $m . "-31";
+                $d = new DateTime($date1);
+                $date2 = $d->format('Y-m-t');
             }
 
             // Get the type sum               
@@ -419,10 +421,12 @@ foreach($accounts_exp_class as $key => $name) {
         for ($m = 1; $m <= 12; $m++) {
             if ($m < 10) {
                 $date1 = $year . "-0" . $m . "-01";
-                $date2 = $year . "-0" . $m . "-31";
+                $d = new DateTime($date1);
+                $date2 = $d->format('Y-m-t');
             } else {
                 $date1 = $year . "-" . $m . "-01";
-                $date2 = $year . "-" . $m . "-31";
+                $d = new DateTime($date1);
+                $date2 = $d->format('Y-m-t');
             }
             // Get the type sum detail
             //by allocation
@@ -651,10 +655,12 @@ foreach($accounts_income_class as $key => $name) {
         for ($m = 1; $m <= 12; $m++) {
             if ($m < 10) {
                 $date1 = $year . "-0" . $m . "-01";
-                $date2 = $year . "-0" . $m . "-31";
+                $d = new DateTime($date1);
+                $date2 = $d->format('Y-m-t');
             } else {
                 $date1 = $year . "-" . $m . "-01";
-                $date2 = $year . "-" . $m . "-31";
+                $d = new DateTime($date1);
+                $date2 = $d->format('Y-m-t');
             }
 
             //get the sum detail
@@ -874,10 +880,12 @@ $sum_nyr = 0;
 for ($m = 1; $m <= 12; $m++) {
     if ($m < 10) {
         $date1 = $year . "-0" . $m . "-01";
-        $date2 = $year . "-0" . $m . "-31";
+        $d = new DateTime($date1);
+        $date2 = $d->format('Y-m-t');
     } else {
         $date1 = $year . "-" . $m . "-01";
-        $date2 = $year . "-" . $m . "-31";
+        $d = new DateTime($date1);
+        $date2 = $d->format('Y-m-t');
     }
 
     // Get the sum of payments not received 
@@ -934,10 +942,12 @@ $sum_np = 0;
 for ($m = 1; $m <= 12; $m++) {
     if ($m < 10) {
         $date1 = $year . "-0" . $m . "-01";
-        $date2 = $year . "-0" . $m . "-31";
+        $d = new DateTime($date1);
+        $date2 = $d->format('Y-m-t');
     } else {
         $date1 = $year . "-" . $m . "-01";
-        $date2 = $year . "-" . $m . "-31";
+        $d = new DateTime($date1);
+        $date2 = $d->format('Y-m-t');
     }
 
     $query = Database::getConnection('external_db', 'external_db')
@@ -990,10 +1000,12 @@ $sum_np = 0;
 for ($m = 1; $m <= 12; $m++) {
     if ($m < 10) {
         $date1 = $year . "-0" . $m . "-01";
-        $date2 = $year . "-0" . $m . "-31";
+        $d = new DateTime($date1);
+        $date2 = $d->format('Y-m-t');
     } else {
         $date1 = $year . "-" . $m . "-01";
-        $date2 = $year . "-" . $m . "-31";
+        $d = new DateTime($date1);
+        $date2 = $d->format('Y-m-t');
     }
 
 $query = Database::getConnection('external_db', 'external_db')
@@ -1047,10 +1059,12 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Internal t
 for ($m = 1; $m <= 12; $m++) {
     if ($m < 10) {
         $date1 = $year . "-0" . $m . "-01";
-        $date2 = $year . "-0" . $m . "-31";
+        $d = new DateTime($date1);
+        $date2 = $d->format('Y-m-t');
     } else {
         $date1 = $year . "-" . $m . "-01";
-        $date2 = $year . "-" . $m . "-31";
+        $d = new DateTime($date1);
+        $date2 = $d->format('Y-m-t');
     }
     $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_expenses_memo', 'm');
@@ -1097,10 +1111,12 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Internal t
 for ($m = 1; $m <= 12; $m++) {
     if ($m < 10) {
         $date1 = $year . "-0" . $m . "-01";
-        $date2 = $year . "-0" . $m . "-31";
+        $d = new DateTime($date1);
+        $date2 = $d->format('Y-m-t');
     } else {
         $date1 = $year . "-" . $m . "-01";
-        $date2 = $year . "-" . $m . "-31";
+        $d = new DateTime($date1);
+        $date2 = $d->format('Y-m-t');
     }
     $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_expenses_memo', 'm');

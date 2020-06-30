@@ -2,7 +2,7 @@
 
 namespace Drupal\ek_finance;
 
-use Drupal\Core\Database\Connection;
+use DateTime;
 use Drupal\Core\Url;
 use Drupal\Core\Database\Database;
 use Drupal\ek_finance\FinanceSettings;
@@ -2720,7 +2720,8 @@ class Journal
             $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
             $company = new \Drupal\ek_admin\CompanySettings($coid);
             $y = $company->get('fiscal_year') - 1;
-            $from = $y . '-' . $company->get('fiscal_month') . '-31';
+            $dl = new DateTime($y . '-' . $company->get('fiscal_month') . '-01');
+            $from = $dl->format('Y-m-t');
             $aid = $company->get('CurrencyGainLoss');
 
             $query = Database::getConnection('external_db', 'external_db')
@@ -2855,8 +2856,7 @@ class Journal
                 }
             }
             $items['companies'][$coid . ' ' . $name]['total'] = $total;
-        }
-     
+        } 
         return $items;
     }
     
