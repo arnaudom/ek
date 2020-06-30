@@ -53,17 +53,14 @@ while ($row = $data->fetchObject())
                        $params['uid'] =  $user;
                        $params['assign'] = $row->uid;
                        $params['serial'] = $row['pcode'];
-                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
+                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
                        $params['id'] = $row->id;
-                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
+                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
                        $params['end'] = date('Y-m-d', $row->end);
                        $params['task'] = $row->task;
 
                        self::send_mail($params);
                     }
-
-
-
             }//weekly
 
 
@@ -82,15 +79,14 @@ while ($row = $data->fetchObject())
                        $params['uid'] =  $user;
                        $params['assign'] = $row->uid;
                        $params['serial'] = $row->pcode;
-                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
+                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
                        $params['id'] = $row->id;
-                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
+                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
                        $params['end'] = date('Y-m-d', $row->end);
                        $params['task'] = $row->task;
 
                        self::send_mail($params);
                     }
-
             }//daily       
 
         /*
@@ -108,17 +104,14 @@ while ($row = $data->fetchObject())
                        $params['uid'] =  $user;
                        $params['assign'] = $row->uid;
                        $params['serial'] = $row->pcode;
-                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
+                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
                        $params['id'] = $row->id;
-                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
+                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
                        $params['end'] = date('Y-m-d', $row->end);
                        $params['task'] = $row->task;
 
                        self::send_mail($params);
                     }
-
-
-
             }//5 days 
 
         /*
@@ -136,17 +129,14 @@ while ($row = $data->fetchObject())
                        $params['uid'] =  $user;
                        $params['assign'] = $row->uid;
                        $params['serial'] = $row->pcode;
-                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
+                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
                        $params['id'] = $row->id;
-                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
+                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
                        $params['end'] = date('Y-m-d', $row->end);
                        $params['task'] = $row->task;
 
                        self::send_mail($params);
                     }
-
-
-
             }//3 days         
 
          /*
@@ -164,17 +154,14 @@ while ($row = $data->fetchObject())
                        $params['uid'] =  $user;
                        $params['assign'] = $row->uid;
                        $params['serial'] = $row->pcode;
-                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
+                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
                        $params['id'] = $row->id;
-                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
+                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
                        $params['end'] = date('Y-m-d', $row->end);
                        $params['task'] = $row->task;
 
                        self::send_mail($params);
                     }
-
-
-
             }//3 days        
 
          /*
@@ -192,7 +179,7 @@ while ($row = $data->fetchObject())
                        $params['uid'] =  $user;
                        $params['assign'] = $row->uid;
                        $params['serial'] = $row->pcode;
-                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString();
+                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
                        $params['id'] = $row->id;
                        $params['alert'] = $params['link'];
                        $params['end'] = date('Y-m-d', $row->end);
@@ -200,9 +187,6 @@ while ($row = $data->fetchObject())
 
                        self::send_mail($params);
                     }
-
-
-
             }//expired
     }    
 }//while 

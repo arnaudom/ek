@@ -1,68 +1,68 @@
 /*
-* provide a multi users autocomplete function for field
-*/
+ * provide a multi users autocomplete function for field
+ */
 (function ($, Drupal, drupalSettings) {
 
 
-  Drupal.behaviors.ek_messaging = {
-    attach: function (context, settings) {
-      
-      var rel = '../../';
+    Drupal.behaviors.ek_admin_auto = {
+        attach: function (context, settings) {
 
-        jQuery(function() {
-          function split( val ) {
-          return val.split( /,\s*/ 
-          );
-          }
+            var rel = '../../';
 
-        function extractLast( term ) {
-          return split( term ).pop();
-          }
-        
-        jQuery( "#edit-users" )
-          // don't navigate away from the field on tab when selecting an item
-          .bind( "keydown", function( event ) {
-          if ( event.keyCode === jQuery.ui.keyCode.TAB &&
-          jQuery( this ).data( "ui-autocomplete" ).menu.active ) {
-          event.preventDefault();
-          }
-          })
-          .autocomplete({
-          source: function( request, response ) {
-          jQuery.getJSON( rel + "ek_admin/user/autocomplete", {
-          q: extractLast( request.term )
-          }, response );
-          },
-          search: function() {
-          // custom minLength
-          var term = extractLast( this.value );
-          if ( term.length < 2 ) {
-          return false;
-          }
-          },
-          focus: function() {
-          // prevent value inserted on focus
-          return false;
-          },
-          select: function( event, ui ) {
-          var terms = split( this.value );
-          // remove the current input
-          terms.pop();
-          // add the selected item
-          terms.push( ui.item.value );
-          // add placeholder to get the comma-and-space at the end - used for multi select
-          terms.push( "" );
-          this.value = terms.join( ", " );
-          
-          return false;
-          }
-          });
-        });
+            jQuery(function () {
+                function split(val) {
+                    return val.split(/,\s*/
+                            );
+                }
 
-  } //attach
-    
+                function extractLast(term) {
+                    return split(term).pop();
+                }
 
-  }; //bahaviors
+                jQuery("#edit-users")
+                        // don't navigate away from the field on tab when selecting an item
+                        .bind("keydown", function (event) {
+                            if (event.keyCode === jQuery.ui.keyCode.TAB &&
+                                    jQuery(this).data("ui-autocomplete").menu.active) {
+                                event.preventDefault();
+                            }
+                        })
+                        .autocomplete({
+                            source: function (request, response) {
+                                jQuery.getJSON(rel + "ek_admin/user/autocomplete", {
+                                    q: extractLast(request.term)
+                                }, response);
+                            },
+                            search: function () {
+                                // custom minLength
+                                var term = extractLast(this.value);
+                                if (term.length < 2) {
+                                    return false;
+                                }
+                            },
+                            focus: function () {
+                                // prevent value inserted on focus
+                                return false;
+                            },
+                            select: function (event, ui) {
+                                var terms = split(this.value);
+                                // remove the current input
+                                terms.pop();
+                                // add the selected item
+                                terms.push(ui.item.value);
+                                // add placeholder to get the comma-and-space at the end - used for multi select
+                                terms.push("");
+                                this.value = terms.join(", ");
+
+                                return false;
+                            }
+                        });
+            });
+
+        } //attach
+
+
+    }; //bahaviors
 
 
 })(jQuery, Drupal, drupalSettings);

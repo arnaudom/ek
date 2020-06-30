@@ -236,15 +236,15 @@ App
 }
 
 .ek_messages {
-    background-color: #E0ECF8;
-    color: #A9BCF5;
+    background-color: #E0ECF8 !important;
+    color: #A9BCF5 !important;
     border: 5px solid;
     border-radius: 5px;
     padding: 20px;
 }
 
 .ek_messages p {
-    color: #3276b1;
+    color: #3276b1 !important;
     text-align: center;
 }
 
