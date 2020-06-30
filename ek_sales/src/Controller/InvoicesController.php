@@ -402,10 +402,20 @@ class InvoicesController extends ControllerBase {
                 'url' => Url::fromRoute('ek_sales.invoices.alert', ['id' => $r->id]),
             );
 
-            $links['task'] = array(
+            $destination = ['destination' => '/invoices/list'];
+            $link = Url::fromRoute('ek_sales.invoices.task', ['id' => $r->id], ['query' => $destination]);
+            $links['task'] = [
                 'title' => $this->t('Edit task'),
-                'url' => Url::fromRoute('ek_sales.invoices.task', ['id' => $r->id]),
-            );
+                'url' => $link,
+                'attributes' => [
+                    'class' => ['use-ajax'],
+                    'data-dialog-type' => 'dialog',
+                    'data-dialog-renderer' => 'off_canvas',
+                    'data-dialog-options' => Json::encode([
+                        'width' => '30%',
+                    ]),
+                ]
+            ];
 
             if (\Drupal::currentUser()->hasPermission('print_share_invoice')) {
                 $links['iprint'] = array(
@@ -477,12 +487,12 @@ class InvoicesController extends ControllerBase {
             $options = unserialize($param);
             $access = AccessCheck::GetCompanyByUser();
             $company = implode(',', $access);
-            $status = array('0' => (string) $this->t('unpaid'), '1' => (string) $this->t('paid'), '2' => (string) $this->t('partially paid'));
+            $status = ['0' => (string) $this->t('unpaid'), '1' => (string) $this->t('paid'), '2' => (string) $this->t('partially paid')];
+            $types = ['1' => $this->t('Invoice'), '2' => $this->t('Invoice'), '4' => $this->t('CN'),'5' => $this->t('Proforma')];
             if ($this->moduleHandler->moduleExists('ek_finance')) {
                 $settings = new FinanceSettings();
                 $baseCurrency = $settings->get('baseCurrency');
             }
-
 
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_sales_invoice', 'i');
@@ -516,6 +526,16 @@ class InvoicesController extends ControllerBase {
                     ->condition('i.head', $options['coid'], '=')
                     ->orderBy('i.id', 'ASC')
                     ->execute();
+            
+            $companies = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_company','c')
+                    ->fields('c',['id','name'])
+                    ->execute()->fetchAllKeyed();
+            $abook = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book','a')
+                    ->fields('a',['id','name'])
+                    ->execute()->fetchAllKeyed();
+
             include_once drupal_get_path('module', 'ek_sales') . '/excel_list_invoices.inc';
         }
 
@@ -994,12 +1014,51 @@ class InvoicesController extends ControllerBase {
      *
      */
     public function TaskInvoices(Request $request, $id) {
-        $build['task_invoice'] = $this->formBuilder
-                ->getForm('Drupal\ek_sales\Form\TaskInvoice', $id);
-        $build['#attached'] = array(
-            'library' => array('ek_sales/ek_task'),
-        );
-        return $build;
+        
+        $access = AccessCheck::GetCompanyByUser();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_sales_invoice', 'i');
+        $query->leftJoin('ek_sales_invoice_tasks', 't', 'i.serial=t.serial');
+        $or1 = $query->orConditionGroup();
+        $or1->condition('head', $access, 'IN');
+        $or1->condition('allocation', $access, 'IN');
+
+        $data = $query
+                ->fields('t')
+                ->fields('i', array('serial'))
+                ->condition($or1)
+                ->condition('i.id', $id, '=')
+                ->execute()
+                ->fetchObject();
+        $param = [];
+        $param['delete'] = \Drupal::currentUser()->hasPermission('sales_task');
+        $param['owner'] = (\Drupal::currentUser()->id() == $data->uid) ? 1 : 0;
+        $param['destination'] = $request->query->get('destination');
+        
+        if($data) {
+            $build['task_invoice'] = $this->formBuilder
+                    ->getForm('Drupal\ek_sales\Form\Tasks', $data, 'Invoice',$param);
+            $build['#attached'] = array(
+                'library' => array('ek_sales/ek_task'),
+            );
+            return $build;
+        } else {
+            $url = Url::fromRoute('ek_sales.invoices.tasks_list', [])->toString();
+            $items['type'] = 'edit';
+            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', array('@document' => $this->t('Task')))];
+            $items['description'] = ['#markup' => $this->t('Access denied')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $build = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ];
+        
+            return $build;
+        }
     }
 
     /**
@@ -1009,6 +1068,7 @@ class InvoicesController extends ControllerBase {
      *
      */
     public function ListTaskInvoices() {
+        
         $build['filter'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\SelectTask');
 
         if (isset($_SESSION['taskfilter']['filter'])) {
@@ -1081,67 +1141,87 @@ class InvoicesController extends ControllerBase {
                 $number = "<a title='" . $this->t('view') . "' href='"
                         . Url::fromRoute('ek_sales.invoices.print_html', ['id' => $r->id], [])->toString() . "'>"
                         . $r->serial . "</a>";
-                $url = Url::fromRoute('ek_sales.invoices.task', ['id' => $r->id])->toString();
-                $link = "<a href='" . $url . "'>" . $this->t('edit') . '</a>';
-
-                $data['list'][] = [
+                $destination = ['destination' => '/invoices/tasks_list'];
+                $link = Url::fromRoute('ek_sales.invoices.task', ['id' => $r->id], ['query' => $destination]);
+                $task = $r->task;
+                if (strlen($task) > 30) {
+                    $task = substr($task, 0, 30) . '...';
+                }
+                $ops['form'] = [
+                    'title' => $this->t('Edit'),
+                    'url' => $link,
+                    'attributes' => [
+                        'class' => ['use-ajax'],
+                        'data-dialog-type' => 'dialog',
+                        'data-dialog-renderer' => 'off_canvas',
+                        'data-dialog-options' => Json::encode([
+                            'width' => '30%',
+                        ]),
+                    ]
+                ];
+                $ops[] = ['title' => ''];
+                
+                $data['list'][$r->id] = [
+                    'color' => ['data' => ['#markup' => ''], 'style' => ['background-color:' . $r->color]],
                     'serial' => ['data' => ['#markup' => $number]],
                     'username' => $username,
-                    'task' => ['data' => ['#markup' => $r->task], 'style' => ['background-color:' . $r->color]],
+                    'task' => ['data' => ['#markup' => $task],],
                     'period' => date('Y-m-d', $r->start) . ' -> ' . date('Y-m-d', $r->end),
                     'expired' => $expired,
                     'rate' => $r->completion_rate . ' %',
                     'who' => $who,
                     'notify' => $notify[$r->notify],
-                    'edit' => ['data' => ['#markup' => $link]],
+                    'operations' => ['data' => ['#type' => 'operations','#links' => $ops,]],
                 ];
-            }
+                
+                            }
 
-            $header = array(
-                'reference' => array(
+            $header = [
+                'color' => [
+                    'data' => '',
+                    'class' => array(RESPONSIVE_PRIORITY_LOW),
+                ],
+                'reference' => [
                     'data' => $this->t('Document'),
                     'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
                     'id' => 'serial',
-                ),
-                'username' => array(
+                ],
+                'username' => [
                     'data' => $this->t('Assigned'),
                     'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
                     'id' => 'username',
-                ),
-                'task' => array(
+                ],
+                'task' => [
                     'data' => $this->t('Task'),
-                    'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                    'class' => array(RESPONSIVE_PRIORITY_LOW),
                     'id' => 'task',
-                ),
-                'period' => array(
+                ],
+                'period' => [
                     'data' => $this->t('From -> to'),
                     'id' => 'date',
-                ),
-                'expired' => array(
+                ],
+                'expired' => [
                     'data' => $this->t('Expired'),
                     'class' => array(RESPONSIVE_PRIORITY_LOW),
                     'id' => 'due',
-                ),
-                'completion' => array(
+                ],
+                'completion' => [
                     'data' => $this->t('Completion'),
                     'class' => array(RESPONSIVE_PRIORITY_LOW),
                     'id' => 'completion',
-                ),
-                'who' => array(
+                ],
+                'who' => [
                     'data' => $this->t('Alert who'),
                     'class' => array(RESPONSIVE_PRIORITY_LOW),
                     'id' => 'who',
-                ),
-                'notify' => array(
+                ],
+                'notify' => [
                     'data' => $this->t('Alert when'),
                     'class' => array(RESPONSIVE_PRIORITY_LOW),
                     'id' => 'notify',
-                ),
-                'edit' => array(
-                    'data' => '',
-                    'id' => 'edit',
-                ),
-            );
+                ],
+                'operations' => '',
+            ];
 
 
             $build['invoices_tasks_table'] = array(

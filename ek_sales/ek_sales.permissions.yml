@@ -14,8 +14,8 @@ list_more:
   title: 'Payment data details'
   description: 'List more info about payment, modal.'
 sales_task:
-  title: 'Edit and manage tasks'
-  description: 'Edit tasks for invoices, purchases.'  
+  title: 'Edit tasks'
+  description: 'Edit,delete tasks for invoices, purchases.'  
 create_purchase:
   title: 'Create or edit purchase'
   description: 'Create or edit purchase'    

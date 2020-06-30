@@ -393,11 +393,21 @@ class PurchasesController extends ControllerBase {
                 'title' => $this->t('Set alert [@a]', array('@a' => $alert)),
                 'url' => Url::fromRoute('ek_sales.purchases.alert', ['id' => $r->id]),
             );
-            $links['task'] = array(
+            $destination = ['destination' => '/purchases/list'];
+            $link = Url::fromRoute('ek_sales.purchases.task', ['id' => $r->id], ['query' => $destination]);
+            $links['task'] = [
                 'title' => $this->t('Edit task'),
-                'url' => Url::fromRoute('ek_sales.purchases.task', ['id' => $r->id]),
-            );
-
+                'url' => $link,
+                'attributes' => [
+                    'class' => ['use-ajax'],
+                    'data-dialog-type' => 'dialog',
+                    'data-dialog-renderer' => 'off_canvas',
+                    'data-dialog-options' => Json::encode([
+                        'width' => '30%',
+                    ]),
+                ]
+            ];
+            
             if (\Drupal::currentUser()->hasPermission('print_share_purchase')) {
                 $links['pprint'] = array(
                     'title' => $this->t('Print and share'),
@@ -917,7 +927,7 @@ class PurchasesController extends ControllerBase {
     /**
      * @retun
      *  Debit note assignment form for recording payment
-     * @param $id = id of Debdit note
+     * @param $id = id of Debit note
      *
      */
     public function AssignDebitNote($id) {
@@ -941,17 +951,55 @@ class PurchasesController extends ControllerBase {
 
     /**
      * @retun
-     *  Form for creating a pourchase task
+     *  Form for creating a purchase task
      * @param $id = id of purchase
      *
      */
     public function TaskPurchases(Request $request, $id) {
-        $build['task_purchase'] = $this->formBuilder
-                ->getForm('Drupal\ek_sales\Form\TaskPurchase', $id);
-        $build['#attached'] = array(
-            'library' => array('ek_sales/ek_task'),
-        );
-        return $build;
+        
+        $access = AccessCheck::GetCompanyByUser();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_sales_purchase', 'p');
+        $query->leftJoin('ek_sales_purchase_tasks', 't', 'p.serial=t.serial');
+        $or1 = $query->orConditionGroup();
+        $or1->condition('head', $access, 'IN');
+        $or1->condition('allocation', $access, 'IN');
+
+        $data = $query
+                ->fields('t')
+                ->fields('p', array('serial'))
+                ->condition($or1)
+                ->condition('p.id', $id, '=')
+                ->execute()
+                ->fetchObject();
+        $param = [];
+        $param['delete'] = \Drupal::currentUser()->hasPermission('sales_task');
+        $param['owner'] = (\Drupal::currentUser()->id() == $data->uid) ? 1 : 0;
+        $param['destination'] = $request->query->get('destination');
+        if($data) {
+            $build['task_purchase'] = $this->formBuilder
+                    ->getForm('Drupal\ek_sales\Form\Tasks', $data, 'Purchase',$param);
+            $build['#attached'] = array(
+                'library' => array('ek_sales/ek_task'),
+            );
+            return $build;
+        } else {
+            $url = Url::fromRoute('ek_sales.purchases.tasks_list', [])->toString();
+            $items['type'] = 'edit';
+            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', array('@document' => $this->t('Task')))];
+            $items['description'] = ['#markup' => $this->t('Access denied')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $build = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ];
+        
+            return $build;
+        }
     }
 
     /**
@@ -1034,23 +1082,45 @@ class PurchasesController extends ControllerBase {
                 $number = "<a title='" . $this->t('view') . "' href='"
                         . Url::fromRoute('ek_sales.purchases.print_html', ['id' => $r->id], [])->toString() . "'>"
                         . $r->serial . "</a>";
-                $url = Url::fromRoute('ek_sales.purchases.task', ['id' => $r->id])->toString();
-                $link = "<a href='" . $url . "'>" . $this->t('edit') . '</a>';
+                $destination = ['destination' => '/purchases/tasks_list'];
+                $link = Url::fromRoute('ek_sales.purchases.task', ['id' => $r->id], ['query' => $destination]);
+                $task = $r->task;
+                if (strlen($task) > 30) {
+                    $task = substr($task, 0, 30) . '...';
+                }
+                $ops['form'] = [
+                    'title' => $this->t('Edit'),
+                    'url' => $link,
+                    'attributes' => [
+                        'class' => ['use-ajax'],
+                        'data-dialog-type' => 'dialog',
+                        'data-dialog-renderer' => 'off_canvas',
+                        'data-dialog-options' => Json::encode([
+                            'width' => '30%',
+                        ]),
+                    ]
+                ];
+                $ops[] = ['title' => ''];
 
                 $data['list'][] = [
+                    'color' => ['data' => ['#markup' => ''], 'style' => ['background-color:' . $r->color]],
                     'serial' => ['data' => ['#markup' => $number]],
                     'username' => $username,
-                    'task' => ['data' => ['#markup' => $r->task], 'style' => ['background-color:' . $r->color]],
+                    'task' => ['data' => ['#markup' => $task]],
                     'period' => date('Y-m-d', $r->start) . ' -> ' . date('Y-m-d', $r->end),
                     'expired' => $expired,
                     'rate' => $r->completion_rate . ' %',
                     'who' => $who,
                     'notify' => $notify[$r->notify],
-                    'edit' => ['data' => ['#markup' => $link]],
+                    'operations' => ['data' => ['#type' => 'operations','#links' => $ops,]],
                 ];
             }
 
             $header = array(
+                'color' => [
+                    'data' => '',
+                    'class' => array(RESPONSIVE_PRIORITY_LOW),
+                ],
                 'reference' => array(
                     'data' => $this->t('Document'),
                     'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
@@ -1090,10 +1160,7 @@ class PurchasesController extends ControllerBase {
                     'class' => array(RESPONSIVE_PRIORITY_LOW),
                     'id' => 'notify',
                 ),
-                'edit' => array(
-                    'data' => '',
-                    'id' => 'edit',
-                ),
+                'operations' => '',
             );
 
             $build['purchases_tasks_table'] = array(
