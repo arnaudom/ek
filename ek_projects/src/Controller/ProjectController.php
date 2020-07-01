@@ -2086,7 +2086,7 @@ class ProjectController extends ControllerBase {
             ];
 
 
-            $destination = ['destination' => 'projects/project/' . $r->p_id . '?s2=true#ps2'];
+            $destination = ['destination' => '/projects/project/' . $r->p_id . '?s2=true#ps2'];
             $link = Url::fromRoute('ek_projects_task', ['pid' => $r->p_id, 'id' => $r->id], ['query' => $destination]);
             $links['form'] = [
                 'title' => $this->t('Edit'),
