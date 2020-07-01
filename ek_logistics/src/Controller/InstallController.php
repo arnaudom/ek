@@ -76,16 +76,15 @@ class InstallController extends ControllerBase {
               COMMENT='holds settings by company'
               COLLATE='utf8_general_ci'
               ENGINE=InnoDB";
-
-        try {
-            $query = "INSERT INTO `ek_logi_settings` (`coid`, `settings`) VALUES  (0, '')";           
-            $db = Database::getConnection('external_db', 'external_db')->query($query);
-        } catch (Exception $e) {
-            $markup .= '<br/><b>Caught exception for settings: ' . $e->getMessage() . "</b>\n";
-        }
-        
         $db = Database::getConnection('external_db', 'external_db')->query($query);
+
         if ($db) {
+            try {
+                $query = "INSERT INTO `ek_logi_settings` (`coid`, `settings`) VALUES  (0, '')";
+                $db = Database::getConnection('external_db', 'external_db')->query($query);
+            } catch (Exception $e) {
+                $markup .= '<br/><b>Caught exception for settings: ' . $e->getMessage() . "</b>\n";
+            }
             $markup .= 'Logistics settings table installed <br/>';
         }
 
