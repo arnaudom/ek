@@ -339,9 +339,7 @@ class EditCompanySettings extends FormBase
                     '#rows' => array(),
                 );
 
-                $perm = in_array('administrator', \Drupal::currentUser()->getRoles()) ? 0 : 1;
-
-
+                $perm = \Drupal::currentUser()->hasPermission('administrate_finance') ? 0 : 1;
                 foreach ($Currencies as $currency => $name) {
                     $cname = array(
                         '#id' => 'name-' . $currency . "-$name",
