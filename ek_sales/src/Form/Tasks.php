@@ -54,40 +54,40 @@ class Tasks extends FormBase {
             ];
         }
 
-        $form['edit_doc'] = array(
+        $form['edit_doc'] = [
             '#type' => 'item',
-            '#markup' => $this->t('@doc ref. @p', array('@doc' => $doc, '@p' => $data->serial)),
-        );
+            '#markup' => $this->t('@doc ref. @p', ['@doc' => $doc, '@p' => $data->serial]),
+        ];
 
-        $form['for_serial'] = array(
+        $form['for_serial'] = [
             '#type' => 'hidden',
             '#value' => $data->serial,
-        );
+        ];
 
-        $form['for_doc'] = array(
+        $form['for_doc'] = [
             '#type' => 'hidden',
             '#value' => strtolower($doc),
-        );
+        ];
         
-        $form['destination'] = array(
+        $form['destination'] = [
             '#type' => 'hidden',
             '#value' => $param['destination'],
-        );
+        ];
 
         if ($data->id) {
             // edit 
-            $form['for_id'] = array(
+            $form['for_id'] = [
                 '#type' => 'hidden',
                 '#value' => $data->id,
-            );
+            ];
 
-            $form['delete'] = array(
+            $form['delete'] = [
                 '#type' => 'checkbox',
                 '#title' => $this->t('Delete this task'),
-                '#attributes' => isset($read['delete']) ? array('disabled' => $read['delete']) : null,
-            );
+                '#attributes' => isset($read['delete']) ? ['disabled' => $read['delete']] : null,
+            ];
 
-            $r = isset($data->completion_rate) ? $data->completion_rate : 0;
+            $r = null !== ($data->completion_rate) ? $data->completion_rate : 0;
             $form['completion_rate'] = [
                 '#type' => 'range',
                 '#min' => 0,
@@ -107,92 +107,92 @@ class Tasks extends FormBase {
                 '#prefix' => "<div class='container-inline'>",
             ];
 
-            $form['rate'] = array(
+            $form['rate'] = [
                 '#type' => 'item',
                 '#markup' => $r . " %",
                 '#prefix' => "<div  id='rate'>",
                 '#suffix' => "</div></div>",
-            );
+            ];
         } else {
-            $form['rate'] = array(
+            $form['rate'] = [
                 '#type' => 'hidden',
                 '#value' => 0,
-            );
+            ];
         }
 
-        $form['event'] = array(
+        $form['event'] = [
             '#type' => 'textfield',
             '#title' => $this->t('Event name'),
             '#size' => 25,
             '#maxlength' => 100,
-            '#default_value' => isset($data->event) ? $data->event : null,
-            '#attributes' => isset($read['event']) ? array('readonly' => $read['event']) : null,
+            '#default_value' => null !==$data->event ? $data->event : null,
+            '#attributes' => isset($read['event']) ? ['readonly' => $read['event']] : null,
             '#states' => [
                 'visible' => [":input[name='delete']" => ['checked' => false]],
             ],
-        );
+        ];
 
 
-        $form['uid'] = array(
+        $form['uid'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => \Drupal\ek_admin\Access\AccessCheck::listUsers(1),
             '#required' => true,
-            '#default_value' => isset($data->uid) ? $data->uid : null,
+            '#default_value' => null !== $data->uid ? $data->uid : null,
             '#disabled' => isset($read['uid']) ? $read['uid'] : false,
             '#title' => $this->t('Assigned to'),
             '#states' => [
                 'visible' => [":input[name='delete']" => ['checked' => false]],
             ],
-        );
+        ];
 
-        $form['task'] = array(
+        $form['task'] = [
             '#type' => 'textarea',
             '#rows' => 3,
             '#title' => $this->t('Task description'),
             '#required' => true,
-            '#attributes' => isset($read['task']) ? array('readonly' => $read['task']) : null,
+            '#attributes' => null !== $read['task'] ? ['readonly' => $read['task']] : null,
             '#default_value' => isset($data->task) ? $data->task : null,
             '#states' => [
                 'visible' => [":input[name='delete']" => ['checked' => false]],
             ],
-        );
+        ];
 
 
-        $form['start'] = array(
+        $form['start'] = [
             '#type' => 'date',
             '#id' => 'edit-from',
             '#size' => 12,
             '#required' => true,
-            '#default_value' => isset($data->start) ? date('Y-m-d', $data->start) : date('Y-m-d'),
+            '#default_value' => (null !== $data->start && is_numeric($data->start)) ? date('Y-m-d', $data->start) : date('Y-m-d'),
             '#title' => $this->t('Starting'),
             '#prefix' => "<div class='container-inline'>",
             '#states' => [
                 'visible' => [":input[name='delete']" => ['checked' => false]],
             ],
-        );
+        ];
 
 
-        $form['end'] = array(
+        $form['end'] = [
             '#type' => 'date',
             '#id' => 'edit-to',
             '#size' => 12,
-            '#default_value' => isset($data->end) ? date('Y-m-d', $data->end) : null,
+            '#default_value' => (null !== $data->end && is_numeric($data->end)) ? date('Y-m-d', $data->end) : null,
             '#title' => $this->t('ending'),
             '#suffix' => '</div>',
             '#states' => [
                 'visible' => [":input[name='delete']" => ['checked' => false]],
             ],
-        );
+        ];
 
-        $form['color'] = array(
+        $form['color'] = [
             '#type' => 'color',
             '#title' => $this->t('Color'),
-            '#default_value' => isset($data->color) ? $data->color : '#80ff80',
+            '#default_value' => null !== $data->color ? $data->color : '#80ff80',
             '#states' => [
                 'visible' => [":input[name='delete']" => ['checked' => false]],
             ],
-        );
+        ];
 
         if ($data->notify_who != null) {
             $who = explode(',', $data->notify_who);
@@ -211,12 +211,12 @@ class Tasks extends FormBase {
         }
 
 
-        $form['notify_who'] = array(
+        $form['notify_who'] = [
             '#type' => 'textarea',
             '#title' => $this->t('Notification recipients'),
             '#rows' => 2,
             '#id' => 'edit-users',
-            '#attributes' => array('placeholder' => $this->t('enter users names separated by comma (autocomplete enabled).')),
+            '#attributes' => ['placeholder' => $this->t('enter users names separated by comma (autocomplete enabled).')],
             '#default_value' => $list,
             '#disabled' => isset($read['notify_who']) ? $read['notify_who'] : false,
             '#attached' => [
@@ -227,10 +227,10 @@ class Tasks extends FormBase {
             '#states' => [
                 'visible' => [":input[name='delete']" => ['checked' => false]],
             ],
-        );
+        ];
 
 
-        $notify = array(
+        $notify = [
             '0' => $this->t('Never'),
             '5' => $this->t('Daily'),
             '1' => $this->t('Weekly'),
@@ -238,9 +238,9 @@ class Tasks extends FormBase {
             '2' => $this->t('5 days before deadline'),
             '3' => $this->t('3 days before dealine'),
             '4' => $this->t('1 day before dealine'),
-        );
+        ];
 
-        $form['notify'] = array(
+        $form['notify'] = [
             '#type' => 'select',
             '#title' => $this->t('Notification period'),
             '#options' => $notify,
@@ -249,10 +249,10 @@ class Tasks extends FormBase {
             '#states' => [
                 'visible' => [":input[name='delete']" => ['checked' => false]],
             ],
-        );
+        ];
 
         
-        $form['actions']['record'] = array(
+        $form['actions']['record'] = [
             '#type' => 'submit',
             '#id' => 'task-record',
             '#value' => $this->t('Record'),
@@ -260,7 +260,7 @@ class Tasks extends FormBase {
             '#ajax' => [
                 'callback' => '::ajaxSubmit',
             ],
-        );
+        ];
 
         $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
 
