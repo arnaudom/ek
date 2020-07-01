@@ -14,12 +14,8 @@ use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
-use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Cache\Cache;
 use Drupal\Component\Utility\Xss;
-use Drupal\Core\Ajax\CloseModalDialogCommand;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_projects\ProjectData;
 
 /**
@@ -29,29 +25,7 @@ class TaskProject extends FormBase {
 
     use AjaxFormHelperTrait;
     
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
-    protected $moduleHandler;
 
-    /**
-     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler.
-     */
-    public function __construct(ModuleHandler $module_handler) {
-        $this->moduleHandler = $module_handler;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function create(ContainerInterface $container) {
-        return new static(
-                $container->get('module_handler')
-        );
-    }
 
     /**
      * {@inheritdoc}
@@ -66,9 +40,7 @@ class TaskProject extends FormBase {
      * @param id: task id
      */
     public function buildForm(array $form, FormStateInterface $form_state, $param = null) {
-        $access = AccessCheck::GetCountryByUser();
-        $perm = \Drupal::currentUser()->hasPermission('delete_project_task');
-
+        
         if ($param['edit'] == true) {
             // edit a task mode
             $form['for_id'] = [
@@ -110,7 +82,7 @@ class TaskProject extends FormBase {
 
         $form['edit_task_project'] = [
             '#type' => 'item',
-            '#markup' => $this->t('Project ref. @p', array('@p' => $param['data']->pcode)),
+            '#markup' => $this->t('Project ref. @p', ['@p' => $param['data']->pcode]),
         ];
 
 
@@ -167,7 +139,7 @@ class TaskProject extends FormBase {
             '#title' => $this->t('Event name'),
             '#size' => 30,
             '#maxlength' => 100,
-            '#default_value' => isset($param['data']->event) ? $param['data']->event : null,
+            '#default_value' => null !== $param['data']->event ? $param['data']->event : null,
             '#attributes' => isset($read['event']) ? array('readonly' => $read['event']) : null,
             '#states' => [
                 'visible' => [":input[name='delete']" => ['checked' => false]],
@@ -180,7 +152,7 @@ class TaskProject extends FormBase {
             '#size' => 1,
             '#options' => \Drupal\ek_admin\Access\AccessCheck::listUsers(),
             '#required' => true,
-            '#default_value' => isset($param['data']->uid) ? $param['data']->uid : null,
+            '#default_value' => null !== $param['data']->uid ? $param['data']->uid : null,
             '#title' => $this->t('Assigned to'),
             '#disabled' => isset($read['uid']) ? $read['uid'] : false,
             '#states' => [
@@ -193,7 +165,7 @@ class TaskProject extends FormBase {
             '#rows' => 3,
             '#title' => $this->t('Task description'),
             '#required' => true,
-            '#default_value' => isset($param['data']->task) ? $param['data']->task : null,
+            '#default_value' => null !== $param['data']->task ? $param['data']->task : null,
             '#attributes' => isset($read['task']) ? array('readonly' => $read['task']) : null,
             '#states' => [
                 'visible' => [":input[name='delete']" => ['checked' => false]],
@@ -204,7 +176,7 @@ class TaskProject extends FormBase {
             '#type' => 'date',
             '#size' => 12,
             '#required' => true,
-            '#default_value' => isset($param['data']->start) ? date('Y-m-d', $param['data']->start) : date('Y-m-d'),
+            '#default_value' => (null !== $param['data']->start && is_numeric($param['data']->end)) ? date('Y-m-d', $param['data']->start) : date('Y-m-d'),
             '#title' => $this->t('Starting'),
             '#prefix' => "<div class='container-inline'>",
             '#states' => [
@@ -215,7 +187,7 @@ class TaskProject extends FormBase {
         $form['end'] = [
             '#type' => 'date',
             '#size' => 12,
-            '#default_value' => isset($param['data']->end) ? date('Y-m-d', $param['data']->end) : null,
+            '#default_value' => (null !== $param['data']->end && is_numeric($param['data']->end)) ? date('Y-m-d', $param['data']->end) : null,
             '#title' => $this->t('ending'),
             '#suffix' => '</div>',
             '#states' => [
@@ -226,7 +198,7 @@ class TaskProject extends FormBase {
         $form['color'] = [
             '#type' => 'color',
             '#title' => $this->t('Color'),
-            '#default_value' => isset($param['data']->color) ? $param['data']->color : '#80ff80',
+            '#default_value' => null !== $param['data']->color ? $param['data']->color : '#80ff80',
             '#states' => [
                 'visible' => [":input[name='delete']" => ['checked' => false]],
             ],
@@ -385,7 +357,7 @@ class TaskProject extends FormBase {
     protected function getRedirectUrl(array $form, FormStateInterface $form_state) {
        
         if ($form_state->getTriggeringElement()['#id'] == 'task-record') {
-            return "/projects/project/" . $form_state->getValue('for_pid') . "?s2=true#ps2";
+            return "/projects/project/" . $form_state->getValue('for_pid') . "?s2=true";
         }
         
     }
@@ -444,8 +416,9 @@ class TaskProject extends FormBase {
             }
             $param = serialize(
                     array(
+                        'pcode' => $form_state->getValue('for_pcode'),
                         'id' => $form_state->getValue('for_pid'),
-                        'field' => $this->t('New task added for') . ": " . $name,
+                        'field' => $this->t('Task edited for') . ": " . $name,
                         'value' => Xss::filter($form_state->getValue('task'))
                     )
             );
