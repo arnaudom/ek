@@ -1237,12 +1237,13 @@ class ProjectController extends ControllerBase {
 
                     $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
                     $query->fields('p');
-                    $query->leftJoin('ek_project_description', 'd', 'd.pcode = p.pcode');
+                    $query->innerJoin('ek_project_description', 'd', 'd.pcode = p.pcode');
                     $query->fields('d');
-                    $query->leftJoin('ek_project_finance', 'f', 'f.pcode = p.pcode');
+                    $query->innerJoin('ek_project_finance', 'f', 'f.pcode = p.pcode');
                     $query->fields('f');
-                    $query->leftJoin('ek_project_shipment', 's', 's.pcode = p.pcode');
+                    $query->innerJoin('ek_project_shipment', 's', 's.pcode = p.pcode');
                     $query->fields('s');
+                    $query->condition('p.id', $id);
                     $data = $query->execute()->fetchObject();
                     $fields['status'] = $data->status;
                     $fields['status_container'] = $data->status;
