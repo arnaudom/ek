@@ -20,40 +20,42 @@ $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue('B3', (string) t('Serial'))
         ->setCellValue('C3', (string) t('Type'))
         ->setCellValue('D3', (string) t('Delivery order'))
-        ->setCellValue('E3', (string) t('Header'))
-        ->setCellValue('F3', (string) t('Allocated'))
-        ->setCellValue('G3', (string) t('Status'))
-        ->setCellValue('H3', (string) t('Amount'))
-        ->setCellValue('I3', (string) t('Currency'))
-        ->setCellValue('J3', (string) t('Tax value'))
-        ->setCellValue('K3', (string) t("Amount in base currency") . " " . $baseCurrency)
-        ->setCellValue('L3', (string) t('Amount paid'))
-        ->setCellValue('M3', (string) t('Pay date'))
-        ->setCellValue('N3', (string) t('Project'))
-        ->setCellValue('O3', (string) t('Client'))
-        ->setCellValue('P3', (string) t('Comment'));
+        ->setCellValue('E3', (string) t('PO No.'))
+        ->setCellValue('F3', (string) t('Header'))
+        ->setCellValue('G3', (string) t('Allocated'))
+        ->setCellValue('H3', (string) t('Status'))
+        ->setCellValue('I3', (string) t('Amount'))
+        ->setCellValue('J3', (string) t('Currency'))
+        ->setCellValue('K3', (string) t('Tax value'))
+        ->setCellValue('L3', (string) t("Amount in base currency") . " " . $baseCurrency)
+        ->setCellValue('M3', (string) t('Amount paid'))
+        ->setCellValue('N3', (string) t('Pay date'))
+        ->setCellValue('O3', (string) t('Project'))
+        ->setCellValue('P3', (string) t('Client'))
+        ->setCellValue('Q3', (string) t('Comment'));
 
 $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(5);
 $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
 $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(10);
 $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
-$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(10);
+$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(10);
-$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
-$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(5);
-$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(8);
-$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(15);
-$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(12);
+$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
+$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(5);
+$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(8);
+$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(12);
-$objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(18);
-$objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(20);
-$objPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(15);
-$objPHPExcel->getActiveSheet()->getStyle('A3:P3')->getFill()
+$objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(12);
+$objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(18);
+$objPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(20);
+$objPHPExcel->getActiveSheet()->getColumnDimension('Q')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getStyle('A3:Q3')->getFill()
         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-$objPHPExcel->getActiveSheet()->getStyle('A3:P3')
+$objPHPExcel->getActiveSheet()->getStyle('A3:Q3')
         ->getFill()->getStartColor()->setARGB('66b2ff');
-$objPHPExcel->getActiveSheet()->getStyle('A3:P3')
+$objPHPExcel->getActiveSheet()->getStyle('A3:Q3')
         ->applyFromArray(
                 [
                     'font' => array(
@@ -84,10 +86,10 @@ WHILE ($data = $result->fetchAssoc()) {
     $l = $l + 1; // line index
 
     if ($l & 1) {
-        $row = "A" . $l . ":O" . $l;
-        $objPHPExcel->getActiveSheet()->getStyle("$row")
+        $row = "A" . $l . ":Q" . $l;
+        $objPHPExcel->getActiveSheet()->getStyle($row)
                 ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-        $objPHPExcel->getActiveSheet()->getStyle("$row")
+        $objPHPExcel->getActiveSheet()->getStyle($row)
                 ->getFill()->getStartColor()->setARGB('e6e6fa');
     }
 
@@ -99,18 +101,19 @@ WHILE ($data = $result->fetchAssoc()) {
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $data['serial']);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$l", $types[$data['type']]);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $data['do_no']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $companies[$data['head']]);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $companies[$data['allocation']]);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $status[$data['status']]);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $data['amount']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $data['currency']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $tax);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $data['amountbase']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $data['amountreceived']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $data['pay_date']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $data['pcode']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", $data['name']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("P$l", $data['comment']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $data['po_no']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $companies[$data['head']]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $companies[$data['allocation']]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $status[$data['status']]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $data['amount']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $data['currency']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $tax);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $data['amountbase']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $data['amountreceived']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $data['pay_date']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", $data['pcode']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("P$l", $data['name']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("Q$l", $data['comment']);
 }
 $l += 1;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", (string) t('TOTAL'));
@@ -129,15 +132,7 @@ header("Content-Disposition: attachment;filename=$fileName");
 header('Cache-Control: max-age=0');
 $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
 $objWriter->save('php://output');
-exit;
-
-
-// end generate report
-
-
-
-
-    
+exit;    
             
             
             
