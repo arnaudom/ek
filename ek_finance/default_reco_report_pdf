@@ -11,7 +11,7 @@ class EKPDF extends TCPDF {
                if(file_exists($this->company->logo)) {
                    $logo = file_create_url($this->company->logo);
                    $info = getimagesize($logo);
-                    $h = $info[1] * 20 / $info[0];
+                    $h = $info[1] * 35 / $info[0];
                     $this->Image($logo, 25, 10, $h);
                }
         }
@@ -86,7 +86,7 @@ $pdf->SetHeaderData('','',$company,'');
 $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
 // set margins
-$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+$pdf->SetMargins(PDF_MARGIN_LEFT, 50, PDF_MARGIN_RIGHT);
 $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
 $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 
@@ -108,7 +108,7 @@ $left_margin=4;
 // header details
 
 // document head
-$pdf->Ln(25);
+$pdf->Ln(1);
 $pdf->SetFont('helvetica','B',11);
 $pdf->SetTextColor(68, 151, 242);
 $pdf->Cell($col1_width,5, t('RECONCILIATION REPORT') ,0,1);
@@ -207,5 +207,5 @@ $pdf->SetLineStyle(['width' => 0.1, 'cap' => 'square', 'join' => 'miter', 'dash'
 $pdf->Ln(5);    
 $pdf->SetFont('helvetica','',8); 
 $date = date("F j, Y, g:i a");
-    $pdf->Cell($col1_width,5, t('Prepared by') . ' ' . $userName ,0,1);
+    $pdf->Cell($col1_width,5, t('Printed by') . ' ' . $userName ,0,1);
     $pdf->Cell($col1_width,5,$date,0,1);
