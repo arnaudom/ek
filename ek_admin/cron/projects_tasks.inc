@@ -25,8 +25,8 @@ try {
    $log = 'start projects tasks checking at:' . date('Y-m-d h:i', $stamp);
    \Drupal::logger('ek_admin')->notice( $log ); 
 
-while ($row = $data->fetchObject())
-{
+while ($row = $data->fetchObject()) {
+    
     if(is_numeric($row->end)){
         $delta = round( ( $row->end  - $stamp ) / (24*60*60), 0); 
 
@@ -42,10 +42,7 @@ while ($row = $data->fetchObject())
          */
 
             if($row->notify == 1 && $weekday == 'Mon'){
-
-
                 $users = explode(',', $row->notify_who);
-
                     foreach($users as $key => $user) {
                        $params = array();
                        $params['type'] = 'task';
@@ -69,9 +66,7 @@ while ($row = $data->fetchObject())
          */        
 
             if($row->notify == 5 ){
-
                 $users = explode(',', $row->notify_who);
-
                     foreach($users as $key => $user) {
                        $params = array();
                        $params['type'] = 'task';
@@ -94,9 +89,7 @@ while ($row = $data->fetchObject())
          */        
 
             if($row->notify == 2 && $delta == 5 ){
-
                 $users = explode(',', $row->notify_who);
-
                     foreach($users as $key => $user) {
                        $params = array();
                        $params['type'] = 'task';
@@ -119,9 +112,7 @@ while ($row = $data->fetchObject())
          */        
 
             if($row->notify == 3 && $delta == 3 ){
-
                 $users = explode(',', $row->notify_who);
-
                     foreach($users as $key => $user) {
                        $params = array();
                        $params['type'] = 'task';
@@ -144,9 +135,7 @@ while ($row = $data->fetchObject())
          */        
 
             if($row->notify == 4 && $delta == 1 ){
-
                 $users = explode(',', $row->notify_who);
-
                     foreach($users as $key => $user) {
                        $params['type'] = 'task';
                        $params = array();
@@ -169,9 +158,7 @@ while ($row = $data->fetchObject())
          */        
 
             if($row->end < $stamp ){
-
                 $users = explode(',', $row->notify_who);
-
                     foreach($users as $key => $user) {
                        $params = array();
                        $params['type'] = 'task';

@@ -241,6 +241,7 @@ function ek_admin_mail($key, &$message, $params) {
         case 'sales_alert':
         case 'hr_date':
         case 'receipt':
+        case 'client_reminder':
 
             $message['subject'] = $params['options']['subject'];
             $message['body'][] = $params['body'];

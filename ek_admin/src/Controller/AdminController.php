@@ -1195,52 +1195,80 @@ class AdminController extends ControllerBase {
 
     /*
      * function to send an email notification for tasks (cron)
+     * @param array param
+     *  - type : string
+     *  - subject : string
+     *  - contact_email : string
+     *  - data : array
+     *  - uid : int
+     *  - assign :  int
+     *  - 
      */
 
     private function send_mail($params) {
-        $u = \Drupal\user\Entity\User::load($params['uid']);
-        if ($u) {
-            $params['options']['name'] = $u->getAccountName();
-            $mail = $u->getEmail();
-
+        
+        if ($params['type'] == 'client') {
+            // send an email to a client
+            $mail = $params['contact_email'];
+            $template = 'client_reminder';
             $params['options']['subject'] = $params['subject'];
-
-            if ($params['type'] == 'status') {
-                $template = 'project_status';
-                $params['options']['data'] = $params['data'];
-            } elseif ($params['type'] == 'salert') {
-                $template = 'sales_alert';
-                $params['options']['data'] = $params['data'];
-            } elseif ($params['type'] == 'hr_date') {
-                $template = 'hr_date';
-                $params['options']['data'] = $params['data'];
-            } else { //default
-                $template = 'tasks';
-                $params['options']['link'] = $params['link'];
-                $params['options']['serial'] = $params['serial'];
-                $params['options']['task'] = $params['task'];
-                $params['options']['end'] = $params['end'];
-                $params['options']['alert'] = $params['alert'];
-
-                $a = \Drupal\user\Entity\User::load($params['uid']);
-                $params['options']['assign_name'] = '';
-                if ($a) {
-                    $params['options']['assign_name'] = $a->getAccountName();
-                }
+            $params['options']['data'] = $params['data'];
+            $params['body'] = null;
+            $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
+            if($params['copy'] === 1) {
+                $log = 'sent reminder: ' . $params['data']['serial'] . ' - ' . $mail;
+                \Drupal::logger('ek_admin')->notice($log);
             }
-
-            if ($mail) {
+        } else {
+            $u = \Drupal\user\Entity\User::load($params['uid']);
+            if ($u) {
+                $params['options']['name'] = $u->getAccountName();
+                $mail = $u->getEmail();
+                $params['options']['subject'] = $params['subject'];
                 if ($target_user = user_load_by_mail($mail)) {
                     $target_langcode = $target_user->getPreferredLangcode();
                 } else {
                     $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
                 }
-                $send = \Drupal::service('plugin.manager.mail')->mail(
-                        'ek_admin', $template, trim($mail), $target_langcode, $params, "no-reply@" . $_SERVER['HTTP_HOST'], true
-                );
-            } else {
-                return false;
+                if ($params['type'] == 'status') {
+                    $template = 'project_status';
+                    $params['options']['data'] = $params['data'];
+                } elseif ($params['type'] == 'sales_alert') {
+                    $template = 'sales_alert';
+                    $params['body'] = null;
+                    $params['options']['data'] = $params['data'];
+                } elseif ($params['type'] == 'hr_date') {
+                    $template = 'hr_date';
+                    $params['options']['data'] = $params['data'];
+                } else { //default
+                    $template = 'tasks';
+                    $params['options']['link'] = $params['link'];
+                    $params['options']['serial'] = $params['serial'];
+                    $params['options']['task'] = $params['task'];
+                    $params['options']['end'] = $params['end'];
+                    $params['options']['alert'] = $params['alert'];
+
+                    $a = \Drupal\user\Entity\User::load($params['uid']);
+                    $params['options']['assign_name'] = '';
+                    if ($a) {
+                        $params['options']['assign_name'] = $a->getAccountName();
+                    }
+                }
             }
+        }
+        
+        if ($mail) {
+            $queue = \Drupal::queue('ek_email_queue');
+            $queue->createQueue();
+            $data['module'] = 'ek_admin';
+            $data['key'] = $template;
+            $data['params'] = $params;
+            $data['email'] = $mail;
+            $data['lang'] = $target_langcode;
+            $queue->createItem($data);
+            
+        } else {
+            return false;
         }
     }
 
