@@ -138,6 +138,24 @@ class AddressBookData
         );
         return \Drupal::service('renderer')->render($render);
     }
+    
+
+    /**
+     * @param int id
+     *  address book contact id
+     * @return array
+     */
+    public static function getContactData($id)
+    {
+        $query = Database::getConnection('external_db', 'external_db')
+                      ->select('ek_address_book_contacts', 'ab');
+        $query->fields('ab');
+        $query->condition('id', $id, '=');
+        $data = $query->execute()->fetchAssoc();
+        if($data) {
+            return $data;
+        }
+    }    
 }
 
 // class
