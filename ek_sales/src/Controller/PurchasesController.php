@@ -337,7 +337,7 @@ class PurchasesController extends ControllerBase {
                     . 'class="use-ajax ' . $status_class . '"  data-accepts="application/vnd.drupal-modal"  >' . $status . '</a>';
 
             $options[$r->id] = array(
-                'number' => ['data' => ['#markup' => $number]],
+                'number' => ['data' => ['#markup' => $number], 'id' => $r->id],
                 'reference' => ['data' => ['#markup' => $reference]],
                 'purchase' => array('data' => ['#markup' => $co], 'title' => $r->title),
                 'date' => $r->date,
@@ -382,17 +382,28 @@ class PurchasesController extends ControllerBase {
                     );
                 }
             }
+           
             if ($r->alert == 1) {
-                $alert = $this->t('on');
+                $alert = ['use-ajax','fa', 'fa-circle', 'green'];
             }
             if ($r->alert == 0) {
-                $alert = $this->t('off');
+                $alert = ['use-ajax','fa', 'fa-circle', 'red'];
             }
-
+            $destination = ['destination' => '/purchases/list'];
+            $link = Url::fromRoute('ek_sales.purchases.alert', ['id' => $r->id], ['query' => $destination]);
             $links['alert'] = array(
-                'title' => $this->t('Set alert [@a]', array('@a' => $alert)),
-                'url' => Url::fromRoute('ek_sales.purchases.alert', ['id' => $r->id]),
+                'title' => " " . $this->t('Alert'),
+                'url' => $link,
+                'attributes' => [
+                    'class' => $alert,
+                    'data-dialog-type' => 'dialog',
+                    'data-dialog-renderer' => 'off_canvas',
+                    'data-dialog-options' => Json::encode([
+                        'width' => '30%',
+                    ]),
+                ],
             );
+            
             $destination = ['destination' => '/purchases/list'];
             $link = Url::fromRoute('ek_sales.purchases.task', ['id' => $r->id], ['query' => $destination]);
             $links['task'] = [
@@ -944,6 +955,43 @@ class PurchasesController extends ControllerBase {
      *
      */
     public function alertPurchases(Request $request, $id) {
+        $access = AccessCheck::GetCompanyByUser();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_sales_purchase', 'p');
+        $or1 = $query->orConditionGroup();
+        $or1->condition('head', $access, 'IN');
+        $or1->condition('allocation', $access, 'IN');
+
+        $data = $query
+                ->fields('p')
+                ->condition($or1)
+                ->condition('p.id', $id, '=')
+                ->execute()
+                ->fetchObject();
+        if($data) {
+            $param['doc'] = 'purchase';
+            $param['destination'] = $request->query->get('destination');
+            return $this->formBuilder
+                ->getForm('Drupal\ek_sales\Form\Alert', $data, $param);
+        
+        } else {
+            $url = Url::fromRoute('ek_sales.purchases.list', [])->toString();
+            $items['type'] = 'edit';
+            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', array('@document' => $this->t('Alert')))];
+            $items['description'] = ['#markup' => $this->t('Access denied')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $build = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ];
+        
+            return $build;
+        }
+        
         $build['alert_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\AlertPurchase', $id);
 
         return $build;

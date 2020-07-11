@@ -92,7 +92,7 @@ class Tasks extends FormBase {
                 '#type' => 'range',
                 '#min' => 0,
                 '#max' => 100,
-                '#required' => true,
+                '#required' => false,
                 '#default_value' => $r,
                 '#title' => $this->t('Completion rate'),
                 '#states' => [

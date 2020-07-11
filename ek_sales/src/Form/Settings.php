@@ -10,6 +10,7 @@ namespace Drupal\ek_sales\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
+use Drupal\Component\Utility\Xss;
 use Drupal\ek_sales\SalesSettings;
 use Drupal\ek_admin\Access\AccessCheck;
 
@@ -85,8 +86,16 @@ class Settings extends FormBase {
                 '#title' => $this->t('Long due alert (days)'),
                 '#required' => true,
             );
+            
+            $body = 'We kindly ask you for your attention and your action within 3 working days';
 
-
+            $form['reminder_body'] = array(
+                '#type' => 'textarea',
+                '#rows' => 3,
+                '#default_value' => ($settings->get('reminder_body')) ? $settings->get('reminder_body') : $body,
+                '#title' => $this->t('A custom message added to clients reminder alerts.'),
+                '#required' => true,
+            );    
 
             $form['actions'] = array('#type' => 'actions');
             $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
@@ -133,6 +142,7 @@ class Settings extends FormBase {
 
             $settings->set('shortdue', $form_state->getValue('shortdue'));
             $settings->set('longdue', $form_state->getValue('longdue'));
+            $settings->set('reminder_body', Xss::filter($form_state->getValue('reminder_body')));
 
 
             $save = $settings->save();

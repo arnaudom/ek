@@ -343,7 +343,7 @@ class InvoicesController extends ControllerBase {
             }
             
             $options[$r->id] = array(
-                'number' => ['data' => ['#markup' => $number]],
+                'number' => ['data' => ['#markup' => $number], 'id' => $r->id],
                 'reference' => ['data' => ['#markup' => $reference]],
                 'issuer' => array('data' => ['#markup' => $co], 'title' => $r->title),
                 'date' => $r->date,
@@ -389,17 +389,27 @@ class InvoicesController extends ControllerBase {
                     );
                 }
             }
-
+            
+            $destination = ['destination' => '/invoices/list'];
             if ($r->alert == 1) {
-                $alert = $this->t('on');
+                $alert = ['use-ajax','fa', 'fa-circle', 'green'];
             }
             if ($r->alert == 0) {
-                $alert = $this->t('off');
+                $alert = ['use-ajax','fa', 'fa-circle', 'red'];
             }
 
+            $link = Url::fromRoute('ek_sales.invoices.alert', ['id' => $r->id], ['query' => $destination]);
             $links['alert'] = array(
-                'title' => $this->t('Set alert [@a]', array('@a' => $alert)),
-                'url' => Url::fromRoute('ek_sales.invoices.alert', ['id' => $r->id]),
+                'title' => " " . $this->t('Alert'),
+                'url' => $link,
+                'attributes' => [
+                    'class' => $alert,
+                    'data-dialog-type' => 'dialog',
+                    'data-dialog-renderer' => 'off_canvas',
+                    'data-dialog-options' => Json::encode([
+                        'width' => '30%',
+                    ]),
+                ],
             );
 
             $destination = ['destination' => '/invoices/list'];
@@ -1001,10 +1011,42 @@ class InvoicesController extends ControllerBase {
      *
      */
     public function AlertInvoices(Request $request, $id) {
-        $build['alert_invoice'] = $this->formBuilder
-                ->getForm('Drupal\ek_sales\Form\AlertInvoice', $id);
+        $access = AccessCheck::GetCompanyByUser();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_sales_invoice', 'i');
+        $or1 = $query->orConditionGroup();
+        $or1->condition('head', $access, 'IN');
+        $or1->condition('allocation', $access, 'IN');
 
-        return $build;
+        $data = $query
+                ->fields('i')
+                ->condition($or1)
+                ->condition('i.id', $id, '=')
+                ->execute()
+                ->fetchObject();
+        if($data) {
+            $param['doc'] = 'invoice';
+            $param['destination'] = $request->query->get('destination');
+            return $this->formBuilder
+                ->getForm('Drupal\ek_sales\Form\Alert', $data, $param);
+        
+        } else {
+            $url = Url::fromRoute('ek_sales.invoices.list', [])->toString();
+            $items['type'] = 'edit';
+            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', array('@document' => $this->t('Alert')))];
+            $items['description'] = ['#markup' => $this->t('Access denied')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            $build = [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ];
+        
+            return $build;
+        }
     }
 
     /**
