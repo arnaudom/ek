@@ -48,29 +48,26 @@ class Journal
          */
         $company = new CompanySettings($coid);
         $archive = false;
-        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $company->get('fiscal_month'), $company->get('fiscal_year'));
-        $start_fiscal = date('Y-m-d', strtotime($company->get('fiscal_year') . '-'
-                        . $company->get('fiscal_month') . '-' . $daysInMonth . ' - 1 year + 1 day'));
-        $end_fiscal = date('Y-m-d', strtotime($company->get('fiscal_year') . '-'
-                        . $company->get('fiscal_month') . '-' . $daysInMonth));
-
-
-        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-        $end_request = date('Y-m-d', strtotime($year . '-'
-                        . $month . '-' . $daysInMonth));
-
-        $n = 11 - date('n', strtotime($end_fiscal)) + date('n', strtotime($end_request));
-        // start request is calculated relative to end request minus number $n of months
-        // for a fiscal year
-        $start_request = date('Y-m', strtotime($end_request . ' - ' . $n . ' months')) . '-01';
-
+        $f = new DateTime($company->get('fiscal_year') . '-' .  $company->get('fiscal_month')); 
+        $d = new DateTime($year . '-' .  $month); 
+        
+        // the starting of fiscal year based on settings
+        $start_fiscal = date('Y-m-d', strtotime($f->format('Y-m-d') . ' - 11 months'));
+        // the end of fiscal year based on settings
+        $end_fiscal = $f->format('Y-m-t');
+        
+        // last date based on request
+        $end_request = $d->format('Y-m-t');
+        // start date of request
+        $start_request = date('Y-m-d', strtotime($d->format('Y-m-d') . ' - 11 months'));
+        
         if ($end_request < $start_fiscal) {
             $archive = true;
-            $start_request = date('Y-m', strtotime($start_fiscal . ' - 12 months')) . '-01';
         }
 
-        $stop_date = date('Y-m-d', strtotime($end_request . ' + 1 day'));
-
+        // a stop date based on request
+        $stop_date = date('Y-m-d', strtotime($d->format('Y-m-t') . ' + 1 day'));
+        
         return [
             'month_settings' => $company->get('fiscal_month'),
             'year_settings' => $company->get('fiscal_year'),
@@ -1606,7 +1603,6 @@ class Journal
 
         //determine if query cover closed years, before current fiscal year
         $dates = self::getFiscalDates($l['coid'], date('Y', strtotime($l['date2'])), date('m', strtotime($l['date2'])));
-
         $settings = new FinanceSettings();
         $baseCurrency = $settings->get('baseCurrency');
         $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
