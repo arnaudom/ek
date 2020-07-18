@@ -154,7 +154,7 @@ ek_projects_modal:
 ek_projects_delete_file:
   path: 'ek_project/delete_file/{id}'
   defaults:
-    _controller: '\Drupal\ek_projects\Controller\ProjectController::deletefile'
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::deleteFile'
   requirements:
     _permission: 'create_projects'
     id: \d*
@@ -163,6 +163,14 @@ ek_projects_delete_confirm_file:
   path: 'projects/project/delete_file_confirmed/{id}'
   defaults:
     _controller: '\Drupal\ek_projects\Controller\ProjectController::deleteConfirmed'
+  requirements:
+    _permission: 'create_projects'
+    id: \d*
+    
+ek_projects_file_data:
+  path: 'projects/project/file-data/{id}'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::fileData'
   requirements:
     _permission: 'create_projects'
     id: \d*

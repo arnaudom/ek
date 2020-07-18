@@ -349,21 +349,19 @@ class ProjectData {
     }
 
     /*
-     * @return
-     *  array (uid , owner) of a file attached in a project
-     * @param
-     *  id = file id
+     * Get file managed data
+     * @param uri = file uri
+     * @return object query
      *
      */
 
-    public static function file_owner($id) {
-        /*
-          $query = "SELECT uid from {file_managed} WHERE id =:f";
-          //$owner = db_query($query, array(':f' => $id))->fetchField();
-          //$name = db_query('SELECT name from {users_field_data} WHERE uid=:u', array(':u' => $owner))->fetchField();
-
-          return array($owner, $name);
-         */
+    public static function file_owner($uri) {
+        $file = Database::getConnection()
+                    ->select('file_managed', 'f')
+                    ->fields('f')
+                    ->condition('uri', $uri)
+                    ->execute()->fetchObject();
+        return $file;
     }
 
     /*
@@ -481,5 +479,3 @@ class ProjectData {
     }
 
 }
-
-//class

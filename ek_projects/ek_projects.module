@@ -62,7 +62,6 @@ function ek_projects_theme() {
       'template' => 'ek_projects_dashboard',
       'variables' => array('items' => array()),
     ),   
- 
     // for the project items display
     'ek_projects_view' => array
     (
@@ -86,6 +85,11 @@ function ek_projects_theme() {
       'template' => 'activity_block',
       'variables' => array('items' => array()),
     ), 
+    'file_data' => array
+    (
+      'template' => 'file_data',
+      'variables' => array('items' => array()),
+    ),  
   );     
 }
 

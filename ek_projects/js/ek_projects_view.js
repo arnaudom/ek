@@ -142,7 +142,6 @@ function update_documents(pid) {
 function addajax() {
 
     // Bind Ajax behaviors to all items showing the class.
-
     jQuery('.use-ajax').once('ajax').each(function () {
         var element_settings = {};
         // Clicked links look better with the throbber than the progress bar.
@@ -157,12 +156,11 @@ function addajax() {
         }
         element_settings.dialogType = jQuery(this).data('dialog-type');
         element_settings.dialog = jQuery(this).data('dialog-options');
+        element_settings.dialogRenderer = jQuery(this).data('dialog-renderer');
         element_settings.base = jQuery(this).attr('id');
         element_settings.element = this;
         Drupal.ajax(element_settings);
     });
-
-
 }
 
 /*

@@ -847,7 +847,6 @@ class ProjectController extends ControllerBase {
              * finance table
              */
             if (in_array(5, $sections)) {
-                //$query = "SELECT * from {ek_project_finance} WHERE pcode=:p";
                 $data['finance'] = $this->extdb->select('ek_project_finance', 'f')
                         ->fields('f')
                         ->condition('pcode', $pcode)
@@ -1404,7 +1403,12 @@ class ProjectController extends ControllerBase {
                                 $route = Url::fromRoute('ek_projects_delete_file', ['id' => $l->id])->toString();
                                 $items[$l->sub_folder][$i]['delete_url'] = $route;
                                 $items[$l->sub_folder][$i]['file_url'] = file_create_url($l->uri);
-
+                                $destination = ['destination' => '/projects/project/' . $id];
+                                $link = Url::fromRoute('ek_projects_file_data', ['id' => $l->id], ['query' => $destination])->toString();
+                                $size = Json::encode(['width' => '30%', 'resizable' => 1]);
+                                $items[$l->sub_folder][$i]['more'] = '<a href="' . $link . '" class="use-ajax" '
+                                        . 'data-dialog-type="dialog" data-dialog-renderer="off_canvas" data-dialog-options=' 
+                                        . $size . '>[+]</a>';
                                 $param_mail = 'mail|' . $l->id . '|project_documents';
                                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_mail])->toString();
                                 $items[$l->sub_folder][$i]['mail_url'] = $link;
@@ -1580,6 +1584,71 @@ class ProjectController extends ControllerBase {
     }
 
     /**
+     * view meta data from file
+     * 
+     * @param id: file id
+     * @return array
+     *
+     */
+    public function fileData($id) {
+
+        if (ProjectData::validate_file_access($id)) {
+            $file = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_project_documents', 'd')
+                            ->fields('d')
+                            ->condition('id', $id)
+                            ->execute()->fetchObject();
+            $file_managed = ProjectData::file_owner($file->uri);
+            $owner = '';
+            if($file_managed){
+                $user = \Drupal\user\Entity\User::load($file_managed->uid);
+                if($user){
+                    $owner = $user->getAccountName();
+                }
+            }
+            $parts = explode(".", $file->filename);
+            $extension = array_pop($parts);
+            $icon = '';
+            if (file_exists(drupal_get_path('module', 'ek_projects') . '/art/icons/' . $extension . ".png")) {
+                $icon = drupal_get_path('module', 'ek_projects') . '/art/icons/' . $extension . ".png";
+            }
+            $data = [
+                'filename' =>$file->filename,
+                'filetype' => $extension,
+                'icon' => $icon,
+                'size' => round($file->size / 1000, 0) . " Kb",
+                'date' => date('Y-m-d', $file->date),
+                'url' => file_create_url($file->uri),
+                'comment' => ['#markup' => $file->comment],
+                'folder' => $file->sub_folder,
+                'owner' => $owner,
+            ];
+            $access = [0 => ['name' => t('default')]];
+            if($file->share != 0) {
+                $shares = explode(",",$file->share);
+                $access = [];
+                foreach($shares as $key => $val){
+                    $user = \Drupal\user\Entity\User::load($val);
+                    if($user){
+                        $avatar = ($user->get('user_picture')->entity) ? $user->get('user_picture')->entity->url(): null;
+                        if(!$avatar) {
+                            $avatar = file_create_url(drupal_get_path('module','ek_admin') . "/art/avatar/default.jpeg");
+                        }
+                        $access[] = ['name' => $user->getAccountName(), 'avatar' => $avatar];
+                    }
+                }
+            }
+            $data['access'] = $access;
+            $content = [
+                '#items' => $data,
+                '#theme' => 'file_data',
+                '#attached' => [],
+            ];
+        }
+        return $content;
+    }
+
+    /**
      * delete a file from project
      * Return ajax delete confirmation alert
      * @param
@@ -1588,7 +1657,7 @@ class ProjectController extends ControllerBase {
      *  ajax dialog
      *
      */
-    public function deletefile($id) {
+    public function deleteFile($id) {
 
         $file = Database::getConnection('external_db', 'external_db')
                         ->select('ek_project_documents', 'd')
@@ -1836,9 +1905,9 @@ class ProjectController extends ControllerBase {
      */
     public function edit_notify_me() {
         $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_project', 'p')
-                    ->fields('p', ['notify'])
-                    ->condition('id', $_POST['id']);
+                ->select('ek_project', 'p')
+                ->fields('p', ['notify'])
+                ->condition('id', $_POST['id']);
         $notify = $query->execute()->fetchField();
         $action = 0;
         if ($notify == null) {

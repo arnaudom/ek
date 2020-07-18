@@ -1,0 +1,21 @@
+<div>
+    <p><strong>{{ 'File'|trans }}:</strong> <a target="_blank" href="{{ items.url }}">{{ items.filename }}</a></p>
+    <p><strong>{{ 'Type'|trans }}:</strong> {{ items.filetype }} &nbsp <img src="../../{{ items.icon }}"/></p>
+    <p><strong>{{ 'Size'|trans }}:</strong> {{ items.size }}</p>
+    <p><strong>{{ 'Date'|trans }}:</strong> {{ items.date }}</p>
+    <p><strong>{{ 'Uploaded by'|trans }}:</strong> {{ items.owner }}</p>
+    <p><strong>{{ 'Foder'|trans }}:</strong> {{ items.folder }}</p>
+    <p><strong>{{ 'Comment'|trans }}:</strong> {{ items.comment }}</p>
+    {% if items.access %}
+        <ul>
+        <strong>{{ 'Access granted to'|trans }}:</strong>
+        {% for key, item in items.access %}
+            {% if item.avatar %} 
+                <li><img class="avatar" src="{{ item.avatar }}"/> {{ item.name }}</li>
+                    {%  else %}
+                        <li>{{ item.name }}</li>
+                        {% endif %}
+            {%  endfor  %}
+        {% endif %}
+    </ul>
+</div>
