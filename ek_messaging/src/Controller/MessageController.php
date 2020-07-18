@@ -75,8 +75,8 @@ class MessageController extends ControllerBase {
     }
 
     /**
-     * Return a 'send message' form
-     *
+     * send message form
+     * @return array
      */
     public function send(Request $request, $id = null) {
         $build['message_form'] = $this->formBuilder->getForm('Drupal\ek_messaging\Form\Message', $id);
@@ -87,8 +87,8 @@ class MessageController extends ControllerBase {
     }
 
     /**
-     * Return a 'read message' page
-     *
+     * read message page
+     * @return array
      */
     public function read(Request $request, $id) {
         $query = Database::getConnection('external_db', 'external_db')->select('ek_messaging', 'm');
@@ -156,8 +156,8 @@ class MessageController extends ControllerBase {
     }
 
     /**
-     * Return an inbox page
-     *
+     * inbox page
+     * @return array
      */
     public function inbox(Request $request) {
         $links = array();
@@ -229,7 +229,14 @@ class MessageController extends ControllerBase {
             $account = \Drupal\user\Entity\User::load($r->from_uid);
             $from = '';
             if ($account) {
-                $from = $account->getDisplayName();
+                $avatar = ($account->get('user_picture')->entity) ? $account->get('user_picture')->entity->url(): null;
+                if($avatar) {
+                    $from = "<div><img src='".$avatar."' class='avatar'>" . " " . $account->getDisplayName() . "</div>";
+                } else {
+                    $avatar = file_create_url(drupal_get_path('module','ek_admin') . "/art/avatar/default.jpeg");
+                    $from = "<div><img src='".$avatar."' class='avatar'>" . " " . $account->getDisplayName() . "</div>";
+                }
+                
             }
 
             $link = Url::fromRoute('ek_messaging_read', array('id' => $r->id))->toString();
@@ -252,15 +259,18 @@ class MessageController extends ControllerBase {
 
             $options[$i] = [
                 'data' => [
-                    'date' => array('data' => date('Y-m-d h:i', $r->stamp),
+                    'date' => [
+                        'data' => date('Y-m-d h:i', $r->stamp),
                         'title' => date('l', $r->stamp)
-                    ),
-                    'from' => $from,
-                    'subject' => array(
+                    ],
+                    'from' => [
+                        'data' => ['#markup' => $from],
+                        ],
+                    'subject' => [
                         'data' => ['#markup' => $priority . ' ' . $subject],
                         'title' => '',
                         'class' => array($read),
-                    ),
+                    ],
                     'action' => ['data' => ['#markup' => $action]],
                 ],
                 'id' => ['line' . $r->id],
