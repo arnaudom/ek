@@ -451,6 +451,7 @@ foreach ($items['lines'] as $detail) {
                     $pdf->Ln(3);
                     $font3 = $format_body['font'] - 3;
                     $pdf->SetFont('helvetica', '', $font3);
+                    $pdf->Cell($lm);
                     $pdf->Cell($b1, 5, '', 1, 0);
                     $pdf->Cell($b2, 5, t('Description'), 1, 0, 'C', '0');
                     $pdf->Cell($b3, 5, $items['column_name4'], 1, 0, 'C', '0');
