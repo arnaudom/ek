@@ -13,6 +13,7 @@ use Drupal\Core\Extension\ModuleHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Database\Database;
 use Drupal\user\Entity\User;
+use Drupal\ek_admin\Access\AccessCheck;
 
 /**
  * Provides form to manage access.
@@ -64,16 +65,12 @@ class CountryAccessForm extends FormBase
         $form['#cache']['max-age'] = -1;
         $form['#cache']['tags'] = ['ek_access_control_form'];
 
-        $option = array();
+        $option = [];
         $t = (string) $this->t('active');
-        $query = "SELECT id,name from {ek_country} where status=:s order by name";
-        $r1 = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => 1))->fetchAllKeyed();
-        $option[$t] = $r1;
+        $option[$t] = AccessCheck::CountryList(1);
 
         $t = (string) $this->t('non active');
-        $query = "SELECT id,name from {ek_country}  where status=:s order by name";
-        $r2 = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => 0))->fetchAllKeyed();
-        $option[$t] = $r2;
+        $option[$t] = AccessCheck::CountryList(0);
 
         $form['cid'] = array(
             '#type' => 'select',
@@ -115,11 +112,13 @@ class CountryAccessForm extends FormBase
                 $class = in_array($u->uid, $default) ? 'select' : '';
                 $obj = \Drupal\user\Entity\User::load($u->uid);
                 $role = $obj->getRoles();
-                $role = implode(',', $role);
-
+                $role = '(' .  implode(',', $role) . ')';
+                if($obj->isBlocked()) {
+                    $role = '<strong>[' . t('Bloked') . ']</strong> ' . $role ;
+                }
                 $form['list'][$form_state->getValue('cid')][$u->uid] = array(
                     '#type' => 'checkbox',
-                    '#title' => $u->name . ' (' . $role . ')',
+                    '#title' => $obj->toLink($u->name)->toString() . " " . $role,
                     '#default_value' => in_array($u->uid, $default) ? 1 : 0,
                     '#attributes' => array('onclick' => "jQuery('#u" . $u->uid . "' ).toggleClass('select');"),
                     '#prefix' => "<div id='u" . $u->uid . "' class='" . $class . "'>",

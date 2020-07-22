@@ -85,12 +85,15 @@ class CompanyAccessForm extends FormBase
                 $value = in_array($u->uid, $default) ? 1 : 0;
                 $obj = \Drupal\user\Entity\User::load($u->uid);
                 $role = $obj->getRoles();
-                $role = implode(',', $role);
+                $role = '(' .  implode(',', $role) . ')';
+                if($obj->isBlocked()) {
+                    $role = '<strong>[' . t('Bloked') . ']</strong> ' . $role ;
+                }
                 
                 $form['list'][$form_state->getValue('coid')][$u->uid] = array(
                     '#type' => 'checkbox',
                     //'#id' => 'u' . $u->uid,
-                    '#title' => $u->name . ' (' . $role . ')',
+                    '#title' => $obj->toLink($u->name)->toString() . ' (' . $role . ')',
                     '#default_value' => $value,
                     '#attributes' => array('onclick' => "jQuery('#u" . $u->uid . "' ).toggleClass('select');"),
                     '#prefix' => "<div id='u" . $u->uid . "' class='" . $class . "'>",

@@ -15,158 +15,148 @@ use Drupal\ek_admin\Access\AccessCheck;
 /**
  * Provides a form.
  */
-class DocAccessEdit extends FormBase
-{
+class DocAccessEdit extends FormBase {
 
-  /**
-   * {@inheritdoc}
-   */
-    public function getFormId()
-    {
+    /**
+     * {@inheritdoc}
+     */
+    public function getFormId() {
         return 'ek_admin_doc_edit_access';
     }
-
 
     /**
      *
      * {@inheritdo}
      *
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $type = null)
-    {
-        if ($type == 'company_doc') {
-            $query = "SELECT share,deny,coid FROM {ek_company_documents} WHERE id=:id";
-        }
-        $data = Database::getConnection('external_db', 'external_db')
-            ->query($query, array(':id' => $id))
-            ->fetchObject();
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $type = null) {
 
-        $query = Database::getConnection()->select('users_field_data', 'u');
-        $query->fields('u', ['uid', 'name']);
-        $query->condition('uid', 0, '<>');
-        $query->orderBy('name');
-        $users = $query->execute()->fetchAllKeyed();
-    
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_company_documents', 'd')
+                ->fields('d', ['share', 'deny', 'coid'])
+                ->condition('id', $id);
+        $data = $query->execute()->fetchObject();
+
+        $access = AccessCheck::GetCompanyAccess($data->coid);
+        $users = [];
+        foreach (\Drupal\user\Entity\User::loadMultiple() as $account) {
+            if ($account->isActive() && $account->id() != \Drupal::currentUser()->id()
+                    && $account->id() > 0 ) {
+                if (in_array($account->id(), $access[$data->coid])) {
+                    $roles = $account->getRoles();
+                    $users[$account->id()] = $account->getAccountName() . " [" . $roles[1] . "]";
+                }
+            }
+        }
+
+        $default = explode(',', $data->share);
+
+        $form['item'] = [
+            '#type' => 'item',
+            '#markup' => $this->t('By default access is given to users who have access to the company '
+                    . 'unless custom access has been defined by owner.'),
+        ];
+
+        $ds = ['left' => $this->t('not shared'), 'right' => $this->t('shared')];
         if ($data->share == 0) {
-            //no custom settings
-            //default users are selected
-            $default_users = AccessCheck::GetCompanyAccess($data->cid);
-            $default_users = $default_users[$data->cid];
+            $form['item2'] = [
+                '#type' => 'item',
+                '#markup' => $this->t('Current access: default.'),
+            ];
+            $ds = ['left' => $this->t('default'), 'right' => $this->t('select')];
         } else {
-            $default_users = explode(',', $data->share);
-            $deny = explode(',', $data->deny);
+            $form['reset'] = [
+                '#type' => 'checkbox',
+                '#title' => $this->t('Reset default')
+            ];
         }
+        
+        $form['users'] = [
+            '#type' => 'select',
+            '#options' => $users,
+            '#multiple' => true,
+            '#size' => 8,
+            '#default_value' => $default,
+            '#attributes' => ['class' => ['form-select-multiple'], 'style' => array('width:300px;')],
+            '#attached' => [
+                'drupalSettings' => $ds,
+                'library' => ['ek_admin/ek_admin_multi-select'],
+            ],
+        ];
 
-        $form['item'] = array(
-      '#type' => 'item',
-      '#markup' => '<span class="help">'. $this->t('By default access is given to users who have access to the company unless custom access has been defined by owner. Use "Ctrl C" to select multiple users in the box below.') . '</span>',
-    );
-    
-        $form['users'] = array(
-      '#type' => 'select',
-      '#options' => $users,
-      '#multiple' => true,
-      '#size' => 8,
-      '#default_value' => $default_users,
-      
-      );
+        $form['for_id'] = [
+            '#type' => 'hidden',
+            '#value' => $id,
+        ];
 
-   
-        $form['for_id'] = array(
-          '#type' => 'hidden',
-          '#default_value' =>$id,
-    );
 
-        $form['type'] = array(
-          '#type' => 'hidden',
-          '#default_value' =>$type,
-    );
-    
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['access'] = array(
+
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['access'] = [
             '#id' => 'accessbutton',
             '#type' => 'submit',
-            '#value' =>  $this->t('Save') ,
+            '#value' => $this->t('Save'),
             '#attributes' => array('class' => array('use-ajax-submit')),
+        ];
 
-      );
-
-        $form['#attached']['css'][] = array(
-        'data' => drupal_get_path('module', 'ek_projects') . '/css/ek_admin.css',
-        'type' => 'file',
-
-    );
 
         if ($form_state->get('message') <> '') {
-            $form['message'] = array(
-      '#markup' => "<div class='red'>" . $this->t('Data') . ": " . $form_state->get('message') . "</div>",
-    );
+            $form['message'] = [
+                '#markup' => "<div class='red'>" . $this->t('Data') . ": " . $form_state->get('message') . "</div>",
+            ];
             $form_state->set('message', '');
             $form_state->setRebuild();
         }
- 
+
         return $form;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
+        
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
-  
-    //set a security check in order to prevent any user to change data except the owner
-        if ($form_state->getValue('type') == 'company_doc') {
-            $query = "SELECT share,deny,id FROM {ek_company_documents} WHERE id=:id";
-        }
-        $data = Database::getConnection('external_db', 'external_db')
-    ->query($query, array(':id' => $form_state->getValue('for_id')))->fetchObject();
-    
-    
-        //owner can edit data
-        $query = Database::getConnection()->select('users_field_data', 'u');
-        $query->fields('u', ['uid', 'name']);
-        $query->condition('uid', 0, '<>');
-        $users = $query->execute();
-    
-        $share = explode(',', $data->share);
-        $deny = explode(',', $data->deny);
-        $new_share = array();
-        $new_deny = array();
+    public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        while ($u = $users->fetchObject()) {
-            if (in_array($u->uid, $form_state->getValue('users'))) {
-                array_push($new_share, $u->uid);
-            } else {
-                array_push($new_deny, $u->uid);
+        if($form_state->getValue('reset') == 1) {
+            $fields = array(
+                'share' => 0,
+                'deny' => 0,
+            );
+        } else {
+            // include current user by default or document could be locked
+            $share = [\Drupal::currentUser()->id()];
+            $deny = [];
+
+            foreach (\Drupal\user\Entity\User::loadMultiple() as $account) {
+                if (in_array($account->id(), $form_state->getValue('users'))) {
+                    array_push($share, $account->id());
+                } elseif($account->id() > 0 && $account->id() != \Drupal::currentUser()->id()) {
+                    array_push($deny, $account->id());
+                }
             }
-        }
-      
-        if (empty($new_deny)) {
-            $new_deny = '0';
-        }
-    
-    
-   
-        $fields = array(
-    'share' => implode(',', $new_share),
-    'deny' => implode(',', $new_deny),
-  );
-  
-        if ($form_state->getValue('type') == 'company_doc') {
-            $update = Database::getConnection('external_db', 'external_db')
-  ->update('ek_company_documents')->fields($fields)
-  ->condition('id', $form_state->getValue('for_id'))->execute();
+           
+            if (empty($deny)) {
+                $deny = '0';
+            }
+
+
+            $fields = array(
+                'share' => implode(',', $share),
+                'deny' => implode(',', $deny),
+            );
         }
 
-   
-   
+        $update = Database::getConnection('external_db', 'external_db')
+                        ->update('ek_company_documents')->fields($fields)
+                        ->condition('id', $form_state->getValue('for_id'))->execute();
+
+
         if ($update) {
             $form_state->set('message', $this->t('saved'));
             $form_state->setRebuild();
@@ -175,4 +165,5 @@ class DocAccessEdit extends FormBase
             $form_state->setRebuild();
         }
     }
+
 }
