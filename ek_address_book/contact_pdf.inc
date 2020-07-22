@@ -249,13 +249,7 @@ if (headers_sent()) {
 }
 header('Cache-Control: private');
 header('Content-Type: application/pdf');
-
-
 header("Content-Disposition: 'attachment'; filename=\"" . $book_data->name . '_' . $card_data->contact_name . "\" ");
 $f = str_replace(' ', '_', $card_data->contact_name) . '.pdf';
 echo $pdf->Output($f, 'I');
-flush();
-
-return TRUE;
-
-
+exit;
