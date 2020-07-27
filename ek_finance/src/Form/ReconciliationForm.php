@@ -76,11 +76,8 @@ class ReconciliationForm extends FormBase {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
+        
         $company = AccessCheck::CompanyListByUid();
-        //$company = implode(',', $access);
-        //$query = "SELECT id,name from {ek_company} where active=:t AND FIND_IN_SET (id, :c ) order by name";
-        //$company = Database::getConnection('external_db', 'external_db')->query($query, array(':t' => 1, ':c' => $company))->fetchAllKeyed();
-
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Filter'),
@@ -132,7 +129,7 @@ class ReconciliationForm extends FormBase {
         $form['filters']['next'] = array(
             '#type' => 'submit',
             '#value' => $this->t('Next'),
-            //'#limit_validation_errors' => array(),
+            '#limit_validation_errors' => [['date'],['coid'],['account']],
             '#submit' => array(array($this, 'list_journal')),
             '#states' => array(
                 'invisible' => array(
@@ -155,10 +152,10 @@ class ReconciliationForm extends FormBase {
                 '#markup' => "<a title='" . $this->t('Excel download') . "' href='" . $xlink . "'><span class='ico excel green'/></a>",
             );
 
-            //retreive exchange value when inter accounts transfer with different currencies
-            //1 select active currencies
+            // retreive exchange value when inter accounts transfer with different currencies
+            // 1 select active currencies
             $currencies = CurrencyData::listcurrency(1);
-            //verify settings for currency accounts
+            // verify settings for currency accounts
             $companysettings = new CompanySettings($form_state->getValue('coid'));
             $account_currency = null;
             foreach ($currencies as $key => $value) {
@@ -206,7 +203,7 @@ class ReconciliationForm extends FormBase {
             // sum transaction currency
             // remove filter with 'exchange' flag for case where journal has records
             // with internal currency transfers - applies to base currency
-            //$settings = new FinanceSettings();
+            // $settings = new FinanceSettings();
             $baseCurrency = $this->settings->get('baseCurrency');
 
             if ($baseCurrency == $account_currency) {
@@ -378,7 +375,7 @@ class ReconciliationForm extends FormBase {
             while ($r = $result->fetchObject()) {
                 $j = Journal::journalEntryDetails($r->id);
 
-                //Fix a bug to retreive exchange value when inter accounts transfer with different currencies
+                // Fix a bug to retreive exchange value when inter accounts transfer with different currencies
                 if ($account_currency && ($account_currency != $j['currency'])) {
                     $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_journal', 'jr');
@@ -561,7 +558,7 @@ class ReconciliationForm extends FormBase {
                 $form_state->setErrorByName("headerline", $this->t('No record selected'));
             }
 
-            //attachment
+            // attachment
             $validators = array('file_validate_extensions' => array('png jpg jpeg pdf'));
             $field = "upload_doc";
             // Check for uploaded file.
@@ -640,7 +637,7 @@ class ReconciliationForm extends FormBase {
                         $j['currency'] = $form_state->getValue('account_currency');
                     }
 
-                    //verify if date of entry is current or past year. If past year reco tag is changed from 1 to current year
+                    // verify if date of entry is current or past year. If past year reco tag is changed from 1 to current year
                     // this is used for balance calculation with overlaping data when doing reconciliation
                     $current_year = date('Y');
                     if (date('Y', strtotime($j['date'])) < $current_year) {
@@ -658,7 +655,7 @@ class ReconciliationForm extends FormBase {
                             ->fields(array('reconcile' => $reco))
                             ->execute();
 
-                    //verify if aid is bank account, if yes update bank history
+                    // verify if aid is bank account, if yes update bank history
                     $query = "SELECT ba.id,account_ref FROM {ek_bank_accounts} ba INNER JOIN {ek_bank} b ON ba.bid=b.id where aid=:aid and coid=:coid";
                     $a = array(':aid' => $form_state->getValue('account'), ':coid' => $form_state->getValue('coid'));
                     $result = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
