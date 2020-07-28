@@ -1,7 +1,5 @@
 <section class="address_book_card">
-
     <div class='button' style='float:right;'><span class="ico search"></span>{{ items.search }}</div><br/>
-
     <div class="address_book_card-data">
         <div class='table'>
             <div class='row'>
@@ -38,8 +36,6 @@
                 </div>
             </div>
             <div class='row'>
-
-
                 <div class='cell'>
                     {# righ column #}
                     <h2><span class="ico map-marker"></span><span class=" clipboard_add">{{ 'Address'|t }}</span><span class="copy copyAdd">copied to clipboard</span></h2>
@@ -54,7 +50,6 @@
                             <td id="postcode">{{ items.postcode }}</td><td id="city">{{ items.country }}</td>
                         </tr> 
                     </table>
-
                     <hr>
                     <h2><span class="ico phone"></span>{{ 'Contact'|t }}</h2>
                     <table>    
@@ -71,33 +66,27 @@
                             </tr>    
                         {% endif %}
                     </table>
-
                 </div>
                 <div class='cell'>
                     <table>
                         <tr>
-                            <td><span class='badge'>{{ 'Reg. number'|t }}: </span></td><td  id="regnumber">{{ items.reg }}</td>
+                            <td><span class='ab-badge'>{{ 'Reg. number'|t }}: </span></td><td  id="regnumber">{{ items.reg }}</td>
                         </tr>
                         <tr>
-                            <td><span class='badge'>{{ 'Status'|t }}: </span></td><td  id="astatus">{{ items.status }}</td>
+                            <td><span class='ab-badge'>{{ 'Status'|t }}: </span></td><td  id="astatus">{{ items.status }}</td>
                         </tr>
                         <tr>
-                            <td><span class='badge'>{{ 'Tags'|t }}:</span></td><td id="atags">{{ items.activity }}</td>
+                            <td><span class='ab-badge'>{{ 'Tags'|t }}:</span></td><td id="atags">{{ items.activity }}</td>
                         </tr>
                         <tr>
-                            <td><span class='badge'>{{ 'Type'|t }}:</span></td><td id="atype">{{ items.type }} {{ items.clone }}</td>
+                            <td><span class='ab-badge'>{{ 'Type'|t }}:</span></td><td id="atype">{{ items.type }} {{ items.clone }}</td>
                         </tr>
                     </table>
                 </div>
             </div>
-
         </div>
-
-
     </div>
-
     <hr>
-
     <div class="address_book_card-contacts">
 
         <div class='table'>
@@ -108,15 +97,15 @@
 
         {% for item in items.contacts %}
 
-            <div class="panel panel-default">
-
-                <div class="panel-heading"><a href='#{{ item.id }}'  onclick="jQuery('#{{ item.id }}').toggle();">
-                        <h3 class="panel-title"><span id="salutation{{ item.id }}">{{ item.salutation }}</span> 
-                            <span id="card{{ item.id }}">{{ item.contact_name }}</span></h3></a>
-
+            <div class="ab-panel ab-panel-default">
+                <div class="ab-panel-heading">
+                    <a href='#{{ item.id }}'  onclick="jQuery('#{{ item.id }}').toggle();">
+                        <h3 class="ab-panel-title"><span id="salutation{{ item.id }}">{{ item.salutation }}</span> 
+                            <span id="card{{ item.id }}">{{ item.contact_name }}</span>
+                        </h3>
+                    </a>
                 </div>
-
-                <div class="panel-body" id="{{ item.id }}">
+                <div class="ab-panel-body" id="{{ item.id }}">
                     <table>
                         <tr>
                             <td>
@@ -156,7 +145,7 @@
                         </tr>       
                         <tr>
                             <td><span class="ico comment"></span><span>  </span><span>{{ item.comment }}</span></td>
-                            <td><center><span class="ico file-pdf"> {{ item.pdf }}</center></td>
+                            <td><center><span class="ico file-pdf"> {{ item.pdf|raw }}</center></td>
                         </tr>                  
                     </table>
                 </div>

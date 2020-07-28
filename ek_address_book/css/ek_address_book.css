@@ -22,41 +22,37 @@ tr {
 }
 
 .cellborder {  
-  border-width: thin ;
-	border-spacing: 1px;
-	border-collapse: collapse;
-	background-color: #CEE3F6;
-
+    border-width: thin ;
+    border-spacing: 1px;
+    border-collapse: collapse;
+    background-color: #CEE3F6;
 }
 
 .thumbnail {
     width : 50px;
-
 }
 
-.panel-default {
-    border-color: #DDDDDD;
-}
-.panel {
+.ab-panel {
     background-color: #FFFFFF !important;
     padding: 0px !important;
     border-radius: 4px;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #ccc;
+    box-shadow: 0 5px 20px rgb(169, 188, 245);
     margin: 0px !important;
 }
-
-.panel-default > .panel-heading {
+.ab-panel-heading {
     background-color: #A9BCF5;
     border-color: #A9BCF5;
     color: #333333;
-}
-.panel-heading {
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
     padding: 1px 5px;
+    text-align: center;
 }
-
-.panel-body {
+.ab-panel-heading a {
+    color: #313131;
+}
+.ab-panel-body {
     padding: 15px;
 }
 
@@ -82,34 +78,34 @@ tr {
     color: #FFFFFF;
 }
 
-.badge {
-    background-color: #9dbed0;
-    border-radius: 5px;
-    color: #fff;
-    display: inline-block;
-    font-size: 10px;
-    font-weight: bold;
-    line-height: 1;
-    min-width: 10px;
-    padding: 5px 9px;
-    text-align: center;
-    vertical-align: baseline;
-    white-space: nowrap;
+.ab-badge {
+	background-color: #ddd;
+	border-radius: 5px;
+	color: #2b2b2b;
+	display: inline-block;
+	/* font-size: 1.1em; */
+	font-weight: bold;
+	/* line-height: 1; */
+	min-width: 10px;
+	padding: 5px 9px;
+	/* text-align: center; */
+	/* vertical-align: baseline; */
+	/* white-space: nowrap; */
 }
 
 hr {
-  -moz-border-bottom-colors: none;
-  -moz-border-left-colors: none;
-  -moz-border-right-colors: none;
-  -moz-border-top-colors: none;
-  border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
-  border-image: none;
-  border-right: 0 none;
-  border-style: solid none none;
-  border-width: 1px 0 0;
-  margin-bottom: 2px;
-  margin-top: 2px;
-  height: 0;
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
+    border-image: none;
+    border-right: 0 none;
+    border-style: solid none none;
+    border-width: 1px 0 0;
+    margin-bottom: 2px;
+    margin-top: 2px;
+    height: 0;
 }
 
 /* clipboard */
@@ -119,14 +115,13 @@ hr {
 }
 
 .copy {
-   display:none;
-   color: green;
-   padding-left: 20px;
-   font-size: 0.8em;
+    display:none;
+    color: green;
+    padding-left: 20px;
+    font-size: 0.8em;
 }
 /* search display */
 .abook_thumbnail {
-    
     width: 40px;
     height: 40px;
     overflow: hidden;
@@ -142,11 +137,11 @@ hr {
 }
 
 #abook-search-result {
-   overflow: auto;
-   padding-top: 5px;
+    overflow: auto;
+    padding-top: 5px;
 }
 .abook_image-link {
-  border-bottom: 0px !important;
+    border-bottom: 0px !important;
 }
 
 div .client {
@@ -159,57 +154,57 @@ div .other  {
     background-color: #9F9F9F;
 }
 .ico:before {
-  font-family: FontAwesome;
-  font-size:1.3em;
-  color: #446E9B;
-  width: 1.4em;
-  text-align: center;
-  display: inline-block;
-  text-rendering: auto;
+    font-family: FontAwesome;
+    font-size:1.3em;
+    color: #446E9B;
+    width: 1.4em;
+    text-align: center;
+    display: inline-block;
+    text-rendering: auto;
 }
 
 .search:before {
-  content: "\f002";
+    content: "\f002";
 }
 .pencil:before {
-  content: "\f044";
+    content: "\f044";
 }
 .map-marker:before {
-  content: "\f041";
+    content: "\f041";
 }
 .phone:before {
-  content: "\f095";
+    content: "\f095";
 }
 .users:before {
-  content: "\f0c0";
+    content: "\f0c0";
 }
 .plus:before {
-  content: "\f067";
+    content: "\f067";
 }
 
 .user:before {
-  content: "\f2be"; 
+    content: "\f2be"; 
 }
 .briefcase:before {
-  content: "\f0b1"; 
+    content: "\f0b1"; 
 }
 .tag:before {
-  content: "\f02b"; 
+    content: "\f02b"; 
 }
 .mobile:before {
-  content: "\f10b";
+    content: "\f10b";
 }
 .envelope:before {
-  content: "\f003"; 
+    content: "\f003"; 
 }
 .link:before {
-  content: "\f0c1"; 
+    content: "\f0c1"; 
 }
 .comment:before {
-  content: "\f075"; 
+    content: "\f075"; 
 }
 .file-pdf:before {
-  content: "\f1c1"; 
+    content: "\f1c1"; 
 }
 .namecard:before {
     content: "\f2bc";
