@@ -39,17 +39,17 @@
 
         {% set i = i+1 %}
 
-        <div id="{{ folder }}" class='drop-folder panel panel-default'>
-            <div class='panel-heading'  onclick="jQuery('#mdoc_{{ i }}').toggle('fast');">
-                <h4 class='panel-title text-primary'>
+        <div id="{{ folder }}" class='drop-folder doc-panel doc-panel-default'>
+            <div class='doc-panel-heading'  onclick="jQuery('#mdoc_{{ i }}').toggle('fast');">
+                <h4 class='doc-panel-title text-primary'>
                     <span class="folder-ico" aria-hidden="true"></span>&nbsp;
                     {{ folder }}
-                    <small class='badge float-right' >{{ docs|length }} {{'document(s)'|t }}</small>
+                    <small class='doc-badge float-right' >{{ docs|length }} {{'document(s)'|t }}</small>
                 </h4>
 
             </div>
 
-            <div id="{{ folder }}" class='drop-folder panel-body'>
+            <div id="{{ folder }}" class='drop-folder doc-panel-body'>
                 <div class='inner' id='mdoc_{{ i }}' >
 
                     {% for doc in docs %}

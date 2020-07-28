@@ -1,44 +1,36 @@
-.panel-default {
-    border-color: #ddd;
-}
 
-.panel {
+.doc-panel {
     background-color: #fff;
     border-radius: 4px;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
     margin-bottom: 20px;
     padding:0px !important;
+    border: 1px solid #ccc;
+    box-shadow: 0 5px 20px rgb(169, 188, 245);
 }
 
-.panel-default > .panel-heading {
+.doc-panel-heading {
     background-color: #A9BCF5;
     border-color: #A9BCF5;
     color: #333;
-}
-.panel-heading {
     display: block;
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-    padding: 10px 15px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    padding: 5px 20px;
     cursor:pointer
 }
-
-.panel-body {
+.doc-panel-body {
     display : block;
     padding: 10px;
 }
-
-
-.panel-body:after {
+.doc-panel-body:after {
     clear: both;
 }
-.panel-body:before, .panel-body:after {
+.doc-panel-body:before, .doc-panel-body:after {
     content: " ";
     display: table;
 }
 
-
-.badge {
+.doc-badge {
     background-color: #999;
     border-radius: 10px;
     color: #fff;
