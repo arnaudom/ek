@@ -172,7 +172,7 @@ class InstallController extends ControllerBase {
 	`serial` VARCHAR(45) NOT NULL DEFAULT '',
 	`head` TINYINT(3) UNSIGNED NULL DEFAULT NULL,
 	`allocation` TINYINT(3) UNSIGNED NULL DEFAULT NULL,
-	`status` VARCHAR(45) NOT NULL DEFAULT '',
+	`status` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '0 = Open, 1 = Printed, 2 = Invoiced',
 	`amount` DOUBLE NOT NULL DEFAULT '0',
 	`currency` VARCHAR(5) NOT NULL DEFAULT '',
 	`date` VARCHAR(45) NOT NULL DEFAULT '0000-00-00',

@@ -1210,7 +1210,7 @@ class InvoicesController extends ControllerBase {
                     'task' => ['data' => ['#markup' => $task],],
                     'period' => date('Y-m-d', $r->start) . ' -> ' . date('Y-m-d', $r->end),
                     'expired' => $expired,
-                    'rate' => $r->completion_rate . ' %',
+                    'rate' => ['data' => ['#markup' => "<meter title='" . $r->completion_rate . "%'  value=" . $r->completion_rate . " max=100>". $r->completion_rate." %</meter>"]],
                     'who' => $who,
                     'notify' => $notify[$r->notify],
                     'operations' => ['data' => ['#type' => 'operations','#links' => $ops,]],
