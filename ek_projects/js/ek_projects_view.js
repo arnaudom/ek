@@ -49,9 +49,9 @@
             update_fields(drupalSettings.ek_projects.id);
             update_documents(drupalSettings.ek_projects.id);
             if (jQuery('#expand').hasClass('open-ico'))
-                jQuery('.panel-body').hide('fast');
+                jQuery('.pro-panel-body').hide('fast');
             if (jQuery('#expand').hasClass('close-ico'))
-                jQuery('.panel-body').show('fast');
+                jQuery('.pro-panel-body').show('fast');
             jQuery('#expand').toggleClass('close-ico open-ico');
 
         });

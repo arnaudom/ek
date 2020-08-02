@@ -2139,7 +2139,7 @@ class ProjectController extends ControllerBase {
             if ($r->end != null && date('U') > $r->end && $r->completion_rate < 100) {
                 $status = "<span class='red'>" . $this->t('expired') . "</span>";
             } else {
-                $status = $this->t('done') . ': ' . $r->completion_rate . ' %';
+                $status = "<meter title='" . $r->completion_rate . "%'  value=" . $r->completion_rate . " max=100>". $r->completion_rate." %</meter>";
             }
 
             $task = $r->task;
