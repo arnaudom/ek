@@ -13,7 +13,7 @@ use Drupal\Core\Database\Database;
 function ek_hr_uninstall() {
     
   $configs = [
-      'tour.tour.hr_accounts',
+      'tour.tour.hr_accounts_parameters',
       'tour.tour.hr_advance',
       'tour.tour.hr_allowance',
       'tour.tour.hr_categories',
