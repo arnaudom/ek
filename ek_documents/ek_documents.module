@@ -1,13 +1,13 @@
 <?php
 
-    ///////////////////////////////////////////////////
-    //                  COPYRIGHT                    //
-    //                                               //
-    // DEVELOPPED BY ARREA LTD                       //
-    // all rights reserved                           //
-    // Please read and agree with software           //
-    // application license                           //
-    ///////////////////////////////////////////////////
+///////////////////////////////////////////////////
+//                  COPYRIGHT                    //
+//                                               //
+// DEVELOPPED BY ARREA LTD                       //
+// all rights reserved                           //
+// Please read and agree with software           //
+// application license                           //
+///////////////////////////////////////////////////
 
 
 use Drupal\Core\Database\Database;
@@ -16,88 +16,85 @@ use Drupal\Core\Database\Database;
  * @file
  *  module ek_documents.
  */
- 
+
 /**
  * Implementation hook_ek_settings().
  * 
- */ 
- function ek_documents_ek_settings($coids) { 
+ */
+function ek_documents_ek_settings($coids) {
     //we do not use param coids here as settings are global
     $settings = [];
     $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_document_settings', 'd');
+            ->select('ek_document_settings', 'd');
     $query->fields('d', ['id', 'settings']);
     $query->condition('id', '0');
     $data = $query->execute()->fetchObject();
-    if($data){
+    if ($data) {
         $settings = unserialize($data->settings);
     }
-    if(empty($settings)) {
+    if (empty($settings)) {
         $_SESSION['install'] = 1;
         $link = \Drupal\Core\Url::fromRoute('ek_documents_settings', array(), array())->toString();
         return ['documents' => $link];
-        
     }
-  
+
     return new \Symfony\Component\HttpFoundation\Response('', 204);
-     
- }
- 
+}
 
 /**
  * Implements hook_ek_home().
  */
 function ek_documents_ek_home() {
-  
+    
 }
 
 /**
  * Implementation hook_theme().
  */
 function ek_documents_theme() {
-  return array(
-    //block view render formatting
-    'ek_documents_block_view' => array
-    (
-      'template' => 'ek_documents_block_view',
-      'variables' => array('items' => array(), 'modules' => array()),
-    ),
-    //list view render formatting
-    'ek_documents_list_view' => array
-    (
-      'template' => 'ek_documents_list_view',
-      'variables' => array('items' => array(), 'modules' => array()),
-    ),        
-    // my docs
-    'ek_documents_my' => array
-    (
-      'template' => 'ek_documents_my',
-      'variables' => array('items' => array()),
-    ),
-    // shared docs
-    'ek_documents_shared' => array
-    (
-      'template' => 'ek_documents_shared',
-      'variables' => array('items' => array()),
-    ),  
-    // common docs
-    'ek_documents_common' => array
-    (
-      'template' => 'ek_documents_common',
-      'variables' => array('items' => array()),
-    ),     
-  );     
+    return array(
+        //block view render formatting
+        'ek_documents_block_view' => array
+            (
+            'template' => 'ek_documents_block_view',
+            'variables' => array('items' => array(), 'modules' => array()),
+        ),
+        //list view render formatting
+        'ek_documents_list_view' => array
+            (
+            'template' => 'ek_documents_list_view',
+            'variables' => array('items' => array(), 'modules' => array()),
+        ),
+        // my docs
+        'ek_documents_my' => array
+            (
+            'template' => 'ek_documents_my',
+            'variables' => array('items' => array()),
+        ),
+        // shared docs
+        'ek_documents_shared' => array
+            (
+            'template' => 'ek_documents_shared',
+            'variables' => array('items' => array()),
+        ),
+        // common docs
+        'ek_documents_common' => array
+            (
+            'template' => 'ek_documents_common',
+            'variables' => array('items' => array()),
+        ),
+    );
 }
 
 /**
  * Implements hook_file_download().
  */
 /* edit the file_download function in order to control access of shared files
-* by users if they belong to shared group or shared user
-*/
+ * by users if they belong to shared group or shared user
+ */
 function ek_documents_file_download($uri) {
 
-    if (strpos($uri,'/documents/users/')) {
+    if (strpos($uri, '/documents/users/')) {
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->file($uri);
         $query = "SELECT * FROM {ek_documents}  WHERE uri = :uri";
@@ -110,78 +107,64 @@ function ek_documents_file_download($uri) {
         $name = \Drupal::currentUser()->getAccountName();
         $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
 
-            if ($file->id && $uid) {
+        if ($file->id && $uid) {
 
-                $now = time();
-                $name = \Drupal::currentUser()->getAccountName();   
+            $now = time();
+            $name = \Drupal::currentUser()->getAccountName();
 
 
-                if ($uid == $file->uid || $file->uid == '0') {
+            if ($uid == $file->uid || $file->uid == '0') {
                 //file belongs to user or common area, ok
+                //////////////////////////
+                //    WATCHDOG          //
+                //////////////////////////
+                $log = t("User @u has downloaded document @d (file id @i)", $a);
+                \Drupal::logger('ek_documents')->notice($log);
+                return array('Content-Type' => $mime);
+            } else {
+
+                if ($file->share == '2') {
+                    //share all...
+
+
+                    $info = file_load($fid);
                     //////////////////////////
                     //    WATCHDOG          //
                     //////////////////////////
                     $log = t("User @u has downloaded document @d (file id @i)", $a);
-                    \Drupal::logger('ek_documents')->notice( $log );                
+                    \Drupal::logger('ek_documents')->notice($log);
                     return array('Content-Type' => $mime);
+                } elseif ($file->share == '1') {
+                    //verify access granted by owner
+                    $share_uid = explode(',', $file->share_uid);
 
-
-                } else { 
-
-                    if ($file->share == '2') {
-                    //share all...
-
-
-                          $info = file_load($fid);
-                          //////////////////////////
-                          //    WATCHDOG          //
-                          //////////////////////////
-                          $log = t("User @u has downloaded document @d (file id @i)", $a);
-                          \Drupal::logger('ek_documents')->notice( $log );  
-                          return array('Content-Type' => $mime); 
-
+                    if (in_array($uid, $share_uid) && ($file->expire >= $now || $file->expire == 0)) {
+                        //////////////////////////
+                        //    WATCHDOG          //
+                        //////////////////////////
+                        $log = t("1- User @u has downloaded document @d (file id @i)", $a);
+                        \Drupal::logger('ek_documents')->notice($log);
+                        return array('Content-Type' => $mime);
+                    } else {
+                        //////////////////////////
+                        //    WATCHDOG          //
+                        //////////////////////////
+                        $log = t("User @u tried to downlaod document @d but it is not shared with this user or expired (file id @i)", $a);
+                        \Drupal::logger('ek_documents')->notice($log);
+                        return -1;
                     }
-
-                    elseif ($file->share == '1' )  {
-                      //verify access granted by owner
-                      $share_uid = explode(',', $file->share_uid);
-
-                          if (in_array($uid , $share_uid ) && ($file->expire >= $now || $file->expire == 0) ) {
-                              //////////////////////////
-                              //    WATCHDOG          //
-                              //////////////////////////
-                              $log = t("1- User @u has downloaded document @d (file id @i)", $a);
-                              \Drupal::logger('ek_documents')->notice( $log );  
-                              return array('Content-Type' => $mime);
-
-
-                          }  else {
-                              //////////////////////////
-                              //    WATCHDOG          //
-                              //////////////////////////
-                              $log = t("User @u tried to downlaod document @d but it is not shared with this user or expired (file id @i)", $a);
-                               \Drupal::logger('ek_documents')->notice( $log );  
-                              return -1;          
-                          }
-
-
-                    }  else {
-                          //////////////////////////
-                          //    WATCHDOG          //
-                          //////////////////////////
-                          $log = t("User @u tried to downlaod document @d but it is not shared (file id @i)", $a);
-                           \Drupal::logger('ek_documents')->notice( $log );  
-                          return -1;          
-                    }
-
-                } //if not owner
-
-            }//if fid
-
+                } else {
+                    //////////////////////////
+                    //    WATCHDOG          //
+                    //////////////////////////
+                    $log = t("User @u tried to downlaod document @d but it is not shared (file id @i)", $a);
+                    \Drupal::logger('ek_documents')->notice($log);
+                    return -1;
+                }
+            } //if not owner
+        }//if fid
     }
 }
-
-
 
 /**
  * manage messaging.
@@ -189,78 +172,58 @@ function ek_documents_file_download($uri) {
  */
 function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL, $priority = NULL) {
 
-  //$users = implode(',' , $to);
-  //$query = "SELECT name,mail from {users_field_data} WHERE (FIND_IN_SET (uid, :uid )) ";
-  //$list = db_query($query, array(':uid' => $users ));
-  $users = ',';
-  $param = array();
-  $site_config = \Drupal::config('system.site');
-  $params['from'] =  Drupal::currentUser()->getEmail() ;
-  $theme = theme_get_setting('logo');
-  $params['options']['logo'] = $GLOBALS['base_url'] . '/' . $theme['url'];
-  $params['options']['site'] = $site_config->get('name');
-  $params['options']['stamp'] = date('F j, Y, g:i a');
-  $url = "<a href='". file_create_url($uri) ."'>". $filename ."</a>";
-    
+    //$users = implode(',' , $to);
+    //$query = "SELECT name,mail from {users_field_data} WHERE (FIND_IN_SET (uid, :uid )) ";
+    //$list = db_query($query, array(':uid' => $users ));
+    $users = ',';
+    $param = array();
+    $site_config = \Drupal::config('system.site');
+    $params['from'] = Drupal::currentUser()->getEmail();
+    $theme = theme_get_setting('logo');
+    $params['options']['logo'] = $GLOBALS['base_url'] . '/' . $theme['url'];
+    $params['options']['site'] = $site_config->get('name');
+    $params['options']['stamp'] = date('F j, Y, g:i a');
+    $url = "<a href='" . file_create_url($uri) . "'>" . $filename . "</a>";
+    $names = '';
     //while ($l = $list->fetchObject()) {
     foreach (\Drupal\user\Entity\User::loadMultiple($to) as $account) {
-        
-      if($account) {
-        switch($key) {
-          case 'share' :
-          default:
-          $params['subject'] = t("Document shared");
-          $render = [
-              '#markup' => t('Dear @n , @u shared with you a document', array('@n' => $account->getAccountName(), '@u' => Drupal::currentUser()->getAccountName() ))   ,
-          ];
-          //$message = ['#markup' => $message];
-          $params['body'] = \Drupal::service('renderer')->render($render);
-          $render = ['#markup' => $message];
-          $params['options']['message'] = \Drupal::service('renderer')->render($render);
-          $params['options']['url'] = $url;
-          $params['options']['priority'] = $priority;
-          $template = 'key_document_share';
-          break;
 
+        if ($account) {
+            switch ($key) {
+                case 'share' :
+                default:
+                    $params['subject'] = t("Document shared");
+                    $names .= $account->getAccountName() . ',';
+                    $render = [
+                        '#markup' => t('Dear @n, @u shared a document with you', array('@n' => $account->getAccountName(), '@u' => Drupal::currentUser()->getAccountName())),
+                    ];
+                    //$message = ['#markup' => $message];
+                    $params['body'] = \Drupal::service('renderer')->render($render);
+                    $render = ['#markup' => $message];
+                    $params['options']['message'] = \Drupal::service('renderer')->render($render);
+                    $params['options']['url'] = $url;
+                    $params['options']['priority'] = $priority;
+                    $template = 'key_document_share';
+                    break;
+            }
+            $users .= $account->id() . ',';
+            $target_langcode = $account->getPreferredLangcode();
+
+            $send = \Drupal::service('plugin.manager.mail')->mail(
+                    'ek_documents',
+                    $template,
+                    $account->getEmail(),
+                    $target_langcode,
+                    $params,
+                    $params['from'],
+                    TRUE
+            );
         }
-        $users .= $account->id() . ',';
-        $target_langcode = $account->getPreferredLangcode();
-         
-        $send = \Drupal::service('plugin.manager.mail')->mail(
-                  'ek_documents',
-                  $template,
-                  $account->getEmail(),
-                  $target_langcode,
-                  $params,
-                  $params['from'],
-                  TRUE
-                );   
-
-      }
     }
-  
-    //send an email copy to me
-    $params['subject'] = t("My document shared (copy)");
-    $my_mail = \Drupal::currentUser()->getEmail();
-    if ($target_user = user_load_by_mail($my_mail)) {
-            $target_langcode = $target_user->getPreferredLangcode();
-        } else {
-            $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
-        }
-    $send = \Drupal::service('plugin.manager.mail')->mail(
-                'ek_documents',
-                $template,
-                $my_mail ,
-                $target_langcode,
-                $params,
-                $params['from'],
-                TRUE
-              );
-
-
-      if($mode == 'internal message') {  
-      //add copy in internal messaging
-          ek_message_register( [
+    
+    if ($mode == 'internal message') {
+        //add copy in internal messaging
+        ek_message_register([
             'uid' => \Drupal::currentUser()->id(),
             'to' => $users,
             'to_group' => 0,
@@ -271,13 +234,32 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
             'subject' => $params['subject'],
             'body' => serialize($params['body']),
             'priority' => $priority,
-          ]
-          );
-
-      }
-
+                ]
+        );
+    }
+    
+    //send an email copy to me
+    $params['subject'] = t("My document shared (copy)");
+    $render = [
+        '#markup' => t('Message sent to @names', array('@names' => $names)),
+    ];
+    $params['body'] = \Drupal::service('renderer')->render($render);
+    $my_mail = \Drupal::currentUser()->getEmail();
+    if ($target_user = user_load_by_mail($my_mail)) {
+        $target_langcode = $target_user->getPreferredLangcode();
+    } else {
+        $target_langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
+    }
+    $send = \Drupal::service('plugin.manager.mail')->mail(
+            'ek_documents',
+            $template,
+            $my_mail,
+            $target_langcode,
+            $params,
+            $params['from'],
+            TRUE
+    );
 }
-
 
 /**
  * Implementation hook_mail().
@@ -285,15 +267,14 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
 function ek_documents_mail($key, &$message, $params) {
 
 
-    switch($key) {
-      case 'key_document_share':
+    switch ($key) {
+        case 'key_document_share':
 
-        $message['headers']['From'] = $params['from'];
-        $message['subject'] = $params['subject'];        
-        $message['body'][] = $params['body'];
-        $message['options'] = $params['options'];
-        break;
-
+            $message['headers']['From'] = $params['from'];
+            $message['subject'] = $params['subject'];
+            $message['body'][] = $params['body'];
+            $message['options'] = $params['options'];
+            break;
     }
 }
 
@@ -301,66 +282,61 @@ function ek_documents_mail($key, &$message, $params) {
  * Implements hook_form_alter().
  */
 function ek_documents_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-    
-  if ($form_id == 'user_multiple_cancel_confirm') {
-    
-    $form['move_uid_documents'] = [
-      '#type' => 'textfield',
-      '#title' => t('Move user documents'),
-      '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
-      '#description' => t('Select to whom to transfer personal documents'),
-    ];
-    $form['#validate'][] = 'ek_documents_form_user_delete_validate';
-    $form['#submit'][] = 'ek_documents_form_user_delete_submit';
-    
-     return $form;
-      
-  }
-} 
+
+    if ($form_id == 'user_multiple_cancel_confirm') {
+
+        $form['move_uid_documents'] = [
+            '#type' => 'textfield',
+            '#title' => t('Move user documents'),
+            '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
+            '#description' => t('Select to whom to transfer personal documents'),
+        ];
+        $form['#validate'][] = 'ek_documents_form_user_delete_validate';
+        $form['#submit'][] = 'ek_documents_form_user_delete_submit';
+
+        return $form;
+    }
+}
 
 /**
  * Implements hook_form_validate().
  */
 function ek_documents_form_user_delete_validate(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
 
-  if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
+    if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
         if ($form_state->getValue('move_uid_documents') <> '') {
             $query = Database::getConnection()->select('users_field_data', 'u');
             $query->fields('u', ['uid']);
             $query->condition('name', $form_state->getValue('move_uid_documents'));
             $data = $query->execute()->fetchField();
-            
+
             if ($data) {
                 $form_state->setValue('move_uid_documents', $data);
             } else {
                 $form_state->setErrorByName('move_uid_documents', t('Unknown user to move documents'));
             }
         }
-    
-     return $form;
-      
-  }
+
+        return $form;
+    }
 }
 
 /**
  * Implements hook_form_submit().
  */
 function ek_documents_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
-    
-  if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
-    if($form_state->getValue('move_uid_documents')){
-        foreach($form_state->getValue('accounts') as $key => $id) {
+
+    if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
+        if ($form_state->getValue('move_uid_documents')) {
+            foreach ($form_state->getValue('accounts') as $key => $id) {
 
                 $query = Database::getConnection('external_db', 'external_db')
-                      ->update('ek_documents')
-                      ->fields(['uid' => $form_state->getValue('move_uid_documents'), 'folder' => t('Moved from user @u', ['@u' => $id])])
-                      ->condition('uid', $id)->execute();
+                                ->update('ek_documents')
+                                ->fields(['uid' => $form_state->getValue('move_uid_documents'), 'folder' => t('Moved from user @u', ['@u' => $id])])
+                                ->condition('uid', $id)->execute();
             }
+        }
+        \Drupal::messenger()->addStatus(t('Documents moved to user @u', ['@u' => $form_state->getValue('move_uid_documents')]));
+        return $form;
     }
-     \Drupal::messenger()->addStatus(t('Documents moved to user @u', ['@u' => $form_state->getValue('move_uid_documents')]));
-     return $form;
-      
-  }
 }
-
-
