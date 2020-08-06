@@ -151,10 +151,12 @@ class ProjectData {
     /*
      * @param mix $id
      *  project id or project serial code
-     * @param bolean $ext
-     *  flag to open link in new window
+     * @param bolean $abs
+     *  true|false absolute url 
+     * @param bolean $dest
+     *  true|false create link as destination
      * @param bolean $short
-     *  return only last part of serial code (number)
+     *  true|false return only last part of serial code (number)
      * @param string $text
      *  custom text for link
      * @param array $param
@@ -167,7 +169,7 @@ class ProjectData {
      *
      */
 
-    public static function geturl($id, $ext = null, $base = null, $short = null, $text = null, $param = null, $fragment = null) {
+    public static function geturl($id, $abs = null, $dest = null, $short = null, $text = null, $param = null, $fragment = null) {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_project', 'p');
         $query->fields('p', ['id', 'pcode', 'pname']);
@@ -180,14 +182,13 @@ class ProjectData {
         $p = $query->execute()->fetchObject();
 
         if ($p) {
-            if ($ext == true) {
-                $link = Url::fromRoute('ek_projects_view', array('id' => $p->id), ['absolute' => true, 'query' => $param])->toString();
-            } else {
-                $link = Url::fromRoute('ek_projects_view', array('id' => $p->id), ['query' => $param, 'fragment' => $fragment])->toString();
-            }
+            
+            // create a driect link
+            $link = Url::fromRoute('ek_projects_view', ['id' => $p->id], ['absolute' => $abs, 'query' => $param, 'fragment' => $fragment])->toString();
 
-            if ($base != null) {
-                $link = $GLOBALS['base_url'] . $link;
+            if ($dest == true) {
+                // create a link for external notification, i.e. email with user login and page as destination
+                $link = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
             }
 
             if ($short != null) {
@@ -473,7 +474,7 @@ class ProjectData {
             }
 
             return new Response('', 204);
-        } //if>0
+        } 
 
         return new Response('', 204);
     }
