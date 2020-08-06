@@ -53,7 +53,8 @@ while ($row = $data->fetchObject()) {
         $doc['late'] = $late;
         $doc['shortdue'] = $salesSettings[$row->head]['shortdue'];
         $doc['longdue'] = $salesSettings[$row->head]['longdue'];
-        $doc['link'] = $domain . Url::fromRoute('ek_sales.invoices.print_html', ['id' => $row->id])->toString();
+        $l = Url::fromRoute('ek_sales.invoices.print_html', ['id' => $row->id],['query' => []])->toString();
+        $doc['link'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
         $doc['due'] = round($late, 0) . ' ' . t('days');
         $doc['serial'] = $row->serial;
         $doc['value'] = round($row->amount + ($row->amount * $row->taxvalue / 100),2);

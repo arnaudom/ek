@@ -20,14 +20,7 @@ try {
      $query->condition($condition);
      $query->distinct();
      $data = $query->execute();
-     /*
-    $query = "SELECT distinct owner from {ek_project} where status=:s or status=:t";
-    $a = array(':s' => 'open', ':t' => 'awarded');
-    $data = Database::getConnection('external_db', 'external_db')
-            ->query($query, $a);*/
-
-    $protocol = isset($_SERVER["https"]) ? 'https' : 'http';
-    $domain = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
+    
     $weekday = date('D');
     $stamp = date('U');
     $last = $stamp - (30 * 24 * 60 * 60); //30 days past
@@ -44,16 +37,7 @@ try {
                 ->condition('status', 'awarded');        
         $query->condition($condition);
         $projects = $query->execute();
-        /*
-        $query = "SELECT id, last_modified ,pcode,pname FROM {ek_project} "
-                . "where owner=:o "
-                . "AND (status=:s or status=:t) "
-                . "AND last_modified < :l";
-
-        $a = array(':o' => $row->owner, ':s' => 'open', ':t' => 'awarded', ':l' => $last);
-        $projects = Database::getConnection('external_db', 'external_db')
-                ->query($query, $a);
-*/
+        
 
         $list = array();
 
@@ -61,7 +45,8 @@ try {
             if ($p->id > 0) {
                 $line = array();
                 $modif = explode('|', $p->last_modified);
-                $line['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $p->id))->toString();
+                $l = Url::fromRoute('ek_projects_view', ['id' => $p->id],['query' => []])->toString();
+                $line['link'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
                 $line['modified'] = date('Y-m-d', $modif[0]);
                 $line['pcode'] = $p->pcode;
 

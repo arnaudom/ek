@@ -1,11 +1,14 @@
 <?php
+
 /**
  * @file
  *  module . ek_admin
  *  implement tasks alerts for project module
  */
+
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
+
 try {
 
   $query = Database::getConnection('external_db', 'external_db')
@@ -18,10 +21,7 @@ try {
   
   $weekday = date('D');
   $stamp = date('U');
-  
-  $protocol = isset($_SERVER["https"]) ? 'https' : 'http';
-  $domain = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
-  
+    
    $log = 'start projects tasks checking at:' . date('Y-m-d h:i', $stamp);
    \Drupal::logger('ek_admin')->notice( $log ); 
 
@@ -35,7 +35,17 @@ while ($row = $data->fetchObject()) {
                 $query->fields('p',['id']);
                 $query->condition('pcode',$row->pcode, '=');
         $pid =  $query->execute()->fetchField();   
-
+        
+        $params = [];
+        $params['type'] = 'task';
+        $params['assign'] = $row->uid;
+        $params['serial'] = $row->pcode;
+        $l = Url::fromRoute('ek_projects_view', ['id' => $pid],['query' => ['s2' => true],'fragment' => 'ps2'])->toString();
+        $params['link'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
+        $params['id'] = $row->id;
+        $params['alert'] = $params['link'];
+        $params['end'] = date('Y-m-d', $row->end);
+        $params['task'] = $row->task;
 
         /*
          * notify weekly , notify = 1
@@ -44,18 +54,8 @@ while ($row = $data->fetchObject()) {
             if($row->notify == 1 && $weekday == 'Mon'){
                 $users = explode(',', $row->notify_who);
                     foreach($users as $key => $user) {
-                       $params = array();
-                       $params['type'] = 'task';
                        $params['subject'] = t('Weekly task alert for project');
                        $params['uid'] =  $user;
-                       $params['assign'] = $row->uid;
-                       $params['serial'] = $row['pcode'];
-                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
-                       $params['id'] = $row->id;
-                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
-                       $params['end'] = date('Y-m-d', $row->end);
-                       $params['task'] = $row->task;
-
                        self::send_mail($params);
                     }
             }//weekly
@@ -68,18 +68,8 @@ while ($row = $data->fetchObject()) {
             if($row->notify == 5 ){
                 $users = explode(',', $row->notify_who);
                     foreach($users as $key => $user) {
-                       $params = array();
-                       $params['type'] = 'task';
                        $params['subject'] = t('Daily task alert for project');
                        $params['uid'] =  $user;
-                       $params['assign'] = $row->uid;
-                       $params['serial'] = $row->pcode;
-                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
-                       $params['id'] = $row->id;
-                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
-                       $params['end'] = date('Y-m-d', $row->end);
-                       $params['task'] = $row->task;
-
                        self::send_mail($params);
                     }
             }//daily       
@@ -91,18 +81,8 @@ while ($row = $data->fetchObject()) {
             if($row->notify == 2 && $delta == 5 ){
                 $users = explode(',', $row->notify_who);
                     foreach($users as $key => $user) {
-                       $params = array();
-                       $params['type'] = 'task';
                        $params['subject'] = t('5 days deadline project task alert');
                        $params['uid'] =  $user;
-                       $params['assign'] = $row->uid;
-                       $params['serial'] = $row->pcode;
-                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
-                       $params['id'] = $row->id;
-                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
-                       $params['end'] = date('Y-m-d', $row->end);
-                       $params['task'] = $row->task;
-
                        self::send_mail($params);
                     }
             }//5 days 
@@ -114,18 +94,8 @@ while ($row = $data->fetchObject()) {
             if($row->notify == 3 && $delta == 3 ){
                 $users = explode(',', $row->notify_who);
                     foreach($users as $key => $user) {
-                       $params = array();
-                       $params['type'] = 'task';
                        $params['subject'] = t('3 days deadline project task alert');
                        $params['uid'] =  $user;
-                       $params['assign'] = $row->uid;
-                       $params['serial'] = $row->pcode;
-                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
-                       $params['id'] = $row->id;
-                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
-                       $params['end'] = date('Y-m-d', $row->end);
-                       $params['task'] = $row->task;
-
                        self::send_mail($params);
                     }
             }//3 days         
@@ -137,18 +107,8 @@ while ($row = $data->fetchObject()) {
             if($row->notify == 4 && $delta == 1 ){
                 $users = explode(',', $row->notify_who);
                     foreach($users as $key => $user) {
-                       $params['type'] = 'task';
-                       $params = array();
                        $params['subject'] = t('1 day deadline project task alert');
                        $params['uid'] =  $user;
-                       $params['assign'] = $row->uid;
-                       $params['serial'] = $row->pcode;
-                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
-                       $params['id'] = $row->id;
-                       $params['alert'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
-                       $params['end'] = date('Y-m-d', $row->end);
-                       $params['task'] = $row->task;
-
                        self::send_mail($params);
                     }
             }//3 days        
@@ -160,18 +120,8 @@ while ($row = $data->fetchObject()) {
             if($row->end < $stamp ){
                 $users = explode(',', $row->notify_who);
                     foreach($users as $key => $user) {
-                       $params = array();
-                       $params['type'] = 'task';
                        $params['subject'] = t('Expired project task alert');
                        $params['uid'] =  $user;
-                       $params['assign'] = $row->uid;
-                       $params['serial'] = $row->pcode;
-                       $params['link'] = $domain . Url::fromRoute('ek_projects_view', array('id' => $pid))->toString() . '?s2=true#ps2';
-                       $params['id'] = $row->id;
-                       $params['alert'] = $params['link'];
-                       $params['end'] = date('Y-m-d', $row->end);
-                       $params['task'] = $row->task;
-
                        self::send_mail($params);
                     }
             }//expired

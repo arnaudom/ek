@@ -16,10 +16,6 @@ try {
             $query->condition('active','working');
             $e = $query->execute();
     
-    
-    $protocol = isset($_SERVER["https"]) ? 'https' : 'http';
-    $domain = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
-    
     $stamp = date('U');
 
     while ($row = $e->fetchObject()) {
@@ -28,7 +24,8 @@ try {
         if($row->administrator != 0){
             
             $line = array();
-            $line['link'] = $domain . Url::fromRoute('ek_hr.employee.view', array('id' => $row->id))->toString();
+            $l = Url::fromRoute('ek_hr.employee.view', ['id' => $row->id],['query' => []])->toString();
+            $line['link'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
             $line['name'] = $row->name;
             $line['id'] = ($row->custom_id != '') ? $row->custom_id : $row->id;
             $uids = explode(',',$row->administrator);
