@@ -1056,12 +1056,9 @@ class NewMemo extends FormBase {
 
         if ($form_state->getValue('category') == 5 && $this->settings->get('authorizeMemo') == 1) {
             // send a notification
-            //$query = "SELECT name,mail from {users_field_data} WHERE uid=:u";
-            //$user_memo = db_query($query, array(':u' => \Drupal::currentUser()->id() ))->fetchObject();
+            
             $user_memo = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
-            //$authorizer_mail = db_query($query, array(':u' => $uid ))->fetchObject();
             $authorizer_mail = \Drupal\user\Entity\User::load($uid);
-            //$entity_mail = db_query($query, array(':u' => $form_state->getValue('entity') ))->fetchObject();
             $entity_mail = \Drupal\user\Entity\User::load($form_state->getValue('entity'));
 
             $action = array(1 => $this->t('pending approval'), 2 => $this->t('authorized'), 3 => $this->t('rejected'));
@@ -1130,13 +1127,10 @@ class NewMemo extends FormBase {
                 $entity = $query->execute()->fetchObject();
                 $entity_mail = $entity->email;
             } else {
-                //$query = "SELECT name,mail from {users_field_data} WHERE uid=:u";
-                //$entity = db_query($query, array(':u' => $form_state->getValue('entity')))
-                //        ->fetchObject();
-                //$entity_mail = $entity->mail;
                 $query = \Drupal\user\Entity\User::load($form_state->getValue('entity'));
                 if ($query) {
                     $entity_mail = $query->getEmail();
+                    $entity_name = $query->getAccountName();
                 }
             }
 
@@ -1150,7 +1144,7 @@ class NewMemo extends FormBase {
                 $params['subject'] = $this->t("New memo") . ': ' . $serial;
                 $url = $GLOBALS['base_url'] . Url::fromRoute('ek_finance_manage_print_html', array('id' => $reference))->toString();
                 $params['options']['url'] = "<a title='" . $serial . "' href='" . $url . "'>" . $this->t('Open') . "</a>";
-                $params['options']['user'] = $entity->name;
+                $params['options']['user'] = $entity_name;
 
                 $params['body'] = $this->t('Memo ref. @p', ['@p' => $serial]) . "." . $this->t('Issued to') . ": " . $entity_to->name;
                 //send notification email to central email queue;
