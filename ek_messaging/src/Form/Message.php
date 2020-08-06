@@ -211,7 +211,7 @@ class Message extends FormBase {
         } else {
             //send only a notification
 
-            $link = Url::fromRoute('ek_messaging_read', array('id' => $m), ['absolute' => true])->toString();
+            $link = Url::fromRoute('ek_messaging_read', ['id' => $m], ['absolute' => true])->toString();
             $params = [
                 'subject' => $this->t('You have a new message'),
                 'body' => "<a href='" . $link . "'>" . $this->t('read') . "</a>",
@@ -223,11 +223,18 @@ class Message extends FormBase {
 
 
         $list_ids = explode(',', rtrim($form_state->getValue('list_ids'), ","));
-
+        $link = Url::fromRoute('ek_messaging_read', ['id' => $m], [])->toString();
+        $url = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
+        $params['body'] = "<a href='" . $url . "'>" . $this->t('open') . "</a>";
         foreach (User::loadMultiple($list_ids) as $account) {
             if ($account->isActive()) {
                 $send = \Drupal::service('plugin.manager.mail')->mail(
-                        'ek_messaging', 'ek_message', $account->getEmail(), $account->getPreferredLangcode(), $params, $currentuserMail, true
+                        'ek_messaging', 'ek_message',
+                        $account->getEmail(),
+                        $account->getPreferredLangcode(),
+                        $params,
+                        $currentuserMail,
+                        true
                 );
 
                 if ($send['result'] == false) {
