@@ -78,9 +78,7 @@ class DocumentsEditController extends ControllerBase
      * Return ajax load / display docs
      *
      */
-    public function load(Request $request)
-    {
-
+    public function load(Request $request) {
 
         //verify if the folder structure exist and create
         $dir = "private://documents/users/" . \Drupal::currentUser()->id();
@@ -159,8 +157,7 @@ class DocumentsEditController extends ControllerBase
      * Return ajax upload
      *
      */
-    public function upload(Request $request, $id)
-    {
+    public function upload(Request $request, $id) {
         return array();
     }
 
@@ -168,12 +165,14 @@ class DocumentsEditController extends ControllerBase
      * Return ajax delete confirmation alert
      * My documents
      */
-    public function delete(Request $request, $id)
-    {
-        $query = 'SELECT filename FROM {ek_documents} WHERE id=:id';
-        $file = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $id))
-                ->fetchField();
+    public function delete(Request $request, $id) {
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_documents', 'd');
+        $query->fields('d',['filename']);
+        $query->condition('id', $id, '=');
+        $file = $query->execute()->fetchField();
+        
         $content = array('content' =>
             array('#markup' =>
                 "<div><a href='documents/delete-confirm/" . $id . "' class='use-ajax'>"
@@ -187,7 +186,6 @@ class DocumentsEditController extends ControllerBase
 
         $response->addCommand(new OpenModalDialogCommand($title, $content));
 
-
         return $response;
     }
 
@@ -195,20 +193,24 @@ class DocumentsEditController extends ControllerBase
      * Return ajax delete actions after confirmation
      * My documents
      */
-    public function deleteConfirmed(Request $request, $id)
-    {
+    public function deleteConfirmed(Request $request, $id) {
+        
         if (DocumentsData::validate_owner($id)) {
-            $query = 'SELECT uri FROM {ek_documents} WHERE id=:id';
-            $uri = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $id))
-                    ->fetchField();
-
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_documents', 'd');
+            $query->fields('d',['uri']);
+            $query->condition('id', $id, '=');
+            $uri = $query->execute()->fetchField();
+            
             $delete = Database::getConnection('external_db', 'external_db')
                     ->delete('ek_documents')
                     ->condition('id', $id)
                     ->execute();
             
-            \Drupal\Core\Cache\Cache::invalidateTags(['common_documents','my_documents','shared_documents']);
+            \Drupal\Core\Cache\Cache::invalidateTags(['common_documents','my_documents','shared_documents','new_documents_shared']);
+            // remove from user data for new document
+            \Drupal::service('user.data')->delete('ek_documents', \Drupal::currentUser()->id(), $id, 'shared');
             
             if ($delete) {
                 $query = Database::getConnection()->select('file_managed', 'f');
@@ -221,7 +223,8 @@ class DocumentsEditController extends ControllerBase
                     $file = \Drupal\file\Entity\File::load($fid);
                     $file->delete();
                 }
-
+                
+                
                 $response = new AjaxResponse();
                 $response->addCommand(new CloseDialogCommand());
                 $response->addCommand(new RemoveCommand('#div-' . $id));
@@ -238,10 +241,13 @@ class DocumentsEditController extends ControllerBase
      * Return ajax remove
      * Remove shared document from display in list
      */
-    public function remove($id)
-    {
-        $query = 'SELECT share_uid FROM {ek_documents} WHERE id=:id';
-        $share_uid = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
+    public function remove($id)  {
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_documents', 'd');
+        $query->fields('d',['share_uid']);
+        $query->condition('id', $id, '=');
+        $share_uid = $query->execute()->fetchField();
         $uid = ',' . \Drupal::currentUser()->id() . ',';
         $share_uid = str_replace($uid, ',', $share_uid);
         if ($share_uid == ',') {
@@ -250,7 +256,15 @@ class DocumentsEditController extends ControllerBase
         } else {
             $share = 1;
         }
-        Database::getConnection('external_db', 'external_db')->update('ek_documents')->fields(array('share' => $share, 'share_uid' => $share_uid))->condition('id', $id)->execute();
+        Database::getConnection('external_db', 'external_db')
+                ->update('ek_documents')
+                ->fields(array('share' => $share, 'share_uid' => $share_uid))
+                ->condition('id', $id)
+                ->execute();
+        
+        \Drupal\Core\Cache\Cache::invalidateTags(['new_documents_shared']);
+        // remove from user data for new document
+        \Drupal::service('user.data')->delete('ek_documents', \Drupal::currentUser()->id(), $id,'shared');
         $response = new AjaxResponse();
         $response->addCommand(new RemoveCommand('#div-' . $id));
         return $response;
@@ -260,8 +274,7 @@ class DocumentsEditController extends ControllerBase
      * Return ajax share
      *
      */
-    public function share(Request $request, $id)
-    {
+    public function share(Request $request, $id) {
         return $this->dialog(true, 'share|' . $id);
     }
 
@@ -269,8 +282,8 @@ class DocumentsEditController extends ControllerBase
      * Return ajax move
      * From share to my
      */
-    public function move(Request $request, $id)
-    {
+    public function move(Request $request, $id) {
+        
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_documents', 'd');
         $query->fields('d');
@@ -301,7 +314,6 @@ class DocumentsEditController extends ControllerBase
             self::remove($id);
         }
         
-        
         return new Response('', 204);
     }
 
@@ -309,8 +321,7 @@ class DocumentsEditController extends ControllerBase
      * Return ajax project post
      * send a document to a project
      */
-    public function project(Request $request, $id)
-    {
+    public function project(Request $request, $id) {
         return $this->dialog(true, 'project|' . $id);
     }
 
@@ -318,8 +329,8 @@ class DocumentsEditController extends ControllerBase
      * Return ajax drag & drop
      *
      */
-    public function dragdrop(Request $request)
-    {
+    public function dragdrop(Request $request) {
+        
         $from = explode("-", $request->get('from'));
         $fields = array('folder' => $request->get('to'));
         $result = Database::getConnection('external_db', 'external_db')
@@ -334,8 +345,7 @@ class DocumentsEditController extends ControllerBase
     /**
      * AJAX callback handler for AjaxTestDialogForm.
      */
-    public function modal($param)
-    {
+    public function modal($param) {
         return $this->dialog(true, $param);
     }
 
@@ -348,8 +358,8 @@ class DocumentsEditController extends ControllerBase
      * @return \Drupal\Core\Ajax\AjaxResponse
      *   An ajax response object.
      */
-    protected function dialog($is_modal = false, $param = null)
-    {
+    protected function dialog($is_modal = false, $param = null) {
+        
         $param = explode('|', $param);
         $content = [];
         switch ($param[0]) {
@@ -386,8 +396,8 @@ class DocumentsEditController extends ControllerBase
      * @param request
      * @return Json response
      */
-    public function lookupfolders(Request $request)
-    {
+    public function lookupfolders(Request $request) {
+        
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_documents');
         $data = $query

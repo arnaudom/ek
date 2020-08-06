@@ -100,20 +100,19 @@ class DocumentsController extends ControllerBase
        *
     */
 
-    public function documentsShared(Request $request)
-    {
-        $items = array();
-        return array(
-      '#theme' => 'ek_documents_shared',
-      '#items' => $items,
-      '#attached' => array(
-        'drupalSettings' => array('ek_documents' => 'sharedDocs'),
-        'library' => array('ek_documents/ek_documents_display','ek_admin/classic_doc','ek_admin/ek_admin_css'),
-      ),
-      '#cache' => [
-            'tags' => ['shared_documents']
-        ],
-    );
+    public function documentsShared(Request $request) {
+        $items = [];
+        return [
+            '#theme' => 'ek_documents_shared',
+            '#items' => $items,
+            '#attached' => array(
+              'drupalSettings' => array('ek_documents' => 'sharedDocs'),
+              'library' => array('ek_documents/ek_documents_display','ek_admin/classic_doc','ek_admin/ek_admin_css'),
+            ),
+            '#cache' => [
+                  'tags' => ['shared_documents']
+              ],
+        ];
     }
  
     /**
@@ -121,19 +120,18 @@ class DocumentsController extends ControllerBase
        *
     */
 
-    public function documentsCommon(Request $request)
-    {
-        $items = array();
-        return array(
-      '#theme' => 'ek_documents_common',
-      '#items' => $items,
-      '#attached' => array(
-        'drupalSettings' => array('ek_documents' => 'commonDocs'),
-        'library' => array('ek_documents/ek_documents_display','ek_admin/classic_doc','ek_admin/ek_admin_css'),
-      ),
-      '#cache' => [
-            'tags' => ['common_documents']
-        ],
-    );
+    public function documentsCommon(Request $request) {
+        $items = [];
+        return [
+            '#theme' => 'ek_documents_common',
+            '#items' => $items,
+            '#attached' => array(
+              'drupalSettings' => array('ek_documents' => 'commonDocs'),
+              'library' => array('ek_documents/ek_documents_display','ek_admin/classic_doc','ek_admin/ek_admin_css'),
+            ),
+            '#cache' => [
+                  'tags' => ['common_documents']
+              ],
+        ];
     }
-} //class
+}

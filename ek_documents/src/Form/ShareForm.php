@@ -32,9 +32,7 @@ class ShareForm extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
-    {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
 
         //confirm the file is owned by current user to avoid access via direct link
         if (DocumentsData::validate_owner($id)) {
@@ -154,15 +152,13 @@ class ShareForm extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         $id = $form_state->getValue('for_id');
 
         $expire = 0;
@@ -201,6 +197,15 @@ class ShareForm extends FormBase
         \Drupal::logger('ek_documents')->notice($log);
 
         if ($update) {
+            
+            // record user.data
+            $userData = \Drupal::service('user.data');
+            foreach (\Drupal\user\Entity\User::loadMultiple($form_state->getValue('users')) as $account) {
+                if ($account) {
+                    $userData->set('ek_documents', $account->id(), $id, 'shared');
+                }
+            }
+            
             if ($form_state->getValue('notify')) {
                 $message = Xss::filter($form_state->getValue('comment'));
                 if ($expire != 0) {
@@ -226,7 +231,7 @@ class ShareForm extends FormBase
                 );
             }
 
-            \Drupal\Core\Cache\Cache::invalidateTags(['shared_documents']);
+            \Drupal\Core\Cache\Cache::invalidateTags(['shared_documents','new_documents_shared']);
             $form_state->set('message', $this->t('success') . '. ' . $d);
             $form_state->setRebuild();
         } else {

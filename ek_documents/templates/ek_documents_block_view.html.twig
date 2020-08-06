@@ -25,9 +25,7 @@
  *   share_uid (string) comma separated uid
  *   share_gid (string) comma separated gid (not used)
  *   expire (int) unix time or 0
- *
- *
- * 
+ *   new (bol) flag
  *
  * @ingroup themeable
  */
@@ -105,11 +103,17 @@
                         {% elseif doc.content == 'sharedDocs' %} 
                             <div id="div-{{ doc.id }}" class="move">
                                 <div class="doc_canvas">
+                                    
                                     <div class="doc_menu">
 
                                         <div class="doc_content">
+                                       
                                             <a target='_blank' href="{{ doc.url }}">
-                                                <div class="icon_doc {{ doc.extension }}_doc"></div>              
+                                                <div class="icon_doc {{ doc.extension }}_doc">
+                                                {% if doc.new %}
+                                                     <span class="shared_document_badge">{{ 'new'|trans }}</span>
+                                                {% endif %}
+                                                </div>              
                                                 <div title="{{ doc.date_full }}, {{ doc.filename }}">
                                                     {{ doc.doc_name_short }} ({{ doc.size }} Kb)
                                                 </div>

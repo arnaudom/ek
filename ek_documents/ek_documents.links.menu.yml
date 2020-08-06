@@ -22,6 +22,7 @@ ek_documents_main_menu:
   hidden: 0
   weight: 4
   menu_name: main
+  class: Drupal\ek_documents\Plugin\Menu\DocumentMenuLink
   
 ek_documents_settings__main_menu:
   title: 'Settings'

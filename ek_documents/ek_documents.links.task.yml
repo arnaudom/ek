@@ -6,9 +6,11 @@ ek_documents_task_main:
 
 ek_documents_task_shared:
   route_name: ek_documents_documents_shared
+  class: Drupal\ek_documents\Plugin\Menu\LocalTask\DocumentShareMenuLink
   base_route: ek_documents_documents
   title: 'Shared documents'
   weight: 2
+  
   
 ek_documents_task_common:
   route_name: ek_documents_documents_common

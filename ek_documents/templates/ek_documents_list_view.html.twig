@@ -25,7 +25,7 @@
  *   share_uid (string) comma separated uid
  *   share_gid (string) comma separated gid (not used)
  *   expire (int) unix time or 0
- *
+ *   new (bol) flag
  *
  * 
  *
@@ -68,8 +68,13 @@
                             {% for doc in docs %}
 
                                 <tr class='move'id="div-{{ doc.id }}">
-                                    <td class='priority-low handle-ico' style="text-align: center;"><p class="smallico icon_doc_list {{ doc.extension }}_doc_list"></p></td>
-                                    <td title="{{ doc.filename }}"><a target='_blank' href="{{ doc.url }}">{{ doc.doc_name }}</a></td>
+                                    <td class='priority-low handle-ico' style="text-align: center;">
+                                        <p class="smallico icon_doc_list {{ doc.extension }}_doc_list"></p></td>
+                                    <td title="{{ doc.filename }}">
+                                        {% if doc.new %}
+                                           <span class="shared_document_badge">{{ 'new'|trans }}</span>
+                                        {% endif %}
+                                        <a target='_blank' href="{{ doc.url }}">{{ doc.doc_name }}</a></td>
                                     <td class="priority-low"><h5>{{ doc.date_full }}</h5></td>
                                     <td class='priority-low'><h5>{{ doc.size }} Kb</h5></td>
 

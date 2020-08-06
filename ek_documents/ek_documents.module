@@ -11,6 +11,7 @@
 
 
 use Drupal\Core\Database\Database;
+use Drupal\Core\Url;
 
 /**
  * @file
@@ -97,12 +98,13 @@ function ek_documents_file_download($uri) {
     if (strpos($uri, '/documents/users/')) {
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->file($uri);
-        $query = "SELECT * FROM {ek_documents}  WHERE uri = :uri";
-        $a = array(':uri' => $uri);
-
-        $file = Database::getConnection('external_db', 'external_db')
-                ->query($query, $a)
-                ->fetchObject();
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_documents', 'd')
+                    ->fields('d')
+                    ->condition('uri', $uri)
+                    ->execute();
+        $file = $query->fetchObject();
         $uid = \Drupal::currentUser()->id();
         $name = \Drupal::currentUser()->getAccountName();
         $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
@@ -125,8 +127,6 @@ function ek_documents_file_download($uri) {
 
                 if ($file->share == '2') {
                     //share all...
-
-
                     $info = file_load($fid);
                     //////////////////////////
                     //    WATCHDOG          //
@@ -144,6 +144,8 @@ function ek_documents_file_download($uri) {
                         //////////////////////////
                         $log = t("1- User @u has downloaded document @d (file id @i)", $a);
                         \Drupal::logger('ek_documents')->notice($log);
+                        // remove from user data for new document
+                        \Drupal::service('user.data')->delete('ek_documents', $uid, $l->id, 'shared');
                         return array('Content-Type' => $mime);
                     } else {
                         //////////////////////////
@@ -168,13 +170,11 @@ function ek_documents_file_download($uri) {
 
 /**
  * manage messaging.
- * $key =type of message, $to = array of uid, $message
+ * $key = type of message, $to = array of uid, $message
  */
 function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL, $priority = NULL) {
 
-    //$users = implode(',' , $to);
-    //$query = "SELECT name,mail from {users_field_data} WHERE (FIND_IN_SET (uid, :uid )) ";
-    //$list = db_query($query, array(':uid' => $users ));
+    
     $users = ',';
     $param = array();
     $site_config = \Drupal::config('system.site');
@@ -183,9 +183,10 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
     $params['options']['logo'] = $GLOBALS['base_url'] . '/' . $theme['url'];
     $params['options']['site'] = $site_config->get('name');
     $params['options']['stamp'] = date('F j, Y, g:i a');
-    $url = "<a href='" . file_create_url($uri) . "'>" . $filename . "</a>";
+    $l = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => '/shared_documents']])->toString();
+    $url = "<a href='" . $l . "'>" . $filename . "</a>";
     $names = '';
-    //while ($l = $list->fetchObject()) {
+    
     foreach (\Drupal\user\Entity\User::loadMultiple($to) as $account) {
 
         if ($account) {
@@ -197,7 +198,7 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
                     $render = [
                         '#markup' => t('Dear @n, @u shared a document with you', array('@n' => $account->getAccountName(), '@u' => Drupal::currentUser()->getAccountName())),
                     ];
-                    //$message = ['#markup' => $message];
+                    
                     $params['body'] = \Drupal::service('renderer')->render($render);
                     $render = ['#markup' => $message];
                     $params['options']['message'] = \Drupal::service('renderer')->render($render);
