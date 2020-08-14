@@ -85,7 +85,7 @@ class InstallController extends ControllerBase
                 `postcode` VARCHAR(50) NULL DEFAULT NULL,
                 `state` VARCHAR(50) NULL DEFAULT NULL COMMENT 'address state',
                 `city` VARCHAR(100) NULL DEFAULT NULL,
-                `country` VARCHAR(45) NULL DEFAULT NULL,
+                `country` VARCHAR(45) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',,
                 `telephone` VARCHAR(45) NULL DEFAULT NULL,
                 `fax` VARCHAR(45) NOT NULL DEFAULT '',
                 `website` VARCHAR(255) NULL DEFAULT NULL,
