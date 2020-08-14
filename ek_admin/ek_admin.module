@@ -317,9 +317,6 @@ function mail_attachment($email, $file, $message = null, $options = null) {
         $params['body'] = nl2br(Xss::filter($message, ['p', 'br', 'li', 'ul']));
         $params['options']['user'] = $options['user'];
         $params['options']['filename'] = $filename;
-        //$theme = theme_get_setting('logo');
-        //$params['options']['logo'] = \Drupal::request()->getSchemeAndHttpHost() . $theme['url'];
-        //$params['options']['site'] = \Drupal::config('system.site')->get('name');
         if (isset($options['stripe']) && $options['stripe'] == 1) {
             $params['options']['checkout'] = $options['checkout'];
         }
@@ -382,8 +379,8 @@ function mail_attachment($email, $file, $message = null, $options = null) {
         Return array('send' => $send, 'error' => $error);
         
     } else {
-        //use in-house attachment
-        //copy target file to local system file before attachment
+        // attachment
+        // copy target file to local system file before attachment
         $filesystem = \Drupal::service('file_system');
         $filecopy = PublicStream::basePath() . "/" . $filename;
         $filesystem->copy($file, $filecopy, FileSystemInterface::EXISTS_REPLACE);
@@ -448,8 +445,6 @@ function mail_attachment($email, $file, $message = null, $options = null) {
                                 </body>
                         </html>";
 
-
-            //mail
             $zid = md5(uniqid(time()));
             $headers = "From:" . \Drupal::currentUser()->getEmail() . "\r\n";
             $headers .= "MIME-Version: 1.0 \r\n";
@@ -522,7 +517,44 @@ function ek_admin_form_user_form_alter(&$form, \Drupal\Core\Form\FormStateInterf
         if (\Drupal::currentUser()->id() != 1) {
             $form['contact']['#disabled'] = TRUE;
         }
+        
         return $form;
+    }
+}
+
+/**
+ * Implements hook_form_ID_alter().
+ * user-register-form
+ * add a notification copy for new account
+ */
+function ek_admin_form_user_register_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+    $form['actions']['submit']['#submit'][] = 'ek_admin_form_user_register_form_submit';
+    return $form;
+}
+
+function ek_admin_form_user_register_form_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+    // send an email copy on activation
+    $values = $form_state->getValues();
+    $params = [];
+    $params['account'] = \Drupal\user\Entity\User::load($values['uid']);
+    $notify = !$form_state->isValueEmpty('notify');
+    $op = $notify ? 'register_admin_created' : 'register_no_approval_required'; 
+    if($op == 'register_admin_created') {
+        $site_mail = \Drupal::config('system.site')->get('mail_notification');
+        if (empty($site_mail)) {
+          $site_mail = \Drupal::config('system.site')->get('mail');
+        }
+        if (empty($site_mail)) {
+          $site_mail = ini_get('sendmail_from');
+        }
+        $params['subject'] = "[copy] account created";
+        $email = \Drupal::currentUser()->getEmail();
+        $lang = \Drupal::languageManager()->getDefaultLanguage()->getId();
+        $mail = \Drupal::service('plugin.manager.mail')->mail('user', $op, $email,$lang, $params, $site_mail);
+        if($mail) {
+            \Drupal::messenger()->addWarning(t('A notification copy as been sent to @m', ['@m' => $email]));
+        }
+        
     }
 }
 
@@ -532,9 +564,16 @@ function ek_admin_form_user_form_alter(&$form, \Drupal\Core\Form\FormStateInterf
 function ek_admin_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
 
     if ($form_id == 'user_multiple_cancel_confirm') {
-
         $form['#submit'][] = 'ek_admin_form_user_delete_submit';
-
+        return $form;
+    }
+    
+    if ($form_id == 'user_form') {
+        $form['account']['current_status'] = [
+            '#type' => 'hidden',
+            '#value' => $form['account']['status']['#default_value'],
+        ];
+        $form['actions']['submit']['#submit'][] = 'ek_admin_form_user_form_submit';
         return $form;
     }
 
@@ -546,13 +585,34 @@ function ek_admin_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_
 /**
  * Implements hook_form_submit().
  */
-function ek_admin_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+function ek_admin_form_user_form_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+    $values = $form_state->getValues();
+    if($values['status'] == 1 && $values['current_status'] == '0') {
+        // user unblocked
+        $params = [];
+        $params['account'] = \Drupal\user\Entity\User::load($values['uid']);
+        $site_mail = \Drupal::config('system.site')->get('mail_notification');
+        if (empty($site_mail)) {
+          $site_mail = \Drupal::config('system.site')->get('mail');
+        }
+        if (empty($site_mail)) {
+          $site_mail = ini_get('sendmail_from');
+        }
+        $params['subject'] = "[copy]  account unblocked";
+        $email = \Drupal::currentUser()->getEmail();
+        $lang = \Drupal::languageManager()->getDefaultLanguage()->getId();
+        $mail = \Drupal::service('plugin.manager.mail')->mail('user','status_activated', $email,$lang, $params, $site_mail);
+        if($mail) {
+            \Drupal::messenger()->addWarning(t('A notification copy as been sent to @m', ['@m' => $email]));
+        }
+    }
+}
 
+function ek_admin_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
 
     if ($form['#form_id'] == 'user_multiple_cancel_confirm') {
 
         foreach ($form_state->getValue('accounts') as $key => $id) {
-
             /*
              * company table
              */
