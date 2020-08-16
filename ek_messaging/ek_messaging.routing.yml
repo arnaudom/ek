@@ -28,7 +28,15 @@ ek_messaging_send:
     _controller: '\Drupal\ek_messaging\Controller\MessageController::send'
   requirements:
     _permission: 'send_message'
-
+    
+ek_messaging_send_broadcast:
+  path: '/messaging/send/broadcast'
+  defaults:
+    _title: 'New message'
+    _controller: '\Drupal\ek_messaging\Controller\MessageController::send'
+  requirements:
+    _permission: 'send_message'
+    
 ek_messaging_reply:
   path: '/messaging/reply/{id}'
   defaults:

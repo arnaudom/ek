@@ -79,6 +79,10 @@ class MessageController extends ControllerBase {
      * @return array
      */
     public function send(Request $request, $id = null) {
+                
+        if($id == NULL && \Drupal::routeMatch()->getRouteName() == 'ek_messaging_send_broadcast'){
+            $id = 'broadcast';
+        }
         $build['message_form'] = $this->formBuilder->getForm('Drupal\ek_messaging\Form\Message', $id);
         $build['#attached'] = array(
             'library' => array('ek_messaging/ek_messaging'),

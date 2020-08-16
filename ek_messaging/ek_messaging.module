@@ -1,4 +1,5 @@
 <?php
+
     ///////////////////////////////////////////////////
     //                  COPYRIGHT                    //
     //                                               //
@@ -32,7 +33,24 @@ function ek_messaging_theme() {
       
   );     
 }   
-   
+
+/**
+ * Implementation hook ek_home.
+ */
+function ek_messaging_ek_home() {
+    $build = [];
+    $build[] = [
+        'name' => 'feature_broadcast',
+        'module' => 'Messaging',
+        'stamp' => 1597560000,
+        'type' => "new",
+        'content' => 'Send <a href="/messaging/send/broadcast">broadcast</a> messages to all users.',
+        'footer' => 'August 2020',
+    ];
+    
+    return $build;
+}
+
 /**
  * Implements hook_file_download().
  *
@@ -47,15 +65,23 @@ function ek_messaging_file_download($uri) {
  
  
 /*
-* REGISTER A MESSAGE
-* used by dependent modules to register a message
+ * REGISTER A MESSAGE
+ * used by dependent modules to register a message
+ * @param $data
+ * uid : int user id
+ * to: string of ids separated by comma
+ * to_group : int
+ * type : int
+ * status: null|string of ids separated by comma
+ * inbox : null|string of ids separated by comma
+ * archive : null|string of ids separated by comma
+ * subject : string
+ * priority : int
 */
 function ek_message_register($data) {
-
-$stamp=strtotime("now");
     
     $fields = array (
-      'stamp' => $stamp,
+      'stamp' => strtotime("now"),
       'from_uid' => $data['uid'],
       '`to`' => $data['to'],
       'to_group' => $data['to_group'],
@@ -68,7 +94,7 @@ $stamp=strtotime("now");
 
       );
 
-    $result= Database::getConnection('external_db', 'external_db')
+    $result = Database::getConnection('external_db', 'external_db')
             ->insert('ek_messaging')->fields($fields)->execute();
 
     $fields = array (
@@ -108,14 +134,14 @@ function ek_messaging_mail($key, &$message, $params) {
     $params['options']['priority'] = $priority[$params['priority']];
     $params['options']['color'] = $color[$params['priority']];
     $params['options']['link'] = $params['link'];
+    
     switch($key) {
+        
       case 'ek_message':
           
         //filter body for images / links
         if(preg_match("/src=\"([^\"]+)\"/", $params['body'], $body)){
-           
             $params['body'] = str_replace('src="/', 'src="' . $base_url, $params['body']);
-            
         }
        
         $render = [

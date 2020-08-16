@@ -30,9 +30,8 @@ class Message extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
-        if ($id != null) {
+        if ($id != null && $id != 'broadcast') {
             //this is a reply / forward form
-
             $form['id'] = array(
                 '#type' => 'hidden',
                 '#value' => $id,
@@ -59,57 +58,66 @@ class Message extends FormBase {
                 $text = "<br><p> ------- " . $quote . " -------</p><p>" . $data->text . "</p>";
             }
         }
-        $form['users'] = array(
-            '#type' => 'textarea',
-            '#rows' => 2,
-            '#attributes' => array('placeholder' => $this->t('enter recipients name separated by comma (autocomplete enabled).')),
-            '#required' => true,
-            '#default_value' => isset($to) ? $to : null,
-        );
+        
+        if($id != 'broadcast') {
+            $form['users'] = [
+                '#type' => 'textarea',
+                '#rows' => 2,
+                '#attributes' => ['placeholder' => $this->t('enter recipients name separated by comma (autocomplete enabled).')],
+                '#required' => true,
+                '#default_value' => isset($to) ? $to : null,
+            ];
+        } else {
+            $form['info'] = [
+                '#type' => 'item',
+                '#markup' => "<h1>" . $this->t('Message broadcast') . "</h1>",
+            ];
+            $form['users'] = [
+                '#type' => 'hidden',
+                '#value' => 'broadcast',
+            ];
+        }
 
-        $form['priority'] = array(
+        $form['priority'] = [
             '#type' => 'select',
-            '#options' => array('3' => $this->t('low'), '2' => $this->t('normal'), '1' => $this->t('high')),
+            '#options' => ['3' => $this->t('low'), '2' => $this->t('normal'), '1' => $this->t('high')],
             '#title' => $this->t('priority'),
             '#default_value' => isset($data->priority) ? $data->priority : null,
-        );
+        ];
 
-        $form['subject'] = array(
+        $form['subject'] = [
             '#type' => 'textfield',
             '#default_value' => '',
             '#required' => true,
             '#default_value' => isset($subject) ? $subject : null,
-            '#attributes' => array('placeholder' => $this->t('subject')),
-        );
+            '#attributes' => ['placeholder' => $this->t('subject')],
+        ];
 
-        $form['message'] = array(
+        $form['message'] = [
             '#type' => 'text_format',
             '#rows' => 10,
             '#attributes' => array('placeholder' => $this->t('your message')),
             '#default_value' => isset($text) ? $text : null,
             '#format' => isset($data->format) ? $data->format : 'restricted_html',
-        );
+        ];
 
-        $form['email'] = array(
-            '#type' => 'checkbox',
-            '#title' => $this->t('Send also via email (note: html formated text may not be fully displayed.)'),
-        );
+        if($id != 'broadcast') {
+            $form['email'] =[
+                '#type' => 'checkbox',
+                '#title' => $this->t('Send also via email (note: html formated text may not be fully displayed.)'),
+            ];
+        }
 
-
-        $form['actions'] = array(
+        $form['actions'] = [
             '#type' => 'actions',
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            '#attributes' => ['class' => array('container-inline')],
+        ];
 
-        $form['actions']['submit'] = array(
+        $form['actions']['submit'] = [
             '#type' => 'submit',
             '#value' => $this->t('Send message'),
-        );
-
-
-
-
-
+        ];
+        
         return $form;
     }
 
@@ -117,9 +125,9 @@ class Message extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-        if ($form_state->getValue('users') == '') {
+        if ($form_state->getValue('users') != 'broadcast' && $form_state->getValue('users') == '') {
             $form_state->setErrorByName('users', $this->t('there is no recipient'));
-        } else {
+        } elseif($form_state->getValue('users') != 'broadcast') {
             $users = explode(',', $form_state->getValue('users'));
             $error = '';
             $list_ids = '';
@@ -154,6 +162,7 @@ class Message extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
+        
         $message = $form_state->getValue('message');
         $priority = array('3' => $this->t('low'), '2' => $this->t('normal'), '1' => $this->t('high'));
         if ($form_state->getValue('priority') == 1) {
@@ -165,16 +174,26 @@ class Message extends FormBase {
         $currentuserId = \Drupal::currentUser()->id();
         $currentuserName = \Drupal::currentUser()->getAccountName();
         $currentuserMail = \Drupal::currentUser()->getEmail();
-        $users = explode(',', $form_state->getValue('users'));
         $error = '';
 
         /*
          * System message record
          */
+        if($form_state->getValue('users') == 'broadcast') {
+            $inbox = ',';
+            $n = 0;
+            foreach (\Drupal\ek_admin\Access\AccessCheck::listUsers() as $uid => $name) {
+                if($uid != $currentuserId) {
+                    $inbox .= $uid . ',';
+                    $n++;
+                }
+            }
+        } else {
+            $inbox = ',' . $form_state->getValue('list_ids');
+        }
+        
 
-        $inbox = ',' . $form_state->getValue('list_ids');
-
-        /* TO DO
+        /* @TODO
          * check security implication
          * if Xss filter applied, images and links are filtered out
          * from messages
@@ -196,59 +215,63 @@ class Message extends FormBase {
                 )
         );
 
-        /*
-         * email sending record
-         */
-        if ($form_state->getValue('email') == 1) {
-            //send a full copy message to email address
-            $params = [
-                'subject' => $subject,
-                'body' => $message['value'],
-                'from' => $currentuserMail,
-                'priority' => $form_state->getValue('priority'),
-                'link' => 0,
-            ];
-        } else {
-            //send only a notification
+        if($form_state->getValue('users') != 'broadcast') {
+            /*
+             * email sending record
+             * don't send email with broadcast
+             */
+            if ($form_state->getValue('email') == 1) {
+                //send a full copy message to email address
+                $params = [
+                    'subject' => $subject,
+                    'body' => $message['value'],
+                    'from' => $currentuserMail,
+                    'priority' => $form_state->getValue('priority'),
+                    'link' => 0,
+                ];
+            } else {
+                //send only a notification
+                $link = Url::fromRoute('ek_messaging_read', ['id' => $m], ['absolute' => true])->toString();
+                $params = [
+                    'subject' => $this->t('You have a new message'),
+                    'body' => "<a href='" . $link . "'>" . $this->t('read') . "</a>",
+                    'from' => $currentuserMail,
+                    'priority' => $form_state->getValue('priority'),
+                    'link' => 1,
+                ];
+            }
+            
+            $list_ids = explode(',', rtrim($form_state->getValue('list_ids'), ","));
+            $link = Url::fromRoute('ek_messaging_read', ['id' => $m], [])->toString();
+            $url = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
+            $params['body'] = "<a href='" . $url . "'>" . $this->t('open') . "</a>";
+            foreach (User::loadMultiple($list_ids) as $account) {
+                if ($account->isActive()) {
+                    $send = \Drupal::service('plugin.manager.mail')->mail(
+                            'ek_messaging', 'ek_message',
+                            $account->getEmail(),
+                            $account->getPreferredLangcode(),
+                            $params,
+                            $currentuserMail,
+                            true
+                    );
 
-            $link = Url::fromRoute('ek_messaging_read', ['id' => $m], ['absolute' => true])->toString();
-            $params = [
-                'subject' => $this->t('You have a new message'),
-                'body' => "<a href='" . $link . "'>" . $this->t('read') . "</a>",
-                'from' => $currentuserMail,
-                'priority' => $form_state->getValue('priority'),
-                'link' => 1,
-            ];
-        }
-
-
-        $list_ids = explode(',', rtrim($form_state->getValue('list_ids'), ","));
-        $link = Url::fromRoute('ek_messaging_read', ['id' => $m], [])->toString();
-        $url = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
-        $params['body'] = "<a href='" . $url . "'>" . $this->t('open') . "</a>";
-        foreach (User::loadMultiple($list_ids) as $account) {
-            if ($account->isActive()) {
-                $send = \Drupal::service('plugin.manager.mail')->mail(
-                        'ek_messaging', 'ek_message',
-                        $account->getEmail(),
-                        $account->getPreferredLangcode(),
-                        $params,
-                        $currentuserMail,
-                        true
-                );
-
-                if ($send['result'] == false) {
-                    $error .= $account->getEmail() . ' ';
+                    if ($send['result'] == false) {
+                        $error .= $account->getEmail() . ' ';
+                    }
                 }
             }
-        }
 
-        if ($error != '') {
-            \Drupal::messenger()->addError(t('Error sending email to @m', ['@m' => $error]));
+            if ($error != '') {
+                \Drupal::messenger()->addError(t('Error sending email to @m', ['@m' => $error]));
+            } else {
+                \Drupal::messenger()->addStatus(t('Message @id sent', ['@id' => $m]));
+            }
+            
         } else {
-            \Drupal::messenger()->addStatus(t('Message @id sent', ['@id' => $m]));
+                \Drupal::messenger()->addStatus(t('Broadcast message @id sent to @n users', ['@id' => $m, '@n' => $n]));
         }
-
+        
         $form_state->setRedirect('ek_messaging_inbox');
     }
 

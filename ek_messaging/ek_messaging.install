@@ -40,3 +40,10 @@ function ek_messaging_uninstall() {
 function ek_messaging_update_8001() {
    drupal_flush_all_caches();
 } 
+
+/**
+ * message broadcast route
+ */
+function ek_messaging_update_8002() {
+   \Drupal::service('router.builder')->rebuild(); 
+}

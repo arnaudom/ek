@@ -15,3 +15,9 @@ ek_messaging_task_archives:
   base_route: ek_messaging_inbox
   title: 'Archives'
   weight: 3
+  
+ek_messaging_task_broadcast:
+  route_name: ek_messaging_send_broadcast
+  base_route: ek_messaging_inbox
+  title: 'Broadcast'
+  weight: 4

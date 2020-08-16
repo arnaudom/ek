@@ -72,19 +72,19 @@ class InstallController extends ControllerBase {
                 `id` INT(11) NOT NULL AUTO_INCREMENT,
                 `stamp` INT(11) NOT NULL DEFAULT '0',
                 `from_uid` INT(11) NOT NULL DEFAULT '0' COMMENT 'user sending message',
-                `to` VARCHAR(255) NOT NULL DEFAULT '0' COMMENT 'user id, multiple or group',
-                `to_group` VARCHAR(255) NULL DEFAULT '0' COMMENT 'record the goup id the message is sent to',
-                `type` VARCHAR(50) NOT NULL DEFAULT '0' COMMENT '1=private,2=multiple,3=group',
-                `status` VARCHAR(255) NULL DEFAULT '0' COMMENT '0,NULL = unread, array of readers id',
-                `reply` VARCHAR(255) NULL DEFAULT '0' COMMENT 'array of user reply',
-                `inbox` VARCHAR(255) NULL DEFAULT '0' COMMENT 'array of user in inbox',
-                `archive` VARCHAR(255) NULL DEFAULT '0' COMMENT 'array of user in archive',
+                `to` LONGBLOB NOT NULL COMMENT 'user id, multiple or group',
+                `to_group` INT(11) NULL DEFAULT '0' COMMENT 'record the goup id the message is sent to',
+                `type` INT(3) NOT NULL DEFAULT '0' COMMENT '1=private,2=multiple,3=group',
+                `status` LONGBLOB NULL COMMENT '0,NULL = unread, array of readers id',
+                `reply` LONGBLOB NULL COMMENT 'list of users reply',
+                `inbox` LONGBLOB NULL COMMENT 'list of users in inbox',
+                `archive` LONGBLOB NULL COMMENT 'list of user in archive',
                 `subject` VARCHAR(255) NULL DEFAULT NULL COMMENT 'subject',
                 `priority` VARCHAR(5) NOT NULL DEFAULT '2' COMMENT '1=high, 2 meduim, 3 low',
                 INDEX `Index 1` (`id`)
                 )
                 COMMENT='record and management of messages between users'
-                COLLATE='utf8_general_ci'
+                COLLATE='utf8mb4_general_ci'
                 ENGINE=InnoDB
                 AUTO_INCREMENT=1";
 
@@ -100,7 +100,7 @@ class InstallController extends ControllerBase {
                   INDEX `Index 1` (`id`)
                 )
                 COMMENT='record messaging body content'
-                COLLATE='utf8_general_ci'
+                COLLATE='utf8mb4_general_ci'
                 ENGINE=InnoDB
                 ROW_FORMAT=COMPACT";
 

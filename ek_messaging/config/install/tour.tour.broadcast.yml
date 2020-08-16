@@ -1,0 +1,73 @@
+id: ek_messaging.broadcast
+module: ek_messaging
+label: 'Send broadcast message'
+langcode: en
+routes:
+  - route_name: ek_messaging_send_broadcast
+tips:
+  introduction:
+    id: introduction
+    plugin: text
+    label: 'Send a broadcast message form'
+    body: 'This is a guided tour about sending broadcast message.'
+    weight: 1
+  item0:
+    id: tabs
+    plugin: text
+    label: 'Recipients'
+    body: 'Broadcast will send a message to all internal and active application users. They are selected automatically.'
+    weight: 2
+    location: bottom
+    attributes:
+      data-id: edit-info
+  item1:
+    id: priority
+    plugin: text
+    label: 'Priority'
+    body: 'Select the priority of your message: <ul><li class="red">Urgent</li><li class="blue">Normal</li><li class="green">Low</li></ul>'
+    weight: 3
+    location: bottom
+    attributes:
+      data-id: edit-priority
+  item2:
+    id: subject
+    plugin: text
+    label: 'Subject'
+    body: 'Message subject'
+    weight: 4
+    location: bottom
+    attributes:
+      data-id: edit-subject
+  item3:
+    id: body
+    plugin: text
+    label: 'Message body'
+    body: 'Input your message here.'
+    weight: 4
+    location: bottom
+    attributes:
+      data-id: edit-message-value
+  item4:
+    id: filters
+    plugin: text
+    label: 'Text formats'
+    body: 'Based on administrator settings, you can have different text format available: plain text, restricted or full HTML.'
+    weight: 5
+    location: bottom
+    attributes:
+      data-class: filter-list
+  item5:
+    id: send
+    plugin: text
+    label: 'Send'
+    body: 'Click to send message.'
+    weight: 6
+    location: right
+    attributes:
+      data-id: edit-submit
+  conclusion:
+    id: conclusion
+    plugin: text
+    label: 'Online documentation'
+    body: 'Go to <a href="https://arrea-systems.com/tutorial-messaging">online documentation</a> for further help.'
+    weight: 7
