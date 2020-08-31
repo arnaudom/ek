@@ -57,61 +57,70 @@ class FilterPurchase extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
         $to = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT date from {ek_sales_purchase} order by date DESC limit 1")
-                ->fetchObject();
+                        ->select('ek_sales_purchase', 'p')
+                        ->fields('p', ['date'])
+                        ->range(0, 1)
+                        ->orderBy('date', 'DESC')
+                        ->execute()->fetchObject();
         $from = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT date from {ek_sales_purchase} WHERE status <> 1 order by date limit 1")
-                ->fetchObject();
-        //$date1= date('Y-m-d', strtotime($data2." -30 days")) ;
-        $s = array(0 => $this->t('Not paid'), 1 => $this->t('Paid'), 3 => $this->t('Any'));
+                        ->select('ek_sales_purchase', 'p')
+                        ->fields('p', ['date'])
+                        ->condition('status', 1, '<>')
+                        ->range(0, 1)
+                        ->orderBy('date')
+                        ->execute()->fetchObject();
+        $s = [0 => $this->t('Not paid'), 1 => $this->t('Paid'), 3 => $this->t('Any')];
         $filter_title = $this->t('Filter');
         if (isset($_SESSION['pfilter']['status'])) {
-            $filter_title .= ' (' . $s[$_SESSION['pfilter']['status']] . ')';
+            $filter_title .= ' (' . $s[$_SESSION['pfilter']['status']];
+            if (isset($_SESSION['pfilter']['currency']) && $_SESSION['pfilter']['currency'] != '%') {
+                $filter_title .=  " - " . $_SESSION['pfilter']['currency'];
+            }
+            $filter_title .= ')';
         }
 
-        $form['filters'] = array(
+        $form['filters'] = [
             '#type' => 'details',
             '#title' => $filter_title,
             '#open' => (isset($_SESSION['pfilter']['filter'])) ? false : true,
                 //'#attributes' => array('class' => array('container-inline')),
-        );
-        $form['filters']['filter'] = array(
+        ];
+
+        $form['filters']['filter'] = [
             '#type' => 'hidden',
             '#value' => 'filter',
-        );
+        ];
 
-        $form['filters']['keyword'] = array(
+        $form['filters']['keyword'] = [
             '#type' => 'textfield',
             '#maxlength' => 75,
             '#size' => 30,
-            '#attributes' => array('placeholder' => $this->t('Search with keyword, ref No.')),
+            '#attributes' => ['placeholder' => $this->t('Search with keyword, ref No.')],
             '#default_value' => isset($_SESSION['pfilter']['keyword']) ? $_SESSION['pfilter']['keyword'] : null,
-        );
+        ];
 
-        $form['filters']['coid'] = array(
+        $form['filters']['coid'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => AccessCheck::CompanyListByUid(),
             '#default_value' => isset($_SESSION['pfilter']['coid']) ? $_SESSION['pfilter']['coid'] : 0,
             '#prefix' => "<div>",
             '#suffix' => '</div>',
-            '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
-                ),
-            ),
-        );
+            '#states' => [
+                'invisible' => [':input[name="keyword"]' => ['filled' => true],],
+            ],
+        ];
 
-        $form['filters']['from'] = array(
+        $form['filters']['from'] = [
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['pfilter']['from']) ? $_SESSION['pfilter']['from'] : $from->date,
             '#prefix' => "<div class='container-inline'>",
             '#title' => $this->t('from'),
-            '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
-                ),
-            ),
-        );
+            '#states' => [
+                'invisible' => [':input[name="keyword"]' => ['filled' => true],],
+            ],
+        ];
 
         $form['filters']['to'] = array(
             '#type' => 'date',
@@ -119,74 +128,84 @@ class FilterPurchase extends FormBase {
             '#default_value' => isset($_SESSION['pfilter']['to']) ? $_SESSION['pfilter']['to'] : $to->date,
             '#suffix' => '</div>',
             '#title' => $this->t('to'),
-            '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
-                ),
-            ),
+            '#states' => [
+                'invisible' => [':input[name="keyword"]' => ['filled' => true],],
+            ],
         );
 
 
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
             $supplier = \Drupal\ek_address_book\AddressBookData::addresslist(2);
-
             if (!empty($supplier)) {
-                $supplier = array('%' => $this->t('Any')) + $supplier;
+                $supplier = ['%' => $this->t('Any')] + $supplier;
                 $form['filters']['supplier'] = array(
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $supplier,
                     '#required' => true,
                     '#default_value' => isset($_SESSION['pfilter']['client']) ? $_SESSION['pfilter']['client'] : '%',
-                    '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
+                    '#attributes' => ['style' => array('width:200px;white-space:nowrap')],
                     '#title' => $this->t('supplier'),
-                    '#states' => array(
-                        'invisible' => array(':input[name="keyword"]' => array('filled' => true),
-                        ),
-                    ),
+                    '#states' => [
+                        'invisible' => [':input[name="keyword"]' => ['filled' => true],],
+                    ],
                 );
             } else {
-                $link = Url::fromRoute('ek_address_book.new', array())->toString();
+                $link = Url::fromRoute('ek_address_book.new', [])->toString();
 
-                $form['filters']['supplier'] = array(
+                $form['filters']['supplier'] = [
                     '#markup' => $this->t("You do not have any <a title='create' href='@cl'>supplier</a> in your record.", ['@cl' => $link]),
                     '#prefix' => "<div class='messages messages--warning'>",
                     '#suffix' => '</div>',
-                );
+                ];
             }
         } else {
-            $form['filters']['supplier'] = array(
+            $form['filters']['supplier'] = [
                 '#markup' => $this->t('You do not have any supplier list.'),
                 '#default_value' => 0,
-            );
+            ];
         }
 
-        $form['filters']['status'] = array(
+        $form['filters']['status'] = [
             '#type' => 'select',
             '#options' => $s,
             '#default_value' => isset($_SESSION['pfilter']['status']) ? $_SESSION['pfilter']['status'] : '0',
-            '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
-                ),
-            ),
-        );
+            '#states' => [
+                'invisible' => [':input[name="keyword"]' => ['filled' => true],],
+            ],
+        ];
 
-        $form['filters']['actions'] = array(
+        if ($this->moduleHandler->moduleExists('ek_finance')) {
+            $op = ['%' => $this->t('Any')];
+            $op += \Drupal\ek_finance\CurrencyData::listcurrency(1);
+            $form['filters']['currency'] = [
+                '#type' => 'select',
+                '#options' => $op,
+                '#description' => $this->t('currency'),
+                '#default_value' => isset($_SESSION['pfilter']['currency']) ? $_SESSION['pfilter']['currency'] : '%',
+                '#states' => [
+                'invisible' => [':input[name="keyword"]' => array('filled' => true),],
+                ],
+            ];
+        }
+        
+        $form['filters']['actions'] = [
             '#type' => 'actions',
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            '#attributes' => ['class' => array('container-inline')],
+        ];
 
-        $form['filters']['actions']['submit'] = array(
+        $form['filters']['actions']['submit'] = [
             '#type' => 'submit',
             '#value' => $this->t('Apply'),
-        );
+        ];
 
         if (!empty($_SESSION['pfilter'])) {
-            $form['filters']['actions']['reset'] = array(
+            $form['filters']['actions']['reset'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Reset'),
                 '#limit_validation_errors' => array(),
-                '#submit' => array(array($this, 'resetForm')),
-            );
+                '#submit' => [[$this, 'resetForm']],
+            ];
         }
         return $form;
     }
@@ -210,6 +229,7 @@ class FilterPurchase extends FormBase {
         $_SESSION['pfilter']['to'] = $form_state->getValue('to');
         $_SESSION['pfilter']['status'] = $form_state->getValue('status');
         $_SESSION['pfilter']['client'] = $form_state->getValue('supplier');
+        $_SESSION['pfilter']['currency'] = (!null == $form_state->getValue('currency')) ? $form_state->getValue('currency') : '%';
         $_SESSION['pfilter']['filter'] = 1;
     }
 

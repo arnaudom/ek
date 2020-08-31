@@ -144,7 +144,8 @@ class InvoicesController extends ControllerBase {
                     'from' => $_SESSION['ifilter']['from'],
                     'to' => $_SESSION['ifilter']['to'],
                     'client' => $_SESSION['ifilter']['client'],
-                    'status' => $_SESSION['ifilter']['status']
+                    'status' => $_SESSION['ifilter']['status'],
+                    'currency' => $_SESSION['ifilter']['currency'],
                 ));
                 $excel = Url::fromRoute('ek_sales.invoices.excel', array('param' => $param))->toString();
                 $build['excel'] = array(
@@ -176,6 +177,7 @@ class InvoicesController extends ControllerBase {
                         ->condition('i.client', $_SESSION['ifilter']['client'], 'like')
                         ->condition('i.date', $_SESSION['ifilter']['from'], '>=')
                         ->condition('i.date', $_SESSION['ifilter']['to'], '<=')
+                        ->condition('i.currency', $_SESSION['ifilter']['currency'], 'LIKE')
                         ->condition($or3)
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
@@ -489,7 +491,7 @@ class InvoicesController extends ControllerBase {
      *
      */
     public function ExportExcel($param) {
-        $markup = array();
+        $markup = [];
 
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
@@ -525,15 +527,18 @@ class InvoicesController extends ControllerBase {
             $or1 = $query->orConditionGroup();
             $or1->condition('head', $access, 'IN');
             $or1->condition('allocation', $access, 'IN');
+            // skip condition on payment status, extract all statuses
+            
             $result = $query
                     ->fields('i')
                     ->fields('b', array('name'))
                     ->fields('c', array('name'))
                     ->condition($or)->condition($or1)
+                    ->condition('i.head', $options['coid'], '=')
                     ->condition('i.client', $options['client'], 'like')
                     ->condition('i.date', $options['from'], '>=')
                     ->condition('i.date', $options['to'], '<=')
-                    ->condition('i.head', $options['coid'], '=')
+                    ->condition('i.currency', $options['currency'], 'LIKE')
                     ->orderBy('i.id', 'ASC')
                     ->execute();
             

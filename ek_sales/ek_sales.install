@@ -293,3 +293,11 @@ function ek_sales_update_8012() {
 function ek_sales_update_8013() {
     \Drupal::service('router.builder')->rebuild();
 }
+     
+/**
+ * New route for quotations
+ * 
+*/
+function ek_sales_update_8014() {
+    \Drupal::service('router.builder')->rebuild();
+}

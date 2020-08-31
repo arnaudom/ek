@@ -361,6 +361,13 @@ ek_sales.quotations.print_share_pdf:
   requirements:
     _permission: 'print_share_quotation'
     #param: \w*
+
+ek_sales.quotations.excel:
+  path: '/quotations/export/{param}'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\QuotationsController::ExportExcel'
+  requirements:
+    _permission: 'list_quotation'
     
 ek_sales.quotations.delete:
   path: '/quotations/delete/{id}'

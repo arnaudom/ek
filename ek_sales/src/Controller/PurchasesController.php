@@ -143,7 +143,8 @@ class PurchasesController extends ControllerBase {
                     'from' => $_SESSION['pfilter']['from'],
                     'to' => $_SESSION['pfilter']['to'],
                     'client' => $_SESSION['pfilter']['client'],
-                    'status' => $_SESSION['pfilter']['status']
+                    'status' => $_SESSION['pfilter']['status'],
+                    'currency' => $_SESSION['pfilter']['currency'],
                 ));
                 $excel = Url::fromRoute('ek_sales.purchases.excel', array('param' => $param))->toString();
                 $build['excel'] = array(
@@ -173,6 +174,7 @@ class PurchasesController extends ControllerBase {
                         ->condition('p.client', $_SESSION['pfilter']['client'], 'like')
                         ->condition('p.date', $_SESSION['pfilter']['from'], '>=')
                         ->condition('p.date', $_SESSION['pfilter']['to'], '<=')
+                        ->condition('p.currency', $_SESSION['pfilter']['currency'], 'LIKE')
                         ->condition($or3)
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
@@ -242,7 +244,8 @@ class PurchasesController extends ControllerBase {
         $abook = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT id,name from {ek_address_book}")
                 ->fetchAllKeyed();
-
+        $options = [];
+        
         while ($r = $data->fetchObject()) {
             $settings = new SalesSettings($r->head);
             $supplier_name = '';
@@ -809,7 +812,7 @@ class PurchasesController extends ControllerBase {
     /**
      * Render excel form for purchases list
      *
-     * @param array $param coid,from,to,client,status
+     * @param array $param coid,from,to,client,status, currency
      *
      *
      */
@@ -833,7 +836,7 @@ class PurchasesController extends ControllerBase {
             $query->leftJoin('ek_address_book', 'b', 'p.client=b.id');
             $query->leftJoin('ek_company', 'c', 'p.head=c.id');
 
-            $or = $or2 = $query->orConditionGroup();
+            $or = $query->orConditionGroup();
             if ($options['status'] == 3) {
                 //any status
                 $or->condition('p.status', $_SESSION['pfilter']['status'], '<');
@@ -846,9 +849,11 @@ class PurchasesController extends ControllerBase {
                 $or->condition('p.status', 1, '=');
             }
 
-            $or1 = $or2 = $query->orConditionGroup();
+            $or1 = $query->orConditionGroup();
             $or1->condition('head', $access, 'IN');
             $or1->condition('allocation', $access, 'IN');
+            // skip condition on payment status, extract all statuses
+            
             $result = $query
                     ->fields('p')
                     ->fields('b', array('name'))
@@ -858,6 +863,7 @@ class PurchasesController extends ControllerBase {
                     ->condition('p.date', $options['from'], '>=')
                     ->condition('p.date', $options['to'], '<=')
                     ->condition('p.head', $options['coid'], 'like')
+                    ->condition('p.currency', $options['currency'], 'LIKE')
                     ->orderBy('p.id', 'ASC')
                     ->execute();
             include_once drupal_get_path('module', 'ek_sales') . '/excel_list_purchases.inc';

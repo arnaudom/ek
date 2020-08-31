@@ -153,6 +153,18 @@ class QuotationsController extends ControllerBase {
                         ->execute();
             } else {
                 //search based on input fields
+                $param = serialize(array(
+                    'coid' => $_SESSION['qfilter']['coid'],
+                    'from' => $_SESSION['qfilter']['from'],
+                    'to' => $_SESSION['qfilter']['to'],
+                    'client' => $_SESSION['qfilter']['client'],
+                    'status' => $_SESSION['qfilter']['status'],
+                    'currency' => $_SESSION['qfilter']['currency'],
+                ));
+                $excel = Url::fromRoute('ek_sales.quotations.excel', array('param' => $param))->toString();
+                $build['excel'] = array(
+                    '#markup' => "<a href='" . $excel . "' title='" . $this->t('Excel download') . "'><span class='ico excel green'></span></a>"
+                );
                 $or2 = $query->orConditionGroup();
                 $or2->condition('head', $_SESSION['qfilter']['coid']);
                 $or2->condition('allocation', $_SESSION['qfilter']['coid']);
@@ -164,6 +176,7 @@ class QuotationsController extends ControllerBase {
                         ->condition('client', $_SESSION['qfilter']['client'], 'like')
                         ->condition('date', $_SESSION['qfilter']['from'], '>=')
                         ->condition('date', $_SESSION['qfilter']['to'], '<=')
+                        ->condition('currency', $_SESSION['qfilter']['currency'], 'like')
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
                         ->limit(20)
@@ -174,7 +187,6 @@ class QuotationsController extends ControllerBase {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_sales_quotation', 'q');
             $query->fields('q', ['date']);
-            //$query->condition('status', 0);
             $query->orderBy('date', "DESC");
             $query->range(0, 1);
             $from = $query->execute()->fetchField();
@@ -202,7 +214,8 @@ class QuotationsController extends ControllerBase {
         $abook = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT id,name from {ek_address_book}")
                 ->fetchAllKeyed();
-
+        $options = [];
+        
         while ($r = $data->fetchObject()) {
             $number = "<a title='" . $this->t('view') . "' href='"
                     . Url::fromRoute('ek_sales.quotations.print_html', ['id' => $r->id], [])->toString() . "'>"
@@ -607,7 +620,52 @@ class QuotationsController extends ControllerBase {
             ];
         }
     }
+    
+    /**
+     * Render excel form for quotations list
+     *
+     * @param array $param coid,from,to,client,status, currency
+     *
+     *
+     */
+    public function ExportExcel($param) {
+        $markup = [];
 
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
+            $markup = $this->t('Excel library not available, please contact administrator.');
+        } else {
+            $options = unserialize($param);
+            $access = AccessCheck::GetCompanyByUser();
+            $company = implode(',', $access);
+            $status = ['0' => (string) $this->t('open'), '1' => (string) $this->t('printed'), '2' => (string) $this->t('invoiced')];
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_quotation', 'q');
+            $query->leftJoin('ek_address_book', 'b', 'q.client=b.id');
+            $query->leftJoin('ek_company', 'c', 'q.head=c.id');
+
+            $or = $query->orConditionGroup();
+            $or->condition('head', $access, 'IN');
+            $or->condition('allocation', $access, 'IN');
+            
+            $result = $query
+                    ->fields('q')
+                    ->fields('b', array('name'))
+                    ->fields('c', array('name'))
+                    ->condition($or)
+                    ->condition('q.client', $options['client'], 'like')
+                    ->condition('q.date', $options['from'], '>=')
+                    ->condition('q.date', $options['to'], '<=')
+                    ->condition('q.head', $options['coid'], 'like')
+                    ->condition('q.currency', $options['currency'], 'LIKE')
+                    ->orderBy('q.id', 'ASC')
+                    ->execute();
+            include_once drupal_get_path('module', 'ek_sales') . '/excel_list_quotations.inc';
+        }
+
+        return ['#markup' => $markup];
+    }
+    
     public function DeleteQuotations(Request $request, $id) {
         //filter del
         $query = Database::getConnection('external_db', 'external_db')
