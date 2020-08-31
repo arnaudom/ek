@@ -266,8 +266,7 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
  * Implementation hook_mail().
  */
 function ek_documents_mail($key, &$message, $params) {
-
-
+    
     switch ($key) {
         case 'key_document_share':
 

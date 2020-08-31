@@ -64,71 +64,69 @@ class FilterExpenses extends FormBase {
         if (isset($_SESSION['efilter']['filter']) && $_SESSION['efilter']['filter'] == 1) {
             $open = false;
         }
-        $form['filters'] = array(
+        $form['filters'] = [
             '#type' => 'details',
             '#title' => $this->t('Filter'),
             '#open' => $open,
-        );
+        ];
 
         $coid = [];
         $coid += AccessCheck::CompanyListByUid();
 
-        $form['filters']['filter'] = array(
+        $form['filters']['filter'] = [
             '#type' => 'hidden',
             '#value' => 'filter',
-        );
+        ];
 
-        $form['filters'][0]['keyword'] = array(
+        $form['filters'][0]['keyword'] = [
             '#type' => 'textfield',
             '#maxlength' => 150,
-            '#attributes' => array('placeholder' => $this->t('Search with keyword, ref No.')),
+            '#attributes' => ['placeholder' => $this->t('Search with keyword, ref No.')],
             '#default_value' => isset($_SESSION['efilter']['keyword']) ? $_SESSION['efilter']['keyword'] : null,
-        );
+        ];
 
-
-        $form['filters'][1]['coid'] = array(
+        $form['filters'][1]['coid'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $coid,
             '#default_value' => isset($_SESSION['efilter']['coid']) ? $_SESSION['efilter']['coid'] : null,
             '#title' => $this->t('company'),
-            '#ajax' => array(
+            '#ajax' => [
                 'callback' => array($this, 'set_coid'),
                 'wrapper' => 'add',
-            ),
+            ],
             '#prefix' => "<div class='table'><div class='row'><div class='cell cellfloat'>",
             '#suffix' => '</div>',
             '#states' => [
                 'invisible' => [':input[name="keyword"]' => ['filled' => true]],
                 'required' => [':input[name="keyword"]' => ['filled' => false]],
             ],
-        );
+        ];
 
         if ($form_state->getValue('coid')) {
-            $aid = array('%' => $this->t('Any'));
+            $aid = ['%' => $this->t('Any')];
             $chart = $this->settings->get('chart');
-            $aid += AidList::listaid($form_state->getValue('coid'), array($chart['liabilities'], $chart['cos'], $chart['expenses'], $chart['other_expenses']), 1);
+            $aid += AidList::listaid($form_state->getValue('coid'), [chart['liabilities'], $chart['cos'], $chart['expenses'], $chart['other_expenses']], 1);
             $_SESSION['efilter']['options'] = $aid;
         }
 
-        $form['filters'][1]["aid"] = array(
+        $form['filters'][1]["aid"] = [
             '#type' => 'select',
             '#size' => 1,
-            '#options' => isset($_SESSION['efilter']['options']) ? $_SESSION['efilter']['options'] : array(),
+            '#options' => isset($_SESSION['efilter']['options']) ? $_SESSION['efilter']['options'] : [],
             '#title' => $this->t('class'),
             '#default_value' => isset($_SESSION['efilter']['aid']) ? $_SESSION['efilter']['aid'] : null,
-            '#attributes' => array('style' => array('width:200px;')),
+            '#attributes' => ['style' => array('width:200px;')],
             '#prefix' => "<div id='add'  class='cell cellfloat'>",
             '#suffix' => '</div>',
-            '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
-                ),
-            ),
-        );
+            '#states' => [
+                'invisible' => [':input[name="keyword"]' => array('filled' => true),],
+            ],
+        ];
 
         $allocation_options = ['0' => $this->t('Any')];
         $allocation_options += $coid;
-        $form['filters'][1]["allocation"] = array(
+        $form['filters'][1]["allocation"] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $allocation_options,
@@ -137,12 +135,11 @@ class FilterExpenses extends FormBase {
             '#attributes' => array('style' => array('width:200px;')),
             '#prefix' => "<div class='cell cellfloat'>",
             '#suffix' => '</div></div></div>',
-            '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
-                ),
-            ),
-        );
-        $form['filters'][2]['from'] = array(
+            '#states' => [
+                'invisible' => [':input[name="keyword"]' => array('filled' => true),],
+            ],
+        ];
+        $form['filters'][2]['from'] = [
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['efilter']['from']) ? $_SESSION['efilter']['from'] : date('Y-m') . "-01",
@@ -150,13 +147,12 @@ class FilterExpenses extends FormBase {
             '#prefix' => "<div class=''><div class='row'><div class='cell cellfloat'>",
             '#suffix' => '</div>',
             '#title' => $this->t('from'),
-            '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
-                ),
-            ),
-        );
+            '#states' => [
+                'invisible' => [':input[name="keyword"]' => array('filled' => true),],
+            ],
+        ];
 
-        $form['filters'][2]['to'] = array(
+        $form['filters'][2]['to'] = [
             '#type' => 'date',
             '#size' => 12,
             '#default_value' => isset($_SESSION['efilter']['to']) ? $_SESSION['efilter']['to'] : $to->date,
@@ -164,21 +160,18 @@ class FilterExpenses extends FormBase {
             '#title' => $this->t('to'),
             '#prefix' => "<div class='cell cellfloat'>",
             '#suffix' => '</div></div></div>',
-            '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
-                ),
-            ),
-        );
+            '#states' => [
+                'invisible' => [':input[name="keyword"]' => array('filled' => true),],
+            ],
+        ];
 
-
-
-        $supplier = array('%' => $this->t('Any'));
+        $supplier = ['%' => $this->t('Any')];
         $supplier += Database::getConnection('external_db', 'external_db')
                 ->query("SELECT DISTINCT ab.id,name FROM {ek_address_book} ab INNER JOIN {ek_expenses} e ON e.suppliername=ab.id order by name")
                 ->fetchAllKeyed();
 
 
-        $form['filters'][3]['supplier'] = array(
+        $form['filters'][3]['supplier'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $supplier,
@@ -187,19 +180,18 @@ class FilterExpenses extends FormBase {
             '#attributes' => array('style' => array('width:200px;')),
             '#prefix' => "<div class='table'><div class='row'><div class='cell cellfloat'>",
             '#suffix' => '</div>',
-            '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
-                ),
-            ),
-        );
+            '#states' => [
+                'invisible' => [':input[name="keyword"]' => array('filled' => true),],
+            ],
+        ];
 
-        $client = array('%' => $this->t('Any'));
+        $client = ['%' => $this->t('Any')];
         $client += Database::getConnection('external_db', 'external_db')
                 ->query("SELECT DISTINCT ab.id,name FROM {ek_address_book} ab INNER JOIN {ek_expenses} e ON e.clientname=ab.id order by name")
                 ->fetchAllKeyed();
 
 
-        $form['filters'][3]['client'] = array(
+        $form['filters'][3]['client'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $client,
@@ -208,14 +200,13 @@ class FilterExpenses extends FormBase {
             '#attributes' => array('style' => array('width:200px;')),
             '#prefix' => "<div class='cell cellfloat'>",
             '#suffix' => '</div>',
-            '#states' => array(
-                'invisible' => array(':input[name="keyword"]' => array('filled' => true),
-                ),
-            ),
-        );
+            '#states' => [
+                'invisible' => [':input[name="keyword"]' => array('filled' => true),],
+            ],
+        ];
 
         if ($this->moduleHandler->moduleExists('ek_projects')) {
-            $pcode = array('%' => $this->t('Any'), 'na' => $this->t('not applicable'));
+            $pcode = ['%' => $this->t('Any'), 'na' => $this->t('not applicable')];
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_expenses', 'e');
             $query->fields('e', ['id', 'pcode']);
@@ -225,7 +216,7 @@ class FilterExpenses extends FormBase {
 
             $pcode += \Drupal\ek_projects\ProjectData::format_project_list($list);
 
-            $form['filters'][3]['pcode'] = array(
+            $form['filters'][3]['pcode'] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $pcode,
@@ -234,19 +225,30 @@ class FilterExpenses extends FormBase {
                 '#attributes' => array('style' => array('width:200px;')),
                 '#prefix' => "<div class='cell cellfloat'>",
                 '#suffix' => '</div></div></div>',
-                '#states' => array(
-                    'invisible' => array(':input[name="keyword"]' => array('filled' => true),
-                    ),
-                ),
-            );
+                '#states' => [
+                    'invisible' => [':input[name="keyword"]' => array('filled' => true),],
+                ],
+            ];
         } else {
-            $form['filters'][3]['pcode'] = array(
+            $form['filters'][3]['pcode'] = [
                 '#type' => 'hidden',
                 '#value' => '%',
                 '#suffix' => '</div></div>',
-            );
+            ];
         }
-
+        
+        $op = ['%' => $this->t('Any')];
+        $op += \Drupal\ek_finance\CurrencyData::listcurrency(1);
+        $form['filters']['currency'] = [
+                '#type' => 'select',
+                '#options' => $op,
+                '#title' => $this->t('currency'),
+                '#default_value' => isset($_SESSION['efilter']['currency']) ? $_SESSION['efilter']['currency'] : '%',
+                '#states' => [
+                    'invisible' => [':input[name="keyword"]' => ['filled' => true],],
+                ],
+            ];
+        
         $form['filters']['rows'] = array(
             '#type' => 'select',
             '#size' => 1,
@@ -320,6 +322,7 @@ class FilterExpenses extends FormBase {
         $_SESSION['efilter']['client'] = $form_state->getValue('client');
         $_SESSION['efilter']['pcode'] = $form_state->getValue('pcode');
         $_SESSION['efilter']['keyword'] = $form_state->getValue('keyword');
+        $_SESSION['efilter']['currency'] = $form_state->getValue('currency');
         $_SESSION['efilter']['rows'] = $form_state->getValue('rows');
         $_SESSION['efilter']['filter'] = 1;
         $aid = array('%' => $this->t('Any'));

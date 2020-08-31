@@ -584,7 +584,9 @@ class PayMemo extends FormBase {
 
             if (isset($entity_mail) && isset($entity_to->email)) {
                 $params['subject'] = $this->t('Payment information') . ': ' . $data->serial;
-                $url = $GLOBALS['base_url'] . Url::fromRoute('ek_finance_manage_print_html', array('id' => $data->id))->toString();
+                $link = Url::fromRoute('ek_finance_manage_print_html', array('id' => $data->id))->toString();
+                $url = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
+                //$url = $GLOBALS['base_url'] . Url::fromRoute('ek_finance_manage_print_html', array('id' => $data->id))->toString();
                 $params['options']['url'] = "<a href='" . $url . "'>" . $data->serial . "</a>";
                 $params['options']['user'] = $entity->name;
 

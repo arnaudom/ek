@@ -1126,6 +1126,7 @@ class NewMemo extends FormBase {
                 $query->condition('id', $form_state->getValue('entity'), '=');
                 $entity = $query->execute()->fetchObject();
                 $entity_mail = $entity->email;
+                $entity_name = $entity->name;
             } else {
                 $query = \Drupal\user\Entity\User::load($form_state->getValue('entity'));
                 if ($query) {
@@ -1142,7 +1143,8 @@ class NewMemo extends FormBase {
 
             if (isset($insert) && isset($entity_mail) && isset($entity_to->email)) {
                 $params['subject'] = $this->t("New memo") . ': ' . $serial;
-                $url = $GLOBALS['base_url'] . Url::fromRoute('ek_finance_manage_print_html', array('id' => $reference))->toString();
+                $link = Url::fromRoute('ek_finance_manage_print_html', array('id' => $reference))->toString();
+                $url = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
                 $params['options']['url'] = "<a title='" . $serial . "' href='" . $url . "'>" . $this->t('Open') . "</a>";
                 $params['options']['user'] = $entity_name;
 
