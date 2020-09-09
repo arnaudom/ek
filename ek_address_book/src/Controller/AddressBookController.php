@@ -201,7 +201,7 @@ class AddressBookController extends ControllerBase
                 $contact['department'] = ucwords($r['department']);
                 $contact['link'] = $r['link'];
                 $contact['comment'] = $r['comment'];
-
+                
                 $url_pdf = Url::fromRoute('ek_address_book.pdf', array('abid' => $abid, 'cid' => $r['id']), array())->toString();
                 $contact['pdf'] = $this->t('<a href="@url" target="_blank">Pdf</a>', array('@url' => $url_pdf));
 
@@ -740,7 +740,6 @@ class AddressBookController extends ControllerBase
         $or->condition('activity', $text . "%", 'like');
         $or->condition('activity', "%," . $text . "%", 'like');
         $query->condition($or);
-        
         $data = $query->execute();
        
         while ($string = $data->fetchObject()) {
@@ -752,7 +751,7 @@ class AddressBookController extends ControllerBase
             }
         }
         
-        return new JsonResponse($result);
+        return new JsonResponse(array_unique($result));
     }
 
     /**
