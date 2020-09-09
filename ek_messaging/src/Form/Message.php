@@ -220,21 +220,27 @@ class Message extends FormBase {
              * email sending record
              * don't send email with broadcast
              */
+            
+            $link = Url::fromRoute('ek_messaging_read', ['id' => $m], [])->toString();
+            $url = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
+            $open = "<a href='" . $url . "'>" . $this->t('open') . "</a>";
+            
             if ($form_state->getValue('email') == 1) {
                 //send a full copy message to email address
                 $params = [
                     'subject' => $subject,
-                    'body' => $message['value'],
+                    'body' => $open . "<hr>" . $message['value'],
                     'from' => $currentuserMail,
                     'priority' => $form_state->getValue('priority'),
                     'link' => 0,
+                    'url' => $url,
                 ];
             } else {
                 //send only a notification
                 $link = Url::fromRoute('ek_messaging_read', ['id' => $m], ['absolute' => true])->toString();
                 $params = [
                     'subject' => $this->t('You have a new message'),
-                    'body' => "<a href='" . $link . "'>" . $this->t('read') . "</a>",
+                    'body' => $open,
                     'from' => $currentuserMail,
                     'priority' => $form_state->getValue('priority'),
                     'link' => 1,
@@ -242,9 +248,7 @@ class Message extends FormBase {
             }
             
             $list_ids = explode(',', rtrim($form_state->getValue('list_ids'), ","));
-            $link = Url::fromRoute('ek_messaging_read', ['id' => $m], [])->toString();
-            $url = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
-            $params['body'] = "<a href='" . $url . "'>" . $this->t('open') . "</a>";
+            
             foreach (User::loadMultiple($list_ids) as $account) {
                 if ($account->isActive()) {
                     $send = \Drupal::service('plugin.manager.mail')->mail(

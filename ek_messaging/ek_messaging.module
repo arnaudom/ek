@@ -134,24 +134,38 @@ function ek_messaging_mail($key, &$message, $params) {
     $params['options']['priority'] = $priority[$params['priority']];
     $params['options']['color'] = $color[$params['priority']];
     $params['options']['link'] = $params['link'];
-    
+        
     switch($key) {
         
       case 'ek_message':
-          
-        //filter body for images / links
-        if(preg_match("/src=\"([^\"]+)\"/", $params['body'], $body)){
-            $params['body'] = str_replace('src="/', 'src="' . $base_url, $params['body']);
+        
+        if($params['link'] == 0) {
+            //filter body for images / links
+            if(preg_match("/src=\"([^\"]+)\"/", $params['body'], $body)){
+                $params['body'] = str_replace('src="/', 'src="' . $base_url, $params['body']);
+            }
         }
-       
+                
         $render = [
             '#markup' => $params['body'],
         ];
-       
+        
         $message['From'] = $params['from'];
         $message['subject'] = $params['subject'];
         $message['body'][] = \Drupal::service('renderer')->render($render);
         $message['options'] = $params['options'];
+        $message['headers']['Disposition-Notification-To'] = $params['from'];
+        $message['headers']['X-Confirm-Reading-To'] = $params['from'];
+        if($params['priority'] == 1) {
+            $message['headers']['Priority'] = 'High';
+            $message['headers']['X-Priority'] = '1';
+            $message['headers']['X-MSMail-Priority'] = 'Highest';
+        } else {
+            $message['headers']['Priority'] = 'normal';
+            $message['headers']['X-Priority'] = '3';
+            $message['headers']['X-MSMail-Priority'] = 'Normal';
+        }
+        
         break;
 
     }
