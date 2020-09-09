@@ -274,6 +274,17 @@ function ek_documents_mail($key, &$message, $params) {
             $message['subject'] = $params['subject'];
             $message['body'][] = $params['body'];
             $message['options'] = $params['options'];
+            $message['headers']['Disposition-Notification-To'] = $params['from'];
+            $message['headers']['X-Confirm-Reading-To'] = $params['from'];
+            if($params['options']['priority'] == 1) {
+                $message['headers']['Priority'] = 'High';
+                $message['headers']['X-Priority'] = '1';
+                $message['headers']['X-MSMail-Priority'] = 'Highest';
+            } else {
+                $message['headers']['Priority'] = 'normal';
+                $message['headers']['X-Priority'] = '3';
+                $message['headers']['X-MSMail-Priority'] = 'Normal';
+            }
             break;
     }
 }
