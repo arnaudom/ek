@@ -198,13 +198,11 @@ class Notification extends FormBase {
             ;
         }
 
-        //$currentuserid = \Drupal::currentUser()->id();
-        //$query = "SELECT mail from {users_field_data} WHERE uid=:u";
-        //$from = db_query($query, array(':u' => $currentuserid))->fetchField();
         $acc2 = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
         $from = '';
         if ($acc2) {
             $from = $acc2->getEmail();
+            $params['from'] = $from;
         }
         $addresses = explode(',', $form_state->getValue('notify_who'));
         $error = '';
