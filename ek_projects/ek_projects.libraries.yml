@@ -56,8 +56,8 @@ ek_projects.calendar:
   version: 1
   css:
     theme:
-      css/ek_calendar.css: {} 
-      /libraries/fullcalendar/fullcalendar.min.css: {} 
+      css/ek_calendar.css: {weight: 100} 
+      /libraries/fullcalendar/fullcalendar.min.css: {weight: 99} 
       /libraries/qTip2/dist/jquery.qtip.min.css: {}
   js:
     /libraries/fullcalendar/lib/moment.min.js: {}
@@ -70,7 +70,8 @@ ek_projects.calendar:
     - core/drupalSettings
     - core/drupal.ajax
     - core/drupal.dialog
-
+ 
+    
 ek_projects_charts:
   js:
     js/ek_projects_charts.js: {}

@@ -74,7 +74,18 @@ class CalendarController extends ControllerBase {
      * AJAX callback handler for Ajax Calendar Dialog
      */
     public function calendar() {
-        return $this->dialog(true);
+        
+        $content = [];
+        $content['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\SelectCalendar');
+        $content['warning']['#markup'] = "<div id='calendar-warning' class='messages messages--warning'>"
+                    . $this->t('Error fetching data') 
+                    . "</div>";
+        $content['cal']['#markup'] = "<div id='calendar'></div>";     
+        $l = (null == \Drupal::currentUser()->getPreferredLangcode()) ? 'en' : \Drupal::currentUser()->getPreferredLangcode();
+        $content['#attached']['drupalSettings'] = array('calendarLang' => $l);
+        $content['#attached']['library'] = array('ek_projects/ek_projects.calendar');
+        return $content;
+        //return $this->dialog(true);
     }
 
     /**
@@ -93,7 +104,8 @@ class CalendarController extends ControllerBase {
 
         $response = new AjaxResponse();
         $title = $this->t('Calendar');
-        $l = \Drupal::currentUser()->getPreferredLangcode();
+        $l = (null == \Drupal::currentUser()->getPreferredLangcode()) ? 'en' : \Drupal::currentUser()->getPreferredLangcode();
+        
         $content['#attached']['drupalSettings'] = array('calendarLang' => $l);
         $content['#attached']['library'] = array('core/drupal.dialog.ajax', 'ek_projects/ek_projects.calendar');
         $options = array('width' => '80%');
@@ -112,33 +124,23 @@ class CalendarController extends ControllerBase {
      * AJAX callback handler for task and event display in calendar
      */
     public function view($id) {
-        $color_array = array('#CEE3F6', '#CEEFF6', '#CEF6F0', '#CEE3F6', '#CEF6D4',
-            '#DAF6CE', '#E9F6CE', '#F6F5CE', '#F6EBCE', '#F6DECE', '#CED5F6', '#D4CEF6', '#E1CEF6',
-            '#E2CEF6', '#F6CEEF', '#F6CEE5', '#F6CED9', '#F6CECE', '#CEE3F6', '#CEEFF6', '#CEF6F0',
-            '#CEE3F6', '#CEF6D4', '#DAF6CE', '#E9F6CE', '#F6F5CE', '#F6EBCE', '#F6DECE', '#CED5F6',
-            '#D4CEF6', '#E1CEF6', '#E2CEF6', '#F6CEEF', '#F6CEE5', '#F6CED9', '#F6CECE'
-        );
+        
         $events = array();
         $keys = array('id', 'title', 'description', 'start', 'end', 'url');
 
         switch ($id) {
-
             case 1:
-
-                //1 My tasks
-                //$query="SELECT * FROM {ek_project_tasks} WHERE uid=:o";
-                $query = "SELECT p.id as pid ,t.id,event,task,uid,t.pcode,start,end,completion_rate FROM {ek_project_tasks} t "
-                        . "LEFT JOIN {ek_project} p "
-                        . "ON p.pcode=t.pcode WHERE t.uid=:id";
-
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => \Drupal::currentUser()->id()));
-
+                //1 My tasks             
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project_tasks', 't');
+                $query->fields('t',['id','pcode','event','task','start','end','uid','completion_rate','color']);
+                $query->leftJoin('ek_project', 'p', 'p.pcode = t.pcode');
+                $query->fields('p', ['id']);
+                $query->condition('uid',\Drupal::currentUser()->id());
+                $r = $query->execute();
                 $x = -1;
-                while ($d = $data->fetchObject()) {
+                while ($d = $r->fetchObject()) {
                     $x++;
-
-
                     if (strlen($d->task > 25)) {
                         $title = substr($d->task, 0, 25) . "...";
                     } else {
@@ -165,100 +167,89 @@ class CalendarController extends ControllerBase {
                     }
 
                     $values = array(
-                        'id' => $d->id,
+                        'id' => $d->t_id,
                         'title' => $title,
                         'description' => $event,
                         'start' => $d1,
                         'end' => $d2,
-                        'url' => "../projects/project/" . $d->pid,
+                        'url' => "../projects/project/" . $d->p_id . "?s2=true#ps2",
                         'allDay' => $allday,
-                        'className' => "",
-                        'color' => $color_array[$x],
-                        'textColor' => 'black',
-                        'backgroundColor' => '',
+                        'className' => '',
+                        'color' => '',
+                        'textColor' => '',
+                        'backgroundColor' => $d->color,
                         'modal' => '',
                     );
                     array_push($events, $values);
                 }
 
-                break; //id=1
-
+                break; 
+                
             case 2:
             case 3:
             case 4:
             case 5:
-
+            case 6:
                 if ($id == 2) {
                     //select project submission
-                    $query = "SELECT p.id,p.pcode,pname,cid,submission as date from {ek_project} p "
-                            . "LEFT JOIN {ek_project_description} d "
-                            . "ON p.pcode=d.pcode "
-                            . "WHERE submission <> '0000-00-00'";
+                    $date = 'submission';
                 }
 
                 if ($id == 3) {
                     //select project validation
-                    $query = "SELECT p.id,p.pcode,pname,cid,validation as date from {ek_project} p "
-                            . "LEFT JOIN {ek_project_description} d "
-                            . "ON p.pcode=d.pcode "
-                            . "WHERE validation <> '0000-00-00'";
+                    $date = 'validation';
                 }
 
                 if ($id == 4) {
                     //select project start dates
-                    $query = "SELECT p.id,p.pcode,pname,cid,start_date as date from {ek_project} p LEFT JOIN {ek_project_description} d "
-                            . "ON p.pcode=d.pcode "
-                            . "WHERE start_date <> '0000-00-00'";
+                    $date = 'start_date';
                 }
                 if ($id == 5) {
                     //select project deadline
-                    $query = "SELECT p.id,p.pcode,pname,cid,deadline as date from {ek_project} p LEFT JOIN {ek_project_description} d "
-                            . "ON p.pcode=d.pcode "
-                            . "WHERE deadline <> '0000-00-00'";
+                    $date = 'deadline';
                 }
                 if ($id == 6) {
                     //select project completion
-                    $query = "SELECT p.id,p.pcode,pname,cid,completion as date from {ek_project} p LEFT JOIN {ek_project_description} d "
-                            . "ON p.pcode=d.pcode "
-                            . "WHERE completion <> '0000-00-00'";
+                    $date = 'completion';
                 }
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query);
-
-
-                //build array
-                $x = -1;
-                while ($d = $data->fetchObject()) {
-                    if (ProjectData::validate_access($d->id)) {
-                        $x++;
-
+              
+                $no = "0000-00-00";
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_project', 'p');
+                    $query->fields('p',['id','pcode','pname','cid']);
+                    $query->leftJoin('ek_project_description', 'd', 'p.pcode = d.pcode');
+                    $query->fields('d', [$date]);
+                    //$query->condition($date,`$no`,'<>');
+                    $r = $query->execute();
+                
+                $class_array = ['submission' => ['#034f84','#fff'],'validation' => ['#36486b','#fff'],
+                    'start_date' => ['#405d27','#fff'],'deadline' => ['#d64161','#fff'],
+                    'completion' => ['#3e4444','#fff'],];
+                $countries = \Drupal\ek_admin\Access\AccessCheck::CountryList();
+                while ($d = $r->fetchObject()) {
+                    if (ProjectData::validate_access($d->id) && $d->$date != '0000-00-00') {
                         $pcode = explode('-', $d->pcode);
                         $pcode = array_reverse($pcode);
-
                         if (strlen($d->pname > 15)) {
                             $title = $pcode[0] . ' - ' . substr($d->pname, 0, 15) . "...";
                         } else {
                             $title = $pcode[0] . ' - ' . $d->pname;
                         }
-                        $country = Database::getConnection('external_db', 'external_db')
-                                ->query("SELECT name FROM {ek_country} WHERE id=:cid", array(':cid' => $d->cid))
-                                ->fetchField();
-                        $d1 = $d->date;
-                        $d2 = $d->date;
-
-
+                        $country = $countries[$d->cid]; 
+                        $d1 = $d->$date;
+                        $d2 = $d->$date;
                         $values = array(
                             'id' => $d->id,
                             'title' => $title,
-                            'description' => $country,
+                            'description' => $country ."<br/>" . $d->pcode. "<br/>" . $title,
                             'start' => $d1,
                             'end' => $d2,
                             'url' => "../projects/project/" . $d->id,
                             'allDay' => true,
-                            'className' => "",
-                            'color' => $color_array[$x],
-                            'textColor' => 'black',
-                            'backgroundColor' => '',
+                            'className' => '',
+                            'color' => $class_array[$date][1],
+                            'textColor' => $class_array[$date][1],
+                            'backgroundColor' => $class_array[$date][0],
                             'modal' => '',
                         );
                         array_push($events, $values);
@@ -268,10 +259,7 @@ class CalendarController extends ControllerBase {
                 break;
         }
 
-
         return new JsonResponse($events);
     }
 
 }
-
-//class

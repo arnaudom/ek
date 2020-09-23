@@ -138,11 +138,19 @@ function ek_projects_update_8009() {
    \Drupal::service('router.builder')->rebuild(); 
 }
 
-
 /**
  * Project route rebuild
  * 
  */
 function ek_projects_update_8010() {
    \Drupal::service('router.builder')->rebuild(); 
+}
+
+/**
+ * reset style and js scripts for calendar
+ * 
+ */
+function ek_projects_update_8011() {
+    \Drupal::service("asset.css.collection_optimizer")->deleteAll(); 
+    \Drupal::service("asset.js.collection_optimizer")->deleteAll();
 }

@@ -1,13 +1,85 @@
-#loading {
+.button-calendar:before {
+  content: "\f073";
+  font-family: FontAwesome;
+  font-size: 1.8em;
+  margin-right: 5px;
+}
+#calendar-warning {
     display: none;
 }
-#calendar {
-    padding: 10px;
-}
+
 #calendar_block {
     font-size: 0.7em;
+}
 
+/* Style fc container. */
+td.fc-day {
+    border-color: #ddd !important;
 }
-.fc-header-title h2 {
-    color: #000 !important;
+td.fc-day-top.fc-today {
+    background: #e3ecfc !important;
+    border-bottom: 1px solid #ddd !important;
 }
+td.fc-today {
+    background: #e3ecfc !important;
+}
+td.fc-day-top.fc-past {
+    border-bottom: 1px solid #ddd !important;
+}
+
+td.fc-day-top.fc-future {
+    border-bottom: 1px solid #ddd !important;
+}
+
+/* Style the dialog-off-canvas container. */
+/* Layer the dialog just under the toolbar. */
+.ui-dialog.ui-dialog-off-canvas {
+    color: #ggg;
+    background: #fff;
+}
+#drupal-off-canvas .fc-day-top {
+    padding-right: 20px !important;
+}
+#drupal-off-canvas .fc-state-active, .fc-state-disabled, .fc-state-down, .fc-state-hover, .fc-today-button {
+    color: #333;
+    background-color: #e6e6e6;
+}
+#drupal-off-canvas .fc-title {
+    color: #fff;
+}
+
+#drupal-off-canvas td,
+#drupal-off-canvas th {
+    border-bottom: 0px solid #fff;
+}
+
+#drupal-off-canvas *,
+#drupal-off-canvas *:not(div),
+#drupal-off-canvas *:not(span){
+    color: #2d2d2d;
+    background: transparent;
+}
+
+#drupal-off-canvas tr:hover td {
+    background: whitesmoke;
+    background-color: whitesmoke;
+}
+#drupal-off-canvas td a {
+}
+
+#drupal-off-canvas a {
+}
+
+#drupal-off-canvas button,
+#drupal-off-canvas .button {
+  margin: 0 3px 10px;
+  padding: 2px;
+  cursor: pointer;
+  border: 1px solid #cacaca;
+  background: transparent;
+}
+
+#drupal-off-canvas th:first-child, #drupal-off-canvas td:first-child {
+    width: auto;
+}
+

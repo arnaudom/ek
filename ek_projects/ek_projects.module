@@ -35,7 +35,7 @@ use Drupal\ek_projects\ProjectData;
     
     if(isset($settings['code']) && empty($settings['code'])) {
         $_SESSION['install'] = 1;
-        $link = \Drupal\Core\Url::fromRoute('ek_projects.settings.serial', array(), array())->toString();
+        $link = \Drupal\Core\Url::fromRoute('ek_projects.settings.serial', [], array())->toString();
         return ['projects' => $link];
         
     }
@@ -51,45 +51,38 @@ use Drupal\ek_projects\ProjectData;
 function ek_projects_theme() {
   return array(
       // default display
-    'ek_projects_default' => array
-    (
+    'ek_projects_default' => [
       'template' => 'ek_projects_default',
-      'variables' => array('items' => array()),
-    ),
+      'variables' => array('items' => []),
+    ],
     // for the dashboard
-    'ek_projects_dashboard' => array
-    (
+    'ek_projects_dashboard' => [
       'template' => 'ek_projects_dashboard',
-      'variables' => array('items' => array()),
-    ),   
+      'variables' => array('items' => []),
+    ],   
     // for the project items display
-    'ek_projects_view' => array
-    (
+    'ek_projects_view' => [
       'template' => 'ek_projects_view',
-      'variables' => array('items' => array()),
-    ), 
+      'variables' => array('items' => []),
+    ], 
     //template for attached docs in project page  
-    'ek_projects_doc_view' => array
-    (
+    'ek_projects_doc_view' => [
       'template' => 'ek_projects_doc_view',
-      'variables' => array('items' => array()),
-    ),       
+      'variables' => array('items' => []),
+    ],       
     // for the project calendar block
-    'calendar_block' => array
-    (
+    'calendar_block' => [
       'template' => 'calendar_block',
-      'variables' => array('items' => array()),
-    ), 
-    'activity_block' => array
-    (
+      'variables' => array('items' => []),
+    ], 
+    'activity_block' => [
       'template' => 'activity_block',
-      'variables' => array('items' => array()),
-    ), 
-    'file_data' => array
-    (
+      'variables' => array('items' => []),
+    ], 
+    'file_data' => [
       'template' => 'file_data',
-      'variables' => array('items' => array()),
-    ),  
+      'variables' => array('items' => []),
+    ],  
   );     
 }
 
