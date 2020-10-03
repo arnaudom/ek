@@ -19,8 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a new organization form.
  */
-class NewAddressBookForm extends FormBase
-{
+class NewAddressBookForm extends FormBase {
 
     /**
      * The country manager.
@@ -55,8 +54,8 @@ class NewAddressBookForm extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $abid = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $abid = null) {
+        
         if (isset($abid)) {
             $form['for_id'] = array(
                 '#type' => 'hidden',
@@ -68,7 +67,6 @@ class NewAddressBookForm extends FormBase
             $query->fields('ab');
             $query->condition('id', $abid, '=');
             $r = $query->execute()->fetchAssoc();
-            
 
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_address_book_contacts', 'abc');
@@ -261,6 +259,7 @@ class NewAddressBookForm extends FormBase
 
         // insert the name cards
         $i = 0;
+        $main = 1;
         $salutation = array('-', $this->t('Mr.'), $this->t('Mrs.'), $this->t('Miss.'));
         if ($vocabulary = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadTree('salutation', 0, 1)) {
             foreach ($vocabulary as $item) {
@@ -269,6 +268,7 @@ class NewAddressBookForm extends FormBase
         }
         if (isset($rc) && $rc > 0) {
 
+            $main = 0;
             //namecard exist
             $query = Database::getConnection('external_db', 'external_db')
                       ->select('ek_address_book_contacts', 'abc');
@@ -437,7 +437,7 @@ class NewAddressBookForm extends FormBase
         $form[$i]['main' . $i] = array(
             '#type' => 'checkbox',
             '#title' => $this->t('Set as primary'),
-            '#default_value' => 0,
+            '#default_value' => $main,
             '#attributes' => array('title' => $this->t('Set as primary')),
             // Hide data fieldset when field is empty.
             '#states' => array(
