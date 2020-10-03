@@ -26,17 +26,11 @@ class CurrencyData {
     /**
      * build an array of currencies by currency => name (ie 'USD' => 'United States Dollar')
      *
-     * @param $type = 1 (active) or 0 (inactive)
+     * @param $type = 1 (active) or 0 (all)
+     * @return array
      */
     public static function listcurrency($type = null) {
-        if ($type == '1') {
-            $condition1 = "where active=:param1";
-            $a[':param1'] = 1;
-        } else {
-            $condition1 = '';
-            $a[':param1'] = '';
-        }
-
+        
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_currency', 'c')
                 ->fields('c', ['currency', 'name']);
@@ -45,8 +39,6 @@ class CurrencyData {
         }
         $query->orderBy('name');
         $data = $query->execute();
-
-
         return $data->fetchAllKeyed();
     }
 

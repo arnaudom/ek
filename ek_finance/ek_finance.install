@@ -1312,3 +1312,23 @@ function ek_finance_update_8020() {
         return t('New table created');
     } 
 }
+
+/**
+ * Add field currency in AB bank table
+ */
+function ek_finance_update_8021() {
+
+    $schema = Database::getConnection('external_db', 'external_db')->schema();
+    if (!$schema->fieldExists('ek_address_book_bank', 'currency')) {
+        $spec = array(
+            'description' => 'Currency code',
+            'type' => 'varchar',
+            'length' => 10,
+            'not null' => FALSE,
+        );
+        $schema->addField('ek_address_book_bank', 'currency', $spec);
+        return t('Table updated');
+    }
+    
+    
+}
