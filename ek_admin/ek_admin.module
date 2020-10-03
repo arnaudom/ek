@@ -49,7 +49,7 @@ function ek_admin_preprocess_page(&$variables) {
 
         if ($db == FALSE) {
 
-            $url = Url::fromRoute('ek_admin_ex_database', array(), array())->toString();
+            $url = Url::fromRoute('ek_admin_ex_database', [], [])->toString();
             drupal_set_message(t('<h2>Application setup is not yet done. Go <a href="@u">here</a> to start</h2>', ['@u' => $url]), 'error');
         } else {
             //$variables['page']['primary_menu']['#region'] = [];
@@ -148,58 +148,49 @@ function ek_admin_filter_ico($extension) {
 function ek_admin_theme() {
     return array(
         // default alert, access message
-        'ek_admin_settings' => array
-            (
+        'ek_admin_settings' => [
             'template' => 'ek_admin_settings',
-            'variables' => array('items' => array()),
-        ),
+            'variables' => array('items' => []),
+        ],
         // login
-        'ek_login' => array
-            (
+        'ek_login' => [
             'template' => 'login',
-            'variables' => array('items' => array()),
-        ),
+            'variables' => array('items' => []),
+        ],
         // default home
-        'ek_admin_home' => array
-            (
+        'ek_admin_home' => [
             'template' => 'ek_admin_home',
-            'variables' => array('items' => array()),
-        ),
+            'variables' => array('items' => []),
+        ],
         // default alert, access message
-        'ek_admin_message' => array
-            (
+        'ek_admin_message' => [
             'template' => 'ek_admin_message',
-            'variables' => array('items' => array()),
-        ),
+            'variables' => array('items' => []),
+        ],
         // for the company form
-        'ek_admin_company_form' => array
-            (
+        'ek_admin_company_form' => [
             'template' => 'ek_admin_company_form',
-            'variables' => array('items' => array()),
-        ),
+            'variables' => array('items' => []),
+        ],
         // for the country form
-        'ek_admin_country_form' => array
-            (
+        'ek_admin_country_form' => [
             'template' => 'ek_admin_country_form',
-            'variables' => array('items' => array()),
-        ),
+            'variables' => array('items' => []),
+        ],
         // for user access view
-        'ek_admin_user_access' => array
-            (
+        'ek_admin_user_access' => [
             'template' => 'ek_admin_user_access',
-            'variables' => array('items' => array()),
-        ),
+            'variables' => array('items' => []),
+        ],
         // for the documents
-        'ek_admin_docs_view' => array
-            (
+        'ek_admin_docs_view' => [            
             'template' => 'ek_admin_docs_view',
-            'variables' => array('items' => array()),
-        ),
-        'ek_admin_list_docs_view' => array
-            (
+            'variables' => array('items' => []),
+        ],
+        'ek_admin_list_docs_view' => [
             'template' => 'ek_admin_list_docs_view',
-            'variables' => array('items' => array()),
-        ),
+            'variables' => array('items' => []),
+        ],
     );
 }
 
@@ -213,16 +204,21 @@ function ek_admin_mail($key, &$message, $params) {
     $params['options']['logo'] = \Drupal::request()->getSchemeAndHttpHost() . $theme['url'];
     $params['options']['site'] = $site_config->get('name');
     $params['options']['stamp'] = date('F j, Y, g:i a');
+    $site_mail = \Drupal::config('system.site')->get('mail');
+    if (empty($site_mail)) {
+       $site_mail = \Drupal::config('system.site')->get('mail_notification');
+    }
+    $message['headers']['Reply-To'] = $site_mail;
 
     switch ($key) {
         case 'key_document_share':
-
+            /* @TODO remove
             $message['headers']['From'] = $params['from'];
             $message['subject'] = $params['subject'];
             $message['body'][] = $params['body'];
             $message['body'][] = '<hr><br>' . $params['message'] . '<br><hr>';
             $message['params']['attachments'][] = $params['attachments'];
-
+            */
             break;
 
         case 'attachment':
@@ -263,6 +259,7 @@ function ek_admin_mail_alter(&$message) {
         $params['options']['site'] = $site_config->get('name');
         $params['options']['stamp'] = date('F j, Y, g:i a');
         $message['options'] = $params['options'];
+       
         //Convert content for html mail
         $render = [
             '#markup' => nl2br($message['body'][0]),
