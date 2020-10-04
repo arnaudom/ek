@@ -408,16 +408,16 @@ function ek_finance_form_ek_edit_address_book_form_alter(&$form, \Drupal\Core\Fo
 
         $form['bank']['edit' . $i]['account' . $i] = [
             '#type' => 'textfield',
-            '#size' => 25,
+            '#size' => 40,
             '#default_value' => $bank->account,
-            '#maxlength' => 20,
+            '#maxlength' => 40,
             '#attributes' => array('placeholder' => t('account')),
         ];
 
         $form['bank']['edit' . $i]['bank_code' . $i] = [
             '#type' => 'textfield',
             '#size' => 25,
-            '#maxlength' => 20,
+            '#maxlength' => 25,
             '#default_value' => $bank->bank_code,
             '#attributes' => array('placeholder' => t('bank code')),
         ];
@@ -425,7 +425,7 @@ function ek_finance_form_ek_edit_address_book_form_alter(&$form, \Drupal\Core\Fo
         $form['bank']['edit' . $i]['swift' . $i] = [
             '#type' => 'textfield',
             '#size' => 25,
-            '#maxlength' => 20,
+            '#maxlength' => 25,
             '#default_value' => $bank->swift,
             '#attributes' => array('placeholder' => t('swift code')),
         ];
@@ -526,7 +526,7 @@ function ek_finance_form_ek_edit_address_book_form_alter(&$form, \Drupal\Core\Fo
         $form['bank']['new']['bank_code'] = [
             '#type' => 'textfield',
             '#size' => 25,
-            '#maxlength' => 20,
+            '#maxlength' => 25,
             '#attributes' => array('placeholder' => t('bank code')),
             '#states' => [
                 'invisible' => [
