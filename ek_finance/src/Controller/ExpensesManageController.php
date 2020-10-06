@@ -635,6 +635,7 @@ class ExpensesManageController extends ControllerBase
                         'pcode' => $_SESSION['efilter']['pcode'],
                         'from' => $_SESSION['efilter']['from'],
                         'to' => $_SESSION['efilter']['to'],
+                        'currency' => $_SESSION['efilter']['currency'],
                         'rows' => $_SESSION['efilter']['rows'],
                             )
                     );
