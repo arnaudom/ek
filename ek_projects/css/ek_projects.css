@@ -341,3 +341,19 @@
    border-bottom: 2px solid #94b4d0;
    padding-bottom:1px; 
 }
+
+/* Style the dialog-off-canvas container. */
+#drupal-off-canvas input[type="submit"] {
+    width: 30% !important;
+}
+
+#drupal-off-canvas fieldset {
+    padding: 5px;
+    border: 2px solid #94b4d0;
+}
+
+#drupal-off-canvas a, #drupal-off-canvas .link {
+    transition: color 0.5s ease;
+    text-decoration: none !important;
+    color: #85bef4 !important;
+}

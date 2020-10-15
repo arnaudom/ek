@@ -63,7 +63,6 @@ function ek_projects_views_data() {
         'sort' => ['id' => 'standard',],
         'filter' => ['id' => 'numeric',],
     );
-
     $data['ek_project']['cid'] = array(
         'title' => t('Country id'),
         'help' => t('Reference from country table'),
@@ -86,7 +85,6 @@ function ek_projects_views_data() {
         'sort' => ['id' => 'date',],
         'filter' => ['id' => 'date',],
     );
-
     $data['ek_project']['category'] = array(
         'title' => t('Project category'),
         'help' => t('Reference from project categories table'),
@@ -102,7 +100,6 @@ function ek_projects_views_data() {
             'base field' => 'id',
         ),
     );
-
     $data['ek_project']['pcode'] = array(
         'title' => t('Project code'),
         'help' => t('Project description'),
@@ -111,7 +108,6 @@ function ek_projects_views_data() {
         'filter' => ['id' => 'string',],
         'argument' => ['id' => 'string',],
     );
-
     $data['ek_project']['status'] = array(
         'title' => t('Status'),
         'help' => t('Open, awarded, completed, closed'),
@@ -120,7 +116,6 @@ function ek_projects_views_data() {
         'filter' => ['id' => 'string',],
         'argument' => ['id' => 'string',],
     );
-
     $data['ek_project']['level'] = array(
         'title' => t('Level'),
         'help' => t('Main or sub project'),
@@ -129,7 +124,6 @@ function ek_projects_views_data() {
         'filter' => ['id' => 'string',],
         'argument' => ['id' => 'string',],
     );
-
     $data['ek_project']['subcount'] = array(
         'title' => t('Number of sub projects'),
         'help' => t('Number of sub projects'),
@@ -137,7 +131,6 @@ function ek_projects_views_data() {
         'sort' => ['id' => 'standard',],
         'filter' => ['id' => 'numeric',],
     );
-
     $data['ek_project']['priority'] = array(
         'title' => t('Priority level'),
         'help' => t('0 to 3'),
@@ -145,7 +138,6 @@ function ek_projects_views_data() {
         'sort' => ['id' => 'standard',],
         'filter' => ['id' => 'numeric',],
     );
-
     $data['ek_project']['owner'] = array(
         'title' => t('Project owner'),
         'help' => t('User id from users table'),
@@ -163,7 +155,6 @@ function ek_projects_views_data() {
               'label' => t('Authenticated user'),
               ), */
     );
-
     $data['ek_project']['last_modified'] = array(
         'title' => t('Last edition stamp'),
         'help' => t('Unix timestamp'),
@@ -171,7 +162,6 @@ function ek_projects_views_data() {
         'sort' => ['id' => 'standard',],
         'filter' => ['id' => 'numeric',],
     );
-
     $data['ek_project']['share'] = array(
         'title' => t('List of users with share privileges'),
         'help' => t('Comma separated list of user id from users table'),
@@ -180,7 +170,6 @@ function ek_projects_views_data() {
         'filter' => ['id' => 'string',],
         'argument' => ['id' => 'string',],
     );
-
     $data['ek_project']['deny'] = array(
         'title' => t('List of users with blocked access'),
         'help' => t('Comma separated list of user id from users table'),
@@ -189,7 +178,6 @@ function ek_projects_views_data() {
         'filter' => ['id' => 'string',],
         'argument' => ['id' => 'string',],
     );
-
     $data['ek_project']['notify'] = array(
         'title' => t('List of users with update request'),
         'help' => t('Comma separated list of user id from users table'),
@@ -198,7 +186,6 @@ function ek_projects_views_data() {
         'filter' => ['id' => 'string',],
         'argument' => ['id' => 'string',],
     );
-
     $data['ek_project']['archive'] = array(
         'title' => t('Archive status'),
         'help' => t('0 or 1'),
@@ -206,7 +193,7 @@ function ek_projects_views_data() {
         'sort' => ['id' => 'standard',],
         'filter' => ['id' => 'numeric',],
     );
-
+    
     /*     * ********Project description********** */
     $data['ek_project_description']['table']['group'] = t('ek projects');
 
@@ -217,7 +204,6 @@ function ek_projects_views_data() {
         'weight' => -10,
         'database' => 'external_db',
     );
-
     $data['ek_project_description']['pcode'] = array(
         'title' => t('Project code in description'),
         'help' => t('Project code in description'),
@@ -309,7 +295,6 @@ function ek_projects_views_data() {
         'weight' => -10,
         'database' => 'external_db',
     );
-
     $data['ek_project_description']['pcode'] = array(
         'title' => t('Project code in logistics'),
         'help' => t('Project code in logistics'),

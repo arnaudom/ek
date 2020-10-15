@@ -552,10 +552,6 @@ class ProjectController extends ControllerBase {
 
                 $data['suppliers'] = [];
                 if ($data['description'][0]->supplier_offer) {
-                    //$suppliers = $this->extdb->select('ek_address_book','b')
-                    //        ->fields('b',['id','name'])
-                    //        ->condition('id',$data['description'][0]->supplier_offer,'IN')
-                    //        ->execute();
                     $suppliers = explode(',', $data['description'][0]->supplier_offer);
                     foreach ($suppliers as $key) {
                         $data['suppliers'][] = [
@@ -1593,11 +1589,13 @@ class ProjectController extends ControllerBase {
     public function fileData($id) {
 
         if (ProjectData::validate_file_access($id)) {
-            $file = Database::getConnection('external_db', 'external_db')
-                            ->select('ek_project_documents', 'd')
-                            ->fields('d')
-                            ->condition('id', $id)
-                            ->execute()->fetchObject();
+            $query = $this->extdb
+                ->select('ek_project_documents', 'd')
+                ->fields('d');
+            $query->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
+            $query->fields('p', ['pcode','main','subcount']);
+            $query->condition('d.id', $id);
+            $file = $query->execute()->fetchObject();
             $file_managed = ProjectData::file_owner($file->uri);
             $owner = '';
             if($file_managed){
@@ -1613,7 +1611,7 @@ class ProjectController extends ControllerBase {
                 $icon = drupal_get_path('module', 'ek_projects') . '/art/icons/' . $extension . ".png";
             }
             $data = [
-                'filename' =>$file->filename,
+                'filename' => $file->filename,
                 'filetype' => $extension,
                 'icon' => $icon,
                 'size' => round($file->size / 1000, 0) . " Kb",
@@ -1639,6 +1637,34 @@ class ProjectController extends ControllerBase {
                 }
             }
             $data['access'] = $access;
+            /* sub project filter */
+            if ($file->main != NULL || $file->subcount > 0){
+                $data['linked'] = 1;
+                $data['sub'] = [];
+                $query = $this->extdb
+                        ->select('ek_project', 'p')
+                        ->fields('p', ['id','pcode','pname']);
+                if($file->subcount > 0){
+                    $query->condition('pcode', $file->pcode . '_sub%', 'LIKE');
+                }
+                if($file->main != NULL){
+                    $c = explode('_',$file->pcode);
+                    $query->condition('pcode', $c[0] . '_' . $c[1] . '%', 'LIKE');
+                    $query->condition('pcode', $file->pcode, '<>');
+                }
+                $sub = $query->execute();
+                $data['sub'][$file->pcode] = $file->pcode;
+                while ($l = $sub->fetchObject()) {
+                    $data['sub'][$l->pcode] = $l->pcode;
+                }
+                $p = [
+                    'id' => $id,
+                    'name' => $file->filename,
+                    'options' => $data['sub'],
+                ];
+                $data['move_file'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\MoveFile',$p);
+            }
+            
             $content = [
                 '#items' => $data,
                 '#theme' => 'file_data',

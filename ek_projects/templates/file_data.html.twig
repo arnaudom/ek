@@ -8,14 +8,18 @@
     <p><strong>{{ 'Comment'|trans }}:</strong> {{ items.comment }}</p>
     {% if items.access %}
         <ul>
-        <strong>{{ 'Access granted to'|trans }}:</strong>
-        {% for key, item in items.access %}
-            {% if item.avatar %} 
-                <li><img class="avatar" src="{{ item.avatar }}"/> {{ item.name }}</li>
+            <strong>{{ 'Access granted to'|trans }}:</strong>
+            {% for key, item in items.access %}
+                {% if item.avatar %} 
+                    <li><img class="avatar" src="{{ item.avatar }}"/> {{ item.name }}</li>
                     {%  else %}
-                        <li>{{ item.name }}</li>
-                        {% endif %}
-            {%  endfor  %}
+                    <li>{{ item.name }}</li>
+                    {% endif %}
+                {%  endfor  %}
+
+        </ul>
+    {% endif %}
+    {% if items.linked %}
+        {{ items.move_file }}
         {% endif %}
-    </ul>
 </div>

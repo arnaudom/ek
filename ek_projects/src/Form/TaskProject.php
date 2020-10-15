@@ -24,8 +24,6 @@ use Drupal\ek_projects\ProjectData;
 class TaskProject extends FormBase {
 
     use AjaxFormHelperTrait;
-    
-
 
     /**
      * {@inheritdoc}
@@ -270,6 +268,7 @@ class TaskProject extends FormBase {
             '#ajax' => [
                 'callback' => '::ajaxSubmit',
             ],
+            '#button_type' => 'primary',
         ];
 
         $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
