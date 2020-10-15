@@ -1593,7 +1593,7 @@ class ProjectController extends ControllerBase {
                 ->select('ek_project_documents', 'd')
                 ->fields('d');
             $query->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
-            $query->fields('p', ['pcode','main','subcount']);
+            $query->fields('p', ['id','pcode','main','subcount']);
             $query->condition('d.id', $id);
             $file = $query->execute()->fetchObject();
             $file_managed = ProjectData::file_owner($file->uri);
@@ -1645,11 +1645,17 @@ class ProjectController extends ControllerBase {
                         ->select('ek_project', 'p')
                         ->fields('p', ['id','pcode','pname']);
                 if($file->subcount > 0){
-                    $query->condition('pcode', $file->pcode . '_sub%', 'LIKE');
+                    $or = $query->orConditionGroup()
+                        ->condition('pcode', $file->pcode . '_sub%', 'LIKE')
+                        ->condition('main', $file->id);
+                    $query->condition($or);
                 }
                 if($file->main != NULL){
                     $c = explode('_',$file->pcode);
-                    $query->condition('pcode', $c[0] . '_' . $c[1] . '%', 'LIKE');
+                    $or = $query->orConditionGroup()
+                        ->condition('id', $file->main)
+                        ->condition('pcode', $c[0] . '_' . $c[1] . '%', 'LIKE');
+                    $query->condition($or);
                     $query->condition('pcode', $file->pcode, '<>');
                 }
                 $sub = $query->execute();
