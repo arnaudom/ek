@@ -132,8 +132,8 @@ class InstallController extends ControllerBase
         $query = "CREATE TABLE IF NOT EXISTS `ek_hr_location` (
                 `id` MEDIUMINT(3) NOT NULL AUTO_INCREMENT,
                 `coid` MEDIUMINT(3) NOT NULL DEFAULT '1',
-                `location` VARCHAR(50) NULL DEFAULT '0',
-                `description` VARCHAR(200) NULL DEFAULT NULL,
+                `location` VARCHAR(50) NULL DEFAULT '0' COLLATE 'utf8mb4_unicode_ci',
+                `description` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
                 `turnover` DOUBLE UNSIGNED NULL DEFAULT NULL,
                 PRIMARY KEY (`id`)
               )
@@ -232,8 +232,8 @@ class InstallController extends ControllerBase
     
         $query = "CREATE TABLE IF NOT EXISTS `ek_hr_service` (
                 `sid` INT(10) NOT NULL AUTO_INCREMENT,
-                `service_name` VARCHAR(250) NOT NULL COLLATE 'latin1_general_cs',
-                `lib_service` LONGTEXT NULL COLLATE 'latin1_general_cs',
+                `service_name` VARCHAR(250) NOT NULL COLLATE 'utf8mb4_unicode_ci',
+                `lib_service` LONGTEXT NULL COLLATE 'utf8mb4_unicode_ci',
                 `eid` INT(10) NOT NULL DEFAULT '-1' COMMENT 'employee ID',
                 `coid` INT(10) NOT NULL DEFAULT '1' COMMENT 'Company ID',
                 `id_service` INT(10) NULL DEFAULT '-1',
@@ -277,7 +277,7 @@ class InstallController extends ControllerBase
                 `itax_no` VARCHAR(50) NULL DEFAULT NULL COMMENT 'income tax number',
                 `itax_c` VARCHAR(3) NULL DEFAULT NULL COMMENT 'income tax category',
                 `e_status` VARCHAR(30) NULL DEFAULT NULL COMMENT 'employee work status',
-                `location` VARCHAR(45) NULL DEFAULT NULL,
+                `location` VARCHAR(45) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
                 `service` INT(5) UNSIGNED NULL DEFAULT NULL,
                 `bank` VARCHAR(35) NULL DEFAULT NULL,
                 `bank_account` VARCHAR(45) NULL DEFAULT NULL,

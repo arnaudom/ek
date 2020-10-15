@@ -1,17 +1,11 @@
 <?php
-    ///////////////////////////////////////////////////
-    //                  COPYRIGHT                    //
-    //                                               //
-    // DEVELOPPED BY ARREA LTD                       //
-    // all rights reserved                           //
-    // Please read and agree with software           //
-    // application license                           //
-    ///////////////////////////////////////////////////
 
 use Drupal\Core\Database\Database;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+
+
 /**
  * @file
  *  module ek_hr.
