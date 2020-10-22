@@ -388,6 +388,12 @@ class ProjectController extends ControllerBase {
                 }
             } elseif ($data['project'][0]->level == 'Sub project') {
                 $data['sub'][] = ProjectData::geturl($data['project'][0]->main);
+                $cc = $this->extdb
+                            ->select('ek_country')
+                            ->fields('ek_country', ['code'])
+                            ->condition('id', $data['project'][0]->cid)
+                            ->execute()->fetchField();
+                $data['project'][0]->level = $cc . ' - ' . $data['project'][0]->level;
             }
 
             /*
@@ -479,7 +485,17 @@ class ProjectController extends ControllerBase {
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_access])->toString();
                 $data['project'][0]->access = $this->t('<a href="@url" class="@c" >manage access</a>', array('@url' => $link, '@c' => 'use-ajax red '));
             }
-
+            
+            /*
+             * create a link to split form
+             */
+            $data['project'][0]->split = null;
+            if ($data['project'][0]->level == 'Main project') {
+                $param_split = 'split|' . $id;
+                $link = Url::fromRoute('ek_projects_modal', ['param' => $param_split])->toString();
+                $data['project'][0]->split = $this->t('<a href="@url" class="@c" >split</a>', array('@url' => $link, '@c' => 'use-ajax blue'));
+            }
+            
             /*
              * create a link for notification
              */
@@ -1903,6 +1919,13 @@ class ProjectController extends ControllerBase {
                 $content['content'] = ['#markup' => '<ul>' . $list . '</ul>'];
                 $options = array('width' => $width);
                 $is_modal == true;
+                break;
+                
+            case 'split':
+                $title = $this->t('Split');
+                $id = $param[1];
+                $content['content'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\SplitProject', $id);
+                $options = array('width' => '30%',);
                 break;
         }
 
