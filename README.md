@@ -15,7 +15,7 @@ The current open version is made of several Drupal 8 modules:
 - report drafting
 - finance (accounts, reporting, journal) 
 
-An online demo site is available [here](http://ek.demo.arrea-systems.com) (with further modules and functions not included into this open source version).
+An online demo site is available [here](https://ek.demo.arrea-systems.com/ek-demo-management-software) (with further modules and functions not included into this open source version).
 
 ## Install
 
@@ -39,13 +39,8 @@ After modules are enabled, you will need to run the application setup process.
 For this, navigate to /ek_admin from your browser. Specific tables and settings will be done after
 creating a dedicated database. 
 Other settings are not covered here as it implies many custom business questions.
-An initial setup description can be view [here](https://arrea-systems.com/ek_manuals) with other online description manuals.
-There are also some videos covering this subject:
- - [video 1](https://www.useloom.com/share/e9bdd405ebab4b0cb6c272f2c1f224f4)
- - [video 2](https://www.useloom.com/share/0a5b298ceb724c63b973437710cf0ce6)
- - [video 3](https://www.useloom.com/share/25a83961acd24047b830eba05c740026)
-
-All videos are [here](https://www.useloom.com/share/folder/cf070450cd5e45caa50c2c83607289f4)
+An initial setup description can be view [here](https://arrea-systems.com/tutorial-setup) with other online description manuals.
+There are also some videos covering this subject in the tutorial pages.
 
 Some issues are reported and answered on [Drupal project page](https://www.drupal.org/project/issues/2887559?text=&status=All&priorities=All&categories=All&version=All&component=All)
 
