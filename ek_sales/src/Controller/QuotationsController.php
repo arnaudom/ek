@@ -190,7 +190,7 @@ class QuotationsController extends ControllerBase {
             $query->orderBy('date', "DESC");
             $query->range(0, 1);
             $from = $query->execute()->fetchField();
-            if($from == '') {
+            if ($from == '') {
                 $from = date('Y-m-d');
             }
             $data = $query
@@ -215,7 +215,7 @@ class QuotationsController extends ControllerBase {
                 ->query("SELECT id,name from {ek_address_book}")
                 ->fetchAllKeyed();
         $options = [];
-        
+
         while ($r = $data->fetchObject()) {
             $number = "<a title='" . $this->t('view') . "' href='"
                     . Url::fromRoute('ek_sales.quotations.print_html', ['id' => $r->id], [])->toString() . "'>"
@@ -258,7 +258,7 @@ class QuotationsController extends ControllerBase {
 
             $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision";
             $revisions = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':s' => $r->serial));
+                    ->query($query, [':s' => $r->serial]);
 
             $revision_numbers = array();
 
@@ -269,7 +269,7 @@ class QuotationsController extends ControllerBase {
 
             $query = 'SELECT sum(total) from {ek_sales_quotation_details} WHERE serial=:s and revision=:r';
             $taxable = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':s' => $r->serial, ':r' => $last))
+                    ->query($query, [':s' => $r->serial, ':r' => $last])
                     ->fetchField();
             //$tax = $taxable*$r->taxvalue/100;
 
@@ -284,75 +284,74 @@ class QuotationsController extends ControllerBase {
                 $status = $this->t('invoiced');
             }
 
-            $options[$r->id] = array(
+            $options[$r->id] = [
                 'number' => ['data' => ['#markup' => $number]],
                 'revision' => $last,
                 'reference' => ['data' => ['#markup' => $reference]],
-                'issuer' => array('data' => ['#markup' => $co], 'title' => $r->title),
+                'issuer' => ['data' => ['#markup' => $co], 'title' => $r->title],
                 'date' => ['data' => ['#markup' => $r->date]],
                 'value' => ['data' => ['#markup' => $value]],
                 'status' => ['data' => ['#markup' => $status]],
-            );
+            ];
 
-            $links = array();
-
+            $links = [];
+            $param = 'quick_edit|' . $r->id . '|quotation';
+            $links['qedit'] = [
+                'title' => $this->t('Quick edit'),
+                'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
+                'attributes' => [
+                    'class' => ['use-ajax'],
+                    'data-dialog-type' => 'modal',
+                    'data-dialog-options' => Json::encode(['width' => 700,]),
+                ],
+            ];
             if ($r->status <> 2) {
-                $param = 'quick_edit|' . $r->id . '|quotation';
-                $links['qedit'] = array(
-                    'title' => $this->t('Quick edit'),
-                    'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
-                    'attributes' => [
-                        'class' => ['use-ajax'],
-                        'data-dialog-type' => 'modal',
-                        'data-dialog-options' => Json::encode(['width' => 700,]),
-                    ],
-                );
-                $links['edit'] = array(
+
+                $links['edit'] = [
                     'title' => $this->t('Edit'),
                     'url' => Url::fromRoute('ek_sales.quotations.edit', ['id' => $r->id]),
-                );
+                ];
 
-
-                $links['invoice'] = array(
+                $links['invoice'] = [
                     'title' => $this->t('Convert to invoice'),
                     'url' => Url::fromRoute('ek_sales.quotations.invoice', ['id' => $r->id]),
-                );
+                ];
             }
 
             if (\Drupal::currentUser()->hasPermission('print_share_quotation')) {
-                $links['qprint'] = array(
+                $links['qprint'] = [
                     'title' => $this->t('Print'),
                     'url' => Url::fromRoute('ek_sales.quotations.print_share', ['id' => $r->id]),
                     'attributes' => ['class' => ['ico', 'pdf']]
-                );
-                $links['qexcel'] = array(
+                ];
+                $links['qexcel'] = [
                     'title' => $this->t('Excel download'),
                     'url' => Url::fromRoute('ek_sales.quotations.print_excel', ['id' => $r->id]),
                     'attributes' => ['class' => ['ico', 'excel']]
-                );
+                ];
             }
 
-            $links['clone'] = array(
+            $links['clone'] = [
                 'title' => $this->t('Clone'),
                 'url' => Url::fromRoute('ek_sales.quotations.edit', ['id' => $r->id], ['query' => ['action' => 'clone']]),
-            );
+            ];
 
             if (\Drupal::currentUser()->hasPermission('delete_quotation') && $r->status == 0) {
-                $links['delete'] = array(
+                $links['delete'] = [
                     'title' => $this->t('Delete'),
                     'url' => Url::fromRoute('ek_sales.quotations.delete', ['id' => $r->id]),
-                );
+                ];
             }
 
 
-            $options[$r->id]['operations']['data'] = array(
+            $options[$r->id]['operations']['data'] = [
                 '#type' => 'operations',
                 '#links' => $links,
-            );
-        } //while
+            ];
+        } 
 
 
-        $build['quotations_table'] = array(
+        $build['quotations_table'] = [
             '#type' => 'table',
             '#header' => $header,
             '#rows' => $options,
@@ -361,11 +360,11 @@ class QuotationsController extends ControllerBase {
             '#attached' => array(
                 'library' => array('ek_sales/ek_sales_css', 'ek_admin/ek_admin_css'),
             ),
-        );
+        ];
 
-        $build['pager'] = array(
+        $build['pager'] = [
             '#type' => 'pager',
-        );
+        ];
 
         return $build;
     }
@@ -620,7 +619,7 @@ class QuotationsController extends ControllerBase {
             ];
         }
     }
-    
+
     /**
      * Render excel form for quotations list
      *
@@ -638,7 +637,7 @@ class QuotationsController extends ControllerBase {
             $access = AccessCheck::GetCompanyByUser();
             $company = implode(',', $access);
             $status = ['0' => (string) $this->t('open'), '1' => (string) $this->t('printed'), '2' => (string) $this->t('invoiced')];
-            
+
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_sales_quotation', 'q');
             $query->leftJoin('ek_address_book', 'b', 'q.client=b.id');
@@ -647,7 +646,7 @@ class QuotationsController extends ControllerBase {
             $or = $query->orConditionGroup();
             $or->condition('head', $access, 'IN');
             $or->condition('allocation', $access, 'IN');
-            
+
             $result = $query
                     ->fields('q')
                     ->fields('b', array('name'))
@@ -665,7 +664,7 @@ class QuotationsController extends ControllerBase {
 
         return ['#markup' => $markup];
     }
-    
+
     public function DeleteQuotations(Request $request, $id) {
         //filter del
         $query = Database::getConnection('external_db', 'external_db')

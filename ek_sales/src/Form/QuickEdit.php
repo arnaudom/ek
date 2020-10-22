@@ -78,32 +78,38 @@ class QuickEdit extends FormBase {
             $edit = false;
         }
 
+        if (!$form_state->getValue('head')) {
+            $form_state->setValue('head', $data->head);
+        }
+        $form['serial'] = [
+            '#type' => 'hidden',
+            '#value' => $data->serial,
+        ];
+
+        $form['doc'] = [
+            '#type' => 'hidden',
+            '#value' => $doc,
+        ];
+
+        $form['id'] = [
+            '#type' => 'hidden',
+            '#value' => $id,
+        ];
+
+        $form['edit'] = [
+            '#type' => 'hidden',
+            '#value' => $edit,
+        ];
+        $form['options']['ref'] = [
+            '#markup' => "<h2>" . $data->serial . "</h2>",
+        ];
+
         if ($edit) {
-            if (!$form_state->getValue('head')) {
-                $form_state->setValue('head', $data->head);
-            }
-            $form['serial'] = array(
-                '#type' => 'hidden',
-                '#value' => $data->serial,
-            );
-
-            $form['doc'] = array(
-                '#type' => 'hidden',
-                '#value' => $doc,
-            );
-
-            $form['id'] = array(
-                '#type' => 'hidden',
-                '#value' => $id,
-            );
 
             $company = AccessCheck::CompanyListByUid();
-            $form['options']['ref'] = array(
-                '#markup' => "<h2>" . $data->serial . "</h2>",
-            );
 
             if ($doc == 'invoice') {
-                $form['options']['head'] = array(
+                $form['options']['head'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $company,
@@ -117,19 +123,19 @@ class QuickEdit extends FormBase {
                         'wrapper' => 'debit',
                     //will define the list of bank accounts by company below
                     ),
-                );
+                ];
             } elseif ($doc == 'purchase' || $doc == 'quotation') {
-                $form['options']['head'] = array(
+                $form['options']['head'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $company,
                     '#required' => true,
                     '#default_value' => isset($data->head) ? $data->head : null,
                     '#title' => $this->t('Header'),
-                );
+                ];
             }
 
-            $form['options']['allocation'] = array(
+            $form['options']['allocation'] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $company,
@@ -139,7 +145,7 @@ class QuickEdit extends FormBase {
                 '#description' => $this->t('select an entity for which the @doc is done', ['@doc' => $doc]),
                 '#prefix' => "",
                 '#suffix' => '',
-            );
+            ];
 
 
             if ($this->moduleHandler->moduleExists('ek_address_book')) {
@@ -152,7 +158,7 @@ class QuickEdit extends FormBase {
                 }
                 $client = \Drupal\ek_address_book\AddressBookData::addresslist($type);
 
-                $form['options']['client'] = array(
+                $form['options']['client'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $client,
@@ -161,18 +167,18 @@ class QuickEdit extends FormBase {
                     '#title' => $title,
                     '#prefix' => "",
                     '#suffix' => '',
-                    '#attributes' => array('style' => array('width:300px;white-space:nowrap')),
-                );
+                    '#attributes' => ['style' => array('width:300px;white-space:nowrap')],
+                ];
             } else {
-                $form['options']['client'] = array(
+                $form['options']['client'] = [
                     '#markup' => $this->t('You do not have any client list.'),
                     '#default_value' => 0,
                     '#prefix' => "",
                     '#suffix' => '',
-                );
+                ];
             }
 
-            $form['options']['date'] = array(
+            $form['options']['date'] = [
                 '#type' => 'date',
                 '#size' => 12,
                 '#required' => true,
@@ -180,11 +186,11 @@ class QuickEdit extends FormBase {
                 '#title' => $this->t('Date'),
                 '#prefix' => "",
                 '#suffix' => '',
-            );
+            ];
 
 
             if ($this->moduleHandler->moduleExists('ek_projects')) {
-                $form['options']['pcode'] = array(
+                $form['options']['pcode'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => ProjectData::listprojects(0),
@@ -192,23 +198,23 @@ class QuickEdit extends FormBase {
                     '#default_value' => isset($data->pcode) ? $data->pcode : null,
                     '#title' => $this->t('Project'),
                     '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
-                );
+                ];
             } // project
 
             if ($this->moduleHandler->moduleExists('ek_finance') && $doc == 'invoice') {
                 $options['bank'] = \Drupal\ek_finance\BankData::listbankaccountsbyaid($form_state->getValue('head'));
 
-                $form['options']['_currency'] = array(
+                $form['options']['_currency'] = [
                     '#type' => 'item',
                     '#markup' => $this->t('Currency') . " : <strong>" . $data->currency . "</strong>",
-                );
+                ];
 
-                $form['options']['currency'] = array(
+                $form['options']['currency'] = [
                     '#type' => 'hidden',
                     '#value' => $data->currency,
-                );
-                /**/
-                $form['options']['bank_account'] = array(
+                ];
+
+                $form['options']['bank_account'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => isset($options['bank']) ? $options['bank'] : array(),
@@ -218,21 +224,21 @@ class QuickEdit extends FormBase {
                     '#prefix' => "<div id='debit'>",
                     '#suffix' => '</div>',
                     '#description' => '',
-                    '#attributes' => array('style' => array('width:280px;;white-space:nowrap')),
-                );
+                    '#attributes' => ['style' => array('width:280px;;white-space:nowrap')],
+                ];
             } else {
-                $form['options']['bank_account'] = array(
+                $form['options']['bank_account'] = [
                     '#type' => 'hidden',
                     '#value' => 0
-                );
-                $form['options']['currency'] = array(
+                ];
+                $form['options']['currency'] = [
                     '#type' => 'hidden',
                     '#value' => $data->currency,
-                );
+                ];
             }
 
             if ($doc == 'purchase' || $doc == 'invoice') {
-                $form['options']['terms'] = array(
+                $form['options']['terms'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => array(t('on receipt'), $this->t('due days')),
@@ -244,9 +250,9 @@ class QuickEdit extends FormBase {
                         'wrapper' => 'calday',
                         'event' => 'change',
                     ),
-                );
+                ];
 
-                $form['options']['due'] = array(
+                $form['options']['due'] = [
                     '#type' => 'textfield',
                     '#size' => 5,
                     '#maxlength' => 3,
@@ -257,55 +263,81 @@ class QuickEdit extends FormBase {
                         'wrapper' => 'calday',
                         'event' => 'change',
                     ),
-                );
-                $form['options']['day'] = array(
+                ];
+
+                $form['options']['day'] = [
                     '#type' => 'item',
                     '#markup' => '',
                     '#prefix' => "<div  id='calday'>",
                     '#suffix' => "</div></div>",
-                );
+                ];
             } else {
-                $form['options']['terms'] = array(
+                $form['options']['terms'] = [
                     '#type' => 'hidden',
                     '#value' => 0,
-                );
+                ];
             }
 
             if ($doc == 'invoice') {
-                $form['options']['po_no'] = array(
+                $form['options']['po_no'] = [
                     '#type' => 'textfield',
                     '#maxlength' => 50,
                     '#size' => 25,
                     '#default_value' => isset($data->po_no) ? $data->po_no : null,
-                    '#attributes' => array('placeholder' => $this->t('PO No.')),
-                );
+                    '#attributes' => ['placeholder' => $this->t('PO No.')],
+                ];
             }
-            $form['options']['comment'] = array(
+            $form['options']['comment'] = [
                 '#type' => 'textarea',
                 '#rows' => 1,
                 '#default_value' => isset($data->comment) ? $data->comment : null,
                 '#prefix' => "<div class='container-inline'>",
                 '#suffix' => "</div>",
-                '#attributes' => array('placeholder' => $this->t('comment')),
-            );
+                '#attributes' => ['placeholder' => $this->t('comment')],
+            ];
 
-
-
-            $form['actions'] = array(
+            $form['actions'] = [
                 '#type' => 'actions',
-            );
+            ];
 
-
-
-            $form['actions']['record'] = array(
+            $form['actions']['record'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Record'),
                 '#attributes' => array('class' => array('button--record')),
-            );
+            ];
+        } else {
+            // document closed, only edit limited data
 
+            if ($this->moduleHandler->moduleExists('ek_projects')) {
+                $form['options']['pcode'] = [
+                    '#type' => 'select',
+                    '#size' => 1,
+                    '#options' => ProjectData::listprojects(0),
+                    '#required' => true,
+                    '#default_value' => isset($data->pcode) ? $data->pcode : null,
+                    '#title' => $this->t('Project'),
+                    '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
+                ];
 
-            $form['#attached']['library'][] = 'ek_sales/ek_sales.invoice';
+                $form['actions'] = [
+                    '#type' => 'actions',
+                ];
+
+                $form['actions']['record'] = [
+                    '#type' => 'submit',
+                    '#value' => $this->t('Record'),
+                    '#attributes' => array('class' => array('button--record')),
+                ];
+            } else {
+                $form['options']['alert'] = [
+                    '#markup' => $this->t('There is no data to edit on this document'),
+                    '#prefix' => "<div class='messages messages--warning'>",
+                    '#suffix' => "</div>"
+                ];
+            }
         }
+
+        $form['#attached']['library'][] = 'ek_sales/ek_sales.invoice';
 
         return $form;
     }
@@ -330,12 +362,14 @@ class QuickEdit extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-        if ($form_state->getValue('terms') == 1 && $form_state->getValue('due') == '') {
-            $form_state->setErrorByName('due', $this->t('Terms days is empty'));
-        }
+        if ($form_state->getValue('edit')) {
+            if ($form_state->getValue('terms') == 1 && $form_state->getValue('due') == '') {
+                $form_state->setErrorByName('due', $this->t('Terms days is empty'));
+            }
 
-        if ($form_state->getValue('terms') == 1 && !is_numeric($form_state->getValue('due'))) {
-            $form_state->setErrorByName('due', $this->t('Terms days should be numeric'));
+            if ($form_state->getValue('terms') == 1 && !is_numeric($form_state->getValue('due'))) {
+                $form_state->setErrorByName('due', $this->t('Terms days should be numeric'));
+            }
         }
     }
 
@@ -343,6 +377,7 @@ class QuickEdit extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
+
         $serial = $form_state->getValue('serial');
         $doc = $form_state->getValue('doc');
         $query = Database::getConnection('external_db', 'external_db')
@@ -358,103 +393,129 @@ class QuickEdit extends FormBase {
             } else {
                 $pcode = $form_state->getValue('pcode');
             }
-
-            $fields = array(
-                'head' => $form_state->getValue('head'),
-                'allocation' => $form_state->getValue('allocation'),
-                'date' => date('Y-m-d', strtotime($form_state->getValue('date'))),
-                'pcode' => $pcode,
-                'comment' => Xss::filter($form_state->getValue('comment')),
-                'client' => $form_state->getValue('client'),
-                'status' => 0,
-            );
-        }
+            if ($form_state->getValue('edit') == false) {
+                // document closed, limited edition
+                $update = Database::getConnection('external_db', 'external_db')
+                        ->update("ek_sales_" . $doc)
+                        ->fields(['pcode' => $pcode])
+                        ->condition('serial', $serial)
+                        ->execute();
+            } else {
+                $fields = array(
+                    'head' => $form_state->getValue('head'),
+                    'allocation' => $form_state->getValue('allocation'),
+                    'date' => date('Y-m-d', strtotime($form_state->getValue('date'))),
+                    'pcode' => $pcode,
+                    'comment' => Xss::filter($form_state->getValue('comment')),
+                    'client' => $form_state->getValue('client'),
+                    'status' => 0,
+                );
+                $update = Database::getConnection('external_db', 'external_db')
+                        ->update("ek_sales_" . $doc)
+                        ->fields($fields)
+                        ->condition('serial', $serial)
+                        ->execute();
+            }
+        } // Quot.
 
         if ($doc == 'invoice' || $doc == 'purchase') {
-            if ($form_state->getValue('due') == '') {
-                $due = 0;
-            } else {
-                $due = $form_state->getValue('due');
-            }
+
             if ($form_state->getValue('pcode') == '') {
                 $pcode = 'n/a';
             } else {
                 $pcode = $form_state->getValue('pcode');
             }
-            if ($form_state->getValue('taxvalue') == '') {
-                $taxvalue = 0;
+
+            if ($form_state->getValue('edit') == false) {
+                // document closed, limited edition
+                $update = Database::getConnection('external_db', 'external_db')
+                        ->update("ek_sales_" . $doc)
+                        ->fields(['pcode' => $pcode])
+                        ->condition('serial', $serial)
+                        ->execute();
             } else {
-                $taxvalue = $form_state->getValue('taxvalue');
+                if ($form_state->getValue('due') == '') {
+                    $due = 0;
+                } else {
+                    $due = $form_state->getValue('due');
+                }
+
+                if ($form_state->getValue('taxvalue') == '') {
+                    $taxvalue = 0;
+                } else {
+                    $taxvalue = $form_state->getValue('taxvalue');
+                }
+
+                $fields = array(
+                    'head' => $form_state->getValue('head'),
+                    'allocation' => $form_state->getValue('allocation'),
+                    'date' => date('Y-m-d', strtotime($form_state->getValue('date'))),
+                    'pcode' => $pcode,
+                    'comment' => Xss::filter($form_state->getValue('comment')),
+                    'client' => $form_state->getValue('client'),
+                    'terms' => Xss::filter($form_state->getValue('terms')),
+                    'due' => $due,
+                );
+
+
+                if ($doc == 'invoice') {
+                    //add specific field for invoice
+                    $fields['bank'] = $form_state->getValue('bank_account');
+                    $fields['po_no'] = $form_state->getValue('po_no');
+                }
+
+                $update = Database::getConnection('external_db', 'external_db')
+                        ->update("ek_sales_" . $doc)
+                        ->fields($fields)
+                        ->condition('serial', $serial)
+                        ->execute();
+
+
+                if ($this->moduleHandler->moduleExists('ek_finance') && $doc == 'invoice') {
+                    //if coid changed, need to update the currency assets debit account in journal
+                    $coSettings = new \Drupal\ek_admin\CompanySettings($form_state->getValue('head'));
+                    $asset = $coSettings->get('asset_account', $form_state->getValue('currency'));
+                    $update1 = Database::getConnection('external_db', 'external_db')
+                            ->update("ek_journal")
+                            ->fields(['aid' => $asset])
+                            ->condition('source', 'invoice')
+                            ->condition('type', 'debit')
+                            ->condition('reference', $form_state->getValue('id'))
+                            ->execute();
+                    //Edit invoice header in journal
+                    $update2 = Database::getConnection('external_db', 'external_db')
+                            ->update("ek_journal")
+                            ->fields(['coid' => $form_state->getValue('head')])
+                            ->condition('source', 'invoice')
+                            ->condition('reference', $form_state->getValue('id'))
+                            ->execute();
+                }
+
+                if ($this->moduleHandler->moduleExists('ek_finance') && $doc == 'purchase') {
+                    //if coid changed, need to update the currency liability account in journal
+                    $coSettings = new \Drupal\ek_admin\CompanySettings($form_state->getValue('head'));
+                    $liability = $coSettings->get('liability_account', $form_state->getValue('currency'));
+
+                    $update1 = Database::getConnection('external_db', 'external_db')
+                            ->update("ek_journal")
+                            ->fields(['aid' => $liability])
+                            ->condition('source', 'purchase')
+                            ->condition('type', 'credit')
+                            ->condition('reference', $form_state->getValue('id'))
+                            ->execute();
+                    //Edit purchase header in journal
+                    $update2 = Database::getConnection('external_db', 'external_db')
+                            ->update("ek_journal")
+                            ->fields(['coid' => $form_state->getValue('head')])
+                            ->condition('source', 'purchase')
+                            ->condition('reference', $form_state->getValue('id'))
+                            ->execute();
+                }
             }
+        } // Inv. Pur.
 
-            $fields = array(
-                'head' => $form_state->getValue('head'),
-                'allocation' => $form_state->getValue('allocation'),
-                'date' => date('Y-m-d', strtotime($form_state->getValue('date'))),
-                'pcode' => $pcode,
-                'comment' => Xss::filter($form_state->getValue('comment')),
-                'client' => $form_state->getValue('client'),
-                'terms' => Xss::filter($form_state->getValue('terms')),
-                'due' => $due,
-            );
-        }
-
-        if ($doc == 'invoice') {
-            //add specific field for invoice
-            $fields['bank'] = $form_state->getValue('bank_account');
-            $fields['po_no'] = $form_state->getValue('po_no');
-        }
-
-        $update = Database::getConnection('external_db', 'external_db')
-                ->update("ek_sales_" . $doc)
-                ->fields($fields)
-                ->condition('serial', $serial)
-                ->execute();
-
-
-        if ($this->moduleHandler->moduleExists('ek_finance') && $doc == 'invoice') {
-            //if coid changed, need to update the currency assets debit account in journal
-            $coSettings = new \Drupal\ek_admin\CompanySettings($form_state->getValue('head'));
-            $asset = $coSettings->get('asset_account', $form_state->getValue('currency'));
-            $update1 = Database::getConnection('external_db', 'external_db')
-                    ->update("ek_journal")
-                    ->fields(['aid' => $asset])
-                    ->condition('source', 'invoice')
-                    ->condition('type', 'debit')
-                    ->condition('reference', $form_state->getValue('id'))
-                    ->execute();
-            //Edit invoice header in journal
-            $update2 = Database::getConnection('external_db', 'external_db')
-                    ->update("ek_journal")
-                    ->fields(['coid' => $form_state->getValue('head')])
-                    ->condition('source', 'invoice')
-                    ->condition('reference', $form_state->getValue('id'))
-                    ->execute();
-        }
-
-        if ($this->moduleHandler->moduleExists('ek_finance') && $doc == 'purchase') {
-            //if coid changed, need to update the currency liability account in journal
-            $coSettings = new \Drupal\ek_admin\CompanySettings($form_state->getValue('head'));
-            $liability = $coSettings->get('liability_account', $form_state->getValue('currency'));
-
-            $update1 = Database::getConnection('external_db', 'external_db')
-                    ->update("ek_journal")
-                    ->fields(['aid' => $liability])
-                    ->condition('source', 'purchase')
-                    ->condition('type', 'credit')
-                    ->condition('reference', $form_state->getValue('id'))
-                    ->execute();
-            //Edit purchase header in journal
-            $update2 = Database::getConnection('external_db', 'external_db')
-                    ->update("ek_journal")
-                    ->fields(['coid' => $form_state->getValue('head')])
-                    ->condition('source', 'purchase')
-                    ->condition('reference', $form_state->getValue('id'))
-                    ->execute();
-        }
-
-        Cache::invalidateTags(['project_page_view']);
         if (isset($update)) {
+            Cache::invalidateTags(['project_page_view']);
             \Drupal::messenger()->addStatus(t('The @doc is recorded. Ref. @r', ['@r' => $serial, '@doc' => $doc]));
 
             if ($this->moduleHandler->moduleExists('ek_projects')) {
@@ -482,9 +543,9 @@ class QuickEdit extends FormBase {
                     \Drupal\ek_projects\ProjectData::notify_user($param);
                 }
             }
-        }
+        } // if updated
 
         $form_state->setRedirect("ek_sales." . $doc . "s.list");
-    }
-
+        
+    } // submit
 }

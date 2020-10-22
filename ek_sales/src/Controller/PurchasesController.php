@@ -339,50 +339,39 @@ class PurchasesController extends ControllerBase {
             $more = '<a href="' . $url . '" '
                     . 'class="use-ajax ' . $status_class . '"  data-accepts="application/vnd.drupal-modal"  >' . $status . '</a>';
 
-            $options[$r->id] = array(
+            $options[$r->id] = [
                 'number' => ['data' => ['#markup' => $number], 'id' => $r->id],
                 'reference' => ['data' => ['#markup' => $reference]],
-                'purchase' => array('data' => ['#markup' => $co], 'title' => $r->title),
+                'purchase' => ['data' => ['#markup' => $co], 'title' => $r->title],
                 'date' => $r->date,
-                'due' => array('data' => ['#markup' => $due], 'title' => $duetitle),
+                'due' => ['data' => ['#markup' => $due], 'title' => $duetitle],
                 'value' => ['data' => ['#markup' => $value]],
                 'paid' => isset($r->pdate) ? $r->pdate : '-',
-                'status' => array('data' => ['#markup' => $more]),
-            );
+                'status' => ['data' => ['#markup' => $more]],
+            ];
 
-            $links = array();
-
+            $links = [];
+            
             if ($r->status == 0) {
-                if (\Drupal::currentUser()->hasPermission('create_purchase')) {
-                    $param = 'quick_edit|' . $r->id . '|purchase';
-                    $links['qedit'] = array(
-                        'title' => $this->t('Quick edit'),
-                        'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
-                        'attributes' => [
-                            'class' => ['use-ajax'],
-                            'data-dialog-type' => 'modal',
-                            'data-dialog-options' => Json::encode(['width' => 700,]),
-                        ],
-                    );
-                }
-                $links['edit'] = array(
+                
+                $links['edit'] = [
                     'title' => $this->t('Edit'),
                     'url' => Url::fromRoute('ek_sales.purchases.edit', ['id' => $r->id]),
-                );
+                ];
             }
             if ($r->status != 1) {
                 if ($r->type < 3) {
-                    $links['pay'] = array(
+                    $links['pay'] = [
                         'title' => $this->t('Pay'),
                         'url' => Url::fromRoute('ek_sales.purchases.pay', ['id' => $r->id]),
                         'weight' => $weight,
-                    );
+                    ];
                 } elseif ($r->type == 4) {
-                    $links['pay'] = array(
+                    $links['pay'] = [
                         'title' => $this->t('Assign debit note'),
                         'url' => Url::fromRoute('ek_sales.purchases.assign.dn', ['id' => $r->id]),
                         'weight' => $weight,
-                    );
+                    ];
                 }
             }
            
@@ -394,7 +383,7 @@ class PurchasesController extends ControllerBase {
             }
             $destination = ['destination' => '/purchases/list'];
             $link = Url::fromRoute('ek_sales.purchases.alert', ['id' => $r->id], ['query' => $destination]);
-            $links['alert'] = array(
+            $links['alert'] = [
                 'title' => " " . $this->t('Alert'),
                 'url' => $link,
                 'attributes' => [
@@ -405,7 +394,7 @@ class PurchasesController extends ControllerBase {
                         'width' => '30%',
                     ]),
                 ],
-            );
+            ];
             
             $destination = ['destination' => '/purchases/list'];
             $link = Url::fromRoute('ek_sales.purchases.task', ['id' => $r->id], ['query' => $destination]);
@@ -421,64 +410,75 @@ class PurchasesController extends ControllerBase {
                     ]),
                 ]
             ];
-            
+            if (\Drupal::currentUser()->hasPermission('create_purchase')) {
+                $param = 'quick_edit|' . $r->id . '|purchase';
+                $links['qedit'] = [
+                    'title' => $this->t('Quick edit'),
+                    'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
+                    'attributes' => [
+                        'class' => ['use-ajax'],
+                        'data-dialog-type' => 'modal',
+                        'data-dialog-options' => Json::encode(['width' => 700,]),
+                    ],
+                ];
+            }
             if (\Drupal::currentUser()->hasPermission('print_share_purchase')) {
-                $links['pprint'] = array(
+                $links['pprint'] = [
                     'title' => $this->t('Print and share'),
                     'url' => Url::fromRoute('ek_sales.purchases.print_share', ['id' => $r->id]),
                     'route_name' => 'ek_sales.purchases.print_share',
                     'attributes' => ['class' => ['ico', 'pdf']]
-                );
-                $links['pexcel'] = array(
+                ];
+                $links['pexcel'] = [
                     'title' => $this->t('Excel download'),
                     'url' => Url::fromRoute('ek_sales.purchases.print_excel', ['id' => $r->id]),
                     'attributes' => ['class' => ['ico', 'excel']]
-                );
+                ];
             }
             if (\Drupal::currentUser()->hasPermission('delete_purchase') && $r->status == '0') {
-                $links['delete'] = array(
+                $links['delete'] = [
                     'title' => $this->t('Delete'),
                     'url' => Url::fromRoute('ek_sales.purchases.delete', ['id' => $r->id]),
                     'route_name' => 'ek_sales.purchases.delete',
-                );
+                ];
             }
             if (\Drupal::currentUser()->hasPermission('reset_pay') && $r->status == 1) {
-                $links['reset'] = array(
+                $links['reset'] = [
                     'title' => $this->t('Reset'),
                     'url' => Url::fromRoute('ek_sales.reset_payment', ['doc' => 'purchase', 'id' => $r->id]),
-                );
+                ];
             }
-            $links['clone'] = array(
+            $links['clone'] = [
                 'title' => $this->t('Clone'),
                 'url' => Url::fromRoute('ek_sales.purchases.clone', ['id' => $r->id]),
-            );
+            ];
 
-            $options[$r->id]['operations']['data'] = array(
+            $options[$r->id]['operations']['data'] = [
                 '#type' => 'operations',
                 '#links' => $links,
-            );
+            ];
         } //while
 
 
-        $build['purchase_table'] = array(
+        $build['purchase_table'] = [
             '#type' => 'table',
             '#header' => $header,
             '#rows' => $options,
-            '#attributes' => array('id' => 'purchases_table'),
+            '#attributes' => ['id' => 'purchases_table'],
             '#empty' => $this->t('No purchase available.'),
-            '#attached' => array(
-                'library' => array('ek_sales/ek_sales_css', 'ek_admin/ek_admin_css', 'core/drupal.ajax'),
-            ),
-        );
+            '#attached' => [
+                'library' => ['ek_sales/ek_sales_css', 'ek_admin/ek_admin_css', 'core/drupal.ajax'],
+            ],
+        ];
 
-        $build['pager'] = array(
+        $build['pager'] = [
             '#type' => 'pager',
-        );
+        ];
         return $build;
     }
 
     /**
-     * Purchasess aging report
+     * Purchases aging report
      * @return array
      *
      */

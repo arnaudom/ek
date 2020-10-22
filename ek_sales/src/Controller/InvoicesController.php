@@ -344,51 +344,39 @@ class InvoicesController extends ControllerBase {
                 $more = $this->t('Proforma');
             }
             
-            $options[$r->id] = array(
+            $options[$r->id] = [
                 'number' => ['data' => ['#markup' => $number], 'id' => $r->id],
                 'reference' => ['data' => ['#markup' => $reference]],
-                'issuer' => array('data' => ['#markup' => $co], 'title' => $r->title),
+                'issuer' => ['data' => ['#markup' => $co], 'title' => $r->title],
                 'date' => $r->date,
                 'due' => ['data' => ['#markup' => $due], 'title' => $duetitle],
                 'value' => ['data' => ['#markup' => $value]],
                 'paid' => ($r->pay_date != '') ? $r->pay_date : '-',
                 'status' => ['data' => ['#markup' => $more]],
-            );
+            ];
 
-            $links = array();
-
+            $links = [];
+            
             if ($r->status == 0) {
-                if (\Drupal::currentUser()->hasPermission('create_invoice')) {
-                    $param = 'quick_edit|' . $r->id . '|invoice';
-                    $links['qedit'] = array(
-                        'title' => $this->t('Quick edit'),
-                        'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
-                        'attributes' => [
-                            'class' => ['use-ajax'],
-                            'data-dialog-type' => 'modal',
-                            'data-dialog-options' => Json::encode(['width' => 700,]),
-                        ],
-                    );
-                }
-                $links['edit'] = array(
+                $links['edit'] = [
                     'title' => $this->t('Edit'),
                     'url' => Url::fromRoute('ek_sales.invoices.edit', ['id' => $r->id]),
-                );
+                ];
             }
 
             if ($r->status != 1) {
                 if ($r->type < 3) {
-                    $links['pay'] = array(
+                    $links['pay'] = [
                         'title' => $this->t('Receive'),
                         'url' => Url::fromRoute('ek_sales.invoices.pay', ['id' => $r->id]),
                         'weight' => $weight,
-                    );
+                    ];
                 } elseif ($r->type == 4) {
-                    $links['pay'] = array(
+                    $links['pay'] = [
                         'title' => $this->t('Assign credit note'),
                         'url' => Url::fromRoute('ek_sales.invoices.assign.cn', ['id' => $r->id]),
                         'weight' => $weight,
-                    );
+                    ];
                 }
             }
             
@@ -401,7 +389,7 @@ class InvoicesController extends ControllerBase {
             }
 
             $link = Url::fromRoute('ek_sales.invoices.alert', ['id' => $r->id], ['query' => $destination]);
-            $links['alert'] = array(
+            $links['alert'] = [
                 'title' => " " . $this->t('Alert'),
                 'url' => $link,
                 'attributes' => [
@@ -412,8 +400,19 @@ class InvoicesController extends ControllerBase {
                         'width' => '30%',
                     ]),
                 ],
-            );
-
+            ];
+            if (\Drupal::currentUser()->hasPermission('create_invoice')) {
+                $param = 'quick_edit|' . $r->id . '|invoice';
+                $links['qedit'] = [
+                    'title' => $this->t('Quick edit'),
+                    'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
+                    'attributes' => [
+                        'class' => ['use-ajax'],
+                        'data-dialog-type' => 'modal',
+                        'data-dialog-options' => Json::encode(['width' => 700,]),
+                    ],
+                ];
+            }
             $destination = ['destination' => '/invoices/list'];
             $link = Url::fromRoute('ek_sales.invoices.task', ['id' => $r->id], ['query' => $destination]);
             $links['task'] = [
@@ -430,16 +429,16 @@ class InvoicesController extends ControllerBase {
             ];
 
             if (\Drupal::currentUser()->hasPermission('print_share_invoice')) {
-                $links['iprint'] = array(
+                $links['iprint'] = [
                     'title' => $this->t('Print and share'),
                     'url' => Url::fromRoute('ek_sales.invoices.print_share', ['id' => $r->id]),
                     'attributes' => ['class' => ['ico', 'pdf']]
-                );
-                $links['iexcel'] = array(
+                ];
+                $links['iexcel'] = [
                     'title' => $this->t('Excel download'),
                     'url' => Url::fromRoute('ek_sales.invoices.print_excel', ['id' => $r->id]),
                     'attributes' => ['class' => ['ico', 'excel']]
-                );
+                ];
             }
             if (\Drupal::currentUser()->hasPermission('delete_invoice') && $r->status == 0) {
                 $links['delete'] = array(
@@ -448,37 +447,36 @@ class InvoicesController extends ControllerBase {
                 );
             }
             if (\Drupal::currentUser()->hasPermission('reset_pay') && $r->status == 1) {
-                $links['reset'] = array(
+                $links['reset'] = [
                     'title' => $this->t('Reset'),
                     'url' => Url::fromRoute('ek_sales.reset_payment', ['doc' => 'invoice', 'id' => $r->id]),
-                );
+                ];
             }
-            $links['clone'] = array(
+            $links['clone'] = [
                 'title' => $this->t('Clone'),
                 'url' => Url::fromRoute('ek_sales.invoices.clone', ['id' => $r->id]),
-            );
+            ];
 
-
-            $options[$r->id]['operations']['data'] = array(
+            $options[$r->id]['operations']['data'] = [
                 '#type' => 'operations',
                 '#links' => $links,
-            );
+            ];
         } //while
 
-        $build['invoices_table'] = array(
+        $build['invoices_table'] = [
             '#type' => 'table',
             '#header' => $header,
             '#rows' => $options,
-            '#attributes' => array('id' => 'invoices_table'),
+            '#attributes' => ['id' => 'invoices_table'],
             '#empty' => $this->t('No invoice available'),
-            '#attached' => array(
-                'library' => array('ek_sales/ek_sales_css', 'ek_admin/ek_admin_css', 'core/drupal.ajax'),
-            ),
-        );
+            '#attached' => [
+                'library' => ['ek_sales/ek_sales_css', 'ek_admin/ek_admin_css', 'core/drupal.ajax'],
+            ],
+        ];
 
-        $build['pager'] = array(
+        $build['pager'] = [
             '#type' => 'pager',
-        );
+        ];
 
         return $build;
     }

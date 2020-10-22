@@ -538,8 +538,8 @@ class Quotation extends FormBase {
                     '#maxlength' => 255,
                     '#attributes' => array('placeholder' => $this->t('item')),
                     '#default_value' => $name,
-                    '#field_prefix' => "<span class='badge'>" . $z . "</span>",
-                    '#field_suffix' => isset($link) ? "<span class='badge'>" . $link . "</span>" : '',
+                    '#field_prefix' => "<span class='s-s-badge'>" . $z . "</span>",
+                    '#field_suffix' => isset($link) ? "<span class='s-s-badge'>" . $link . "</span>" : '',
                     '#autocomplete_route_name' => 'ek.look_up_item_ajax',
                 );
                 if ($this->moduleHandler->moduleExists('ek_products')) {
@@ -763,7 +763,7 @@ class Quotation extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 40,
                 '#maxlength' => 255,
-                '#field_prefix' => "<span class='badge'>" . $z . "</span>",
+                '#field_prefix' => "<span class='s-s-badge'>" . $z . "</span>",
                 '#attributes' => array('placeholder' => $this->t('item')),
                 '#autocomplete_route_name' => 'ek.look_up_item_ajax',
             );
@@ -957,7 +957,7 @@ class Quotation extends FormBase {
             $n = $n + 2;
             $form['description'] = array(
                 '#type' => 'item',
-                '#markup' => $this->t('Total') . " " . "<span id='convertedValue' class='badge'></span>"
+                '#markup' => $this->t('Total') . " " . "<span id='convertedValue' class='s-s-badge'></span>"
             );
             $form['priceType'] = ['#type' => 'item'];
             $form['quantity'] = ['#type' => 'item'];

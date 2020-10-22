@@ -490,8 +490,8 @@ class Purchase extends FormBase {
                     '#maxlength' => 255,
                     '#attributes' => array('placeholder' => $this->t('item')),
                     '#default_value' => $name,
-                    '#field_prefix' => "<span class='badge'>" . $n . "</span>",
-                    '#field_suffix' => isset($link) ? "<span class='badge'>" . $link . "</span>" : '',
+                    '#field_prefix' => "<span class='s-s-badge'>" . $n . "</span>",
+                    '#field_suffix' => isset($link) ? "<span class='s-s-badge'>" . $link . "</span>" : '',
                     '#autocomplete_route_name' => 'ek.look_up_item_ajax',
                 );
                 if ($this->moduleHandler->moduleExists('ek_finance')) {
@@ -602,7 +602,7 @@ class Purchase extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 40,
                 '#maxlength' => 255,
-                '#field_prefix' => "<span class='badge'>" . $i . "</span>",
+                '#field_prefix' => "<span class='s-s-badge'>" . $i . "</span>",
                 '#attributes' => array('placeholder' => $this->t('item')),
                 '#autocomplete_route_name' => 'ek.look_up_item_ajax',
             );
@@ -713,7 +713,7 @@ class Purchase extends FormBase {
             }
             $form['description'] = array(
                 '#type' => 'item',
-                '#markup' => $this->t('Total') . " " . "<span id='convertedValue' class='badge'>" . $converted . "</span>"
+                '#markup' => $this->t('Total') . " " . "<span id='convertedValue' class='s-s-badge'>" . $converted . "</span>"
             );
             $form['account'] = array(
                 '#type' => 'item',

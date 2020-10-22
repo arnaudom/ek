@@ -529,7 +529,7 @@ class ConvertQuotation extends FormBase {
                     '#maxlength' => 255,
                     '#attributes' => array('placeholder' => $this->t('item')),
                     '#default_value' => $name,
-                    '#field_prefix' => "<span class='badge'>" . $n . "</span>",
+                    '#field_prefix' => "<span class='s-badge'>" . $n . "</span>",
                     '#autocomplete_route_name' => 'ek.look_up_item_ajax',
                 );
                 if ($this->moduleHandler->moduleExists('ek_finance')) {
@@ -638,7 +638,7 @@ class ConvertQuotation extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 40,
                 '#maxlength' => 255,
-                '#field_prefix' => "<span class='badge'>" . $n . "</span>",
+                '#field_prefix' => "<span class='s-badge'>" . $n . "</span>",
                 '#attributes' => array('placeholder' => $this->t('item')),
                 '#autocomplete_route_name' => 'ek.look_up_item_ajax',
             );
@@ -886,7 +886,7 @@ class ConvertQuotation extends FormBase {
         );
         $form['delete'] = array(
             '#type' => 'item',
-            '#markup' => "<div id='convertedValue' class='badge'>" . $converted . "</div>",
+            '#markup' => "<div id='convertedValue' class='s-badge'>" . $converted . "</div>",
         );
         //built total rows for table
         $form['items']['itemTable'][$n] = array(
