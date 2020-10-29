@@ -318,6 +318,7 @@ class FinanceSettingsForm extends FormBase {
 
         if ($save) {
             \Drupal::messenger()->addStatus(t('The settings are recorded'));
+            \Drupal\Core\Cache\Cache::invalidateTags(['ek_admin.settings']);
             if ($_SESSION['install'] == 1) {
                 unset($_SESSION['install']);
                 $form_state->setRedirect('ek_admin.main');

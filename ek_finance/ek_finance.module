@@ -1,18 +1,11 @@
 <?php
 
-///////////////////////////////////////////////////
-//                  COPYRIGHT                    //
-//                                               //
-// DEVELOPED BY ARREA LTD                        //
-// all rights reserved                           //
-// Please read and agree with software           //
-// application license                           //
-///////////////////////////////////////////////////
 
 /**
  * @file
  *  module ek_finance
  */
+
 use Drupal\Core\Database\Database;
 use Drupal\Component\Utility\Xss;
 use Drupal\ek_finance\Journal;
@@ -22,7 +15,7 @@ use Drupal\ek_finance\Journal;
  * 
  */
 function ek_finance_ek_settings($coids) {
-    //we do not use param coids here as settings are global
+    // we do not use param coids here as settings are global
     $settings = [];
     $query = Database::getConnection('external_db', 'external_db')
             ->select('ek_finance', 'f');
@@ -33,10 +26,30 @@ function ek_finance_ek_settings($coids) {
         $settings = unserialize($data->settings);
     }
 
+    $return = [];
     if (empty($settings)) {
         $_SESSION['install'] = 1;
-        $link = \Drupal\Core\Url::fromRoute('ek_finance.admin.settings', array(), array())->toString();
-        return ['finance' => $link];
+        $link = \Drupal\Core\Url::fromRoute('ek_finance.admin.settings', [], [])->toString();
+        $return['finance']['global'] = $link;
+    }
+    
+    $co = [];
+    foreach ($coids as $k => $id) {
+        if($id > 0) {
+            $fin = new \Drupal\ek_admin\CompanySettings($id);
+            if(empty($fin->settings)) { 
+                $link = \Drupal\Core\Url::fromRoute('ek_admin.company_settings.edit', ['id' => $id]);
+                array_push($co, $link);
+            }
+        }
+        if(!empty($co)) {
+            $return['finance']['company'] = $co;
+        }
+        
+    }
+    
+    if(!empty($return)) {
+        return $return;
     }
 
     return new \Symfony\Component\HttpFoundation\Response('', 204);
