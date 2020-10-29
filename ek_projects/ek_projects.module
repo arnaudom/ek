@@ -13,7 +13,7 @@ use Drupal\ek_projects\ProjectData;
  * 
  */ 
  function ek_projects_ek_settings($coids) { 
-    //we do not use param coids here as settings are global
+    // we do not use param coids here as settings are global
     $settings = [];
     $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_project_settings', 'p');
@@ -24,7 +24,7 @@ use Drupal\ek_projects\ProjectData;
         $settings = unserialize($data->settings);
     }
     
-    if(isset($settings['code']) && empty($settings['code'])) {
+    if(!isset($settings['code']) || empty($settings['code'])) {
         $_SESSION['install'] = 1;
         $link = \Drupal\Core\Url::fromRoute('ek_projects.settings.serial', [], array())->toString();
         return ['projects' => $link];
