@@ -347,6 +347,22 @@ App
     background-color: #fdf8ed;
 }
 
+.admin_menu_badge {
+    background-color: #FF6666;
+    color: #fff;
+    border: 1px solid #BA0B0B;
+    border-radius: 25px;
+    display: inline-block;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-align: center;
+    min-width: 20px;
+    top:-5px;
+    -webkit-box-shadow: 3px 3px 5px 0px rgba(0,0,0,0.5);
+    -moz-box-shadow: 3px 3px 5px 0px rgba(0,0,0,0.5);
+    box-shadow: 3px 3px 5px 0px rgba(0,0,0,0.5);
+}
+
 /*
 * Home dashboard
 */
