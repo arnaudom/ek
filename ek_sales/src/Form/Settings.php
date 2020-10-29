@@ -146,7 +146,7 @@ class Settings extends FormBase {
 
 
             $save = $settings->save();
-
+            \Drupal\Core\Cache\Cache::invalidateTags(['ek_admin.settings']);
             if ($save) {
                 \Drupal::messenger()->addStatus(t('The settings are recorded'));
                 if ($_SESSION['install'] == 1) {

@@ -36,7 +36,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
         }        
         
     }
-  
+
     if($flag == 1){
         return ['sales' => $link];
     } else {
