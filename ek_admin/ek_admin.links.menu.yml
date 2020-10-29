@@ -5,6 +5,7 @@ ek_admin.menu:
   expanded: true
   hidden: 0
   weight: 16
+  class: Drupal\ek_admin\Plugin\Menu\AdminMenuLink
      
 ek.company_list:
   title: Companies
@@ -33,6 +34,7 @@ ek_admin_main.menu:
   menu_name: main
   hidden: 0
   weight: 16
+  class: Drupal\ek_admin\Plugin\Menu\AdminMenuLink
      
 ek.company_main_list:
   title: Companies

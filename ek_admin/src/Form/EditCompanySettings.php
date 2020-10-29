@@ -518,6 +518,7 @@ class EditCompanySettings extends FormBase
 
 
             $settings->save();
+            \Drupal\Core\Cache\Cache::invalidateTags(['ek_admin.settings']);
             $h = Url::fromRoute('ek_admin.company.list')->toString();
             \Drupal::messenger()->addStatus(t('Settings saved. Go back to <a href="@h">list</a>', ['@h' => $h]));
         }

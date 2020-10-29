@@ -24,7 +24,7 @@
         <p class="messages messages--warning">{{ items.privateStream }}</p>
 
     {% endif %}
-    
+
     {% if items.country %}
 
         <p class="messages messages--warning">{{ items.country }}</p>
@@ -46,10 +46,20 @@
                 </li>
             {% endif %}
             {% if items.finance %}
-                <li>
-                    <span class="list_ico fas fa-cog"></span>
-                    <div class="list_name missing">{{ 'Missing settings for finance'|t }}: <a href='{{ items.finance }}'>{{'Edit'|t}}</a></div>
-                </li>
+                {% if items.finance.global %}
+                    <li>
+                        <span class="list_ico fas fa-cog"></span>
+                        <div class="list_name missing">{{ 'Missing settings for finance'|t }}: <a href='{{ items.finance.global }}'>{{'Edit'|t}}</a></div>
+                    </li>
+                {% endif %} 
+                {% if items.finance.company %}
+                    {% for link in items.finance.company  %}
+                        <li>
+                            <span class="list_ico fas fa-cog"></span>
+                            <div class="list_name missing">{{ 'Missing settings'|t }}: <a href='{{ link }}'>{{'Edit company finance settings'|t}}</a></div>
+                        </li>
+                    {%  endfor %}
+                {% endif %} 
             {% endif %}            
             {% if items.currency %}
                 <li>
@@ -113,5 +123,5 @@
         </ul>
 
     </div>
-                
+
 {% endif %}

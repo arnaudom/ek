@@ -234,5 +234,6 @@ class SettingsForm extends FormBase
         $settings->save();
         
         \Drupal::messenger()->addStatus(t('Data updated'));
+        \Drupal\Core\Cache\Cache::invalidateTags(['ek_admin.settings']);
     }
 }
