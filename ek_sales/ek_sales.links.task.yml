@@ -88,7 +88,6 @@ ek_sales.invoice.task.tasks_list:
   title: 'Tasks'
   weight: 4
 
-
 #add tab to address book
 ek_sales.ab_data:
   route_name: ek_sales.data
@@ -101,3 +100,9 @@ ek_sales.ab_documents:
   base_route: ek_address_book.view
   title: 'Documents'
   weight: 5
+    
+ek_sales.ab_documents_search:
+  route_name: ek_sales.search_form
+  base_route: ek_address_book.search
+  title: 'Search documents'
+  weight: 3

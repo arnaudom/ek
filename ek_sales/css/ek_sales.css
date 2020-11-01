@@ -115,26 +115,6 @@ hr {
     height: 0;
 }
 
-#invoice_form_footer .form-item, .form-actions {
-    margin-bottom: 0em !important;
-    margin-top: 0em !important;
-}
-
-#invoice_form_items .form-item, .form-actions {
-    margin-bottom: 0em !important;
-    margin-top: 0em !important;
-}
-
-#purchase_form_footer .form-item, .form-actions {
-    margin-bottom: 0em !important;
-    margin-top: 0em !important;
-}
-
-#purchase_form_items .form-item, .form-actions {
-    margin-bottom: 0em !important;
-    margin-top: 0em !important;
-}
-
 .button--record:hover {
     background-color: #FFF;
     color: #FFF !important;
@@ -189,4 +169,34 @@ hr {
 
 tr.drop-folder {
    cursor: pointer;
+}
+
+
+/*
+* Searc doc
+*/
+#doc-search-result {
+    list-style-type: none;
+}
+
+#doc-search-result li {
+    margin-bottom: 10px;
+}
+
+#doc-search-result a {
+    text-decoration: none;
+    color: #1a0dab;
+    font-size: 1.3em;
+    border-bottom: none;
+}
+#doc-search-result a:hover {
+    background-color: #E2F5FE;
+}
+#doc-search-result .file {
+    display: inline-block;
+    color: #aaa;
+}
+
+#doc-search-result .info {
+    background-color: #F8F8F8;
 }

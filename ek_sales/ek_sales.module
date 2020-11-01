@@ -79,6 +79,15 @@ function ek_sales_ek_home() {
         'footer' => 'April 2020',
     ];
     
+    $build[] = [
+        'name' => 'feature_3_docsearch',
+        'module' => 'Sales',
+        'stamp' => 1604197000,
+        'type' => "new",
+        'content' => '<a href="/sales-search-doc-form">Quick search</a> '
+            . 'documents linked to Address Book.',
+        'footer' => 'November 2020',
+    ];
    
     
     return $build;

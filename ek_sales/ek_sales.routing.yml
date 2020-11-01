@@ -68,6 +68,7 @@ ek_sales.data:
     _permission: 'sales_data'
     abid: \d*
 
+    
 ek_sales.document:
   path: '/sales/document/{abid}'
   defaults:
@@ -76,6 +77,22 @@ ek_sales.document:
   requirements:
     _permission: 'sales_data'
     abid: \d*
+    
+ek_sales.search_form:
+  path: '/sales-search-doc-form'
+  defaults:
+    _title: 'Search documents'
+    _form: '\Drupal\ek_sales\Form\SearchDocForm'
+  requirements:
+    _permission: 'sales_documents'
+    
+ek_sales.search_doc:
+  path: '/ek_sales-search-doc'
+  defaults:
+    _controller: '\Drupal\ek_sales\Controller\SalesController::searchDoc'
+    type: '%'
+  requirements:
+    _permission: 'sales_documents'
 
 ek_sales_folders:
   path: '/sales/look_up_folders/{abid}'

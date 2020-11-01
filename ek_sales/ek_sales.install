@@ -301,3 +301,11 @@ function ek_sales_update_8013() {
 function ek_sales_update_8014() {
     \Drupal::service('router.builder')->rebuild();
 }
+     
+/**
+ * New route for search
+ * 
+*/
+function ek_sales_update_8015() {
+    \Drupal::service('router.builder')->rebuild();
+}

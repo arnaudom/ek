@@ -614,6 +614,51 @@ class SalesController extends ControllerBase {
     }
 
     /**
+     * Search documents by keyword
+     *  
+     * @return array
+     */
+    public static function searchDoc(Request $request) {
+        $text = (null !== $request->query->get('q')) ? $request->query->get('q') : $request->query->get('term');
+        if (strpos($text, '%') >= 0) {
+            $text = str_replace('%', '', $text);
+        }
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_sales_documents', 's');
+        $query->fields('s');
+        $query->innerJoin('ek_address_book', 'ab', 'ab.id=s.abid');
+        $query->fields('ab',['name']);
+        $query->condition('filename', '%' . $text . '%', 'LIKE');
+        $data = $query->execute();
+        $result = [];
+        $me = \Drupal::currentUser()->id();
+        while ($r = $data->fetchObject()) {
+            $line = [];
+            $line['filename'] = str_ireplace($text,"<mark>" . $text . "</mark>", $r->filename);
+            $line['url'] = Url::fromRoute('ek_sales.document', ['abid' => $r->abid],['fragment' => 'tr-' . $r->id])->toString();
+            $line['folder'] = "-";
+            if($r->folder){
+                $line['folder'] = $r->folder;
+            }
+            $line['share'] = 1;
+            if($r->share != '0') {
+                $ids = explode($r->share);
+                if (!in_array($me,$ids)) {
+                   $line['share'] = 0; 
+                }
+            }
+            $line['date'] = date('Y-m-d', $r->date);
+            $line['size'] = (round($r->size / 1000)) . ' Kb';
+            $line['ab'] = $r->name;
+            
+             $result[] = $line;
+        }
+        
+        return new JsonResponse($result);
+    }
+
+
+    /**
      * AJAX callback handler for AjaxTestDialogForm.
      */
     public function modal($param) {
