@@ -21,8 +21,7 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to ecord or edit payroll
  */
-class PayrollRecord extends FormBase
-{
+class PayrollRecord extends FormBase {
 
     /**
      * The module handler.
@@ -35,16 +34,14 @@ class PayrollRecord extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler')
         );
@@ -53,25 +50,23 @@ class PayrollRecord extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'payroll_record';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $coid = null, $eid = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $coid = null, $eid = null) {
         if ($coid != null && $eid != null) {
             if (array_key_exists($coid, AccessCheck::CompanyListByUid())) {
                 $form_state->set('step', 2);
                 $form_state->setValue('coid', $coid);
-                
+
 
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_hr_workforce', 'h');
-                $query->fields('h', ['id', 'name', 'custom_id','administrator'])
+                $query->fields('h', ['id', 'name', 'custom_id', 'administrator'])
                         ->condition('company_id', $form_state->getValue('coid'))
                         ->condition('active', 'resigned', '<>')
                         ->orderBy('name');
@@ -88,7 +83,7 @@ class PayrollRecord extends FormBase
                         $id = isset($e->custom_id) ? $e->custom_id : $e->id;
                         $employees[$e->id] = $id . " - " . $e->name;
                     }
-                    
+
                     if ($e->id == $eid) {
                         //validate current id is editable
                         //i.e. filter resigned
@@ -123,7 +118,7 @@ class PayrollRecord extends FormBase
         if (!isset($employees)) {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_hr_workforce', 'h');
-            $query->fields('h', ['id', 'name', 'custom_id','administrator'])
+            $query->fields('h', ['id', 'name', 'custom_id', 'administrator'])
                     ->condition('company_id', $form_state->getValue('coid'))
                     ->condition('active', 'resigned', '<>')
                     ->orderBy('name');
@@ -170,11 +165,13 @@ class PayrollRecord extends FormBase
             $form_state->set('step', 2);
 
             //build payroll data
-            $query = "SELECT * from {ek_hr_workforce} WHERE id=:id";
-            $a = array(':id' => $form_state->getValue('eid'));
-            $e = Database::getConnection('external_db', 'external_db')
-                    ->query($query, $a)
-                    ->fetchObject();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_hr_workforce', 'wf');
+            $query->fields('wf');
+            $query->leftJoin('ek_company', 'c', 'c.id = wf.company_id');
+            $query->fields('c', ['country']);
+            $query->condition('wf.id', $form_state->getValue('eid'), '=');
+            $e = $query->execute()->fetchObject();
 
             $category = explode("_", $e->origin);
             if (isset($category[1])) {
@@ -260,6 +257,7 @@ class PayrollRecord extends FormBase
             $markup .= ($e->resign <> '') ? "<li>" . $this->t('resigned date') . ': <b>' . $e->resign . '</b></li>' : '';
             $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . $this->t('status') . ': <b>' . $e->active . ', ' . $e->e_status . '</b></li>' : '';
             $markup .= (!null == $form_state->getValue('eid')) ? "<li>" . $this->t('tax category') . ': <b>' . $e->itax_c . '</b></li></ul>' : '';
+            $markup .= (!null == $form_state->getValue('eid')) ? "<p>" . $e->country . "</p>" : '';
             $markup .= (!null == $form_state->getValue('eid')) ? "<p>" . $e->note . "</p>" : '';
         }
 
@@ -269,18 +267,20 @@ class PayrollRecord extends FormBase
             '#open' => (!null == $form_state->getValue('eid')) ? true : false,
         );
 
-
         $form['hr']['data']['payroll_month'] = array(
             '#type' => 'hidden',
             '#value' => $current,
+        );
+
+        $form['hr']['country'] = array(
+            '#type' => 'hidden',
+            '#value' => trim($e->country),
         );
 
         $form['hr']['data']['info'] = array(
             '#type' => 'item',
             '#markup' => $markup,
         );
-
-
 
         //Table 1 work data
         $form['hr']['table1'] = array(
@@ -378,14 +378,15 @@ class PayrollRecord extends FormBase
         //Table 2 fixed allowances
         $form['hr']['fa'] = [
             '#title' => $this->t('Fixed allowances'),
-            '#type' => 'fieldset',
+            '#type' => 'details',
+            '#open' => TRUE,
         ];
         $form['hr']['fa']['table2'] = array(
             '#type' => 'item',
             '#tree' => true,
             '#input' => true,
             '#theme' => 'table',
-            '#title' => $this->t('Fixed allowances'),
+            // '#title' => $this->t('Fixed allowances'),
             '#header' => array(
                 'unit' => array(
                     'data' => $this->t('Unit'),
@@ -448,7 +449,6 @@ class PayrollRecord extends FormBase
             'unit' => &$form['overtime_hours'],
             'value' => &$form['normal_ot'],
             'formula' => &$form['formula_not'],
-                
         );
         $form['hr']['fa']['table2']['#rows'][] = array(
             'data' => array(
@@ -457,7 +457,6 @@ class PayrollRecord extends FormBase
                 array('data' => &$form['tax_not']),
                 array('data' => &$form['formula_not']),
             ),
-               
         );
         unset($form['overtime_hours']);
         unset($form['normal_ot']);
@@ -513,7 +512,6 @@ class PayrollRecord extends FormBase
                 array('data' => &$form['tax_rdot']),
                 array('data' => &$form['formula_rdot']),
             ),
-               
         );
         unset($form['rest_hours']);
         unset($form['rest_day_ot']);
@@ -745,14 +743,15 @@ class PayrollRecord extends FormBase
         //Table 3 custom allowances
         $form['hr']['ca'] = [
             '#title' => $this->t('Custom allowances'),
-            '#type' => 'fieldset',
+            '#type' => 'details',
+            '#open' => TRUE,
         ];
         $form['hr']['ca']['table3'] = array(
             '#type' => 'item',
             '#tree' => true,
             '#input' => true,
             '#theme' => 'table',
-            '#title' => $this->t('Custom allowances'),
+            // '#title' => $this->t('Custom allowances'),
             '#header' => array(
                 'allowance' => array(
                     'data' => $this->t('Allowance'),
@@ -783,7 +782,7 @@ class PayrollRecord extends FormBase
                     $attr = ['title' => $this->t('include tax'), 'class' => ['calculate'], 'checked' => 'checked'];
                 }
             }
-            
+
             $form[$custom_aw] = array(
                 '#type' => 'textfield',
                 '#id' => $custom_aw,
@@ -929,14 +928,15 @@ class PayrollRecord extends FormBase
         //Table 4 custom deductions
         $form['hr']['cd'] = [
             '#title' => $this->t('Custom deductions'),
-            '#type' => 'fieldset',
+            '#type' => 'details',
+            '#open' => TRUE,
         ];
         $form['hr']['cd']['table4'] = array(
             '#type' => 'item',
             '#tree' => true,
             '#input' => true,
             '#theme' => 'table',
-            '#title' => $this->t('Custom deductions'),
+            // '#title' => $this->t('Custom deductions'),
             '#header' => array(
                 'allowance' => array(
                     'data' => $this->t('Deduction'),
@@ -1047,7 +1047,8 @@ class PayrollRecord extends FormBase
         //table 5 contributions
         $form['hr']['co'] = [
             '#title' => $this->t('Contributions'),
-            '#type' => 'fieldset',
+            '#type' => 'details',
+            '#open' => TRUE,
         ];
         $form['hr']['co']['table5'] = array(
             '#type' => 'item',
@@ -1319,25 +1320,21 @@ class PayrollRecord extends FormBase
         $form['hr']['#attached']['library'][] = 'ek_admin/ek_admin_css';
         $form['#id'] = 'payroll_data';
 
-
         return $form;
     }
 
     /**
      * callback functions
      */
-    public function get_employees(array &$form, FormStateInterface $form_state)
-    {
+    public function get_employees(array &$form, FormStateInterface $form_state) {
         return $form['eid'];
     }
 
-    public function get_data(array &$form, FormStateInterface $form_state)
-    {
+    public function get_data(array &$form, FormStateInterface $form_state) {
         return $form['hr'];
     }
 
-    public function clearForm(array &$form, FormStateInterface $form_state)
-    {
+    public function clearForm(array &$form, FormStateInterface $form_state) {
         $db = Database::getConnection('external_db', 'external_db')
                 ->delete('ek_hr_workforce_pay')
                 ->condition('id', $form_state->getValue('eid'))
@@ -1347,8 +1344,7 @@ class PayrollRecord extends FormBase
         $form_state->setRedirect('ek_hr.payroll', ['coid' => $form_state->getValue('coid'), 'eid' => $form_state->getValue('eid')]);
     }
 
-    public function build_settings($param, $ad, $c)
-    {
+    public function build_settings($param, $ad, $c) {
         return array(
             'LAF1' => $ad['LAF1-' . $c]['value'], //$param->get('ad', 'LAF1' . $c, 'value'),
             'LAF1f' => $ad['LAF1-' . $c]['formula'], //$param->get('ad', 'LAF1' . $c, 'formula'),
@@ -1444,10 +1440,9 @@ class PayrollRecord extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         $tb = $form_state->getValue('table1');
-        
+
         $tb = $form_state->getValue('table2');
         if (!is_numeric($form_state->getValue('table2')['to']['unit'])) {
             $form_state->setErrorByName($form_state->setErrorByName("table2][to][unit", $this->t('Wrong input')));
@@ -1479,8 +1474,7 @@ class PayrollRecord extends FormBase
         }
     }
 
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         $triggering_element = $form_state->getTriggeringElement();
         if ($triggering_element['#id'] == 'savebutton') {
             $tb1 = $form_state->getValue('table1');
@@ -1564,4 +1558,5 @@ class PayrollRecord extends FormBase
             $form_state->setRedirect('ek_hr.payroll', ['coid' => $form_state->getValue('coid'), 'eid' => $form_state->getValue('eid')]);
         }
     }
+
 }

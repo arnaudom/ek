@@ -1,4 +1,4 @@
-(function ($, Drupal, drupalSettings) {
+s(function ($, Drupal, drupalSettings) {
 
     Drupal.behaviors.ek_hr = {
         attach: function (context, settings) {
@@ -209,7 +209,7 @@
                 if (settings.ek_hr.fund1_base == "BMF")
                     fund_base = eval(thisbasic - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val);//calculated Gross minus OTs
                 if (settings.ek_hr.fund1_base == "GMFC")
-                    fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val - commision);//calculated Gross minus OTs and deductions
+                    fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val - commission);//calculated Gross minus OTs and deductions
 
                 if ($('#thisepf').prop('checked')) {
 
@@ -289,7 +289,7 @@
                     fund_base = eval(thisbasic - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val);//calculated Gross minus OTs
                 }
                 if (settings.ek_hr.fund2_base == "GMFC"){
-                    fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val - commision);//calculated Gross minus OTs and deductions
+                    fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val - commission);//calculated Gross minus OTs and deductions
                 }
                 if ($('#thissoc').prop('checked')) {
                     //employer
@@ -370,7 +370,7 @@
                     fund_base = eval(thisbasic - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val);//calculated Gross minus OTs
                 }
                 if (settings.ek_hr.fund3_base == "GMFC"){
-                    fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val - commision);//calculated Gross minus OTs and deductions
+                    fund_base = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val - commission);//calculated Gross minus OTs and deductions
                 }
 
                 if ($('#thiswith').prop('checked')) {
@@ -449,7 +449,7 @@
                     tax_base_val = eval(thisbasic - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val);//Gross - F
                 }
                 if (settings.ek_hr.tax_base == "GMFC"){
-                    tax_base_val = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val - commision);
+                    tax_base_val = eval(total - normal_ot - rest_day_ot - ph_ot - mc_day_val - x_hours_val - commission);
                 }
                 
                 if ($('#thisincometax').prop('checked')) {
