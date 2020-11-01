@@ -141,10 +141,14 @@ class PayrollRecord extends FormBase {
             '#empty' => $this->t('No data'),
         );
 
-
         $form['HrTable']["coid"] = array(
             '#type' => 'hidden',
             '#value' => $param['coid'],
+        );
+        
+        $form['HrTable']["month"] = array(
+            '#type' => 'hidden',
+            '#value' => $param['month'],
         );
 
         $client = array('n/a' => $this->t('not applicable'));
