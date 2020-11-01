@@ -20,7 +20,7 @@ ek_address_book.new:
   route_name: ek_address_book.new
   base_route: ek_address_book.search
   title: 'New'
-  weight: 4
+  weight: 3
 
 #administrate - import - export
 ek_address_book.admin:
@@ -40,8 +40,7 @@ ek_address_book.admin_export:
   title: 'Export'
   parent_id: ek_address_book.admin
   weight: 2
-  
-  
+    
 ek_address_book.view:
   route_name: ek_address_book.view
   base_route: ek_address_book.view

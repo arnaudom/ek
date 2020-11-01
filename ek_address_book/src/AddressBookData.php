@@ -4,6 +4,7 @@ namespace Drupal\ek_address_book;
 
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Interface for address book data data
@@ -12,16 +13,15 @@ use Drupal\Core\Url;
  * @getid : get entry id from name
  * @geturl : return an html format url
  */
-class AddressBookData
-{
+class AddressBookData {
 
     /**
      * Constructs a AddressBookData
      *
      *
      */
-    public function __construct()
-    {
+    public function __construct() {
+        
     }
 
     /**
@@ -30,8 +30,7 @@ class AddressBookData
      * @param status 1 or 0
      * @param category (variable) ie 'head office'
      */
-    public static function addresslist($type = null, $status = null, $category = null)
-    {
+    public static function addresslist($type = null, $status = null, $category = null) {
         if ($type == null) {
             $type = '%';
         }
@@ -43,14 +42,14 @@ class AddressBookData
         }
 
         $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_address_book', 'ab');
+                ->select('ek_address_book', 'ab');
         $query->fields('ab', ['id', 'name', 'type']);
         $query->condition('type', $type, 'LIKE');
         $query->condition('category', $category, 'LIKE');
         $query->condition('status', $status, 'LIKE');
         $query->orderBy('name');
         $data = $query->execute();
-        
+
         $options = [];
         $arr = ['1' => t('client'), '2' => t('supplier'), '3' => t('other')];
         while ($d = $data->fetchObject()) {
@@ -61,7 +60,7 @@ class AddressBookData
                 $options[$d->id] = $d->name;
             }
         }
-            
+
         return $options;
     }
 
@@ -70,8 +69,7 @@ class AddressBookData
      *    name from id
      *
      */
-    public static function getname($id = null)
-    {
+    public static function getame($id = null) {
         if ($id != null) {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'ab');
@@ -90,8 +88,7 @@ class AddressBookData
      *
      *
      */
-    public static function getid($name = null)
-    {
+    public static function getid($name = null) {
         if ($name != null) {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'ab');
@@ -114,10 +111,9 @@ class AddressBookData
      *    \Drupal\ek_address_book\AddressBookData::geturl($id, $option);
      *
      */
-    public static function geturl($id = null, $option = null)
-    {
+    public static function geturl($id = null, $option = null) {
         $query = Database::getConnection('external_db', 'external_db')
-                      ->select('ek_address_book', 'ab');
+                ->select('ek_address_book', 'ab');
         $query->fields('ab', ['name']);
         $query->condition('id', $id, '=');
         $name = $query->execute()->fetchField();
@@ -138,24 +134,22 @@ class AddressBookData
         );
         return \Drupal::service('renderer')->render($render);
     }
-    
 
     /**
      * @param int id
      *  address book contact id
      * @return array
      */
-    public static function getContactData($id)
-    {
+    public static function getContactData($id) {
         $query = Database::getConnection('external_db', 'external_db')
-                      ->select('ek_address_book_contacts', 'ab');
+                ->select('ek_address_book_contacts', 'ab');
         $query->fields('ab');
         $query->condition('id', $id, '=');
         $data = $query->execute()->fetchAssoc();
-        if($data) {
+        if ($data) {
             return $data;
         }
-    }    
+    }
+
 }
 
-// class

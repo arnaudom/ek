@@ -135,7 +135,7 @@ ek.look_up_email_ajax:
     type: '%'
   requirements:
     _permission: 'view_address_book_user_contact'
-        
+    
 ek.built_sn_ajax:
   path: '/built_sn_ajax'
   defaults:
