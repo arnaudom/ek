@@ -69,7 +69,7 @@ class AddressBookData {
      *    name from id
      *
      */
-    public static function getame($id = null) {
+    public static function getname($id = null) {
         if ($id != null) {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'ab');
