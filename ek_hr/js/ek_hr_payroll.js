@@ -1,4 +1,4 @@
-s(function ($, Drupal, drupalSettings) {
+(function ($, Drupal, drupalSettings) {
 
     Drupal.behaviors.ek_hr = {
         attach: function (context, settings) {
