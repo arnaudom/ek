@@ -547,6 +547,8 @@ class AdminController extends ControllerBase {
                 exit;
             }
 
+            
+            $coids = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
             $api = \Drupal::moduleHandler()->invokeAll('ek_settings', [$coids]);
             $mod = ['documents','finance','logistics','projects','sales'];
             $c = 0;
