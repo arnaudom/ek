@@ -917,9 +917,6 @@ class NewMemo extends FormBase {
             $query->condition('id', $form_state->getValue('entity_to'));
             $short = $query->execute()->fetchField();
 
-            //$short = Database::getConnection('external_db', 'external_db')
-            //        ->query("SELECT short from {ek_company} where id=:id", array(':id' => $form_state->getValue('entity_to')))
-            //        ->fetchField();
             $date = substr($form_state->getValue('date'), 2, 5);
             $serial = ucwords(str_replace('-', '', $short)) . "-EM-" . $date . "-" . $iid;
         } else {
@@ -933,9 +930,6 @@ class NewMemo extends FormBase {
             $query->fields('memo', ['id']);
             $query->condition('serial', $serial);
             $iid = $query->execute()->fetchField();
-            //$iid = Database::getConnection('external_db', 'external_db')
-            //      ->query('SELECT id from {ek_expenses_memo} where serial=:s', array(':s' => $serial))
-            //    ->fetchField();
         }
 
         $currencyRate = CurrencyData::rate($form_state->getValue('currency'));
@@ -1102,11 +1096,11 @@ class NewMemo extends FormBase {
                 }
                 if ($entity_mail) {
                     $send = \Drupal::service('plugin.manager.mail')->mail(
-                            'ek_finance', 'key_memo_note', $entity_mail->getEmail(), $target_langcode, $params, $user_memo->mail, true
+                            'ek_finance', 'key_memo_note', $entity_mail->getEmail(), $target_langcode, $params, $user_memo->getEmail(), true
                     );
 
                     if ($send['result'] == false) {
-                        $error[] = $user_memo->mail;
+                        $error[] = $user_memo->getEmail();
                     }
                 }
             }
