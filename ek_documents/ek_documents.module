@@ -214,6 +214,11 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
     
     if ($mode == 'internal message') {
         //add copy in internal messaging
+        $render = [
+            '#markup' => t('@u shared a document with you', array('@u' => Drupal::currentUser()->getAccountName())) . ": " . $url . ".",
+        ];
+                    
+        $body = \Drupal::service('renderer')->render($render);
         ek_message_register([
             'uid' => \Drupal::currentUser()->id(),
             'to' => $users,
@@ -223,10 +228,9 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
             'inbox' => $users,
             'archive' => '',
             'subject' => $params['subject'],
-            'body' => serialize($params['body']),
+            'body' => serialize($body),
             'priority' => $priority,
-                ]
-        );
+        ]);
     }
     
     //send an email copy to me
