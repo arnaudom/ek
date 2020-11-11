@@ -81,7 +81,7 @@ class DocumentsData {
                 $extension = explode(".", $l->filename);
                 $doc_name = $extension[0];
                 $doc_short_name = substr($extension[0], 0, 12) . "...";
-                $extension = array_pop($extension);
+                $extension = strtolower(array_pop($extension));
 
                 $icon_path = drupal_get_path('module', 'ek_admin') . '/art/' . $extension . ".png";
                 $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/' . $extension . ".png";
@@ -187,7 +187,7 @@ class DocumentsData {
                 $extension = explode(".", $l->filename);
                 $doc_name = $extension[0];
                 $doc_short_name = substr($extension[0], 0, 12) . "...";
-                $extension = array_pop($extension);
+                $extension = strtolower(array_pop($extension));
                 $icon_path = drupal_get_path('module', 'ek_admin') . '/art/' . $extension . ".png";
                 $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/' . $extension . ".png";
                 $new = 0;
@@ -298,7 +298,7 @@ class DocumentsData {
                 $extension = explode(".", $l->filename);
                 $doc_name = $extension[0];
                 $doc_short_name = substr($extension[0], 0, 12) . "...";
-                $extension = array_pop($extension);
+                $extension = strtolower(array_pop($extension));
                 $icon_path = drupal_get_path('module', 'ek_admin') . '/art/' . $extension . ".png";
                 $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/' . $extension . ".png";
 
