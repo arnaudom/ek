@@ -90,7 +90,7 @@ $pdf->SetFont('helvetica','',10);
 
 $pdf->Cell($col1, 5,t('Asset quantity') . ':',0,0);
 $pdf->SetFont('helvetica','',8);
-$pdf->Cell($col2, 5,$items['asset_unit'],0,0);
+$pdf->Cell($col2, 5,$items['unit'],0,0);
 $pdf->Cell($col3, 5,"",0,1);
 $pdf->SetFont('helvetica','',10);
 
@@ -118,21 +118,15 @@ $pdf->Cell($col2, 5,$items['date_purchase'],0,0);
 $pdf->Cell($col3, 5,"",0,1);
 $pdf->SetFont('helvetica','',10);
 
-$pdf->Cell($col1, 5,t('Amortization rate') . ':',0,0);
+$pdf->Cell($col1, 5,t('Amortization terms') . ':',0,0);
 $pdf->SetFont('helvetica','',8);
-$pdf->Cell($col2, 5,$items['amort_rate'],0,0);
+$pdf->Cell($col2, 5,$items['term'] . " " . $items['term_unit'],0,0);
 $pdf->Cell($col3, 5,"",0,1);
 $pdf->SetFont('helvetica','',10);
 
-$pdf->Cell($col1, 5,t('Amortization value') . ':',0,0);
+$pdf->Cell($col1, 5,t('Amortization method') . ':',0,0);
 $pdf->SetFont('helvetica','',8);
-$pdf->Cell($col2, 5,$items['amort_value'],0,0);
-$pdf->Cell($col3, 5,"",0,1);
-$pdf->SetFont('helvetica','',10);
-
-$pdf->Cell($col1, 5,t('Amortization per year') . ':',0,0);
-$pdf->SetFont('helvetica','',8);
-$pdf->Cell($col2, 5,$items['amort_yearly'],0,0);
+$pdf->Cell($col2, 5,$items['method'],0,0);
 $pdf->Cell($col3, 5,"",0,1);
 $pdf->SetFont('helvetica','',10);
 
@@ -173,8 +167,6 @@ if($items['eid']) {
 
 header('Cache-Control: private');
 header('Content-Type: application/pdf');
-
-
 header("Content-Disposition: 'attachment'; filename=\"" . $title . "\" ");
 
 echo $pdf->Output($title, 'I');

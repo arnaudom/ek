@@ -21,8 +21,7 @@ use Drupal\ek_finance\FinanceSettings;
 /**
  * Provides a form to manage assets amortization record
  */
-class AmortizationRecord extends FormBase
-{
+class AmortizationRecord extends FormBase {
 
     /**
      * Constructs a AmortizationRecord object
@@ -44,8 +43,7 @@ class AmortizationRecord extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $ref = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null, $ref = null) {
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
         $baseCurrency = $this->settings->get('baseCurrency');
@@ -267,16 +265,15 @@ class AmortizationRecord extends FormBase
                 '#attributes' => array('id' => 'rows'),
                 '#value' => 1,
             );
+            
             $form['actions'] = array(
                 '#type' => 'actions',
                 '#attributes' => array('class' => array('container-inline')),
             );
-
-
-
+            
             $form['actions']['submit'] = array(
                 '#type' => 'submit',
-                '#value' => $this->$this->t('Save'),
+                '#value' => $this->t('Save'),
                 '#suffix' => ''
             );
         }
@@ -287,8 +284,7 @@ class AmortizationRecord extends FormBase
         return $form;
     }
 
-    public function fx_rate(array &$form, FormStateInterface $form_state)
-    {
+    public function fx_rate(array &$form, FormStateInterface $form_state) {
         $currency = $form_state->getValue('currency');
         $fx = CurrencyData::rate($currency);
 
@@ -308,8 +304,7 @@ class AmortizationRecord extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         $totalcredit = 0;
         $totaldebit = 0;
 
@@ -352,8 +347,7 @@ class AmortizationRecord extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         $journal = new Journal();
 
         $class = substr($form_state->getValue('d-account1'), 0, 2);

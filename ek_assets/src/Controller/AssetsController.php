@@ -15,15 +15,14 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Drupal\ek_admin\Access\AccessCheck;
-use Drupal\ek_finance\FinanceSettings;
+use Drupal\ek_finance\AidList;
 
 /**
  * Controller routines for ek module routes.
  */
-class AssetsController extends ControllerBase
-{
+class AssetsController extends ControllerBase {
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -48,8 +47,7 @@ class AssetsController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -63,8 +61,7 @@ class AssetsController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -74,14 +71,13 @@ class AssetsController extends ControllerBase
      * Return list
      *
      */
-    public function assetsList()
-    {
+    public function assetsList() {
         $new = Url::fromRoute('ek_assets.new')->toString();
         $build["new"] = array(
             '#markup' => "<a href='" . $new . "' >" . $this->t('New asset') . "</a>",
         );
         $build['filter_assets_list'] = $this->formBuilder->getForm('Drupal\ek_assets\Form\FilterAssets');
-        
+
         if (isset($_SESSION['assetfilter']['filter']) && $_SESSION['assetfilter']['filter'] == 1) {
             $header = array(
                 'id' => array(
@@ -108,13 +104,12 @@ class AssetsController extends ControllerBase
                     'data' => '',
                     'class' => array(RESPONSIVE_PRIORITY_LOW),
                 ),
-
             );
 
             $header['operations'] = '';
             $access = AccessCheck::GetCompanyByUser();
             $company = implode(',', $access);
-            
+
             if ($_SESSION['assetfilter']['amort_status'] == '1') {
                 $s = 0;
             } else {
@@ -122,49 +117,40 @@ class AssetsController extends ControllerBase
             }
             //build the export link
             $param = serialize(
-                array(
-                'id' => 0,
-                'coid' => $_SESSION['assetfilter']['coid'],
-                'aid' => $_SESSION['assetfilter']['category'],
-                'status' => $s
-                )
+                    array(
+                        'id' => 0,
+                        'coid' => $_SESSION['assetfilter']['coid'],
+                        'aid' => $_SESSION['assetfilter']['category'],
+                        'status' => $s
+                    )
             );
             $excel = Url::fromRoute('ek_assets.excel', array('param' => $param))->toString();
             $build['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>",
+                '#markup' => "<a href='" . $excel . "' title='" . $this->t('Excel download') . "'><span class='ico excel green'/></a>",
             );
             $qrcode = Url::fromRoute('ek_assets.print-qrcode', array('param' => $param))->toString();
             $build['qrcode'] = array(
-                '#markup' => "<a href='" . $qrcode . "' title='". $this->t('Qr codes') . "' target='_blank'><span class='ico barcode'/></a>",
+                '#markup' => "<a href='" . $qrcode . "' title='" . $this->t('Qr codes') . "' target='_blank'><span class='ico barcode'/></a>",
             );
             //get data base on criteria
-            $query = "SELECT * from {ek_assets} a INNER JOIN {ek_assets_amortization} b "
-                    . "ON a.id = b.asid "
-                    . "WHERE coid=:coid "
-                    . "AND aid like :a "
-                    . "AND amort_status like :s "
-                    . "AND FIND_IN_SET (coid, :c)  order by id";
-            $a = array(
-                ':coid' => $_SESSION['assetfilter']['coid'],
-                ':a' => $_SESSION['assetfilter']['category'],
-                ':c' => $company,
-                ':s' => $s,
-            );
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_assets', 'a');
+            $query->fields('a');
+            $query->leftJoin('ek_assets_amortization', 'b', 'a.id = b.asid');
+            $query->fields('b');
+            $query->condition('coid', $_SESSION['assetfilter']['coid'], '=');
+            $query->condition('aid', $_SESSION['assetfilter']['category'], 'LIKE');
+            $query->condition('amort_status', $s, 'LIKE');
+            $data = $query->execute();
 
-            $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
-            $query2 = "SELECT name FROM {ek_company} WHERE id=:coid";
-            $company_name = Database::getConnection('external_db', 'external_db')
-                    ->query($query2, array(':coid' => $_SESSION['assetfilter']['coid']))
-                    ->fetchField();
+            $companies = AccessCheck::CompanyList();
+            $company_name = $companies[$_SESSION['assetfilter']['coid']];
+
+            $chartList = Aidlist::chartList();
 
             while ($r = $data->fetchObject()) {
-                $query2 = "SELECT DISTINCT aname from {ek_accounts} where aid=:aid and coid=:coid";
-                $a = array(
-                    ':aid' => $r->aid,
-                    ':coid' => $_SESSION['assetfilter']['coid'],
-                );
-                $aname = Database::getConnection('external_db', 'external_db')
-                                ->query($query2, $a)->fetchField();
+
+                $aname = $chartList[$_SESSION['assetfilter']['coid']][$r->aid];
 
                 if ($r->asset_pic != '') {
                     $img = "<a href='" . file_create_url($r->asset_pic) . "' target='_blank'>"
@@ -180,7 +166,6 @@ class AssetsController extends ControllerBase
                     'location' => $company_name,
                     'quantity' => $r->unit,
                     'image' => ['data' => ['#markup' => $img]],
-                    
                 );
 
                 $links = array();
@@ -190,103 +175,103 @@ class AssetsController extends ControllerBase
                     'route_name' => 'ek_assets.view',
                 );
                 $param = serialize(
-                    array(
-                    'id' => $r->id,
-                    'coid' => $_SESSION['assetfilter']['coid'],
-                    'aid' => $_SESSION['assetfilter']['category'],
-                    'status' => $s
-                    )
+                        [
+                            'id' => $r->id,
+                            'coid' => $_SESSION['assetfilter']['coid'],
+                            'aid' => $_SESSION['assetfilter']['category'],
+                            'status' => $s
+                        ]
                 );
-                $links['qrcode'] = array(
+                $links['qrcode'] = [
                     'title' => $this->t('QRcode'),
-                    'url' => Url::fromRoute('ek_assets.print-qrcode', ['param' => $param], ['attributes' =>['target' => '_blank']]),
+                    'url' => Url::fromRoute('ek_assets.print-qrcode', ['param' => $param], ['attributes' => ['target' => '_blank']]),
                     'route_name' => 'ek_assets.view',
-                );
-                $links['edit'] = array(
+                ];
+                $links['edit'] = [
                     'title' => $this->t('Edit'),
                     'url' => Url::fromRoute('ek_assets.edit', ['id' => $r->id]),
                     'route_name' => 'ek_assets.edit',
-                );
+                ];
+
                 if (\Drupal::currentUser()->hasPermission('amortize_assets')) {
-                    $links['amort'] = array(
+                    $links['amort'] = [
                         'title' => $this->t('Amortization'),
                         'url' => Url::fromRoute('ek_assets.set_amortization', ['id' => $r->id]),
-                    );
+                    ];
                 }
-                $links['delete'] = array(
+
+                $links['delete'] = [
                     'title' => $this->t('Delete'),
                     'url' => Url::fromRoute('ek_assets.delete', ['id' => $r->id]),
                     'route_name' => 'ek_assets.delete',
-                );
-                $options[$r->id]['operations']['data'] = array(
+                ];
+
+                $options[$r->id]['operations']['data'] = [
                     '#type' => 'operations',
                     '#links' => $links,
-                );
-            }//loop
+                ];
+            }
 
-
-
-            $build['assets_table'] = array(
+            $build['assets_table'] = [
                 '#type' => 'table',
                 '#header' => $header,
                 '#rows' => $options,
                 '#attributes' => array('id' => 'assets_table'),
                 '#empty' => $this->t('No asset'),
                 '#attached' => array(
-                    'library' =>[],
+                    'library' => [],
                 ),
-            );
+            ];
         } else {
-            $build['assets_table'] = array(
+            $build['assets_table'] = [
                 '#markup' => $this->t('Use filter to search assets'),
-            );
+            ];
         }
-        
-        return array(
+
+        return [
             '#theme' => 'ek_assets_list',
             '#title' => $this->t('List assets'),
             '#items' => $build,
-            '#attached' => array(
-                'library' => array('ek_assets/ek_assets_css','ek_admin/admin_css'),
-            ),
-            '#cache' => [
-                'tags' => ['assets'],
+            '#attached' => [
+                'library' => ['ek_assets/ek_assets_css', 'ek_admin/admin_css'],
             ],
-        );
+            '#cache' => [
+                'tags' => ['ek.assets_list'],
+            ],
+        ];
     }
 
     /**
      * Return view page
      *
      */
-    public function assetsView(Request $request, $id)
-    {
+    public function assetsView(Request $request, $id) {
+
         $access = AccessCheck::GetCompanyByUser();
-        $company = implode(',', $access);
-        $query = "SELECT * from {ek_assets} "
-                . "WHERE id=:id "
-                . "AND FIND_IN_SET (coid, :c)  order by id";
-        $a = array(
-            ':id' => $id,
-            ':c' => $company,
-        );
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_assets', 'a');
+        $query->fields('a');
+        $query->condition('id', $id);
+        $query->condition('coid', $access, 'IN');
+        $query->leftJoin('ek_assets_amortization', 'b', 'a.id = b.asid');
+        $query->fields('b');
+        $data = $query->execute()->fetchObject();
 
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, $a)
-                ->fetchObject();
 
-        $items = array();
-        $query2 = "SELECT name FROM {ek_company} WHERE id=:coid";
-        $company_name = Database::getConnection('external_db', 'external_db')
-                ->query($query2, array(':coid' => $data->coid))
-                ->fetchField();
-        $query2 = "SELECT DISTINCT aname from {ek_accounts} where aid=:aid and coid=:coid";
-        $a = array(
-            ':aid' => $data->aid,
-            ':coid' => $data->coid,
-        );
-        $aname = Database::getConnection('external_db', 'external_db')
-                        ->query($query2, $a)->fetchField();
+        $items = [];
+        $items['list'] = Url::fromRoute('ek_assets.list', [], [])->toString();
+        $method = ['1' => $this->t('Straight line')];
+        $term = ['Y' => $this->t('Years'), 'M' => $this->t('Months')];
+        $companies = AccessCheck::CompanyList();
+        $company_name = $companies[$data->coid];
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_accounts', 'a');
+        $query->fields('a', ['aname']);
+        $query->condition('aid', $data->aid);
+        $query->condition('coid', $data->coid);
+        $aname = $query->execute()->fetchField();
+
         $items['id'] = $id;
         $items['company_name'] = $company_name;
         $items['asset_name'] = $data->asset_name;
@@ -301,7 +286,9 @@ class AssetsController extends ControllerBase
         $items['date_purchase'] = $data->date_purchase;
         $items['amort_rate'] = $data->amort_rate;
         $items['amort_value'] = $data->amort_value;
-        $items['amort_yearly'] = $data->amort_yearly;
+        $items['term'] = $data->term;
+        $items['method'] = $method[$data->method];
+        $items['term_unit'] = $term[$data->term_unit];
         $status = array(0 => $this->t('not amortized'), 1 => $this->t('amortized'));
         $items['amort_status'] = $status[$data->amort_status];
         $items['picture'] = '';
@@ -310,7 +297,7 @@ class AssetsController extends ControllerBase
         }
         if ($data->asset_doc != '') {
             $items['doc_url'] = file_create_url($data->asset_doc);
-            
+
             $items['doc'] = basename($items['doc_url']);
         } else {
             $items['doc'] = '';
@@ -319,34 +306,37 @@ class AssetsController extends ControllerBase
         if (class_exists('TCPDF2DBarcode')) {
             include_once drupal_get_path('module', 'ek_assets') . '/code.inc';
             $qr_text = $this->t('ID') . ': ' . $data->id . ', ' . $this->t('Name') . ': '
-                       . $data->asset_name . ', ' . $this->t('Company') . ': ' . $company_name . ', '
-                       . $this->t('Date of purchase') . ': ' . $data->date_purchase . ', '
-                       . $this->t('Reference') . ': ' . $data->asset_ref . ', '
-                       . $this->t('Category') . ': ' . $aname;
-           
+                    . $data->asset_name . ', ' . $this->t('Company') . ': ' . $company_name . ', '
+                    . $this->t('Date of purchase') . ': ' . $data->date_purchase . ', '
+                    . $this->t('Reference') . ': ' . $data->asset_ref . ', '
+                    . $this->t('Category') . ': ' . $aname;
+
             $items['qr_code_html'] = qr_code($qr_text, 'QRCODE,H', '2', 'black', 'html');
-            $items['qr_code_svg'] = qr_code($qr_text, 'QRCODE,H', '3', 'black', 'svg');//"<IMG src ='data:image,".  . "' />";
+            $items['qr_code_svg'] = qr_code($qr_text, 'QRCODE,H', '3', 'black', 'svg'); //"<IMG src ='data:image,".  . "' />";
         }
         if ($this->moduleHandler->moduleExists('ek_hr')) {
             $check = Database::getConnection('external_db', 'external_db')
-                ->select('ek_hr_workforce')
-                ->fields('ek_hr_workforce', ['name', 'id'])
-                ->condition('id', $data->eid, '=')
-                ->execute()
-                ->fetchObject();
+                    ->select('ek_hr_workforce')
+                    ->fields('ek_hr_workforce', ['name', 'id'])
+                    ->condition('id', $data->eid, '=')
+                    ->execute()
+                    ->fetchObject();
             if ($check->name) {
                 $items['eid'] = $check->id;
                 $items['employee'] = $check->name;
                 $items['eurl'] = Url::fromRoute('ek_hr.employee.view', ['id' => $check->id])->toString();
             }
         }
-            
+
         return array(
             '#theme' => 'ek_assets_card',
             '#items' => $items,
             '#attached' => array(
                 'library' => array('ek_assets/ek_assets_css'),
             ),
+            '#cache' => [
+                'tags' => ['ek.assets:' . $id],
+            ],
         );
     }
 
@@ -354,8 +344,7 @@ class AssetsController extends ControllerBase
      * Return edit form for new asset
      *
      */
-    public function assetsNew(Request $request)
-    {
+    public function assetsNew(Request $request) {
         $build['form_assets_new'] = $this->formBuilder->getForm('Drupal\ek_assets\Form\EditForm', 0);
         $build['#attached']['library'] = array('ek_assets/ek_assets_css', 'ek_assets/ek_assets.number_format');
         return $build;
@@ -365,8 +354,7 @@ class AssetsController extends ControllerBase
      * Return edit form
      *
      */
-    public function assetsEdit(Request $request, $id)
-    {
+    public function assetsEdit(Request $request, $id) {
         $build['form_assets_edit'] = $this->formBuilder->getForm('Drupal\ek_assets\Form\EditForm', $id);
         $build['#attached']['library'] = array('ek_assets/ek_assets_css', 'ek_assets/ek_assets.number_format');
         return $build;
@@ -376,8 +364,7 @@ class AssetsController extends ControllerBase
      * Return delete form
      *
      */
-    public function assetsDelete(Request $request, $id)
-    {
+    public function assetsDelete(Request $request, $id) {
         $query = "SELECT * from {ek_assets} a INNER JOIN {ek_assets_amortization} b "
                 . "ON a.id = b.asid "
                 . "WHERE id=:id";
@@ -422,28 +409,26 @@ class AssetsController extends ControllerBase
      * Return export of list in excel format
      *
      */
-    public function assetsExcel($param)
-    {
+    public function assetsExcel($param) {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $options = unserialize($param);
             $markup = array();
-            $status = array(0 => (STRING)t('not amortized'), 1 => (STRING)t('amortized'));
+            $status = array(0 => (STRING) t('not amortized'), 1 => (STRING) t('amortized'));
             $access = AccessCheck::GetCompanyByUser();
             $company = implode(',', $access);
-            $query2 = "SELECT name FROM {ek_company} WHERE id=:coid";
-            $company_name = Database::getConnection('external_db', 'external_db')
-                    ->query($query2, array(':coid' => $options['coid']))
-                    ->fetchField();
-            
+            $companies = AccessCheck::CompanyList();
+            $company_name = $companies[$options['coid']];
+            $chartList = Aidlist::chartList();
+
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_assets', 'a');
             $query->fields('a');
             $query->leftJoin('ek_assets_amortization', 'b', 'a.id = b.asid');
             $query->fields('b');
-            
+
             if ($this->moduleHandler->moduleExists('ek_hr')) {
                 $query->leftJoin('ek_hr_workforce', 'c', 'c.id=a.eid');
                 $query->fields('c', ['id', 'name']);
@@ -452,8 +437,8 @@ class AssetsController extends ControllerBase
             $query->condition('aid', $options['aid'], 'like');
             $query->condition('amort_status', $options['status'], 'like');
             $query->condition('coid', $access, 'IN');
-                       
-            $result =  $query->execute();
+
+            $result = $query->execute();
 
             include_once drupal_get_path('module', 'ek_assets') . '/excel_list.inc';
         }
@@ -466,38 +451,36 @@ class AssetsController extends ControllerBase
      * @return print pdf output
      *
      */
-    public function assetsPrint($id)
-    {
+    public function assetsPrint($id) {
         if (!class_exists('TCPDF')) {
             $markup = ['#markup' => $this->t('Pdf library not available, please contact administrator.')];
             return $markup;
         } else {
             $access = AccessCheck::GetCompanyByUser();
-            $company = implode(',', $access);
-            $query = "SELECT * from {ek_assets} "
-                    . "WHERE id=:id "
-                    . "AND FIND_IN_SET (coid, :c)  order by id";
-            $a = array(
-                ':id' => $id,
-                ':c' => $company,
-            );
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_assets', 'a');
+            $query->fields('a');
+            $query->condition('id', $id);
+            $query->condition('coid', $access, 'IN');
+            $query->leftJoin('ek_assets_amortization', 'b', 'a.id = b.asid');
+            $query->fields('b');
+            $data = $query->execute()->fetchObject();
 
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, $a)
-                    ->fetchObject();
-
-            $items = array();
+            $items = [];
+            $method = ['1' => $this->t('Straight line')];
+            $term = ['Y' => $this->t('Years'), 'M' => $this->t('Months')];
             $query2 = "SELECT name,logo FROM {ek_company} WHERE id=:coid";
             $company = Database::getConnection('external_db', 'external_db')
                     ->query($query2, array(':coid' => $data->coid))
                     ->fetchObject();
-            $query2 = "SELECT DISTINCT aname from {ek_accounts} where aid=:aid and coid=:coid";
-            $a = array(
-                ':aid' => $data->aid,
-                ':coid' => $data->coid,
-            );
-            $aname = Database::getConnection('external_db', 'external_db')
-                            ->query($query2, $a)->fetchField();
+
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a');
+            $query->fields('a', ['aname']);
+            $query->condition('aid', $data->aid);
+            $query->condition('coid', $data->coid);
+            $aname = $query->execute()->fetchField();
+            
             $items['id'] = $id;
             $items['company_name'] = $company->name;
             $items['company_logo'] = $company->logo;
@@ -509,11 +492,13 @@ class AssetsController extends ControllerBase
             $items['aname'] = $aname;
             $items['asset_comment'] = $data->asset_comment;
             $items['asset_value'] = $data->asset_value;
+            $items['term'] = $data->term;
+            $items['term_unit'] = $term[$data->term_unit];
+            $items['method'] = $method[$data->method];
             $items['currency'] = $data->currency;
             $items['date_purchase'] = $data->date_purchase;
             $items['amort_rate'] = $data->amort_rate;
             $items['amort_value'] = $data->amort_value;
-            $items['amort_yearly'] = $data->amort_yearly;
             $status = array(0 => $this->t('not amortized'), 1 => $this->t('amortized'));
             $items['amort_status'] = $status[$data->amort_status];
             if ($data->asset_pic != '' && file_exists($data->asset_pic)) {
@@ -530,31 +515,32 @@ class AssetsController extends ControllerBase
             } else {
                 $items['doc'] = '';
             }
-            /*qr_code*/
+            /* qr_code */
             $qr_text = $this->t('ID') . ': ' . $data->id . ', ' . $this->t('Name') . ': '
-                       . $data->asset_name . ', ' . $this->t('Company') . ': ' . $company->name . ', '
-                       . $this->t('Date of purchase') . ': ' . $data->date_purchase;
-               
+                    . $data->asset_name . ', ' . $this->t('Company') . ': ' . $company->name . ', '
+                    . $this->t('Date of purchase') . ': ' . $data->date_purchase;
+
             $items['qr_text'] = $qr_text;
-               
+
             if ($this->moduleHandler->moduleExists('ek_hr')) {
                 $check = Database::getConnection('external_db', 'external_db')
-                ->select('ek_hr_workforce')
-                ->fields('ek_hr_workforce', ['name', 'id'])
-                ->condition('id', $data->eid, '=')
-                ->execute()
-                ->fetchObject();
+                        ->select('ek_hr_workforce')
+                        ->fields('ek_hr_workforce', ['name', 'id'])
+                        ->condition('id', $data->eid, '=')
+                        ->execute()
+                        ->fetchObject();
                 if ($check->name) {
                     $items['eid'] = $check->id;
                     $items['employee'] = $check->name;
                     $items['eurl'] = Url::fromRoute('ek_hr.employee.view', ['id' => $check->id])->toString();
                 }
             }
-            
+
             include_once drupal_get_path('module', 'ek_assets') . '/pdf_asset.inc';
+            return new Response('', 204);
         }
     }
-    
+
     /**
      * @parm param
      *  printing parameters
@@ -565,17 +551,16 @@ class AssetsController extends ControllerBase
      * @return print pdf output
      *
      */
-    public function assetsPrintQrcode($param)
-    {
+    public function assetsPrintQrcode($param) {
         $params = unserialize($param);
-        
+
         if (in_array($params['coid'], \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser())) {
-        
-            
-                //print all from list
+
+
+            //print all from list
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_assets', 'a');
-            $query->fields('a', ['id','asset_name','date_purchase','coid','eid','asset_ref','aid']);
+            $query->fields('a', ['id', 'asset_name', 'date_purchase', 'coid', 'eid', 'asset_ref', 'aid']);
             $query->leftJoin('ek_assets_amortization', 'b', 'a.id = b.asid');
             $query->fields('b');
             $query->leftJoin('ek_company', 'c', 'a.coid = c.id');
@@ -588,7 +573,7 @@ class AssetsController extends ControllerBase
             }
             $data = $query->execute();
             $print = [];
-                
+
             while ($d = $data->fetchObject()) {
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_accounts', 'a');
@@ -596,24 +581,24 @@ class AssetsController extends ControllerBase
                 $query->condition('coid', $d->coid, '=');
                 $query->condition('aid', $d->aid, '=');
                 $account = $query->execute()->fetchField();
-                    
+
                 $qrcode = $this->t('ID') . ': ' . $d->id . ', ' . $this->t('Name') . ': '
-                       . $d->asset_name . ', ' . $this->t('Company') . ': ' . $d->name . ', '
-                       . $this->t('Date of purchase') . ': ' . $d->date_purchase . ', '
-                       . $this->t('Reference') . ': ' . $d->asset_ref . ', '
-                       . $this->t('Category') . ': ' . $account;
-                $assigned = isset($d->eid) ? 1 :0;
-                    
+                        . $d->asset_name . ', ' . $this->t('Company') . ': ' . $d->name . ', '
+                        . $this->t('Date of purchase') . ': ' . $d->date_purchase . ', '
+                        . $this->t('Reference') . ': ' . $d->asset_ref . ', '
+                        . $this->t('Category') . ': ' . $account;
+                $assigned = isset($d->eid) ? 1 : 0;
+
                 $print[] = [
-                        'id' => $d->id,
-                        'reference' => $d->asset_ref,
-                        'name' => $d->asset_name,
-                        'company' => $d->name,
-                        'assigned' => $assigned,
-                        'qrcode' => $qrcode,
-                    ];
+                    'id' => $d->id,
+                    'reference' => $d->asset_ref,
+                    'name' => $d->asset_name,
+                    'company' => $d->name,
+                    'assigned' => $assigned,
+                    'qrcode' => $qrcode,
+                ];
             }
-                
+
             include_once drupal_get_path('module', 'ek_assets') . '/qrcode.inc';
             return new \Symfony\Component\HttpFoundation\Response('', 204);
         } else {
@@ -622,15 +607,15 @@ class AssetsController extends ControllerBase
             $items['message'] = ['#markup' => $this->t('You are not authorized to print this information')];
             $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             return [
-                    '#items' => $items,
-                    '#theme' => 'ek_admin_message',
-                    '#attached' => array(
-                        'library' => array('ek_admin/ek_admin_css'),
-                    ),
-                    '#cache' => ['max-age' => 0,],
-                ];
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ];
         }
     }
-    
+
     //end class
 }

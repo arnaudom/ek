@@ -26,11 +26,9 @@ $objPHPExcel->setActiveSheetIndex(0)
             ->setCellValue('I3', 'currency') 
             ->setCellValue('J3', "value") 
             ->setCellValue('K3', 'purchase date') 
-            ->setCellValue('L3', 'amortization rate') 
-            ->setCellValue('M3', 'amortization value') 
-            ->setCellValue('N3', 'yearly amortization') 
-            ->setCellValue('O3', 'amortization status') 
-            ->setCellValue('P3', 'Allocation ID') ;                                                                                     
+            ->setCellValue('L3', 'amortization terms') 
+            ->setCellValue('M3', 'amortization status') 
+            ->setCellValue('N3', 'Allocation ID') ;                                                                                     
             
 $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(5);
 $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(30);
@@ -45,9 +43,7 @@ $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(12);
 $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
-$objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);   
-$objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(15);
-$objPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getStyle('A3:P3')->getFill()
         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle('A3:P3')
@@ -72,25 +68,18 @@ $objPHPExcel->getActiveSheet()->getStyle('A3:P3')
    
 $l=3; 
 $t = (STRING)t('Assets list');
+$term = ['' => '-', 'Y' => $this->t('Years'), 'M' => $this->t('Months')];
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', $t ) ;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', $company_name) ;
 
 
 WHILE ($data = $result->fetchAssoc()) {
      
-
-    $query2 =  "SELECT DISTINCT aname from {ek_accounts} where aid=:aid and coid=:coid";
-         $a = array(
-             ':aid' =>  $data['aid'] , 
-             ':coid' => $data['coid'],
-             );     
-    $aname = Database::getConnection('external_db','external_db')     
-                ->query($query2, $a)->fetchField();
-
+    $aname = $chartList[$data['coid']][$data['aid']];
     $l=$l+1; // line index
 
     if ($l & 1) {
-        $row="A".$l.":P".$l;
+        $row="A".$l.":N".$l;
         $objPHPExcel->getActiveSheet()->getStyle("$row")
                 ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $objPHPExcel->getActiveSheet()->getStyle($row)
@@ -108,11 +97,9 @@ WHILE ($data = $result->fetchAssoc()) {
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $data['currency']);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $data['asset_value']);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $data['date_purchase']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $data['amort_rate']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $data['amort_value']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $data['amort_yearly']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", $status[$data['amort_status']]);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("P$l", $data['eid'] . ' ' . $data['name']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $data['term'] . " " . $term[$data['term_unit']]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $status[$data['amort_status']]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $data['eid'] . ' ' . $data['name']);
 
 
 }

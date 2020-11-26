@@ -1,12 +1,13 @@
 <section class="assets_card">
 
     <div class="assets_card-data">
-        <div class="text-right"><a href="pdf/{{ items.id }}" target="_blank">{{ 'Print in Pdf'|t }}</a></div>
+        <div class=""><a href="{{ items.list }}" >{{ 'List'|trans }}</a></div>
+        <div class="text-right"><a href="pdf/{{ items.id }}" target="_blank">{{ 'Print in Pdf'|trans }}</a></div>
 
         <div class='table'>
             <div class='row'>
                 <div class='cell200 text-left'>
-                    <p class='badge'>{{ 'ID'|t }}: {{ items.id }}</p>
+                    <p class='badge'>{{ 'ID'|trans }}: {{ items.id }}</p>
                 </div>
                 <div class='cell300 text-center'>
                     <a href='{{ items.picture }}' target='_blank'>
@@ -20,7 +21,7 @@
             </div>
                 <div class='row'>
                     {% if items.doc %}
-                        {{ 'Attachment'|t }} : <a href='{{ items.doc_url}}' target='_blank' >{{ items.doc }}</a>
+                        {{ 'Attachment'|trans }} : <a href='{{ items.doc_url}}' target='_blank' >{{ items.doc }}</a>
                         {% endif %}
                 </div>
         </div>
@@ -28,7 +29,7 @@
         <div class='table'>
             <div class='row'>
                 <div class='cell300'>
-                    {{ 'Registered under'|t }}:
+                    {{ 'Registered under'|trans }}:
                 </div>
                 <div class='cell300 cellborder'>
                     {{ items.company_name }}
@@ -37,7 +38,7 @@
 
             <div class='row'>
                 <div class='cell300'>
-                    {{ 'Asset name'|t }}:
+                    {{ 'Asset name'|trans }}:
                 </div>
                 <div class='cell300 cellborder'>
                     {{ items.asset_name }}
@@ -46,7 +47,7 @@
 
             <div class='row'>
                 <div class='cell300'>
-                    {{ 'Asset brand'|t }}:
+                    {{ 'Asset brand'|trans }}:
                 </div>
                 <div class='cell300 cellborder'>
                     {{ items.asset_brand }}
@@ -54,15 +55,15 @@
             </div>
             <div class='row'>
                 <div class='cell300'>
-                    {{ 'Asset reference'|t }}:
+                    {{ 'Asset reference'|trans }}:
                 </div>
                 <div class='cell300 cellborder'>
-                    {{ items.asset_reference }}
+                    {{ items.asset_ref }}
                 </div>
             </div>
             <div class='row'>
                 <div class='cell300'>
-                    {{ 'Asset quantity'|t }}:
+                    {{ 'Asset quantity'|trans }}:
                 </div>
                 <div class='cell300 cellborder'>
                     {{ items.unit }}
@@ -70,7 +71,7 @@
             </div>  
             <div class='row'>
                 <div class='cell300'>
-                    {{ 'Description'|t }}:
+                    {{ 'Description'|trans }}:
                 </div>
                 <div class='cell300 cellborder'>
                     {{ items.asset_comment }}
@@ -78,7 +79,7 @@
             </div> 
             <div class='row'>
                 <div class='cell300'>
-                    {{ 'Asset category'|t }}:
+                    {{ 'Asset category'|trans }}:
                 </div>
                 <div class='cell300 cellborder'>
                     {{ items.aid }} {{ items.aname }}
@@ -86,7 +87,7 @@
             </div>
             <div class='row'>
                 <div class='cell300'>
-                    {{ 'Asset value'|t }}:
+                    {{ 'Asset value'|trans }}:
                 </div>
                 <div class='cell300 cellborder'>
                     {{ items.asset_value }} {{ items.currency }}
@@ -94,7 +95,7 @@
             </div> 
             <div class='row'>
                 <div class='cell300'>
-                    {{ 'Purchase date'|t }}:
+                    {{ 'Purchase date'|trans }}:
                 </div>
                 <div class='cell300 cellborder'>
                     {{  items.date_purchase }}
@@ -102,31 +103,15 @@
             </div>
             <div class='row'>
                 <div class='cell300'>
-                    {{ 'Amortization rate'|t }}:
+                    {{ 'Amortization terms'|trans }}:
                 </div>
                 <div class='cell300 cellborder'>
-                    {{ items.amort_rate }}
+                    {{ items.term }} {{ items.term_unit }} 
                 </div>
-            </div>
+            </div>     
             <div class='row'>
                 <div class='cell300'>
-                    {{ 'Amortization value'|t }}:
-                </div>
-                <div class='cell300 cellborder'>
-                    {{ items.amort_value }}
-                </div>
-            </div>                  
-            <div class='row'>
-                <div class='cell300'>
-                    {{ 'Amortization per year'|t }}:
-                </div>
-                <div class='cell300 cellborder'>
-                    {{ items.amort_yearly }}
-                </div>
-            </div>                  
-            <div class='row'>
-                <div class='cell300'>
-                    {{ 'Amortization status'|t }}:
+                    {{ 'Amortization status'|trans }}:
                 </div>
                 <div class='cell300 cellborder'>
                     {{ items.amort_status }}
@@ -135,7 +120,7 @@
             {% if items.eid %}     
                 <div class='row'>
                     <div class='cell300'>
-                        {{ 'Allocated'|t }}:
+                        {{ 'Allocated'|trans }}:
                     </div>
                     <div class='cell300 cellborder'>
                         <a href="{{ items.eurl }}">{{ items.eid }} | {{ items.employee }}</a>
