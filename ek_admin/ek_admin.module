@@ -41,7 +41,8 @@ function ek_admin_preprocess_page(&$variables) {
         if ($db == FALSE) {
 
             $url = Url::fromRoute('ek_admin_ex_database', [], [])->toString();
-            drupal_set_message(t('<h2>Application setup is not yet done. Go <a href="@u">here</a> to start</h2>', ['@u' => $url]), 'error');
+            $m = t('<h2>Application setup is not yet done. Go <a href="@u">here</a> to start</h2>', ['@u' => $url]);
+            \Drupal::messenger()->addError($m);
         } else {
             //$variables['page']['primary_menu']['#region'] = [];
             //$variables['#attached']['library'][] = 'ek_admin/frontpage'; 

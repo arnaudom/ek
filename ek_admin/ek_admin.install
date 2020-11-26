@@ -16,7 +16,7 @@ function ek_admin_install() {
     }
     if(\Drupal::service('theme_handler')->themeExists('ek')){
         \Drupal::service('theme_installer')->install(['ek']);
-        \Drupal::service('theme_handler')->setDefault('ek');
+        \Drupal::configFactory()->getEditable('system.theme')->set('default', 'ek')->save();
     }
     
 }
