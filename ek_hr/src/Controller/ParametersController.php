@@ -25,8 +25,7 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Controller routines for ek module routes.
  */
-class ParametersController extends ControllerBase
-{
+class ParametersController extends ControllerBase {
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -51,8 +50,7 @@ class ParametersController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -66,8 +64,7 @@ class ParametersController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -77,8 +74,7 @@ class ParametersController extends ControllerBase
      * Return list of employees with filter
      *
      */
-    public function parameters(Request $request)
-    {
+    public function parameters(Request $request) {
         $build['filter_hr_list'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\FilterEmployeeList');
 
         $header = array(
@@ -98,7 +94,6 @@ class ParametersController extends ControllerBase
                 'data' => $this->t('Status'),
                 'id' => 'estatus',
                 'class' => array(RESPONSIVE_PRIORITY_LOW),
-                
             ],
             'operations' => [
                 'data' => $this->t('Operations'),
@@ -141,7 +136,7 @@ class ParametersController extends ControllerBase
                 $eid = ($r->custom_id != '') ? $r->custom_id : $r->id;
                 $options[$r->id] = array(
                     'id' => ['data' => ['#markup' => "<span class='badge'>" . $eid . "</span>"]],
-                    'name' => array('data' => $r->name, 'title' => $r->name, 'class' => ['tip'],'id' => $r->id),
+                    'name' => array('data' => $r->name, 'title' => $r->name, 'class' => ['tip'], 'id' => $r->id),
                     'status' => $r->active . ' ' . $archive,
                 );
 
@@ -168,7 +163,7 @@ class ParametersController extends ControllerBase
             $param = serialize(['coid' => $coid, 'status' => $status]);
             $excel = Url::fromRoute('ek_hr.parameters-excel', array('param' => $param), array())->toString();
             $build['excel'] = array(
-                '#markup' => "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'></span></a>"
+                '#markup' => "<a href='" . $excel . "' title='" . $this->t('Excel download') . "'><span class='ico excel green'></span></a>"
             );
 
             $build['hr_table'] = array(
@@ -178,14 +173,14 @@ class ParametersController extends ControllerBase
                 '#attributes' => array('id' => 'hr_table'),
                 '#empty' => $this->t('No employee'),
                 '#attached' => array(
-                    'library' => array('ek_hr/ek_hr_css', 'ek_hr/ek_hr_help','ek_hr/ek_hr_tip','ek_admin/ek_admin_css'),
+                    'library' => array('ek_hr/ek_hr_css', 'ek_hr/ek_hr_help', 'ek_hr/ek_hr_tip', 'ek_admin/ek_admin_css'),
                 ),
             );
             $build['pager'] = array(
                 '#type' => 'pager',
             );
         }
-        
+
         return $build;
     }
 
@@ -193,8 +188,7 @@ class ParametersController extends ControllerBase
      * Extract list of employees with filter
      * Excel
      */
-    public function extraList($param = null)
-    {
+    public function extraList($param = null) {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
@@ -203,9 +197,9 @@ class ParametersController extends ControllerBase
 
             $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
             $company = implode(',', $access);
-            
+
             $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_hr_workforce', 'w');
+                    ->select('ek_hr_workforce', 'w');
             $or = $query->orConditionGroup();
             $or->condition('company_id', $access, 'IN');
             $data = $query
@@ -214,20 +208,19 @@ class ParametersController extends ControllerBase
                     ->condition('w.active', $param['status'], '=')
                     ->condition('w.company_id', $param['coid'], '=')
                     ->execute();
-            
-            
+
+
             include_once drupal_get_path('module', 'ek_hr') . '/excel_employee_list.inc';
         }
-        
+
         return ['#markup' => $markup];
     }
-    
+
     /**
      * Return employee data
      *
      */
-    public function employeeView(Request $request, $id)
-    {
+    public function employeeView(Request $request, $id) {
         $query = 'SELECT * FROM {ek_hr_workforce}  WHERE id=:id';
         $data['hr'] = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchAll();
 
@@ -251,7 +244,7 @@ class ParametersController extends ControllerBase
             }
 
             if ($data['hr'][0]->administrator != '0') {
-                $users =\Drupal\ek_admin\Access\AccessCheck::listUsers(0);
+                $users = \Drupal\ek_admin\Access\AccessCheck::listUsers(0);
                 $adm = explode(',', $data['hr'][0]->administrator);
                 $list = [];
                 foreach ($adm as $k => $v) {
@@ -267,20 +260,20 @@ class ParametersController extends ControllerBase
                     . "WHERE ek_company.id=:id AND sid=:s order by service_name";
             $a = array(':id' => $data['hr'][0]->company_id, ':s' => $data['hr'][0]->service);
             $data['hr'][0]->service_name = Database::getConnection('external_db', 'external_db')
-                    ->query($query, $a)->fetchField();
+                            ->query($query, $a)->fetchField();
 
             $query = "SELECT description FROM {ek_hr_location} l "
                     . "INNER JOIN {ek_hr_workforce} w ON l.location=w.location "
                     . "WHERE w.id=:id";
             $a = array(':id' => $data['hr'][0]->id);
             $data['hr'][0]->location_description = Database::getConnection('external_db', 'external_db')
-                    ->query($query, $a)->fetchField();
-            
+                            ->query($query, $a)->fetchField();
+
             //filter contract expiration
             $stamp = date('U');
             if ($data['hr'][0]->contract_expiration != null) {
-                $delta = round((strtotime($data['hr'][0]->contract_expiration)  - $stamp) / (24*60*60), 0);
-            
+                $delta = round((strtotime($data['hr'][0]->contract_expiration) - $stamp) / (24 * 60 * 60), 0);
+
                 if ($delta <= 0) {
                     \Drupal::messenger()->addError(t('Contract is expired'));
                 }
@@ -291,8 +284,8 @@ class ParametersController extends ControllerBase
             //filter birthday
             if ($data['hr'][0]->birth != null) {
                 $next = date('Y') . '-' . date('m-d', strtotime($data['hr'][0]->birth));
-                $delta = round((strtotime($next)  - $stamp) / (24*60*60), 0);
-            
+                $delta = round((strtotime($next) - $stamp) / (24 * 60 * 60), 0);
+
                 if ($delta <= 0 && $delta > -8) {
                     //TODO add flag if birthday is valid
                     //\Drupal::messenger()->addWarning(t('You missed employee birthday on @d', ['@d' => $next]));
@@ -319,13 +312,13 @@ class ParametersController extends ControllerBase
             $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
             $items['link'] = ['#markup' => $this->t('<a href="@url" >Back</a>.', ['@url' => $url])];
             return $build = [
-                    '#items' => $items,
-                    '#theme' => 'ek_admin_message',
-                    '#attached' => array(
-                        'library' => array('ek_admin/ek_admin_css'),
-                    ),
-                    '#cache' => ['max-age' => 0],
-                ];
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0],
+            ];
         }
     }
 
@@ -333,8 +326,7 @@ class ParametersController extends ControllerBase
      * employee history data
      *
      */
-    public function employeeHistory(Request $request, $id)
-    {
+    public function employeeHistory(Request $request, $id) {
         $query = 'SELECT * FROM {ek_hr_workforce}  WHERE id=:id';
         $data['hr'] = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchAll();
 
@@ -412,8 +404,7 @@ class ParametersController extends ControllerBase
      * employee payment history details
      *
      */
-    public function employeeHistoryPay(Request $request, $id)
-    {
+    public function employeeHistoryPay(Request $request, $id) {
         $data = array();
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_hr_post_data', 'p');
@@ -422,7 +413,7 @@ class ParametersController extends ControllerBase
         $query->fields('w')
                 ->condition('p.id', $id, '=');
         $data['salary'] = $query->execute()->fetchObject();
-                
+
         $condition = $data['salary']->administrator == '0' || in_array(\Drupal::currentUser()->id(), explode(',', $data['salary']->administrator));
         if ($condition) {
             if ($invoke = $this->moduleHandler()->invokeAll('hr_history', [$data])) {
@@ -498,11 +489,11 @@ class ParametersController extends ControllerBase
                     6 => $param->get('ad', 'LDC6-' . $c, 'formula'),
                     7 => $param->get('ad', 'LDC7-' . $c, 'formula'),
                 ),
-                'fund1' => $param->get('param', 'fund_1', ['name','value']),
-                'fund2' => $param->get('param', 'fund_2', ['name','value']),
-                'fund3' => $param->get('param', 'fund_3', ['name','value']),
-                'fund4' => $param->get('param', 'fund_4', ['name','value']),
-                'fund5' => $param->get('param', 'fund_5', ['name','value']),
+                'fund1' => $param->get('param', 'fund_1', ['name', 'value']),
+                'fund2' => $param->get('param', 'fund_2', ['name', 'value']),
+                'fund3' => $param->get('param', 'fund_3', ['name', 'value']),
+                'fund4' => $param->get('param', 'fund_4', ['name', 'value']),
+                'fund5' => $param->get('param', 'fund_5', ['name', 'value']),
                 'incometax' => $param->get('param', 'tax', ['name', 'value']),
             );
 
@@ -523,14 +514,12 @@ class ParametersController extends ControllerBase
      * Return new employee form
      *
      */
-    public function employeeNew(Request $request)
-    {
+    public function employeeNew(Request $request) {
         $build['new_employee'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\EditEmployee');
         return $build;
     }
 
-    public function employeeEdit(Request $request, $id)
-    {
+    public function employeeEdit(Request $request, $id) {
         $query = 'SELECT administrator FROM {ek_hr_workforce}  WHERE id=:id';
         $administrator = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchField();
 
@@ -546,8 +535,7 @@ class ParametersController extends ControllerBase
      * Return list of documents
      *
      */
-    public function employeeDoc(Request $request, $id)
-    {
+    public function employeeDoc(Request $request, $id) {
         $header = array(
             'doc' => array(
                 'data' => $this->t('Documents'),
@@ -644,8 +632,7 @@ class ParametersController extends ControllerBase
         return $build;
     }
 
-    public function deletedoc($id)
-    {
+    public function deletedoc($id) {
         $query = "SELECT uri from {ek_hr_documents} WHERE id=:id";
         $a = array(':id' => $id);
         $uri = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
@@ -677,50 +664,42 @@ class ParametersController extends ControllerBase
         }
     }
 
-    public function category()
-    {
+    public function category() {
         $build['cat'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\EditCategory');
         return $build;
     }
 
-    public function ad()
-    {
+    public function ad() {
         $build['ad'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\EditAd');
         return $build;
     }
 
-    public function main()
-    {
+    public function main() {
         $build['main'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\EditMainParameters');
         return $build;
     }
 
-    public function organization()
-    {
+    public function organization() {
 
         //Return $build;
     }
 
-    public function location()
-    {
+    public function location() {
         $build['location'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\EditLocation');
         return $build;
     }
 
-    public function service()
-    {
+    public function service() {
         $build['service'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\EditService');
         return $build;
     }
 
-    public function rank()
-    {
+    public function rank() {
         $build['rank'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\EditRank');
         return $build;
     }
 
-    public function accounts()
-    {
+    public function accounts() {
         $build['accounts'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\EditAccounts');
         return $build;
     }
@@ -728,8 +707,7 @@ class ParametersController extends ControllerBase
     /**
      * list payslip formats available
      */
-    public function payslip()
-    {
+    public function payslip() {
         $header = array(
             'doc' => array(
                 'data' => $this->t('Form'),
@@ -793,8 +771,7 @@ class ParametersController extends ControllerBase
     /**
      * list HR forms available
      */
-    public function formHr()
-    {
+    public function formHr() {
         $header = array(
             'doc' => array(
                 'data' => $this->t('Form'),
@@ -858,8 +835,7 @@ class ParametersController extends ControllerBase
      * delete payslip file
      * @name = file name
      */
-    public function deletePayslip(Request $request, $name)
-    {
+    public function deletePayslip(Request $request, $name) {
         if (\Drupal::currentUser()->hasPermission('hr_parameters')) {
             $file = str_replace('___', '.', $name);
             $uri = "private://hr/payslips/" . $file;
@@ -875,8 +851,7 @@ class ParametersController extends ControllerBase
      * delete form file
      * @name = file name
      */
-    public function deleteForm(Request $request, $name)
-    {
+    public function deleteForm(Request $request, $name) {
         if (\Drupal::currentUser()->hasPermission('hr_parameters')) {
             $file = str_replace('___', '.', $name);
             $uri = "private://hr/forms/" . $file;
@@ -891,14 +866,13 @@ class ParametersController extends ControllerBase
     /**
      * display and edit funds tables
      */
-    public function fundHr()
-    {
+    public function fundHr() {
         $build['filter_form'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\FilterFund');
 
         if (isset($_SESSION['hrfundfilter']['filter']) && $_SESSION['hrfundfilter']['filter'] == 1) {
             $param = explode('_', $_SESSION['hrfundfilter']['fund']);
             $form = "Drupal\\ek_hr_" . $_SESSION['hrfundfilter']['code'] . "\Form\\" . $param[0] . 'Form';
-            
+
             $build['fundTable'] = $this->formBuilder->getForm($form);
         }
 
@@ -907,7 +881,6 @@ class ParametersController extends ControllerBase
             '#theme' => 'ek_hr_fund',
             '#items' => $build,
             '#title' => $this->t('Funds management'),
-            
         );
     }
 
@@ -919,8 +892,7 @@ class ParametersController extends ControllerBase
      *  value
      * @return TRUE or FALSE
      */
-    public function fundEdit(Request $request)
-    {
+    public function fundEdit(Request $request) {
         $ref = explode('_', $request->query->get('reference'));
 
         if (is_numeric($request->query->get('value'))) {
@@ -943,8 +915,7 @@ class ParametersController extends ControllerBase
     /**
      * AJAX callback handler for modal dialog.
      */
-    public function modal($param)
-    {
+    public function modal($param) {
         return $this->dialog(true, $param);
     }
 
@@ -961,8 +932,7 @@ class ParametersController extends ControllerBase
      * @return \Drupal\Core\Ajax\AjaxResponse
      *   An ajax response object.
      */
-    protected function dialog($is_modal = false, $param = null)
-    {
+    protected function dialog($is_modal = false, $param = null) {
         $param = explode('|', unserialize($param));
         $content = [];
         switch ($param[0]) {
@@ -982,7 +952,7 @@ class ParametersController extends ControllerBase
                 $options = array('width' => '25%',);
 
                 break;
-                
+
             case 'roster_note':
                 $title = ucfirst(str_replace('_', ' ', $this->t($param[0])));
                 $ref = explode('_', $param[1]);
@@ -993,7 +963,7 @@ class ParametersController extends ControllerBase
         }
 
         $response = new AjaxResponse();
-        
+
         $content['#attached']['library'][] = 'core/drupal.dialog.ajax';
         $dialog = new OpenModalDialogCommand($title, $content, $options);
         $response->addCommand($dialog);
@@ -1002,86 +972,85 @@ class ParametersController extends ControllerBase
     }
 
     /**
-         * Util to return employee name callback.
-         * @param option
-         * @param term
-         * @return \Symfony\Component\HttpFoundation\JsonResponse;
-         *   An Json response object.
-         */
-    public function employee_autocomplete(Request $request)
-    {
+     * Util to return employee name callback.
+     * @param option
+     * @param term
+     * @return \Symfony\Component\HttpFoundation\JsonResponse;
+     *   An Json response object.
+     */
+    public function employee_autocomplete(Request $request) {
         $option = $request->query->get('option');
         $term = trim($request->query->get('q'));
+        //$term = strtolower($term);
         $data = [];
-        if (strlen($term) > 0 && strpos($term, '%') === false) {
+        if (!isset($_SESSION['hrEmpData'])) {
+            // build data by session 
+            $_SESSION['hrEmpData'] = [];
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_hr_workforce', 'hr')
+                    ->fields('hr', ['id', 'custom_id', 'company_id', 'name', 'picture']);
+
+            $ids = $query->execute();
+            while ($d = $ids->fetchObject()) {
+                $_SESSION['hrEmpData'][$d->id] = [
+                    'custom_id' => $d->custom_id,
+                    'name' => $d->name,
+                    'company_id' => $d->company_id,
+                    'picture' => $d->picture,
+                ];
+            }
+        }
+
+        if (isset($_SESSION['hrEmpData']) && strlen($term) > 0 && strpos($term, '%') === false) {
             switch ($option) {
                 case 'default':
                 default:
-                    
-                    $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_hr_workforce', 'hr')
-                    ->fields('hr', ['id','name']);
-                    $or = $query->orConditionGroup();
-                    $or->condition('hr.name', $term . '%', 'like');
-                    $or->condition('hr.id', $term, '=');
-                    $or->condition('hr.custom_id', $term, '=');
-                    $ids = $query->condition($or)->execute();
-
-                    while ($d = $ids->fetchObject()) {
-                        $data[] = $d->id . ' | ' . $d->name;
+                    foreach ($_SESSION['hrEmpData'] as $id => $emp) {
+                        if ($id == $term || $emp['custom_id'] == $term || str_contains($emp['name'], $term)) {
+                            $data[] = $id . ' | ' . $emp['name'];
+                        }
                     }
 
                     break;
                 case 'image':
-                    
-                    $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_hr_workforce', 'hr')
-                    ->fields('hr', ['id','company_id','name','picture']);
-                    $or = $query->orConditionGroup();
-                    $or->condition('hr.name', $term . '%', 'like');
-                    $or->condition('hr.id', $term, '=');
-                    $or->condition('hr.custom_id', $term, '=');
-                    $ids = $query->condition($or)->execute();
+                    foreach ($_SESSION['hrEmpData'] as $id => $emp) {
+                        if ($id == $term || $emp['custom_id'] == $term || str_contains($emp['name'], $term)) {
+                            $line = [];
+                            $dir = "private://hr/pictures/" . $emp['company_id'] . "/";
+                            if ($emp['picture'] && file_exists($dir . basename($emp['picture']))) {
+                                $thumb = "private://hr/pictures/" . $emp['company_id'] . "/40/40x40_" . basename($emp['picture']);
+                                if (!file_exists($thumb)) {
+                                    $dir = "private://hr/pictures/" . $emp['company_id'] . "/40/";
+                                    $filesystem = \Drupal::service('file_system');
+                                    $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                                    $filesystem->copy($d->picture, $thumb, FILE_EXISTS_REPLACE);
+                                    //Resize after copy
+                                    $image_factory = \Drupal::service('image.factory');
+                                    $image = $image_factory->get($thumb);
+                                    $image->scale(40);
+                                    $image->save();
+                                }
 
-                    while ($d = $ids->fetchObject()) {
-                        $line = [];
-                        $dir = "private://hr/pictures/" . $d->company_id . "/";
-                        if ($d->picture && file_exists($dir . basename($d->picture))) {
-                            $thumb = "private://hr/pictures/" . $d->company_id . "/40/40x40_" . basename($d->picture) ;
-                            if (!file_exists($thumb)) {
-                                $dir = "private://hr/pictures/" . $d->company_id . "/40/";
-                                $filesystem = \Drupal::service('file_system');
-                                $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                                $filesystem->copy($d->picture, $thumb, FILE_EXISTS_REPLACE);
-                                //Resize after copy
-                                $image_factory = \Drupal::service('image.factory');
-                                $image = $image_factory->get($thumb);
-                                $image->scale(40);
-                                $image->save();
+                                $pic = "<img class='hr_thumbnail' src='"
+                                        . file_create_url($thumb) . "'>";
+                            } else {
+                                $default = file_create_url(drupal_get_path('module', 'ek_hr') . '/art/default.jpeg');
+                                $pic = "<img class='hr_thumbnail' src='"
+                                        . $default . "'>";
                             }
-                            
-                            $pic = "<img class='hr_thumbnail' src='"
-                            . file_create_url($thumb) . "'>";
-                        } else {
-                            $default = file_create_url(drupal_get_path('module', 'ek_hr') . '/art/default.jpeg');
-                            $pic = "<img class='hr_thumbnail' src='"
-                            . $default . "'>";
+                            $line['picture'] = isset($pic) ? $pic : '';
+                            $line['name'] = $emp['name'];
+                            $line['id'] = $id;
+                            $data[] = $line;
                         }
-                        $line['picture'] = isset($pic) ? $pic : '';
-                        $line['name'] = $d->name;
-                        $line['id'] = $d->id;
-
-                        $data[] = $line;
                     }
                     break;
-
             }
         }
-        
-        
-        
+
         return new JsonResponse($data);
     }
+
 }
 
 //class
