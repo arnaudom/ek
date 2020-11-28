@@ -10,6 +10,7 @@ namespace Drupal\ek_projects\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
+use Drupal\Component\Utility\Xss;
 use Drupal\ek_projects\ProjectData;
 
 /**
@@ -28,9 +29,12 @@ class SettingsUsers extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-        $query = "SELECT settings from {ek_project_settings} WHERE coid=:c";
-        $settings = Database::getConnection('external_db', 'external_db')
-                        ->query($query, [':c' => 0])->fetchField();
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project_settings', 'p');
+        $query->fields('p', ['settings']);
+        $query->condition('coid', 0);
+        $settings = $query->execute()->fetchField();
         $s = unserialize($settings);
 
         $form['access_level'] = array(
@@ -38,21 +42,22 @@ class SettingsUsers extends FormBase {
             '#title' => $this->t('Block file access level at page level'),
             '#default_value' => ($s['access_level'] == 1) ? 1 : 0,
         );
+        
+        if (isset($s['sections'])) {
+            $s1 = $s['sections']['s1'];
+            $s2 = $s['sections']['s2'];
+            $s3 = $s['sections']['s3'];
+            $s4 = $s['sections']['s4'];
+            $s5 = $s['sections']['s5'];
+        } else {
+            $s1 = $this->t("Section 1");
+            $s2 = $this->t("Section 2");
+            $s3 = $this->t("Section 3");
+            $s4 = $this->t("Section 4");
+            $s5 = $this->t("Section 5");
+        }
 
-        //$users = db_query('SELECT uid,name,status FROM {users_field_data} WHERE uid>:u order by name', array(':u' => 0));
         $users = \Drupal\ek_admin\Access\AccessCheck::listUsers(0);
-
-        $headerline = "<div class='table'  id='users_items'>
-                  <div class='row'>
-                      <div class='cell cellborder' id='tour-item1'>" . $this->t("Login") . "</div>
-                      <div class='cell cellborder' id='tour-item2'>" . $this->t("Section 1") . "</div>
-                      <div class='cell cellborder' id='tour-item3'>" . $this->t("Section 2") . "</div>
-                      <div class='cell cellborder' id='tour-item4'>" . $this->t("Section 3") . "</div>
-                      <div class='cell cellborder' id='tour-item5'>" . $this->t("Section 4") . "</div>
-                      <div class='cell cellborder' id='tour-item6'>" . $this->t("Section 5") . "</div>
-                   ";
-
-
         $header = [
             'login' => $this->t('Login'),
             's1' => $this->t('Section 1'),
@@ -61,13 +66,52 @@ class SettingsUsers extends FormBase {
             's4' => $this->t('Section 4'),
             's5' => $this->t('Section 5'),
         ];
-        $form['list'] = array(
+        $form['list'] = [
             '#type' => 'table',
             '#caption' => ['#markup' => '<h2>' . $this->t('Access') . '</h2>'],
             '#header' => $header,
-        );
-        $options = [];
-
+        ];
+        
+        $form['list']['sections']['s0'] = [
+                '#type' => 'item',
+                '#markup' => $this->t('Section custom name'),
+            ];
+        $form['list']['sections']['s1'] = [
+                '#type' => 'textfield',
+                '#size' => 15,
+                '#maxlength' => 100,
+                '#default_value' => $s1,
+                '#required' => true,
+            ];
+        $form['list']['sections']['s2'] = [
+                '#type' => 'textfield',
+                '#size' => 15,
+                '#maxlength' => 100,
+                '#default_value' => $s2,
+                '#required' => true,
+            ];
+        $form['list']['sections']['s3'] = [
+                '#type' => 'textfield',
+                '#size' => 15,
+                '#maxlength' => 100,
+                '#default_value' => $s3,
+                '#required' => true,
+            ];
+        $form['list']['sections']['s4'] = [
+                '#type' => 'textfield',
+                '#size' => 15,
+                '#maxlength' => 100,
+                '#default_value' => $s4,
+                '#required' => true,
+            ];
+        $form['list']['sections']['s5'] = [
+                '#type' => 'textfield',
+                '#size' => 15,
+                '#maxlength' => 100,
+                '#default_value' => $s5,
+                '#required' => true,
+            ];
+        
         foreach ($users as $uid => $name) {
             $acc = \Drupal\user\Entity\User::load($uid);
             $status = ($acc->isBlocked()) ? ' (' . $this->t('Blocked') . ')' : '';
@@ -134,54 +178,68 @@ class SettingsUsers extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        $query = "SELECT settings from {ek_project_settings} WHERE coid=:c";
-        $settings = Database::getConnection('external_db', 'external_db')
-                        ->query($query, [':c' => 0])->fetchField();
+        
+        $n = 0;
+        $i = 0;
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project_users', 'u'); 
+        $query->fields('u', ['uid']);
+        $uids = $query->execute()->fetchCol();
+
+        foreach ($form_state->getValue('list') as $key => $data) {
+            
+            if($key == 'sections') {
+                $sections = [
+                    's1' => Xss::filter($data['s1']),
+                    's2' => Xss::filter($data['s2']),
+                    's3' => Xss::filter($data['s3']),
+                    's4' => Xss::filter($data['s4']),
+                    's5' => Xss::filter($data['s5']),
+                ];
+            } else {
+                $fields = [
+                    'section_1' => $data['s1'],
+                    'section_2' => $data['s2'],
+                    'section_3' => $data['s3'],
+                    'section_4' => $data['s4'],
+                    'section_5' => $data['s5'],
+                ];
+
+                if (in_array($key, $uids)) {
+                    Database::getConnection('external_db', 'external_db')
+                            ->update('ek_project_users')
+                            ->fields($fields)
+                            ->condition('uid', $key)
+                            ->execute();
+                    $n++;
+                    
+                } else {
+                    $fields['uid'] = $key;
+                    Database::getConnection('external_db', 'external_db')
+                            ->insert('ek_project_users')
+                            ->fields($fields)
+                            ->execute();
+                    $i++;
+                    
+                }
+            }
+        }
+        
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project_settings', 'p');
+        $query->fields('p', ['settings']);
+        $query->condition('coid', 0);
+        $settings = $query->execute()->fetchField();
         $s = unserialize($settings);
 
         $s['access_level'] = $form_state->getValue('access_level');
+        $s['sections'] = $sections;
         Database::getConnection('external_db', 'external_db')
                 ->update('ek_project_settings')
                 ->condition('coid', 0)
                 ->fields(['settings' => serialize($s)])
                 ->execute();
-
-        $n = 0;
-        $i = 0;
-
-        foreach ($form_state->getValue('list') as $key => $data) {
-            $query = 'SELECT uid from {ek_project_users} WHERE uid=:u';
-            $uid = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':u' => $key))
-                    ->fetchField();
-            $fields = [
-                'section_1' => $data['s1'],
-                'section_2' => $data['s2'],
-                'section_3' => $data['s3'],
-                'section_4' => $data['s4'],
-                'section_5' => $data['s5'],
-            ];
-
-            if ($uid) {
-                $update = Database::getConnection('external_db', 'external_db')
-                        ->update('ek_project_users')
-                        ->fields($fields)
-                        ->condition('uid', $key)
-                        ->execute();
-                if ($update) {
-                    $n++;
-                }
-            } else {
-                $fields['uid'] = $key;
-                $insert = Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_project_users')
-                        ->fields($fields)
-                        ->execute();
-                if ($insert) {
-                    $i++;
-                }
-            }
-        }
 
         \Drupal::messenger()->addStatus(t("Updated @n, inserted @i user(s)", ['@n' => $n, '@i' => $i]));
     }

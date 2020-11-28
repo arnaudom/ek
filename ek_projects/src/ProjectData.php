@@ -318,6 +318,38 @@ class ProjectData {
 
     /*
      * @return
+     *  array of custom sections names
+     *
+     */
+
+    public static function sectionsName() {
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project_settings', 'p');
+        $query->fields('p', ['settings']);
+        $query->condition('coid', 0);
+        $settings = $query->execute()->fetchField();
+        $s = unserialize($settings);
+        
+        if (isset($s['sections'])) {
+            return [
+                $s['sections']['s1'],
+                $s['sections']['s2'],
+                $s['sections']['s3'],
+                $s['sections']['s4'],
+                $s['sections']['s5'],
+            ];
+        } else {
+            return [
+                $this->t("Section 1"),
+                $this->t("Section 2"),
+                $this->t("Section 3"),
+                $this->t("Section 4"),
+                $this->t("Section 5"),
+            ];
+        }
+    }
+    /*
+     * @return
      *  access to section by user
      *  return an array of accessible sections i.e (1,2,5) => access to section 1, 2 and 5
      * @param

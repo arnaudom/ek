@@ -343,6 +343,7 @@ class ProjectController extends ControllerBase {
 
             $settings = ['id' => $id,];
             $sections = ProjectData::validate_section_access(\Drupal::currentUser()->id());
+            $data['sections_name'] = ProjectData::sectionsName();
 
             for ($i = 1; $i < 6; $i++) {
                 if (in_array($i, $sections)) {
