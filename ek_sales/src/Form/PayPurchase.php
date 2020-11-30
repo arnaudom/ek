@@ -340,7 +340,8 @@ class PayPurchase extends FormBase {
                 'account' => $liabacc,
             );
             $journal_payable = $this->journal->checkTransactionDebit($a);
-            if ($journal_payable == 0 || ($journal_payable + $this_pay) > 0) {
+            
+            if ($journal_payable == 0 || round($journal_payable + $this_pay,4) > 0) {
                 $form_state->setErrorByName("amount", $this->t('this payment exceeds purchase balance amount in journal'));
             }
         } else {
