@@ -5,9 +5,9 @@
  * @file
  *  module sales.
  */
-
-use Drupal\charts\Charts\ModuleSelector;
 use Drupal\Core\Database\Database;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\user\UserInterface;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 
 
@@ -148,6 +148,51 @@ function ek_sales_theme() {
     ],
   );     
 }
+
+/**
+ * Implements hook_form_ID_alter().
+ * manage email alert subscription
+ */
+function ek_sales_form_user_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+    $user = \Drupal::routeMatch()->getParameter('user');
+    if ($user instanceof UserInterface) {
+        $userData = \Drupal::service('user.data');
+        
+        $form['alter_fields']['edit_sales_doc_subscription'] = [
+            '#type' => 'checkbox',
+            '#title' => t('Subscribe to new and edit sales document alerts'),
+            '#default_value' => ($userData->get('ek_alert_subscriptions', $user->id(), 'edit_sales_doc_subscription') == 1) ? 1 : 0,
+        ];
+        
+        $form['alter_fields']['sales_payment_subscription'] = [
+            '#type' => 'checkbox',
+            '#title' => t('Subscribe to sales payment alerts'),
+            '#default_value' => ($userData->get('ek_alert_subscriptions', $user->id(), 'sales_payment_subscription') == 1) ? 1 : 0,
+        ];
+        
+        // Add a submit action.
+        $form['actions']['submit']['#submit'][] = '_ek_sales_form_user_form_submit';
+        
+    }
+}
+
+/**
+ * Form submit for user_form.
+ *
+ * @param array $form
+ *   
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state interface.
+ */
+function _ek_sales_form_user_form_submit(array $form, FormStateInterface $form_state) {
+    
+  $uid = $form_state->getValue('uid'); 
+  $userData = \Drupal::service('user.data');
+  $userData->set('ek_alert_subscriptions', $uid, 'edit_sales_doc_subscription', $form_state->getValue('edit_sales_doc_subscription'));
+  $userData->set('ek_alert_subscriptions', $uid, 'sales_payment_subscription', $form_state->getValue('sales_payment_subscription'));
+
+}
+
 
 /**
  * Implements template_preprocess_page
