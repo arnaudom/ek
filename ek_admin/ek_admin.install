@@ -51,7 +51,7 @@ function ek_admin_uninstall() {
 
 /**
  * Implements hook_schema().
- * schema installation is not done at install time but wihin the application
+ * schema installation is not done at install time but within the application
  * in a separate database
  */
 

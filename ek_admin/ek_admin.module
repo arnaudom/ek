@@ -175,7 +175,7 @@ function ek_admin_theme() {
             'variables' => array('items' => []),
         ],
         // for the documents
-        'ek_admin_docs_view' => [            
+        'ek_admin_docs_view' => [
             'template' => 'ek_admin_docs_view',
             'variables' => array('items' => []),
         ],
@@ -198,19 +198,19 @@ function ek_admin_mail($key, &$message, $params) {
     $params['options']['stamp'] = date('F j, Y, g:i a');
     $site_mail = \Drupal::config('system.site')->get('mail');
     if (empty($site_mail)) {
-       $site_mail = \Drupal::config('system.site')->get('mail_notification');
+        $site_mail = \Drupal::config('system.site')->get('mail_notification');
     }
     $message['headers']['Reply-To'] = $site_mail;
 
     switch ($key) {
         case 'key_document_share':
             /* @TODO remove
-            $message['headers']['From'] = $params['from'];
-            $message['subject'] = $params['subject'];
-            $message['body'][] = $params['body'];
-            $message['body'][] = '<hr><br>' . $params['message'] . '<br><hr>';
-            $message['params']['attachments'][] = $params['attachments'];
-            */
+              $message['headers']['From'] = $params['from'];
+              $message['subject'] = $params['subject'];
+              $message['body'][] = $params['body'];
+              $message['body'][] = '<hr><br>' . $params['message'] . '<br><hr>';
+              $message['params']['attachments'][] = $params['attachments'];
+             */
             break;
 
         case 'attachment':
@@ -251,7 +251,7 @@ function ek_admin_mail_alter(&$message) {
         $params['options']['site'] = $site_config->get('name');
         $params['options']['stamp'] = date('F j, Y, g:i a');
         $message['options'] = $params['options'];
-       
+
         //Convert content for html mail
         $render = [
             '#markup' => nl2br($message['body'][0]),
@@ -363,10 +363,9 @@ function mail_attachment($email, $file, $message = null, $options = null) {
                     'ek_admin', 'attachment', \Drupal::currentUser()->getEmail(), $target_langcode, $params, $currentuserMail, TRUE
             );
         }
-        
+
         unlink($filecopy);
         Return array('send' => $send, 'error' => $error);
-        
     } else {
         // attachment
         // copy target file to local system file before attachment
@@ -507,8 +506,17 @@ function ek_admin_form_user_form_alter(&$form, \Drupal\Core\Form\FormStateInterf
             $form['contact']['#disabled'] = TRUE;
         }
         
-        return $form;
+        // insert options to subscribe to EK module alerts
+        $form['alter_fields'] = [
+            '#type' => 'fieldset',
+            '#title' => t('Email alert subscriptions'),
+            '#description' => t('Select which type of email you want to receive.'),
+        ];
+
+        
     }
+
+    return $form;
 }
 
 /**
@@ -527,23 +535,22 @@ function ek_admin_form_user_register_form_submit(&$form, \Drupal\Core\Form\FormS
     $params = [];
     $params['account'] = \Drupal\user\Entity\User::load($values['uid']);
     $notify = !$form_state->isValueEmpty('notify');
-    $op = $notify ? 'register_admin_created' : 'register_no_approval_required'; 
-    if($op == 'register_admin_created') {
+    $op = $notify ? 'register_admin_created' : 'register_no_approval_required';
+    if ($op == 'register_admin_created') {
         $site_mail = \Drupal::config('system.site')->get('mail_notification');
         if (empty($site_mail)) {
-          $site_mail = \Drupal::config('system.site')->get('mail');
+            $site_mail = \Drupal::config('system.site')->get('mail');
         }
         if (empty($site_mail)) {
-          $site_mail = ini_get('sendmail_from');
+            $site_mail = ini_get('sendmail_from');
         }
         $params['subject'] = "[copy] account created";
         $email = \Drupal::currentUser()->getEmail();
         $lang = \Drupal::languageManager()->getDefaultLanguage()->getId();
-        $mail = \Drupal::service('plugin.manager.mail')->mail('user', $op, $email,$lang, $params, $site_mail);
-        if($mail) {
+        $mail = \Drupal::service('plugin.manager.mail')->mail('user', $op, $email, $lang, $params, $site_mail);
+        if ($mail) {
             \Drupal::messenger()->addWarning(t('A notification copy as been sent to @m', ['@m' => $email]));
         }
-        
     }
 }
 
@@ -556,7 +563,7 @@ function ek_admin_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_
         $form['#submit'][] = 'ek_admin_form_user_delete_submit';
         return $form;
     }
-    
+
     if ($form_id == 'user_form') {
         $form['account']['current_status'] = [
             '#type' => 'hidden',
@@ -576,22 +583,22 @@ function ek_admin_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_
  */
 function ek_admin_form_user_form_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
     $values = $form_state->getValues();
-    if($values['status'] == 1 && $values['current_status'] == '0') {
+    if ($values['status'] == 1 && $values['current_status'] == '0') {
         // user unblocked
         $params = [];
         $params['account'] = \Drupal\user\Entity\User::load($values['uid']);
         $site_mail = \Drupal::config('system.site')->get('mail_notification');
         if (empty($site_mail)) {
-          $site_mail = \Drupal::config('system.site')->get('mail');
+            $site_mail = \Drupal::config('system.site')->get('mail');
         }
         if (empty($site_mail)) {
-          $site_mail = ini_get('sendmail_from');
+            $site_mail = ini_get('sendmail_from');
         }
         $params['subject'] = "[copy]  account unblocked";
         $email = \Drupal::currentUser()->getEmail();
         $lang = \Drupal::languageManager()->getDefaultLanguage()->getId();
-        $mail = \Drupal::service('plugin.manager.mail')->mail('user','status_activated', $email,$lang, $params, $site_mail);
-        if($mail) {
+        $mail = \Drupal::service('plugin.manager.mail')->mail('user', 'status_activated', $email, $lang, $params, $site_mail);
+        if ($mail) {
             \Drupal::messenger()->addWarning(t('A notification copy as been sent to @m', ['@m' => $email]));
         }
     }
