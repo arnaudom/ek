@@ -1,9 +1,11 @@
 <?php
 
 use Drupal\Core\Database\Database;
-use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\user\UserInterface;
 use Drupal\Core\Url;
+use Drupal\ek_admin\Access\AccessCheck;
 
 
 /**
@@ -179,18 +181,51 @@ function ek_hr_theme() {
 }
 
 /**
+ * Implements hook_form_ID_alter().
+ * manage email alert subscription
+ */
+function ek_hr_form_user_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+    $user = \Drupal::routeMatch()->getParameter('user');
+    if ($user instanceof UserInterface) {
+        $userData = \Drupal::service('user.data');
+        
+        $form['alter_fields']['hr_date_subscription'] = [
+            '#type' => 'checkbox',
+            '#title' => t('Subscribe to HR date alerts'),
+            '#default_value' => ($userData->get('ek_alert_subscriptions', $user->id(), 'hr_date_subscription') == 1) ? 1 : 0,
+        ];
+               
+        // Add a submit action.
+        $form['actions']['submit']['#submit'][] = '_ek_hr_form_user_form_submit';
+        
+    }
+}
+
+/**
+ * Form submit for user_form.
+ *
+ * @param array $form
+ *   
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state interface.
+ */
+function _ek_hr_form_user_form_submit(array $form, FormStateInterface $form_state) {
+    
+  $uid = $form_state->getValue('uid'); 
+  $userData = \Drupal::service('user.data');
+  $userData->set('ek_alert_subscriptions', $uid, 'hr_date_subscription', $form_state->getValue('hr_date_subscription'));
+
+}
+
+/**
  * Preprocess variables .
  *
  * @param array $variables
  *  An associative array containing:
  *  - items: 
  */
-
-
 function template_preprocess_ek_hr_dashboard(&$variables) {
-
-
-$items = $variables['items'];
+    $items = $variables['items'];
 }
 
 
