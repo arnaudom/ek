@@ -439,11 +439,13 @@ class ProjectData {
                     $text = t('Payment received for project ref. @p', ['@p' => $param['pcode']]);
                     $text .= '<br/>' . t('Invoice : @v', array('@v' => $param['value']));
                     $params['subject'] = t("Project invoicing update");
+                    $subscription = "sales_payment_subscription";
                     break;
                 case 'quotation_edit':
                     $text = t('Quotation edited for project ref. @p', ['@p' => $param['pcode']]);
                     $text .= '<br/>' . t('Quotation : @v', array('@v' => $param['value']));
                     $params['subject'] = t("Project quotation update");
+                    $subscription = "edit_sales_doc_subscription";
                     if ($param['input'] && !empty($param['input'])) {
                         $text .= '<br/>' . t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input']))));
                         $text .= '<br/>' . t('By : @b', array('@b' => $from->name));
@@ -453,6 +455,7 @@ class ProjectData {
                     $text = t('Invoice edited for project ref. @p', ['@p' => $param['pcode']]);
                     $text .= '<br/>' . t('Invoice : @v', array('@v' => $param['value']));
                     $params['subject'] = t("Project invoicing update");
+                    $subscription = "edit_sales_doc_subscription";
                     if ($param['input'] && !empty($param['input'])) {
                         $text .= '<br/>' . t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input']))));
                         $text .= '<br/>' . t('By : @b', array('@b' => $from->name));
@@ -462,11 +465,13 @@ class ProjectData {
                     $text = t('Purchase paid for project ref. @p', ['@p' => $param['pcode']]);
                     $text .= '<br/>' . t('Purchase : @v', array('@v' => $param['value']));
                     $params['subject'] = t("Project purchase update");
+                    $subscription = "sales_payment_subscription";
                     break;
                 case 'purchase_edit':
                     $text = t('Purchase edited for project ref. @p', ['@p' => $param['pcode']]);
                     $text .= '<br/>' . t('Purchase : @v', array('@v' => $param['value']));
                     $params['subject'] = t("Project purchase update");
+                    $subscription = "edit_sales_doc_subscription";
                     if ($param['input'] && !empty($param['input'])) {
                         $text .= '<br/>' . t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input']))));
                         $text .= '<br/>' . t('By : @b', array('@b' => $from->name));
@@ -477,10 +482,12 @@ class ProjectData {
                     $text .= '<br/>' . t('Name : @v', array('@v' => $param['pname']));
                     $text .= '<br/>' . t('By : @v', array('@v' => $from->name));
                     $params['subject'] = t("New project in @c", array('@c' => $param['country'])) . '</p>';
+                    $subscription = "new_project_subscription";
                     break;
                 default:
                     $text = t('Data edited for project ref. @p', ['@p' => $param['pcode']]);
                     $text .= '<br/>' . t('Field : @f', array('@f' => str_replace('_', ' ', $param['field'])));
+                    $subscription = "edit_project_subscription";
                     if ($param['value']) {
                         $text .= '<br/>' . t('Value : @v', array('@v' => $param['value']));
                     }
@@ -495,13 +502,16 @@ class ProjectData {
             $data['module'] = 'ek_projects';
             $data['key'] = 'project_note';
             $data['params'] = $params;
-
+            $userData = \Drupal::service('user.data');
             foreach (User::loadMultiple($notify) as $account) {
                 if ($account->isActive()) {
-                    //send notification email to central email queue;
-                    $data['email'] = $account->getEmail();
-                    $data['lang'] = $account->getPreferredLangcode();
-                    $queue->createItem($data);
+                    // insert option per user
+                    if($userData->get('ek_alert_subscriptions', $account->id(), $subscription) == 1){
+                        // send notification email to central email queue;
+                        $data['email'] = $account->getEmail();
+                        $data['lang'] = $account->getPreferredLangcode();
+                        $queue->createItem($data);
+                    }
                 }
             }
 

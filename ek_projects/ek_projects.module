@@ -1,6 +1,8 @@
 <?php
 
 use Drupal\Core\Database\Database;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\user\UserInterface;
 use Drupal\ek_projects\ProjectData;
 
 /**
@@ -168,6 +170,50 @@ function ek_projects_file_download($uri) {
                     return -1;          
               }
     }
+
+}
+
+/**
+ * Implements hook_form_ID_alter().
+ * manage email alert subscription
+ */
+function ek_projects_form_user_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+    $user = \Drupal::routeMatch()->getParameter('user');
+    if ($user instanceof UserInterface) {
+        $userData = \Drupal::service('user.data');
+        
+        $form['alter_fields']['new_project_subscription'] = [
+            '#type' => 'checkbox',
+            '#title' => t('Subscribe to new project alerts'),
+            '#default_value' => ($userData->get('ek_alert_subscriptions', $user->id(), 'new_project_subscription') == 1) ? 1 : 0,
+        ];
+        
+        $form['alter_fields']['edit_project_subscription'] = [
+            '#type' => 'checkbox',
+            '#title' => t('Subscribe to edit project alerts'),
+            '#default_value' => ($userData->get('ek_alert_subscriptions', $user->id(), 'edit_project_subscription') == 1) ? 1 : 0,
+        ];
+        
+        // Add a submit action.
+        $form['actions']['submit']['#submit'][] = '_ek_projects_form_user_form_submit';
+        
+    }
+}
+
+/**
+ * Form submit for user_form.
+ *
+ * @param array $form
+ *   
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state interface.
+ */
+function _ek_projects_form_user_form_submit(array $form, FormStateInterface $form_state) {
+    
+  $uid = $form_state->getValue('uid'); 
+  $userData = \Drupal::service('user.data');
+  $userData->set('ek_alert_subscriptions', $uid, 'new_project_subscription', $form_state->getValue('new_project_subscription'));
+  $userData->set('ek_alert_subscriptions', $uid, 'edit_project_subscription', $form_state->getValue('edit_project_subscription'));
 
 }
 
