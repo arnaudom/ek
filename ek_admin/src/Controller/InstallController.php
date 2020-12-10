@@ -1,8 +1,9 @@
 <?php
+
 /**
-* @file
-* Contains \Drupal\ek-admin\Controller\InstallController
-*/
+ * @file
+ * Contains \Drupal\ek-admin\Controller\InstallController
+ */
 
 namespace Drupal\ek_admin\Controller;
 
@@ -13,40 +14,42 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
-* Controller routines for ek module routes.
-*/
-class InstallController extends ControllerBase
-{
+ * Controller routines for ek module routes.
+ */
+class InstallController extends ControllerBase {
+    /* The module handler.
+     *
+     * @var \Drupal\Core\Extension\ModuleHandler
+     */
 
-   /* The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandler
-   */
     protected $moduleHandler;
+
     /**
      * The database service.
      *
      * @var \Drupal\Core\Database\Connection
      */
     protected $database;
+
     /**
      * The form builder service.
      *
      * @var \Drupal\Core\Form\FormBuilderInterface
      */
     protected $formBuilder;
+
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
-      $container->get('database'),
-      $container->get('form_builder'),
-      $container->get('module_handler')
-    );
+                $container->get('database'),
+                $container->get('form_builder'),
+                $container->get('module_handler')
+        );
     }
 
     /**
@@ -57,8 +60,7 @@ class InstallController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -68,39 +70,32 @@ class InstallController extends ControllerBase
      * data update
      *
      *
-    */
-
-    public function update()
-    {
+     */
+    public function update(Request $request) {
         include_once drupal_get_path('module', 'ek_admin') . '/' . 'update.php';
-        return  array('#markup' => $markup) ;
+        return ['#markup' => $markup, '#cache' => ['max-age' => 0]];
     }
 
     /**
      * data merge
      * combine data from other database tables with current data tables
      * @return Form
-    */
-
-    public function merge()
-    {
+     */
+    public function merge() {
         $form_builder = $this->formBuilder();
         $form = $form_builder->getForm('Drupal\ek_admin\Form\Merge');
-        
+
         return array(
             $form,
             '#title' => $this->t('Merge data'),
         );
     }
- 
- 
+
     /**
      * install required tables in a separate database
      *
-    */
-
-    public function install()
-    {
+     */
+    public function install() {
         $query = "CREATE TABLE IF NOT EXISTS `ek_admin_settings` (
             `coid` INT NULL COMMENT 'company id, 0 = global',
             `settings` BLOB NULL COMMENT 'settings serialized array',
@@ -109,12 +104,12 @@ class InstallController extends ControllerBase
     COMMENT='global and per company settings references'
     COLLATE='utf8_general_ci'
     ENGINE=InnoDB";
-    
+
         $db = Database::getConnection('external_db', 'external_db')->query($query);
         if ($db) {
             $markup = 'Settings table installed <br/>';
         }
-    
+
         $query = "INSERT INTO `ek_admin_settings` (`coid`) VALUES (0)";
         $db = Database::getConnection('external_db', 'external_db')->query($query);
         if ($db) {
@@ -161,12 +156,12 @@ class InstallController extends ControllerBase
               COLLATE='utf8_general_ci'
               ENGINE=InnoDB
               AUTO_INCREMENT=1";
-    
+
         $db = Database::getConnection('external_db', 'external_db')->query($query);
         if ($db) {
             $markup .= 'Company / entity table installed <br/>';
         }
-   
+
         $query = "CREATE TABLE IF NOT EXISTS `ek_company_documents` (
               `id` INT(5) NOT NULL AUTO_INCREMENT,
               `coid` INT(5) NULL DEFAULT NULL COMMENT 'company id',
@@ -184,12 +179,12 @@ class InstallController extends ControllerBase
             COLLATE='utf8_general_ci'
             ENGINE=InnoDB
             AUTO_INCREMENT=1";
-            
+
         $db = Database::getConnection('external_db', 'external_db')->query($query);
         if ($db) {
             $markup .= 'Company documents table installed <br/>';
         }
-    
+
         $query = "CREATE TABLE IF NOT EXISTS `ek_country` (
                 `id` SMALLINT(5) NOT NULL AUTO_INCREMENT,
                 `access` BLOB NULL DEFAULT NULL COMMENT 'serialized list uid',
@@ -203,20 +198,23 @@ class InstallController extends ControllerBase
               COLLATE='utf8_general_ci'
               ENGINE=InnoDB
               AUTO_INCREMENT=1";
-              
+
         $db = Database::getConnection('external_db', 'external_db')->query($query);
         if ($db) {
             $markup .= 'Countries table installed <br/>';
         }
-    
-    
-    
-        $link =  Url::fromRoute('ek_admin.main', array(), array())->toString();
+
+
+
+        $link = Url::fromRoute('ek_admin.main', array(), array())->toString();
         $markup .= '<br/>' . $this->t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
-       
-        return  array(
-      '#title'=> $this->t('Installation of Ek_admin module'),
-      '#markup' => $markup
-      ) ;
+
+        return array(
+            '#title' => $this->t('Installation of Ek_admin module'),
+            '#markup' => $markup
+                );
     }
-} //class
+
+}
+
+//class
