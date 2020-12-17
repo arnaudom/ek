@@ -1645,7 +1645,8 @@ class ProjectController extends ControllerBase {
                 foreach($shares as $key => $val){
                     $user = \Drupal\user\Entity\User::load($val);
                     if($user){
-                        $avatar = ($user->get('user_picture')->entity) ? $user->get('user_picture')->entity->url(): null;
+                        $avatar = ($user->get('user_picture')->entity) ? file_create_url($user->get('user_picture')->entity->getFileUri()) 
+                                : null;
                         if(!$avatar) {
                             $avatar = file_create_url(drupal_get_path('module','ek_admin') . "/art/avatar/default.jpeg");
                         }
