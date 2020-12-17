@@ -112,7 +112,7 @@ class MessageController extends ControllerBase {
         $account = \Drupal\user\Entity\User::load($message->from_uid);
         if ($account) {
             $message->from = $account->getDisplayName();
-            $message->avatar = ($account->get('user_picture')->entity) ? $account->get('user_picture')->entity->url()
+            $message->avatar = ($account->get('user_picture')->entity) ? file_create_url($account->get('user_picture')->entity->getFileUri())
                     : file_create_url(drupal_get_path('module','ek_admin') . "/art/avatar/default.jpeg");
                
         }
@@ -147,7 +147,7 @@ class MessageController extends ControllerBase {
                 ->fields(array('status' => $list))
                 ->execute();
 
-        //when reading new message clear cache for menu link display
+        // when reading new message clear cache for menu link display
         \Drupal\Core\Cache\Cache::invalidateTags(['ek_message_inbox']);
         \Drupal\Core\Cache\Cache::invalidateTags(['config:system.menu.tools']);
 
@@ -236,9 +236,9 @@ class MessageController extends ControllerBase {
             $account = \Drupal\user\Entity\User::load($r->from_uid);
             $from = '';
             if ($account) {
-                $avatar = ($account->get('user_picture')->entity) ? $account->get('user_picture')->entity->url(): null;
+                $avatar = ($account->get('user_picture')->entity) ? $account->get('user_picture')->entity->getFileUri(): null;
                 if($avatar) {
-                    $from = "<div><img src='".$avatar."' class='avatar'>" . " " . $account->getDisplayName() . "</div>";
+                    $from = "<div><img src='". file_create_url($avatar) ."' class='avatar'>" . " " . $account->getDisplayName() . "</div>";
                 } else {
                     $avatar = file_create_url(drupal_get_path('module','ek_admin') . "/art/avatar/default.jpeg");
                     $from = "<div><img src='".$avatar."' class='avatar'>" . " " . $account->getDisplayName() . "</div>";
