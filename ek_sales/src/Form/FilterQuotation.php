@@ -129,7 +129,7 @@ class FilterQuotation extends FormBase {
                     '#size' => 1,
                     '#options' => $client,
                     '#required' => true,
-                    '#default_value' => isset($_SESSION['qfilter']['client']) ? $_SESSION['qfilter']['client'] : null,
+                    '#default_value' => isset($_SESSION['qfilter']['client']) ? $_SESSION['qfilter']['client'] : '%',
                     '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
                     '#title' => $this->t('client'),
                     '#states' => [

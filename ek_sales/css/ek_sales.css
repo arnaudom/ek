@@ -84,6 +84,15 @@
     background-color:#CEE3F6 !important;
 }
 
+.rowheader {
+    border-bottom: 1px solid #000;
+    background-color: #7D7F9D !important;
+    color: #FFFFFF;
+}
+
+._rowheader {
+   display: none;  
+}    
 .delete {
     background-color:#FF6666 !important;  
 }
