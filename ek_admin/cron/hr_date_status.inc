@@ -55,7 +55,7 @@ try {
                 if(isset($params['subject'])) {
                     //send mail
                     $userData = \Drupal::service('user.data');
-                    foreach($uids as $k => $id){dpm('test hr off', $id);
+                    foreach($uids as $k => $id){
                         // insert option per user$params['uid'] = $id;
                         if($userData->get('ek_alert_subscriptions', $id, 'hr_date_subscription') == 1){
                             $params['uid'] = $id;
