@@ -57,7 +57,7 @@ while ($row = $data->fetchObject()) {
         $doc['link'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
         $doc['due'] = round($late, 0) . ' ' . t('days');
         $doc['serial'] = $row->serial;
-        $doc['value'] = round($row->amount + ($row->amount * $row->taxvalue / 100),2);
+        $doc['value'] = number_format($row->amount + ($row->amount * $row->taxvalue / 100),2);
         $doc['currency'] = $row->currency;
         
     }

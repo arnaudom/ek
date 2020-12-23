@@ -1207,7 +1207,7 @@ class AdminController extends ControllerBase {
 
     private function send_mail($params) {
         
-        if ($params['type'] == 'client') {
+        if (isset($params['type']) && $params['type'] == 'client') {
             // send an email to a client
             $mail = $params['contact_email'];
             $template = 'client_reminder';

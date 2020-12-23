@@ -43,15 +43,13 @@ try {
          */
 
         if ($row->notify == 1 && $weekday == 'Mon') {
-
             $users = explode(',', $row->notify_who);
-
             foreach ($users as $key => $user) {
                 $params['subject'] = t('Weekly task purchase alert');
                 $params['uid'] = $user;
                 self::send_mail($params);
             }
-        }//weekly
+        } // weekly
 
 
         /*
@@ -59,15 +57,13 @@ try {
          */
 
         if ($row->notify == 5 && $row->completion_rate < 100) {
-
             $users = explode(',', $row->notify_who);
-
             foreach ($users as $key => $user) {
                 $params['subject'] = t('Daily task purchase alert');
                 $params['uid'] = $user;
                 self::send_mail($params);
             }
-        }//daily       
+        } // daily       
 
         /*
          * notify before deadline , notify = 2, 5 days

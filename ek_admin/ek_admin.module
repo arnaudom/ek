@@ -193,7 +193,8 @@ function ek_admin_mail($key, &$message, $params) {
 
     $site_config = \Drupal::config('system.site');
     $theme = theme_get_setting('logo');
-    $params['options']['logo'] = \Drupal::request()->getSchemeAndHttpHost() . $theme['url'];
+    $params['options']['url'] = \Drupal::request()->getSchemeAndHttpHost();
+    $params['options']['logo'] = $params['options']['url'] . $theme['url'];
     $params['options']['site'] = $site_config->get('name');
     $params['options']['stamp'] = date('F j, Y, g:i a');
     $site_mail = \Drupal::config('system.site')->get('mail');
@@ -203,14 +204,8 @@ function ek_admin_mail($key, &$message, $params) {
     $message['headers']['Reply-To'] = $site_mail;
 
     switch ($key) {
-        case 'key_document_share':
-            /* @TODO remove
-              $message['headers']['From'] = $params['from'];
-              $message['subject'] = $params['subject'];
-              $message['body'][] = $params['body'];
-              $message['body'][] = '<hr><br>' . $params['message'] . '<br><hr>';
-              $message['params']['attachments'][] = $params['attachments'];
-             */
+        case 'test':
+            $message['options'] = $params['options'];
             break;
 
         case 'attachment':
@@ -239,10 +234,13 @@ function ek_admin_mail($key, &$message, $params) {
     }
 }
 
+
+
 /**
  * Implementation hook_mail_alter().
  */
 function ek_admin_mail_alter(&$message) {
+
 
     if (stristr($message['id'], 'user_')) {
         $site_config = \Drupal::config('system.site');
@@ -258,6 +256,18 @@ function ek_admin_mail_alter(&$message) {
         ];
         $message['body'][0] = \Drupal::service('renderer')->render($render);
     }
+    
+    if ($message['id'] == 'swiftmailer_test') {
+        $site_config = \Drupal::config('system.site');
+        $theme = theme_get_setting('logo');
+        $params['options']['url'] = \Drupal::request()->getSchemeAndHttpHost();
+        $params['options']['logo'] = $params['options']['url'] . $theme['url'];
+        $params['options']['site'] = $site_config->get('name');
+        $params['options']['stamp'] = date('F j, Y, g:i a');
+        $message['options'] = $params['options'];
+    }
+    
+    
 }
 
 /**
@@ -332,7 +342,7 @@ function mail_attachment($email, $file, $message = null, $options = null) {
                 //insert receipt log
                 if ($receipt && $options['origin'] != 'backup_documents') {
                     $params['options']['receipt'] = "<img src='" . \Drupal::request()->getSchemeAndHttpHost() . "/ek_admin_receipt/mail"
-                            . "?org=" . $currentuserMail . "&ts=" . time() . "&r=" . $value . "&c=" . $filename . "' class='receipt' />";
+                            . "?org=" . $currentuserMail . "&ts=" . time() . "&r=" . $value . "&c=" . $filename . "' class='receipt' style='width: 0px;height: 0px;' />";
                 }
                 if ($target_user = user_load_by_mail($value)) {
                     $target_langcode = $target_user->getPreferredLangcode();
