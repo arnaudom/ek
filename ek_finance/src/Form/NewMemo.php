@@ -1047,28 +1047,25 @@ class NewMemo extends FormBase {
                 ->fields(array('serial' => $serial))
                 ->condition('serial', $form_state->getValue('tempSerial'))
                 ->execute();
-
+        $params = [];
         if ($form_state->getValue('category') == 5 && $this->settings->get('authorizeMemo') == 1) {
             // send a notification
-            
             $user_memo = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
             $authorizer_mail = \Drupal\user\Entity\User::load($uid);
             $entity_mail = \Drupal\user\Entity\User::load($form_state->getValue('entity'));
-
-            $action = array(1 => $this->t('pending approval'), 2 => $this->t('authorized'), 3 => $this->t('rejected'));
-
+            $action = [1 => $this->t('pending approval'), 2 => $this->t('authorized'), 3 => $this->t('rejected')];
             $params['subject'] = $this->t("Authorization notification") . ' - ' . $action[$form_state->getValue('action')];
-            $url = $GLOBALS['base_url'] . Url::fromRoute('ek_finance_manage_personal_memo', array('id' => $reference))->toString();
-            $params['options']['url'] = "<a href='" . $url . "'>" . $serial . "</a>";
+            $params['options']['link'] = \Drupal::request()->getSchemeAndHttpHost() . Url::fromRoute('ek_finance_manage_personal_memo', ['id' => $reference])->toString();
+            $params['options']['url'] = "<a href='" . $params['options']['link'] . "'>" . $serial . "</a>";
             $params['options']['user'] = $user_memo->getAccountName();
+            $params['options']['serial'] = $serial;
             $body = '';
-            $body .= $this->t('Memo ref. @p', ['@p' => $serial]);
-            $body .= '<br/>' . $this->t('Status') . ': ' . $action[$form_state->getValue('action')];
+            $body .= "<p>" . $this->t('Memo ref. @p', ['@p' => $serial]) . "</p>";
+            $body .= "<p>" . $this->t('Status') . ': ' . $action[$form_state->getValue('action')] . "</p>";
             $error = [];
             if (\Drupal::currentUser()->id() == $form_state->getValue('entity')) {
                 //current user is accessing his/her own claim
-
-                $body .= '<br/>' . $this->t('Authorization action is required. Thank you.');
+                $body .= "<p>" . $this->t('Authorization action is required. Thank you.') . "</p>";
                 $params['body'] = $body;
                 if ($authorizer_mail) {
                     $target_langcode = $authorizer_mail->getPreferredLangcode();
@@ -1087,7 +1084,7 @@ class NewMemo extends FormBase {
             } elseif (\Drupal::currentUser()->id() == $uid) {
                 //authorizer editing
 
-                $body .= '<br/>' . $this->t('Authorization has been reviewed. Thank you.');
+                $body .= "<p>" . $this->t('Authorization has been reviewed. Thank you.') . "</p>";
                 $params['body'] = $body;
                 if ($entity_mail) {
                     $target_langcode = $entity_mail->getPreferredLangcode();
@@ -1136,13 +1133,15 @@ class NewMemo extends FormBase {
             $entity_to = $query->execute()->fetchObject();
 
             if (isset($insert) && isset($entity_mail) && isset($entity_to->email)) {
+                
                 $params['subject'] = $this->t("New memo") . ': ' . $serial;
-                $link = Url::fromRoute('ek_finance_manage_print_html', array('id' => $reference))->toString();
+                $link = Url::fromRoute('ek_finance_manage_print_html', ['id' => $reference])->toString();
                 $url = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
-                $params['options']['url'] = "<a title='" . $serial . "' href='" . $url . "'>" . $this->t('Open') . "</a>";
+                $params['options']['link'] = $url;
+                $params['options']['serial'] = $serial;
+                $params['options']['url'] = "<a title='" . $serial . "' href='" . $params['options']['link'] . "'>" . $this->t('Open') . "</a>";
                 $params['options']['user'] = $entity_name;
-
-                $params['body'] = $this->t('Memo ref. @p', ['@p' => $serial]) . "." . $this->t('Issued to') . ": " . $entity_to->name;
+                $params['body'] = "<p>" . $this->t('Memo ref. @p', ['@p' => $serial]) . "." . $this->t('Issued to') . ": " . $entity_to->name . "</p>";
                 //send notification email to central email queue;
                 $data['module'] = 'ek_finance';
                 $data['key'] = 'key_memo_note';
