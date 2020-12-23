@@ -1,72 +1,69 @@
 <?php
-    
-use Drupal\Core\Database\Database;   
 
+use Drupal\Core\Database\Database;
 
 /**
  * Implementation hook_ek_settings().
  * 
- */ 
- function ek_logistics_ek_settings($coids) {
-   
+ */
+function ek_logistics_ek_settings($coids) {
+
     $flag = 0;
-    
-    foreach($coids as $key => $id) {
-        $settings = [];
-        $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_logi_settings', 'l');
-        $query->fields('l', ['coid', 'settings']);
-        $query->condition('coid', $id);
-        $data = $query->execute()->fetchObject();
-        if($data){
-            $settings = unserialize($data->settings);
-        }
-            if(empty($settings)) {
+
+    foreach ($coids as $key => $id) {
+        if ($id > 0) {
+            $settings = [];
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_logi_settings', 'l');
+            $query->fields('l', ['coid', 'settings']);
+            $query->condition('coid', $id);
+            $data = $query->execute()->fetchObject();
+            if ($data) {
+                $settings = unserialize($data->settings);
+            }
+            if (empty($settings)) {
                 $link = \Drupal\Core\Url::fromRoute('ek_logistics_settings', array(), array())->toString();
                 $_SESSION['install'] = 1;
                 $flag = 1;
-            }  
-        
+            }
+        }
     }
 
-    if($flag == 1){
+    if ($flag == 1) {
         return ['logistics' => $link];
     } else {
         return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
-    
-     
- }
+}
 
 /**
  * Implements hook_file_download().
  *
  * edit the file_download function in order to control access of items images
 
-function ek_logistics_file_download($uri) {
- 
+  function ek_logistics_file_download($uri) {
 
-}
-*/
+
+  }
+ */
 
 /**
  * Implementation hook_theme().
  */
 function ek_logistics_theme() {
-  return array(
-    // for the dashboard
-    'ek_logistics_dashboard' => array
-    (
-      'template' => 'ek_logistics_dashboard',
-      'variables' => array('items' => array()),
-    ),
-    'iframe' => array
-    (
-      'template' => 'iframe',
-      'variables' => array('items' => array()),
-    ),        
-  );
-  
+    return array(
+        // for the dashboard
+        'ek_logistics_dashboard' => array
+            (
+            'template' => 'ek_logistics_dashboard',
+            'variables' => array('items' => array()),
+        ),
+        'iframe' => array
+            (
+            'template' => 'iframe',
+            'variables' => array('items' => array()),
+        ),
+    );
 }
 
 /*
@@ -77,21 +74,20 @@ function ek_logistics_theme() {
  */
 
 function ek_logistics_stock_adjust($itemcode, $value, $action) {
-    
+
     if ($action == '-') {
         $query = 'UPDATE {ek_item_packing} SET units = units - :u WHERE itemcode = :i';
-        
     }
-    
+
     if ($action == '+') {
         $query = 'UPDATE {ek_item_packing} SET units = units - :u WHERE itemcode = :i';
     }
-    
-    $a = array(':u' => $value, ':i' => $itemcode );
-        $data = Database::getConnection('external_db', 'external_db')
-              ->query($query, $a );
-        
-        if($data) {
-            return TRUE;
-        }
+
+    $a = array(':u' => $value, ':i' => $itemcode);
+    $data = Database::getConnection('external_db', 'external_db')
+            ->query($query, $a);
+
+    if ($data) {
+        return TRUE;
+    }
 }
