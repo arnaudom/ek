@@ -163,18 +163,18 @@ function ek_documents_file_download($uri) {
  * $key = type of message, $to = array of uid, $message
  */
 function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL, $priority = NULL) {
-
     
     $users = ',';
-    $param = array();
+    $params = [];
     $site_config = \Drupal::config('system.site');
     $params['from'] = Drupal::currentUser()->getEmail();
     $theme = theme_get_setting('logo');
-    $params['options']['logo'] = $GLOBALS['base_url'] . '/' . $theme['url'];
-    $params['options']['site'] = $site_config->get('name');
+    $params['options']['logo'] = \Drupal::request()->getSchemeAndHttpHost() . $theme['url'];
+    $params['options']['site'] = $site_config->get('name');    
     $params['options']['stamp'] = date('F j, Y, g:i a');
-    $l = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => '/shared_documents']])->toString();
-    $url = "<a href='" . $l . "'>" . $filename . "</a>";
+    $params['options']['filename'] = $filename;
+    $params['options']['link'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => '/shared_documents']])->toString();
+    $params['options']['url'] = "<a href='" . $params['options']['link'] . "'>" . $params['options']['filename'] . "</a>";
     $names = '';
     
     foreach (\Drupal\user\Entity\User::loadMultiple($to) as $account) {
@@ -192,7 +192,6 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
                     $params['body'] = \Drupal::service('renderer')->render($render);
                     $render = ['#markup' => $message];
                     $params['options']['message'] = \Drupal::service('renderer')->render($render);
-                    $params['options']['url'] = $url;
                     $params['options']['priority'] = $priority;
                     $template = 'key_document_share';
                     break;
@@ -260,6 +259,12 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
  * Implementation hook_mail().
  */
 function ek_documents_mail($key, &$message, $params) {
+    
+    /*$site_mail = \Drupal::config('system.site')->get('mail');
+    if (empty($site_mail)) {
+        $site_mail = \Drupal::config('system.site')->get('mail_notification');
+    }
+    $message['headers']['Reply-To'] = $site_mail;*/
     
     switch ($key) {
         case 'key_document_share':
