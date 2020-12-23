@@ -2,10 +2,10 @@
 
 namespace Drupal\ek_projects;
 
-use Drupal\Core\Url;
 use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Drupal\ek_admin\Access\AccessCheck;
 
@@ -432,66 +432,68 @@ class ProjectData {
             $from = Database::getConnection('default', 'default')
                             ->query($query, array(':u' => $currentuserid, ':m' => $param['mail']))->fetchObject();
             $params = [];
-            $params['options']['url'] = self::geturl($param['id'], null, 1, null, t('Open'));
+            $link = Url::fromRoute('ek_projects_view', ['id' => $param['id']])->toString();
+            $params['options']['url'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
+            // $params['options']['url'] = self::geturl($param['id'], null, 1, null, t('Open'));
             switch ($param['field']) {
 
                 case 'invoice_payment':
-                    $text = t('Payment received for project ref. @p', ['@p' => $param['pcode']]);
-                    $text .= '<br/>' . t('Invoice : @v', array('@v' => $param['value']));
+                    $text = "<p>" . t('Payment received for project ref. @p', ['@p' => $param['pcode']]) . ".</p>";
+                    $text .= "<p>" . t('Invoice : @v', array('@v' => $param['value'])) . ".</p>";
                     $params['subject'] = t("Project invoicing update");
                     $subscription = "sales_payment_subscription";
                     break;
                 case 'quotation_edit':
-                    $text = t('Quotation edited for project ref. @p', ['@p' => $param['pcode']]);
-                    $text .= '<br/>' . t('Quotation : @v', array('@v' => $param['value']));
+                    $text = "<p>" . t('Quotation edited for project ref. @p', ['@p' => $param['pcode']]) . ".</p>";
+                    $text .= "<p>" . t('Quotation : @v', array('@v' => $param['value'])) . ".</p>";
                     $params['subject'] = t("Project quotation update");
                     $subscription = "edit_sales_doc_subscription";
                     if ($param['input'] && !empty($param['input'])) {
-                        $text .= '<br/>' . t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input']))));
-                        $text .= '<br/>' . t('By : @b', array('@b' => $from->name));
+                        $text .= "<p>" . t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input'])))) . ".</p>";
+                        $text .= "<p>" .  t('By : @b', array('@b' => $from->name)) . ".</p>";
                     }
                     break;
                 case 'invoice_edit':
-                    $text = t('Invoice edited for project ref. @p', ['@p' => $param['pcode']]);
-                    $text .= '<br/>' . t('Invoice : @v', array('@v' => $param['value']));
+                    $text = "<p>" . t('Invoice edited for project ref. @p', ['@p' => $param['pcode']]) . ".</p>";
+                    $text .= "<p>" . t('Invoice : @v', array('@v' => $param['value']));
                     $params['subject'] = t("Project invoicing update");
                     $subscription = "edit_sales_doc_subscription";
                     if ($param['input'] && !empty($param['input'])) {
-                        $text .= '<br/>' . t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input']))));
-                        $text .= '<br/>' . t('By : @b', array('@b' => $from->name));
+                        $text .= "<p>" . t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input'])))) . ".</p>";
+                        $text .= "<p>" .  t('By : @b', array('@b' => $from->name)) . ".</p>";
                     }
                     break;
                 case 'purchase_payment':
-                    $text = t('Purchase paid for project ref. @p', ['@p' => $param['pcode']]);
-                    $text .= '<br/>' . t('Purchase : @v', array('@v' => $param['value']));
+                    $text = "<p>" . t('Purchase paid for project ref. @p', ['@p' => $param['pcode']]) . ".</p>";
+                    $text .= "<p>" . t('Purchase : @v', array('@v' => $param['value'])) . ".</p>";
                     $params['subject'] = t("Project purchase update");
                     $subscription = "sales_payment_subscription";
                     break;
                 case 'purchase_edit':
-                    $text = t('Purchase edited for project ref. @p', ['@p' => $param['pcode']]);
-                    $text .= '<br/>' . t('Purchase : @v', array('@v' => $param['value']));
+                    $text = "<p>" . t('Purchase edited for project ref. @p', ['@p' => $param['pcode']]) . ".</p>";
+                    $text .= "<p>" .  t('Purchase : @v', array('@v' => $param['value'])) . ".</p>";
                     $params['subject'] = t("Project purchase update");
                     $subscription = "edit_sales_doc_subscription";
                     if ($param['input'] && !empty($param['input'])) {
-                        $text .= '<br/>' . t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input']))));
-                        $text .= '<br/>' . t('By : @b', array('@b' => $from->name));
+                        $text .= "<p>" .  t('Edit : @v', array('@v' => implode(",", str_replace("_", " ", $param['input'])))) . ".</p>";
+                        $text .= "<p>" .  t('By : @b', array('@b' => $from->name)) . ".</p>";
                     }
                     break;
                 case 'new_project':
-                    $text = t('New project created with ref @r', array('@r' => $param['pcode']));
-                    $text .= '<br/>' . t('Name : @v', array('@v' => $param['pname']));
-                    $text .= '<br/>' . t('By : @v', array('@v' => $from->name));
-                    $params['subject'] = t("New project in @c", array('@c' => $param['country'])) . '</p>';
+                    $text = "<p>" . t('New project created with ref @r', array('@r' => $param['pcode'])) . ".</p>";
+                    $text .= "<p>" . t('Name : @v', array('@v' => $param['pname'])) . ".</p>";
+                    $text .= "<p>" . t('By : @v', array('@v' => $from->name)) . ".</p>";
+                    $params['subject'] = t("New project in @c", array('@c' => $param['country']));
                     $subscription = "new_project_subscription";
                     break;
                 default:
-                    $text = t('Data edited for project ref. @p', ['@p' => $param['pcode']]);
-                    $text .= '<br/>' . t('Field : @f', array('@f' => str_replace('_', ' ', $param['field'])));
+                    $text = "<p>" . t('Data edited for project ref. @p', ['@p' => $param['pcode']]) . ".</p>";
+                    $text .= "<p>" . t('Field : @f', array('@f' => str_replace('_', ' ', $param['field']))) . ".</p>";
                     $subscription = "edit_project_subscription";
                     if ($param['value']) {
-                        $text .= '<br/>' . t('Value : @v', array('@v' => $param['value']));
+                        $text .= "<p>" .  t('Value : @v', array('@v' => $param['value'])) . ".</p>";
                     }
-                    $text .= '<br/>' . t('By : @b', array('@b' => $from->name));
+                    $text .= "<p>" . t('By : @b', array('@b' => $from->name)) . ".</p>";
                     $params['subject'] = t("Project Edited");
                     break;
             }

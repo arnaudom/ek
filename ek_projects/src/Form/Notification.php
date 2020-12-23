@@ -219,8 +219,6 @@ class Notification extends FormBase {
                     $query->fields('u', ['uid']);
                     $query->condition('mail', trim($email));
                     $to = $query->execute()->fetchField();
-                    //$query = "SELECT uid from {users_field_data} WHERE mail=:e";
-                    //$to = db_query($query, array(':e' => trim($email)))->fetchField();
                     $inbox .= $to . ',';
                 }
             }
@@ -249,8 +247,9 @@ class Notification extends FormBase {
         // email sending record
         //
         
-        $text = $params['text'];
-        $text .= "<br>" . $this->t('Project ref.') . ': ' . $code[0] . ' | ' . $p->pcode;
+        $text = "<p>" . $params['text'] . ".</p>";
+        $text .= "<p>" . $this->t('Project ref.') . ': ' . $code[0] . ' | ' . $p->pcode . ".</p>";
+        
         $params['body'] = $text;
         $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), null, 1, null, $this->t('Open'));
         foreach ($addresses as $email) {

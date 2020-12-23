@@ -89,6 +89,11 @@ function ek_projects_mail($key, &$message, &$params) {
     $params['options']['logo'] = $base_url . $theme['url'];
     $params['options']['site'] = \Drupal::config('system.site')->get('name');
     $params['options']['stamp'] = date('F j, Y, g:i a');
+    $site_mail = \Drupal::config('system.site')->get('mail');
+    if (empty($site_mail)) {
+        $site_mail = \Drupal::config('system.site')->get('mail_notification');
+    }
+    $message['headers']['Reply-To'] = $site_mail;
     
     switch($key) {
       case 'project_access':
@@ -107,9 +112,11 @@ function ek_projects_mail($key, &$message, &$params) {
         ];
         $message['body'][] = \Drupal::service('renderer')->render($render);  
         $message['options'] = $params['options'];
-        $message['headers']['Disposition-Notification-To'] = $params['from'];
-        $message['headers']['X-Confirm-Reading-To'] = $params['from'];
-        if($params['options']['priority'] == 1) {
+        if(isset($params['from'])) {
+            $message['headers']['Disposition-Notification-To'] = $params['from'];
+            $message['headers']['X-Confirm-Reading-To'] = $params['from'];
+        }
+        if(isset($params['options']['priority']) && $params['options']['priority'] == 1) {
             $message['headers']['Priority'] = 'High';
             $message['headers']['X-Priority'] = '1';
             $message['headers']['X-MSMail-Priority'] = 'Highest';

@@ -11,6 +11,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Url;
 use Drupal\ek_projects\ProjectData;
 
 /**
@@ -49,8 +50,6 @@ class AccessRequest extends FormBase {
             '#attributes' => array('placeholder' => $this->t('optional text message')),
             '#title' => $this->t('Message to owner'),
         );
-
-
 
         $form['actions'] = array(
             '#type' => 'actions',
@@ -92,7 +91,10 @@ class AccessRequest extends FormBase {
             if (\Drupal::moduleHandler()->moduleExists('swiftmailer')) {
                 $params['body'] = Xss::filter($form_state->getValue('message'));
                 $params['options']['pcode'] = $p->pcode;
-                $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), null, 1, null, $this->t('Open'));
+                // $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), null, 1, null, $this->t('Open'));
+                $link = Url::fromRoute('ek_projects_view', ['id' => $form_state->getValue('pid')])->toString();
+                $params['options']['url'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
+                
             } else {
                 $params['body'] = Xss::filter($form_state->getValue('message')) . '\r\n'
                         . $this->t('Project ref.') . ': ' . ProjectData::geturl($form_state->getValue('pid'), 0, 1);
