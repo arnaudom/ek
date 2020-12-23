@@ -244,6 +244,7 @@ class Message extends FormBase {
                     'from' => $currentuserMail,
                     'priority' => $form_state->getValue('priority'),
                     'link' => 1,
+                    'url' => $url,
                 ];
             }
             

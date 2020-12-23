@@ -126,6 +126,7 @@ function ek_messaging_mail($key, &$message, $params) {
     $params['options']['priority'] = $priority[$params['priority']];
     $params['options']['color'] = $color[$params['priority']];
     $params['options']['link'] = $params['link'];
+    $params['options']['url'] = $params['url'];
         
     switch($key) {
         
