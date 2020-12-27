@@ -193,7 +193,7 @@ function ek_admin_mail($key, &$message, $params) {
 
     $site_config = \Drupal::config('system.site');
     $theme = theme_get_setting('logo');
-    $params['options']['url'] = \Drupal::request()->getSchemeAndHttpHost();
+    $params['options']['base_url'] = \Drupal::request()->getSchemeAndHttpHost();
     $params['options']['logo'] = $params['options']['url'] . $theme['url'];
     $params['options']['site'] = $site_config->get('name');
     $params['options']['stamp'] = date('F j, Y, g:i a');
@@ -260,7 +260,7 @@ function ek_admin_mail_alter(&$message) {
     if ($message['id'] == 'swiftmailer_test') {
         $site_config = \Drupal::config('system.site');
         $theme = theme_get_setting('logo');
-        $params['options']['url'] = \Drupal::request()->getSchemeAndHttpHost();
+        $params['options']['base_url'] = \Drupal::request()->getSchemeAndHttpHost();
         $params['options']['logo'] = $params['options']['url'] . $theme['url'];
         $params['options']['site'] = $site_config->get('name');
         $params['options']['stamp'] = date('F j, Y, g:i a');
