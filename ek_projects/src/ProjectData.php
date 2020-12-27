@@ -434,7 +434,7 @@ class ProjectData {
             $params = [];
             $link = Url::fromRoute('ek_projects_view', ['id' => $param['id']])->toString();
             $params['options']['url'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
-            // $params['options']['url'] = self::geturl($param['id'], null, 1, null, t('Open'));
+            $params['options']['base_url'] = \Drupal::request()->getSchemeAndHttpHost();
             switch ($param['field']) {
 
                 case 'invoice_payment':
