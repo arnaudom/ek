@@ -7,12 +7,12 @@
 
 namespace Drupal\ek_projects\Form;
 
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Database\Database;
+use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Component\Utility\Xss;
-use Drupal\Core\Mail\MailManager;
-use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_projects\ProjectData;
 
@@ -251,7 +251,8 @@ class Notification extends FormBase {
         $text .= "<p>" . $this->t('Project ref.') . ': ' . $code[0] . ' | ' . $p->pcode . ".</p>";
         
         $params['body'] = $text;
-        $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), null, 1, null, $this->t('Open'));
+        $l = Url::fromRoute('ek_projects_view', ['id' => $form_state->getValue('pid')],['query' => []])->toString();
+        $params['options']['url'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
         foreach ($addresses as $email) {
             if (trim($email) != null) {
                 if ($target_user = user_load_by_mail($email)) {
