@@ -134,8 +134,8 @@ class UploadForm extends FormBase {
                 $extensions = 'png gif jpg jpeg bmp txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip';
                 $validators = array('file_validate_extensions' => array($extensions));
                 $dir = "private://projects/documents/" . $folder;
-                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $file = file_save_upload("upload_doc", $validators, $dir, 0, FILE_EXISTS_RENAME);
+                \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                $file = file_save_upload("upload_doc", $validators, $dir, 0, 'FILE_EXISTS_RENAME');
 
                 if ($file) {
                     $file->setPermanent();

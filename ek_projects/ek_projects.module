@@ -89,9 +89,13 @@ function ek_projects_mail($key, &$message, &$params) {
     $params['options']['logo'] = $base_url . $theme['url'];
     $params['options']['site'] = \Drupal::config('system.site')->get('name');
     $params['options']['stamp'] = date('F j, Y, g:i a');
-    $site_mail = \Drupal::config('system.site')->get('mail');
-    if (empty($site_mail)) {
-        $site_mail = \Drupal::config('system.site')->get('mail_notification');
+    if(isset($params['from'])) {
+        $site_mail = $params['from'];
+    } else {
+        $site_mail = \Drupal::config('system.site')->get('mail');
+        if (empty($site_mail)) {
+            $site_mail = \Drupal::config('system.site')->get('mail_notification');
+        }
     }
     $message['headers']['Reply-To'] = $site_mail;
     

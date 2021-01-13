@@ -253,6 +253,7 @@ class Notification extends FormBase {
         $params['body'] = $text;
         $l = Url::fromRoute('ek_projects_view', ['id' => $form_state->getValue('pid')],['query' => []])->toString();
         $params['options']['url'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
+        
         foreach ($addresses as $email) {
             if (trim($email) != null) {
                 if ($target_user = user_load_by_mail($email)) {
