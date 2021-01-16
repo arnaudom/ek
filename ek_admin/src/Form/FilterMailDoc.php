@@ -211,6 +211,10 @@ class FilterMailDoc extends FormBase {
                             $options['stripe'] = 1;
                             $options['checkout'] = $form_state->getValue('checkout');
                         }
+                        if (!null == $form_state->getValue('utrust_add') && $form_state->getValue('utrust_add') == 1) {
+                            $options['utrust'] = 1;
+                            $options['checkout_utrust'] = $form_state->getValue('checkout_utrust');
+                        }
                         break;
 
                     case 'delivery':

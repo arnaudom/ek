@@ -319,6 +319,9 @@ function mail_attachment($email, $file, $message = null, $options = null) {
         if (isset($options['stripe']) && $options['stripe'] == 1) {
             $params['options']['checkout'] = $options['checkout'];
         }
+        if (isset($options['utrust']) && $options['utrust'] == 1) {
+            $params['options']['checkout_utrust'] = $options['checkout_utrust'];
+        }
 
         switch ($options['origin']) {
             case 'project_documents':
