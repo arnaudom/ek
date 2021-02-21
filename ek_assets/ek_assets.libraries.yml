@@ -1,22 +1,14 @@
-ek_assets.datepicker:
-  version: VERSION
-  js:
-    js/ek_assets_date.js: {}
-  dependencies:
-    - core/jquery
-    - core/jquery.ui.datepicker
-
 ek_assets_css:
   version: VERSION
   css:
     theme:
       css/ek_assets.css: {}
-      
+
 ek_assets.number_format:
   version: VERSION
   js:
     js/ek_assets_number_format.js: {}
-    
+
 ek_assets.dashboard:
   version: VERSION
   css:

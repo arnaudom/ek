@@ -11,7 +11,7 @@ ek_assets_update:
     _controller: '\Drupal\ek_assets\Controller\InstallController::update'
   requirements:
     _permission: 'administer site configuration'
-    
+
 ek_assets.list:
   path: '/assets'
   defaults:
@@ -36,7 +36,7 @@ ek_assets.new:
     _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsNew'
   requirements:
     _permission: 'edit_assets'
-    
+
 ek_assets.edit:
   path: '/assets/edit/{id}'
   defaults:
@@ -45,7 +45,7 @@ ek_assets.edit:
   requirements:
     _permission: 'edit_assets'
     id: \d*
-    
+
 ek_assets.delete:
   path: '/assets/delete/{id}'
   defaults:
@@ -54,14 +54,14 @@ ek_assets.delete:
   requirements:
     _permission: 'delete_assets'
     id: \d*
-    
+
 ek_assets.excel:
   path: '/assets/export/{param}'
   defaults:
     _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsExcel'
   requirements:
     _permission: 'view_assets'
-    
+
 ek_assets.print:
   path: '/assets/pdf/{id}'
   defaults:
@@ -70,14 +70,14 @@ ek_assets.print:
   requirements:
     _permission: 'view_assets'
     id: \d*
-    
+
 ek_assets.print-qrcode:
   path: '/assets/qrcode/{param}'
   defaults:
     _controller: '\Drupal\ek_assets\Controller\AssetsController::assetsPrintQrcode'
   requirements:
     _permission: 'view_assets'
-    
+
 ek_assets.set_amortization:
   path: '/assets/amortization/{id}'
   defaults:
@@ -86,8 +86,7 @@ ek_assets.set_amortization:
   requirements:
     _permission: 'amortize_assets'
     id: \d*
-    
-    
+
 ek_assets.record_amortization:
   path: '/assets/amortization_record/{id}/{ref}'
   defaults:
