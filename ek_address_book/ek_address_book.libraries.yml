@@ -18,7 +18,7 @@ ek_address_boook.tip:
       /libraries/qTip2/dist/jquery.qtip.min.css: {}
   js:
     js/ek_address_book_tip.js: {}
-    /libraries/qTip2/dist/jquery.qtip.min.js: {} 
+    /libraries/qTip2/dist/jquery.qtip.min.js: {}
     
     
 ek_address_book.email_autocomplete:
@@ -36,7 +36,7 @@ ek_address_book.email_autocomplete_user:
   dependencies:
     - core/jquery
     - core/jquery.ui.autocomplete
-    
+
 ek_address_book.dialog:
   version: VERSION
   js:
@@ -50,8 +50,7 @@ ek_address_book.dialog:
     - core/drupalSettings
     - core/jquery.once
     - core/drupal.ajax
-    
-    
+
 ek_address_book.search:
   version: VERSION
   css:
@@ -61,4 +60,3 @@ ek_address_book.search:
     js/ek_address_book_autocomplete.js: {}
   dependencies:
     - core/jquery
-

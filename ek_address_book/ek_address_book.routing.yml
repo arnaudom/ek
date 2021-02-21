@@ -35,7 +35,7 @@ ek_address_book.import:
     _controller: '\Drupal\ek_address_book\Controller\AdminAddressBookController::import'
   requirements:
     _permission: 'admin_address_book'
-    
+
 ek_address_book.search:
   path: '/address_book'
   defaults:
@@ -78,15 +78,14 @@ ek_address_book.contacts:
     _controller: '\Drupal\ek_address_book\Controller\AddressBookController::contactsaddressbook'
   requirements:
     _permission: 'view_address_book'
-    
-   
+
 ek_address_book.new:
   path: '/new_contact'
   defaults:
     _controller: '\Drupal\ek_address_book\Controller\AddressBookController::newaddressbook'
   requirements:
     _permission: 'edit_address_book'
-    
+
 ek_address_book.newcard:
   path: '/new_contact_card/{abid}'
   defaults:
@@ -94,7 +93,7 @@ ek_address_book.newcard:
   requirements:
     _permission: 'edit_address_book'
     abid: \d*
-    
+
 ek_address_book.edit:
   path: '/edit_contact/{abid}'
   defaults:
@@ -102,7 +101,7 @@ ek_address_book.edit:
   requirements:
     _permission: 'edit_address_book'
     abid: \d*
-    
+
 ek_address_book.clone:
   path: '/clone_contact/{abid}'
   defaults:
@@ -110,7 +109,7 @@ ek_address_book.clone:
   requirements:
     _permission: 'edit_address_book'
     abid: \d*
-    
+
 ek_address_book.delete:
   path: '/delete_contact/{abid}'
   defaults:
@@ -119,7 +118,7 @@ ek_address_book.delete:
   requirements:
     _permission: 'delete_address_book'
     abid: \d*
-    
+
 ek.look_up_contact_ajax:
   path: '/look_up_contact_ajax/{type}'
   defaults:
@@ -135,14 +134,14 @@ ek.look_up_email_ajax:
     type: '%'
   requirements:
     _permission: 'view_address_book_user_contact'
-    
+
 ek.built_sn_ajax:
   path: '/built_sn_ajax'
   defaults:
     _controller: '\Drupal\ek_address_book\Controller\AddressBookController::ajaxsnbuilt'
   requirements:
     _permission: 'edit_address_book'
-    
+
 ek_address_book.pdf:
   path: '/address_book/name_card_pdf/{abid}/{cid}'
   defaults:
@@ -150,8 +149,8 @@ ek_address_book.pdf:
   requirements:
     _permission: 'view_address_book'
     abid: \d*
-    cid: \d* 
-    
+    cid: \d*
+
 ek_address_book_tag_activity:
   path: '/ek_address_book/tag_activity'
   defaults:
