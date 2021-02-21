@@ -1,13 +1,13 @@
 administrate_finance:
   title: 'Administrate finance parameters'
-  description: 'Administrate finance parameters'  
+  description: 'Administrate finance parameters'
 finance_dashboard:
   title: 'Access finance dashboard'
 post_new_year:
   title: 'Post new financial years'
 budgeting_reporting:
   title: 'Monthly budget and reporting'
-  description: 'Access or view budget, reporting data'  
+  description: 'Access or view budget, reporting data'
 update_finance_budget:
   title: 'Monthly budget edit'
   description: 'Edit, update budget data'
@@ -45,15 +45,15 @@ attach_file_memos:
 list_memos:
   title: 'List memos'
 pay_memos:
-  title: 'Record memo payment' 
+  title: 'Record memo payment'
 record_memos:
-  title: 'Record memo in expenses'  
+  title: 'Record memo in expenses'
 receive_memos:
-  title: 'Record memo receipt'  
+  title: 'Record memo receipt'
 print_memos:
-  title: 'Print a memo' 
+  title: 'Print a memo'
 delete_memos:
-  title: 'Delete a memo'   
+  title: 'Delete a memo'
 
 #cash bank
 manage_currency:

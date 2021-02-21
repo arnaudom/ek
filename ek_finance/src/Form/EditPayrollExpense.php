@@ -767,7 +767,7 @@ class EditPayrollExpense extends FormBase {
                     $file = $this->fileStorage->load($fid);
                     $name = $file->getFileName();
                     $dir = "private://finance/receipt/" . $form_state->getValue('coid');
-                    \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                    \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
                     $load_attachment = \Drupal::service('file_system')->copy($file->getFileUri(), $dir . "/" . $insert . '_' . $name);
                 } elseif ($form_state->getValue('uri' . $n) != '') {
                     $receipt = 'yes';

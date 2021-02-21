@@ -295,7 +295,7 @@ class moveData extends FormBase {
 
         $dir = "private://finance/log";
         if (!file_exists()) {
-            \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
         }
         $file = $dir . '/log_' . date('Y-m-d_H-i') . '_' . $form_state->getValue('coid') . '_' . $form_state->getValue('fromClass') . '_' . $form_state->getValue('toClass') . '.txt';
         $fp = fopen($file, 'w');

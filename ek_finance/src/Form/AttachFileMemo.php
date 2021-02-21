@@ -175,7 +175,7 @@ class AttachFileMemo extends FormBase {
 
         if ($file) {
             $dir = "private://finance/memos";
-            \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
             $dest = $dir . '/' . $file->getFilename();
             $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $dest);
 

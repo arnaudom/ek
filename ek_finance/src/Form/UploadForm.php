@@ -115,7 +115,7 @@ class UploadForm extends FormBase {
                     //move it to a new folder
 
                     $dir = "private://finance/receipt/" . $att->company;
-                    \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                    \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
                     $filepath = \Drupal::service('file_system')->copy($file->getFileUri(), $dir . "/" . $ref[0] . '_' . $file->getFilename());
                     $receipt = 'yes';
 
@@ -150,7 +150,7 @@ class UploadForm extends FormBase {
 
                 if ($file) {
                     $dir = "private://finance/bank/" . $att->coid;
-                    \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                    \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
                     $filepath = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
 
 

@@ -101,7 +101,7 @@ class UploadExcelBudget extends FormBase {
         $extensions = 'xls xlsx';
         $validators = array('file_validate_extensions' => array($extensions));
         $dir = "private://tmp/";
-        \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+        \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
         $file = file_save_upload("upload_doc", $validators, $dir, 0, FILE_EXISTS_RENAME);
 
         if ($file) {

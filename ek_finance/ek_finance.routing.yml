@@ -43,7 +43,7 @@ ek_finance.admin.settings:
     _title: 'Settings'
     _controller: '\Drupal\ek_finance\Controller\SettingsController::settings'
   requirements:
-    _permission: 'administrate_finance' 
+    _permission: 'administrate_finance'
 
 #generic ajax call
 ek_finance.ajax_call:
@@ -51,7 +51,7 @@ ek_finance.ajax_call:
   defaults:
     _controller: '\Drupal\ek_finance\Controller\FinanceController::ajaxCall'
   requirements:
-    _user_is_logged_in: 'TRUE' 
+    _user_is_logged_in: 'TRUE'
     
 ek_finance.main:
   path: '/finance'
@@ -98,9 +98,8 @@ ek_finance.admin.modal_charts_accounts:
   defaults:
     _controller: '\Drupal\ek_finance\Controller\AccountsChartController::modal'
   requirements:
-    _permission: 'administrate_finance'  
+    _permission: 'administrate_finance'
 
-    
 ek_finance.admin.new_year:
   path: '/finance/admin/new-year'
   defaults:
@@ -162,7 +161,7 @@ ek_finance.extract.excel-journal:
     _controller: '\Drupal\ek_finance\Controller\JournalController::exceljournal'
   requirements:
     _permission: 'view_finance_balances'
-    
+
 ek_finance.extract.excel-ledger:
   path: '/finance/ledger-balance/excel/{param}'
   defaults:
@@ -176,7 +175,7 @@ ek_finance.extract.excel-trial:
     _controller: '\Drupal\ek_finance\Controller\BalanceTrialController::exceltrial'
   requirements:
     _permission: 'view_finance_balances'
-  
+
 # management reporting
 ek_finance_reporting:
   path: '/finance/reporting'
@@ -185,7 +184,7 @@ ek_finance_reporting:
     _controller: '\Drupal\ek_finance\Controller\ReportController::reporting'
   requirements:
     _permission: 'view_finance_reporting'
-    
+
 ek_finance_reporting_excel:
   path: '/finance/reporting-excel/{param}'
   defaults:
@@ -218,7 +217,7 @@ ek_finance_budgeting_excel:
 ek_finance.invoice.ledger:
   path: '/finance/sales-ledger/invoice'
   defaults:
-    _title: 'Sales ledger'      
+    _title: 'Sales ledger'
     _controller: '\Drupal\ek_finance\Controller\BalanceLedgerController::sales'
   requirements:
     _permission: 'view_finance_sales_ledger'
@@ -227,19 +226,19 @@ ek_finance.invoice.ledger:
 ek_finance.purchase.ledger:
   path: '/finance/sales-ledger/purchase'
   defaults:
-    _title: 'Purchases ledger'      
+    _title: 'Purchases ledger'
     _controller: '\Drupal\ek_finance\Controller\BalanceLedgerController::sales'
   requirements:
     _permission: 'view_finance_sales_ledger'
     
-#accounts reports       
+#accounts reports
 ek_finance.extract.profit_loss:
   path: '/finance/report/profit-loss'
   defaults:
     _title: 'Profit & Loss'
     _controller: '\Drupal\ek_finance\Controller\ReportController::profitloss'
   requirements:
-    _permission: 'view_finance_balances' 
+    _permission: 'view_finance_balances'
 
 ek_finance_extract.profit_loss_pdf:
   path: '/finance/report/profit-loss/pdf/{param}'
@@ -254,7 +253,7 @@ ek_finance.extract.balance_sheet:
     _title: 'Balance Sheet'
     _controller: '\Drupal\ek_finance\Controller\ReportController::balancesheet'
   requirements:
-    _permission: 'view_finance_balances' 
+    _permission: 'view_finance_balances'
     
 ek_finance_extract.balance_sheet_pdf:
   path: '/finance/report/balance-sheet/pdf/{param}'
@@ -269,7 +268,7 @@ ek_finance.manage.reconciliation:
     _title: 'Reconciliation'
     _controller: '\Drupal\ek_finance\Controller\ReconciliationController::reconciliation'
   requirements:
-    _permission: 'reconcile'  
+    _permission: 'reconcile'
     
 ek_finance.manage.reconciliation_reports:
   path: '/finance/reconciliation-reports'
@@ -277,7 +276,7 @@ ek_finance.manage.reconciliation_reports:
     _title: 'Reconciliation reports'
     _controller: '\Drupal\ek_finance\Controller\ReconciliationController::reportsreconciliation'
   requirements:
-    _permission: 'reconcile'   
+    _permission: 'reconcile'
 
 ek_finance_reconciliation.pdf:
   path: '/finance/reconciliation-report/3/{id}'
@@ -319,7 +318,7 @@ ek_finance.manage.record_expense:
     _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::recordExpenses'
     id: NULL
   requirements:
-    _permission: 'manage_expenses'    
+    _permission: 'manage_expenses'
     
 ek_finance.manage.list_expense:
   path: '/finance/expenses-list'
@@ -327,7 +326,7 @@ ek_finance.manage.list_expense:
     _title: 'List expenses'
     _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::listExpenses'
   requirements:
-    _permission: 'manage_expenses'      
+    _permission: 'manage_expenses'
 
 ek_finance.manage.list_raw_expense:
   path: '/finance/expenses-list-raw'
@@ -349,7 +348,7 @@ ek_finance.manage.modal_expense:
   defaults:
     _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::modal'
   requirements:
-    _permission: 'manage_expenses'  
+    _permission: 'manage_expenses'
    
 ek_finance.manage.edit_expense:
   path: '/finance/expenses-edit/{id}'
@@ -357,8 +356,8 @@ ek_finance.manage.edit_expense:
     _title: 'Edit expenses'
     _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::editexpenses'
   requirements:
-    _permission: 'edit_expenses'  
-    id: \d*  
+    _permission: 'edit_expenses'
+    id: \d*
 
 ek_finance.manage.clone_expense:
   path: '/finance/expenses-clone/{id}'
@@ -366,8 +365,8 @@ ek_finance.manage.clone_expense:
     _title: 'Record expenses'
     _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::cloneExpenses'
   requirements:
-    _permission: 'manage_expenses'  
-    id: \d* 
+    _permission: 'manage_expenses'
+    id: \d*
         
 ek_finance.manage.delete_expense:
   path: '/finance/expenses-delete/{id}'
@@ -375,9 +374,9 @@ ek_finance.manage.delete_expense:
     _title: 'Delete expense'
     _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::deleteExpenses'
   requirements:
-    _permission: 'delete_expenses'  
+    _permission: 'delete_expenses'
     id: \d*
-    
+
 #-Exp voucher---------------------------------------------
 ek_finance_voucher.pdf:
   path: '/finance/voucher/{type}/{id}'
@@ -385,7 +384,7 @@ ek_finance_voucher.pdf:
     _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::pdfVoucher'
   requirements:
     _permission: 'manage_expenses'
-    type: 1|2 #1 = expense, 2 = cash 
+    type: 1|2 #1 = expense, 2 = cash
     
 #cash-bank---------------------------------------------- 
 ek_finance.currencies:
@@ -395,14 +394,14 @@ ek_finance.currencies:
     _controller: '\Drupal\ek_finance\Controller\CashController::currencies'
   requirements:
     _permission: 'manage_currency'
-       
+
 ek_finance.manage.cash_balance:
   path: '/finance/cash-balance'
   defaults:
     _title: 'Cash balance'
     _controller: '\Drupal\ek_finance\Controller\CashController::cashbalance'
   requirements:
-    _permission: 'edit_cash'    
+    _permission: 'edit_cash'
 
 ek_finance.extract.excel-cash:
   path: '/finance/cash-excel/{param}'
@@ -417,7 +416,7 @@ ek_finance.manage.cash_manage:
     _title: 'Manage cash'
     _controller: '\Drupal\ek_finance\Controller\CashController::cashmanage'
   requirements:
-    _permission: 'edit_cash'     
+    _permission: 'edit_cash'
 
 ek_finance.manage.bank_statement:
   path: '/finance/bank-statement-balance/{id}'
@@ -434,15 +433,15 @@ ek_finance.manage.bank_list:
     _title: 'Banks references'
     _controller: '\Drupal\ek_finance\Controller\BankController::banklist'
   requirements:
-    _permission: 'list_bank' 
+    _permission: 'list_bank'
 
 ek_finance.manage.bank_label:
   path: '/finance/bank-label/{type}/{param}'
   defaults:
     _controller: '\Drupal\ek_finance\Controller\BankController::banklabel'
   requirements:
-    _permission: 'list_bank' 
-    type: \d*      
+    _permission: 'list_bank'
+    type: \d*
 
 ek_finance.manage.bank_accounts_list:
   path: '/finance/bank-accounts-list'
@@ -450,17 +449,16 @@ ek_finance.manage.bank_accounts_list:
     _title: 'Banks references'
     _controller: '\Drupal\ek_finance\Controller\BankController::bankaccountslist'
   requirements:
-    _permission: 'list_bank' 
+    _permission: 'list_bank'
 
 ek_finance.manage.bank_accounts_label:
   path: '/finance/bank-accounts-label/{type}/{param}'
   defaults:
     _controller: '\Drupal\ek_finance\Controller\BankController::bankaccountslabel'
   requirements:
-    _permission: 'list_bank' 
-    type: \d* 
-    
-           
+    _permission: 'list_bank'
+    type: \d*
+
 ek_finance.manage.bank_manage:
   path: '/finance/bank-manage/{id}'
   defaults:
@@ -468,7 +466,7 @@ ek_finance.manage.bank_manage:
     _controller: '\Drupal\ek_finance\Controller\BankController::bank'
     id: NULL
   requirements:
-    _permission: 'edit_bank' 
+    _permission: 'edit_bank'
     
 ek_finance.manage.bank_accounts_manage:
   path: '/finance/bank-account-manage/{id}'
@@ -484,7 +482,7 @@ ek_finance.manage.bank_delete:
   defaults:
     _controller: '\Drupal\ek_finance\Controller\BankController::deletebank'
   requirements:
-    _permission: 'delete_bank' 
+    _permission: 'delete_bank'
     id: \d*    
 
 ek_finance.manage.bank_account_delete:
@@ -492,7 +490,7 @@ ek_finance.manage.bank_account_delete:
   defaults:
     _controller: '\Drupal\ek_finance\Controller\BankController::deletebankaccount'
   requirements:
-    _permission: 'delete_bank' 
+    _permission: 'delete_bank'
     id: \d*   
 
 ek_finance.address_book.bank:
@@ -500,9 +498,9 @@ ek_finance.address_book.bank:
   defaults:
     _controller: '\Drupal\ek_finance\Controller\BankController::addressBook'
   requirements:
-    _permission: 'view_address_book' 
-    abid: \d* 
-           
+    _permission: 'view_address_book'
+    abid: \d*
+
 #memos
 ek_finance_manage_internal_memo:
   path: '/finance/internal-memo/{id}'
@@ -511,7 +509,7 @@ ek_finance_manage_internal_memo:
     _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::createInternalMemo'
     id: NULL
   requirements:
-    _permission: 'edit_internal_memos'    
+    _permission: 'edit_internal_memos'
 
 ek_finance_memo_transactions:
   path: '/finance/internal-memo-transactions/{id}'
@@ -520,7 +518,7 @@ ek_finance_memo_transactions:
     _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::transactions'
     id: NULL
   requirements:
-    _permission: 'edit_internal_memos'  
+    _permission: 'edit_internal_memos'
     
 ek_finance_manage_personal_memo:
   path: '/finance/claim-memo/{id}'
@@ -529,15 +527,15 @@ ek_finance_manage_personal_memo:
     _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::createPersonalMemo'
     id: NULL
   requirements:
-    _permission: 'edit_claim_memos' 
-       
+    _permission: 'edit_claim_memos'
+
 ek_finance_manage_list_memo_internal:
   path: '/finance/list-memo/internal'
   defaults:
     _title: 'List expenses memos'
     _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::listMemoInternal'
   requirements:
-    _permission: 'list_memos' 
+    _permission: 'list_memos'
 
 ek_finance_manage_list_memo_personal:
   path: '/finance/list-memo/personal'
@@ -553,25 +551,25 @@ ek_finance_manage_pay_memo:
     _title: 'Pay a memo'
     _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::payMemo'
   requirements:
-    _permission: 'pay_memos'  
+    _permission: 'pay_memos'
     id: \d*
-    
+
 ek_finance_manage_reset_pay_memo:
   path: '/finance_memo/reset-pay/{id}'
   defaults:
     _title: 'Reset payment'
     _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::resetPay'
   requirements:
-    _permission: 'pay_memos'  
+    _permission: 'pay_memos'
     id: \d*
-    
+
 ek_finance_manage_receive_memo:
   path: '/finance_memo/receive/{id}'
   defaults:
     _title: 'Receive memo payment'
     _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::receiveMemo'
   requirements:
-    _permission: 'receive_memos'    
+    _permission: 'receive_memos'
     id: \d*
 
 ek_finance_manage_print_memo:
@@ -580,7 +578,7 @@ ek_finance_manage_print_memo:
     _title: 'Print memo'
     _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::printMemo'
   requirements:
-    _permission: 'print_memos'    
+    _permission: 'print_memos'
     id: \d*
     
 ek_finance_manage_print_memo_range:
@@ -589,7 +587,7 @@ ek_finance_manage_print_memo_range:
     _title: 'Print memo range'
     _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::printMemoRange'
   requirements:
-    _permission: 'print_memos'    
+    _permission: 'print_memos'
     category: internal|personal
 
 ek_finance_manage_print_memo_pdf:
@@ -597,7 +595,7 @@ ek_finance_manage_print_memo_pdf:
   defaults:
     _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::printMemoPdf'
   requirements:
-    _permission: 'print_memos'    
+    _permission: 'print_memos'
 
 ek_finance_manage_print_html:
   path: '/finance/memo/html/{id}'
@@ -606,26 +604,26 @@ ek_finance_manage_print_html:
     _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::Html'
   requirements:
     _permission: 'print_memos'
-    id: \d*   
-       
+    id: \d*
+
 ek_finance_manage_delete_memo:
   path: '/finance/memo/delete/{id}'
   defaults:
     _title: 'Delete memo'
     _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::deleteMemo'
   requirements:
-    _permission: 'delete_memos'    
-    id: \d*    
-       
+    _permission: 'delete_memos'
+    id: \d*
+
 ek_finance_manage_memo_attach:
   path: '/finance/memo/attach/{id}'
   defaults:
     _title: 'Attach file to memo'
     _controller: '\Drupal\ek_finance\Controller\MemoExpensesController::attachMemo'
   requirements:
-    _permission: 'attach_file_memos'    
-    id: \d* 
-    
+    _permission: 'attach_file_memos'
+    id: \d*
+
 ek_finance_manage_modal_memo:
   path: '/finance/memo/modal/{id}'
   defaults:
@@ -633,22 +631,22 @@ ek_finance_manage_modal_memo:
   requirements:
     _permission: 'list_memos'
     id: \d*
-     
-ek_finance_payroll.record:   
+
+ek_finance_payroll.record:
   path: '/finance/record-payroll/{param}'
   defaults:
     _title: 'Record payroll'
     _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::payrollRecord'
   requirements:
-    _permission: 'hr_payroll_post'   
+    _permission: 'hr_payroll_post'
      
-ek_finance_payroll.edit:   
+ek_finance_payroll.edit:
   path: '/finance/edit-payroll-expense/{id}'
   defaults:
     _title: 'Edit payroll'
     _controller: '\Drupal\ek_finance\Controller\ExpensesManageController::editPayrollExpense'
   requirements:
-    _permission: 'edit_expenses' 
+    _permission: 'edit_expenses'
 #tax---------------------------------------------
 ek_finance_tax:
   path: '/finance/tax-report'
@@ -663,28 +661,4 @@ ek_finance_tax_excel:
   defaults:
     _controller: '\Drupal\ek_finance\Controller\TaxController::exceltax'
   requirements:
-    _permission: 'manage_expenses'    
-      
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    _permission: 'manage_expenses'
