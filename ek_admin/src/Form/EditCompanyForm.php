@@ -502,7 +502,7 @@ class EditCompanyForm extends FormBase
 
         $validators = array('file_validate_is_image' => array());
         $destination =  "private://admin/company" . $form_state->getValue('for_id') . "/images";
-        \Drupal::service('file_system')->prepareDirectory($destination, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+        \Drupal::service('file_system')->prepareDirectory($destination, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
         //LOGO
         $field = "logo";
         // Check for a new uploaded logo.

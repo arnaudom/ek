@@ -135,7 +135,7 @@ class FilterPostDoc extends FormBase
         $pcode_parts = array_reverse(explode('-', $form_state->getValue('pcode')));
         $folder = $pcode_parts[0];
         $dir = "private://projects/documents/" . $folder;
-        \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+        \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
         $uri = "private://projects/documents/" . $folder . "/" . $fileName;
         $copy = \Drupal::service('file_system')->copy($file, $uri);
         

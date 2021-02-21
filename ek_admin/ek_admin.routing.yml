@@ -33,29 +33,28 @@ ek_admin_backup_database:
   requirements:
     _permission: 'administrate_settings'
     coid: \d*
-    
+
 ek_admin_cron_tasks:
   path: '/cron/task/{key}'
   defaults:
     _controller: '\Drupal\ek_admin\Controller\AdminController::run_task_cron'
   requirements:
     _access: 'TRUE'
-    
+
 ek_admin_cron_backup:
   path: '/cron/backup/{key}'
   defaults:
     _controller: '\Drupal\ek_admin\Controller\AdminController::run_backup_cron'
   requirements:
     _access: 'TRUE'
-    
+
 ek_admin_mail_receipt:
   path: '/ek_admin_receipt/{key}'
   defaults:
     _controller: '\Drupal\ek_admin\Controller\AdminController::mail_receipt'
   requirements:
     _access: 'TRUE'
-    
-    
+
 ek_admin.main:
   path: '/ek_admin'
   defaults:
@@ -72,14 +71,14 @@ ek_admin.settings:
   requirements:
     #_access: 'TRUE'
     _permission: 'administrate_settings'
-    
+
 ek_admin.default:
   path: '/ek'
   defaults:
     _controller: '\Drupal\ek_admin\Controller\AdminController::isDefault'
   requirements:
     _access: 'TRUE'
-    
+
 ek_admin.company.list:
   path: '/ek_admin/company'
   defaults:
@@ -110,7 +109,7 @@ ek_admin_modal:
     _controller: '\Drupal\ek_admin\Controller\AdminController::modal'
   requirements:
     _permission: 'company_documents'
-    
+
 ek_admin_confirm_delete_file:
   path: 'ek_admin/delete_file_confirm/{id}'
   defaults:
@@ -118,7 +117,7 @@ ek_admin_confirm_delete_file:
   requirements:
     _permission: 'company_documents'
     id: \d*
-    
+
 ek_admin_delete_file:
   path: 'ek_admin/delete_file/{id}'
   defaults:
@@ -126,7 +125,7 @@ ek_admin_delete_file:
   requirements:
     _permission: 'company_documents'
     id: \d*
-        
+
 ek_admin.company.new:
   path: '/ek_admin/company/new'
   defaults:
@@ -134,7 +133,7 @@ ek_admin.company.new:
     _controller: '\Drupal\ek_admin\Controller\AdminController::AdminCompanyNew'
   requirements:
     _permission: 'administrate_settings'
-    
+
 ek_admin.company.edit:
   path: '/ek_admin/company/edit/{id}'
   defaults:
@@ -152,14 +151,14 @@ ek_admin.company_settings.edit:
   requirements:
     _permission: 'administrate_finance'
     id: \d*
-    
+
 ek_admin.built_csn_ajax:
   path: '/built_csn_ajax'
   defaults:
     _controller: '\Drupal\ek_admin\Controller\AdminController::ajaxcsnbuilt'
   requirements:
     _permission: 'administrate'
-    
+
 ek_admin_company.pdf:
   path: '/company_pdf/{id}'
   defaults:
@@ -167,15 +166,14 @@ ek_admin_company.pdf:
   requirements:
     _permission: 'company_extract'
     id: \d*
-    
+
 ek_admin_company.excel:
   path: '/company_list_excel'
   defaults:
     _controller: '\Drupal\ek_admin\Controller\AdminController::excelcompany'
   requirements:
     _permission: 'company_extract'
-    
-    
+
 ek_admin.country.list:
   path: '/ek_admin/country'
   defaults:
@@ -191,7 +189,7 @@ ek_admin.access.company:
     _controller: '\Drupal\ek_admin\Controller\AdminController::AccessCompany'
   requirements:
     _permission: 'administrate_settings'
-    
+
 ek_admin.access.country:
   path: '/ek_admin/access_country'
   defaults:
@@ -207,15 +205,14 @@ ek_admin.access.byuser:
     _controller: '\Drupal\ek_admin\Controller\AdminController::AccessByUser'
   requirements:
     _permission: 'administrate_settings'
-    
+
 ek_admin.user_autocomplete:
   path: '/ek_admin/user/autocomplete'
   defaults:
     _controller: '\Drupal\ek_admin\Controller\AdminController::userAutocomplete'
   requirements:
     _permission: 'access_user_autocomplete'
-   
-    
+
 ek_admin.home:
   path: '/ek_admin/feature-reset'
   defaults:

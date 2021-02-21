@@ -5,12 +5,11 @@ ek_admin_css:
       css/ek_admin.css: {}
       https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css: { type: external }
 
-#global css resources for doc icons
 classic_doc:
   version: 1
   css:
     theme:
-      css/classic_doc.css: {} 
+      css/classic_doc.css: {}
 
 frontpage:
   version: 1
