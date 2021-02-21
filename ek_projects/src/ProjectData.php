@@ -340,11 +340,11 @@ class ProjectData {
             ];
         } else {
             return [
-                $this->t("Section 1"),
-                $this->t("Section 2"),
-                $this->t("Section 3"),
-                $this->t("Section 4"),
-                $this->t("Section 5"),
+                t("Section 1"),
+                t("Section 2"),
+                t("Section 3"),
+                t("Section 4"),
+                t("Section 5"),
             ];
         }
     }

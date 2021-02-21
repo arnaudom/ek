@@ -19,7 +19,7 @@ ek_projects_view:
   version: 1
   css:
     theme:
-      css/ek_projects.css: {}  
+      css/ek_projects.css: {}
   js:
     js/ek_projects_view.js: {}
   dependencies:
@@ -30,9 +30,8 @@ ek_projects_view:
     - core/drupalSettings
     - core/drupal.ajax
     - jquery_ui_droppable/droppable
-    - jquery_ui_draggable/draggable    
+    - jquery_ui_draggable/draggable
 
-    
 ek_projects_autocomplete:
   version: 1  
   js:
@@ -41,7 +40,6 @@ ek_projects_autocomplete:
     - core/jquery
     - core/jquery.ui.autocomplete
 
-    
 ek_projects.dashboard:
   version: 1
   js:
@@ -51,13 +49,13 @@ ek_projects.dashboard:
       css/ek_projects_dashboard.css: {}
   dependencies:
     - core/jquery
- 
+
 ek_projects.calendar:
   version: 1
   css:
     theme:
-      css/ek_calendar.css: {weight: 100} 
-      /libraries/fullcalendar/fullcalendar.min.css: {weight: 99} 
+      css/ek_calendar.css: {weight: 100}
+      /libraries/fullcalendar/fullcalendar.min.css: {weight: 99}
       /libraries/qTip2/dist/jquery.qtip.min.css: {}
   js:
     /libraries/fullcalendar/lib/moment.min.js: {}
@@ -78,7 +76,7 @@ ek_projects_charts:
   dependencies:
     - core/jquery
     - core/jquery.once
-    
+
 ek_projects_settings:
   css:
     theme:
@@ -86,4 +84,4 @@ ek_projects_settings:
   js:
     js/ek_projects_settings.js: {}
   dependencies:
-    - core/jquery    
+    - core/jquery

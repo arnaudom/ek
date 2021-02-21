@@ -279,7 +279,7 @@ class SplitProject extends FormBase {
                     ->insert('ek_project_finance')->fields($fields)->execute();
             //create document folder
             $dir = "private://projects/documents/" . $ref;
-            \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
 
             \Drupal::messenger()->addStatus(t('New project created with ref @r', ['@r' => $pcode]));
             Cache::invalidateTags(['project_last_block']);
