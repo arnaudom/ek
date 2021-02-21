@@ -249,8 +249,8 @@ class Settings extends FormBase {
             $extensions = 'inc';
             $validators = array('file_validate_extensions' => [$extensions]);
             $dir = 'private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/';
-            \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-            $file = file_save_upload("custom_pdf_form", $validators, $dir, 0, FILE_EXISTS_REPLACE);
+            \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+            $file = file_save_upload("custom_pdf_form", $validators, $dir, 0, 'FILE_EXISTS_REPLACE');
             if ($file) {
                 $file->setPermanent();
                 $file->save();
@@ -258,8 +258,8 @@ class Settings extends FormBase {
             }
 
             $dir = 'private://logistics/templates/' . $form_state->getValue('coid') . '/xls/';
-            \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-            $file = file_save_upload("custom_xls_form", $validators, $dir, 0, FILE_EXISTS_REPLACE);
+            \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+            $file = file_save_upload("custom_xls_form", $validators, $dir, 0, 'FILE_EXISTS_REPLACE');
             if ($file) {
                 $file->setPermanent();
                 $file->save();

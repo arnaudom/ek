@@ -1,14 +1,14 @@
 administrate_logistics:
   title: 'Administrate logistics'
-  description: 'Administrate logistics parameters' 
+  description: 'Administrate logistics parameters'
 
 logistics_dashboard:
   title: 'Logistics dashboard'
 
 list_delivery:
   title: 'List deliveries'
-  description: 'View list of deliveries orders and operations' 
-  
+  description: 'View list of deliveries orders and operations'
+
 edit_delivery:
   title: 'Create and edit deliveries'
 
@@ -23,10 +23,9 @@ post_delivery:
 delete_delivery:
   title: 'Delete delivery order'
 
-
 list_receiving:
   title: 'List receiving'
-  description: 'View list of received stock or return orders and operations' 
+  description: 'View list of received stock or return orders and operations'
   
 edit_receiving:
   title: 'Create and edit stock received or returned'

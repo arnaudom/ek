@@ -11,7 +11,7 @@ ek_logistics_install:
     _controller: '\Drupal\ek_logistics\Controller\InstallController::install'
   requirements:
     _permission: 'administer site configuration'
-    
+
 ek_logistics_settings:
   path: '/ek_logistics/admin/settings'
   defaults:
@@ -33,8 +33,8 @@ ek_logistics_settings_custom_forms_preview:
   defaults:
     _controller: '\Drupal\ek_logistics\Controller\SettingsController::settingsFormPreview'
   requirements:
-    _permission: 'print_share_delivery' 
-     
+    _permission: 'print_share_delivery'
+
 ek_logistics_main:
   path: '/ek_logistics/dashboard'
   defaults:
@@ -115,7 +115,7 @@ ek_logistics_delivery_post:
   path: '/logistics/delivery-post/{id}'
   defaults:
     _controller: '\Drupal\ek_logistics\Controller\DeliveryController::post'
-    _title: 'Post quantities'    
+    _title: 'Post quantities'
   requirements:
     _permission: 'post_delivery'
     id: \d*   
@@ -127,7 +127,7 @@ ek_logistics_delivery_delete:
     _controller: '\Drupal\ek_logistics\Controller\DeliveryController::delete'
   requirements:
     _permission: 'delete_delivery'
-    id: \d*  
+    id: \d*
    
     
 #receiving   
@@ -194,10 +194,10 @@ ek_logistics_receiving_post:
   path: '/logistics/receiving-post/{id}'
   defaults:
     _controller: '\Drupal\ek_logistics\Controller\ReceivingController::post'
-    _title: 'Post quantities'    
+    _title: 'Post quantities'
   requirements:
     _permission: 'post_receiving'
-    id: \d*  
+    id: \d*
 
 ek_logistics_receiving_delete:
   path: '/logistics/delete-receiving/{id}'
@@ -206,8 +206,8 @@ ek_logistics_receiving_delete:
     _controller: '\Drupal\ek_logistics\Controller\ReceivingController::delete'
   requirements:
     _permission: 'delete_receiving'
-    id: \d*   
-        
+    id: \d*
+
 #returning  
 ek_logistics_list_returning:
   path: '/logistics/list-returning'
