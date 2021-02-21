@@ -1022,7 +1022,7 @@ class ParametersController extends ControllerBase {
                                 if (!file_exists($thumb)) {
                                     $dir = "private://hr/pictures/" . $emp['company_id'] . "/40/";
                                     $filesystem = \Drupal::service('file_system');
-                                    $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                                    $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
                                     $filesystem->copy($d->picture, $thumb, FILE_EXISTS_REPLACE);
                                     //Resize after copy
                                     $image_factory = \Drupal::service('image.factory');

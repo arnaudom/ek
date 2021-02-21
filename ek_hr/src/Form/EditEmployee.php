@@ -793,7 +793,7 @@ class EditEmployee extends FormBase
                 $file = $this->fileStorage->load($fid);
                 $name = $file->getFileName();
                 $dir = "private://hr/pictures/" . $form_state->getValue('coid');
-                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
                 $image = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                     
                 \Drupal::messenger()->addStatus(t("New Picture uploaded"));

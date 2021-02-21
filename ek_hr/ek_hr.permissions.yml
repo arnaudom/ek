@@ -1,15 +1,15 @@
 hr_dashboard:
   title: 'HR dashboard'
-  description: 'View a dashborad page with summary of HR content'  
+  description: 'View a dashborad page with summary of HR content'
 hr_parameters:
   title: 'HR parameters'
-  description: 'Set paramaters for HR managment'    
+  description: 'Set paramaters for HR managment'
 new_employee:
   title: 'Create new employee'
-  description: 'Create new employee, administrate employee profile.'  
+  description: 'Create new employee, administrate employee profile.'
 hr_payroll:
   title: 'Payroll'
-  description: 'Input payroll data per company' 
+  description: 'Input payroll data per company'
 hr_payroll_post:
   title: 'Payroll post'
   description: 'Post payroll data and record in accounts'

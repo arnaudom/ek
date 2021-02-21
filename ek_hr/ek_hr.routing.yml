@@ -67,7 +67,7 @@ ek_hr.parameters-organization:
     _title: 'Organization'
     #_controller: '\Drupal\ek_hr\Controller\ParametersController::organization'
   requirements:
-    _permission: 'hr_parameters'   
+    _permission: 'hr_parameters'
 
 ek_hr.parameters-organization-location:
   path: '/human-resources/parameters-location'
@@ -75,7 +75,7 @@ ek_hr.parameters-organization-location:
     _title: 'Location'
     _controller: '\Drupal\ek_hr\Controller\ParametersController::location'
   requirements:
-    _permission: 'hr_parameters'         
+    _permission: 'hr_parameters'
 
 ek_hr.parameters-organization-service:
   path: '/human-resources/parameters-service'
@@ -91,9 +91,8 @@ ek_hr.parameters-organization-rank:
     _title: 'Ranks'
     _controller: '\Drupal\ek_hr\Controller\ParametersController::rank'
   requirements:
-    _permission: 'hr_parameters' 
+    _permission: 'hr_parameters'
 
-    
 ek_hr.parameters-payslip:
   path: '/human-resources/parameters-payslip'
   defaults:
@@ -108,15 +107,15 @@ ek_hr.parameters-accounts:
     _title: 'Accounts'
     _controller: '\Drupal\ek_hr\Controller\ParametersController::accounts'
   requirements:
-    _permission: 'hr_parameters' 
-    
+    _permission: 'hr_parameters'
+
 ek_hr.parameters-delete-payslip:
   path: '/human-resources/delete-payslip/{name}'
   defaults:
     _controller: '\Drupal\ek_hr\Controller\ParametersController::deletePayslip'
   requirements:
     _permission: 'hr_parameters'
-    id: \w*  
+    id: \w*
 
 ek_hr.parameters-form:
   path: '/human-resources/parameters-form'
@@ -190,7 +189,7 @@ ek_hr.employee.history_pay:
     _controller: '\Drupal\ek_hr\Controller\ParametersController::employeeHistoryPay'
   requirements:
     _permission: 'new_employee'
-    id: \d*    
+    id: \d*
         
 ek_hr.employee.edit:
   path: '/human-resources/edit-employee/{id}'
@@ -208,7 +207,7 @@ ek_hr.employee.doc:
     _controller: '\Drupal\ek_hr\Controller\ParametersController::employeeDoc'
   requirements:
     _permission: 'new_employee'
-    id: \d*  
+    id: \d*
     
 ek_hr.employee.delete-doc:
   path: '/human-resources/delete-doc/{id}'
@@ -216,7 +215,7 @@ ek_hr.employee.delete-doc:
     _controller: '\Drupal\ek_hr\Controller\ParametersController::deletedoc'
   requirements:
     _permission: 'new_employee'
-    id: \d*  
+    id: \d*
 
 ek_hr.employee.autocomplete:
   path: '/human-resources/e/autocomplete'
@@ -278,14 +277,14 @@ ek_hr.print-forms:
 ek_hr.print-payslip-output:
   path: '/human-resources/print/output/{param}'
   defaults:
-    _controller: '\Drupal\ek_hr\Controller\PayrollController::OutputPayslip'  
+    _controller: '\Drupal\ek_hr\Controller\PayrollController::OutputPayslip'
   requirements:
-    _permission: 'hr_payroll' 
+    _permission: 'hr_payroll'
 
 ek_hr.print-forms-output:
   path: '/human-resources/print/output-form/{param}'
   defaults:
-    _controller: '\Drupal\ek_hr\Controller\PayrollController::OutputForm'  
+    _controller: '\Drupal\ek_hr\Controller\PayrollController::OutputForm'
 
   requirements:
     _permission: 'hr_payroll'

@@ -206,7 +206,7 @@ class EditRank extends FormBase
         if ($form_state->get('step') == 3) {
             if ($form_state->get('new_upload')) {
                 $dir = "private://hr/data/" . $form_state->getValue('coid') . '/ranks' ;
-                \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
                 $dest = $dir . '/ranks.txt';
                 $filename = \Drupal::service('file_system')->copy($form_state->get('new_upload')->getFileUri(), $dest, FILE_EXISTS_REPLACE);
                 \Drupal::messenger()->addStatus(t("New file uploaded"));
@@ -214,7 +214,7 @@ class EditRank extends FormBase
                 //write the data to the file
                 $dir = "private://hr/data/" . $form_state->getValue('coid')  ."/ranks";
                 if (!file_exists()) {
-                    \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                    \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
                 }
                 $file = $dir . '/ranks.txt';
                 $fp = fopen($file, 'w');

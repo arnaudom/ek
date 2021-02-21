@@ -16,7 +16,7 @@ ek_hr.task.new_employee:
   options:
     attributes:
       id:
-        - 'tour2'  
+        - 'tour2'
 
 ek_hr.task.categories:
   route_name: ek_hr.parameters-category
@@ -36,7 +36,7 @@ ek_hr.task.main_param:
   options:
     attributes:
       id:
-        - 'tour4'  
+        - 'tour4'
 ek_hr.task.ad:
   route_name: ek_hr.parameters-ad
   base_route: ek_hr.parameters
@@ -56,7 +56,7 @@ ek_hr.parameters-organization:
   options:
     attributes:
       id:
-        - 'tour6'  
+        - 'tour6'
 
 ek_hr.task.location:
   route_name: ek_hr.parameters-organization-location
@@ -184,12 +184,6 @@ ek_hr.task.roster:
   base_route: ek_hr.roster
   title: 'Edit Roster'
   weight: 1
-
-#ek_hr.task.roster-excel:
- # route_name: ek_hr.roster_extract
-  #base_route: ek_hr.roster
-  #title: 'Extract roster'
-  #weight: 2
     
 ek_hr.task.ph:
   route_name: ek_hr.roster_ph
