@@ -4,7 +4,7 @@ ek_sales_install:
     _controller: '\Drupal\ek_sales\Controller\InstallController::install'
   requirements:
     _permission: 'administer site configuration'
-    
+
 ek_sales_update:
   path: '/ek_sales/update'
   defaults:
@@ -41,8 +41,8 @@ ek_sales_settings_custom_forms_preview:
   defaults:
     _controller: '\Drupal\ek_sales\Controller\SettingsController::settingsFormPreview'
   requirements:
-    _permission: 'print_share_invoice' 
-    
+    _permission: 'print_share_invoice'
+
 ek_sales_settings_serial:
   path: '/ek_sales/admin/settings-serial'
   defaults:
@@ -50,7 +50,7 @@ ek_sales_settings_serial:
     _controller: '\Drupal\ek_sales\Controller\SettingsController::settingsSerial'
   requirements:
     _permission: 'administrate_sales'
-    
+
 ek_sales.main:
   path: '/sales_management'
   defaults:
@@ -68,7 +68,6 @@ ek_sales.data:
     _permission: 'sales_data'
     abid: \d*
 
-    
 ek_sales.document:
   path: '/sales/document/{abid}'
   defaults:
@@ -77,7 +76,7 @@ ek_sales.document:
   requirements:
     _permission: 'sales_data'
     abid: \d*
-    
+
 ek_sales.search_form:
   path: '/sales-search-doc-form'
   defaults:
@@ -85,7 +84,7 @@ ek_sales.search_form:
     _form: '\Drupal\ek_sales\Form\SearchDocForm'
   requirements:
     _permission: 'sales_documents'
-    
+
 ek_sales.search_doc:
   path: '/ek_sales-search-doc'
   defaults:
@@ -100,28 +99,28 @@ ek_sales_folders:
     _controller: '\Drupal\ek_sales\Controller\SalesController::lookupFolders'
   requirements:
     _permission: 'sales_documents'
-    
+
 ek_sales_documents_load:
   path: 'ek_sales/load_documents'
   defaults:
     _controller: '\Drupal\ek_sales\Controller\SalesController::load'
   requirements:
     _permission: 'sales_documents'
-    
+
 ek_sales_documents_dragdrop:
   path: 'ek_sales/dragdrop'
   defaults:
     _controller: '\Drupal\ek_sales\Controller\SalesController::dragDrop'
   requirements:
     _permission: 'sales_documents'
-    
+
 ek_sales_modal:
   path: 'ek_sales/documents/modal/{param}'
   defaults:
     _controller: '\Drupal\ek_sales\Controller\SalesController::modal'
   requirements:
     _permission: 'sales_data'
-    
+
 ek_sales_delete_file:
   path: 'ek_sales/delete_file/{id}'
   defaults:
@@ -137,7 +136,7 @@ ek_sales_delete_file_confirm:
   requirements:
     _permission: 'sales_data'
     id: \d*
-    
+
 ek_sales_user_autocomplete:
   path: '/ek_sales/autocomplete/user'
   defaults:
@@ -145,14 +144,13 @@ ek_sales_user_autocomplete:
   requirements:
     _permission: 'sales_task'
 
-
 ek_sales.modal_more:
   path: '/ek_sales/more/modal/{param}'
   defaults:
     _controller: '\Drupal\ek_sales\Controller\SalesController::modal'
   requirements:
     _permission: 'list_more'
-    
+
 ek_sales.reset_payment:
   path: '/reset/{doc}/{id}'
   defaults:
@@ -160,8 +158,8 @@ ek_sales.reset_payment:
     _controller: '\Drupal\ek_sales\Controller\SalesController::ResetPayment'
   requirements:
     _permission: 'reset_pay'
-    id: \d* 
-    
+    id: \d*
+
 #purchases
 ek_sales.purchases.list:
   path: '/purchases/list'
@@ -178,7 +176,7 @@ ek_sales.purchases.aging:
     _controller: '\Drupal\ek_sales\Controller\PurchasesController::AgingPurchases'
   requirements:
     _permission: 'list_purchase'
-    
+
 ek_sales.purchases.create:
   path: '/purchases/new'
   defaults:
@@ -195,7 +193,7 @@ ek_sales.purchases.clone:
   requirements:
     _permission: 'create_purchase'
     id: \d*
-       
+
 ek_sales.purchases.edit:
   path: '/purchases/edit/{id}'
   defaults:
@@ -256,7 +254,7 @@ ek_sales.purchases.print_html:
     _controller: '\Drupal\ek_sales\Controller\PurchasesController::Html'
   requirements:
     _permission: 'print_share_purchase'
-    id: \d*    
+    id: \d*
 
 ek_sales.purchases.print_excel:
   path: '/purchases/excel/{id}'
@@ -265,7 +263,7 @@ ek_sales.purchases.print_excel:
     _controller: '\Drupal\ek_sales\Controller\PurchasesController::Excel'
   requirements:
     _permission: 'print_share_purchase'
-    id: \d* 
+    id: \d*
     
 ek_sales.purchases.print_share:
   path: '/purchases/print/{id}'
@@ -279,7 +277,7 @@ ek_sales.purchases.print_share:
 ek_sales.purchases.print_share_pdf:
   path: '/purchases/print/pdf/{param}'
   defaults:
-    _controller: '\Drupal\ek_sales\Controller\PurchasesController::PdfPurchases'  
+    _controller: '\Drupal\ek_sales\Controller\PurchasesController::PdfPurchases'
   requirements:
     _permission: 'print_share_purchase'
     #param: \w*
@@ -290,7 +288,7 @@ ek_sales.purchases.excel:
     _controller: '\Drupal\ek_sales\Controller\PurchasesController::ExportExcel'
   requirements:
     _permission: 'list_purchase'
-    
+
 ek_sales.purchases.delete:
   path: '/purchases/delete/{id}'
   defaults:
@@ -298,7 +296,7 @@ ek_sales.purchases.delete:
     _controller: '\Drupal\ek_sales\Controller\PurchasesController::DeletePurchases'
   requirements:
     _permission: 'delete_purchase'
-    id: \d*  
+    id: \d*
 
 
 #quotations   
@@ -309,7 +307,7 @@ ek_sales.quotations.settings:
     _controller: '\Drupal\ek_sales\Controller\QuotationsController::SettingsQuotations'
   requirements:
     _permission: 'administrate_sales'
-    
+
 ek_sales.quotations.list:
   path: '/quotations/list'
   defaults:
@@ -317,7 +315,7 @@ ek_sales.quotations.list:
     _controller: '\Drupal\ek_sales\Controller\QuotationsController::ListQuotations'
   requirements:
     _permission: 'list_quotation'
-    
+
 ek_sales.quotations.create:
   path: '/quotations/new'
   defaults:
@@ -333,7 +331,7 @@ ek_sales.quotations.edit:
     _controller: '\Drupal\ek_sales\Controller\QuotationsController::EditQuotation'
   requirements:
     _permission: 'create_quotation'
-    id: \d*    
+    id: \d*
 
 ek_sales.quotations.invoice:
   path: '/quotations/invoice/{id}'
@@ -342,7 +340,7 @@ ek_sales.quotations.invoice:
     _controller: '\Drupal\ek_sales\Controller\QuotationsController::InvoiceQuotation'
   requirements:
     _permission: 'create_quotation'
-    id: \d* 
+    id: \d*
 
 ek_sales.quotations.print_excel:
   path: '/quotations/excel/{id}'
@@ -351,7 +349,7 @@ ek_sales.quotations.print_excel:
     _controller: '\Drupal\ek_sales\Controller\QuotationsController::Excel'
   requirements:
     _permission: 'print_share_quotation'
-    id: \d* 
+    id: \d*
     
 ek_sales.quotations.print_share:
   path: '/quotations/print/{id}'
@@ -374,7 +372,7 @@ ek_sales.quotations.print_html:
 ek_sales.quotations.print_share_pdf:
   path: '/quotations/print/pdf/{param}'
   defaults:
-    _controller: '\Drupal\ek_sales\Controller\QuotationsController::PdfQuotations'  
+    _controller: '\Drupal\ek_sales\Controller\QuotationsController::PdfQuotations'
   requirements:
     _permission: 'print_share_quotation'
     #param: \w*
@@ -393,7 +391,7 @@ ek_sales.quotations.delete:
     _controller: '\Drupal\ek_sales\Controller\QuotationsController::DeleteQuotations'
   requirements:
     _permission: 'delete_quotation'
-    id: \d*     
+    id: \d*
     
 #invoice
 ek_sales.invoices.list:
@@ -411,7 +409,7 @@ ek_sales.invoices.aging:
     _controller: '\Drupal\ek_sales\Controller\InvoicesController::AgingInvoices'
   requirements:
     _permission: 'list_invoice'
-    
+
 ek_sales.invoices.create:
   path: '/invoices/new'
   defaults:
@@ -419,7 +417,7 @@ ek_sales.invoices.create:
     _controller: '\Drupal\ek_sales\Controller\InvoicesController::NewInvoices'
   requirements:
     _permission: 'create_invoice'
-    
+
 ek_sales.invoices.clone:
   path: '/invoices/clone/{id}'
   defaults:
@@ -427,7 +425,7 @@ ek_sales.invoices.clone:
     _controller: '\Drupal\ek_sales\Controller\InvoicesController::CloneInvoices'
   requirements:
     _permission: 'create_invoice'
-    id: \d*  
+    id: \d*
 
 ek_sales.invoices.do:
   path: '/invoices/do/{id}'
@@ -437,7 +435,7 @@ ek_sales.invoices.do:
   requirements:
     _permission: 'create_invoice'
     id: \d*
-        
+
 ek_sales.invoices.edit:
   path: '/invoices/edit/{id}'
   defaults:
@@ -445,7 +443,7 @@ ek_sales.invoices.edit:
     _controller: '\Drupal\ek_sales\Controller\InvoicesController::EditInvoice'
   requirements:
     _permission: 'create_invoice'
-    id: \d*  
+    id: \d*
 
 ek_sales.invoices.pay:
   path: '/invoices/pay/{id}'
@@ -464,7 +462,7 @@ ek_sales.invoices.assign.cn:
   requirements:
     _permission: 'create_invoice'
     id: \d*
-    
+
 ek_sales.invoices.alert:
   path: '/invoices/alert/{id}'
   defaults:
@@ -498,7 +496,7 @@ ek_sales.invoices.print_html:
     _controller: '\Drupal\ek_sales\Controller\InvoicesController::Html'
   requirements:
     _permission: 'print_share_invoice'
-    id: \d*    
+    id: \d*
 
 ek_sales.invoices.print_excel:
   path: '/invoices/excel/{id}'
@@ -507,8 +505,8 @@ ek_sales.invoices.print_excel:
     _controller: '\Drupal\ek_sales\Controller\InvoicesController::Excel'
   requirements:
     _permission: 'print_share_invoice'
-    id: \d* 
-    
+    id: \d*
+
 ek_sales.invoices.print_share:
   path: '/invoices/print/{id}'
   defaults:
@@ -521,7 +519,7 @@ ek_sales.invoices.print_share:
 ek_sales.invoices.print_share_pdf:
   path: '/invoices/print/pdf/{param}'
   defaults:
-    _controller: '\Drupal\ek_sales\Controller\InvoicesController::PdfInvoices'  
+    _controller: '\Drupal\ek_sales\Controller\InvoicesController::PdfInvoices'
   requirements:
     _permission: 'print_share_invoice'
     #param: \w*

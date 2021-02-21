@@ -1296,7 +1296,7 @@ class Purchase extends FormBase {
             $file = $this->fileStorage->load($fid);
 
             $dir = "private://sales/purchase/" . $reference . "";
-            \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
 
             $move = file_copy($file, $dir, FILE_EXISTS_RENAME);
             $move->setPermanent();

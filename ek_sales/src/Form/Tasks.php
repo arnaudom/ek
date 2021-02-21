@@ -56,7 +56,7 @@ class Tasks extends FormBase {
 
         $form['edit_doc'] = [
             '#type' => 'item',
-            '#markup' => $this->t('@doc ref. @p', ['@doc' => $doc, '@p' => $data->serial]),
+            '#markup' => "<h1>" . $this->t('@doc ref. @p', ['@doc' => $doc, '@p' => $data->serial]) . "</h1>",
         ];
 
         $form['for_serial'] = [
@@ -130,6 +130,7 @@ class Tasks extends FormBase {
             '#states' => [
                 'visible' => [":input[name='delete']" => ['checked' => false]],
             ],
+            '#prefix' => "",
         ];
 
 

@@ -68,11 +68,11 @@ class Alert extends FormBase {
 
         $form['info1'] = [
             '#type' => 'item',
-            '#markup' => $this->t('@d ref. @p', ['@d' => ucfirst($param['doc']), '@p' => $data->serial]),
+            '#markup' => "<h1>" . $this->t('@d ref. @p', ['@d' => ucfirst($param['doc']), '@p' => $data->serial]) . "</h1>",
         ];
         $form['info2'] = [
             '#type' => 'item',
-            '#markup' => $this->t('Automatic alert will be sent to the list of users for late payment'),
+            '#markup' => "<h2>" . $this->t('Automatic alert will be sent to the list of users for late payment') . "</h2>",
         ];
 
         $form['for_id'] = [
@@ -107,19 +107,30 @@ class Alert extends FormBase {
         if ($param['doc'] == 'invoice') {
             $form['client'] = [
                 '#type' => 'details',
-                '#title' => $this->t('Client alert'),
+                '#title' => "<h2>" . $this->t('Client alert') . "</h2>",
+                // '#open' => true,
                 '#open' => empty($w['client']) ? false : true,
             ];
 
             $form['client']['info'] = [
                 '#type' => 'item',
-                '#markup' => $this->t('Automatic alert will be sent to a client'),
+                '#markup' => "<p>" . $this->t('Automatic alert will be sent to a client') . "</p>",
+                '#states' => [
+                    'invisible' => [
+                        "select[name='astatus']" => ['value' => 0],
+                    ],
+                ],
             ];
             $link = Url::fromRoute('ek_sales_settings')->toString();
             $form['client']['aging'] = [
                 '#type' => 'item',
-                '#markup' => $this->t('Message threshold: @d day(s) after due date.', ['@d' => $settings->get('shortdue')]),
-                '#description' => $this->t('You can change this number in <a href="@l">sales settings</a>.',['@l' => $link]),
+                '#markup' => "<p>" . $this->t('Message threshold: @d day(s) after due date.', ['@d' => $settings->get('shortdue')]) . "</p>",
+                '#description' => "<p>" . $this->t('You can change this number in <a href="@l">sales settings</a>.', ['@l' => $link]) . "</p>",
+                '#states' => [
+                    'invisible' => [
+                        "select[name='astatus']" => ['value' => 0],
+                    ],
+                ],
             ];
 
 
@@ -257,8 +268,8 @@ class Alert extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        
-        if($form_state->getValue('document') == 'invoice') {
+
+        if ($form_state->getValue('document') == 'invoice') {
             $w = [
                 'users' => $form_state->get('list'),
                 'client' => ['frequency' => $form_state->getValue('frequency'), 'id' => $form_state->getValue('contact')],
@@ -267,12 +278,11 @@ class Alert extends FormBase {
                 'alert' => $form_state->getValue('astatus'),
                 'alert_who' => serialize($w),
             );
-            
-            $table = 'ek_sales_invoice';
 
+            $table = 'ek_sales_invoice';
         }
-        
-        if($form_state->getValue('document') == 'purchase') {
+
+        if ($form_state->getValue('document') == 'purchase') {
             $w = [
                 'users' => $form_state->get('list'),
                 'client' => [],
@@ -284,12 +294,11 @@ class Alert extends FormBase {
 
             $table = 'ek_sales_purchase';
         }
-        
+
         $update = Database::getConnection('external_db', 'external_db')
-                    ->update($table)->fields($fields)
-                    ->condition('id', $form_state->getValue('for_id'))
-                    ->execute();
-        
+                ->update($table)->fields($fields)
+                ->condition('id', $form_state->getValue('for_id'))
+                ->execute();
     }
 
 }

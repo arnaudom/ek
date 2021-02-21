@@ -25,8 +25,8 @@ ek_sales_settings:
   js:
     js/ek_sales_settings.js: {}
   dependencies:
-    - core/jquery 
-    
+    - core/jquery
+
 ek_sales_print:
   version: 1
   js:
@@ -43,7 +43,7 @@ ek_sales.invoice:
     js/ek_sales_invoice.js: {}
   dependencies:
     - core/jquery
-        
+
 ek_sales.purchase:
   version: 1
   css:
@@ -53,7 +53,7 @@ ek_sales.purchase:
     js/ek_sales_purchase.js: {}
   dependencies:
     - core/jquery
-        
+
 ek_sales.quotation:
   version: 1
   css:
@@ -63,14 +63,14 @@ ek_sales.quotation:
     js/ek_sales_quotation.js: {}
   dependencies:
     - core/jquery
-    
+
 ek_sales.check_aid:
   version: 1
   js:
     js/ek_sales_check_aid.js: {}
   dependencies:
     - core/jquery
-    
+
 ek_task:
   version: 1
   js:
@@ -81,7 +81,7 @@ ek_task:
   dependencies:
     - core/jquery
     - core/jquery.ui.autocomplete
-    
+
 ek_sales_docs_updater:
   version: 1
   js:

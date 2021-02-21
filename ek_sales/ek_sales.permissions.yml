@@ -1,9 +1,9 @@
 administrate_sales:
   title: 'Sales administation'
-  description: 'Settings and parameters' 
+  description: 'Settings and parameters'
 sales_management:
   title: 'Sales management'
-  description: 'Sales management, main access.' 
+  description: 'Sales management, main access.'
 sales_data:
   title: 'Sales data  per address book'
   description: 'Sales data compilation per address book account.'
@@ -15,31 +15,31 @@ list_more:
   description: 'List more info about payment, modal.'
 sales_task:
   title: 'Edit tasks'
-  description: 'Edit,delete tasks for invoices, purchases.'  
+  description: 'Edit,delete tasks for invoices, purchases.'
 create_purchase:
   title: 'Create or edit purchase'
-  description: 'Create or edit purchase'    
+  description: 'Create or edit purchase'
 list_purchase:
   title: 'List purchases'
-  description: 'List purchases and reprint.'  
+  description: 'List purchases and reprint.'
 print_share_purchase:
   title: 'Share purchases'
-  description: 'Send and share purchases via email.' 
+  description: 'Send and share purchases via email.'
 delete_purchase:
   title: 'Delete purchases'
   description: 'Administrate purchases (ie. delete).'
 create_quotation:
   title: 'Create or edit quotation'
-  description: 'Create or edit quotation.' 
+  description: 'Create or edit quotation.'
 list_quotation:
   title: 'List quotations'
   description: 'List quotations and reprint.'
 print_share_quotation:
   title: 'Share quotations'
-  description: 'Send and share quotations via email.' 
+  description: 'Send and share quotations via email.'
 delete_quotation:
   title: 'Delete quotations'
-  description: 'Delete quotations.'  
+  description: 'Delete quotations.'
 create_invoice:
   title: 'Create or edit invoice'
   description: 'Create or edit invoice.'
@@ -54,4 +54,4 @@ delete_invoice:
   description: 'Administrate invoices (ie. delete).'
 reset_pay:
   title: 'Reset payment'
-  description: 'Administrate (ie. reset a recorded payment).' 
+  description: 'Administrate (ie. reset a recorded payment).'
