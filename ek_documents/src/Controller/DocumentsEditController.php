@@ -82,7 +82,7 @@ class DocumentsEditController extends ControllerBase
 
         //verify if the folder structure exist and create
         $dir = "private://documents/users/" . \Drupal::currentUser()->id();
-        \Drupal::service('file_system')->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+        \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
         //load mydocs
         $list = [];
         $path = drupal_get_path('module', 'ek_documents');

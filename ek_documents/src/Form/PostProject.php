@@ -131,7 +131,7 @@ class PostProject extends FormBase
             $pcode = $code[0];
             $to = "private://projects/documents/" . $pcode;
 
-            \Drupal::service('file_system')->prepareDirectory($to, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            \Drupal::service('file_system')->prepareDirectory($to, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
             $to .= $data->filename;
             
             $move = \Drupal::service('file_system')->copy($doc->uri, $to, FILE_EXISTS_RENAME);

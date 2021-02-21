@@ -25,7 +25,6 @@ ek_documents_display:
     - jquery_ui_droppable/droppable
     - jquery_ui_draggable/draggable
 
-    
 ek_documents_multiselect:
   version: 1
   js:
@@ -36,4 +35,3 @@ ek_documents_multiselect:
       js/multiselect/css/multi-select.css: {}
   dependencies:
     - core/jquery
- 

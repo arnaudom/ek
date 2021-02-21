@@ -4,14 +4,14 @@ ek_documents_install:
     _controller: '\Drupal\ek_documents\Controller\InstallController::install'
   requirements:
     _permission: 'administer site configuration'
-    
+
 ek_documents_update:
   path: '/ek_documents/update'
   defaults:
     _controller: '\Drupal\ek_documents\Controller\InstallController::update'
   requirements:
     _permission: 'administer site configuration'
-    
+
 ek_documents_settings:
   path: '/documents/admin/settings'
   defaults:
@@ -19,7 +19,7 @@ ek_documents_settings:
     _controller: '\Drupal\ek_documents\Controller\SettingsController::settings'
   requirements:
     _permission: 'administrate_documents'
-    
+
 ek_documents_documents:
   path: '/documents'
   defaults:
@@ -27,7 +27,7 @@ ek_documents_documents:
     _controller: '\Drupal\ek_documents\Controller\DocumentsController::documents'
   requirements:
     _permission: 'manage_documents'
-    
+
 ek_documents_documents_shared:
   path: '/shared_documents'
   defaults:
@@ -43,21 +43,21 @@ ek_documents_documents_common:
     _controller: '\Drupal\ek_documents\Controller\DocumentsController::documentsCommon'
   requirements:
     _permission: 'view_common_documents'
-    
+
 ek_documents_documents_load:
   path: '/documents/load'
   defaults:
     _controller: '\Drupal\ek_documents\Controller\DocumentsEditController::load'
   requirements:
     _permission: 'manage_documents'
-    
+
 ek_documents_documents_upload:
   path: '/documents/upload'
   defaults:
     _controller: '\Drupal\ek_documents\Controller\DocumentsEditController::upload'
   requirements:
     _permission: 'manage_documents'
-    
+
 ek_documents_documents_delete:
   path: '/documents/delete/{id}'
   defaults:
@@ -73,7 +73,7 @@ ek_documents_documents_delete_confirm:
   requirements:
     _permission: 'manage_documents'
     id: \d*
-    
+
 ek_documents_documents_remove:
   path: '/documents/remove/{id}'
   defaults:
@@ -89,7 +89,7 @@ ek_documents_documents_share:
   requirements:
     _permission: 'manage_documents'
     id: \d*
-    
+
 ek_documents_documents_move:
   path: '/documents/move/{id}'
   defaults:
@@ -105,7 +105,6 @@ ek_documents_documents_dragdrop:
   requirements:
     _permission: 'manage_documents'
 
-   
 ek_documents_documents_project:
   path: '/documents/project/{id}'
   defaults:
@@ -113,7 +112,7 @@ ek_documents_documents_project:
   requirements:
     _permission: 'manage_documents'
     id: \d*
- 
+
 ek_look_up_folders:
   path: '/documents/look_up_folders'
   defaults:
