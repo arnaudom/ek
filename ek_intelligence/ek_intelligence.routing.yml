@@ -11,7 +11,7 @@ ek_intelligence_update:
     _controller: '\Drupal\ek_intelligence\Controller\InstallController::update'
   requirements:
     _permission: 'administer site configuration'
-    
+
 ek_intelligence.report:
   path: '/ireport'
   defaults:
@@ -19,7 +19,7 @@ ek_intelligence.report:
     _controller: '\Drupal\ek_intelligence\Controller\IreportController::reports'
   requirements:
     _permission: 'write_i_report'
-    
+
 ek_intelligence.new:
   path: '/ireport/new'
   defaults:
@@ -27,7 +27,7 @@ ek_intelligence.new:
     _controller: '\Drupal\ek_intelligence\Controller\IreportController::newReport'
   requirements:
     _permission: 'generate_i_report'
-    
+
 ek_intelligence.write:
   path: '/ireport/write/{id}'
   defaults:
@@ -44,7 +44,7 @@ ek_intelligence.read:
     _controller: '\Drupal\ek_intelligence\Controller\IreportController::readReport'
   requirements:
     _permission: 'write_i_report'
-    
+
 ek_intelligence.export:
   path: '/ireport/export/{id}'
   defaults:
@@ -53,7 +53,7 @@ ek_intelligence.export:
   requirements:
     _permission: 'generate_i_report'
     _id: \d*
-       
+
 ek_intelligence.delete:
   path: '/ireport/delete/{id}'
   defaults:
@@ -62,4 +62,3 @@ ek_intelligence.delete:
   requirements:
     _permission: 'delete_i_report'
     _id: \d*
-    

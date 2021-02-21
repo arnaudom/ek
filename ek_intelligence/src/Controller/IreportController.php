@@ -346,7 +346,7 @@ class IreportController extends ControllerBase {
 
             $fileName = $data->serial . '_' . 'report.docx';
             $path = "private://intelligence/reports/" . $data->coid;
-            \Drupal::service('file_system')->prepareDirectory($path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+            \Drupal::service('file_system')->prepareDirectory($path, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
 
 
             $markup = array();
