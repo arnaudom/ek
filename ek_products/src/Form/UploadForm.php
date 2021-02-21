@@ -83,7 +83,7 @@ class UploadForm extends FormBase {
             if ($file = $form_state->getValue('upload_image')) {
                 $filesystem = \Drupal::service('file_system');
                 $dir = "private://products/images/" . $form_state->getValue('for_id');
-                $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
                 $filename = $filesystem->copy($file->getFileUri(), $dir);
 
                 $query = "SELECT itemcode from {ek_items} where id=:id";
@@ -108,8 +108,8 @@ class UploadForm extends FormBase {
 
                 $thumb = "private://products/images/" . $form_state->getValue('for_id') . "/100/100x100_" . basename($filename);
                 $dir = "private://products/images/" . $form_state->getValue('for_id') . "/100/";
-                $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $filesystem->copy($filename, $thumb, FILE_EXISTS_REPLACE);
+                $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                $filesystem->copy($filename, $thumb, 'FILE_EXISTS_REPLACE');
                 //Resize after copy
                 $image_factory = \Drupal::service('image.factory');
                 $image = $image_factory->get($thumb);

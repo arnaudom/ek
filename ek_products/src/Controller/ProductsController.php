@@ -175,8 +175,8 @@ class ProductsController extends ControllerBase {
                     if (!file_exists($thumb)) {
                         $filesystem = \Drupal::service('file_system');
                         $dir = "private://products/images/" . $r->id . "/40/";
-                        $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                        $filesystem->copy($item_img->uri, $thumb, FILE_EXISTS_REPLACE);
+                        $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                        $filesystem->copy($item_img->uri, $thumb, 'FILE_EXISTS_REPLACE');
                         //Resize after copy
                         $image_factory = \Drupal::service('image.factory');
                         $image = $image_factory->get($thumb);
@@ -529,8 +529,8 @@ class ProductsController extends ControllerBase {
                 if (!file_exists($thumb) && file_exists($dir . basename($i['uri']))) {
                     $filesystem = \Drupal::service('file_system');
                     $dir = "private://products/images/" . $items['id'] . "/100/";
-                    $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                    $filesystem->copy($i['uri'], $thumb, FILE_EXISTS_REPLACE);
+                    $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                    $filesystem->copy($i['uri'], $thumb, 'FILE_EXISTS_REPLACE');
                     //Resize after copy
                     $image_factory = \Drupal::service('image.factory');
                     $image = $image_factory->get($thumb);

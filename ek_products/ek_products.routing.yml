@@ -73,7 +73,7 @@ ek_products.edit:
     _title: 'Edit product or services'
     _controller: '\Drupal\ek_products\Controller\ProductsController::editproducts'
   requirements:
-    _permission: 'edit_products'  
+    _permission: 'edit_products'
     id: \w*
     
 ek_products.clone:
@@ -82,7 +82,7 @@ ek_products.clone:
     _title: 'Clone product or service'
     _controller: '\Drupal\ek_products\Controller\ProductsController::cloneproducts'
   requirements:
-    _permission: 'edit_products'  
+    _permission: 'edit_products'
     id: \w*
     
 ek_products.delete:
@@ -91,7 +91,7 @@ ek_products.delete:
     _title: 'Delete product or services'
     _controller: '\Drupal\ek_products\Controller\ProductsController::deleteproducts'
   requirements:
-    _permission: 'delete_products'  
+    _permission: 'delete_products'
     id: \w*   
     
 ek.look_up_item_ajax:
@@ -108,7 +108,7 @@ ek_look_up_item_type:
     _controller: '\Drupal\ek_products\Controller\ProductsController::tags'
     opt: 'type'
   requirements:
-    _permission: 'create_products' 
+    _permission: 'create_products'
 
 ek_look_up_item_department:
   path: '/item/tags2/{opt}'
@@ -116,7 +116,7 @@ ek_look_up_item_department:
     _controller: '\Drupal\ek_products\Controller\ProductsController::tags'
     opt: 'department'
   requirements:
-    _permission: 'create_products' 
+    _permission: 'create_products'
 
 ek_look_up_item_family:
   path: '/item/tags3/{opt}'
@@ -124,7 +124,7 @@ ek_look_up_item_family:
     _controller: '\Drupal\ek_products\Controller\ProductsController::tags'
     opt: 'family'
   requirements:
-    _permission: 'create_products' 
+    _permission: 'create_products'
 
 ek_look_up_item_collection:
   path: '/item/tags4/{opt}'
@@ -157,4 +157,3 @@ ek_item.pdf:
   requirements:
     _permission: 'view_products'
     id: \w*
-      

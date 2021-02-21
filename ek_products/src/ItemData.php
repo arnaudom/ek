@@ -320,7 +320,7 @@ class ItemData {
                     if (!file_exists($thumb) && file_exists($dir . basename($r->uri))) {
                         $filesystem = \Drupal::service('file_system');
                         $dir = "private://products/images/" . $r->id . "/40/";
-                        $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+                        $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
                         $filesystem->copy($r->uri, $thumb, FILE_EXISTS_REPLACE);
                         //Resize after copy
                         $image_factory = \Drupal::service('image.factory');
