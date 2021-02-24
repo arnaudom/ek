@@ -7,17 +7,18 @@
 
 namespace Drupal\ek_products\Controller;
 
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\OpenModalDialogCommand;
+use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\OpenModalDialogCommand;
-use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_products\ItemSettings;
 
@@ -175,7 +176,7 @@ class ProductsController extends ControllerBase {
                     if (!file_exists($thumb)) {
                         $filesystem = \Drupal::service('file_system');
                         $dir = "private://products/images/" . $r->id . "/40/";
-                        $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                        $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                         $filesystem->copy($item_img->uri, $thumb, 'FILE_EXISTS_REPLACE');
                         //Resize after copy
                         $image_factory = \Drupal::service('image.factory');
@@ -529,7 +530,7 @@ class ProductsController extends ControllerBase {
                 if (!file_exists($thumb) && file_exists($dir . basename($i['uri']))) {
                     $filesystem = \Drupal::service('file_system');
                     $dir = "private://products/images/" . $items['id'] . "/100/";
-                    $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                    $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                     $filesystem->copy($i['uri'], $thumb, 'FILE_EXISTS_REPLACE');
                     //Resize after copy
                     $image_factory = \Drupal::service('image.factory');

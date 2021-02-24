@@ -7,11 +7,12 @@
 
 namespace Drupal\ek_products\Form;
 
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Database\Database;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InsertCommand;
+use Drupal\Core\Database\Database;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Provides a form to upload file.
@@ -83,7 +84,7 @@ class UploadForm extends FormBase {
             if ($file = $form_state->getValue('upload_image')) {
                 $filesystem = \Drupal::service('file_system');
                 $dir = "private://products/images/" . $form_state->getValue('for_id');
-                $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $filename = $filesystem->copy($file->getFileUri(), $dir);
 
                 $query = "SELECT itemcode from {ek_items} where id=:id";
@@ -98,8 +99,8 @@ class UploadForm extends FormBase {
                 //create thumbs
                 $thumb = "private://products/images/" . $form_state->getValue('for_id') . "/40/40x40_" . basename($filename);
                 $dir = "private://products/images/" . $form_state->getValue('for_id') . "/40/";
-                $filesystem->prepareDirectory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-                $filesystem->copy($filename, $thumb, FILE_EXISTS_REPLACE);
+                $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+                $filesystem->copy($filename, $thumb, 'FILE_EXISTS_REPLACE');
                 //Resize after copy
                 $image_factory = \Drupal::service('image.factory');
                 $image = $image_factory->get($thumb);
@@ -108,7 +109,7 @@ class UploadForm extends FormBase {
 
                 $thumb = "private://products/images/" . $form_state->getValue('for_id') . "/100/100x100_" . basename($filename);
                 $dir = "private://products/images/" . $form_state->getValue('for_id') . "/100/";
-                $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $filesystem->copy($filename, $thumb, 'FILE_EXISTS_REPLACE');
                 //Resize after copy
                 $image_factory = \Drupal::service('image.factory');
