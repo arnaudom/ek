@@ -7,6 +7,7 @@
 
 namespace Drupal\ek_address_book\Form;
 
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
@@ -335,7 +336,7 @@ class NewAddressBookCardForm extends FormBase
                     if (!$form_state->getValue('image' . $i) == 0) {
                         $file = $form_state->getValue('image' . $i);
                         $dir = "private://address_book/cards/" . $form_state->getValue('for_id');
-                        \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                        \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                         $card = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                     }
                     //end upload//

@@ -7,6 +7,7 @@
 
 namespace Drupal\ek_address_book\Form;
 
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
@@ -700,7 +701,7 @@ class NewAddressBookForm extends FormBase {
         if (!$form_state->getValue('logo') == 0) {
             if ($file = $form_state->getValue('logo')) {
                 $dir = "private://address_book/cards/" . $id;
-                \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $logo = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                 //Resize after copy
                 $image_factory = \Drupal::service('image.factory');
@@ -781,7 +782,7 @@ class NewAddressBookForm extends FormBase {
                             $file = $form_state->getValue('image' . $i);
                             //unset($file);
                             $dir = "private://address_book/cards/" . $id;
-                            \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                            \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                             $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                         }
 
