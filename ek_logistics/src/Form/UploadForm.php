@@ -7,6 +7,7 @@
 
 namespace Drupal\ek_logistics\Form;
 
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -78,7 +79,7 @@ class UploadForm extends FormBase {
 
         if ($file) {
             $dir = "private://logistics/templates";
-            \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+            \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
             $doc = $dir . '/' . $file->getFileName();
             $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $doc, 'FILE_EXISTS_REPLACE');
 
