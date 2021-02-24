@@ -7,9 +7,10 @@
 
 namespace Drupal\ek_hr\Form;
 
+use Drupal\Core\Database\Database;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -97,7 +98,7 @@ class UploadForm extends FormBase
     {
         if ($form_state->get('new_upload')) {
             $dir = "private://hr/documents/" . $form_state->getValue('for_id')  ;
-            \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+            \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
             $move = file_move($form_state->get('new_upload'), $dir);
           
             if ($move) {

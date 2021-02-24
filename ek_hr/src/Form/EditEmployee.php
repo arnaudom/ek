@@ -7,16 +7,17 @@
 
 namespace Drupal\ek_hr\Form;
 
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Database\Database;
-use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Database\Database;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\CurrencyData;
 use Drupal\ek_hr\HrSettings;
@@ -793,7 +794,7 @@ class EditEmployee extends FormBase
                 $file = $this->fileStorage->load($fid);
                 $name = $file->getFileName();
                 $dir = "private://hr/pictures/" . $form_state->getValue('coid');
-                \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $image = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                     
                 \Drupal::messenger()->addStatus(t("New Picture uploaded"));

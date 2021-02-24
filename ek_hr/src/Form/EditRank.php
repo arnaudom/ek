@@ -7,12 +7,12 @@
 
 namespace Drupal\ek_hr\Form;
 
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_hr\HrSettings;
 
@@ -188,7 +188,7 @@ class EditRank extends FormBase
             $field = "upload";
             //$form_state->setValue('image', '');
             
-            $file = file_save_upload($field, $validators, false, 0, FILE_EXISTS_REPLACE);
+            $file = file_save_upload($field, $validators, false, 0, 'FILE_EXISTS_REPLACE');
         
             if ($file) {
                 $form_state->set('new_upload', $file);
@@ -206,15 +206,15 @@ class EditRank extends FormBase
         if ($form_state->get('step') == 3) {
             if ($form_state->get('new_upload')) {
                 $dir = "private://hr/data/" . $form_state->getValue('coid') . '/ranks' ;
-                \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $dest = $dir . '/ranks.txt';
-                $filename = \Drupal::service('file_system')->copy($form_state->get('new_upload')->getFileUri(), $dest, FILE_EXISTS_REPLACE);
+                $filename = \Drupal::service('file_system')->copy($form_state->get('new_upload')->getFileUri(), $dest, 'FILE_EXISTS_REPLACE');
                 \Drupal::messenger()->addStatus(t("New file uploaded"));
             } elseif ($form_state->getValue('rank')) {
                 //write the data to the file
                 $dir = "private://hr/data/" . $form_state->getValue('coid')  ."/ranks";
                 if (!file_exists()) {
-                    \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                    \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 }
                 $file = $dir . '/ranks.txt';
                 $fp = fopen($file, 'w');

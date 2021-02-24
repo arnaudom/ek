@@ -7,10 +7,11 @@
 
 namespace Drupal\ek_hr\Form;
 
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InsertCommand;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 
 /**
@@ -88,10 +89,10 @@ class UploadFormPayslip extends FormBase
           
         if ($file) {
             $dir = "private://hr/payslips" ;
-            \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+            \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
             $filename = str_replace(' ', '_', $file->getFileName());
             $doc = $dir . '/' .  $filename;
-            \Drupal::service('file_system')->copy($file->getFileUri(), $doc, FILE_EXISTS_REPLACE);
+            \Drupal::service('file_system')->copy($file->getFileUri(), $doc, 'FILE_EXISTS_REPLACE');
    
             $vid = str_replace('.', '___', $filename);
             $link = "<a href='#' class='deleteButton red'  id='". $vid ."' >[x]</a>" ;

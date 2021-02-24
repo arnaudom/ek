@@ -7,15 +7,16 @@
 
 namespace Drupal\ek_hr\Controller;
 
-use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Database\Connection;
-use Drupal\Core\Database\Database;
-use Drupal\Core\Url;
-use Drupal\Core\Form\FormBuilderInterface;
-use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\RemoveCommand;
+use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Database\Database;
+use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Form\FormBuilderInterface;
+use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -1022,8 +1023,8 @@ class ParametersController extends ControllerBase {
                                 if (!file_exists($thumb)) {
                                     $dir = "private://hr/pictures/" . $emp['company_id'] . "/40/";
                                     $filesystem = \Drupal::service('file_system');
-                                    $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
-                                    $filesystem->copy($d->picture, $thumb, FILE_EXISTS_REPLACE);
+                                    $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+                                    $filesystem->copy($d->picture, $thumb, 'FILE_EXISTS_REPLACE');
                                     //Resize after copy
                                     $image_factory = \Drupal::service('image.factory');
                                     $image = $image_factory->get($thumb);
