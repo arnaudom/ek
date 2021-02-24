@@ -7,14 +7,15 @@
 
 namespace Drupal\ek_finance\Form;
 
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Database\Database;
-use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Core\Url;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\HtmlCommand;
+use Drupal\Core\Database\Database;
+use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_finance\FinanceSettings;
 
 /**
@@ -175,7 +176,7 @@ class AttachFileMemo extends FormBase {
 
         if ($file) {
             $dir = "private://finance/memos";
-            \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+            \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
             $dest = $dir . '/' . $file->getFilename();
             $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $dest);
 

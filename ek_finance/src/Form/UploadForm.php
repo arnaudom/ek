@@ -7,9 +7,10 @@
 
 namespace Drupal\ek_finance\Form;
 
+use Drupal\Core\Database\Database;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Database\Database;
 use Drupal\Core\StreamWrapper\TemporaryStream;
 use Drupal\ek_finance\FinanceSettings;
 
@@ -106,7 +107,7 @@ class UploadForm extends FormBase {
                 //upload
 
                 $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [$ext_size]);
-                $file = file_save_upload("upload_doc", $validators, null, 0, FILE_EXISTS_RENAME);
+                $file = file_save_upload("upload_doc", $validators, null, 0, 'FILE_EXISTS_RENAME');
 
                 if ($file) {
                     //add the expense id to the filename
@@ -115,7 +116,7 @@ class UploadForm extends FormBase {
                     //move it to a new folder
 
                     $dir = "private://finance/receipt/" . $att->company;
-                    \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                    \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                     $filepath = \Drupal::service('file_system')->copy($file->getFileUri(), $dir . "/" . $ref[0] . '_' . $file->getFilename());
                     $receipt = 'yes';
 
@@ -146,11 +147,11 @@ class UploadForm extends FormBase {
                         ->fetchObject();
 
                 $validators = array('file_validate_extensions' => array('png jpg jpeg pdf'));
-                $file = file_save_upload("upload_doc", $validators, null, 0, FILE_EXISTS_RENAME);
+                $file = file_save_upload("upload_doc", $validators, null, 0, 'FILE_EXISTS_RENAME');
 
                 if ($file) {
                     $dir = "private://finance/bank/" . $att->coid;
-                    \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                    \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                     $filepath = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
 
 

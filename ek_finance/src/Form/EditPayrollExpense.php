@@ -7,14 +7,15 @@
 
 namespace Drupal\ek_finance\Form;
 
+use Drupal\Core\Database\Database;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Locale\CountryManagerInterface;
-use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_projects\ProjectData;
@@ -767,7 +768,7 @@ class EditPayrollExpense extends FormBase {
                     $file = $this->fileStorage->load($fid);
                     $name = $file->getFileName();
                     $dir = "private://finance/receipt/" . $form_state->getValue('coid');
-                    \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                    \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                     $load_attachment = \Drupal::service('file_system')->copy($file->getFileUri(), $dir . "/" . $insert . '_' . $name);
                 } elseif ($form_state->getValue('uri' . $n) != '') {
                     $receipt = 'yes';

@@ -7,12 +7,11 @@
 
 namespace Drupal\ek_finance\Form;
 
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Component\Utility\Xss;
-use Drupal\Core\Cache\Cache;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_projects\ProjectData;
 use Drupal\ek_admin\Access\AccessCheck;
@@ -295,7 +294,7 @@ class moveData extends FormBase {
 
         $dir = "private://finance/log";
         if (!file_exists()) {
-            \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+            \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
         }
         $file = $dir . '/log_' . date('Y-m-d_H-i') . '_' . $form_state->getValue('coid') . '_' . $form_state->getValue('fromClass') . '_' . $form_state->getValue('toClass') . '.txt';
         $fp = fopen($file, 'w');
