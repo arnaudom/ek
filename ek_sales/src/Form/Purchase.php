@@ -7,15 +7,16 @@
 
 namespace Drupal\ek_sales\Form;
 
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Database\Database;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Database\Database;
-use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Url;
-use Drupal\Core\Cache\Cache;
-use Drupal\Component\Utility\Xss;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_admin\Access\AccessCheck;
 
@@ -1296,9 +1297,9 @@ class Purchase extends FormBase {
             $file = $this->fileStorage->load($fid);
 
             $dir = "private://sales/purchase/" . $reference . "";
-            \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+            \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
 
-            $move = file_copy($file, $dir, FILE_EXISTS_RENAME);
+            $move = file_copy($file, $dir, 'FILE_EXISTS_RENAME');
             $move->setPermanent();
             $move->save();
 

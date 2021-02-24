@@ -7,10 +7,11 @@
 
 namespace Drupal\ek_sales\Form;
 
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 
@@ -246,7 +247,7 @@ class SettingsForms extends FormBase {
 
 
         $dir = "private://sales/templates/purchase/";
-        $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+        $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
 
         $file = file_save_upload("P", $validators, $dir, 0, 'FILE_EXISTS_REPLACE');
         if ($file) {
@@ -256,7 +257,7 @@ class SettingsForms extends FormBase {
         }
 
         $dir = "private://sales/templates/quotation/";
-        $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+        $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
 
         $file = file_save_upload("Q", $validators, $dir, 0, 'FILE_EXISTS_REPLACE');
         if ($file) {
@@ -266,7 +267,7 @@ class SettingsForms extends FormBase {
         }
 
         $dir = "private://sales/templates/invoice/";
-        $filesystem->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+        $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
 
         $file = file_save_upload("I", $validators, $dir, 0, 'FILE_EXISTS_REPLACE');
         if ($file) {
