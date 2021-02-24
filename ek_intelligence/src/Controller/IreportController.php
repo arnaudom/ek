@@ -11,6 +11,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Url;
 use Drupal\user\Entity\User;
@@ -346,7 +347,7 @@ class IreportController extends ControllerBase {
 
             $fileName = $data->serial . '_' . 'report.docx';
             $path = "private://intelligence/reports/" . $data->coid;
-            \Drupal::service('file_system')->prepareDirectory($path, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+            \Drupal::service('file_system')->prepareDirectory($path, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
 
 
             $markup = array();
