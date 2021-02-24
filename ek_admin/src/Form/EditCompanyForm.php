@@ -8,6 +8,7 @@
 namespace Drupal\ek_admin\Form;
 
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Locale\CountryManagerInterface;
@@ -502,11 +503,11 @@ class EditCompanyForm extends FormBase
 
         $validators = array('file_validate_is_image' => array());
         $destination =  "private://admin/company" . $form_state->getValue('for_id') . "/images";
-        \Drupal::service('file_system')->prepareDirectory($destination, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+        \Drupal::service('file_system')->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
         //LOGO
         $field = "logo";
         // Check for a new uploaded logo.
-        $file = file_save_upload($field, $validators, $destination, 0, FILE_EXISTS_RENAME);
+        $file = file_save_upload($field, $validators, $destination, 0, 'FILE_EXISTS_RENAME');
 
         if (isset($file)) {
             $res = file_validate_image_resolution($file, '300x300', '100x100');
@@ -525,7 +526,7 @@ class EditCompanyForm extends FormBase
         //SIGN
         $field = "sign";
         // Check for a new uploaded signature.
-        $file = file_save_upload($field, $validators, $destination, 0, FILE_EXISTS_RENAME);
+        $file = file_save_upload($field, $validators, $destination, 0, 'FILE_EXISTS_RENAME');
 
         if (isset($file)) {
             $res = file_validate_image_resolution($file, '300x300', '100x100');

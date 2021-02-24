@@ -7,9 +7,10 @@
 
 namespace Drupal\ek_admin\Form;
 
+use Drupal\Core\Database\Database;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Database\Database;
 use Drupal\Component\Utility\Xss;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -95,8 +96,8 @@ class UploadForm extends FormBase {
         $extensions = 'png gif jpg jpeg bmp txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip';
         $validators = array('file_validate_extensions' => array($extensions));
         $dir = "private://admin/company" . $form_state->getValue('coid') . "/documents";
-        \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
-        $file = file_save_upload("upload_doc", $validators, $dir, 0, FILE_EXISTS_RENAME);
+        \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+        $file = file_save_upload("upload_doc", $validators, $dir, 0, 'FILE_EXISTS_RENAME');
 
         if ($file) {
             $file->setPermanent();
