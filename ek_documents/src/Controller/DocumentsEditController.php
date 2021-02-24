@@ -10,6 +10,7 @@ namespace Drupal\ek_documents\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Ajax\AjaxResponse;
@@ -67,8 +68,7 @@ class DocumentsEditController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -82,7 +82,7 @@ class DocumentsEditController extends ControllerBase
 
         //verify if the folder structure exist and create
         $dir = "private://documents/users/" . \Drupal::currentUser()->id();
-        \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+        \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
         //load mydocs
         $list = [];
         $path = drupal_get_path('module', 'ek_documents');
@@ -291,7 +291,7 @@ class DocumentsEditController extends ControllerBase
         $doc = $query->execute()->fetchObject();
         
         $uri = "private://documents/users/" . \Drupal::currentUser()->id() . '/' . basename($doc->uri);
-        $move = \Drupal::service('file_system')->copy($doc->uri, $uri, FILE_EXISTS_RENAME);
+        $move = \Drupal::service('file_system')->copy($doc->uri, $uri, 'FILE_EXISTS_RENAME');
         
         $fields = array(
             'uid' => \Drupal::currentUser()->id(),

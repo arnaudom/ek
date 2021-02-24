@@ -7,10 +7,11 @@
 
 namespace Drupal\ek_documents\Form;
 
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Database\Database;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Database\Database;
-use Drupal\Component\Utility\Xss;
 use Drupal\ek_documents\Settings;
 
 /**
@@ -112,7 +113,7 @@ class UploadForm extends FormBase {
         $extensions = $settings->get('file_extensions');
         $validators = array('file_validate_extensions' => array($extensions));
         $dir = "private://documents/users/" . $user;
-        \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+        \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
         $file = file_save_upload("upload_doc", $validators, $dir, 0, 'FILE_EXISTS_RENAME');
 
         if ($file) {

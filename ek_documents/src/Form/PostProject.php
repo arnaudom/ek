@@ -7,6 +7,7 @@
 
 namespace Drupal\ek_documents\Form;
 
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
@@ -131,10 +132,10 @@ class PostProject extends FormBase
             $pcode = $code[0];
             $to = "private://projects/documents/" . $pcode;
 
-            \Drupal::service('file_system')->prepareDirectory($to, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+            \Drupal::service('file_system')->prepareDirectory($to, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
             $to .= $data->filename;
             
-            $move = \Drupal::service('file_system')->copy($doc->uri, $to, FILE_EXISTS_RENAME);
+            $move = \Drupal::service('file_system')->copy($doc->uri, $to, 'FILE_EXISTS_RENAME');
             // if($move) {
             $fields = array(
                 'pcode' => $string[1],
