@@ -7,12 +7,13 @@
 
 namespace Drupal\ek_assets\Form;
 
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Database\Database;
+use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Database\Database;
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
-use Drupal\Core\Extension\ModuleHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\AidList;
@@ -476,7 +477,7 @@ class EditForm extends FormBase {
         if ($form_state->getValue('asset_pic') != 0) {
             if ($file = $form_state->getValue('asset_pic')) {
                 $dir = "private://assets/" . $form_state->getValue('coid');
-                \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $picture = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
 
                 \Drupal::messenger()->addStatus(t("Picture uploaded"));
@@ -487,7 +488,7 @@ class EditForm extends FormBase {
         if ($form_state->getValue('asset_doc') != 0) {
             if ($file = $form_state->getValue('asset_doc')) {
                 $dir = "private://assets/" . $form_state->getValue('coid');
-                \Drupal::service('file_system')->prepareDirectory($dir, 'FILE_CREATE_DIRECTORY' | 'FILE_MODIFY_PERMISSIONS');
+                \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $doc = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
 
                 \Drupal::messenger()->addStatus(t("Attachment uploaded"));
