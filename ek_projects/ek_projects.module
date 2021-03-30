@@ -150,9 +150,8 @@ function ek_projects_file_download($uri) {
             ) { 
         
     $guesser = \Drupal::service('file.mime_type.guesser');
-    $mime = $guesser->guessMimeType($uri);    
-    // $finfo = new finfo(FILEINFO_MIME_TYPE);
-    // $mime = $finfo->file($uri);
+    // D9 $mime = $guesser->guessMimeType($uri);
+    $mime = $guesser->guess($uri);
     $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_project_documents', 'd')
                             ->fields('d',['id','filename'])
