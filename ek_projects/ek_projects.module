@@ -149,8 +149,10 @@ function ek_projects_file_download($uri) {
             &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , '/extranet/chat')
             ) { 
         
-    $finfo = new finfo(FILEINFO_MIME_TYPE);
-    $mime = $finfo->file($uri);
+    $guesser = \Drupal::service('file.mime_type.guesser');
+    $mime = $guesser->guessMimeType($uri);    
+    // $finfo = new finfo(FILEINFO_MIME_TYPE);
+    // $mime = $finfo->file($uri);
     $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_project_documents', 'd')
                             ->fields('d',['id','filename'])
