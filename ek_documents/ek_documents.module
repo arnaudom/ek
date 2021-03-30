@@ -86,8 +86,10 @@ function ek_documents_theme() {
 function ek_documents_file_download($uri) {
 
     if (strpos($uri, '/documents/users/')) {
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->file($uri);
+        $guesser = \Drupal::service('file.mime_type.guesser');
+        $mime = $guesser->guessMimeType($uri);
+        // $finfo = new finfo(FILEINFO_MIME_TYPE);
+        // $mime = $finfo->file($uri);
         
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_documents', 'd')
