@@ -15,8 +15,8 @@
 function ek_products_file_download($uri) {
     if( strpos($uri , 'products/images' )  ) { 
         $guesser = \Drupal::service('file.mime_type.guesser');
-        $mime = $guesser->guessMimeType($uri);
-        // $finfo = new finfo(FILEINFO_MIME_TYPE);
+        // D9 $mime = $guesser->guessMimeType($uri);
+        $mime = $guesser->guess($uri);
         return array('Content-Type' => $mime); 
     }
 }
