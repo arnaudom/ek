@@ -309,3 +309,49 @@ function ek_sales_update_8014() {
 function ek_sales_update_8015() {
     \Drupal::service('router.builder')->rebuild();
 }
+
+/**
+ * move sales templates to settings
+ * before enabling s3 storage
+*/
+function ek_sales_update_8016() {
+    $settings = new \Drupal\ek_sales\SalesSettings();
+    $tpls = $settings->get('templates');
+    if(empty($tpls)) {
+        $tpls['purchase'] = [];
+        $tpls['quotation'] = [];
+        $tpls['invoice'] = [];
+        $templates = 'private://sales/templates/purchase/';
+            if (file_exists($templates)) {
+              $handle = opendir('private://sales/templates/purchase/');
+              while ($file = readdir($handle)) {
+                if ($file != '.' and $file != '..') {
+                    $tpls['purchase'][] = $file;
+                }
+              }
+            }   
+
+        $templates = 'private://sales/templates/quotation/';
+            if (file_exists($templates)) {
+              $handle = opendir('private://sales/templates/quotation/');
+              while ($file = readdir($handle)) {
+                if ($file != '.' and $file != '..') {
+                    $tpls['quotation'][] = $file;
+                }
+              }
+            }
+
+        $templates = 'private://sales/templates/invoice/';
+            if (file_exists($templates)) {
+              $handle = opendir('private://sales/templates/invoice/');
+              while ($file = readdir($handle)) {
+                if ($file != '.' and $file != '..') {
+                    $tpls['invoice'][] = $file;
+                }
+              }
+            }      
+
+        $settings->set('templates', $tpls);
+        $settings->save();
+    }
+}

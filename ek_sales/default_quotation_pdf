@@ -521,9 +521,9 @@ $y = $pdf->GetY();
 $adj = ($s_pos > 0) ? $s_pos : 40;
 $bottom = ($y + $adj) > 268 ? 268 : $y + $adj;
 if ($signature == 1) {
-    if (isset($company->sign)) {
-        $sign = \Drupal::service('file_system')->realpath($company->sign);
-        if (file_exists($sign)) {
+     if(isset($company->sign)) {        
+            if(file_exists($company->sign)) {
+            $sign = file_create_url($company->sign);
             $pdf->Image($sign, 20, $bottom - 20, $format_feature['stamp_z']);
         }
     }

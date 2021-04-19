@@ -13,7 +13,7 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\ek_sales\SalesSettings;
 
 ;
 
@@ -35,6 +35,8 @@ class SettingsForms extends FormBase {
      */
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
+        $this->settings = new SalesSettings();
+        $this->tpls = $this->settings->get('templates');
     }
 
     /**
@@ -69,20 +71,9 @@ class SettingsForms extends FormBase {
             '#description' => $this->t('Upload a new purchase template. Only files with a ".inc" extension is allowed.'),
         );
 
-        $list_purchase = array();
-        $templates = 'private://sales/templates/purchase/';
-        if (file_exists($templates)) {
-            $handle = opendir('private://sales/templates/purchase/');
-            while ($file = readdir($handle)) {
-                if ($file != '.' and $file != '..') {
-                    $list_purchase[$file] = $file;
-                }
-            }
-
-
-            $i = 0;
-
-            foreach ($list_purchase as $key => $name) {
+        $i = 0;
+        if (!empty($this->tpls['purchase'])) {
+            foreach ($this->tpls['purchase'] as $key => $name) {
                 $form['P']['template' . $i] = array(
                     '#type' => 'checkbox',
                     '#default_value' => 0,
@@ -93,6 +84,7 @@ class SettingsForms extends FormBase {
                 $i++;
             }
         }
+
 
         $form['Q'] = array(
             '#type' => 'details',
@@ -105,18 +97,9 @@ class SettingsForms extends FormBase {
             '#type' => 'file',
             '#description' => $this->t('Upload a new quotation template. Only files with a ".inc" extension is allowed.'),
         );
-
-        $list_quotation = array();
-        $templates = 'private://sales/templates/quotation/';
-        if (file_exists($templates)) {
-            $handle = opendir('private://sales/templates/quotation/');
-            while ($file = readdir($handle)) {
-                if ($file != '.' and $file != '..') {
-                    $list_quotation[$file] = $file;
-                }
-            }
-
-            foreach ($list_quotation as $key => $name) {
+        
+        if (!empty($this->tpls['quotation'])) {
+            foreach ($this->tpls['quotation'] as $key => $name) {
                 $form['Q']['template' . $i] = array(
                     '#type' => 'checkbox',
                     '#default_value' => 0,
@@ -139,18 +122,9 @@ class SettingsForms extends FormBase {
             '#type' => 'file',
             '#description' => $this->t('Upload a new invoice template. Only files with a ".inc" extension is allowed.'),
         );
-
-        $list_invoice = array();
-        $templates = 'private://sales/templates/invoice/';
-        if (file_exists($templates)) {
-            $handle = opendir('private://sales/templates/invoice/');
-            while ($file = readdir($handle)) {
-                if ($file != '.' and $file != '..') {
-                    $list_invoice[$file] = $file;
-                }
-            }
-
-            foreach ($list_invoice as $key => $name) {
+        
+        if (!empty($this->tpls['invoice'])) {
+            foreach ($this->tpls['invoice'] as $key => $name) {
                 $form['I']['template' . $i] = array(
                     '#type' => 'checkbox',
                     '#default_value' => 0,
@@ -161,6 +135,7 @@ class SettingsForms extends FormBase {
                 $i++;
             }
         }
+        
         $form['#tree'] = true;
 
         $form['actions'] = array(
@@ -190,6 +165,9 @@ class SettingsForms extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
+        
+        // if checkbox is selected, value return = file name
+        // file is deleted and remove from settings
         foreach ($form_state->getValue('P') as $key => $value) {
             if ($value != 0 || $value != '') {
                 $uri = "private://sales/templates/purchase/" . $value;
@@ -203,6 +181,9 @@ class SettingsForms extends FormBase {
                     $file = \Drupal\file\Entity\File::load($fid);
                     $file->delete();
                     \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
+                }
+                if (($key = array_search($value, $this->tpls['purchase'])) !== false) {
+                    unset($this->tpls['purchase'][$key]);
                 }
             }
         }
@@ -221,6 +202,9 @@ class SettingsForms extends FormBase {
                     $file->delete();
                     \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
                 }
+                if (($key = array_search($value, $this->tpls['quotation'])) !== false) {
+                    unset($this->tpls['quotation'][$key]);
+                }
             }
         }
 
@@ -238,6 +222,9 @@ class SettingsForms extends FormBase {
                     $file->delete();
                     \Drupal::messenger()->addStatus(t("Template @t deleted", ['@t' => $value]));
                 }
+                if (($key = array_search($value, $this->tpls['invoice'])) !== false) {
+                    unset($this->tpls['invoice'][$key]);
+                }
             }
         }
 
@@ -253,6 +240,7 @@ class SettingsForms extends FormBase {
         if ($file) {
             $file->setPermanent();
             $file->save();
+            $this->tpls['purchase'][] = $file->getFileName();
             \Drupal::messenger()->addStatus(t("New purchase file uploaded"));
         }
 
@@ -263,6 +251,7 @@ class SettingsForms extends FormBase {
         if ($file) {
             $file->setPermanent();
             $file->save();
+            $this->tpls['quotation'][] = $file->getFileName();
             \Drupal::messenger()->addStatus(t("New quotation file uploaded"));
         }
 
@@ -273,8 +262,13 @@ class SettingsForms extends FormBase {
         if ($file) {
             $file->setPermanent();
             $file->save();
+            $this->tpls['invoice'][] = $file->getFileName();
             \Drupal::messenger()->addStatus(t("New invoice file uploaded"));
         }
+        
+        // save template
+        $this->settings->set('templates', $this->tpls);
+        $this->settings->save();
     }
 
 }

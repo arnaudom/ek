@@ -11,12 +11,21 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\ek_sales\SalesSettings;
 
 /**
  * Provides a form to filter print docs.
  */
 class FilterPrint extends FormBase {
 
+    /**
+     * 
+     */
+    public function __construct() {
+        $this->settings = new SalesSettings();
+        $this->tpls = $this->settings->get('templates');
+    }
+    
     /**
      * {@inheritdoc}
      */
@@ -130,9 +139,8 @@ class FilterPrint extends FormBase {
             $list['default_receipt_invoice_' . $format] = $this->t('receipt');
         }
         $templates = 'private://sales/templates/' . $source . '/';
-        if (file_exists($templates)) {
-            $handle = opendir('private://sales/templates/' . $source . '/');
-            while ($file = readdir($handle)) {
+        if (!empty($this->tpls[$source])) {
+            foreach ($this->tpls[$source] as $key => $file) {
                 if ($file != '.' and $file != '..') {
                     if (strpos($file, $format)) {
                         $filename = explode('.', $file);
