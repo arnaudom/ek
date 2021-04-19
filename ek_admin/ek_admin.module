@@ -193,7 +193,7 @@ function ek_admin_mail($key, &$message, $params) {
     $site_config = \Drupal::config('system.site');
     $theme = theme_get_setting('logo');
     $params['options']['base_url'] = \Drupal::request()->getSchemeAndHttpHost();
-    $params['options']['logo'] = $params['options']['url'] . $theme['url'];
+    $params['options']['logo'] = $params['options']['base_url'] . $theme['url'];
     $params['options']['site'] = $site_config->get('name');
     $params['options']['stamp'] = date('F j, Y, g:i a');
     $site_mail = \Drupal::config('system.site')->get('mail');
@@ -364,7 +364,7 @@ function mail_attachment($email, $file, $message = null, $options = null) {
         }
 
         // self copy
-        if ($options['copy'] == 1) {
+        if (isset($options['copy']) && $options['copy'] == 1) {
             if ($target_user = user_load_by_mail(\Drupal::currentUser()->getEmail())) {
                 $target_langcode = $target_user->getPreferredLangcode();
             } else {
