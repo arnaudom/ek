@@ -51,3 +51,41 @@ function ek_logistics_update_8002() {
    
    \Drupal::service('router.builder')->rebuild(); 
 }
+
+/**
+ * move sales templates to settings
+ * before enabling s3 storage
+*/
+function ek_logistics_update_8003() {
+    
+    $coids = \Drupal\ek_admin\Access\AccessCheck::CompanyList();
+    
+    foreach($coids as $id => $name) {
+        $settings = new \Drupal\ek_logistics\LogisticsSettings($id);
+        $tpls = $settings->get('templates');
+            if(empty($tpls)) {
+                $tpls['pdf'] = [];
+                $tpls['xls'] = [];
+                $templates = 'private://logistics/templates/' . $id . '/pdf/';
+                if (file_exists($templates)) {
+                    $handle = opendir($templates);
+                    while ($file = readdir($handle)) {
+                        if ($file != '.' and $file != '..') {
+                            $tpls['pdf'][] = $file;
+                        }   
+                    }
+                }
+                $templates = 'private://logistics/templates/' . $id . '/xls/';
+                if (file_exists($templates)) {
+                    $handle = opendir($templates);
+                    while ($file = readdir($handle)) {
+                        if ($file != '.' and $file != '..') {
+                            $tpls['xls'][] = $file;
+                        }   
+                    }
+                }  
+            }
+        $settings->set('templates', $tpls);
+        $settings->save();    
+    }
+}

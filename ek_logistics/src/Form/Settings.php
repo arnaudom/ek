@@ -68,6 +68,11 @@ class Settings extends FormBase {
                 '#type' => 'hidden',
                 '#value' => $form_state->getValue('coid'),
             );
+            
+            $form['name'] = array(
+                '#type' => 'item',
+                '#markup' => '<h1>' . \Drupal\ek_admin\Access\AccessCheck::CompanyList()[$form_state->getValue('coid')] .'</h1>',
+            );
 
             $form['edit'] = array(
                 '#type' => 'select',
@@ -90,7 +95,7 @@ class Settings extends FormBase {
 
 
 
-            if (file_exists('private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/')) {
+            /*if (file_exists('private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/')) {
                 $list_pdf_forms = array();
                 $handle = opendir('private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/');
                 while ($file = readdir($handle)) {
@@ -111,9 +116,22 @@ class Settings extends FormBase {
                     );
                     $i++;
                 }
+            }*/
+            $tpls = $settings->get('templates');
+            if (!empty($tpls['pdf'])) {
+                foreach ($tpls['pdf'] as $key => $name) {
+                    $form['pdf']['template_pdf' . $i] = array(
+                        '#type' => 'checkbox',
+                        '#default_value' => 0,
+                        '#return_value' => $name,
+                        '#attributes' => array('title' => $this->t('delete')),
+                        '#title' => $this->t('Delete pdf template <b>"@n"</b>', array('@n' => $name)),
+                    );
+                    $i++;
+                }
             }
 
-            if (file_exists('private://logistics/templates/' . $form_state->getValue('coid') . '/xls/')) {
+            /*if (file_exists('private://logistics/templates/' . $form_state->getValue('coid') . '/xls/')) {
                 $list_xls_forms = array();
                 $handle = opendir('private://logistics/templates/' . $form_state->getValue('coid') . '/xls/');
                 while ($file = readdir($handle)) {
@@ -134,8 +152,19 @@ class Settings extends FormBase {
                     );
                     $i++;
                 }
+            }*/
+            if (!empty($tpls['xls'])) {
+                foreach ($tpls['xls'] as $key => $name) {
+                    $form['pdf']['template_xls' . $i] = array(
+                        '#type' => 'checkbox',
+                        '#default_value' => 0,
+                        '#return_value' => $name,
+                        '#attributes' => array('title' => $this->t('delete')),
+                        '#title' => $this->t('Delete excel template <b>"@n"</b>', array('@n' => $name)),
+                    );
+                    $i++;
+                }
             }
-
 
             $form['#tree'] = true;
             $form['actions'] = array('#type' => 'actions');
@@ -185,12 +214,7 @@ class Settings extends FormBase {
                     ->fields('s', ['coid'])
                     ->condition('coid', $form_state->getValue('coid'));
             $coid = $query->execute()->fetchField();
-            /*
-              $query = 'SELECT coid from {ek_logi_settings} WHERE coid=:c';
-              $coid = Database::getConnection('external_db', 'external_db')
-              ->query($query, array(':c' => $form_state->getValue('coid')))
-              ->fetchField();
-             */
+            
             if (!$coid) {
                 Database::getConnection('external_db', 'external_db')
                         ->insert('ek_logi_settings')
@@ -210,7 +234,7 @@ class Settings extends FormBase {
 
 
             // delete the forms
-
+            $tpls = $settings->get('templates');
             foreach ($form_state->getValue('pdf') as $key => $value) {
                 if ($value != 0 || $value != '') {
                     $uri = 'private://logistics/templates/' . $form_state->getValue('coid') . '/pdf/' . $value;
@@ -224,6 +248,9 @@ class Settings extends FormBase {
                         $file = \Drupal\file\Entity\File::load($fid);
                         $file->delete();
                         \Drupal::messenger()->addStatus($this->t("Template @t deleted", ['@t' => $value]));
+                    }
+                    if (($key = array_search($value, $tpls['pdf'])) !== false) {
+                        unset($tpls['pdf'][$key]);
                     }
                 }
             }
@@ -242,6 +269,9 @@ class Settings extends FormBase {
                         $file->delete();
                         \Drupal::messenger()->addStatus($this->t("Template @t deleted", ['@t' => $value]));
                     }
+                    if (($key = array_search($value, $tpls['xls'])) !== false) {
+                        unset($tpls['xls'][$key]);
+                    }
                 }
             }
             // upload the forms
@@ -255,6 +285,7 @@ class Settings extends FormBase {
             if ($file) {
                 $file->setPermanent();
                 $file->save();
+                $tpls['pdf'][] = $file->getFileName();
                 \Drupal::messenger()->addStatus(t("New pdf form uploaded"));
             }
 
@@ -264,8 +295,13 @@ class Settings extends FormBase {
             if ($file) {
                 $file->setPermanent();
                 $file->save();
+                $tpls['xls'][] = $file->getFileName();
                 \Drupal::messenger()->addStatus(t("New excel form uploaded"));
             }
+            
+            // save template
+            $settings->set('templates', $tpls);
+            $settings->save();
 
             if ($_SESSION['install'] == '1') {
                 unset($_SESSION['install']);

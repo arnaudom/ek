@@ -11,6 +11,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\ek_logistics\LogisticsSettings;
 
 /**
  * Provides a form to filter print docs.
@@ -110,12 +111,7 @@ class FilterPrint extends FormBase {
                 '#markup' => \Drupal\Core\Link::createFromRoute(t('Upload signature'), 'ek_admin.company.edit', ['id' => $doc->head], ['fragment' => 'edit-i'])->toString(),
             );
         }
-        /*$form['filters']['signature'] = array(
-            '#type' => 'checkbox',
-            '#default_value' => 0,
-            '#attributes' => array('title' => $this->t('signature')),
-            '#title' => $this->t('signature'),
-        );*/
+        
 
         $stamps = array('0' => $this->t('no'), '1' => $this->t('original'), '2' => $this->t('copy'));
 
@@ -126,14 +122,27 @@ class FilterPrint extends FormBase {
             '#attributes' => array('title' => $this->t('stamp')),
             '#title' => $this->t('stamp'),
         );
+        
         //
         // provide selector for templates
         //
+        $settings = new LogisticsSettings($doc->head);
         $list = array(0 => 'default');
-        $handle = opendir('private://logistics/templates/' . $doc->head . '/' . $format . '/');
+        $tpls = $settings->get('templates');
+        /*$handle = opendir('private://logistics/templates/' . $doc->head . '/' . $format . '/');
         while ($file = readdir($handle)) {
             if ($file != '.' and $file != '..') {
                 $list[$file] = $file;
+            }
+        }*/
+        if (!empty($tpls[$format])) {
+            foreach ($tpls[$format] as $key => $file) {
+                if ($file != '.' and $file != '..') {
+                    if (strpos($file, $format)) {
+                        $filename = explode('.', $file);
+                        $list[$file] = $filename[0];
+                    }
+                }
             }
         }
 
