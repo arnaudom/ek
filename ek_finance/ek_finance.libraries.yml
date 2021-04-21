@@ -4,12 +4,12 @@ ek_finance:
     js/ek_finance.js: {}
   css:
     theme:
-      css/ek_finance.css: {}    
+      css/ek_finance.css: {}
 
 ek_finance_css:
   css:
     theme:
-      css/ek_finance.css: {}  
+      css/ek_finance.css: {}
 
 ek_finance_html_documents_css:
   version: 1
@@ -31,7 +31,7 @@ ek_finance.ledger:
     js/ek_finance_ledger.js: {}
   css:
     theme:
-      css/ek_finance.css: {} 
+      css/ek_finance.css: {}
   dependencies:
     - core/jquery
     
@@ -42,35 +42,35 @@ ek_finance.reporting:
     js/ek_finance_reporting.js: {}
   css:
     theme:
-      css/ek_finance_reporting.css: {} 
+      css/ek_finance_reporting.css: {}
   dependencies:
     - core/jquery
     - core/drupal
     - core/drupalSettings
     - core/drupal.ajax
     - core/drupal.dialog
-    
+
 ek_finance.cashflow:
   version: 1
   js:
     js/ek_finance_cashflow.js: {}
   css:
     theme:
-      css/ek_finance_reporting.css: {} 
+      css/ek_finance_reporting.css: {}
   dependencies:
     - core/jquery
     - core/drupal
     - core/drupalSettings
     - core/drupal.ajax
     - core/drupal.dialog
-    
+
 ek_finance.budgeting:
   version: 1
   js:
     js/ek_finance_budgeting.js: {}
   css:
     theme:
-      css/ek_finance_reporting.css: {} 
+      css/ek_finance_reporting.css: {}
 
 ek_finance.journal:
   version: 1
@@ -87,7 +87,7 @@ ek_finance.dialog:
     js/ek_finance_memo.js: {}
   css:
     theme:
-      css/ek_finance.css: {}     
+      css/ek_finance.css: {}
   dependencies:
     - core/jquery
     - core/drupal
@@ -102,7 +102,7 @@ ek_finance.journal_form:
     js/ek_finance.js: {}
   css:
     theme:
-      css/ek_finance.css: {} 
+      css/ek_finance.css: {}
 
 ek_finance.cash_form:
   version: 1
@@ -111,17 +111,16 @@ ek_finance.cash_form:
     js/ek_finance_cash.js: {}
   css:
     theme:
-      css/ek_finance.css: {} 
- 
-      
+      css/ek_finance.css: {}
+
 ek_finance.memo_form:
   version: 1
   js:
     js/ek_finance_memo.js: {}
   css:
     theme:
-      css/ek_finance_memo.css: {} 
-      
+      css/ek_finance_memo.css: {}
+
 ek_finance.memo_pay_form:
   version: 1
   js:
@@ -145,7 +144,7 @@ ek_finance.expenses_form:
     js/ek_finance_number_format.js: {}
   css:
     theme:
-      css/ek_finance.css: {} 
+      css/ek_finance.css: {}
 
 ek_finance_charts:
   css:

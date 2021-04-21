@@ -133,9 +133,15 @@ class PostNewYear extends FormBase {
                 //display detail of posted data
                 $journal = new Journal();
                 $settings = new CompanySettings($form_state->getValue('coid'));
-                //$finance = new FinanceSettings();
                 $fiscal_year = $settings->get('fiscal_year');
                 $fiscal_month = $settings->get('fiscal_month');
+                $dates = $journal->getFiscalDates($form_state->getValue('coid'), $fiscal_year, $fiscal_month);
+                $from = $dates['from'];
+                $to = $dates['to'];
+                $earn_date = $dates['fiscal_end'];
+                $earning = $journal->current_earning($form_state->getValue('coid'), $from, $to);
+                $display = '';
+                $rows = '';
 
                 //determine range of balance sheet items
                 //other assets
@@ -160,19 +166,14 @@ class PostNewYear extends FormBase {
                 $earnings_account = $equity_min + 9001; //default
                 $reserve_account = $equity_min + 8001; //default
 
-                $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $fiscal_month, $fiscal_year);
-                $from = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth . ' - 1 year + 1 day'));
-                $to = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth . ' + 1 day'));
-                $earn_date = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth));
-                $earning = $journal->current_earning($form_state->getValue('coid'), $from, $earn_date);
-                $display = '';
-                $rows = '';
-                $q = "SELECT * FROM {ek_accounts} where coid=:coid ORDER BY aid";
-                $a = array(':coid' => $form_state->getValue('coid'));
-                $result = Database::getConnection('external_db', 'external_db')
-                        ->query($q, $a);
+                $q = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_accounts', 'a')
+                        ->fields('a')
+                        ->condition('coid', $form_state->getValue('coid'))
+                        ->orderBy('aid')
+                        ->execute();
 
-                while ($r = $result->fetchAssoc()) {
+                while ($r = $q->fetchAssoc()) {
                     if (($r['aid'] >= $other_assets_min && $r['aid'] <= $other_assets_max) || ($r['aid'] >= $assets_min && $r['aid'] <= $assets_max) || ($r['aid'] >= $liabilities_min && $r['aid'] <= $liabilities_max) || ($r['aid'] >= $other_liabilities_min && $r['aid'] <= $other_liabilities_max) || ($r['aid'] >= $equity_min && $r['aid'] <= $equity_max)
                     ) {
                         if ($r['aid'] == $earnings_account) {
@@ -203,7 +204,7 @@ class PostNewYear extends FormBase {
                           <td align=center>" . $r['balance_date'] . "</td>"
                                 . "<td align=right>" . number_format($r['balance_base'], 2) . "</td>"
                                 . "<td align=right>" . number_format($r['balance'], 2) . "</td>
-                          <td align=center>" . $to . "</td>"
+                          <td align=center>" . $dates['stop_date'] . "</td>"
                                 . "<td align=right>" . number_format($b[1], 2) . "</td>"
                                 . "<td align=right>" . number_format($b[0], 2) . "</td>
                           </tr>";
@@ -214,7 +215,7 @@ class PostNewYear extends FormBase {
                                 <thead class='font24'>
                                   <tr>
                                     <td colspan='7'>" . $this->t('Current year start') . ": " . $from
-                        . " , " . $this->t('New year start') . ": " . $to . "</td>
+                        . " , " . $this->t('New year start') . ": " . $dates['stop_date'] . "</td>
                                   </tr>
                                   <tr class=''>
                                     <td></td>
@@ -282,11 +283,12 @@ class PostNewYear extends FormBase {
         $settings = new CompanySettings($form_state->getValue('coid'));
         $fiscal_year = $settings->get('fiscal_year');
         $fiscal_month = $settings->get('fiscal_month');
-
-        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $fiscal_month, $fiscal_year);
-        $from = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth . ' - 1 year + 1 day'));
-        $to = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth . ' + 1 day'));
-        $earn_date = date('Y-m-d', strtotime($fiscal_year . '-' . $fiscal_month . '-' . $daysInMonth));
+        $fiscal_year = $settings->get('fiscal_year');
+        $fiscal_month = $settings->get('fiscal_month');
+        $dates = $journal->getFiscalDates($form_state->getValue('coid'), $fiscal_year, $fiscal_month);
+        $from = $dates['from'];
+        $to = $dates['to'];
+        $earn_date = $dates['fiscal_end'];
         $earning = $journal->current_earning($form_state->getValue('coid'), $from, $earn_date);
 
         /* clone current tables as archives
@@ -296,12 +298,16 @@ class PostNewYear extends FormBase {
         $ek_accounts = "ek_accounts" . $name;
         $ek_journal = "ek_journal" . $name;
 
+        $query = "DROP TABLE IF EXISTS " . $ek_accounts; /* if reset, to avoid query error */
+        Database::getConnection('external_db', 'external_db')->query($query);
         $query = "CREATE TABLE " . $ek_accounts . " LIKE {ek_accounts}";
-        Database::getConnection('external_db', 'external_db')
-                ->query($query);
+        Database::getConnection('external_db', 'external_db')->query($query);
         $query = "INSERT INTO " . $ek_accounts . " SELECT * FROM {ek_accounts} WHERE coid=:coid";
         Database::getConnection('external_db', 'external_db')
                 ->query($query, [':coid' => $form_state->getValue('coid')]);
+
+        $query = "DROP TABLE IF EXISTS " . $ek_journal; /* if reset, to avoid query error */
+        Database::getConnection('external_db', 'external_db')->query($query);
         $query = "CREATE TABLE " . $ek_journal . " LIKE {ek_journal}";
         Database::getConnection('external_db', 'external_db')
                 ->query($query);
@@ -312,12 +318,13 @@ class PostNewYear extends FormBase {
         $display = '';
         $rows = '';
         $report = array($form_state->getValue('coid'), $fiscal_year);
-        $q = "SELECT * FROM {ek_accounts} where coid=:coid ORDER BY aid";
-        $a = array(':coid' => $form_state->getValue('coid'));
-        $result = Database::getConnection('external_db', 'external_db')
-                ->query($q, $a);
-
-        //determine range of balance sheet items
+        $q = Database::getConnection('external_db', 'external_db')
+                ->select('ek_accounts', 'a')
+                ->fields('a')
+                ->condition('coid', $form_state->getValue('coid'))
+                ->orderBy('aid')
+                ->execute();
+        
         //other assets
         $other_assets_min = $this->chart['other_assets'] * 10000;
         $other_assets_max = $other_assets_min + 9999;
@@ -340,7 +347,7 @@ class PostNewYear extends FormBase {
         $earnings_account = $equity_min + 9001; //default
         $reserve_account = $equity_min + 8001; //default
 
-        while ($r = $result->fetchAssoc()) {
+        while ($r = $q->fetchAssoc()) {
             if ($r['aid'] == $earnings_account) {
                 $r['balance_base'] = $earning[1];
                 $r['balance'] = $earning[0];
@@ -364,13 +371,17 @@ class PostNewYear extends FormBase {
                 );
             }
 
-            if (($r['aid'] >= $other_assets_min && $r['aid'] <= $other_assets_max) || ($r['aid'] >= $assets_min && $r['aid'] <= $assets_max) || ($r['aid'] >= $liabilities_min && $r['aid'] <= $liabilities_max) || ($r['aid'] >= $other_liabilities_min && $r['aid'] <= $other_liabilities_max) || ($r['aid'] >= $equity_min && $r['aid'] <= $equity_max)
+            if (($r['aid'] >= $other_assets_min && $r['aid'] <= $other_assets_max) 
+                    || ($r['aid'] >= $assets_min && $r['aid'] <= $assets_max) 
+                    || ($r['aid'] >= $liabilities_min && $r['aid'] <= $liabilities_max) 
+                    || ($r['aid'] >= $other_liabilities_min && $r['aid'] <= $other_liabilities_max) 
+                    || ($r['aid'] >= $equity_min && $r['aid'] <= $equity_max)
             ) {
                 //balance sheet closing balance are reported to following year opening
-                $fields = array('balance_date' => $to, 'balance' => $b[0], 'balance_base' => $b[1]);
+                $fields = array('balance_date' => $dates['stop_date'], 'balance' => $b[0], 'balance_base' => $b[1]);
                 array_push($report, array($r['aid'], $r['balance'], $r['balance_base'], $b[0], $b[1]));
             } else {
-                $fields = array('balance_date' => $to, 'balance' => 0, 'balance_base' => 0);
+                $fields = array('balance_date' => $dates['stop_date'], 'balance' => 0, 'balance_base' => 0);
                 array_push($report, array($r['aid'], $r['balance'], $r['balance_base'], 0, 0));
             }
 
