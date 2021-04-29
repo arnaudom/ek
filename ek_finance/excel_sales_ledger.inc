@@ -12,10 +12,13 @@ use Drupal\ek_finance\Journal;
                 $source3 = 'purchase dn';
                 $book = 2;
                 if ($p['client'] == '%') {
-                    $clients = Database::getConnection('external_db', 'external_db')
-                            ->query("SELECT DISTINCT ab.id FROM {ek_address_book} ab "
-                                    . "INNER JOIN {ek_sales_purchase} p ON p.client = ab.id order by name")
-                            ->fetchCol();
+                    $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_address_book', 'ab');
+                    $query->fields('ab', ['id']);
+                    $query->innerJoin('ek_sales_purchase', 'p', 'ab.id = p.client');
+                    $query->orderBy('ab.name', 'ASC');
+                    $data = $query->execute()->fetchCol();
+                    $clients = array_unique($data);
                 } else {
                     $clients = [0 => $p['client']];
                 }
@@ -25,10 +28,13 @@ use Drupal\ek_finance\Journal;
                 $source3 = 'invoice cn';
                 $book = 1;
                 if ($p['client'] == '%') {
-                    $clients = Database::getConnection('external_db', 'external_db')
-                            ->query("SELECT DISTINCT ab.id FROM {ek_address_book} ab "
-                                    . "INNER JOIN {ek_sales_invoice} i ON i.client = ab.id order by name")
-                            ->fetchCol();
+                    $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_address_book', 'ab');
+                    $query->fields('ab', ['id']);
+                    $query->innerJoin('ek_sales_invoice', 'i', 'ab.id = i.client');
+                    $query->orderBy('ab.name', 'ASC');
+                    $data = $query->execute()->fetchCol();
+                    $clients = array_unique($data);
                 } else {
                     $clients = [0 => $p['client']];
                 }

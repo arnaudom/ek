@@ -20,8 +20,7 @@ use Drupal\ek_finance\Journal;
 /**
  * Controller routines for ek module routes.
  */
-class JournalController extends ControllerBase
-{
+class JournalController extends ControllerBase {
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -46,8 +45,7 @@ class JournalController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -63,8 +61,7 @@ class JournalController extends ControllerBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -77,15 +74,14 @@ class JournalController extends ControllerBase
      *  render Html
      *
      */
-    public function journal(Request $request)
-    {
+    public function journal(Request $request) {
         $items = array();
-        $jid = ($request->query->get('jid')) ? $request->query->get('jid'):null;
+        $jid = ($request->query->get('jid')) ? $request->query->get('jid') : null;
         $items['filter_journal'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterJournal', $jid);
         $items['data'] = array();
         $settings = new \Drupal\ek_finance\FinanceSettings();
         $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
-        
+
         //todo filter by module
         $folders = array('general', 'expense', 'receipt', 'payroll', 'invoice', 'pos', 'purchase', 'payment');
 
@@ -95,17 +91,17 @@ class JournalController extends ControllerBase
 
 
         if (isset($_SESSION['jfilter']['filter']) && $_SESSION['jfilter']['filter'] == 1) {
-            if (isset($_SESSION['jfilter']['jid']) &&  $_SESSION['jfilter']['jid'] != "") {
+            if (isset($_SESSION['jfilter']['jid']) && $_SESSION['jfilter']['jid'] != "") {
                 //retrieve data by journal id
                 $details = $journal->journalEntryDetails($_SESSION['jfilter']['jid']);
-              
+
                 if ($details['id'] == '') {
                     $items['#markup'] = "<div class='messages messages--warning'>"
-                             . $this->t('No data available')
-                             . '</div>';
+                            . $this->t('No data available')
+                            . '</div>';
                     return $items;
                 }
-                
+
                 $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
                 if (in_array($details['coid'], $access)) {
                     $items['data'] = $journal->data_by_jid($_SESSION['jfilter']['jid']);
@@ -114,16 +110,16 @@ class JournalController extends ControllerBase
                         '#theme' => 'ek_finance_journal_by_id',
                         '#items' => $items,
                         '#attached' => array(
-                            'library' => array('ek_finance/ek_finance_css', 'ek_finance/ek_finance.journal','ek_admin/ek_admin_css'),
+                            'library' => array('ek_finance/ek_finance_css', 'ek_finance/ek_finance.journal', 'ek_admin/ek_admin_css'),
                         ),
                     );
                 } else {
                     //no access
                     $query = "SELECT name from {ek_company} WHERE id=:id";
                     $name = Database::getConnection('external_db', 'external_db')
-                        ->query($query, [':id' => $details['coid']])
-                        ->fetchField();
-                    
+                            ->query($query, [':id' => $details['coid']])
+                            ->fetchField();
+
                     $buil['type'] = 'access';
                     $build['message'] = ['#markup' => $this->t('Denied access for @e to @p', ['@e' => $name, '@p' => \Drupal::currentUser()->getAccountName()])];
                     $items['alert'] = [
@@ -141,20 +137,20 @@ class JournalController extends ControllerBase
                     $data = array();
 
                     $data[$folder] = $journal->display(
-                        array(
-                        'date1' => $_SESSION['jfilter']['from'],
-                        'date2' => $_SESSION['jfilter']['to'],
-                        'company' => $_SESSION['jfilter']['coid'],
-                        'edit' => 0,
-                        'source' => $folder
-                        )
+                            array(
+                                'date1' => $_SESSION['jfilter']['from'],
+                                'date2' => $_SESSION['jfilter']['to'],
+                                'company' => $_SESSION['jfilter']['coid'],
+                                'edit' => 0,
+                                'source' => $folder
+                            )
                     );
 
                     $items['data'] += $data;
                 }
 
                 $param = serialize(
-                    array(
+                        array(
                             'date1' => $_SESSION['jfilter']['from'],
                             'date2' => $_SESSION['jfilter']['to'],
                             'company' => $_SESSION['jfilter']['coid'],
@@ -165,7 +161,7 @@ class JournalController extends ControllerBase
 
                 $items['rounding'] = $rounding;
                 $excel = Url::fromRoute('ek_finance.extract.excel-journal', array('param' => $param), array())->toString();
-                $items['excel'] = "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>";
+                $items['excel'] = "<a href='" . $excel . "' title='" . $this->t('Excel download') . "'><span class='ico excel green'/></a>";
             }
         }
 
@@ -173,7 +169,7 @@ class JournalController extends ControllerBase
             '#theme' => 'ek_finance_journal',
             '#items' => $items,
             '#attached' => array(
-                'library' => array('ek_finance/ek_finance_css', 'ek_finance/ek_finance.journal','ek_admin/ek_admin_css'),
+                'library' => array('ek_finance/ek_finance_css', 'ek_finance/ek_finance.journal', 'ek_admin/ek_admin_css'),
             ),
         );
     }
@@ -188,8 +184,7 @@ class JournalController extends ControllerBase
      *  PhpExcel object download
      *
      */
-    public function exceljournal($param = null)
-    {
+    public function exceljournal($param = null) {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
@@ -213,8 +208,7 @@ class JournalController extends ControllerBase
      *  render Html
      *
      */
-    public function history($param)
-    {
+    public function history($param) {
         $journal = new Journal();
         $history = $journal->history($param);
         return array(
@@ -226,7 +220,6 @@ class JournalController extends ControllerBase
         );
     }
 
-    
     /**
      * Generate audit data for journal data records
      *
@@ -237,20 +230,27 @@ class JournalController extends ControllerBase
      *  render Html
      *
      */
-    public function audit($audit, $param)
-    {
+    public function audit($audit, $param) {
         $journal = new Journal();
         switch ($audit) {
+            // param : [i/p]
             case 'currency':
                 $audit = $journal->audit_currency($param);
                 $audit['layout'] = 'currency';
                 break;
             case 'chart':
+                // param : coid
                 $audit = $journal->audit_chart($param);
                 $audit['layout'] = 'chart';
                 $audit['title'] = $this->t('Chart structure in journal');
+            case 'post-year' :
+                // param : coid|year
+                $audit = $journal->audit_newyear($param);
+                $audit['layout'] = 'newyear';
+                $audit['title'] = $this->t('Post new year report') . " " . explode('|', $param)[1] . " " 
+                        . \Drupal\ek_admin\Access\AccessCheck::CompanyList()[explode('|', $param)[0]];
         }
-        
+
         return array(
             '#theme' => 'ek_journal_audit',
             '#items' => $audit,
@@ -259,4 +259,5 @@ class JournalController extends ControllerBase
             ),
         );
     }
+
 }

@@ -17,10 +17,9 @@ use Drupal\ek_finance\AidList;
  *
  *
  */
-class Journal
-{
-    public function __construct()
-    {
+class Journal {
+
+    public function __construct() {
         (double) $this->tax = 0;
         (double) $this->debit = 0;
         (double) $this->credit = 0;
@@ -38,8 +37,7 @@ class Journal
      *  array of dates in string format Y-m-d $from, $to, $stop_date, $fiscal_start, $fiscal_end, bool. archive
      */
 
-    public static function getFiscalDates($coid, $year, $month)
-    {
+    public static function getFiscalDates($coid, $year, $month) {
 
         /* if previous year has been posted to new year
          * New fiscal year is : start year + 12 months
@@ -48,26 +46,26 @@ class Journal
          */
         $company = new CompanySettings($coid);
         $archive = false;
-        $f = new DateTime($company->get('fiscal_year') . '-' .  $company->get('fiscal_month')); 
-        $d = new DateTime($year . '-' .  $month); 
-        
+        $f = new DateTime($company->get('fiscal_year') . '-' . $company->get('fiscal_month'));
+        $d = new DateTime($year . '-' . $month);
+
         // the starting of fiscal year based on settings
         $start_fiscal = date('Y-m-d', strtotime($f->format('Y-m-d') . ' - 11 months'));
         // the end of fiscal year based on settings
         $end_fiscal = $f->format('Y-m-t');
-        
+
         // last date based on request
         $end_request = $d->format('Y-m-t');
         // start date of request
         $start_request = date('Y-m-d', strtotime($d->format('Y-m-d') . ' - 11 months'));
-        
+
         if ($end_request < $start_fiscal) {
             $archive = true;
         }
 
         // a stop date based on request
         $stop_date = date('Y-m-d', strtotime($d->format('Y-m-t') . ' + 1 day'));
-        
+
         return [
             'month_settings' => $company->get('fiscal_month'),
             'year_settings' => $company->get('fiscal_year'),
@@ -91,8 +89,7 @@ class Journal
      *
      */
 
-    public static function journalEntryDetails($id)
-    {
+    public static function journalEntryDetails($id) {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_journal', 'j');
         $query->fields('j');
@@ -152,8 +149,7 @@ class Journal
      * fxRate2 = exchange rate when payments received are credited to a different currency account than the payment
      */
 
-    public function record($j)
-    {
+    public function record($j) {
         $settings = new FinanceSettings();
         $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
         $baseCurrency = $settings->get('baseCurrency');
@@ -254,7 +250,7 @@ class Journal
                 //account receiving fund is not in base currency
                 if ($account_currency <> $baseCurrency) {
                     $trfx = $j['fxRate'];
-                    if(isset($j['fxRate2']) && $j['fxRate2'] <> 1) {
+                    if (isset($j['fxRate2']) && $j['fxRate2'] <> 1) {
                         $trfx = $j['fxRate2'];
                     }
                     $exchange = CurrencyData::journalexchange($account_currency, $debit, $trfx);
@@ -268,7 +264,7 @@ class Journal
                 //currency of payment is not base currency
                 if ($j['currency'] <> $baseCurrency) {
                     $trfx = $j['fxRate'];
-                    if(isset($j['fxRate2']) && $j['fxRate2'] <> 1 && ($account_currency <> $baseCurrency)) {
+                    if (isset($j['fxRate2']) && $j['fxRate2'] <> 1 && ($account_currency <> $baseCurrency)) {
                         $trfx = $j['fxRate2'];
                     }
                     $exchange = CurrencyData::journalexchange($j['currency'], $j['value'], $trfx);
@@ -788,8 +784,7 @@ class Journal
      *
      */
 
-    public function recordtax($j)
-    {
+    public function recordtax($j) {
         $settings = new FinanceSettings();
         $baseCurrency = $settings->get('baseCurrency');
         $companysettings = new CompanySettings($j['coid']);
@@ -851,8 +846,7 @@ class Journal
      * comment string
      */
 
-    private function save($aid, $exchange, $coid, $type, $source, $ref, $date, $value, $reco, $currency = null, $comment = null)
-    {
+    private function save($aid, $exchange, $coid, $type, $source, $ref, $date, $value, $reco, $currency = null, $comment = null) {
         $query = "SELECT count('id') FROM {ek_journal} WHERE coid = :c";
         $count = Database::getConnection('external_db', 'external_db')
                         ->query($query, [':c' => $coid])->fetchField();
@@ -914,8 +908,7 @@ class Journal
      * to : date string
      */
 
-    public function traceError($param)
-    {
+    public function traceError($param) {
 
         //verify if each journal references as equal debit and credit
         $query = Database::getConnection('external_db', 'external_db')
@@ -989,8 +982,7 @@ class Journal
      * return value debit >= credit
      */
 
-    public function checkTransactionDebit($j)
-    {
+    public function checkTransactionDebit($j) {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_journal', 'j');
         $query->addExpression('SUM(value)', 'sumValue');
@@ -1024,8 +1016,7 @@ class Journal
      *
      */
 
-    public function checkTransactionCredit($j)
-    {
+    public function checkTransactionCredit($j) {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_journal', 'j');
         $query->addExpression('SUM(value)', 'sumValue');
@@ -1075,8 +1066,7 @@ class Journal
      *   with transaction value , transaction value in base currency
      */
 
-    public function transactions($data)
-    {
+    public function transactions($data) {
         $type = $data['type'];
         $account = $data['aid'];
         $coid = $data['coid'];
@@ -1145,8 +1135,7 @@ class Journal
      * @return the value of gain or loss.
      */
 
-    private static function exchangeGL($currency, $value, $rate, $current_rate = null)
-    {
+    private static function exchangeGL($currency, $value, $rate, $current_rate = null) {
         //exchange gain loss
         if ($current_rate == null) {
             $current_rate = CurrencyData::rate($currency);
@@ -1175,8 +1164,7 @@ class Journal
      * @return double value
      */
 
-    private static function sumAccount($table, $exchange, $type, $aid, $coid, $date_start, $date_end)
-    {
+    private static function sumAccount($table, $exchange, $type, $aid, $coid, $date_start, $date_end) {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select($table, 'j');
         $query->addExpression('SUM(value)', 'sumValue');
@@ -1199,8 +1187,7 @@ class Journal
      * @param $jid id of the journal entry
      */
 
-    public function data_by_jid($jid)
-    {
+    public function data_by_jid($jid) {
         $details = self::journalEntryDetails($jid);
         $settings = new FinanceSettings();
         $baseCurrency = $settings->get('baseCurrency');
@@ -1242,13 +1229,13 @@ class Journal
                 //build an history link
                 $d1 = date('Y', strtotime($details['date'])) . '-01-01';
                 $param = serialize(
-                    array(
+                        array(
                             'id' => 'journal',
                             'from' => $d1,
                             'to' => $details['date'],
                             'coid' => $details['coid'],
                             'aid' => $d->aid
-                )
+                        )
                 );
                 $history = Url::fromRoute('ek_finance_modal', array('param' => $param), array())->toString();
                 $aid = "<a class='use-ajax' href='" . $history . "' >" . $d->aid . "</a>";
@@ -1316,8 +1303,7 @@ class Journal
      * edit = edit mode
      */
 
-    public function display($j)
-    {
+    public function display($j) {
         $settings = new FinanceSettings();
         $baseCurrency = $settings->get('baseCurrency');
         $source = $j['source'];
@@ -1396,13 +1382,13 @@ class Journal
                     if ($entry->exchange == 0 && $format == 'html') {
                         //build an history link
                         $param = serialize(
-                            array(
+                                array(
                                     'id' => 'journal',
                                     'from' => $j['date1'],
                                     'to' => $j['date2'],
                                     'coid' => $j['company'],
                                     'aid' => $entry->aid
-                        )
+                                )
                         );
                         $history = Url::fromRoute('ek_finance_modal', array('param' => $param), array())->toString();
                         $aid = "<a class='use-ajax' href='" . $history . "' >" . $entry->aid . "</a>";
@@ -1416,18 +1402,18 @@ class Journal
                     $transaction['type'] = $entry->type;
                     if ($entry->type == 'debit') {
                         if ($entry->exchange == 0) {
-                            $sum_d = $sum_d+=$entry->value;
+                            $sum_d = $sum_d += $entry->value;
                         }
                         if ($entry->exchange == 1) {
-                            $sum_d2 = $sum_d2+=$entry->value;
+                            $sum_d2 = $sum_d2 += $entry->value;
                         }
                     }
                     if ($entry->type == 'credit') {
                         if ($entry->exchange == 0) {
-                            $sum_c = $sum_c+=$entry->value;
+                            $sum_c = $sum_c += $entry->value;
                         }
                         if ($entry->exchange == 1) {
-                            $sum_c2 = $sum_c2+=$entry->value;
+                            $sum_c2 = $sum_c2 += $entry->value;
                         }
                     }
                     $transaction['value'] = $entry->value;
@@ -1462,8 +1448,7 @@ class Journal
      * @param reference = a table id entry for the source
      */
 
-    public static function reference($source, $reference)
-    {
+    public static function reference($source, $reference) {
         switch ($source) {
 
             case 'expense':
@@ -1559,7 +1544,7 @@ class Journal
 
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 't');
-                $query->fields('t', ['id','comment', 'currency']);
+                $query->fields('t', ['id', 'comment', 'currency']);
                 $query->condition('reference', $reference, '=');
                 $query->condition('source', 'general', '=');
                 $data = $query->execute()->fetchObject();
@@ -1577,7 +1562,7 @@ class Journal
                 $query->condition('reference', $reference, '=');
                 $query->condition('source', 'general cash', '=');
                 $data = $query->execute()->fetchObject();
-                
+
                 $comment = $data->comment;
                 $currency = $data->currency;
                 break;
@@ -1600,8 +1585,7 @@ class Journal
      *     company id: coid
      */
 
-    public function ledger($l)
-    {
+    public function ledger($l) {
 
         //determine if query cover closed years, before current fiscal year
         $dates = self::getFiscalDates($l['coid'], date('Y', strtotime($l['date2'])), date('m', strtotime($l['date2'])));
@@ -1633,7 +1617,7 @@ class Journal
             } else {
                 $ek_journal = "ek_journal_" . date('Y', strtotime($l['date2'])) . '_' . $l['coid'];
             }
-            
+
             //verify that the archive accounts tables exists
             //in some cases with older data versions, posted table do not exist
             if (!$schema->tableExists($ek_accounts)) {
@@ -1826,8 +1810,7 @@ class Journal
      *     journal entries by reference with opening and closing values
      */
 
-    public function salesledger($l)
-    {
+    public function salesledger($l) {
 
         //get array of all chart of accounts structure per coid
         //(to reduce queries call rates)
@@ -1999,8 +1982,7 @@ class Journal
      *      bolean $option : 1 = link history , 0 no link
      */
 
-    public function trial($t, $option = 1)
-    {
+    public function trial($t, $option = 1) {
         if ($t['active'] == 0) {
             $t['active'] = '%';
         }
@@ -2013,7 +1995,7 @@ class Journal
                 ->condition('coid', $t['coid'], '=')
                 ->orderBy('aid', 'ASC')
                 ->execute();
-        
+
         $data = array();
         $total_td = 0;
         $total_tc = 0;
@@ -2038,7 +2020,7 @@ class Journal
         $query->fields('t', ['name']);
         $query->condition('id', $t['coid']);
         $company = $query->execute()->fetchField();
-        
+
         $data['company'] = $company;
         $data['year'] = $t['year'];
         $data['month'] = $t['month'];
@@ -2053,13 +2035,13 @@ class Journal
 
             //build an history link
             $param = serialize(
-                array(
+                    array(
                         'id' => 'trial',
                         'from' => $t['year'] . '-01-01',
                         'to' => date('Y-m-d'),
                         'coid' => $t['coid'],
                         'aid' => $l->aid
-            )
+                    )
             );
             if ($option == 1) {
                 $history = Url::fromRoute('ek_finance_modal', array('param' => $param), array())->toString();
@@ -2069,7 +2051,7 @@ class Journal
             }
 
             $row['transaction_debit'] = self::transactions(
-                array(
+                            array(
                                 'aid' => $l->aid,
                                 'type' => 'debit',
                                 'coid' => $t['coid'],
@@ -2078,7 +2060,7 @@ class Journal
                             )
             );
             $row['transaction_credit'] = self::transactions(
-                array(
+                            array(
                                 'aid' => $l->aid,
                                 'type' => 'credit',
                                 'coid' => $t['coid'],
@@ -2088,7 +2070,7 @@ class Journal
             );
 
             $row['transaction_ytd_debit'] = self::transactions(
-                array(
+                            array(
                                 'aid' => $l->aid,
                                 'type' => 'debit',
                                 'coid' => $t['coid'],
@@ -2098,7 +2080,7 @@ class Journal
             );
 
             $row['transaction_ytd_credit'] = self::transactions(
-                array(
+                            array(
                                 'aid' => $l->aid,
                                 'type' => 'credit',
                                 'coid' => $t['coid'],
@@ -2108,11 +2090,7 @@ class Journal
             );
 
             if (
-                ($t['null'] == 1 && ($row['transaction_ytd_debit'][0] != 0
-                        || $row['transaction_ytd_credit'][0] != 0
-                        || $row['transaction_ytd_debit'][1] != 0
-                        || $row['transaction_ytd_credit'][1] != 0))
-                        || $t['null'] == 0
+                    ($t['null'] == 1 && ($row['transaction_ytd_debit'][0] != 0 || $row['transaction_ytd_credit'][0] != 0 || $row['transaction_ytd_debit'][1] != 0 || $row['transaction_ytd_credit'][1] != 0)) || $t['null'] == 0
             ) {
                 //show
                 $data['transactions'][] = $row;
@@ -2160,7 +2138,6 @@ class Journal
         return $data;
     }
 
-
     /*
      * calculate the opening value of an account
      * $journal->opening(
@@ -2173,8 +2150,7 @@ class Journal
       );
      */
 
-    public function opening($data)
-    {
+    public function opening($data) {
         $account = $data['aid'];
         $coid = $data['coid'];
         $d1 = $data['from'];
@@ -2197,7 +2173,7 @@ class Journal
                 ->orderBy('aid', 'ASC')
                 ->execute();
         $result = $data->fetchObject();
-        
+
         //get to total transaction up to d1
         // sum transaction currency
 
@@ -2230,8 +2206,7 @@ class Journal
      * @return array value, value with exchange
      */
 
-    public function current_earning($coid, $from, $to)
-    {
+    public function current_earning($coid, $from, $to) {
         $settings = new FinanceSettings();
         $chart = $settings->get('chart');
         //REVENUE - class //
@@ -2268,7 +2243,7 @@ class Journal
 
             while ($r3 = $result3->fetchAssoc()) {
                 $d = self::transactions(
-                    array(
+                                array(
                                     'aid' => $r3['aid'],
                                     'type' => 'debit',
                                     'coid' => $coid,
@@ -2278,7 +2253,7 @@ class Journal
                 );
 
                 $c = self::transactions(
-                    array(
+                                array(
                                     'aid' => $r3['aid'],
                                     'type' => 'credit',
                                     'coid' => $coid,
@@ -2288,12 +2263,12 @@ class Journal
                 );
                 $b = $c[0] - $d[0];
                 $b_exc = $c[1] - $d[1];
-                $total_detail+=$b_exc;
-                $total_detail_l+=$b;
+                $total_detail += $b_exc;
+                $total_detail_l += $b;
             }
 
-            $total_class4+=$total_detail;
-            $total_class4_l+=$total_detail_l;
+            $total_class4 += $total_detail;
+            $total_class4_l += $total_detail_l;
         }
 
         // COS - class //
@@ -2327,7 +2302,7 @@ class Journal
 
             while ($r3 = $result3->fetchAssoc()) {
                 $d = self::transactions(
-                    array(
+                                array(
                                     'aid' => $r3['aid'],
                                     'type' => 'debit',
                                     'coid' => $coid,
@@ -2337,7 +2312,7 @@ class Journal
                 );
 
                 $c = self::transactions(
-                    array(
+                                array(
                                     'aid' => $r3['aid'],
                                     'type' => 'credit',
                                     'coid' => $coid,
@@ -2347,12 +2322,12 @@ class Journal
                 );
                 $b = $c[0] - $d[0];
                 $b_exc = $c[1] - $d[1];
-                $total_detail+=$b_exc;
-                $total_detail_l+=$b;
+                $total_detail += $b_exc;
+                $total_detail_l += $b;
             }
 
-            $total_class5+=$total_detail;
-            $total_class5_l+=$total_detail_l;
+            $total_class5 += $total_detail;
+            $total_class5_l += $total_detail_l;
         }
 
         // CHARGES - class //
@@ -2388,7 +2363,7 @@ class Journal
 
             while ($r3 = $result3->fetchAssoc()) {
                 $d = self::transactions(
-                    array(
+                                array(
                                     'aid' => $r3['aid'],
                                     'type' => 'debit',
                                     'coid' => $coid,
@@ -2398,7 +2373,7 @@ class Journal
                 );
 
                 $c = self::transactions(
-                    array(
+                                array(
                                     'aid' => $r3['aid'],
                                     'type' => 'credit',
                                     'coid' => $coid,
@@ -2408,12 +2383,12 @@ class Journal
                 );
                 $b = $c[0] - $d[0];
                 $b_exc = $c[1] - $d[1];
-                $total_detail+=$b_exc;
-                $total_detail_l+=$b;
+                $total_detail += $b_exc;
+                $total_detail_l += $b;
             }
 
-            $total_class6+=$total_detail;
-            $total_class6_l+=$total_detail_l;
+            $total_class6 += $total_detail;
+            $total_class6_l += $total_detail_l;
         }
 
 
@@ -2435,8 +2410,7 @@ class Journal
      * closing_exchange
      */
 
-    public function history($param)
-    {
+    public function history($param) {
         $param = unserialize($param);
         if (!isset($param['source'])) {
             $param['source'] = '%';
@@ -2530,8 +2504,7 @@ class Journal
      * @return array
      */
 
-    public function entity_history($param)
-    {
+    public function entity_history($param) {
         if (!isset($param['format'])) {
             $format = 'html';
         } else {
@@ -2619,8 +2592,7 @@ class Journal
      * @return array of deleted ids
      */
 
-    public function delete($source = null, $reference = null, $coid = null)
-    {
+    public function delete($source = null, $reference = null, $coid = null) {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_journal', 'j');
         $query->fields('j', ['id']);
@@ -2655,8 +2627,7 @@ class Journal
      * @return
      */
 
-    public function resetCount($coid = null, $id = null)
-    {
+    public function resetCount($coid = null, $id = null) {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_journal', 'j');
         $query->addExpression('Count(id)', 'count');
@@ -2690,11 +2661,10 @@ class Journal
      * ex. use /finance/audit/currency/i
      */
 
-    public function audit_currency($param)
-    {
+    public function audit_currency($param) {
         $companies = \Drupal\ek_admin\Access\AccessCheck::CompanyList();
         $items = [];
-        
+
         if ($param == 'i') {
             $src = 'invoice';
             $acc = 'asset_account';
@@ -2788,7 +2758,7 @@ class Journal
                         if ($d->type == 'debit') {
                             $ok = 'ok';
                         }
-                        
+
                         $items['companies'][$coid . ' ' . $name][] = [
                             'debit' => $aid,
                             'credit' => $receipt_account,
@@ -2840,7 +2810,7 @@ class Journal
                         if ($d->type == 'credit') {
                             $ok = 'ok';
                         }
-                        
+
                         $items['companies'][$coid . ' ' . $name][] = [
                             'debit' => $receipt_account,
                             'credit' => $aid,
@@ -2854,38 +2824,38 @@ class Journal
                 }
             }
             $items['companies'][$coid . ' ' . $name]['total'] = $total;
-        } 
+        }
         return $items;
     }
-    
+
     /*
      * Audit chart of account match with journal
      * @coid int company id
      * ex. use /finance/audit/chart/1
      */
 
-    public function audit_chart($coid)
-    {
+    public function audit_chart($coid) {
+
         $companies = \Drupal\ek_admin\Access\AccessCheck::CompanyList();
         $items = [];
-        
+
         if (isset($companies[$coid])) {
             $items['company'] = $companies[$coid];
             $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_accounts', 'a');
+                    ->select('ek_accounts', 'a');
             $query->fields('a', ['aid']);
             $query->condition('coid', $coid);
             $query->orderBy('aid');
             $accounts = $query->execute()->fetchCol();
             $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_journal', 'j');
+                    ->select('ek_journal', 'j');
             $query->fields('j');
             $query->condition('coid', $coid);
             $query->orderBy('id');
             $journal = $query->execute();
             /**/
             while ($j = $journal->fetchObject()) {
-                if (!in_array((int)$j->aid, $accounts)) {
+                if (!in_array((int) $j->aid, $accounts)) {
                     $items['journal'][] = $j;
                 }
             }
@@ -2893,7 +2863,48 @@ class Journal
                 $items['journal'][] = ['aid' => t('No discrepency found')];
             }
         }
-        
+
         return $items;
     }
+
+    /*
+     * Audit new year post report
+     * @aram string coid|year
+     * ex. use /finance/audit/post-year/1|2020
+     */
+
+    public function audit_newyear($param) {
+
+        $param = explode('|', $param);
+        $audit = [];
+        $companies = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
+        if (in_array($param[0], $companies)) {
+            $q = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal_reco_history', 'a')
+                    ->fields('a')
+                    ->condition('coid', $param[0])
+                    ->condition('aid', 0)
+                    ->execute();
+            while ($r = $q->fetchObject()) {
+                $data = json_decode($r->data);
+                if ($data[1] == $param[1]) {
+                    $settings = new FinanceSettings();
+                    $audit['baseCurrency'] = $settings->get('baseCurrency');
+                    $coset = new CompanySettings($param[0]);
+                    $fiscal_month = $coset->get('fiscal_month');
+                    $audit['dates'] = self::getFiscalDates($param[0], $param[1], $fiscal_month);
+                    $audit['data'] = $data;
+                    // pull accounts definition archive
+                    $table = 'ek_accounts_' . $data[1] . '_' . $data[0];
+                    $q = Database::getConnection('external_db', 'external_db')
+                            ->select($table, 't')
+                            ->fields('t', ['aid', 'aname'])
+                            ->execute();
+                    $audit['accounts'] = $q->fetchAllKeyed();
+                    return $audit;
+                }
+            }
+        }
+    }
+
 }

@@ -60,6 +60,40 @@
                 </tr>
             
             {% endfor %}
-    </tbody>
-</table>
+        </tbody>
+    </table>
+{% endif %}
+
+{% if items.layout == 'newyear' %}
+
+    <table>
+        <thead>
+            <tr>
+                <th></th>
+                <th colspan='2'> {{ items.dates['from'] }}</th>
+                <th colspan='2'> {{ items.dates['fiscal_start'] }}</th>
+            </tr>
+            <tr>
+                <th>{{ 'Account' }}</th>
+                <th>{{ 'Previous opening' }} {{ items.baseCurrency }}</th>
+                <th>{{ 'Previous opening local currency' }}</th>
+                <th>{{ 'New opening' }} {{ items.baseCurrency }}</th>
+                <th>{{ 'New opening local currency' }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key,data in items.data %}
+                {% if key > 1 %}
+                    <tr>
+                        <td>{{ data.0 }} {{ items.accounts[data.0] }}</td>
+                        <td>{{ data.2|number_format(2, '.', ',') }}</td>
+                        <td>{{ data.1|number_format(2, '.', ',') }}</td>
+                        <td>{{ data.4|number_format(2, '.', ',') }}</td>
+                        <td>{{ data.3|number_format(2, '.', ',') }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    
 {% endif %}

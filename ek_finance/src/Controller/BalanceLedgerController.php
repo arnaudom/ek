@@ -21,8 +21,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 /**
  * Controller routines for ek module routes.
  */
-class BalanceLedgerController extends ControllerBase
-{
+class BalanceLedgerController extends ControllerBase {
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -47,8 +46,7 @@ class BalanceLedgerController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -64,8 +62,7 @@ class BalanceLedgerController extends ControllerBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -78,8 +75,7 @@ class BalanceLedgerController extends ControllerBase
      *      rendered Html
      *
      */
-    public function ledgerbalance(Request $request)
-    {
+    public function ledgerbalance(Request $request) {
         $items['filter_ledger'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterLedger');
         $items['data'] = array();
         $journal = new Journal();
@@ -102,7 +98,7 @@ class BalanceLedgerController extends ControllerBase
             $items['rounding'] = $rounding;
             if ($items['data']['archive'] != 2) {
                 $excel = Url::fromRoute('ek_finance.extract.excel-ledger', array('param' => serialize($param)), array())->toString();
-                $items['excel'] = "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>";
+                $items['excel'] = "<a href='" . $excel . "' title='" . $this->t('Excel download') . "'><span class='ico excel green'/></a>";
             }
         }
 
@@ -131,8 +127,7 @@ class BalanceLedgerController extends ControllerBase
      * @return Object
      *  PhpExcel object
      */
-    public function excelledger($param = null)
-    {
+    public function excelledger($param = null) {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
@@ -158,8 +153,7 @@ class BalanceLedgerController extends ControllerBase
      *      supplier|client
      *  @return array html display
      */
-    public function sales(RouteMatchInterface $route_match, Request $request)
-    {
+    public function sales(RouteMatchInterface $route_match, Request $request) {
         $path = $route_match->getRouteObject()->getPath();
 
         $path = explode('/', $path);
@@ -215,14 +209,14 @@ class BalanceLedgerController extends ControllerBase
                     $clients = [0 => $_SESSION['salesledger']['client']];
                 }
             }
-            
+
             $items['book'] = \Drupal\ek_address_book\AddressBookData::addresslist($book);
             $items['data'] = [];
-            
-            foreach ($clients as  $clientId) {
+
+            foreach ($clients as $clientId) {
                 //select the documents ids related to the selected client
                 $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_sales_' .$entity, 's');
+                        ->select('ek_sales_' . $entity, 's');
 
                 $result = $query->fields('s', array('id'))
                         ->condition('s.client', $clientId, '=')
@@ -231,7 +225,7 @@ class BalanceLedgerController extends ControllerBase
 
                 $ids = $result->fetchCol();
                 $row = [];
-            
+
                 $row['client_id'] = $clientId;
                 $row['client_name'] = $items['book'][$clientId];
 
@@ -248,7 +242,7 @@ class BalanceLedgerController extends ControllerBase
 
 
                     $row['journal'] = $journal->salesledger($param);
-                    
+
                     $items['data'][] = $row;
                 }
             }
@@ -266,11 +260,12 @@ class BalanceLedgerController extends ControllerBase
                 '#theme' => 'ek_finance_sales_ledger',
                 '#items' => $items,
                 '#attached' => array(
-                    'library' => array('ek_finance/ek_finance.ledger','ek_admin/ek_admin_css')
-                    ),
+                    'library' => array('ek_finance/ek_finance.ledger', 'ek_admin/ek_admin_css')
+                ),
             );
         } else {
             return $items['form'];
         }
     }
+
 }
