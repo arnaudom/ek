@@ -48,12 +48,16 @@ td.fc-day-top.fc-future {
     color: #fff;
 }
 
+.fc-today .fc-day-number{
+    color:#0064ff !important;
+}
+
 #drupal-off-canvas td,
 #drupal-off-canvas th {
     border-bottom: 0px solid #fff;
 }
 
-#drupal-off-canvas *,
+/*#drupal-off-canvas *,
 #drupal-off-canvas *:not(div),
 #drupal-off-canvas *:not(span){
     color: #2d2d2d;
@@ -63,7 +67,7 @@ td.fc-day-top.fc-future {
 #drupal-off-canvas tr:hover td {
     background: whitesmoke;
     background-color: whitesmoke;
-}
+}*/
 #drupal-off-canvas td a {
 }
 
