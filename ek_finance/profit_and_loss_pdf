@@ -38,8 +38,8 @@ class EKPDF extends TCPDF {
                if(file_exists($this->company->logo)) {
                    $logo = file_create_url($this->company->logo);
                    $info = getimagesize($logo);
-                    $h = $info[1] * 15 / $info[0];
-                    $this->Image($logo, 25, 8, $h);
+                    $h = $info[1] * 50 / $info[0];
+                    $this->Image($logo, 25, 10, $h);
                }
         }
         $this->Ln(5);
@@ -72,19 +72,18 @@ class EKPDF extends TCPDF {
         $this->Cell(100);
         $this->Cell(50,4, $next ,0,1);
             
-        if ($this->company->telephone) {
+        /*if ($this->company->telephone) {
             $this->Cell(100);
             $this->Cell(8,3,t("tel:"). $this->company->telephone,0,1);
         }
         if ($this->company->fax) {
             $this->Cell(100);
             $this->Cell(8,4,t("fax:"). $this->company->telephone,0,1);
-        }
+        }*/
     }
 
     //Page footer
-    function Footer()
-    {
+    function Footer() {
 
         //Position at 1.5 cm from bottom
         $this->SetY(-15);
@@ -114,18 +113,21 @@ $pdf->SetHeaderData('','',$company);
 $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
 // set margins
-$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+$format_doc = ['orientation' => 'P', 'format' => 'A4', 'margin_left' => 15, 
+      'margin_top' => 40, 'margin_right' => 15, 'margin_bottom' => 25, 
+      'margin_header' => 5, 'margin_footer' => 10, ];
+$pdf->SetMargins($format_doc['margin_left'], $format_doc['margin_top'], $format_doc['margin_right']);
+$pdf->SetHeaderMargin($format_doc['margin_header']);
+$pdf->SetFooterMargin($format_doc['margin_footer']);
 
 // set auto page breaks
-$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+$pdf->SetAutoPageBreak(TRUE, $format_doc['margin_bottom']);
 
 // set image scale factor
 $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 
 $pdf->SetTitle($fileName);
-$pdf->AddPage('P','A4');
+$pdf->AddPage($format_doc['orientation'],$format_doc['format']);
 
 
 //margin settings - to adjust output

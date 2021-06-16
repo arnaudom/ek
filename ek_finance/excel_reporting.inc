@@ -1,15 +1,9 @@
 <?php
 
-use DateTime;
+
 use Drupal\Core\Database\Database;
 use Drupal\ek_admin\Access\AccessCheck;
 
-$param = unserialize($param);
-$coid = $param['coid'];
-$year = $param['year'];
-$view = $param['view'];
-$baseCurrency = $param['baseCurrency'];
-$rounding = $param['rounding'];
 $company = AccessCheck::GetCompanyByUser();
 $company = implode(',', $company);
 if($coid != 'all') {
@@ -21,13 +15,13 @@ $company_name = Database::getConnection('external_db', 'external_db')
     $company_name = (string)t('All');
     $company_name_short = (string)t('All');
 }
-$grandtotal_column_purchases = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0];
-$grandtotal_column_expenses = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0];
-$grandtotal_column_income = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0];
-
 
 // Create new PHPExcel object
 $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+$objPHPExcel->getActiveSheet()->setBreak( 'O1' , \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_COLUMN );
+$objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+$objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
+$objPHPExcel->getActiveSheet()->getPageSetup()->setFitToWidth(1);
 
 $objPHPExcel->getProperties()->setCreator("Ek")
         ->setLastModifiedBy('')
@@ -58,14 +52,26 @@ if($view['S'] == 'allocation') {
     $text = (string)t('Actual values');
 }
 $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(45);
-$objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(18);
-
+$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(20);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A1", $text);
 $objPHPExcel->getActiveSheet()->mergeCells('A1:N1');
 $objPHPExcel->getActiveSheet()->getStyle('A1:N1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-/*
- * Purchases
- */
+//
+// Purchases
+//
 $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue("A$l", (string) t("Purchases @c @y @m", array('@c' => $company_name, '@y' => $year, '@m' => $baseCurrency)))
         ->setCellValue("B$l", 'JAN')
@@ -100,145 +106,33 @@ $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
         )
 );
 
-// Get the class 
-// build accounts array structures for expenses
-$query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_accounts', 'a');
-    $query->fields('a', ['aid', 'aname']);
-    $or = $query->orConditionGroup();
-    $or->condition('aid', $chart['cos'] . '%', 'like');
-    $or->condition('aid', $chart['expenses'] . '%', 'like');
-    $or->condition('aid', $chart['other_expenses'] . '%', 'like');
-    
-    $query->condition($or);
-    $query->condition('atype', 'class');
-    $query->condition('astatus', '1');
-    
-if ($coid != 'all') {
-    $query->condition('coid', $coid);
-}
-$query->orderBy('aid');
-$accounts_exp_class = $query->execute()->fetchAllKeyed();
-
-
-$thisclass = [];
-
-foreach($accounts_exp_class as $key => $name) {
-    $class = substr($key, 0, 2);
-    //$l++;
-    $c = 0;
-    $row = "A" . $l . ":M" . $l;
-    $flag = 0;
-    $thisclass[$class] = [];
-    $thisclass[$class]['name'] = $key . " " . $name;
-    // Get the account type
-    $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_accounts', 'a');
-        $query->fields('a', ['aid', 'aname']);
-        $query->condition('aid', $class . '%', 'like');
-        $query->condition('atype', 'detail');
-        $query->condition('astatus', '1');
-        
-    if ($coid != 'all') {
-        $query->condition('coid', $coid);
-    }
-
-    $query->orderBy('aid');
-    $data2 = $query->execute();
-    $sum_row_amount = 0;
-    $flag = 0;
-    $table_0_detail = '';
-    $subtotal_column_purchases = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0];
-
-    while ($d2 = $data2->fetchObject()) { //loop aid within acc. class
-        $thisline = [];
-        $thisline[0] = $d2->aid . " " . $d2->aname;
-
-        for ($m = 1; $m <= 12; $m++) {
-            if ($m < 10) {
-                $date1 = $year . "-0" . $m . "-01";
-                $d = new DateTime($date1);
-                $date2 = $d->format('Y-m-t');
-            } else {
-                $date1 = $year . "-" . $m . "-01";
-                $d = new DateTime($date1);
-                $date2 = $d->format('Y-m-t');
-            }
-
-            // Get the type sum               
-            // select purchases by date in usd
-            // The reporting consider purchases value from allocation of purchase 
-            // NOT from the actual purchasing entity. This is to compare revenue & expenses fron analytical point of view
-
-            $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_journal', 'j');
-                $query->leftJoin('ek_sales_purchase', 'p', 'p.id = j.reference');    
-                $query->addExpression('SUM(value)', 'sumValue');
-                $query->condition('aid', $d2->aid);
-                $query->condition('j.date', $date1, '>=');
-                $query->condition('j.date', $date2, '<=');
-                $query->condition('source', 'purchase', '=');
-                $query->condition('j.type', 'debit');
-                
-            if ($coid != 'all') {           
-                $query->condition($view['S'], $coid);
-            }
-
-            $Obj = $query->execute();
-            $sum_d2 = $Obj->fetchObject()->sumValue; 
-
-            $cell = $columns[$m] . $l;
-            if ($sum_d2 == "") {
-                $amount = 0;
-            } else {
-                $amount = round($sum_d2, $rounding);
-            }
-            $thisline[$m] = $amount;
-            $sum_row_amount = $sum_row_amount + $sum_d2;
-            $subtotal_column_purchases[$m] += $sum_d2;
-            
-        } //for loop months
-
-        $thisline[13] = $sum_row_amount;
-        if ($sum_row_amount <> 0) {
-            $flag++;
-            $thisclass[$class]['lines'][] = $thisline;
-        }
-        $sum_row_amount = 0;
-    } //loop aid
-    // Display if line has data
-
-    if ($flag <> 0) {
-        //some lines have data
-        //add lines and sub total
+foreach ($purchases[0]['classes'] as $key => $values){
         $l++;
         $c = 0;
         $row = "A" . $l . ":M" . $l;
         $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('ffcc99');
         $cell = $columns[$c] . $l;
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $thisclass[$class]['name']);
-        
-        if (!empty($thisclass[$class]['lines'])) {
-            
-            foreach ($thisclass[$class]['lines'] as $key => $value) {
-                if ($value[13] <> 0) {
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $values['id'] . " - " . $values['name']);
                     
-                        //display the line only if it has data
+            foreach ($values['rows'] as $aid => $v) {
+                if ($v['sumRow'] <> 0) {
                         $l++;
                         $cell = $columns[0] . $l;
                         $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $value[0]);
+                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $aid . " " . $v['desc']);
 
                         for ($m = 1; $m <= 12; $m++) {
                             $cell = $columns[$m] . $l;
-                            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $value[$m]);
-                            $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
-                            if ($value[$m] == 0) {
+                            if ($v[$m] == "") {
+                                $v[$m] = 0;
                                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
                             } else {
                                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
                             }
+                            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $v[$m]);
+                            $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
+                            
                         }
 
                         $cell = $columns[13] . $l;
@@ -247,35 +141,29 @@ foreach($accounts_exp_class as $key => $name) {
                         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
                     
                 }
-            }//if line not empty     
-        }//loop thisline
-
+            }    
+        
         $l++;
-
         $cell = $columns[0] . $l;
         $row = "A" . $l . ":N" . $l;
         $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('f3e1b7');
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('ffcc99');
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Sub total'));
 
         for ($m = 1; $m <= 12; $m++) {
-
-            $total_class = $subtotal_column_purchases[$m];
+            //$total_class = $subtotal_column_purchases[$m];
             $cell = $columns[$m] . $l;
-            if ($total_class == "") {
-                $amount = 0;
+            if ($values['subTotal'][$m] == "") {
+                $values['subTotal'][$m] = 0;
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
             } else {
-                $amount = round($total_class, $rounding);
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
             }
-            $grandtotal_column_purchases[$m] += $subtotal_column_purchases[$m];
-            $sum_row_amount = $sum_row_amount + $amount;
 
             // insert line
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $values['subTotal'][$m]);
             $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
             $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         } // for loop months
@@ -284,45 +172,35 @@ foreach($accounts_exp_class as $key => $name) {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
-        $sum_row_amount = 0;
-    }//if flag 1
-} //while loop acc. classes
+        
 
+}
 
-
-/*
- * Grand total purchases
- */
-
+//
+// Grand total purchases
+//
 $l++;
 $cell = $columns[0] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Grand total'). ' ' . (string) t('purchases'));
 
-$grand_total_purchases = array();
-
 for ($m = 1; $m <= 12; $m++) {
     
     $cell = $columns[$m] . $l;
-    if ($grandtotal_column_purchases[$m] == "") {
-        $amount = 0;
+    if ($purchases[0]['total'][$m] == "0") {
         //$objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = round($grandtotal_column_purchases[$m], $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
 
-    $sum_row_amount = $sum_row_amount + $amount;
-
     //insert line
-
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $purchases[0]['total'][$m]);
 
    
-    $grand_total_purchases[$m] = $amount; 
-}  //for loop month
+    //$grand_total_purchases[$m] = $amount; 
+}  // for loop month
 
 $cell = $columns[$m] . $l;
 $row = "A" . $l . ":N" . $l;
@@ -336,12 +214,12 @@ $sum_amount = 0;
 
 $l++;
 
-/*
- * Expenses
- * journal data linked to expense table. The reporting consider purchase value from allocation of expense 
- * NOT from the actual spending entity. This is to compare revenue & expenses from analytical point of view
- * Note: if aid of main busineess entity does not exist in allocated business entity, the data is not displayed
- */
+//
+//  Expenses
+//  journal data linked to expense table. The reporting consider purchase value from allocation of expense 
+//  NOT from the actual spending entity. This is to compare revenue & expenses from analytical point of view
+//  Note: if aid of main busineess entity does not exist in allocated business entity, the data is not displayed
+// 
 
 $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue("A$l", (string) t("Expenses @c @y @m", array('@c' => $company_name, '@y' => $year, '@m' => $baseCurrency)))
@@ -360,7 +238,7 @@ $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue("N$l", 'TOTAL');
 
 $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-$objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->getFill()->getStartColor()->setARGB('ed95b0');
+$objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->getFill()->getStartColor()->setARGB('FF9C9C');
 $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
         array(
             'font' => array(
@@ -376,174 +254,101 @@ $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
             )
         )
 );
-
-
-foreach($accounts_exp_class as $key => $name) {
-    
-    $class = substr($key, 0, 2);
-
-    // insert lines data
-    $c = 0;
-    $l++;
-    $row = "A" . $l . ":M" . $l;
-    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('d2bbc2');
-    // insert line
-    $cell = $columns[$c] . $l;
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $key . ' ' . $name);
-
-// Get the account type detail
-    $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_accounts', 'a');
-        $query->fields('a', ['aid', 'aname']);
-        $query->condition('aid', $class . '%', 'like');
-        $query->condition('atype', 'detail');
-        $query->condition('astatus', '1');
-        
-    if ($coid != 'all') {
-        $query->condition('coid', $coid);
-    }
-    
-    $query->orderBy('aid');
-    $data2 = $query->execute();
-    $flag = 0;
-    $subtotal_column_expenses = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0]; //used to comine sub total per column
-
-    while ($d2 = $data2->fetchObject()) {
-
-        $sum_row_amount = 0;
+foreach ($expenses[0]['classes'] as $key => $values){
         $l++;
+        $c = 0;
+        $row = "A" . $l . ":M" . $l;
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('FFDBE6');
         $cell = $columns[$c] . $l;
-        $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d2->aid . ' ' . $d2->aname);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $values['id'] . " - " . $values['name']);
+                    
+            foreach ($values['rows'] as $aid => $v) {
+                if ($v['sumRow'] <> 0) {
+                        $l++;
+                        $cell = $columns[0] . $l;
+                        $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+                        
+                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $aid . " " . $v['desc']);
 
+                        for ($m = 1; $m <= 12; $m++) {
+                            $cell = $columns[$m] . $l;
+                            if ($v[$m] == "") {
+                                $v[$m] = 0;
+                                $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
+                            } else {
+                                $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
+                            }
+                            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $v[$m]);
+                            $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
+                            
+                        }
+
+                        $cell = $columns[13] . $l;
+                        $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
+                        $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
+                    
+                }
+            }    
+        
+        $l++;
+        $cell = $columns[0] . $l;
+        $row = "A" . $l . ":N" . $l;
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('FFDBE6');
+        $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
+        $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Sub total'));
 
         for ($m = 1; $m <= 12; $m++) {
-            if ($m < 10) {
-                $date1 = $year . "-0" . $m . "-01";
-                $d = new DateTime($date1);
-                $date2 = $d->format('Y-m-t');
-            } else {
-                $date1 = $year . "-" . $m . "-01";
-                $d = new DateTime($date1);
-                $date2 = $d->format('Y-m-t');
-            }
-            // Get the type sum detail
-            //by allocation
-            $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_journal', 'j');
-                $query->leftJoin('ek_expenses', 'e', 'e.id = j.reference');    
-                $query->addExpression('SUM(value)', 'sumValue');
-                $query->condition('aid', $d2->aid);
-                $query->condition('date', $date1, '>=');
-                $query->condition('date', $date2, '<=');
-                $query->condition('source', 'purchase', '!=');
-                $query->condition('j.type', 'debit');
-                
-                
-            if ($coid != 'all') {           
-                $query->condition($view['E'], $coid);
-            }
 
-            $Obj = $query->execute();
-            $sum_d2 = $Obj->fetchObject()->sumValue; 
-
+            //$total_class = $subtotal_column_expenses[$m];
             $cell = $columns[$m] . $l;
-            if ($sum_d2 == "") {
-                $amount = 0;
+            if ($values['subTotal'][$m] == "0") {
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
             } else {
-                $amount = round($sum_d2, $rounding);
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
             }
-
-            $sum_row_amount = $sum_row_amount + $sum_d2;
-            $subtotal_column_expenses[$m] += $sum_d2;
-
             // insert line
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
-            $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
-        } //for loop months
-        // total line
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $values['subTotal'][$m]);
+            $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
+            $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        } // for loop months
+        // total subtotal line
         $cell = $columns[$m] . $l;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
+        $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
-        $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-        $sum_amount = 0;
-    } //while aid
+        //$sum_row_amount = 0;
 
-    
-    // Get the class sum - subtotal
-    $l++;
-    $cell = $columns[0] . $l;
-    $row = "A" . $l . ":N" . $l;
-    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('f3e1b7');
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Sub total'));
+}
 
+//
+// Grand total exp
+//
 
-    for ($m = 1; $m <= 12; $m++) {
-
-        $cell = $columns[$m] . $l;
-        if ($subtotal_column_expenses[$m] == "") {
-            $amount = 0;
-            $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
-        } else {
-            $amount = round($subtotal_column_expenses[$m], $rounding);
-            $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
-        }
-
-        $sum_row_amount = $sum_row_amount + $amount;
-        $grandtotal_column_expenses[$m] += $subtotal_column_expenses[$m];
-        // insert line
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
-        $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-        $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-    }
-
-    // total subtotal line
-    $cell = $columns[$m] . $l;
-    $sum_amount = round($sum_amount, $rounding);
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
-    $sum_row_amount = 0;
-    $c++;
-} //while class 
-
-
-/*
- * Grand total expenses
- */
-
+$l++;
 $cell = $columns[0] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Grand total') . ' ' . (string) t('expenses'));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Grand total'). ' ' . (string) t('expenses'));
 
-$sum_row_amount = 0;
-$grand_total_expenses = [];
 
 for ($m = 1; $m <= 12; $m++) {
-
+    
     $cell = $columns[$m] . $l;
-    if ($grandtotal_column_expenses[$m] == "") {
-        $amount = 0;
+    if ($expenses[0]['total'][$m] == "0") {
+        //$objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = $grandtotal_column_expenses[$m];
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
-
-    $sum_row_amount = $sum_row_amount + $amount;
-
+    //insert line
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $expenses[0]['total'][$m]);
 
-    $grand_total_expenses[$m] = $amount;
-} //loop months
+  
+}  // for loop month
 
 $cell = $columns[$m] . $l;
 $row = "A" . $l . ":N" . $l;
@@ -552,19 +357,17 @@ $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCod
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('ed95b0');
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-$sum_amount = round($sum_amount, $rounding);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
-$sum_row_amount = 0;
-
+$sum_amount = 0;
 
 $l++;
 
-/*
- * Income
- * journal data linked to sales table. The reporting consider sales value from allocation of sales 
- * NOT from the actual invoicing entity. This is to compare revenue & expenses from analytical point of view
- * Note: if aid of main busineess entity does not exist in allocated business entity, the data is not displayed
- */
+//
+// Income
+// journal data linked to sales table. The reporting consider sales value from allocation of sales 
+// NOT from the actual invoicing entity. This is to compare revenue & expenses from analytical point of view
+// Note: if aid of main busineess entity does not exist in allocated business entity, the data is not displayed
+//
 $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue("A$l", (string) t("Income @c @y @m", array('@c' => $company_name, '@y' => $year, '@m' => $baseCurrency)))
         ->setCellValue("B$l", 'JAN')
@@ -599,185 +402,102 @@ $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
         )
 );
 
-// Get the class array structure
-$query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_accounts', 'a');
-    $query->fields('a', ['aid', 'aname']);
-    $or = $query->orConditionGroup();
-    $or->condition('aid', $chart['income'] . '%', 'like');
-    $or->condition('aid', $chart['other_income'] . '%', 'like');
-    $query->condition($or);
-    $query->condition('atype', 'class');
-    $query->condition('astatus', '1');
+foreach ($income[0]['classes'] as $key => $values){
+        $l++;
+        $c = 0;
+        $row = "A" . $l . ":M" . $l;
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('d1d5f8');
+        $cell = $columns[$c] . $l;
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $values['id'] . " - " . $values['name']);
+                    
+            foreach ($values['rows'] as $aid => $v) {
+                if ($v['sumRow'] <> 0) {
+                        $l++;
+                        $cell = $columns[0] . $l;
+                        $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+                        
+                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $aid . " " . $v['desc']);
 
-if ($coid != 'all') {
-    $query->condition('coid', $coid);
-}  
+                        for ($m = 1; $m <= 12; $m++) {
+                            $cell = $columns[$m] . $l;
+                            if ($v[$m] == "") {
+                                $v[$m] = 0;
+                                $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
+                            } else {
+                                $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
+                            }
+                            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $v[$m]);
+                            $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
+                            
+                        }
 
-$query->orderBy('aid');
-$accounts_income_class = $query->execute()->fetchAllKeyed();
-
-foreach($accounts_income_class as $key => $name) {
-    $class = substr($key, 0, 2);
-    $l++;
-    $c = 0;
-    $row = "A" . $l . ":M" . $l;
-    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('d1d5f8');
-    $cell = $columns[$c] . $l;
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $key . " " . $name);
-
-
-    // Get the account type detail
-        $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_accounts', 'a');
-        $query->fields('a', ['aid', 'aname']);
-        $query->condition('aid', $class . '%', 'like');
-        $query->condition('atype', 'detail');
-        $query->condition('astatus', '1');
+                        $cell = $columns[13] . $l;
+                        $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
+                        $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
+                    
+                }
+            }    
         
-    if ($coid != 'all') {
-        $query->condition('coid', $coid);
-    }
- 
-    $query->orderBy('aid');
-    $data2 = $query->execute();
-    $sum_row_amount = 0;
-    $subtotal_column_income = [1 => 0 ,2 => 0 ,3 => 0 ,4 => 0 ,5 => 0 ,6 => 0 ,7 => 0 ,8 => 0 ,9 => 0 ,10 => 0 ,11 => 0 ,12 => 0 ,'sumRow' => 0];
-    while ($d2 = $data2->fetchObject()) {
-
         $l++;
         $cell = $columns[0] . $l;
+        $row = "A" . $l . ":N" . $l;
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('d1d5f8');
+        $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $d2->aid . " " . $d2->aname);
-
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Sub total'));
 
         for ($m = 1; $m <= 12; $m++) {
-            if ($m < 10) {
-                $date1 = $year . "-0" . $m . "-01";
-                $d = new DateTime($date1);
-                $date2 = $d->format('Y-m-t');
-            } else {
-                $date1 = $year . "-" . $m . "-01";
-                $d = new DateTime($date1);
-                $date2 = $d->format('Y-m-t');
-            }
-
-            //get the sum detail
-            //by allocation
-            $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_journal', 'j');
-                $query->leftJoin('ek_sales_invoice', 'i', 'i.id = j.reference');    
-                $query->addExpression('SUM(value)', 'sumValue');
-                $query->condition('aid', $d2->aid);
-                $query->condition('j.date', $date1, '>=');
-                $query->condition('j.date', $date2, '<=');
-                $query->condition('source', 'invoice', '=');
-                $query->condition('j.type', 'credit');
-                
-                
-            if ($coid != 'all') {           
-                $query->condition($view['S'], $coid);
-            }            
-
-            $Obj = $query->execute();
-            $sum_d2 = $Obj->fetchObject()->sumValue; 
-
+;
             $cell = $columns[$m] . $l;
-            if ($sum_d2 == "") {
-                $amount = 0;
+            if ($values['subTotal'][$m] == "0") {
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
             } else {
-                $amount = round($sum_d2, $rounding);
                 $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
             }
-
-            $sum_row_amount = $sum_row_amount + $amount;
-            $subtotal_column_income[$m] += $sum_d2;
             // insert line
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
-            $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
-        } //for loop months
-        // insert line
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $values['subTotal'][$m]);
+            $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
+            $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        } // for loop months
+        // total subtotal line
         $cell = $columns[$m] . $l;
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
+        //$sum_row_amount = 0;
 
-        $sum_row_amount = 0;
-    } 
-    
-    // Get the class sum - subtotal
-    $l++;
-    $cell = $columns[0] . $l;
-    $row = "A" . $l . ":N" . $l;
-    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-    $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setARGB('f3e1b7');
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Sub total'));
-
-    for ($m = 1; $m <= 12; $m++) {
-        
-        $cell = $columns[$m] . $l;
-        if ($subtotal_column_income[$m] == "") {
-            $amount = 0;
-            $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
-        } else {
-            $amount = round($subtotal_column_income[$m], $rounding);
-            $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
-        }
-
-        $sum_row_amount = $sum_row_amount + $amount;
-        $grandtotal_column_income[$m] += $subtotal_column_income[$m];
-        // insert line
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
-        $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-        $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    } // for loop months
-    // total subtotal line
-    $cell = $columns[$m] . $l;
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
-    $sum_row_amount = 0;
-} 
+}
 
 
+//
+// Grand total
+//
 
-/*
- * Grand total income
- */
-
-
+$l++;
 $cell = $columns[0] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Grand total') . ' ' . t('income'));
-
-$grand_total_revenue = [];
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Grand total'). ' ' . (string) t('income'));
 
 for ($m = 1; $m <= 12; $m++) {
     
     $cell = $columns[$m] . $l;
-    if ($grandtotal_column_income[$m] == "") {
+    if ($grandtotal_column_purchases[$m] == "") {
         $amount = 0;
         //$objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = round($grandtotal_column_income[$m], $rounding);
+        $amount = round($grandtotal_column_purchases[$m], $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
 
-    $sum_row_amount = $sum_row_amount + $amount;
-
     //insert line
-    
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
-  
-    $grand_total_revenue[$m] = $amount; //exclude internal transactions  
-    
-}  //for loop month
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $income[0]['total'][$m]);
+
+} 
 
 $cell = $columns[$m] . $l;
 $row = "A" . $l . ":N" . $l;
@@ -787,14 +507,14 @@ $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->setFillType(\PhpOffic
 $objPHPExcel->getActiveSheet()->getStyle($row)->getFill()->getStartColor()->setRGB('a9b1f8');
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
-$sum_row_amount = 0;
+$sum_amount = 0;
 
+$l++;
 
-
-/*
- * Balances
- * PL
- */
+//
+// Balances
+// PL
+//
 $profitloss = [];
 $l+=2;
 
@@ -842,35 +562,32 @@ $sum_pl = 0;
 for ($m = 1; $m <= 12; $m++) {
     $cell = $columns[$m] . $l;
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-    $pl = $grand_total_revenue[$m] - $grand_total_purchases[$m] - $grand_total_expenses[$m];
-    if ($pl < 0) {
+    //$pl = $grand_total_revenue[$m] - $grand_total_purchases[$m] - $grand_total_expenses[$m];
+    if ($balances['pl'][$m] < 0) {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('ed95b0');
     } else {
-        $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('a9b1f8');
+        $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('81F871');
     }
     //insert line
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $pl);
-    $sum_pl = $sum_pl + $pl;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $balances['pl'][$m]);
 }
 $cell = $columns[$m] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-if ($sum_pl < 0) {
+if (array_sum($balances['pl']) < 0) {
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('ed95b0');
 } else {
-    $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('a9b1f8');
+    $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('81F871');
 }
 
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
-$sum_pl = 0;
 
-
-/*
- * Balances
- * INYR
- */
+//
+// Balances
+// INYR
+//
 $l++;
 $cell = $columns[0] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
@@ -878,119 +595,58 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Payments n
 
 $sum_nyr = 0;
 for ($m = 1; $m <= 12; $m++) {
-    if ($m < 10) {
-        $date1 = $year . "-0" . $m . "-01";
-        $d = new DateTime($date1);
-        $date2 = $d->format('Y-m-t');
-    } else {
-        $date1 = $year . "-" . $m . "-01";
-        $d = new DateTime($date1);
-        $date2 = $d->format('Y-m-t');
-    }
-
-    // Get the sum of payments not received 
-    //TODO get data from journal
-    
-    $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_invoice', 'i');
-        $query->addExpression('SUM(amountbase)', 'sumValue');
-        $query->condition('date', $date1, '>=');
-        $query->condition('date', $date2, '<=');
-        $query->condition('status', '0');
-        
-    if ($coid != 'all') {
-        $query->condition($view['S'], $coid);
-    }
-    
-    $Obj = $query->execute();
-    $not_received = $Obj->fetchObject()->sumValue; 
-    
+       
     $cell = $columns[$m] . $l;
-    if ($not_received == "") {
-        $amount = 0;
+    if ($balances['inyr'][$m] == "0") {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = round($not_received, $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
-    }
-
-    $sum_nyr = $sum_nyr + $amount;
+    } 
 
     //insert line
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $balances['inyr'][$m]);
+    
 } //for loop months   
 // Line total INR
 $cell = $columns[$m] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
-$sum_amount = 0;
-$sum_nyr = 0;
 
 
-/*
- * Balances
- * short payments
- */
+//
+// Balances
+// short payments
+//
 $l++;
 $cell = $columns[0] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Short payments'));
 
-$sum_np = 0;
 for ($m = 1; $m <= 12; $m++) {
-    if ($m < 10) {
-        $date1 = $year . "-0" . $m . "-01";
-        $d = new DateTime($date1);
-        $date2 = $d->format('Y-m-t');
-    } else {
-        $date1 = $year . "-" . $m . "-01";
-        $d = new DateTime($date1);
-        $date2 = $d->format('Y-m-t');
-    }
-
-    $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_invoice', 'i');
-        $query->addExpression('SUM(balancebase)', 'sumValue');
-        $query->condition('date', $date1, '>=');
-        $query->condition('date', $date2, '<=');
-        $query->condition('status', '1');
-        
-    if ($coid != 'all') {
-        $query->condition($view['S'], $coid);
-    }
-    
-    $Obj = $query->execute();
-    $not_paid = $Obj->fetchObject()->sumValue; 
     $cell = $columns[$m] . $l;
-    if ($not_paid == "") {
-        $amount = 0;
+    if ($balances['short'][$m] == "0") {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = round($not_paid, $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
-
-    $sum_np = $sum_np + $amount;
 
     //insert line
     $cell = $columns[$m] . $l;
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $balances['short'][$m]);
 } //for loop months   
 // Line total SP
 $cell = $columns[$m] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
-$sum_amount = 0;
-$sum_np = 0;
 
-/*
- * Balances
- * ENYP
- */   
+//
+// Balances
+// ENYP
+//   
 $l++;
 $cell = $columns[0] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
@@ -998,101 +654,41 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Expenses n
 
 $sum_np = 0;
 for ($m = 1; $m <= 12; $m++) {
-    if ($m < 10) {
-        $date1 = $year . "-0" . $m . "-01";
-        $d = new DateTime($date1);
-        $date2 = $d->format('Y-m-t');
-    } else {
-        $date1 = $year . "-" . $m . "-01";
-        $d = new DateTime($date1);
-        $date2 = $d->format('Y-m-t');
-    }
 
-$query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_expenses', 'e');
-        $query->addExpression('SUM(amount)', 'sumValue');
-        $query->condition('pdate', $date1, '>=');
-        $query->condition('pdate', $date2, '<=');
-        $query->condition('cash', 'p');
-        
-        if ($coid != 'all') {
-            $query->condition($view['E'], $coid);
-        }
-
-        $Obj = $query->execute();
-        $not_paid = $Obj->fetchObject()->sumValue; 
-        
     $cell = $columns[$m] . $l;
-    if ($not_paid == "") {
-        $amount = 0;
+    if ($balances['enyp'][$m] == "") {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount = round($not_paid, $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
-
-    $sum_np = $sum_np + $amount;
 
     //insert line
 
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $balances['enyp'][$m]);
 } //for loop months   
 // Line total NYP
 $cell = $columns[$m] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
-$sum_amount = 0;
-$sum_np = 0;
 
-/*
- * Internal Revenue
- */
-
+//
+// Internal Revenue
+//
 $l++;
 $cell = $columns[0] . $l;
-//$objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Internal transfers received'));
-
-
 for ($m = 1; $m <= 12; $m++) {
-    if ($m < 10) {
-        $date1 = $year . "-0" . $m . "-01";
-        $d = new DateTime($date1);
-        $date2 = $d->format('Y-m-t');
-    } else {
-        $date1 = $year . "-" . $m . "-01";
-        $d = new DateTime($date1);
-        $date2 = $d->format('Y-m-t');
-    }
-    $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_expenses_memo', 'm');
-                $query->addExpression('SUM(amount_paid_base)', 'sumValue');
-                $query->condition('date', $date1, '>=');
-                $query->condition('date', $date2, '<=');
-                $query->condition('category', 5, '<>');
-                $query->condition('status', 0, '>');
-                $query->condition('entity', $coid);
-                
-    
-        $Obj = $query->execute();
-        $sumValue = $Obj->fetchObject()->sumValue; 
-        
     $cell = $columns[$m] . $l;
-    if ($sumValue == "") {
-        $amount_i[$m] = 0;
+    if ($internal_received[0][$m] == "0") {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount_i[$m] = round($sumValue, $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
-    $sum_row_amount = $sum_row_amount + $amount_i[$m];
-
     // insert line
-    
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount_i[$m]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $internal_received[0][$m]);
 }
 
 $cell = $columns[$m] . $l;
@@ -1104,55 +700,23 @@ $sum_row_amount = 0;
 
 $l++;
 $cell = $columns[0] . $l;
-
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Internal transfers paid'));
-
-
 for ($m = 1; $m <= 12; $m++) {
-    if ($m < 10) {
-        $date1 = $year . "-0" . $m . "-01";
-        $d = new DateTime($date1);
-        $date2 = $d->format('Y-m-t');
-    } else {
-        $date1 = $year . "-" . $m . "-01";
-        $d = new DateTime($date1);
-        $date2 = $d->format('Y-m-t');
-    }
-    $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_expenses_memo', 'm');
-                $query->addExpression('SUM(amount_paid_base)', 'sumValue');
-                $query->condition('date', $date1, '>=');
-                $query->condition('date', $date2, '<=');
-                $query->condition('category', 5, '<>');
-                $query->condition('status', 0, '>');
-                $query->condition('entity_to', $coid);
-                
-    
-        $Obj = $query->execute();
-        $sumValue = $Obj->fetchObject()->sumValue; 
-        
     $cell = $columns[$m] . $l;
-    if ($sumValue == "") {
-        $amount_i[$m] = 0;
+    if ($internal_paid[0][$m] == "") {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
-        $amount_i[$m] = round($sumValue, $rounding);
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
-    $sum_row_amount = $sum_row_amount + $amount_i[$m];
-
     // insert line
-    
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $amount_i[$m]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $internal_paid[0][$m]);
 }
 
 $cell = $columns[$m] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, "=SUM(B$l:M$l)");
-//$thissum_i[$m] = $sum_row_amount;
-$sum_row_amount = 0;
 
 $date = date('Y-m-d h:i:s');
 $l+=2;

@@ -150,10 +150,11 @@ class ReportController extends ControllerBase
                             'year' => $year,
                             'baseCurrency' => $baseCurrency,
                             'rounding' => $rounding,
+                            'divide' => $divide,
                             'view' => ['E' => $viewE, 'S' => $viewS]
                         )
                 );
-                $excel = Url::fromRoute('ek_finance_reporting_excel', array('param' => $param), array())->toString();
+                $excel = Url::fromRoute('ek_finance_reporting_excel', ['param' => $param], [])->toString();
                 $items['excel'] = array(
                     '#markup' => "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>",
                 );
@@ -227,8 +228,7 @@ class ReportController extends ControllerBase
      *  or markup if error
      *
      */
-    public function excelreporting(Request $request, $param)
-    {
+    public function excelreporting(Request $request, $param) {
         $markup = array();
         //The chart structure is as follow
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
@@ -236,6 +236,14 @@ class ReportController extends ControllerBase
         $chart = $this->settings->get('chart');
         $p = unserialize($param);
         if (isset($p['coid'])) {
+            $coid = $p['coid'];
+            $year = $p['year'];
+            $baseCurrency = $p['baseCurrency'];
+            $rounding = $p['rounding'];
+            $divide = 1;
+            $viewE = $p['view']['E'];
+            $viewS = $p['view']['S'];
+            include_once drupal_get_path('module', 'ek_finance') . '/reporting.inc';
             include_once drupal_get_path('module', 'ek_finance') . '/excel_reporting.inc';
         } else {
             include_once drupal_get_path('module', 'ek_finance') . '/excel_reporting_compilation.inc';

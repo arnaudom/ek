@@ -1,18 +1,32 @@
 
 <div>{{ items.form }}</div>
-<div class='right' title='{{ 'Excel download'|t }}'>{{ items.excel|raw }}</div>
+<div class='right' title='{{ 'Excel download'|trans }}'>{{ items.excel|raw }}</div>
 {% set rounding = items.rounding %}
-<div id="" class='right'><a class='right' href='#' onclick="jQuery('#help').toggle('slow');">{{ 'help'|t }} <i class="fa fa-question-circle"></i></a>
+<div id="" class='right'><a class='right' href='#' onclick="jQuery('#help').toggle('slow');">{{ 'help'|trans }} <i class="fa fa-question-circle"></i></a>
     <p class='left' id='help' style='display:none;'>
         {{ 'This report is not an accounting report.
         It is an analytic report that extract data per company based on business allocation.
         For instance you may issue an invoice with business entity A but allocate the value to another business entity B 
         (i.e profit center) for analytic purpose.
         Selecting "allocated" in the filter above means that data displyed are values allocated to this business entity (i.e. entity B);
-        Selecting "actual" means that data shown are values attached to main entity (i.e entity A).'|t }}
+        Selecting "actual" means that data shown are values attached to main entity (i.e entity A).'|trans }}
     </p>
     
 </div>
+    
+    
+{% if items.error %}
+    <p class="messages messages--warning">
+    {{ 'Some accounts from allocation companies are not used or active in allocated (selected)
+        company chart. This may result in compilation errors. Please check the 
+        following accounts for errors and activate or create them if necessary.'|trans }}:
+    
+    {% for key,aid in items.error %} 
+       {{ aid }} {{ ", " }}
+    {% endfor %}
+    </p>
+{% endif %}
+    
 <table class='report'>   
         <colgroup/>
         <colgroup class="c1"/>
@@ -31,25 +45,25 @@
     <colgroup class="c14"/>
     <thead class=''>
         <th class='column_aid'>
-            <a href='#balance' id='balance'>{{ 'Balances'|t }}</a> {{ items.year }} - {{ items.baseCurrency }} {{ items.budgetUnit }}
+            <a href='#balance' id='balance'>{{ 'Balances'|trans }}</a> {{ items.year }} - {{ items.baseCurrency }} {{ items.budgetUnit }}
         </th>
-        <th class='column_value'>{{ 'Jan'|t }}</th>
-        <th class='column_value'>{{ 'Feb'|t }}</th>
-        <th class='column_value'>{{ 'Mar'|t }}</th>
-        <th class='column_value'>{{ 'Apr'|t }}</th>
-        <th class='column_value'>{{ 'May'|t }}</th>
-        <th class='column_value'>{{ 'Jun'|t }}</th>
-        <th class='column_value'>{{ 'Jul'|t }}</th>
-        <th class='column_value'>{{ 'Aug'|t }}</th>
-        <th class='column_value'>{{ 'Sep'|t }}</th>
-        <th class='column_value'>{{ 'Oct'|t }}</th>
-        <th class='column_value'>{{ 'Nov'|t }}</th>
-        <th class='column_value'>{{ 'Dec'|t }}</th>
-        <th class='column_value'>{{ 'Total'|t }}</th>
+        <th class='column_value'>{{ 'Jan'|trans }}</th>
+        <th class='column_value'>{{ 'Feb'|trans }}</th>
+        <th class='column_value'>{{ 'Mar'|trans }}</th>
+        <th class='column_value'>{{ 'Apr'|trans }}</th>
+        <th class='column_value'>{{ 'May'|trans }}</th>
+        <th class='column_value'>{{ 'Jun'|trans }}</th>
+        <th class='column_value'>{{ 'Jul'|trans }}</th>
+        <th class='column_value'>{{ 'Aug'|trans }}</th>
+        <th class='column_value'>{{ 'Sep'|trans }}</th>
+        <th class='column_value'>{{ 'Oct'|trans }}</th>
+        <th class='column_value'>{{ 'Nov'|trans }}</th>
+        <th class='column_value'>{{ 'Dec'|trans }}</th>
+        <th class='column_value'>{{ 'Total'|trans }}</th>
     </thead>
     <tbody>
     <tr>
-        <td class=''>{{ 'Gain/Loss'|t }}</td>
+        <td class=''>{{ 'Gain/Loss'|trans }}</td>
         <td class='right {% if items.balances.pl.1 < 0 %} red {% endif %}' >{{ items.balances.pl.1|number_format(rounding) }}</td>
         <td class='right{% if items.balances.pl.2 < 0 %} red {% endif %}' >{{ items.balances.pl.2|number_format(rounding) }}</td>
         <td class='right{% if items.balances.pl.3 < 0 %} red {% endif %}' >{{ items.balances.pl.3|number_format(rounding) }}</td>
@@ -66,7 +80,7 @@
     </tr>  
 
     <tr>
-        <td class=''><span title="{{ 'open invoices'|t }}">{{ 'Payments not yet received'|t }}</span></td>
+        <td class=''><span title="{{ 'open invoices'|trans }}">{{ 'Payments not yet received'|trans }}</span></td>
         <td class='right'>{{ items.balances.inyr.1|number_format(rounding) }}</td>
         <td class='right'>{{ items.balances.inyr.2|number_format(rounding) }}</td>
         <td class='right' >{{ items.balances.inyr.3|number_format(rounding) }}</td>
@@ -83,7 +97,7 @@
     </tr>
 
     <tr>
-        <td class=''><span title="{{ 'closed invoices'|t }}">{{ 'Payments not received (short)'|t }}</span></td>
+        <td class=''><span title="{{ 'closed invoices'|trans }}">{{ 'Payments not received (short)'|trans }}</span></td>
         <td class='right'>{{ items.balances.short.1|number_format(rounding) }}</td>
         <td class='right'>{{ items.balances.short.2|number_format(rounding) }}</td>
         <td class='right' >{{ items.balances.short.3|number_format(rounding) }}</td>
@@ -99,7 +113,7 @@
         <td class='total right' >{{ items.balances.short.sumRow|number_format(rounding) }}</td>
     </tr>
     <tr>
-        <td class=''><span title="{{ 'provisions'|t }}">{{ 'Expenses not yet paid'|t }}</span></td>
+        <td class=''><span title="{{ 'provisions'|trans }}">{{ 'Expenses not yet paid'|trans }}</span></td>
         <td class='right'>{{ items.balances.enyp.1|number_format(rounding) }}</td>
         <td class='right'>{{ items.balances.enyp.2|number_format(rounding) }}</td>
         <td class='right' >{{ items.balances.enyp.3|number_format(rounding) }}</td>
@@ -116,7 +130,7 @@
     </tr>
     
     <tr>
-        <td class=''>{{ 'Internal payments received'|t }}</td>
+        <td class=''>{{ 'Internal payments received'|trans }}</td>
         <td class='right' >{{ items.internal_received.0.1.1|number_format(rounding) }}</td>
         <td class='right' >{{ items.internal_received.0.1.2|number_format(rounding) }}</td>
         <td class='right' >{{ items.internal_received.0.1.3|number_format(rounding) }}</td>
@@ -132,7 +146,7 @@
         <td class='total right' >{{ items.internal_received.0.1.sumRow|number_format(rounding) }}</td>
     </tr>
     <tr>
-        <td class=''>{{ 'Internal payments paid'|t }}</td>
+        <td class=''>{{ 'Internal payments paid'|trans }}</td>
         <td class='right' >{{ items.internal_paid.0.1.1|number_format(rounding) }}</td>
         <td class='right' >{{ items.internal_paid.0.1.2|number_format(rounding) }}</td>
         <td class='right' >{{ items.internal_paid.0.1.3|number_format(rounding) }}</td>
@@ -152,21 +166,21 @@
 
 <thead class=''>
         <th class='column_aid header_th'>
-            <a href=#purchases_data' id='purchases' onclick="jQuery('#purchases_data').toggle('slow');">{{ 'Purchases'|t }}</a> {{ items.year }} - {{ items.baseCurrency }} {{ items.budgetUnit }}
+            <a href=#purchases_data' id='purchases' onclick="jQuery('#purchases_data').toggle('slow');">{{ 'Purchases'|trans }}</a> {{ items.year }} - {{ items.baseCurrency }} {{ items.budgetUnit }}
         </th>
-        <th class='column_value header_th'>{{ 'Jan'|t }}</th>
-        <th class='column_value header_th'>{{ 'Feb'|t }}</th>
-        <th class='column_value header_th'>{{ 'Mar'|t }}</th>
-        <th class='column_value header_th'>{{ 'Apr'|t }}</th>
-        <th class='column_value header_th'>{{ 'May'|t }}</th>
-        <th class='column_value header_th'>{{ 'Jun'|t }}</th>
-        <th class='column_value header_th'>{{ 'Jul'|t }}</th>
-        <th class='column_value header_th'>{{ 'Aug'|t }}</th>
-        <th class='column_value header_th'>{{ 'Sep'|t }}</th>
-        <th class='column_value header_th'>{{ 'Oct'|t }}</th>
-        <th class='column_value header_th'>{{ 'Nov'|t }}</th>
-        <th class='column_value header_th'>{{ 'Dec'|t }}</th>
-        <th class='column_value header_th'>{{ 'Total'|t }}</th>
+        <th class='column_value header_th'>{{ 'Jan'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Feb'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Mar'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Apr'|trans }}</th>
+        <th class='column_value header_th'>{{ 'May'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Jun'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Jul'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Aug'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Sep'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Oct'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Nov'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Dec'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Total'|trans }}</th>
 </thead>
     
 <tbody id='purchases_data'>
@@ -180,7 +194,7 @@
         {% for aid,value in values.rows %}    
 
             <tr class='data0'>
-                <td class='left detail_aid'>{{ aid }}</td>
+                <td class='left detail_aid'>{{ value.link|raw }} {{ value.desc }}</td>
                 <td class='right' >{{ value.1|number_format(rounding) }}</td>
                 <td class='right' >{{ value.2|number_format(rounding) }}</td>
                 <td class='right' >{{ value.3|number_format(rounding) }}</td>
@@ -198,7 +212,7 @@
 
         {% endfor %}
         <tr>
-            <td class='right subtotal'>{{ 'Sub total'|t }}</td>
+            <td class='right subtotal'>{{ 'Sub total'|trans }}</td>
             <td class='right subtotal'>{{ values.subTotal.1|number_format(rounding) }}</td>
             <td class='right subtotal'>{{ values.subTotal.2|number_format(rounding) }}</td>
             <td class='right subtotal'>{{ values.subTotal.3|number_format(rounding) }}</td>
@@ -220,7 +234,7 @@
 </tbody>
 <tbody>
     <tr>
-        <td class='left grandtotal'>{{ 'Total'|t }} {{ 'purchases'|t }}</td>
+        <td class='left grandtotal'>{{ 'Total'|trans }} {{ 'purchases'|trans }}</td>
         <td class='right grandtotal' >{{ items.purchases.0.total.1|number_format(rounding) }}</td>
         <td class='right grandtotal' >{{ items.purchases.0.total.2|number_format(rounding) }}</td>
         <td class='right grandtotal' >{{ items.purchases.0.total.3|number_format(rounding) }}</td>
@@ -239,21 +253,21 @@
 
 <thead class=''>
     <th class='column_aid header_th'>
-        <a href='#expenses_data' id='expenses' onclick="jQuery('#expenses_data').toggle('slow');">{{ 'Expenses'|t }}</a> {{ items.year }} - {{ items.baseCurrency }} {{ items.budgetUnit }}
+        <a href='#expenses_data' id='expenses' onclick="jQuery('#expenses_data').toggle('slow');">{{ 'Expenses'|trans }}</a> {{ items.year }} - {{ items.baseCurrency }} {{ items.budgetUnit }}
     </th>
-    <th class='column_value header_th'>{{ 'Jan'|t }}</th>
-    <th class='column_value header_th'>{{ 'Feb'|t }}</th>
-    <th class='column_value header_th'>{{ 'Mar'|t }}</th>
-    <th class='column_value header_th'>{{ 'Apr'|t }}</th>
-    <th class='column_value header_th'>{{ 'May'|t }}</th>
-    <th class='column_value header_th'>{{ 'Jun'|t }}</th>
-    <th class='column_value header_th'>{{ 'Jul'|t }}</th>
-    <th class='column_value header_th'>{{ 'Aug'|t }}</th>
-    <th class='column_value header_th'>{{ 'Sep'|t }}</th>
-    <th class='column_value header_th'>{{ 'Oct'|t }}</th>
-    <th class='column_value header_th'>{{ 'Nov'|t }}</th>
-    <th class='column_value header_th'>{{ 'Dec'|t }}</th>
-    <th class='column_value header_th'>{{ 'Total'|t }}</th>
+    <th class='column_value header_th'>{{ 'Jan'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Feb'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Mar'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Apr'|trans }}</th>
+    <th class='column_value header_th'>{{ 'May'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Jun'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Jul'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Aug'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Sep'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Oct'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Nov'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Dec'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Total'|trans }}</th>
 </thead>
 <tbody id='expenses_data'>
     {# loop class #}
@@ -266,7 +280,7 @@
         {% for aid,value in values.rows %}    
 
             <tr class='data0'>
-                <td class='left detail_aid'>{{ aid|raw }}</td>
+                <td class='left detail_aid'>{{ value.link|raw }} {{ value.desc }}</td>
                 <td class='right' >{{ value.1|number_format(rounding) }}</td>
                 <td class='right' >{{ value.2|number_format(rounding) }}</td>
                 <td class='right' >{{ value.3|number_format(rounding) }}</td>
@@ -284,7 +298,7 @@
 
         {% endfor %}
         <tr>
-            <td class='right subtotal'>{{ 'Sub total'|t }}</td>
+            <td class='right subtotal'>{{ 'Sub total'|trans }}</td>
             <td class='right subtotal'>{{ values.subTotal.1|number_format(rounding) }}</td>
             <td class='right subtotal'>{{ values.subTotal.2|number_format(rounding) }}</td>
             <td class='right subtotal'>{{ values.subTotal.3|number_format(rounding) }}</td>
@@ -307,7 +321,7 @@
 </tbody>
 <tbody>
     <tr>
-        <td class='left grandtotal'>{{ 'Total'|t }} {{ 'expenses'|t }}</td>
+        <td class='left grandtotal'>{{ 'Total'|trans }} {{ 'expenses'|trans }}</td>
         <td class='right grandtotal' >{{ items.expenses.0.total.1|number_format(rounding) }}</td>
         <td class='right grandtotal' >{{ items.expenses.0.total.2|number_format(rounding) }}</td>
         <td class='right grandtotal' >{{ items.expenses.0.total.3|number_format(rounding) }}</td>
@@ -326,21 +340,21 @@
 
 <thead class=''>
     <th class='column_aid header_th'>
-        <a href='#income_data' id='income' onclick="jQuery('#income_data').toggle('slow');">{{ 'Income'|t }}</a> {{ items.year }} - {{ items.baseCurrency }} {{ items.budgetUnit }}
+        <a href='#income_data' id='income' onclick="jQuery('#income_data').toggle('slow');">{{ 'Income'|trans }}</a> {{ items.year }} - {{ items.baseCurrency }} {{ items.budgetUnit }}
     </th>
-    <th class='column_value header_th'>{{ 'Jan'|t }}</th>
-    <th class='column_value header_th'>{{ 'Feb'|t }}</th>
-    <th class='column_value header_th'>{{ 'Mar'|t }}</th>
-    <th class='column_value header_th'>{{ 'Apr'|t }}</th>
-    <th class='column_value header_th'>{{ 'May'|t }}</th>
-    <th class='column_value header_th'>{{ 'Jun'|t }}</th>
-    <th class='column_value header_th'>{{ 'Jul'|t }}</th>
-    <th class='column_value header_th'>{{ 'Aug'|t }}</th>
-    <th class='column_value header_th'>{{ 'Sep'|t }}</th>
-    <th class='column_value header_th'>{{ 'Oct'|t }}</th>
-    <th class='column_value header_th'>{{ 'Nov'|t }}</th>
-    <th class='column_value header_th'>{{ 'Dec'|t }}</th>
-    <th class='column_value header_th'>{{ 'Total'|t }}</th>
+    <th class='column_value header_th'>{{ 'Jan'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Feb'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Mar'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Apr'|trans }}</th>
+    <th class='column_value header_th'>{{ 'May'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Jun'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Jul'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Aug'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Sep'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Oct'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Nov'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Dec'|trans }}</th>
+    <th class='column_value header_th'>{{ 'Total'|trans }}</th>
     </thead>
 <tbody id='income_data'>
 {# loop class #}
@@ -353,7 +367,7 @@
         {% for aid,value in values.rows %}    
 
             <tr class='data0'>
-                <td class='left detail_aid'>{{ aid|raw }}</td>
+                <td class='left detail_aid'>{{ value.link|raw }} {{ value.desc }}</td>
                 <td class='right' >{{ value.1|number_format(rounding) }}</td>
                 <td class='right' >{{ value.2|number_format(rounding) }}</td>
                 <td class='right' >{{ value.3|number_format(rounding) }}</td>
@@ -371,7 +385,7 @@
 
         {% endfor %}
         <tr>
-            <td class='right subtotal'>{{ 'Sub total'|t }}</td>
+            <td class='right subtotal'>{{ 'Sub total'|trans }}</td>
             <td class='right subtotal'>{{ values.subTotal.1|number_format(rounding) }}</td>
             <td class='right subtotal'>{{ values.subTotal.2|number_format(rounding) }}</td>
             <td class='right subtotal'>{{ values.subTotal.3|number_format(rounding) }}</td>
@@ -391,7 +405,7 @@
 </tbody>
 <tbody>
     <tr>
-        <td class='left grandtotal'>{{ 'Total'|t }} {{ 'income'|t }}</td>
+        <td class='left grandtotal'>{{ 'Total'|trans }} {{ 'income'|trans }}</td>
         <td class='right grandtotal' >{{ items.income.0.total.1|number_format(rounding) }}</td>
         <td class='right grandtotal' >{{ items.income.0.total.2|number_format(rounding) }}</td>
         <td class='right grandtotal' >{{ items.income.0.total.3|number_format(rounding) }}</td>
@@ -408,14 +422,3 @@
     </tr>      
 <tbody>
 </table>
-    
-{% if items.error %}
-    {{ 'Some accounts from allocation companies are not used or active in allocated 
-        company chart. This may result in compilation errors. Please check the 
-        following accounts for errors'|t }}:
-    <ul>
-    {% for key,aid in items.error %} 
-        <li>{{ aid }}</li>
-    {% endfor %}
-    </ul>
-    {% endif %}
