@@ -97,10 +97,11 @@ foreach ($accounts_exp_class as $key => $name) {
                     $history = Url::fromRoute('ek_finance_modal', array('param' => $param), array())->toString();
                     $link = "<a class='use-ajax' href='" . $history . "' >" . $values->aid . "</a>";
                     
-                    if (!isset($rows[$values->aid . ' - ' . $accounts[$values->aid]][$m] )) {
-                        //$rows[$values->aid . ' - ' . $accounts[$values->aid]] = [];
-                        //$rows[$values->aid . ' - ' . $accounts[$values->aid]][$m] = 0;
-                        //$rows[$values->aid . ' - ' . $accounts[$values->aid]]['sumRow'] = 0;
+                    if (!isset($rows[$values->aid][$m] )) {
+                        $rows[$values->aid][$m] = 0;
+                    }
+                    if (!isset($rows[$values->aid]['sumRow'])) {
+                        $rows[$values->aid]['sumRow'] = 0;
                     }
                     $v = round($values->value / $divide, $rounding);
                     $rows[$values->aid]['desc'] = $accounts[$values->aid];
@@ -175,10 +176,11 @@ foreach ($accounts_exp_class as $key => $name) {
                     $history = Url::fromRoute('ek_finance_modal', array('param' => $param), array())->toString();
                     $link = "<a class='use-ajax' href='" . $history . "' >" . $values->aid . "</a>";
 
-                    if (!isset($rows[$link . ' - ' . $accounts[$values->aid]][$m])) {
-                        //$rows[$link . ' - ' . $accounts[$values->aid]] = [];
-                        //$rows[$link . ' - ' . $accounts[$values->aid]][$m] = 0;
-                        //$rows[$link . ' - ' . $accounts[$values->aid]]['sumRow'] = 0;
+                    if (!isset($rows[$values->aid][$m] )) {
+                        $rows[$values->aid][$m] = 0;
+                    }
+                    if (!isset($rows[$values->aid]['sumRow'])) {
+                        $rows[$values->aid]['sumRow'] = 0;
                     }
                     $v = round($values->value / $divide, $rounding);
                     
@@ -267,10 +269,11 @@ foreach ($accounts_income_class as $key => $name) {
                     ]);
                     $history = Url::fromRoute('ek_finance_modal', ['param' => $param], [])->toString();
                     $link = "<a class='use-ajax' href='" . $history . "' >" . $values->aid . "</a>";
-                    if (!isset($rows[$values->aid . ' - ' . $accounts[$values->aid]][$m])) {
-                        //$rows[$link . ' - ' . $accounts[$values->aid]] = [];
-                        //$rows[$link . ' - ' . $accounts[$values->aid]][$m] = 0;
-                        //$rows[$link . ' - ' . $accounts[$values->aid]]['sumRow'] = 0;
+                    if (!isset($rows[$values->aid][$m] )) {
+                        $rows[$values->aid][$m] = 0;
+                    }
+                    if (!isset($rows[$values->aid]['sumRow'])) {
+                        $rows[$values->aid]['sumRow'] = 0;
                     }
                     $v = round($values->value / $divide, $rounding);
                     $rows[$values->aid]['desc'] = $accounts[$values->aid];
