@@ -7,6 +7,8 @@
 
 namespace Drupal\ek_finance\Form;
 
+use Drupal\Component\Utility\Bytes;
+use Drupal\Component\Utility\Environment;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Database\Database;
@@ -171,7 +173,11 @@ class AttachFileMemo extends FormBase {
 
         //upload
         $extensions = 'png jpeg jpg';
-        $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [file_upload_max_size()]);
+        // @TODO Remove for Drupal 8.5 and 8.6.
+        $max_bytes = floatval(\Drupal::VERSION) < 8.7
+            ? file_upload_max_size() : Environment::getUploadMaxSize();
+        $max_filesize = Bytes::toInt($max_bytes);
+        $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [$max_filesize]);
         $file = file_save_upload("upload_doc", $validators, false, 0);
 
         if ($file) {

@@ -15,6 +15,8 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\Component\Utility\Bytes;
+use Drupal\Component\Utility\Environment;
 use Drupal\Component\Utility\Xss;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_projects\ProjectData;
@@ -816,7 +818,10 @@ class NewMemo extends FormBase {
 
         //upload
         $extensions = 'png jpg jpeg';
-        $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [file_upload_max_size()]);
+        $max_bytes = floatval(\Drupal::VERSION) < 8.7
+            ? file_upload_max_size() : Environment::getUploadMaxSize();
+        $max_filesize = Bytes::toInt($max_bytes);
+        $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [$max_filesize]);
         $file = file_save_upload("upload_doc", $validators, false, 0);
 
         if ($file) {
