@@ -203,10 +203,19 @@ class AttachFileMemo extends FormBase {
                 return $response->addCommand(new HtmlCommand('#error', $msg));
             }
         } else {
-            $size = round(file_upload_max_size() / 1000000, 0);
+            $m = \Drupal::messenger()->messagesByType('error');
+            $e = '';
+            if(!empty($m)){
+                foreach ($m as $k){
+                    $e .= "<p>". (string) $k . "</p>";
+                }
+                \Drupal::messenger()->deleteByType('error');
+            }
+            $size = round($max_filesize / 1000000, 0);
             $msg = "<div aria-label='Error message' class='messages messages--error'>"
-                    . $this->t('Error') . ". " . $this->t('Allowed extensions') . ": " . 'png jpg jpeg'
-                    . ', ' . $this->t('maximum size') . ": " . $size . 'Mb'
+                    . $this->t('Allowed extensions') . ": " . 'png jpg jpeg'
+                    . ', ' . $this->t('maximum size') . ": " . $size . 'Mb.'
+                    . $e
                     . "</div>";
             $response = new AjaxResponse();
             return $response->addCommand(new HtmlCommand('#error', $msg));
