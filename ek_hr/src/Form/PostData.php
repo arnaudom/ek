@@ -96,7 +96,7 @@ class PostData extends FormBase
             $query = "SELECT count(ek_hr_workforce_pay.id) from {ek_hr_workforce_pay} INNER JOIN {ek_hr_workforce} ON  ek_hr_workforce_pay.id=ek_hr_workforce.id  WHERE company_id=:c";
             $row = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $form_state->getValue('coid')))->fetchField();
 
-            $query = "SELECT current from {ek_hr_payroll_cycle WHERE coid=:c";
+            $query = "SELECT current from {ek_hr_payroll_cycle} WHERE coid=:c";
             $current = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $form_state->getValue('coid')))->fetchField();
 
             $form['month'] = array(
