@@ -11,7 +11,6 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -282,7 +281,7 @@ class PayrollRecord extends FormBase {
             '#markup' => $markup,
         );
 
-        //Table 1 work data
+        // Table 1 work data
         $form['hr']['table1'] = array(
             '#type' => 'item',
             '#tree' => true,
@@ -349,7 +348,7 @@ class PayrollRecord extends FormBase {
             '#attributes' => array('readonly' => 'readonly', 'class' => ['amount'], 'value' => $val_s,)
         );
 
-        //built edit rows for table
+        // built edit rows for table
         $form['hr']['table1'][] = array(
             'work_base' => &$form['work_base'],
             'unit_work' => &$form['unit_work'],
@@ -375,7 +374,7 @@ class PayrollRecord extends FormBase {
         unset($form['leave']);
         unset($form['basic_value']);
 
-        //Table 2 fixed allowances
+        // Table 2 fixed allowances
         $form['hr']['fa'] = [
             '#title' => $this->t('Fixed allowances'),
             '#type' => 'details',
@@ -444,7 +443,7 @@ class PayrollRecord extends FormBase {
         );
 
 
-        //rows normal OT
+        // rows normal OT
         $form['hr']['fa']['table2']['not'] = array(
             'unit' => &$form['overtime_hours'],
             'value' => &$form['normal_ot'],
@@ -498,7 +497,7 @@ class PayrollRecord extends FormBase {
         );
 
 
-        //rows rest day OT
+        // rows rest day OT
         $form['hr']['fa']['table2']['rdot'] = array(
             'unit' => &$form['rest_hours'],
             'value' => &$form['rest_day_ot'], 'tax' => &$form['tax_rdot'],
@@ -552,7 +551,7 @@ class PayrollRecord extends FormBase {
         );
 
 
-        //rows PH OT
+        // rows PH OT
         $form['hr']['fa']['table2']['phot'] = array(
             'unit' => &$form['ph_hours'],
             'value' => &$form['ph_ot'],
@@ -607,7 +606,7 @@ class PayrollRecord extends FormBase {
         );
 
 
-        //rows mc
+        // rows mc
         $form['hr']['fa']['table2']['mc'] = array(
             'unit' => &$form['mc_days'],
             'value' => &$form['mc_day_val'],
@@ -663,7 +662,7 @@ class PayrollRecord extends FormBase {
         );
 
 
-        //rows extra hours
+        // rows extra hours
         $form['hr']['fa']['table2']['xh'] = array(
             'unit' => &$form['x_hours'],
             'value' => &$form['x_hours_val'],
@@ -718,7 +717,7 @@ class PayrollRecord extends FormBase {
         );
 
 
-        //rows commission
+        // rows commission
         $form['hr']['fa']['table2']['to'] = array(
             'unit' => &$form['turnover'],
             'value' => &$form['commission'],
@@ -740,7 +739,7 @@ class PayrollRecord extends FormBase {
         unset($form['tax_commision']);
 
 
-        //Table 3 custom allowances
+        // Table 3 custom allowances
         $form['hr']['ca'] = [
             '#title' => $this->t('Custom allowances'),
             '#type' => 'details',
@@ -772,10 +771,12 @@ class PayrollRecord extends FormBase {
             '#attributes' => array('id' => 'table3'),
             '#empty' => '',
         );
+
         for ($i = 1; $i <= 13; $i++) {
             $custom_aw = 'custom_aw' . $i;
             $tax = 'tax' . $i;
             $formula = 'formula' . $i;
+            $attr = [];
             if (!null == $form_state->getValue('eid')) {
                 $attr = ['title' => $this->t('include tax'), 'class' => ['calculate']];
                 if ($ad["LAC$i-" . $c]['tax'] == 1) {
@@ -829,7 +830,7 @@ class PayrollRecord extends FormBase {
             unset($form[$formula]);
             unset($form[$tax]);
         }
-        $i++;
+       $i++;
         $form["sub_total_gross"] = array(
             '#type' => 'item',
             '#markup' => $this->t('Total gross salary'),
@@ -925,7 +926,7 @@ class PayrollRecord extends FormBase {
         unset($form['sub_advance']);
         unset($form["advance"]);
 
-        //Table 4 custom deductions
+        // Table 4 custom deductions
         $form['hr']['cd'] = [
             '#title' => $this->t('Custom deductions'),
             '#type' => 'details',
@@ -961,6 +962,7 @@ class PayrollRecord extends FormBase {
             $custom_d = 'custom_d' . $i;
             $tax = 'tax' . $n;
             $formula = 'formula' . $i;
+            $attr = [];
             if (!null == $form_state->getValue('eid')) {
                 $attr = ['title' => $this->t('include tax'), 'class' => ['calculate']];
                 if ($ad["LDC$i-" . $c]['tax'] == 1) {
@@ -1044,7 +1046,7 @@ class PayrollRecord extends FormBase {
         unset($form['sub_total_deductions']);
         unset($form["total_deductions"]);
 
-        //table 5 contributions
+        // table 5 contributions
         $form['hr']['co'] = [
             '#title' => $this->t('Contributions'),
             '#type' => 'details',
@@ -1100,7 +1102,7 @@ class PayrollRecord extends FormBase {
             '#attributes' => array('title' => $this->t('include this fund'), 'class' => ['amount', 'calculate']),
         );
 
-        //built edit rows for table
+        // built edit rows for table
         $form['hr']['co']['table5']['fund1'] = array(
             'employer' => &$form['fund1_employer'],
             'employee' => &$form['fund1_employee'],
@@ -1145,7 +1147,7 @@ class PayrollRecord extends FormBase {
             '#attributes' => array('title' => $this->t('include this fund'), 'class' => ['amount', 'calculate']),
         );
 
-        //built edit rows for table
+        // built edit rows for table
         $form['hr']['co']['table5']['fund2'] = array(
             'employer' => &$form['fund2_employer'],
             'employee' => &$form['fund2_employee'],
@@ -1190,7 +1192,7 @@ class PayrollRecord extends FormBase {
             '#attributes' => array('title' => $this->t('include this fund'), 'class' => ['amount', 'calculate']),
         );
 
-        //built edit rows for table
+        // built edit rows for table
         $form['hr']['co']['table5']['fund3'] = array(
             'employer' => &$form['fund3_employer'],
             'employee' => &$form['fund3_employee'],
@@ -1228,7 +1230,7 @@ class PayrollRecord extends FormBase {
             '#attributes' => array('title' => $this->t('include personal tax'), 'class' => ['amount', 'calculate']),
         );
 
-        //built edit rows for table
+        // built edit rows for table
         $form['hr']['co']['table5']['tax'] = array(
             'item' => &$form['tax_employee'],
             'income_tax' => &$form['income_tax'],
@@ -1247,7 +1249,7 @@ class PayrollRecord extends FormBase {
         unset($form['income_tax']);
         unset($form['thisincometax']);
 
-        //Table 6 total
+        // Table 6 total
         $form['hr']['table6'] = array(
             '#type' => 'item',
             '#tree' => true,
@@ -1271,7 +1273,7 @@ class PayrollRecord extends FormBase {
             '#attributes' => array('readonly' => 'readonly', 'class' => array('amount'), 'value' => isset($post->nett) ? $post->nett : 0),
         );
 
-        //built edit rows for table
+        // built edit rows for table
         $form['hr']['table6']['total'] = array(
             'item' => &$form['_total_net'],
             'total_net' => &$form['total_net'],

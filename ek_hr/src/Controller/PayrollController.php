@@ -87,8 +87,7 @@ class PayrollController extends ControllerBase
      * Return payroll form
      *
      */
-    public function payroll(Request $request)
-    {
+    public function payroll(Request $request) {
         $flag = 1;
         if (!null == $request->query->get('coid')) {
             $flag = (in_array($request->query->get('coid'), AccessCheck::GetCompanyByUser())) ? 1 : 0;
