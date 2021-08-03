@@ -1687,6 +1687,14 @@ class ProjectController extends ControllerBase {
                     'options' => $data['sub'],
                 ];
                 $data['move_file'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\MoveFile',$p);
+                
+                
+            }
+            // insert a form to attach the file to a sales doc
+            if ($this->moduleHandler->moduleExists('ek_sales')) {
+                $p['uri'] = $file->uri;
+                $p['pcode'] = $file->pcode;
+                $data['attach_file'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\AttFilePurchase', $p);
             }
             
             $content = [

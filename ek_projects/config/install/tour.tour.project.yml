@@ -17,71 +17,64 @@ tips:
     label: 'Page title'
     body: 'The page title will show the project unique reference'
     weight: 2
-    location: bottom
-    attributes:
-      data-class: page-title
+    position: bottom
+    selector: '.page-title'
   second-item:
     id: p-last_view
     plugin: text
     label: 'Last view'
     body: 'This indicate the last time the page was opened and who view it'
     weight: 3
-    location: bottom
-    attributes:
-      data-id: project-last_view
+    position: bottom
+    selector: '#project-last_view'
   third-item:
     id: p-type
     plugin: text
     label: 'Category'
     body: 'This is the category classification of the project'
     weight: 4
-    location: bottom
-    attributes:
-      data-id: project-type
+    position: bottom
+    selector: '#project-type'
   fourth-item:
     id: p-notify
     plugin: text
     label: 'Notify me'
     body: 'Click this box if you want to receive email notification whenever data are updated in this page by other users'
     weight: 5
-    location: bottom
-    attributes:
-      data-id: project-notify
+    position: bottom
+    selector: '#project-notify'
   item4:
     id: p-client
     plugin: text
     label: 'Client'
     body: 'Link to the client for which this project is opened. Click on the link to open address book and view this entity information'
     weight: 6
-    location: bottom
-    attributes:
-      data-id: project-client
+    position: bottom
+    selector: '#project-client'
   item5:
     id: item5
     plugin: text
     label: 'Case reference'
     body: 'If project management module is available, the invoice can be referred to a specific project to be selected from list'
     weight: 7
-    location: bottom
-    attributes:
-      data-id: edit-pcode
+    position: bottom
+    selector: '#edit-pcode'
   item6:
     id: p-name
     plugin: text
     label: 'Name'
     body: 'The name of tis project. Note: project name is not unique as it is define by project owner'
     weight: 8
-    location: bottom
-    attributes:
-      data-id: project-name
+    position: bottom
+    selector: '#project-name'
   item7:
     id: p-level
     plugin: text
     label: 'Level'
     body: 'Indicate the level of the project. There are 2 levels: "main project" and "sub project". A sub project is linked to a main project. You can create sub project when for instance extending a main project geographically or renewing existing project for another period. If sub projects exist for a given project they will be listed in "linked projects" section'
     weight: 9
-    location: bottom
-    attributes:
+    position: bottom
+    selector: '#
       data-id: project-level
   item8:
     id: item8
@@ -89,26 +82,24 @@ tips:
     label: 'Extranet'
     body: 'If extranet module is available, use this link to create or edit an extranet page where you can invite "external" user to view or share information about this project'
     weight: 10
-    location: bottom
-    attributes:
-      data-id: project-extranet
+    position: bottom
+    selector: '#project-extranet'
   item9:
     id: item9
     plugin: text
     label: 'Owner'
     body: 'The owner is the system user who has initially created this project page. By default the notification box seen earlier is selected for this user'
     weight: 11
-    location: bottom
-    attributes:
-      data-id: project-owner
+    position: bottom
+    selector: '#project-owner'
   item10:
     id: item10
     plugin: text
     label: 'Notification'
     body: 'Use this link to send short message via email to system users about this project. You can communicate with local users and send text message with 3 priority levels: low, medium or high. If Messaging module is enabled, the message is also copied in the internal messaging inbox of recipients'
     weight: 12
-    location: bottom
-    attributes:
+    position: bottom
+    selector: '#
       data-id: project-notification
   item11:
     id: item11
@@ -116,62 +107,56 @@ tips:
     label: 'Access'
     body: 'If you are owner of the project, you can control users access to this page. By default all users who have access to the country for which this project is opened will have access to the page. However you can restrict manually this access by selecting auhtorized users'
     weight: 13
-    location: bottom
-    attributes:
-      data-id: project-access
+    position: bottom
+    selector: '#project-access'
   item12:
     id: item12
     plugin: text
     label: 'Tasks'
     body: 'Click on this link to create a new task attached to this project. You can assign tasks to users, set start and ending dates and get notified by email about pending tasks'
     weight: 14
-    location: bottom
-    attributes:
-      data-id: project-task
+    position: bottom
+    selector: '#project-task'
   item13:
     id: item13
     plugin: text
     label: 'Edit mode'
     body: 'To enter or exit edit mode, click on this link. In edit mode, an icon will appear next to each editable field. Click on the icon next to the field to open the form and edit the information'
     weight: 15
-    location: bottom
-    attributes:
-      data-id: project-edit
+    position: bottom
+    selector: '#project-edit'
   item14:
     id: item14
     plugin: text
     label: 'Edit timeline'
     body: 'All editions and interactions with the project are listed in this box. You can view what has been edited and see more detail when placing your mouse over the user name'
     weight: 16
-    location: right
-    attributes:
-      data-id: tracker
+    position: right
+    selector: '#tracker'
   item15:
     id: item15
     plugin: text
     label: 'Calendar'
     body: 'Click on this button to open a calendar. In the calendar, you can filter tasks deadlines or project milestone dates'
     weight: 17
-    location: right
-    attributes:
-      data-id: tour-calendar     
+    position: right
+    selector: '#tour-calendar'     
   item16:
     id: item16
     plugin: text
     label: 'Toggle sections'
     body: 'Click on this button to expand or close all the below sections containing project information. You can also click on each section header to open or close the view'
     weight: 18
-    location: left
-    attributes:
-      data-id: expand 
+    position: left
+    selector: '#expand' 
   item17:
     id: item17
     plugin: text
     label: 'Linked projects section'
     body: 'If this project is linked to 1 or more main or sub-project, they will be listed in this section'
     weight: 19
-    location: left
-    attributes:
+    position: left
+    selector: '#
       data-class: project
   item18:
     id: item18
@@ -179,43 +164,38 @@ tips:
     label: 'Main data'
     body: 'Main section contains the project milestones like start or end dates as well as descriptions, people in charge. From this section the user should understand what is the project about'
     weight: 21
-    location: left
-    attributes:
-      data-class: project  
+    position: left
+    selector: '.project'  
   item19:
     id: item19
     plugin: text
     label: 'Tasks'
     body: 'This section will list current tasks created for this project'
     weight: 20
-    location: left
-    attributes:
-      data-class: project 
+    position: left
+    selector: '.project'
   item20:
     id: item20
     plugin: text
     label: 'Communication'
     body: 'This section is reserved for projects reports and files attachments. Use the "upload new file" link to add new attachment. If the IReports module is available, links to reports created will be displayed in this section'
     weight: 22
-    location: left
-    attributes:
-     data-class: project
+    position: left
+    selector: '.project'
   item21:
     id: item21
     plugin: text
     label: 'Logistics'
     body: 'Logistics section will compile delivery schedules and documents issued for this project'
     weight: 23
-    location: left
-    attributes:
-      data-class: project     
+    position: left
+    selector: '.project'    
   item22:
     id: item22
     plugin: text
     label: 'Finance'
     body: 'Finance section will gather all information about project cost or income. Depending on available modules (Finance, Sales) you can view purchases, quotations, invoices, expenses. Use the "upload new file" link to add new attachment. You can also add text comments'
     weight: 24
-    location: left
-    attributes:
-      data-class: project
+    position: left
+    selector: '.project'
 
