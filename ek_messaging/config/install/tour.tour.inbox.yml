@@ -17,74 +17,66 @@ tips:
     label: 'Tabs'
     body: 'There are 3 tabs <ul><li>Messages received in inbox from other users</li><li>Messages you sent in outbox</li><li>Messages archived</li></ul>'
     weight: 2
-    location: bottom
-    attributes:
-      data-id: block-ek-local-tasks
+    position: bottom
+    selector: '#block-ek-local-tasks'
   item1:
     id: table1
     plugin: text
     label: 'Inbox messages'
     body: 'Messages are listed by date and time.'
     weight: 3
-    location: top
-    attributes:
-      data-id: inbox_date
+    position: top
+    selector: '#inbox_date'
   item2:
     id: table2
     plugin: text
     label: 'Inbox messages'
     body: 'From: the application user who sent you the internal message.'
     weight: 4
-    location: top
-    attributes:
-      data-id: inbox_from
+    position: top
+    selector: '#inbox_from'
   item3:
     id: table3
     plugin: text
     label: 'Inbox messages'
     body: 'Subject: the message subject.'
     weight: 4
-    location: top
-    attributes:
-      data-id: inbox_subject
+    position: top
+    selector: '#inbox_subject'
   item4:
     id: subject
     plugin: text
     label: 'Inbox messages: subject'
     body: 'Click on message subject to open it. There are 3 colors indicating priority <ul><li><span class="fa fa-circle red"/> Urgent</li><li><span class="fa fa-circle blue"/> Normal</li><li><span class="fa fa-circle green"/> Low</li></ul>'
     weight: 5
-    location: top
-    attributes:
-      data-id: inbox_subject
+    position: top
+    selector: '#inbox_subject'
   item5:
     id: archive
     plugin: text
     label: 'Action'
     body: 'Click on archive icon <span class="fa fa-folder archiveButton"/> to move message to archive'
     weight: 6
-    location: left
-    attributes:
-      data-id: inbox_action
+    position: left
+    selector: '#inbox_action'
   item6:
     id: search
     plugin: text
     label: 'Search box'
     body: 'Input keyword to search message by content. this will also filter outbox and archive messages.'
     weight: 7
-    location: right
-    attributes:
-      data-id: edit-keyword
+    position: right
+    selector: '#edit-keyword'
   item7:
     id: new_message
     plugin: text
     label: 'Send new message'
     body: 'Click this button to send a new message.'
     weight: 8
-    attributes:
-      data-id: block-ek-local-actions
+    selector: '#block-ek-local-actions'
   conclusion:
     id: introduction
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-messaging">online documentation</a> for further help.'
-    weight: 9  
+    weight: 9

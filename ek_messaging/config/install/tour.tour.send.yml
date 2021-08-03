@@ -17,67 +17,59 @@ tips:
     label: 'Recipients'
     body: 'Input message recipients. You can only send message to other users. Type first letters and the form will suggest user names to select.'
     weight: 2
-    location: bottom
-    attributes:
-      data-id: edit-users
+    position: bottom
+    selector: '#edit-users'
   item1:
     id: priority
     plugin: text
     label: 'Priority'
     body: 'Select the priority of your message: <ul><li class="red">Urgent</li><li class="blue">Normal</li><li class="green">Low</li></ul>'
     weight: 3
-    location: bottom
-    attributes:
-      data-id: edit-priority
+    position: bottom
+    selector: '#edit-priority'
   item2:
     id: subject
     plugin: text
     label: 'Subject'
     body: 'Message subject'
     weight: 4
-    location: bottom
-    attributes:
-      data-id: edit-subject
+    position: bottom
+    selector: '#edit-subject'
   item3:
     id: body
     plugin: text
     label: 'Message body'
-    body: 'Input your message here.'
+    body: 'Input your message here'
     weight: 4
-    location: bottom
-    attributes:
-      data-id: edit-message-value
+    position: bottom
+    selector: '#edit-message-value'
   item4:
     id: filters
     plugin: text
     label: 'Text formats'
     body: 'Based on administrator settings, you can have different text format available: plain text, restricted or full HTML.'
     weight: 5
-    location: bottom
-    attributes:
-      data-class: filter-list
+    position: bottom
+    selector: '.filter-list'
   item5:
     id: email
     plugin: text
     label: 'Option for email'
     body: 'Select this option if you want user(s) to receive as well email with the above message content.'
     weight: 6
-    location: bottom
-    attributes:
-      data-id: edit-email
+    position: bottom
+    selector: '#edit-email'
   item6:
     id: send
     plugin: text
     label: 'Send'
     body: 'Click to send message.'
     weight: 7
-    location: right
-    attributes:
-      data-id: edit-submit
+    position: right
+    selector: '#edit-submit'
   conclusion:
     id: introduction
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-messaging">online documentation</a> for further help.'
-    weight: 8   
-      
+    weight: 8
