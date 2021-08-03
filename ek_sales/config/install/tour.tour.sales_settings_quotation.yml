@@ -23,32 +23,27 @@ tips:
     label: 'Column 2'
     body: 'You can input a custom description for this field or choose to hide it in the quotation form.'
     weight: 3
-    location: right
-    attributes:
-      data-id: edit-setting-2-active
+    position: right
+    selector: '#edit-setting-2-active'
   item3:
     id: c3
     plugin: text
     label: 'Column 3'
     body: 'You can input a custom description for this field or choose to hide it in the quotation form.'
     weight: 4
-    location: right
-    attributes:
-      data-id: edit-setting-3-active
+    position: right
+    selector: '#edit-setting-3-active'
   item4:
     id: item7
     plugin: text
     label: 'Save'
     body: 'Click "Record" to save settings.'
     weight: 5
-    location: top
-    attributes:
-      data-id: edit-record
+    position: top
+    selector: '#edit-record'
   conclusion:
     id: conclusion
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-sales">online documentation</a> for further help.'
     weight: 6
-    attributes:
-      backdrop: 1

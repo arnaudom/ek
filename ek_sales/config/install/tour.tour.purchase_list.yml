@@ -17,171 +17,152 @@ tips:
     label: 'Tabs'
     body: 'There are 5 tabs <ul><li>Current purchases</li><li>New purchase to create new document</li><li>Purchase aging summary</li><li>Payment ledger per supplier (if finance module is installed)</li><li>Tasks and reminders</li></ul>'
     weight: 2
-    location: bottom
-    attributes:
-      data-id: block-ek-local-tasks  
+    position: bottom
+    selector: '#block-ek-local-tasks'
   item1:
     id: edit-filters
     plugin: text
     label: 'Filter'
     body: 'You can filter the list with different criteria: <ul><li>Keyword</li><li>Date creation range</li><li>Supplier</li><li>Status (Paid or not paid)</li><li>Currency</li></ul>'
     weight: 3
-    location: bottom
-    attributes:
-      data-id: edit-filters
+    position: bottom
+    selector: '#edit-filters'
   item2:
     id: edit-k
     plugin: text
     label: 'Keyword'
     body: 'If you filter by keyword, other options are disabled.'
     weight: 4
-    location: bottom
-    attributes:
-      data-id: edit-keyword
+    position: bottom
+    selector: '#edit-keyword'
   item2a:
     id: edit-coid
     plugin: text
     label: 'Company'
     body: 'Will filter purchase by header OR allocation.'
     weight: 5
-    location: bottom
-    attributes:
-      data-id: edit-coid
+    position: bottom
+    selector: '#edit-coid'
   item3:
     id: edit-from
     plugin: text
     label: 'Dates'
     body: 'Dates: select date from calendar.'
     weight: 6
-    location: bottom
-    attributes:
-      data-id: edit-from
+    position: bottom
+    selector: '#edit-from'
   item4:
     id: edit-client
     plugin: text
     label: 'Clients'
     body: 'Clients: select supplier from list.'
     weight: 7
-    location: bottom
-    attributes:
-      data-id: edit-supplier
+    position: bottom
+    selector: '#edit-supplier'
   item5:
     id: edit-status
     plugin: text
     label: 'Status'
     body: 'Status: select <ul><li>Paid</li><li>Not paid</li><li>Any</li></ul>'
     weight: 8
-    location: bottom
-    attributes:
-      data-id: edit-status
+    position: bottom
+    selector: '#edit-status'
   item5a:
     id: edit-currency
     plugin: text
     label: 'Currency'
     body: 'With multiple currencies settings (finance module), you can filter by currency of record.'
     weight: 9
-    location: bottom
-    attributes:
-      data-id: edit-currency
+    position: bottom
+    selector: '#edit-currency'
   item6:
     id: edit-submit
     plugin: text
     label: 'Apply button'
     body: 'click on button to search and filter.'
     weight: 10
-    location: top
-    attributes:
-      data-id: edit-submit   
+    position: top
+    selector: '#edit-submit'
   item7:
     id: edit-reset
     plugin: text
     label: 'Reset button'
     body: 'click reset button if filter is active and you want to clear it.'
     weight: 11
-    location: top
-    attributes:
-      data-id: edit-reset 
+    position: top
+    selector: '#edit-reset'
   item8:
     id: number
     plugin: text
     label: 'Purchase number'
     body: 'Will display the purchase unique ref. Number. If clicked, will display document content in HTML format.'
     weight: 12
-    location: top
-    attributes:
-      data-id: number
+    position: top
+    selector: '#number'
   item9:
     id: reference
     plugin: text
     label: 'Purchase references'
     body: 'Will display the supplier name and if available the case file reference number.'
     weight: 13
-    location: top
-    attributes:
-      data-id: reference
+    position: top
+    selector: '#reference'
   item10:
     id: issuer
     plugin: text
     label: 'The issuer entity'
     body: 'The company that has issued the purchase. Optionally will indicate the allocation company for analytics use.'
     weight: 14
-    location: top
-    attributes:
-      data-id: issuer      
+    position: top
+    selector: '#issuer'     
   item11:
     id: date
     plugin: text
     label: 'Date'
     body: 'The date the purchase was created.'
     weight: 15
-    location: top
-    attributes:
-      data-id: date   
+    position: top
+    selector: '#date'
   item12:
     id: due
     plugin: text
     label: 'Date'
     body: 'The payment due date based on due days recorded. Red dot <span class="fa fa-circle red"></span> indicates purchase is due, orange dot <span class="fa fa-circle orange"></span> indicates the due date is between short due date alert and due alert, green dot <span class="fa fa-circle green"></span> indicated payment is below short due alert.'
     weight: 16
-    location: top
-    attributes:
-      data-id: due 
+    position: top
+    selector: '#due'
   item13:
     id: value
     plugin: text
     label: 'value'
     body: 'The purchase net value and taxes if any.'
     weight: 17
-    location: top
-    attributes:
-      data-id: value 
+    position: top
+    selector: '#value' 
   item14:
     id: paid
     plugin: text
     label: 'Payment date'
     body: 'The date of payment if status is paid or partially paid.'
     weight: 18
-    location: top
-    attributes:
-      data-id: paid  
+    position: top
+    selector: '#paid' 
   item15:
     id: status
     plugin: text
     label: 'Status'
     body: 'The current status of the purchase: unpaid, partially paid or paid. If link is clicked, you can view payment details and journal details if available (finance module).'
     weight: 19
-    location: top
-    attributes:
-      data-id: status  
+    position: top
+    selector: '#status'  
   item16:
     id: operations
     plugin: text
     label: 'Operations'
     body: 'You can <ul><li>Quick edit if not paid</li><li>Edit full content if not paid</li><li>Record a payment</li><li>Set an alert for notification</li><li>Set a task for routine or reminder</li><li>print (in Pdf) and share</li><li>download in excel format</li><li>Delete the purchase if not paid</li><li>Clone it: re-use the purchase data as template</li></ul>'
     weight: 20
-    location: top
-    attributes:
-      data-id: operations
+    position: top
+    selector: '#operations'
   conclusion:
     id: conclusion
     plugin: text

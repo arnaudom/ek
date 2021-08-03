@@ -17,162 +17,144 @@ tips:
     label: 'Tabs'
     body: 'There are 2 tabs <ul><li>Current quotations</li><li>New Quatation to create new document</li></ul>'
     weight: 2
-    location: bottom
-    attributes:
-      data-id: block-ek-local-tasks  
+    position: bottom
+    selector: '#block-ek-local-tasks'  
   item1:
     id: edit-filters
     plugin: text
     label: 'Filter'
     body: 'You can filter the list with different criteria: <ul><li>Date creation range</li><li>Client</li><li>Status: open,printed,invoiced</li><li>Currency</li></ul>'
     weight: 3
-    location: bottom
-    attributes:
-      data-id: edit-filters
+    position: bottom
+    selector: '#edit-filters'
   item2:
     id: edit-k
     plugin: text
     label: 'Keyword'
     body: 'If you filter by keyword, other options are disabled.'
     weight: 4
-    location: bottom
-    attributes:
-      data-id: edit-keyword
+    position: bottom
+    selector: '#edit-keyword'
   item2a:
     id: edit-coid
     plugin: text
     label: 'Company'
     body: 'Will filter quotation by header OR allocation.'
     weight: 5
-    location: bottom
-    attributes:
-      data-id: edit-coid
+    position: bottom
+    selector: '#edit-coid'
   item3:
     id: edit-from
     plugin: text
     label: 'Dates'
     body: 'Dates: select date from calendar.'
     weight: 6
-    location: bottom
-    attributes:
-      data-id: edit-from
+    position: bottom
+    selector: '#edit-from'
   item4:
     id: edit-client
     plugin: text
     label: 'Clients'
     body: 'Clients: select supplier from list.'
     weight: 7
-    location: bottom
-    attributes:
-      data-id: edit-client
+    position: bottom
+    selector: '#edit-client'
   item5:
     id: edit-status
     plugin: text
     label: 'Status'
     body: 'Status: select <ul><li>Open</li><li>Printed</li><li>Invoiced</li></ul>'
     weight: 8
-    location: bottom
-    attributes:
-      data-id: edit-status
+    position: bottom
+    selector: '#edit-status'
   item5a:
     id: edit-currency
     plugin: text
     label: 'Currency'
     body: 'With multiple currencies settings (finance module), you can filter by currency of record.'
     weight: 9
-    location: bottom
-    attributes:
-      data-id: edit-currency
+    position: bottom
+    selector: '#edit-currency'
   item6:
     id: edit-submit
     plugin: text
     label: 'Apply button'
     body: 'click on button to search and filter.'
     weight: 10
-    location: bottom
-    attributes:
-      data-id: edit-submit   
+    position: bottom
+    selector: '#edit-submit'  
   item7:
     id: edit-reset
     plugin: text
     label: 'Apply button'
     body: 'click on button to clear filter.'
     weight: 11
-    location: bottom
-    attributes:
-      data-id: edit-reset 
+    position: bottom
+    selector: '#edit-reset'
   item8:
     id: number
     plugin: text
     label: 'Quotation number'
     body: 'Will display the quotation unique ref. Number. If clicked, will display document content in HTML format.'
     weight: 12
-    location: bottom
-    attributes:
-      data-id: number
+    position: bottom
+    selector: '#number'
   item9:
     id: revision
     plugin: text
     label: 'Revision number'
     body: 'You can edit quotations with revision number for each data change. The last revision number is shown.'
     weight: 13
-    location: bottom
-    attributes:
-      data-id: revision
+    position: bottom
+    selector: '#revision'
   item10:
     id: reference
     plugin: text
     label: 'Quotation references'
     body: 'Will display the client name and if available the case file reference number.'
     weight: 14
-    location: bottom
-    attributes:
-      data-id: reference
+    position: bottom
+    selector: '#reference'
   item11:
     id: issuer
     plugin: text
     label: 'The issuer entity'
     body: 'The company that has issued the quotation. Optionally will indicate the allocation company for analytics use.'
     weight: 15
-    location: bottom
-    attributes:
-      data-id: issuer      
+    position: bottom
+    selector: '#issuer'    
   item12:
     id: date
     plugin: text
     label: 'Date'
     body: 'The date the quotation was created.'
     weight: 16
-    location: bottom
-    attributes:
-      data-id: date 
+    position: bottom
+    selector: '#date'
   item13:
     id: value
     plugin: text
     label: 'Value'
     body: 'The quotation net total value and taxes if any.'
     weight: 17
-    location: bottom
-    attributes:
-      data-id: value 
+    position: bottom
+    selector: '#value' 
   item14:
     id: status
     plugin: text
     label: 'Status'
     body: 'The current status of the quotation: open (not printed), printed, invoiced (converted to invoice).'
     weight: 18
-    location: bottom
-    attributes:
-      data-id: status  
+    position: bottom
+    selector: '#status' 
   item15:
     id: operations
     plugin: text
     label: 'Operations'
     body: 'You can <ul><li>Quick edit if not invoiced</li><li>Edit full content if not invoiced</li><li>Convert to invoice</li><li>Print</li><li>Download <span class="ico excel"></span></li><li>print <span class="ico pdf"></span> and share</li><li>download in excel format</li><li>Delete the quotation if not invoiced</li><li>Clone it: re-use the quotation data as template</li></ul>.'
     weight: 19
-    location: bottom
-    attributes:
-      data-id: operations
+    position: bottom
+    selector: '#operations'
   item16:
     id: video
     plugin: video

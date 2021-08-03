@@ -17,68 +17,59 @@ tips:
     label: 'Sample structure'
     body: 'This is the template that represents the default structure of documents serial number.'
     weight: 2
-    location: bottom
-    attributes:
-      data-id: edit-sample
+    position: bottom
+    selector: '#edit-sample'
   item2:
     id: ele1
     plugin: text
     label: 'Elements'
     body: 'The serial number is made of 5 elements. 4 of which can be customized. You can select order of elements or hide them.'
     weight: 3
-    location: right
-    attributes:
-      data-id: edit-first
+    position: right
+    selector: '#edit-first'
   item3:
     id: ele2
     plugin: text
     label: 'Elements'
     body: 'There are 4 elements options selectable: <ul><li>Company short name</li><li>Document type (I,P,Q)</li><li>Short date, MM-YY</li><li>Client code (defined in address book)</li></ul>'
     weight: 4
-    location: right
-    attributes:
-      data-id: edit-second
+    position: right
+    selector: '#edit-second'
   item4:
     id: ele3
     plugin: text
     label: 'Elements'
     body: 'The last element is fixed and is always a sequence number incremented for each new document.'
     weight: 5
-    location: right
-    attributes:
-      data-id: edit-last      
+    position: right
+    selector: '#edit-last'     
   item5:
     id: ele4
     plugin: text
     label: 'Increment'
     body: 'You can set a start number for incrementation if you do not want to start from 0.'
     weight: 6
-    location: right
-    attributes:
-      data-id: edit-increment     
+    position: right
+    selector: '#edit-increment'     
   item6:
     id: sample
     plugin: text
     label: 'Sample structure'
     body: 'The template is update when you select elements below.'
     weight: 7
-    location: right
-    attributes:
-      data-id: e5
+    position: right
+    selector: '#e5'
   item7:
     id: item7
     plugin: text
     label: 'Save'
     body: 'Click "Save" to save settings.'
     weight: 8
-    location: top
-    attributes:
-      data-id: edit-submit
+    position: top
+    selector: '#edit-submit'
   conclusion:
     id: conclusion
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-sales">online documentation</a> for further help.'
     weight: 28
-    attributes:
-      backdrop: 1
