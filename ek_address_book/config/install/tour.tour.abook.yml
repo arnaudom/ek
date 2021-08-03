@@ -17,9 +17,8 @@ tips:
     label: 'Tabs'
     body: 'There are up to 5 tabs <ul><li>Main search page to search be name</li><li>List by company</li><li>List by contact name</li><li>New: to record a new client or supplier</li><li>Administrate: to import or export data</li></ul>'
     weight: 2
-    location: bottom
-    attributes:
-      data-id: block-ek-local-tasks
+    position: bottom
+    selector: '#block-ek-local-tasks'
   item1:
     id: listview
     plugin: htext
@@ -27,9 +26,8 @@ tips:
     body: 'Type name or keyword in the search box to display matching address book enties. Then click on the display entry to open selected entry.'
     image: 'ek_address_book,/art/tour.search.jpg'
     weight: 3
-    location: right
-    attributes:
-      data-id: abook-search-form
+    position: right
+    selector: '#abook-search-form'
   conclusion:
     id: conclusion
     plugin: text

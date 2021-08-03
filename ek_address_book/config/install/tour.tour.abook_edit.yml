@@ -17,225 +17,200 @@ tips:
     label: 'Contact name'
     body: 'Address book is organized by business entities. Input here the name of business, i.e. client company name.'
     weight: 2
-    location: bottom
-    attributes:
-      data-id: edit-name
+    position: bottom
+    selector: '#edit-name'
   item1:
     id: shortname
     plugin: text
     label: 'Short name'
     body: 'Sort name is suggested based on name. You can edit suggestion. It is used to generate identification references in other modules, i.e. invoice reference.'
     weight: 3
-    location: bottom
-    attributes:
-      data-id: short_name
+    position: bottom
+    selector: '#short_name'
   item2:
     id: status
     plugin: text
     label: 'Status'
     body: 'Status: active or inactive.'
     weight: 4
-    location: bottom
-    attributes:
-      data-id: edit-status
+    position: bottom
+    selector: '#edit-status'
   item3:
     id: address
     plugin: text
     label: 'Address section'
     body: 'Input address, city, postcode and country. All those data may be used in other modules like sales documents.'
     weight: 5
-    location: bottom
-    attributes:
-      data-id: edit-address2
+    position: bottom
+    selector: '#edit-address2'
   item4:
     id: contact
     plugin: text
     label: 'Main contact'
     body: 'Input main telephone number, fax number, web site address (i.e. www.exemple.com or exemple.com).'
     weight: 6
-    location: bottom
-    attributes:
-      data-id: edit-telephone
+    position: bottom
+    selector: '#edit-telephone'
   item5:
     id: organization
     plugin: text
     label: 'Type of contact'
     body: '3 types available: <ul><li>Client</li><li>Supplier</li><li>Other</li></ul>'
     weight: 7
-    location: bottom
-    attributes:
-      data-id: edit-type
+    position: bottom
+    selector: '#edit-type'
   item6:
     id: category
     plugin: text
     label: 'Category of contact'
     body: 'Categories available: <ul><li>Head office</li><li>Store</li><li>Factory</li><li>Other</li></ul>'
     weight: 8
-    location: bottom
-    attributes:
-      data-id: edit-category--description
+    position: bottom
+    selector: '#edit-category--description'
   item7:
     id: tags
     plugin: text
     label: 'Tags'
     body: 'Enter tags for your own classification of data. Tags can be searched in the address book search box. Existing tags are suggested when typing. Remove tag by clicking the "x" sign.'
     weight: 9
-    location: bottom
-    attributes:
-      data-id: edit-tags--description
+    position: bottom
+    selector: '#edit-tags--description'
   item8:
     id: logo
     plugin: text
     label: 'Logo file'
     body: 'Upload company logo. It will replace existing if any.'
     weight: 10
-    location: bottom
-    attributes:
-      data-id: edit-logo
+    position: bottom
+    selector: '#edit-logo'
   item9:
     id: img
     plugin: text
     label: 'Logo image'
     body: 'If logo was uploaded previously, this is the current image attached to this entry.'
     weight: 11
-    location: bottom
-    attributes:
-      data-class: thumbnail    
+    position: bottom
+    selector: '.thumbnail'    
   item10:
     id: img
     plugin: text
     label: 'Delete logo'
     body: 'Check this box if you want to remove current logo.'
     weight: 12
-    location: bottom
-    attributes:
-      data-id: edit-delete-logo      
+    position: bottom
+    selector: '#edit-delete-logo'      
   item11:
     id: deletecard
     plugin: text
     label: 'Delete namecard'
     body: 'Check this box if you want to delete all data of this namecard.'
     weight: 13
-    location: right
-    attributes:
-      data-id: edit-delete0
+    position: right
+    selector: '#edit-delete0'
   item12:
     id: primarycard
     plugin: text
     label: 'Set primary card'
     body: 'Check this box if you want to select this namecard as default contact name. Each address book entry must have 1 primary card.'
     weight: 14
-    location: right
-    attributes:
-      data-id: edit-main0
+    position: right
+    selector: '#edit-main0'
   item13:
     id: salutation
     plugin: text
     label: 'Salutation'
     body: 'Select salutation title. Salutations can be edited with taxonomy edition form. Check video at the end of this tour for example.'
     weight: 15
-    location: bottom
-    attributes:
-      data-id: edit-salutation0        
+    position: bottom
+    selector: '#edit-salutation0'        
   item14:
     id: namecard
     plugin: text
     label: 'Contact name card'
     body: 'Input the contact name for the business entity.'
     weight: 17
-    location: right
-    attributes:
-      data-id: edit-contact-name0
+    position: right
+    selector: '#edit-contact-name0'
   item15:
     id: title
     plugin: text
     label: 'Contact title'
     body: 'Input the contact title, i.e. "General Manager", "Marketing Director", etc...'
     weight: 17
-    location: right
-    attributes:
-      data-id: edit-title0      
+    position: right
+    selector: '#edit-title0'      
   item16:
     id: phone
     plugin: text
     label: 'Contact phone'
     body: 'Input the contact phone number here.'
     weight: 18
-    location: right
-    attributes:
-      data-id: edit-ctelephone0
+    position: right
+    selector: '#edit-ctelephone0'
   item17:
     id: mobilephone
     plugin: text
     label: 'Contact mobile phone'
     body: 'Input the contact mobile phone number here.'
     weight: 19
-    location: right
-    attributes:
-      data-id: edit-cmobilephone0
+    position: right
+    selector: '#edit-cmobilephone0'
   item18:
     id: email
     plugin: text
     label: 'Contact email'
     body: 'Input the contact email address here. Imust be a valid address.'
     weight: 20
-    location: right
-    attributes:
-      data-id: edit-email0
+    position: right
+    selector: '#edit-email0'
   item19:
     id: image
     plugin: text
     label: 'Contact name card image'
     body: 'You can upload an image for this card, a copy of name card or profile picture.'
     weight: 21
-    location: right
-    attributes:
-      data-id: edit-image0
+    position: right
+    selector: '#edit-image0'
   item20:
     id: currentimage
     plugin: text
     label: 'Contact name card image'
     body: 'If there is already an image attached to this name card, check this box to delete it. You can click on existing image thumbail to view larger picture.'
     weight: 22
-    location: right
-    attributes:
-      data-id: edit-image-delete0
+    position: right
+    selector: '#edit-image-delete0'
   item21:
     id: dpt
     plugin: text
     label: 'Contact department'
     body: 'Input here contact department or office, i.e. "sales department".'
     weight: 23
-    location: right
-    attributes:
-      data-id: edit-department0
+    position: right
+    selector: '#edit-department0'
   item22:
     id: socialnetwork
     plugin: text
     label: 'Social network'
     body: 'Add social network internet link.'
     weight: 25
-    location: right
-    attributes:
-      data-id: edit-link0     
+    position: right
+    selector: '#edit-link0'     
   item23:
     id: note
     plugin: text
     label: 'Note'
     body: 'This is a free text field where you can write any comment or information about this card.'
     weight: 25
-    location: bottom
-    attributes:
-      data-id: edit-ccomment0
+    position: bottom
+    selector: '#edit-ccomment0'
   item24:
     id: save
     plugin: text
     label: 'Save'
     body: 'Click "Record" to save your data.'
     weight: 26
-    location: top
-    attributes:
-      data-id: edit-submit
+    position: top
+    selector: '#edit-submit'
   item25:
     id: video
     plugin: video

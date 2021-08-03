@@ -17,71 +17,63 @@ tips:
     label: 'Tabs'
     body: 'For each book entry, there are up to 5 tabs <ul><li>Main view</li><li>Edit form</li><li>Delete form</li><li>Sales: data linked to sales module</li><li>Documents: documents repository linked to this entry</li></ul>'
     weight: 2
-    location: bottom
-    attributes:
-      data-id: block-ek-local-tasks
+    position: bottom
+    selector: '#block-ek-local-tasks'
   item1:
     id: edit
     plugin: text
     label: 'Last edit'
     body: 'The last edit time.'
     weight: 3
-    location: bottom
-    attributes:
-      data-class: pencil
+    position: bottom
+    selector: '.pencil'
   item2:
     id: address
     plugin: text
     label: 'Address'
     body: 'The saved address. Click on icon to copy/paste data to clipboard.'
     weight: 4
-    location: bottom
-    attributes:
-      data-class: clipboard_add
+    position: bottom
+    selector: '.clipboard_add'
   item3:
     id: tags
     plugin: text
     label: 'Tags'
     body: 'Custom tags used to classify and search address book.'
     weight: 5
-    location: bottom
-    attributes:
-      data-id: atags
+    position: bottom
+    selector: '#atags'
   item4:
     id: type
     plugin: text
     label: 'Type'
     body: 'This is the entry type. You can switch (<->) type if available or "clone" existing into another type; i.e. create "supplier" type if you have a "client" type.'
     weight: 6
-    location: bottom
-    attributes:
-      data-id: atype
+    position: bottom
+    selector: '#atype'
   item5:
     id: cards
     plugin: text
     label: 'Name cards'
     body: 'These are the name cards attached to the address book entry. Each name cards have multiple fields including name, email address, mobile phone or picture. Click on the name to copy data to clipboard.'
     weight: 7
-    location: top
-    attributes:
-      data-class: users
+    position: top
+    selector: '.users'
   item6:
     id: addcontact
     plugin: text
     label: 'Add contact'
     body: 'Click on "Add contact" to add new name card to this business entity.'
     weight: 8
-    location: left
-    attributes:
-      data-class: plus
+    position: left
+    selector: '.plus'
   item7:
     id: search
     plugin: text
     label: 'New search "new search" to go to search page.'
     weight: 9
-    location: left
-    attributes:
-      data-class: search
+    position: left
+    selector: '.search'
   item8:
     id: video
     plugin: video

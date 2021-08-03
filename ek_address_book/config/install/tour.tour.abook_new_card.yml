@@ -23,27 +23,24 @@ tips:
     label: 'Option: copy'
     body: 'If name card already exist and is attached to another address book entry, you can copy to the current edited address book. Type name and select from suggested existing name cards.'
     weight: 3
-    location: bottom
-    attributes:
-      data-id: edit-copy
+    position: bottom
+    selector: '#edit-copy'
   item2:
     id: new
     plugin: text
     label: 'Option: new'
     body: 'If name card does not exist, you can key-in a new name card with full details like name, email address, mobile phone, etc...'
     weight: 4
-    location: bottom
-    attributes:
-      data-id: edit-0
+    position: bottom
+    selector: '#edit-0'
   item3:
     id: save
     plugin: text
     label: 'Save'
     body: 'Click "Record" to save your data.'
     weight: 5
-    location: top
-    attributes:
-      data-id: edit-submit
+    position: top
+    selector: '#edit-submit'
   item4:
     id: video
     plugin: video
