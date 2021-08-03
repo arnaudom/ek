@@ -17,36 +17,32 @@ tips:
     label: 'Prices labels'
     body: 'There are 6 custom prices for which price label can be set. Those price labels are used in <a href="/new_item">item data form</a> and when selecting price type in other modules forms, i.e. invoice.'
     weight: 2
-    location: right
-    attributes:
-      data-id: edit-selling-price-label
+    position: right
+    selector: '#edit-selling-price-label'
   item1:
     id: autocomplete
     plugin: text
     label: 'Format'
     body: 'You can select fields that will be dispayed in forms where item autocomplete is enabled. This setting may help identifying correct item in forms.'
     weight: 3
-    location: top
-    attributes:
-      data-id: edit-format
+    position: top
+    selector: '#edit-format'
   item2:
     id: fields
     plugin: text
     label: 'Fields'
     body: 'You have 4 fields you can select: <ul><li>Barcode</li><li>Main description</li><li>Detailed description</li><li>Supplier code</li></ul>.'
     weight: 4
-    location: bottom
-    attributes:
-      data-id: edit-format
+    position: bottom
+    selector: '#edit-format'
   item3:
     id: submit
     plugin: text
     label: 'Save'
     body: 'Click "Record" to save data.'
     weight: 5
-    location: top
-    attributes:
-      data-id: edit-submit
+    position: top
+    selector: '#edit-submit'
   conclusion:
     id: introduction
     plugin: text

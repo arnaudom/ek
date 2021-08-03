@@ -17,9 +17,8 @@ tips:
     label: 'Tabs'
     body: 'There are up to 4 tabs <ul><li>Main search page to search be code, name or barcode</li><li>Filtered list</li><li>Create: to record a new item</li><li>Parameters and settings</li></ul>'
     weight: 2
-    location: bottom
-    attributes:
-      data-id: block-ek-local-tasks
+    position: bottom
+    selector: '#block-ek-local-tasks'
   item1:
     id: listview
     plugin: htext
@@ -27,9 +26,8 @@ tips:
     body: 'Type name or keyword in the search box to display matching items. Then click on the item to view details.'
     image: 'ek_products,/art/tour.search.jpg'
     weight: 3
-    location: right
-    attributes:
-      data-id: product-search-form
+    position: right
+    selector: '#product-search-form'
   conclusion:
     id: introduction
     plugin: text

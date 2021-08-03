@@ -17,242 +17,216 @@ tips:
     label: 'Status'
     body: 'You can set active or inactive status (stop) to the item. Default for new item is "active"'
     weight: 2
-    location: right
-    attributes:
-      data-id: edit-active
+    position: right
+    selector: '#edit-active'
   item1:
     id: coid
     plugin: text
     label: 'Company'
     body: 'Items are classified by company. If you have multiple business entities, select one.'
     weight: 3
-    location: right
-    attributes:
-      data-id: edit-coid
+    position: right
+    selector: '#edit-coid'
   item2:
     id: tag2
     plugin: text
     label: 'Tag value'
     body: 'If you select a custom tag, you can then pick any of its description in the next list. I.e. tag "Color" -> description "Blue"'
     weight: 4
-    location: right
-    attributes:
-      data-id: edit-tagvalue
+    position: right
+    selector: '#edit-tagvalue'
   item3:
     id: type
     plugin: text
     label: 'Type'
     body: '"Type" is a tag used to classify items and generate a code. Key-in the type name; the system will suggest existing names if you already have item types recorded. Type cannot be changed.'
     weight: 5
-    location: right
-    attributes:
-      data-id: edit-type
+    position: right
+    selector: '#edit-type'
   item4:
     id: desc1
     plugin: text
     label: 'Main description'
     body: 'The main description such as item name.'
     weight: 6
-    location: bottom
-    attributes:
-      data-id: edit-description1
+    position: bottom
+    selector: '#edit-description1'
   item5:
     id: desc2
     plugin: text
     label: 'Extended description'
     body: 'Use this box for more detailed description if needed. Text can also be formatted and reused in other modules, i.e. invoice item description.'
     weight: 7
-    location: bottom
-    attributes:
-      data-id: edit-description2-value
+    position: bottom
+    selector: '#edit-description2-value'
   item6:
     id: suppliercode
     plugin: text
     label: 'Supplier code'
     body: 'If you you purchase this item from a supplier and have a code supplied for the item, you can save it here.'
     weight: 8
-    location: right
-    attributes:
-      data-id: edit-supplier-code
+    position: right
+    selector: '#edit-supplier-code'
   item7:
     id: suppliername
     plugin: text
     label: 'Supplier name'
     body: 'You can select the supplier name; this is based on the address book data.'
     weight: 9
-    location: right
-    attributes:
-      data-id: edit-supplier
+    position: right
+    selector: '#edit-supplier'
   item8:
     id: dpt
     plugin: text
     label: 'Department'
     body: '"Department" is a tag used to classify items. Key-in the depatment name; the system will suggest existing names if you already have item departments record.'
     weight: 10
-    location: right
-    attributes:
-      data-id: edit-department
+    position: right
+    selector: '#edit-department'
   item9:
     id: family
     plugin: text
     label: 'Item family'
     body: '"Family" of item is a tag used to classify items. Key-in the family name; the system will suggest existing names if you already have item families record.'
     weight: 11
-    location: right
-    attributes:
-      data-id: edit-family
+    position: right
+    selector: '#edit-family'
   item10:
     id: collection
     plugin: text
     label: 'Item collection'
     body: '"collection" of item is a tag used to classify items. Key-in the collection name; the system will suggest existing names if you already have item collections record.'
     weight: 12
-    location: right
-    attributes:
-      data-id: edit-collection     
+    position: right
+    selector: '#edit-collection'     
   item11:
     id: itemcolor
     plugin: text
     label: 'Item image'
     body: '"Color" of item is a tag used to classify items. Key-in the color name; the system will suggest existing names if you already have item colors record.'
     weight: 13
-    location: right
-    attributes:
-      data-id: edit-color
+    position: right
+    selector: '#edit-color'
   item12:
     id: itemsize
     plugin: text
     label: 'Size'
     body: 'You can input any text that define the size like "small", "medium" or "xl".'
     weight: 14
-    location: right
-    attributes:
-      data-id: edit-size
+    position: right
+    selector: '#edit-size'
   item13:
     id: units
     plugin: text
     label: 'Stock in units'
     body: 'This should be a number.'
     weight: 15
-    location: bottom
-    attributes:
-      data-id: edit-units      
+    position: bottom
+    selector: '#edit-units'      
   item14:
     id: unitmeasure
     plugin: text
     label: Uunit measure'
     body: 'Input the unit of measure, i.e. "box", "kg", "unit". The system will suggest unit measure if you already have unit measures recorded.'
     weight: 16
-    location: right
-    attributes:
-      data-id: edit-unit-measure       
+    position: right
+    selector: '#edit-unit-measure'       
   item15:
     id: unitsize
     plugin: text
     label: 'Item size'
     body: 'Input the item size, i.e. "5x10x0.5 cm".'
     weight: 17
-    location: right
-    attributes:
-      data-id: edit-item-size 
+    position: right
+    selector: '#edit-item-size' 
   item16:
     id: packsize
     plugin: text
     label: 'Pack size'
     body: 'If the item is sold in pacj you can input pack size.'
     weight: 18
-    location: right
-    attributes:
-      data-id: edit-pack-size     
+    position: right
+    selector: '#edit-pack-size'     
   item17:
     id: qtypack
     plugin: text
     label: 'Quantity per pack'
     body: 'If you have pack of multiple items, you can input the quantity per pack, i.e. "6" or "1x6 per pack".'
     weight: 19
-    location: right
-    attributes:
-      data-id: edit-qty-pack
+    position: right
+    selector: '#edit-qty-pack'
   item18:
     id: 20ft
     plugin: text
     label: 'Quantity per container'
     body: 'You can input a quantity per container volume here.'
     weight: 20
-    location: right
-    attributes:
-      data-id: edit-c20      
+    position: right
+    selector: '#edit-c20'      
   item19:
     id: 40ft
     plugin: text
     label: 'Quantity per container'
     body: 'You can input another quantity per container volume here.'
     weight: 21
-    location: right
-    attributes:
-      data-id: edit-c40      
+    position: right
+    selector: '#edit-c40'      
   item20:
     id: minorder
     plugin: text
     label: 'Minimum order'
     body: 'You can input a minimum order value here.'
     weight: 22
-    location: right
-    attributes:
-      data-id: edit-min-order    
+    position: right
+    selector: '#edit-min-order'    
   item21:
     id: pprice
     plugin: text
     label: 'Purchase price'
     body: 'If you purchase this item, you can input value here.'
     weight: 23
-    location: right
-    attributes:
-      data-id: edit-purchase-price   
+    position: right
+    selector: '#edit-purchase-price'   
   item22:
     id: ppricecurrency
     plugin: text
     label: 'Purchase price currency'
     body: 'The currency of the purchase (Selected currencies based on the finance module).'
     weight: 24
-    location: right
-    attributes:
-      data-id: edit-currency                      
+    position: right
+    selector: '#edit-currency'                      
   item23:
     id: ppricedate
     plugin: text
     label: 'Purchase date'
     body: 'The date of last purchase.'
     weight: 25
-    location: right
-    attributes:
-      data-id: edit-date-purchase                     
+    position: right
+    selector: '#edit-date-purchase'                     
   item24:
     id: localcurrency
     plugin: text
     label: 'Local currency'
     body: 'A local currency in which selling prices are expressed.'
     weight: 26
-    location: right
-    attributes:
-      data-id: edit-loc-currency                                               
+    position: right
+    selector: '#edit-loc-currency'                                               
   item25:
     id: p1
     plugin: text
     label: 'Price value 1'
     body: 'You can input pre-defined selling prices. You have up to 6 predefined price options. Price definitions can be set in <a href="/ek_products/parameters">parameters</a>. They can be used to automatically populate forms like invoice.'
     weight: 27
-    location: right
-    attributes:
-      data-id: edit-selling-price                                                                         
+    position: right
+    selector: '#edit-selling-price'                                                                         
   item26:
     id: p2
     plugin: text
     label: 'Price value 2'
     body: 'Input value and  go to <a href="/ek_products/parameters">parameters</a> to define this price.'
     weight: 28
-    location: right
-    attributes:
+    position: right
+    selector: '#
       data-id: edit-promo-price                                           
   item27:
     id: p3
@@ -260,72 +234,64 @@ tips:
     label: 'Price value 3'
     body: 'Input value and  go to <a href="/ek_products/parameters">parameters</a> to define this price.'
     weight: 29
-    location: right
-    attributes:
-      data-id: edit-discount-price
+    position: right
+    selector: '#edit-discount-price'
   item28:
     id: expcurrency
     plugin: text
     label: 'Export currency'
     body: 'An export currency in which selling prices are expressed.'
     weight: 30
-    location: right
-    attributes:
-      data-id: edit-exp-currency       
+    position: right
+    selector: '#edit-exp-currency'       
   item29:
     id: p4
     plugin: text
     label: 'Price value 4'
     body: 'You can input pre-defined selling prices for this currency. Price definitions can be set in <a href="/ek_products/parameters">parameters</a>. They can be used to automatically populate forms like invoice.'
     weight: 31
-    location: right
-    attributes:
-      data-id: edit-exp-selling-price                                                                         
+    position: right
+    selector: '#edit-exp-selling-price'                                                                         
   item30:
     id: p5
     plugin: text
     label: 'Price value 5'
     body: 'Input value and  go to <a href="/ek_products/parameters">parameters</a> to define this price.'
     weight: 32
-    location: right
-    attributes:
-      data-id: edit-exp-promo-price                                           
+    position: right
+    selector: '#edit-exp-promo-price'                                           
   item31:
     id: p6
     plugin: text
     label: 'Price value 6'
     body: 'Input value and  go to <a href="/ek_products/parameters">parameters</a> to define this price.'
     weight: 33
-    location: right
-    attributes:
-      data-id: edit-exp-discount-price
+    position: right
+    selector: '#edit-exp-discount-price'
   item32:
     id: barcode
     plugin: text
     label: 'Barcode'
     body: 'Barcode value'
     weight: 34
-    location: right
-    attributes:
-      data-id: edit-barcode
+    position: right
+    selector: '#edit-barcode'
   item33:
     id: encode
     plugin: text
     label: 'Barcode'
     body: 'Encoding or barcode type. Used for barcode printing.'
     weight: 35
-    location: right
-    attributes:
-      data-id: edit-encode   
+    position: right
+    selector: '#edit-encode'   
   item34:
     id: submit
     plugin: text
     label: 'Save'
     body: 'Click "Record" to save data.'
     weight: 36
-    location: top
-    attributes:
-      data-id: edit-submit
+    position: top
+    selector: '#edit-submit'
   conclusion:
     id: introduction
     plugin: text

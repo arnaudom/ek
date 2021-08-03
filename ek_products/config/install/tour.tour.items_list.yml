@@ -17,62 +17,56 @@ tips:
     label: 'Company'
     body: 'You can filter by specific company if you have multiple entities or select "Any" to select all'
     weight: 2
-    location: bottom
-    attributes:
-      data-id: edit-coid
+    position: bottom
+    selector: '#edit-coid'
   item1:
     id: tag
     plugin: text
     label: 'Tag'
     body: 'You can filter by specific tag used to classify items: <ul><li>Type</li><li>Department</li><li>Family</li><li>Collection</li><li>Color</li></ul>'
     weight: 3
-    location: bottom
-    attributes:
-      data-id: edit-tag
+    position: bottom
+    selector: '#edit-tag'
   item2:
     id: tag2
     plugin: text
     label: 'Tag value'
     body: 'If you select a custom tag, you can then pick any of its description in the next list. I.e. tag "Color" -> description "Blue"'
     weight: 4
-    location: right
-    attributes:
-      data-id: edit-tagvalue
+    position: right
+    selector: '#edit-tagvalue'
   item3:
     id: status
     plugin: text
     label: 'Status'
     body: 'Filter by status: <ul><li>Any</li><li>Active</li><li>Stop</li></ul>'
     weight: 5
-    location: bottom
-    attributes:
-      data-id: edit-status
+    position: bottom
+    selector: '#edit-status'
   item4:
     id: pages
     plugin: text
     label: 'Items per page'
     body: 'Choose display of items per page. Default: 25.'
     weight: 6
-    location: bottom
-    attributes:
-      data-id: edit-paging
+    position: bottom
+    selector: '#edit-paging'
   item5:
     id: submit
     plugin: text
     label: 'Apply'
     body: 'Click on "Apply" to view filtered list'
     weight: 7
-    location: top
-    attributes:
-      data-id: edit-submit
+    position: top
+    selector: '#edit-submit'
   item6:
     id: reset
     plugin: text
     label: 'Reset'
     body: 'Click on "Reset" to clear filter'
     weight: 8
-    location: top
-    attributes:
+    position: top
+    selector: '#
       data-id: edit-reset
   item7:
     id: excel
@@ -80,54 +74,48 @@ tips:
     label: 'Excel'
     body: 'Export current list in excel format with items details.'
     weight: 9
-    location: right
-    attributes:
-      data-class: excel
+    position: right
+    selector: '.excel'
   item8:
     id: itemid
     plugin: text
     label: 'Item ID'
     body: 'Unique number reference.'
     weight: 10
-    location: top
-    attributes:
-      data-id: item-id
+    position: top
+    selector: '#item-id'
   item9:
     id: itemcode
     plugin: text
     label: 'Item code'
     body: 'Unique code reference.'
     weight: 11
-    location: top
-    attributes:
-      data-id: item-code
+    position: top
+    selector: '#item-code'
   item10:
     id: itemname
     plugin: text
     label: 'Item name'
     body: 'Item name input.'
     weight: 12
-    location: top
-    attributes:
-      data-id: item-name     
+    position: top
+    selector: '#item-name'     
   item11:
     id: itemimage
     plugin: text
     label: 'Item image'
     body: 'If items have multiple pictures attached, the first one is displayed here. Click on image thumb to view a larger image.'
     weight: 13
-    location: top
-    attributes:
-      data-id: item-image
+    position: top
+    selector: '#item-image'
   item12:
     id: operations
     plugin: text
     label: 'Menu'
     body: 'Options: <ul><li>View: open page with item details</li><li>Edit: open form to edit item data</li><li>Clone: create new item with current item input</li><li>Delete: remove item (only if the item is not used and stock = 0</li></ul>'
     weight: 14
-    location: top
-    attributes:
-      data-id: operations
+    position: top
+    selector: '#operations'
   conclusion:
     id: introduction
     plugin: text
