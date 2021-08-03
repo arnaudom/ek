@@ -18,8 +18,10 @@ tips:
     body: "Select the company."
     weight: 2
     location: right
+    position: right
     attributes:
       data-id: edit-coid
+    selector: '#edit-coid'
   item-2:
     id: eid
     plugin: text
@@ -27,8 +29,10 @@ tips:
     body: "Select employee."
     weight: 3
     location: right
+    position: right
     attributes:
       data-id: edit-eid
+    selector: '#edit-eid'  
   item-3:
     id: edit-data
     plugin: text
@@ -36,8 +40,10 @@ tips:
     body: 'This frame display the profile data of the selected employee.'
     weight: 4
     location: top
+    position: top
     attributes:
       data-id: edit-data
+    selector: '#edit-data'
   item-4:
     id: work_base
     plugin: text
@@ -45,8 +51,10 @@ tips:
     body: 'Work base unit(s) (WB). It can be hours, days or month. For instance 180 Hours (per month).'
     weight: 5
     location: right
+    position: right
     attributes:
       data-id: work_base
+    selector: '#work_base'  
   item-5:
     id: unit_work
     plugin: text
@@ -54,8 +62,10 @@ tips:
     body: 'The total units worked (TW). This will create a ratio: TW/WB to calculate salary payable from basic salary. Ex. if you set WB = 25 (days) and  TW = 24 (days), salary = Basic salary x 24 / 25.'
     weight: 6
     location: right
+    position: right
     attributes:
       data-id: unit_work
+    selector: '#unit_work'   
   item-6:
     id: no_pay_day
     plugin: text
@@ -63,8 +73,10 @@ tips:
     body: 'Use to ajust difference between base and worked (if any).'
     weight: 7
     location: right
+    position: right
     attributes:
       data-id: no_pay_day
+    selector: '#no_pay_day'  
   item-7:
     id: leave
     plugin: text
@@ -72,8 +84,10 @@ tips:
     body: 'Use to ajust difference between base and worked (if any).'
     weight: 8
     location: right
+    position: right
     attributes:
       data-id: leave
+    selector: '#leave'   
   item-8:
     id: basic_value
     plugin: text
@@ -81,8 +95,10 @@ tips:
     body: 'The calculated value from ratio between base and worked.'
     weight: 9
     location: right
+    position: right
     attributes:
       data-id: basic_value
+    selector: '#basic_value'
   item-9:
     id: table2
     plugin: text
@@ -90,8 +106,10 @@ tips:
     body: 'Table of fixed allowances.'
     weight: 10
     location: top
+    position: top
     attributes:
       data-id: table2 
+    selector: '#table2'  
   item-10:
     id: overtime_hours
     plugin: text
@@ -99,8 +117,10 @@ tips:
     body: 'Set allowance unit(s) if any.'
     weight: 11
     location: right
+    position: right
     attributes:
-      data-id: overtime_hours 
+      data-id: overtime_hours
+    selector: '#overtime_hours'   
   item-11:
     id: normal_ot
     plugin: text
@@ -108,8 +128,10 @@ tips:
     body: 'Calculated value base on <a href="/human-resources/parameters-ad">settings</a>.'
     weight: 12
     location: right
+    position: right
     attributes:
-      data-id: normal_ot      
+      data-id: normal_ot
+    selector: '#normal_ot'  
   item-12:
     id: edit-table2-not-formula
     plugin: text
@@ -117,8 +139,10 @@ tips:
     body: 'Click on <span class="formula"></span> to read formula (if any).'
     weight: 13
     location: right
+    position: right
     attributes:
-      data-id: edit-table2-not-formula   
+      data-id: edit-table2-not-formula
+    selector: '#edit-table2-not-formula'   
   item-13:
     id: table3
     plugin: text
@@ -126,8 +150,10 @@ tips:
     body: 'Table of custom allowances.'
     weight: 14
     location: top
+    position: top
     attributes:
-      data-id: table3       
+      data-id: table3
+    selector: '#table3'    
   item-14:
     id: custom_aw1
     plugin: text
@@ -135,8 +161,10 @@ tips:
     body: 'Input value. Custom allowance can have a custom name, fixed value or formula. If a formula is set the value will be calculated based on formula only and cannot be set manually. Ex. of formula: {unit_work*15} will take value of unit worked and multiply by 15.'
     weight: 15
     location: right
+    position: right
     attributes:
-      data-id: custom_aw1       
+      data-id: custom_aw1
+    selector: '#custom_aw1'   
   item-15:
     id: tax1
     plugin: text
@@ -144,8 +172,10 @@ tips:
     body: 'Click to include in revenue for personal income tax.'
     weight: 16
     location: right
+    position: right
     attributes:
-      data-id: tax1   
+      data-id: tax1
+    selector: '#tax1'
   item-16:
     id: total_gross
     plugin: text
@@ -153,8 +183,10 @@ tips:
     body: 'This is the calculated value Basic + allowances.'
     weight: 17
     location: right
+    position: right
     attributes:
       data-id: total_gross
+    selector: '#total_gross'
   item-17:
     id: less_hours
     plugin: text
@@ -162,8 +194,10 @@ tips:
     body: 'Adjust hours (if any).'
     weight: 18
     location: right
+    position: right
     attributes:
-      data-id: less_hours      
+      data-id: less_hours  
+    selector: '#less_hours'    
   item-18:
     id: advance
     plugin: text
@@ -171,8 +205,10 @@ tips:
     body: 'This is the value of salary paid in advance (if any). Advances are managed in <a href="/human-resources/advance">here</a>.'
     weight: 19
     location: right
+    position: right
     attributes:
-      data-id: advance        
+      data-id: advance     
+    selector: '#advance'     
   item-19:
     id: table4
     plugin: text
@@ -180,8 +216,10 @@ tips:
     body: 'Table of custom deductions. Data input follows the same structure as custom allowances.'
     weight: 20
     location: top
+    position: top
     attributes:
-      data-id: table4      
+      data-id: table4     
+    selector: '#table4'     
   item-20:
     id: total_deductions
     plugin: text
@@ -189,8 +227,10 @@ tips:
     body: 'This is the calculated total of deductions.'
     weight: 21
     location: right
+    position: right
     attributes:
-      data-id: total_deductions
+      data-id: total_deductions     
+    selector: '#total_deductions'
   item-21:
     id: table5
     plugin: text
@@ -198,8 +238,10 @@ tips:
     body: 'Table of funds and contributions.'
     weight: 22
     location: top
+    position: top
     attributes:
-      data-id: table5        
+      data-id: table5       
+    selector: '#table5'      
   item-22:
     id: fund1_employer
     plugin: text
@@ -207,8 +249,10 @@ tips:
     body: 'Share allocated to employer (if any).'
     weight: 23
     location: right
+    position: right
     attributes:
-      data-id: fund1_employer       
+      data-id: fund1_employer      
+    selector: '#fund1_employer'       
   item-23:
     id: fund1_employee
     plugin: text
@@ -216,8 +260,10 @@ tips:
     body: 'Share allocated to employee (if any).'
     weight: 24
     location: right
+    position: right
     attributes:
-      data-id: fund1_employee       
+      data-id: fund1_employee    
+    selector: '#fund1_employee'       
   item-24:
     id: thisepf
     plugin: text
@@ -225,8 +271,10 @@ tips:
     body: 'Ckeck box to generate calculation of contribution based on the set <a href="/human-resources/parameters-main">parameters</a>.'
     weight: 25
     location: right
+    position: right
     attributes:
-      data-id: thisepf        
+      data-id: thisepf  
+    selector: '#thisepf'         
   item-25:
     id: income_tax
     plugin: text
@@ -234,8 +282,10 @@ tips:
     body: 'Personal income tax value.'
     weight: 26
     location: right
+    position: right
     attributes:
-      data-id: income_tax
+      data-id: income_tax  
+    selector: '#income_tax'
   item-26:
     id: total_net
     plugin: text
@@ -243,8 +293,10 @@ tips:
     body: 'The net payable to employee.'
     weight: 27
     location: right
+    position: right
     attributes:
-      data-id: total_net      
+      data-id: total_net 
+    selector: '#total_net'      
   item-27:
     id: total_display
     plugin: text
@@ -252,8 +304,10 @@ tips:
     body: 'The net payable is also displayed in this box.'
     weight: 28
     location: top
+    position: top
     attributes:
-      data-id: total_display      
+      data-id: total_display 
+    selector: '#total_display'      
   item-28:
     id: save
     plugin: text
@@ -261,8 +315,10 @@ tips:
     body: 'Click to save data.'
     weight: 29
     location: right
+    position: right
     attributes:
-      data-id: savebutton        
+      data-id: savebutton
+    selector: '#savebutton'        
   item-29:
     id: video
     plugin: video

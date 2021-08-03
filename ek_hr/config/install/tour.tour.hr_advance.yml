@@ -17,45 +17,40 @@ tips:
     label: 'Company'
     body: "Select the company."
     weight: 2
-    location: right
-    attributes:
-      data-id: edit-coid
+    position: right
+    selector: '#edit-coid'
   item-2:
     id: fund1
     plugin: text
     label: 'Name'
     body: "Name of employee."
     weight: 3
-    location: top
-    attributes:
-      data-id: tour-item1
+    position: top
+    selector: '#tour-item1'
   item-3:
     id: fund1name
     plugin: text
     label: 'Id'
     body: 'System ID or given ID if any.'
     weight: 4
-    location: top
-    attributes:
-      data-id: tour-item2
+    position: top
+    selector: '#tour-item2'
   item-4:
     id: calcul
     plugin: text
     label: 'Value'
     body: 'Input the value advanced in payment currency.'
     weight: 5
-    location: top
-    attributes:
-      data-id: tour-item3
+    position: top
+    selector: '#tour-item3'
   item-5:
     id: submit
     plugin: text
     label: 'Save'
     body: 'Click "confirm" to save value(s). The current payroll cycle is indicated.'
     weight: 6
-    location: top
-    attributes:
-      data-id: edit-submit
+    position: top
+    selector: '#edit-submit'
   conclusion:
     id: conclusion
     plugin: text

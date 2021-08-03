@@ -17,180 +17,160 @@ tips:
     label: 'Company'
     body: "Select the company to which employee is attached."
     weight: 2
-    location: right
-    attributes:
-      data-id: edit-coid
+    position: right
+    selector: '#edit-coid'
   item-2:
     id: active
     plugin: text
     label: 'Status'
     body: "Select the working status (default for new is 'working') <ul><li>working</li><li>resigned</li><li>absent</li></ul>"
     weight: 3
-    location: right
-    attributes:
-      data-id: edit-active
+    position: right
+    selector: '#edit-active'
   item-3:
     id: image
     plugin: text
     label: 'Picture'
     body: 'Upload employee picture. The image will be resized.'
     weight: 4
-    location: right
-    attributes:
-      data-id: edit-image-upload
+    position: right
+    selector: '#edit-image-upload'
   item-4:
     id: givenid
     plugin: text
     label: 'Given id'
     body: "The system automatically give a unique ID to each employee but you can overwrite it by giving a custom ID. It can be alpha-numeric input."
     weight: 5
-    location: right
-    attributes:
-      data-id: edit-custom-id
+    position: right
+    selector: '#edit-custom-id'
   item-5:
     id: note
     plugin: text
     label: 'Note'
     body: "A free text field. Notes may be printed on the payslip."
     weight: 6
-    location: top
-    attributes:
-      data-id: edit-note
+    position: top
+    selector: '#edit-note'
   item-6:
     id: admin
     plugin: text
     label: 'Administrators'
     body: "List of users the are selected as Administrator for this employee. If any selected, only administrators can then view or edit this employee data."
     weight: 7
-    location: top
-    attributes:
-      data-id: edit-admin      
+    position: top
+    selector: '#edit-admin'      
   item-7:
     id: contact
     plugin: text
     label: 'Contact'
     body: "Input in this section the employee name and contact. All fields are required."
     weight: 8
-    location: top
-    attributes:
-      data-id: edit-1   
+    position: top
+    selector: '#edit-1'   
   item-8:
     id: identification
     plugin: text
     label: 'Other identification information'
     body: "Input in this section other identification information such as sex, birth date or administrative IDs."
     weight: 9
-    location: top
-    attributes:
-      data-id: edit-2
+    position: top
+    selector: '#edit-2'
   item-9:
     id: work
     plugin: text
     label: 'Work information'
     body: "Use this tab update the employee working situation."
     weight: 10
-    location: top
-    attributes:
-      data-id: edit-3
+    position: top
+    selector: '#edit-3'
   item-10:
     id: category
     plugin: text
     label: 'Category'
     body: "Select the category. You have up to 5 category options that can be customized. Each category has its own parameters. Go to <a href='/human-resources/parameters-category'>categories</a> to edit this parameter."
     weight: 11
-    location: right
-    attributes:
-      data-id: edit-origin
+    position: right
+    selector: '#edit-origin'
   item-11:
     id: location
     plugin: text
     label: 'Location and service'
     body: "Select location and service; Those options are managed in <a href='/human-resources/parameters-location'>Organization settings</a>."
     weight: 12
-    location: right
-    attributes:
-      data-id: edit-service
+    position: right
+    selector: '#edit-service'
   item-12:
     id: rank
     plugin: text
     label: 'Rank'
     body: "Select rank; Rankss are managed in <a href='/human-resources/parameters-location'>Organization settings</a>."
     weight: 13
-    location: right
-    attributes:
-      data-id: edit-rank
+    position: right
+    selector: '#edit-rank'
   item-13:
     id: dates
     plugin: text
     label: 'Dates'
     body: "Select start (required data) and resign date (if any)."
     weight: 14
-    location: right
-    attributes:
-      data-id: edit-resign
+    position: right
+    selector: '#edit-resign'
   item-14:
     id: contract
     plugin: text
     label: 'Contract'
     body: 'Use this field to indicate date of employment contract expiration. The system will issue an alert before expiration.'
     weight: 15
-    location: right
-    attributes:
-      data-id: edit-contract-expiration
+    position: right
+    selector: '#edit-contract-expiration'
   item-15:
     id: leave
     plugin: text
     label: 'Leaves'
     body: 'Input leave allowance in number of days.'
     weight: 16
-    location: right
-    attributes:
-      data-id: edit-mcleave
+    position: right
+    selector: '#edit-mcleave'
   item-16:
     id: salary
     plugin: text
     label: 'Salary'
     body: 'Input salary information in this section.'
     weight: 17
-    location: top
-    attributes:
-      data-id: edit-4
+    position: top
+    selector: '#edit-4'
   item-17:
     id: value
     plugin: text
     label: 'Value'
     body: 'Input gross salary value; "other base salary" can be a value used in formulas; currency are managed by the finanace module if available.'
     weight: 18
-    location: right
-    attributes:
-      data-id: edit-currency   
+    position: right
+    selector: '#edit-currency'   
   item-18:
     id: bank
     plugin: text
     label: 'Bank'
     body: 'bank information that may be used for direct transfers.'
     weight: 19
-    location: right
-    attributes:
-      data-id: edit-bank-account    
+    position: right
+    selector: '#edit-bank-account'    
   item-19:
     id: bankstatus
     plugin: text
     label: 'Type'
     body: 'Type "own" or 3rd party if payment is not done on the employee bank account.'
     weight: 20
-    location: right
-    attributes:
-      data-id: edit-bank-account-status   
+    position: right
+    selector: '#edit-bank-account-status'   
   item-20:
     id: save
     plugin: text
     label: 'Save'
     body: 'click to save data.'
     weight: 21
-    location: bottom
-    attributes:
-      data-id: edit-submit  
+    position: bottom
+    selector: '#edit-submit'  
   conclusion:
     id: conclusion
     plugin: text

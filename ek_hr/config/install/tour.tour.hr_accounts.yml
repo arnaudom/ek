@@ -17,81 +17,72 @@ tips:
     label: 'Company'
     body: "Select the company."
     weight: 2
-    location: right
-    attributes:
-      data-id: edit-coid
+    position: right
+    selector: '#edit-coid'
   item-2:
     id: liab1
     plugin: text
     label: 'Payroll salary liability'
     body: "This is the account in which payable salaries are credited for payment."
     weight: 3
-    location: right
-    attributes:
-      data-id: edit-pay-account
+    position: right
+    selector: '#edit-pay-account'
   item-3:
     id: fund1
     plugin: text
     label: 'Fund liability'
     body: 'Each customized HR fund collection can have its dedicated liability account. Select from list.'
     weight: 4
-    location: right
-    attributes:
-      data-id: edit-fund1-account
+    position: right
+    selector: '#edit-fund1-account'
   item-4:
     id: fund2
     plugin: text
     label: 'Fund liability'
     body: 'Select from list.'
     weight: 5
-    location: right
-    attributes:
-      data-id: edit-fund2-account
+    position: right
+    selector: '#edit-fund2-account'
   item-5:
     id: fund3
     plugin: text
     label: 'Fund liability'
     body: 'Select from list.'
     weight: 6
-    location: right
-    attributes:
-      data-id: edit-fund3-account
+    position: right
+    selector: '#edit-fund3-account'
   item-6:
     id: fund4
     plugin: text
     label: 'Fund liability'
     body: 'Select from list.'
     weight: 7
-    location: right
-    attributes:
-      data-id: edit-fund4-account
+    position: right
+    selector: '#edit-fund4-account'
   item-7:
     id: fund5
     plugin: text
     label: 'Fund liability'
     body: 'Select from list'
     weight: 8
-    location: right
-    attributes:
-      data-id: edit-fund5-account
+    position: right
+    selector: '#edit-fund5-account'
   item-8:
     id: tax
     plugin: text
     label: 'Tax liability'
     body: 'Select from list.'
     weight: 9
-    location: right
-    attributes:
-      data-id: edit-tax1-account
+    position: right
+    selector: '#edit-tax1-account'
   item-9:
     id: save
     plugin: text
     label: 'Save'
     body: 'Click to save data.'
     weight: 10
-    location: top
-    attributes:
-      data-id: edit-submit  
+    position: top
+    selector: '#edit-submit'  
   conclusion:
     id: conclusion
     plugin: text

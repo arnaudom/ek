@@ -17,180 +17,160 @@ tips:
     label: 'List'
     body: "This opens the list of current employees. It can be filtered by company and working status. The list will display the employee ID, name status and a link to edit the employee's profile."
     weight: 2
-    location: bottom
-    attributes:
-      data-id: "tour1"
+    position: bottom
+    selector: '#tour1'
   item-2:
     id: new
     plugin: text
     label: 'New employee'
     body: "Go to this tab to create a new employee by filling-up the form. But before creating your first employee, you will need to set <ul><li>categories</li><li>main parameters</li><li>custom allowance or deductions</li><li>organizationstructure</li></ul>"
     weight: 3
-    location: bottom
-    attributes:
-      data-id: "tour2"
+    position: bottom
+    selector: '#tour2'
   item-3:
     id: category
     plugin: text
     label: 'Categories'
     body: "Opens employee categories form. Each category of employee will have its own set of custom allowance and deductions. You need to define categories before allowances."
     weight: 4
-    location: bottom
-    attributes:
-      data-id: "tour3"
+    position: bottom
+    selector: '#tour3'
   item-4:
     id: mainp
     plugin: text
     label: 'Main parameters'
     body: "In this tab, you can define main parameters (funds,contributions or tax) by company that apply to all employees of that company."
     weight: 5
-    location: bottom
-    attributes:
-      data-id: "tour4"
+    position: bottom
+    selector: '#tour4'
   item-5:
     id: allow
     plugin: text
     label: 'Allowances and deductions'
     body: "Allowances and deductions are defined by company and by category. Whithin each category you will have fixed and custom allowances and deductions. You can set your own parameters for custom inputs (description,value, formula)."
     weight: 6
-    location: bottom
-    attributes:
-      data-id: "tour5"
+    position: bottom
+    selector: '#tour5'
   item-6:
     id: org
     plugin: text
     label: 'Organization'
     body: "Inside organization, you can <ul><li>set your locations by company (i.e. Head office, factory, storage)</li><li>set the type of services (i.e. Sales department, Quality control, Logistics)</li><li>set the structure of your organization (i.e. Executive, Senior manager, Director)</li></ul>"
     weight: 7
-    location: bottom
-    attributes:
-      data-id: "tour6"      
+    position: bottom
+    selector: '#tour6'      
   item-7:
     id: account
     plugin: text
     label: 'Accounts'
     body: "If finance module is installed, you can map main parameters with acounting references per company. You will need to create a chart of accounts first."
     weight: 8
-    location: bottom
-    attributes:
-      data-id: "tour7"      
+    position: bottom
+    selector: '#tour7'      
   item-8:
     id: payslip
     plugin: text
     label: 'Manage payslips'
     body: "Use this tab to upload custom payslip templates for printing."
     weight: 9
-    location: bottom
-    attributes:
-      data-id: "tour8"
+    position: bottom
+    selector: '#tour8'
   item-9:
     id: forms
     plugin: text
     label: 'Forms'
     body: "Use this tab to upload custom HR forms (i.e. tax submission form or pension declaration form)."
     weight: 10
-    location: bottom
-    attributes:
-      data-id: "tour9"
+    position: bottom
+    selector: '#tour9'
   item-10:
     id: funds
     plugin: text
     label: 'Funds'
     body: "Funds table are used to calculate deduction values from tables (see main parameters). They can be edited directly and are specific to countries where applicable. This parameter requires custom HR module installation."
     weight: 11
-    location: bottom
-    attributes:
-      data-id: "tour10"
+    position: bottom
+    selector: '#tour10'
   item-11:
     id: elist
     plugin: text
     label: 'Employee list filter'
     body: "To view employee list, use list filter"
     weight: 12
-    location: top
-    attributes:
-      data-id: employee-list-filter
+    position: top
+    selector: '#employee-list-filter'
   item-12:
     id: coid
     plugin: text
     label: 'Company'
     body: "Select company"
     weight: 13
-    location: right
-    attributes:
-      data-id: edit-coid
+    position: right
+    selector: '#edit-coid'
   item-13:
     id: status
     plugin: text
     label: 'Status'
     body: "Select working status: working, resigned or absent."
     weight: 14
-    location: right
-    attributes:
-      data-id: edit-status
+    position: right
+    selector: '#edit-status'
   item-14:
     id: submit
     plugin: text
     label: 'Apply'
     body: 'Click "Apply" to display the list'
     weight: 15
-    location: right
-    attributes:
-      data-id: edit-submit
+    position: right
+    selector: '#edit-submit'
   item-15:
     id: reset
     plugin: text
     label: 'Reset'
     body: 'Click "Reset" to change filter options'
     weight: 15
-    location: right
-    attributes:
-      data-id: edit-reset
+    position: right
+    selector: '#edit-reset'
   item-16:
     id: excel
     plugin: text
     label: 'Download'
     body: 'Click <span class="ico excel"></span> to download the list in spreadsheet format.'
     weight: 17
-    location: right
-    attributes:
-      data-class: excel
+    position: right
+    selector: '.excel'
   item-17:
     id: eid
     plugin: text
     label: 'ID'
     body: 'Employee unique ID; this is either the system ID or custom ID given to the employee (see <a href="/human-resources/new-employee">create employee form</a>).'
     weight: 18
-    location: top
-    attributes:
-      data-id: eid    
+    position: top
+    selector: '#eid'    
   item-18:
     id: ename
     plugin: text
     label: 'Name'
     body: 'The employee full name.'
     weight: 19
-    location: top
-    attributes:
-      data-id: ename     
+    position: top
+    selector: '#ename'     
   item-19:
     id: estatus
     plugin: text
     label: 'Status'
     body: 'The employee status.'
     weight: 20
-    location: top
-    attributes:
-      data-id: estatus   
+    position: top
+    selector: '#estatus'   
   item-20:
     id: ops
     plugin: text
     label: 'Menu'
     body: 'List of available options: <ul><li>View: to view all employee data</li><li>Edit: to edit employee data</li></ul>'
     weight: 21
-    location: bottom
-    attributes:
-      data-id: operations  
+    position: bottom
+    selector: '#operations'  
   conclusion:
     id: conclusion
     plugin: text

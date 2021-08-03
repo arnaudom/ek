@@ -17,63 +17,56 @@ tips:
     label: 'Company'
     body: "Select the company."
     weight: 2
-    location: right
-    attributes:
-      data-id: edit-coid
+    position: right
+    selector: '#edit-coid'
   item-2:
     id: categorya
     plugin: text
     label: 'Custom name'
     body: "Input the custom name for each category you want to use."
     weight: 3
-    location: right
-    attributes:
-      data-id: edit-a
+    position: right
+    selector: '#edit-a'
   item-3:
     id: categoryb
     plugin: text
     label: 'Custom name'
     body: ''
     weight: 4
-    location: right
-    attributes:
-      data-id: edit-b
+    position: right
+    selector: '#edit-b'
   item-4:
     id: categoryc
     plugin: text
     label: 'Custom name'
     body: ''
     weight: 5
-    location: right
-    attributes:
-      data-id: edit-c
+    position: right
+    selector: '#edit-c'
   item-5:
     id: categoryc
     plugin: text
     label: 'Custom name'
     body: ''
     weight: 6
-    location: right
-    attributes:
-      data-id: edit-d
+    position: right
+    selector: '#edit-d'
   item-6:
     id: categorycd
     plugin: text
     label: 'Custom name'
     body: ''
     weight: 7
-    location: right
-    attributes:
-      data-id: edit-e     
+    position: right
+    selector: '#edit-e'     
   item-7:
     id: save
     plugin: text
     label: 'Save'
     body: 'Click to save data.'
     weight: 8
-    location: top
-    attributes:
-      data-id: edit-submit  
+    position: top
+    selector: '#edit-submit'  
   conclusion:
     id: conclusion
     plugin: text

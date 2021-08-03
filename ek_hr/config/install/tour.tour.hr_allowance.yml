@@ -17,108 +17,96 @@ tips:
     label: 'Company'
     body: "Select the company."
     weight: 2
-    location: right
-    attributes:
-      data-id: edit-coid
+    position: right
+    selector: '#edit-coid'
   item-2:
     id: category
     plugin: text
     label: 'Category'
     body: 'Select the <a href="/human-resources/parameters-category">category</a>.'
     weight: 3
-    location: right
-    attributes:
-      data-id: edit-category
+    position: right
+    selector: '#edit-category'
   item-3:
     id: fixedallowance
     plugin: text
     label: 'Fixed allowances'
     body: 'There are 6 fixed allowances. Fixed allowances are preset allowances like over time with customizable value.'
     weight: 4
-    location: top
-    attributes:
-      data-id: edit-af
+    position: top
+    selector: '#edit-af'
   item-4:
     id: laf1d
     plugin: text
     label: 'Description'
     body: 'Fixed allowance description (cannot be edited).'
     weight: 5
-    location: right
-    attributes:
-      data-id: edit-laf1-a-description
+    position: right
+    selector: '#edit-laf1-a-description'
   item-5:
     id: laf1v
     plugin: text
     label: 'Value'
     body: 'Input value for allowance (if any).'
     weight: 6
-    location: right
-    attributes:
-      data-id: edit-laf1-a-value
+    position: right
+    selector: '#edit-laf1-a-value'
   item-6:
     id: laf1f
     plugin: text
     label: 'Input formuala for allowance (if any). Formulas can automatically calculate allowance values by using payroll variables.'
     body: ''
     weight: 7
-    location: right
-    attributes:
-      data-id: edit-laf1-a-formula   
+    position: right
+    selector: '#edit-laf1-a-formula'   
   item-7:
     id: laf1t
     plugin: text
     label: 'Tax'
     body: 'Select if this allowance should be included in tax calculation.'
     weight: 8
-    location: top
-    attributes:
-      data-id: edit-laf1-a-tax
+    position: top
+    selector: '#edit-laf1-a-tax'
   item-8:
     id: customallowance
     plugin: text
     label: 'Custom allowances'
     body: 'There are 13 custom allowances. These allowances can be fully customized.'
     weight: 9
-    location: top
-    attributes:
-      data-id: edit-ac   
+    position: top
+    selector: '#edit-ac'   
   item-9:
     id: lac1d
     plugin: text
     label: 'Description'
     body: 'Custom allowance description is editable.'
     weight: 10
-    location: right
-    attributes:
-      data-id: edit-lac1-a-description      
+    position: right
+    selector: '#edit-lac1-a-description'      
   item-10:
     id: fixeddeduction
     plugin: text
     label: 'Fixed deductions'
     body: 'There are 2 fixed deductions. Fixed deductions are preset deductions like advance paid with customizable value.'
     weight: 11
-    location: top
-    attributes:
-      data-id: edit-df      
+    position: top
+    selector: '#edit-df'      
   item-11:
     id: customdeduction
     plugin: text
     label: 'Custom deductions'
     body: 'There are 7 custom deductions. These deductions can be fully customized.'
     weight: 11
-    location: top
-    attributes:
-      data-id: edit-dc       
+    position: top
+    selector: '#edit-dc'       
   item-12:
     id: save
     plugin: text
     label: 'Save'
     body: 'Click to save data.'
     weight: 13
-    location: top
-    attributes:
-      data-id: edit-submit       
+    position: top
+    selector: '#edit-submit'       
   item-13:
     id: video
     plugin: video
