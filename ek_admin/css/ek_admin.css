@@ -158,9 +158,9 @@ App
     width : 100px;
 }
 .avatar {
-    width : 30px;
-    border-radius: 50%;
-    vertical-align:middle
+    width : 30px !important;
+    border-radius: 50% !important;
+    vertical-align:middle;
 }
 .panel-default {
     border-color: #DDDDDD;
