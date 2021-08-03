@@ -17,68 +17,59 @@ tips:
     label: 'New'
     body: 'To add new country in the list, select from available countries and click "Record".'
     weight: 2
-    location: right
-    attributes:
-      data-id: edit-new-country
+    position: right
+    selector: '#edit-new-country'
   item2: 
     id: name
     plugin: text
     label: 'Active'
     body: 'After a new country is added, it will appear in the active list.'
     weight: 3
-    location: top
-    attributes:
-      data-id: cname1
+    position: top
+    selector: '#cname1'
   item3:
     id: entity
     plugin: text
     label: 'Custom name'
     body: 'You can input a custom entity name for reference only.'
     weight: 4
-    location: top
-    attributes:
-      data-id: entity1
+    position: top
+    selector: '#entity1'
   item4:
     id: status1
     plugin: text
     label: 'Staus'
     body: 'to set country as inactive, uncheck the box.'
     weight: 5
-    location: top
-    attributes:
-      data-id: active1
+    position: top
+    selector: '#active1'
   item5:
     id: name2
     plugin: text
     label: 'Non active'
     body: 'Non active countries are listed here.'
     weight: 6
-    location: top
-    attributes:
-      data-id: cname2
+    position: top
+    selector: '#cname2'
   item6:
     id: status2
     plugin: text
     label: 'Non active'
     body: 'Check the box to activate a country.'
     weight: 7
-    location: top
-    attributes:
-      data-id: active2
+    position: top
+    selector: '#active2'
   item7:
     id: save
     plugin: text
     label: 'Save'
     body: 'Click "Record" to save settings.'
     weight: 8
-    location: top
-    attributes:
-      data-id: edit-actions-submit
+    position: top
+    selector: '#edit-actions-submit'
   conclusion:
     id: conclusion
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-setup">online documentation</a> for further help.'
     weight: 9
-    attributes:
-      backdrop: 1

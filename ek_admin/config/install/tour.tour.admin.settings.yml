@@ -17,32 +17,27 @@ tips:
     label: 'Backup recipients'
     body: 'If automated backup is active (server configuration), you can input email address(es) that will receive a backup copy. For multiple addresses, separate email with ",".'
     weight: 2
-    location: right
-    attributes:
-      data-id: edit-backup-recipients
+    position: right
+    selector: '#edit-backup-recipients'
   item2: 
     id: tasks
     plugin: text
     label: 'Tasks'
     body: 'If automated tasks is active (server configuration), you can select which tasks to be verified. When a task is unchecked, you will not receive email notification.'
     weight: 3
-    location: right
-    attributes:
-      data-class: details-wrapper
+    position: right
+    selector: '.details-wrapper'
   item3:
     id: save
     plugin: text
     label: 'Save'
     body: 'Click "Record" to save.'
     weight: 4
-    location: top
-    attributes:
-      data-id: edit-submit
+    position: top
+    selector: '#edit-submit'
   conclusion:
     id: conclusion
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-setup">online documentation</a> for further help.'
     weight: 5
-    attributes:
-      backdrop: 1

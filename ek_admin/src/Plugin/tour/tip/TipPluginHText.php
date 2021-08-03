@@ -16,14 +16,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   title = @Translation("Text")
  * )
  */
-class TipPluginHText extends TipPluginBase implements ContainerFactoryPluginInterface
-{
+class TipPluginHText extends TipPluginBase implements ContainerFactoryPluginInterface {
 
-  /**
-   * The body text which is used for render of this Text Tip.
-   *
-   * @var string
-   */
+    /**
+     * The body text which is used for render of this Text Tip.
+     *
+     * @var string
+     */
     protected $body;
 
     /**
@@ -32,14 +31,14 @@ class TipPluginHText extends TipPluginBase implements ContainerFactoryPluginInte
      * @var string
      */
     protected $image;
-  
+
     /**
      * The url of image attached to tip.
      *
      * @var string
      */
     protected $imageUrl;
-  
+
     /**
      * Token service.
      *
@@ -73,8 +72,7 @@ class TipPluginHText extends TipPluginBase implements ContainerFactoryPluginInte
      * @param \Drupal\Core\Utility\Token $token
      *   The token service.
      */
-    public function __construct(array $configuration, $plugin_id, $plugin_definition, Token $token)
-    {
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, Token $token) {
         parent::__construct($configuration, $plugin_id, $plugin_definition);
         $this->token = $token;
     }
@@ -82,8 +80,7 @@ class TipPluginHText extends TipPluginBase implements ContainerFactoryPluginInte
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition)
-    {
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
         return new static($configuration, $plugin_id, $plugin_definition, $container->get('token'));
     }
 
@@ -93,8 +90,7 @@ class TipPluginHText extends TipPluginBase implements ContainerFactoryPluginInte
      * @return string
      *   A unique id to be used to generate aria attributes.
      */
-    public function getAriaId()
-    {
+    public function getAriaId() {
         if (!$this->ariaId) {
             $this->ariaId = Html::getUniqueId($this->get('id'));
         }
@@ -107,49 +103,44 @@ class TipPluginHText extends TipPluginBase implements ContainerFactoryPluginInte
      * @return string
      *   The tip body.
      */
-    public function getBody()
-    {
+    public function getBody() {
         return $this->get('body');
     }
-  
+
     /**
      * Returns local image of the htext tip.
      * format: [module,folder]
      * @return string
      *   The tip image.
      */
-    public function getImage()
-    {
+    public function getImage() {
         return $this->get('image');
     }
-  
+
     /**
      * Returns url image of the htext tip.
      *
      * @return string
      *   The tip image.
      */
-    public function getImageUrl()
-    {
+    public function getImageUrl() {
         return $this->get('imageUrl');
     }
-  
+
     /**
      * Returns location of the text tip.
      *
      * @return string
      *   The tip location.
      */
-    public function getLocation()
-    {
+    public function getLocation() : ?string{
         return $this->get('location');
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getAttributes()
-    {
+    public function getAttributes() {
         $attributes = parent::getAttributes();
         $attributes['data-aria-describedby'] = 'tour-tip-' . $this->getAriaId() . '-contents';
         $attributes['data-aria-labelledby'] = 'tour-tip-' . $this->getAriaId() . '-label';
@@ -162,8 +153,7 @@ class TipPluginHText extends TipPluginBase implements ContainerFactoryPluginInte
     /**
      * {@inheritdoc}
      */
-    public function getOutput()
-    {
+    public function getOutput() {
         $output = '<h2 class="tour-tip-label" id="tour-tip-' . $this->getAriaId() . '-label">' . Html::escape($this->getLabel()) . '</h2>';
         $output .= '<p class="tour-tip-body" id="tour-tip-' . $this->getAriaId() . '-contents">' . $this->token->replace($this->getBody()) . '</p>';
         if ($url = $this->getImageUrl()) {
@@ -176,7 +166,8 @@ class TipPluginHText extends TipPluginBase implements ContainerFactoryPluginInte
                 $output .= '<p class="tour-tip-image" id="tour-tip-' . $this->getAriaId() . '-image2"><IMG src="' . $img . '"/></p>';
             }
         }
-    
+
         return ['#markup' => $output, '#allowed_tags' => ['h2', 'p', 'img']];
     }
+
 }

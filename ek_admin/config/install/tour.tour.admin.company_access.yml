@@ -17,32 +17,27 @@ tips:
     label: 'Company'
     body: 'Select the company first.'
     weight: 2
-    location: right
-    attributes:
-      data-id: edit-coid
+    position: right
+    selector: '#edit-coid'
   item2: 
     id: name
     plugin: text
     label: 'Users'
     body: 'In the list, you can select or unselect the users who are granted access.'
     weight: 3
-    location: top
-    attributes:
-      data-class: details-wrapper
+    position: top
+    selector: '.details-wrapper'
   itemsave:
     id: save
     plugin: text
     label: 'Save'
     body: 'Click "Record" to save any change.'
     weight: 4
-    location: top
-    attributes:
-      data-id: edit-submit
+    position: top
+    selector: '#edit-submit'
   conclusion:
     id: conclusion
     plugin: text
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-setup">online documentation</a> for further help.'
     weight: 5
-    attributes:
-      backdrop: 1

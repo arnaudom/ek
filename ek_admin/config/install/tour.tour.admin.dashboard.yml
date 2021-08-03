@@ -35,5 +35,3 @@ tips:
     label: 'Online documentation'
     body: 'Go to <a href="https://arrea-systems.com/tutorial-setup">online documentation</a> for further help.'
     weight: 5
-    attributes:
-      backdrop: 1
