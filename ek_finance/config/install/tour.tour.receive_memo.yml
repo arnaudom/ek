@@ -1,57 +1,3 @@
-# This file defines the tour for our example page. There should be one tour
-# file for each tour that you create. These tour files should be placed in a
-# module's 'config' folder and named using the pattern
-# 'tour.tour.{tour-id}.yml'.
-#
-# Each tour file has two parts: 1) The tour properties, and 2) the tip
-# definitions.
-#
-#
-# TOUR PROPERTIES
-#
-# The tour properties define information that applies to the tour as a whole.
-# Properties that you can define for your tours include the following:
-#
-#   id:         Each tour should have a unique ID. This id is used in the
-#               filename and appears as an ID in the HTML.
-#   module:     The machine name of the module containing your tour.
-#   label:      A human readable name for the tour.
-#   status:     A boolean, defining whether the tour is enabled.
-#   langcode:   A two-letter language code defining the language of your tour.
-#   routes:     An array of routes for which the tour is active. Specify these
-#               as an array with route_name and optional route_params (also an
-#               array). Route names are found in each module's routing.yml file.
-#
-#
-# TIP DEFINITIONS
-#
-# Here, you define each tip that you want to appear in your tour. Each of
-# the tips have properties that must be defined, including the following:
-#
-#   id:         Each tip needs a unique ID. This appears as an ID in the HTML.
-#   plugin:     The Tour API uses plugins for defining different types of
-#               tips. The 'text' plugin (for making text tooltips) is provided
-#               in core, but developers can define additional plugins for tips
-#               containing images, video, or other interactions.
-#   label:      The lable for the tip. This will be rendered in an h3 element.
-#   body:       The body of the tip. HTML markup is allowed.
-#   weight:     Tips within a tour are ordered by weight, beginning with the
-#               lowest number. Negative values are acceptable.
-#   location:   Defines the location of the tip, relative to its target.
-#               Acceptable values include: top, bottom, left, & right. If the
-#               location is not defined, the default value (bottom) will be
-#               used.
-#   attributes: Attributes provdied to the tip for various purposes. Use the
-#               following attributes to control the placement of the tip:
-#
-#                 data-id:      Places this tip on the DOM element containing
-#                               this ID.
-#                 data-class:   Places this tip on the DOM element containing
-#                               this class.
-#
-#               If you omit both the .data-id and .data-class, the tip will be
-#               shown as modal instead of being targeted to an element.
-#
 id: ek_finance.memo_receive
 module: ek_finance
 label: 'Receive memo tour'
@@ -71,36 +17,32 @@ tips:
     label: 'Date of payment'
     body: 'Input the date of receipt by selecting in calendar.'
     weight: 2
-    location: bottom
-    attributes:
-      data-id: edit-from
+    position: bottom
+    selector: '#edit-from'
   second-item:
     id: second-item
     plugin: text
     label: 'Account'
     body: 'Select the cash or bank account on which the amout paid is received.'
     weight: 3
-    location: bottom
-    attributes:
-      data-id: edit-bank-account
+    position: bottom
+    selector: '#edit-bank-account'
   third-item:
     id: third-item
     plugin: text
     label: 'Exchange rate'
     body: 'The exchange rate is the rate between the base currency and the currency of payment account. You can receive payments in multiple currencies. Base on the current exchange rate, the system will calculate the estimated amount received. Edit the rate base on the date of payment.'
     weight: 4
-    location: bottom
-    attributes:
-      data-id: edit-debit-fx-rate
+    position: bottom
+    selector: '#edit-debit-fx-rate'
   fourth-item:
     id: fourth-item
     plugin: text
     label: 'Account'
     body: 'Select the income account corresponding to the payment received.'
     weight: 5
-    location: bottom
-    attributes:
-      data-id: edit-aid
+    position: bottom
+    selector: '#edit-aid'
 
   item4:
     id: item4
@@ -108,8 +50,7 @@ tips:
     label: 'Amount'
     body: 'Input the amount expressed in the currency of the cash or bank account that is receiving the payment. For example if the memo value is 100 USD but your receive it on a EUR account an the exchange rate is 0.9, you will enter "90".'
     weight: 6
-    attributes:
-      data-id: grandtotal
+    selector: '#grandtotal'
       
   item8:
     id: item8
@@ -117,5 +58,4 @@ tips:
     label: 'Record'
     body: 'click to record.'
     weight: 10
-    attributes:
-      data-id: edit-record
+    selector: '#edit-record'
