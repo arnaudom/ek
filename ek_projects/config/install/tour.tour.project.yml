@@ -74,8 +74,7 @@ tips:
     body: 'Indicate the level of the project. There are 2 levels: "main project" and "sub project". A sub project is linked to a main project. You can create sub project when for instance extending a main project geographically or renewing existing project for another period. If sub projects exist for a given project they will be listed in "linked projects" section'
     weight: 9
     position: bottom
-    selector: '#
-      data-id: project-level
+    selector: '#project-level'
   item8:
     id: item8
     plugin: text
@@ -99,8 +98,7 @@ tips:
     body: 'Use this link to send short message via email to system users about this project. You can communicate with local users and send text message with 3 priority levels: low, medium or high. If Messaging module is enabled, the message is also copied in the internal messaging inbox of recipients'
     weight: 12
     position: bottom
-    selector: '#
-      data-id: project-notification
+    selector: '#project-notification'
   item11:
     id: item11
     plugin: text
@@ -156,8 +154,7 @@ tips:
     body: 'If this project is linked to 1 or more main or sub-project, they will be listed in this section'
     weight: 19
     position: left
-    selector: '#
-      data-class: project
+    selector: '.project'
   item18:
     id: item18
     plugin: text
