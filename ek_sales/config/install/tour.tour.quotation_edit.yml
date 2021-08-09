@@ -190,7 +190,7 @@ tips:
     body: 'Click box to apply incoterm value (if % > 0).'
     weight: 24
     position: left
-    selector: '#optax11     
+    selector: '#optax11'
   item23:
     id: item23
     plugin: text
@@ -207,7 +207,7 @@ tips:
     weight: 25
     position: right
     selector: '#edit-record' 
-  itemvideo:'
+  itemvideo:
     id: video
     plugin: video
     label: 'Video tutorial: Create sub-total in sales documents'

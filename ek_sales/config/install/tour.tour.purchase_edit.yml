@@ -42,8 +42,7 @@ tips:
     body: 'The date of issue. By default, current date is set. A calendar is automatically opened when clicking on the date.'
     weight: 5
     position: bottom
-    selector: '#
-      data-id: edit-date
+    selector: '#edit-date'
   item4:
     id: item4
     plugin: text

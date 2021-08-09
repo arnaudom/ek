@@ -43,7 +43,7 @@ tips:
     weight: 4
     position: bottom
     selector: '#edit-coid'
-  item3:'
+  item3:
     id: edit-from
     plugin: text
     label: 'Dates'
@@ -146,8 +146,7 @@ tips:
     body: 'The date of payment if status is paid or partially paid.'
     weight: 17
     position: bottom
-    selector: '#
-      data-id: paid  
+    selector: '#paid' 
   item15:
     id: status
     plugin: text

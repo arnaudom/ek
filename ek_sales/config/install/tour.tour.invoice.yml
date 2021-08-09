@@ -1,4 +1,4 @@
-id: ek_sales.invoice_create
+id: ek_sales.invoice
 module: ek_sales
 label: 'Sales: create invoice tour'
 langcode: en
