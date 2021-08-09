@@ -226,8 +226,7 @@ tips:
     body: 'Input value and  go to <a href="/ek_products/parameters">parameters</a> to define this price.'
     weight: 28
     position: right
-    selector: '#
-      data-id: edit-promo-price                                           
+    selector: '#edit-promo-price'
   item27:
     id: p3
     plugin: text

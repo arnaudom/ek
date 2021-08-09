@@ -66,8 +66,7 @@ tips:
     body: 'Click on "Reset" to clear filter'
     weight: 8
     position: top
-    selector: '#
-      data-id: edit-reset
+    selector: '#edit-reset'
   item7:
     id: excel
     plugin: text
