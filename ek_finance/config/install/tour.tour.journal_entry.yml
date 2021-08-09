@@ -67,8 +67,7 @@ tips:
     label: 'Debit value'
     body: 'The value of the debit. Debit value total must always be equal to credit value total per transaction.'
     weight: 9
-    selector: '#
-      data-id: debit1
+    selector: '#debit1'
       
   item8:
     id: item8
@@ -116,8 +115,7 @@ tips:
     label: 'Add line'
     body: 'You can add lines to the journal entry by clicking on this button. If multi lines entry, you can also remove the last line with "remove" button.'
     weight: 14
-    selector: '#
-      data-id: edit-add 
+    selector: '#edit-add'
 
   item14:
     id: item14
