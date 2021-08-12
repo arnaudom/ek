@@ -105,9 +105,13 @@ $pdf->SetFont('helvetica','',10);
     $pdf->Cell(9,5,"",0,0);       
     $pdf->Cell(100,5,$text,0,0);         
     $pdf->Cell(1,5,"",0,1);   
-        
+    
+    $text = '';
+    if($company['state']  != '') {
+        $text .= $company['state'] . ", ";
+    }
     $pdf->Cell(9,5,"",0,0);       
-    $pdf->Cell(100,5,$company["country"],0,0); 
+    $pdf->Cell(100,5,$text . $company["country"],0,0); 
     $pdf->Cell(1,5,"",0,1);   
     
     $pdf->ln(2);  
@@ -162,9 +166,13 @@ $pdf->SetFont('helvetica','',10);
     $pdf->Cell(9,5,"",0,0);       
     $pdf->Cell(100,5,$text,0,0);         
     $pdf->Cell(1,5,"",0,1);   
-        
+    
+    $text = '';
+    if($company['state']  != '') {
+        $text .= $company['state'] . ", ";
+    }
     $pdf->Cell(9,5,"",0,0);       
-    $pdf->Cell(100,5,$company["country"],0,0); 
+    $pdf->Cell(100,5,$text . $company["country"],0,0); 
     $pdf->Cell(1,5,"",0,1);   
     
     $pdf->ln(2);  
@@ -206,9 +214,13 @@ $pdf->SetFont('helvetica','',10);
     $pdf->Cell(9,5,"",0,0);       
     $pdf->Cell(100,5,$text,0,0);         
     $pdf->Cell(1,5,"",0,1);   
-        
+    
+    $text = '';
+    if($company['state2']  != '') {
+        $text .= $company['state2'] . ", ";
+    }
     $pdf->Cell(9,5,"",0,0);       
-    $pdf->Cell(100,5,$company["country2"],0,0); 
+    $pdf->Cell(100,5,$text . $company["country2"],0,0); 
     $pdf->Cell(1,5,"",0,1);     
 
 if ($company["telephone2"] || $company["fax2"]) {

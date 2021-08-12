@@ -119,3 +119,30 @@ function ek_admin_update_8008() {
     \Drupal::service('router.builder')->rebuild();
     \Drupal::cache('data')->deleteAll();
 }
+
+/**
+ * Add fields
+*/
+function ek_admin_update_8009() {
+    $schema = \Drupal\Core\Database\Database::getConnection('external_db','external_db')->schema();
+    if(!$schema->fieldExists('ek_company', 'state')) {
+            $spec = array(
+                'description' => 'address state',
+                'type' => 'varchar',
+                'length' => 50,
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_company', 'state', $spec);
+    }
+    if(!$schema->fieldExists('ek_company', 'state2')) {
+            $spec = array(
+                'description' => 'address state',
+                'type' => 'varchar',
+                'length' => 50,
+                'not null' => FALSE,
+
+            );
+            $schema->addField('ek_company', 'state2', $spec);
+    }
+}

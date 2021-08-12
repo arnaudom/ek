@@ -820,6 +820,7 @@ class AdminController extends ControllerBase {
                         . $data->address2 . "<br/>"
                         . $data->city . "<br/>"
                         . $data->postcode . "<br/>"
+                        . $data->state . "<br/>"
                         . $data->country . "<br/>"
                         . $this->t('telephone') . " " . $data->telephone . "<br/>"
                         . $this->t('fax') . ": " . $data->fax . "<br/>"
@@ -831,6 +832,7 @@ class AdminController extends ControllerBase {
                             . $data->address4 . "<br/>"
                             . $data->city2 . "<br/>"
                             . $data->postcode2 . "<br/>"
+                            . $data->state2 . "<br/>"
                             . $data->country2 . "<br/>"
                             . $this->t('telephone') . ": " . $data->telephone2 . "<br/>"
                             . $this->t('fax') . ": " . $data->fax2 . "</p>";

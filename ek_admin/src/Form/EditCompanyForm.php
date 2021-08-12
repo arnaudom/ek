@@ -169,8 +169,19 @@ class EditCompanyForm extends FormBase
             '#default_value' => isset($r['postcode']) ? $r['postcode'] : null,
             '#attributes' => array('placeholder' => $this->t('post code')),
             '#description' => $this->t('post code'),
+            '#suffix' => "</div>",
         );
-
+        
+        $form['state'] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 50,
+            '#default_value' => isset($r['state']) ? $r['state'] : null,
+            '#attributes' => array('placeholder' => $this->t('state')),
+            '#prefix' => "<div class='container-inline'>",
+            '#description' => $this->t('state'),
+        );
+        
         $form['country'] = array(
             '#type' => 'select',
             '#options' => array_combine($country, $country),
@@ -270,8 +281,19 @@ class EditCompanyForm extends FormBase
             '#default_value' => isset($r['postcode2']) ? $r['postcode2'] : null,
             '#attributes' => array('placeholder' => $this->t('post code')),
             '#description' => $this->t('post code'),
+            '#suffix' => "</div>",
         );
 
+        $form['2']['state2'] = array(
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 50,
+            '#default_value' => isset($r['state']) ? $r['state'] : null,
+            '#attributes' => array('placeholder' => $this->t('state')),
+            '#prefix' => "<div class='container-inline'>",
+            '#description' => $this->t('state'),
+        );
+        
         $form['2']['country2'] = array(
             '#type' => 'select',
             '#options' => array_combine($country, $country),
@@ -558,6 +580,8 @@ class EditCompanyForm extends FormBase
             'address4' => $form_state->getValue('address4'),
             'city' => $form_state->getValue('city'),
             'city2' => $form_state->getValue('city2'),
+            'state' => $form_state->getValue('state'),
+            'state2' => $form_state->getValue('state2'),
             'postcode' => $form_state->getValue('postcode'),
             'postcode2' => $form_state->getValue('postcode2'),
             'country' => $form_state->getValue('country'),

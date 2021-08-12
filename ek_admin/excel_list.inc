@@ -26,31 +26,33 @@ $objPHPExcel->setActiveSheetIndex(0)
             ->setCellValue('F3', 'address line 1') 
             ->setCellValue('G3', 'address line 2') 
             ->setCellValue('H3', 'city') 
-            ->setCellValue('I3', 'postcode') 
-            ->setCellValue('J3', "country") 
-            ->setCellValue('K3', 'telephone') 
-            ->setCellValue('L3', 'fax') 
-            ->setCellValue('M3', 'email') 
-            ->setCellValue('N3', 'contact') 
-            ->setCellValue('O3', 'mobile') 
-            ->setCellValue('P3', 'other address') 
-            ->setCellValue('Q3', 'other address line 2') 
-            ->setCellValue('R3', 'other city') 
-            ->setCellValue('S3', 'other postcode') 
-            ->setCellValue('T3', 'other country')             
-            ->setCellValue('U3', 'other telephone')   
-            ->setCellValue('V3', 'other fax') 
-            ->setCellValue('W3', 'accounts year') 
-            ->setCellValue('X3', 'accounts month') 
-            ->setCellValue('Y3', 'income tax No') 
-            ->setCellValue('Z3', 'pension No') 
-            ->setCellValue('AA3', 'social No')
-            ->setCellValue('AB3', 'adhoc No');                                                                                     
+            ->setCellValue('I3', 'postcode')
+            ->setCellValue('J3', 'state') 
+            ->setCellValue('K3', "country") 
+            ->setCellValue('L3', 'telephone') 
+            ->setCellValue('M3', 'fax') 
+            ->setCellValue('N3', 'email') 
+            ->setCellValue('O3', 'contact') 
+            ->setCellValue('P3', 'mobile') 
+            ->setCellValue('Q3', 'other address') 
+            ->setCellValue('R3', 'other address line 2') 
+            ->setCellValue('S3', 'other city') 
+            ->setCellValue('T3', 'other postcode') 
+            ->setCellValue('U3', 'other state') 
+            ->setCellValue('V3', 'other country')             
+            ->setCellValue('W3', 'other telephone')   
+            ->setCellValue('X3', 'other fax') 
+            ->setCellValue('Y3', 'accounts year') 
+            ->setCellValue('Z3', 'accounts month') 
+            ->setCellValue('AA3', 'income tax No') 
+            ->setCellValue('AB3', 'pension No') 
+            ->setCellValue('AC3', 'social No')
+            ->setCellValue('AD3', 'adhoc No');                                                                                     
             
             
-$objPHPExcel->getActiveSheet()->getStyle('A3:AB3')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-$objPHPExcel->getActiveSheet()->getStyle('A3:AB3')->getFill()->getStartColor()->setARGB('66b2ff');
-$objPHPExcel->getActiveSheet()->getStyle('A3:AB3')->applyFromArray(
+$objPHPExcel->getActiveSheet()->getStyle('A3:AD3')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A3:AD3')->getFill()->getStartColor()->setARGB('66b2ff');
+$objPHPExcel->getActiveSheet()->getStyle('A3:AD3')->applyFromArray(
 		array(
 			'font'    => array(
 				'bold'      => true
@@ -85,25 +87,27 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $data['address1']);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $data['address2']);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $data['city']);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $data['postcode']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $data['country']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $data['telephone']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $data['fax']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $data['email']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $data['contact']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", $data['mobile']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("P$l", $data['address3']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("Q$l", $data['address4']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("R$l", $data['city2']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("S$l", $data['postcode2']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("T$l", $data['country2']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("U$l", $data['telephone2']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("V$l", $data['fax2']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("W$l", $data['accounts_year']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("X$l", $data['accounts_month']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("Y$l", $data['itax_no']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("Z$l", $data['pension_no']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("AA$l", $data['social_no']);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("AB$l", $data['adoc_no']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $data['state']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $data['country']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $data['telephone']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $data['fax']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $data['email']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", $data['contact']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("P$l", $data['mobile']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("Q$l", $data['address3']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("R$l", $data['address4']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("S$l", $data['city2']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("T$l", $data['postcode2']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("U$l", $data['state2']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("V$l", $data['country2']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("W$l", $data['telephone2']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("X$l", $data['fax2']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("Y$l", $data['accounts_year']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("Z$l", $data['accounts_month']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("AA$l", $data['itax_no']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("AB$l", $data['pension_no']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("AC$l", $data['social_no']);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("AD$l", $data['adoc_no']);
 ;
 }   
 $date = date('Y-m-d h:i:s');
