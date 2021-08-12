@@ -76,7 +76,7 @@
         "jquery/tageditor" : "1.0.20",
         "phpoffice/phpspreadsheet": "^1.8",
         "qtip2/qtip2" : "3.0.3",
-        "tecnickcom/tcpdf": "6.2.*",
+        "tecnickcom/tcpdf": "^6.4.0",
         "vench/vs-word": "^1.0"
     }
 
