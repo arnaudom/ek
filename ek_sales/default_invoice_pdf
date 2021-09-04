@@ -553,6 +553,11 @@ $bottom = ($y + $adj) > 268 ? 268: $y + $adj;
         }
         $pdf->SetXY(20,$bottom);
         $pdf->Cell(60,3,t("Authorized signatory") ,'T',1);
+    } elseif($signature == 2) {
+        // computer signature
+        $pdf->SetXY(20,$bottom);
+        $pdf->SetFont('helvetica','B',9);
+        $pdf->Cell(60,3,t("Electronic invoice – no signature required") ,'',1);
     }
 
    

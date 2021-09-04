@@ -2,7 +2,7 @@
 
   /* Manage print output based on format
   * get data from modules and generate an html output
-  * variables : source = ie. invoice, purchase, quotation; id = source id, signature = bolean; stamps = 
+  * variables : source = ie. invoice, purchase, quotation; id = source id, signature = 0=no,1=image,2=computer; stamps = 
   * 1,2,3 ; mode = print = 0 or save = 1
   */
 use Drupal\Core\Database\Database;

@@ -482,25 +482,32 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", $head->currency . ' ' 
 $i++;
 //SIGNATURE============================================================
 if ($signature == 1) {
+    $i += 7;
     if (isset($company->sign)) {
-        $info = getimagesize($company->logo);
+        $info = getimagesize($company->sign);
         $h = $info[1];
         $w = $info[0];
-        $resolution = 100 / $w * $h;
+        $off = $i - $s_pos / 10;
+        $resolution = 200 / $w * $h;
         $objDrawing2 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
         $objDrawing2->setName('signature');
         $objDrawing2->setPath(\Drupal::service('file_system')->realpath($company->sign));
         $objDrawing2->setHeight($resolution);
-        $objDrawing2->setCoordinates('B' . $i);
-        $objDrawing2->setOffsetX(10);
+        $objDrawing2->setCoordinates('B' . $off);
         $objDrawing2->setWorksheet($objPHPExcel->getActiveSheet());
     }
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", (String) t("Authorized signatory"));
+    $objPHPExcel->getActiveSheet()->getStyle("B$i")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+    $objPHPExcel->getActiveSheet()->getStyle("B$i:D$i")->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+    $objPHPExcel->getActiveSheet()->mergeCells("B$i:F$i");
+} elseif ($signature == 2) {
+    $i += 7;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", (String) t("Electronic quotation – no signature required"));
+    $objPHPExcel->getActiveSheet()->getStyle("B$i")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+    $objPHPExcel->getActiveSheet()->getStyle("B$i:D$i")->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+    $objPHPExcel->getActiveSheet()->mergeCells("B$i:F$i");
+    $objPHPExcel->getActiveSheet()->getStyle("B$i:F$i")->getFont()->setBold(true);
 }
-
-$i+=7;
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", "Authorized signatory");
-$objPHPExcel->getActiveSheet()->getStyle("B$i")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-$objPHPExcel->getActiveSheet()->getStyle("B$i:D$i")->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
 // payment
 $i+=7;

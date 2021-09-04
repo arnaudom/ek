@@ -46,95 +46,93 @@ class FilterPrint extends FormBase {
         $doc = $query->execute()->fetchObject();
 
 
-        $form['serial'] = array(
+        $form['serial'] = [
             '#type' => 'item',
             '#markup' => $doc->serial,
-        );
-        $form['for_id'] = array(
+        ];
+        $form['for_id'] = [
             '#type' => 'hidden',
             '#value' => $id . '_' . $source,
-        );
-        $form['format'] = array(
+        ];
+        $form['format'] = [
             '#type' => 'hidden',
             '#value' => $format,
-        );
+        ];
 
-        $back = Url::fromRoute('ek_sales.' . $source . 's.list', array(), array())->toString();
+        $back = Url::fromRoute('ek_sales.' . $source . 's.list', [], [])->toString();
 
-        $form["back"] = array(
+        $form["back"] = [
             '#markup' => "<a href='" . $back . "' >" . $this->t('list') . "</a>",
-        );
+        ];
 
-
-        $form['filters'] = array(
+        $form['filters'] = [
             '#type' => 'details',
             '#title' => $this->t('Options'),
             '#open' => (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id && $format != 'excel') ? false : true,
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            // '#attributes' => ['class' => ['container-inline']],
+        ];
 
         if ($format == 'excel') {
             //add option to choose download as excel or csv
-
-            $form['filters']['output_format'] = array(
+            $form['filters']['output_format'] = [
                 '#type' => 'radios',
-                '#options' => array('1' => $this->t('excel'), '2' => $this->t('csv')),
+                '#options' => ['1' => $this->t('excel'), '2' => $this->t('csv')],
                 '#default_value' => 1,
-                '#attributes' => array('title' => $this->t('output format')),
+                '#attributes' => ['title' => $this->t('output format')],
                 '#title' => $this->t('Format'),
-            );
+            ];
         }
 
+        
+        $sign_type = ['0' => $this->t('no signature'), '2' => $this->t('computer signature')];
         if ($doc->sign != null && file_exists($doc->sign)) {
-            $form['filters']['signature'] = array(
-                '#type' => 'checkbox',
-                '#default_value' => isset($_SESSION['printfilter']['signature'][0]) ? $_SESSION['printfilter']['signature'][0] : 0,
-                '#attributes' => array('title' => $this->t('signature')),
-                '#title' => $this->t('signature'),
-                '#states' => array(
-                    'invisible' => array(':input[name="output_format"]' => array('value' => 2),
-                    ),
-                )
-            );
-
-            $form['filters']['s_pos'] = [
+            $sign_type[1] = $this->t('hand signature');
+        } else {            
+            $form['filters']['signature_alert'] = [
+                '#markup' => \Drupal\Core\Link::createFromRoute(t('Upload signature'), 'ek_admin.company.edit', ['id' => $doc->head], ['fragment' => 'edit-i'])->toString(),
+            ];           
+        }
+        
+        $form['filters']['signature'] = [
+            '#type' => 'radios',
+            '#options' => $sign_type,
+            '#default_value' => isset($_SESSION['printfilter']['signature'][0]) ? $_SESSION['printfilter']['signature'][0] : 0,
+            '#attributes' => ['title' => $this->t('signature type')],
+            '#title' => $this->t('signature type'),
+            '#description_display' => 'before',
+            '#states' => [
+                'invisible' => [':input[name="output_format"]' => ['value' => 2],],
+            ]
+        ];
+        
+        $form['filters']['s_pos'] = [
                 '#type' => 'number',
-                '#default_value' => isset($_SESSION['printfilter']['signature'][1]) ? $_SESSION['printfilter']['signature'][1] : 40,
+                '#default_value' => isset($_SESSION['printfilter']['s_pos'][1]) ? $_SESSION['printfilter']['s_pos'][1] : 40,
                 '#description' => $this->t('Adjust vertical position'),
                 '#min' => 10,
                 '#max' => 100,
                 '#step' => 10,
-                '#states' => array(
-                    'visible' => array(":input[name='signature']" => ['checked' => true]),
-                ),
-            ];
-        } else {
-            $form['filters']['signature'] = array(
-                '#type' => 'hidden',
-                '#value' => 0,
-            );
-            $form['filters']['signature_alert'] = array(
-                '#markup' => \Drupal\Core\Link::createFromRoute(t('Upload signature'), 'ek_admin.company.edit', ['id' => $doc->head], ['fragment' => 'edit-i'])->toString(),
-            );
-        }
+                '#states' => [
+                    'invisible' => [":input[name='signature']" => ['value' => 0]],
+                ],
+        ];           
+        
 
-        $stamps = array('0' => $this->t('no'), '1' => $this->t('original'), '2' => $this->t('copy'));
+        $stamps = ['0' => $this->t('no'), '1' => $this->t('original'), '2' => $this->t('copy')];
 
-        $form['filters']['stamp'] = array(
+        $form['filters']['stamp'] = [
             '#type' => 'radios',
             '#options' => $stamps,
             '#default_value' => 0,
-            '#attributes' => array('title' => $this->t('stamp')),
+            '#attributes' => ['class' => ['container-inline']],
             '#title' => $this->t('stamp'),
-            '#states' => array(
-                'invisible' => array(':input[name="output_format"]' => array('value' => 2),
-                ),
-            )
-        );
+            '#states' => [
+                'invisible' => [':input[name="output_format"]' => ['value' => 2],],
+            ]
+        ];
 
-        //provide selector for templates
-
-        $list = array(0 => $this->t('default'));
+        // provide selector for templates
+        $list = [0 => $this->t('default')];
         if ($doc->status == '1') {
             $list['default_receipt_invoice_' . $format] = $this->t('receipt');
         }
@@ -150,52 +148,50 @@ class FilterPrint extends FormBase {
             }
         }
 
-        $form['filters']['template'] = array(
+        $form['filters']['template'] = [
             '#type' => 'select',
             '#options' => $list,
             '#default_value' => isset($_SESSION['printfilter']['template']) ? $_SESSION['printfilter']['template'] : null,
             '#title' => $this->t('template'),
-            '#states' => array(
-                'invisible' => array(':input[name="output_format"]' => array('value' => 2),
-                ),
-            )
-        );
+            '#prefix' => "<div class='container-inline'>",
+            '#states' => [
+                'invisible' => [':input[name="output_format"]' => ['value' => 2],]
+            ]
+        ];
 
         //if client has multiple contact, provide a filter for choice
         $query = 'SELECT id,contact_name FROM {ek_address_book_contacts} WHERE abid=:id';
-        $contacts = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $doc->client))->fetchAllKeyed();
+        $contacts = Database::getConnection('external_db', 'external_db')->query($query, [':id' => $doc->client])->fetchAllKeyed();
 
         if (count($contacts) > 1) {
-            $form['filters']['contact'] = array(
+            $form['filters']['contact'] = [
                 '#type' => 'select',
                 '#options' => $contacts,
                 '#default_value' => isset($_SESSION['printfilter']['contact']) ? $_SESSION['printfilter']['contact'] : null,
                 '#title' => $this->t('addressed to'),
-                '#states' => array(
-                    'invisible' => array(':input[name="output_format"]' => array('value' => 2),
-                    ),
-                )
-            );
+                '#suffix' => "</div>",
+                '#states' => [
+                    'invisible' => [':input[name="output_format"]' => ['value' => 2],]
+                ]
+            ];
         }
 
 
-        $form['filters']['actions'] = array(
+        $form['filters']['actions'] = [
             '#type' => 'actions',
-            '#attributes' => array('class' => array()),
-        );
+        ];
 
         if ($format == 'html') {
-            $form['filters']['actions']['submit'] = array(
+            $form['filters']['actions']['submit'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Display'),
-            );
+            ];
         } else {
-            $form['filters']['actions']['submit'] = array(
+            $form['filters']['actions']['submit'] = [
                 '#type' => 'submit',
                 '#value' => ($format == 'pdf') ? $this->t('Print in Pdf') : $this->t('Download'),
-            );
+            ];
         }
-
 
         return $form;
     }
