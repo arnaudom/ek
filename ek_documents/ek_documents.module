@@ -215,7 +215,7 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
     if ($mode == 'internal message') {
         //add copy in internal messaging
         $render = [
-            '#markup' => t('@u shared a document with you', array('@u' => Drupal::currentUser()->getAccountName())) . ": " . $url . ".",
+            '#markup' => t('@u shared a document with you', ['@u' => Drupal::currentUser()->getAccountName()]) . ": " . $params['options']['url'] . ".",
         ];
                     
         $body = \Drupal::service('renderer')->render($render);
@@ -261,16 +261,17 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
  */
 function ek_documents_mail($key, &$message, $params) {
     
-    /*$site_mail = \Drupal::config('system.site')->get('mail');
+    /**/
+    $site_mail = \Drupal::config('system.site')->get('mail');
     if (empty($site_mail)) {
         $site_mail = \Drupal::config('system.site')->get('mail_notification');
     }
-    $message['headers']['Reply-To'] = $site_mail;*/
+    $message['headers']['Reply-To'] = $params['from'];
     
     switch ($key) {
         case 'key_document_share':
 
-            $message['headers']['From'] = $params['from'];
+            $message['headers']['From'] = $site_mail;
             $message['subject'] = $params['subject'];
             $message['body'][] = $params['body'];
             $message['options'] = $params['options'];
