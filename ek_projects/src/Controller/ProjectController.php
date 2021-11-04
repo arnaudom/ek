@@ -1472,6 +1472,27 @@ class ProjectController extends ControllerBase {
      */
     public function edit(Request $request, $id) {
         
+        switch ($_POST['f']) {
+            case 'postit':
+                $query = Database::getConnection('external_db', 'external_db')
+                          ->select('ek_project_actionplan', 'a');
+                $query->fields('a',['ap_doc', 'pcode']);
+                $query->leftJoin('ek_project', 'p', 'p.pcode=a.pcode');
+                $query->condition('p.id', $id, '=');
+                $data = $query->execute()->fetchObject();    
+                $post = unserialize($data->ap_doc);
+                $post[\Drupal::currentUser()->id()] = $_POST['string'];
+                Database::getConnection('external_db', 'external_db')
+                        ->update('ek_project_actionplan')
+                        ->fields(['ap_doc' => serialize($post)])->condition('pcode', $data->pcode)
+                        ->execute();
+                return new JsonResponse(['update' => true]);
+                
+            break;
+            
+        }
+        return new JsonResponse(['update' => false]);
+        
     }
 
     /**

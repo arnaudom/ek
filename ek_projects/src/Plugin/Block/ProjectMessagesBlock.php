@@ -58,7 +58,7 @@ class ProjectMessagesBlock extends BlockBase {
                     $from = User::load($d->from_uid);
                     $link = Url::fromRoute('ek_messaging_read', array('id' => $d->id))->toString();
                     $read = "<a href='" . $link . "'>" . $this->t('open') . "</a>";
-                    $list .= '<li title="' . $from->getAccountName . '" >'
+                    $list .= '<li title="' . $from->getAccountName() . '" >'
                             . substr($d->subject, 0, 20) . ' - ' . date('Y-m-d', $d->stamp) . ' [' . $read . ']</li>';
                 }
             }

@@ -70,7 +70,26 @@
 
         });
     });
-
+    
+    /*
+     * postit
+     */
+    $('.projectpostit').blur(function () {
+            var text = $(this).html(); console.log(text);
+            jQuery.ajax({
+                type: "POST",
+                url: drupalSettings.path.baseUrl + 'projects/project/' + drupalSettings.ek_projects.id + '/edit',
+                data: {f: 'postit', d: drupalSettings.ek_projects.id, string: text},
+                async: false,
+                success: function (data) {
+                    if (data.action == 1) {
+                        
+                    } else {
+                        
+                    }
+                }
+            });
+        });
 
 })(jQuery, Drupal, drupalSettings);
 

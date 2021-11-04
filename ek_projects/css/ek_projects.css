@@ -328,18 +328,40 @@
 }
 
 .panel-drop {
-   background-color: #CEE3F6; 
+    background-color: #CEE3F6; 
 }
 
 .tr-drop {
-   background-color: #FF6666; 
+    background-color: #FF6666; 
 }
 .sub-folder {
-   
+
 }
 .sub-folder-title {
-   border-bottom: 2px solid #94b4d0;
-   padding-bottom:1px; 
+    border-bottom: 2px solid #94b4d0;
+    padding-bottom:1px; 
+}
+
+.tracklist{
+    padding: 10px;
+    background-color: palegreen;
+    box-shadow: 3px 3px rgb(187, 187, 187);
+    font-size: larger;
+}
+    
+
+.projectMessagesList {
+    padding: 10px;
+    background-color: azure;
+    box-shadow: 3px 3px rgb(187, 187, 187);
+    font-size: larger;
+    list-style-type: none;
+}
+.projectpostit {
+    padding: 10px;
+    background-color: yellow;
+    box-shadow: 3px 3px rgb(187, 187, 187);
+    font-size: larger;
 }
 
 /* Style the dialog-off-canvas container. */
