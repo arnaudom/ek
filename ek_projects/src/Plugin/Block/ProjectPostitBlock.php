@@ -39,11 +39,6 @@ class ProjectPostitBlock extends BlockBase {
             $path = \Drupal::service('path.current')->getPath();
             $parts = explode('/', $path);
             $id = array_pop($parts);
-            /*$sub_query = Database::getConnection('external_db', 'external_db')
-                      ->select('ek_project', 'p');
-            $sub_query->fields('p',['pcode']);
-            $sub_query->condition('id', $id, '=');
-            $pcode = $sub_query->execute()->fetchField();*/
            
             $query = Database::getConnection('external_db', 'external_db')
                       ->select('ek_project_actionplan', 'a');
