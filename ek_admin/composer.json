@@ -19,7 +19,7 @@
         {
             "type": "package",
             "package": {
-                "name": "qTip2/qTip2",
+                "name": "qtip2/qtip2",
                 "version": "3.0.3",
                 "dist": {
                     "url": "https://github.com/qTip2/qTip2/archive/v3.0.3.zip",
@@ -55,7 +55,7 @@
         {
             "type": "package",
             "package": {
-                "name": "jquery/tagEditor",
+                "name": "jquery/tageditor",
                 "version": "1.0.20",
                 "dist": {
                     "url": "https://github.com/Pixabay/jQuery-tagEditor/archive/1.0.20.zip",
