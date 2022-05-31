@@ -1295,17 +1295,10 @@ class Purchase extends FormBase {
             }
 
             $file = $this->fileStorage->load($fid);
-
             $dir = "private://sales/purchase/" . $reference . "";
             \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-
-            $move = file_copy($file, $dir, 'FILE_EXISTS_RENAME');
-            $move->setPermanent();
-            $move->save();
-
-            $fields = array(
-                'uri' => $move->getFileUri(),
-            );
+            $uri = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
+            $fields = ['uri' => $uri];
 
             $update = Database::getConnection('external_db', 'external_db')
                             ->update('ek_sales_purchase')
