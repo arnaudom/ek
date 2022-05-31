@@ -21,8 +21,7 @@ use Drupal\ek_finance\Journal;
 /**
  * Controller routines for ek module routes.
  */
-class ReconciliationController extends ControllerBase
-{
+class ReconciliationController extends ControllerBase {
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -47,8 +46,7 @@ class ReconciliationController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -64,8 +62,7 @@ class ReconciliationController extends ControllerBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $data_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $data_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $data_builder;
         $this->moduleHandler = $module_handler;
@@ -79,13 +76,23 @@ class ReconciliationController extends ControllerBase
      *  Form
      *
      */
-    public function reconciliation(Request $request)
-    {
+    public function reconciliation(Request $request) {
         $build['reconciliation'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\ReconciliationForm');
-
         return $build;
     }
 
+    /**
+     *  do reconciliation reset by id
+     *
+     * @return array
+     *  Form
+     *
+     */
+    public function reset($id) {
+        $build['reconciliation'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\ResetReconciliation', $id);
+        return $build;
+    }
+    
     /**
      *  display list of reconciliationreports
      *
@@ -93,61 +100,78 @@ class ReconciliationController extends ControllerBase
      *  render Html
      *
      */
-    public function reportsreconciliation(Request $request)
-    {
+    public function reportsreconciliation(Request $request) {
         $build['reconciliation_report'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterRecoReports');
 
 
         if (isset($_SESSION['recofilter']['filter']) && $_SESSION['recofilter']['filter'] == 1) {
-            $header = array(
-                'id' => array(
+            $header = [
+                'id' => [
                     'data' => $this->t('Id'),
                     'specifier' => 'id',
                     'field' => 'id',
-                ),
-                'company' => array(
+                ],
+                'company' => [
                     'data' => $this->t('Company'),
-                    'class' => array(RESPONSIVE_PRIORITY_LOW),
-                ),
-                'date' => array(
+                    'class' => [ESPONSIVE_PRIORITY_LOW],
+                ],
+                'date' => [
                     'data' => $this->t('Date'),
-                    'class' => array(RESPONSIVE_PRIORITY_LOW),
-                ),
-                'aid' => array(
+                    'class' => [ESPONSIVE_PRIORITY_LOW],
+                ],
+                'aid' => [
                     'data' => $this->t('Account'),
                     'field' => 'aid',
-                    'class' => array(RESPONSIVE_PRIORITY_LOW),
-                ),
-                'attachment' => array(
+                    'class' => [RESPONSIVE_PRIORITY_LOW],
+                ],
+                'attachment' => [
                     'data' => $this->t('Attachment'),
                     'field' => 'aid',
-                    'class' => array(RESPONSIVE_PRIORITY_LOW),
-                ),
-            );
+                    'class' => [ESPONSIVE_PRIORITY_LOW],
+                ],
+                'reset' => [
+                    'data' => $this->t('Reset'),
+                    'field' => 'reset',
+                    'class' => [RESPONSIVE_PRIORITY_LOW],
+                ],
+            ];
 
 
 
             if ($_SESSION['recofilter']['coid'] == '0') {
                 $_SESSION['recofilter']['coid'] = '%';
             }
-            $a = array(
+            $a = [
                 ':coid' => $_SESSION['recofilter']['coid'],
                 ':date1' => $_SESSION['recofilter']['from'],
                 ':date2' => $_SESSION['recofilter']['to'],
                 ':t' => '1',
-            );
+            ];
 
-            $query = "SELECT * FROM {ek_journal_reco_history} "
+            /*$query = "SELECT * FROM {ek_journal_reco_history} "
                     . "WHERE coid like :coid AND date >= :date1 AND date <= :date2 AND type=:t";
-            $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
-            $options = array();
+            $data = Database::getConnection('external_db', 'external_db')->query($query, $a);*/
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal_reco_history', 'h');
+            $query->fields('h');
+            $query->condition('coid', $_SESSION['recofilter']['coid'], 'like');
+            $query->condition('date', $_SESSION['recofilter']['from'], '>=');
+            $query->condition('date', $_SESSION['recofilter']['to'], '<=');
+            $query->condition('type', 1, '=');
+            
+            $options = [];
+            $rows = $query->countQuery()->execute()->fetchField();
+            $data = $query->execute();
+            $i = 0;
             while ($r = $data->fetchObject()) {
+                $i++;
                 $query = "SELECT aname from {ek_accounts} WHERE aid=:a AND coid=:c";
                 $aname = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':a' => $r->aid, ':c' => $r->coid))
+                        ->query($query, [':a' => $r->aid, ':c' => $r->coid])
                         ->fetchField();
                 $query = "SELECT name from {ek_company} WHERE id=:id";
-                $company_name = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $r->coid))->fetchField();
+                $company_name = Database::getConnection('external_db', 'external_db')->query($query, [':id' => $r->coid])->fetchField();
                 $url = Url::fromRoute('ek_finance_reconciliation.pdf', ['id' => $r->id])->toString();
 
                 $report = '<a href="' . $url . '" target="_blank"  title="' . $this->t('report') . '">' . $r->id . '</a>';
@@ -158,29 +182,34 @@ class ReconciliationController extends ControllerBase
                     $attachment = 'upload';
                     $param = 'upload-' . $r->id . '-statement';
                     $modal_route = Url::fromRoute('ek_finance.manage.modal_expense', ['param' => $param])->toString();
-                    $attachment = $this->t('<a href="@url" class="@c"  data-accepts=@a  >upload</a>', array('@url' => $modal_route, '@c' => 'use-ajax red', '@a' => "application/vnd.drupal-modal",));
+                    $attachment = $this->t('<a href="@url" class="@c"  data-accepts=@a  >upload</a>', ['@url' => $modal_route, '@c' => 'use-ajax red', '@a' => "application/vnd.drupal-modal",]);
                 }
-
-                $options[$r->id] = array(
+                
+                if($i == $rows) {
+                    $reset_lk =  Url::fromRoute('ek_finance.manage.reconciliation_reset', ['id' => $r->id])->toString();
+                    $reset = "<a href=$reset_lk  title='" . $this->t('reset') . "' class='red fa fa-times' ></a>";
+                }
+                $options[$r->id] = [
                     'id' => ['data' => ['#markup' => $report]],
                     'company' => $company_name,
                     'date' => $r->date,
-                    'aid' => array('data' => $r->aid . " " . $aname),
-                    'attachment' => array('data' => ['#markup' => $attachment]),
-                );
+                    'aid' => ['data' => $r->aid . " " . $aname],
+                    'attachment' => ['data' => ['#markup' => $attachment]],
+                    'reset' => ['data' => ['#markup' => $reset]],
+                ];
             }
 
 
-            $build['reco_table'] = array(
+            $build['reco_table'] = [
                 '#type' => 'table',
                 '#header' => $header,
                 '#rows' => $options,
-                '#attributes' => array('id' => 'reco_table'),
+                '#attributes' => ['id' => 'reco_table'],
                 '#empty' => $this->t('No report available.'),
-                '#attached' => array(
-                    'library' => array('ek_finance/ek_finance'),
-                ),
-            );
+                '#attached' => [
+                    'library' => ['ek_finance/ek_finance'],
+                ],
+            ];
         }
 
         return $build;
@@ -196,10 +225,9 @@ class ReconciliationController extends ControllerBase
      *      or markup if error
      *
      */
-    public function pdfreconciliation(Request $request, $id)
-    {
+    public function pdfreconciliation(Request $request, $id) {
         $type = 3;
-        $markup = array();
+        $markup = [];
         include_once drupal_get_path('module', 'ek_finance') . '/pdf.inc';
         return $markup;
     }
@@ -214,8 +242,7 @@ class ReconciliationController extends ControllerBase
      *  or markup if error
      *
      */
-    public function excelreco($param)
-    {
+    public function excelreco($param) {
         $markup = array();
         $rounding = (!null == $this->financeSettings->get('rounding')) ? $this->financeSettings->get('rounding'):2;
         
