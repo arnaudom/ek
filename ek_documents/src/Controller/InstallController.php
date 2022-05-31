@@ -100,7 +100,7 @@ class InstallController extends ControllerBase
                 `date` VARCHAR(50) NULL DEFAULT '0',
                 `size` VARCHAR(50) NULL DEFAULT '0',
                 `share` VARCHAR(1) NULL DEFAULT '0' COMMENT 'bolean 0=not shared, 1=shared,2=visible all',
-                `share_uid` VARCHAR(255) NULL DEFAULT '0' COMMENT 'list of shared users id',
+                `share_uid` TEXT NULL COMMENT COMMENT 'list of shared users id',
                 `share_gid` VARCHAR(255) NULL DEFAULT '0' COMMENT 'list of shared groups',
                 `expire` VARCHAR(255) NULL DEFAULT '0' COMMENT 'optional share expiration date',
                 PRIMARY KEY (`id`),
