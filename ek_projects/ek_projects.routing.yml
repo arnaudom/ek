@@ -107,7 +107,6 @@ ek_projects_types:
     _permission: 'admin_projects'
     id: \d*
     
-    
 ek_projects_periodicalupdater:
   path: 'ek_project/periodicalupdater'
   defaults:
@@ -121,7 +120,14 @@ ek_projects_notify_me:
     _controller: '\Drupal\ek_projects\Controller\ProjectController::edit_notify_me'
   requirements:
     _permission: 'view_project'
-
+    
+ek_projects_follow:
+  path: 'ek_project/follow'
+  defaults:
+    _controller: '\Drupal\ek_projects\Controller\ProjectController::follow'
+  requirements:
+    _access: 'TRUE'
+    
 ek_projects_archive:
   path: 'ek_project/edit_archive/{id}'
   defaults:

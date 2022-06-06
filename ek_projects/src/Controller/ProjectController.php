@@ -25,6 +25,7 @@ use Drupal\Core\Entity\EntityTypeManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\FinanceSettings;
@@ -2025,6 +2026,46 @@ class ProjectController extends ControllerBase {
         }
     }
 
+    /**
+     * Set follow by user account
+     * Return array redirect
+     */
+    public function follow(Request $request) {
+        $account = $request->query->get('u');
+        $pid = $request->query->get('pid');
+        $save = 0;
+            if($user = user_load_by_mail($account)) {
+                $uid = $user->id();
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project', 'p')
+                    ->fields('p', ['notify'])
+                    ->condition('id', $pid);
+                $notify = $query->execute()->fetchField();
+                if ($notify == null) {
+                    $notify = [$uid];
+                    $save = 1;
+                } else {
+                    $notify = explode(',', $notify);
+                    if (!in_array($uid, $notify)) {
+                        array_push($notify, $uid);
+                        $save = 1;
+                    } 
+                }
+                if($save == 1) {
+                    $notify = implode(',', $notify);
+                    Database::getConnection('external_db', 'external_db')
+                    ->update('ek_project')
+                    ->fields(['notify' => $notify])
+                    ->condition('id', $pid)
+                    ->execute();
+                }
+            }
+            
+            $link = Url::fromRoute('ek_projects_view', ['id' => $pid])->toString();
+            return new RedirectResponse(
+                    Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString());
+            }
+    
     /**
      * Edit the archive field in project
      *
