@@ -388,12 +388,21 @@ function ek_finance_form_ek_edit_address_book_form_alter(&$form, \Drupal\Core\Fo
             '#default_value' => $bank->currency,
         ];
         
+        
         $form['bank']['edit' . $i]["bname" . $i] = [
             '#type' => 'textfield',
             '#size' => 40,
-            '#maxlength' => 100,
+            '#maxlength' => 255,
             '#default_value' => $bank->name,
             '#attributes' => array('placeholder' => t('bank name')),
+        ];
+        
+        $form['bank']['edit' . $i]["beneficiary" . $i] = [
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 255,
+            '#default_value' => $bank->beneficiary,
+            '#attributes' => array('placeholder' => t('beneficiary')),
         ];
 
         $form['bank']['edit' . $i]["baddress1" . $i] = [
@@ -464,9 +473,22 @@ function ek_finance_form_ek_edit_address_book_form_alter(&$form, \Drupal\Core\Fo
         $form['bank']['new']["bname"] = [
             '#type' => 'textfield',
             '#size' => 40,
-            '#maxlength' => 100,
+            '#maxlength' => 250,
             '#description' => '',
             '#attributes' => array('placeholder' => t('bank name')),
+        ];
+        
+        $form['bank']['new']["beneficiary"] = [
+            '#type' => 'textfield',
+            '#size' => 40,
+            '#maxlength' => 250,
+            '#description' => '',
+            '#attributes' => array('placeholder' => t('beneficiary name')),
+            '#states' => [
+                'invisible' => [
+                    "input[name='bname']" => ['value' => ''],
+                ],
+            ],
         ];
 
         $form['bank']['new']["currency"] = [
@@ -601,6 +623,7 @@ function ek_fiance_ab_bank_submit(&$form, \Drupal\Core\Form\FormStateInterface $
         for($i = 1; $i <= $form_state->getValue('count'); $i++) {
             $fields = array(
                     'name' => Xss::filter($form_state->getValue('bname' . $i)),
+                    'beneficiary' => Xss::filter($form_state->getValue('beneficiary' . $i)),
                     'address1' => Xss::filter($form_state->getValue('baddress1' . $i)),
                     'address2' => Xss::filter($form_state->getValue('baddress2' . $i)),
                     'postcode' => Xss::filter($form_state->getValue('bpostcode' . $i)),
@@ -637,6 +660,7 @@ function ek_fiance_ab_bank_submit(&$form, \Drupal\Core\Form\FormStateInterface $
         }
         $fields = array(
                     'name' => Xss::filter($form_state->getValue('bname')),
+                    'beneficiary' => Xss::filter($form_state->getValue('beneficiary')),
                     'address1' => Xss::filter($form_state->getValue('baddress1')),
                     'address2' => Xss::filter($form_state->getValue('baddress2')),
                     'postcode' => Xss::filter($form_state->getValue('bpostcode')),

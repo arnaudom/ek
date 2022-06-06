@@ -8,6 +8,7 @@
                 <br/>{{ value.postcode }}
                 <br/>{{ value.country }}</td></tr>
         <tr><td class='td-info'><strong>{{  'Account'|t }} :</strong></td><td class='td-data'>{{ value.account }}</td></tr>
+        <tr><td class='td-info'><strong>{{ 'Beneficiary'|t }} :</strong></td><td class='td-data'>{{ value.beneficiary }}</td></tr>
         <tr><td class='td-info'><strong>{{  'Currency'|t }} :</strong></td><td class='td-data'>{% if value.currency != '0' %}{{ value.currency }}{% endif %}</td></tr>
         <tr><td class='td-info'><strong>{{  'Swift'|t }} :</strong></td><td class='td-data'>{{ value.swift }}</td></tr>
         <tr><td class='td-info'><strong>{{  'bank code'|t }} :</strong></td><td class='td-data'>{{ value.bank_code }}</td></tr>
