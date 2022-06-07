@@ -114,7 +114,7 @@ class UploadForm extends FormBase {
         $validators = array('file_validate_extensions' => array($extensions));
         $dir = "private://documents/users/" . $user;
         \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-        $file = file_save_upload("upload_doc", $validators, $dir, 0, 'FILE_EXISTS_RENAME');
+        $file = file_save_upload("upload_doc", $validators, $dir, 0, FileSystemInterface::EXISTS_RENAME);
 
         if ($file) {
             if ($settings->get('filter_char') == '1' && preg_match('/[^\00-\255]+/u', $file->getFileName())) {
