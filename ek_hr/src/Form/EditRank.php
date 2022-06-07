@@ -188,7 +188,7 @@ class EditRank extends FormBase
             $field = "upload";
             //$form_state->setValue('image', '');
             
-            $file = file_save_upload($field, $validators, false, 0, 'FILE_EXISTS_REPLACE');
+            $file = file_save_upload($field, $validators, false, 0, FileSystemInterface::EXISTS_RENAME);
         
             if ($file) {
                 $form_state->set('new_upload', $file);
