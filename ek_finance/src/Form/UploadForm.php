@@ -105,9 +105,8 @@ class UploadForm extends FormBase {
                         ->fetchObject();
 
                 //upload
-
                 $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [$ext_size]);
-                $file = file_save_upload("upload_doc", $validators, null, 0, 'FILE_EXISTS_RENAME');
+                $file = file_save_upload("upload_doc", $validators, null, 0, FileSystemInterface::EXISTS_RENAME);
 
                 if ($file) {
                     //add the expense id to the filename
@@ -147,7 +146,7 @@ class UploadForm extends FormBase {
                         ->fetchObject();
 
                 $validators = array('file_validate_extensions' => array('png jpg jpeg pdf'));
-                $file = file_save_upload("upload_doc", $validators, null, 0, 'FILE_EXISTS_RENAME');
+                $file = file_save_upload("upload_doc", $validators, null, 0, FileSystemInterface::EXISTS_RENAME);
 
                 if ($file) {
                     $dir = "private://finance/bank/" . $att->coid;
