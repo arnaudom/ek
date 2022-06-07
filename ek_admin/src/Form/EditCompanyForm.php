@@ -529,7 +529,7 @@ class EditCompanyForm extends FormBase
         //LOGO
         $field = "logo";
         // Check for a new uploaded logo.
-        $file = file_save_upload($field, $validators, $destination, 0, 'FILE_EXISTS_RENAME');
+        $file = file_save_upload($field, $validators, $destination, 0);
 
         if (isset($file)) {
             $res = file_validate_image_resolution($file, '300x300', '100x100');
@@ -548,7 +548,7 @@ class EditCompanyForm extends FormBase
         //SIGN
         $field = "sign";
         // Check for a new uploaded signature.
-        $file = file_save_upload($field, $validators, $destination, 0, 'FILE_EXISTS_RENAME');
+        $file = file_save_upload($field, $validators, $destination, 0);
 
         if (isset($file)) {
             $res = file_validate_image_resolution($file, '300x300', '100x100');
