@@ -107,7 +107,7 @@ class UploadForm extends FormBase {
         $validators = array('file_validate_extensions' => array($extensions));
         $dir = "private://sales/documents/" . $form_state->getValue('abid');
         \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-        $file = file_save_upload("upload_doc", $validators, $dir, 0, 'FILE_EXISTS_RENAME');
+        $file = file_save_upload("upload_doc", $validators, $dir, 0, FileSystemInterface::EXISTS_RENAME);
 
         if ($file) {
             $file->setPermanent();

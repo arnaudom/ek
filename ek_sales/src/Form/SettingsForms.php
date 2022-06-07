@@ -236,7 +236,7 @@ class SettingsForms extends FormBase {
         $dir = "private://sales/templates/purchase/";
         $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
 
-        $file = file_save_upload("P", $validators, $dir, 0, 'FILE_EXISTS_REPLACE');
+        $file = file_save_upload("P", $validators, $dir, 0, FileSystemInterface::EXISTS_RENAME);
         if ($file) {
             $file->setPermanent();
             $file->save();
@@ -247,7 +247,7 @@ class SettingsForms extends FormBase {
         $dir = "private://sales/templates/quotation/";
         $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
 
-        $file = file_save_upload("Q", $validators, $dir, 0, 'FILE_EXISTS_REPLACE');
+        $file = file_save_upload("Q", $validators, $dir, 0, FileSystemInterface::EXISTS_RENAME);
         if ($file) {
             $file->setPermanent();
             $file->save();
@@ -258,7 +258,7 @@ class SettingsForms extends FormBase {
         $dir = "private://sales/templates/invoice/";
         $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
 
-        $file = file_save_upload("I", $validators, $dir, 0, 'FILE_EXISTS_REPLACE');
+        $file = file_save_upload("I", $validators, $dir, 0, FileSystemInterface::EXISTS_RENAME);
         if ($file) {
             $file->setPermanent();
             $file->save();
