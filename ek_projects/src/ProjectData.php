@@ -361,7 +361,7 @@ class ProjectData {
         $query = 'SELECT * from {ek_project_users} wHERE uid=:u';
         $access = Database::getConnection('external_db', 'external_db')->query($query, array(':u' => $uid))->fetchobject();
 
-        $sections = array();
+        $sections = [];
         if ($access->section_1 == 1) {
             array_push($sections, 1);
         }
@@ -436,7 +436,6 @@ class ProjectData {
             $params['options']['url'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
             $params['options']['base_url'] = \Drupal::request()->getSchemeAndHttpHost();
             switch ($param['field']) {
-
                 case 'invoice_payment':
                     $text = "<p>" . t('Payment received for project ref. @p', ['@p' => $param['pcode']]) . ".</p>";
                     $text .= "<p>" . t('Invoice : @v', ['@v' => $param['value']]) . ".</p>";
@@ -484,9 +483,7 @@ class ProjectData {
                     $text .= "<p>" . t('Name : @v', ['@v' => $param['pname']]) . ".</p>";
                     $text .= "<p>" . t('By : @v', ['@v' => $from->name]) . ".</p>";
                     $params['subject'] = t("New project in @c", ['@c' => $param['country']]);
-                    $subscription = "new_project_subscription";
-                    // force follow route
-                    $params['options']['url'] = Url::fromRoute('ek_projects_follow', [], ['absolute' => true, 'query' => ['pid' => $param['id'], 'u' => $from->mail]])->toString();
+                    $subscription = "new_project_subscription";                    
                     break;
                 default:
                     $text = "<p>" . t('Data edited for project ref. @p', ['@p' => $param['pcode']]) . ".</p>";
@@ -514,6 +511,10 @@ class ProjectData {
                         // send notification email to central email queue;
                         $data['email'] = $account->getEmail();
                         $data['lang'] = $account->getPreferredLangcode();
+                        if($param['field'] == "new_project") {
+                            // force follow route
+                            $data['params']['options']['url'] = Url::fromRoute('ek_projects_follow', [], ['absolute' => true, 'query' => ['pid' => $param['id'], 'u' => $data['email']]])->toString();
+                        }
                         $queue->createItem($data);
                     }
                 }
