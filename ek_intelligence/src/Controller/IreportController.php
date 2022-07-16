@@ -113,7 +113,9 @@ class IreportController extends ControllerBase {
 
         if ($_SESSION['ireports']['filter'] == 1) {
             //get data base on criteria
-
+            if($_SESSION['ireports']['from'] == null) {
+                $_SESSION['ireports']['from'] = date('Y-m-d');
+            }
             $query = Database::getConnection('external_db', 'external_db')->select('ek_ireports', 'i');
             $data = $query
                     ->fields('i', array('id', 'serial', 'type', 'coid', 'date', 'assign', 'status'))

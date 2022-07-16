@@ -121,7 +121,9 @@ class FilterReports extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-        
+        if (strtotime($form_state->getValue('from')) == null) {
+                $form_state->setErrorByName('from', $this->t('Invalid date'));
+        }
     }
 
     /**
