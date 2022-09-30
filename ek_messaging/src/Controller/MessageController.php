@@ -135,7 +135,11 @@ class MessageController extends ControllerBase {
         $url_reply = Url::fromRoute('ek_messaging_reply', array('id' => $message->id), array())->toString();
         $message->reply = $this->t('<a href="@url" >Reply</a>', array('@url' => $url_reply));
 
-
+        $render = [
+            '#markup' => $message->text,
+        ];
+        $message->text = \Drupal::service('renderer')->render($render);
+        
         //update read status in reader list
         $list = explode(',', $message->status);
         array_push($list, \Drupal::currentUser()->id());

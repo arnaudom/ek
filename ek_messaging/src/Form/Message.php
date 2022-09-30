@@ -53,7 +53,7 @@ class Message extends FormBase {
             $from = \Drupal\user\Entity\User::load($data->from_uid);
             $quote = $this->t('On @date, @user wrote', ['@date' => date('l jS \of F Y h:i:s A', $data->stamp), '@user' => $from->getAccountName()]);
             if ($data->format == 'restricted_html') {
-                $text = "\r\n\r\n\r\n\r\n ------- " . $quote . " ------- \r\n\r\n" . $data->text;
+                $text = "\r\n\r\n ------- " . $quote . " ------- \r\n" . $data->text;
             } else {
                 $text = "<br><p> ------- " . $quote . " -------</p><p>" . $data->text . "</p>";
             }

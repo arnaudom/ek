@@ -37,7 +37,12 @@
     <div class="table">
         <div class='row'>
             <div class="cell message">
-                {{ items.text|raw|nl2br }}
+                {% if items.format == "restricted_html" %}
+                    {{ items.text|nl2br}}
+                {% else %}
+                    {{ items.text}}
+                {% endif %}
+                
             </div>
         </div>
     </div>
