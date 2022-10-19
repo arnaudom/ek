@@ -92,7 +92,7 @@ class UploadForm extends FormBase {
             $link = "<a href=" . $route . " class='use-ajax red'  onclick=\"jQuery('#" . $id . "').fadeOut();\">[x]</a>";
 
             return "<tr class='' id='" . $id . "'>
-               <td class='priority-medium'><a href='" . file_create_url($doc) . "' target='_blank'>" . $file->getFileName() . "</a></td>
+               <td class='priority-medium'><a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($doc) . "' target='_blank'>" . $file->getFileName() . "</a></td>
                <td class='priority-medium' title=''>" . date('Y-m-d') . "</td>
                <td >" . $link . "</td>
              </tr>";

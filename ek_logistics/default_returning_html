@@ -11,13 +11,13 @@ if ($stamp == "2") {
       
         $copy = drupal_get_path('module', 'ek_logistics') . "/art/copy.png";
         if (file_exists($copy)) {
-          $copy = "<IMG src='". file_create_url($copy) ."' alt='copy' class='align-center'/>";
+          $copy = "<IMG src='". \Drupal::service('file_url_generator')->generateAbsoluteString($copy) ."' alt='copy' class='align-center'/>";
         }
            
 } elseif ($stamp == "1") {
         $original = drupal_get_path('module', 'ek_logistics') . "/art/original.png";
         if (file_exists($original)) {         
-          $original = "<IMG src='". file_create_url($original) ."' alt='original' class='align-center'/>";    
+          $original = "<IMG src='". \Drupal::service('file_url_generator')->generateAbsoluteString($original) ."' alt='original' class='align-center'/>";    
         }  
 } 
 
@@ -33,7 +33,7 @@ $document .= '<page_wrapper>';
     if ($company->logo != '') {
         $path = $company->logo;
         if(file_exists($path)) {
-           $logo = "<IMG src='". file_create_url($path) ."'/>";
+           $logo = "<IMG src='". \Drupal::service('file_url_generator')->generateAbsoluteString($path) ."'/>";
         }
     
     }
@@ -260,7 +260,7 @@ if ($signature == "1") {
     if(isset($company->sign)) {  
         $path = $company->sign;
         if(file_exists($path)) {
-           $sign = "<IMG src='". file_create_url($path) ."'/>";
+           $sign = "<IMG src='". \Drupal::service('file_url_generator')->generateAbsoluteString($path) ."'/>";
         }
     }       
 }
