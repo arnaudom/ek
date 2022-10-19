@@ -330,9 +330,9 @@ class ItemData {
                         $image->save();
                     }
                     $pic = "<img class='product_thumbnail' src='"
-                            . file_create_url($thumb) . "'>";
+                            . \Drupal::service('file_url_generator')->generateAbsoluteString($thumb) . "'>";
                 } else {
-                    $default = file_create_url(drupal_get_path('module', 'ek_products') . '/css/images/default.jpg');
+                    $default = \Drupal::service('file_url_generator')->generateAbsoluteString(drupal_get_path('module', 'ek_products') . '/css/images/default.jpg');
                     $pic = "<img class='product_thumbnail' src='"
                             . $default . "'>";
                 }

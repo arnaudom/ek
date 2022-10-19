@@ -119,9 +119,9 @@ class UploadForm extends FormBase {
             }
         }
 
-        $img = "<div class='grid'><a href='" . file_create_url($filename)
+        $img = "<div class='grid'><a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($filename)
                 . "' target='_blank'><img class='thumbnail' src="
-                . file_create_url($filename) . "></a></div>";
+                . \Drupal::service('file_url_generator')->generateAbsoluteString($filename) . "></a></div>";
         $response = new AjaxResponse();
         return $response->addCommand(new InsertCommand('#product_images', $img));
     }

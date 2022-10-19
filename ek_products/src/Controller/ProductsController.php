@@ -189,7 +189,7 @@ class ProductsController extends ControllerBase {
                     $route = Url::fromRoute('ek_products_modal', ['param' => $mod])->toString();
 
                     $img = "<a href='" . $route . "' class='use-ajax'>"
-                            . "<img class='thumbnail' src=" . file_create_url($thumb) . "></a>";
+                            . "<img class='thumbnail' src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($thumb) . "></a>";
                 }
 
                 $i++;
@@ -542,7 +542,7 @@ class ProductsController extends ControllerBase {
                     $mod = serialize(['content' => 'img', 'id' => $i['id'], 'width' => '50%']);
                     $route = Url::fromRoute('ek_products_modal', ['param' => $mod])->toString();
                     $picture['element'] = "<a href='" . $route . "' class='use-ajax'><img class='thumbnail' src="
-                            . file_create_url($thumb) . "></a>";
+                            . \Drupal::service('file_url_generator')->generateAbsoluteString($thumb) . "></a>";
                 } else {
                     $picture['element'] = '';
                 }
@@ -838,7 +838,7 @@ class ProductsController extends ControllerBase {
                 $url = $query->execute()->fetchField();
                 $title = $this->t('Image');
                 $options = array('width' => $opt['width'],);
-                $content['#markup'] = "<img src=" . file_create_url($url) . ">";
+                $content['#markup'] = "<img src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($url) . ">";
                 break;
         }
 

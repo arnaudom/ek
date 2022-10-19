@@ -590,7 +590,7 @@ class EditProductsForm extends FormBase {
                     $route = Url::fromRoute('ek_products_modal', ['param' => $mod])->toString();
 
                     $image = "<a href='" . $route . "'  class='use-ajax'>"
-                            . "<img class='thumbnail' src=" . file_create_url($ri['uri']) . "></a>";
+                            . "<img class='thumbnail' src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($ri['uri']) . "></a>";
 
                     $form['images']["image" . $i] = array(
                         '#markup' => "<div id='image$i' style='padding:2px;' class=''>" . $image . "</div>",
