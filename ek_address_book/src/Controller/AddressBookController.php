@@ -77,7 +77,7 @@ class AddressBookController extends ControllerBase {
             
         } else {
             //return the data
-            $items = array();
+            $items = [];
 
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'a');
@@ -88,12 +88,12 @@ class AddressBookController extends ControllerBase {
 
             $r = $query->execute()->fetchAssoc();
 
-            $url_search = Url::fromRoute('ek_address_book.search', array(), array())->toString();
-            $url_add = Url::fromRoute('ek_address_book.newcard', array('abid' => $r['id']), array())->toString();
+            $url_search = Url::fromRoute('ek_address_book.search', [], [])->toString();
+            $url_add = Url::fromRoute('ek_address_book.newcard', ['abid' => $r['id']], [])->toString();
 
             if ($this->moduleHandler->moduleExists('ek_sales')) {
-                $url_sales = Url::fromRoute('ek_sales.data', array('abid' => $r['id']), array())->toString();
-                $items['sales'] = $this->t('<a href="@url" >Sales data</a>', array('@url' => $url_sales));
+                $url_sales = Url::fromRoute('ek_sales.data', ['abid' => $r['id']], [])->toString();
+                $items['sales'] = $this->t('<a href="@url" >Sales data</a>', ['@url' => $url_sales]);
             }
 
             $query = Database::getConnection('external_db', 'external_db')
@@ -115,17 +115,17 @@ class AddressBookController extends ControllerBase {
             }
             $into = ($r['type'] == '1') ? $this->t('supplier') : $this->t('client');
             if ($clone == true) {
-                $url_clone = Url::fromRoute('ek_address_book.clone', array('abid' => $r['id']), array())->toString();
-                $items['clone'] = $this->t('<a href="@url" title="@i">Clone</a>', array('@url' => $url_clone, '@i' => $into));
+                $url_clone = Url::fromRoute('ek_address_book.clone', ['abid' => $r['id']], [])->toString();
+                $items['clone'] = $this->t('<a href="@url" title="@i">Clone</a>', ['@url' => $url_clone, '@i' => $into]);
             } else {
-                $url_clone = Url::fromRoute('ek_address_book.view', array('abid' => $check->id), array())->toString();
-                $items['clone'] = $this->t('<a href="@url" title="@i"><-></a>', array('@url' => $url_clone, '@i' => $into));
+                $url_clone = Url::fromRoute('ek_address_book.view', ['abid' => $check->id], [])->toString();
+                $items['clone'] = $this->t('<a href="@url" title="@i"><-></a>', ['@url' => $url_clone, '@i' => $into]);
             }
             $items['stamp'] = date('Y-m-d', $r['stamp']);
             $items['id'] = $r['id'];
-            $items['search'] = $this->t('<a href="@url" >New search</a>', array('@url' => $url_search));
+            $items['search'] = $this->t('<a href="@url" >New search</a>', ['@url' => $url_search]);
 
-            $items['add'] = $this->t('<a href="@url" >Add contact</a>', array('@url' => $url_add));
+            $items['add'] = $this->t('<a href="@url" >Add contact</a>', ['@url' => $url_add]);
             $items['name'] = ucwords($r['name']);
             $items['shortname'] = $r['shortname'];
             $items['address'] = ucwords($r['address']);
@@ -139,12 +139,12 @@ class AddressBookController extends ControllerBase {
             $items['website'] = $r['website'];
             $items['reg'] = $r['reg'];
             $items['activity'] = ucwords($r['activity']);
-            $t = array(1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other'));
+            $t = [1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other')];
             $items['type'] = $t[$r['type']];
 
 
 
-            $c = array(1 => $this->t('Head office'), 2 => $this->t('Store'), 3 => $this->t('Factory'), 4 => $this->t('Other'));
+            $c = [1 => $this->t('Head office'), 2 => $this->t('Store'), 3 => $this->t('Factory'), 4 => $this->t('Other')];
             $items['category'] = $c[$r['category']];
 
             if (\Drupal::currentUser()->hasPermission('sales_data')) {
@@ -152,9 +152,9 @@ class AddressBookController extends ControllerBase {
             }
 
             if ($r['logo'] != '' && file_exists($r['logo'])) {
-                $items['logo_url'] = file_create_url($r['logo']);
-                $items['logo_img'] = "<img class='thumbnail' src='"
-                        . file_create_url($r['logo']) . "'>";
+                $items['logo_url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($r['logo']);
+                $items['logo_img'] = "<img class='thumbnail' src='" 
+                        . $items['logo_url'] . "'>";
             } else {
                 $items['logo_url'] = '';
                 $items['logo_img'] = '';
@@ -181,17 +181,16 @@ class AddressBookController extends ControllerBase {
                 $contact['telephone'] = $r['telephone'];
                 $contact['mobilephone'] = $r['mobilephone'];
                 $contact['email'] = $r['email'];
-                $contact['card'] = file_create_url($r['card']);
+                $contact['card'] = \Drupal::service('file_url_generator')->generateAbsoluteString($r['card']);
                 if ($r['card'] <> '') {
-                    $image = "<img class='thumbnail' src=" . file_create_url($r['card']) . ">";
-                    $url = file_create_url($r['card']);
+                    $image = "<img class='thumbnail' src=" . $contact['card'] . ">";
                     $markup = "<a href='modal/nojs/" . $r['id']
-                            . "' class='use-ajax'><img class='thumbnail' src=" . file_create_url($r['card']) . "></a>";
+                            . "' class='use-ajax'><img class='thumbnail' src=" . $contact['card'] . "></a>";
 
-                    $contact['card_'] = array(
+                    $contact['card_'] = [
                         '#type' => 'markup',
                         '#markup' => $markup,
-                    );
+                    ];
                 } else {
                     $contact['card_'] = "";
                 }
@@ -199,8 +198,8 @@ class AddressBookController extends ControllerBase {
                 $contact['link'] = $r['link'];
                 $contact['comment'] = $r['comment'];
 
-                $url_pdf = Url::fromRoute('ek_address_book.pdf', array('abid' => $abid, 'cid' => $r['id']), array())->toString();
-                $contact['pdf'] = $this->t('<a href="@url" target="_blank">Pdf</a>', array('@url' => $url_pdf));
+                $url_pdf = Url::fromRoute('ek_address_book.pdf', ['abid' => $abid, 'cid' => $r['id']], [])->toString();
+                $contact['pdf'] = $this->t('<a href="@url" target="_blank">Pdf</a>', ['@url' => $url_pdf]);
 
                 array_push($items['contacts'], $contact);
             }
@@ -209,9 +208,9 @@ class AddressBookController extends ControllerBase {
             return array(
                 '#theme' => 'ek_address_book_card',
                 '#items' => $items,
-                '#attached' => array(
-                    'library' => array('ek_address_book/ek_address_book.dialog', 'ek_admin/ek_admin_css'),
-                ),
+                '#attached' => [
+                    'library' => ['ek_address_book/ek_address_book.dialog', 'ek_admin/ek_admin_css'],
+                ],
                 '#cache' => [
                     'tags' => ['address_book_card'],
                     'contexts' => [],
@@ -232,7 +231,7 @@ class AddressBookController extends ControllerBase {
             $query->condition('id', $abid);
             $data = $query->execute()->fetchField();
 
-            $image = "<img  src=" . file_create_url($data) . ">";
+            $image = "<img  src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($data) . ">";
             $content = array(
                 'content' => array(
                     '#markup' => $image,
@@ -523,7 +522,8 @@ class AddressBookController extends ControllerBase {
             $logo = '';
             $url = '';
             if ($data->logo && file_exists($data->logo)) {
-                $url = file_create_url($data->logo);
+                // $url = file_create_url($data->logo);
+                $url = \Drupal::service('file_url_generator')->generateAbsoluteString($data->logo);
                 $logo = "<img class='thumbnail' src='" . $url . "'>";
             }
 
@@ -560,9 +560,10 @@ class AddressBookController extends ControllerBase {
 
                     if ($r->logo) {
                         $pic = "<img class='abook_thumbnail'' src='"
-                                . file_create_url($r->logo) . "'>";
+                                . \Drupal::service('file_url_generator')->generateAbsoluteString($r->logo) . "'>";
                     } else {
-                        $default = file_create_url(drupal_get_path('module', 'ek_address_book') . '/art/default.jpg');
+                        $default = \Drupal::service('file_url_generator')
+                                ->generateAbsoluteString(drupal_get_path('module', 'ek_address_book') . '/art/default.jpg');
                         $pic = "<img  class='abook_thumbnail' src='"
                                 . $default . "'>";
                     }

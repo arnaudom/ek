@@ -230,9 +230,10 @@ class NewAddressBookForm extends FormBase {
             ),
         );
 
-        //current logo if any
+        // current logo if any
         if (isset($r['logo']) && $r['logo'] <> '') {
-            $logo = "<a href='" . file_create_url($r['logo']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['logo']) . "></a>";
+            $logo = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r['logo']) . 
+                    "' target='_blank'><img class='thumbnail' src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($r['logo']) . "></a>";
             $form['delete_logo'] = array(
                 '#type' => 'checkbox',
                 '#title' => $this->t('delete logo'),
@@ -369,9 +370,10 @@ class NewAddressBookForm extends FormBase {
                     '#maxlength' => 40,
                 );
 
-                //current image if any
+                // current image if any
                 if ($rc['card'] <> '') {
-                    $image = "<a href='" . file_create_url($rc['card']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($rc['card']) . "></a>";
+                    $card = \Drupal::service('file_url_generator')->generateAbsoluteString($rc['logo']);
+                    $image = "<a href='" . $card . "' target='_blank'><img class='thumbnail' src=" . $card . "></a>";
                     $form[$i]['image_delete' . $i] = array(
                         '#type' => 'checkbox',
                         '#title' => $this->t('delete image'),
