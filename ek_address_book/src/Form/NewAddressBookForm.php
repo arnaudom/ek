@@ -372,7 +372,7 @@ class NewAddressBookForm extends FormBase {
 
                 // current image if any
                 if ($rc['card'] <> '') {
-                    $card = \Drupal::service('file_url_generator')->generateAbsoluteString($rc['logo']);
+                    $card = \Drupal::service('file_url_generator')->generateAbsoluteString($rc['card']);
                     $image = "<a href='" . $card . "' target='_blank'><img class='thumbnail' src=" . $card . "></a>";
                     $form[$i]['image_delete' . $i] = array(
                         '#type' => 'checkbox',
