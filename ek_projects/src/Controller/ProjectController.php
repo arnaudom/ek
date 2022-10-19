@@ -1416,7 +1416,7 @@ class ProjectController extends ControllerBase {
                             if (ProjectData::validate_file_access($l->id)) {
                                 $route = Url::fromRoute('ek_projects_delete_file', ['id' => $l->id])->toString();
                                 $items[$l->sub_folder][$i]['delete_url'] = $route;
-                                $items[$l->sub_folder][$i]['file_url'] = file_create_url($l->uri);
+                                $items[$l->sub_folder][$i]['file_url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($l->uri);
                                 $destination = ['destination' => '/projects/project/' . $id];
                                 $link = Url::fromRoute('ek_projects_file_data', ['id' => $l->id], ['query' => $destination])->toString();
                                 $size = Json::encode(['width' => '30%', 'resizable' => 1]);
@@ -1655,7 +1655,7 @@ class ProjectController extends ControllerBase {
                 'icon' => $icon,
                 'size' => round($file->size / 1000, 0) . " Kb",
                 'date' => date('Y-m-d', $file->date),
-                'url' => file_create_url($file->uri),
+                'url' => \Drupal::service('file_url_generator')->generateAbsoluteString($file->uri),
                 'comment' => ['#markup' => $file->comment],
                 'folder' => $file->sub_folder,
                 'owner' => $owner,
@@ -1667,10 +1667,10 @@ class ProjectController extends ControllerBase {
                 foreach($shares as $key => $val){
                     $user = \Drupal\user\Entity\User::load($val);
                     if($user){
-                        $avatar = ($user->get('user_picture')->entity) ? file_create_url($user->get('user_picture')->entity->getFileUri()) 
+                        $avatar = ($user->get('user_picture')->entity) ? \Drupal::service('file_url_generator')->generateAbsoluteString($user->get('user_picture')->entity->getFileUri()) 
                                 : null;
                         if(!$avatar) {
-                            $avatar = file_create_url(drupal_get_path('module','ek_admin') . "/art/avatar/default.jpeg");
+                            $avatar = \Drupal::service('file_url_generator')->generateAbsoluteString(drupal_get_path('module','ek_admin') . "/art/avatar/default.jpeg");
                         }
                         $access[] = ['name' => $user->getAccountName(), 'avatar' => $avatar];
                     }
