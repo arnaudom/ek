@@ -256,8 +256,8 @@ class EditForm extends FormBase {
 
         /* current image if any */
         if (isset($data->asset_pic) && $data->asset_pic != '') {
-            $image = "<a href='" . file_create_url($data->asset_pic)
-                    . "' target='_blank'><img class='thumbnail' src=" . file_create_url($data->asset_pic) . "></a>";
+            $image = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($data->asset_pic)
+                    . "' target='_blank'><img class='thumbnail' src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($data->asset_pic) . "></a>";
             $form['i']['picture_delete'] = [
                 '#type' => 'checkbox',
                 '#title' => $this->t('Delete picture'),
@@ -287,7 +287,7 @@ class EditForm extends FormBase {
             $parts = explode("/", $data->asset_doc);
             $parts = array_reverse($parts);
             $name = $parts[0];
-            $doc = "<a href='" . file_create_url($data->asset_doc)
+            $doc = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($data->asset_doc)
                     . "' target='_blank'><p>" . $name . "</p></a>";
             $form['i']['doc_delete'] = [
                 '#type' => 'checkbox',

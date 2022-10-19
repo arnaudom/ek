@@ -140,12 +140,12 @@ $pdf->SetFont('helvetica','',10);
 
 
 if($items['doc']){
-$link = file_create_url($items['doc']);
+$link = \Drupal::service('file_url_generator')->generateAbsoluteString($items['doc']);
 $pdf->Write(5, t('Attachment') . ': ' . $items['doc_name'], $link);
 }
 
 if($items['eid']) {
-    $link2 = file_create_url($items['eurl']);
+    $link2 = \Drupal::service('file_url_generator')->generateAbsoluteString($items['eurl']);
     $pdf->Cell($col1, 5,t('Allocation') . ':',0,0);
     $pdf->SetFont('helvetica','',8);
     $pdf->Cell($col2, 5,$items['eid'] . ' | ' . $items['employee'],0,0,'L',FALSE);

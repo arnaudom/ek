@@ -153,8 +153,8 @@ class AssetsController extends ControllerBase {
                 $aname = $chartList[$_SESSION['assetfilter']['coid']][$r->aid];
 
                 if ($r->asset_pic != '') {
-                    $img = "<a href='" . file_create_url($r->asset_pic) . "' target='_blank'>"
-                            . "<img class='thumbnail' src=" . file_create_url($r->asset_pic) . "></a>";
+                    $img = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r->asset_pic) . "' target='_blank'>"
+                            . "<img class='thumbnail' src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($r->asset_pic) . "></a>";
                 } else {
                     $img = '';
                 }
@@ -293,10 +293,10 @@ class AssetsController extends ControllerBase {
         $items['amort_status'] = $status[$data->amort_status];
         $items['picture'] = '';
         if ($data->asset_pic != '') {
-            $items['picture'] = file_create_url($data->asset_pic);
+            $items['picture'] = \Drupal::service('file_url_generator')->generateAbsoluteString($data->asset_pic);
         }
         if ($data->asset_doc != '') {
-            $items['doc_url'] = file_create_url($data->asset_doc);
+            $items['doc_url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($data->asset_doc);
 
             $items['doc'] = basename($items['doc_url']);
         } else {
