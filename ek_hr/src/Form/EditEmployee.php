@@ -208,8 +208,8 @@ class EditEmployee extends FormBase
 
             /* current image if any */
             if (isset($r->picture)) {
-                $image = "<a href='" . file_create_url($r->picture) . "' target='_blank'>"
-                        . "<img class='thumbnail' src=" . file_create_url($r->picture) . "></a>";
+                $image = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r->picture) . "' target='_blank'>"
+                        . "<img class='thumbnail' src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($r->picture) . "></a>";
                 $form['image_delete'] = array(
                     '#type' => 'checkbox',
                     '#title' => $this->t('delete image'),

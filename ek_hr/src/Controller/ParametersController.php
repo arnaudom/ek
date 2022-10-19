@@ -235,9 +235,9 @@ class ParametersController extends ControllerBase {
             $origin = $category->HrCat[$data['hr'][0]->company_id];
             $data['hr'][0]->origin = $origin[$data['hr'][0]->origin];
             if ($data['hr'][0]->picture) {
-                $data['hr'][0]->pictureUrl = file_create_url($data['hr'][0]->picture);
+                $data['hr'][0]->pictureUrl = \Drupal::service('file_url_generator')->generateAbsoluteString($data['hr'][0]->picture);
                 $data['hr'][0]->picture = "<img class='thumbnail' src='"
-                        . file_create_url($data['hr'][0]->picture) . "'>";
+                        . \Drupal::service('file_url_generator')->generateAbsoluteString($data['hr'][0]->picture) . "'>";
             } else {
                 $pic = '../../' . drupal_get_path('module', 'ek_hr') . '/art/default.jpeg';
                 $data['hr'][0]->picture = "<img class='thumbnail' src='" . $pic . "'>";
@@ -576,7 +576,7 @@ class ParametersController extends ControllerBase {
             $form = 1;
         } else {
 
-            //filter by admin
+            // filter by admin
             $query = "SELECT ek_hr_documents.id,uri,fid,filename,type,comment,date,size "
                     . "FROM {ek_hr_documents} INNER JOIN {ek_hr_workforce} "
                     . "ON ek_hr_documents.employee_id=ek_hr_workforce.id "
@@ -600,7 +600,7 @@ class ParametersController extends ControllerBase {
             } else {
                 $route = Url::fromRoute('ek_hr.employee.delete-doc', ['id' => $r->id])->toString();
                 $link = "<a href=" . $route . " class='use-ajax red' >[x]</a>";
-                $doc = "<a href='" . file_create_url($r->uri) . "' target='_blank'>" . $r->filename . "</a>";
+                $doc = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r->uri) . "' target='_blank'>" . $r->filename . "</a>";
             }
 
 
@@ -800,7 +800,7 @@ class ParametersController extends ControllerBase {
         $i = 0;
         foreach ($list as $key => $v) {
             $i++;
-            $doc = "<a href='" . file_create_url("private://hr/forms/" . $v) . "'>" . $v . "</a>";
+            $doc = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString("private://hr/forms/" . $v) . "'>" . $v . "</a>";
             $vid = str_replace('.', '___', $v);
 
             $link = "<a href='#' class='use-ajax deleteButton red' id='" . $vid . "' title='" . $this->t('delete') . "' >[x]</a>";
@@ -1033,9 +1033,9 @@ class ParametersController extends ControllerBase {
                                 }
 
                                 $pic = "<img class='hr_thumbnail' src='"
-                                        . file_create_url($thumb) . "'>";
+                                        . \Drupal::service('file_url_generator')->generateAbsoluteString($thumb) . "'>";
                             } else {
-                                $default = file_create_url(drupal_get_path('module', 'ek_hr') . '/art/default.jpeg');
+                                $default = \Drupal::service('file_url_generator')->generateAbsoluteString(drupal_get_path('module', 'ek_hr') . '/art/default.jpeg');
                                 $pic = "<img class='hr_thumbnail' src='"
                                         . $default . "'>";
                             }
