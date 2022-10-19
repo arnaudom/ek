@@ -340,7 +340,8 @@ class EditCompanyForm extends FormBase
 
             /* current image if any */
             if (isset($r['logo']) && $r['logo'] <> '') {
-                $image = "<a href='" . file_create_url($r['logo']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['logo']) . "></a>";
+                $image = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r['logo']) 
+                        . "' target='_blank'><img class='thumbnail' src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($r['logo']) . "></a>";
                 $form['i']['logo_delete'] = array(
                     '#type' => 'checkbox',
                     '#title' => $this->t('delete logo'),
@@ -367,7 +368,8 @@ class EditCompanyForm extends FormBase
             
             /* current image if any */
             if (isset($r['sign']) && $r['sign'] <> '') {
-                $image = "<a href='" . file_create_url($r['sign']) . "' target='_blank'><img class='thumbnail' src=" . file_create_url($r['sign']) . "></a>";
+                $image = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r['sign']) 
+                        . "' target='_blank'><img class='thumbnail' src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($r['sign']) . "></a>";
                 $form['i']['sign_delete'] = array(
                     '#type' => 'checkbox',
                     '#title' => $this->t('delete signature'),

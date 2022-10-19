@@ -224,7 +224,7 @@ class AdminController extends ControllerBase {
                     $params['body'] = \Drupal::service('renderer')->render($render);
 
                     $send = \Drupal::service('plugin.manager.mail')->mail(
-                            'ek_admin', 'receipt', $user->getEmail(), $target_langcode, $params, "no-reply@" . $_SERVER['HTTP_HOST'], true
+                            'ek_admin', 'receipt', $user->getEmail(), $user->getPreferredLangcode(), $params, "no-reply@" . $_SERVER['HTTP_HOST'], true
                     );
                 }
             } else {
@@ -713,7 +713,7 @@ class AdminController extends ControllerBase {
                 ->query($query, array(':c' => $request->get('coid')));
 
 
-        //build list of documents
+        // build list of documents
         $t = '';
         $i = 0;
         $items = [];
@@ -751,10 +751,7 @@ class AdminController extends ControllerBase {
                         } else {
                             //file exist
                             $items[$i]['del_button'] = Url::fromRoute('ek_admin_confirm_delete_file', ['id' => $l->id])->toString();
-                            $items[$i]['url'] = file_create_url($l->uri);
-
-                            //$del_button = "<a id='d$i' href=" . $route . " class='use-ajax red fa fa-trash-o' title='" . $this->t('delete the file') . "'></a>";
-                            //$doc = "<a href='" . file_create_url($uri) . "' target='_blank' >" . $l->filename . "</a>";
+                            $items[$i]['url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($l->uri);
                             $param_access = 'access|' . $l->id . '|company_doc';
                             $link = Url::fromRoute('ek_admin_modal', ['param' => $param_access])->toString();
                             $items[$i]['share_button'] = Url::fromRoute('ek_admin_modal', ['param' => $param_access])->toString();

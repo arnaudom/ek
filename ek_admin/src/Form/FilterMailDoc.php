@@ -56,47 +56,45 @@ class FilterMailDoc extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $param = null) {
         $param = unserialize($param);
 
-        $form['source'] = array(
+        $form['source'] = [
             '#type' => 'hidden',
             '#value' => $param[1],
-        );
+        ];
 
         //insert the create file mode into param
         array_push($param, '1');
         $nparam = serialize($param);
 
-        $form['param'] = array(
+        $form['param'] = [
             '#type' => 'hidden',
             '#value' => $nparam,
-        );
+        ];
 
-        $form['maildoc'] = array(
+        $form['maildoc'] = [
             '#type' => 'details',
             '#title' => $this->t('Share this document via email'),
             '#open' => isset($param['open']) ? $param['open'] : false,
-            '#attributes' => array('class' => ''),
-        );
+            //'#attributes' => ['class' => []],
+        ];
 
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
-            $form['maildoc']['email'] = array(
+            $form['maildoc']['email'] = [
                 '#type' => 'textarea',
                 '#rows' => 2,
                 '#id' => 'edit-email',
                 //'#required' => TRUE,
-                '#attributes' => array('placeholder' => $this->t('enter email addresses separated by comma (autocomplete enabled).')),
-                '#attached' => array(
-                    'library' => array(
-                        'ek_address_book/ek_address_book.email_autocomplete'
-                    ),
-                ),
-            );
+                '#attributes' => ['placeholder' => $this->t('enter email addresses separated by comma (autocomplete enabled).')],
+                '#attached' => [
+                    'library' => ['ek_address_book/ek_address_book.email_autocomplete'],
+                ],
+            ];
         } else {
-            $form['maildoc']['email'] = array(
+            $form['maildoc']['email'] = [
                 '#type' => 'textarea',
                 '#rows' => 2,
                 //'#required' => TRUE,
-                '#attributes' => array('placeholder' => $this->t('enter email addresses separated by comma.')),
-            );
+                '#attributes' => ['placeholder' => $this->t('enter email addresses separated by comma.')],
+            ];
         }
         $form['maildoc']['copy'] = [
             '#type' => 'checkbox',
@@ -104,30 +102,30 @@ class FilterMailDoc extends FormBase {
             '#default_value' => 1,
         ];
 
-        $form['maildoc']['message'] = array(
+        $form['maildoc']['message'] = [
             '#type' => 'textarea',
             '#rows' => 2,
-            '#attributes' => array('placeholder' => $this->t('add optional message')),
-        );
+            '#attributes' => ['placeholder' => $this->t('add optional message')],
+        ];
 
-        $form['maildoc']['actions'] = array('#type' => 'actions');
-        $form['maildoc']['actions']['send'] = array(
+        $form['maildoc']['actions'] = ['#type' => 'actions'];
+        $form['maildoc']['actions']['send'] = [
             '#id' => 'sharebuttonid',
             '#type' => 'button',
             '#value' => $this->t('Send'),
             //'#limit_validation_errors' => array(),
-            '#ajax' => array(
-                'callback' => array($this, 'ProcessMail'),
+            '#ajax' => [
+                'callback' => [$this, 'ProcessMail'],
                 'wrapper' => 'SendMessage',
-            ),
-        );
+            ],
+        ];
 
-        $form['maildoc']['alert'] = array(
+        $form['maildoc']['alert'] = [
             '#type' => 'item',
             '#markup' => '',
             '#prefix' => "<div id='SendMessage'>",
             '#suffix' => '</div>',
-        );
+        ];
 
         return $form;
     }

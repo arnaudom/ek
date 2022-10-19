@@ -1265,7 +1265,7 @@ class BackupCoid extends FormBase
             $sql->save();
         }
         
-        $form['section']['sql']['#markup'] = "<a href='". file_create_url($sql->getFileUri())
+        $form['section']['sql']['#markup'] = "<a href='". \Drupal::service('file_url_generator')->generateAbsoluteString($sql->getFileUri())
                 . "'>" . $this->t('download') . "</a>";
         return $form['section'];
     }

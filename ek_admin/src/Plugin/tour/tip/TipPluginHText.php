@@ -162,7 +162,7 @@ class TipPluginHText extends TipPluginBase implements ContainerFactoryPluginInte
         if ($img = $this->getImage()) {
             $parts = explode(",", $img);
             if (file_exists(drupal_get_path('module', $parts[0]) . $parts[1])) {
-                $img = file_create_url(drupal_get_path('module', $parts[0]) . $parts[1]);
+                $img = \Drupal::service('file_url_generator')->generateAbsoluteString(drupal_get_path('module', $parts[0]) . $parts[1]);
                 $output .= '<p class="tour-tip-image" id="tour-tip-' . $this->getAriaId() . '-image2"><IMG src="' . $img . '"/></p>';
             }
         }
