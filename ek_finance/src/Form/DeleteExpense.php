@@ -91,7 +91,7 @@ class DeleteExpense extends FormBase {
             if ($data->attachment <> '') {
                 $parts = explode('/', $data->attachment);
                 $file = array_reverse($parts);
-                $link = "<a href='" . file_create_url($data->attachment) . "' target='_blank'>" . $file[0] . "</a>";
+                $link = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($data->attachment) . "' target='_blank'>" . $file[0] . "</a>";
 
                 $form['alert2'] = array(
                     '#type' => 'item',

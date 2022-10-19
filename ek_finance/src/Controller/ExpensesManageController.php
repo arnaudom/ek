@@ -101,8 +101,7 @@ class ExpensesManageController extends ControllerBase
      * @param array $setting
      *  finance settings
      */
-    private function pullExpensesData($session_filter = null, $sort = null, $order = null, $settings)
-    {
+    private function pullExpensesData($settings, $session_filter = null, $sort = null, $order = null) {
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
         $chart = $settings->get('chart');
@@ -383,7 +382,7 @@ class ExpensesManageController extends ControllerBase
         $filteredIds = [];
         
         if (isset($_SESSION['efilter'])) {
-            $data = $this->pullExpensesData($_SESSION['efilter'], $sort, $order, $settings);
+            $data = $this->pullExpensesData($settings,$_SESSION['efilter'], $sort, $order);
             $chartList = Aidlist::chartList();
             $total = 0;
             $company_array = \Drupal\ek_admin\Access\AccessCheck::CompanyList();
@@ -477,11 +476,11 @@ class ExpensesManageController extends ControllerBase
                             ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $r->suppliername))
                             ->fetchField();
 
-                    if ($r->clientname != 0) {
+                    if ($r->clientname != 0 && $r->clientname != 'n/a') {
                         $url = \Drupal\ek_address_book\AddressBookData::geturl($r->clientname, ['short' => 8]);
                         $ref['client'] = ['#markup' => $url];
                     }
-                    if ($r->suppliername != 0) {
+                    if ($r->suppliername != 0 && $r->suppliername != 'n/a') {
                         $url = \Drupal\ek_address_book\AddressBookData::geturl($r->suppliername, ['short' => 8]);
                         $ref['supplier'] = ['#markup' => $url];
                     }
@@ -493,7 +492,7 @@ class ExpensesManageController extends ControllerBase
                     }
 
                     if ($r->attachment <> '') {
-                        $receipt = "<a href='" . file_create_url($r->attachment) . "' target='_blank'>" . $this->t('open') . "</a>";
+                        $receipt = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r->attachment) . "' target='_blank'>" . $this->t('open') . "</a>";
                         $edit = 'upload-' . $r->e_id . '-expense';
                     } else {
                         $param = 'upload-' . $r->e_id . '-expense';
@@ -519,7 +518,7 @@ class ExpensesManageController extends ControllerBase
                         }
                     }
                     if ($r->uri != '') {
-                        $receipt = "<a href='" . file_create_url($r->uri) . "' target='_blank'>" . $this->t('open') . "</a>";
+                        $receipt = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r->uri) . "' target='_blank'>" . $this->t('open') . "</a>";
                     }
                     //voucher
                     $url = Url::fromRoute('ek_sales.purchases.print_share', ['id' => $r->p_id])->toString();
@@ -859,7 +858,7 @@ class ExpensesManageController extends ControllerBase
                 }
 
                 if ($r->attachment <> '') {
-                    $receipt = "<a href='" . file_create_url($r->attachment) . "' target='_blank'>" . $this->t('open') . "</a>";
+                    $receipt = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r->attachment) . "' target='_blank'>" . $this->t('open') . "</a>";
                     $edit = 'upload-' . $r->e_id . '-expense';
                 } else {
                     $param = 'upload-' . $r->e_id . '-expense';
@@ -1087,7 +1086,7 @@ class ExpensesManageController extends ControllerBase
                             ->query($query)->fetchAllKeyed();
             $param = unserialize($param);
             $chartList = Aidlist::chartList();
-            $result = $this->pullExpensesData($param, 'asc', 'j.id', $settings);
+            $result = $this->pullExpensesData($settings, $param, 'asc', 'j.id');
 
             include_once drupal_get_path('module', 'ek_finance') . '/excel_expenses.inc';
         }

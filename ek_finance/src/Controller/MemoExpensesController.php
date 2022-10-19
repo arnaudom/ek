@@ -955,8 +955,7 @@ class MemoExpensesController extends ControllerBase
      *  rendered html
      */
     
-    public function printMemoPdf(Request $request, $param)
-    {
+    public function printMemoPdf(Request $request, $param) {
         $markup = array();
         $format = 'pdf';
         include_once drupal_get_path('module', 'ek_finance') . '/manage_print_output.inc';
@@ -972,8 +971,7 @@ class MemoExpensesController extends ControllerBase
      *
      *
      */
-    public function Html($id)
-    {
+    public function Html($id) {
 
         //filter access to document
         $query = "SELECT `serial`, `category`, `entity`, `entity_to`, `auth` FROM {ek_expenses_memo} "
@@ -1113,7 +1111,7 @@ class MemoExpensesController extends ControllerBase
         while ($l = $attach->fetchObject()) {
             $parts = explode('/', $l->uri);
             $fname = array_pop($parts);
-            $markup .= "<li><a href='" . file_create_url($l->uri) . "' target='_blank'>" . $fname . "</a></li>";
+            $markup .= "<li><a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($l->uri) . "' target='_blank'>" . $fname . "</a></li>";
         }
 
         $markup .= '</ul>';

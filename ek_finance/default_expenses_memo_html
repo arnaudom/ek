@@ -17,13 +17,13 @@ if ($stamp == "2") {
       
         $copy = drupal_get_path('module', 'ek_finance') . "/art/copy.png";
         if (file_exists($copy)) {
-          $copy = "<IMG src='". file_create_url($copy) ."' alt='copy' class='align-center'/>";
+          $copy = "<IMG src='". \Drupal::service('file_url_generator')->generateAbsoluteString($copy) ."' alt='copy' class='align-center'/>";
         }
            
 } elseif ($stamp == "1") {
         $original = drupal_get_path('module', 'ek_finance') . "/art/original.png";
         if (file_exists($original)) {         
-          $original = "<IMG src='". file_create_url($original) ."' alt='original' class='align-center'/>";    
+          $original = "<IMG src='". \Drupal::service('file_url_generator')->generateAbsoluteString($original) ."' alt='original' class='align-center'/>";    
         }  
 } 
 
@@ -245,7 +245,7 @@ if ($signature == "1") {
     if(isset($company->sign)) {  
         $path = $company->sign;
         if(file_exists($path)) {
-           $sign = "<IMG src='". file_create_url($path) ."'/>";
+           $sign = "<IMG src='". \Drupal::service('file_url_generator')->generateAbsoluteString($path) ."'/>";
         }
     }       
 }
@@ -278,7 +278,7 @@ while ($d = $documents->fetchObject()) {
         $parts = explode('/', $d->uri);
         $parts = array_reverse($parts);
         
-        $files .= "<li><a target='_blank' href='". file_create_url($d->uri) ."'>" . $parts[0] . "</a></li>";
+        $files .= "<li><a target='_blank' href='". \Drupal::service('file_url_generator')->generateAbsoluteString($d->uri) ."'>" . $parts[0] . "</a></li>";
     }
 }
 $files .= '</ul>';

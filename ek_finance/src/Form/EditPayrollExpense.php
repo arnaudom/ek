@@ -472,7 +472,7 @@ class EditPayrollExpense extends FormBase {
                         '#value' => $expense->attachment,
                     ];
                     $fname = array_reverse(explode('/', $expense->attachment));
-                    $markup = "<a href='" . file_create_url($expense->attachment) . "' target='_blank'>" . $fname[0] . "</a>";
+                    $markup = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($expense->attachment) . "' target='_blank'>" . $fname[0] . "</a>";
                     $form['debit']["currenFile$i"] = [
                         '#type' => 'item',
                         '#markup' => $markup,

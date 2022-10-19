@@ -113,11 +113,11 @@ class ReconciliationController extends ControllerBase {
                 ],
                 'company' => [
                     'data' => $this->t('Company'),
-                    'class' => [ESPONSIVE_PRIORITY_LOW],
+                    'class' => [RESPONSIVE_PRIORITY_LOW],
                 ],
                 'date' => [
                     'data' => $this->t('Date'),
-                    'class' => [ESPONSIVE_PRIORITY_LOW],
+                    'class' => [RESPONSIVE_PRIORITY_LOW],
                 ],
                 'aid' => [
                     'data' => $this->t('Account'),
@@ -127,7 +127,7 @@ class ReconciliationController extends ControllerBase {
                 'attachment' => [
                     'data' => $this->t('Attachment'),
                     'field' => 'aid',
-                    'class' => [ESPONSIVE_PRIORITY_LOW],
+                    'class' => [RESPONSIVE_PRIORITY_LOW],
                 ],
                 'reset' => [
                     'data' => $this->t('Reset'),
@@ -177,7 +177,7 @@ class ReconciliationController extends ControllerBase {
                 $report = '<a href="' . $url . '" target="_blank"  title="' . $this->t('report') . '">' . $r->id . '</a>';
 
                 if ($r->uri <> '') {
-                    $attachment = "<a class='blue' href='" . file_create_url($r->uri) . "' target='_blank'>" . $this->t('Attachment') . "</a>";
+                    $attachment = "<a class='blue' href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r->uri) . "' target='_blank'>" . $this->t('Attachment') . "</a>";
                 } else {
                     $attachment = 'upload';
                     $param = 'upload-' . $r->id . '-statement';

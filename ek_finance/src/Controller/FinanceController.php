@@ -169,7 +169,7 @@ class FinanceController extends ControllerBase
                     $name = explode('/', $doc->uri);
                     $output .="<div class='row' id='row-". $doc->id ."'>
                                 <div class='cell'>
-                                  <a href='" . file_create_url($doc->uri)  ."' target='_blank'>". array_pop($name) ."</a>
+                                  <a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($doc->uri)  ."' target='_blank'>". array_pop($name) ."</a>
                                 </div>
                                 <div class='cell'>
                                 <a  class='button delButton' id='" . $doc->id ."' name='attachment-" . $doc->id ."'>" . $this->t('delete attachment') . "</a>                                </div>

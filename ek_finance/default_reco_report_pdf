@@ -9,7 +9,7 @@ class EKPDF extends TCPDF {
         //Logo
         if ($this->company->logo != '') {
                if(file_exists($this->company->logo)) {
-                   $logo = file_create_url($this->company->logo);
+                   $logo = \Drupal::service('file_url_generator')->generateAbsoluteString($this->company->logo);
                    $info = getimagesize($logo);
                     $h = $info[1] * 35 / $info[0];
                     $this->Image($logo, 25, 10, $h);
@@ -99,11 +99,11 @@ $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 //$pdf=new PDF();
 $pdf->SetTitle($fileName);
 $pdf->AddPage('P','A4');
-$col1_width=100;
-$col2_width=34;
-$col3_width=34;
-$col4_width=35;
-$left_margin=4;
+$col1_width=110;
+$col2_width=36;
+$col3_width=36;
+$col4_width=36;
+$left_margin=1;
 
 // header details
 
@@ -173,8 +173,8 @@ for ($x=1;$x<=count($data);$x++) {
                 $error = '';
             }
 
-            if (strlen($data[$x][6])>50) {
-                $this_line = substr($data[$x][6],0,50)."...";} 
+            if (strlen($data[$x][6])>45) {
+                $this_line = substr($data[$x][6],0,45)."...";} 
             else {
                 $this_line = $data[$x][6];
             }

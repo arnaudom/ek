@@ -47,7 +47,7 @@ class SettingsController extends ControllerBase
         $form_builder = $this->formBuilder();
         
         if (isset($_SESSION['moveLog'])) {
-            $url = file_create_url($_SESSION['moveLog']);
+            $url = \Drupal::service('file_url_generator')->generateAbsoluteString($_SESSION['moveLog']);
             $items['log'] = ['#markup' => "<a target='_blank' href='". $url ."'>" . $this->t('View last log') . "</a>"];
             $_SESSION['moveLog'] = null;
         }

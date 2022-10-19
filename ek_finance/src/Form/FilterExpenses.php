@@ -106,7 +106,7 @@ class FilterExpenses extends FormBase {
         if ($form_state->getValue('coid')) {
             $aid = ['%' => $this->t('Any')];
             $chart = $this->settings->get('chart');
-            $aid += AidList::listaid($form_state->getValue('coid'), [chart['liabilities'], $chart['cos'], $chart['expenses'], $chart['other_expenses']], 1);
+            $aid += AidList::listaid($form_state->getValue('coid'), [$chart['liabilities'], $chart['cos'], $chart['expenses'], $chart['other_expenses']], 1);
             $_SESSION['efilter']['options'] = $aid;
         }
 

@@ -276,7 +276,7 @@ class RecordExpense extends FormBase {
             '#suffix' => '</div>',
         );
 
-        //bank account
+        // bank account
         if (($form_state->getValue('coid') || $form_state->get('coid')) && ($form_state->getValue('currency') || $form_state->get('currency'))) {
             $coid = $form_state->getValue('coid') ? $form_state->getValue('coid') : $form_state->get('coid');
             $currency = $form_state->getValue('currency') ? $form_state->getValue('currency') : $form_state->get('currency');
@@ -364,7 +364,7 @@ class RecordExpense extends FormBase {
             '#suffix' => '</div></div></div>',
         );
 
-        //user acc
+        // user acc
         // used to control cash payments and advances
         $form['user_acc'] = array(
             '#type' => 'details',
@@ -406,7 +406,7 @@ class RecordExpense extends FormBase {
             ),
         );
 
-        //References / tags
+        // References / tags
         $form['reference'] = array(
             '#type' => 'details',
             '#title' => $this->t('References'),
@@ -630,7 +630,7 @@ class RecordExpense extends FormBase {
                     '#value' => $expense->attachment,
                 ];
                 $fname = array_reverse(explode('/', $expense->attachment));
-                $markup = "<a href='" . file_create_url($expense->attachment) . "' target='_blank'>" . $fname[0] . "</a>";
+                $markup = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($expense->attachment) . "' target='_blank'>" . $fname[0] . "</a>";
                 $form['debit']["currenFile$i"] = [
                     '#type' => 'item',
                     '#markup' => $markup,
