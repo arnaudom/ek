@@ -387,7 +387,7 @@ if($output_format == '1') {
         }
  
         $build['csv']=[
-            '#markup' => "<a href='". file_create_url($f->getFileUri()) 
+            '#markup' => "<a href='". \Drupal::service('file_url_generator')->generateAbsoluteString($f->getFileUri()) 
                 . "'>" . t('download') . "</a>"
         ];
   
