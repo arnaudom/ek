@@ -96,12 +96,12 @@ $pdf->ln(2);
 
 $pdf->SetFont('dejavusans','',9,'',true);
 $pdf->SetTextColor(0,87,130);
-$pdf->MultiCell(180,5,$items['description2'],'','L',0);
-$pdf->ln(2);
-
-
-
-$pdf->ln(2);
+if(stristr($items['format'], 'html')) {
+    $pdf->MultiCell(180,5,$pdf->writeHTML($items['description2'], true, false, true, false, ''),'','L',0);
+} else {
+    $pdf->MultiCell(180,5,$items['description2'],'','L',0);
+}
+$pdf->ln(4);
 $pdf->SetFont('dejavusans','B',8,'',true);
 $pdf->SetTextColor(91,91,91); 
 $pdf->Cell($col1,5,t('Department'),1,0);
