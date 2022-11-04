@@ -407,8 +407,11 @@ class AssignNote extends FormBase {
 
         $max_receivable = round($form_state->get('max_receivable'), 2);
         $taxable = round($form_state->get('sum_received') * $this_cn / $max_receivable, 4);
-        $original_fx_rate = round($cn_data->amount / $cn_data->amountbase, 4); //original rate used to calculate currency gain/loss
-
+        if(!null == ($cn_data->amountbase)) {
+            $original_fx_rate = round($cn_data->amount / $cn_data->amountbase, 4); //original rate used to calculate currency gain/loss
+        } else {
+             $original_fx_rate = round($cn_data->amount / $cn_data->amountbc, 4); 
+        }
 
         if ($this->moduleHandler->moduleExists('ek_finance') && $this_cn > 0) {
             $currencyRate = CurrencyData::rate($cn_data->currency);
