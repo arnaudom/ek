@@ -33,7 +33,7 @@
   -ms-transition: border linear 0.2s, box-shadow linear 0.2s;
   -o-transition: border linear 0.2s, box-shadow linear 0.2s;
   transition: border linear 0.2s, box-shadow linear 0.2s;
-  border: 1px solid #ccc;
+  border: 1px solid #dbdbdb;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
@@ -66,7 +66,7 @@
   margin: 0;
   padding: 5px 0px 0px 5px;
   cursor: pointer;
-  color: #999;
+  color: #696969;
 }
 
 .ms-container .ms-selectable li.ms-elem-selectable,
@@ -82,7 +82,7 @@
   cursor: pointer;
   color: #fff;
   text-decoration: none;
-  background-color: #08c;
+  background-color: #0088cc;
 }
 
 .ms-container .ms-selectable li.disabled,

@@ -1,5 +1,5 @@
 .shared_document_badge {
-    background-color: #46ae31;
+    background-color: #00b515;
     color: #fff;
     border: 1px solid #06ff2d;
     border-radius: 25px;
@@ -19,8 +19,8 @@
     border-radius: 4px;
     margin-bottom: 20px;
     padding:0px !important;
-    border: 1px solid #ccc;
-    box-shadow: 0 5px 20px rgb(169, 188, 245);
+    border: 1px solid #dbdbdb;
+    box-shadow: 0 5px 20px #a9bcf5;
 }
 
 .doc-panel-heading {
@@ -46,7 +46,7 @@
 }
 
 .doc-badge {
-    background-color: #999;
+    background-color: #696969;
     border-radius: 10px;
     color: #fff;
     display: inline-block;
@@ -115,7 +115,7 @@
     border-bottom: 0px;
 }
 .red {
-    color: #FF6666;
+    color: #ff0000;
 }
 
 .green {
