@@ -15,20 +15,20 @@ class EKPDF extends TCPDF {
         }
         
         $this->Ln(5);
-        $this->SetFont('helvetica', '', 12);
-        $this->Cell(100);
+        $this->SetFont('helvetica', '', 10);
+        $this->Cell(90);
         $this->Cell(50, 5, $this->company->name, 0, 1);
         $this->SetFont('helvetica', '', 8);
         if ($this->company->reg_number) {
-            $this->Cell(100);
+            $this->Cell(90);
             $this->Cell(8, 3, "(" . $this->company->reg_number . ")", 0, 1);
         }
         if ($this->company->address1) {
-            $this->Cell(100);
+            $this->Cell(90);
             $this->Cell(60, 4, $this->company->address1, 0, 1);
         }
         if ($this->company->address2) {
-            $this->Cell(100);
+            $this->Cell(90);
             $this->Cell(60, 4, $this->company->address2, 0, 1);
         }
         $next = '';
@@ -41,15 +41,15 @@ class EKPDF extends TCPDF {
         if ($this->company->country) {
             $next .= ", " . $this->company->country;
         }
-        $this->Cell(100);
+        $this->Cell(90);
         $this->Cell(50, 4, $next, 0, 1);
 
         if ($this->company->telephone) {
-            $this->Cell(100);
+            $this->Cell(90);
             $this->Cell(8, 3, t("tel:") . $this->company->telephone, 0, 1);
         }
         if ($this->company->fax) {
-            $this->Cell(100);
+            $this->Cell(90);
             $this->Cell(8, 4, t("fax:") . $this->company->telephone, 0, 1);
         }
     }
@@ -100,11 +100,11 @@ Foreach ($data as $id => $arr) {
     $pdf->AddPage('P', 'A4');
     $pdf->Ln(25);
     $pdf->SetFont('helvetica', 'B', 12);
-    $pdf->SetTextColor(68, 151, 242);
+    $pdf->SetTextColor(0, 136, 204);
     $pdf->Cell($m1, 5);
-    $pdf->Cell(75, 5, t('PAYMENT VOUCHER'), 0, 1);
+    $pdf->Cell(140, 5, t('PAYMENT VOUCHER'), 0, 1,"C");
     $pdf->SetTextColor(0);
-    $pdf->Ln(3);
+    $pdf->Ln(5);
 
     $pdf->SetFont('helvetica', '', 8);
     $pdf->Cell($m2, 5);

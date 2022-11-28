@@ -111,30 +111,52 @@ class RecordExpense extends FormBase {
 
         if ($id != null && $form_state->get('num_items') == null) {
 
-            //get expense data
-            $query = "SELECT * from {ek_expenses} WHERE id=:id";
-            $expense = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $id))
-                    ->fetchObject();
-            //get journal data
-            $query = "SELECT * from {ek_journal} WHERE source like :s and reference = :r AND type=:t AND exchange=:e";
-            $a = array(':s' => "expense%", ':r' => $id, ':t' => 'debit', ':e' => 0);
-            $j_entry = Database::getConnection('external_db', 'external_db')
-                    ->query($query, $a);
+            // get expense data
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses', 'e');
+            $query->fields('e');
+            $query->condition('id', $id, '=');
+            $expense = $query->execute()->fetchObject();
+            //$query = "SELECT * from {ek_expenses} WHERE id=:id";
+            //$expense = Database::getConnection('external_db', 'external_db')
+              //      ->query($query, array(':id' => $id))
+                //    ->fetchObject();
+            
+            // get journal data
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+            $query->fields('j');
+            $query->condition('source', "expense%", 'LIKE');
+            $query->condition('reference', $id, '=');
+            $query->condition('type', 'debit', '=');
+            $query->condition('exchange', '0', '=');
+            $j_entry = $query->execute();
+            
+            //$query = "SELECT * from {ek_journal} WHERE source like :s and reference = :r AND type=:t AND exchange=:e";
+            //$a = array(':s' => "expense%", ':r' => $id, ':t' => 'debit', ':e' => 0);
+            //$j_entry = Database::getConnection('external_db', 'external_db')
+            //        ->query($query, $a);
 
             $form_state->set('step', 2);
-
             $form_state->set('coid', $expense->company);
-
-
             $form_state->set('currency', $expense->currency);
 
             if ($expense->cash == 'Y' || $expense->cash == 'P') {
-                $query = "SELECT aid from {ek_journal} WHERE source like :s and reference = :r AND type=:t AND exchange=:e";
-                $a = array(':s' => "expense%", ':r' => $id, ':t' => 'credit', ':e' => 0);
-                $jCredit = Database::getConnection('external_db', 'external_db')
-                        ->query($query, $a)
-                        ->fetchField();
+                
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+                $query->fields('j',['aid']);
+                $query->condition('source', "expense%", 'LIKE');
+                $query->condition('reference', $id, '=');
+                $query->condition('type', 'credit', '=');
+                $query->condition('exchange', '0', '=');
+                $jCredit = $query->execute()->fetchField();
+                
+                //$query = "SELECT aid from {ek_journal} WHERE source like :s and reference = :r AND type=:t AND exchange=:e";
+                //$a = array(':s' => "expense%", ':r' => $id, ':t' => 'credit', ':e' => 0);
+                //$jCredit = Database::getConnection('external_db', 'external_db')
+                //        ->query($query, $a)
+                //        ->fetchField();
                 if ($expense->cash == 'Y') {
                     $credit = $expense->currency . '-' . $jCredit;
                 } else {
@@ -144,8 +166,8 @@ class RecordExpense extends FormBase {
                 $credit = $expense->cash;
             }
 
-            //list of accounts chart is defined in the general finance settings
-            //The chart structure is as follow
+            // list of accounts chart is defined in the general finance settings
+            // The chart structure is as follow
             // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses', 'other_liabilities', 'other_income', 'other_expenses'
 
             $opt1 = [$chart['assets'], $chart['liabilities'], $chart['cos'], $chart['expenses'], $chart['other_expenses']];
@@ -157,15 +179,21 @@ class RecordExpense extends FormBase {
             $settings = new CompanySettings($expense->company);
             $form_state->set('stax_deduct', $settings->get('stax_deduct'));
             $form_state->set('stax_rate', $settings->get('stax_rate'));
+            $form_state->set('stax_name', $settings->get('stax_name'));
             $stax_deduct_aid = $settings->get('stax_deduct_aid');
+            $form_state->set('wtax_deduct', $settings->get('wtax_deduct'));
+            $form_state->set('wtax_rate', $settings->get('wtax_rate'));
+            $form_state->set('wtax_name', $settings->get('wtax_name'));
+            $wtax_deduct_aid = $settings->get('wtax_deduct_aid');
 
             $i = 1;
-            $tax = array();
+            //$tax = array();
             while ($d = $j_entry->fetchObject()) {
-                if ($form_state->get('stax_deduct') == 1 && $d->aid == $stax_deduct_aid) {
+                if ($form_state->get('stax_deduct') == 1 && ($d->aid == $stax_deduct_aid || $d->aid == $wtax_deduct_aid)) {
                     // tax line
                     $tax[$i - 1] = "(" . $expense->currency . "  " . round($d->value, 2) . ")";
                     $check[$i - 1] = 1;
+                    $selecttax[$i-1] = round($d->value, 2);
                 } else {
                     $form_state->set("account" . $i, $d->aid);
                     if ($clone == 'clone') {
@@ -463,7 +491,8 @@ class RecordExpense extends FormBase {
                 '#autocomplete_route_parameters' => array('level' => 'all', 'status' => '0'),
             );
         } // project
-        //provision type entry options
+        
+        // provision type entry options
         if ($recordProvision == '1' || $credit == 'P') {
             $form['provision'] = array(
                 '#type' => 'details',
@@ -496,7 +525,7 @@ class RecordExpense extends FormBase {
             );
         }
 
-        //debits
+        // debits
         $form['debit'] = array(
             '#type' => 'details',
             '#title' => $this->t('Debits'),
@@ -521,7 +550,6 @@ class RecordExpense extends FormBase {
         );
 
 
-
         if (isset($n)) {
             // reset the new rows items in edit mode
             $max = $form_state->get('num_items') + $n;
@@ -542,7 +570,7 @@ class RecordExpense extends FormBase {
                 '#options' => $form_state->get('AidOptions'),
                 '#required' => true,
                 '#default_value' => ($form_state->get("account$i")) ? $form_state->get("account$i") : null,
-                '#attributes' => array('style' => array('width:100px;white-space:nowrap')),
+                '#attributes' => ['style' => ['width:100px;white-space:nowrap']],
                 '#prefix' => "<div class='row'><div class='cell'>",
                 '#suffix' => '</div>',
             );
@@ -556,7 +584,7 @@ class RecordExpense extends FormBase {
             $form['debit']["pdate$i"] = array(
                 '#type' => 'date',
                 '#id' => "edit-from$i",
-                '#size' => 12,
+                '#size' => 16,
                 '#required' => true,
                 '#default_value' => ($form_state->get("pdate$i")) ? $form_state->get("pdate$i") : $rowDate,
                 '#prefix' => "<div class='cell'>",
@@ -568,7 +596,7 @@ class RecordExpense extends FormBase {
             $form['debit']["value$i"] = array(
                 '#type' => 'textfield',
                 '#id' => 'value' . $i,
-                '#size' => 12,
+                '#size' => 18,
                 '#maxlength' => 255,
                 '#description' => '',
                 '#default_value' => ($form_state->get("value$i")) ? $form_state->get("value$i") : null,
@@ -579,25 +607,62 @@ class RecordExpense extends FormBase {
 
             if ($form_state->get('stax_deduct') == 1) {
                 $form['debit']["tv$i"] = array(
-                    '#type' => 'item',
-                    '#markup' => isset($tax[$i]) ? '' . $tax[$i] : null,
-                    '#prefix' => "<div class='cell' id='tval$i' >",
-                    '#suffix' => "</div>",
+                    //'#type' => 'item',
+                    //'#markup' => isset($tax[$i]) ? '' . $tax[$i] : null,
+                    //'#prefix' => "<div class='cell' id='tval$i' >",
+                    //'#suffix' => "</div>",
                 );
-
-                $form['debit']["tax$i"] = array(
-                    '#type' => 'checkbox',
-                    '#id' => 'tax-' . $i,
-                    '#default_value' => isset($check[$i]) ? $check[$i] : null,
-                    '#attributes' => array('title' => $this->t('add sales tax')),
-                    '#prefix' => "<div class='cell' style='padding-right:2px'>",
-                    '#suffix' => "</div>",
-                    '#ajax' => array(
-                        'callback' => array($this, "thistax"),
-                        'wrapper' => "tval$i",
-                        'progress' => array('message' => null),
-                    ),
-                );
+                
+                if ($form_state->get('wtax_rate') == null || $form_state->get('wtax_rate') == 0){
+                // only 1 tax rate    
+                    $form['debit']["tax$i"] = array(
+                        '#type' => 'checkbox',
+                        '#id' => 'tax-' . $i,
+                        '#default_value' => isset($check[$i]) ? $check[$i] : null,
+                        '#attributes' => array('title' => $this->t('add sales tax')),
+                        '#prefix' => "<div class='cell' style='padding-right:2px' id='tval$i'>",
+                        '#suffix' => "</div>",
+                        '#description_display' => 'after',
+                        '#description' => isset($tax[$i]) ? '' . $tax[$i] : null,
+                        '#ajax' => array(
+                            'callback' => array($this, "singletax"),
+                            'wrapper' => "tval$i",
+                            'progress' => array('message' => null),
+                        ),
+                    );
+                } else { 
+                    // select option 2 rates
+                    if($clone == 'clone') {
+                        $dv = "";
+                        $desc = "";
+                    } else {
+                        $dv = isset($selecttax[$i]) ? round($selecttax[$i]/$form_state->get("value$i")*100,2) : null;
+                        $desc = isset($tax[$i]) ? '' . $tax[$i] : null;
+                    }
+                    $form['debit']["tax$i"] = [
+                        '#type' => 'select',
+                        '#id' => 'tax-' . $i,
+                        '#options' => [0 => $this->t('no tax'),$form_state->get('stax_rate') => $form_state->get('stax_name'),$form_state->get('wtax_rate') => $form_state->get('wtax_name')],
+                        '#required' => true,
+                        '#default_value' => $dv,
+                        '#attributes' => ['title' => $this->t('add sales tax'),'style' => array('width:80px;white-space:nowrap')],
+                        '#prefix' => "<div class='cell' style='padding-right:2px' id='stval$i'>",
+                        '#suffix' => "</div>",
+                        '#description_display' => 'after',
+                        '#description' => $desc,
+                        '#ajax' => [
+                            'callback' => [$this, "selecttax"],
+                            'wrapper' => "stval$i",
+                            'progress' => ['message' => null],
+                        ],
+                    ];
+                    
+                    // add hidden field for submit function
+                    $form['debit']["taxtype$i"] = [
+                        '#type' => 'hidden',
+                        '#value' => 'multi',
+                    ];
+                }
             }
 
             $form['debit']['attachment' . $i] = [
@@ -606,18 +671,18 @@ class RecordExpense extends FormBase {
                     'file_validate_extensions' => [$ext_format],
                     'file_validate_size' => [$ext_size],
                 ],
-                '#attributes' => ['class' => ['file_input']],
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div>',
+                '#attributes' => ['class' => ['file_input', 'formexpense']],
+                '#title' => $this->t('Add file'),
+                
             ];
 
             $form['debit']["comment$i"] = array(
                 '#type' => 'textfield',
                 '#id' => 'value' . $i,
-                '#size' => 25,
+                '#size' => 30,
                 '#maxlength' => 255,
                 '#default_value' => ($form_state->get("comment$i")) ? $form_state->get("comment$i") : null,
-                '#attributes' => array('placeholder' => $this->t('comment'),),
+                '#attributes' => array('placeholder' => $this->t('comment'), 'ondblclick' => "this.value=''"),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div></div>',
             );
@@ -638,7 +703,7 @@ class RecordExpense extends FormBase {
                     '#suffix' => '</div></div>',
                 ];
             }
-        }//loop added debits
+        } // loop added debits
 
 
         $form['debit']['_table'] = array(
@@ -693,6 +758,10 @@ class RecordExpense extends FormBase {
                 $settings = new CompanySettings($form_state->getValue('coid'));
                 $form_state->set('stax_deduct', $settings->get('stax_deduct'));
                 $form_state->set('stax_rate', $settings->get('stax_rate'));
+                $form_state->set('stax_name', $settings->get('stax_name'));
+                $form_state->set('wtax_deduct', $settings->get('wtax_deduct'));
+                $form_state->set('wtax_rate', $settings->get('wtax_rate'));
+                $form_state->set('wtax_name', $settings->get('wtax_name'));
             }
             $chart = $form_state->get('chart');
             $opt1 = [$chart['assets'], $chart['liabilities'], $chart['cos'], $chart['expenses'], $chart['other_expenses']];
@@ -718,17 +787,30 @@ class RecordExpense extends FormBase {
     /**
      * callback functions
      */
-    public function thistax(array &$form, FormStateInterface $form_state) {
+    public function singletax(array &$form, FormStateInterface $form_state) {
         $trigger = $form_state->getTriggeringElement();
         $i = str_replace('tax-', '', $trigger['#id']);
         if ($trigger['#value'] == 1) {
             $value = str_replace(",", "", $form_state->getValue("value$i"));
-            $form['debit']["tv$i"]['#markup'] = "(" . $form_state->getValue('currency') . "  " . round($value * $form_state->get('stax_rate') / 100, 2) . ")";
+            $form['debit']["tax$i"]['#description'] = "(" . $form_state->getValue('currency') . "  " . round($value * $form_state->get('stax_rate') / 100, 2) . ")";
         } else {
-            $form['debit']["tv$i"]['#markup'] = '';
+            $form['debit']["tax$i"]['#description'] = '';
         }
-        return $form['debit']["tv$i"];
+        return $form['debit']["tax$i"];
     }
+    
+    public function selecttax(array &$form, FormStateInterface $form_state) {
+        $trigger = $form_state->getTriggeringElement();
+        $i = str_replace('tax-', '', $trigger['#id']);
+        if ($trigger['#value'] != null && $trigger['#value'] != 0) {
+            $value = str_replace(",", "", $form_state->getValue("value$i"));
+            $form['debit']["tax$i"]['#description'] = "(" . $form_state->getValue('currency') . "  " . round($value * $trigger['#value'] / 100, 2) . ")";
+        } else {
+            $form['debit']["tax$i"]['#description'] = '';
+        }
+        return $form['debit']["tax$i"];
+    }
+    
 
     /**
      * Callback
@@ -946,13 +1028,14 @@ class RecordExpense extends FormBase {
             }
             // amount is recorded without tax($tax/$form_state->getValue('fx_rate'))
 
-            if ($form_state->getValue("tax$n") == 1) {
-                $tax = round($value * $form_state->get('stax_rate') / 100, $this->rounding);
+            if ($form_state->getValue("taxtype$n") == 'multi') {
+                $tax = round($value * $form_state->getValue("tax$n") / 100, $this->rounding);
+            } elseif ($form_state->getValue("tax$n") == 1) {
+                    $tax = round($value * $form_state->get('stax_rate') / 100, $this->rounding);
             } else {
                 $tax = 0;
             }
-
-
+            
             if (strpos($form_state->getValue('bank_account'), "-")) {
                 $cash = 'Y';
                 $credit = $form_state->getValue('bank_account');
