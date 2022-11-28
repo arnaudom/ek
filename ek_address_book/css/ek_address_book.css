@@ -25,7 +25,7 @@ tr {
     border-width: thin ;
     border-spacing: 1px;
     border-collapse: collapse;
-    background-color: #CEE3F6;
+    background-color: #e6f5ff;
 }
 
 .thumbnail {
@@ -36,8 +36,8 @@ tr {
     background-color: #FFFFFF !important;
     padding: 0px !important;
     border-radius: 4px;
-    border: 1px solid #ccc;
-    box-shadow: 0 5px 20px rgb(169, 188, 245);
+    border: 1px solid #dbdbdb;
+    box-shadow: 0 5px 20px #a9bcf5;
     margin: 0px !important;
 }
 .ab-panel-heading {
@@ -69,12 +69,12 @@ tr {
 }
 
 .delete {
-    background-color: #FF6666;
+    background-color: #ff0000;
     color: #FFFFFF;
 }
 
 .select {
-    background-color: #66FF97;
+    background-color: #64fe2e;
     color: #FFFFFF;
 }
 
@@ -98,7 +98,7 @@ hr {
     -moz-border-left-colors: none;
     -moz-border-right-colors: none;
     -moz-border-top-colors: none;
-    border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
+    border-color: #696969 -moz-use-text-color -moz-use-text-color;
     border-image: none;
     border-right: 0 none;
     border-style: solid none none;
@@ -145,13 +145,13 @@ hr {
 }
 
 div .client {
-    background-color: #6474FF;
+    background-color: #0088cc;
 }
 div .supplier {
     background-color: #00B515;
 }
 div .other  {
-    background-color: #9F9F9F;
+    background-color: #696969;
 }
 .ico:before {
     font-family: FontAwesome;
