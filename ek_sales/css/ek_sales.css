@@ -1,5 +1,5 @@
 .panel-default {
-    border-color: #DDDDDD;
+    border-color: #dbdbdb;
 }
 .panel {
     padding: 0px !important;
@@ -70,9 +70,9 @@
     border-width: thin ;
     border-spacing: 1px;
     border-style: solid;
-    border-color: #A4A4A4;
+    border-color: #696969;
     border-collapse: collapse;
-    background-color: #CEE3F6;
+    background-color: #e6f5ff;
     padding: 2px;
 }
 
@@ -81,12 +81,12 @@
 }
 
 .current {
-    background-color:#CEE3F6 !important;
+    background-color:#e6f5ff !important;
 }
 
 .rowheader {
     border-bottom: 1px solid #000;
-    background-color: #7D7F9D !important;
+    background-color: #696969 !important;
     color: #FFFFFF;
 }
 
@@ -94,11 +94,11 @@
     display: none;  
 }    
 .delete {
-    background-color:#FF6666 !important;  
+    background-color:#ff0000 !important;  
 }
 
 .red {
-    color: #FF6666;
+    color: #ff0000;
 }
 
 .green {
@@ -114,7 +114,7 @@ hr {
     -moz-border-left-colors: none;
     -moz-border-right-colors: none;
     -moz-border-top-colors: none;
-    border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
+    border-color: #696969 -moz-use-text-color -moz-use-text-color;
     border-image: none;
     border-right: 0 none;
     border-style: solid none none;
@@ -127,8 +127,8 @@ hr {
 .button--record:hover {
     background-color: #FFF;
     color: #FFF !important;
-    background-image: linear-gradient(to bottom, #FF6666, #981010) !important;
-    border-color: #FF6666 #981010 #981010 !important;
+    background-image: linear-gradient(to bottom, #ff0000, #981010) !important;
+    border-color: #ff0000 #981010 #981010 !important;
 }
 
 .button--add:hover {
@@ -173,7 +173,7 @@ hr {
 */
 
 .tr-drop {
-    background-color: #FF6666; 
+    background-color: #ff0000; 
 }
 
 tr.drop-folder {
@@ -199,7 +199,7 @@ tr.drop-folder {
     border-bottom: none;
 }
 #doc-search-result a:hover {
-    background-color: #E2F5FE;
+    background-color: #e6f5ff;
 }
 #doc-search-result .file {
     display: inline-block;
@@ -227,8 +227,8 @@ tr.drop-folder {
 }
 
 #drupal-off-canvas .ui-autocomplete div:hover {
-    border: 1px solid 007fff;
-    background-color: #007fff !important;
+    border: 1px solid 0088cc;
+    background-color: #0088cc !important;
     color: #fff !important;
     cursor:pointer;
 }

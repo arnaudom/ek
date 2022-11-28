@@ -62,7 +62,7 @@ table {
 
 tr {
     background: #fff !important;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #dbdbdb;
     padding: 0.1em 0.6em;
 }
 
@@ -81,7 +81,7 @@ td, th {
 }
 
 .cellbordertop {
-    border-top: 2px solid #999;
+    border-top: 2px solid #696969;
 }
 
 .c10 {
