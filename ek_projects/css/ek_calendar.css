@@ -42,7 +42,7 @@ td.fc-day-top.fc-future {
 }
 #drupal-off-canvas .fc-state-active, .fc-state-disabled, .fc-state-down, .fc-state-hover, .fc-today-button {
     color: #333;
-    background-color: #e6e6e6;
+    background-color: #dbdbdb;
 }
 #drupal-off-canvas .fc-title {
     color: #fff;

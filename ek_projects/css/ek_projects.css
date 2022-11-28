@@ -3,7 +3,7 @@
     border-radius: 4px;
     margin-bottom: 20px;
     padding:0px !important;
-    border: 1px solid #ccc;
+    border: 1px solid #dbdbdb;
     box-shadow: 0 5px 20px rgb(169, 188, 245);
 }
 
@@ -43,7 +43,7 @@
 
 .tlabel {
     text-shadow: 0 1px 0 #fff !important;
-    background-color: #CEE3F6 ;
+    background-color: #e6f5ff ;
 }
 
 .row {
@@ -65,9 +65,9 @@
     border-width: thin ;
     border-spacing: 1px;
     border-style: solid;
-    border-color: #A4A4A4;
+    border-color: #696969;
     border-collapse: collapse;
-    background-color: #CEE3F6;
+    background-color: #e6f5ff;
     padding: 2px;
 }
 
@@ -84,18 +84,18 @@
 }
 
 .delete {
-    background-color: #FF6666;
+    background-color: #ff0000;
     color: #FFFFFF;
-    background: none repeat scroll 0 0 #FF6666 !important;
+    background: none repeat scroll 0 0 #ff0000 !important;
 }
 
 .select {
-    background-color: #66FF97;
+    background-color: #64fe2e;
     color: #FFFFFF;
 }
 
 .p_awarded {
-    background-color: #66FF97;
+    background-color: #64fe2e;
     color: #173B0B;
 }
 
@@ -105,12 +105,12 @@
 }
 
 .p_closed {
-    background-color: #FF6666;
+    background-color: #ff0000;
     color: #FFFFFF;
 }
 
 .editBackground {
-    background-color: #e7e7e7;
+    background-color: #dbdbdb;
 }
 
 .help {
@@ -118,7 +118,7 @@
 }
 
 .red {
-    color: #FF6666;
+    color: #ff0000;
 }
 .green {
     color: #00D744;
@@ -167,7 +167,7 @@
 }
 
 .projectMessagesList {
-    background-color: #e7e7e7;
+    background-color: #dbdbdb;
     height:10em;
     overflow:auto;
 }
@@ -221,13 +221,13 @@
 }
 
 .follow {
-    background-color:#5CB85C;
+    background-color:#00b515;
     border-color:#4CAE4C;
     color:#FFFFFF;  
 }
 
 ._follow {
-    background-color:#D9534F;
+    background-color:#ff0000;
     border-color:#D43F3A;
     color:#FFFFFF;  
 }
@@ -241,12 +241,12 @@
     position:fixed;
     bottom:100px;
     right:100px;
-    box-shadow: 2px 2px 3px #999; 
+    box-shadow: 2px 2px 3px #696969; 
 }
 
 
 ._edit {
-    background-color:#A4A4A4;
+    background-color:#696969;
     color:#FFFFFF;  
 }
 
@@ -323,16 +323,16 @@
 .extranet-btn-red:before {
     font-family: FontAwesome;
     font-size:1.3em;
-    color: #FF6666;
+    color: #ff0000;
     content: "\f204";
 }
 
 .panel-drop {
-    background-color: #CEE3F6; 
+    background-color: #e6f5ff; 
 }
 
 .tr-drop {
-    background-color: #FF6666; 
+    background-color: #ff0000; 
 }
 .sub-folder {
 
@@ -344,23 +344,23 @@
 
 .tracklist{
     padding: 10px;
-    background-color: palegreen;
-    box-shadow: 3px 3px rgb(187, 187, 187);
+    background-color: #64fe2e;
+    box-shadow: 3px 3px #dbdbdb;
     font-size: larger;
 }
     
 
 .projectMessagesList {
     padding: 10px;
-    background-color: azure;
-    box-shadow: 3px 3px rgb(187, 187, 187);
+    background-color: f5f5f5;
+    box-shadow: 3px 3px #dbdbdb;
     font-size: larger;
     list-style-type: none;
 }
 .projectpostit {
     padding: 10px;
-    background-color: yellow;
-    box-shadow: 3px 3px rgb(187, 187, 187);
+    background-color: f2f5a9;
+    box-shadow: 3px 3px #dbdbdb;
     font-size: larger;
 }
 
