@@ -13,7 +13,7 @@ header.masthead {
 
 .header-content {
     padding: 20px 10px 20px 20px;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: #0088cc;
     border-radius: 8px;
     color: rgba(37, 76, 170);
 }
@@ -93,7 +93,7 @@ header.masthead {
     touch-action: auto;
     width: 100%;
     border-width: 0 0 2px 0;
-    border-color: rgba(37, 76, 170);
+    border-color: #0088cc;
     background: whitesmoke;
     height: 30px;
     font-size: large;
@@ -104,16 +104,16 @@ header.masthead {
     letter-spacing: 2px;
     text-transform: uppercase;
     margin-top: 20px;
-    color: rgba(37, 76, 170);
+    color: #0088cc;
     border: 1px solid;
-    border-color: rgba(37, 76, 170);
+    border-color: #0088cc;
     background-color: whitesmoke;
     padding: 10px 30px;
 }
 
 .login input[type=submit]:hover {
     color: whitesmoke;
-    background-color: rgba(37, 76, 170);
+    background-color: #0088cc;
     cursor:pointer;
 }
 
@@ -163,7 +163,7 @@ App
     vertical-align:middle;
 }
 .panel-default {
-    border-color: #DDDDDD;
+    border-color: #dbdbdb;
 }
 .panel {
     background-color: #FFFFFF;
@@ -213,17 +213,17 @@ App
 }
 
 .delete {
-    background-color: #FF6666;
+    background-color: #ff0000;
     color: #FFFFFF;
 }
 
 .select {
-    background-color: #66FF97;
+    background-color: #64fe2e;
     color: #0B3B0B;
 }
 
 .red {
-    color: #FF6666 !important;
+    color: #ff0000 !important;
 }
 
 .green {
@@ -239,7 +239,7 @@ App
 }
 
 .ek_messages {
-    background-color: #E0ECF8 !important;
+    background-color: #e6f5ff !important;
     color: #A9BCF5 !important;
     border: 5px solid;
     border-radius: 5px;
@@ -338,7 +338,7 @@ App
     float:left;
 }
 .valid {
-    background: #93b3e4;
+    background: #a9bcf5;
     color: whitesmoke;
 }
 .missing { 
@@ -348,7 +348,7 @@ App
 }
 
 .admin_menu_badge {
-    background-color: #FF6666;
+    background-color: #ff0000;
     color: #fff;
     border: 1px solid #BA0B0B;
     border-radius: 25px;
@@ -371,10 +371,10 @@ App
     padding:10px;
 }
 .widget-home .info {
-    background-color: #93b3e4;
+    background-color: #a9bcf5;
 }
 .widget-home .new {
-    background-color: #1AFF00;
+    background-color: #64fe2e;
 }
 .home-title {
     width:50%;
