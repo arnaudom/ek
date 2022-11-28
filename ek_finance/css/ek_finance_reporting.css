@@ -13,7 +13,7 @@ tr td {
 }
 
 .head {
-    background-color: #C0C0C0;
+    background-color: #dbdbdb;
     color: #FFF;
     font-weight: bold;
 }
@@ -22,7 +22,7 @@ tr td {
     padding-left: 10px !important;
 }
 .classe {
-    background-color: #C0C0C0;
+    background-color: #dbdbdb;
     border-top: 1px solid #FFF !important;
 }
 
@@ -32,7 +32,7 @@ tr td {
 
 .detail {
     text-shadow: 0 1px 0 #fff ;
-    background-color: #CEE3F6 ;
+    background-color: #e6f5ff ;
 }
 .detail_row {
     padding-left: 25px !important;
@@ -40,19 +40,19 @@ tr td {
 
 .subtotal {
     font-weight: bold;
-    background-color: #D8D8D8;
+    background-color: #dbdbdb;
     border-top: 1px solid #000 !important;
 }
 
 .total {
     font-weight: bold;
-    background-color: #D8D8D8 !important;
+    background-color: #dbdbdb !important;
 }
 
 .grandtotal {
     font-weight: bold;
     border-top: 1px solid #848484 !important;
-    background-color: #dbe1ea;
+    background-color: #e6f5ff;
 }
 .grandtotal td {
     padding: 5px !important;
@@ -72,7 +72,7 @@ tr td {
 }
 
 .red {
-    color: #FF6666;
+    color: #ff0000;
 }
 
 .editinline {

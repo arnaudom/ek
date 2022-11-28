@@ -61,9 +61,8 @@ table {
 }
 
 tr {
-    //background: rgba(0, 0, 0, 0.063) none repeat scroll 0 0;
     background: #fff !important;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #dbdbdb;
     padding: 0.1em 0.6em;
 }
 

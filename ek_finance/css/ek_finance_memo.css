@@ -20,7 +20,7 @@
 }
 
 .red {
-  color: #FF6666;
+  color: #ff0000;
 } 
 
 .floatright {
@@ -56,12 +56,12 @@
 
 .cellborder {  
   border-width: thin ;
-	border-spacing: 1px;
-	border-style: solid;
-	border-color: #A4A4A4;
-	border-collapse: collapse;
-	background-color: #CEE3F6;
-	padding: 2px;
+  border-spacing: 1px;
+  border-style: solid;
+  border-color: #696969;
+  border-collapse: collapse;
+  background-color: #e6f5ff;
+  padding: 2px;
 }
 
 .amount {
@@ -69,7 +69,7 @@
 }
 
 .current {
-  background-color:#CEE3F6 !important;
+  background-color:#e6f5ff !important;
 }
 
 hr {
@@ -77,7 +77,7 @@ hr {
   -moz-border-left-colors: none;
   -moz-border-right-colors: none;
   -moz-border-top-colors: none;
-  border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
+  border-color: #696969 -moz-use-text-color -moz-use-text-color;
   border-image: none;
   border-right: 0 none;
   border-style: solid none none;
@@ -111,7 +111,7 @@ hr {
 }
 
 .delete{
-   background-color: #FF6666 !important; 
+   background-color: #ff0000 !important; 
 }
 
 .button--add:hover {
@@ -132,6 +132,6 @@ hr {
 .button--record:hover {
     background-color: #FFF;
     color: #FFF !important;
-    background-image: linear-gradient(to bottom, #FF6666, #981010) !important;
-    border-color: #FF6666 #981010 #981010 !important;
+    background-image: linear-gradient(to bottom, #ff0000, #981010) !important;
+    border-color: #ff0000 #981010 #981010 !important;
 }
