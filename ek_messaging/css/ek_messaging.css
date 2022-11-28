@@ -43,7 +43,7 @@
 }
 
 .red {
-    color: #FF6666;
+    color: #ff0000;
 }
 
 .green {
@@ -63,7 +63,7 @@ hr {
     -moz-border-left-colors: none;
     -moz-border-right-colors: none;
     -moz-border-top-colors: none;
-    border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
+    border-color: #696969 -moz-use-text-color -moz-use-text-color;
     border-image: none;
     border-right: 0 none;
     border-style: solid none none;
@@ -78,7 +78,7 @@ hr {
 }
 
 .badge {
-    background-color: #08c;
+    background-color: #0088cc;
     border-radius: 5px;
     color: #fff;
     display: inline-block;
@@ -93,7 +93,7 @@ hr {
 }
 
 .inbox_message_badge {
-    background-color: #76b4e1;
+    background-color: #a9bcf5;
     color: #fff;
     border: 1px solid #0696ff;
     border-radius: 25px;
