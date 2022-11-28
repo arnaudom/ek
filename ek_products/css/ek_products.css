@@ -30,7 +30,7 @@
 }
 
 .panel-default {
-    border-color: #DDDDDD;
+    border-color: #dbdbdb;
 }
 .panel {
     background-color: #FFFFFF;
@@ -85,12 +85,12 @@
 }
 
 .delete {
-    background-color: #FF6666;
+    background-color: #ff0000;
     color: #FFFFFF;
 }
 
 .badge {
-    background-color: #ccc;
+    background-color: #dbdbdb;
     border-radius: 5px;
     color: #555;
     display: inline-block;
