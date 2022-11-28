@@ -64,7 +64,7 @@
     border-width: thin ;
     border-spacing: 1px;
     border-style: solid;
-    border-color: #A4A4A4;
+    border-color: #696969;
     border-collapse: collapse;
     padding: 1px;
     text-align: center;
@@ -75,11 +75,11 @@
 }
 
 .ph {
-    background-color: #FFBF00;
+    background-color: #ffe166;
 }
 
 .sun {
-    background-color: #CCC;
+    background-color: #dbdbdb;
 }
 
 .day {
@@ -88,7 +88,7 @@
 }
 
 .day:hover{
-    background-color: #dbe1ea;
+    background-color: #e6f5ff;
 }
 
 .week {
@@ -114,7 +114,7 @@
     border-width: thin ;
     border-spacing: 1px;
     border-style: solid;
-    border-color: #A4A4A4;
+    border-color: #696969;
     font-size:0.8em;
     background-color: #FFF;
 }
@@ -181,7 +181,7 @@
     content: "\f069"; 
     font-family: FontAwesome;
     font-size:1em;
-    color: #FFBF00;
+    color: #ffe166;
     text-align: center;
     display: inline-block;
     text-rendering: auto;

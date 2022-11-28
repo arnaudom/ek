@@ -12,19 +12,19 @@
 
 .widget-content {
   
-  border: 1px solid #ccc;
+  border: 1px solid #dbdbdb;
   background-color: #fff;
   padding-bottom: 5px;
   padding-left: 10px;
   height: 200px;
   overflow: auto;
-  border: solid 1px #ccc;
+  border: solid 1px #dbdbdb;
   border-radius: 0.3em;
 
 }
 
 .red {
-    color: #FF6666;
+    color: #ff0000;
 }
 
 .green {

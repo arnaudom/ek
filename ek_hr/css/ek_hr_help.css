@@ -1,6 +1,6 @@
 #help {
     cursor: pointer;
-    background-color: #A9D0F5 ;
+    background-color: #a9bcf5 ;
     padding-left: 10px;
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
     border-top-left-radius: 6px;
@@ -9,7 +9,7 @@
 }
 
 #help_content {
-    background-color: #CEE3F6 ;
+    background-color: #e6f5ff ;
     padding: 15px;
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
 }

@@ -44,7 +44,7 @@
     border-width: thin ;
     border-spacing: 1px;
     border-style: solid;
-    border-color: #A4A4A4;
+    border-color: #696969;
     border-collapse: collapse;
     padding: 2px;
 }
@@ -53,7 +53,7 @@
     border-width: 0px 1px 0px 0px ;
     border-spacing: 1px;
     border-style: solid;
-    border-color: #A4A4A4;
+    border-color: #696969;
     border-collapse: collapse;
 
 }
@@ -70,34 +70,33 @@
 }
 
 .delete {
-    background-color: #FF6666;
+    background-color: #ff0000;
     color: #FFFFFF;
-    background: none repeat scroll 0 0 #FF6666 !important;
+    background: none repeat scroll 0 0 #ff0000 !important;
 }
 
 .select {
-    background-color: #66FF97;
+    background-color: #64fe2e;
     color: #0B3B0B;
 }
 
 .red {
-    color: #FF6666;
+    color: #ff0000;
 }
 .green {
     color: #00822A;
 }
 
 .blue {
-    color: #CEE3F6;
+    color: #e6f5ff;
 }
 
 
 .back_blue {
-    background-color: #CEE3F6;
-    //color:#fafafa;
+    background-color: #e6f5ff;
 }
 .back_red {
-    background-color: #FF6666;
+    background-color: #ff0000;
     color: #fafafa;
     width: 200px;
     padding-left: 10px;
@@ -122,7 +121,7 @@ hr {
     -moz-border-left-colors: none;
     -moz-border-right-colors: none;
     -moz-border-top-colors: none;
-    border-color: #A4A4A4 -moz-use-text-color -moz-use-text-color;
+    border-color: #696969 -moz-use-text-color -moz-use-text-color;
     border-image: none;
     border-right: 0 none;
     border-style: solid none none;
@@ -142,7 +141,7 @@ hr {
 #total_display {
     position:fixed;
     font-size:1.4em;
-    box-shadow: 2px 2px 3px #999; 
+    box-shadow: 2px 2px 3px #696969; 
     -webkit-user-select:none;
     border:1px solid transparent;
     border-radius:4px;
@@ -153,7 +152,7 @@ hr {
     text-align:right;
     vertical-align:middle;
     white-space:nowrap;
-    background-color:#5CB85C;
+    background-color:#00b515;
     color:#fafafa;
 }
 
@@ -232,7 +231,7 @@ hr {
     overflow: hidden;
     vertical-align: middle;
     margin-right: 10px;
-    box-shadow: 0 0 5px rgba(0, 128, 255, 1);
+    box-shadow: 0 0 5px #0088cc;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
 }
@@ -250,7 +249,7 @@ hr {
 }
 
 .badge {
-    background-color: #35a4db;
+    background-color: #a9bcf5;
     border-radius: 5px;
     color: #fff;
     display: inline-block;
