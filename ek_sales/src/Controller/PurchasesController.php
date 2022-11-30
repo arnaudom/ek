@@ -282,7 +282,7 @@ class PurchasesController extends ControllerBase {
                 $reference = $supplier;
             }
             if ($r->uri <> '') {
-                $attachment = "<div><a class='blue' href='" . file_create_url($r->uri) . "' target='_blank'>" . $this->t('Attachment') . "</a></div>";
+                $attachment = "<div><a class='blue' href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r->uri) . "' target='_blank'>" . $this->t('Attachment') . "</a></div>";
                 $reference .= $attachment;
             }
 

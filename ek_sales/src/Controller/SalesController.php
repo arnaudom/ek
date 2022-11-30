@@ -127,12 +127,13 @@ class SalesController extends ControllerBase {
                         ->query($query, array(':abid' => $abid));
                 $items['projects'] = array();
                 while ($d = $data->fetchObject()) {
+                    $dmod = explode("|", $d->last_modified);
                     $items['projects'][] = array(
                         'link' => \Drupal\ek_projects\ProjectData::geturl($d->id),
                         'pcode' => $d->pcode,
                         'pname' => $d->pname,
                         'date' => $d->date,
-                        'last_modified' => date('Y-m-d', $d->last_modified),
+                        'last_modified' => date('Y-m-d', $dmod[1]),
                         'country' => $d->name,
                         'status' => $d->status,
                         'level' => $d->level,
@@ -182,7 +183,7 @@ class SalesController extends ControllerBase {
                     $chartSettings = \Drupal::service('charts.settings')->getChartsSettings();
 
                     $options = [];
-                    $options['type'] = 'donut';
+                    $options['type'] = 'pie';
                     $options['title'] = $this->t('Projects');
                     $options['xaxis_title'] = $items['baseCurrency'];
                     $options['title_position'] = 'in';
@@ -194,7 +195,6 @@ class SalesController extends ControllerBase {
                             "colors" => [$chartSettings['colors'][0], $chartSettings['colors'][1], $chartSettings['colors'][2], $chartSettings['colors'][3]]
                         ]
                     ];
-
                     $uuid_service = \Drupal::service('uuid');
                     $element = [
                         '#theme' => 'charts_api',
@@ -205,8 +205,9 @@ class SalesController extends ControllerBase {
                         '#id' => 'chart-' . $uuid_service->generate(),
                         '#override' => [],
                     ];
-
-                    $items['project_status_chart'] = \Drupal::service('renderer')->render($element);
+                    if($items['category_statistics']['total'] > 0) { 
+                        $items['project_status_chart'] = \Drupal::service('renderer')->render($element);
+                    }
                 }
 
 
@@ -571,7 +572,7 @@ class SalesController extends ControllerBase {
                             //file exist
                             $route = Url::fromRoute('ek_sales_delete_file', array('id' => $l->id))->toString();
                             $items[$l->folder][$i]['delete_url'] = $route;
-                            $items[$l->folder][$i]['file_url'] = file_create_url($l->uri);
+                            $items[$l->folder][$i]['file_url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($l->uri);
                             $items[$l->folder][$i]['delete'] = 1;
                             $items[$l->folder][$i]['comment'] = $l->comment;
                             $items[$l->folder][$i]['date'] = date('Y-m-d', $l->date);
@@ -729,9 +730,9 @@ class SalesController extends ControllerBase {
                         . "</tbody></table><br/>";
 
                 if ($this->moduleHandler->moduleExists('ek_finance')) {
-                    //extract journal transactions;
+                    // extract journal transactions;
                     $journal = new Journal();
-                    $content['#markup'] .= $journal->entity_history(array('entity' => 'invoice', 'id' => $id));
+                    $content['#markup'] .= $journal->entity_history(['entity' => 'invoice', 'id' => $id]);
                 }
                 break;
 
@@ -762,8 +763,9 @@ class SalesController extends ControllerBase {
                         . "</tbody></table><br/>";
 
                 if ($this->moduleHandler->moduleExists('ek_finance')) {
-                    //extract journal transactions;
-                    $content['#markup'] .= Journal::entity_history(array('entity' => 'purchase', 'id' => $id));
+                    // extract journal transactions;
+                    $journal = new Journal();
+                    $content['#markup'] .= $journal->entity_history(['entity' => 'purchase', 'id' => $id]);
                 }
                 break;
 
