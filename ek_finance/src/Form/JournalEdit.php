@@ -24,6 +24,12 @@ use Drupal\ek_finance\FinanceSettings;
  */
 class JournalEdit extends FormBase {
 
+    public function __construct() {
+        $this->settings = new FinanceSettings();
+        $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding') : 2;
+        $this->baseCurrency = $this->settings->get('baseCurrency');
+    }
+    
     /**
      * {@inheritdoc}
      */
@@ -40,8 +46,8 @@ class JournalEdit extends FormBase {
             '#value' => $param,
         );
 
-        $settings = new FinanceSettings();
-        $baseCurrency = $settings->get('baseCurrency');
+        // $settings = new FinanceSettings();
+        // $baseCurrency = $settings->get('baseCurrency');
         $CurrencyOptions = CurrencyData::listcurrency(1);
         $accountOptions = array('0' => '');
         $accountOptions += AidList::listaid($param['coid'], array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 1);
@@ -237,7 +243,7 @@ class JournalEdit extends FormBase {
         if ($totaldebit_exchange != 0 || $totalcredit_exchange != 0) {
             $form['items']["footer6"] = array(
                 '#type' => 'item',
-                '#prefix' => "<div class='row'><div class='cell cellborder'>" . $baseCurrency,
+                '#prefix' => "<div class='row'><div class='cell cellborder'>" . $this->baseCurrency,
                 '#suffix' => '</div>',
             );
             $form['items']["footer7"] = array(
@@ -348,11 +354,11 @@ class JournalEdit extends FormBase {
                 }
 
 
-                $totalcredit += $credit;
-                $totaldebit += $debit;
+                $totalcredit += (double)$credit;
+                $totaldebit += (double)$debit;
             }
 
-            if ($totalcredit <> $totaldebit) {
+            if (round($totalCT,$this->rounding) <> round($totalDT,$this->rounding)) {
                 $form_state->setErrorByName('items][footer2', $this->t('entry is not balanced'));
                 $form_state->setErrorByName('items][footer3');
             }

@@ -17,12 +17,17 @@ use Drupal\ek_finance\AidList;
 use Drupal\ek_finance\CurrencyData;
 use Drupal\ek_finance\Journal;
 use Drupal\ek_admin\CompanySettings;
+use Drupal\ek_finance\FinanceSettings;
 
 /**
  * Provides a form to create a manual journal entry
  */
 class JournalEntry extends FormBase {
 
+    public function __construct() {
+        $this->settings = new FinanceSettings();
+        $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding') : 2;
+    }
     /**
      * {@inheritdoc}
      */
@@ -452,8 +457,8 @@ class JournalEntry extends FormBase {
                 }
 
 
-                $totalCT += $credit;
-                $totalDT += $debit;
+                $totalCT += (double)round($credit,$this->rounding);
+                $totalDT += (double)round($debit,$this->rounding);
                 array_push($accounts, $form_state->getValue("d-account$i"));
                 array_push($accounts, $form_state->getValue("c-account$i"));
             }
@@ -461,7 +466,7 @@ class JournalEntry extends FormBase {
             $form_state->set('totalDT', $totalDT);
             $form_state->set('totalCT', $totalCT);
 
-            if ($totalCT <> $totalDT) {
+            if (round($totalCT,$this->rounding) <> round($totalDT,$this->rounding)) {
                 $form['items']["footer2"] = array(
                     '#type' => 'item',
                     '#prefix' => "<div class='cell cellborder delete' id='totald'>"
