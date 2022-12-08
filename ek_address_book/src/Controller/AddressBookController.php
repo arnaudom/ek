@@ -181,7 +181,7 @@ class AddressBookController extends ControllerBase {
                 $contact['telephone'] = $r['telephone'];
                 $contact['mobilephone'] = $r['mobilephone'];
                 $contact['email'] = $r['email'];
-                $contact['card'] = \Drupal::service('file_url_generator')->generateAbsoluteString($r['card']);
+                $contact['card'] = (!Null == $r['card']) ? \Drupal::service('file_url_generator')->generateAbsoluteString($r['card']): '';
                 if ($r['card'] <> '') {
                     $image = "<img class='thumbnail' src=" . $contact['card'] . ">";
                     $markup = "<a href='modal/nojs/" . $r['id']
