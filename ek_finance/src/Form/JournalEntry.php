@@ -49,7 +49,7 @@ class JournalEntry extends FormBase {
 
 
         $company = AccessCheck::CompanyListByUid();
-        $form['coid'] = array(
+        $form['coid'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
@@ -58,25 +58,25 @@ class JournalEntry extends FormBase {
             '#disabled' => $form_state->getValue('coid') ? true : false,
             '#required' => true,
             '#prefix' => "<div class='container-inline'>",
-        );
+        ];
 
         if ($form_state->getValue('coid') == null) {
-            $form['next'] = array(
+            $form['next'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Next') . ' >>',
-                '#states' => array(
+                '#states' => [
                     // Hide data fieldset when class is empty.
-                    'invisible' => array(
-                        "select[name='coid']" => array('value' => ''),
-                    ),
-                ),
+                    'invisible' => [
+                        "select[name='coid']" => ['value' => ''],
+                    ],
+                ],
                 '#suffix' => '</div> ',
-            );
+            ];
         } else {
-            $form['item'] = array(
+            $form['item'] = [
                 '#type' => 'item',
                 '#markup' => '</div><br/> ',
-            );
+            ];
         }
 
         if ($form_state->getValue('coid')) {
@@ -87,25 +87,25 @@ class JournalEntry extends FormBase {
             }
 
             $CurrencyOptions = CurrencyData::listcurrency(1);
-            $accountOptions = array('0' => '');
-            $accountOptions += AidList::listaid($form_state->getValue('coid'), array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 1);
+            $accountOptions = ['0' => ''];
+            $accountOptions += AidList::listaid($form_state->getValue('coid'), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 1);
 
 
-            $form['currency'] = array(
+            $form['currency'] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $CurrencyOptions,
                 '#required' => true,
                 '#default_value' => ($form_state->getValue('currency')) ? $form_state->getValue('currency') : null,
                 '#title' => $this->t('Currency'),
-                '#ajax' => array(
-                    'callback' => array($this, 'fx_rate'),
+                '#ajax' => [
+                    'callback' => [$this, 'fx_rate'],
                     'wrapper' => 'credit',
-                ),
+                ],
                 '#prefix' => "<div class='container-inline'>",
-            );
+            ];
 
-            $form['fx_rate'] = array(
+            $form['fx_rate'] = [
                 '#type' => 'textfield',
                 '#size' => 15,
                 '#maxlength' => 15,
@@ -115,9 +115,9 @@ class JournalEntry extends FormBase {
                 '#description' => '',
                 '#prefix' => "<div id='credit'>",
                 '#suffix' => '</div></div>',
-            );
+            ];
 
-            $form["date"] = array(
+            $form["date"] = [
                 '#type' => 'date',
                 '#size' => 12,
                 '#required' => true,
@@ -125,7 +125,7 @@ class JournalEntry extends FormBase {
                 '#title' => $this->t('Record date'),
                 '#prefix' => "",
                 '#suffix' => '',
-            );
+            ];
 
 
             $headerline = "<div class='table'><div class='row'><div class='cell cellborder'>"
@@ -137,64 +137,64 @@ class JournalEntry extends FormBase {
             $totalCT = 0;
             $totalDT = 0;
 
-            $form['items']["headerline"] = array(
+            $form['items']["headerline"] = [
                 '#type' => 'item',
                 '#markup' => $headerline,
-            );
+            ];
 
-            $form['items']["d-account1"] = array(
+            $form['items']["d-account1"] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $accountOptions,
                 '#default_value' => ($form_state->getValue('d-account1')) ? $form_state->getValue('d-account1') : null,
-                '#attributes' => array('style' => array('width:150px;white-space:nowrap')),
+                '#attributes' => ['style' => ['width:150px;white-space:nowrap']],
                 '#prefix' => "<div class='row'><div class='cell'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            $form['items']['debit1'] = array(
+            $form['items']['debit1'] = [
                 '#type' => 'textfield',
                 '#id' => 'debit1',
                 '#size' => 12,
                 '#maxlength' => 255,
                 '#description' => '',
                 '#default_value' => ($form_state->getValue('debit1')) ? $form_state->getValue('debit1') : null,
-                '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                '#attributes' => ['placeholder' => $this->t('value'), 'class' => ['amount'], 'ondblclick' => "this.value=''", 'onKeyPress' => "return(number_format(this,',','.', event))"],
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            $form['items']['credit1'] = array(
+            $form['items']['credit1'] = [
                 '#type' => 'textfield',
                 '#id' => 'credit1',
                 '#size' => 12,
                 '#maxlength' => 255,
                 '#description' => '',
                 '#default_value' => ($form_state->getValue('credit1')) ? $form_state->getValue('credit1') : null,
-                '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                '#attributes' => ['placeholder' => $this->t('value'), 'class' => ['amount'], 'ondblclick' => "this.value=''", 'onKeyPress' => "return(number_format(this,',','.', event))"],
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            $form['items']["c-account1"] = array(
+            $form['items']["c-account1"] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $accountOptions,
                 '#default_value' => ($form_state->getValue('c-account')) ? $form_state->getValue('c-account') : null,
-                '#attributes' => array('style' => array('width:150px;white-space:nowrap')),
+                '#attributes' => ['style' => ['width:150px;white-space:nowrap']],
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            $form['items']["comment1"] = array(
+            $form['items']["comment1"] = [
                 '#type' => 'textfield',
                 '#size' => 30,
                 '#maxlength' => 255,
                 '#default_value' => ($form_state->getValue('comment1')) ? $form_state->getValue('comment1') : null,
-                '#attributes' => array('placeholder' => $this->t('comment'),),
+                '#attributes' => ['placeholder' => $this->t('comment'),],
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div></div>',
-            );
+            ];
 
             //$totalCT += str_replace(",", "", $form_state->getValue('credit1'));
             //$totalDT += str_replace(",", "", $form_state->getValue('debit1'));
@@ -210,59 +210,59 @@ class JournalEntry extends FormBase {
             }
 
             for ($i = $n; $i <= $max; $i++) {
-                $form['items']["d-account$i"] = array(
+                $form['items']["d-account$i"] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $accountOptions,
                     '#default_value' => ($form_state->getValue("d-account$i")) ? $form_state->getValue("d-account$i") : null,
-                    '#attributes' => array('style' => array('width:150px;white-space:nowrap')),
+                    '#attributes' => ['style' =>['width:150px;white-space:nowrap']],
                     '#prefix' => "<div class='row'><div class='cell'>",
                     '#suffix' => '</div>',
-                );
+                ];
 
-                $form['items']["debit$i"] = array(
+                $form['items']["debit$i"] = [
                     '#type' => 'textfield',
                     '#id' => "debit$i",
                     '#size' => 12,
                     '#maxlength' => 255,
                     '#description' => '',
                     '#default_value' => ($form_state->getValue("debit$i")) ? $form_state->getValue("debit$i") : null,
-                    '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                    '#attributes' => ['placeholder' => $this->t('value'), 'class' => ['amount'], 'onKeyPress' => "return(number_format(this,',','.', event))"],
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div>',
-                );
+                ];
 
-                $form['items']["credit$i"] = array(
+                $form['items']["credit$i"] = [
                     '#type' => 'textfield',
                     '#id' => "credit$i",
                     '#size' => 12,
                     '#maxlength' => 255,
                     '#description' => '',
                     '#default_value' => ($form_state->getValue("credit$i")) ? $form_state->getValue("credit$i") : null,
-                    '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                    '#attributes' => ['placeholder' => $this->t('value'), 'class' => ['amount'], 'onKeyPress' => "return(number_format(this,',','.', event))"],
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div>',
-                );
+                ];
 
-                $form['items']["c-account$i"] = array(
+                $form['items']["c-account$i"] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $accountOptions,
                     '#default_value' => ($form_state->getValue("c-account$i")) ? $form_state->getValue("c-account$i") : null,
-                    '#attributes' => array('style' => array('width:150px;white-space:nowrap')),
+                    '#attributes' => ['style' => ['width:150px;white-space:nowrap']],
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div>',
-                );
+                ];
 
-                $form['items']["comment$i"] = array(
+                $form['items']["comment$i"] = [
                     '#type' => 'textfield',
                     '#size' => 30,
                     '#maxlength' => 255,
                     '#default_value' => ($form_state->getValue("comment$i")) ? $form_state->getValue("comment$i") : null,
-                    '#attributes' => array('placeholder' => $this->t('comment'),),
+                    '#attributes' => ['placeholder' => $this->t('comment'),],
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div></div>',
-                );
+                ];
 
 
                 //$totalCT += $form_state->getValue("credit$i");
@@ -280,83 +280,83 @@ class JournalEntry extends FormBase {
             //footer
 
 
-            $form['items']["footer1"] = array(
+            $form['items']["footer1"] = [
                 '#type' => 'item',
                 '#prefix' => "<div class='row'><div class='cell cellborder'>",
                 '#suffix' => '</div>',
-            );
-            $form['items']["footer2"] = array(
+            ];
+            $form['items']["footer2"] = [
                 '#type' => 'item',
                 '#prefix' => "<div class='cell cellborder $style' id='totald'>"
                 . number_format($form_state->get('totalDT'), 2) . "",
                 '#suffix' => '</div>',
-            );
-            $form['items']["footer3"] = array(
+            ];
+            $form['items']["footer3"] = [
                 '#type' => 'item',
                 '#prefix' => "<div class='cell cellborder $style' id='totalc'>"
                 . number_format($form_state->get('totalCT'), 2) . "",
                 '#suffix' => '</div>',
-            );
-            $form['items']["footer4"] = array(
+            ];
+            $form['items']["footer4"] = [
                 '#type' => 'item',
                 '#prefix' => "<div class='cell cellborder'>",
                 '#suffix' => '</div>',
-            );
-            $form['items']["footer5"] = array(
+            ];
+            $form['items']["footer5"] = [
                 '#type' => 'item',
                 '#prefix' => "<div class='cell cellborder'>",
                 '#suffix' => '</div></div></div>',
-            );
+            ];
 
 
 
-            $form['rows'] = array(
+            $form['rows'] = [
                 '#type' => 'hidden',
-                '#attributes' => array('id' => 'rows'),
+                '#attributes' => ['id' => 'rows'],
                 '#value' => $form_state->get('num_items'),
-            );
+            ];
 
             if (!null == $form_state->getValue('confirm_box')) {
-                $form['confirm'] = array(
+                $form['confirm'] = [
                     '#type' => 'checkbox',
                     '#default_value' => 0,
                     '#description' => $this->t('You are transferring value between accounts that use different currencies. Please confirm.'),
                     '#prefix' => '<div class="messages messages--warning">',
                     '#suffix' => '</div>'
-                );
+                ];
             } else {
                 $form['confirm'] = ['#markup' => ''];
             }
 
-            $form['actions'] = array(
+            $form['actions'] = [
                 '#type' => 'actions',
-                '#attributes' => array('class' => array('container-inline')),
-            );
+                '#attributes' => ['class' => ['container-inline']],
+            ];
 
-            $form['actions']['add'] = array(
+            $form['actions']['add'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Add line'),
                 //'#limit_validation_errors' => array(),
-                '#submit' => array(array($this, 'addForm')),
+                '#submit' => [[$this, 'addForm']],
                 '#prefix' => "",
                 '#suffix' => '',
-            );
+            ];
 
             if ($form_state->get('num_items') > 1) {
-                $form['actions']['remove'] = array(
+                $form['actions']['remove'] = [
                     '#type' => 'submit',
                     '#value' => $this->t('remove last line'),
                     //'#limit_validation_errors' => array(),
-                    '#submit' => array(array($this, 'removeForm')),
-                );
+                    '#submit' => [[$this, 'removeForm']],
+                ];
             }
 
 
-            $form['actions']['submit'] = array(
+            $form['actions']['submit'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Save'),
                 '#suffix' => ''
-            );
+            ];
 
 
             $form['#attached']['library'][] = 'ek_finance/ek_finance.journal_form';
@@ -561,7 +561,7 @@ class JournalEntry extends FormBase {
                 }
             }
 
-            if ($journal->credit <> $journal->debit) {
+            if (round($journal->credit,$this->rounding) <> round($journal->debit,$this->rounding)) {
                 $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
                 \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }

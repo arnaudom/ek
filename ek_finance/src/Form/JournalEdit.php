@@ -49,34 +49,34 @@ class JournalEdit extends FormBase {
         // $settings = new FinanceSettings();
         // $baseCurrency = $settings->get('baseCurrency');
         $CurrencyOptions = CurrencyData::listcurrency(1);
-        $accountOptions = array('0' => '');
-        $accountOptions += AidList::listaid($param['coid'], array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 1);
+        $accountOptions = ['0' => ''];
+        $accountOptions += AidList::listaid($param['coid'], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 1);
         $query = "SELECT name from {ek_company} WHERE id=:id";
         $company = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $param['coid']))
+                ->query($query, [':id' => $param['coid']])
                 ->fetchField();
 
-        $url = Url::fromRoute('ek_finance.extract.general_journal', array(), array())->toString();
-        $form['back'] = array(
+        $url = Url::fromRoute('ek_finance.extract.general_journal', [], [])->toString();
+        $form['back'] = [
             '#type' => 'item',
             '#markup' => $this->t("<a href='@url'>Back</a>", ['@url' => $url]),
-        );
+        ];
 
-        $form['company'] = array(
+        $form['company'] = [
             '#type' => 'item',
             '#markup' => $company,
-        );
-        $form['currency'] = array(
+        ];
+        $form['currency'] = [
             '#type' => 'item',
             '#markup' => $param['currency'],
-        );
+        ];
 
-        $form["delete"] = array(
+        $form["delete"] = [
             '#type' => 'checkbox',
             '#title' => $this->t('delete')
-        );
+        ];
 
-        $form["date"] = array(
+        $form["date"] = [
             '#type' => 'date',
             '#size' => 12,
             '#required' => true,
@@ -84,7 +84,7 @@ class JournalEdit extends FormBase {
             '#title' => $this->t('record date'),
             '#prefix' => "",
             '#suffix' => '',
-        );
+        ];
 
         $headerline = "<div class='table'><div class='row'><div class='cell cellborder'>"
                 . $this->t("Debit account") . "</div><div class='cell cellborder'>"
@@ -98,17 +98,17 @@ class JournalEdit extends FormBase {
         $totaldebit = 0;
         $totaldebit_exchange = 0;
 
-        $form['items']["headerline"] = array(
+        $form['items']["headerline"] = [
             '#type' => 'item',
             '#markup' => $headerline,
-        );
+        ];
 
         $query = "SELECT * FROM {ek_journal} WHERE source=:s AND reference=:r AND type=:t ORDER by id";
         $dataDT = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':s' => $param['source'], ':r' => $param['reference'], ':t' => 'debit'))
+                ->query($query, [':s' => $param['source'], ':r' => $param['reference'], ':t' => 'debit'])
                 ->fetchAll();
         $dataCT = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':s' => $param['source'], ':r' => $param['reference'], ':t' => 'credit'))
+                ->query($query, [':s' => $param['source'], ':r' => $param['reference'], ':t' => 'credit'])
                 ->fetchAll();
 
         if (count($dataDT) >= count($dataCT)) {
@@ -116,7 +116,7 @@ class JournalEdit extends FormBase {
         } elseif (count($dataCT) >= count($dataDT)) {
             $count = count($dataCT);
         }
-        //loop  data
+        // loop  data
 
         $i = 0;
 
@@ -137,21 +137,21 @@ class JournalEdit extends FormBase {
                 $tagCT = "*e";
             }
 
-            $form['items']["dtid$i"] = array(
+            $form['items']["dtid$i"] = [
                 '#type' => 'hidden',
                 '#value' => $dataDT[$n]->id,
-            );
-            $form['items']["d-account$i"] = array(
+            ];
+            $form['items']["d-account$i"] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $accountOptions,
                 '#default_value' => $dataDT[$n]->aid,
-                '#attributes' => array('style' => array('width:150px;white-space:nowrap')),
+                '#attributes' => ['style' => ['width:150px;white-space:nowrap']],
                 '#prefix' => "<div class='row'><div class='cell'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            $form['items']["debit$i"] = array(
+            $form['items']["debit$i"] = [
                 '#type' => 'textfield',
                 '#id' => "debit$i",
                 '#size' => 12,
@@ -159,17 +159,23 @@ class JournalEdit extends FormBase {
                 '#title' => $tagDT,
                 '#title_display' => 'after',
                 '#default_value' => $dataDT[$n]->value,
-                '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
-                '#prefix' => "<div class='cell'>",
+                '#attributes' => ['placeholder' => $this->t('value'), 'class' => ['amount'], 'ondblclick' => "this.value=''", 'onKeyPress' => "return(number_format(this,',','.', event))"],
+                '#prefix' => "<div class='cell container-inline'>",
+            ];
+
+            $form['items']["force_dt_ex$i"] = [
+                '#type' => 'checkbox',
+                '#default_value' => ($dataDT[$n]->exchange == 0) ? 0 : 1,
+                '#attributes' => ['title' => $this->t('Force exchange record')],
                 '#suffix' => '</div>',
-            );
+            ];/**/
 
-
-            $form['items']["ctid$i"] = array(
+            $form['items']["ctid$i"] = [
                 '#type' => 'hidden',
                 '#value' => $dataCT[$n]->id,
-            );
-            $form['items']["credit$i"] = array(
+            ];
+            
+            $form['items']["credit$i"] = [
                 '#type' => 'textfield',
                 '#id' => "credit$i",
                 '#size' => 12,
@@ -177,33 +183,39 @@ class JournalEdit extends FormBase {
                 '#title' => $tagCT,
                 '#title_display' => 'after',
                 '#default_value' => $dataCT[$n]->value,
-                '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
-                '#prefix' => "<div class='cell '>",
-                '#suffix' => '</div>',
-            );
+                '#attributes' => ['placeholder' => $this->t('value'), 'class' => ['amount'], 'ondblclick' => "this.value=''", 'onKeyPress' => "return(number_format(this,',','.', event))"],
+                '#prefix' => "<div class='cell container-inline'>",
+            ];
 
-            $form['items']["c-account$i"] = array(
+            $form['items']["force_ct_ex$i"] = [
+                '#type' => 'checkbox',
+                '#default_value' => ($dataCT[$n]->exchange == 0) ? 0 : 1,
+                '#attributes' => ['title' => $this->t('Force exchange record')],
+                '#suffix' => '</div>',
+            ];/**/
+            
+            $form['items']["c-account$i"] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $accountOptions,
                 '#default_value' => $dataCT[$n]->aid,
                 '#description' => '',
-                '#attributes' => array('style' => array('width:150px;white-space:nowrap')),
+                '#attributes' => ['style' => ['width:150px;white-space:nowrap']],
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
 
 
-            $form['items']["comment$i"] = array(
+            $form['items']["comment$i"] = [
                 '#type' => 'textfield',
                 '#size' => 30,
                 '#maxlength' => 255,
                 '#default_value' => $dataDT[$n]->comment,
-                '#attributes' => array('placeholder' => $this->t('comment'),),
+                '#attributes' => ['placeholder' => $this->t('comment'),],
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div></div>',
-            );
+            ];
         }
 
 
@@ -213,85 +225,82 @@ class JournalEdit extends FormBase {
             $style = 'delete';
         }
 
-        //footer
-        $form['items']["footer1"] = array(
+        // footer
+        $form['items']["footer1"] = [
             '#type' => 'item',
             '#prefix' => "<div class='row'><div class='cell cellborder'>" . $param['currency'],
             '#suffix' => '</div>',
-        );
-        $form['items']["footer2"] = array(
+        ];
+        $form['items']["footer2"] = [
             '#type' => 'item',
             '#prefix' => "<div class='cell cellborder $style' id='totald'>" . number_format($totaldebit, 2) . "",
             '#suffix' => '</div>',
-        );
-        $form['items']["footer3"] = array(
+        ];
+        $form['items']["footer3"] = [
             '#type' => 'item',
             '#prefix' => "<div class='cell cellborder $style' id='totalc'>" . number_format($totalcredit, 2) . "",
             '#suffix' => '</div>',
-        );
-        $form['items']["footer4"] = array(
+        ];
+        $form['items']["footer4"] = [
             '#type' => 'item',
             '#prefix' => "<div class='cell cellborder'>",
             '#suffix' => '</div>',
-        );
-        $form['items']["footer5"] = array(
+        ];
+        $form['items']["footer5"] = [
             '#type' => 'item',
             '#prefix' => "<div class='cell cellborder'>",
             '#suffix' => '</div></div>',
-        );
+        ];
 
         if ($totaldebit_exchange != 0 || $totalcredit_exchange != 0) {
-            $form['items']["footer6"] = array(
+            $form['items']["footer6"] = [
                 '#type' => 'item',
                 '#prefix' => "<div class='row'><div class='cell cellborder'>" . $this->baseCurrency,
                 '#suffix' => '</div>',
-            );
-            $form['items']["footer7"] = array(
+            ];
+            $form['items']["footer7"] = [
                 '#type' => 'item',
                 '#prefix' => "<div class='cell cellborder $style' id='totald'>" . number_format($totaldebit + $totaldebit_exchange, 2) . "",
                 '#suffix' => '</div>',
-            );
-            $form['items']["footer8"] = array(
+            ];
+            $form['items']["footer8"] = [
                 '#type' => 'item',
                 '#prefix' => "<div class='cell cellborder $style' id='totalc'>" . number_format($totalcredit + $totalcredit_exchange, 2) . "",
                 '#suffix' => '</div>',
-            );
-            $form['items']["footer9"] = array(
+            ];
+            $form['items']["footer9"] = [
                 '#type' => 'item',
                 '#prefix' => "<div class='cell cellborder'>",
                 '#suffix' => '</div>',
-            );
-            $form['items']["footer10"] = array(
+            ];
+            $form['items']["footer10"] = [
                 '#type' => 'item',
                 '#prefix' => "<div class='cell cellborder'>",
                 '#suffix' => '</div></div></div>',
-            );
+            ];
         } else {
-            $form['items']["footer6"] = array(
+            $form['items']["footer6"] = [
                 '#type' => 'item',
                 '#prefix' => "</div>",
-            );
+            ];
         }
 
-
-
-        $form['rows'] = array(
+        $form['rows'] = [
             '#type' => 'hidden',
-            '#attributes' => array('id' => 'rows'),
+            '#attributes' => ['id' => 'rows'],
             '#value' => $n,
-        );
-        $form['actions'] = array(
+        ];
+        
+        $form['actions'] = [
             '#type' => 'actions',
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            '#attributes' => ['class' => ['container-inline']],
+        ];
 
-
-
-        $form['actions']['submit'] = array(
+        $form['actions']['submit'] = [
             '#type' => 'submit',
             '#value' => $this->t('Save'),
             '#suffix' => ''
-        );
+        ];
 
 
         $form['#attached']['library'][] = 'ek_finance/ek_finance.journal_form';
@@ -403,11 +412,13 @@ class JournalEdit extends FormBase {
                     'date' => $form_state->getValue("date"),
                     'value' => $debit,
                     'aid' => $form_state->getValue("d-account$i"),
+                    'exchange' => $form_state->getValue("force_dt_ex$i"),
                 ];
                 $fields2 = [
                     'date' => $form_state->getValue("date"),
                     'value' => $credit,
                     'aid' => $form_state->getValue("c-account$i"),
+                    'exchange' => $form_state->getValue("force_ct_ex$i"),
                 ];
 
                 Database::getConnection('external_db', 'external_db')
