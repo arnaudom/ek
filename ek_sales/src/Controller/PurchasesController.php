@@ -489,7 +489,7 @@ class PurchasesController extends ControllerBase {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_sales_purchase', 'p');
             $fields = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                'amount', 'amountpaid', 'amountbc', 'balancebc', 'pcode', 'taxvalue');
+                'amount', 'amountpaid', 'amountbase', 'balancebase', 'pcode', 'taxvalue');
 
             if ($this->moduleHandler->moduleExists('ek_finance')) {
                 $settings = new FinanceSettings();
@@ -588,11 +588,11 @@ class PurchasesController extends ControllerBase {
                 if ($r->status == 2) {
                     $status = "(" . $this->t("Partially paid") . ")";
                     $value = $r->currency . ' ' . number_format($r->amount - $r->amountpaid, 2);
-                    $basevalue = $r->balancebc;
+                    $basevalue = $r->balancebase;
                 } else {
                     $status = "";
                     $value = $r->currency . ' ' . number_format($r->amount, 2);
-                    $basevalue = $r->amountbc;
+                    $basevalue = $r->amountbase;
                 }
 
                 $query = 'SELECT sum(total) from {ek_sales_purchase_details} WHERE serial=:s and opt=:o';
@@ -1155,13 +1155,17 @@ class PurchasesController extends ControllerBase {
                     ]
                 ];
                 $ops[] = ['title' => ''];
-
+                if($r->end) {
+                    $period = date('Y-m-d', $r->start) . ' -> ' . date('Y-m-d', $r->end);
+                } else {
+                    $period = date('Y-m-d', $r->start). ' -> ?';
+                }
                 $data['list'][] = [
                     'color' => ['data' => ['#markup' => ''], 'style' => ['background-color:' . $r->color]],
                     'serial' => ['data' => ['#markup' => $number]],
                     'username' => $username,
                     'task' => ['data' => ['#markup' => $task]],
-                    'period' => date('Y-m-d', $r->start) . ' -> ' . date('Y-m-d', $r->end),
+                    'period' => $period,
                     'expired' => $expired,
                     'rate' => ['data' => ['#markup' => "<meter title='" . $r->completion_rate . "%'  value=" . $r->completion_rate . " max=100>". $r->completion_rate." %</meter>"]],
                     'who' => $who,

@@ -85,6 +85,13 @@ class Purchase extends FormBase {
                     ->fetchObject();
             $detail = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT * from {ek_sales_purchase_details} WHERE serial=:s ORDER BY id", [':s' => $data->serial]);
+            $fx_rate = round($data->amount / $data->amountbase, 4);
+                $form_state->set('fx_rate', $fx_rate);
+                if ($fx_rate != '1') {
+                    $form_state->set('fx_rate_require', true);
+                } else {
+                    $form_state->set('fx_rate_require', false);
+                }
 
             if ($clone != 'clone') {
                 $form['edit_purchase'] = [
@@ -282,20 +289,33 @@ class Purchase extends FormBase {
                 '#default_value' => isset($data->currency) ? $data->currency : null,
                 '#title' => $this->t('currency'),
                 '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
-                '#suffix' => '</div></div></div>',
+                '#suffix' => '</div>',
                 '#ajax' => [
                     'callback' => [$this, 'check_aid'],
-                    'wrapper' => 'alert',
+                    'wrapper' => 'fx',
                 ],
             ];
-
-            $form['options']['alert'] = [
+            
+            $form['options']['fx_rate'] = [
+                '#type' => 'textfield',
+                '#size' => 15,
+                '#maxlength' => 15,
+                //'#value' =>  $fx_rate,
+                '#default_value' => $form_state->get('fx_rate'),
+                '#required' => $form_state->get('fx_rate_require'),
+                '#title' => $this->t('Exchange rate'),
+                '#description' => $form_state->get('fx_rate_desc'),
+                '#prefix' => "<div id='fx' class='cell'>",
+                '#suffix' => '</div></div></div>',
+            ];
+            
+            /*$form['options']['alert'] = [
                 '#type' => 'item',
                 '#markup' => '',
                 '#description' => '',
                 '#prefix' => "<div id='alert' class=''>",
                 '#suffix' => '</div>',
-            ];
+            ];*/
         } // finance
         else {
             $l = explode(',', file_get_contents(drupal_get_path('module', 'ek_sales') . '/currencies.inc'));
@@ -314,6 +334,11 @@ class Purchase extends FormBase {
                 '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
                 '#suffix' => '</div></div></div>',
             ];
+            
+            $form['options']['fx_rate'] = [
+                '#type' => 'hidden',
+                '#value' => 1,
+            ];
         }
 
 
@@ -323,7 +348,8 @@ class Purchase extends FormBase {
             '#maxlength' => 255,
             '#default_value' => isset($data->tax) ? $data->tax : null,
             '#title' => $this->t('tax'),
-            '#prefix' => "<div class='container-inline'>",
+            '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+            '#suffix' => '</div>',
             '#attributes' => ['placeholder' => $this->t('ex. sales tax')],
         ];
 
@@ -334,9 +360,10 @@ class Purchase extends FormBase {
             '#maxlength' => 6,
             '#default_value' => isset($data->taxvalue) ? $data->taxvalue : null,
             '#title' => $this->t('percent'),
-            '#title_display' => 'after',
-            '#suffix' => "</div>",
-            '#attributes' => ['placeholder' => '%', 'class' => ['amount']],
+            //'#title_display' => 'after',
+            '#prefix' => "<div class='cell'>",
+            '#suffix' => "</div></div></div>",
+            '#attributes' => ['placeholder' => 'ex. 10', 'class' => ['amount']],
         ];
 
         $form['options']['terms'] = [
@@ -345,7 +372,8 @@ class Purchase extends FormBase {
             '#options' => [('on receipt'), $this->t('due days')],
             '#default_value' => isset($data->terms) ? $data->terms : null,
             '#title' => $this->t('terms'),
-            '#prefix' => "<div class='container-inline'>",
+            '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+            '#suffix' => '</div>',
             '#ajax' => [
                 'callback' => [$this, 'check_day'],
                 'wrapper' => 'calday',
@@ -357,8 +385,11 @@ class Purchase extends FormBase {
             '#type' => 'textfield',
             '#size' => 5,
             '#maxlength' => 3,
+            '#title' => $this->t('days'),
             '#default_value' => isset($data->due) ? $data->due : null,
             '#attributes' => ['placeholder' => $this->t('days')],
+            '#prefix' => "<div class='cell' id=''>",
+            '#suffix' => '</div>',
             '#ajax' => [
                 'callback' => [$this, 'check_day'],
                 'wrapper' => 'calday',
@@ -369,8 +400,8 @@ class Purchase extends FormBase {
         $form['options']['day'] = [
             '#type' => 'item',
             '#markup' => '',
-            '#prefix' => "<div  id='calday'>",
-            '#suffix' => "</div></div>",
+            '#prefix' => "<div class='cell' id='calday'>",
+            '#suffix' => '</div></div></div>',
         ];
 
         $form['options']['comment'] = [
@@ -866,7 +897,7 @@ class Purchase extends FormBase {
             $attachment = "<div class='table' id='purchase_form_att'>"
                     . "<div class='row'>"
                     . "<div class='cell'>"
-                    . "<a href='" . file_create_url($data->uri) . "' target='_blank'>" . $this->t('Attached document') . ":<strong> " . $fparts[0] . "</strong></a></div>"
+                    . "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($data->uri) . "' target='_blank'>" . $this->t('Attached document') . ":<strong> " . $fparts[0] . "</strong></a></div>"
                     . "</div></div>";
 
             $form['file']['attachement'] = [
@@ -924,7 +955,7 @@ class Purchase extends FormBase {
     public function check_aid(array &$form, FormStateInterface $form_state) {
 
         //return alert
-        $coid = $form_state->getValue('head');
+        /*$coid = $form_state->getValue('head');
         $currency = $form_state->getValue('currency');
         $settings = new CompanySettings($coid);
         $aid = $settings->get('liability_account', $currency);
@@ -940,7 +971,41 @@ class Purchase extends FormBase {
             $form['options']['alert']['#markup'] = '';
             $form['options']['alert']['#description'] = '';
         }
-        return $form['options']['alert'];
+        return $form['options']['alert'];*/
+        $description = '';
+        $fx_rate = '';
+        $required = false;
+        if ($form_state->getValue('currency')) {
+            if (!$form_state->getValue('head')) {
+                $description = "<div id='fx' class='messages messages--warning'>"
+                        . $this->t('You need to select header first. You cannot proceed.') . "</div>";
+            } else {
+                $description = '';
+                $settings = new CompanySettings($form_state->getValue('head'));
+                $aid = $settings->get('liability_account', $form_state->getValue('currency'));
+
+                if ($aid == '') {
+                    $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
+                    $description = "<div id='fx' class='messages messages--warning'>"
+                            . $this->t("There is no liability account defined for currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]) . "</div>";
+                } else {
+                    $fx_rate = \Drupal\ek_finance\CurrencyData::rate($form_state->getValue('currency'));
+                    if ($fx_rate == '1') {
+                        // $required  = FALSE;
+                        $form['options']['fx_rate']['#required'] = false;
+                    }
+                    // not base currency
+                    else {
+                        // $required  = TRUE;
+                        $form['options']['fx_rate']['#required'] = true;
+                    }
+                } // else -> aid
+            }// else -> coid
+        }
+
+        $form['options']['fx_rate']['#description'] = $description;
+        $form['options']['fx_rate']['#value'] = $fx_rate;
+        return $form['options']['fx_rate'];
     }
 
     /**
@@ -1209,18 +1274,24 @@ class Purchase extends FormBase {
         $taxvalue = ($form_state->getValue('taxvalue') == '') ? 0 : $taxvalue = $form_state->getValue('taxvalue');
        
         if ($this->moduleHandler->moduleExists('ek_finance')) {
+            
             // used to calculate currency gain/loss from rate at purchase record time
+            $fx_rate = round($form_state->getValue('fx_rate'), 4);
             $baseCurrency = $this->Financesettings->get('baseCurrency');
-            $sumwithtax = $sum + (round($taxable * $taxvalue / 100, 2));
             if ($baseCurrency <> $form_state->getValue('currency')) {
-                $currencyRate = \Drupal\ek_finance\CurrencyData::rate($form_state->getValue('currency'));
+                // $currencyRate = \Drupal\ek_finance\CurrencyData::rate($form_state->getValue('currency'));
                 //calculate the value in base currency of the amount without tax
-                $amountbc = round($sum / $currencyRate, 2);
+                if ($fx_rate <> '' && is_numeric($fx_rate)) {
+                    $currencyRate = $fx_rate;
+                } else {
+                    $currencyRate = \Drupal\ek_finance\CurrencyData::rate($form_state->getValue('currency'));
+                }
+                $amountbase = round($sum / $currencyRate, 4);
             } else {
-                $amountbc = $sum;
+                $amountbase = $sum;
             }
         } else {
-            $amountbc = $sum;
+            $amountbase = $sum;
         }
         $fields1 = array(
             'serial' => $serial,
@@ -1236,8 +1307,8 @@ class Purchase extends FormBase {
             'comment' => Xss::filter($form_state->getValue('comment')),
             'client' => $form_state->getValue('supplier'),
             'amountpaid' => 0,
-            'amountbc' => $amountbc,
-            'balancebc' => $amountbc,
+            'amountbase' => $amountbase,
+            'balancebase' => $amountbase,
             'pdate' => '',
             'bank' => '',
             'terms' => Xss::filter($form_state->getValue('terms')),

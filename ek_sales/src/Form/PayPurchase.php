@@ -394,20 +394,21 @@ class PayPurchase extends FormBase {
         if ($form_state->getValue('fx_rate')) {
             $currencyRate = $form_state->getValue('fx_rate');
         } else {
-            $currencyRate = round($total / $data->amountbc, 2);
+            $currencyRate = round($total / $data->amountbase, 2);
         }
         //because bal. in base currency is without tax, we need to convert the paid value into
         //base currency without tax
         //on short payment we assume tax are paid in full and short payment applies to non taxed portion
         $v1 = ($total_taxable * ($data->taxvalue / 100)) * $this_pay / ($max_pay - $data->amountpaid); //taxed portion value in current payment
         $v2 = ($this_pay - $v1) / $currencyRate; //payment without tax in base currency
-        $balancebc = round($data->balancebc - $v2, 2);
+        $balancebase = round($data->balancebase - $v2, 2);
 
         $fields = array(
             'status' => $paid,
             'amountpaid' => $amountpaid,
-            'balancebc' => $balancebc,
+            'balancebase' => $balancebase,
             'pdate' => $form_state->getValue('date'),
+            'pay_rate' => $form_state->getValue('fx_rate'),
         );
 
         $update = Database::getConnection('external_db', 'external_db')
@@ -454,7 +455,7 @@ class PayPurchase extends FormBase {
                         'taxable' => $taxable,
                         'tax' => $data->taxvalue,
                         'currency' => $data->currency,
-                        'rate' => round($total / $data->amountbc, 4),
+                        'rate' => round($total / $data->amountbase, 4),
                         'fxRate' => $fx,
                     ]
             );

@@ -896,7 +896,7 @@ class ProjectController extends ControllerBase {
                         $href = Url::fromRoute('ek_sales.purchases.print_html', ['id' => $p->id])->toString();
                         $link = '<a title="' . $this->t('view') . '" href="' . $href . '" class="blue" target="_blank">' . $this->t('view') . '</a>';
                         $sum_a = $sum_a + $p->amount;
-                        $sum_abc = $sum_abc + $p->amountbc;
+                        $sum_abc = $sum_abc + $p->amountbase;
                         $more = Url::fromRoute('ek_sales.modal_more', ['param' => 'purchase|' . $p->id])->toString();
                         $psettings = new \Drupal\ek_sales\SalesSettings($p->head);
                         $due = 'green';
@@ -917,7 +917,7 @@ class ProjectController extends ControllerBase {
                             'serial' => $p->serial,
                             'status' => $po_status[$p->status],
                             'amount' => $p->currency . ' ' . number_format($p->amount, 2),
-                            'amountbc' => $baseCurrency . ' ' . number_format($p->amountbc, 2),
+                            'amountbase' => $baseCurrency . ' ' . number_format($p->amountbase, 2),
                             'date' => $p->date,
                             'url' => ['#markup' => $link],
                             'href' => $href,
@@ -1005,7 +1005,7 @@ class ProjectController extends ControllerBase {
                             'serial' => $in->serial,
                             'status' => $invoice_status[$in->status],
                             'amount' => $in->currency . ' ' . number_format($in->amount, 2),
-                            'amountbc' => $baseCurrency . ' ' . number_format($in->amountbase, 2),
+                            'amountbase' => $baseCurrency . ' ' . number_format($in->amountbase, 2),
                             'date' => $in->date,
                             'url' => ['#markup' => $link],
                             'href' => $href,
@@ -1032,7 +1032,7 @@ class ProjectController extends ControllerBase {
                             ->condition('class', $chart['cos'] . '%', 'LIKE');
                     $query->addExpression('SUM(amount)', 'sumValue');
                     $exp5 = $query->execute()->fetchObject()->sumValue;
-                    $data['finance'][0]->expenses5 = $baseCurrency . ' ' . number_format($exp5, 2);
+                    $data['finance'][0]->expenses5 = is_numeric($exp5) ? $baseCurrency . ' ' . number_format($exp5, 2) : 0;
 
                     $query = $this->extdb->select('ek_expenses', 'e');
                     $condition = $query->orConditionGroup()
@@ -1041,8 +1041,8 @@ class ProjectController extends ControllerBase {
                     $query->condition($condition)->condition('pcode', $pcode);
                     $query->addExpression('SUM(amount)', 'sumValue');
                     $exp6 = $query->execute()->fetchObject()->sumValue;
-                    $data['finance'][0]->expenses6 = $baseCurrency . ' ' . number_format($exp6, 2);
-                    $data['finance'][0]->expenses = $baseCurrency . ' ' . number_format($exp5 + $exp6, 2);
+                    $data['finance'][0]->expenses6 = is_numeric($exp6) ? $baseCurrency . ' ' . number_format($exp6, 2) : 0;
+                    $data['finance'][0]->expenses = (is_numeric($exp5) && is_numeric($exp6)) ? $baseCurrency . ' ' . number_format($exp5 + $exp6, 2) : "";
 
 
                     /*
@@ -1072,7 +1072,7 @@ class ProjectController extends ControllerBase {
                             'status' => $memo_status[$memo->status],
                             'status_class' => $stc[$memo->status],
                             'amount' => $memo->currency . ' ' . number_format($memo->value, 2),
-                            'amountbc' => $baseCurrency . ' ' . number_format($memo->value_base, 2),
+                            'amountbase' => $baseCurrency . ' ' . number_format($memo->value_base, 2),
                             'date' => $memo->date,
                             'url' => ['#markup' => $link],
                             'href' => $href,
@@ -1247,7 +1247,6 @@ class ProjectController extends ControllerBase {
                 case 'fields':
                     $fields = array();
                     $prio = array(0 => '', 1 => $this->t('low'), 2 => $this->t('medium'), 3 => $this->t('high'));
-
                     $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
                     $query->fields('p');
                     $query->innerJoin('ek_project_description', 'd', 'd.pcode = p.pcode');
@@ -1263,15 +1262,14 @@ class ProjectController extends ControllerBase {
                     $fields['priority'] = $prio[$data->priority];
 
                     if (in_array(1, $sections)) {
-
                         if ($data) {
                             $fields['submission'] = $data->submission;
                             $fields['deadline'] = $data->deadline;
                             $fields['start_date'] = $data->start_date;
                             $fields['validation'] = $data->validation;
                             $fields['completion'] = $data->completion;
-                            $fields['project_description'] = nl2br($data->project_description);
-                            $fields['project_comment'] = nl2br($data->project_comment);
+                            $fields['project_description'] = isset($data->project_description) ? nl2br($data->project_description) : "";
+                            $fields['project_comment'] = isset($data->project_comment) ? nl2br($data->project_comment) : "";
                             $fields['perso_1'] = $data->perso_1;
                             $fields['perso_2'] = $data->perso_2;
                             $fields['perso_3'] = $data->perso_3;
@@ -1317,7 +1315,7 @@ class ProjectController extends ControllerBase {
                             $fields['incoterm'] = $data->incoterm;
                             $fields['currency'] = $data->currency;
                             $fields['payment'] = is_numeric($v = $data->payment) ? number_format($v, 2) : $v;
-                            $fields['comment'] = nl2br($data->comment);
+                            $fields['comment'] = isset($data->comment) ? nl2br($data->comment) : "";
                         }
                     }
                     if (in_array(4, $sections)) {

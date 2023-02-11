@@ -364,7 +364,7 @@
                                 <tr>
                                     <td style="width:35%;"><a href="{{ item.href }}">{{ item.serial }}</a></td>
                                     <td style="width:25%;">{{ item.amount }}</td>
-                                    <td style="width:25%;">{{ item.amountbc }} </td>
+                                    <td style="width:25%;">{{ item.amountbase }} </td>
                                     <td style="width:5%;"><i class="fa fa-circle {{ item.due }}" aria-hidden="true" title="{{ item.duedate }}"></i> </td>
                                     <td style=""><a class="use-ajax red"  data-accepts="application/vnd.drupal-modal" href="{{ item.more }}">{{ item.status }}</a></td>
                                     
@@ -408,7 +408,7 @@
                                 <tr>
                                     <td style="width:35%;"><a href="{{ item.href }}">{{ item.serial }}</a></td>
                                     <td style="width:25%;">{{ item.amount }}</td>
-                                    <td style="width:25%;">{{ item.amountbc }} </td>
+                                    <td style="width:25%;">{{ item.amountbase }} </td>
                                     <td style="width:5%;"><i class="fa fa-circle {{ item.due }}" aria-hidden="true" title="{{ item.duedate }}"></i> </td>
                                     <td style=""><a class="use-ajax red"  data-accepts="application/vnd.drupal-modal" href="{{ item.more }}">{{ item.status }}</a></td>
                                     
@@ -453,7 +453,7 @@
                                 <tr>
                                     <td style="width:35%;"><a title="{{ item.mission }}" href="{{ item.href }}">{{ item.serial }}</a></td>
                                     <td style="width:25%;">{{ item.amount }}</td>
-                                    <td style="width:25%;">{{ item.amountbc }} </td>
+                                    <td style="width:25%;">{{ item.amountbase }} </td>
                                     <td><i class="fa fa-circle {{ item.status_class }}" aria-hidden="true" title="{{ item.status }}"></i></td>
                                 </tr>
                             {% endfor %} {# memos list #}

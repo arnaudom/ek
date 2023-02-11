@@ -87,7 +87,7 @@ class Tasks extends FormBase {
                 '#attributes' => isset($read['delete']) ? ['disabled' => $read['delete']] : null,
             ];
 
-            $r = null !== ($data->completion_rate) ? $data->completion_rate : 0;
+            $r = (null !== $data->completion_rate) ? $data->completion_rate : 0;
             $form['completion_rate'] = [
                 '#type' => 'range',
                 '#min' => 0,
@@ -114,7 +114,7 @@ class Tasks extends FormBase {
                 '#suffix' => "</div></div>",
             ];
         } else {
-            $form['rate'] = [
+            $form['completion_rate'] = [
                 '#type' => 'hidden',
                 '#value' => 0,
             ];
@@ -384,6 +384,7 @@ class Tasks extends FormBase {
                 'event' => Xss::filter($form_state->getValue('event')),
                 'uid' => $form_state->getValue('uid'),
                 'task' => Xss::filter($form_state->getValue('task')),
+                'weight' => 0,
                 'start' => strtotime($form_state->getValue('start')),
                 'end' => strtotime($form_state->getValue('end')),
                 'completion_rate' => $form_state->getValue('completion_rate'),

@@ -253,13 +253,13 @@ class SalesController extends ControllerBase {
                         . "WHERE client = :abid and status=:s";
             } else {
                 $source = 'purchase';
-                $query = "SELECT sum(amountbc) as total FROM {ek_sales_purchase} "
+                $query = "SELECT sum(amountbase) as total FROM {ek_sales_purchase} "
                         . "WHERE client=:abid";
 
-                $query2 = "SELECT amountbc as amount FROM {ek_sales_purchase} "
+                $query2 = "SELECT amountbase as amount FROM {ek_sales_purchase} "
                         . "WHERE client=:abid";
 
-                $query3 = "SELECT sum(amountbc) as sum FROM {ek_sales_purchase} WHERE "
+                $query3 = "SELECT sum(amountbase) as sum FROM {ek_sales_purchase} WHERE "
                         . "client=:abid AND date like :d";
 
                 $query4 = "SELECT date,pdate FROM {ek_sales_purchase} "
@@ -708,7 +708,7 @@ class SalesController extends ControllerBase {
                 $options = array('width' => '30%',);
                 $settings = new \Drupal\ek_finance\FinanceSettings();
                 $baseCurrency = $settings->get('baseCurrency');
-                $query = 'SELECT currency,amount,amountreceived,pay_date,amountbase,balancebase,taxvalue '
+                $query = 'SELECT currency,amount,amountreceived,date,pay_date,amountbase,balancebase,taxvalue '
                         . 'FROM {ek_sales_invoice} WHERE id=:id';
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
@@ -727,6 +727,8 @@ class SalesController extends ControllerBase {
                         . "</tr>"
                         . "<tr>"
                         . "<td>" . $this->t('Balance') . "</td><td>" . $data->currency . " " . number_format($bal, 2) . "<td>"
+                        . "<tr>"
+                        . "<td>" . $this->t('Exchange rate') . " " . $data->date . "</td><td>"  . round($data->amount/$data->amountbase, 4) . "<td>"
                         . "</tbody></table><br/>";
 
                 if ($this->moduleHandler->moduleExists('ek_finance')) {
@@ -741,14 +743,14 @@ class SalesController extends ControllerBase {
                 $options = array('width' => '30%',);
                 $settings = new \Drupal\ek_finance\FinanceSettings();
                 $baseCurrency = $settings->get('baseCurrency');
-                $query = 'SELECT currency,amount,amountpaid,pdate,amountbc,balancebc,taxvalue '
+                $query = 'SELECT currency,amount,amountpaid,pdate,amountbase,balancebase,taxvalue '
                         . 'FROM {ek_sales_purchase} WHERE id=:id';
                 $data = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $id))
                         ->fetchObject();
                 $gross = $data->amount + (round($data->amount * $data->taxvalue / 100, 2));
                 $bal = $gross - $data->amountpaid;
-                $base = $data->amountbc - $data->balancebc;
+                $base = $data->amountbase - $data->balancebase;
 
                 $content['#markup'] = "<table>"
                         . "<tbody>"
@@ -760,6 +762,8 @@ class SalesController extends ControllerBase {
                         . "</tr>"
                         . "<tr>"
                         . "<td>" . $this->t('Balance') . "</td><td>" . $data->currency . " " . number_format($bal, 2) . "<td>"
+                        . "<tr>"
+                        . "<td>" . $this->t('Exchange rate') . " " . $data->date . "</td><td>"  . round($data->amount/$data->amountbase, 4) . "<td>"
                         . "</tbody></table><br/>";
 
                 if ($this->moduleHandler->moduleExists('ek_finance')) {

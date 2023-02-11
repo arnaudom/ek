@@ -355,3 +355,38 @@ function ek_sales_update_8016() {
         $settings->save();
     }
 }
+
+/**
+ * add field for exchange rate
+*/
+function ek_sales_update_8017() {
+    $schema = Database::getConnection('external_db','external_db')->schema();
+    if(!$schema->fieldExists('ek_sales_invoice', 'pay_rate')) {   
+        $spec = array(
+            'description' => 'exchange from receipt',
+            'type' => 'float',
+            'not null' => False,
+            'default' => 0,
+        );
+        $schema->addField('ek_sales_invoice', 'pay_rate', $spec); 
+    }
+    
+    // change field names to for standardisation
+    if(!$schema->fieldExists('ek_sales_purchase', 'amountbase')) {  
+        Database::getConnection('external_db', 'external_db')->query("ALTER TABLE `ek_sales_purchase`
+        CHANGE COLUMN `amountbc` `amountbase` DOUBLE(22,0) NULL DEFAULT '0' AFTER `amountpaid`;");
+    }
+    if(!$schema->fieldExists('ek_sales_purchase', 'balancebase')) {
+        Database::getConnection('external_db', 'external_db')->query("ALTER TABLE `ek_sales_purchase`
+        CHANGE COLUMN `balancebc` `balancebase` DOUBLE(22,0) NULL DEFAULT '0' AFTER `amountbase`;");
+    }
+    if(!$schema->fieldExists('ek_sales_purchase', 'pay_rate')) {   
+        $spec = array(
+            'description' => 'exchange from payment',
+            'type' => 'float',
+            'not null' => False,
+            'default' => 0,
+        );
+        $schema->addField('ek_sales_purchase', 'pay_rate', $spec); 
+    }
+}

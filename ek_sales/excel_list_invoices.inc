@@ -26,36 +26,40 @@ $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue('H3', (string) t('Status'))
         ->setCellValue('I3', (string) t('Amount'))
         ->setCellValue('J3', (string) t('Currency'))
-        ->setCellValue('K3', (string) t('Tax value'))
-        ->setCellValue('L3', (string) t("Amount in base currency") . " " . $baseCurrency)
-        ->setCellValue('M3', (string) t('Amount paid'))
-        ->setCellValue('N3', (string) t('Pay date'))
-        ->setCellValue('O3', (string) t('Project'))
-        ->setCellValue('P3', (string) t('Client'))
-        ->setCellValue('Q3', (string) t('Comment'));
+        ->setCellValue('K3', (string) t('Ex. rate'))
+        ->setCellValue('L3', (string) t('Tax value'))
+        ->setCellValue('M3', (string) t("Amount in base currency") . " " . $baseCurrency)
+        ->setCellValue('N3', (string) t('Amount paid'))
+        ->setCellValue('O3', (string) t('Payment ex. rate'))
+        ->setCellValue('P3', (string) t('Pay date'))
+        ->setCellValue('Q3', (string) t('Project'))
+        ->setCellValue('R3', (string) t('Client'))
+        ->setCellValue('S3', (string) t('Comment'));
 
-$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(5);
+$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(8);
 $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
 $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(10);
-$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
-$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(10);
+$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(10);
 $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(10);
-$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
+$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(8);
 $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(5);
-$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(8);
-$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
-$objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(12);
-$objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(12);
-$objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(18);
-$objPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(20);
+$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(10);
+$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(8);
+$objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(10);
+$objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(5);
+$objPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(10);
 $objPHPExcel->getActiveSheet()->getColumnDimension('Q')->setWidth(15);
-$objPHPExcel->getActiveSheet()->getStyle('A3:Q3')->getFill()
+$objPHPExcel->getActiveSheet()->getColumnDimension('R')->setWidth(15);
+$objPHPExcel->getActiveSheet()->getColumnDimension('S')->setWidth(20);
+$objPHPExcel->getActiveSheet()->getStyle('A3:S3')->getFill()
         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-$objPHPExcel->getActiveSheet()->getStyle('A3:Q3')
+$objPHPExcel->getActiveSheet()->getStyle('A3:S3')
         ->getFill()->getStartColor()->setARGB('66b2ff');
-$objPHPExcel->getActiveSheet()->getStyle('A3:Q3')
+$objPHPExcel->getActiveSheet()->getStyle('A3:S3')
         ->applyFromArray(
                 [
                     'font' => array(
@@ -86,14 +90,18 @@ WHILE ($data = $result->fetchAssoc()) {
     $l = $l + 1; // line index
 
     if ($l & 1) {
-        $row = "A" . $l . ":Q" . $l;
+        $row = "A" . $l . ":S" . $l;
         $objPHPExcel->getActiveSheet()->getStyle($row)
                 ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $objPHPExcel->getActiveSheet()->getStyle($row)
                 ->getFill()->getStartColor()->setARGB('e6e6fa');
     }
 
-
+    if( $data['amountbase']) {
+        $exrate = round($data['amount'] / $data['amountbase'] , 4);
+    } else {
+        $exrate = "";
+    }
     $tax = round($data['taxvalue'] * $data['amount'] / 100, 2);
     $total += $data['amountbase'];
 
@@ -107,18 +115,20 @@ WHILE ($data = $result->fetchAssoc()) {
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $status[$data['status']]);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $data['amount']);
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $data['currency']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $tax);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $data['amountbase']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $data['amountreceived']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $data['pay_date']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", $data['pcode']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("P$l", $data['name']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("Q$l", $data['comment']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $exrate);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $tax);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $data['amountbase']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $data['amountreceived']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", $data['pay_rate']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("P$l", $data['pay_date']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("Q$l", $data['pcode']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("R$l", $data['name']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("S$l", $data['comment']);
 }
 $l += 1;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", (string) t('TOTAL'));
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $total);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $baseCurrency);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $total);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $baseCurrency);
 
 $date = date('Y-m-d h:i:s');
 $l += 2;

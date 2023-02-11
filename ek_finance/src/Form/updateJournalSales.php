@@ -287,7 +287,7 @@ class updateJournalSales extends FormBase {
                         $tax = 0;
                     }
                     if ($baseCurrency != $purchase->currency) {
-                        $currencyRate = round($purchase->amount / $purchase->amountbc, 2);
+                        $currencyRate = round($purchase->amount / $purchase->amountbase, 2);
                     } else {
                         $currencyRate = 1;
                     }

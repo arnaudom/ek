@@ -39,13 +39,18 @@ class ProjectPostitBlock extends BlockBase {
             $path = \Drupal::service('path.current')->getPath();
             $parts = explode('/', $path);
             $id = array_pop($parts);
+            $post = [];
            
             $query = Database::getConnection('external_db', 'external_db')
                       ->select('ek_project_actionplan', 'a');
             $query->fields('a',['ap_doc']);
             $query->leftJoin('ek_project', 'p', 'p.pcode=a.pcode');
             $query->condition('p.id', $id, '=');
-            $post = unserialize($query->execute()->fetchField());
+            $data = $query->execute()->fetchField();
+            if($data) {
+                $post = unserialize($data);
+            }
+            
             
             $text = isset($post[\Drupal::currentUser()->id()]) ? $post[\Drupal::currentUser()->id()] : '?';
                       
@@ -54,9 +59,6 @@ class ProjectPostitBlock extends BlockBase {
             $list .= '</div>';
             $items['title'] = $this->t('Post-it');
             $items['content'] = $list;
-        
-
-
 
         return array(
             '#markup' => $list,

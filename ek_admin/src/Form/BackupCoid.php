@@ -7,11 +7,12 @@
 
 namespace Drupal\ek_admin\Form;
 
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
-use Drupal\Core\Extension\ModuleHandler;
 use Drupal\user\Entity\User;
+use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
@@ -292,7 +293,7 @@ class BackupCoid extends FormBase
 
             $fields = "`id`,`currency`,`name`,`rate`,`active`,`date`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' ORDER by id';
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, 'no');
             
         
             ///////////////
@@ -374,7 +375,7 @@ class BackupCoid extends FormBase
             $fields = "`id`,`settings`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' ';
             
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd,'no');
             
            
             ////////////////////
@@ -500,7 +501,23 @@ class BackupCoid extends FormBase
                     . 'WHERE coid=:c ORDER by ' . $table . '.id ';
             
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
-                       
+            
+            ////////////////////////
+            //journal reconciliation
+            ////////////////////////
+
+            $table = 'ek_journal';
+            
+            $file .= " #--------------------------------------------------------" . $lineEnd;
+            $file .= " # Table  " . $table . $lineEnd;
+            $file .= " #--------------------------------------------------------" . $lineEnd;
+
+            $fields = $table .".`id`,`aid`,`count`,`exchange`,`coid`,`type`,`source`,`reference`, "
+                    . "`date`, `value`, `reconcile`, `currency`, `comment`";
+            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ORDER by ' . $table . '.id';
+
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
+            
             ////////////////////////
             //journal reconciliation
             ////////////////////////
@@ -587,7 +604,7 @@ class BackupCoid extends FormBase
             
             $fields = $table .".`id`,`serial`,`do_no`,`po_no`,`head`,`allocation`,`status`,`amount`, "
                     . "`currency`, `date`, `title`, `type`, `pcode`, `comment`,`client`,"
-                    . "`amountreceived`,`pay_date`,`class`,`amountbase`,`balancebase`,`terms`,"
+                    . "`amountreceived`,`pay_rate`,`pay_date`,`class`,`amountbase`,`balancebase`,`terms`,"
                     . "`due`,`bank`,`tax`,`taxvalue`,`reconcile`,`alert`,`alert_who`,`balance_post`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE head=:c ';
 
@@ -642,8 +659,8 @@ class BackupCoid extends FormBase
             
             $fields = $table .".`id`,`serial`,`head`,`allocation`,`status`,`amount`, "
                     . "`currency`, `date`, `title`, `type`, `pcode`, `comment`,`client`,"
-                    . "`amountpaid`,`amountbc`,`balancebc`,`bank`,`tax`,`taxvalue`,"
-                    . "`terms`,`due`,`pdate`,`pay_ref`,`reconcile`,`alert`,`alert_who`,`uri`";
+                    . "`amountpaid`,`amountbase`,`balancebase`,`bank`,`tax`,`taxvalue`,"
+                    . "`terms`,`due`,`pay_rate`,`pdate`,`pay_ref`,`reconcile`,`alert`,`alert_who`,`uri`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE head=:c ';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
@@ -732,7 +749,7 @@ class BackupCoid extends FormBase
             $fields = $table .".`id`,`field`,`name`,`active`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table ;
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd,'no');
             
             ////////////////
             //sales docs
@@ -984,7 +1001,7 @@ class BackupCoid extends FormBase
             $fields = $table .".`id`,`settings`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' ';
 
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd,'no');
             
             ///////////////////////
             //items
@@ -1099,7 +1116,7 @@ class BackupCoid extends FormBase
             //keep references to extract address book data
             $query = "SELECT distinct client_id FROM {ek_project}";
             $abid_projects = Database::getConnection('external_db', 'external_db')
-                    ->query($query, [':c' => $coid])
+                    ->query($query)
                     ->fetchCol();
         }
         
@@ -1159,7 +1176,23 @@ class BackupCoid extends FormBase
                     . ''. $table .'.abid = b.id WHERE  FIND_IN_SET (b.id, :c ) ORDER by ' . $table . '.abid';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, $condition);
-        }
+        }            
+            ///////////////////////
+            //address book bank
+            ///////////////////////
+
+            $table = 'ek_address_book_bank';
+            
+            $file .= " #--------------------------------------------------------" . $lineEnd;
+            $file .= " # Table  " . $table . $lineEnd;
+            $file .= " #--------------------------------------------------------" . $lineEnd;
+            
+            $fields = $table .".`id`,`abid`," . $table .".`name`,`beneficiary`,`address1`, " . $table .".`address2`,"
+                    . "" . $table .".`postcode`," . $table .".`country`,`account`,`swift`,`bank_code`,`currency`";
+            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_address_book} b ON '
+                    . ''. $table .'.abid = b.id WHERE  FIND_IN_SET (b.id, :c ) ORDER by ' . $table . '.id';
+
+            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd, $condition);
         
         if ($this->moduleHandler->moduleExists('ek_logistics')) {
             ////////////////////
@@ -1249,8 +1282,9 @@ class BackupCoid extends FormBase
         }
          
         $name = md5(date('U')) . '.sql';
-        $sql = file_save_data($file, 'private://tmp/' . $name, null);
-        
+        // $sql = file_save_data($file, 'private://tmp/' . $name, null);
+        // $sql = \Drupal::service('file_system')->saveData($file,'private://tmp/'. $name);
+        $sql = \Drupal::service('file.repository')->writeData($file,'private://tmp/'. $name);
         if ($sql) {
             $id = \Drupal::currentUser()->id();
             if ($id) {
@@ -1287,15 +1321,21 @@ class BackupCoid extends FormBase
                     ->fetchAssoc();
 
         $file .= str_replace('"', '`', $data['Create Table']) . ';' . $lineEnd;
-            
-        if ($condition) {
+        
+        if($condition == 'no') {
+            $data = Database::getConnection('external_db', 'external_db')
+                    ->query($query);
+        } elseif ($condition) {
             $a = [':c' => $condition];
+            $data = Database::getConnection('external_db', 'external_db')
+                    ->query($query, $a);
         } else {
             $a = [':c' => $coid];
+            $data = Database::getConnection('external_db', 'external_db')
+                    ->query($query, $a);
         }
 
-        $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, $a);
+        
         
         $rows = '';
         $i = 0;

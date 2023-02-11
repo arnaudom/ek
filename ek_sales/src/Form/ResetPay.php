@@ -117,16 +117,19 @@ class ResetPay extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
         switch ($form_state->getValue('for_doc')) {
             case 'invoice':
-                $query = "SELECT amountbase from {ek_sales_invoice} where id=:id";
-                $ab = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $form_state->getValue('for_id')))
-                        ->fetchField();
+                $i = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_sales_invoice', 'i')
+                        ->fields('i',)
+                        ->condition('id', $form_state->getValue('for_id'))
+                        ->execute()
+                        ->fetchObject();
 
                 $fields = [
                     'status' => 0,
                     'amountreceived' => 0,
-                    'balancebase' => $ab,
-                    'pay_date' => ''
+                    'balancebase' => $i->amountbase,
+                    'pay_date' => '',
+                    'pay_rate' => 0
                 ];
 
                 $update = Database::getConnection('external_db', 'external_db')
@@ -139,24 +142,56 @@ class ResetPay extends FormBase {
                     $delete = Database::getConnection('external_db', 'external_db')
                             ->delete('ek_journal')
                             ->condition('reference', $form_state->getValue('for_id'))
-                            ->condition('coid', $form_state->getValue('for_coid'))
-                            ->condition('source', 'receipt')
-                            ->execute();
+                            ->condition('coid', $form_state->getValue('for_coid'));
+                    if ($i->type == 4) {
+                        // this is a CN
+                        $delete->condition('source', 'invoice cn');
+                    } else {
+                        $delete->condition('source', 'receipt');
+                    }
+
+                    $delete->execute();
+                }
+
+                if ($i->type == 4) {
+                    // reset the assigned invoice to CN
+                    $code = explode(" ", $i->comment);
+                    $iassigned = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_sales_invoice', 's')
+                            ->fields('s')
+                            ->condition('serial', $code[2])
+                            ->execute()
+                            ->fetchObject();
+                    $updatei = Database::getConnection('external_db', 'external_db')
+                            ->update('ek_sales_invoice')
+                            ->condition('id', $iassigned->id);
+                    if ($i->amount == $iassigned->amountreceived) {
+                        $updatei->fields(['status' => 0, 'amountreceived' => 0, 'balancebase' => $iassigned->amountbase]);
+                    } else {
+                        $ar = $iassigned->amountreceived - $i->amount;
+                        $bb = $iassigned->balancebase + $i->amountbase;
+                        $updatei->fields(['status' => 2, 'amountreceived' => $ar, 'balancebase' => $bb]);
+                    }
+
+                    $updatei->execute();
                 }
 
                 break;
 
             case 'purchase':
-                $query = "SELECT amountbc from {ek_sales_purchase} where id=:id";
-                $ab = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $form_state->getValue('for_id')))
-                        ->fetchField();
+                $p = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_sales_purchase', 'p')
+                        ->fields('p',)
+                        ->condition('id', $form_state->getValue('for_id'))
+                        ->execute()
+                        ->fetchObject();
 
                 $fields = [
                     'status' => 0,
                     'amountpaid' => 0,
-                    'balancebc' => $ab,
-                    'pdate' => ''
+                    'balancebase' => $p->balancebase,
+                    'pdate' => '',
+                    'pay_rate' => 0
                 ];
 
                 $update = Database::getConnection('external_db', 'external_db')
@@ -169,10 +204,41 @@ class ResetPay extends FormBase {
                     $delete = Database::getConnection('external_db', 'external_db')
                             ->delete('ek_journal')
                             ->condition('reference', $form_state->getValue('for_id'))
-                            ->condition('coid', $form_state->getValue('for_coid'))
-                            ->condition('source', 'payment')
-                            ->execute();
+                            ->condition('coid', $form_state->getValue('for_coid'));
+                    
+                    if ($p->type == 4) {
+                        // this is a CN
+                        $delete->condition('source', 'purchase dn');
+                    } else {
+                        $delete->condition('source', 'payment');
+                    }
+                            
+                    $delete->execute();
                 }
+                
+                if ($p->type == 4) {
+                    // reset the assigned purchase to DN
+                    $code = explode(" ", $p->comment);
+                    $passigned = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_sales_purchase', 'p')
+                            ->fields('p')
+                            ->condition('serial', $code[2])
+                            ->execute()
+                            ->fetchObject();
+                    $updatep = Database::getConnection('external_db', 'external_db')
+                            ->update('ek_sales_purchase')
+                            ->condition('id', $passigned->id);
+                    if ($p->amount == $passigned->amountpaid) {
+                        $updatep->fields(['status' => 0, 'amountpaid' => 0, 'balancebase' => $passigned->amountbase]);
+                    } else {
+                        $ar = $passigned->amountreceived - $p->amount;
+                        $bb = $passigned->balancebase + $p->amountbase;
+                        $updatep->fields(['status' => 2, 'amountreceived' => $ar, 'balancebase' => $bb]);
+                    }
+
+                    $updatep->execute();
+                }
+                                
                 break;
         }
 

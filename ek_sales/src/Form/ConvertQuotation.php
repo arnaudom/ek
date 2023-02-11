@@ -1249,9 +1249,9 @@ class ConvertQuotation extends FormBase {
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $sumwithtax = $sum + (round($taxable * $taxvalue / 100, 2));
             if ($baseCurrency <> $form_state->getValue('currency')) {
-                $amountbc = round($sumwithtax / $currencyRate, 2);
+                $amountbase = round($sumwithtax / $currencyRate, 2);
             } else {
-                $amountbc = $sumwithtax;
+                $amountbase = $sumwithtax;
             }
         }
         $options = array('1' => 'Invoice', '2' => 'Commercial invoice', '4' => 'Credit note');
@@ -1270,8 +1270,8 @@ class ConvertQuotation extends FormBase {
             'client' => $form_state->getValue('client'),
             'amountreceived' => 0,
             'pay_date' => '',
-            'amountbase' => $amountbc,
-            'balancebase' => $amountbc,
+            'amountbase' => $amountbase,
+            'balancebase' => $amountbase,
             'terms' => Xss::filter($form_state->getValue('terms')),
             'due' => $due,
             'bank' => $form_state->getValue('bank_account'),

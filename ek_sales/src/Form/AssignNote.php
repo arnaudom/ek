@@ -410,7 +410,7 @@ class AssignNote extends FormBase {
         if(!null == ($cn_data->amountbase)) {
             $original_fx_rate = round($cn_data->amount / $cn_data->amountbase, 4); //original rate used to calculate currency gain/loss
         } else {
-             $original_fx_rate = round($cn_data->amount / $cn_data->amountbc, 4); 
+             $original_fx_rate = round($cn_data->amount / $cn_data->amountbase, 4); 
         }
 
         if ($this->moduleHandler->moduleExists('ek_finance') && $this_cn > 0) {
@@ -457,12 +457,13 @@ class AssignNote extends FormBase {
                 'amountreceived' => $assign_data->amountreceived + $this_cn_tax,
                 'balancebase' => $balancebase,
                 'pay_date' => $form_state->getValue('date'),
+                
             );
         } else {
             $fields = array(
                 'status' => $paid,
                 'amountpaid' => $assign_data->amountpaid + $this_cn_tax,
-                'balancebc' => $balancebase,
+                'balancebase' => $balancebase,
                 'pdate' => $form_state->getValue('date'),
             );
         }
@@ -480,13 +481,15 @@ class AssignNote extends FormBase {
                 'amountreceived' => $this_cn,
                 'balancebase' => 0,
                 'pay_date' => $form_state->getValue('date'),
+                'comment' => 'Applied to ' . $assign_data->serial
             );
         } else {
             $fields = array(
                 'status' => 1,
                 'amountpaid' => $this_cn,
-                'balancebc' => 0,
+                'balancebase' => 0,
                 'pdate' => $form_state->getValue('date'),
+                'comment' => 'Applied to ' . $assign_data->serial
             );
         }
 

@@ -1368,12 +1368,12 @@ class Invoice extends FormBase {
             $sumwithtax = $sum + (round($taxable * $taxvalue / 100, 2));
             if ($baseCurrency <> $form_state->getValue('currency')) {
                 //calculate the value in base currency of the amount without tax
-                $amountbc = round($sum / $currencyRate, 2);
+                $amountbase = round($sum / $currencyRate, 2);
             } else {
-                $amountbc = $sum;
+                $amountbase = $sum;
             }
         } else {
-            $amountbc = $sum;
+            $amountbase = $sum;
         }
 
 
@@ -1393,8 +1393,8 @@ class Invoice extends FormBase {
             'client' => $form_state->getValue('client'),
             'amountreceived' => 0,
             'pay_date' => '',
-            'amountbase' => $amountbc,
-            'balancebase' => $amountbc,
+            'amountbase' => $amountbase,
+            'balancebase' => $amountbase,
             'terms' => Xss::filter($form_state->getValue('terms')),
             'due' => $due,
             'bank' => $form_state->getValue('bank_account'),

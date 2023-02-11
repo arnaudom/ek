@@ -604,6 +604,7 @@ class ReceiveInvoice extends FormBase {
             'amountreceived' => $amountpaid,
             'balancebase' => $balancebase,
             'pay_date' => $form_state->getValue('date'),
+            'pay_rate' => $form_state->getValue('fx_rate'),
         );
 
         $update = Database::getConnection('external_db', 'external_db')

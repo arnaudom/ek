@@ -1205,13 +1205,17 @@ class InvoicesController extends ControllerBase {
                     ]
                 ];
                 $ops[] = ['title' => ''];
-                
+                if($r->end) {
+                    $period = date('Y-m-d', $r->start) . ' -> ' . date('Y-m-d', $r->end);
+                } else {
+                    $period = date('Y-m-d', $r->start). ' -> ?';
+                }
                 $data['list'][$r->id] = [
                     'color' => ['data' => ['#markup' => ''], 'style' => ['background-color:' . $r->color]],
                     'serial' => ['data' => ['#markup' => $number]],
                     'username' => $username,
                     'task' => ['data' => ['#markup' => $task],],
-                    'period' => date('Y-m-d', $r->start) . ' -> ' . date('Y-m-d', $r->end),
+                    'period' => $period,
                     'expired' => $expired,
                     'rate' => ['data' => ['#markup' => "<meter title='" . $r->completion_rate . "%'  value=" . $r->completion_rate . " max=100>". $r->completion_rate." %</meter>"]],
                     'who' => $who,
