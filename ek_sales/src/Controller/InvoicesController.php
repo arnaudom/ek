@@ -154,7 +154,7 @@ class InvoicesController extends ControllerBase {
 
                 $or2 = $query->orConditionGroup();
                 if ($_SESSION['ifilter']['status'] == 3) {
-                    //any status
+                    // any status
                     $or2->condition('i.status', $_SESSION['ifilter']['status'], '<');
                 } elseif ($_SESSION['ifilter']['status'] == 0) {
                     //unpaid
@@ -185,10 +185,12 @@ class InvoicesController extends ControllerBase {
                         ->orderBy('id', 'ASC')
                         ->execute();
             } else {
-                //search based on keyword
+                // search based on keyword
                 $or2 = $query->orConditionGroup();
                 $or2->condition('i.serial', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
                 $or2->condition('i.pcode', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
+                $or2->condition('i.po_no', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
+                $or2->condition('i.comment', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
                 $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
                     'amount', 'amountreceived', 'pcode', 'taxvalue', 'pay_date', 'alert', 'type');
                 $data = $query

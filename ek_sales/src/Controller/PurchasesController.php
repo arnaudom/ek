@@ -186,6 +186,7 @@ class PurchasesController extends ControllerBase {
                 $or2 = $query->orConditionGroup();
                 $or2->condition('p.serial', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
                 $or2->condition('p.pcode', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
+                $or2->condition('p.comment', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
                 $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
                     'amount', 'amountpaid', 'pcode', 'taxvalue', 'pdate', 'alert', 'alert_who', 'uri', 'type');
                 $data = $query
