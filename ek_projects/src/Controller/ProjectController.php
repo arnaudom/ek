@@ -128,7 +128,7 @@ class ProjectController extends ControllerBase {
                             ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
                             ->limit(10)->orderBy('id', 'ASC')
                             ->execute();
-                } else {
+                } else { 
                     $key = Xss::filter($_SESSION['pjfilter']['keyword']);
                     $keyword1 = trim($key) . '%';
                     $keyword2 = '%' . trim($key) . '%';
@@ -138,6 +138,7 @@ class ProjectController extends ControllerBase {
                     $or = $query->orConditionGroup();
                     $or->condition('p.pname', $keyword2, 'like');
                     $or->condition('d.filename', $keyword2, 'like');
+                    $or->condition('d.comment', $keyword2, 'like');
                     $or->condition('t.project_description', $keyword2, 'like');
                     $or->condition('t.project_comment', $keyword2, 'like');
                     $data = $query
@@ -180,7 +181,7 @@ class ProjectController extends ControllerBase {
                 }
 
                 if ($_SESSION['pjfilter']['supplier'] != '%') {
-                    //a project can have multiple suppliers
+                    // a project can have multiple suppliers
 
                     $or = $query->orConditionGroup();
                     foreach ($_SESSION['pjfilter']['supplier'] as $key => $id) {
