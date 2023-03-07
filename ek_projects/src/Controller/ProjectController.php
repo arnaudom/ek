@@ -1717,6 +1717,14 @@ class ProjectController extends ControllerBase {
                 $p['pcode'] = $file->pcode;
                 $data['attach_file'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\AttFilePurchase', $p);
             }
+
+            // insert a form to edit the file comment
+                $p['id'] = $id;
+                $p['filename'] = $file->filename;
+                $p['pcode'] = $file->pcode;
+                $p['comment'] = $file->comment;
+                $data['edit_file_comment'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\EditFileComment', $p);
+            
             
             $content = [
                 '#items' => $data,

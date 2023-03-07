@@ -19,6 +19,9 @@
 
         </ul>
     {% endif %}
+    {% if items.edit_file_comment %}
+        {{ items.edit_file_comment }}
+        {% endif %}
     {% if items.linked %}
         {{ items.move_file }}
         {% endif %}
