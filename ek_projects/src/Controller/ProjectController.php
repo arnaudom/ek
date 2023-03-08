@@ -130,6 +130,10 @@ class ProjectController extends ControllerBase {
                             ->execute();
                 } else { 
                     $key = Xss::filter($_SESSION['pjfilter']['keyword']);
+                    if (preg_match('/#+[0-9]+/', $key)) {
+                        // to force numeric search user added # to a number
+                        $key = preg_replace('/#/', '', $key);
+                    }
                     $keyword1 = trim($key) . '%';
                     $keyword2 = '%' . trim($key) . '%';
                     $query = $this->extdb->select('ek_project', 'p');

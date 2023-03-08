@@ -13,7 +13,6 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Database\Database;
 
 /**
@@ -104,7 +103,7 @@ class EditFileComment extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
         $f = Database::getConnection('external_db', 'external_db')
                 ->update('ek_project_documents')
-                ->fields(['comment' => Xss::filter( $form_state->getValue('comment') )])
+                ->fields(['comment' => filter_var($form_state->getValue('comment'), FILTER_SANITIZE_SPECIAL_CHARS)])
                 ->condition('id', $form_state->getValue('fid'))
                 ->execute(); 
         if ($f) {
