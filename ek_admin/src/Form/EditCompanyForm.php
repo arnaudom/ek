@@ -393,7 +393,7 @@ class EditCompanyForm extends FormBase
             );
         }
 
-        //admin data
+        // admin data
         $form['f'] = array(
             '#type' => 'details',
             '#title' => $this->t('Other settings'),
@@ -401,11 +401,11 @@ class EditCompanyForm extends FormBase
             '#collapsed' => false,
         );
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-            //choice to load standard account or use othe company accunts
+            // choice to load standard account or use othe company accunts
 
 
             if (!isset($id)) {
-                //new company
+                // new company
                 $option = [0 => $this->t('Default standard')];
                 $t = $this->t('Copy from') . ":";
                 $option[$t] = Database::getConnection('external_db', 'external_db')
@@ -587,6 +587,7 @@ class EditCompanyForm extends FormBase
             'postcode' => $form_state->getValue('postcode'),
             'postcode2' => $form_state->getValue('postcode2'),
             'country' => $form_state->getValue('country'),
+            'country2' => $form_state->getValue('country2'),
             'telephone' => $form_state->getValue('telephone'),
             'telephone2' => $form_state->getValue('telephone2'),
             'fax' => $form_state->getValue('fax'),
