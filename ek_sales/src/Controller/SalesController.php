@@ -278,9 +278,8 @@ class SalesController extends ControllerBase {
             $data = Database::getConnection('external_db', 'external_db')
                     ->query($query2, $a);
 
-            $inv = array();
+            $inv = [0];
             while ($d = $data->fetchObject()) {
-                ;
                 array_push($inv, $d->amount);
             }
             $items['invoices'] = array(
