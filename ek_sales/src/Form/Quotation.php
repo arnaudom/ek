@@ -380,7 +380,7 @@ class Quotation extends FormBase {
             $form['options']['revision'] = [
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => [revision => $revision, 'new' => $this->t('new revision')],
+                '#options' => ['revision' => $revision, 'new' => $this->t('new revision')],
                 '#required' => true,
                 '#default_value' => $revision,
                 '#title' => $this->t('current revision'),
