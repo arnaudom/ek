@@ -453,7 +453,7 @@ class SettingsFormCustomize extends FormBase {
             
             // convert rgb used color to valid format for form
             if(isset($s[$tpl[1]]['header']['color'])){
-                $c = ColorUtility::rgbToHex(isset($s[$tpl[1]]['footer']['color']));
+                $c = ColorUtility::rgbToHex($s[$tpl[1]]['footer']['color']);
             } else {
                 $c = ColorUtility::rgbToHex('128,128,128');
             }
@@ -569,8 +569,8 @@ class SettingsFormCustomize extends FormBase {
             ];
             
             // convert rgb used color to valid format for form
-            if(isset($s[$tpl[1]]['feature']['colortitle'])){
-                $c = ColorUtility::rgbToHex(isset($s[$tpl[1]]['feature']['colortitle']));
+            if(isset($s[$tpl[1]]['feature']['colortitle'])){ 
+                $c = ColorUtility::rgbToHex($s[$tpl[1]]['feature']['colortitle']);
             } else {
                 $c = ColorUtility::rgbToHex('120,150,190');
             }
@@ -584,7 +584,7 @@ class SettingsFormCustomize extends FormBase {
             
             // convert rgb used color to valid format for form
             if(isset($s[$tpl[1]]['feature']['color'])){
-                $c = ColorUtility::rgbToHex(isset($s[$tpl[1]]['feature']['color']));
+                $c = ColorUtility::rgbToHex($s[$tpl[1]]['feature']['color']);
             } else {
                 $c = ColorUtility::rgbToHex('128,128,128');
             }
@@ -704,7 +704,7 @@ class SettingsFormCustomize extends FormBase {
             
             // convert rgb used color to valid format for form
             if(isset($s[$tpl[1]]['body']['color'])){
-                $c = ColorUtility::rgbToHex(isset($s[$tpl[1]]['body']['color']));
+                $c = ColorUtility::rgbToHex($s[$tpl[1]]['body']['color']);
             } else {
                 $c = ColorUtility::rgbToHex('128,128,128');
             }
