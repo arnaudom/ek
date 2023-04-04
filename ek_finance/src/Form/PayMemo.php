@@ -491,7 +491,7 @@ class PayMemo extends FormBase {
                 'comment' => $form_state->getValue('description' . $i),
                 'pcode' => $data->pcode,
                 'clientname' => $data->client,
-                'suppliername' => 'not supplier related',
+                'suppliername' => 'n/a',
                 'receipt' => 'yes',
                 'employee' => $employee,
                 'status' => 'paid',
