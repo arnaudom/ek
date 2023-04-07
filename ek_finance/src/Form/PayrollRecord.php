@@ -439,10 +439,10 @@ class PayrollRecord extends FormBase {
      *
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-        $data = $form_state->getValue('HrTable');
+        $data = $form_state->getValue('HrTable'); 
         $n = 0;
-        foreach ($data as $key => $value) {
-            if ($key != 'coid' && $value['select'] == 1) {
+        foreach ($data as $key => $value) { 
+            if ($key != 'coid' && $key != 'month' && $value['select'] == 1) {
                 $n++;
                 if ($value['account'] == '' || !is_numeric($value['account'])) {
                     $form_state->setErrorByName(
@@ -495,7 +495,7 @@ class PayrollRecord extends FormBase {
         $bank_acc_list = $query->fetchAllKeyed();
 
         foreach ($array as $key => $value) {
-            if ($key != 'coid' && $value['select'] == 1) {
+            if ($key != 'coid' && $key != 'month' && $value['select'] == 1) {
                 $class = substr($value["account"], 0, 2);
                 $allocation = $coid;
                 $date = explode("-", $value['payDate']);
