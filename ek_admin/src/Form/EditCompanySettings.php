@@ -146,8 +146,20 @@ class EditCompanySettings extends FormBase
                 if ($settings->get('wtax_rate') == '') {
                     $miss['wtax_rate'] = $this->t('Secondary rate of tax');
                 }
-                if ($settings->get('wtax_name') == '') {
-                    $miss['wtax_name'] = $this->t('Default name of secondary tax');
+                if ($settings->get('ytax_name') == '') {
+                    $miss['ytax_name'] = $this->t('Default name of third tax');
+                }
+                if ($settings->get('ytax_collect_aid') == '') {
+                    $miss['ytax_collect_aid'] = $this->t('Third collection account for tax');
+                }
+                if ($settings->get('ytax_deduct_aid') == '') {
+                    $miss['ytax_deduct_aid'] = $this->t('Third deduction account for tax');
+                }
+                if ($settings->get('ytax_rate') == '') {
+                    $miss['ytax_rate'] = $this->t('Third rate of tax');
+                }
+                if ($settings->get('ytax_name') == '') {
+                    $miss['ytax_name'] = $this->t('Default name of Third tax');
                 }
                 if ($settings->get('CurrencyGainLoss') == '') {
                     $miss['CurrencyGainLoss'] = $this->t('Account to compute currency gain or loss');
@@ -311,6 +323,39 @@ class EditCompanySettings extends FormBase
                     '#description' => $this->t('Other tax default name'),
                 );
 
+                $form['g']['ytax_collect_aid'] = array(
+                    '#type' => 'select',
+                    '#options' => AidList::listaid($id, [$chart['liabilities']], 1),
+                    '#size' => 1,
+                    '#default_value' => $settings->get('ytax_collect_aid'),
+                    '#description' => $this->t('Other  tax collection account'),
+                );
+                $form['g']['ytax_deduct_aid'] = array(
+                    '#type' => 'select',
+                    '#options' => AidList::listaid($id, [$chart['assets']], 1),
+                    '#size' => 1,
+                    '#default_value' => $settings->get('ytax_deduct_aid'),
+                    '#description' => $this->t('Other tax deduction account'),
+                );
+
+                $form['g']['ytax_rate'] = array(
+                    '#type' => 'textfield',
+                    '#size' => 20,
+                    '#maxlength' => 255,
+                    '#default_value' => $settings->get('ytax_rate'),
+                    '#attributes' => array('placeholder' => $this->t('other tax rate')),
+                    '#description' => $this->t('Other tax rate'),
+                );
+
+                $form['g']['ytax_name'] = array(
+                    '#type' => 'textfield',
+                    '#size' => 20,
+                    '#maxlength' => 50,
+                    '#default_value' => $settings->get('ytax_name'),
+                    '#attributes' => array('placeholder' => $this->t('default name')),
+                    '#description' => $this->t('Other tax default name'),
+                );
+
                 $form['g']['CurrencyGainLoss'] = array(
                     '#type' => 'select',
                     '#size' => 1,
@@ -442,7 +487,12 @@ class EditCompanySettings extends FormBase
         }
         if ($form_state->getValue('wtax_rate') != '') {
             if (!is_numeric($form_state->getValue('wtax_rate')) || $form_state->getValue('wtax_rate') == 0) {
-                $form_state->setErrorByName('wtax_rate', $this->t('Wrong withholding tax value input'));
+                $form_state->setErrorByName('wtax_rate', $this->t('Wrong tax value input'));
+            }
+        }
+        if ($form_state->getValue('ytax_rate') != '') {
+            if (!is_numeric($form_state->getValue('ytax_rate')) || $form_state->getValue('ytax_rate') == 0) {
+                $form_state->setErrorByName('ytax_rate', $this->t('Wrong tax value input'));
             }
         }
     }
@@ -505,6 +555,10 @@ class EditCompanySettings extends FormBase
             $settings->set('stax_name', $form_state->getValue('stax_name'));
             $settings->set('wtax_rate', $form_state->getValue('wtax_rate'));
             $settings->set('wtax_name', $form_state->getValue('wtax_name'));
+            $settings->set('ytax_collect_aid', $form_state->getValue('ytax_collect_aid'));
+            $settings->set('ytax_deduct_aid', $form_state->getValue('ytax_deduct_aid'));
+            $settings->set('ytax_rate', $form_state->getValue('ytax_rate'));
+            $settings->set('ytax_name', $form_state->getValue('ytax_name'));
             $settings->set('CurrencyGainLoss', $form_state->getValue('CurrencyGainLoss'));
 
             foreach ($form_state->getValue('currency_settings') as $c) {
