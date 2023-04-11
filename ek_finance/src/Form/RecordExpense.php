@@ -185,6 +185,10 @@ class RecordExpense extends FormBase {
             $form_state->set('wtax_rate', $settings->get('wtax_rate'));
             $form_state->set('wtax_name', $settings->get('wtax_name'));
             $wtax_deduct_aid = $settings->get('wtax_deduct_aid');
+            $form_state->set('ytax_deduct', $settings->get('ytax_deduct'));
+            $form_state->set('ytax_rate', $settings->get('ytax_rate'));
+            $form_state->set('ytax_name', $settings->get('ytax_name'));
+            $ytax_deduct_aid = $settings->get('ytax_deduct_aid');
 
             $i = 1;
             //$tax = array();
@@ -642,7 +646,7 @@ class RecordExpense extends FormBase {
                     $form['debit']["tax$i"] = [
                         '#type' => 'select',
                         '#id' => 'tax-' . $i,
-                        '#options' => [0 => $this->t('no tax'),$form_state->get('stax_rate') => $form_state->get('stax_name'),$form_state->get('wtax_rate') => $form_state->get('wtax_name')],
+                        '#options' => [0 => $this->t('no tax'),$form_state->get('stax_rate') => $form_state->get('stax_name'),$form_state->get('wtax_rate') => $form_state->get('wtax_name'),$form_state->get('ytax_rate') => $form_state->get('ytax_name')],
                         '#required' => true,
                         '#default_value' => $dv,
                         '#attributes' => ['title' => $this->t('add sales tax'),'style' => array('width:80px;white-space:nowrap')],
@@ -762,6 +766,9 @@ class RecordExpense extends FormBase {
                 $form_state->set('wtax_deduct', $settings->get('wtax_deduct'));
                 $form_state->set('wtax_rate', $settings->get('wtax_rate'));
                 $form_state->set('wtax_name', $settings->get('wtax_name'));
+                $form_state->set('ytax_deduct', $settings->get('ytax_deduct'));
+                $form_state->set('ytax_rate', $settings->get('ytax_rate'));
+                $form_state->set('ytax_name', $settings->get('ytax_name'));
             }
             $chart = $form_state->get('chart');
             $opt1 = [$chart['assets'], $chart['liabilities'], $chart['cos'], $chart['expenses'], $chart['other_expenses']];
