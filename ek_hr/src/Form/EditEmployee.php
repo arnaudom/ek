@@ -814,6 +814,8 @@ class EditEmployee extends FormBase
             }
 
             if (!empty($admin)) {
+                // if access is restricted always inject super admin 1
+                if(!in_array(1,$admin)) {array_push($admin,1);}
                 $admin = implode(',', $admin);
             } else {
                 $admin = 0;
