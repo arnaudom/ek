@@ -76,6 +76,10 @@ class RecordExpense extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = null, $clone = null) {
+        
+        // store rounding settings for alteration option
+        $form_state->set('taxrounding', $this->rounding);
+        $form_state->set('amountrounding', $this->rounding);
         $recordProvision = $this->settings->get('recordProvision');
         $chart = $this->settings->get('chart');
         if (null !== $this->settings->get('expenseAttachmentFormat')) {
@@ -985,6 +989,7 @@ class RecordExpense extends FormBase {
         $journal = new Journal();
         $baseCurrency = $this->settings->get('baseCurrency');
         $currency = $form_state->getValue('currency');
+        
 
         if ($form_state->getValue('edit') != '') {
             //delete old  journal records
@@ -1028,17 +1033,17 @@ class RecordExpense extends FormBase {
             $value = str_replace(',', '', $form_state->getValue("value$n"));
 
             if ($baseCurrency != $currency) {
-                $amount = round($value / $form_state->getValue('fx_rate'), $this->rounding);
+                $amount = round($value / $form_state->getValue('fx_rate'), $form_state->get('amountrounding'));
             } else {
-                $amount = round($value, $this->rounding);
+                $amount = round($value, $form_state->get('amountrounding'));
                 $form_state->setValue('fx_rate', 1);
             }
             // amount is recorded without tax($tax/$form_state->getValue('fx_rate'))
 
             if ($form_state->getValue("taxtype$n") == 'multi') {
-                $tax = round($value * $form_state->getValue("tax$n") / 100, $this->rounding);
+                $tax = round($value * $form_state->getValue("tax$n") / 100, $form_state->get('taxrounding'));
             } elseif ($form_state->getValue("tax$n") == 1) {
-                    $tax = round($value * $form_state->get('stax_rate') / 100, $this->rounding);
+                $tax = round($value * $form_state->get('stax_rate') / 100, $form_state->get('taxrounding'));
             } else {
                 $tax = 0;
             }
@@ -1160,10 +1165,11 @@ class RecordExpense extends FormBase {
             \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
         }
 
+        $url = Url::fromRoute('ek_finance.manage.edit_expense', ['id' => $insert], [])->toString();
         if ($form_state->getValue('edit') != '') {
-            \Drupal::messenger()->addStatus(t('Expenses ref. @id edited', ['@id' => $insert]));
+            \Drupal::messenger()->addStatus(t('Expenses ref. <a href="@url">@id</a> edited', ['@url' =>  $url, '@id' => $insert]));
         } else {
-            \Drupal::messenger()->addStatus(t('Expenses recorded ref. @id', ['@id' => $insert]));
+            \Drupal::messenger()->addStatus(t('Expenses recorded ref. <a href="@url">@id</a>', ['@url' =>  $url,'@id' => $insert]));
         }
         \Drupal\Core\Cache\Cache::invalidateTags(['reporting', 'expenses']);
         $form_state->setRedirect('ek_finance.manage.list_expense');
