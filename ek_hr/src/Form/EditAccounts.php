@@ -150,7 +150,7 @@ class EditAccounts extends FormBase
                 );
 
                 $param = [
-                    'pay_account' => $this->t('liability'),
+                    'pay_account' => 'liability',
                     'fund1_account' => $category->get('param', 'fund_1', ['name', 'value']),
                     'fund2_account' => $category->get('param', 'fund_2', ['name', 'value']),
                     'fund3_account' => $category->get('param', 'fund_3', ['name', 'value']),
