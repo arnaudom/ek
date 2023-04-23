@@ -96,3 +96,24 @@ function ek_address_book_update_8003() {
         return t('Table updated');
         
 }
+
+/**
+ * add field in address book
+ * 
+ */
+function ek_address_book_update_8004() {
+    $schema = Database::getConnection('external_db','external_db')->schema();
+           if(!$schema->fieldExists('ek_address_book', 'created')) {
+               $spec = array(
+                   'description' => 'account creation',
+                   'type' => 'varchar',
+                   'length' => 20,
+                   'not null' => FALSE,
+   
+               );
+               $schema->addField('ek_address_book', 'created', $spec);
+           }
+           
+           return t('Table updated');
+           
+   }

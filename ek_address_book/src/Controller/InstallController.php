@@ -91,6 +91,7 @@ class InstallController extends ControllerBase {
                 `category` VARCHAR(45) NULL DEFAULT NULL,
                 `status` VARCHAR(1) NULL DEFAULT '1' COMMENT 'status, 1=active, 0=inactive',
                 `stamp` VARCHAR(50) NULL DEFAULT NULL,
+                `created` VARCHAR(20) NULL DEFAULT NULL,
                 `activity` VARCHAR(255) NULL DEFAULT NULL,
                 `logo` VARCHAR(255) NULL DEFAULT NULL COMMENT 'contact logo',
                 `reg` VARCHAR(30) NULL DEFAULT NULL COMMENT 'registration number',

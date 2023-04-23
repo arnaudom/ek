@@ -662,6 +662,7 @@ class NewAddressBookForm extends FormBase {
             'category' => $form_state->getValue('category'),
             'activity' => Xss::filter($form_state->getValue('tags')),
             'stamp' => strtotime("now"),
+            'created' => date('Y-m-d')
         );
 
 
