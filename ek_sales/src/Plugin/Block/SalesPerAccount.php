@@ -44,7 +44,7 @@ class SalesPerAccount extends BlockBase
         $baseCurrency = $settings->get('baseCurrency');
 
         $months = array('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12');
-        $years = array(date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3 );
+        $years = array(date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3, date('Y') - 4 );
         $content = '';
 
         $query = "SELECT sum(amountbase) as total,name FROM {ek_sales_invoice} i "
@@ -54,14 +54,16 @@ class SalesPerAccount extends BlockBase
         foreach ($years as $year) {
             $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':d' => $year . '%'));
-
-            $content .= '<div>' . $year . '</div><table><tbody class="">';
-       
+            $count = 0;
+            $table = "";
+                  
             while ($d = $data->fetchObject()) {
-                $content .= "<tr><td class='' title=''>" . $d->name . ":</td>"
+                $count++;
+                $table .= "<tr><td class='' title=''>" . $d->name . ":</td>"
                     . "<td class='' title='');'>" . number_format($d->total, 2) . " " . $baseCurrency . "</td></tr>";
             }
-            $content .= "</tbody></table>";
+
+            $content .= '<div>' . $year . " (" . $this->t('@c account(s)', ['@c' => $count]) . ')</div><table><tbody class="">' . $table . "</tbody></table>";
         }
         
         $items['content'] = '<div>' . $content . '</div>';
