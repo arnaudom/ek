@@ -1415,7 +1415,7 @@ class Purchase extends FormBase {
                                     'date' => $form_state->getValue('date'),
                                     'value' => $line,
                                     'currency' => $form_state->getValue('currency'),
-                                    'fxRate' => null,
+                                    'fxRate' => $currencyRate,
                                     'tax' => $tax,
                                 )
                         );
