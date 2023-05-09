@@ -565,8 +565,8 @@ class ProjectController extends ControllerBase {
                         ->execute()
                         ->fetchAll();
 
-                $data['description'][0]->project_description = html_entity_decode($data['description'][0]->project_description, ENT_QUOTES, "utf-8");
-                $data['description'][0]->project_comment = html_entity_decode($data['description'][0]->project_comment, ENT_QUOTES, "utf-8");
+                $data['description'][0]->project_description = html_entity_decode($data['description'][0]->project_description ?? '', ENT_QUOTES, "utf-8");
+                $data['description'][0]->project_comment = html_entity_decode($data['description'][0]->project_comment ?? '', ENT_QUOTES, "utf-8");
 
 
                 /*
