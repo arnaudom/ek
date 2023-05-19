@@ -256,7 +256,6 @@ class NewAddressBookForm extends FormBase {
         $form['logo'] = array(
             '#type' => 'file',
             '#title' => $this->t('Upload logo'),
-            '#maxlength' => 200,
         );
 
         // insert the name cards
@@ -277,10 +276,7 @@ class NewAddressBookForm extends FormBase {
             $query->fields('abc');
             $query->condition('abid', $abid, '=');
             $data = $query->execute();
-            /*
-            $query = "SELECT * from {ek_address_book_contacts} WHERE abid=:id order by id";
-            $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $abid));*/
-
+            
             while ($rc = $data->fetchAssoc()) {
                 $form[$i] = array(
                     '#type' => 'details',
@@ -604,11 +600,11 @@ class NewAddressBookForm extends FormBase {
         } else {
             $form_state->setValue($field, 0);
         }
-                
+             
         for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
             if ($form_state->getValue('contact_name' . $i) <> '') {
                 // Handle file uploads.
-                //$validators = array('file_validate_extensions' => array('ico png gif jpg jpeg apng svg'));
+                // $validators = array('file_validate_extensions' => array('ico png gif jpg jpeg svg'));
                 $validators = array('file_validate_is_image' => array());
                 $field = "image" . $i;
                 // Check for a new uploaded .
@@ -626,6 +622,7 @@ class NewAddressBookForm extends FormBase {
                 }
             } //if name
         } //loop
+
         $primary = 0;
         for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
             if ($form_state->getValue('contact_name' . $i) <> '') {
@@ -688,8 +685,8 @@ class NewAddressBookForm extends FormBase {
 
             $id = $form_state->getValue('for_id');
         }
-        //logo
-        //first delete current if requested
+        // logo
+        // first delete current if requested
         $del = false;
         if ($form_state->getValue('delete_logo') == 1) {
             \Drupal::service('file_system')->delete($form_state->getValue('logo_uri'));
@@ -700,7 +697,7 @@ class NewAddressBookForm extends FormBase {
             $logo = $form_state->getValue('logo_uri');
         }
             
-        //second, upload if any image is available
+        // second, upload if any image is available
         if (!$form_state->getValue('logo') == 0) {
             if ($file = $form_state->getValue('logo')) {
                 $dir = "private://address_book/cards/" . $id;
@@ -725,7 +722,6 @@ class NewAddressBookForm extends FormBase {
                     ->condition('id', $id)
                     ->fields(['logo' => $logo])
                     ->execute();
-             
              
         //update contact card
         if ($form_state->getValue('cards') >= 0) {
