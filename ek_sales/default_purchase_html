@@ -24,8 +24,8 @@ $document = "<a class='button' href='" . $url_edit . "' ><i class='fa fa-edit'><
         . "<a class='button' href='" . $url_excel . "' ><i class='fa fa-file-excel-o'></i> " . t('Excel') . "</a>" 
         . "<a class='button' href='" . $url_pdf . "' ><i class='fa fa-file-pdf-o'></i> " . t('Pdf') . "</a>";
 $document .= '<page_wrapper>';
-//HEADER data
-    //LOGO
+// HEADER data
+    // LOGO
     $logo = '';
     if ($company->logo != '') {
         $path = $company->logo;
@@ -34,7 +34,7 @@ $document .= '<page_wrapper>';
         }
     
     }
-    //COMPANY
+    // COMPANY
     $header = '<b><h2>' . $company->name . '</h2></b>';
     
         if($company->reg_number) {
@@ -72,7 +72,7 @@ $document .= '<page_wrapper>';
                     </page_header>';
  
 
-//DOCUMENT ref
+// DOCUMENT ref
 
 $ref = '<h2 class="blue">' . strtoupper($head->title) . '</h2>';
 $ref .= '<br/>' . $head->serial;
@@ -92,7 +92,7 @@ $document .= '<page_reference>
                         </table>
                     </page_reference>';
 
-//CLIENT data
+// CLIENT data
 
 $cl = '<h2 class="">' . strtoupper($client->name) . '</h2>';
 $cl .= '<br/>' . $client->address;
@@ -132,7 +132,7 @@ $document .= '<page_client>
                         </table>
                     </page_client>';
 
-//OPEN comments
+// OPEN comments
 
 $document .= '<page_comments>
                         <table>
@@ -144,7 +144,7 @@ $document .= '<page_comments>
                         </table>
                     </page_comments>';
 
-//ITEMS
+// ITEMS
 
 $list = '';
 $grandtotal = 0;
@@ -152,7 +152,7 @@ $subtotal = 0;
 $i = 1;
 $j = 1;
 foreach ($items as $detail) {
-    if($detail['item'] != '') {
+    if( is_array($detail) && !null == $detail['item']) {
         $list .= '<tr>';
         
         if($detail['item'] === "sub_total" || $detail['item'] === "[sub total]") {
@@ -222,7 +222,7 @@ $document .= '<page_items>
 
 
 
-//TOTAL
+// TOTAL
 $document .= '<page_total>
                         <table>
                             <tr>
@@ -258,15 +258,15 @@ $document .= '</table>
             <div class="right">' . $word . '</div>
             </page_total>';
 
-//RECEIPT
+// RECEIPT
 $receipt = '';
 if ($head->status == 1 && $stamp != 2 && $stamp != 1 ) {
  $receipt = '<div class="red">' . t('RECEIVED') . '</div>';
- $receipt .= '<div class="red">' . t('Date') . ': ' . $head->pay_date . '</div>';
+ $receipt .= '<div class="red">' . t('Date') . ': ' . $head->pdate . '</div>';
  $receipt .= '<div class="red">' . $company->name . '</div>';
 }
 
-//SIGNATURE
+// SIGNATURE
 $sign = '';
 if ($signature == "1") {
     if(isset($company->sign)) {  
