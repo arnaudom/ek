@@ -363,7 +363,6 @@ class NewAddressBookForm extends FormBase {
                 $form[$i]['image' . $i] = array(
                     '#type' => 'file',
                     '#title' => $this->t('Upload a name card image'),
-                    '#maxlength' => 40,
                 );
 
                 // current image if any
@@ -514,7 +513,6 @@ class NewAddressBookForm extends FormBase {
         $form[$i]['image' . $i] = array(
             '#type' => 'file',
             '#title' => $this->t('Upload a name card image'),
-            '#maxlength' => 100,
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
