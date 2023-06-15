@@ -352,6 +352,18 @@ class PurchasesController extends ControllerBase {
             ];
 
             $links = [];
+            if (\Drupal::currentUser()->hasPermission('create_purchase')) {
+                $param = 'quick_edit|' . $r->id . '|purchase';
+                $links['qedit'] = [
+                    'title' => $this->t('Quick edit'),
+                    'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
+                    'attributes' => [
+                        'class' => ['use-ajax'],
+                        'data-dialog-type' => 'modal',
+                        'data-dialog-options' => Json::encode(['width' => 700,]),
+                    ],
+                ];
+            }
             
             if ($r->status == 0) {
                 
@@ -411,18 +423,7 @@ class PurchasesController extends ControllerBase {
                     ]),
                 ]
             ];
-            if (\Drupal::currentUser()->hasPermission('create_purchase')) {
-                $param = 'quick_edit|' . $r->id . '|purchase';
-                $links['qedit'] = [
-                    'title' => $this->t('Quick edit'),
-                    'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
-                    'attributes' => [
-                        'class' => ['use-ajax'],
-                        'data-dialog-type' => 'modal',
-                        'data-dialog-options' => Json::encode(['width' => 700,]),
-                    ],
-                ];
-            }
+
             if (\Drupal::currentUser()->hasPermission('print_share_purchase')) {
                 $links['pprint'] = [
                     'title' => $this->t('Print and share'),

@@ -152,7 +152,7 @@ $subtotal = 0;
 $i = 1;
 $j = 1;
 foreach ($items as $detail) {
-    if( is_array($detail) && !null == $detail['item']) {
+    if(is_array($detail) && !null == $detail['item']) {
         $list .= '<tr>';
         
         if($detail['item'] === "sub_total" || $detail['item'] === "[sub total]") {

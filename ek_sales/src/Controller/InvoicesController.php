@@ -358,6 +358,18 @@ class InvoicesController extends ControllerBase {
             ];
 
             $links = [];
+            if (\Drupal::currentUser()->hasPermission('create_invoice')) {
+                $param = 'quick_edit|' . $r->id . '|invoice';
+                $links['qedit'] = [
+                    'title' => $this->t('Quick edit'),
+                    'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
+                    'attributes' => [
+                        'class' => ['use-ajax'],
+                        'data-dialog-type' => 'modal',
+                        'data-dialog-options' => Json::encode(['width' => 700,]),
+                    ],
+                ];
+            }
             
             if ($r->status == 0) {
                 $links['edit'] = [
@@ -403,18 +415,7 @@ class InvoicesController extends ControllerBase {
                     ]),
                 ],
             ];
-            if (\Drupal::currentUser()->hasPermission('create_invoice')) {
-                $param = 'quick_edit|' . $r->id . '|invoice';
-                $links['qedit'] = [
-                    'title' => $this->t('Quick edit'),
-                    'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
-                    'attributes' => [
-                        'class' => ['use-ajax'],
-                        'data-dialog-type' => 'modal',
-                        'data-dialog-options' => Json::encode(['width' => 700,]),
-                    ],
-                ];
-            }
+
             $destination = ['destination' => '/invoices/list'];
             $link = Url::fromRoute('ek_sales.invoices.task', ['id' => $r->id], ['query' => $destination]);
             $links['task'] = [
