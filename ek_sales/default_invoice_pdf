@@ -47,14 +47,18 @@ class EKPDF extends TCPDF {
         $this->SetFont('helvetica','',$font3);
         $this->Cell($lm);  
         $this->Cell($h1+$h2);
-        if ($this->company->telephone <> '') {
-         $this->Cell($h3,3,t("tel:").$this->company->telephone,$b,1);
-        }
+        $numbers = "";
         if ($this->company->fax <> '') {
-         $this->Cell($lm);  
-         $this->Cell($h1+$h2);
-         $this->Cell($h3,4,t("fax:").$this->company->fax,$b,1);
+            $numbers .= t("fax:").$this->company->fax;
         }
+        if ($this->company->telephone <> '') {
+            $numbers .= t("tel:").$this->company->telephone . " " . $numbers;
+        }
+        if($numbers != "") {
+            $this->Cell($h3,3,$numbers,$b,1);
+        }
+
+        
         //Line break
         $this->Ln(1);        
         
