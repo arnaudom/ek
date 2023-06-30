@@ -48,17 +48,15 @@ class EKPDF extends TCPDF {
         $this->Cell($lm);  
         $this->Cell($h1+$h2);
         $numbers = "";
+        if ($this->company->telephone <> '') {
+            $numbers .= t("tel:").$this->company->telephone . " ";
+        }
         if ($this->company->fax <> '') {
             $numbers .= t("fax:").$this->company->fax;
-        }
-        if ($this->company->telephone <> '') {
-            $numbers .= t("tel:").$this->company->telephone . " " . $numbers;
         }
         if($numbers != "") {
             $this->Cell($h3,3,$numbers,$b,1);
         }
-
-        
         //Line break
         $this->Ln(1);        
         
