@@ -18,7 +18,8 @@
                                     data: c.data,
                                     xkey: c.xkey,
                                     ykeys: c.ykeys,
-                                    labels: c.labels
+                                    labels: c.labels,
+                                    hideHover: 'auto'
                                 });
                             }
                             if (c.type == 'Area') {
@@ -28,7 +29,8 @@
                                     data: c.data,
                                     xkey: c.xkey,
                                     ykeys: c.ykeys,
-                                    labels: c.labels
+                                    labels: c.labels,
+                                    hideHover: 'auto'
                                 });
                             }
 
@@ -39,7 +41,8 @@
                                     data: c.data,
                                     xkey: c.xkey,
                                     ykeys: c.ykeys,
-                                    labels: c.labels
+                                    labels: c.labels,
+                                    hideHover: 'auto'
                                 });
 
                             }
