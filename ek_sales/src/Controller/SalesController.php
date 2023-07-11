@@ -7,6 +7,7 @@
 
 namespace Drupal\ek_sales\Controller;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
@@ -56,7 +57,10 @@ class SalesController extends ControllerBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
+                $container->get('database'),
+                $container->get('form_builder'),
+                $container->get('module_handler'),
+                $container->get('config.factory')
         );
     }
 
@@ -68,10 +72,12 @@ class SalesController extends ControllerBase {
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler,
+    ConfigFactoryInterface $config_factory) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
+        $this->configFactory = $config_factory;
     }
 
     /**
@@ -180,8 +186,7 @@ class SalesController extends ControllerBase {
 
                 if ($this->moduleHandler->moduleExists('charts')) {
                     $theme = 'ek_sales_data_charts';
-                    $chartSettings = \Drupal::service('charts.settings')->getChartsSettings();
-
+                    $chartSettings = $this->config('charts.settings')->get('charts_default_settings');
                     $options = [];
                     $options['type'] = 'pie';
                     $options['title'] = $this->t('Projects');

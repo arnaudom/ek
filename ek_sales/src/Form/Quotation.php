@@ -508,7 +508,7 @@ class Quotation extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 35,
                     '#maxlength' => 255,
-                    '#attributes' => ['placeholder' => $this->t('item')],
+                    '#attributes' => ['placeholder' => $this->t('item'),'class' => ['expand']],
                     '#default_value' => $name,
                     '#field_prefix' => "<span class='s-s-badge'>" . $z . "</span>",
                     '#field_suffix' => isset($link) ? "<span class='s-s-badge'>" . $link . "</span>" : '',
@@ -749,7 +749,7 @@ class Quotation extends FormBase {
                 '#size' => 40,
                 '#maxlength' => 255,
                 '#field_prefix' => "<span class='s-s-badge'>" . $z . "</span>",
-                '#attributes' => ['placeholder' => $this->t('item')],
+                '#attributes' => ['placeholder' => $this->t('item'),'class' => ['expand']],
                 '#autocomplete_route_name' => 'ek.look_up_item_ajax',
             ];
             if ($this->moduleHandler->moduleExists('ek_products')) {

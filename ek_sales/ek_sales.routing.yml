@@ -74,7 +74,7 @@ ek_sales.document:
     _title: 'Documents'
     _controller: '\Drupal\ek_sales\Controller\SalesController::DataBookDocuments'
   requirements:
-    _permission: 'sales_data'
+    _permission: 'sales_documents'
     abid: \d*
 
 ek_sales.search_form:

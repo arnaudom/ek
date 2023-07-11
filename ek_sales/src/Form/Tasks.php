@@ -178,7 +178,7 @@ class Tasks extends FormBase {
             '#type' => 'date',
             '#id' => 'edit-to',
             '#size' => 12,
-            '#default_value' => (null !== $data->end && is_numeric($data->end)) ? date('Y-m-d', $data->end) : null,
+            '#default_value' => (null !== $data->end && is_numeric($data->end)) ? date('Y-m-d', $data->end) : date('Y-m-d'),
             '#title' => $this->t('ending'),
             '#suffix' => '</div>',
             '#states' => [

@@ -611,7 +611,7 @@ class Invoice extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 38,
                     '#maxlength' => 255,
-                    '#attributes' => ['placeholder' => $this->t('item')],
+                    '#attributes' => ['placeholder' => $this->t('item'), 'class' => ['expand']],
                     '#default_value' => $name,
                     '#field_prefix' => "<span class='s-s-badge'>" . $n . "</span>",
                     '#field_suffix' => isset($link) ? "<span class='s-s-badge'>" . $link . "</span>" : '',
@@ -732,7 +732,7 @@ class Invoice extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 38,
                 '#maxlength' => 255,
-                '#attributes' => ['placeholder' => $this->t('item')],
+                '#attributes' => ['placeholder' => $this->t('item'), 'class' => ['expand']],
                 '#field_prefix' => "<span class='s-badge'>" . $i . "</span>",
                 '#autocomplete_route_name' => 'ek.look_up_item_ajax',
             ];

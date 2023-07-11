@@ -97,6 +97,11 @@
                 }
                 $('#convertedValue').html(convert);
             }
+            
+            $('.expand').on('dblclick', function(){
+                var text = prompt("input", this.value);
+                this.value = text;
+            });
 
         } //attach
     }; //bahaviors
