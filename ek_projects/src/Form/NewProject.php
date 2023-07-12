@@ -394,7 +394,7 @@ class NewProject extends FormBase {
                         array(
                             'id' => $pid,
                             'field' => 'new_project',
-                            'value' => $data->serial,
+                            'value' => $pcode,
                             'pname' => $pname,
                             'country' => $cdata->name,
                             'cid' => $form_state->getValue('cid'),
