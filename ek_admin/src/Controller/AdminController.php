@@ -1256,7 +1256,7 @@ class AdminController extends ControllerBase {
             }
         }
         
-        if ($mail) {
+        if (isset($mail)) {
             $queue = \Drupal::queue('ek_email_queue');
             $queue->createQueue();
             $data['module'] = 'ek_admin';
