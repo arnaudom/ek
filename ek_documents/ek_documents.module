@@ -213,7 +213,7 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
     }
     
     if ($mode == 'internal message') {
-        //add copy in internal messaging
+        // add copy in internal messaging
         $render = [
             '#markup' => t('@u shared a document with you', ['@u' => Drupal::currentUser()->getAccountName()]) . ": " . $params['options']['url'] . ".",
         ];
@@ -233,7 +233,7 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
         ]);
     }
     
-    //send an email copy to me
+    // send an email copy to me
     $params['subject'] = t("My document shared (copy)");
     $render = [
         '#markup' => t('Message sent to @names', array('@names' => $names)),

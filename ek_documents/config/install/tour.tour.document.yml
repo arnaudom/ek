@@ -81,7 +81,6 @@ tips:
     body: 'Delete by clicking the <span class="trash-ico"/> trash bin icon.'
     weight: 10
     attributes:
-      data-class: trash-ico
     selector: '.trash-ico'
   item8:
     id: post-ico
