@@ -435,6 +435,8 @@ class ProjectData {
             $link = Url::fromRoute('ek_projects_view', ['id' => $param['id']])->toString();
             $params['options']['url'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
             $params['options']['base_url'] = \Drupal::request()->getSchemeAndHttpHost();
+            $params['pcode'] = $param['pcode'];
+            $params['priority'] = 1;
             switch ($param['field']) {
                 case 'invoice_payment':
                     $text = "<p>" . t('Payment received for project ref. @p', ['@p' => $param['pcode']]) . ".</p>";
@@ -498,6 +500,9 @@ class ProjectData {
             }
 
             $params['body'] = $text;
+            if (empty($params['from'])) {
+                $params['from'] = \Drupal::config('system.site')->get('mail_notification');
+            }
             $queue = \Drupal::queue('ek_email_queue');
             $queue->createQueue();
             $data['module'] = 'ek_projects';

@@ -60,69 +60,61 @@ class Notification extends FormBase {
         $p = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
         $currentusername = \Drupal::currentUser()->getAccountName();
 
-        $form['item'] = array(
+        $form['item'] = [
             '#type' => 'item',
             '#markup' => $this->t('Send a short notification regarding project @p .', array('@p' => $p->pcode)),
-        );
-        $form['pid'] = array(
+        ];
+        
+        $form['pid'] = [
             '#type' => 'hidden',
             '#value' => $id,
-        );
-
-
-        $form['email'] = array(
+        ];
+        
+        $form['email'] = [
             '#type' => 'textarea',
             '#rows' => 2,
             '#id' => 'edit-email',
-            '#attributes' => array('placeholder' => $this->t('enter user(s) separated by comma (autocomplete enabled).')),
-            '#attached' => array(
-                'library' => array(
-                    'ek_projects/ek_projects_autocomplete',
-                ),
-            ),
-        );
+            '#attributes' => ['placeholder' => $this->t('enter user(s) separated by comma (autocomplete enabled).')],
+            '#attached' => ['library' => ['ek_projects/ek_projects_autocomplete',],],
+        ];
 
 
-        $form['priority'] = array(
+        $form['priority'] = [
             '#type' => 'radios',
-            '#options' => array('3' => $this->t('low'), '2' => $this->t('normal'), '1' => $this->t('high')),
+            '#options' => ['3' => $this->t('low'), '2' => $this->t('normal'), '1' => $this->t('high')],
             '#title' => $this->t('priority'),
             '#default_value' => 2,
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            '#attributes' => ['class' => array('container-inline')],
+        ];
 
 
-        $form['message'] = array(
+        $form['message'] = [
             '#type' => 'textarea',
             '#default_value' => '',
-            '#attributes' => array('placeholder' => $this->t('your message')),
-        );
+            '#attributes' => ['placeholder' => $this->t('your message')],
+        ];
 
         if ($form_state->get('alert') <> '') {
-            $form['alert'] = array(
+            $form['alert'] = [
                 '#markup' => "<div class='red'>" . $form_state->get('alert') . "</div>",
-            );
+            ];
             $form_state->set('error', '');
             $form_state->setRebuild();
         }
 
 
-        $form['actions'] = array(
+        $form['actions'] = [
             '#type' => 'actions',
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            '#attributes' => ['class' => ['container-inline']],
+        ];
 
-        $form['actions']['submit'] = array(
+        $form['actions']['submit'] = [
             '#type' => 'submit',
             '#value' => $this->t('Send note'),
-            '#attributes' => array('class' => array('use-ajax-submit')),
-            '#attached' => array(
-                'library' => array(
-                    'core/jquery.form',
-                ),
-            ),
-        );
-        //, 'core/jquery.form', 'core/drupal.form', 'core/drupal.ajax'];
+            '#attributes' => ['class' => ['use-ajax-submit']],
+            '#attached' => ['library' => ['core/jquery.form',],],
+        ];
+        
 
         return $form;
     }
@@ -171,13 +163,11 @@ class Notification extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        $params = array();
+        $params = [];
         $query = "SELECT pcode,owner from {ek_project} WHERE id=:id";
         $p = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $form_state->getValue('pid')))
+                ->query($query, [':id' => $form_state->getValue('pid')])
                 ->fetchObject();
-        //$query = "SELECT mail from {users_field_data} WHERE uid=:u";
-        //$to = db_query($query, array(':u' => $p->owner))->fetchField();
         $acc = \Drupal\user\Entity\User::load($p->owner);
         $to = '';
         if ($acc) {
@@ -187,7 +177,7 @@ class Notification extends FormBase {
         $params['options']['pcode'] = $p->pcode;
         $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), true);
         $params['options']['priority'] = $form_state->getValue('priority');
-        $priority = array('3' => $this->t('low'), '2' => $this->t('normal'), '1' => $this->t('high'));
+        // $priority = ['3' => $this->t('low'), '2' => $this->t('normal'), '1' => $this->t('high')];
 
         $code = explode("-", $p->pcode);
         $code = array_reverse($code);
@@ -198,12 +188,14 @@ class Notification extends FormBase {
             ;
         }
 
-        $acc2 = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
+        /*$acc2 = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
         $from = '';
         if ($acc2) {
             $from = $acc2->getEmail();
             $params['from'] = $from;
-        }
+        }*/
+        $from = \Drupal::currentUser()->getEmail();
+        $params['options']['from'] = $from;
         $addresses = explode(',', $form_state->getValue('notify_who'));
         $error = '';
 
@@ -228,7 +220,7 @@ class Notification extends FormBase {
                     . $params['options']['url'];
 
             ek_message_register(
-                    array(
+                    [
                         'uid' => \Drupal::currentUser()->id(),
                         'to' => $inbox,
                         'to_group' => 0,
@@ -239,7 +231,7 @@ class Notification extends FormBase {
                         'subject' => $params['subject'],
                         'body' => serialize($text),
                         'priority' => $form_state->getValue('priority'),
-                    )
+                    ]
             );
         }
 

@@ -76,30 +76,23 @@ class AccessRequest extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
+    
         $query = "SELECT pcode,owner from {ek_project} WHERE id=:id";
         $p = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form_state->getValue('pid')))
                 ->fetchObject();
-        //$query = "SELECT mail from {users_field_data} WHERE uid=:u";
-        //$to = db_query($query, array(':u' => $p->owner))
-        //        ->fetchField();
         $acc = \Drupal\user\Entity\User::load($p->owner);
         $to = '';
         if ($acc) {
             $to = $acc->getEmail();
             $params = [];
-            if (\Drupal::moduleHandler()->moduleExists('swiftmailer')) {
-                $params['body'] = Xss::filter($form_state->getValue('message'));
-                $params['options']['pcode'] = $p->pcode;
-                // $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), null, 1, null, $this->t('Open'));
-                $link = Url::fromRoute('ek_projects_view', ['id' => $form_state->getValue('pid')])->toString();
-                $params['options']['url'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
-                
-            } else {
-                $params['body'] = Xss::filter($form_state->getValue('message')) . '\r\n'
-                        . $this->t('Project ref.') . ': ' . ProjectData::geturl($form_state->getValue('pid'), 0, 1);
-                $params['options'] = '';
-            }
+            
+            $params['body'] = Xss::filter($form_state->getValue('message'));
+            $params['options']['pcode'] = $p->pcode;
+            $link = Url::fromRoute('ek_projects_view', ['id' => $form_state->getValue('pid')])->toString();
+            $params['options']['url'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
+            $params['options']['priority'] = 1;    
+            
             $code = explode("-", $p->pcode);
             $code = array_reverse($code);
             $params['subject'] = $this->t("Access request") . ": " . $code[0] . ' | ' . $p->pcode;
@@ -108,7 +101,7 @@ class AccessRequest extends FormBase {
             if ($acc2) {
                 $from = $acc2->getEmail();
             }
-
+            $params['options']['from'] = $from;
             $send = \Drupal::service('plugin.manager.mail')->mail(
                     'ek_projects', 'project_access', $to, $acc->getPreferredLangcode(), $params, $from, true
             );
