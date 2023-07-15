@@ -147,6 +147,7 @@ function ek_messaging_mail($key, &$message, $params) {
         $message['subject'] = $params['subject'];
         $message['body'][] = \Drupal::service('renderer')->render($render);
         $message['options'] = $params['options'];
+    
         $message['headers']['Disposition-Notification-To'] = $params['from'];
         $message['headers']['X-Confirm-Reading-To'] = $params['from'];
         if($params['priority'] == 1) {
@@ -158,8 +159,24 @@ function ek_messaging_mail($key, &$message, $params) {
             $message['headers']['X-Priority'] = '3';
             $message['headers']['X-MSMail-Priority'] = 'Normal';
         }
-        
         break;
 
     }
+}
+
+/**
+ * Implements hook_mailer_
+ * function invokeHooks(EmailInterface $email) in symfony_mailer/EmailFactory
+*/
+
+function ek_messaging_mailer_ek_messaging_init(\Drupal\symfony_mailer\EmailInterface $email) {
+     // i.e $email->getParams()
+}
+
+function ek_messaging_mailer_ek_messaging_build(\Drupal\symfony_mailer\EmailInterface $email) {
+     
+}
+
+function ek_messaging_mailer_ek_messaging_post_send(\Drupal\symfony_mailer\EmailInterface $email) {
+     
 }
