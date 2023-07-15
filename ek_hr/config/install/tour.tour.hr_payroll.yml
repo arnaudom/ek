@@ -20,7 +20,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: edit-coid
     selector: '#edit-coid'
   item-2:
     id: eid
@@ -31,7 +30,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: edit-eid
     selector: '#edit-eid'  
   item-3:
     id: edit-data
@@ -42,7 +40,6 @@ tips:
     location: top
     position: top
     attributes:
-      data-id: edit-data
     selector: '#edit-data'
   item-4:
     id: work_base
@@ -53,7 +50,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: work_base
     selector: '#work_base'  
   item-5:
     id: unit_work
@@ -64,7 +60,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: unit_work
     selector: '#unit_work'   
   item-6:
     id: no_pay_day
@@ -75,7 +70,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: no_pay_day
     selector: '#no_pay_day'  
   item-7:
     id: leave
@@ -86,7 +80,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: leave
     selector: '#leave'   
   item-8:
     id: basic_value
@@ -97,7 +90,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: basic_value
     selector: '#basic_value'
   item-9:
     id: table2
@@ -108,7 +100,6 @@ tips:
     location: top
     position: top
     attributes:
-      data-id: table2 
     selector: '#table2'  
   item-10:
     id: overtime_hours
@@ -119,7 +110,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: overtime_hours
     selector: '#overtime_hours'   
   item-11:
     id: normal_ot
@@ -130,7 +120,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: normal_ot
     selector: '#normal_ot'  
   item-12:
     id: edit-table2-not-formula
@@ -141,7 +130,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: edit-table2-not-formula
     selector: '#edit-table2-not-formula'   
   item-13:
     id: table3
@@ -152,7 +140,6 @@ tips:
     location: top
     position: top
     attributes:
-      data-id: table3
     selector: '#table3'    
   item-14:
     id: custom_aw1
@@ -163,7 +150,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: custom_aw1
     selector: '#custom_aw1'   
   item-15:
     id: tax1
@@ -174,7 +160,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: tax1
     selector: '#tax1'
   item-16:
     id: total_gross
@@ -185,7 +170,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: total_gross
     selector: '#total_gross'
   item-17:
     id: less_hours
@@ -196,7 +180,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: less_hours  
     selector: '#less_hours'    
   item-18:
     id: advance
@@ -207,7 +190,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: advance     
     selector: '#advance'     
   item-19:
     id: table4
@@ -217,8 +199,7 @@ tips:
     weight: 20
     location: top
     position: top
-    attributes:
-      data-id: table4     
+    attributes:     
     selector: '#table4'     
   item-20:
     id: total_deductions
@@ -228,8 +209,7 @@ tips:
     weight: 21
     location: right
     position: right
-    attributes:
-      data-id: total_deductions     
+    attributes:     
     selector: '#total_deductions'
   item-21:
     id: table5
@@ -239,8 +219,7 @@ tips:
     weight: 22
     location: top
     position: top
-    attributes:
-      data-id: table5       
+    attributes:     
     selector: '#table5'      
   item-22:
     id: fund1_employer
@@ -250,8 +229,7 @@ tips:
     weight: 23
     location: right
     position: right
-    attributes:
-      data-id: fund1_employer      
+    attributes:      
     selector: '#fund1_employer'       
   item-23:
     id: fund1_employee
@@ -261,8 +239,7 @@ tips:
     weight: 24
     location: right
     position: right
-    attributes:
-      data-id: fund1_employee    
+    attributes:    
     selector: '#fund1_employee'       
   item-24:
     id: thisepf
@@ -272,8 +249,7 @@ tips:
     weight: 25
     location: right
     position: right
-    attributes:
-      data-id: thisepf  
+    attributes:  
     selector: '#thisepf'         
   item-25:
     id: income_tax
@@ -283,8 +259,7 @@ tips:
     weight: 26
     location: right
     position: right
-    attributes:
-      data-id: income_tax  
+    attributes:  
     selector: '#income_tax'
   item-26:
     id: total_net
@@ -295,7 +270,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: total_net 
     selector: '#total_net'      
   item-27:
     id: total_display
@@ -306,7 +280,6 @@ tips:
     location: top
     position: top
     attributes:
-      data-id: total_display 
     selector: '#total_display'      
   item-28:
     id: save
@@ -317,7 +290,6 @@ tips:
     location: right
     position: right
     attributes:
-      data-id: savebutton
     selector: '#savebutton'        
   item-29:
     id: video

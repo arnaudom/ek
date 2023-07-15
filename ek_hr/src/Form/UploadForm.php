@@ -109,7 +109,7 @@ class UploadForm extends FormBase
               
                 $fields = array(
                 'employee_id' => $form_state->getValue('for_id'),
-                //'fid' => '',
+                'fid' => 1,
                 'type' => 0,
                 'filename' => $filename,
                 'uri' => $uri,
