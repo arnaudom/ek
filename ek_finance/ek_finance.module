@@ -247,7 +247,7 @@ function ek_finance_mail($key, &$message, $params) {
     if (empty($site_mail)) {
         $site_mail = \Drupal::config('system.site')->get('mail_notification');
     }
-    $message['headers']['Reply-To'] = $site_mail;
+    $message['headers']['Reply-To'] = $site_mail; 
     switch ($key) {
         case 'key_memo_note':
             $render = [

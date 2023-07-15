@@ -362,7 +362,6 @@ if ($signature == 1) {
 /**/
 
 while ($d = $documents->fetchObject()) {
-    
     if (file_exists($d->uri)) {
         $pdf->AddPage('P','A4');
         $info = getimagesize($d->uri);
@@ -371,8 +370,10 @@ while ($d = $documents->fetchObject()) {
         $r = 150/$w;
         $parts = explode('/', $d->uri);
         $parts = array_reverse($parts);
-        $pdf->Cell(100, 5, $parts[0], 0, 1);
-        $pdf->Image(\Drupal::service('file_system')->realpath($d->uri), 15, 40, 150, $h*$r);
+        $pdf->Cell(100, 5, $parts[0], 0, 1);        
+        $pdf->Image(\Drupal::service('file_url_generator')->generateAbsoluteString($d->uri), 15, 40, 150, $h*$r);
+        // $pdf->Image(\Drupal::service('file_system')->realpath($d->uri), 15, 40, 150, $h*$r);
+
     } else {
         $pdf->SetFont('helvetica', '', 10);
         $pdf->Cell(50, 5, t('Attachment') . ': ', 0, 0);

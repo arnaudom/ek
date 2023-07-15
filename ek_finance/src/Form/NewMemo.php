@@ -938,6 +938,7 @@ class NewMemo extends FormBase {
             $serial = ucwords(str_replace('-', '', $short)) . "-EM-" . $date . "-" . $iid;
         } else {
             //edit
+            $edit = true;
             $serial = $form_state->getValue('serial');
             $delete = Database::getConnection('external_db', 'external_db')
                     ->delete('ek_expenses_memo_list')->condition('serial', $serial)
@@ -1059,7 +1060,7 @@ class NewMemo extends FormBase {
             \Drupal::messenger()->addStatus(t('The memo is recorded'));
         }
 
-        //update the documents table
+        // update the documents table
         Database::getConnection('external_db', 'external_db')->update('ek_expenses_memo_documents')
                 ->fields(array('serial' => $serial))
                 ->condition('serial', $form_state->getValue('tempSerial'))
@@ -1126,7 +1127,7 @@ class NewMemo extends FormBase {
                 \Drupal::messenger()->addStatus(t('Notification message sent'));
             }
         } else {
-            //notify for new memo
+            // notify for new memo
             if ($form_state->getValue('category') < 5) {
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_company', 'c');
@@ -1151,7 +1152,7 @@ class NewMemo extends FormBase {
 
             if (isset($insert) && isset($entity_mail) && isset($entity_to->email)) {
                 
-                $params['subject'] = $this->t("New memo") . ': ' . $serial;
+                $params['subject'] = ($edit == false) ? $this->t("New memo") . ': ' . $serial : $this->t("Edited memo") . ': ' . $serial;
                 $link = Url::fromRoute('ek_finance_manage_print_html', ['id' => $reference])->toString();
                 $url = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
                 $params['options']['link'] = $url;
@@ -1170,7 +1171,7 @@ class NewMemo extends FormBase {
                 $queue = \Drupal::queue('ek_email_queue');
                 $queue->createQueue();
                 $queue->createItem($data);
-                $data['subject'] = $this->t("New memo") . ': ' . $serial . " (" . $this->t('copy') . ")";
+                $data['subject'] = ($edit == false) ? $this->t("New memo") . ': ' . $serial . " (" . $this->t('copy') . ")" : $this->t("Edited memo") . ': ' . $serial . " (" . $this->t('copy') . ")";
                 $data['email'] = $entity_mail;
                 $queue->createItem($data);
             }

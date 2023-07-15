@@ -6,10 +6,7 @@ jQuery(document).ready(function(){
 
     jQuery('.amount').blur( function(){
 
-      var i=jQuery("#rows").val();
-     
-      
-      
+      var i=jQuery("#rows").val();      
       var debit = parseFloat( jQuery("#debit1").val().replace(/,/g, ''));
       var credit = parseFloat( jQuery("#credit1").val().replace(/,/g, ''));
 
