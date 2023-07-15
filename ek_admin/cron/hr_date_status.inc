@@ -32,7 +32,7 @@ try {
             
             //contract expiration filter
             if($row->contract_expiration != NULL) {
-                $params = array();
+                $params = [];
                 $params['type'] = 'hr_date';
                 $delta = round((strtotime($row->contract_expiration)  - $stamp ) / (24*60*60), 0); 
             

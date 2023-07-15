@@ -26,8 +26,8 @@ try {
     \Drupal::logger('ek_admin')->notice($log);
     
     while ($row = $Obj->fetchObject()) {
-       
-        $delta = round(( $row->end - $stamp ) / (24 * 60 * 60), 0);
+        $end = ($row->end == null) ? date('U') : $row->end;
+        $delta = round(( $end - $stamp ) / (24 * 60 * 60), 0);
         $params = [];
         $l = Url::fromRoute('ek_sales.purchases.print_html', ['id' => $row->p_id],['query' => []])->toString();
         $params['link'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();

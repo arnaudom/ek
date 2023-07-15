@@ -240,7 +240,6 @@ function ek_admin_mail($key, &$message, $params) {
  */
 function ek_admin_mail_alter(&$message) {
 
-
     if (stristr($message['id'], 'user_')) {
         $site_config = \Drupal::config('system.site');
         $theme = theme_get_setting('logo');
@@ -270,6 +269,58 @@ function ek_admin_mail_alter(&$message) {
 }
 
 /**
+ * Implements hook_mailer_TYPE__SUBTYPE_PHASE
+ * function invokeHooks(EmailInterface $email) in symfony_mailer/EmailFactory
+ * email
+ * theme_hook_original
+ * attributes
+ * title_attributes
+ * content_attributes
+ * title_prefix
+ * title_suffix
+ * db_is_active
+ * is_admin
+ * logged_in
+ * user
+ * directory
+ * body
+ * theme_hook_suggestions
+ * theme_hook_suggestion
+ * _parent
+*/
+
+
+function ek_admin_mailer_symfony_mailer__test_build(\Drupal\symfony_mailer\EmailInterface $email) {
+    
+    $site_name = \Drupal::config('system.site')->get('name');
+    $theme = theme_get_setting('logo');
+    $site_logo = \Drupal::request()->getSchemeAndHttpHost() . $theme['url'];
+    $stamp = date('F j, Y, g:i a');
+    $render = ['#markup' => "<p>Your mailer configuration is working.<p>"];
+    $body = \Drupal::service('renderer')->render($render);
+    $email->setVariable('site_name', $site_name)
+      ->setVariable('site_logo', $site_logo)
+      ->setVariable('stamp', $stamp)
+      ->setVariable('base_url', \Drupal::request()->getSchemeAndHttpHost())
+      ->setVariable('body', $body);
+    $email->setSubject("Mailer configuration test");
+}
+
+function ek_admin_mailer_build(\Drupal\symfony_mailer\EmailInterface $email) {
+    
+    // default inputs for ALL custom symfony email
+    $site_name = \Drupal::config('system.site')->get('name');
+    $theme = theme_get_setting('logo');
+    $site_logo = \Drupal::request()->getSchemeAndHttpHost() . $theme['url'];
+    $stamp = date('F j, Y, g:i a');
+    
+    $email->setVariable('site_name', $site_name)
+      ->setVariable('site_logo', $site_logo)
+      ->setVariable('stamp', $stamp);    
+    
+}
+
+/**
  * A file attachment email function used by EK modules (i.e. finance, sales)
  * with option to use swiftmailer library if available
  * @param $email: array of emails
@@ -282,9 +333,9 @@ function mail_attachment($email, $file, $message = null, $options = null) {
     $file_size = filesize($file);
     $send = '';
     $error = '';
-
-    if (\Drupal::moduleHandler()->moduleExists('swiftmailer')) {
-        //Swift mailer contribution module is available
+    if (\Drupal::moduleHandler()->moduleExists('swiftmailer') || \Drupal::moduleHandler()->moduleExists('symfony_mailer')) {
+        
+        $params = [];
         $settings = new GlobalSettings(0);
         $receipt = $settings->get('mail_receipt');
         $currentuserMail = \Drupal::currentUser()->getEmail();
@@ -292,14 +343,14 @@ function mail_attachment($email, $file, $message = null, $options = null) {
             $dom = explode("/", $GLOBALS['base_url']);
             $currentuserMail = "no-reply@" . $dom[2];
         } else {
-            $name = \Drupal::currentUser()->getAccountName();
+            $params['options']['from'] = $currentuserMail;
         }
 
         $filename_parts = explode('/', $file);
         $filenames = array_reverse($filename_parts); // Remove file basename.
         $filename = $filenames[0];
 
-        //copy target file to local system file before attachment
+        // copy target file to local system file before attachment
         $filesystem = \Drupal::service('file_system');
         $filecopy = PublicStream::basePath() . "/" . $filename;
         $filesystem->copy($file, $filecopy, FileSystemInterface::EXISTS_REPLACE);
@@ -310,11 +361,12 @@ function mail_attachment($email, $file, $message = null, $options = null) {
         $attachments->filename = $filename;
         $attachments->filemime = finfo_file($finfo, $filecopy);
 
-        $params['files'][] = $attachments;
+        $params['files'][] = $attachments; // build files arrays for multiple attachments
         $params['subject'] = $filename;
         $params['body'] = nl2br(Xss::filter($message, ['p', 'br', 'li', 'ul']));
         $params['options']['user'] = $options['user'];
         $params['options']['filename'] = $filename;
+        
         if (isset($options['stripe']) && $options['stripe'] == 1) {
             $params['options']['checkout'] = $options['checkout'];
         }
@@ -378,6 +430,7 @@ function mail_attachment($email, $file, $message = null, $options = null) {
 
         unlink($filecopy);
         Return array('send' => $send, 'error' => $error);
+    
     } else {
         // attachment
         // copy target file to local system file before attachment

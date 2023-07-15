@@ -74,7 +74,7 @@ while ($row = $data->fetchObject()) {
                 if($alerts['client']['frequency'] == 8 || ($weekday == $alerts['client']['frequency'])) {
                     // send
                     $contact = \Drupal\ek_address_book\AddressBookData::getContactData($alerts['client']['id']);
-                    $params = array();
+                    $params = [];
                     $params['type'] = 'client';
                     $params['subject'] = t('Reminder @i', ['@i' => $row->serial]);
                     $params['contact_email'] = $contact['email'];

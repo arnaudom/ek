@@ -107,6 +107,7 @@ class UploadForm extends FormBase {
 
             $fields = array(
                 'coid' => $form_state->getValue('coid'),
+                'fid' => 1,
                 'filename' => $filename,
                 'uri' => $uri,
                 'comment' => Xss::filter($form_state->getValue('comment')),

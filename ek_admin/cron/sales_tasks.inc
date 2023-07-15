@@ -25,18 +25,19 @@ try {
 
 while ($row = $Obj->fetchObject()) {
 
-    $delta = round( ( $row->end  - $stamp ) / (24*60*60), 0);
-    $params = []; 
-    $params['assign'] = $row->uid;
-    $params['serial'] = $row->serial;
-    $l = Url::fromRoute('ek_sales.invoices.print_html', ['id' => $row->i_id],['query' => []])->toString();
-    $params['link'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
-    $l = Url::fromRoute('ek_sales.invoices.tasks_list', [])->toString();
-    $params['alert'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
-    $params['id'] = $row->i_id;
-    $l = Url::fromRoute('ek_sales.invoices.print_html', ['id' => $row->i_id],['query' => []])->toString();
-    $params['end'] = date('Y-m-d', $row->end);
-    $params['task'] = $row->task;
+   $end = ($row->end == null) ? date('U') : $row->end;
+   $delta = round(( $end - $stamp ) / (24 * 60 * 60), 0);
+   $params = []; 
+   $params['assign'] = $row->uid;
+   $params['serial'] = $row->serial;
+   $l = Url::fromRoute('ek_sales.invoices.print_html', ['id' => $row->i_id],['query' => []])->toString();
+   $params['link'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
+   $l = Url::fromRoute('ek_sales.invoices.tasks_list', [])->toString();
+   $params['alert'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
+   $params['id'] = $row->i_id;
+   $l = Url::fromRoute('ek_sales.invoices.print_html', ['id' => $row->i_id],['query' => []])->toString();
+   $params['end'] = date('Y-m-d', $row->end);
+   $params['task'] = $row->task;
     
     /*
      * notify weekly , notify = 1
