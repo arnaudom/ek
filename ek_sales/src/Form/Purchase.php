@@ -1278,9 +1278,10 @@ class Purchase extends FormBase {
             // used to calculate currency gain/loss from rate at purchase record time
             $fx_rate = round($form_state->getValue('fx_rate'), 4);
             $baseCurrency = $this->Financesettings->get('baseCurrency');
+            $currencyRate = 1;
             if ($baseCurrency <> $form_state->getValue('currency')) {
                 // $currencyRate = \Drupal\ek_finance\CurrencyData::rate($form_state->getValue('currency'));
-                //calculate the value in base currency of the amount without tax
+                // calculate the value in base currency of the amount without tax
                 if ($fx_rate <> '' && is_numeric($fx_rate)) {
                     $currencyRate = $fx_rate;
                 } else {

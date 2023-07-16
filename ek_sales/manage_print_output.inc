@@ -36,7 +36,7 @@ $head = Database::getConnection('external_db', 'external_db')
 if(\Drupal::moduleHandler()->moduleExists('ek_projects')) {      
     if ($head->pcode && $head->pcode != 'n/a') {
         $project_link = \Drupal\ek_projects\ProjectData::geturl($head->pcode);
-        //TODO pull data from ProjectData instead
+        // TODO pull data from ProjectData instead
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_project', 'p');
             $query->fields('p', ['pname','pcode']);
@@ -59,6 +59,7 @@ Switch ($source) {
 
     $items = array();                 
     $taxline = 0;
+    $bank = '';
 
       While ($line = $lines->fetchObject()) {
         $data['description2'] = '';
@@ -87,7 +88,7 @@ Switch ($source) {
             $thisitem = $query->execute()->fetchObject();
                 
             if($thisitem->description1 != '') {
-                //add this verification for situation of db migrating from old format
+                // add this verification for situation of db migrating from old format
                 $data['item'] = $thisitem->description1;
                 $data['description2'] = $thisitem->description2;
                 $data['itemid'] = $thisitem->id;
@@ -142,13 +143,13 @@ Switch ($source) {
     $client_card = new stdClass();
     
     if($contact != '') {
-    //selected contact from list
+    // selected contact from list
     $query = "SELECT * FROM {ek_address_book_contacts} WHERE id=:id ";
     $client_card = Database::getConnection('external_db', 'external_db')
             ->query($query, array(':id' => $contact))
             ->fetchObject();    
     } else {
-    //default contact
+    // default contact
     $query = "SELECT * FROM {ek_address_book_contacts} WHERE abid=:id and main=:m";
     $client_card = Database::getConnection('external_db', 'external_db')
             ->query($query, array(':id' => $client->id, ':m' => 1))
@@ -156,7 +157,7 @@ Switch ($source) {
     }
 
     if($source == 'invoice') {
-        //collect bank data
+        // collect bank data
         if($head->bank != 0) {
             $query = "SELECT * FROM {ek_bank_accounts} ba "
                     . "LEFT JOIN {ek_bank} b "
@@ -165,7 +166,7 @@ Switch ($source) {
             $bank = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':id' => $head->bank))
                     ->fetchObject();
-            $company->bank = $bank;//used in footer
+            $company->bank = $bank;// used in footer
         }
     }
        
@@ -173,7 +174,7 @@ Switch ($source) {
     
     case 'quotation':
     
-    //use last revision
+    // use last revision
     $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision DESC";
     $revision = Database::getConnection('external_db', 'external_db')
             ->query($query, array(':s' => $head->serial))
@@ -202,7 +203,7 @@ Switch ($source) {
         $data['qty_pack'] = ''; 
         
         if ($line->itemid != NULL && ItemData::item_bycode($line->itemid) ) {
-        //item exist
+        // item exist
 
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_items', 'i');
@@ -213,7 +214,7 @@ Switch ($source) {
             $thisitem = $query->execute()->fetchObject();
             
             if($thisitem->description1 != '') {
-                //add this verification for situation of db migrating from old format
+                // add this verification for situation of db migrating from old format
                 $data['item'] = $thisitem->description1;
                 $data['description2'] = $thisitem->description2;
                 $data['itemid'] = $thisitem->id;
@@ -289,20 +290,20 @@ Switch ($source) {
             ->fetchObject();
 
     if($contact != '') {
-    //selected contact from list
+    // selected contact from list
         $query = "SELECT * from {ek_address_book_contacts} where id=:id ";
         $client_card = Database::getConnection('external_db', 'external_db')
             ->query($query, array(':id' => $contact))
             ->fetchObject();    
     } else {
-    //default contact
+    // default contact
         $query = "SELECT * from {ek_address_book_contacts} where abid=:id and main=:m";
         $client_card = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $client->id, ':m' => 1))
                 ->fetchObject();
     }
     
-    //change quotation status
+    // change quotation status
     if($format != 'html') {
         Database::getConnection('external_db', 'external_db')
             ->update('ek_sales_quotation')
@@ -357,7 +358,7 @@ if((isset($format) && $format == 'pdf') || $mode == 1) {
   include_once $template;  
   
   if ($mode == 1) {
-    //save temp file
+    // save temp file
     $fileName = \Drupal::service('file_system')->getTempDirectory() ."/" . str_replace("/","_", $head->serial ) . ".pdf";
     $pdf->Output($fileName,"F"); 
   
@@ -368,7 +369,7 @@ if((isset($format) && $format == 'pdf') || $mode == 1) {
 
     header('Cache-Control: private');
     header('Content-Type: application/pdf');
-    //header("Content-Disposition: 'attachment'; filename='$fileName' ");
+    // header("Content-Disposition: 'attachment'; filename='$fileName' ");
     $f = $fileName . ".pdf";
     echo $pdf->Output($f,"I");
 
@@ -376,7 +377,7 @@ if((isset($format) && $format == 'pdf') || $mode == 1) {
   }
   
 } else {
-    //HTML
+    // HTML
   if( $template == '0' ) {
       
       $template = drupal_get_path('module', 'ek_sales') . "/default_" . $source . "_html";
