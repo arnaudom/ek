@@ -50,10 +50,10 @@ class ProjectEmailBuilder extends EmailBuilderBase {
     $recipient = $message['to'];
     $subject = $message['params']['subject'];
     $options = [
-        'pcode' => $message['params']['options']['pcode'], 
-        'priority' => $message['params']['options']['priority'], 
+        'pcode' => $message['params']['pcode'], 
+        'priority' => $message['params']['priority'], 
         'url' => $message['params']['options']['url'],
-        'sender' => $message['params']['options']['from'],
+        'sender' => $message['params']['from'],
     ];
     return $factory->newTypedEmail($message['module'], $message['key'],$body,$recipient,$subject,$options);
   }
