@@ -49,6 +49,7 @@ ek_projects.dashboard:
       css/ek_projects_dashboard.css: {}
   dependencies:
     - core/jquery
+    - jquery_ui_sortable/sortable
 
 ek_projects.calendar:
   version: 1
