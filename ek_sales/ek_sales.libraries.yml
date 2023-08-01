@@ -12,11 +12,15 @@ ek_sales_html_documents_css:
       
 ek_sales.dashboard:
   version: 1
+  js:
+    js/ek_sales_blocks.js: {}
   css:
     theme:
       css/ek_sales_dashboard.css: {}
   dependencies:
     - core/jquery
+    - jquery_ui_sortable/sortable
+    - jquery_ui_resizable/resizable
 
 ek_sales_settings:
   css:

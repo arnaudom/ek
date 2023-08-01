@@ -289,7 +289,7 @@ $pdf->Ln(1);
 
 $pdf->SetFont('helvetica','',$font2);
 $pdf->Cell($lm);
-$pdf->Cell($c1,5,utf8_decode( $client->name ),$b,1);   
+$pdf->Cell($c1,5, $client->name,$b,1);   
 
 if($client->reg){
     $pdf->Cell($lm);
@@ -394,7 +394,7 @@ $pdf->SetFillColor($format_body['fillcolor']['red'], $format_body['fillcolor']['
 $pdf->SetTextColor($format_body['color']['red'], $format_body['color']['green'], $format_body['color']['blue']);
 $pdf->SetDrawColor($format_body['color']['red'], $format_body['color']['green'], $format_body['color']['blue']);
 foreach ($items as $detail) {
-    if($detail['item'] != '') {
+    if(is_array($detail) && $detail['item'] != '') {
         if ($detail['item'] === "sub_total" || $detail['item'] === "[sub total]" ) {
             //insert sub total only
             $pdf->SetFont('helvetica', 'B', $font2);

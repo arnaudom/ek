@@ -16,24 +16,21 @@
  */
 #}
 
-
+    <div class="dashcolumn">
       <div class="widget">
-        
-        <div class="widget-title"><a href='#s0'  onclick="jQuery('#{{ items.id }}').toggle('fast');">
-          <h4 class="">{{ items.title }}</h4></a>
+        <div class="widget-title">
+          <a href='#s0'>
+            <span class='ui-icon ui-icon-minusthick widget-toggle'></span>
+          </a>
+            <h4 class="widget-titl-text">{{ items.title }}</h4>
+          
         </div>
-        
-        <div class="widget-content"  style='' id="{{ items.id }}">
-       
-        
+        <div class="widget-content"  style='' id="{{ items.id }}">      
           <div>{{ items.content|raw }}</div>
-        
-        
         </div>
-        
         <div class="widget-footer">
               {{ items.footer }} 
         </div>
-      
       </div>
+    </div>
 
