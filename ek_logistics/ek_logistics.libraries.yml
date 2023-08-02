@@ -28,9 +28,9 @@ ek_logistics.dashboard:
   css:
     theme:
       css/ek_logistics_dashboard.css: {}
+  js:
+    js/ek_logistics_dashboard.js: {}
   dependencies:
     - core/jquery
-    #- core/drupal
-    #- core/drupal.form
-    #- core/jquery.form
-    #- core/drupal.collapse
+    - jquery_ui_sortable/sortable
+    - jquery_ui_resizable/resizable

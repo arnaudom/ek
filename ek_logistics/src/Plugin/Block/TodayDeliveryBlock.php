@@ -22,14 +22,12 @@ use Drupal\Core\Url;
  *   category = @Translation("Ek Logistics block")
  * )
  */
-class TodayDeliveryBlock extends BlockBase
-{
+class TodayDeliveryBlock extends BlockBase {
 
     /**
      * {@inheritdoc}
      */
-    public function build()
-    {
+    public function build() {
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
 
@@ -71,9 +69,7 @@ class TodayDeliveryBlock extends BlockBase
         return array(
             '#items' => $items,
             '#theme' => 'ek_logistics_dashboard',
-            '#attached' => array(
-                'library' => array('ek_logistics/ek_logistics.dashboard'),
-            ),
+            '#attached' => ['library' => ['ek_logistics/ek_logistics.dashboard'],],
             '#cache' => [
                 'tags' => ['logistics_delivery_block'],
                 'max-age' => 43200,
