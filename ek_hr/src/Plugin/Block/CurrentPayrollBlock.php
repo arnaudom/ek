@@ -9,7 +9,6 @@ use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Extension\ModuleHandler;
 
 /**
  * Provides a 'Current payroll widget' .
@@ -20,14 +19,12 @@ use Drupal\Core\Extension\ModuleHandler;
  *   category = @Translation("Ek HR block")
  * )
  */
-class CurrentPayrollBlock extends BlockBase
-{
+class CurrentPayrollBlock extends BlockBase {
    
   /**
    * {@inheritdoc}
    */
-    public function build()
-    {
+    public function build() {
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
      
@@ -47,14 +44,12 @@ class CurrentPayrollBlock extends BlockBase
         $items = array();
         $items['title'] = t('Current payroll cycle');
         $items['content'] = $list;
-        //$items['id'] = 'current_payroll_cycle';
   
         return array(
-    '#items' => $items,
-    '#theme' => 'ek_hr_dashboard',
-    '#attached' => array(
-      'library' => array('ek_hr/ek_hr.dashboard'),
-      ),
+            '#items' => $items,
+            '#theme' => 'ek_hr_dashboard',
+            '#attached' => ['library' => ['ek_hr/ek_hr.dashboard'],],
+            '#cache' => ['max-age' => 86400,],
     );
     }
 

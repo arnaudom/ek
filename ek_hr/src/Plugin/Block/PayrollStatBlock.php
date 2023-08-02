@@ -21,14 +21,12 @@ use Drupal\Core\Database\Database;
  *   category = @Translation("Ek HR block")
  * )
  */
-class PayrollStatBlock extends BlockBase
-{
+class PayrollStatBlock extends BlockBase {
 
   /**
    * {@inheritdoc}
    */
-    public function build()
-    {
+    public function build() {
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
      
@@ -45,8 +43,8 @@ class PayrollStatBlock extends BlockBase
         foreach ($access as $coid) {
             if ($coid != '') {
                 $name = Database::getConnection('external_db', 'external_db')
-            ->query("SELECT name from {ek_company} WHERE id=:coid", array(':coid' => $coid))
-            ->fetchField();
+                    ->query("SELECT name from {ek_company} WHERE id=:coid", array(':coid' => $coid))
+                    ->fetchField();
 
                 $query = "SELECT count(id) from {ek_hr_workforce} WHERE active=:a and company_id=:coid";
                 $a = array(':a' => 'working', ':coid' => $coid);
@@ -67,22 +65,17 @@ class PayrollStatBlock extends BlockBase
         $items['id'] = 'payroll_stat';
   
         return array(
-    '#items' => $items,
-    '#theme' => 'ek_hr_dashboard',
-    '#attached' => array(
-      'library' => array('ek_hr/ek_hr.dashboard'),
-      ),
-   '#cache' => [
-                'tags' => ['payroll_stat_block'],
-            ],
-    );
+            '#items' => $items,
+            '#theme' => 'ek_hr_dashboard',
+            '#attached' => ['library' => ['ek_hr/ek_hr.dashboard'],],
+            '#cache' => ['tags' => ['payroll_stat_block'],],
+        );
     }
 
     /**
      * {@inheritdoc}
      */
-    public function blockAccess(AccountInterface $account)
-    {
+    public function blockAccess(AccountInterface $account) {
         if (!$account->isAnonymous() && $account->hasPermission('hr_dashboard')) {
             return AccessResult::allowed();
         }

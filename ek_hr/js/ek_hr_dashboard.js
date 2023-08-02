@@ -1,12 +1,26 @@
-jQuery(document).ready(function(){
+(function ($, Drupal, drupalSettings) {
 
-    jQuery('.widget-title').click( function(){
-
-      //jQuery(this).next('div').toggleClass('widget-closed');
-      //jQuery(this).next('div').toggleClass('widget-open');
-      //jQuery(this).next('div').toggle();
+  jQuery(function () {
      
-    });
+      jQuery(".dashcolumn").sortable({
+          connectWith: ".dashcolumn",
+          handle: ".widget-title",
+          cancel: ".widget-toggle",
+          placeholder: "widget widget-placeholder",
+          cursor: "move"
+      });
 
-    
-});
+      jQuery(".widget-toggle").on( "click", function() {
+          var icon = $(this);
+          icon.toggleClass( "ui-icon-minusthick ui-icon-plusthick" );
+          icon.closest( ".widget" ).find( ".widget-content" ).toggle();
+      });
+      
+      jQuery(".widget-content" ).resizable({
+          handles: 's'
+      });
+      
+      
+  });
+
+})(jQuery, Drupal, drupalSettings);
