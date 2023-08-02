@@ -10,6 +10,7 @@
                 jQuery('#' + c.element).once().each(function () {
 
                     if (c.type == 'Line') {
+                        jQuery('#' + c.id).css('height', 'auto');
                         Morris.Line({
                             element: c.element,
                             data: c.data,
@@ -21,7 +22,7 @@
 
                     }
                     if (c.type == 'Area') {
-
+                        jQuery('#' + c.id).css('height', 'auto');
                         Morris.Area({
                             element: c.element,
                             data: c.data,
@@ -33,6 +34,7 @@
 
                     }
                     if (c.type == 'Bar') {
+                        jQuery('#' + c.id).css('height', 'auto');
                         Morris.Bar({
                             element: c.element,
                             data: c.data,

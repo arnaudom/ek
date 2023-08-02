@@ -19,11 +19,15 @@ ek_finance_html_documents_css:
       
 ek_finance.dashboard:
   version: 1
+  js:
+    js/ek_finance_blocks.js: {}
   css:
     theme:
       css/ek_finance_dashboard.css: {}
   dependencies:
     - core/jquery
+    - jquery_ui_sortable/sortable
+    - jquery_ui_resizable/resizable
 
 ek_finance.ledger:
   version: 1
