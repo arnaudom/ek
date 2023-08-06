@@ -138,9 +138,6 @@ class Notification extends FormBase {
                     $query->fields('u', ['uid', 'mail']);
                     $query->condition('name', trim($u));
                     $id = $query->execute()->fetchObject();
-
-                    //$query = "SELECT uid,mail from {users_field_data} WHERE name=:u";
-                    //$result = db_query($query, array(':u' => trim($u)))->fetchObject();
                     if (!$id) {
                         $error .= $u . ',';
                     } else {
@@ -150,7 +147,6 @@ class Notification extends FormBase {
             }
 
             if ($error <> '') {
-                //$form_state->setErrorByName("email", $this->t('Invalid user(s)') . ': ' . $error);
                 $form_state->set('alert', $this->t('Invalid user(s)') . ': ' . rtrim($error, ','));
                 $form_state->setRebuild();
             } else {
@@ -174,9 +170,9 @@ class Notification extends FormBase {
             $to = $acc->getEmail();
         }
         $params['text'] = Xss::filter($form_state->getValue('message'));
-        $params['options']['pcode'] = $p->pcode;
+        $params['pcode'] = $p->pcode;
         $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), true);
-        $params['options']['priority'] = $form_state->getValue('priority');
+        $params['priority'] = $form_state->getValue('priority');
         // $priority = ['3' => $this->t('low'), '2' => $this->t('normal'), '1' => $this->t('high')];
 
         $code = explode("-", $p->pcode);
@@ -188,14 +184,9 @@ class Notification extends FormBase {
             ;
         }
 
-        /*$acc2 = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
-        $from = '';
-        if ($acc2) {
-            $from = $acc2->getEmail();
-            $params['from'] = $from;
-        }*/
+       
         $from = \Drupal::currentUser()->getEmail();
-        $params['options']['from'] = $from;
+        $params['from'] = $from;
         $addresses = explode(',', $form_state->getValue('notify_who'));
         $error = '';
 
@@ -245,7 +236,7 @@ class Notification extends FormBase {
         $params['body'] = $text;
         $l = Url::fromRoute('ek_projects_view', ['id' => $form_state->getValue('pid')],['query' => []])->toString();
         $params['options']['url'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
-        
+      
         foreach ($addresses as $email) {
             if (trim($email) != null) {
                 if ($target_user = user_load_by_mail($email)) {
