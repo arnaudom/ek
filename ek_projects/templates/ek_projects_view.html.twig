@@ -354,7 +354,25 @@
                             <td colspan='2'><span id='payment'>{{ items.finance.0.payment }}</span>  <span class='field_edit'>{{ items.finance.0.edit_payment|raw }}</span></td>
                         </tr>               
                     </tbody>
-                </table>
+                </table>           
+                {% if items.finance.0.quote %}
+                    <table class='table'>
+                        <tbody>
+                            <tr><td colspan='1' class='tlabel'>{{ 'Quotations'|t }}</td></tr>
+
+                            {% for key, item in items.finance.0.quote %}
+
+                                <tr>
+                                    <td style="width:35%;"><a href="{{ item.href }}"  target="_blank" title="{{ item.head }}">{{ item.serial }}</a></td>
+                                    <td style="width:55%;">{{ item.amount }}</td>
+                                    <td style="">{{ item.status }}</td>
+                                    
+                                </tr>
+
+                            {% endfor %} {# quote list #}           
+                        </tbody>
+                    </table>        
+                {% endif %}        
                 {% if items.finance.0.po %}
                     <table class='table'>
                         <tbody>
@@ -362,7 +380,7 @@
 
                             {% for key, item in items.finance.0.po %}
                                 <tr>
-                                    <td style="width:35%;"><a href="{{ item.href }}">{{ item.serial }}</a></td>
+                                    <td style="width:35%;"><a href="{{ item.href }}" target="_blank" title="{{ item.head }}">{{ item.serial }}</a></td>
                                     <td style="width:25%;">{{ item.amount }}</td>
                                     <td style="width:25%;">{{ item.amountbase }} </td>
                                     <td style="width:5%;"><i class="fa fa-circle {{ item.due }}" aria-hidden="true" title="{{ item.duedate }}"></i> </td>
@@ -381,32 +399,14 @@
                             </tr>             
                         </tbody>
                     </table>
-                {% endif %}            
-                {% if items.finance.0.quote %}
-                    <table class='table'>
-                        <tbody>
-                            <tr><td colspan='1' class='tlabel'>{{ 'Quotations'|t }}</td></tr>
-
-                            {% for key, item in items.finance.0.quote %}
-
-                                <tr>
-                                    <td style="width:35%;"><a href="{{ item.href }}">{{ item.serial }}</a></td>
-                                    <td style="width:55%;">{{ item.amount }}</td>
-                                    <td style="">{{ item.status }}</td>
-                                    
-                                </tr>
-
-                            {% endfor %} {# quote list #}           
-                        </tbody>
-                    </table>        
-                {% endif %}            
+                {% endif %}     
                 {% if items.finance.0.invoice %} 
                     <table class='table'>
                         <tbody>
                             <tr><td colspan='1' class='tlabel'>{{ 'Invoices'|t }}</td></tr>
                             {% for key, item in items.finance.0.invoice %}
                                 <tr>
-                                    <td style="width:35%;"><a href="{{ item.href }}">{{ item.serial }}</a></td>
+                                    <td style="width:35%;"><a href="{{ item.href }}" target="_blank" title="{{ item.head }}">{{ item.serial }}</a></td>
                                     <td style="width:25%;">{{ item.amount }}</td>
                                     <td style="width:25%;">{{ item.amountbase }} </td>
                                     <td style="width:5%;"><i class="fa fa-circle {{ item.due }}" aria-hidden="true" title="{{ item.duedate }}"></i> </td>

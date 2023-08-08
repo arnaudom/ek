@@ -337,7 +337,7 @@ class ProjectController extends ControllerBase {
             's5' => (null !== $request->query->get('s5')) ? $request->query->get('s5') : 'none',
         ];
         $edit_icon = "&nbsp<span class='ico pencil-edit'></span>";
-
+        $coid = $access = \Drupal\ek_admin\Access\AccessCheck::CompanyList();
         $ab = $this->extdb
                         ->select('ek_address_book', 'ab')
                         ->fields('ab', ['id', 'name'])
@@ -929,6 +929,7 @@ class ProjectController extends ControllerBase {
                             'more' => ['#markup' => $more],
                             'due' => ['#markup' => $due],
                             'duedate' => ['#markup' => $duedate],
+                            'head' => $coid[$p->head],
                         );
                         $i++;
                     }
@@ -962,7 +963,8 @@ class ProjectController extends ControllerBase {
                             'amount' => $q->currency . ' ' . number_format($q->amount, 2),
                             'date' => $q->date,
                             'url' => ['#markup' => $link],
-                            'href' => $href
+                            'href' => $href,
+                            'head' => $coid[$q->head],
                         );
                         $i++;
                     }
@@ -1017,6 +1019,7 @@ class ProjectController extends ControllerBase {
                             'more' => ['#markup' => $more],
                             'due' => ['#markup' => $due],
                             'duedate' => ['#markup' => $duedate],
+                            'head' => $coid[$in->head],
                         );
                         $i++;
                     }
