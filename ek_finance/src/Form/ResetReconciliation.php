@@ -97,7 +97,7 @@ class ResetReconciliation extends FormBase {
                     ->execute();
         $c = $query->fetchField();
         
-        $data = unserialize(utf8_decode($h->data));
+        $data = unserialize($h->data);
         $form['id'] = [
                 '#type' => 'hidden',
                 '#value' => $h->id,
@@ -146,10 +146,10 @@ class ResetReconciliation extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         
-        $data = unserialize(utf8_decode($form_state->getValue('data')));
+        $data = unserialize($form_state->getValue('data'));
         $id = $form_state->getValue('id');
         
-        for ($i=1; $i <= count($data); $i++) {
+        for ($i=1; $i < count($data); $i++) {
             
             // change flag in journal
             $journal_id = $data[$i][7];
@@ -206,152 +206,7 @@ class ResetReconciliation extends FormBase {
         $form_state->setRedirect('ek_finance.manage.reconciliation_reports');
         
         
-        /*
-        if ($form_state->get('step') == 2) {
-            $reco_lines = array();
-            $error = 0;
-            $reco_lines[0] = array(
-                $form_state->getValue('credits'),
-                $form_state->getValue('debits'),
-                $form_state->getValue('openbalance'),
-                $form_state->getValue('statement'),
-                $form_state->getValue('difference'),
-                $form_state->getValue('date'),
-                $form_state->getValue("coid"),
-                $form_state->getValue('account')
-            );
-
-            $items = $form_state->getValue('items');
-            for ($i = 0; $i < $form_state->getValue('rows'); $i++) {
-                if ($items[$i]['select' . $i] <> 0) {
-                    $journal_id = $items[$i]['journal_id'];
-
-
-                    //set the reconciliation flag to 1 in journal entry
-                    $update = Database::getConnection('external_db', 'external_db')->update('ek_journal')
-                            ->condition('id', $journal_id)
-                            ->fields(array('reconcile' => 1))
-                            ->execute();
-
-                    if (!$update) {
-                        //keep a record of id not properly updated in journal
-                        $error = 1;
-                    } else {
-                        $error = 0;
-                    }
-
-                    //set the reconcilition flag to 1 for all journal entries (block edit of entries, i.e. expense)
-                    $j = Journal::journalEntryDetails($journal_id);
-
-                    //Fix a bug to retreive exchange value when inter accounts transfer with different currencies
-                    if ($form_state->getValue('account_currency') && ($form_state->getValue('account_currency') != $j['currency'])) {
-                        $query = Database::getConnection('external_db', 'external_db')
-                                ->select('ek_journal', 'jr');
-                        $query->fields('jr', ['value']);
-                        $query->condition('coid', $j['coid'], '=');
-                        $query->condition('aid', $j['aid'], '=');
-                        $query->condition('date', $j['date'], '=');
-                        $query->condition('type', $j['type'], '=');
-                        $query->condition('source', $j['source'], '=');
-                        $query->condition('reference', $j['reference'], '=');
-                        $query->condition('exchange', 1, '=');
-
-                        $exchange = $query->execute()->fetchObject();
-
-                        $j['value'] = $j['value'] + $exchange->value;
-                        $j['currency'] = $form_state->getValue('account_currency');
-                    }
-
-                    // verify if date of entry is current or past year. If past year reco tag is changed from 1 to current year
-                    // this is used for balance calculation with overlaping data when doing reconciliation
-                    $current_year = date('Y');
-                    if (date('Y', strtotime($j['date'])) < $current_year) {
-                        $reco = $current_year;
-                    } else {
-                        $reco = 1;
-                    }
-
-                    Database::getConnection('external_db', 'external_db')->update('ek_journal')
-                            //->condition('exchange', 1)
-                            ->condition('aid', $j['aid'])
-                            ->condition('reference', $j['reference'])
-                            ->condition('source', $j['source'])
-                            ->condition('date', $j['date'])
-                            ->fields(array('reconcile' => $reco))
-                            ->execute();
-
-                    // verify if aid is bank account, if yes update bank history
-                    $query = "SELECT ba.id,account_ref FROM {ek_bank_accounts} ba INNER JOIN {ek_bank} b ON ba.bid=b.id where aid=:aid and coid=:coid";
-                    $a = array(':aid' => $form_state->getValue('account'), ':coid' => $form_state->getValue('coid'));
-                    $result = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
-                    $year = explode("-", $j['date']);
-
-                    if (is_array($j['comment'])) {
-                        //remove the hyperlink tag
-                        preg_match("'>(.*?)</a>'si", $j['comment']['#markup'], $match);
-                        $j['comment'] = $j['reference'] . " - " . $match[1];
-                    } else {
-                        $j['comment'] = $j['reference'] . " - " . $j['comment'];
-                    }
-
-                    if ($result) {
-                        $fields = array(
-                            'account_ref' => $result->account_ref,
-                            'date_transaction' => $j['date'],
-                            'year_transaction' => $year[0],
-                            'type' => $j['type'],
-                            'currency' => $j['currency'],
-                            'amount' => $j['value'],
-                            'description' => $j['comment']
-                        );
-
-                        Database::getConnection('external_db', 'external_db')->insert('ek_bank_transactions')
-                                ->fields($fields)
-                                ->execute();
-                    }
-
-                    // save reco line for report
-
-                    $reco_lines[$i + 1] = array(
-                       0 $form_state->getValue('account'),
-                       1 $j['date'],
-                       2 $year[0],
-                       3 $j['type'],
-                       4 $j['currency'],
-                       5 $j['value'],
-                       6 $j['comment'],
-                       7 $journal_id,
-                       8 $error,
-                    );
-                }
-            } //for
-            //save report data
-
-            if (!$form_state->getValue('upload_doc') == 0) {
-                $file = $form_state->getValue('upload_doc');
-                $dir = "private://finance/bank/" . $form_state->getValue('coid');
-                \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
-            } else {
-                $filename = "";
-            }
-            $reco_lines = serialize($reco_lines);
-            $error = serialize($error);
-            $fields = array(
-                'type' => 1,
-                'date' => $form_state->getValue('date'),
-                'aid' => $form_state->getValue('account'),
-                'coid' => $form_state->getValue('coid'),
-                'data' => $reco_lines,
-                'uri' => $filename,
-            );
-            Database::getConnection('external_db', 'external_db')
-                    ->insert('ek_journal_reco_history')
-                    ->fields($fields)
-                    ->execute();
-        } //if
         
-         */
     }
 
 }
