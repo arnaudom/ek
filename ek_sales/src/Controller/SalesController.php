@@ -114,14 +114,14 @@ class SalesController extends ControllerBase {
             //upload form for documents
             $items['form'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\UploadForm', $abid);
 
-            //comments
+            // comments
             $items['comment'] = html_entity_decode($ab->comment, ENT_QUOTES, "utf-8");
             $param_edit = 'comment|' . $abid . '|address_book|50%';
             $items['url_comment'] = Url::fromRoute('ek_sales_modal', ['param' => $param_edit])->toString();
             $items['edit_comment'] = $this->t('<a href="@url" class="@c"  >[ edit ]</a>', array('@url' => $items['url_comment'], '@c' => 'use-ajax red '));
 
 
-            //projects linked
+            // projects linked
             if ($this->moduleHandler->moduleExists('ek_projects')) {
                 $query = "SELECT p.id,p.status,date,pcode,pname,level,priority,cid,last_modified,c.name
                     FROM {ek_project} p
@@ -147,7 +147,7 @@ class SalesController extends ControllerBase {
                     );
                 }
             }
-            //reports
+            // reports
             if ($this->moduleHandler->moduleExists('ek_intelligence')) {
                 $query = "SELECT id,serial,edit FROM {ek_ireports} WHERE abid=:c";
                 $data = Database::getConnection('external_db', 'external_db')
@@ -164,7 +164,7 @@ class SalesController extends ControllerBase {
             }
 
             if ($this->moduleHandler->moduleExists('ek_projects')) {
-                //statistics cases
+                // statistics cases
                 $query = "SELECT count(pcode) as sum, status FROM {ek_project}"
                         . " WHERE client_id=:abid group by status";
                 $data = Database::getConnection('external_db', 'external_db')
@@ -186,30 +186,117 @@ class SalesController extends ControllerBase {
 
                 if ($this->moduleHandler->moduleExists('charts')) {
                     $theme = 'ek_sales_data_charts';
-                    $chartSettings = $this->config('charts.settings')->get('charts_default_settings');
-                    $options = [];
-                    $options['type'] = 'pie';
-                    $options['title'] = $this->t('Projects');
-                    $options['xaxis_title'] = $items['baseCurrency'];
-                    $options['title_position'] = 'in';
-                    $categories = [t('open'), $this->t('awarded'), $this->t('completed'), $this->t('closed')];
+                    $chartSettings = $this->config('charts.settings');
+                    $chartSettings_ = $this->config('charts.settings')->get('charts_default_settings.library');
+                    if (empty($chartSettings_)) {
+                        $this->messenger->addError($this->t('You need to first configure Charts default settings'));
+                        return [];
+                      }
+
+                    /*
+                    Array ( [library] => highcharts 
+                    [type] => bar 
+                    [display] => Array ( 
+                        [title] => 
+                        [title_position] => 
+                        [subtitle] => 
+                        [data_labels] => 
+                        [data_markers] => 
+                        [legend_position] => 
+                        [background] => 
+                        [three_dimensional] => 0 
+                        [colors] => 
+                        [polar] => 0 
+                        [tooltips] => 
+                        [dimensions] => Array ( 
+                            [width] => 
+                            [width_units] => 
+                            [height] => 
+                            [height_units] => ) 
+                        [gauge] => Array ( 
+                            [max] => 
+                            [min] => 
+                            [green_from] => 
+                            [green_to] => 
+                            [yellow_from] => 
+                            [yellow_to] => 
+                            [red_from] => 
+                            [red_to] => ) 
+                        [color_changer] => ) 
+                    [xaxis] => Array ( 
+                        [title] => 
+                        [labels_rotation] => 0 ) 
+                    [yaxis] => Array ( 
+                        [title] => 
+                        [min] => 
+                        [max] => 
+                        [prefix] => 
+                        [suffix] => 
+                        [decimal_count] => 
+                        [labels_rotation] => 0 ) 
+                    [library_config] => Array ( 
+                        [legend] => Array ( 
+                            [layout] => vertical 
+                            [background_color] => 
+                            [border_width] => 0 
+                            [item_style] => Array ( 
+                                [color] => [overflow] => ) 
+                            [shadow] => ) 
+                        [exporting_library] => 
+                        [texture_library] => 
+                        [global_options] => Array ( 
+                            [lang] => Array ( 
+                                [download_CSV] => Download CSV 
+                                [download_JPEG] => Download JPEG image 
+                                [download_PDF] => Download PDF document 
+                                [download_PNG] => Download PNG image 
+                                [download_SVG] => Download SVG vector image 
+                                [download_XLS] => Download XLS 
+                                [exit_fullscreen] => Exit from full screen 
+                                [hide_data] => Hide data table 
+                                [loading] => Loading... 
+                                [main_breadcrumb] => Main 
+                                [no_data] => No data to display 
+                                [print_chart] => Print chart 
+                                [reset_zoom] => Reset zoom 
+                                [reset_zoom_title] => Reset zoom level 1:1 
+                                [view_data] => View data table 
+                                [view_fullscreen] => View in full screen 
+                                [months] => Array ( 
+                                    [0] => January [1] => February [2] => March [3] => April [4] => May [5] => June [6] => July [7] => August [8] => September [9] => October [10] => November [11] => December ) 
+                                    [short_months] => Array ( [0] => Jan [1] => Feb [2] => Mar [3] => Apr [4] => May [5] => Jun [6] => Jul [7] => Aug [8] => Sept [9] => Oct [10] => Nov [11] => Dec ) 
+                                    [weekdays] => Array ( [0] => Sunday [1] => Monday [2] => Tuesday [3] => Wednesday [4] => Thursday [5] => Friday [6] => Saturday ) 
+                                    [short_weekdays] => Array ( [0] => Sun [1] => Mon [2] => Tue [3] => Wed [4] => Thurs [5] => Frid [6] => Sat ) ) ) ) ) 
+                    */
+
+                    $x_axis = [
+                        '#type' => 'chart_xaxis',
+                        '#title' => $this->t('Number of projects'),
+                        '#labels' => [$this->t('open'), $this->t('awarded'), $this->t('completed'), $this->t('closed')],
+                    ];
+                    
+                    $y_axis = [];
 
                     $seriesData = [
-                        [
-                            "data" => [$items['category_statistics']['open'], $items['category_statistics']['awarded'], $items['category_statistics']['completed'], $items['category_statistics']['closed']],
-                            "colors" => [$chartSettings['colors'][0], $chartSettings['colors'][1], $chartSettings['colors'][2], $chartSettings['colors'][3]]
-                        ]
+                            '#type' => 'chart_data',
+                            '#title' => $this->t('pie'),
+                            "#data" => [$items['category_statistics']['open'], $items['category_statistics']['awarded'], $items['category_statistics']['completed'], $items['category_statistics']['closed']],                            
                     ];
+
                     $uuid_service = \Drupal::service('uuid');
+                    
                     $element = [
-                        '#theme' => 'charts_api',
-                        '#library' => (string) $chartSettings['library'],
-                        '#categories' => $categories,
-                        '#seriesData' => $seriesData,
-                        '#options' => $options,
                         '#id' => 'chart-' . $uuid_service->generate(),
-                        '#override' => [],
+                        '#type' => 'chart',
+                        '#tooltips' => true,
+                        '#title' => $this->t('Projects'),
+                        '#chart_type' => 'pie',
+                        'series' => $seriesData,
+                        'x_axis' => $x_axis,
+                        'y_axis' => $y_axis,
+                        '#raw_options' => [],
                     ];
+
                     if($items['category_statistics']['total'] > 0) { 
                         $items['project_status_chart'] = \Drupal::service('renderer')->render($element);
                     }
@@ -271,14 +358,12 @@ class SalesController extends ControllerBase {
                         . "WHERE client = :abid and status=:s";
             }
 
-
             $a = array(
                 ':abid' => $abid,
             );
             $items['total_income'] = Database::getConnection('external_db', 'external_db')
                     ->query($query, $a)
                     ->fetchField();
-
 
             $data = Database::getConnection('external_db', 'external_db')
                     ->query($query2, $a);
@@ -306,51 +391,53 @@ class SalesController extends ControllerBase {
                 }
             }
 
-            if (isset($chartSettings)) {
-                $options = [];
-                $options['type'] = 'bar';
-                $options['title'] = ($ab->type == 1) ? $this->t('Sales structure') : $this->t('Purchases structure');
-                $options['yaxis_title'] = t($source);
-                $options['yaxis_min'] = '';
-                $options['yaxis_max'] = '';
-                $options['xaxis_title'] = $items['baseCurrency'];
-                $options['legend_position'] = 'bottom';
-                $options['title_position'] = 'top';
-                $categories = [];
+            if (isset($chartSettings_)) {
                 $seriesData = [
-                    ["name" => $this->t('Highest'), "color" => $chartSettings['colors'][0], "type" => "bar", "data" => [$items['invoices']['max']]],
-                    ["name" => $this->t('Lowest'), "color" => $chartSettings['colors'][1], "type" => "bar", "data" => [$items['invoices']['min']]],
-                    ["name" => $this->t('Average'), "color" => $chartSettings['colors'][2], "type" => "bar", "data" => [$items['invoices']['avg']]]
+                    '#type' => 'chart_data',
+                    '#title' => $this->t('invoice'),
+                    "#data" => [ $items['invoices']['max'], $items['invoices']['min'], $items['invoices']['avg']],
                 ];
 
-                $uuid_service = \Drupal::service('uuid');
+                $x_axis = [
+                    '#type' => 'chart_xaxis',
+                    '#title' => $this->t('Invoice range'),
+                    '#labels' => [$this->t('Highest'), $this->t('Lowest'), $this->t('Average')],
+                ];
+
+                $y_axis = [
+                    '#type' => 'chart_yaxis',
+                    '#title' => $this->t('Invoice') . " " . $items['baseCurrency'],
+                ];
+
+                $title = ($ab->type == 1) ? $this->t('Sales structure') : $this->t('Purchases structure');
                 $element = [
-                    '#theme' => 'charts_api',
-                    '#library' => (string) $chartSettings['library'],
-                    '#categories' => $categories,
-                    '#seriesData' => $seriesData,
-                    '#options' => $options,
                     '#id' => 'chart-' . $uuid_service->generate(),
-                    '#override' => [],
+                    '#type' => 'chart',
+                    '#tooltips' => true,
+                    '#title' => $title,
+                    '#chart_type' => 'bar',
+                    'series' => $seriesData,
+                    'x_axis' => $x_axis,
+                    'y_axis' => $y_axis,
+                    '#raw_options' => [],
                 ];
 
                 $items['invoices_chart'] = \Drupal::service('renderer')->render($element);
+                $x_axis = [
+                    '#type' => 'chart_xaxis',
+                    '#title' => $this->t('Years'),
+                    '#labels' => [date('Y') - 6, date('Y') - 5, date('Y') - 4, date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y')],
+                ];
+                
+                $y_axis = [
+                    '#type' => 'chart_yaxis',
+                    '#title' => $this->t('Value') . " " . $items['baseCurrency'],
+                ];
 
-
-                $options = [];
-                $options['type'] = 'line';
-                $options['title'] = ($ab->type == 1) ? $this->t('Sales per year') : $this->t('Purchases per year');
-                $options['yaxis_title'] = $items['baseCurrency'];
-                $options['yaxis_min'] = '';
-                $options['yaxis_max'] = '';
-                $options['xaxis_title'] = $this->t('Years');
-                $options['legend_position'] = 'bottom';
-                $options['title_position'] = 'top';
-                $categories = [date('Y') - 6, date('Y') - 5, date('Y') - 4, date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y')];
                 $seriesData = [
-                    ["name" => $this->t('Transactions') . " " . $items['baseCurrency'],
-                        "type" => 'line',
-                        "data" => [
+                        '#type' => 'chart_data',
+                        '#title' => $this->t('Yearly sales'),
+                        "#data" => [
                             (int) $items['sales_year'][date('Y') - 6],
                             (int) $items['sales_year'][date('Y') - 5],
                             (int) $items['sales_year'][date('Y') - 4],
@@ -359,25 +446,31 @@ class SalesController extends ControllerBase {
                             (int) $items['sales_year'][date('Y') - 1],
                             (int) $items['sales_year'][date('Y')]
                         ],
-                        "color" => $chartSettings['colors'][0],
+                ];
+              
+                $element = [
+                    '#id' => 'chart-' . $uuid_service->generate(),
+                    '#type' => 'chart',
+                    '#tooltips' => true,
+                    '#title' => $this->t('Transactions'),
+                    '#chart_type' => 'column',
+                    'width' => 400,
+                    'series' => $seriesData,
+                    'x_axis' => $x_axis,
+                    'y_axis' => $y_axis,
+                    '#raw_options' => [
+                        'chart' => [
+                            'width' => 600, // Set the width here , other chart options ...
+                        ],
                     ],
                 ];
 
-                $uuid_service = \Drupal::service('uuid');
-                $element = [
-                    '#theme' => 'charts_api',
-                    '#library' => (string) $chartSettings['library'],
-                    '#categories' => $categories,
-                    '#seriesData' => $seriesData,
-                    '#options' => $options,
-                    '#id' => 'chart-' . $uuid_service->generate(),
-                    '#override' => [],
-                ];
-
                 $items['sales_year_chart'] = \Drupal::service('renderer')->render($element);
+            
             }
 
-            //Payment performance
+
+            // Payment performance
             $query4 = "SELECT date,pay_date FROM {ek_sales_invoice} "
                     . "WHERE client = :abid and status=:s";
 
@@ -405,7 +498,7 @@ class SalesController extends ControllerBase {
             }
 
 
-            if (isset($chartSettings)) {
+            if (isset($chartSettings_)) {/*
                 $options = [];
                 $options['type'] = 'bar';
                 $options['title'] = $this->t('Payments performance');
@@ -416,22 +509,35 @@ class SalesController extends ControllerBase {
                 $options['legend_position'] = 'bottom';
                 $options['title_position'] = 'top';
 
-                $categories = ['days'];
+            */ 
                 $seriesData = [
-                    ["name" => $this->t('Highest'), "color" => $chartSettings['colors'][0], "type" => "bar", "data" => [$items['payment_performance']['max']]],
-                    ["name" => $this->t('Lowest'), "color" => $chartSettings['colors'][1], "type" => "bar", "data" => [$items['payment_performance']['min']]],
-                    ["name" => $this->t('Average'), "color" => $chartSettings['colors'][2], "type" => "bar", "data" => [$items['payment_performance']['avg']]]
+                    '#type' => 'chart_data',
+                    '#title' => $this->t('Pay terms'),
+                    "#data" => [ $items['payment_performance']['max'], $items['payment_performance']['min'], $items['payment_performance']['avg']],
                 ];
 
-                $uuid_service = \Drupal::service('uuid');
+                $x_axis = [
+                    '#type' => 'chart_xaxis',
+                    '#title' => $this->t('Pay range'),
+                    '#labels' => [$this->t('Highest'), $this->t('Lowest'), $this->t('Average')],
+                ];
+
+                $y_axis = [
+                    '#type' => 'chart_yaxis',
+                    '#title' => $this->t('Days'),
+                ];
+
+                $title = ($ab->type == 1) ? $this->t('Payment performance') : $this->t('Purchase performance');
                 $element = [
-                    '#theme' => 'charts_api',
-                    '#library' => (string) $chartSettings['library'],
-                    '#categories' => $categories,
-                    '#seriesData' => $seriesData,
-                    '#options' => $options,
                     '#id' => 'chart-' . $uuid_service->generate(),
-                    '#override' => [],
+                    '#type' => 'chart',
+                    '#tooltips' => true,
+                    '#title' => $title,
+                    '#chart_type' => 'bar',
+                    'series' => $seriesData,
+                    'x_axis' => $x_axis,
+                    'y_axis' => $y_axis,
+                    '#raw_options' => [],
                 ];
 
                 $items['payment_performance_chart'] = \Drupal::service('renderer')->render($element);
@@ -442,7 +548,7 @@ class SalesController extends ControllerBase {
             $items['data'] = null;
         }
 
-        return array(
+        return [
             '#items' => $items,
             '#title' => $this->t('Sales data'),
             '#theme' => $theme,
@@ -454,7 +560,7 @@ class SalesController extends ControllerBase {
             '#cache' => [
                 'tags' => ['sales_data']
             ],
-        );
+        ];
     }
 
     /**
@@ -473,7 +579,7 @@ class SalesController extends ControllerBase {
                 ->query($query, [':abid' => $abid])
                 ->fetchField();
 
-        return array(
+        return [
             '#title' => $this->t('Documents'),
             '#items' => $items,
             '#theme' => 'ek_sales_documents',
@@ -486,7 +592,7 @@ class SalesController extends ControllerBase {
             '#cache' => [
                 'tags' => ['sales_data']
             ],
-        );
+        ];
     }
 
     /**

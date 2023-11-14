@@ -200,9 +200,9 @@ function _ek_sales_form_user_form_submit(array $form, FormStateInterface $form_s
  * @param $variables
  */
 function template_preprocess_charts_api(&$variables) {
-  
+  /*
   // Charts override settings applied at this point.
-  $chartOverridePluginManager = \Drupal::service('plugin.manager.charts_override');
+  $chartOverridePluginManager = \Drupal::service('plugin.manager.charts');
   $plugin_definition = [];
   $chartOverrideOptions = [];
   try {
@@ -219,6 +219,16 @@ function template_preprocess_charts_api(&$variables) {
 
   $plugin_manager = \Drupal::service('plugin.manager.charts');
   $plugin = $plugin_manager->createInstance($variables['library']);
-  $plugin->buildVariables($variables['options'], $variables['id'], $variables, $variables['categories'], $variables['seriesData'], [], $chartOverrideOptions);
+  $plugin->buildVariables(
+    $variables['options'],
+    $variables['id'],
+    $variables,
+    $variables['categories'],
+    $variables['seriesData'],
+    [],
+    $chartOverrideOptions );
+    */
+    
 }
+
 
