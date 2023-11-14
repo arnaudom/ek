@@ -612,9 +612,21 @@ function ek_admin_form_user_register_form_submit(&$form, \Drupal\Core\Form\FormS
         $params['subject'] = "[copy] account created";
         $email = \Drupal::currentUser()->getEmail();
         $lang = \Drupal::languageManager()->getDefaultLanguage()->getId();
-        $mail = \Drupal::service('plugin.manager.mail')->mail('user', $op, $email, $lang, $params, $site_mail);
-        if ($mail) {
-            \Drupal::messenger()->addWarning(t('A notification copy as been sent to @m', ['@m' => $email]));
+        
+        /* a copy will will be Bcc in accounts configuration settings; this form alteration should be disabled */
+
+        // $mail = \Drupal::service('plugin.manager.mail')->mail('user', $op, $email, $lang, $params, $site_mail);
+        /* $queue = \Drupal::queue('ek_email_queue');
+            $queue->createQueue();
+            $data['module'] = 'user';
+            $data['key'] = $op;
+            $data['params'] = $params;
+            $data['email'] = $email;
+            $data['lang'] = $lang;
+            $queue->createItem($data);*/
+        if ($mail) { 
+            // \Drupal::messenger()->addWarning(t('A notification copy as been sent to @m', ['@m' => $email]));
+            // \Drupal::logger('ek_admin')->notice(t('A notification copy as been sent to @m via @v', ['@m' => $email, '@v' => $site_mail]));
         }
     }
 }

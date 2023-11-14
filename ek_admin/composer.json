@@ -19,10 +19,10 @@
         {
             "type": "package",
             "package": {
-                "name": "qtip2/qtip2",
-                "version": "3.0.3",
+                "name": "jquery/chosen",
+                "version": "1.8.7",
                 "dist": {
-                    "url": "https://github.com/qTip2/qTip2/archive/v3.0.3.zip",
+                    "url": "https://github.com/harvesthq/chosen-package/archive/v1.8.7.zip",
                     "type": "zip"
                 },
                 "type": "drupal-library"
@@ -39,18 +39,6 @@
                 },
                 "type": "drupal-library"
             }
-        },
-        {
-            "type": "package",
-            "package": {
-                "name": "jquery/chosen",
-                "version": "1.8.7",
-                "dist": {
-                    "url": "https://github.com/harvesthq/chosen-package/archive/v1.8.7.zip",
-                    "type": "zip"
-                },
-                "type": "drupal-library"
-            }
         }, 
         {
             "type": "package",
@@ -63,13 +51,25 @@
                 },
                 "type": "drupal-library"
             }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "qtip2/qtip2",
+                "version": "3.0.3",
+                "dist": {
+                    "url": "https://github.com/qTip2/qTip2/archive/v3.0.3.zip",
+                    "type": "zip"
+                },
+                "type": "drupal-library"
+            }
         }
     ],
     "require": {
         "drupal/jquery_ui": "^1.2",
-        "drupal/jquery_ui_slider": "^1.0",
-        "drupal/jquery_ui_droppable": "^1.0",
-        "drupal/jquery_ui_draggable": "^1.0",
+        "drupal/jquery_ui_slider": "^2.0",
+        "drupal/jquery_ui_droppable": "^2.0",
+        "drupal/jquery_ui_draggable": "^2.0",
         "fullcalendar/fullcalendar" : "3.10.2",
         "jquery/multi-select" : "0.9.12",
         "jquery/chosen" : "1.8.7",
