@@ -83,7 +83,6 @@ class ExpensesTableBlock extends BlockBase {
                             ->query($query, $a)->fetchField();
             $line['classe_'] = $line['classe'];
             if (strlen($line['classe']) > 10) {
-                
                 $line['classe'] = substr($line['classe'], 0, 10) . '...';
             }
             array_push($data, $line);
@@ -96,7 +95,7 @@ class ExpensesTableBlock extends BlockBase {
         }
         foreach ($data as $key => $arr) {
             $items['content'] .= "<tr>";
-            $items['content'] .= "<td title=" .$arr['classe_']. ">" . $arr['classe'] . "</td>";
+            $items['content'] .= "<td title='" . $arr['classe_']. "'>" . $arr['classe'] . "</td>";
             for ($i = 1; $i <= count($companies); $i++) {
                 $items['content'] .= "<td>" . round($arr[$i]/1000) . "</td>";
             }
