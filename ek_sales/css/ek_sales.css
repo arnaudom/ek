@@ -108,6 +108,9 @@
 .blue {
     color: #2E64FE;
 }
+.grey {
+    color: #696969
+}
 
 hr {
     -moz-border-bottom-colors: none;

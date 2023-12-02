@@ -38,7 +38,8 @@ class Settings extends FormBase {
         }
 
 
-        $company = AccessCheck::CompanyListByUid();
+        $company = AccessCheck::CompanyListByUid(); 
+        $company += [0 => $this->t('All')];
         $form['coid'] = array(
             '#type' => 'select',
             '#size' => 1,
@@ -70,32 +71,50 @@ class Settings extends FormBase {
                 '#type' => 'hidden',
                 '#value' => $form_state->getValue('coid'),
             );
+            $form['coidname'] = array(
+                '#type' => 'item',
+                '#markup' => "<h1>" . $company[$form_state->getValue('coid')] . "</h1>",
+            );
 
-            $form['shortdue'] = array(
+            if($form_state->getValue('coid') == 0) {
+                $form['listlength'] = array(
+                    '#type' => 'number',
+                    '#size' => 5,
+                    '#step' => 5,
+                    '#default_value' => ($settings->get('listlength')) ? $settings->get('listlength') : 20,
+                    '#title' => $this->t('Number of documents in list'),
+                    '#required' => true,
+                );
+
+            } else {
+                $form['shortdue'] = array(
                 '#type' => 'textfield',
                 '#size' => 5,
                 '#default_value' => ($settings->get('shortdue')) ? $settings->get('shortdue') : 7,
                 '#title' => $this->t('Short due alert (days)'),
                 '#required' => true,
-            );
+                );
 
-            $form['longdue'] = array(
-                '#type' => 'textfield',
-                '#size' => 5,
-                '#default_value' => ($settings->get('longdue')) ? $settings->get('longdue') : 30,
-                '#title' => $this->t('Long due alert (days)'),
-                '#required' => true,
-            );
+                $form['longdue'] = array(
+                    '#type' => 'textfield',
+                    '#size' => 5,
+                    '#default_value' => ($settings->get('longdue')) ? $settings->get('longdue') : 30,
+                    '#title' => $this->t('Long due alert (days)'),
+                    '#required' => true,
+                );
+                
+                $body = 'We kindly ask you for your attention and your action within 3 working days';
+
+                $form['reminder_body'] = array(
+                    '#type' => 'textarea',
+                    '#rows' => 3,
+                    '#default_value' => ($settings->get('reminder_body')) ? $settings->get('reminder_body') : $body,
+                    '#title' => $this->t('A custom message added to clients reminder alerts.'),
+                    '#required' => true,
+                );    
+            }
+
             
-            $body = 'We kindly ask you for your attention and your action within 3 working days';
-
-            $form['reminder_body'] = array(
-                '#type' => 'textarea',
-                '#rows' => 3,
-                '#default_value' => ($settings->get('reminder_body')) ? $settings->get('reminder_body') : $body,
-                '#title' => $this->t('A custom message added to clients reminder alerts.'),
-                '#required' => true,
-            );    
 
             $form['actions'] = array('#type' => 'actions');
             $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
@@ -124,26 +143,28 @@ class Settings extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 3) {
 
-            //verify coid exist first
-            $query = 'SELECT coid from {ek_sales_settings} WHERE coid=:c';
-            $coid = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':c' => $form_state->getValue('coid')))
-                    ->fetchField();
+            if($form_state->getValue('coid') == 0) {
+                $settings = new SalesSettings($form_state->getValue('coid'));
+                $settings->set('listlength', $form_state->getValue('listlength'));
+            } else {
+                // verify coid exist first
+                $query = 'SELECT coid from {ek_sales_settings} WHERE coid=:c';
+                $coid = Database::getConnection('external_db', 'external_db')
+                        ->query($query, array(':c' => $form_state->getValue('coid')))
+                        ->fetchField();
 
-            if (!$coid) {
-                Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_sales_settings')->fields(array('coid' => $form_state->getValue('coid')))
-                        ->execute();
+                if (!$coid) {
+                    Database::getConnection('external_db', 'external_db')
+                            ->insert('ek_sales_settings')->fields(array('coid' => $form_state->getValue('coid')))
+                            ->execute();
+                }
+
+                $settings = new SalesSettings($form_state->getValue('coid'));
+
+                $settings->set('shortdue', $form_state->getValue('shortdue'));
+                $settings->set('longdue', $form_state->getValue('longdue'));
+                $settings->set('reminder_body', Xss::filter($form_state->getValue('reminder_body')));
             }
-
-
-
-            $settings = new SalesSettings($form_state->getValue('coid'));
-
-            $settings->set('shortdue', $form_state->getValue('shortdue'));
-            $settings->set('longdue', $form_state->getValue('longdue'));
-            $settings->set('reminder_body', Xss::filter($form_state->getValue('reminder_body')));
-
 
             $save = $settings->save();
             \Drupal\Core\Cache\Cache::invalidateTags(['ek_admin.settings']);

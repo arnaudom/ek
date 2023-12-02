@@ -70,11 +70,12 @@ class QuickEdit extends FormBase {
                 ->query($query, array(':id' => $data->serial));
 
         $edit = true;
-        //filter status for no editable document
+        // filter status for no editable document
         if ($doc == 'quotation' && $data->status == 2) {
             $edit = false;
         }
-        if (($doc == 'purchase' || $doc == 'invoice') && $data->status > 0) {
+        if (($doc == 'purchase' || $doc == 'invoice') && ($data->status > 1 || $data->lock == 1)) {
+            // document is either partially paid or locked for audit
             $edit = false;
         }
 
@@ -296,6 +297,21 @@ class QuickEdit extends FormBase {
                 '#attributes' => ['placeholder' => $this->t('comment')],
             ];
 
+            if( \Drupal::currentUser()->hasPermission('reset_pay') ) {
+                $form['options']['lock'] = [
+                    '#type' => 'checkbox',
+                    '#default_value' => isset($data->lock) ? $data->lock : 0,
+                    '#prefix' => "<div class='container-inline'>",
+                    '#suffix' => "</div>",
+                    '#title' => $this->t('locked for audit'),
+                ];
+            } else {
+                $form['options']['lock'] = [
+                    '#type' => 'hidden',
+                    '#value' =>  $data->lock,
+                ];
+            }
+
             $form['actions'] = [
                 '#type' => 'actions',
             ];
@@ -308,7 +324,7 @@ class QuickEdit extends FormBase {
         } else {
             // document closed, only edit limited data
 
-            if ($this->moduleHandler->moduleExists('ek_projects')) {
+            if ($this->moduleHandler->moduleExists('ek_projects') || $data['lock'] == 1) {
                 $form['options']['pcode'] = [
                     '#type' => 'select',
                     '#size' => 1,
@@ -318,6 +334,16 @@ class QuickEdit extends FormBase {
                     '#title' => $this->t('Project'),
                     '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
                 ];
+
+                if( \Drupal::currentUser()->hasPermission('reset_pay') ) {
+                    $form['options']['lock'] = [
+                        '#type' => 'checkbox',
+                        '#default_value' => isset($data->lock) ? $data->lock : 0,
+                        '#prefix' => "<div class='container-inline'>",
+                        '#suffix' => "</div>",
+                        '#title' => $this->t('locked for audit'),
+                    ];
+                }
 
                 $form['actions'] = [
                     '#type' => 'actions',
@@ -430,7 +456,7 @@ class QuickEdit extends FormBase {
                 // document closed, limited edition
                 $update = Database::getConnection('external_db', 'external_db')
                         ->update("ek_sales_" . $doc)
-                        ->fields(['pcode' => $pcode])
+                        ->fields(['pcode' => $pcode, 'lock' => $form_state->getValue('lock')])
                         ->condition('serial', $serial)
                         ->execute();
             } else {
@@ -455,6 +481,7 @@ class QuickEdit extends FormBase {
                     'client' => $form_state->getValue('client'),
                     'terms' => Xss::filter($form_state->getValue('terms')),
                     'due' => $due,
+                    'lock' => $form_state->getValue('lock'),
                 );
 
 
@@ -472,7 +499,7 @@ class QuickEdit extends FormBase {
 
 
                 if ($this->moduleHandler->moduleExists('ek_finance') && $doc == 'invoice') {
-                    //if coid changed, need to update the currency assets debit account in journal
+                    // if coid changed, need to update the currency assets debit account in journal
                     $coSettings = new \Drupal\ek_admin\CompanySettings($form_state->getValue('head'));
                     $asset = $coSettings->get('asset_account', $form_state->getValue('currency'));
                     $update1 = Database::getConnection('external_db', 'external_db')
@@ -482,7 +509,7 @@ class QuickEdit extends FormBase {
                             ->condition('type', 'debit')
                             ->condition('reference', $form_state->getValue('id'))
                             ->execute();
-                    //Edit invoice header in journal
+                    // Edit invoice header in journal
                     $update2 = Database::getConnection('external_db', 'external_db')
                             ->update("ek_journal")
                             ->fields(['coid' => $form_state->getValue('head')])
@@ -492,7 +519,7 @@ class QuickEdit extends FormBase {
                 }
 
                 if ($this->moduleHandler->moduleExists('ek_finance') && $doc == 'purchase') {
-                    //if coid changed, need to update the currency liability account in journal
+                    // if coid changed, need to update the currency liability account in journal
                     $coSettings = new \Drupal\ek_admin\CompanySettings($form_state->getValue('head'));
                     $liability = $coSettings->get('liability_account', $form_state->getValue('currency'));
 
@@ -503,7 +530,7 @@ class QuickEdit extends FormBase {
                             ->condition('type', 'credit')
                             ->condition('reference', $form_state->getValue('id'))
                             ->execute();
-                    //Edit purchase header in journal
+                    // Edit purchase header in journal
                     $update2 = Database::getConnection('external_db', 'external_db')
                             ->update("ek_journal")
                             ->fields(['coid' => $form_state->getValue('head')])
@@ -519,7 +546,7 @@ class QuickEdit extends FormBase {
             \Drupal::messenger()->addStatus(t('The @doc is recorded. Ref. @r', ['@r' => $serial, '@doc' => $doc]));
 
             if ($this->moduleHandler->moduleExists('ek_projects')) {
-                //notify user if invoice is linked to a project
+                // notify user if invoice is linked to a project
                 if ($pcode && $pcode != 'n/a') {
                     $pid = Database::getConnection('external_db', 'external_db')
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])

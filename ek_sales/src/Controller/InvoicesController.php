@@ -127,14 +127,20 @@ class InvoicesController extends ControllerBase {
          * Table - query data
          */
 
-
+        $globalsettings = new SalesSettings(0);
+        if(null !== $globalsettings->get('listlength')) {
+            $limit = $globalsettings->get('listlength');
+        } else {
+            $limit = 25;
+        }
         $access = AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_invoice', 'i');
         $or1 = $query->orConditionGroup();
         $or1->condition('head', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');
-
+        $f = ['id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
+                    'amount', 'amountreceived', 'pcode', 'taxvalue', 'pay_date', 'alert', 'type','lock'];
         if (isset($_SESSION['ifilter']['filter']) && $_SESSION['ifilter']['filter'] == 1) {
             if ($_SESSION['ifilter']['keyword'] == '') {
                 //search via options fields
@@ -157,19 +163,16 @@ class InvoicesController extends ControllerBase {
                     // any status
                     $or2->condition('i.status', $_SESSION['ifilter']['status'], '<');
                 } elseif ($_SESSION['ifilter']['status'] == 0) {
-                    //unpaid
+                    // unpaid
                     $or2->condition('i.status', 0, '=');
                     $or2->condition('i.status', 2, '=');
                 } else {
-                    //paid
+                    // paid
                     $or2->condition('i.status', 1, '=');
                 }
                 $or3 = $query->orConditionGroup();
                 $or3->condition('head', $_SESSION['ifilter']['coid']);
                 $or3->condition('allocation', $_SESSION['ifilter']['coid']);
-
-                $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                    'amount', 'amountreceived', 'pcode', 'taxvalue', 'pay_date', 'alert', 'type');
                 $data = $query
                         ->fields('i', $f)
                         ->condition($or1)
@@ -181,7 +184,7 @@ class InvoicesController extends ControllerBase {
                         ->condition($or3)
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit(20)
+                        ->limit($limit)
                         ->orderBy('id', 'ASC')
                         ->execute();
             } else {
@@ -191,20 +194,18 @@ class InvoicesController extends ControllerBase {
                 $or2->condition('i.pcode', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
                 $or2->condition('i.po_no', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
                 $or2->condition('i.comment', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
-                $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                    'amount', 'amountreceived', 'pcode', 'taxvalue', 'pay_date', 'alert', 'type');
                 $data = $query
                         ->fields('i', $f)
                         ->condition($or1)
                         ->condition($or2)
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit(20)
+                        ->limit($limit)
                         ->orderBy('id', 'ASC')
                         ->execute();
             }
         } else {
-            //no filter
+            // no filter
 
             $from = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT date from {ek_sales_invoice} order by date limit 1")
@@ -215,8 +216,6 @@ class InvoicesController extends ControllerBase {
             $or2 = $query->orConditionGroup();
             $or2->condition('i.status', 0, '=');
             $or2->condition('i.status', 2, '=');
-            $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                'amount', 'amountreceived', 'pcode', 'taxvalue', 'pay_date', 'alert', 'type');
             $data = $query
                     ->fields('i', $f)
                     ->condition($or1)
@@ -226,16 +225,16 @@ class InvoicesController extends ControllerBase {
                     ->condition('i.date', date('Y-m-d'), '<=')
                     ->extend('Drupal\Core\Database\Query\TableSortExtender')
                     ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                    ->limit(20)
+                    ->limit($limit)
                     ->orderBy('id', 'ASC')
                     ->execute();
         }
 
-        //store company data
+        // store company data
         $companies = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT id,name from {ek_company}")
                 ->fetchAllKeyed();
-        //store a. book data
+        // store a. book data
         $abook = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT id,name from {ek_address_book}")
                 ->fetchAllKeyed();
@@ -261,13 +260,16 @@ class InvoicesController extends ControllerBase {
                 $co = $co . $for;
             }
 
-            if ($r->type == 4) {
-                //CN
+            if($r->type == 4) {
+                // CN
                 $doctype = 'red';
             }
-            if ($r->type == 5) {
-                //Proforma
+            if($r->type == 5) {
+                // Proforma
                 $doctype = 'green';
+            }
+            if($r->lock == 1) {
+                $doctype = 'grey';
             }
 
             $number = "<a class='" . $doctype . "' title='" . $this->t('view') . "' href='"
@@ -908,27 +910,26 @@ class InvoicesController extends ControllerBase {
      *
      */
     public function EditInvoice(Request $request, $id) {
-        //filter edit
+        // filter edit
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_invoice', 'i')
-                ->fields('i', ['status'])
+                ->fields('i', ['status', 'lock'])
                 ->condition('id', $id, '=');
-        $status = $query->execute()->fetchField();
-        if ($status == '0') {
+        $data = $query->execute()->fetchObject();
+        if ($data->status == '0' && $data->lock != 1) {
             $build['new_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Invoice', $id);
         } else {
-            $opt = ['0' => $this->t('Unpaid'), 1 => $this->t('Paid'), 2 => $this->t('Partially paid')];
-            $url = Url::fromRoute('ek_sales.invoices.list', array(), array())->toString();
+            $data->lock == 1 ? $status = 3 : $status = $data->status;
+            $opt = ['0' => $this->t('Unpaid'), 1 => $this->t('Paid'), 2 => $this->t('Partially paid'), 3 => $this->t('Locked for audit')];
+            $url = Url::fromRoute('ek_sales.invoices.list',[], [])->toString();
             $items['type'] = 'edit';
-            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', array('@document' => $this->t('Invoice')))];
+            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', ['@document' => $this->t('Invoice')])];
             $items['description'] = ['#markup' => $opt[$status]];
             $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
-                '#attached' => array(
-                    'library' => array('ek_admin/ek_admin_css'),
-                ),
+                '#attached' => ['library' => array('ek_admin/ek_admin_css'),],
                 '#cache' => ['max-age' => 0,],
             ];
         }

@@ -125,7 +125,12 @@ class QuotationsController extends ControllerBase {
          * Table - query data
          */
 
-
+         $globalsettings = new SalesSettings(0);
+         if(null !== $globalsettings->get('listlength')) {
+             $limit = $globalsettings->get('listlength');
+         } else {
+             $limit = 25;
+         }
         $access = AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_quotation', 'q');
@@ -148,7 +153,7 @@ class QuotationsController extends ControllerBase {
                         ->condition($or2)
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit(20)
+                        ->limit($limit)
                         ->orderBy('id', 'ASC')
                         ->execute();
             } else {
@@ -179,7 +184,7 @@ class QuotationsController extends ControllerBase {
                         ->condition('currency', $_SESSION['qfilter']['currency'], 'like')
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit(20)
+                        ->limit($limit)
                         ->orderBy('id', 'ASC')
                         ->execute();
             }
@@ -201,7 +206,7 @@ class QuotationsController extends ControllerBase {
                     ->condition('date', date('Y-m-d'), '<=')
                     ->extend('Drupal\Core\Database\Query\TableSortExtender')
                     ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                    ->limit(20)
+                    ->limit($limit)
                     ->orderBy('id', 'ASC')
                     ->execute();
         }

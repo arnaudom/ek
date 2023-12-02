@@ -108,6 +108,7 @@ class InstallController extends ControllerBase {
 	`alert` TINYINT(1) NULL DEFAULT '0',
 	`alert_who` VARCHAR(250) NULL DEFAULT NULL,
 	`uri` VARCHAR(250) NULL DEFAULT NULL COMMENT 'uri of file attached' COLLATE 'utf8mb4_unicode_ci',
+        `lock` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '1 = locked',
 	PRIMARY KEY (`id`)
         )
         COMMENT='Record of purchases'
@@ -250,7 +251,8 @@ class InstallController extends ControllerBase {
 	`reconcile` VARCHAR(5) NULL DEFAULT NULL,
 	`balance_post` VARCHAR(1) NULL DEFAULT '0',
 	`alert` TINYINT(4) NULL DEFAULT '0',
-	`alert_who` VARCHAR(255) NULL DEFAULT NULL,
+	`alert_who` VARCHAR(255) NULL DEFAULT NULL,        
+        `lock` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '1 = locked',
 	PRIMARY KEY (`id`)
         )
         COMMENT='Main invoice ref table'

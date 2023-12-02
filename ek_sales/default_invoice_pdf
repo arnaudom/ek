@@ -289,7 +289,7 @@ $pdf->Ln(1);
 
 $pdf->SetFont('helvetica','',$font2);
 $pdf->Cell($lm);
-$pdf->Cell($c1,5, $client->name,$b,1);   
+$pdf->MultiCell($c1 + $c2,5, $client->name,"",'L',0); 
 
 if($client->reg){
     $pdf->Cell($lm);

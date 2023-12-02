@@ -54,4 +54,4 @@ delete_invoice:
   description: 'Administrate invoices (ie. delete).'
 reset_pay:
   title: 'Reset payment'
-  description: 'Administrate (ie. reset a recorded payment).'
+  description: 'Administrate (ie. reset a recorded payment, lock).'

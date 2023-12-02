@@ -128,12 +128,19 @@ class PurchasesController extends ControllerBase {
         /*
          * Table - query data
          */
-
+        $globalsettings = new SalesSettings(0);
+        if(null !== $globalsettings->get('listlength')) {
+            $limit = $globalsettings->get('listlength');
+        } else {
+            $limit = 25;
+        }
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')->select('ek_sales_purchase', 'p');
         $or1 = $query->orConditionGroup();
         $or1->condition('head', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');
+        $f = ['id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
+        'amount', 'amountpaid', 'pcode', 'taxvalue', 'pdate', 'alert', 'alert_who', 'uri', 'type', 'lock'];
 
         if (isset($_SESSION['pfilter']) && $_SESSION['pfilter']['filter'] == 1) {
             if ($_SESSION['pfilter']['keyword'] == '') {
@@ -167,8 +174,7 @@ class PurchasesController extends ControllerBase {
                 $or3->condition('head', $_SESSION['pfilter']['coid']);
                 $or3->condition('allocation', $_SESSION['pfilter']['coid']);
                 $data = $query
-                        ->fields('p', array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                            'amount', 'amountpaid', 'pcode', 'taxvalue', 'pdate', 'alert', 'alert_who', 'uri', 'type'))
+                        ->fields('p', $f)
                         ->condition($or1)
                         ->condition($or2)
                         ->condition('p.client', $_SESSION['pfilter']['client'], 'like')
@@ -178,7 +184,7 @@ class PurchasesController extends ControllerBase {
                         ->condition($or3)
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit(20)
+                        ->limit($limit)
                         ->orderBy('id', 'ASC')
                         ->execute();
             } else {
@@ -187,15 +193,13 @@ class PurchasesController extends ControllerBase {
                 $or2->condition('p.serial', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
                 $or2->condition('p.pcode', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
                 $or2->condition('p.comment', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
-                $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                    'amount', 'amountpaid', 'pcode', 'taxvalue', 'pdate', 'alert', 'alert_who', 'uri', 'type');
                 $data = $query
                         ->fields('p', $f)
                         ->condition($or1)
                         ->condition($or2)
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit(20)
+                        ->limit($limit)
                         ->orderBy('id', 'ASC')
                         ->execute();
             }
@@ -222,8 +226,7 @@ class PurchasesController extends ControllerBase {
             $or2->condition('p.status', 2, '=');
 
             $data = $query
-                    ->fields('p', array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date', 'due',
-                        'amount', 'amountpaid', 'pcode', 'taxvalue', 'pdate', 'alert', 'alert_who', 'uri', 'type'))
+                    ->fields('p', $f)
                     ->condition($or1)
                     ->condition($or2)
                     ->condition('p.client', '%', 'like')
@@ -232,7 +235,7 @@ class PurchasesController extends ControllerBase {
                     ->condition('p.head', '%', 'like')
                     ->extend('Drupal\Core\Database\Query\TableSortExtender')
                     ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                    ->limit(20)
+                    ->limit($limit)
                     ->orderBy('id', 'ASC')
                     ->execute();
         }
@@ -270,6 +273,10 @@ class PurchasesController extends ControllerBase {
             if ($r->type == 4) {
                 $doctype = 'green';
             }
+            if($r->lock == 1) {
+                $doctype = 'grey';
+            }
+
             $number = "<a class='" . $doctype . "' title='" . $this->t('view') . "' href='"
                     . Url::fromRoute('ek_sales.purchases.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
@@ -891,27 +898,26 @@ class PurchasesController extends ControllerBase {
      *
      */
     public function EditPurchases(Request $request, $id) {
-        //filter edit
+        // filter edit
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_purchase', 'p')
-                ->fields('p', ['status'])
+                ->fields('p', ['status', 'lock'])
                 ->condition('id', $id, '=');
-        $status = $query->execute()->fetchField();
-        if ($status == '0') {
+                $data = $query->execute()->fetchObject();
+        if ($data->status == '0' && $data->lock != 1) {
             $build['edit_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Purchase', $id);
         } else {
-            $opt = ['0' => $this->t('Unpaid'), 1 => $this->t('Paid'), 2 => $this->t('Partially paid')];
-            $url = Url::fromRoute('ek_sales.purchases.list', array(), array())->toString();
+            $data->lock == 1 ? $status = 3 : $status = $data->status;
+            $opt = ['0' => $this->t('Unpaid'), 1 => $this->t('Paid'), 2 => $this->t('Partially paid'), 3 => $this->t('Locked for audit')];
+            $url = Url::fromRoute('ek_sales.purchases.list', [], [])->toString();
             $items['type'] = 'edit';
-            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', array('@document' => $this->t('Purchase')))];
+            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', ['@document' => $this->t('Purchase')])];
             $items['description'] = ['#markup' => $opt[$status]];
             $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
             $build = [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
-                '#attached' => array(
-                    'library' => array('ek_admin/ek_admin_css'),
-                ),
+                '#attached' => ['library' => ['ek_admin/ek_admin_css'],],
                 '#cache' => ['max-age' => 0,],
             ];
         }

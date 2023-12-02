@@ -390,3 +390,27 @@ function ek_sales_update_8017() {
         $schema->addField('ek_sales_purchase', 'pay_rate', $spec); 
     }
 }
+
+/**
+ * add field to lock documents
+*/
+function ek_sales_update_8018() {
+    $schema = Database::getConnection('external_db','external_db')->schema();
+    if(!$schema->fieldExists('ek_sales_invoice', 'lock')) {
+        $spec = array(
+            'description' => 'lock edit, 1 = true',
+            'type' => 'int',
+            'size' => 'small',
+            'not null' => TRUE,
+            'default' => '0',
+            
+        );
+        $schema->addField('ek_sales_invoice', 'lock', $spec);
+        $schema->addField('ek_sales_purchase', 'lock', $spec);
+
+
+    }    
+   
+        \Drupal::service('router.builder')->rebuild();
+  
+}

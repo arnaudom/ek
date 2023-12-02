@@ -107,13 +107,13 @@ class FilterPrint extends FormBase {
         
         $form['filters']['s_pos'] = [
                 '#type' => 'number',
-                '#default_value' => isset($_SESSION['printfilter']['s_pos'][1]) ? $_SESSION['printfilter']['s_pos'][1] : 40,
+                '#default_value' => isset($_SESSION['printfilter']['s_pos'][1]) ? $_SESSION['printfilter']['s_pos'][1] : 10,
                 '#description' => $this->t('Adjust vertical position'),
-                '#min' => 10,
+                '#min' => 0,
                 '#max' => 100,
-                '#step' => 10,
+                '#step' => 5,
                 '#states' => [
-                    'invisible' => [":input[name='signature']" => ['value' => 0]],
+                    //'invisible' => [":input[name='signature']" => ['value' => 0]],
                 ],
         ];           
         
