@@ -410,24 +410,7 @@ class BackupCoid extends FormBase
                     . 'WHERE coid=:c ORDER by ' . $table . '.id ';
             
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
-           
-            ////////////////////////
-            //item barcodes
-            ////////////////////////
-
-            $table = 'ek_item_barcodes';
-            
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            $file .= " # Table  " . $table . $lineEnd;
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            
-            $fields = "" . $table . ".id," . $table . ".itemcode,`barcode`,`encode`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' '
-                    . 'LEFT join {ek_items} ON ek_items.itemcode = ' . $table . '.itemcode '
-                    . 'WHERE coid=:c ORDER by ' . $table . '.id ';
-            
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
-                                      
+                                                 
             ////////////////////
             //item images
             ////////////////////
@@ -605,7 +588,7 @@ class BackupCoid extends FormBase
             $fields = $table .".`id`,`serial`,`do_no`,`po_no`,`head`,`allocation`,`status`,`amount`, "
                     . "`currency`, `date`, `title`, `type`, `pcode`, `comment`,`client`,"
                     . "`amountreceived`,`pay_rate`,`pay_date`,`class`,`amountbase`,`balancebase`,`terms`,"
-                    . "`due`,`bank`,`tax`,`taxvalue`,`reconcile`,`alert`,`alert_who`,`balance_post`";
+                    . "`due`,`bank`,`tax`,`taxvalue`,`reconcile`,`alert`,`alert_who`,`balance_post`,`lock`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE head=:c ';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
@@ -660,7 +643,7 @@ class BackupCoid extends FormBase
             $fields = $table .".`id`,`serial`,`head`,`allocation`,`status`,`amount`, "
                     . "`currency`, `date`, `title`, `type`, `pcode`, `comment`,`client`,"
                     . "`amountpaid`,`amountbase`,`balancebase`,`bank`,`tax`,`taxvalue`,"
-                    . "`terms`,`due`,`pay_rate`,`pdate`,`pay_ref`,`reconcile`,`alert`,`alert_who`,`uri`";
+                    . "`terms`,`due`,`pay_rate`,`pdate`,`pay_ref`,`reconcile`,`alert`,`alert_who`,`uri`,`lock`";
             $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE head=:c ';
 
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
@@ -986,130 +969,6 @@ class BackupCoid extends FormBase
             $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
         }//hr
       
-        if ($this->moduleHandler->moduleExists('ek_products')) {
-            
-            ///////////////////////
-            //items settings
-            ///////////////////////
-
-            $table = 'ek_item_settings';
-            
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            $file .= " # Table  " . $table . $lineEnd;
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            
-            $fields = $table .".`id`,`settings`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' ';
-
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd,'no');
-            
-            ///////////////////////
-            //items
-            ///////////////////////
-
-            $table = 'ek_items';
-            
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            $file .= " # Table  " . $table . $lineEnd;
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            
-            $fields = $table .".`id`,`coid`,`type`,`itemcode`,`description1`,`description2`,"
-                    . "`supplier_code`,`active`,`collection`,`department`,`family`,`size`,`color`,`supplier`,"
-                    . "`stamp`,`format`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE coid=:c ';
-
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
-            
-            ///////////////////////
-            //items barcode
-            ///////////////////////
-
-            $table = 'ek_item_barcodes';
-            
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            $file .= " # Table  " . $table . $lineEnd;
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            
-            $fields = $table .".`id`," .  $table .".`itemcode`,`barcode`,`encode`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_items} b ON '
-                    . ''. $table .'.itemcode = b.itemcode WHERE coid=:c ORDER by ' . $table . '.id';
-
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
-            
-            ///////////////////////
-            //items images
-            ///////////////////////
-
-            $table = 'ek_item_images';
-            
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            $file .= " # Table  " . $table . $lineEnd;
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            
-            $fields = $table .".`id`," .  $table .".`itemcode`,`uri`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_items} b ON '
-                    . ''. $table .'.itemcode = b.itemcode WHERE coid=:c ORDER by ' . $table . '.id';
-
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
-            
-            ///////////////////////
-            //items packing
-            ///////////////////////
-
-            $table = 'ek_item_packing';
-            
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            $file .= " # Table  " . $table . $lineEnd;
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            
-            $fields = $table .".`id`," .  $table .".`itemcode`,`units`,`unit_measure`,`item_size`,`pack_size`,"
-                    . "`qty_pack`,`c20`,`c40`,`min_order`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_items} b ON '
-                    . ''. $table .'.itemcode = b.itemcode WHERE coid=:c ORDER by ' . $table . '.id';
-
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
-            
-            ///////////////////////
-            //items prices
-            ///////////////////////
-
-            $table = 'ek_item_prices';
-            
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            $file .= " # Table  " . $table . $lineEnd;
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            
-            $fields = $table .".`id`," .  $table .".`itemcode`,`purchase_price`,`currency`,`date_purchase`,"
-                    . "`selling_price`,`promo_price`,`discount_price`,`exp_selling_price`,`exp_promo_price`,"
-                    . "`exp_discount_price`,`loc_currency`,`exp_currency`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_items} b ON '
-                    . ''. $table .'.itemcode = b.itemcode WHERE coid=:c ORDER by ' . $table . '.id';
-
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
-            
-            ///////////////////////
-            //items prices history
-            ///////////////////////
-
-            $table = 'ek_item_price_history';
-            
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            $file .= " # Table  " . $table . $lineEnd;
-            $file .= " #--------------------------------------------------------" . $lineEnd;
-            
-            $fields = $table .".`id`," .  $table .".`itemcode`,`date`,`price`,`currency`," .  $table .".`type`";
-            $query = 'SELECT ' . $fields . ' FROM ' . $table . ' LEFT JOIN {ek_items} b ON '
-                    . ''. $table .'.itemcode = b.itemcode WHERE coid=:c ORDER by ' . $table . '.id';
-
-            $file .= self::querydb($coid, $table, $fields, $query, $lineEnd);
-            
-            
-            //keep references to extract address book data
-            $query = "SELECT distinct supplier FROM {ek_items} WHERE coid=:c";
-            $abid_items = Database::getConnection('external_db', 'external_db')
-                    ->query($query, [':c' => $coid])
-                    ->fetchCol();
-        } //products
         
         if ($this->moduleHandler->moduleExists('ek_projects')) {
             
