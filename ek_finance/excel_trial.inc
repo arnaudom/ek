@@ -20,7 +20,7 @@ $objPHPExcel->getProperties()->setCreator("Ek")
                                 ->setDescription("Trial balance report")
                                 ->setKeywords("office 2007 openxml php")
                                 ->setCategory("file");
-$objPHPExcel->getActiveSheet()->setTitle('Ledger local currency');
+$objPHPExcel->getActiveSheet()->setTitle("Trial balance");
 
 
 
@@ -39,37 +39,39 @@ $company = Database::getConnection('external_db', 'external_db')
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A3', $company);
             
 // format titles
-$objPHPExcel->getActiveSheet()->getStyle('A1:G5')->getFont()->setName('Arial');
+$objPHPExcel->getActiveSheet()->getStyle('A1:H5')->getFont()->setName('Arial');
 $objPHPExcel->getActiveSheet()->getStyle('A1')->getFont()->setSize(12);
-$objPHPExcel->getActiveSheet()->getStyle('A1:G1')->getFont()->setBold(true);
-$objPHPExcel->getActiveSheet()->getStyle('A2:G2')->getFont()->setSize(10);
-$objPHPExcel->getActiveSheet()->getStyle('A2:G2')->getFont()->setBold(true);
+$objPHPExcel->getActiveSheet()->getStyle('A1:H1')->getFont()->setBold(true);
+$objPHPExcel->getActiveSheet()->getStyle('A2:H2')->getFont()->setSize(10);
+$objPHPExcel->getActiveSheet()->getStyle('A2:H2')->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle('A3')->getFont()->setSize(11);
-$objPHPExcel->getActiveSheet()->getStyle('A3:G3')->getFont()->setBold(true);
+$objPHPExcel->getActiveSheet()->getStyle('A3:H3')->getFont()->setBold(true);
 
 // Add rows
 $objPHPExcel->setActiveSheetIndex(0)
             ->setCellValue('A5', 'ACCOUNT')
-            ->setCellValue('B5', '')           
+            ->setCellValue('B5', 'OPEN')           
             ->setCellValue('C5', 'DEBIT')           
             ->setCellValue('D5', 'CREDIT') 
             ->setCellValue('E5', 'NET') 
             ->setCellValue('F5', 'YTD DEBIT')
-            ->setCellValue('G5', 'YTD CREDIT') ;
+            ->setCellValue('G5', 'YTD CREDIT') 
+            ->setCellValue('H5', 'CLOSE') ;
 $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(40);
-$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(5);
+$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(10);
 $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
 $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
-$objPHPExcel->getActiveSheet()->setBreak( 'H1' , \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_COLUMN );
+$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
+$objPHPExcel->getActiveSheet()->setBreak( 'I1' , \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_COLUMN );
 $objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
 $objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
 
-$objPHPExcel->getActiveSheet()->getStyle('A4:G5')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT); 
-$objPHPExcel->getActiveSheet()->getStyle('A4:G5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-$objPHPExcel->getActiveSheet()->getStyle('A4:G5')->getFill()->getStartColor()->setARGB('FFFFFF');
+$objPHPExcel->getActiveSheet()->getStyle('A4:H5')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT); 
+$objPHPExcel->getActiveSheet()->getStyle('A4:H5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A4:H5')->getFill()->getStartColor()->setARGB('FFFFFF');
 
 $TopBorderThin = array(
 	'borders' => array(
@@ -90,32 +92,39 @@ $FontBoldCenter = array(
 		);
 $FontRed = array(
 			'font'    => array(
-				'color' => array(
-                      'rgb' => 'FF6666'
-                    ),
+			        'color' => array(
+                                        'rgb' => 'FF6666'
+                                ),
 			),
 
 		);
-
-$objPHPExcel->getActiveSheet()->getStyle('A4:G4')->applyFromArray($TopBorderThin);     
-$objPHPExcel->getActiveSheet()->getStyle('A4:G5')->applyFromArray($FontBoldCenter); 
-$objPHPExcel->getActiveSheet()->getStyle('A4:G5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-$objPHPExcel->getActiveSheet()->getStyle('A4:G5')->getFill()->getStartColor()->setARGB('e6e6fa');
+$NumberFormat = array(
+                'numberformat' => [
+                    'code' => '#,##0.00'
+                ]
+                );
+$objPHPExcel->getActiveSheet()->getStyle('A4:H4')->applyFromArray($TopBorderThin);     
+$objPHPExcel->getActiveSheet()->getStyle('A4:H5')->applyFromArray($FontBoldCenter); 
+$objPHPExcel->getActiveSheet()->getStyle('A4:H5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A4:H5')->getFill()->getStartColor()->setARGB('e6e6fa');
 
 
 $l=5;
 
         $c=0; // column index
         $l=$l+1; // line index
-
-      
+     
           foreach($items['data']['transactions'] as $key => $row) {
           
               $c=0; 
               $l++;
               $cell=$columns[$c].$l;                
               $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['aid'] . '-' . $row['aname']);
-              $c+=2;
+              $c++;
+              $cell=$columns[$c].$l;
+              $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['open_base']);
+              $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($NumberFormat);
+              $c++;
               $cell=$columns[$c].$l; 
               $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['transaction_debit'][0]);               
               $c++;
@@ -130,17 +139,24 @@ $l=5;
               $c++;
               $cell=$columns[$c].$l;
               $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['transaction_ytd_credit'][0]);   
+              $c++;
+              $cell=$columns[$c].$l;
+              $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['closing_base']);
+              $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($NumberFormat);
               
               if($row['active'] == 0) {
-              $objPHPExcel->getActiveSheet(0)->getStyle("A$l:G$l")->applyFromArray($FontRed);
+                $objPHPExcel->getActiveSheet(0)->getStyle("A$l:H$l")->applyFromArray($FontRed);
               }              
-                          
           
               $c=0; 
               $l++;
               $cell=$columns[$c].$l;                
               $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('base currency') . ' ' . $items['data']['baseCurrency'] );
-              $c+=2;
+              $c++;
+              $cell=$columns[$c].$l;
+              $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['open']);
+              $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($NumberFormat);
+              $c++;
               $cell=$columns[$c].$l; 
               $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['transaction_debit'][1]);               
               $c++;
@@ -154,20 +170,24 @@ $l=5;
               $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['transaction_ytd_debit'][1]);                 
               $c++;
               $cell=$columns[$c].$l;
-              $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['transaction_ytd_credit'][1]);   
-              $objPHPExcel->getActiveSheet()->getStyle("A$l:G$l")->getFont()->setSize(9);
+              $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['transaction_ytd_credit'][1]);  
+              $c++;
+              $cell=$columns[$c].$l;
+              $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $row['closing']); 
+              $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($NumberFormat);
+              $objPHPExcel->getActiveSheet()->getStyle("A$l:H$l")->getFont()->setSize(9);
               if($row['active'] == 0) {
-              $objPHPExcel->getActiveSheet(0)->getStyle("A$l:G$l")->applyFromArray($FontRed);
+                $objPHPExcel->getActiveSheet(0)->getStyle("A$l:H$l")->applyFromArray($FontRed);
               }               
           }
 
 //TOTAL
 $l++;
 $c=0;
-$objPHPExcel->getActiveSheet()->getStyle("A$l:G$l")->applyFromArray($TopBorderThin);
+$objPHPExcel->getActiveSheet()->getStyle("A$l:H$l")->applyFromArray($TopBorderThin);
 $cell=$columns[$c].$l;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Total') ); 
-$objPHPExcel->getActiveSheet()->getStyle("A$l:G$l")->getFont()->setBold(true); 
+$objPHPExcel->getActiveSheet()->getStyle("A$l:H$l")->getFont()->setBold(true); 
 
 $c=2;
 $cell=$columns[$c].$l;
@@ -205,8 +225,8 @@ $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\
 
 
 if ($items['data']['total']['error2'] == 1) {
-$objPHPExcel->getActiveSheet()->getStyle("F$l:G$l")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-$objPHPExcel->getActiveSheet()->getStyle("F$l:G$l")->getFill()->getStartColor()->setRGB('FF6666');
+$objPHPExcel->getActiveSheet()->getStyle("F$l:H$l")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("F$l:H$l")->getFill()->getStartColor()->setRGB('FF6666');
 
 }
 
@@ -214,7 +234,7 @@ $l++;
 $c=0;
 $cell=$columns[$c].$l;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Total'). ' ' . $items['data']['baseCurrency'] ); 
-$objPHPExcel->getActiveSheet()->getStyle("A$l:G$l")->getFont()->setBold(true); 
+$objPHPExcel->getActiveSheet()->getStyle("A$l:H$l")->getFont()->setBold(true); 
 
 $c=2;
 $cell=$columns[$c].$l;
@@ -252,8 +272,8 @@ $objPHPExcel->getActiveSheet()->getStyle($cell)->getAlignment()->setHorizontal(\
 
 
 if ($items['data']['total']['error2'] == 1) {
-$objPHPExcel->getActiveSheet()->getStyle("F$l:G$l")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-$objPHPExcel->getActiveSheet()->getStyle("F$l:G$l")->getFill()->getStartColor()->setRGB('FF6666');
+$objPHPExcel->getActiveSheet()->getStyle("F$l:H$l")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle("F$l:H$l")->getFill()->getStartColor()->setRGB('FF6666');
 
 }
 

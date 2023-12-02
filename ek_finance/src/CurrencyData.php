@@ -69,7 +69,7 @@ class CurrencyData {
      */
     public static function journalexchange($currency, $value, $rate = null) {
         $financeSettings = new \Drupal\ek_finance\FinanceSettings();
-        $rounding = (!null == $financeSettings->get('rounding')) ? $financeSettings->get('rounding') : 2;
+        $rounding = (!null == $financeSettings->get('rounding')) ? $financeSettings->get('rounding') : 2; 
         if ($rate == '') {
             // the rate is not given by input , check value in DB
             $rate = self::rate($currency);

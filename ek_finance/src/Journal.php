@@ -627,7 +627,7 @@ class Journal {
                 self::save($j['aid'], '0', $j['coid'], 'debit', 'purchase', $j['reference'], $j['date'], $j['value'], '0', $j['currency']);
 
                 //exchange
-                if ($j['currency'] <> $baseCurrency) {
+                if ($j['currency'] <> $baseCurrency) { 
                     $exchange = CurrencyData::journalexchange($j['currency'], $j['value'], $j['fxRate']);
                     self::save($j['aid'], '1', $j['coid'], 'debit', 'purchase', $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                 }
@@ -1996,7 +1996,7 @@ class Journal {
                 ->orderBy('aid', 'ASC')
                 ->execute();
 
-        $data = array();
+        $data = [];
         $total_td = 0;
         $total_tc = 0;
         $total_td_base = 0;
@@ -2024,75 +2024,79 @@ class Journal {
         $data['company'] = $company;
         $data['year'] = $t['year'];
         $data['month'] = $t['month'];
-        $data['transactions'] = array();
-
+        $data['transactions'] = [];
 
         while ($l = $list->fetchObject()) {
-            $row = array();
+            $row = [];
 
             $row['aname'] = $l->aname;
             $row['active'] = $l->astatus;
 
-            //build an history link
+            // build an history link
             $param = serialize(
-                    array(
+                    [
                         'id' => 'trial',
-                        'from' => $t['year'] . '-01-01',
-                        'to' => date('Y-m-d'),
+                        'from' => $ytd ,
+                        'to' => $d2,
                         'coid' => $t['coid'],
                         'aid' => $l->aid
-                    )
+                    ]
             );
             if ($option == 1) {
-                $history = Url::fromRoute('ek_finance_modal', array('param' => $param), array())->toString();
+                $history = Url::fromRoute('ek_finance_modal', ['param' => $param], [])->toString();
                 $row['aid'] = "<a class='use-ajax' href='" . $history . "' >" . $l->aid . "</a>";
             } else {
                 $row['aid'] = $l->aid;
             }
 
+            $row['open'] = round($l->balance,2);
+            $row['open_base'] = round($l->balance_base,2);
+            $c = unserialize(self::history($param));
+            $row['closing'] = round($c['closing'],2);
+            $row['closing_base'] = round($c['closing_exchange'],2);
             $row['transaction_debit'] = self::transactions(
-                            array(
+                            [
                                 'aid' => $l->aid,
                                 'type' => 'debit',
                                 'coid' => $t['coid'],
                                 'from' => $d1,
                                 'to' => $d2
-                            )
+                            ]
             );
             $row['transaction_credit'] = self::transactions(
-                            array(
+                            [
                                 'aid' => $l->aid,
                                 'type' => 'credit',
                                 'coid' => $t['coid'],
                                 'from' => $d1,
                                 'to' => $d2
-                            )
+                            ]
             );
 
             $row['transaction_ytd_debit'] = self::transactions(
-                            array(
+                            [
                                 'aid' => $l->aid,
                                 'type' => 'debit',
                                 'coid' => $t['coid'],
                                 'from' => $ytd,
                                 'to' => $d2
-                            )
+                            ]
             );
 
             $row['transaction_ytd_credit'] = self::transactions(
-                            array(
+                            [
                                 'aid' => $l->aid,
                                 'type' => 'credit',
                                 'coid' => $t['coid'],
                                 'from' => $ytd,
                                 'to' => $d2
-                            )
+                            ]
             );
 
             if (
                     ($t['null'] == 1 && ($row['transaction_ytd_debit'][0] != 0 || $row['transaction_ytd_credit'][0] != 0 || $row['transaction_ytd_debit'][1] != 0 || $row['transaction_ytd_credit'][1] != 0)) || $t['null'] == 0
             ) {
-                //show
+                // show
                 $data['transactions'][] = $row;
 
                 $total_td += $row['transaction_debit'][0];
@@ -2106,7 +2110,7 @@ class Journal {
                 $total_net += $row['transaction_credit'][0] - $row['transaction_debit'][0];
                 $total_net_base += $row['transaction_credit'][1] - $row['transaction_debit'][1];
             }
-        }//while
+        } 
 
         if (abs(round($total_td, $rounding) - round($total_tc, $rounding)) > 0) {
             $error1 = 1;
@@ -2526,6 +2530,9 @@ class Journal {
                 } else {
                     $return = [];
                 }
+                
+                $local = [];
+                $exchange = [];
                 while ($d = $data->fetchObject()) {
                     if ($format == 'html') {
                         if ($d->source == 'invoice' && $d->type == 'credit' && $d->exchange == '0') {
@@ -2558,22 +2565,37 @@ class Journal {
                 } else {
                     $return = [];
                 }
-
+                
+                $local = [];
+                $exchange = [];
                 while ($d = $data->fetchObject()) {
                     if ($format == 'html') {
                         if ($d->source == 'purchase' && $d->type == 'credit' && $d->exchange == '0') {
                             $return .= '<tr><td>' . $d->date . '</td><td>' . $d->aid . '</td>'
                                     . '<td>' . $d->currency . ' ' . $d->value . '</td><td></td></tr>';
+                            $local[0] += $d->value;
                         }
+                        if ($d->source == 'purchase' && $d->type == 'credit' && $d->exchange == '1' && $d->comment != 'currency exchange loss') {
+                            $exchange[0] += $d->value;
+                        }
+                        
                         if ($d->source == 'payment' && $d->type == 'debit' && $d->exchange == '0') {
                             $return .= '<tr><td>' . $d->date . '</td><td>' . $d->aid . '</td>'
                                     . '<td></td><td>' . $d->currency . ' ' . $d->value . '</td></tr>';
+                            $local[1] += $d->value;
                         }
+                        if ($d->source == 'payment' && $d->type == 'debit' && $d->exchange == '1' && $d->comment != 'currency exchange loss') {
+                            $exchange[1] += $d->value;
+                            
+                        }
+                        
+                        
                     } else {
                         $return[] = self::journalEntryDetails($d->id);
                     }
                 }
-
+                /*$return .= '<tr><td>' . t('Exchange rate') . '</td> <td></td>'
+                                    . '<td></td><td>' . round($local[0]/($local[0] + $exchange[0]),4) . '</td></tr>';*/
 
                 break;
         }

@@ -19,6 +19,7 @@
                 <div id='desc-bar' class='opened' ></div><div style='display:inline;'>{{ items.data.baseCurrency }}</div>
                 </div>
               </th>
+              <th >{{ 'Opening'|t }}</th>
               <th align=center>{{ 'Debit'|t }}</th>
               <th align=center>{{ 'Credit'|t }}</th>
               <th align=center>{{ 'Net'|t }}</th>
@@ -31,6 +32,7 @@
           {#total#}
               <tr class='journal-total ' >
                   <td colspan='2'>{{ 'TOTAL balance'|t }}</td>
+                  <td></td>
                   <td class='right cellborder'>{{ items.data.total.transaction_debit | number_format(2) }}</td>
                   <td class='right cellborder'>{{ items.data.total.transaction_credit | number_format(2) }}</td>
                   <td class='right cellborder {% if  items.data.total.error1 == "1"  %} red {% endif %}'>{{ items.data.total.total_net | number_format(2) }}</td>
@@ -41,6 +43,7 @@
 
                   <tr class='journal-total'>
                   <td colspan='2'>{{ 'TOTAL balance'|t }} {{ items.data.baseCurrency }}</td>
+                  <td></td>
                   <td class='right cellborder'>{{ items.data.total.transaction_debit_base | number_format(2) }}</td>
                   <td class='right cellborder'>{{ items.data.total.transaction_credit_base | number_format(2) }}</td>
                   <td class='right cellborder {% if  items.data.total.error1 == "1"  %} red {% endif %}'>{{ items.data.total.total_net_base | number_format(2) }}</td>
@@ -53,6 +56,7 @@
 
                   <tr class=''>
                   <td colspan='2'>{{ 'Discerpancy'|t }}</td>
+                  <td></td>
                   <td class='right red'>{{ (items.data.total.transaction_debit - items.data.total.transaction_credit) | number_format(2) }}</td>
                   <td></td>
                   <td></td>
@@ -67,6 +71,13 @@
           
               <tr class='{% if row.active == 0 %}red{% else %} {% endif %}'>
                   <td  class='' colspan='2' ><b>{{ row.aid|raw }} - {{ row.aname }}</b></td>
+                  <td>{{ items.data.baseCurrency }} 
+                    {% if row.open_base < 0 %} 
+                        DT {{ row.open_base*(-1) | number_format(2) }}
+                    {% else %}
+                        CT {{ row.open_base | number_format(2) }}
+                    {% endif %}
+                  </td>
                   <td class='right'>{{ row.transaction_debit.0 | number_format(2) }}</td>
                   <td class='right'>{{ row.transaction_credit.0 | number_format(2) }}</td>
                   <td class='right'>{{ (row.transaction_credit.0-row.transaction_debit.0) | number_format(2) }}</td>
@@ -76,6 +87,7 @@
               </tr>
               <tr class='journal-exchange {% if row.active == 0 %}red{% else %} {% endif %}'>
                   <td colspan='2'><span>{{ 'Exchange'|t }}</span> {{ items.data.baseCurrency }}</td>
+                  <td></td>
                   <td class='right'>{{ row.transaction_debit.1 | number_format(2) }}</td>
                   <td class='right'>{{ row.transaction_credit.1 | number_format(2) }}</td>
                   <td class='right'>{{ (row.transaction_credit.1-row.transaction_debit.1) | number_format(2) }}</td>
