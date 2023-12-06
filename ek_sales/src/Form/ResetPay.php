@@ -233,7 +233,7 @@ class ResetPay extends FormBase {
                     } else {
                         $ar = $passigned->amountreceived - $p->amount;
                         $bb = $passigned->balancebase + $p->amountbase;
-                        $updatep->fields(['status' => 2, 'amountreceived' => $ar, 'balancebase' => $bb]);
+                        $updatep->fields(['status' => 2, 'amountpaid' => $ar, 'balancebase' => $bb]);
                     }
 
                     $updatep->execute();
