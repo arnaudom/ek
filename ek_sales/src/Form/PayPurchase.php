@@ -384,10 +384,10 @@ class PayPurchase extends FormBase {
         $max_pay = round($data->amount + ($total_taxable * $data->taxvalue / 100), 2);
 
         $amountpaid = $data->amountpaid + $this_pay;
-        if ($amountpaid == $max_pay) {
+        if ($form_state->getValue('close') == 1) {
+            $paid = 1; // force
+        } elseif  (abs(round($amountpaid,2)) == abs(round($max_pay,2))) {
             $paid = 1; // full payment
-        } elseif ($form_state->getValue('for_id') == 1) {
-            $paid = 1; // close
         } else {
             $paid = 2; // partial payment (can't edit anymore)
         }
