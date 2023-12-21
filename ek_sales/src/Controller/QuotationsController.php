@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\ek_sales\SalesSettings;
 
 /**
  * Controller routines for ek module routes.
@@ -502,7 +503,7 @@ class QuotationsController extends ControllerBase {
     public function PdfQuotations(Request $request, $param) {
         $markup = array();
         $format = 'pdf';
-        include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_print_output.inc';
         return new Response($markup);
     }
 
@@ -543,7 +544,7 @@ class QuotationsController extends ControllerBase {
 
                 $url_pdf = Url::fromRoute('ek_sales.quotations.print_share', ['id' => $doc_id], [])->toString();
                 $url_edit = Url::fromRoute('ek_sales.quotations.edit', ['id' => $doc_id], [])->toString();
-                include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_print_output.inc';
 
 
                 $build['quotation'] = [
@@ -605,7 +606,7 @@ class QuotationsController extends ControllerBase {
                 $_SESSION['printfilter'] = array();
                 $format = 'excel';
 
-                include_once drupal_get_path('module', 'ek_sales') . '/manage_excel_output.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_excel_output.inc';
             }
 
             return array($build);
@@ -664,7 +665,7 @@ class QuotationsController extends ControllerBase {
                     ->condition('q.currency', $options['currency'], 'LIKE')
                     ->orderBy('q.id', 'ASC')
                     ->execute();
-            include_once drupal_get_path('module', 'ek_sales') . '/excel_list_quotations.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/excel_list_quotations.inc';
         }
 
         return ['#markup' => $markup];
