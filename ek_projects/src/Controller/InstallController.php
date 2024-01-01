@@ -70,7 +70,7 @@ class InstallController extends ControllerBase {
     public function update() {
 
         //update and conversion of DB
-        include_once drupal_get_path('module', 'ek_projects') . '/' . 'update.php';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_projects') . '/' . 'update.php';
         return array('#markup' => $markup);
     }
 

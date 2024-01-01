@@ -182,7 +182,6 @@ class ProjectData {
         $p = $query->execute()->fetchObject();
 
         if ($p) {
-            
             // create a driect link
             $link = Url::fromRoute('ek_projects_view', ['id' => $p->id], ['absolute' => $abs, 'query' => $param, 'fragment' => $fragment])->toString();
 
@@ -201,7 +200,8 @@ class ProjectData {
             } else {
                 $pcode = $p->pcode;
             }
-            return "<a title='" . htmlspecialchars($p->pname, ENT_QUOTES) . "' href='" . $link . "'>" . $pcode . "</a>";
+            $pname = html_entity_decode($p->pname);
+            return "<a title='" . $pname . "' href='" . $link . "'>" . $pcode . "</a>";
         } else {
             return "";
         }

@@ -29,6 +29,7 @@ ek_projects_view:
     - core/jquery.form
     - core/drupalSettings
     - core/drupal.ajax
+    - core/once
     - jquery_ui_droppable/droppable
     - jquery_ui_draggable/draggable
 
@@ -38,7 +39,7 @@ ek_projects_autocomplete:
     js/autocomplete.js: {}
   dependencies:
     - core/jquery
-    - core/jquery.ui.autocomplete
+    - jquery_ui_autocomplete/autocomplete
 
 ek_projects.dashboard:
   version: 1
@@ -76,7 +77,7 @@ ek_projects_charts:
     js/ek_projects_charts.js: {}
   dependencies:
     - core/jquery
-    - core/jquery.once
+    - core/once
 
 ek_projects_settings:
   css:

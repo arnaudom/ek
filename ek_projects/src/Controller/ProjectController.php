@@ -303,7 +303,7 @@ class ProjectController extends ControllerBase {
                     . "WHERE FIND_IN_SET (id, :c ) ORDER by p.id";
             $data = $this->extdb->query($query, [':c' => implode(',', $param)]);
 
-            include_once drupal_get_path('module', 'ek_projects') . '/excel_list.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_projects') . '/excel_list.inc';
         }
         return ['#markup' => $markup];
     }
@@ -369,7 +369,7 @@ class ProjectController extends ControllerBase {
 
             $data['project'] = $query->fetchAll();
             $pcode = $data['project'][0]->pcode;
-
+            $data['project'][0]->pname = htmlspecialchars_decode($data['project'][0]->pname);
             $data['type'] = $this->extdb
                             ->select('ek_project_type')
                             ->fields('ek_project_type', ['type'])
@@ -1389,9 +1389,9 @@ class ProjectController extends ControllerBase {
                     $extension = explode(".", $l->filename);
                     $extension = array_pop($extension);
 
-                    $items[$l->sub_folder][$i]['icon_path'] = drupal_get_path('module', 'ek_projects') . '/art/icons/';
+                    $items[$l->sub_folder][$i]['icon_path'] = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_projects') . '/art/icons/';
 
-                    if (file_exists(drupal_get_path('module', 'ek_projects') . '/art/icons/' . $extension . ".png")) {
+                    if (file_exists(\Drupal::service('extension.path.resolver')->getPath('module', 'ek_projects') . '/art/icons/' . $extension . ".png")) {
                         $items[$l->sub_folder][$i]['icon'] = strtolower($extension);
                     }
 
@@ -1652,8 +1652,8 @@ class ProjectController extends ControllerBase {
             $parts = explode(".", $file->filename);
             $extension = array_pop($parts);
             $icon = '';
-            if (file_exists(drupal_get_path('module', 'ek_projects') . '/art/icons/' . $extension . ".png")) {
-                $icon = drupal_get_path('module', 'ek_projects') . '/art/icons/' . $extension . ".png";
+            if (file_exists(\Drupal::service('extension.path.resolver')->getPath('module', 'ek_projects') . '/art/icons/' . $extension . ".png")) {
+                $icon = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_projects') . '/art/icons/' . $extension . ".png";
             }
             $data = [
                 'filename' => $file->filename,
@@ -1676,7 +1676,7 @@ class ProjectController extends ControllerBase {
                         $avatar = ($user->get('user_picture')->entity) ? \Drupal::service('file_url_generator')->generateAbsoluteString($user->get('user_picture')->entity->getFileUri()) 
                                 : null;
                         if(!$avatar) {
-                            $avatar = \Drupal::service('file_url_generator')->generateAbsoluteString(drupal_get_path('module','ek_admin') . "/art/avatar/default.jpeg");
+                            $avatar = \Drupal::service('file_url_generator')->generateAbsoluteString(\Drupal::service('extension.path.resolver')->getPath('module','ek_admin') . "/art/avatar/default.jpeg");
                         }
                         $access[] = ['name' => $user->getAccountName(), 'avatar' => $avatar];
                     }

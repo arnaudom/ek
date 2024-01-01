@@ -183,7 +183,7 @@ class ProjectFieldEdit extends FormBase {
                 if (file_exists($dir)) {
                     
                 } else {
-                    $dir = drupal_get_path('module', 'ek_projects') . '/project_responsibility.txt';
+                    $dir = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_projects') . '/project_responsibility.txt';
                 }
                 $list = explode(',', file_get_contents($dir));
 
