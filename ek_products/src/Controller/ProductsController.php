@@ -287,7 +287,7 @@ class ProductsController extends ControllerBase {
                 'exp_discount_price_label' => $this->settings->get('exp_discount_price_label')
             ];
             $markup = [];
-            include_once drupal_get_path('module', 'ek_products') . '/excel_items_list.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_products') . '/excel_items_list.inc';
         }
         return ['#markup' => $markup];
     }
@@ -485,7 +485,7 @@ class ProductsController extends ControllerBase {
                     ->query($query, [':id' => $items['itemcode']]);
             if (class_exists('TCPDF2DBarcode')) {
                 $add_barcode = true;
-                include_once drupal_get_path('module', 'ek_products') . '/code.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_products') . '/code.inc';
             }
             $barcodes = [];
             while ($r = $data->fetchAssoc()) {
@@ -738,7 +738,7 @@ class ProductsController extends ControllerBase {
                         ->query($query, [':id' => $result->itemcode]);
                 if (class_exists('TCPDF2DBarcode')) {
                     $add_barcode = true;
-                    include_once drupal_get_path('module', 'ek_products') . '/code.inc';
+                    include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_products') . '/code.inc';
                 }
                 $barcodes = [];
                 while ($r = $data->fetchAssoc()) {
@@ -774,7 +774,7 @@ class ProductsController extends ControllerBase {
             }
 
             // insert pdf
-            include_once drupal_get_path('module', 'ek_products') . '/pdf_item.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_products') . '/pdf_item.inc';
             return new \Symfony\Component\HttpFoundation\Response('', 204);
         }
     }

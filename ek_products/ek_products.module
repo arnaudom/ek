@@ -6,7 +6,6 @@
  *  module .
  */
 
-
 /**
  * Implements hook_file_download().
  *
@@ -15,8 +14,7 @@
 function ek_products_file_download($uri) {
     if( strpos($uri , 'products/images' )  ) { 
         $guesser = \Drupal::service('file.mime_type.guesser');
-        // D9 $mime = $guesser->guessMimeType($uri);
-        $mime = $guesser->guess($uri);
+        $mime = $guesser->guessMimeType($uri);
         return array('Content-Type' => $mime); 
     }
 }
