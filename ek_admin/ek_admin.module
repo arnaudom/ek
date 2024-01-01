@@ -56,11 +56,10 @@ function ek_admin_preprocess_page(&$variables) {
 function ek_admin_file_download($uri) {
 
     if (strpos($uri, '/images')) {
-        return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($uri));
+        return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($uri));
     } elseif (strpos($uri, '/admin/company')) {
         $guesser = \Drupal::service('file.mime_type.guesser');
-        // D9 $mime = $guesser->guessMimeType($uri);
-        $mime = $guesser->guess($uri);
+        $mime = $guesser->guessMimeType($uri);
         $query = "SELECT * FROM {ek_company_documents}  WHERE uri = :uri";
         $a = array(':uri' => $uri);
 
@@ -126,7 +125,7 @@ function ek_admin_filter_ico($extension) {
         'wma' => 'video', 'wmv' => 'video', 'wpl' => 'video', 'wri' => 'document', 'xls' => 'xls', 'xlsx' => 'xls', 'xlm' => 'script',
         'zip' => 'zip'];
 
-    if (file_exists(drupal_get_path('module', 'ek_admin') . '/art/ico/' . $ico[$extension] . ".png")) {
+    if (file_exists(\Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/ico/' . $ico[$extension] . ".png")) {
         return TRUE;
     }
 

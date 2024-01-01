@@ -4,20 +4,17 @@
         attach: function (context, settings) {
 
             if (drupalSettings.auto_complete) {
-
-                $('.form-select-tag').once().tagEditor({
+                $('.form-select-tag').tagEditor({ 
                     autocomplete: {
                                 source : drupalSettings.path.baseUrl + drupalSettings.auto_complete, 
                                 minLength: 2,
-                            }
                         }
-                        );
+                    }
+                );
 
             } else {
-                $('.form-select-tag').once().tagEditor();
+                $(once('bind-tag-event', '.form-select-tag', context)).tagEditor();
             }
-
-
         }
     };
 })(jQuery, Drupal, drupalSettings);   

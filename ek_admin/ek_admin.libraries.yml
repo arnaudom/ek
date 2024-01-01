@@ -29,7 +29,7 @@ ek_admim.users_autocomplete:
     js/ek_admin_users_autocomplete.js: {}
   dependencies:
     - core/jquery
-    - core/jquery.ui.autocomplete
+    - jquery_ui_autocomplete/autocomplete
        
 ek_admin_docs_updater:
   version: 1
@@ -92,4 +92,5 @@ ek_admin_tageditor:
       /libraries/tagEditor/jquery.tag-editor.css: {}
   dependencies:
     - core/jquery
-    - core/jquery.ui.autocomplete
+    - jquery_ui_autocomplete/autocomplete
+    - core/once

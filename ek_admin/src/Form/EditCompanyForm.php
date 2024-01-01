@@ -624,7 +624,7 @@ class EditCompanyForm extends FormBase
         if ($this->moduleHandler->moduleExists('ek_finance') && $form_state->getValue('for_id') == '') {
             if ($form_state->getValue('use_chart') == 0) {
                 //load standard accounts
-                $file = drupal_get_path('module', 'ek_finance') . '/ek_standard_accounts.sql';
+                $file = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/ek_standard_accounts.sql';
                 $query = file_get_contents($file);
                 $acc = Database::getConnection('external_db', 'external_db')->query($query);
                 $balance_date = date('Y') . '-01-01';

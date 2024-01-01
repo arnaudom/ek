@@ -72,7 +72,7 @@ class InstallController extends ControllerBase {
      *
      */
     public function update(Request $request) {
-        include_once drupal_get_path('module', 'ek_admin') . '/' . 'update.php';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/' . 'update.php';
         return ['#markup' => $markup, '#cache' => ['max-age' => 0]];
     }
 

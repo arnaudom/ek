@@ -70,6 +70,7 @@
         "drupal/jquery_ui_slider": "^2.0",
         "drupal/jquery_ui_droppable": "^2.0",
         "drupal/jquery_ui_draggable": "^2.0",
+        "drupal/jquery_ui_autocomplete": "^2.0",
         "fullcalendar/fullcalendar" : "3.10.2",
         "jquery/multi-select" : "0.9.12",
         "jquery/chosen" : "1.8.7",

@@ -5,13 +5,13 @@ use Drupal\Core\Database\Database;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Drupal\Core\Url;
 use Drupal\ek_admin\GlobalSettings;
 
 class NewUserSubscriber implements EventSubscriberInterface
 {
-    public function checkForUser(GetResponseEvent $event)
+    public function checkForUser(RequestEvent $event)
     {
         $e = $event->getRequest();
         $route = $e->get('_route');

@@ -140,7 +140,7 @@ class AdminController extends ControllerBase {
             \Drupal::logger('ek_admin')->notice($log);
 
             //include the tasks checking code (modules ek_sales, ek_projects)
-            include_once drupal_get_path('module', 'ek_admin') . '/cron/cron_get_tasks.php';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/cron/cron_get_tasks.php';
         }
 
         // HTTP 204 is "No content", meaning "I did what you asked and we're done."
@@ -246,7 +246,7 @@ class AdminController extends ControllerBase {
         $site_config = \Drupal::config('system.site');
         $build = [];
         if (!\Drupal::currentUser()->isAuthenticated() && \Drupal::service('theme_handler')->themeExists('ek_login')) {
-            $build['img'] = drupal_get_path('module', 'ek_admin') . "/css/images/";
+            $build['img'] = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . "/css/images/";
             $build['form'] = \Drupal::formBuilder()->getForm('Drupal\user\Form\UserLoginForm');
             $build['name'] = $site_config->get('name');
             return array(
@@ -736,7 +736,7 @@ class AdminController extends ControllerBase {
 
                     $extension = explode(".", $l->filename);
                     $extension = array_pop($extension);
-                    $icon_path = drupal_get_path('module', 'ek_admin') . '/art/ico/';
+                    $icon_path = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/ico/';
                     if (file_exists($icon_path . $extension . ".png")) {
                         $items[$i]['ico'] = $extension . '_doc_list';
                     }
@@ -1031,7 +1031,7 @@ class AdminController extends ControllerBase {
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
-            include_once drupal_get_path('module', 'ek_admin') . '/excel_list.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/excel_list.inc';
         }
         return ['#markup' => $markup];
     }
@@ -1043,7 +1043,7 @@ class AdminController extends ControllerBase {
      */
     public function pdfcompany($id = null) {
         $markup = array();
-        include_once drupal_get_path('module', 'ek_admin') . '/company_pdf.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/company_pdf.inc';
         return $markup;
     }
 
@@ -1179,6 +1179,7 @@ class AdminController extends ControllerBase {
         $matches = [];
         $uids = $this->entityTypeManager->getStorage('user')->getQuery()
                 ->condition('name', $q, 'STARTS_WITH')
+                ->accessCheck(FALSE)
                 ->range(0, 10)
                 ->execute();
 
