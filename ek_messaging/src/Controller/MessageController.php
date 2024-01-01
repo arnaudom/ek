@@ -113,7 +113,7 @@ class MessageController extends ControllerBase {
         if ($account) {
             $message->from = $account->getDisplayName();
             $message->avatar = ($account->get('user_picture')->entity) ? \Drupal::service('file_url_generator')->generateAbsoluteString($account->get('user_picture')->entity->getFileUri())
-                    : \Drupal::service('file_url_generator')->generateAbsoluteString(drupal_get_path('module','ek_admin') . "/art/avatar/default.jpeg");
+                    : \Drupal::service('file_url_generator')->generateAbsoluteString(\Drupal::service('extension.path.resolver')->getPath('module','ek_admin') . "/art/avatar/default.jpeg");
                
         }
 
@@ -244,7 +244,7 @@ class MessageController extends ControllerBase {
                 if($avatar) {
                     $from = "<div><img src='". \Drupal::service('file_url_generator')->generateAbsoluteString($avatar) ."' class='avatar'>" . " " . $account->getDisplayName() . "</div>";
                 } else {
-                    $avatar = \Drupal::service('file_url_generator')->generateAbsoluteString(drupal_get_path('module','ek_admin') . "/art/avatar/default.jpeg");
+                    $avatar = \Drupal::service('file_url_generator')->generateAbsoluteString(\Drupal::service('extension.path.resolver')->getPath('module','ek_admin') . "/art/avatar/default.jpeg");
                     $from = "<div><img src='".$avatar."' class='avatar'>" . " " . $account->getDisplayName() . "</div>";
                 }
                 
