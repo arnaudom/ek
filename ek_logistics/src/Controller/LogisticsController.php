@@ -252,7 +252,7 @@ class LogisticsController extends ControllerBase {
                         ->execute();
                 $barcode = $barcode_data->fetchAll(\PDO::FETCH_ASSOC);
                 $markup = array();
-                include_once drupal_get_path('module', 'ek_logistics') . '/excel_items_stock.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . '/excel_items_stock.inc';
             } else {
                 $markup = $this->t('No data available');
             }

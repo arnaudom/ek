@@ -160,7 +160,7 @@ if ($format == 'pdf' | $mode == 1) {
             ->execute();
         
     if ($template == '0') {
-        $template = drupal_get_path('module', 'ek_logistics') . "/default_" . $tpl . "_pdf";
+        $template = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . "/default_" . $tpl . "_pdf";
     } else {
         //if print template is a custom file, copy from private to public before include
         //use this feature when storage of data is remote.
@@ -194,7 +194,7 @@ if ($format == 'pdf' | $mode == 1) {
 } else {
     //html format
     if ($template == '0') {
-        $template = drupal_get_path('module', 'ek_logistics') . "/default_" . $tpl . "_html";
+        $template = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . "/default_" . $tpl . "_html";
     }  else {
         $filesystem = \Drupal::service('file_system');
         $path = PublicStream::basePath() . "/" . $tpl;

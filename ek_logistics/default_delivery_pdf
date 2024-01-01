@@ -304,7 +304,7 @@ $pdf->Cell(0, 5, t('PO. No.') . " : " . $head->po, 'T', 1);
 
 $pdf->Ln(5);
 // BODY ==========================================================
-include_once drupal_get_path('module', 'ek_logistics') . "/barcode.inc.php";
+include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . "/barcode.inc.php";
 $bar = new BARCODES();
 if ($bar == false) {
     die($bar->error());
@@ -461,12 +461,12 @@ if ($head->ordered_quantity > 0) {
 
 // stamps ========================================================
 if ($stamp == "2") {
-    $copy = drupal_get_path('module', 'ek_logistics') . "/art/copy.png";
+    $copy = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . "/art/copy.png";
     if (file_exists($copy)) {
         $pdf->Image($copy, $format_feature['stamp_x'], $format_feature['stamp_y'], $format_feature['stamp_z']);
     }
 } elseif ($stamp == "1") {
-    $original = drupal_get_path('module', 'ek_logistics') . "/art/original.png";
+    $original = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . "/art/original.png";
     if (file_exists($original)) {
         $pdf->Image($original, $format_feature['stamp_x'], $format_feature['stamp_y'], $format_feature['stamp_z']);
     }

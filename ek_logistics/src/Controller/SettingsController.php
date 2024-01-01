@@ -68,7 +68,7 @@ class SettingsController extends ControllerBase {
      *
      */
     public function update() {
-        include_once drupal_get_path('module', 'ek_logistics') . '/' . 'update.php';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . '/' . 'update.php';
         return array('#markup' => $markup);
     }
 
@@ -179,7 +179,7 @@ class SettingsController extends ControllerBase {
         
         $coid = $_SESSION['prev'][key($_SESSION['prev'])]['source'];
         if ($coid == '0') {  
-            $template = drupal_get_path('module', 'ek_logistics') . "/" . key($_SESSION['prev']);
+            $template = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . "/" . key($_SESSION['prev']);
         } else {
             $filesystem = \Drupal::service('file_system');
            

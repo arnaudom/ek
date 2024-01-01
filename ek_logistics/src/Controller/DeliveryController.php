@@ -377,7 +377,7 @@ class DeliveryController extends ControllerBase {
                 $url_pdf = Url::fromRoute('ek_logistics_delivery_print_share', ['id' => $doc_id], [])->toString();
                 $url_excel = Url::fromRoute('ek_logistics_delivery_excel', ['param' => serialize([$doc_id, 'logi_delivery', 0, 0])], [])->toString();
                 $url_edit = Url::fromRoute('ek_logistics_delivery_edit', ['id' => $doc_id], [])->toString();
-                include_once drupal_get_path('module', 'ek_logistics') . '/manage_print_output.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . '/manage_print_output.inc';
                 $build['delivery'] = [
                     '#markup' => $document,
                     '#attached' => array(
@@ -480,7 +480,7 @@ class DeliveryController extends ControllerBase {
         if ($this->moduleHandler->moduleExists('ek_products')) {
             $product = true;
         }
-        include_once drupal_get_path('module', 'ek_logistics') . '/manage_print_output.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . '/manage_print_output.inc';
         return $markup;
     }
 
@@ -496,7 +496,7 @@ class DeliveryController extends ControllerBase {
         if ($this->moduleHandler->moduleExists('ek_products')) {
             $product = true;
         }
-        include_once drupal_get_path('module', 'ek_logistics') . '/manage_excel_output.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . '/manage_excel_output.inc';
         return $markup;
     }
 

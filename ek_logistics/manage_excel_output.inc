@@ -121,7 +121,7 @@ Switch ($source) {
 
   if( $template == '0' ) {
     $form = str_replace('logi_', '', $source);
-    $template = drupal_get_path('module', 'ek_logistics') . "/default_" . $form . "_xls";
+    $template = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . "/default_" . $form . "_xls";
   } else {
     $filesystem = \Drupal::service('file_system');
     $path = PublicStream::basePath() . "/" . $template;
