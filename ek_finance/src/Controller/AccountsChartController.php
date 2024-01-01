@@ -81,7 +81,7 @@ class AccountsChartController extends ControllerBase
                 ->query('SELECT name FROM {ek_company} WHERE id=:id', [':id' => $coid])
                 ->fetchField();
         
-        include_once drupal_get_path('module', 'ek_finance') . '/chart_pdf';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/chart_pdf';
         return $markup;
     }
 
@@ -109,7 +109,7 @@ class AccountsChartController extends ControllerBase
                 ->query('SELECT name FROM {ek_company} WHERE id=:id', [':id' => $coid])
                 ->fetchField();
         
-            include_once drupal_get_path('module', 'ek_finance') . '/excel_chart';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_chart';
         }
         
         return $markup;

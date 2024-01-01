@@ -191,7 +191,7 @@ class JournalController extends ControllerBase {
         } else {
             $param = unserialize($param);
             $markup = array();
-            include_once drupal_get_path('module', 'ek_finance') . '/excel_journal.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_journal.inc';
         }
         return ['#markup' => $markup];
     }

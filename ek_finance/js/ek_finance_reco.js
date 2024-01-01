@@ -1,13 +1,12 @@
-(function ($, Drupal, drupalSettings) {
+(function ($, Drupal, drupalSettings,cookies) {
 
     Drupal.behaviors.ek_reconciliation = {
         attach: function (context, settings) {
-console.log(settings.rounding);
             var ref = jQuery('#edit-account').val();
             var store = 'statement' + ref;
 
-            if (jQuery.cookie(store)) {
-                jQuery('#statement').val(jQuery.cookie(store));
+            if (cookies.get(store)) {
+                $('#statement').val(cookies.get(store));
             }
 
             jQuery('.calculate').on('click, change', function () {
@@ -17,7 +16,6 @@ console.log(settings.rounding);
                 var debit = parseFloat(jQuery("#opendebits").val());
                 var statement = parseFloat(jQuery("#statement").val());
                 var openbalance = parseFloat(jQuery("#openbalance").val());
-
                 var sum_debit = 0;
                 var sum_credit = 0;
 
@@ -75,24 +73,14 @@ console.log(settings.rounding);
 
             });
 
-
+            jQuery('#statement').change(function () {
+                var value = parseFloat(jQuery('#statement').val());
+                var ref = jQuery('#edit-account').val();
+                var store = 'statement' + ref;
+                cookies.set(store, value, {expires: 1});
+            });
         }
     }
-})(jQuery, Drupal, drupalSettings);
-
-
-
-jQuery(document).ready(function () {
-
-    jQuery('#statement').change(function () {
-
-        var value = parseFloat(jQuery('#statement').val());
-        var ref = jQuery('#edit-account').val();
-        var store = 'statement' + ref;
-        jQuery.cookie(store, value, {expires: 1});
-
-
-    });
-});
+})(jQuery, Drupal, drupalSettings,window.Cookies);
 
 

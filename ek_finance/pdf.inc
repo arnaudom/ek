@@ -193,7 +193,7 @@ if ($type == 7) {
 
 }
 
-include_once drupal_get_path('module', 'ek_finance') . '/' .$template;
+include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/' .$template;
 
   header('Cache-Control: private');
   header('Content-Type: application/pdf');

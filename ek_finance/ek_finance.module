@@ -61,7 +61,7 @@ function ek_finance_ek_settings($coids) {
 function ek_finance_file_download($uri) {
 
     if (strpos($uri, '/finance/')) {
-        return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($uri));
+        return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($uri));
     }
 }
 

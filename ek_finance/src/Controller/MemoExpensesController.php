@@ -958,7 +958,7 @@ class MemoExpensesController extends ControllerBase
     public function printMemoPdf(Request $request, $param) {
         $markup = array();
         $format = 'pdf';
-        include_once drupal_get_path('module', 'ek_finance') . '/manage_print_output.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/manage_print_output.inc';
         return $markup;
     }
 
@@ -1035,7 +1035,7 @@ class MemoExpensesController extends ControllerBase
                         $url_edit = Url::fromRoute('ek_finance_manage_personal_memo', ['id' => $doc_id], [])->toString();
                     }
                 }
-                include_once drupal_get_path('module', 'ek_finance') . '/manage_print_output.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/manage_print_output.inc';
 
                 $build['html_memo'] = [
                     '#markup' => $document,

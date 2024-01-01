@@ -275,8 +275,6 @@ class ReconciliationForm extends FormBase {
                 '#attributes' => array('id' => 'openbalance'),
             );
 
-
-
             // top bar displaying the total
             $form['bar']["debits"] = array(
                 '#type' => 'textfield',

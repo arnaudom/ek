@@ -179,7 +179,7 @@ class CashController extends ControllerBase
             $data['filter'] = $extract['filter'];
             $data['data'] = $extract['data'];
             $data['total'] = $extract['total'];
-            include_once drupal_get_path('module', 'ek_finance') . '/excel_cash.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_cash.inc';
         }
         return ['#markup' => $markup];
     }

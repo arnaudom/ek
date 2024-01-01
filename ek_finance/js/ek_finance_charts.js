@@ -6,8 +6,8 @@
             var k;
             for (k in settings.charts) {
                 var c = settings.charts[k];
-                //prevent drupal.behavior to call script twice with once
-                jQuery('#' + c.element).once().each(function () {
+                // prevent drupal.behavior to call script twice with once
+                $(once('bind-chart-event', '#' + c.element, context)).each(function () {
 
                     if (c.type == 'Line') {
                         jQuery('#' + c.id).css('height', 'auto');

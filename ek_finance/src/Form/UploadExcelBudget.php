@@ -109,7 +109,7 @@ class UploadExcelBudget extends FormBase {
             $uri = \Drupal::service('file_system')->realpath($file->getFileUri());
             $coid = $form_state->getValue('coid');
             $year = $form_state->getValue('year');
-            include_once drupal_get_path('module', 'ek_finance') . '/excel_import_budget.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_import_budget.inc';
 
             \Drupal::messenger()->addStatus(t('imported @n rows from file @f', ['@n' => $row, '@f' => $filename]));
         } else {

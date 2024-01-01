@@ -278,7 +278,7 @@ $pdf->Cell(185, 3, '', 'LBR', 1);
 
 if ($head->status > 1) {
 
-    $paid = drupal_get_path('module', 'ek_finance') . "/art/paid.png";
+    $paid = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . "/art/paid.png";
     if (file_exists($paid)) {
         $pdf->Image($paid, 90, 95, 20);
     }
@@ -325,24 +325,24 @@ $pdf->MultiCell(130, 5, $head->comment, 0, 1);
 //STAMP============================================================ 
 
 if ($stamp == "2") {
-    $copy = drupal_get_path('module', 'ek_finance') . "/art/copy.png";
+    $copy = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . "/art/copy.png";
     if (file_exists($copy)) {
         $pdf->Image($copy, 150, 10, 40);
     }
 } elseif ($stamp == "1") {
-    $original = drupal_get_path('module', 'ek_finance') . "/art/original.png";
+    $original = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . "/art/original.png";
     if (file_exists($original)) {
         $pdf->Image($original, 150, 10, 40);
     }
 }
 
 if ($auth[0] == 1) {
-    $na = drupal_get_path('module', 'ek_finance') . "/art/authopending.jpeg";
+    $na = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . "/art/authopending.jpeg";
     if (file_exists($na))
         $pdf->Image($na, 130, 100, 50);
 }
 if ($auth[0] == 3) {
-    $na = drupal_get_path('module', 'ek_finance') . "/art/notapproved.jpeg";
+    $na = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . "/art/notapproved.jpeg";
     if (file_exists($na))
         $pdf->Image($na, 130, 95, 50);
 }

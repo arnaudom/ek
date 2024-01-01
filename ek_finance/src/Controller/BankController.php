@@ -149,7 +149,7 @@ class BankController extends ControllerBase {
 
         //generate bank contact card with type 6
         $markup = array();
-        include_once drupal_get_path('module', 'ek_finance') . '/pdf.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/pdf.inc';
         return $markup;
     }
 
@@ -404,7 +404,7 @@ class BankController extends ControllerBase {
 
         //generate bank account card with type 7
         $markup = array();
-        include_once drupal_get_path('module', 'ek_finance') . '/pdf.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/pdf.inc';
         return $markup;
     }
 

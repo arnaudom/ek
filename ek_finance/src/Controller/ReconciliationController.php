@@ -228,7 +228,7 @@ class ReconciliationController extends ControllerBase {
     public function pdfreconciliation(Request $request, $id) {
         $type = 3;
         $markup = [];
-        include_once drupal_get_path('module', 'ek_finance') . '/pdf.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/pdf.inc';
         return $markup;
     }
 
@@ -359,7 +359,7 @@ class ReconciliationController extends ControllerBase {
                 $i++;
             }//while
 
-            include_once drupal_get_path('module', 'ek_finance') . '/excel_reconciliation.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_reconciliation.inc';
         }
         return ['#markup' => $markup];
     }

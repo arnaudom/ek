@@ -102,7 +102,7 @@ class TaxController extends ControllerBase
             if ($show == 1) {
                 $settings = new FinanceSettings();
                 $baseCurrency = $settings->get('baseCurrency');
-                include_once drupal_get_path('module', 'ek_finance') . '/taxes.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/taxes.inc';
 
                 $param = serialize(
                     array(
@@ -178,7 +178,7 @@ class TaxController extends ControllerBase
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
-            include_once drupal_get_path('module', 'ek_finance') . '/excel_tax.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_tax.inc';
         }
         return ['#markup' => $markup];
     }

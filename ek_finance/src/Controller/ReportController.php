@@ -142,7 +142,7 @@ class ReportController extends ControllerBase
                     $items['error'] = $error;
                 }
 
-                include_once drupal_get_path('module', 'ek_finance') . '/reporting.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/reporting.inc';
 
                 $param = serialize(
                     array(
@@ -180,7 +180,7 @@ class ReportController extends ControllerBase
             } else {
                 //display a compilation table
                 
-                include_once drupal_get_path('module', 'ek_finance') . '/reporting_compilation.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/reporting_compilation.inc';
                 $items['purchases'] = $purchases;
                 $items['expenses'] = $expenses;
                 $items['income'] = $income;
@@ -243,10 +243,10 @@ class ReportController extends ControllerBase
             $divide = 1;
             $viewE = $p['view']['E'];
             $viewS = $p['view']['S'];
-            include_once drupal_get_path('module', 'ek_finance') . '/reporting.inc';
-            include_once drupal_get_path('module', 'ek_finance') . '/excel_reporting.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/reporting.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_reporting.inc';
         } else {
-            include_once drupal_get_path('module', 'ek_finance') . '/excel_reporting_compilation.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_reporting_compilation.inc';
         }
         return $markup;
     }
@@ -279,7 +279,7 @@ class ReportController extends ControllerBase
             } else {
                 $budgetUnit = '';
             }
-            include_once drupal_get_path('module', 'ek_finance') . '/budgeting.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/budgeting.inc';
 
             $param = serialize(
                 array(
@@ -353,7 +353,7 @@ class ReportController extends ControllerBase
             // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
             // 'other_liabilities', 'other_income', 'other_expenses'
             $chart = $this->settings->get('chart');
-            include_once drupal_get_path('module', 'ek_finance') . '/excel_budgeting.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_budgeting.inc';
         }
         return ['#markup' => $markup];
     }
@@ -381,7 +381,7 @@ class ReportController extends ControllerBase
             $summary = $_SESSION['bsfilter']['summary'];
             $settings = new FinanceSettings();
             $baseCurrency = $settings->get('baseCurrency');
-            include_once drupal_get_path('module', 'ek_finance') . '/profitloss.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/profitloss.inc';
 
             $param = serialize(
                 array(
@@ -440,7 +440,7 @@ class ReportController extends ControllerBase
         $fiscalYear = $settings->get('fiscal_year');
         $fiscalMonth = $settings->get('fiscal_month');
 
-        include_once drupal_get_path('module', 'ek_finance') . '/pdf.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/pdf.inc';
         return $markup;
     }
 
@@ -466,7 +466,7 @@ class ReportController extends ControllerBase
             $summary = $_SESSION['bsfilter']['summary'];
             //$settings = new FinanceSettings();
             $baseCurrency = $this->settings->get('baseCurrency');
-            include_once drupal_get_path('module', 'ek_finance') . '/balancesheet.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/balancesheet.inc';
 
             $param = serialize(
                 array(
@@ -527,7 +527,7 @@ class ReportController extends ControllerBase
         $settings = new CompanySettings($params['coid']);
         $fiscalYear = $settings->get('fiscal_year');
         $fiscalMonth = $settings->get('fiscal_month');
-        include_once drupal_get_path('module', 'ek_finance') . '/pdf.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/pdf.inc';
         return $markup;
     }
 
@@ -557,7 +557,7 @@ class ReportController extends ControllerBase
             $items['baseCurrency'] = $settings->get('baseCurrency');
             $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
             $items['rounding'] = $rounding;
-            include_once drupal_get_path('module', 'ek_finance') . '/cashflow_statement.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/cashflow_statement.inc';
 
             $param = serialize(
                 array(
@@ -606,7 +606,7 @@ class ReportController extends ControllerBase
             $items['rounding'] = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
             $extract = unserialize($param);
             $coid = $extract['coid'];
-            include_once drupal_get_path('module', 'ek_finance') . '/excel_cash_statement.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_cash_statement.inc';
         }
         return ['#markup' => $markup];
     }

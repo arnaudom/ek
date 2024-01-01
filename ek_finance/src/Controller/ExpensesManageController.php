@@ -1088,7 +1088,7 @@ class ExpensesManageController extends ControllerBase
             $chartList = Aidlist::chartList();
             $result = $this->pullExpensesData($settings, $param, 'asc', 'j.id');
 
-            include_once drupal_get_path('module', 'ek_finance') . '/excel_expenses.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_expenses.inc';
         }
         return ['#markup' => $markup];
     }
@@ -1104,7 +1104,7 @@ class ExpensesManageController extends ControllerBase
     public function pdfVoucher($type, $id)
     {
         $markup = array();
-        include_once drupal_get_path('module', 'ek_finance') . '/pdf.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/pdf.inc';
         return $markup;
     }
 

@@ -138,9 +138,9 @@ class BalanceLedgerController extends ControllerBase {
                     ->fetchField();
 
             if ($p['type'] == 'accounts') {
-                include_once drupal_get_path('module', 'ek_finance') . '/excel_ledger.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_ledger.inc';
             } elseif ($p['type'] == 'sales') {
-                include_once drupal_get_path('module', 'ek_finance') . '/excel_sales_ledger.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_sales_ledger.inc';
             }
         }
         return ['#markup' => $markup];

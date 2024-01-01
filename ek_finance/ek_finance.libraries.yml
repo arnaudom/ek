@@ -140,8 +140,9 @@ ek_finance.reco_form:
   css:
     theme:
       css/ek_finance.css: {}
+  dependencies:
+    - core/js-cookie
       
-
 ek_finance.expenses_form:
   version: 1
   js:
@@ -158,4 +159,4 @@ ek_finance_charts:
     js/ek_finance_charts.js: {}
   dependencies:
     - core/jquery
-    - core/jquery.once
+    - core/once
