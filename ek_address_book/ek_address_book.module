@@ -27,23 +27,22 @@ function ek_address_book_ek_home() {
  */
 function ek_address_book_file_download($uri) {
 
-if (strpos($uri,'address_book/cards/')) {
-    // Check that the file exists and is an image.
-    $image = \Drupal::service('image.factory')->get($uri);
-    if ($image->isValid()) {
-     
-        return array(
-          // Send headers describing the image's size, and MIME-type.
-          'Content-Type' => $image->getMimeType(),
-          'Content-Length' => $image->getFileSize(),
-          // By not explicitly setting them here, this uses normal Drupal
-          // Expires, Cache-Control and ETag headers to prevent proxy or
-          // browser caching of private images.
-        );
+  if (strpos($uri,'address_book/cards/')) {
+      // Check that the file exists and is an image.
+      $image = \Drupal::service('image.factory')->get($uri);
+      if ($image->isValid()) {
       
-    }
-//return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($uri));
-}
+          return array(
+            // Send headers describing the image's size, and MIME-type.
+            'Content-Type' => $image->getMimeType(),
+            'Content-Length' => $image->getFileSize(),
+            // By not explicitly setting them here, this uses normal Drupal
+            // Expires, Cache-Control and ETag headers to prevent proxy or
+            // browser caching of private images.
+          );
+        
+      }
+  }
 }
 
 /**

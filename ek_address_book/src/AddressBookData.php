@@ -116,15 +116,13 @@ class AddressBookData {
                 ->select('ek_address_book', 'ab');
         $query->fields('ab', ['name']);
         $query->condition('id', $id, '=');
-        $name = $query->execute()->fetchField();
+        $name = html_entity_decode($query->execute()->fetchField());
         $fullname = $name;
         if (isset($option['short'])) {
             $name = substr($name, 0, $option['short']);
         }
 
         $link = Url::fromRoute('ek_address_book.view', array('abid' => $id))->toString();
-
-
         $render = array(
             '#theme' => 'ek_address_book_tip',
             '#items' => ['type' => 'link', 'id' => $id, 'full' => $fullname, 'link' => $link, 'short' => $name],

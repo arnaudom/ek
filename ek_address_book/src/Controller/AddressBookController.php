@@ -13,6 +13,8 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Url;
+use Drupal\Core\File\FileUrlGeneratorInterface;
+use Drupal\Core\File\FileSystemInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,17 +37,22 @@ class AddressBookController extends ControllerBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler')
+                $container->get('module_handler'),
+                $container->get('file_url_generator'),
+                $container->get('file_system')
+
         );
     }
+    
 
     /**
      * Constructs a  object.
      *
-     *   The module exist service.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler,FileUrlGeneratorInterface $file_url_generator, FileSystemInterface $file_system) {
         $this->moduleHandler = $module_handler;
+        $this->fileUrlGenerator = $file_url_generator;
+        $this->fileSystem = $file_system;
     }
 
     /**
@@ -181,7 +188,7 @@ class AddressBookController extends ControllerBase {
                 $contact['telephone'] = $r['telephone'];
                 $contact['mobilephone'] = $r['mobilephone'];
                 $contact['email'] = $r['email'];
-                $contact['card'] = (!Null == $r['card']) ? \Drupal::service('file_url_generator')->generateAbsoluteString($r['card']): '';
+                $contact['card'] = (!Null == $r['card']) ? $this->fileUrlGenerator->generateAbsoluteString($r['card']): '';
                 if ($r['card'] <> '') {
                     $image = "<img class='thumbnail' src=" . $contact['card'] . ">";
                     $markup = "<a href='modal/nojs/" . $r['id']
@@ -526,10 +533,10 @@ class AddressBookController extends ControllerBase {
                 $url = \Drupal::service('file_url_generator')->generateAbsoluteString($data->logo);
                 $logo = "<img class='thumbnail' src='" . $url . "'>";
             }
-
+            $name = html_entity_decode($data->name);
             $render = array(
                 '#theme' => 'ek_address_book_tip',
-                '#items' => ['type' => 'display', 'name' => $data->name, 'logo' => $logo, 'url' => $url],
+                '#items' => ['type' => 'display', 'name' => $name, 'logo' => $logo, 'url' => $url],
             );
             $card = \Drupal::service('renderer')->render($render);
             return new JsonResponse(['card' => $card]);
@@ -563,20 +570,20 @@ class AddressBookController extends ControllerBase {
                                 . \Drupal::service('file_url_generator')->generateAbsoluteString($r->logo) . "'>";
                     } else {
                         $default = \Drupal::service('file_url_generator')
-                                ->generateAbsoluteString(drupal_get_path('module', 'ek_address_book') . '/art/default.jpg');
+                                ->generateAbsoluteString(\Drupal::service('extension.path.resolver')->getPath('module', 'ek_address_book') . '/art/default.jpg');
                         $pic = "<img  class='abook_thumbnail' src='"
                                 . $default . "'>";
                     }
                     $line['picture'] = isset($pic) ? $pic : '';
                     $line['type'] = $types[$r->type];
-                    $line['name'] = $r->name;
+                    $line['name'] = html_entity_decode($r->name);
                     $line['id'] = $r->id;
 
                     $result[] = $line;
                 }
             } else {
                 while ($r = $data->fetchObject()) {
-                    $result[] = $r->name;
+                    $result[] = html_entity_decode($r->name);
                 }
             }
         } else {
@@ -746,7 +753,7 @@ class AddressBookController extends ControllerBase {
      */
     public function pdfaddressbook(Request $request, $abid, $cid) {
         $markup = array();
-        include_once drupal_get_path('module', 'ek_address_book') . '/contact_pdf.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_address_book') . '/contact_pdf.inc';
         return $markup;
     }
 

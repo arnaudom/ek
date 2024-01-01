@@ -26,8 +26,9 @@ ek_address_book.email_autocomplete:
   js:
     js/ek_address_book_email_autocomplete.js: {}
   dependencies:
-    - core/jquery
-    - core/jquery.ui.autocomplete
+    - core/jquery    
+    - core/jquery.ui
+    - jquery_ui_autocomplete/autocomplete
 
 ek_address_book.email_autocomplete_user:
   version: VERSION
@@ -35,7 +36,8 @@ ek_address_book.email_autocomplete_user:
     js/ek_address_book_email_autocomplete_user.js: {}
   dependencies:
     - core/jquery
-    - core/jquery.ui.autocomplete
+    - core/jquery.ui
+    - jquery_ui_autocomplete/autocomplete
 
 ek_address_book.dialog:
   version: VERSION

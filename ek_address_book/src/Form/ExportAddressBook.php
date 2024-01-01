@@ -89,7 +89,7 @@ class ExportAddressBook extends FormBase
       }
       
         $data = $query->execute();
-        include_once drupal_get_path('module', 'ek_address_book').'/excel_export.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_address_book').'/excel_export.inc';
         return $markup;
     }
 }
