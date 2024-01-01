@@ -91,6 +91,7 @@ ek_hr.roster:
     - core/drupal
     - core/drupal.form
     - core/jquery.form
+    - core/js-cookie
     - jquery_ui_slider/slider
     
 

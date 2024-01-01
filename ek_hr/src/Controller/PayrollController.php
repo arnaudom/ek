@@ -317,7 +317,7 @@ class PayrollController extends ControllerBase
             );
 
             $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
-            include_once drupal_get_path('module', 'ek_hr') . '/excel_current_payroll.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_hr') . '/excel_current_payroll.inc';
         }
         
         return ['#markup' => $markup];
@@ -379,7 +379,7 @@ class PayrollController extends ControllerBase
             if (strpos($_SESSION['printforms']['template'], '_xls') != false) {
                 $_SESSION['printforms'] = array();
 
-                include_once drupal_get_path('module', 'ek_hr') . '/manage_output_form.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_hr') . '/manage_output_form.inc';
             } elseif (strpos($_SESSION['printforms']['template'], '_pdf') != false) {
                 $_SESSION['printforms'] = array();
                 $path = $GLOBALS['base_url'] . "/human-resources/print/output-form/" . $param;
@@ -399,7 +399,7 @@ class PayrollController extends ControllerBase
     public function OutputPayslip(Request $request, $param)
     {
         $markup = array();
-        include_once drupal_get_path('module', 'ek_hr') . '/manage_output.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_hr') . '/manage_output.inc';
         return ['#markup' => $markup];
     }
 
@@ -410,7 +410,7 @@ class PayrollController extends ControllerBase
     public function OutputForm(Request $request, $param)
     {
         $markup = array();
-        include_once drupal_get_path('module', 'ek_hr') . '/manage_output_form.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_hr') . '/manage_output_form.inc';
         return ['#markup' => $markup];
     }
 

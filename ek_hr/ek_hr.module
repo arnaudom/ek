@@ -93,21 +93,19 @@ function ek_hr_file_download($uri) {
                ) { 
                $log = t("User @u has downloaded document @d (file id @i)", $place);
                     \Drupal::logger('ek_hr')->notice( $log );  
-               return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($data->uri));     
+               return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($data->uri));     
                 
              } else { 
               return -1;
              }
-
         }
 
         if (strpos($uri,'/hr/pictures')) {
             
             if (strpos($uri,'/40/')) {
-                //bypass filter
-                return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($uri));
+                // bypass filter
+                return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($uri));
             }
-
           
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_hr_workforce', 'w')
@@ -121,19 +119,15 @@ function ek_hr_file_download($uri) {
                   || in_array( 'administrator', \Drupal::currentUser()->getRoles()) 
                   || in_array( \Drupal::currentUser()->id(), $admin_array ) 
                ) { 
-                    
-                return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($data->picture));
-                
-             } else { 
-              return -1;
-             }        
-        
-        
+                  return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($data->picture));
+                } else { 
+                  return -1;
+                }
         } elseif (strpos($uri,'/ek_hr/art')) {
             return array('Content-Type' => 'Image');
         }
+  }
 
-}
 /**
  * Implementation hook_theme().
  */

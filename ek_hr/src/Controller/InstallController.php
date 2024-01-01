@@ -73,7 +73,7 @@ class InstallController extends ControllerBase
     {
   
   //update and conversion of DB
-        include_once drupal_get_path('module', 'ek_hr') . '/' . 'update.php';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_hr') . '/' . 'update.php';
         return  array('#markup' => $markup) ;
     }
  

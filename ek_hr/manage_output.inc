@@ -149,7 +149,7 @@ if ($format[1] == 'pdf') {
 
 
     if ($template == 'default-payslip_pdf') {
-        include_once drupal_get_path('module', 'ek_hr') . '/' . $template . '.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_hr') . '/' . $template . '.inc';
     } else {
         //if print template is a custom file, copy from private to public before include
         //use this feature when storage of data is remote.

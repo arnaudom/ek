@@ -1,16 +1,15 @@
-(function ($, Drupal, drupalSettings) {
+(function ($, Drupal, drupalSettings,cookies) {
 
     Drupal.behaviors.ek_hr = {
         attach: function (context, settings) {
 
-
             if (settings.roster.cut) {
-                if (jQuery.cookie(settings.roster.cut)) {
-                    jQuery('#edit-cutoff').val(jQuery.cookie(settings.roster.cut));
+                if (cookies.get(settings.roster.cut)) {
+                    jQuery('#edit-cutoff').val(cookies.get(settings.roster.cut));
                 }
                 $('#edit-cutoff').change(function () {
                     var value = parseFloat(jQuery('#edit-cutoff').val());
-                    jQuery.cookie(settings.roster.cut, value, {expires: 1});
+                    cookies.set(settings.roster.cut, value, {expires: 1});
                 });
             }
 
@@ -94,7 +93,7 @@
 
     };
 
-})(jQuery, Drupal, drupalSettings);
+})(jQuery, Drupal, drupalSettings,window.Cookies);
 
 
 function timing(x) {

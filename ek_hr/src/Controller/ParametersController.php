@@ -211,7 +211,7 @@ class ParametersController extends ControllerBase {
                     ->execute();
 
 
-            include_once drupal_get_path('module', 'ek_hr') . '/excel_employee_list.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_hr') . '/excel_employee_list.inc';
         }
 
         return ['#markup' => $markup];
@@ -239,7 +239,7 @@ class ParametersController extends ControllerBase {
                 $data['hr'][0]->picture = "<img class='thumbnail' src='"
                         . \Drupal::service('file_url_generator')->generateAbsoluteString($data['hr'][0]->picture) . "'>";
             } else {
-                $pic = '../../' . drupal_get_path('module', 'ek_hr') . '/art/default.jpeg';
+                $pic = '../../' . \Drupal::service('extension.path.resolver')->getPath('module', 'ek_hr') . '/art/default.jpeg';
                 $data['hr'][0]->picture = "<img class='thumbnail' src='" . $pic . "'>";
                 $data['hr'][0]->pictureUrl = $pic;
             }
@@ -1035,7 +1035,7 @@ class ParametersController extends ControllerBase {
                                 $pic = "<img class='hr_thumbnail' src='"
                                         . \Drupal::service('file_url_generator')->generateAbsoluteString($thumb) . "'>";
                             } else {
-                                $default = \Drupal::service('file_url_generator')->generateAbsoluteString(drupal_get_path('module', 'ek_hr') . '/art/default.jpeg');
+                                $default = \Drupal::service('file_url_generator')->generateAbsoluteString(\Drupal::service('extension.path.resolver')->getPath('module', 'ek_hr') . '/art/default.jpeg');
                                 $pic = "<img class='hr_thumbnail' src='"
                                         . $default . "'>";
                             }
