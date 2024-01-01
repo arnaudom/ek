@@ -22,6 +22,7 @@ ek_documents_display:
     - core/drupal.dialog
     - core/backbone
     - core/jquery.once
+    - core/js-cookie
     - jquery_ui_droppable/droppable
     - jquery_ui_draggable/draggable
 

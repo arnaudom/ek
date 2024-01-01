@@ -83,8 +83,8 @@ class DocumentsData {
                 $doc_short_name = substr($extension[0], 0, 12) . "...";
                 $extension = strtolower(array_pop($extension));
 
-                $icon_path = drupal_get_path('module', 'ek_admin') . '/art/' . $extension . ".png";
-                $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/' . $extension . ".png";
+                $icon_path = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/' . $extension . ".png";
+                $icon_path_small = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/ico/' . $extension . ".png";
 
                 if (!file_exists($icon_path)) {
                     $extension = 'no';
@@ -188,14 +188,14 @@ class DocumentsData {
                 $doc_name = $extension[0];
                 $doc_short_name = substr($extension[0], 0, 12) . "...";
                 $extension = strtolower(array_pop($extension));
-                $icon_path = drupal_get_path('module', 'ek_admin') . '/art/' . $extension . ".png";
-                $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/' . $extension . ".png";
+                $icon_path = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/' . $extension . ".png";
+                $icon_path_small = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/ico/' . $extension . ".png";
                 $new = 0;
                 if (!file_exists($icon_path)) {
-                    $icon_path = drupal_get_path('module', 'ek_admin') . '/art/no.png';
+                    $icon_path = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/no.png';
                 }
                 if (!file_exists($icon_path_small)) {
-                    $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/no.png';
+                    $icon_path_small = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/ico/no.png';
                 }
                 $size = 0;
                 if (is_numeric($l->size)) {
@@ -299,14 +299,14 @@ class DocumentsData {
                 $doc_name = $extension[0];
                 $doc_short_name = substr($extension[0], 0, 12) . "...";
                 $extension = strtolower(array_pop($extension));
-                $icon_path = drupal_get_path('module', 'ek_admin') . '/art/' . $extension . ".png";
-                $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/' . $extension . ".png";
+                $icon_path = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/' . $extension . ".png";
+                $icon_path_small = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/ico/' . $extension . ".png";
 
                 if (!file_exists($icon_path)) {
-                    $icon_path = drupal_get_path('module', 'ek_admin') . '/art/no.png';
+                    $icon_path = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/no.png';
                 }
                 if (!file_exists($icon_path_small)) {
-                    $icon_path_small = drupal_get_path('module', 'ek_admin') . '/art/ico/no.png';
+                    $icon_path_small = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/ico/no.png';
                 }
 
                 $size = 0;

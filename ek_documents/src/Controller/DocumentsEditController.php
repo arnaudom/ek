@@ -85,7 +85,7 @@ class DocumentsEditController extends ControllerBase
         \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
         //load mydocs
         $list = [];
-        $path = drupal_get_path('module', 'ek_documents');
+        $path = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_documents');
         if ($request->get('get') == 'myDocs') {
             if (isset($_SESSION['documentfilter']['filter'])) {
                 if ($_SESSION['documentfilter']['keyword'] != '') {

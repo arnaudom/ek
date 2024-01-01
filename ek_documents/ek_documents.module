@@ -87,9 +87,7 @@ function ek_documents_file_download($uri) {
 
     if (strpos($uri, '/documents/users/')) {
         $guesser = \Drupal::service('file.mime_type.guesser');
-        // D9 $mime = $guesser->guessMimeType($uri);
-        $mime = $guesser->guess($uri);
-        
+        $mime = $guesser->guessMimeType($uri);
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_documents', 'd')
                     ->fields('d')

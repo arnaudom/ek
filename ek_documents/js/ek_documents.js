@@ -1,4 +1,4 @@
-(function ($, Drupal, drupalSettings) {
+(function ($, Drupal, cookies) {
 
     Drupal.behaviors.ek_documents = {
         attach: function (context, settings) {
@@ -14,7 +14,7 @@
             }
 
             jQuery('#gridview', context).click(function () {
-                jQuery.cookie('list-type', 1, {expires: 1});
+                cookies.set('list-type', 1, {expires: 1});
                 jQuery('#spinico').addClass('spin-ico');
                 if (settings.ek_documents == 'myDocs') {
                     load_my_docs();
@@ -25,7 +25,7 @@
             });
 
             jQuery('#listview', context).click(function () {
-                jQuery.cookie('list-type', 0, {expires: 1});
+                cookies.set('list-type', 0, {expires: 1});
                 jQuery('#spinico').addClass('spin-ico');
                 if (settings.ek_documents == 'myDocs') {
                     load_my_docs();
@@ -39,7 +39,7 @@
         }//attach
     };
 
-})(jQuery, Drupal, drupalSettings);
+})(jQuery, Drupal, window.Cookies);
 
 
 jQuery('#expand').click(function () {
