@@ -71,7 +71,7 @@ class InstallController extends ControllerBase
 
     public function update()
     {
-        include_once drupal_get_path('module', 'ek_assets') . '/' . 'update.php';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_assets') . '/' . 'update.php';
         return  array('#markup' => $markup) ;
     }
     /**

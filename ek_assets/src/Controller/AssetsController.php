@@ -304,7 +304,7 @@ class AssetsController extends ControllerBase {
         }
         /**/
         if (class_exists('TCPDF2DBarcode')) {
-            include_once drupal_get_path('module', 'ek_assets') . '/code.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_assets') . '/code.inc';
             $qr_text = $this->t('ID') . ': ' . $data->id . ', ' . $this->t('Name') . ': '
                     . $data->asset_name . ', ' . $this->t('Company') . ': ' . $company_name . ', '
                     . $this->t('Date of purchase') . ': ' . $data->date_purchase . ', '
@@ -440,7 +440,7 @@ class AssetsController extends ControllerBase {
 
             $result = $query->execute();
 
-            include_once drupal_get_path('module', 'ek_assets') . '/excel_list.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_assets') . '/excel_list.inc';
         }
         return ['#markup' => $markup];
     }
@@ -536,7 +536,7 @@ class AssetsController extends ControllerBase {
                 }
             }
 
-            include_once drupal_get_path('module', 'ek_assets') . '/pdf_asset.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_assets') . '/pdf_asset.inc';
             return new Response('', 204);
         }
     }
@@ -599,7 +599,7 @@ class AssetsController extends ControllerBase {
                 ];
             }
 
-            include_once drupal_get_path('module', 'ek_assets') . '/qrcode.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_assets') . '/qrcode.inc';
             return new \Symfony\Component\HttpFoundation\Response('', 204);
         } else {
             $url = Url::fromRoute('ek_assets.listl', [], [])->toString();
