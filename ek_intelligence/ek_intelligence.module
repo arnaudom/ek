@@ -7,7 +7,7 @@
 function ek_intelligence_file_download($uri) {
 
 if (strpos($uri,'/inline-images/')) {
-return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guess($uri));
+return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($uri));
 }
 }
 

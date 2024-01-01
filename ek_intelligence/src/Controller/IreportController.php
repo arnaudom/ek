@@ -353,7 +353,7 @@ class IreportController extends ControllerBase {
 
 
             $markup = array();
-            include_once drupal_get_path('module', 'ek_intelligence') . '/word_report.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_intelligence') . '/word_report.inc';
             return $markup;
         } else {
             return array(
