@@ -160,6 +160,15 @@ ek_sales.reset_payment:
     _permission: 'reset_pay'
     id: \d*
 
+ek_sales.edit_serial:
+  path: '/edit_serial/{doc}/{id}/{serial}'
+  defaults:
+    _title: 'Edit serial'
+    _controller: '\Drupal\ek_sales\Controller\SalesController::EditSerial'
+  requirements:
+    _permission: 'delete_invoice|delete_purchase'
+    id: \d*
+
 #purchases
 ek_sales.purchases.list:
   path: '/purchases/list'

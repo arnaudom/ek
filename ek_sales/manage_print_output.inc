@@ -327,7 +327,7 @@ Switch ($source) {
 if((isset($format) && $format == 'pdf') || $mode == 1) {
   if( $template == '0' ) {
       
-    $template = drupal_get_path('module', 'ek_sales') . "/default_" . $source . "_pdf";
+    $template = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . "/default_" . $source . "_pdf";
     if(!empty($customSettings["default_" . $source . "_pdf"])){
         $custom = $customSettings["default_" . $source . "_pdf"];
     }
@@ -335,7 +335,7 @@ if((isset($format) && $format == 'pdf') || $mode == 1) {
   
   } elseif($template == 'default_receipt_invoice_pdf') {
       
-    $template = drupal_get_path('module', 'ek_sales') . '/default_receipt_invoice_pdf';
+    $template = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/default_receipt_invoice_pdf';
     if(!empty($customSettings["default_receipt_invoice_pdf"])){
         $custom = $customSettings["default_receipt_invoice_pdf"];
     }
@@ -380,7 +380,7 @@ if((isset($format) && $format == 'pdf') || $mode == 1) {
     // HTML
   if( $template == '0' ) {
       
-      $template = drupal_get_path('module', 'ek_sales') . "/default_" . $source . "_html";
+      $template = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . "/default_" . $source . "_html";
   
   } elseif($template == 'default_receipt_invoice_html') {
      

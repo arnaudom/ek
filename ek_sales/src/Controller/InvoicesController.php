@@ -457,6 +457,12 @@ class InvoicesController extends ControllerBase {
                     'url' => Url::fromRoute('ek_sales.reset_payment', ['doc' => 'invoice', 'id' => $r->id]),
                 ];
             }
+            if (\Drupal::currentUser()->hasPermission('delete_invoice') && $r->status == 0) {
+                $links['edit_serial'] = [
+                    'title' => $this->t('Edit serial'),
+                    'url' => Url::fromRoute('ek_sales.edit_serial', ['doc' => 'invoice', 'id' => $r->id, 'serial' => $r->serial]),
+                ];
+            }
             $links['clone'] = [
                 'title' => $this->t('Clone'),
                 'url' => Url::fromRoute('ek_sales.invoices.clone', ['id' => $r->id]),
@@ -554,7 +560,7 @@ class InvoicesController extends ControllerBase {
                     ->fields('a',['id','name'])
                     ->execute()->fetchAllKeyed();
 
-            include_once drupal_get_path('module', 'ek_sales') . '/excel_list_invoices.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/excel_list_invoices.inc';
         }
 
         return ['#markup' => $markup];
@@ -1371,7 +1377,7 @@ class InvoicesController extends ControllerBase {
     public function PdfInvoices(Request $request, $param) {
         $markup = array();
         $format = 'pdf';
-        include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_print_output.inc';
         return new Response($markup);
     }
 
@@ -1415,7 +1421,7 @@ class InvoicesController extends ControllerBase {
                 $url_excel = Url::fromRoute('ek_sales.invoices.print_excel', ['id' => $doc_id], [])->toString();
                 $url_edit = Url::fromRoute('ek_sales.invoices.edit', ['id' => $doc_id], [])->toString();
 
-                include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_print_output.inc';
                 $build['invoice'] = [
                     '#markup' => $document,
                     '#attached' => array(
@@ -1473,7 +1479,7 @@ class InvoicesController extends ControllerBase {
                 $_SESSION['printfilter'] = array();
                 $format = 'excel';
 
-                include_once drupal_get_path('module', 'ek_sales') . '/manage_excel_output.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_excel_output.inc';
             }
 
 

@@ -596,6 +596,66 @@ class SalesController extends ControllerBase {
     }
 
     /**
+     * @return array form to edit a serial number
+     * @param $doc = document key i.e invoice|purchase
+     * @param $id = id of doc
+     * @param $serial = document current reference
+     *
+     */
+    public function EditSerial($doc, $id, $serial) {
+        $build = [];
+        switch ($doc) {
+            case 'invoice':
+                $tb = "ek_sales_invoice";
+                $route = 'ek_sales.invoices.list';
+                break;
+            case 'purchase':
+                $tb = "ek_sales_purchase";
+                $route = 'ek_sales.purchases.list';
+                break;
+        }
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($tb, 't');
+        $query->fields('t', ['head', 'status']);
+        $query->condition('id', $id);
+        $data = $query->execute()->fetchObject();
+
+        $read = 1;
+        $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
+        if (!in_array($data->head, $access)) {
+            $read = 0;
+            $message = $this->t('You are not authorized to view this content');
+        }
+        if ($data->status <> 0) {
+            $read = 0;
+            $message = $this->t('This @doc cannot be changed because it has been paid.', ['@doc' => $doc]);
+        }
+
+        if ($read <> 1) {
+            if (!isset($message)) {
+                $message = $this->t('This @doc cannot be changed.', ['@doc' => $doc]);
+            }
+            $url = Url::fromRoute($route)->toString();
+            $items['type'] = 'edit';
+            $items['message'] = ['#markup' => $message];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            return [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => array(
+                    'library' => array('ek_admin/ek_admin_css'),
+                ),
+                '#cache' => ['max-age' => 0,],
+            ];
+        } else {
+            $build['edit_serial'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\EditSerial', $doc, $id, $tb, $serial);
+        }
+
+        return $build;
+    }
+
+    /**
      * return folders name autocomplete
      * @param request
      * @return Json response

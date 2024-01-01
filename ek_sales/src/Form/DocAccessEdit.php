@@ -91,7 +91,7 @@ class DocAccessEdit extends FormBase {
         );
 
         $form['#attached']['css'][] = array(
-            'data' => drupal_get_path('module', 'ek_sales') . '/css/ek_sales.css',
+            'data' => \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/css/ek_sales.css',
             'type' => 'file',
         );
 

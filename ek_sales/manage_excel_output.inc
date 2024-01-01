@@ -294,7 +294,7 @@ Switch ($source) {
 if($output_format == '1') {
   if( $template == '0' ) {
       
-      $template = drupal_get_path('module', 'ek_sales') . "/default_" . $source . "_excel";
+      $template = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . "/default_" . $source . "_excel";
   
   } elseif($template == 'default_receipt_invoice_excel') {
      

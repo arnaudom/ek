@@ -84,7 +84,7 @@ ek_task:
       css/ek_sales.css: {}
   dependencies:
     - core/jquery
-    - core/jquery.ui.autocomplete
+    - jquery_ui_autocomplete/autocomplete
 
 ek_sales_docs_updater:
   version: 1

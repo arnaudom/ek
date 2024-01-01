@@ -171,7 +171,7 @@ if ($items['revision'] > 0) {
 // stamps
 if ($stamp == "2") {
 
-    $copy = drupal_get_path('module', 'ek_sales') . "/art/copy.png";
+    $copy = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . "/art/copy.png";
     $objDrawing0 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
     $objDrawing0->setName('Copy');
     $objDrawing0->setDescription('Copy');
@@ -181,7 +181,7 @@ if ($stamp == "2") {
     $objDrawing0->setOffsetX(10);
     $objDrawing0->setWorksheet($objPHPExcel->getActiveSheet());
 } elseif ($stamp == "1") {
-    $original = drupal_get_path('module', 'ek_sales') . "/art/original.png";
+    $original = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . "/art/original.png";
     $objDrawing0 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
     $objDrawing0->setName('Copy');
     $objDrawing0->setDescription('Copy');

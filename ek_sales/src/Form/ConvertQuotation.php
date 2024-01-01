@@ -291,7 +291,7 @@ class ConvertQuotation extends FormBase {
                 ],
             ];
         } else {
-            $l = explode(',', file_get_contents(drupal_get_path('module', 'ek_sales') . '/currencies.inc'));
+            $l = explode(',', file_get_contents(\Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/currencies.inc'));
             foreach ($l as $key => $val) {
                 $val = explode(':', $val);
                 $currency[$val[0]] = $val[1];

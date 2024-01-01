@@ -530,13 +530,13 @@ $pdf->Cell($lm+$b1+$b2+$b3+$b4+$b5,5, $head->currency . ' ' . $word ,0,1,'R');
 
 // stamps-----------------------------------------------------------
 if ($stamp == "2") {   
-        $copy = drupal_get_path('module', 'ek_sales') . "/art/copy.png";
+        $copy = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . "/art/copy.png";
         if (file_exists($copy)) {
           $pdf->Image($copy,$format_feature['stamp_x'], $format_feature['stamp_y'], $format_feature['stamp_z']); 
         }
            
     } elseif ($stamp == "1") {
-        $original = drupal_get_path('module', 'ek_sales') . "/art/original.png";
+        $original = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . "/art/original.png";
         if (file_exists($original)) {         
           $pdf->Image($original,$format_feature['stamp_x'], $format_feature['stamp_y'], $format_feature['stamp_z']);    
         }  

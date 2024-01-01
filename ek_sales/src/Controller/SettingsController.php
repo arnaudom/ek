@@ -72,7 +72,7 @@ class SettingsController extends ControllerBase {
      *
      */
     public function majour() {
-        include_once drupal_get_path('module', 'ek_sales') . '/' . 'majour.php';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/' . 'majour.php';
     }
 
     /**
@@ -253,7 +253,7 @@ class SettingsController extends ControllerBase {
         }
         $source = $_SESSION['prev'][key($_SESSION['prev'])]['source'];
         if ($source == '0') {  
-            $template = drupal_get_path('module', 'ek_sales') . "/" . key($_SESSION['prev']);
+            $template = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . "/" . key($_SESSION['prev']);
         } else {
             $filesystem = \Drupal::service('file_system');
            

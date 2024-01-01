@@ -152,7 +152,8 @@ class Tasks extends FormBase {
             '#rows' => 3,
             '#title' => $this->t('Task description'),
             '#required' => true,
-            '#attributes' => null !== $read['task'] ? ['readonly' => $read['task']] : null,
+            //'#attributes' => null !== $read['task'] ? ['readonly' => $read['task']] : null,
+            '#attributes' => isset($read['task']) ? ['readonly' => $read['task']] : null,
             '#default_value' => isset($data->task) ? $data->task : null,
             '#states' => [
                 'visible' => [":input[name='delete']" => ['checked' => false]],

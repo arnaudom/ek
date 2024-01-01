@@ -457,6 +457,12 @@ class PurchasesController extends ControllerBase {
                     'url' => Url::fromRoute('ek_sales.reset_payment', ['doc' => 'purchase', 'id' => $r->id]),
                 ];
             }
+            if (\Drupal::currentUser()->hasPermission('delete_purchase') && $r->status == 0) {
+                $links['edit_serial'] = [
+                    'title' => $this->t('Edit serial'),
+                    'url' => Url::fromRoute('ek_sales.edit_serial', ['doc' => 'purchase', 'id' => $r->id, 'serial' => $r->serial]),
+                ];
+            }
             $links['clone'] = [
                 'title' => $this->t('Clone'),
                 'url' => Url::fromRoute('ek_sales.purchases.clone', ['id' => $r->id]),
@@ -875,7 +881,7 @@ class PurchasesController extends ControllerBase {
                     ->condition('p.currency', $options['currency'], 'LIKE')
                     ->orderBy('p.id', 'ASC')
                     ->execute();
-            include_once drupal_get_path('module', 'ek_sales') . '/excel_list_purchases.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/excel_list_purchases.inc';
         }
 
         return ['#markup' => $markup];
@@ -1320,7 +1326,7 @@ class PurchasesController extends ControllerBase {
     public function pdfPurchases(Request $request, $param) {
         $markup = array();
         $format = 'pdf';
-        include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_print_output.inc';
         return new Response($markup);
     }
 
@@ -1364,7 +1370,7 @@ class PurchasesController extends ControllerBase {
                 $url_edit = Url::fromRoute('ek_sales.purchases.edit', ['id' => $doc_id], [])->toString();
 
 
-                include_once drupal_get_path('module', 'ek_sales') . '/manage_print_output.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_print_output.inc';
                 $build['purchase'] = [
                     '#markup' => $document,
                     '#attached' => array(
@@ -1424,7 +1430,7 @@ class PurchasesController extends ControllerBase {
                 $_SESSION['printfilter'] = array();
                 $format = 'excel';
 
-                include_once drupal_get_path('module', 'ek_sales') . '/manage_excel_output.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_excel_output.inc';
             }
 
 

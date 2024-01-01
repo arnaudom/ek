@@ -9,7 +9,7 @@
 
                         var c = settings.salescharts[k];
                         //prevent drupal.behavior to call script twice with once
-                        jQuery('#' + c.element).once().each(function () {
+                        jQuery('#' + c.element).each(function () {
 
                             if (c.type == 'Line') {
                                 jQuery('#' + c.id).css('height', 'auto');
