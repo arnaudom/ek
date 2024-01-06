@@ -471,11 +471,11 @@ class QuickEdit extends FormBase {
                 } else {
                     $taxvalue = $form_state->getValue('taxvalue');
                 }
-
+                $new_date = date('Y-m-d', strtotime($form_state->getValue('date')));
                 $fields = array(
                     'head' => $form_state->getValue('head'),
                     'allocation' => $form_state->getValue('allocation'),
-                    'date' => date('Y-m-d', strtotime($form_state->getValue('date'))),
+                    'date' => $new_date,
                     'pcode' => $pcode,
                     'comment' => Xss::filter($form_state->getValue('comment')),
                     'client' => $form_state->getValue('client'),
@@ -497,7 +497,7 @@ class QuickEdit extends FormBase {
                         ->condition('serial', $serial)
                         ->execute();
 
-
+                
                 if ($this->moduleHandler->moduleExists('ek_finance') && $doc == 'invoice') {
                     // if coid changed, need to update the currency assets debit account in journal
                     $coSettings = new \Drupal\ek_admin\CompanySettings($form_state->getValue('head'));
@@ -516,6 +516,15 @@ class QuickEdit extends FormBase {
                             ->condition('source', 'invoice')
                             ->condition('reference', $form_state->getValue('id'))
                             ->execute();
+
+                    // edit date in journal
+                    $update3 = Database::getConnection('external_db', 'external_db')
+                            ->update("ek_journal")
+                            ->fields(['date' =>  $new_date])
+                            ->condition('source', 'invoice')
+                            ->condition('reference', $form_state->getValue('id'))
+                            ->execute();
+
                 }
 
                 if ($this->moduleHandler->moduleExists('ek_finance') && $doc == 'purchase') {
@@ -534,6 +543,14 @@ class QuickEdit extends FormBase {
                     $update2 = Database::getConnection('external_db', 'external_db')
                             ->update("ek_journal")
                             ->fields(['coid' => $form_state->getValue('head')])
+                            ->condition('source', 'purchase')
+                            ->condition('reference', $form_state->getValue('id'))
+                            ->execute();
+                    
+                    // edit date in journal
+                    $update3 = Database::getConnection('external_db', 'external_db')
+                            ->update("ek_journal")
+                            ->fields(['date' =>  $new_date])
                             ->condition('source', 'purchase')
                             ->condition('reference', $form_state->getValue('id'))
                             ->execute();

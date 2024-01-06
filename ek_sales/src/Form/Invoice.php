@@ -1089,7 +1089,12 @@ class Invoice extends FormBase {
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $chart = $this->Financesettings->get('chart');
-            $form_state->set('AidOptions', \Drupal\ek_finance\AidList::listaid($form_state->getValue('head'), array($chart['income'], $chart['other_income']), 1));
+            $fin = new CompanySettings($form_state->getValue('head'));
+            if($fin->get('sales_liabilities') == 1) {
+                $form_state->set('AidOptions', \Drupal\ek_finance\AidList::listaid($form_state->getValue('head'), [$chart['income'], $chart['other_income'],$chart['liabilities']], 1));
+            } else {
+                $form_state->set('AidOptions', \Drupal\ek_finance\AidList::listaid($form_state->getValue('head'), [$chart['income'], $chart['other_income']], 1));
+            }
         }
 
         $input = $form_state->getUserInput();
