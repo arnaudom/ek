@@ -164,6 +164,9 @@ class EditCompanySettings extends FormBase
                 if ($settings->get('CurrencyGainLoss') == '') {
                     $miss['CurrencyGainLoss'] = $this->t('Account to compute currency gain or loss');
                 }
+                if ($settings->get('sales_liabilities') == '') {
+                    $miss['sales_liabilities'] = $this->t('Display liabilities accounts in sales form');
+                }
 
 
                 foreach ($Currencies as $currency => $name) {
@@ -206,21 +209,21 @@ class EditCompanySettings extends FormBase
                     $list = '<li>' . $this->t('All parameters are set') . '</li>';
                 }
 
-                $form['info'] = array(
+                $form['info'] = [
                     '#type' => 'details',
                     '#title' => $this->t('Settings verification'),
                     '#open' => (empty($miss)) ? false : true,
-                );
-                $form['info']['miss'] = array(
+                ];
+                $form['info']['miss'] = [
                     '#type' => 'item',
                     '#markup' => $this->t('Missing settings') . ':' . "<ul>" . $list . "</ul>",
-                );
+                ];
 
                 $fiscal_year = $settings->get('fiscal_year');
                 $fiscal_month = $settings->get('fiscal_month');
                 $year = date('Y');
-                $options = array($year + 1, $year, $year - 1, $year - 2, $year - 3, $year - 4);
-                $form['fiscal_year'] = array(
+                $options = [$year + 1, $year, $year - 1, $year - 2, $year - 3, $year - 4];
+                $form['fiscal_year'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#disabled' => isset($fiscal_year) ? true : false,
@@ -228,223 +231,230 @@ class EditCompanySettings extends FormBase
                     '#default_value' => isset($fiscal_year) ? $fiscal_year : $year,
                     '#title' => $this->t('Fiscal year'),
                     '#prefix' => "<div class='container-inline'>",
-                );
+                ];
 
-                $form['fiscal_month'] = array(
+                $form['fiscal_month'] = [
                     '#type' => 'select',
                     '#size' => 1,
-                    '#options' => array('01' => '01', '02' => '02', '03' => '03', '04' => '04', '05' => '05', '06' => '06', '07' => '07', '08' => '08', '09' => '09', '10' => '10', '11' => '11', '12' => '12'),
+                    '#options' => ['01' => '01', '02' => '02', '03' => '03', '04' => '04', '05' => '05', '06' => '06', '07' => '07', '08' => '08', '09' => '09', '10' => '10', '11' => '11', '12' => '12'],
                     '#default_value' => isset($fiscal_month) ? $fiscal_month : 12,
                     '#title' => $this->t('Month'),
                     '#suffix' => '</div>',
-                );
+                ];
 
-                $form['g']['stax_collect'] = array(
+                $form['g']['stax_collect'] = [
                     '#type' => 'select',
-                    '#options' => array('0' => $this->t('no'), '1' => $this->t('yes')),
+                    '#options' => ['0' => $this->t('no'), '1' => $this->t('yes')],
                     '#size' => 1,
                     '#default_value' => $settings->get('stax_collect'),
                     '#description' => $this->t('Collectible sales tax'),
-                );
+                ];
 
-                $form['g']['stax_collect_aid'] = array(
+                $form['g']['stax_collect_aid'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => AidList::listaid($id, [$chart['liabilities']], 1),
                     '#default_value' => $settings->get('stax_collect_aid'),
                     '#description' => $this->t('Sales tax collection account'),
-                );
+                ];
 
 
-                $form['g']['stax_deduct'] = array(
+                $form['g']['stax_deduct'] = [
                     '#type' => 'select',
-                    '#options' => array('0' => $this->t('no'), '1' => $this->t('yes')),
+                    '#options' => ['0' => $this->t('no'), '1' => $this->t('yes')],
                     '#size' => 1,
                     '#default_value' => $settings->get('stax_deduct'),
                     '#description' => $this->t('Deductible sales tax'),
-                );
+                ];
 
-                $form['g']['stax_deduct_aid'] = array(
+                $form['g']['stax_deduct_aid'] = [
                     '#type' => 'select',
                     '#options' => AidList::listaid($id, [$chart['assets']], 1),
                     '#size' => 1,
                     '#default_value' => $settings->get('stax_deduct_aid'),
                     '#description' => $this->t('Sales tax deduction account'),
-                );
+                ];
 
-                $form['g']['stax_rate'] = array(
+                $form['g']['stax_rate'] = [
                     '#type' => 'textfield',
                     '#size' => 20,
                     '#maxlength' => 255,
                     '#default_value' => $settings->get('stax_rate'),
-                    '#attributes' => array('placeholder' => $this->t('Sales tax rate')),
+                    '#attributes' => ['placeholder' => $this->t('Sales tax rate')],
                     '#description' => $this->t('Sales tax rate'),
-                );
+                ];
 
-                $form['g']['stax_name'] = array(
+                $form['g']['stax_name'] = [
                     '#type' => 'textfield',
                     '#size' => 20,
                     '#maxlength' => 50,
                     '#default_value' => $settings->get('stax_name'),
-                    '#attributes' => array('placeholder' => $this->t('defaultname')),
+                    '#attributes' => ['placeholder' => $this->t('defaultname')],
                     '#description' => $this->t('Sales tax default name'),
-                );
+                ];
 
-                $form['g']['wtax_collect_aid'] = array(
+                $form['g']['wtax_collect_aid'] = [
                     '#type' => 'select',
                     '#options' => AidList::listaid($id, [$chart['liabilities']], 1),
                     '#size' => 1,
                     '#default_value' => $settings->get('wtax_collect_aid'),
                     '#description' => $this->t('Other  tax collection account'),
-                );
-                $form['g']['wtax_deduct_aid'] = array(
+                ];
+
+                $form['g']['wtax_deduct_aid'] = [
                     '#type' => 'select',
                     '#options' => AidList::listaid($id, [$chart['assets']], 1),
                     '#size' => 1,
                     '#default_value' => $settings->get('wtax_deduct_aid'),
                     '#description' => $this->t('Other tax deduction account'),
-                );
+                ];
 
-                $form['g']['wtax_rate'] = array(
+                $form['g']['wtax_rate'] = [
                     '#type' => 'textfield',
                     '#size' => 20,
                     '#maxlength' => 255,
                     '#default_value' => $settings->get('wtax_rate'),
-                    '#attributes' => array('placeholder' => $this->t('other tax rate')),
+                    '#attributes' => ['placeholder' => $this->t('other tax rate')],
                     '#description' => $this->t('Other tax rate'),
-                );
+                ];
 
-                $form['g']['wtax_name'] = array(
+                $form['g']['wtax_name'] = [
                     '#type' => 'textfield',
                     '#size' => 20,
                     '#maxlength' => 50,
                     '#default_value' => $settings->get('wtax_name'),
-                    '#attributes' => array('placeholder' => $this->t('default name')),
+                    '#attributes' => ['placeholder' => $this->t('default name')],
                     '#description' => $this->t('Other tax default name'),
-                );
+                ];
 
-                $form['g']['ytax_collect_aid'] = array(
+                $form['g']['ytax_collect_aid'] = [
                     '#type' => 'select',
                     '#options' => AidList::listaid($id, [$chart['liabilities']], 1),
                     '#size' => 1,
                     '#default_value' => $settings->get('ytax_collect_aid'),
                     '#description' => $this->t('Other  tax collection account'),
-                );
-                $form['g']['ytax_deduct_aid'] = array(
+                ];
+
+                $form['g']['ytax_deduct_aid'] = [
                     '#type' => 'select',
                     '#options' => AidList::listaid($id, [$chart['assets']], 1),
                     '#size' => 1,
                     '#default_value' => $settings->get('ytax_deduct_aid'),
                     '#description' => $this->t('Other tax deduction account'),
-                );
+                ];
 
-                $form['g']['ytax_rate'] = array(
+                $form['g']['ytax_rate'] = [
                     '#type' => 'textfield',
                     '#size' => 20,
                     '#maxlength' => 255,
                     '#default_value' => $settings->get('ytax_rate'),
-                    '#attributes' => array('placeholder' => $this->t('other tax rate')),
+                    '#attributes' => ['placeholder' => $this->t('other tax rate')],
                     '#description' => $this->t('Other tax rate'),
-                );
+                ];
 
-                $form['g']['ytax_name'] = array(
+                $form['g']['ytax_name'] = [
                     '#type' => 'textfield',
                     '#size' => 20,
                     '#maxlength' => 50,
                     '#default_value' => $settings->get('ytax_name'),
-                    '#attributes' => array('placeholder' => $this->t('default name')),
+                    '#attributes' => ['placeholder' => $this->t('default name')],
                     '#description' => $this->t('Other tax default name'),
-                );
+                ];
 
-                $form['g']['CurrencyGainLoss'] = array(
+                $form['g']['CurrencyGainLoss'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => AidList::listaid($id, [$chart['income'], $chart['other_income']], 1),
                     '#default_value' => $settings->get('CurrencyGainLoss') ? $settings->get('CurrencyGainLoss') : '49001',
                     '#description' => $this->t('currency gain, loss account'),
-                );
+                ];
 
+                $form['g']['sales_liabilities'] = [
+                    '#type' => 'select',
+                    '#options' => ['0' => $this->t('no'), '1' => $this->t('yes')],
+                    '#size' => 1,
+                    '#default_value' => $settings->get('sales_liabilities'),
+                    '#description' => $this->t('List liabilities in sales form'),
+                ];
 
-                $header = array(
+                $header = [
                     'name' => '',
                     'cash_account' => $this->t('main cash account'),
                     'cash2_account' => $this->t('other cash account'),
                     'asset_account' => $this->t('receivable account, debtor'),
                     'liability_account' => $this->t('liability account, creditor'),
-                );
+                ];
 
-
-
-                $form['currency_settings'] = array(
+                $form['currency_settings'] = [
                     '#prefix' => '<div id="currency">',
                     '#suffix' => '</div>',
                     '#tree' => true,
                     '#theme' => 'table',
                     '#header' => $header,
-                    '#rows' => array(),
-                );
+                    '#rows' => [],
+                ];
 
                 $perm = \Drupal::currentUser()->hasPermission('administrate_finance') ? 0 : 1;
                 foreach ($Currencies as $currency => $name) {
-                    $cname = array(
+                    $cname = [
                         '#id' => 'name-' . $currency . "-$name",
                         '#type' => 'item',
                         '#markup' => $name . " (" . $currency . ")",
                         '#value' => $currency
-                    );
+                    ];
 
-                    $cash_account = array(
+                    $cash_account = [
                         '#id' => 'name-' . $currency . '-cash_account',
                         '#type' => 'select',
                         '#options' => AidList::listaid($id, [$chart['assets']], 1),
                         '#default_value' => $settings->get('cash_account', $currency),
-                        '#attributes' => array('style' => array('width:120px; white-space:nowrap')),
+                        '#attributes' => ['style' => ['width:120px; white-space:nowrap']],
                         '#disabled' => ($settings->get('cash_account', $currency) && $perm) ? true : false,
-                    );
+                    ];
 
 
-                    $cash2_account = array(
+                    $cash2_account = [
                         '#id' => 'name-' . $currency . '-cash2_account',
                         '#type' => 'select',
                         '#options' => AidList::listaid($id, [$chart['assets']], 1),
                         '#default_value' => $settings->get('cash2_account', $currency),
-                        '#attributes' => array('style' => array('width:120px; white-space:nowrap')),
+                        '#attributes' => ['style' => ['width:120px; white-space:nowrap']],
                         '#disabled' => ($settings->get('cash2_account', $currency) && $perm) ? true : false,
-                    );
+                    ];
 
-                    $asset_account = array(
+                    $asset_account = [
                         '#id' => 'name-' . $currency . '-asset_account',
                         '#type' => 'select',
                         '#options' => AidList::listaid($id, [$chart['assets']], 1),
                         '#default_value' => $settings->get('asset_account', $currency),
-                        '#attributes' => array('style' => array('width:120px; white-space:nowrap')),
+                        '#attributes' => ['style' => ['width:120px; white-space:nowrap']],
                         '#disabled' => ($settings->get('asset_account', $currency) && $perm) ? true : false,
-                    );
+                    ];
 
-                    $liability_account = array(
+                    $liability_account = [
                         '#id' => 'name-' . $currency . '-liability_account',
                         '#type' => 'select',
                         '#options' => AidList::listaid($id, [$chart['liabilities']], 1),
                         '#default_value' => $settings->get('liability_account', $currency),
-                        '#attributes' => array('style' => array('width:120px; white-space:nowrap')),
+                        '#attributes' => ['style' => ['width:120px; white-space:nowrap']],
                         '#disabled' => ($settings->get('liability_account', $currency) && $perm) ? true : false,
-                    );
+                    ];
 
-                    $form['currency_settings'][] = array(
+                    $form['currency_settings'][] = [
                         'cname' => &$cname,
                         'cash_account' => &$cash_account,
                         'cash2_account' => &$cash2_account,
                         'asset_account' => &$asset_account,
                         'liability_account' => &$liability_account,
-                    );
+                    ];
 
-                    $form['currency_settings']['#rows'][] = array(
-                        array('data' => &$cname),
-                        array('data' => &$cash_account),
-                        array('data' => &$cash2_account),
-                        array('data' => &$asset_account),
-                        array('data' => &$liability_account),
-                    );
+                    $form['currency_settings']['#rows'][] = [
+                        ['data' => &$cname],
+                        ['data' => &$cash_account],
+                        ['data' => &$cash2_account],
+                        ['data' => &$asset_account],
+                        ['data' => &$liability_account],
+                    ];
 
                     unset($cname);
                     unset($cash_account);
@@ -454,22 +464,22 @@ class EditCompanySettings extends FormBase
                 }//for
             }//else chart exists
 
-            $form['actions'] = array('#type' => 'actions');
-            $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
+            $form['actions'] = ['#type' => 'actions'];
+            $form['actions']['submit'] = ['#type' => 'submit', '#value' => $this->t('Record')];
         } else {
-            $form['alert'] = array(
+            $form['alert'] = [
                 '#type' => 'item',
                 '#markup' => $this->t('Required finance module is not enabled. Please contact administrator'),
-            );
+            ];
         }
 
         if ($this->moduleHandler->moduleExists('ek_finance') && !$id == null) {
             /* TODO */
         } else {
-            $form['alert2'] = array(
+            $form['alert2'] = [
                 '#type' => 'item',
                 '#markup' => $this->t('Required sales module is not enabled. Please contact administrator'),
-            );
+            ];
         }
 
         return $form;
@@ -504,7 +514,7 @@ class EditCompanySettings extends FormBase
     {
         if (!null == $form_state->getValue('edit_chart')) {
             if ($form_state->getValue('chart') == 0) {
-                //load standard accounts
+                // load standard accounts
                 $file = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/ek_standard_accounts.sql';
                 $query = file_get_contents($file);
                 $acc = Database::getConnection('external_db', 'external_db')->query($query);
@@ -514,7 +524,7 @@ class EditCompanySettings extends FormBase
                                 ->fields(['coid' => $form_state->getValue('coid'), 'balance_date' => $balance_date])
                                 ->execute();
             } else {
-                //copy chart from other account
+                // copy chart from other account
                 $query = "SELECT * from {ek_accounts} WHERE coid=:c ORDER by aid";
                 $acc = Database::getConnection('external_db', 'external_db')
                             ->query($query, [':c' => $form_state->getValue('chart')]);
@@ -560,6 +570,7 @@ class EditCompanySettings extends FormBase
             $settings->set('ytax_rate', $form_state->getValue('ytax_rate'));
             $settings->set('ytax_name', $form_state->getValue('ytax_name'));
             $settings->set('CurrencyGainLoss', $form_state->getValue('CurrencyGainLoss'));
+            $settings->set('sales_liabilities', $form_state->getValue('sales_liabilities'));
 
             foreach ($form_state->getValue('currency_settings') as $c) {
                 $currency = $c['cname'];
