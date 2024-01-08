@@ -1024,8 +1024,8 @@ class ParametersController extends ControllerBase {
                                     $dir = "private://hr/pictures/" . $emp['company_id'] . "/40/";
                                     $filesystem = \Drupal::service('file_system');
                                     $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                                    $filesystem->copy($d->picture, $thumb, 'FILE_EXISTS_REPLACE');
-                                    //Resize after copy
+                                    $filesystem->copy($emp['picture'], $thumb, 'FILE_EXISTS_REPLACE');
+                                    // Resize after copy
                                     $image_factory = \Drupal::service('image.factory');
                                     $image = $image_factory->get($thumb);
                                     $image->scale(40);

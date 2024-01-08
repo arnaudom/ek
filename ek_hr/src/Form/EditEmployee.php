@@ -772,8 +772,8 @@ class EditEmployee extends FormBase
     {
         if ($form_state->get('step') == 2) {
             
-            //image
-            //first delete current if requested
+            // image
+            // first delete current if requested
             $del = false;
             if ($form_state->getValue('image_delete') == 1) {
                 \Drupal::service('file_system')->delete($form_state->getValue('uri'));
@@ -788,7 +788,7 @@ class EditEmployee extends FormBase
                 $image = $form_state->getValue('uri');
             }
             
-            //second, upload if any image is available
+            // second, upload if any image is available
             $fid = $form_state->getValue(['image', 0]);
             if (!empty($fid)) {
                 $file = $this->fileStorage->load($fid);
@@ -798,7 +798,7 @@ class EditEmployee extends FormBase
                 $image = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                     
                 \Drupal::messenger()->addStatus(t("New Picture uploaded"));
-                //remove old if any
+                // remove old if any
                 if (!$del && $form_state->getValue('uri') != '') {
                     \Drupal::service('file_system')->delete($form_state->getValue('uri'));
                 }
