@@ -19,8 +19,7 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to create or edit HR main parameters
  */
-class EditMainParameters extends FormBase
-{
+class EditMainParameters extends FormBase {
 
     /**
      * The module handler.
@@ -59,8 +58,7 @@ class EditMainParameters extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
@@ -238,8 +236,7 @@ class EditMainParameters extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 1) {
             $form_state->set('step', 2);
             $form_state->setRebuild();
@@ -249,15 +246,15 @@ class EditMainParameters extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 3) {
             $settings = new HrSettings($form_state->getValue('coid'));
             $params = $settings->HrParam;
 
             foreach ($params as $key => $values) {
-                $data = Xss::filter($form_state->getValue($key));
+                $data = $form_state->getValue($key);
                 foreach ($data as $param => $val) {
+                    $val = Xss::filter($val);
                     $settings->set(
                         'param',
                         $key,
@@ -270,6 +267,6 @@ class EditMainParameters extends FormBase
             if ($save) {
                 \Drupal::messenger()->addStatus('Data saved');
             }
-        }//step 3
+        }
     }
 }
