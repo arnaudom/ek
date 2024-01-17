@@ -12,7 +12,7 @@
  * edit the file_download function in order to control access of items images
 */
 function ek_products_file_download($uri) {
-    if( strpos($uri , 'products/images' )  ) { 
+    if( strpos($uri ?? "" , 'products/images' )  ) { 
         $guesser = \Drupal::service('file.mime_type.guesser');
         $mime = $guesser->guessMimeType($uri);
         return array('Content-Type' => $mime); 
