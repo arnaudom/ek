@@ -27,7 +27,7 @@ function ek_address_book_ek_home() {
  */
 function ek_address_book_file_download($uri) {
 
-  if (strpos($uri,'address_book/cards/')) {
+  if (strpos($uri ?? "",'address_book/cards/')) {
       // Check that the file exists and is an image.
       $image = \Drupal::service('image.factory')->get($uri);
       if ($image->isValid()) {

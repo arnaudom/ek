@@ -516,7 +516,7 @@ class AddressBookController extends ControllerBase {
         $text = (null !== $request->query->get('q')) ? $request->query->get('q') : $request->query->get('term');
         $option = $request->query->get('option');
         $name = array();
-        if (strpos($text, '%') >= 0) {
+        if (strpos($text ?? '', '%') >= 0) {
             $text = str_replace('%', '', $text);
         }
 
