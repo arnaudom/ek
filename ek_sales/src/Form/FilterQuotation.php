@@ -229,7 +229,8 @@ class FilterQuotation extends FormBase {
      * Resets the filter form.
      */
     public function resetForm(array &$form, FormStateInterface $form_state) {
-        $_SESSION['qfilter'] = array();
+        $_SESSION['qfilter'] = [];
+        $_SESSION['qfilter']['filter'] = 0;
     }
 
 }

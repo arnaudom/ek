@@ -49,7 +49,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
  * Implementation hook download.
  */
 function ek_sales_file_download($uri) {
-  if (strpos($uri,'/sales/')) {
+  if (strpos($uri ?? "",'/sales/')) {
     if (\Drupal::currentUser()->hasPermission('create_purchase') || \Drupal::currentUser()->hasPermission('sales_documents'))  {
           return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($uri));
         }

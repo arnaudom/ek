@@ -1349,9 +1349,6 @@ class Purchase extends FormBase {
                         ->fetchField();
 
                 if ($uri != '') {
-                    //$query = "SELECT * FROM {file_managed} WHERE uri=:u";
-                    //$sysfile = db_query($query, [':u' => $uri])->fetchObject();
-                    //file_delete($sysfile->fid);
                     $query = Database::getConnection()->select('file_managed', 'f');
                     $query->fields('f', ['fid']);
                     $query->condition('uri', $uri);
@@ -1402,7 +1399,7 @@ class Purchase extends FormBase {
                 if ($row['value'] != 'footer') {
                     if (isset($row['delete']) && $row['delete'] != 1) {
                         if ($form_state->getValue('taxvalue') > 0 && $row['tax'] == 1) {
-                            $tax = round($row['value'] * $form_state->getValue('taxvalue') / 100, 2);
+                            $tax = round($row['value'] * $row['quantity'] * $form_state->getValue('taxvalue') / 100, 2); 
                         } else {
                             $tax = 0;
                         }

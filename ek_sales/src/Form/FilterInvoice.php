@@ -238,7 +238,8 @@ class FilterInvoice extends FormBase {
      * Resets the filter form.
      */
     public function resetForm(array &$form, FormStateInterface $form_state) {
-        $_SESSION['ifilter'] = array();
+        $_SESSION['ifilter'] = [];
+        $_SESSION['ifilter']['filter'] = 0;
     }
 
 }
