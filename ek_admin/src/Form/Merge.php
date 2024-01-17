@@ -117,7 +117,7 @@ class Merge extends FormBase
             }
             fclose($handle);
 
-            $str = strpos($content, "`" . $table . "`");
+            $str = strpos($content ?? "", "`" . $table . "`");
             if ($str) {
                 $tpm_table = 'tmp_' . $table;
                 $content = str_replace($table, $tpm_table, $content);

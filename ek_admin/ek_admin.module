@@ -55,9 +55,9 @@ function ek_admin_preprocess_page(&$variables) {
  */
 function ek_admin_file_download($uri) {
 
-    if (strpos($uri, '/images')) {
+    if (strpos($uri ?? "", '/images')) {
         return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($uri));
-    } elseif (strpos($uri, '/admin/company')) {
+    } elseif (strpos($uri ?? "", '/admin/company')) {
         $guesser = \Drupal::service('file.mime_type.guesser');
         $mime = $guesser->guessMimeType($uri);
         $query = "SELECT * FROM {ek_company_documents}  WHERE uri = :uri";
