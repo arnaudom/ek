@@ -49,7 +49,7 @@ function ek_messaging_ek_home() {
  * edit the file_download function in order to control access of inline files
 */
 function ek_messaging_file_download($uri) {
-    if (strpos($uri,'/inline-images/')) {
+    if (strpos($uri ?? "",'/inline-images/')) {
         return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($uri));
     }
     
