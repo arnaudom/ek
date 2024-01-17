@@ -76,7 +76,7 @@ function ek_hr_file_download($uri) {
     $company = AccessCheck::GetCompanyByUser();
     $access = implode(',',$company);
 
-        if (strpos($uri,'/hr/documents')) {
+        if (strpos($uri ?? "",'/hr/documents')) {
           
         $query = "SELECT administrator,filemime,b.uri,b.filename,b.id FROM {ek_hr_workforce} a "
                 . "INNER JOIN {ek_hr_documents} b ON a.id = b.employee_id "
@@ -100,9 +100,9 @@ function ek_hr_file_download($uri) {
              }
         }
 
-        if (strpos($uri,'/hr/pictures')) {
+        if (strpos($uri ?? "",'/hr/pictures')) {
             
-            if (strpos($uri,'/40/')) {
+            if (strpos($uri ?? "",'/40/')) {
                 // bypass filter
                 return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($uri));
             }
@@ -123,7 +123,7 @@ function ek_hr_file_download($uri) {
                 } else { 
                   return -1;
                 }
-        } elseif (strpos($uri,'/ek_hr/art')) {
+        } elseif (strpos($uri ?? "",'/ek_hr/art')) {
             return array('Content-Type' => 'Image');
         }
   }
