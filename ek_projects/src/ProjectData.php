@@ -42,12 +42,8 @@ class ProjectData {
         $query->fields('t', ['id', 'type']);
         $query->orderBy('type');
         $result = $query->execute();
-
-        //$query = "SELECT id, type from {ek_project_type} order by type";
-        //$result = Database::getConnection('external_db', 'external_db')->query($query);
-
-        $optgrouptype = array();
-        $optgrouptype['-'] = array('n/a' => t('not applicable'));
+        $optgrouptype = [];
+        $optgrouptype['-'] = ['n/a' => t('not applicable')];
 
         $query2 = "SELECT DISTINCT pcode, cid, pname, status,date from {ek_project} 
                     where 
@@ -58,14 +54,14 @@ class ProjectData {
                     ORDER by status,date";
 
         while ($r = $result->fetchObject()) {
-            $a = array(
+            $a =[
                 ':cat' => $r->id,
                 ':stat1' => 'open',
                 ':stat2' => 'awarded',
                 ':c' => $country,
                 ':a' => $archive,
-            );
-            $option1 = array();
+            ];
+            $option1 = [];
             $key = $r->type . ' | ' . t('OPEN & AWARDED');
             $optgrouptype[$key] = [];
             $result2 = Database::getConnection('external_db', 'external_db')->query($query2, $a);
@@ -84,14 +80,14 @@ class ProjectData {
 
             $optgrouptype[$key] = $option1;
 
-            $a = array(
+            $a = [
                 ':cat' => $r->id,
                 ':stat1' => 'completed',
                 ':stat2' => 'closed',
                 ':c' => $country,
                 ':a' => $archive,
-            );
-            $option2 = array();
+            ];
+            $option2 = [];
             $key = $r->type . ' | ' . t('COMPLETED & CLOSED');
             $optgrouptype[$key] = [];
             $result3 = Database::getConnection('external_db', 'external_db')->query($query2, $a);
@@ -103,7 +99,7 @@ class ProjectData {
                 if (!isset($pcode[4])) {
                     $pcode[4] = '-';
                 }
-                $option2[$r3->pcode] = $pcode[0] . " | " . $r2->status . " | "
+                $option2[$r3->pcode] = $pcode[0] . " | " . $r3->status . " | "
                         . $pcode[4] . "-" . $pcode[3] . '-' . $pcode[2] . "-"
                         . $pcode[1] . " | " . $pname;
             }

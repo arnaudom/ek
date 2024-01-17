@@ -141,46 +141,46 @@ function ek_projects_mail($key, &$message, &$params) {
 */
 function ek_projects_file_download($uri) {
     
-    //filter uri for document type and source type
-    //if extranet type, hook_ in use is extranet hook
-    if( strpos($uri , '/projects/documents/') 
+    // filter uri for document type and source type
+    // if extranet type, hook_ in use is extranet hook
+    if( strpos($uri ?? "" , '/projects/documents/') 
             &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , '/extranet/project?')
             &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , 'extranet-file/')
             &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , '/extranet/chat')
             ) { 
-        
-    $guesser = \Drupal::service('file.mime_type.guesser');
-    $mime = $guesser->guessMimeType($uri);
-    $query = Database::getConnection('external_db', 'external_db')
+      
+      $guesser = \Drupal::service('file.mime_type.guesser');
+      $mime = $guesser->guessMimeType($uri);
+      $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_project_documents', 'd')
                             ->fields('d',['id','filename'])
                             ->condition('uri', $uri)
                             ->execute();
-    $file = $query->fetchObject();
-    $name = \Drupal::currentUser()->getAccountName();   
+      $file = $query->fetchObject();
+      $name = \Drupal::currentUser()->getAccountName();   
     
-     if (ProjectData::validate_file_access($file->id) ) {
+      if (ProjectData::validate_file_access($file->id) ) {
 
-                //////////////////////////
-                //    WATCHDOG          //
-                //////////////////////////
+          //////////////////////////
+          //    WATCHDOG          //
+          //////////////////////////
 
-                $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
-                $log = t("User @u has downloaded project document @d (file id @i)", $a);
-                \Drupal::logger('ek_projects')->notice( $log );         
-                return array('Content-Type' => $mime);
+          $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
+          $log = t("User @u has downloaded project document @d (file id @i)", $a);
+          \Drupal::logger('ek_projects')->notice( $log );         
+          return array('Content-Type' => $mime);
 
-              }  else {
-                    //////////////////////////
-                    //    WATCHDOG          //
-                    //////////////////////////
-                    $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
-                    $log = t("User @u tried to downlaod project document @d but access is denied (file id @i)", $a);
-                     \Drupal::logger('ek_projects')->notice( $log );  
+          }  else {
+              //////////////////////////
+              //    WATCHDOG          //
+              //////////////////////////
+              $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
+              $log = t("User @u tried to downlaod project document @d but access is denied (file id @i)", $a);
+                \Drupal::logger('ek_projects')->notice( $log );  
 
-                    return -1;          
-              }
-    }
+              return -1;          
+          }
+      }
 
 }
 
