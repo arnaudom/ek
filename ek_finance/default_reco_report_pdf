@@ -163,45 +163,46 @@ $pdf->SetFont('helvetica','',8);
 $total_cr = 0;
 $total_db = 0;
 $pdf->SetLineStyle(['width' => 0.1, 'cap' => 'square', 'join' => 'miter', 'dash' => 1, 'color' => [128, 128, 128]]);
-for ($x=1;$x<=count($data);$x++) {
-    
-        if(isset($data[$x][5])){
-
-            if($data[$x][8] == 1) {
+foreach($data as $key => $line) { 
+    if($key > 0)  {
+        if(isset($line[5])){
+            $cur = $line[4];
+            if($line[8] == 1) {
                 $error = '* ';
             } else {
                 $error = '';
             }
 
-            if (strlen($data[$x][6])>45) {
-                $this_line = substr($data[$x][6],0,45)."...";} 
+            if (strlen($line[6])>45) {
+                $this_line = substr($line[6],0,40)."...";} 
             else {
-                $this_line = $data[$x][6];
+                $this_line = $line[6];
             }
 
-            $this_line = $error . $data[$x][1]." - " . $data[$x][7] . ' ' . $this_line;
+            $this_line = $error . $line[1]." - " . $line[7] . ' ' . $this_line;
             $pdf->Cell($left_margin);
             $pdf->Cell($col1_width,5,$this_line,'LR',0);
-            $amount = $data[$x][4]." ".number_format($data[$x][5],2);
-            if ($data[$x][3]== "Credit" || $data[$x][3]== "credit") {
+            $amount = $cur ." ".number_format($line[5],2);
+            if ($line[3]== "Credit" || $line[3]== "credit") {
                 $pdf->Cell($col2_width,5,$amount,'R',0,'R');
                 $pdf->Cell($col3_width,5,'','R',1);
-                $total_cr=$total_cr+$data[$x][5];
+                $total_cr=$total_cr + $line[5];
             }
-            if ($data[$x][3]=="Debit" || $data[$x][3]=="debit") {
+            if ($line[3]=="Debit" || $line[3]=="debit") {
                 $pdf->Cell($col2_width,5,'','R',0);
                 $pdf->Cell($col3_width,5,$amount,'R',1,'R');    
-                $total_db=$total_db+$data[$x][5];
+                $total_db=$total_db + $line[5];
             }
         }
+    }
 } 
 $pdf->Ln(1); 
 $pdf->SetFont('helvetica','B',8); 
 $pdf->SetLineStyle(['width' => 0.1, 'cap' => 'square', 'join' => 'miter', 'dash' => 0, 'color' => [128, 128, 128]]);
     $pdf->Cell($left_margin);
     $pdf->Cell($col1_width,5, t("Total"),1,0, 'R');
-    $pdf->Cell($col2_width,5,$data[1][4]." ".number_format($total_cr,2),1,0,'R');
-    $pdf->Cell($col3_width,5,$data[1][4]." ".number_format($total_db,2),1,1,'R');  
+    $pdf->Cell($col2_width,5,$cur . " " . number_format($total_cr,2),1,0,'R');
+    $pdf->Cell($col3_width,5,$cur . " " . number_format($total_db,2),1,1,'R');  
          
 
 $pdf->Ln(5);    

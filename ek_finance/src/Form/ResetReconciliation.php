@@ -147,49 +147,52 @@ class ResetReconciliation extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
         
         $data = unserialize($form_state->getValue('data'));
-        $id = $form_state->getValue('id');
+        $coid = $data[0][6];
+        $aid = $data[0][7];
         
-        for ($i=1; $i < count($data); $i++) {
-            
-            // change flag in journal
-            $journal_id = $data[$i][7];
-            Database::getConnection('external_db', 'external_db')->update('ek_journal')
-                            ->condition('id', $journal_id)
-                            ->fields(['reconcile' => 0])
-                            ->execute();
-            
-            // remove from bank history        
-            $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_bank_accounts', 'a');
-            $query->fields('a', ['id', 'account_ref']);
-            $query->leftJoin('ek_bank', 'b', 'a.bid = b.id');
-            $query->condition('coid', $data[0][6], '=');
-            $query->condition('aid', $data[0][7], '=');
-            
-            $bank = $query->execute()->fetchObject();
-            
-            if($bank) {
-                $j = Journal::journalEntryDetails($journal_id);
-                $year = explode("-", $j['date']);
-                if (is_array($j['comment'])) {
-                        //remove the hyperlink tag
-                        preg_match("'>(.*?)</a>'si", $j['comment']['#markup'], $match);
-                        $j['comment'] = $j['reference'] . " - " . $match[1];
-                    } else {
-                        $j['comment'] = $j['reference'] . " - " . $j['comment'];
+        foreach($data as $key => $line) {
+
+            if($key > 0)  {
+                if(!null == $line[7]) {
+                    // change flag in journal
+                    $journal_id = $line[7];
+                    Database::getConnection('external_db', 'external_db')->update('ek_journal')
+                                    ->condition('id', $journal_id)
+                                    ->fields(['reconcile' => 0])
+                                    ->execute();
+                    
+                    // remove from bank history        
+                    $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_bank_accounts', 'a');
+                    $query->fields('a', ['id', 'account_ref']);
+                    $query->leftJoin('ek_bank', 'b', 'a.bid = b.id');
+                    $query->condition('coid', $coid, '=');
+                    $query->condition('aid', $aid, '=');
+                    
+                    $bank = $query->execute()->fetchObject();
+                    
+                    if($bank) {
+                        $j = Journal::journalEntryDetails($journal_id);
+                        $year = explode("-", $j['date']);
+                        if (is_array($j['comment'])) {
+                                // remove the hyperlink tag
+                                preg_match("'>(.*?)</a>'si", $j['comment']['#markup'], $match);
+                                $j['comment'] = $j['reference'] . " - " . $match[1];
+                            } else {
+                                $j['comment'] = $j['reference'] . " - " . $j['comment'];
+                            }
+                        Database::getConnection('external_db', 'external_db')->delete('ek_bank_transactions')
+                                ->condition('account_ref', $bank->account_ref)
+                                ->condition('date_transaction' , $j['date'])
+                                ->condition('year_transaction' , $year[0])
+                                ->condition('type' , $j['type'])
+                                ->condition('currency' , $j['currency'])
+                                ->condition('amount' , $j['value'])
+                                ->condition('description' , $j['comment'])
+                                ->execute();
                     }
-                Database::getConnection('external_db', 'external_db')->delete('ek_bank_transactions')
-                        ->condition('account_ref', $bank->account_ref)
-                        ->condition('date_transaction' , $j['date'])
-                        ->condition('year_transaction' , $year[0])
-                        ->condition('type' , $j['type'])
-                        ->condition('currency' , $j['currency'])
-                        ->condition('amount' , $j['value'])
-                        ->condition('description' , $j['comment'])
-                        ->execute();
-            }
-            
-            
+                }
+            }   
         }
         
         // attachment

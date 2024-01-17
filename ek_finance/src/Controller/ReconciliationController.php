@@ -147,10 +147,6 @@ class ReconciliationController extends ControllerBase {
                 ':date2' => $_SESSION['recofilter']['to'],
                 ':t' => '1',
             ];
-
-            /*$query = "SELECT * FROM {ek_journal_reco_history} "
-                    . "WHERE coid like :coid AND date >= :date1 AND date <= :date2 AND type=:t";
-            $data = Database::getConnection('external_db', 'external_db')->query($query, $a);*/
             
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal_reco_history', 'h');
@@ -166,6 +162,7 @@ class ReconciliationController extends ControllerBase {
             $i = 0;
             while ($r = $data->fetchObject()) {
                 $i++;
+                $reset = "";
                 $query = "SELECT aname from {ek_accounts} WHERE aid=:a AND coid=:c";
                 $aname = Database::getConnection('external_db', 'external_db')
                         ->query($query, [':a' => $r->aid, ':c' => $r->coid])

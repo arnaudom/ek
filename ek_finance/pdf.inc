@@ -119,7 +119,7 @@ $line = Database::getConnection('external_db', 'external_db')
   $settings = new FinanceSettings(); 
   $baseCurrency = $settings->get('baseCurrency'); 
  
-  $data = unserialize(utf8_decode($line->data));
+  $data = unserialize($line->data);
   $template = 'default_reco_report_pdf';
   $fileName = t('Reconciliation_report') . '_' . $line->id;
   $userName =  \Drupal::currentUser()->getAccountName();

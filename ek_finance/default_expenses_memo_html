@@ -129,7 +129,10 @@ $paid = '';
 if ($head->status > 1) {
     $paid =  t('paid') ;
 }
-
+$client = '';
+if (isset($client->name)) {
+    $client = $client->name;
+}
 $document .= '<page_reference>
                         <table>
                             <tr>
@@ -145,7 +148,7 @@ $document .= '<page_reference>
                             </tr>
                             <tr>
                                 <td class="c30 left">' . t("Project reference") . ':</td>
-                                <td class="c30 left">' . $client->name . '</td>
+                                <td class="c30 left">' . $client . '</td>
                                 <td class="c40 left"><h1 class="red"><strong>' . strtoupper($paid) . '</strong></h1></td>
                             </tr>
                             <tr>

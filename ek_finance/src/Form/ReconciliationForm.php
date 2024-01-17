@@ -550,7 +550,9 @@ class ReconciliationForm extends FormBase {
             $select = 0;
             $items = $form_state->getValue('items');
             for ($i = 0; $i < $form_state->getValue('rows'); $i++) {
-                $select += $items[$i]['select' . $i];
+                //if(isset($items[$i]['select' . $i])){
+                    $select += $items[$i]['select' . $i];
+                //}
             }
 
             if ($select == 0) {
