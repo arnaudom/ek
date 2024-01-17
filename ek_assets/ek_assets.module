@@ -35,7 +35,7 @@ function ek_assets_theme() {
  */
 function ek_assets_file_download($uri) {
 
-    if (strpos($uri,'/assets/')) {
+    if (strpos($uri ?? "",'/assets/')) {
         return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($uri));
     }
 }
