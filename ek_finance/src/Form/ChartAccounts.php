@@ -65,18 +65,18 @@ class ChartAccounts extends FormBase {
         $baseCurrency = $settings->get('baseCurrency');
         $company = AccessCheck::CompanyListByUid();
 
-        $form['coid'] = array(
+        $form['coid'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
             '#title' => $this->t('company'),
             '#required' => true,
-            '#ajax' => array(
-                'callback' => array($this, 'get_class'),
+            '#ajax' => [
+                'callback' => [$this, 'get_class'],
                 'wrapper' => 'accounts_class',
-            ),
+            ],
             '#prefix' => "<div class='container-inline'>",
-        );
+        ];
 
         if ($form_state->getValue('coid')) {
             $coid = $form_state->getValue('coid');
@@ -86,39 +86,32 @@ class ChartAccounts extends FormBase {
             array_unshift($classoptions, 'Excel');
         }
 
-        $form['class'] = array(
+        $form['class'] = [
             '#type' => 'select',
             '#size' => 1,
-            '#options' => isset($classoptions) ? $classoptions : array(),
+            '#options' => isset($classoptions) ? $classoptions : [],
             '#required' => true,
             '#title' => $this->t('Class'),
             '#prefix' => "<div id='accounts_class'>",
             '#suffix' => '</div>',
             '#validated' => true,
-        );
+        ];
 
-        $form['next'] = array(
+        $form['next'] = [
             '#type' => 'submit',
             '#value' => $this->t('List accounts'),
-            //'#limit_validation_errors' => array(),
-            '#submit' => array(array($this, 'get_accounts')),
-            '#states' => array(
-                // Hide data fieldset when class is empty.
-                'invisible' => array(
-                    "select[name='class']" => array('value' => ''),
-                ),
-            ),
+            '#submit' => [[$this, 'get_accounts']],
             '#suffix' => '</div>',
-        );
+        ];
 
 
         if ($form_state->getValue('step') == 2 & ($form_state->getValue('class') != '0' && $form_state->getValue('class') != '1')) {
-            $form['step'] = array(
+            $form['step'] = [
                 '#type' => 'hidden',
                 '#value' => 2,
-            );
+            ];
 
-            $form['list'] = array(
+            $form['list'] = [
                 '#type' => 'fieldset',
                 '#title' => 'list',
                 '#prefix' => "<div id='list'>",
@@ -127,7 +120,7 @@ class ChartAccounts extends FormBase {
                 '#open' => true,
                 '#validated' => true,
                 '#tree' => true,
-            );
+            ];
 
             $header = "<div class='table' id='accounts_list'>
                 <div class='row'>
@@ -139,70 +132,74 @@ class ChartAccounts extends FormBase {
                   <div class='cell cell50'>" . $this->t('Active') . "</div>
               ";
 
-            $form['list']['head'] = array(
+            $form['list']['head'] = [
                 '#type' => 'item',
                 '#markup' => $header,
-            );
+            ];
 
-            $query = "SELECT * from {ek_accounts} where atype=:atype and aid like :aid and coid=:coid ORDER BY aid";
-            $a = array(':atype' => 'class', ':aid' => $form_state->getValue('class'), ':coid' => $form_state->getValue('coid'));
-            $thisclass = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a')
+                    ->fields('a')
+                    ->condition('atype', 'class')
+                    ->condition('aid', $form_state->getValue('class'), 'LIKE')
+                    ->condition('coid',$form_state->getValue('coid'))
+                    ->orderBy('aid')
+                    ->execute();
 
+            $thisclass = $query->fetchObject();
             $id = $thisclass->id;
 
-            $form['list']['c'][$id]['aid'] = array(
+            $form['list']['c'][$id]['aid'] = [
                 '#type' => 'item',
                 '#markup' => $thisclass->aid,
                 '#prefix' => "<div class='row'><div class='cell cell50 cellborder'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            $form['list']['c'][$id]['aname'] = array(
+            $form['list']['c'][$id]['aname'] = [
                 '#type' => 'textfield',
                 '#size' => 30,
                 '#maxlength' => 50,
                 '#default_value' => $thisclass->aname,
                 '#prefix' => "<div class='cell cell150 cellborder'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            $form['list']['c'][$id]['col3'] = array(
+            $form['list']['c'][$id]['col3'] = [
                 '#type' => 'item',
                 '#prefix' => "<div class='cell cell100'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            $form['list']['c'][$id]['col4'] = array(
+            $form['list']['c'][$id]['col4'] = [
                 '#type' => 'item',
                 '#prefix' => "<div class='cell cell100'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            $form['list']['c'][$id]['col5'] = array(
+            $form['list']['c'][$id]['col5'] = [
                 '#type' => 'item',
                 '#prefix' => "<div class='cell cell100'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            $form['list']['c'][$id]['astatus'] = array(
+            $form['list']['c'][$id]['astatus'] = [
                 '#type' => 'checkbox',
                 '#default_value' => $thisclass->astatus,
                 '#prefix' => "<div class='cell cell50 cellborder '>",
                 '#suffix' => '</div></div>',
-            );
-
-
-            $query = "SELECT id,aid,aname,astatus,balance,balance_base,balance_date "
-                    . "FROM {ek_accounts} "
-                    . "WHERE atype=:atype "
-                    . "AND aid like :aid and coid=:coid ORDER BY aid";
+            ];
 
             $class = substr($form_state->getValue('class'), 0, 2) . '%';
-            $a = array(':atype' => 'detail', ':aid' => $class, ':coid' => $form_state->getValue('coid'));
-
-
-            $list = Database::getConnection('external_db', 'external_db')->query($query, $a);
-
+            $list = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a')
+                    ->fields('a', ['id','aid','aname','astatus','balance', 'balance_base','balance_date'])
+                    ->condition('atype', 'detail')
+                    ->condition('aid', $class, 'LIKE')
+                    ->condition('coid',$form_state->getValue('coid'))
+                    ->orderBy('aid')
+                    ->execute();
+            
             while ($row = $list->fetchObject()) {
                 $id = $row->id;
                 if ($row->astatus == '1') {
@@ -211,32 +208,37 @@ class ChartAccounts extends FormBase {
                     $css = '';
                 }
 
-                //check if the account is used
-                $query = "SELECT id FROM {ek_journal} WHERE coid=:c AND aid=:a LIMIT 1";
-                $a = array(':a' => $row->aid, ':c' => $form_state->getValue('coid'));
-                $check = Database::getConnection('external_db', 'external_db')
-                        ->query($query, $a)
-                        ->fetchField();
+                // check if the account is used
+                $query = Database::getConnection('external_db', 'external_db')
+                         ->select('ek_journal', 'j')
+                         ->fields('j', ['id'])
+                         ->condition('coid', $form_state->getValue('coid'))
+                         ->condition('aid', $row->aid)
+                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
+                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+                         ->limit(1)
+                         ->execute();
+                $check = $query->fetchField();
                 if ($check > 0) {
                     $markup = "<b title='" . $this->t('account used in journal') . "'>" . $row->aid . '</b>';
                 } else {
                     $markup = $row->aid;
                 }
 
-                //Force edit name for Site admin
+                 // Force edit name for Site admin
                 $user = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
                 if ($user->hasRole('administrator')) {
                     $check = false;
                 }
 
-                $form['list']['d'][$id]['aid'] = array(
+                $form['list']['d'][$id]['aid'] = [
                     '#type' => 'item',
                     '#markup' => $markup,
                     '#prefix' => "<div class='row " . $css . "' id='a" . $id . "' ><div class='cell cell50'>",
                     '#suffix' => '</div>',
-                );
+                ];
 
-                $form['list']['d'][$id]['aname'] = array(
+                $form['list']['d'][$id]['aname'] = [
                     '#type' => 'textfield',
                     '#size' => 30,
                     '#maxlength' => 50,
@@ -244,74 +246,76 @@ class ChartAccounts extends FormBase {
                     '#disabled' => $check ? true : false,
                     '#prefix' => "<div class='cell cell150'>",
                     '#suffix' => '</div>',
-                );
+                ];
 
 
-                $form['list']['d'][$id]['balance'] = array(
+                $form['list']['d'][$id]['balance'] = [
                     '#type' => 'textfield',
                     '#default_value' => number_format($row->balance, 2),
                     '#size' => 15,
-                    '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                    '#attributes' => ['placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"],
                     '#prefix' => "<div class='cell cell100'>",
                     '#suffix' => '</div>',
-                );
+                ];
 
-                $form['list']['d'][$id]['balance_base'] = array(
+                $form['list']['d'][$id]['balance_base'] = [
                     '#type' => 'textfield',
                     '#default_value' => number_format($row->balance_base, 2),
                     '#size' => 15,
-                    '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                    '#attributes' => ['placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"],
                     '#prefix' => "<div class='cell cell100'>",
                     '#suffix' => '</div>',
-                );
+                ];
 
-                $form['list']['d'][$id]['balance_date'] = array(
+                $form['list']['d'][$id]['balance_date'] = [
                     '#type' => 'date',
                     '#default_value' => $row->balance_date,
                     '#size' => 14,
                     '#prefix' => "<div class='cell cell150'>",
                     '#suffix' => '</div>',
-                );
+                ];
 
-                $form['list']['d'][$id]['astatus'] = array(
+                $form['list']['d'][$id]['astatus'] = [
                     '#type' => 'checkbox',
                     '#default_value' => $row->astatus,
                     '#attributes' => array('onclick' => "jQuery('#a" . $id . "' ).toggleClass('grey');"),
                     '#prefix' => "<div class='cell cell50 cellcenter'>",
                     '#suffix' => '</div></div>',
-                );
+                ];
             }
 
             $param = $form_state->getValue('coid') . '-' . $class;
             $url = Url::fromRoute('ek_finance.admin.modal_charts_accounts', array('param' => $param))->toString();
             $new = $this->t('<a href="@url" class="@c" >+ new account</a>', array('@url' => $url, '@c' => 'use-ajax red'));
 
-            $form['list']['close'] = array(
+            $form['list']['close'] = [
                 '#type' => 'item',
                 '#markup' => $new . '</div></div>',
-            );
+            ];
 
 
-            $form['actions'] = array(
+            $form['actions'] = [
                 '#type' => 'actions',
                 '#attributes' => array('class' => array('container-inline')),
-            );
+            ];
 
-            $form['actions']['submit'] = array(
+            $form['actions']['submit'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Save'),
                 '#suffix' => ''
-            );
+            ];
+
         } elseif ($form_state->getValue('step') == 2) {
-            $form['actions'] = array(
+            $form['actions'] = [
                 '#type' => 'actions',
                 '#attributes' => array('class' => array('container-inline')),
-            );
+            ];
 
-            $form['actions']['submit'] = array(
+            $form['actions']['submit'] =[
                 '#type' => 'submit',
                 '#value' => $this->t('Extract'),
-                '#suffix' => '');
+                '#suffix' => ''
+            ];
         }
 
         $form['#tree'] = true;
