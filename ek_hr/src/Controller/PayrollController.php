@@ -363,8 +363,7 @@ class PayrollController extends ControllerBase
      * call for for outputing forms
      *
      */
-    public function HrForms(Request $request)
-    {
+    public function HrForms(Request $request) {
         $build['payslip'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\FormSelect');
 
         if ($_SESSION['printforms']['filter'] == 1) {
@@ -396,8 +395,7 @@ class PayrollController extends ControllerBase
      * manage output format of payslip selected
      *
      */
-    public function OutputPayslip(Request $request, $param)
-    {
+    public function OutputPayslip(Request $request, $param) {
         $markup = array();
         include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_hr') . '/manage_output.inc';
         return ['#markup' => $markup];
@@ -407,8 +405,7 @@ class PayrollController extends ControllerBase
      * manage output form selected
      *
      */
-    public function OutputForm(Request $request, $param)
-    {
+    public function OutputForm(Request $request, $param) {
         $markup = array();
         include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_hr') . '/manage_output_form.inc';
         return ['#markup' => $markup];
@@ -418,9 +415,17 @@ class PayrollController extends ControllerBase
      * post current data to archive
      *
      */
-    public function post(Request $request)
-    {
+    public function post(Request $request) {
         $build['post_payroll'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\PostData');
+        return $build;
+    }
+
+    /**
+     * Edit cycle
+     *
+     */
+    public function cycle(Request $request) {
+        $build['post_payroll'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\Cycle');
         return $build;
     }
 }

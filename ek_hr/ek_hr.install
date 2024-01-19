@@ -232,3 +232,12 @@ function ek_hr_update_8009() {
         
         return t('HR tables updated.');
 }
+
+/**
+ * New menu
+ * 
+*/
+function ek_hr_update_8010() {
+    
+    \Drupal::service('router.builder')->rebuild();
+}

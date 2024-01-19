@@ -59,12 +59,11 @@ class Advance extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
+
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
-
 
         $company = AccessCheck::CompanyListByUid();
         $form['coid'] = array(
@@ -91,8 +90,8 @@ class Advance extends FormBase
         }
 
         if ($form_state->get('step') == 2) {
-            $form_state->set('step', 3);
 
+            $form_state->set('step', 3);
             $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_hr_workforce', 'w')
                             ->fields('w', ['id','custom_id' ,'name','currency'])
@@ -206,7 +205,7 @@ class Advance extends FormBase
                 '#suffix' => ''
             );
             
-            $form['#attached']['library'][] = ['ek_hr/ek_hr_css'];
+            $form['#attached']['library'][] = 'ek_hr/ek_hr_css';
         }
         
         return $form;

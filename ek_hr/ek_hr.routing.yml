@@ -296,6 +296,14 @@ ek_hr.post-data:
     _controller: '\Drupal\ek_hr\Controller\PayrollController::post'
   requirements:
     _permission: 'hr_payroll_post'
+    
+ek_hr.cycle:
+  path: '/human-resources/cycle'
+  defaults:
+    _title: 'Period'
+    _controller: '\Drupal\ek_hr\Controller\PayrollController::cycle'
+  requirements:
+    _permission: 'hr_parameter'
       
 ek_hr.look_up_bank:
   path: '/look_up_bank_ajax'

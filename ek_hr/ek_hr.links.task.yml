@@ -179,6 +179,12 @@ ek_hr.post-data:
   title: 'Post data'
   weight: 6
   
+ek_hr.cycle:
+  route_name: ek_hr.cycle
+  base_route: ek_hr.payroll
+  title: 'Period'
+  weight: 7
+
 ek_hr.task.roster:
   route_name: ek_hr.roster
   base_route: ek_hr.roster
