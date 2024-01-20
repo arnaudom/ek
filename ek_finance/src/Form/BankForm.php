@@ -54,14 +54,19 @@ class BankForm extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         if ($id != null || $form_state->get('bid') != null) {
+
             if ($id == null) {
                 $id = $form_state->getValue('bid');
             }
             $form_state->set('step', 2);
 
             if ($id > 0) {
-                $query = "SELECT * FROM {ek_bank} WHERE id=:id";
-                $data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_bank','b')
+                    ->fields('b')
+                    ->condition('id', $id)
+                    ->execute();
+                $data = $query->fetchObject();
             }
 
             $form['bid'] = array(
@@ -73,176 +78,176 @@ class BankForm extends FormBase {
             $options = BankData::listBank();
             $options['0'] = $this->t('create a new bank');
 
-            $form['bid'] = array(
+            $form['bid'] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $options,
                 '#title' => $this->t('Bank'),
                 '#required' => true,
                 '#prefix' => "<div class='container-inline'>",
-            );
+            ];
 
-            $form['next'] = array(
+            $form['next'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Next'),
-                '#limit_validation_errors' => array(array('bid')),
-                '#submit' => array(array($this, 'get_accounts')),
-                '#states' => array(
-                    'invisible' => array(
-                        "select[name='bid']" => array('value' => ''),
-                    ),
-                ),
+                '#limit_validation_errors' => [['bid']],
+                '#submit' => [[$this, 'get_accounts']],
+                '#states' => [
+                    'invisible' => [
+                        "select[name='bid']" => ['value' => ''],
+                    ],
+                ],
                 '#suffix' => '</div>',
-            );
+            ];
         }
 
         if ($form_state->get('step') == 2) {
-            $back = Url::fromRoute('ek_finance.manage.bank_manage', array(), array())->toString();
-            $table = Url::fromRoute('ek_finance.manage.bank_list', array(), array())->toString();
+            $back = Url::fromRoute('ek_finance.manage.bank_manage', [], [])->toString();
+            $table = Url::fromRoute('ek_finance.manage.bank_list', [], [])->toString();
 
             $form_state->set('step', 3);
 
-            $form["back"] = array(
+            $form["back"] = [
                 '#markup' => "<a href='" . $back . "' >" . $this->t('select another bank') . "</a> " . $this->t('or') . '  ',
                 '#prefix' => '<div class="container-inline">',
-            );
-            $form["list"] = array(
+            ];
+            $form["list"] = [
                 '#markup' => "<a href='" . $table . "' >" . $this->t('view list') . "</a>",
                 '#suffix' => '</div>'
-            );
+            ];
 
-            $form["name"] = array(
+            $form["name"] = [
                 '#type' => 'textfield',
                 '#size' => 40,
                 '#default_value' => $data->name,
                 '#maxlength' => 100,
                 '#description' => '',
-                '#attributes' => array('placeholder' => $this->t('bank name')),
-            );
+                '#attributes' => ['placeholder' => $this->t('bank name')],
+            ];
 
-            $form["address1"] = array(
+            $form["address1"] = [
                 '#type' => 'textfield',
                 '#size' => 40,
                 '#default_value' => $data->address1,
                 '#maxlength' => 255,
                 '#description' => '',
-                '#attributes' => array('placeholder' => $this->t('address line 1')),
-            );
+                '#attributes' => ['placeholder' => $this->t('address line 1')],
+            ];
 
-            $form["address2"] = array(
+            $form["address2"] = [
                 '#type' => 'textfield',
                 '#size' => 40,
                 '#default_value' => $data->address2,
                 '#maxlength' => 255,
                 '#description' => '',
-                '#attributes' => array('placeholder' => $this->t('address line 2')),
-            );
+                '#attributes' => ['placeholder' => $this->t('address line 2')],
+            ];
 
-            $form["postcode"] = array(
+            $form["postcode"] = [
                 '#type' => 'textfield',
                 '#size' => 10,
                 '#default_value' => $data->postcode,
                 '#maxlength' => 30,
                 '#description' => '',
-                '#attributes' => array('placeholder' => $this->t('postcode')),
-            );
+                '#attributes' => ['placeholder' => $this->t('postcode')],
+            ];
 
 
             $countries = $this->countryManager->getList();
-            $form['country'] = array(
+            $form['country'] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => array_combine($countries, $countries),
                 '#required' => true,
                 '#default_value' => isset($data->country) ? $data->country : null,
-            );
+            ];
 
-            $form["contact"] = array(
+            $form["contact"] = [
                 '#type' => 'textfield',
                 '#size' => 20,
                 '#default_value' => $data->contact,
                 '#maxlength' => 30,
                 '#description' => $this->t('contact name'),
-                '#attributes' => array('placeholder' => $this->t('contact')),
-            );
+                '#attributes' => ['placeholder' => $this->t('contact')],
+            ];
 
-            $form['telephone'] = array(
+            $form['telephone'] = [
                 '#type' => 'textfield',
                 '#size' => 25,
                 '#maxlength' => 20,
                 '#default_value' => isset($data->telephone) ? $data->telephone : null,
-                '#attributes' => array('placeholder' => $this->t('telephone')),
-            );
+                '#attributes' => ['placeholder' => $this->t('telephone')],
+            ];
 
-            $form['fax'] = array(
+            $form['fax'] = [
                 '#type' => 'textfield',
                 '#size' => 25,
                 '#maxlength' => 20,
                 '#default_value' => isset($data->fax) ? $data->fax : null,
-                '#attributes' => array('placeholder' => $this->t('fax')),
-            );
+                '#attributes' => ['placeholder' => $this->t('fax')],
+            ];
 
-            $form['email'] = array(
+            $form['email'] = [
                 '#type' => 'textfield',
                 '#size' => 25,
                 '#maxlength' => 160,
                 '#default_value' => isset($data->email) ? $data->email : null,
-                '#attributes' => array('placeholder' => $this->t('email')),
-            );
+                '#attributes' => ['placeholder' => $this->t('email')],
+            ];
 
-            $form['account1'] = array(
+            $form['account1'] = [
                 '#type' => 'textfield',
                 '#size' => 25,
                 '#maxlength' => 20,
                 '#default_value' => isset($data->account1) ? $data->account1 : null,
-                '#attributes' => array('placeholder' => $this->t('account 1')),
+                '#attributes' => ['placeholder' => $this->t('account 1')],
                 '#description' => $this->t('account no.'),
-            );
+            ];
 
-            $form['account2'] = array(
+            $form['account2'] = [
                 '#type' => 'textfield',
                 '#size' => 25,
                 '#maxlength' => 20,
                 '#default_value' => isset($data->account2) ? $data->account2 : null,
-                '#attributes' => array('placeholder' => $this->t('account 2')),
+                '#attributes' => ['placeholder' => $this->t('account 2')],
                 '#description' => $this->t('account no.'),
-            );
+            ];
 
-            $form['bank_code'] = array(
+            $form['bank_code'] = [
                 '#type' => 'textfield',
                 '#size' => 25,
                 '#maxlength' => 20,
                 '#default_value' => isset($data->bank_code) ? $data->bank_code : null,
-                '#attributes' => array('placeholder' => $this->t('bank code')),
+                '#attributes' => ['placeholder' => $this->t('bank code')],
                 '#description' => $this->t('bank code'),
-            );
+            ];
 
-            $form['swift'] = array(
+            $form['swift'] = [
                 '#type' => 'textfield',
                 '#size' => 25,
                 '#maxlength' => 20,
                 '#default_value' => isset($data->swift) ? $data->swift : null,
-                '#attributes' => array('placeholder' => $this->t('swift code')),
+                '#attributes' => ['placeholder' => $this->t('swift code')],
                 '#description' => $this->t('swift, BIC'),
-            );
+            ];
 
-            $form['coid'] = array(
+            $form['coid'] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => AccessCheck::CompanyListByUid(),
                 '#default_value' => isset($data->coid) ? $data->coid : null,
                 '#title' => $this->t('Company reference'),
                 '#required' => true,
-            );
+            ];
 
-            $form['actions'] = array(
+            $form['actions'] = [
                 '#type' => 'actions',
-                '#attributes' => array('class' => array('container-inline')),
-            );
-            $form['actions']['save'] = array(
+                '#attributes' => ['class' => ['container-inline']],
+            ];
+            $form['actions']['save'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Save'),
-            );
+            ];
         }
 
         return $form;
@@ -274,13 +279,13 @@ class BankForm extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 3) {
-            $fields = array(
+            $fields = [
                 'name' => Xss::filter($form_state->getValue('name')),
                 'address1' => Xss::filter($form_state->getValue('address1')),
                 'address2' => Xss::filter($form_state->getValue('address2')),
                 'postcode' => Xss::filter($form_state->getValue('postcode')),
                 'country' => $form_state->getValue('country'),
-                'telephone' => Xss::filter($form_state->getValue('telephone2')),
+                'telephone' => Xss::filter($form_state->getValue('telephone')),
                 'fax' => Xss::filter($form_state->getValue('fax')),
                 'email' => $form_state->getValue('email'),
                 'contact' => Xss::filter($form_state->getValue('contact')),
@@ -289,7 +294,7 @@ class BankForm extends FormBase {
                 'bank_code' => Xss::filter($form_state->getValue('bank_code')),
                 'swift' => Xss::filter($form_state->getValue('swift')),
                 'coid' => $form_state->getValue('coid'),
-            );
+            ];
 
 
             if ($form_state->getValue('bid') == 0) {
@@ -301,6 +306,7 @@ class BankForm extends FormBase {
                         ->fields($fields)
                         ->execute();
             }
+
             \Drupal\Core\Cache\Cache::invalidateTags(['bank_list']);
             \Drupal::messenger()->addStatus(t('Bank data recorded'));
         }
