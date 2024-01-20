@@ -182,7 +182,7 @@ ek_hr.post-data:
 ek_hr.cycle:
   route_name: ek_hr.cycle
   base_route: ek_hr.payroll
-  title: 'Period'
+  title: 'Cycle'
   weight: 7
 
 ek_hr.task.roster:
