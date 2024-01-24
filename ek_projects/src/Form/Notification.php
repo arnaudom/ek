@@ -108,13 +108,14 @@ class Notification extends FormBase {
             '#attributes' => ['class' => ['container-inline']],
         ];
 
-        $form['actions']['submit'] = [
+    // @todo library core/internal.jquery.form is added as a kick fix to load jquery.form.js. 
+    // it should be loaded by default with #ajax call submit with validation
+      $form['actions']['submit'] = [
             '#type' => 'submit',
             '#value' => $this->t('Send note'),
             '#attributes' => ['class' => ['use-ajax-submit']],
-            '#attached' => ['library' => ['core/jquery.form',],],
+            '#attached' => ['library' => ['core/internal.jquery.form'],],
         ];
-        
 
         return $form;
     }
