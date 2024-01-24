@@ -64,6 +64,7 @@ class AssignNote extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $note = null, $id = null) {
+
         if ($note == "CT") {
             $form_state->set('table', "ek_sales_invoice");
             $form_state->set('table_details', "ek_sales_invoice_details");
@@ -75,12 +76,12 @@ class AssignNote extends FormBase {
         }
 
 
-        $form['back'] = array(
+        $form['back'] = [
             '#type' => 'item',
             '#markup' => $this->t('<a href="@url">List</a>', array('@url' => $url)),
-        );
+        ];
 
-        //collect this note info
+        // collect this note info
         $query = Database::getConnection('external_db', 'external_db')
                 ->select($form_state->get('table'), 't');
 
@@ -89,24 +90,25 @@ class AssignNote extends FormBase {
         $Obj = $query->execute();
         $data = $Obj->fetchObject();
         $form_state->set('cn_data', $data); //store note data
-
+        $amount = ($note == "CT") ? $data->amountreceived : $data->amountpaid;
         if ($data->taxvalue > 0) {
             $query = "SELECT sum(quantity*value) from {$form_state->get('table_details')} WHERE serial=:s and opt=:o";
             $details = Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':s' => $data->serial, ':o' => 1))
                     ->fetchField();
-            $cn_amount = $data->amount + ($details * $data->taxvalue / 100) - $data->amountreceived;
+            $cn_amount = $data->amount + ($details * $data->taxvalue / 100) - $amount;
             $title = $this->t('Amount with taxes (@c)', array('@c' => $data->currency));
         } else {
-            $cn_amount = $data->amount - $data->amountreceived;
+            $cn_amount = $data->amount - $amount;
             $title = $this->t('Amount (@c)', array('@c' => $data->currency));
         }
-        $form['balance'] = array(
+
+        $form['balance'] = [
             '#type' => 'hidden',
             '#value' => $cn_amount,
-        );
+        ];
 
-        //collect invoices / purchases to which CN / DN can be assigned
+        // collect invoices / purchases to which CN / DN can be assigned
         $query = Database::getConnection('external_db', 'external_db')
                 ->select($form_state->get('table'), 't');
         $or = $query->orConditionGroup();
@@ -126,36 +128,37 @@ class AssignNote extends FormBase {
             $baseCurrency = $this->settings->get('baseCurrency');
         }
 
-        $form['edit_invoice'] = array(
+        $form['edit_invoice'] = [
             '#type' => 'item',
             '#markup' => $this->t('@doc ref. @p', array('@doc' => $data->title, '@p' => $data->serial)),
-        );
+        ];
 
-        $form['for_id'] = array(
+        $form['for_id'] = [
             '#type' => 'hidden',
             '#value' => $id,
-        );
+        ];
 
-        $form['assign'] = array(
+        $form['assign'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $Obj->fetchAllKeyed(),
             '#required' => true,
             '#title' => $this->t('Credit invoice assignment'),
-            '#ajax' => array(
-                'callback' => array($this, 'note_details'),
+            '#ajax' => [
+                'callback' => [$this, 'note_details'],
                 'wrapper' => 'div_note_details',
-            ),
+            ],
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div></div>',
-        );
-        $form['note_details'] = array(
+        ];
+
+        $form['note_details'] = [
             '#type' => 'item',
             '#prefix' => "<div class='row'><div class = 'cell current blue' id='div_note_details'>",
             '#suffix' => '</div></div>',
-        );
+        ];
 
-        $form['date'] = array(
+        $form['date'] = [
             '#type' => 'date',
             '#id' => 'edit-from',
             '#size' => 12,
@@ -164,11 +167,11 @@ class AssignNote extends FormBase {
             '#title' => $this->t('Payment date'),
             '#prefix' => "<div class='row'><div class='cell'>",
             '#suffix' => '</div>',
-        );
+        ];
 
 
 
-        $form['amount'] = array(
+        $form['amount'] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 255,
@@ -177,11 +180,11 @@ class AssignNote extends FormBase {
             '#title' => $title,
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div>',
-        );
+        ];
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             if ($data->currency != $baseCurrency) {
-                $form['fx_rate'] = array(
+                $form['fx_rate'] = [
                     '#type' => 'textfield',
                     '#size' => 15,
                     '#maxlength' => 255,
@@ -192,34 +195,33 @@ class AssignNote extends FormBase {
                     '#attributes' => array('class' => array('amount')),
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div></div></div>',
-                );
+                ];
             } else {
-                $form['fx_rate'] = array(
+                $form['fx_rate'] = [
                     '#type' => 'hidden',
                     '#value' => 1,
                     '#prefix' => "<div class='cell'>",
                     '#suffix' => '</div></div></div>',
-                );
+                ];
             }
         } else {
-            $form['fx_rate'] = array(
+            $form['fx_rate'] = [
                 '#type' => 'hidden',
                 '#value' => 1,
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div></div></div>',
-            );
+            ];
         }
 
 
 
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['record'] = array(
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['record'] = [
             '#type' => 'submit',
             '#value' => $this->t('Record'),
-        );
+        ];
 
         $form['#attached']['library'][] = 'ek_sales/ek_sales_css';
-
 
         return $form;
     }
