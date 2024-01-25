@@ -6,7 +6,10 @@
  */
 
 namespace Drupal\ek_sales\Form;
-
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\AppendCommand;
+use Drupal\Core\Ajax\CloseDialogCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
@@ -28,18 +31,18 @@ class DocAccessEdit extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = null, $type = null) {
-
-        //if($type == 'sales_doc') {}
-
-        $query = "SELECT share,deny,abid FROM {ek_sales_documents} WHERE id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $id))
-                ->fetchObject();
+                
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_sales_documents', 'd');
+        $query->fields('d', ['share', 'deny', 'abid']);
+        $query->condition('id', $id);
+        $data = $query->execute()->fetchObject();
+        $form_state->set('data', $data);
         $users = \Drupal\ek_admin\Access\AccessCheck::listUsers(0);
 
         if ($data->share == 0) {
-            //no custom settings
-            //default users are selected
+            // no custom settings
+            // default users are selected
             $default_users = array();
 
             foreach ($users as $key => $value) {
@@ -71,7 +74,6 @@ class DocAccessEdit extends FormBase {
             ),
         );
 
-
         $form['for_id'] = array(
             '#type' => 'hidden',
             '#default_value' => $id,
@@ -82,26 +84,44 @@ class DocAccessEdit extends FormBase {
             '#default_value' => $type,
         );
 
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['access'] = array(
-            '#id' => 'accessbutton',
+        $form['alert'] = [
+            '#type' => 'item',
+            '#prefix' => "<div class='alert'>",
+            '#suffix' => '</div>',
+        ];
+
+        $form['actions'] = [
+            '#type' => 'actions',
+            '#attributes' => ['class' => ['container-inline']],
+        ];
+
+        $form['actions']['save'] = [
+            '#id' => 'savebutton',
             '#type' => 'submit',
             '#value' => $this->t('Save'),
-            '#attributes' => array('class' => array('use-ajax-submit')),
-        );
+            '#ajax' => [
+                'callback' => [$this, 'formCallback'],
+                'wrapper' => 'alert',
+                'method' => 'replace',
+                'effect' => 'fade',
+            ],
+        ];
+
+        $form['actions']['close'] = [
+            '#id' => 'closebutton',
+            '#type' => 'submit',
+            '#value' => $this->t('Close'),
+            '#ajax' => [
+                'callback' => [$this, 'dialogClose'],
+                'effect' => 'fade',
+                
+            ],
+        ];
 
         $form['#attached']['css'][] = array(
             'data' => \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/css/ek_sales.css',
             'type' => 'file',
         );
-
-        if ($form_state->get('message') <> '') {
-            $form['message'] = array(
-                '#markup' => "<div class='red'>" . $this->t('Data') . ": " . $form_state->get('message') . "</div>",
-            );
-            $form_state->set('message', '');
-            $form_state->setRebuild();
-        }
 
         return $form;
     }
@@ -116,23 +136,20 @@ class DocAccessEdit extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
+    public function submitForm(array &$form, FormStateInterface $form_state) {}
 
-        //set a security check in order to prevent any user to change data except the owner
-        if ($form_state->getValue('type') == 'sales_doc') {
-            $query = "SELECT share,deny,abid FROM {ek_sales_documents} WHERE id=:id";
-        }
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $form_state->getValue('for_id')))
-                ->fetchObject();
+    /**
+     * {@inheritdoc}
+     */
+    public function formCallback(array &$form, FormStateInterface $form_state) {
 
-
-        //owner can edit data
+        $data = $form_state->get('data');
+        // owner can edit data
         $users = \Drupal\ek_admin\Access\AccessCheck::listUsers(0);
         $share = explode(',', $data->share);
         $deny = explode(',', $data->deny);
-        $new_share = array();
-        $new_deny = array();
+        $new_share = [];
+        $new_deny = [];
 
         foreach ($users as $uid => $name) {
             if (in_array($uid, $form_state->getValue('users'))) {
@@ -158,14 +175,22 @@ class DocAccessEdit extends FormBase {
                     ->condition('id', $form_state->getValue('for_id'))
                     ->execute();
         }
+        $response = new AjaxResponse();
+        $clear = new InvokeCommand('.alert', "html", [""]);
+        $response->addCommand($clear);
 
         if ($update) {
-            $form_state->set('message', $this->t('saved'));
-            $form_state->setRebuild();
+            $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--status'>" . $this->t('saved') . "</div>"));
         } else {
-            $form_state->set('message', $this->t('error'));
-            $form_state->setRebuild();
+            $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--error'>" . $this->t('error') . "</div>"));
         }
+        return $response;
+    }
+
+    public function dialogClose() {
+        $response = new AjaxResponse();
+        $response->addCommand(new CloseDialogCommand('#drupal-modal'));
+        return $response;
     }
 
 }

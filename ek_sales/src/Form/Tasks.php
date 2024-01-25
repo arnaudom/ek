@@ -258,7 +258,6 @@ class Tasks extends FormBase {
             '#type' => 'submit',
             '#id' => 'task-record',
             '#value' => $this->t('Record'),
-            //'#attributes' => array('class' => array('use-ajax-submit')),
             '#ajax' => [
                 'callback' => '::ajaxSubmit',
             ],
