@@ -26,7 +26,6 @@ ek_projects_view:
     - core/jquery
     - core/drupal
     - core/drupal.form
-    - core/jquery.form
     - core/drupalSettings
     - core/drupal.ajax
     - core/once

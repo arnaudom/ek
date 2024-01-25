@@ -7,6 +7,10 @@
 
 namespace Drupal\ek_projects\Form;
 
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\AppendCommand;
+use Drupal\Core\Ajax\CloseDialogCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
@@ -32,12 +36,9 @@ class ProjectAccessEdit extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = null, $type = null) {
         if ($type == 'project') {
-            $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_project', 'p');
-            $query->fields('p', ['share', 'deny', 'cid', 'pcode', 'owner']);
-            $query->condition('id', $id);
+            
         } else {
-            //select data from documents
+            // select data from documents
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_project_documents', 'd');
             $query->fields('d', ['share', 'deny', 'pcode']);
@@ -47,8 +48,9 @@ class ProjectAccessEdit extends FormBase {
         }
 
         $data = $query->execute()->fetchObject();
-
+        $form_state->set('data', $data);
         $users = [];
+
         foreach (\Drupal\user\Entity\User::loadMultiple() as $account) {
             if ($account->isActive() && $account->id() != $data->owner && $account->hasPermission('view_project')) {
                 $roles = $account->getRoles();
@@ -65,8 +67,8 @@ class ProjectAccessEdit extends FormBase {
         }
 
         if ($data->share == 0) {
-            //no custom settings
-            //default users are selected
+            // no custom settings
+            // default users are selected
             $default_users = AccessCheck::GetCountryAccess($data->cid);
             $default_users = $default_users[$data->cid];
         } else {
@@ -96,7 +98,6 @@ class ProjectAccessEdit extends FormBase {
             ),
         );
 
-
         $form['for_id'] = array(
             '#type' => 'hidden',
             '#default_value' => $id,
@@ -107,25 +108,115 @@ class ProjectAccessEdit extends FormBase {
             '#default_value' => $type,
         );
 
+        $form['alert'] = [
+            '#type' => 'item',
+            '#prefix' => "<div class='alert'>",
+            '#suffix' => '</div>',
+        ];
+   
+        $form['actions'] = [
+            '#type' => 'actions',
+            '#attributes' => ['class' => ['container-inline']],
+        ];
+
         if (!$disabled) {
-            $form['actions'] = array('#type' => 'actions');
-            $form['actions']['access'] = array(
-                '#id' => 'accessbutton',
+            $form['actions']['save'] = [
+                '#id' => 'savebutton',
                 '#type' => 'submit',
                 '#value' => $this->t('Save'),
-                '#attributes' => array('class' => array('use-ajax-submit')),
-            );
+                '#ajax' => [
+                    'callback' => [$this, 'formCallback'],
+                    'wrapper' => 'alert',
+                    'method' => 'replace',
+                    'effect' => 'fade',
+                ],
+            ];
         }
 
-        if ($form_state->get('message') <> '') {
-            $form['message'] = array(
-                '#markup' => "<div class='red'>" . $this->t('Data record') . ": " . $form_state->get('message') . "</div>",
-            );
-            $form_state->set('message', '');
-            $form_state->setRebuild();
-        }
-        /**/
+        $form['actions']['close'] = [
+            '#id' => 'closebutton',
+            '#type' => 'submit',
+            '#value' => $this->t('Close'),
+            '#ajax' => [
+                'callback' => [$this, 'dialogClose'],
+                'effect' => 'fade',
+                
+            ],
+        ];
+
         return $form;
+    }
+
+
+    public function formCallback(array &$form, FormStateInterface $form_state) {
+                    $data = $form_state->get('data');
+
+                    if (\Drupal::currentUser()->id() == $data->owner) {
+                        // owner can edit data
+                        $owner = 1;
+                        $query = Database::getConnection()->select('users_field_data', 'u');
+                        $query->fields('u', ['uid', 'name']);
+                        $query->condition('uid', 0, '<>');
+                        $users = $query->execute();
+                        $share = explode(',', $data->share);
+                        $deny = explode(',', $data->deny);
+                        $new_share = array();
+                        $new_deny = array();
+        
+                        while ($u = $users->fetchObject()) {
+                            if (in_array($u->uid, $form_state->getValue('users')) || $data->owner == $u->uid) {
+                                array_push($new_share, $u->uid);
+                            } else {
+                                array_push($new_deny, $u->uid);
+                            }
+                        }
+        
+                        if (empty($new_deny)) {
+                            $new_deny = '0';
+                        }
+        
+                        $fields = array(
+                            'share' => implode(',', $new_share),
+                            'deny' => $new_deny == '0' ? 0 : implode(',', $new_deny),
+                        );
+        
+                        if ($form_state->getValue('type') == 'project') {
+                            $update = Database::getConnection('external_db', 'external_db')
+                                    ->update('ek_project')->fields($fields)
+                                    ->condition('id', $form_state->getValue('for_id'))
+                                    ->execute();
+                        } else {
+                            $update = Database::getConnection('external_db', 'external_db')
+                                    ->update('ek_project_documents')
+                                    ->condition('id', $form_state->getValue('for_id'))
+                                    ->fields($fields)
+                                    ->execute();
+                        }
+                    } else {
+                        // the values cannot be changed
+                        $owner = 0;
+                    }
+        
+                    $response = new AjaxResponse();
+                    $clear = new InvokeCommand('.alert', "html", [""]);
+                    $response->addCommand($clear);
+                    if ($owner == '0') {
+                        $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--warning'>" . $this->t('unchanged') . "</div>"));
+                        
+                    } elseif ($update) {
+                        Cache::invalidateTags(['project_page_view']);
+                        $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--status'>" . $this->t('saved') . "</div>"));
+                    } else {
+                        $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--error'>" . $this->t('error') . "</div>"));
+                    }
+                    return $response;
+       
+    }
+
+    public function dialogClose() {
+        $response = new AjaxResponse();
+        $response->addCommand(new CloseDialogCommand('#drupal-modal'));
+        return $response;
     }
 
     /**
@@ -138,80 +229,7 @@ class ProjectAccessEdit extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-        //set a security check in order to prevent any user to change data except the owner
-        if ($form_state->getValue('type') == 'project') {
-            $query = "SELECT share,deny,cid,pcode,owner FROM {ek_project} WHERE id=:id";
-        } else {
-            //select data from documents
-            $query = "SELECT d.share,d.deny,cid,d.pcode,owner FROM {ek_project_documents} d INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE d.id=:id";
-        }
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':id' => $form_state->getValue('for_id')))
-                ->fetchObject();
-
-        if (\Drupal::currentUser()->id() == $data->owner) {
-            //owner can edit data
-            $owner = 1;
-            $query = Database::getConnection()->select('users_field_data', 'u');
-            $query->fields('u', ['uid', 'name']);
-            $query->condition('uid', 0, '<>');
-            $users = $query->execute();
-            $share = explode(',', $data->share);
-            $deny = explode(',', $data->deny);
-            $new_share = array();
-            $new_deny = array();
-
-            while ($u = $users->fetchObject()) {
-                if (in_array($u->uid, $form_state->getValue('users')) || $data->owner == $u->uid) {
-                    array_push($new_share, $u->uid);
-                } else {
-                    array_push($new_deny, $u->uid);
-                }
-            }
-
-            if (empty($new_deny)) {
-                $new_deny = '0';
-            }
-
-
-            $fields = array(
-                'share' => implode(',', $new_share),
-                'deny' => $new_deny == '0' ? 0 : implode(',', $new_deny),
-            );
-
-            if ($form_state->getValue('type') == 'project') {
-                $update = Database::getConnection('external_db', 'external_db')
-                        ->update('ek_project')->fields($fields)
-                        ->condition('id', $form_state->getValue('for_id'))
-                        ->execute();
-            } else {
-                $update = Database::getConnection('external_db', 'external_db')
-                        ->update('ek_project_documents')
-                        ->condition('id', $form_state->getValue('for_id'))
-                        ->fields($fields)
-                        ->execute();
-            }
-        } else {
-            //the values cannot be changed
-            $owner = 0;
-        }
-
-
-
-
-        if ($owner == '0') {
-            $form_state->set('message', $this->t('unchanged'));
-            $form_state->setRebuild();
-        } elseif ($update) {
-            Cache::invalidateTags(['project_page_view']);
-            $form_state->set('message', $this->t('saved'));
-            $form_state->setRebuild();
-        } else {
-            $form_state->set('message', $this->t('error'));
-            $form_state->setRebuild();
-        }
-    }
+    public function submitForm(array &$form, FormStateInterface $form_state) {}
+    
 
 }
