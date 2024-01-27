@@ -7,6 +7,10 @@
 
 namespace Drupal\ek_admin\Form;
 
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\AppendCommand;
+use Drupal\Core\Ajax\CloseDialogCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
@@ -88,25 +92,40 @@ class DocAccessEdit extends FormBase {
             '#type' => 'hidden',
             '#value' => $id,
         ];
-
-
-
-        $form['actions'] = ['#type' => 'actions'];
-        $form['actions']['access'] = [
-            '#id' => 'accessbutton',
-            '#type' => 'submit',
-            '#value' => $this->t('Save'),
-            '#attributes' => array('class' => array('use-ajax-submit')),
+        
+        $form['alert'] = [
+            '#type' => 'item',
+            '#prefix' => "<div class='alert'>",
+            '#suffix' => '</div>',
         ];
 
+        $form['actions'] = [
+            '#type' => 'actions',
+            '#attributes' => ['class' => ['container-inline']],
+        ];
 
-        if ($form_state->get('message') <> '') {
-            $form['message'] = [
-                '#markup' => "<div class='red'>" . $this->t('Data') . ": " . $form_state->get('message') . "</div>",
-            ];
-            $form_state->set('message', '');
-            $form_state->setRebuild();
-        }
+        $form['actions']['save'] = [
+            '#id' => 'savebutton',
+            '#type' => 'submit',
+            '#value' => $this->t('Save'),
+            '#ajax' => [
+                'callback' => [$this, 'formCallback'],
+                'wrapper' => 'alert',
+                'method' => 'replace',
+                'effect' => 'fade',
+            ],
+        ];
+
+        $form['actions']['close'] = [
+            '#id' => 'closebutton',
+            '#type' => 'submit',
+            '#value' => $this->t('Close'),
+            '#ajax' => [
+                'callback' => [$this, 'dialogClose'],
+                'effect' => 'fade',
+                
+            ],
+        ];
 
         return $form;
     }
@@ -114,14 +133,17 @@ class DocAccessEdit extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-        
-    }
+    public function validateForm(array &$form, FormStateInterface $form_state) {}
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
+    public function submitForm(array &$form, FormStateInterface $form_state){}
+
+    /**
+     * Ajax call back
+     */
+    public function formCallback(array &$form, FormStateInterface $form_state) {
 
         if($form_state->getValue('reset') == 1) {
             $fields = array(
@@ -145,7 +167,6 @@ class DocAccessEdit extends FormBase {
                 $deny = '0';
             }
 
-
             $fields = array(
                 'share' => implode(',', $share),
                 'deny' => implode(',', $deny),
@@ -156,14 +177,21 @@ class DocAccessEdit extends FormBase {
                         ->update('ek_company_documents')->fields($fields)
                         ->condition('id', $form_state->getValue('for_id'))->execute();
 
+        $response = new AjaxResponse();
+        $clear = new InvokeCommand('.alert', "html", [""]);
+        $response->addCommand($clear);
 
         if ($update) {
-            $form_state->set('message', $this->t('saved'));
-            $form_state->setRebuild();
+            $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--status'>" . $this->t('saved') . "</div>"));
         } else {
-            $form_state->set('message', $this->t('error'));
-            $form_state->setRebuild();
+            $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--error'>" . $this->t('error') . "</div>"));
         }
+        return $response;
     }
 
+    public function dialogClose() {
+        $response = new AjaxResponse();
+        $response->addCommand(new CloseDialogCommand('#drupal-modal'));
+        return $response;
+    }
 }
