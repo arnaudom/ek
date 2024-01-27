@@ -7,6 +7,10 @@
 
 namespace Drupal\ek_finance\Form;
 
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\AppendCommand;
+use Drupal\Core\Ajax\CloseDialogCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
@@ -29,55 +33,71 @@ class NewAccountForm extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $param = null) {
         $param = explode('-', $param);
 
-
-
-        $form['coid'] = array(
+        $form['coid'] = [
             '#type' => 'hidden',
             '#value' => $param[0],
-        );
+        ];
 
-        $form['for_class'] = array(
+        $form['for_class'] = [
             '#type' => 'hidden',
             '#value' => str_replace('%', '', $param[1]),
-        );
-        $form['class'] = array(
+        ];
+
+        $form['class'] = [
             '#type' => 'item',
             '#markup' => str_replace('%', '', $param[1]),
             '#prefix' => "<div class='container-inline'>",
-        );
+        ];
 
-        $form['aid'] = array(
+        $form['aid'] = [
             '#type' => 'textfield',
             '#size' => 8,
             '#maxlength' => 3,
             '#required' => true,
             '#suffix' => '</div>',
-        );
+        ];
 
-        $form['aname'] = array(
+        $form['aname'] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#title' => $this->t('account name'),
             '#maxlength' => 50,
             '#required' => true,
-        );
+        ];
+        
+        $form['alert'] = [
+            '#type' => 'item',
+            '#prefix' => "<div class='alert'>",
+            '#suffix' => '</div>',
+        ];
 
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['save'] = array(
-            '#id' => 'buttonid',
+        $form['actions'] = [
+            '#type' => 'actions',
+            '#attributes' => ['class' => ['container-inline']],
+        ];
+
+        $form['actions']['save'] = [
+            '#id' => 'savebutton',
             '#type' => 'submit',
             '#value' => $this->t('Save'),
-            '#attributes' => array('class' => array('use-ajax-submit')),
-        );
+            '#ajax' => [
+                'callback' => [$this, 'formCallback'],
+                'wrapper' => 'alert',
+                'method' => 'replace',
+                'effect' => 'fade',
+            ],
+        ];
 
-
-        if ($form_state->get('message') <> '') {
-            $form['message'] = array(
-                '#markup' => "<div class='red'>" . $form_state->get('message') . "</div>",
-            );
-            $form_state->set('message', '');
-            $form_state->setRebuild();
-        }
+        $form['actions']['close'] = [
+            '#id' => 'closebutton',
+            '#type' => 'submit',
+            '#value' => $this->t('Close'),
+            '#ajax' => [
+                'callback' => [$this, 'dialogClose'],
+                'effect' => 'fade',
+                
+            ],
+        ];
 
         return $form;
     }
@@ -86,33 +106,44 @@ class NewAccountForm extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
+        if (strlen($form_state->getValue('aid')) < 3 || !is_numeric($form_state->getValue('aid'))) {
+            $form_state->set('input', $this->t('Error: account value not valid'));
+            $form_state->set('error', 1);
+        }
+
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a');
+            $query->fields('a', ['id']);
+            $query->condition('coid', $form_state->getValue('coid'));
+            $query->condition('aid', $form_state->getValue('for_class') . $form_state->getValue('aid'));
+            $id = $query->execute()->fetchField();
         
+            if ($id > 0) {
+                $form_state->set('input', $this->t('Error: account already exist'));
+                $form_state->set('error', 2);
+            }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
+    public function submitForm(array &$form, FormStateInterface $form_state) {}
+
+    /**
+     * {@inheritdoc}
+     */
+    public function formCallback(array &$form, FormStateInterface $form_state) {
 
 
-        //filter errors
-        if (strlen($form_state->getValue('aid')) < 3 || !is_numeric($form_state->getValue('aid'))) {
-            $form_state->set('message', $this->t('Error: account value not valid'));
-            $form_state->setRebuild();
-        } else {
-            $query = "SELECT id from {ek_accounts} WHERE coid=:c and aid=:a";
-            $aid = $form_state->getValue('for_class') . $form_state->getValue('aid');
-            $a = array(':c' => $form_state->getValue('coid'), ':a' => $aid);
-            $id = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
+        $response = new AjaxResponse();
+        $clear = new InvokeCommand('.alert', "html", [""]);
+        $response->addCommand($clear);
 
-            if ($id > 0) {
-                $form_state->set('message', $this->t('Error: account already exist'));
-                $form_state->setRebuild();
-            }
-        }
+        if($form_state->get('error')) {
+            $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--error'>" . $form_state->get('input') . "</div>"));
+            return $response;
+        } 
 
-
-        if ($form_state->get('message') == '') {
             $aid = $form_state->getValue('for_class') . $form_state->getValue('aid');
             $aname = \Drupal\Component\Utility\Xss::filter($form_state->getValue('aname'));
 
@@ -128,13 +159,16 @@ class NewAccountForm extends FormBase {
             );
             $insert = Database::getConnection('external_db', 'external_db')->insert('ek_accounts')->fields($fields)->execute();
 
-
-
             if ($insert) {
-                $form_state->set('message', $this->t('Account created') . ': ' . $aid . ' ' . $aname . '. ' . $this->t('Refresh list to view.'));
-                $form_state->setRebuild();
+                $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--status'>" 
+                .  $this->t('Account created') . ': ' . $aid . ' ' . $aname . '. ' . $this->t('Refresh list to view.') . "</div>"));
             }
-        }
+        return $response;
     }
 
+    public function dialogClose() {
+        $response = new AjaxResponse();
+        $response->addCommand(new CloseDialogCommand('#drupal-modal'));
+        return $response;
+    }
 }
