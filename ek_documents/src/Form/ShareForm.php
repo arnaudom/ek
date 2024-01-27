@@ -7,6 +7,10 @@
 
 namespace Drupal\ek_documents\Form;
 
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\AppendCommand;
+use Drupal\Core\Ajax\CloseDialogCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
@@ -34,7 +38,7 @@ class ShareForm extends FormBase
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
 
-        //confirm the file is owned by current user to avoid access via direct link
+        // confirm the file is owned by current user to avoid access via direct link
         if (DocumentsData::validate_owner($id)) {
             $settings = new Settings();
             
@@ -113,7 +117,6 @@ class ShareForm extends FormBase
                 '#type' => 'date',
                 '#size' => 11,
                 '#default_value' => $data->expire ? date('Y-m-d', $data->expire) : null,
-                //'#attributes' => array('class' => array('date'), 'placeholder' => $this->t('date') ),
                 '#description' => $this->t('Optional expiration date'),
             );
 
@@ -122,24 +125,42 @@ class ShareForm extends FormBase
                 '#default_value' => $id,
             );
 
-            $form['actions'] = array('#type' => 'actions');
-            $form['actions']['share'] = array(
-                '#id' => 'sharebuttonid',
+            $form['alert'] = [
+                '#type' => 'item',
+                '#prefix' => "<div class='alert'>",
+                '#suffix' => '</div>',
+            ];
+    
+            $form['actions'] = [
+                '#type' => 'actions',
+                '#attributes' => ['class' => ['container-inline']],
+            ];
+    
+            $form['actions']['save'] = [
+                '#id' => 'savebutton',
                 '#type' => 'submit',
-                '#value' => $this->t('Share'),
-                '#attributes' => array('class' => array('use-ajax-submit')),
-            );
+                '#value' => $this->t('Save'),
+                '#ajax' => [
+                    'callback' => [$this, 'formCallback'],
+                    'wrapper' => 'alert',
+                    'method' => 'replace',
+                    'effect' => 'fade',
+                ],
+            ];
+    
+            $form['actions']['close'] = [
+                '#id' => 'closebutton',
+                '#type' => 'submit',
+                '#value' => $this->t('Close'),
+                '#ajax' => [
+                    'callback' => [$this, 'dialogClose'],
+                    'effect' => 'fade',
+                    
+                ],
+            ];
 
-
-            if ($form_state->get('message') <> '') {
-                $form['message'] = array(
-                    '#markup' => "<div class='red'>" . $this->t('Data record') . ": " . $form_state->get('message') . "</div>",
-                );
-                $form_state->set('message', '');
-                $form_state->setRebuild();
-            }
         } else {
-            //not valid owner
+            
             $form['item'] = array(
                 '#markup' => $this->t('Your are not the owner of this file. Access denied.'),
             );
@@ -152,17 +173,21 @@ class ShareForm extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-    }
+    public function validateForm(array &$form, FormStateInterface $form_state) {}
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-        $id = $form_state->getValue('for_id');
+    public function submitForm(array &$form, FormStateInterface $form_state) {}
+    
+    /**
+     * call back function
+     */
+    public function formCallback(array &$form, FormStateInterface $form_state) {
 
+        $id = $form_state->getValue('for_id');
         $expire = 0;
-        $d = '';
+        $response = new AjaxResponse();
 
         if ($form_state->getValue('expire') != '') {
             if (DateTime::createFromFormat('Y-m-d', $form_state->getValue('expire'))) {
@@ -172,7 +197,7 @@ class ShareForm extends FormBase
             }
         }
 
-        //prepare the sharing list
+        // prepare the sharing list
         $share_uid = ',' . implode(',', $form_state->getValue('users')) . ',';
         if ($share_uid == ',,') {
             $share = 0;
@@ -181,7 +206,7 @@ class ShareForm extends FormBase
             $share = 1;
         }
 
-        //record the list
+        // record the list
         $fields = array(
             'share' => $share,
             'share_uid' => $share_uid,
@@ -231,12 +256,21 @@ class ShareForm extends FormBase
                 );
             }
 
+            
+            $clear = new InvokeCommand('.alert', "html", [""]);
+            $response->addCommand($clear);
             \Drupal\Core\Cache\Cache::invalidateTags(['shared_documents','new_documents_shared']);
-            $form_state->set('message', $this->t('success') . '. ' . $d);
-            $form_state->setRebuild();
+            $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--status'>" . $this->t('document shared') . "</div>"));
         } else {
-            $form_state->set('message', $this->t('failed') . '. ' . $d);
-            $form_state->setRebuild();
+            $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--error'>" . $this->t('error') . "</div>"));
         }
+        return $response;
     }
+
+    public function dialogClose() {
+        $response = new AjaxResponse();
+        $response->addCommand(new CloseDialogCommand('#drupal-modal'));
+        return $response;
+    }
+
 }

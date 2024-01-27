@@ -7,6 +7,10 @@
 
 namespace Drupal\ek_documents\Form;
 
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\AppendCommand;
+use Drupal\Core\Ajax\CloseDialogCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -23,82 +27,106 @@ class PostProject extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'ek_documents_post_project';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
-    {
-        $query = "SELECT filename from {ek_documents} WHERE id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $id))->fetchField();
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
 
-        $form['filename'] = array(
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_documents', 'd');
+        $query->fields('d', ['filename']);
+        $query->condition('id', $id);
+        $data = $query->execute()->fetchField();
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project_settings', 'p');
+        $query->fields('p', ['settings']);
+        $query->condition('coid', 0);
+        $settings = $query->execute()->fetchField();
+        $s = unserialize($settings);
+        
+        if (isset($s['sections'])) {
+            $s3 = $s['sections']['s3'];
+            $s5 = $s['sections']['s5'];
+        } else {
+            $s3 = $this->t("Section 3");
+            $s5 = $this->t("Section 5");
+        }
+        $folders = ProjectData::sectionsName();
+
+        $form['filename'] = [
             '#type' => 'item',
             '#markup' => $data,
-        );
+        ];
 
-        $form['id'] = array(
+        $form['id'] = [
             '#type' => 'hidden',
             '#size' => 1,
             '#value' => $id,
-        );
-        $form['pcode'] = array(
+        ];
+
+        $form['pcode'] = [
             '#type' => 'textfield',
             '#size' => 50,
             '#maxlength' => 150,
             '#required' => true,
             '#default_value' => null,
-            '#attributes' => array('placeholder' => $this->t('Ex. 123')),
+            '#attributes' => ['placeholder' => $this->t('Ex. 123')],
             '#title' => $this->t('Project'),
             '#autocomplete_route_name' => 'ek_look_up_projects',
-        );
+        ];
 
-        $folder = array('com' => $this->t('communication'), 'fi' => $this->t('finance'),);
-        $form['folder'] = array(
+        $folder = ['com' => $folders[2], 'fi' => $folders[4]];
+        $form['folder'] = [
             '#type' => 'select',
             '#options' => $folder,
-            '#size' => 4,
-            '#attributes' => array('placeholder' => $this->t('folder')),
+            '#size' => 1,
+            '#attributes' => ['placeholder' => $this->t('folder')],
             '#required' => true,
-        );
+        ];
 
-        $form['comment'] = array(
+        $form['comment'] = [
             '#type' => 'textfield',
             '#size' => 24,
-            '#attributes' => array('placeholder' => $this->t('comment')),
-        );
-
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['upload'] = array(
-            '#id' => 'upbuttonid1',
-            '#type' => 'submit',
-            '#value' => $this->t('Post'),
-            '#attributes' => array('class' => array('use-ajax-submit')),
-                //'#ajax' => array(
-                //'callback' => array($this, 'submitForm'),
-                //'wrapper' => 'message',
-                // ),
-        );
-
-        $form['message'] = array(
+            '#attributes' => ['placeholder' => $this->t('comment')],
+        ];
+        $form['alert'] = [
             '#type' => 'item',
-            '#markup' => '',
-            '#prefix' => '<div id="message" class="red" >',
+            '#prefix' => "<div class='alert'>",
             '#suffix' => '</div>',
-        );
+        ];
 
-        if ($form_state->get('message') <> '') {
-            $form['message'] = array(
-                '#markup' => "<div class='red'>" . $this->t('Posting') . ": " . $form_state->get('message') . "</div>",
-            );
-            $form_state->set('message', '');
-            $form_state->setRebuild();
-        }
+        $form['actions'] = [
+            '#type' => 'actions',
+            '#attributes' => ['class' => ['container-inline']],
+        ];
+
+        $form['actions']['save'] = [
+            '#id' => 'savebutton',
+            '#type' => 'submit',
+            '#value' => $this->t('Save'),
+            '#ajax' => [
+                'callback' => [$this, 'formCallback'],
+                'wrapper' => 'alert',
+                'method' => 'replace',
+                'effect' => 'fade',
+            ],
+        ];
+
+        $form['actions']['close'] = [
+            '#id' => 'closebutton',
+            '#type' => 'submit',
+            '#value' => $this->t('Close'),
+            '#ajax' => [
+                'callback' => [$this, 'dialogClose'],
+                'effect' => 'fade',
+                
+            ],
+        ];
 
         return $form;
     }
@@ -106,27 +134,48 @@ class PostProject extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->getValue('pcode') == '') {
-            $form_state->setErrorByName("pcode", $this->t('You need to select a project'));
+            $form_state->set("pcode", $this->t('You need to select a project'));
+            $form_state->set("error", 1);
+        }
+        if ($form_state->getValue('folder') == '') {
+            $form_state->set("folder", $this->t('You need to select a folder'));
+            $form_state->set("error", 1);
         }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
-        $string = explode(" ", $form_state->getValue('pcode'));
+    public function submitForm(array &$form, FormStateInterface $form_state) {}
 
-        //verify project access
-        if (ProjectData::validate_access($string[0])) {
+    /**
+     * Ajax callback
+     */
+    public function formCallback(array &$form, FormStateInterface $form_state) {
+
+        $string = explode(" ", $form_state->getValue('pcode'));
+        $response = new AjaxResponse();
+        $clear = new InvokeCommand('.alert', "html", [""]);
+        $response->addCommand($clear);
+
+        if($form_state->get('error')) {
+            if($form_state->get('pcode')){
+                $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--warning'>" . $form_state->get('pcode') . "</div>"));
+            }
+            if($form_state->get('folder')){
+                $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--warning'>" . $form_state->get('folder') . "</div>"));
+            }
+            
+            return $response;
+
+        }  elseif (ProjectData::validate_access($string[0])) {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_documents', 'd');
             $query->fields('d');
             $query->condition('id', $form_state->getValue('id'));
-            $doc = $query->execute()->fetchObject();
+            $data = $query->execute()->fetchObject();
             
             $code = array_reverse(explode('-', $string[1]));
             $pcode = $code[0];
@@ -134,40 +183,47 @@ class PostProject extends FormBase
 
             \Drupal::service('file_system')->prepareDirectory($to, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
             $to .= $data->filename;
-            
-            $move = \Drupal::service('file_system')->copy($doc->uri, $to, 'FILE_EXISTS_RENAME');
-            // if($move) {
-            $fields = array(
-                'pcode' => $string[1],
-                'filename' => $doc->filename,
-                'uri' => $move,
-                'folder' => $form_state->getValue('folder'),
-                'comment' => $form_state->getValue('comment') ? Xss::filter($form_state->getValue('comment')) : $this->t('Posted from documents'),
-                'date' => date('U'),
-                'size' => filesize($move),
-                'share' => 0,
-                'deny' => 0,
-            );
+            $move = \Drupal::service('file_system')->copy($data->uri, $to, 'FILE_EXISTS_RENAME');
+            if($move) {
+                $fields = [
+                    'pcode' => $string[1],
+                    'filename' => $data->filename,
+                    'uri' => $move,
+                    'folder' => $form_state->getValue('folder'),
+                    'comment' => $form_state->getValue('comment') ? Xss::filter($form_state->getValue('comment')) : $this->t('Posted from documents'),
+                    'date' => date('U'),
+                    'size' => filesize($move),
+                    'share' => 0,
+                    'deny' => 0,
+                ];
 
-            $insert = Database::getConnection('external_db', 'external_db')
+                $insert = Database::getConnection('external_db', 'external_db')
                             ->insert('ek_project_documents')
                             ->fields($fields)->execute();
+            }  
 
             if ($insert) {
-                $log = 'user ' . \Drupal::currentUser()->id() . '|' . \Drupal::currentUser()->getAccountName()
-                        . '|post|' . $data->filename . '|pcode|'
+                $log = 'user ' . \Drupal::currentUser()->id() . ' | ' . \Drupal::currentUser()->getAccountName()
+                        . '| post |' . $data->filename . '| pcode |'
                         . $form_state->getValue('pcode');
                 \Drupal::logger('ek_documents')->notice($log);
 
-                $form_state->set('message', $this->t('success'));
-                $form_state->setRebuild();
+                $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--status'>" 
+                . $this->t('copied') . " " . $data->filename . " " . $this->t('to') . " " . $form_state->getValue('pcode') . "</div>"));
             } else {
-                $form_state->set('message', $this->t('failed'));
-                $form_state->setRebuild();
+                $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--error'>" . $this->t('error copying file') . "</div>"));
             }
-        } else {//no acess
-            $form_state->set('message', $this->t('access denied'));
-            $form_state->setRebuild();
+        } else {
+            $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--warning'>" . $this->t('access denied') . "</div>"));
+            
         }
+        return $response;
     }
+
+    public function dialogClose() {
+        $response = new AjaxResponse();
+        $response->addCommand(new CloseDialogCommand('#drupal-modal'));
+        return $response;
+    }
+
 }
