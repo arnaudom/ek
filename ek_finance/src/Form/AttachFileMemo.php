@@ -7,10 +7,13 @@
 
 namespace Drupal\ek_finance\Form;
 
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\AppendCommand;
+use Drupal\Core\Ajax\AttachCommand;
+use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Component\Utility\Bytes;
 use Drupal\Component\Utility\Environment;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\File\FileSystemInterface;
@@ -67,97 +70,93 @@ class AttachFileMemo extends FormBase {
                     ->query($query, array(':id' => $id))
                     ->fetchObject();
 
-
-
-            $form['edit_memo'] = array(
+            $form['edit_memo'] = [
                 '#type' => 'item',
-                '#markup' => '<h2>' . $this->t('Memo ref. @p', array('@p' => $data->serial)) . '</h2>',
-            );
+                '#markup' => '<h2>' . $this->t('Memo ref. @p', ['@p' => $data->serial]). '</h2>',
+            ];
 
-            $form['mission'] = array(
+            $form['mission'] = [
                 '#type' => 'item',
                 '#markup' => '<h2>' . $data->mission . '</h2>',
-            );
-            $form['serial'] = array(
+            ];
+            $form['serial'] = [
                 '#type' => 'hidden',
                 '#value' => $data->serial,
-            );
-            $form['category'] = array(
+            ];
+            $form['category'] = [
                 '#type' => 'hidden',
                 '#value' => $data->category,
-            );
+            ];
         } else {
             
         }
 
-        $type = array(1 => "internal", 2 => "internal", 3 => "internal", 4 => "internal", 5 => "personal");
-        $url = Url::fromRoute('ek_finance_manage_list_memo_' . $type[$data->category], array(), array())->toString();
-        $form['back'] = array(
+        $type = [1 => "internal", 2 => "internal", 3 => "internal", 4 => "internal", 5 => "personal"];
+        $url = Url::fromRoute('ek_finance_manage_list_memo_' . $type[$data->category], [], [])->toString();
+        $form['back'] = [
             '#type' => 'item',
-            '#markup' => $this->t('<a href="@url">List</a>', array('@url' => $url)),
-        );
+            '#markup' => $this->t('<a href="@url">List</a>', ['@url' => $url]),
+        ];
 
 //
-        // Attachments
+// Attachments
 //
 
-        $form['tempSerial'] = array(
+        $form['tempSerial'] = [
             //used for file uploaded
             '#type' => 'hidden',
             '#value' => $tempSerial,
-        );
+        ];
 
-        $form['attach'] = array(
+        $form['attach'] = [
             '#type' => 'details',
             '#title' => $this->t('Attachments'),
             '#open' => true,
-        );
-        $form['attach']['upload_doc'] = array(
+        ];
+        $form['attach']['upload_doc'] = [
             '#type' => 'file',
             '#title' => $this->t('Select file'),
             '#prefix' => '<div class="container-inline">',
-        );
+        ];
 
-        $form['attach']['upload'] = array(
+        $form['attach']['upload'] = [
             '#id' => 'upbuttonid',
             '#type' => 'button',
             '#value' => $this->t('Attach'),
             '#suffix' => '</div>',
-            '#ajax' => array(
-                'callback' => array($this, 'uploadFile'),
+            '#ajax' => [
+                'callback' => [$this, 'uploadFile'],
                 'wrapper' => 'new_attachments',
                 'effect' => 'fade',
                 'method' => 'append',
-            ),
-        );
+            ],
+        ];
 
-        $form['attach']['attach_new'] = array(
+        $form['attach']['attach_new'] = [
             '#type' => 'container',
-            '#attributes' => array(
+            '#attributes' => [
                 'id' => 'attachments',
                 'class' => 'table'
-            ),
-        );
+            ],
+        ];
 
-        $form['attach']['attach_error'] = array(
+        $form['attach']['attach_error'] = [
             '#type' => 'container',
-            '#attributes' => array(
+            '#attributes' => [
                 'id' => 'error',
-            ),
-        );
+            ],
+        ];
 
-
-
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['record'] = array(
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['record'] = [
             '#type' => 'submit',
             '#value' => $this->t('Record'),
-        );
+        ];
 
-        $form['#attached'] = array(
-            'drupalSettings' => array('id' => $id, 'serial' => $tempSerial),
-            'library' => array('ek_finance/ek_finance.memo_form'),
-        );
+        $form['#attached'] = [
+            'drupalSettings' => ['id' => $id, 'serial' => $tempSerial],
+            'library' => ['ek_finance/ek_finance.memo_form'],
+        ];
 
 
         return $form;
@@ -171,12 +170,16 @@ class AttachFileMemo extends FormBase {
      */
     public function uploadFile(array &$form, FormStateInterface $form_state) {
 
-        //upload
+
+        $response = new AjaxResponse();
+        $clear = new InvokeCommand('#error', "html", [""]);
+        $response->addCommand($clear);
+
         $extensions = 'png jpeg jpg';
         // @TODO Remove for Drupal 8.5 and 8.6.
         $max_bytes = floatval(\Drupal::VERSION) < 8.7
             ? file_upload_max_size() : Environment::getUploadMaxSize();
-        $max_filesize = Bytes::toInt($max_bytes);
+        $max_filesize = Bytes::toNumber($max_bytes);
         $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [$max_filesize]);
         $file = file_save_upload("upload_doc", $validators, false, 0);
 
@@ -194,14 +197,16 @@ class AttachFileMemo extends FormBase {
             $insert = Database::getConnection('external_db', 'external_db')
                             ->insert('ek_expenses_memo_documents')->fields($fields)->execute();
 
-            $response = new AjaxResponse();
+            
             if ($insert) {
-                return $response->addCommand(new HtmlCommand('#error', ""));
+                
             } else {
                 $msg = "<div aria-label='Error message' class='messages messages--error'>"
                         . $this->t('Error') . "</div>";
-                return $response->addCommand(new HtmlCommand('#error', $msg));
+                $response->addCommand(new AppendCommand('#error', $msg));
             }
+            return $response;
+
         } else {
             $m = \Drupal::messenger()->messagesByType('error');
             $e = '';
@@ -218,7 +223,7 @@ class AttachFileMemo extends FormBase {
                     . $e
                     . "</div>";
             $response = new AjaxResponse();
-            return $response->addCommand(new HtmlCommand('#error', $msg));
+            return $response->addCommand(new AppendCommand('#error', $msg));
         }
     }
 

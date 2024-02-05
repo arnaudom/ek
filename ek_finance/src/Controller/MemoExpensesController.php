@@ -193,8 +193,7 @@ class MemoExpensesController extends ControllerBase
      *  @return Object
      *  form
      */
-    public function attachMemo($id)
-    {
+    public function attachMemo($id) {
 
 // filter edition access
         $memo = false;
@@ -249,8 +248,7 @@ class MemoExpensesController extends ControllerBase
      *  @return array
      *  rendered html
      */
-    public function listMemoInternal(Request $request)
-    {
+    public function listMemoInternal(Request $request) {
         $build['filter_imemos'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterMemo', 'internal');
 
         $settings = new FinanceSettings();
@@ -497,8 +495,7 @@ class MemoExpensesController extends ControllerBase
      *  @return array
      *  rendered html
      */
-    public function listMemoPersonal(Request $request)
-    {
+    public function listMemoPersonal(Request $request) {
         $build['filter_imemos'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterMemo', 'personal');
 
         $settings = new FinanceSettings();
@@ -779,8 +776,7 @@ class MemoExpensesController extends ControllerBase
      *  form
      *
      */
-    public function payMemo(Request $request, $id = null)
-    {
+    public function payMemo(Request $request, $id = null) {
         $query = "SELECT entity_to FROM {ek_expenses_memo} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $id))
@@ -812,8 +808,7 @@ class MemoExpensesController extends ControllerBase
       *  form
       *
       */
-    public function resetPay($id = null)
-    {
+    public function resetPay($id = null) {
         $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_expenses_memo', 'm')
                             ->fields('m', ['entity_to','status','post'])
@@ -846,8 +841,7 @@ class MemoExpensesController extends ControllerBase
      *  form
      *
      */
-    public function receiveMemo(Request $request, $id = null)
-    {
+    public function receiveMemo(Request $request, $id = null) {
         $query = "SELECT entity FROM {ek_expenses_memo} WHERE id=:id";
         $data = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $id))
@@ -876,8 +870,7 @@ class MemoExpensesController extends ControllerBase
      *
      *  @return mixed
      */
-    public function printMemo(Request $request, $id = null)
-    {
+    public function printMemo(Request $request, $id = null) {
         $format = 'pdf';
         $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterPrint', $id, 'expenses_memo', $format);
 
@@ -1076,8 +1069,7 @@ class MemoExpensesController extends ControllerBase
      * @return Object
      *  form
      */
-    public function deleteMemo(Request $request, $id = null)
-    {
+    public function deleteMemo(Request $request, $id = null) {
         $build['delete_memo'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\DeleteMemo', $id);
 
         return $build;
@@ -1086,8 +1078,7 @@ class MemoExpensesController extends ControllerBase
     /**
      * AJAX callback handler for AjaxTestDialogForm.
      */
-    public function modal($id)
-    {
+    public function modal($id) {
         return $this->dialog(true, $id);
     }
 
@@ -1100,13 +1091,12 @@ class MemoExpensesController extends ControllerBase
      * @return \Drupal\Core\Ajax\AjaxResponse
      *   An ajax response object.
      */
-    protected function dialog($is_modal = false, $id = null)
-    {
+    protected function dialog($is_modal = false, $id = null) {
         $query = "SELECT d.id,uri FROM {ek_expenses_memo_documents} d "
                 . " INNER JOIN {ek_expenses_memo} m ON d.serial=m.serial WHERE m.id=:s";
         $attach = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => $id));
         $markup = '<ul>';
-        $content = array();
+        $content = [];
 
         while ($l = $attach->fetchObject()) {
             $parts = explode('/', $l->uri);
@@ -1138,8 +1128,7 @@ class MemoExpensesController extends ControllerBase
      *   (optional) Null for total transactions, Int for company id
      *
      */
-    public function transactions($id = null)
-    {
+    public function transactions($id = null) {
         $form = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterTransactions');
 
         if ($_SESSION['transfilter']['filter'] == 1) {

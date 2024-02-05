@@ -8,6 +8,9 @@
 namespace Drupal\ek_finance\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\AppendCommand;
+use Drupal\Core\Ajax\AttachCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
@@ -73,7 +76,7 @@ class NewMemo extends FormBase {
 
         if (isset($id) && $id != null) {
 
-            //edit existing memo
+            // edit existing memo
             $chart = $this->settings->get('chart');
             $baseCurrency = $this->settings->get('baseCurrency');
             $n = 0;
@@ -93,36 +96,36 @@ class NewMemo extends FormBase {
 
             if ($clone == false) {
                 $date = $data->date;
-                $form['edit_memo'] = array(
+                $form['edit_memo'] = [
                     '#type' => 'item',
-                    '#markup' => $this->t('Memo ref. @p', array('@p' => $data->serial)),
-                );
-                $form['serial'] = array(
+                    '#markup' => $this->t('Memo ref. @p', ['@p' => $data->serial]),
+                ];
+                $form['serial'] = [
                     '#type' => 'hidden',
                     '#value' => $data->serial,
-                );
-                $form['id'] = array(
+                ];
+                $form['id'] = [
                     '#type' => 'hidden',
                     '#value' => $id,
-                );
+                ];
             } else {
                 $date = date('Y-m-d');
-                $form['edit_memo'] = array(
+                $form['edit_memo'] = [
                     '#type' => 'item',
-                    '#markup' => $this->t('Clone ref. @p', array('@p' => $data->serial)),
-                );
-                $form['new_memo'] = array(
+                    '#markup' => $this->t('Clone ref. @p', ['@p' => $data->serial]),
+                ];
+                $form['new_memo'] = [
                     '#type' => 'hidden',
                     '#value' => 2,
-                );
-                $form['serial'] = array(
+                ];
+                $form['serial'] = [
                     '#type' => 'hidden',
                     '#value' => $data->serial,
-                );
-                $form['id'] = array(
+                ];
+                $form['id'] = [
                     '#type' => 'hidden',
                     '#value' => $id,
-                );
+                ];
             }
 
             if (!$form_state->get('num_items')) {
@@ -134,15 +137,15 @@ class NewMemo extends FormBase {
             }
 
             if ($category == 'internal') {
-                $AidOptions = AidList::listaid($data->entity, array($chart['expenses'], $chart['other_expenses']), 1);
+                $AidOptions = AidList::listaid($data->entity, [$chart['expenses'], $chart['other_expenses']], 1);
             } else {
-                $AidOptions = AidList::listaid($data->entity_to, array($chart['expenses'], $chart['other_expenses']), 1);
+                $AidOptions = AidList::listaid($data->entity_to, [$chart['expenses'], $chart['other_expenses']], 1);
             }
 
             if ($category == 'personal' && $this->settings->get('authorizeMemo') == 1) {
                 $auth_user = explode('|', $data->auth);
                 $this->authorizer = $auth_user[1];
-                //use flag to control form display options when opened by authorizer. Authorizer can't edit all data
+                // use flag to control form display options when opened by authorizer. Authorizer can't edit all data
                 if (\Drupal::currentUser()->id() == $auth_user[1]) {
                     $authorizer = true;
                 } else {
@@ -152,11 +155,11 @@ class NewMemo extends FormBase {
                 $authorizer = false;
             }
         } else {
-            //new
-            $form['new_memo'] = array(
+            // new
+            $form['new_memo'] = [
                 '#type' => 'hidden',
                 '#value' => 1,
-            );
+            ];
             $date = date('Y-m-d');
             $grandtotal = 0;
             $n = 0;
@@ -166,44 +169,44 @@ class NewMemo extends FormBase {
         }
 
 
-        $form['tempSerial'] = array(
-            //used for file uploaded
+        $form['tempSerial'] = [
+            // used for file uploaded
             '#type' => 'hidden',
             '#default_value' => $tempSerial,
             '#id' => 'tempSerial'
-        );
+        ];
 
-        $url = Url::fromRoute('ek_finance_manage_list_memo_' . $category, array(), array())->toString();
-        $form['back'] = array(
+        $url = Url::fromRoute('ek_finance_manage_list_memo_' . $category, [], [])->toString();
+        $form['back'] = [
             '#type' => 'item',
-            '#markup' => $this->t('<a href="@url">List</a>', array('@url' => $url)),
-        );
+            '#markup' => $this->t('<a href="@url">List</a>', ['@url' => $url]),
+        ];
 
 //
-        //Options
+//Options
 //
-        $form['options'] = array(
+        $form['options'] = [
             '#type' => 'details',
             '#title' => $this->t('Options'),
             '#open' => isset($id) || ($form_state->get('num_items') > 0) ? false : true,
-        );
+        ];
 
         if ($category == 'internal') {
-            $type = array(1 => "Internal invoice", 2 => "Purchase", 3 => "Claim", 4 => "Advance");
+            $type = [1 => "Internal invoice", 2 => "Purchase", 3 => "Claim", 4 => "Advance"];
             $type_select = null;
         } else {
-            $type = array(5 => "Personal claim");
+            $type = [5 => "Personal claim"];
             $type_select = 5;
         }
 
-        $form['options']['category'] = array(
+        $form['options']['category'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $type,
             '#required' => true,
             '#default_value' => isset($data->category) ? $data->category : $type_select,
             '#title' => $this->t('Memo type'),
-        );
+        ];
 
         if ($this->settings->get('companyMemo') == 1) {
             $company = AccessCheck::CompanyListByUid();
@@ -214,9 +217,9 @@ class NewMemo extends FormBase {
             if (\Drupal::currentUser()->hasPermission('admin_memos')) {
                 $entity = \Drupal\ek_admin\Access\AccessCheck::listUsers();
             } else {
-                $entity = array(
+                $entity = [
                     \Drupal::currentUser()->id() => \Drupal::currentUser()->getAccountName()
-                );
+                ];
                 $data->entity = \Drupal::currentUser()->id();
             }
         } else {
@@ -224,7 +227,7 @@ class NewMemo extends FormBase {
         }
 
 
-        $form['options']['entity'] = array(
+        $form['options']['entity'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $entity,
@@ -233,9 +236,9 @@ class NewMemo extends FormBase {
             '#title' => $this->t('From entity'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
-        );
+        ];
 
-        $form['options']['entity_to'] = array(
+        $form['options']['entity_to'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
@@ -244,40 +247,40 @@ class NewMemo extends FormBase {
             '#title' => $this->t('To entity'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
-        );
+        ];
 
 
 
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
-            $client = array(0 => $this->t('not applicable'));
+            $client = [0 => $this->t('not applicable')];
             $client += \Drupal\ek_address_book\AddressBookData::addresslist();
 
             if (!empty($client)) {
-                $form['options']['client'] = array(
+                $form['options']['client'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $client,
                     '#required' => true,
                     '#default_value' => isset($data->client) ? $data->client : null,
                     '#title' => $this->t('Client or supplier'),
-                    '#attributes' => array('style' => array('width:300px;')),
-                );
+                    '#attributes' => ['style' => ['width:300px;']],
+                ];
             } else {
-                $link = Url::fromRoute('ek_address_book.new', array())->toString();
+                $link = Url::fromRoute('ek_address_book.new', [])->toString();
 
-                $form['options']['client'] = array(
+                $form['options']['client'] = [
                     '#markup' => $this->t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
                     '#default_value' => 0,
-                );
+                ];
             }
         } else {
-            $form['options']['client'] = array(
+            $form['options']['client'] = [
                 '#markup' => $this->t('You do not have any client or supplier list.'),
                 '#default_value' => 0,
-            );
+            ];
         }
 
-        $form['options']['date'] = array(
+        $form['options']['date'] = [
             '#type' => 'date',
             '#id' => 'edit-from',
             '#size' => 12,
@@ -286,9 +289,9 @@ class NewMemo extends FormBase {
             '#title' => $this->t('date'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
-        );
+        ];
 
-        $form['options']['mission'] = array(
+        $form['options']['mission'] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#required' => true,
@@ -296,30 +299,30 @@ class NewMemo extends FormBase {
             '#title' => $this->t('Memo object'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
-        );
+        ];
 
         if ($this->moduleHandler->moduleExists('ek_projects')) {
             // project
 
-            $form['options']['pcode'] = array(
+            $form['options']['pcode'] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => ProjectData::listprojects(0),
                 '#required' => true,
                 '#default_value' => isset($data->pcode) ? $data->pcode : null,
                 '#title' => $this->t('Project'),
-                '#attributes' => array('style' => array('width:250px;')),
-            );
+                '#attributes' => ['style' => ['width:250px;']],
+            ];
         } else {
-            $form['options']['pcode'] = array(
+            $form['options']['pcode'] = [
                 '#type' => 'textfield',
                 '#size' => 30,
                 '#required' => false,
                 '#default_value' => isset($data->pcode) ? $data->pcode : null,
                 '#title' => $this->t('Project tag'),
-            );
+            ];
         }
-        $form['options']['currency'] = array(
+        $form['options']['currency'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $CurrencyOptions,
@@ -328,50 +331,47 @@ class NewMemo extends FormBase {
             '#title' => $this->t('currency'),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => '</div>',
-        );
+        ];
 
-
-
-
-        $form['options']['budget'] = array(
+        $form['options']['budget'] = [
             '#type' => 'radios',
-            '#options' => array('1' => $this->t('yes'), '0' => $this->t('no')),
+            '#options' => ['1' => $this->t('yes'), '0' => $this->t('no')],
             '#default_value' => isset($data->budget) ? $data->budget : null,
-            '#attributes' => array('title' => $this->t('budget')),
+            '#attributes' => ['title' => $this->t('budget')],
             '#title' => $this->t('Budgeted'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div>',
-        );
+        ];
 
-        $form['options']['refund'] = array(
+        $form['options']['refund'] = [
             '#type' => 'checkbox',
             '#default_value' => isset($data->refund) ? $data->refund : 0,
-            '#attributes' => array('title' => $this->t('action')),
+            '#attributes' => ['title' => $this->t('action')],
             '#description' => $this->t('Refund'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div>',
-        );
+        ];
 
-        $form['options']['invoice'] = array(
+        $form['options']['invoice'] = [
             '#type' => 'checkbox',
             '#default_value' => isset($data->invoice) ? $data->invoice : 0,
-            '#attributes' => array('title' => $this->t('action')),
+            '#attributes' => ['title' => $this->t('action')],
             '#description' => $this->t('Invoice client'),
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div></div></div>',
-        );
+        ];
 
-        $form['options']['comment'] = array(
+        $form['options']['comment'] = [
             '#type' => 'textarea',
             '#rows' => 1,
             '#default_value' => isset($data->comment) ? $data->comment : null,
-            '#attributes' => array('placeholder' => $this->t('comment')),
-        );
+            '#attributes' => ['placeholder' => $this->t('comment')],
+        ];
 
 //
-        // Authorization
+// Authorization
 //
-
+ 
         if ($category == 'personal' && $this->settings->get('authorizeMemo') == 1) {
             $user_name = '';
             if (isset($auth_user)) {
@@ -382,101 +382,101 @@ class NewMemo extends FormBase {
                 $user_name = $query->execute()->fetchField();
             }
 
-            $form['autho'] = array(
+            $form['autho'] = [
                 '#type' => 'details',
                 '#title' => $this->t('Authorization'),
                 '#open' => true,
-            );
+            ];
 
-            $form['autho']['user'] = array(
+            $form['autho']['user'] = [
                 '#type' => 'textfield',
                 '#size' => 30,
                 '#required' => true,
                 '#default_value' => $user_name,
                 '#title' => $this->t('Authorizer'),
                 '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
-            );
+            ];
 
             if (isset($id) && $id != null) {
-                //implement authorization
+                // implement authorization
 
                 if ($auth_user[1] == \Drupal::currentUser()->id() || \Drupal::currentUser()->hasPermission('admin_memos')) {
-                    //authorizer need to approve
-                    $form['autho']['action'] = array(
+                    // authorizer need to approve
+                    $form['autho']['action'] = [
                         '#type' => 'radios',
-                        '#options' => array('read' => $this->t('read only (no action taken)'), 1 => $this->t('request more data or receipts'), 2 => $this->t('authorize'), 3 => $this->t('reject')),
+                        '#options' => ['read' => $this->t('read only (no action taken)'), 1 => $this->t('request more data or receipts'), 2 => $this->t('authorize'), 3 => $this->t('reject')],
                         '#default_value' => $auth_user[0],
-                        '#attributes' => array('title' => $this->t('action')),
+                        '#attributes' => ['title' => $this->t('action')],
                         '#title' => $this->t('Authorization'),
-                    );
+                    ];
                 } elseif (\Drupal::currentUser()->id() == $data->entity) {
-                    //display status to owner
-                    $action = array(0 => $this->t('not required'), 1 => $this->t('pending approval'), 2 => $this->t('authorized'), 3 => $this->t('rejected'));
-                    $form['autho']['info'] = array(
+                    // display status to owner
+                    $action = [0 => $this->t('not required'), 1 => $this->t('pending approval'), 2 => $this->t('authorized'), 3 => $this->t('rejected')];
+                    $form['autho']['info'] = [
                         '#type' => 'item',
                         '#markup' => $this->t('Authorization status') . ': ' . $action[$auth_user[0]],
-                    );
+                    ];
 
-                    $form['autho']['action'] = array(
+                    $form['autho']['action'] = [
                         '#type' => 'hidden',
                         '#value' => $auth_user[0],
-                    );
+                    ];
                 }
             }
         }
 
 //
-        // Items
+// Items
 //
 
-        $form['items'] = array(
+        $form['items'] = [
             '#type' => 'details',
             '#title' => $this->t('Items'),
             '#open' => true,
-        );
+        ];
 
 
-        $form['items']['actions']['add'] = array(
+        $form['items']['actions']['add'] = [
             '#type' => 'submit',
             '#value' => $this->t('Add item'),
-            '#submit' => array(array($this, 'addForm')),
+            '#submit' => [[$this, 'addForm']],
             '#limit_validation_errors' => [['category'], ['entity'], ['entity_to'], ['itemTable']],
-            '#attributes' => array('class' => array('button--add')),
-        );
+            '#attributes' => ['class' => ['button--add']],
+        ];
 
 
-        $header = array(
-            'account' => array(
+        $header = [
+            'account' => [
                 'data' => $this->t('Account'),
-            ),
-            'description' => array(
+            ],
+            'description' => [
                 'data' => $this->t('Description'),
-                'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
-            ),
-            'amount' => array(
+                'class' => [RESPONSIVE_PRIORITY_MEDIUM],
+            ],
+            'amount' => [
                 'data' => $this->t('Amount'),
-            ),
-            'receipt' => array(
+            ],
+            'receipt' => [
                 'data' => $this->t('Receipt'),
-            ),
-            'delete' => array(
+            ],
+            'delete' => [
                 'data' => $this->t('Delete'),
-            )
-        );
+            ]
+        ];
 
-        $form['items']['itemTable'] = array(
+        $form['items']['itemTable'] = [
             '#tree' => true,
             '#theme' => 'table',
             '#header' => $header,
-            '#rows' => array(),
-            '#attributes' => array('id' => 'itemTable'),
+            '#rows' => [],
+            '#attributes' => ['id' => 'itemTable'],
             '#empty' => '',
-        );
+        ];
 
 
         if (isset($detail)) {
-            //edition mode
-            //list current items
+            // edition mode
+            // list current items
 
             $grandtotal = 0;
             $rows = $form_state->getValue('itemTable');
@@ -485,72 +485,72 @@ class NewMemo extends FormBase {
                 $grandtotal += $d->amount;
                 $rowClass = ($rows[$n]['delete'] == 1) ? 'delete' : 'current';
 
-                $form['account'] = array(
+                $form['account'] = [
                     '#id' => 'account-' . $n,
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $AidOptions,
-                    '#attributes' => array('style' => array('width:110px;')),
+                    '#attributes' => ['style' => ['width:110px;']],
                     '#default_value' => $d->aid,
                     '#required' => true,
-                );
-                $form['description'] = array(
+                ];
+                $form['description'] = [
                     '#id' => 'description-' . $n,
                     '#type' => 'textfield',
                     '#size' => 38,
                     '#maxlength' => 200,
-                    '#attributes' => array('placeholder' => $this->t('description')),
+                    '#attributes' => ['placeholder' => $this->t('description')],
                     '#default_value' => $d->description,
                     '#required' => true,
-                );
-                $form['amount'] = array(
+                ];
+                $form['amount'] = [
                     '#id' => 'amount' . $n,
                     '#type' => 'textfield',
                     '#size' => 12,
                     '#maxlength' => 30,
-                    '#attributes' => array('placeholder' => $this->t('amount'), 'class' => array('amount')),
+                    '#attributes' => ['placeholder' => $this->t('amount'), 'class' => ['amount']],
                     '#default_value' => number_format($d->amount, $this->rounding),
                     '#required' => true,
-                );
-                $form['receipt'] = array(
+                ];
+                $form['receipt'] = [
                     '#id' => 'receipt-' . $n,
                     '#type' => 'textfield',
                     '#size' => 10,
                     '#maxlength' => 100,
-                    '#attributes' => array('placeholder' => $this->t('ref')),
+                    '#attributes' => ['placeholder' => $this->t('ref')],
                     '#default_value' => $d->receipt,
-                );
-                $form['delete'] = array(
+                ];
+                $form['delete'] = [
                     '#id' => 'del' . $n,
                     '#type' => 'checkbox',
                     '#default_value' => 0,
-                    '#attributes' => array(
+                    '#attributes' => [
                         'title' => $this->t('delete'),
                         'onclick' => "jQuery('#" . $n . "').toggleClass('delete');",
-                        'class' => array('amount')
-                    ),
-                );
+                        'class' => ['amount']
+                    ],
+                ];
 
-                //built edit rows for table
-                $form['items']['itemTable'][$n] = array(
+                // built edit rows for table
+                $form['items']['itemTable'][$n] = [
                     'account' => &$form['account'],
                     'description' => &$form['description'],
                     'amount' => &$form['amount'],
                     'receipt' => &$form['receipt'],
                     'delete' => &$form['delete']
-                );
+                ];
 
-                $form['items']['itemTable']['#rows'][$n] = array(
-                    'data' => array(
-                        array('data' => &$form['account']),
-                        array('data' => &$form['description']),
-                        array('data' => &$form['amount']),
-                        array('data' => &$form['receipt']),
-                        array('data' => &$form['delete']),
-                    ),
-                    'id' => array($n),
+                $form['items']['itemTable']['#rows'][$n] = [
+                    'data' => [
+                        ['data' => &$form['account']],
+                        ['data' => &$form['description']],
+                        ['data' => &$form['amount']],
+                        ['data' => &$form['receipt']],
+                        ['data' => &$form['delete']],
+                    ],
+                    'id' => [$n],
                     'class' => $rowClass,
-                );
+                ];
 
                 unset($form['account']);
                 unset($form['description']);
@@ -558,7 +558,7 @@ class NewMemo extends FormBase {
                 unset($form['receipt']);
                 unset($form['delete']);
             }
-        } //details of current records
+        } // details of current records
 
 
         if (isset($detail)) {
@@ -573,60 +573,60 @@ class NewMemo extends FormBase {
         for ($i = $n; $i <= $max; $i++) {
             $grandtotal += $rows[$i]['amount'];
             $n++;
-            $form['account'] = array(
+            $form['account'] = [
                 '#id' => 'account-' . $i,
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $AidOptions,
-                '#attributes' => array('style' => array('width:110px;')),
+                '#attributes' => ['style' => ['width:110px;']],
                 '#required' => true,
-            );
-            $form['description'] = array(
+            ];
+            $form['description'] = [
                 '#id' => 'description-' . $i,
                 '#type' => 'textfield',
                 '#size' => 38,
                 '#maxlength' => 200,
-                '#attributes' => array('placeholder' => $this->t('description')),
+                '#attributes' => ['placeholder' => $this->t('description')],
                 '#required' => true,
-            );
-            $form['amount'] = array(
+            ];
+            $form['amount'] = [
                 '#id' => 'amount' . $i,
                 '#type' => 'textfield',
                 '#size' => 12,
                 '#maxlength' => 30,
-                '#attributes' => array('placeholder' => $this->t('amount'), 'class' => array('amount')),
+                '#attributes' => ['placeholder' => $this->t('amount'), 'class' => ['amount']],
                 '#required' => true,
-            );
-            $form['receipt'] = array(
+            ];
+            $form['receipt'] = [
                 '#id' => 'receipt-' . $i,
                 '#type' => 'textfield',
                 '#size' => 10,
                 '#maxlength' => 100,
-                '#attributes' => array('placeholder' => $this->t('ref')),
-            );
-            $form['delete'] = array(
+                '#attributes' => ['placeholder' => $this->t('ref')],
+            ];
+            $form['delete'] = [
                 '#type' => 'item',
-            );
+            ];
 
-            //built rows for table
-            $form['items']['itemTable'][$i] = array(
+            // built rows for table
+            $form['items']['itemTable'][$i] = [
                 'account' => &$form['account'],
                 'description' => &$form['description'],
                 'amount' => &$form['amount'],
                 'receipt' => &$form['receipt'],
                 'delete' => &$form['delete']
-            );
+            ];
 
-            $form['items']['itemTable']['#rows'][$i] = array(
-                'data' => array(
-                    array('data' => &$form['account']),
-                    array('data' => &$form['description']),
-                    array('data' => &$form['amount']),
-                    array('data' => &$form['receipt']),
-                    array('data' => &$form['delete']),
-                ),
+            $form['items']['itemTable']['#rows'][$i] = [
+                'data' => [
+                    ['data' => &$form['account']],
+                    ['data' => &$form['description']],
+                    ['data' => &$form['amount']],
+                    ['data' => &$form['receipt']],
+                    ['data' => &$form['delete']],
+                ],
                 'id' => array($i)
-            );
+            ];
 
             unset($form['account']);
             unset($form['description']);
@@ -637,11 +637,11 @@ class NewMemo extends FormBase {
 
 
 
-        $form['items']['count'] = array(
+        $form['items']['count'] = [
             '#type' => 'hidden',
             '#value' => $n - 1,
-            '#attributes' => array('id' => 'itemsCount'),
-        );
+            '#attributes' => ['id' => 'itemsCount'],
+        ];
 
 
 
@@ -653,49 +653,49 @@ class NewMemo extends FormBase {
                 $converted = '';
             }
             $n++;
-            $form['account'] = array(
+            $form['account'] = [
                 '#type' => 'item',
                 '#markup' => $this->t('Total')
-            );
-            $form['description'] = array(
+            ];
+            $form['description'] = [
                 '#type' => 'hidden',
                 '#value' => 'total'
-            );
-            $form['amount'] = array(
+            ];
+            $form['amount'] = [
                 '#id' => 'grandTotal',
                 '#type' => 'textfield',
                 '#size' => 12,
                 '#maxlength' => 50,
                 '#value' => isset($grandtotal) ? number_format($grandtotal, $this->rounding) : 0,
-                '#attributes' => array('placeholder' => $this->t('total'), 'readonly' => 'readonly', 'class' => array('amount')),
-            );
-            $form['receipt'] = array(
+                '#attributes' => ['placeholder' => $this->t('total'), 'readonly' => 'readonly', 'class' => ['amount']],
+            ];
+            $form['receipt'] = [
                 '#type' => 'item',
                 '#markup' => "<div id='convertedValue' class='badge'>" . $converted . "</div>",
-            );
-            $form['delete'] = array(
+            ];
+            $form['delete'] = [
                 '#type' => 'item',
-            );
+            ];
 
-            //built rows for table total
-            $form['items']['itemTable'][$n] = array(
+            // built rows for table total
+            $form['items']['itemTable'][$n] = [
                 'account' => &$form['account'],
                 'description' => &$form['description'],
                 'amount' => &$form['amount'],
                 'receipt' => &$form['receipt'],
                 'delete' => &$form['delete']
-            );
+            ];
 
-            $form['items']['itemTable']['#rows'][$n] = array(
-                'data' => array(
-                    array('data' => &$form['account']),
-                    array('data' => &$form['description']),
-                    array('data' => &$form['amount']),
-                    array('data' => &$form['receipt']),
-                    array('data' => &$form['delete']),
-                ),
+            $form['items']['itemTable']['#rows'][$n] = [
+                'data' => [
+                    ['data' => &$form['account']],
+                    ['data' => &$form['description']],
+                    ['data' => &$form['amount']],
+                    ['data' => &$form['receipt']],
+                    ['data' => &$form['delete']],
+                ],
                 'id' => array($n)
-            );
+            ];
 
             unset($form['account']);
             unset($form['description']);
@@ -704,82 +704,81 @@ class NewMemo extends FormBase {
             unset($form['delete']);
 
             if ($form_state->get('num_items') > 0) {
-                $form['items']['remove'] = array(
+                $form['items']['remove'] = [
                     '#type' => 'submit',
                     '#value' => $this->t('remove last item'),
-                    '#limit_validation_errors' => array(),
-                    '#submit' => array(array($this, 'removeForm')),
-                    '#attributes' => array('class' => array('button--remove')),
-                );
+                    '#limit_validation_errors' => [],
+                    '#submit' => [[$this, 'removeForm']],
+                    '#attributes' => ['class' => ['button--remove']],
+                ];
             }
         }
 
 //
-        // Attachments
+// Attachments
 //
-        $form['attach'] = array(
+        $form['attach'] = [
             '#type' => 'details',
             '#title' => $this->t('Attachments'),
             '#open' => true,
-        );
-        $form['attach']['upload_doc'] = array(
+        ];
+        $form['attach']['upload_doc'] = [
             '#type' => 'file',
             '#title' => $this->t('Select file'),
             '#prefix' => '<div class="container-inline">',
-        );
+        ];
 
-        $form['attach']['upload'] = array(
+        $form['attach']['upload'] = [
             '#id' => 'upbuttonid',
             '#type' => 'button',
             '#value' => $this->t('Attach'),
             '#suffix' => '</div>',
-            '#ajax' => array(
-                'callback' => array($this, 'uploadFile'),
+            '#ajax' => [
+                'callback' => [$this, 'uploadFile'],
                 'wrapper' => 'new_attachments',
                 'effect' => 'fade',
                 'method' => 'append',
-            ),
-        );
+            ],
+        ];
 
-        $form['attach']['attach_new'] = array(
+        $form['attach']['attach_new'] = [
             '#type' => 'container',
-            '#attributes' => array(
+            '#attributes' => [
                 'id' => 'attachments',
                 'class' => 'table'
-            ),
-        );
+            ],
+        ];
 
-        $form['attach']['attach_error'] = array(
+        $form['attach']['attach_error'] = [
             '#type' => 'container',
-            '#attributes' => array(
+            '#attributes' => [
                 'id' => 'error',
-            ),
-        );
+            ],
+        ];
 
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['record'] = array(
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['record'] = [
             '#type' => 'submit',
             '#value' => $this->t('Record'),
-            '#attributes' => array('class' => array('button--record')),
-        );
+            '#attributes' => ['class' => ['button--record']],
+        ];
 
         if ($clone == true) {
             //do not display current cloned memo attachements
-            $form['#attached'] = array(
-                'drupalSettings' => array('id' => 0, 'serial' => $tempSerial, 'currencies' => CurrencyData::currencyRates(), 'baseCurrency' => $baseCurrency),
-                'library' => array('ek_finance/ek_finance.memo_form'),
-            );
+            $form['#attached'] = [
+                'drupalSettings' => ['id' => 0, 'serial' => $tempSerial, 'currencies' => CurrencyData::currencyRates(), 'baseCurrency' => $baseCurrency],
+                'library' => ['ek_finance/ek_finance.memo_form'],
+            ];
         } else {
-            $form['#attached'] = array(
-                'drupalSettings' => array('id' => $id, 'serial' => $tempSerial, 'currencies' => CurrencyData::currencyRates(), 'baseCurrency' => $baseCurrency),
-                'library' => array('ek_finance/ek_finance.memo_form'),
-            );
+            $form['#attached'] = [
+                'drupalSettings' => ['id' => $id, 'serial' => $tempSerial, 'currencies' => CurrencyData::currencyRates(), 'baseCurrency' => $baseCurrency],
+                'library' => ['ek_finance/ek_finance.memo_form'],
+            ];
         }
 
         return $form;
     }
 
-//
 
     /**
      * Callback to Add item to form
@@ -817,12 +816,16 @@ class NewMemo extends FormBase {
      */
     public function uploadFile(array &$form, FormStateInterface $form_state) {
 
-        //upload
+        // upload
+        $response = new AjaxResponse();
+        $clear = new InvokeCommand('#error', "html", [""]);
+        $response->addCommand($clear);
+
         $extensions = 'png jpg jpeg';
         $max_bytes = floatval(\Drupal::VERSION) < 8.7
             ? file_upload_max_size() : Environment::getUploadMaxSize();
-        $max_filesize = Bytes::toInt($max_bytes);
-        $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [$max_filesize]);
+        $max_filesize = Bytes::toNumber($max_bytes);
+        $validators = ['file_validate_extensions' => [$extensions], 'file_validate_size' => [$max_filesize]];
         $file = file_save_upload("upload_doc", $validators, false, 0);
 
         if ($file) {
@@ -839,14 +842,16 @@ class NewMemo extends FormBase {
             $insert = Database::getConnection('external_db', 'external_db')
                             ->insert('ek_expenses_memo_documents')->fields($fields)->execute();
 
-            $response = new AjaxResponse();
+            
             if ($insert) {
-                return $response->addCommand(new HtmlCommand('#error', ""));
+                //$response->addCommand(new HtmlCommand('#error', ""));
             } else {
                 $msg = "<div aria-label='Error message' class='messages messages--error'>"
                         . $this->t('Error') . "</div>";
-                return $response->addCommand(new HtmlCommand('#error', $msg));
+                $response->addCommand(new AppendCommand('#error', $msg));
             }
+            return $response;
+
         } else {
             $m = \Drupal::messenger()->messagesByType('error');
             $e = '';
@@ -863,8 +868,7 @@ class NewMemo extends FormBase {
                     . ', ' . $this->t('maximum size') . ": " . $size . 'Mb.'
                     . $e
                     . "</div>";
-            $response = new AjaxResponse();
-            return $response->addCommand(new HtmlCommand('#error', $msg));
+            return $response->addCommand(new AppendCommand('#error', $msg));
         }
     }
 

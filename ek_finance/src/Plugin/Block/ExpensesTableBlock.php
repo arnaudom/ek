@@ -66,11 +66,11 @@ class ExpensesTableBlock extends BlockBase {
                     $query->condition('class', $c, '=');
                     
                     $Obj = $query->execute();
-                    $v = $Obj->fetchObject()->sumAmount; 
+                    $v = isset($Obj->fetchObject()->sumAmount) ? $Obj->fetchObject()->sumAmount : 0 ; 
                     $line[$coid] = round($v, 2);
                     $co = $coid;
                 }
-            } //foreach coid
+            } 
 
             $query = "SELECT aname from {ek_accounts} WHERE atype=:t "
                     . "AND aid like :id AND coid = :c";
@@ -90,7 +90,7 @@ class ExpensesTableBlock extends BlockBase {
         } // for each classe
        
         $items['content'] .= "<table><tr><th>'000 " .$companies[0]. "<br/>" .  $y . "</th>";
-        for ($i = 1; $i <= count($companies); $i++) {
+        for ($i = 1; $i < count($companies); $i++) {
             $items['content'] .= "<th>" . $companies[$i] . "</th>";
         }
         foreach ($data as $key => $arr) {

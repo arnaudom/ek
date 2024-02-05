@@ -19,8 +19,7 @@ use Drupal\Core\Ajax\OpenDialogCommand;
 /**
 * Controller routines for ek module routes.
 */
-class FinanceController extends ControllerBase
-{
+class FinanceController extends ControllerBase {
     /**
        * The form builder service.
        *
@@ -30,8 +29,7 @@ class FinanceController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
       $container->get('form_builder')
     );
@@ -43,8 +41,7 @@ class FinanceController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(FormBuilderInterface $form_builder)
-    {
+    public function __construct(FormBuilderInterface $form_builder) {
         $this->formBuilder = $form_builder;
     }
 
@@ -53,8 +50,7 @@ class FinanceController extends ControllerBase
     * Dashboard content
     *   @return array
     */
-    public function dashboard(Request $request)
-    {
+    public function dashboard(Request $request) {
         return array('#markup' => '');
     }
 
@@ -65,16 +61,14 @@ class FinanceController extends ControllerBase
 
      * AJAX callback handler for AjaxTestDialogForm.
      */
-    public function modal($param)
-    {
+    public function modal($param) {
         return $this->dialog(true, $param);
     }
 
     /**
      * AJAX callback handler for AjaxTestDialogForm.
      */
-    public function nonModal($param)
-    {
+    public function nonModal($param) {
         return $this->dialog(false, $param);
     }
 
@@ -93,8 +87,7 @@ class FinanceController extends ControllerBase
      * @return \Drupal\Core\Ajax\AjaxResponse
      *   An ajax response object.
      */
-    protected function dialog($is_modal = false, $param = null)
-    {
+    protected function dialog($is_modal = false, $param = null) {
         $opt = unserialize($param);
         $content = [];
         switch ($opt['id']) {
@@ -143,8 +136,7 @@ class FinanceController extends ControllerBase
        * @return Symfony\Component\HttpFoundation\JsonResponse
        *   An json response object.
        */
-    public function ajaxCall(Request $request, $type = null)
-    {
+    public function ajaxCall(Request $request, $type = null) {
         switch ($type) {
           case 'memofiles':
               $memo_id = $request->get('id');
