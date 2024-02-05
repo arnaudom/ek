@@ -188,7 +188,8 @@ $pdf->SetSubject(t('Quotation'));
 $pdf->SetKeywords(t('Quotation') . ", " . $head->serial);
 
 // set default header data
-$pdf->SetHeaderData('', '', $company, $bank, ['header' => $format_header, 'footer' => $format_footer]);
+$b = isset($bank) ? $bank : "";
+$pdf->SetHeaderData('', '', $company, $b, ['header' => $format_header, 'footer' => $format_footer]);
 
 // set default monospaced font
 $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
@@ -382,6 +383,7 @@ foreach ($items['lines'] as $detail) {
                 $pdf->SetFont('helvetica', '', $font3);
                 // column 0  
                 $iii++;
+                ($i % 2 == 0) ? $fill = 1 : $fill = 0;
                 $pdf->Cell($lm);
                 $pdf->Cell($b1, 5, $iii, 1, 0, 'R');
                 // column 1
@@ -411,21 +413,22 @@ foreach ($items['lines'] as $detail) {
                     $pdf->Cell($lm);
                     $pdf->Cell($b1);
                     $pdf->SetFont('helvetica', '', $font3);
-                    $pdf->Cell($b3, 5, $items['column_name2'], 1, 0, 'L', '1');
-                    $pdf->Cell($b6, 5, $detail['column_2'], 1, 0);
+                    $pdf->Cell($b3, 5, $items['column_name2'], 'LB', 0, 'L',$fill, '1');
+                    $pdf->Cell($b6, 5, $detail['column_2'], 'B', 0, 'L', $fill);
 
                     if ($items['column_active3']) {
-                        $pdf->Cell($b3, 5, $items['column_name3'], 1, 0, 'L', '1');
-                        $pdf->Cell($b7, 5, $detail['column_3'], 1, 1);
+                        $pdf->Cell($b3, 5, $items['column_name3'], 'B', 0, 'L',$fill, '1');
+                        $pdf->Cell($b7, 5, $detail['column_3'], 'B', 0,'L',$fill);
+                        $pdf->Cell($b3+$b4+$b5, 5, "", 'BR', 1,'L',$fill);
                     } else {
-                        $pdf->Cell($b7, 5, "", 0, 1);
+                        $pdf->Cell($b3+$b3+$b4+$b5+$b7, 5, "", 'BR', 1, 'L',$fill);
                     }
                 } elseif ($items['column_active3']) {
                     $pdf->Cell($lm);
                     $pdf->Cell($b1);
                     $pdf->SetFont('helvetica', '', $font3);
-                    $pdf->Cell($b3, 5, $items['column_name3'], 1, 0, 'L', '1');
-                    $pdf->Cell($b7, 5, $detail['column_3'], 1, 1);
+                    $pdf->Cell($b3, 5, $items['column_name3'], 'LB', 0, 'L', $fill);
+                    $pdf->Cell($b7, 5, $detail['column_3'], 'B', 1, 'L',$fill);
                 }
 
                 $i++;
