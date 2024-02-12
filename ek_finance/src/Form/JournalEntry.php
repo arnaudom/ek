@@ -47,7 +47,6 @@ class JournalEntry extends FormBase {
             $form_state->set('step', 1);
         }
 
-
         $company = AccessCheck::CompanyListByUid();
         $form['coid'] = [
             '#type' => 'select',
@@ -80,6 +79,7 @@ class JournalEntry extends FormBase {
         }
 
         if ($form_state->getValue('coid')) {
+        //if ($form_state->get('step') == 1) {
             $form_state->set('step', 2);
 
             if ($form_state->get('num_items') == '') {
@@ -127,100 +127,141 @@ class JournalEntry extends FormBase {
                 '#suffix' => '',
             ];
 
-
-            $headerline = "<div class='table'><div class='row'><div class='cell cellborder'>"
-                    . $this->t("Debit account") . "</div><div class='cell cellborder'>"
-                    . $this->t("Debit") . "</div><div class='cell cellborder'>"
-                    . $this->t("Credit") . "</div><div class='cell cellborder'>"
-                    . $this->t("Credit account") . "</div><div class='cell cellborder'>" . $this->t("Comment") . "</div>";
-
-            $totalCT = 0;
-            $totalDT = 0;
-
-            $form['items']["headerline"] = [
-                '#type' => 'item',
-                '#markup' => $headerline,
+            $form['rows'] = [
+                '#type' => 'hidden',
+                '#attributes' => ['id' => 'rows'],
+                '#value' => $form_state->get('num_items'),
             ];
 
-            $form['items']["d-account1"] = [
+            /*$form['items'] = [
+                '#type' => 'details',
+                '#title' => $this->t('Items'),
+                '#open' => true,
+            ];*/
+
+            $header = [
+                'account' => [
+                    'data' => $this->t('Debit account'),
+                ],
+                'description' => [
+                    'data' => $this->t('Debit'),
+                ],
+                'amount' => [
+                    'data' => $this->t('Credit'),
+                ],
+                'receipt' => [
+                    'data' => $this->t('Credit account'),
+                ],
+                'delete' => [
+                    'data' => $this->t('Comment'),
+                ]
+            ];
+
+            $form['itemTable'] = [
+                '#tree' => true,
+                '#theme' => 'table',
+                '#header' => $header,
+                '#rows' => [],
+                '#attributes' => ['id' => 'itemTable'],
+                '#empty' => '',
+            ];
+
+            // build 1st row
+            $form["d-account"] = [
                 '#type' => 'select',
+                '#id' => 'd-account1',
                 '#size' => 1,
                 '#options' => $accountOptions,
-                '#default_value' => ($form_state->getValue('d-account1')) ? $form_state->getValue('d-account1') : null,
+                '#default_value' => isset($form_state->getValue('itemTable')[1]['d-account']) ? $form_state->getValue('itemTable')[1]['d-account'] : null,
                 '#attributes' => ['style' => ['width:150px;white-space:nowrap']],
-                '#prefix' => "<div class='row'><div class='cell'>",
-                '#suffix' => '</div>',
             ];
 
-            $form['items']['debit1'] = [
+            $form['debit'] = [
                 '#type' => 'textfield',
                 '#id' => 'debit1',
                 '#size' => 12,
                 '#maxlength' => 255,
                 '#description' => '',
-                '#default_value' => ($form_state->getValue('debit1')) ? $form_state->getValue('debit1') : null,
+                '#default_value' =>  isset($form_state->getValue('itemTable')[1]['debit']) ? $form_state->getValue('itemTable')[1]['debit'] : null,
                 '#attributes' => ['placeholder' => $this->t('value'), 'class' => ['amount'], 'ondblclick' => "this.value=''", 'onKeyPress' => "return(number_format(this,',','.', event))"],
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div>',
             ];
 
-            $form['items']['credit1'] = [
+            $form['credit'] = [
                 '#type' => 'textfield',
                 '#id' => 'credit1',
                 '#size' => 12,
                 '#maxlength' => 255,
                 '#description' => '',
-                '#default_value' => ($form_state->getValue('credit1')) ? $form_state->getValue('credit1') : null,
+                '#default_value' => isset($form_state->getValue('itemTable')[1]['credit']) ? $form_state->getValue('itemTable')[1]['credit'] : null,
                 '#attributes' => ['placeholder' => $this->t('value'), 'class' => ['amount'], 'ondblclick' => "this.value=''", 'onKeyPress' => "return(number_format(this,',','.', event))"],
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div>',
             ];
 
-            $form['items']["c-account1"] = [
+            $form["c-account"] = [
                 '#type' => 'select',
+                '#id' => 'c-account1',
                 '#size' => 1,
                 '#options' => $accountOptions,
-                '#default_value' => ($form_state->getValue('c-account')) ? $form_state->getValue('c-account') : null,
+                '#default_value' => isset($form_state->getValue('itemTable')[1]['c-account']) ? $form_state->getValue('itemTable')[1]['c-account'] : null,
                 '#attributes' => ['style' => ['width:150px;white-space:nowrap']],
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div>',
             ];
 
-            $form['items']["comment1"] = [
+            $form["comment"] = [
                 '#type' => 'textfield',
+                '#id' => 'comment1',
                 '#size' => 30,
                 '#maxlength' => 255,
-                '#default_value' => ($form_state->getValue('comment1')) ? $form_state->getValue('comment1') : null,
+                '#default_value' => isset($form_state->getValue('itemTable')[1]['comment']) ? $form_state->getValue('itemTable')[1]['comment'] : null,
                 '#attributes' => ['placeholder' => $this->t('comment'),],
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div></div>',
             ];
 
-            //$totalCT += str_replace(",", "", $form_state->getValue('credit1'));
-            //$totalDT += str_replace(",", "", $form_state->getValue('debit1'));
-            //loop added rows
+            $form['itemTable'][1] = [
+                'd-account' => &$form['d-account'],
+                'debit' => &$form['debit'],
+                'credit' => &$form['credit'],
+                'c-account' => &$form['c-account'],
+                'comment' => &$form['comment']
+            ];
+
+            $form['itemTable']['#rows'][1] = [
+                'data' => [
+                    ['data' => &$form['d-account']],
+                    ['data' => &$form['debit']],
+                    ['data' => &$form['credit']],
+                    ['data' => &$form['c-account']],
+                    ['data' => &$form['comment']],
+                ],
+                'id' => [1],
+                'class' => '',
+            ];
+
+            unset($form['d-account']);
+            unset($form['debit']);
+            unset($form['credit']);
+            unset($form['c-account']);
+            unset($form['comment']);
+
+         // added rows
             if (isset($n)) {
                 // reset the new rows items in edit mode
                 $max = $form_state->get('num_items') + $n;
                 $form_state->set('num_items', $max);
             } else {
-                //new entry
+                // new entry
                 $max = $form_state->get('num_items');
                 $n = 2;
             }
-
+            
             for ($i = $n; $i <= $max; $i++) {
-                $form['items']["d-account$i"] = [
+                $form["d-account"] = [
                     '#type' => 'select',
+                    '#id' => "d-account$i",
                     '#size' => 1,
                     '#options' => $accountOptions,
                     '#default_value' => ($form_state->getValue("d-account$i")) ? $form_state->getValue("d-account$i") : null,
                     '#attributes' => ['style' =>['width:150px;white-space:nowrap']],
-                    '#prefix' => "<div class='row'><div class='cell'>",
-                    '#suffix' => '</div>',
                 ];
 
-                $form['items']["debit$i"] = [
+                $form["debit"] = [
                     '#type' => 'textfield',
                     '#id' => "debit$i",
                     '#size' => 12,
@@ -228,11 +269,9 @@ class JournalEntry extends FormBase {
                     '#description' => '',
                     '#default_value' => ($form_state->getValue("debit$i")) ? $form_state->getValue("debit$i") : null,
                     '#attributes' => ['placeholder' => $this->t('value'), 'class' => ['amount'], 'onKeyPress' => "return(number_format(this,',','.', event))"],
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
                 ];
 
-                $form['items']["credit$i"] = [
+                $form["credit"] = [
                     '#type' => 'textfield',
                     '#id' => "credit$i",
                     '#size' => 12,
@@ -240,81 +279,112 @@ class JournalEntry extends FormBase {
                     '#description' => '',
                     '#default_value' => ($form_state->getValue("credit$i")) ? $form_state->getValue("credit$i") : null,
                     '#attributes' => ['placeholder' => $this->t('value'), 'class' => ['amount'], 'onKeyPress' => "return(number_format(this,',','.', event))"],
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
                 ];
 
-                $form['items']["c-account$i"] = [
+                $form["c-account"] = [
                     '#type' => 'select',
+                    '#id' => "c-account$i",
                     '#size' => 1,
                     '#options' => $accountOptions,
                     '#default_value' => ($form_state->getValue("c-account$i")) ? $form_state->getValue("c-account$i") : null,
                     '#attributes' => ['style' => ['width:150px;white-space:nowrap']],
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div>',
                 ];
 
-                $form['items']["comment$i"] = [
+                $form["comment"] = [
                     '#type' => 'textfield',
+                    '#id' => "comment$i",
                     '#size' => 30,
                     '#maxlength' => 255,
                     '#default_value' => ($form_state->getValue("comment$i")) ? $form_state->getValue("comment$i") : null,
                     '#attributes' => ['placeholder' => $this->t('comment'),],
-                    '#prefix' => "<div class='cell'>",
-                    '#suffix' => '</div></div>',
                 ];
 
+                $form['itemTable'][$i] = [
+                    'd-account' => &$form['d-account'],
+                    'debit' => &$form['debit'],
+                    'credit' => &$form['credit'],
+                    'c-account' => &$form['c-account'],
+                    'comment' => &$form['comment']
+                ];
+    
+                $form['itemTable']['#rows'][$i] = [
+                    'data' => [
+                        ['data' => &$form['d-account']],
+                        ['data' => &$form['debit']],
+                        ['data' => &$form['credit']],
+                        ['data' => &$form['c-account']],
+                        ['data' => &$form['comment']],
+                    ],
+                    'id' => [$i],
+                    'class' => '',
+                ];
+    
+                unset($form['d-account']);
+                unset($form['debit']);
+                unset($form['credit']);
+                unset($form['c-account']);
+                unset($form['comment']);
 
-                //$totalCT += $form_state->getValue("credit$i");
-                //$totalDT += $form_state->getValue("debit$i");
             }
 
-            //loop added rows
-
-            if ($form_state->get('totalCT') == $form_state->get('totalDT')) {
-                $style = "";
-            } else {
-                $style = "delete";
-            }
-
-            //footer
-
-
-            $form['items']["footer1"] = [
+            // footer
+            $form["footer1"] = [
                 '#type' => 'item',
-                '#prefix' => "<div class='row'><div class='cell cellborder'>",
-                '#suffix' => '</div>',
-            ];
-            $form['items']["footer2"] = [
-                '#type' => 'item',
-                '#prefix' => "<div class='cell cellborder $style' id='totald'>"
-                . number_format($form_state->get('totalDT'), 2) . "",
-                '#suffix' => '</div>',
-            ];
-            $form['items']["footer3"] = [
-                '#type' => 'item',
-                '#prefix' => "<div class='cell cellborder $style' id='totalc'>"
-                . number_format($form_state->get('totalCT'), 2) . "",
-                '#suffix' => '</div>',
-            ];
-            $form['items']["footer4"] = [
-                '#type' => 'item',
-                '#prefix' => "<div class='cell cellborder'>",
-                '#suffix' => '</div>',
-            ];
-            $form['items']["footer5"] = [
-                '#type' => 'item',
-                '#prefix' => "<div class='cell cellborder'>",
-                '#suffix' => '</div></div></div>',
             ];
 
-
-
-            $form['rows'] = [
-                '#type' => 'hidden',
-                '#attributes' => ['id' => 'rows'],
-                '#value' => $form_state->get('num_items'),
+            $form['footer2'] = [
+                '#type' => 'textfield',
+                '#id' => 'totald',
+                '#size' => 12,
+                '#maxlength' => 255,
+                '#description' => '',
+                '#default_value' => ($form_state->get('totalDT')) ? number_format($form_state->get('totalDT'), 2) : 0,
+                '#attributes' => ['placeholder' => $this->t('total'),'class' => ['amount'], 'readonly' => 'readonly'],
             ];
+
+            $form['footer3'] = [
+                '#type' => 'textfield',
+                '#id' => 'totalc',
+                '#size' => 12,
+                '#maxlength' => 255,
+                '#description' => '',
+                '#default_value' => ($form_state->get('totalCT')) ? number_format($form_state->get('totalCT'), 2) : 0,
+                '#attributes' => ['placeholder' => $this->t('total'),'class' => ['amount'], 'readonly' => 'readonly'],
+            ];
+
+            $form["footer4"] = [
+                '#type' => 'item',
+            ];
+
+            $form["footer5"] = [
+                '#type' => 'item',
+            ];
+
+            $form['itemTable']['foot'] = [
+                'd-account' => &$form['footer1'],
+                'debit' => &$form['footer2'],
+                'credit' => &$form['footer3'],
+                'c-account' => &$form['footer4'],
+                'comment' => &$form['footer5']
+            ];
+
+            $form['itemTable']['#rows']['foot'] = [
+                'data' => [
+                    ['data' => &$form['footer1']],
+                    ['data' => &$form['footer2']],
+                    ['data' => &$form['footer3']],
+                    ['data' => &$form['footer4']],
+                    ['data' => &$form['footer5']],
+                ],
+                'id' => ['foot'],
+                'class' => '',
+            ];
+
+            unset($form['footer1']);
+            unset($form['footer2']);
+            unset($form['footer3']);
+            unset($form['footer4']);
+            unset($form['footer5']);
 
             if (!null == $form_state->getValue('confirm_box')) {
                 $form['confirm'] = [
@@ -336,7 +406,6 @@ class JournalEntry extends FormBase {
             $form['actions']['add'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Add line'),
-                //'#limit_validation_errors' => array(),
                 '#submit' => [[$this, 'addForm']],
                 '#prefix' => "",
                 '#suffix' => '',
@@ -346,11 +415,9 @@ class JournalEntry extends FormBase {
                 $form['actions']['remove'] = [
                     '#type' => 'submit',
                     '#value' => $this->t('remove last line'),
-                    //'#limit_validation_errors' => array(),
                     '#submit' => [[$this, 'removeForm']],
                 ];
             }
-
 
             $form['actions']['submit'] = [
                 '#type' => 'submit',
@@ -401,7 +468,7 @@ class JournalEntry extends FormBase {
     /**
      * Callback to remove item to form
      */
-    public function removeForm(array &$form, FormStateInterface $form_state) {
+    public function removeForm(array &$form, FormStateInterface $form_state) { 
         if ($form_state->get('num_items') > 1) {
             $i = $form_state->get('num_items') - 1;
             $form_state->set('num_items', $i);
@@ -418,7 +485,8 @@ class JournalEntry extends FormBase {
             $form_state->setRebuild();
         }
 
-        if ($form_state->get('step') == 2) {
+        if ($form_state->get('step') == 2 && $form_state->getTriggeringElement()['#id'] != 'edit-remove' && $form_state->getTriggeringElement()['#id'] != 'edit-add') {
+            
             if ($form_state->getValue('fx_rate') == '') {
                 $form_state->setErrorByName("fx_rate", $this->t('exchange rate must be indicated'));
             }
@@ -426,150 +494,138 @@ class JournalEntry extends FormBase {
                 $form_state->setErrorByName("fx_rate", $this->t('exchange rate input is not correct'));
             }
 
-
+            $rebuild = 0;
             $totalCT = 0;
             $totalDT = 0;
             $accounts = [];
+            $rows = $form_state->getValue('itemTable');
+            if (!empty($rows)) {
+                foreach ($rows as $key => $row) {
+                    if($key != 'foot') {
+                        $debit = preg_replace('/[^0-9.]/', '',  $row['debit']);
+                        $credit = preg_replace('/[^0-9.]/', '',  $row['credit']);
+                        if($row['d-account'] == 0 && $debit > 0) {
+                            $form_state->setErrorByName("itemTable][$key][d-account", $this->t('debit account @n not selected', ['@n' => $key]));
+                            $rebuild =  true;  
+                        }
+                        if($row['c-account'] == 0 && $credit > 0) {
+                            $form_state->setErrorByName("itemTable][$key][c-account", $this->t('credit account @n not selected', ['@n' => $key]));  
+                            $rebuild =  true; 
+                        }
+                        if(!null == $debit && !is_numeric($debit)) {
+                            $form_state->setErrorByName("itemTable][$key][debit", $this->t('input value error'));
+                            $rebuild =  true;                              
+                        } elseif(is_numeric($debit)) {
+                            $totalDT += (double)round($debit,$this->rounding);
+                        }
+                        if(!null == $credit && !is_numeric($credit)) {
+                            $form_state->setErrorByName("itemTable][$key][credit", $this->t('input value error'));
+                            $rebuild =  true;                              
+                        } elseif(is_numeric($credit)) {
+                            $totalCT += (double)round($credit,$this->rounding);
+                        }
 
-            for ($i = 1; $i <= $form_state->getValue('rows'); $i++) {
-                $debit = str_replace(',', '', $form_state->getValue("debit$i"));
-                if ($debit == '') {
-                    $debit = 0;
+                        array_push($accounts, $row["d-account"]);
+                        array_push($accounts, $row["c-account"]);
+                    }
                 }
-                $credit = str_replace(',', '', $form_state->getValue("credit$i"));
-                if ($credit == '') {
-                    $credit = 0;
-                }
-
-                if (!is_numeric($debit)) {
-                    $form_state->setErrorByName("debit$i", $this->t('input value error'));
-                }
-                if (!is_numeric($credit)) {
-                    $form_state->setErrorByName("credit$i", $this->t('input value error'));
-                }
-
-                if ($debit > 0 && $form_state->getValue("d-account$i") == 0) {
-                    $form_state->setErrorByName("d-account$i", $this->t('no account selected'));
-                }
-
-                if ($credit > 0 && $form_state->getValue("c-account$i") == 0) {
-                    $form_state->setErrorByName("c-account$i", $this->t('no account selected'));
-                }
-
-
-                $totalCT += (double)round($credit,$this->rounding);
-                $totalDT += (double)round($debit,$this->rounding);
-                array_push($accounts, $form_state->getValue("d-account$i"));
-                array_push($accounts, $form_state->getValue("c-account$i"));
             }
 
-            $form_state->set('totalDT', $totalDT);
-            $form_state->set('totalCT', $totalCT);
-
-            if (round($totalCT,$this->rounding) <> round($totalDT,$this->rounding)) {
-                $form['items']["footer2"] = array(
-                    '#type' => 'item',
-                    '#prefix' => "<div class='cell cellborder delete' id='totald'>"
-                    . number_format($totalDT, 2) . "",
-                    '#suffix' => '</div>',
-                );
-                $form['items']["footer3"] = array(
-                    '#type' => 'item',
-                    '#prefix' => "<div class='cell cellborder delete' id='totalc'>"
-                    . number_format($totalCT, 2) . "",
-                    '#suffix' => '</div>',
-                );
-                $form_state->setErrorByName("items][footer2", $this->t('entry is not balanced') . ' ' . $totalCT . ' => ' . $totalDT);
-
-                $form_state->setRebuild();
-            } else {
-                $form['items']["footer2"] = array(
-                    '#type' => 'item',
-                    '#prefix' => "<div class='cell cellborder record' id='totald'>"
-                    . number_format($totalDT, 2) . "",
-                    '#suffix' => '</div>',
-                );
-                $form['items']["footer3"] = array(
-                    '#type' => 'item',
-                    '#prefix' => "<div class='cell cellborder record' id='totalc'>"
-                    . number_format($totalCT, 2) . "",
-                    '#suffix' => '</div>',
-                );
+            if($totalDT == 0  && $totalCT == 0) {
+                $form_state->setErrorByName("itemTable][foot][debit", $this->t('total is null')); 
+                $form_state->setErrorByName("itemTable][foot][credit"); 
+                $rebuild =  true;
+            }
+            if($totalDT <> $totalCT) {
+                $form_state->setErrorByName("itemTable][foot][debit", $this->t('total not balanced')); 
+                $form_state->setErrorByName("itemTable][foot][credit"); 
+                $rebuild =  true;
             }
 
-            //filter accounts transfer with different currencies
-            //@TODO : add verification with accounts linked to bank
+
+            // filter accounts transfer with different currencies
+            // @TODO : add verification with accounts linked to bank
             $companysettings = new CompanySettings($form_state->getValue('coid'));
             $cash1 = $companysettings->get('cash_account', $form_state->getValue('currency'));
             $cash2 = $companysettings->get('cash2_account', $form_state->getValue('currency'));
 
             if ((in_array($cash1, $accounts) || in_array($cash2, $accounts)) && $form_state->getValue('confirm') == 0) {
                 $form_state->setValue('confirm_box', 1);
-                $form_state->setRebuild();
+                $rebuild =  true;
             }
+
         }
-        /**/
+        if(isset($rebuild) && $rebuild == true) {
+            $form_state->setRebuild();
+        }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
+    public function submitForm(array &$form, FormStateInterface $form_state) { 
         if ($form_state->get('step') == 2) {
             $journal = new Journal();
 
-            $query = "SELECT reference FROM {ek_journal} WHERE source=:s ORDER  by id DESC limit 1";
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j')
+                    ->fields('j', ['reference'])
+                    ->condition('source','general')
+                    ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+                    ->limit(1)
+                    ->orderBy('id', 'DESC')
+                    ->execute();
 
-            $ref = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':s' => 'general'))
-                    ->fetchField();
+            $ref = $query->fetchField();
             $ref++;
-            for ($i = 1; $i <= $form_state->getValue('rows'); $i++) {
-                $debit = str_replace(',', '', $form_state->getValue("debit$i"));
-                if ($debit <> '') {
-                    $rec[$i] = $journal->record(
-                            array(
+            $rows = $form_state->getValue('itemTable');
+            
+                foreach ($rows as $key => $row) { 
+                    if($key != 'foot') {
+                        $debit = preg_replace('/[^0-9.]/', '',  $row['debit']);
+                        $credit = preg_replace('/[^0-9.]/', '',  $row['credit']);
+                        if ($debit <> '') {
+                            $a = [
                                 'source' => "general",
                                 'coid' => $form_state->getValue('coid'),
-                                'aid' => $form_state->getValue("d-account$i"),
+                                'aid' => $row["d-account"],
                                 'type' => 'debit',
                                 'reference' => $ref,
                                 'date' => $form_state->getValue('date'),
                                 'value' => $debit,
                                 'currency' => $form_state->getValue('currency'),
-                                'comment' => Xss::filter($form_state->getValue("comment$i")),
+                                'comment' => Xss::filter($row["comment"]),
                                 'fxRate' => $form_state->getValue('fx_rate')
-                            )
-                    );
-                }
-                $credit = str_replace(',', '', $form_state->getValue("credit$i"));
-                if ($credit <> '') {
-                    $journal->record(
-                            array(
+                            ];
+                            $rec[$key] = $journal->record($a);
+                        }
+                        if ($credit <> '') {
+                            $a = [
                                 'source' => "general",
                                 'coid' => $form_state->getValue('coid'),
-                                'aid' => $form_state->getValue("c-account$i"),
+                                'aid' => $row["c-account"],
                                 'type' => 'credit',
                                 'reference' => $ref,
                                 'date' => $form_state->getValue('date'),
                                 'value' => $credit,
                                 'currency' => $form_state->getValue('currency'),
-                                'comment' => Xss::filter($form_state->getValue("comment$i")),
+                                'comment' => Xss::filter($row["comment"]),
                                 'fxRate' => $form_state->getValue('fx_rate')
-                            )
-                    );
+                            ];
+                            $journal->record($a);
+                        }
+                    }
                 }
-            }
-
+            
             if (round($journal->credit,$this->rounding) <> round($journal->debit,$this->rounding)) {
                 $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
                 \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }
 
             \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
-            $url = Url::fromRoute('ek_finance.manage.journal_edit', array('id' => $rec[1]), array())->toString();
+            $url = Url::fromRoute('ek_finance.manage.journal_edit', ['id' => $rec[1]], [])->toString();
             \Drupal::messenger()->addStatus(t('Data updated. <a href="@url">Edit</a>', ['@url' => $url]));
-        }//step 2
+        }
     }
 
 }

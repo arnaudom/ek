@@ -28,6 +28,8 @@ jQuery(document).ready(function(){
      var ct = currencyFormat(credit, ',');
      jQuery("#totald").html(dt);
      jQuery("#totalc").html(ct); 
+     jQuery("#totald").val(dt);
+     jQuery("#totalc").val(ct); 
      
      if (debit != credit) {
       jQuery("#totald").addClass('delete');
