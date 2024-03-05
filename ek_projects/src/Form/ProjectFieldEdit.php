@@ -28,7 +28,7 @@ class ProjectFieldEdit extends FormBase {
      * {@inheritdoc}
      */
     public function getFormId() {
-        return 'ek_projects_edit_fileds';
+        return 'ek_projects_edit_fields';
     }
 
     /**
@@ -332,7 +332,6 @@ class ProjectFieldEdit extends FormBase {
         ];
 
         $form['#attached']['library'][] = 'ek_projects/ek_projects_css';
-
         return $form;
     }
 

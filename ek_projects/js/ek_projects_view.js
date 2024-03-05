@@ -1,6 +1,58 @@
 (function ($, Drupal, drupalSettings) {
     Drupal.behaviors.viewproject = {
         attach: function (context, settings) {
+
+        var pTimer;
+        //var isTimerRunning = false;
+        /*
+        * Start a periodical update of all fields
+        * @returns {undefined}
+        */
+       if(typeof drupalSettings.ajax !== 'object' && drupalSettings.ajax == null) {
+        // prevent updater when opening ajax form.
+            var last_update = 0;
+            var update_count = 0;
+            var pTimer = $.periodic({period: 1000, decay: 1.2, max_period: 60000}, function() {
+                $.ajax({
+                    url: drupalSettings.path.baseUrl + 'ek_project/tracker',
+                    data: {id: drupalSettings.ek_projects.id},
+                    success: function(remoteData) { 
+                            update_users_activity(remoteData);
+                    },
+                    complete: function(xhr, status) {
+                            pTimer.ajax_complete(xhr, status);
+                    },
+                    dataType: 'json'
+                });
+            });
+            isTimerRunning = true;
+        }
+
+        /* 
+        * toggle the edition mode for all fields
+        */
+        $(function () {
+            $(once('bind-click-event', '#edit_mode', context)).on('click', function (event) {
+                $('#edit_mode').toggleClass("edit _edit");
+                $(".field_edit").toggle("fast");
+                $('section').toggleClass("editBackground");
+                if ($('#edit_mode').hasClass('edit')) {
+                    console.log('pause auto update');
+                    if (isTimerRunning) {
+                        pTimer.pause();
+                        isTimerRunning = false; 
+                    }
+                }
+                if ($('#edit_mode').hasClass('_edit')) { 
+                    console.log('resume auto update');
+                    if (!isTimerRunning && pTimer) {
+                        pTimer.resume();
+                        isTimerRunning = true; 
+                    }
+                }
+            });
+        });
+
         /* 
         * toggle the notify me value
         */
@@ -26,21 +78,6 @@
 
         });
 
-
-        /* 
-        * toggle the edition mode for all fields
-        */
-        $(function () {
-            $('#edit_mode').click(function () {
-                $('#edit_mode').toggleClass("edit _edit");
-                $(".field_edit").toggle("fast");
-                $('section').toggleClass("editBackground");
-                update_fields(drupalSettings.ek_projects.id);
-                update_documents(drupalSettings.ek_projects.id);
-
-            });
-
-        });
 
         /* activate button
         * Open or close all sections
@@ -234,27 +271,6 @@
 
         }
 
-        /*
-        * Start a periodical update of all fields
-        * @returns {undefined}
-        */
-        var last_update = 0;
-        var update_count = 0;
-        var P1 = $.periodic({period: 1000, decay: 1.2, max_period: 60000}, function() {
-            
-        $.ajax({
-            url: drupalSettings.path.baseUrl + 'ek_project/tracker',
-            data: {id: drupalSettings.ek_projects.id},
-            success: function(remoteData) { 
-                    update_users_activity(remoteData);
-            },
-            complete: function(xhr, status) {
-                    P1.ajax_complete(xhr, status);
-            },
-            dataType: 'json'
-        });
-        });
-
         function update_users_activity(activity) {
             
             $(".tracklist ul").html(activity.data);
@@ -284,8 +300,8 @@
                 //if ($('#rtc-status').hasClass('available'))
                 $(".tracklist").toggle();
                 $("#activityList i").toggleClass('fa-power-off fa-circle-o');
-                if ($('#activityList i').hasClass('fa-power-off')) P1.cancel();
-                if ($('#activityList i').hasClass('fa-circle-o')) P1.reset();
+                if ($('#activityList i').hasClass('fa-power-off')) pTimer.pause();
+                if ($('#activityList i').hasClass('fa-circle-o')) pTimer.resume();
             });
 
         });

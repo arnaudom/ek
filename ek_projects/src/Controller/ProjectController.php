@@ -347,7 +347,7 @@ class ProjectController extends ControllerBase {
             return $items['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\AccessRequest', $id);
         } else {
 
-            $settings = ['id' => $id,];
+            $settings = ['id' => $id, 'view' => true];
             $sections = ProjectData::validate_section_access(\Drupal::currentUser()->id());
             $data['sections_name'] = ProjectData::sectionsName();
 

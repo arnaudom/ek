@@ -19,7 +19,9 @@ jQuery.periodic = function (options, callback) {
     ajax_complete : ajaxComplete,
     increment     : increment,
     reset         : reset,
-    cancel        : cancel
+    cancel        : cancel,
+    pause         : pause,  
+    resume        : resume  
   }, options);
 
   // bookkeeping variables
@@ -86,9 +88,21 @@ jQuery.periodic = function (options, callback) {
     settings.tid = null;
   }
   
-  // other functions we might want to implement
-  function pause() {}
-  function resume() {}
+
+  // Pause the timer
+  function pause() {
+    if (settings.tid) {
+      clearTimeout(settings.tid);
+      settings.tid = null;
+    }
+  }
+
+  // Resume the timer
+  function resume() {
+    if (!settings.tid) {
+      run();
+    }
+  }
   function log() {}
 };
 
