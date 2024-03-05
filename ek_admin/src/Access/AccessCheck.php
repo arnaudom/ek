@@ -196,11 +196,11 @@ class AccessCheck {
      */
     public static function CountryList($status = null) {
         if ($status == null) {
-            $query = "SELECT id,name from {ek_country} ORDER by name";
-            $a = array();
+            $query = "SELECT id,name from {ek_country} WHERE status=:s ORDER by name";
+            $a = [':s' => 0];
         } else {
             $query = "SELECT id,name from {ek_country} WHERE status=:s ORDER by name";
-            $a = array(':s' => $status);
+            $a = [':s' => $status];
         }
 
 

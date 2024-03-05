@@ -18,8 +18,7 @@ use Drupal\ek_admin\Access\AccessCheck;
 /**
  * Provides form to manage access.
  */
-class CountryAccessForm extends FormBase
-{
+class CountryAccessForm extends FormBase {
 
 /**
      * The module handler.
@@ -32,16 +31,14 @@ class CountryAccessForm extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler')
         );
@@ -50,16 +47,14 @@ class CountryAccessForm extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'ek_country_access_form';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state) {
 
         // @todo Evaluate this again in https://www.drupal.org/node/2503009.
         $form['#cache']['max-age'] = -1;
@@ -72,16 +67,16 @@ class CountryAccessForm extends FormBase
         $t = (string) $this->t('non active');
         $option[$t] = AccessCheck::CountryList(0);
 
-        $form['cid'] = array(
+        $form['cid'] = [
             '#type' => 'select',
             '#options' => $option,
             '#default_value' => null,
             '#required' => true,
-            '#ajax' => array(
-                'callback' => array($this, 'user_select_callback'),
+            '#ajax' => [
+                'callback' => [$this, 'user_select_callback'],
                 'wrapper' => 'replace_textfield_div',
-            ),
-        );
+            ],
+        ];
         
         if ($form_state->getValue('cid') <> '') {
             $query = Database::getConnection('external_db', 'external_db')->select('ek_country', 'c');
@@ -97,7 +92,7 @@ class CountryAccessForm extends FormBase
             $default = explode(',', $list);
         }
 
-        $form['list'] = array(
+        $form['list'] = [
             '#type' => 'details',
             '#title' => $this->t("Select users with access "),
             '#collapsible' => true,
@@ -105,7 +100,7 @@ class CountryAccessForm extends FormBase
             '#tree' => true,
             '#prefix' => '<div id="replace_textfield_div">',
             '#suffix' => '</div>',
-        );
+        ];
 
         if (isset($users)) {
             while ($u = $users->fetchObject()) {
@@ -116,25 +111,24 @@ class CountryAccessForm extends FormBase
                 if($obj->isBlocked()) {
                     $role = '<strong>[' . t('Bloked') . ']</strong> ' . $role ;
                 }
-                $form['list'][$form_state->getValue('cid')][$u->uid] = array(
+                $form['list'][$form_state->getValue('cid')][$u->uid] = [
                     '#type' => 'checkbox',
                     '#title' => $obj->toLink($u->name)->toString() . " " . $role,
                     '#default_value' => in_array($u->uid, $default) ? 1 : 0,
-                    '#attributes' => array('onclick' => "jQuery('#u" . $u->uid . "' ).toggleClass('select');"),
+                    '#attributes' => ['onclick' => "jQuery('#u" . $u->uid . "' ).toggleClass('select');"],
                     '#prefix' => "<div id='u" . $u->uid . "' class='" . $class . "'>",
                     '#suffix' => '</div>',
-                );
+                ];
             }
         }
 
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['submit'] = ['#type' => 'submit', '#value' => $this->t('Record')];
 
         return $form;
     }
 
-    public function user_select_callback($form, FormStateInterface $form_state)
-    {
+    public function user_select_callback($form, FormStateInterface $form_state) {
         return $form['list'];
     }
 
