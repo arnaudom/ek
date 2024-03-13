@@ -66,14 +66,6 @@ ek_documents_documents_delete:
     _permission: 'manage_documents'
     id: \d*
 
-ek_documents_documents_delete_confirm:
-  path: '/documents/delete-confirm/{id}'
-  defaults:
-    _controller: '\Drupal\ek_documents\Controller\DocumentsEditController::deleteConfirmed'
-  requirements:
-    _permission: 'manage_documents'
-    id: \d*
-
 ek_documents_documents_remove:
   path: '/documents/remove/{id}'
   defaults:

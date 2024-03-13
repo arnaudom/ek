@@ -166,76 +166,9 @@ class DocumentsEditController extends ControllerBase
      * My documents
      */
     public function delete(Request $request, $id) {
-        
-        $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_documents', 'd');
-        $query->fields('d',['filename']);
-        $query->condition('id', $id, '=');
-        $file = $query->execute()->fetchField();
-        
-        $content = array('content' =>
-            array('#markup' =>
-                "<div><a href='documents/delete-confirm/" . $id . "' class='use-ajax'>"
-                . $this->t('delete') . "</a> " . $file . "</div>")
-        );
-
-        $response = new AjaxResponse();
-
-        $title = $this->t('Confirm');
-        $content['#attached']['library'][] = 'core/drupal.dialog.ajax';
-
-        $response->addCommand(new OpenModalDialogCommand($title, $content));
-
-        return $response;
+        return $this->dialog(true, 'delete|' . $id);
     }
 
-    /**
-     * Return ajax delete actions after confirmation
-     * My documents
-     */
-    public function deleteConfirmed(Request $request, $id) {
-        
-        if (DocumentsData::validate_owner($id)) {
-            
-            $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_documents', 'd');
-            $query->fields('d',['uri']);
-            $query->condition('id', $id, '=');
-            $uri = $query->execute()->fetchField();
-            
-            $delete = Database::getConnection('external_db', 'external_db')
-                    ->delete('ek_documents')
-                    ->condition('id', $id)
-                    ->execute();
-            
-            \Drupal\Core\Cache\Cache::invalidateTags(['common_documents','my_documents','shared_documents','new_documents_shared']);
-            // remove from user data for new document
-            \Drupal::service('user.data')->delete('ek_documents', \Drupal::currentUser()->id(), $id, 'shared');
-            
-            if ($delete) {
-                $query = Database::getConnection()->select('file_managed', 'f');
-                $query->fields('f', ['fid']);
-                $query->condition('uri', $uri);
-                $fid = $query->execute()->fetchField();
-                if (!$fid) {
-                    unlink($uri);
-                } else {
-                    $file = \Drupal\file\Entity\File::load($fid);
-                    $file->delete();
-                }
-                
-                
-                $response = new AjaxResponse();
-                $response->addCommand(new CloseDialogCommand());
-                $response->addCommand(new RemoveCommand('#div-' . $id));
-                return $response;
-            } else {
-                return new Response('', 204);
-            }
-        } else {
-            return new Response('', 204);
-        }
-    }
 
     /**
      * Return ajax remove
@@ -373,6 +306,12 @@ class DocumentsEditController extends ControllerBase
             case 'project':
                 $id = $param[1];
                 $content = $this->formBuilder->getForm('Drupal\ek_documents\Form\PostProject', $id);
+                $options = array('width' => '45%',);
+                break;
+
+            case 'delete':
+                $id = $param[1];
+                $content = $this->formBuilder->getForm('Drupal\ek_documents\Form\DeleteFile', $id);
                 $options = array('width' => '45%',);
                 break;
         }
