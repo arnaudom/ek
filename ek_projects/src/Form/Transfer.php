@@ -28,7 +28,6 @@ class Transfer extends FormBase {
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-      The module handler.
      */
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
@@ -81,23 +80,27 @@ class Transfer extends FormBase {
             $form_state->set('step', 3);
 
             //verify any data to post
-            $query = "SELECT p.id,pname,pcode,name FROM {ek_project} p INNER JOIN {ek_country} c ON p.cid=c.id WHERE owner = :o";
-            $projects = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':o' => $form_state->getValue('uid')));
-            $projects->allowRowCount = true;
-            if ($projects->rowcount() < 1) {
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_project', 'p');
+            $query->fields('p', ['id', 'pname','pcode']);
+            $query->leftJoin('ek_country', 'c', 'p.cid = c.id');
+            $query->condition('owner', $form_state->getValue('uid'));
+            $query->fields('c', ['name']);
+            $rc = $query->countQuery()->execute()->fetchField();
+
+            if ($rc < 1) {
                 $form['info'] = array(
                     '#type' => 'item',
                     '#markup' => $this->t('There is no data to transfer for this user'),
                 );
             } else {
+                $projects = $query->execute();
                 $form['list'] = array(
                     '#type' => 'details',
                     '#title' => $this->t('List'),
                     '#open' => true,
                     '#attributes' => array('class' => array()),
                 );
-
 
                 $header = [
                     'pcode' => $this->t('Reference'),
