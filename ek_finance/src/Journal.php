@@ -1373,6 +1373,7 @@ class Journal {
                         ->condition('source', $source, 'like')
                         ->condition('date', $date->date)
                         ->condition('coid', $j['company']);
+                $query->orderBy('id');
                 $e = $query->execute();
 
                 $transactions = array();
