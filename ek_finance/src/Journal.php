@@ -13,9 +13,6 @@ use Drupal\ek_finance\AidList;
 /**
  * record journal entries
  *
- *
- *
- *
  */
 class Journal {
 
@@ -328,7 +325,7 @@ class Journal {
                 }
 
                 // tax collect
-                if ($j['tax'] > 0) {
+                if ($j['tax'] <> 0) {
                     $this->tax += $j['tax'];
                 }
 
@@ -592,7 +589,7 @@ class Journal {
                     }
                 }
 
-                //tax paid
+                // tax paid
                 if ($j['tax'] > 0) {
                     $stax_deduct_aid = $companysettings->get('stax_deduct_aid');
                     self::save($stax_deduct_aid, '0', $j['coid'], 'debit', $j['source'], $j['reference'], $j['date'], $j['tax'], '0', $j['currency']);
@@ -609,7 +606,7 @@ class Journal {
                     if ($j['currency'] <> $baseCurrency) {
                         self::save($aid, '1', $j['coid'], 'credit', $j['source'], $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                     }
-                }//tax
+                }
 
                 break;
 
@@ -623,26 +620,26 @@ class Journal {
                 /*
                  * data
                  */
-                //main  DEBIT
+                // main  DEBIT
                 self::save($j['aid'], '0', $j['coid'], 'debit', 'purchase', $j['reference'], $j['date'], $j['value'], '0', $j['currency']);
 
-                //exchange
+                // exchange
                 if ($j['currency'] <> $baseCurrency) { 
                     $exchange = CurrencyData::journalexchange($j['currency'], $j['value'], $j['fxRate']);
                     self::save($j['aid'], '1', $j['coid'], 'debit', 'purchase', $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                 }
 
-                //main CREDIT
+                // main CREDIT
                 $liability = $companysettings->get('liability_account', $j['currency']);
                 self::save($liability, '0', $j['coid'], 'credit', 'purchase', $j['reference'], $j['date'], $j['value'], '0', $j['currency']);
 
-                //exchange
+                // exchange
                 if ($j['currency'] <> $baseCurrency) {
                     self::save($liability, '1', $j['coid'], 'credit', 'purchase', $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                 }
 
                 // tax deduct
-                if ($j['tax'] > 0) {
+                if ($j['tax'] <> 0) {
                     if (!isset($this->tax)) {
                         $this->tax = 0;
                     }
@@ -681,7 +678,7 @@ class Journal {
                 }
 
                 // tax collect
-                if ($j['tax'] > 0) {
+                if ($j['tax'] <> 0) {
                     if (!isset($this->tax)) {
                         $this->tax = 0;
                     }
@@ -711,7 +708,7 @@ class Journal {
                     self::save($j['aid'], '1', $j['coid'], 'debit', 'invoice cn', $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                 }
 
-                if ($j['tax'] > 0) {
+                if ($j['tax'] <> 0) {
                     //Liability Tax payable account need to be DT with CT of receivable account
                     $value = round($j['value'] * $j['tax'] / 100, $rounding);
                     $liability = $companysettings->get('stax_collect_aid');
@@ -753,7 +750,7 @@ class Journal {
                     self::save($j['aid'], '1', $j['coid'], 'credit', 'purchase dn', $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
                 }
 
-                if ($j['tax'] > 0) {
+                if ($j['tax'] <> 0) {
                     //Asset Tax deductible account need to be CT against liability payable
 
                     $value = round($j['value'] * $j['tax'] / 100, $rounding);
@@ -786,6 +783,7 @@ class Journal {
 
     public function recordtax($j) {
         $settings = new FinanceSettings();
+        $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
         $baseCurrency = $settings->get('baseCurrency');
         $companysettings = new CompanySettings($j['coid']);
 
@@ -810,23 +808,23 @@ class Journal {
 
         if (isset($this->tax) && $this->tax > 0) {
             // 1
-            self::save($aid, '0', $j['coid'], $entry1, $j['source'], $j['reference'], $j['date'], $this->tax, '0', $j['currency']);
+            self::save($aid, '0', $j['coid'], $entry1, $j['source'], $j['reference'], $j['date'], round($this->tax,$rounding), '0', $j['currency']);
 
             //exchange
             if ($j['currency'] <> $baseCurrency) {
-                $exchange = CurrencyData::journalexchange($j['currency'], $this->tax, $j['fxRate']);
+                $exchange = CurrencyData::journalexchange($j['currency'], round($this->tax,$rounding), $j['fxRate']);
                 self::save($aid, '1', $j['coid'], $entry1, $j['source'], $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
             }
 
             // 2
-            self::save($aid2, '0', $j['coid'], $entry2, $j['source'], $j['reference'], $j['date'], $this->tax, '0', $j['currency']);
+            self::save($aid2, '0', $j['coid'], $entry2, $j['source'], $j['reference'], $j['date'], round($this->tax,$rounding), '0', $j['currency']);
 
             //exchange
             if ($j['currency'] <> $baseCurrency) {
                 self::save($aid2, '1', $j['coid'], $entry2, $j['source'], $j['reference'], $j['date'], $exchange, '0', $baseCurrency);
             }
             $this->tax = 0;
-            return $this->tax;
+            return round($this->tax,$rounding);
         } // tax
     }
 
