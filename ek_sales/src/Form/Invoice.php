@@ -1215,7 +1215,7 @@ class Invoice extends FormBase {
             $iid = $iid + 1 + $format['increment'];
             $query = "SELECT id FROM {ek_sales_invoice} WHERE serial like :s";
             while (Database::getConnection('external_db', 'external_db')->query($query, [':s' => '%-' . $iid])->fetchField()) {
-                //to prevent serial duplication after document have been deleted, increment until no match is found
+                // to prevent serial duplication after document have been deleted, increment until no match is found
                 $iid++;
             }
 
@@ -1289,7 +1289,7 @@ class Invoice extends FormBase {
                 if ($row['value'] != 'footer') {
                     if (isset($row['delete']) && $row['delete'] != 1) {
                         if ($this->moduleHandler->moduleExists('ek_products')) {
-                            //verify if item is in the DB if not just record input
+                            // verify if item is in the DB if not just record input
                             $item = explode(" ", $row["description"]);
                             $id = trim($item[0]);
                             if (isset($item[1])) {
@@ -1334,9 +1334,9 @@ class Invoice extends FormBase {
                         ];
 
                         
-                    } // if not delete
-                } // if not footer
-            } // for
+                    } 
+                } 
+            } 
             // record details in DB
             $insert = Database::getConnection('external_db', 'external_db')
                       ->insert('ek_sales_invoice_details')
@@ -1347,12 +1347,7 @@ class Invoice extends FormBase {
             $insert->execute();
         }
         
-        
-        
-        
-        
         // main
-
         if ($form_state->getValue('due') == '') {
             $due = 0;
         } else {
@@ -1372,7 +1367,7 @@ class Invoice extends FormBase {
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $sumwithtax = $sum + (round($taxable * $taxvalue / 100, 2));
             if ($baseCurrency <> $form_state->getValue('currency')) {
-                //calculate the value in base currency of the amount without tax
+                // calculate the value in base currency of the amount without tax
                 $amountbase = round($sum / $currencyRate, 2);
             } else {
                 $amountbase = $sum;
@@ -1380,7 +1375,6 @@ class Invoice extends FormBase {
         } else {
             $amountbase = $sum;
         }
-
 
         $fields1 = array(
             'serial' => $serial,
@@ -1432,7 +1426,7 @@ class Invoice extends FormBase {
                     ->condition('status', '1')
                     ->execute();
         }
-        //
+
         // Record the accounting journal
         // Credit  notes are not recorded in journal, only once assigned to sales
         // (a CN is deduction of receivable)
@@ -1450,12 +1444,11 @@ class Invoice extends FormBase {
                         ->execute();
             }
 
-
             foreach ($rows as $key => $row) {
                 if ($row['value'] != 'footer') {
                     if ($row['delete'] != 1) {
                         if ($form_state->getValue('taxvalue') > 0 && $row['tax'] == 1) {
-                            $tax = round($row['value'] * $row['quantity'] * $form_state->getValue('taxvalue') / 100, 2);
+                            $tax = round($row['value'] * $row['quantity'] * $form_state->getValue('taxvalue') / 100, 4);
                         } else {
                             $tax = 0;
                         }
@@ -1501,7 +1494,7 @@ class Invoice extends FormBase {
             \Drupal::messenger()->addStatus(t('The @doc is recorded. Ref. @r', ['@r' => $serial, '@doc' => $options[$form_state->getValue('title')]]));
 
             if ($this->moduleHandler->moduleExists('ek_projects')) {
-                //notify user if invoice is linked to a project
+                // notify user if invoice is linked to a project
                 if ($pcode && $pcode != 'n/a') {
                     $pid = Database::getConnection('external_db', 'external_db')
                             ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $pcode])

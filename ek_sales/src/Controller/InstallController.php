@@ -126,7 +126,7 @@ class InstallController extends ControllerBase {
 	`itemdetail` TEXT NULL,
 	`quantity` DOUBLE NULL DEFAULT NULL,
 	`value` DOUBLE NULL DEFAULT NULL,
-	`total` DOUBLE UNSIGNED NULL DEFAULT NULL,
+	`total` DOUBLE NULL DEFAULT NULL,
 	`opt` VARCHAR(45) NULL DEFAULT NULL,
 	`aid` VARCHAR(50) NULL DEFAULT NULL,
 	PRIMARY KEY (`id`)
@@ -228,7 +228,7 @@ class InstallController extends ControllerBase {
         `po_no` VARCHAR(50) NULL DEFAULT NULL COMMENT 'purchase order ref' COLLATE 'utf8_unicode_ci',
 	`head` TINYINT(3) UNSIGNED NULL DEFAULT NULL COMMENT 'company id',
 	`allocation` TINYINT(4) NOT NULL COMMENT 'company id allocation',
-	`status` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '0 unpaid' COLLATE 'utf8_unicode_ci',
+	`status` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '0 unpaid, 1 full, 2 partial' COLLATE 'utf8_unicode_ci',
 	`amount` DOUBLE NOT NULL DEFAULT '0' COMMENT 'total amount',
 	`currency` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'currency' COLLATE 'utf8_unicode_ci',
 	`date` VARCHAR(45) NOT NULL DEFAULT '0000-00-00' COMMENT 'invoice date',

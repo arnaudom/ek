@@ -1155,7 +1155,6 @@ class Purchase extends FormBase {
             }
 
             $serial = '';
-            //$serial = ucwords(str_replace('-', '', $short)) . $type . $date . "-" . ucwords(str_replace('-', '', $sup)) . "-" . $poid;
             foreach ($format['code'] as $k => $v) {
                 switch ($v) {
                     case 0:
@@ -1210,7 +1209,7 @@ class Purchase extends FormBase {
                 if ($row['value'] != 'footer') {
                     if (isset($row['delete']) && $row['delete'] != 1) {
                         if ($this->moduleHandler->moduleExists('ek_products')) {
-                            //verify if item is in the DB if not just record input
+                            // verify if item is in the DB if not just record input
 
                             $item = explode(" ", $row["description"]);
                             $id = trim($item[0]);
@@ -1227,7 +1226,7 @@ class Purchase extends FormBase {
                                 $itemdetail = '';
                             }
                         } else {
-                            //use input from user
+                            // use input from user
                             $item = Xss::filter($row["description"]);
                             $itemdetail = '';
                         }
@@ -1256,9 +1255,9 @@ class Purchase extends FormBase {
                         ];
 
                         
-                    }// if not delete
-                }// if not footer
-            }// for
+                    }
+                }
+            }
             // record details in DB
             $insert = Database::getConnection('external_db', 'external_db')
                       ->insert('ek_sales_purchase_details')
@@ -1335,7 +1334,6 @@ class Purchase extends FormBase {
             $reference = $poid;
         }
 
-        //
         // Update attachment
         // File are recorded in file_managed and purchase table
 
@@ -1399,7 +1397,7 @@ class Purchase extends FormBase {
                 if ($row['value'] != 'footer') {
                     if (isset($row['delete']) && $row['delete'] != 1) {
                         if ($form_state->getValue('taxvalue') > 0 && $row['tax'] == 1) {
-                            $tax = round($row['value'] * $row['quantity'] * $form_state->getValue('taxvalue') / 100, 2); 
+                            $tax = round($row['value'] * $row['quantity'] * $form_state->getValue('taxvalue') / 100, 4); 
                         } else {
                             $tax = 0;
                         }
