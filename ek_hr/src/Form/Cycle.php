@@ -178,10 +178,11 @@ class Cycle extends FormBase {
                         ->execute();
 
                         while ($id = $squery->fetchField()) {
+                            // remove all data by emp_id above the edited date
                             $del = Database::getConnection('external_db', 'external_db')
                                 ->delete('ek_hr_post_data')
                                 ->condition('emp_id', $id)
-                                ->condition('month', $current)
+                                ->condition('month', $edit, '>=')
                                 ->execute();
                             if($del) {$rec++;}
                         }
