@@ -21,8 +21,7 @@ use Drupal\ek_admin\CompanySettings;
 /**
  * Controller routines for ek module routes.
  */
-class TaxController extends ControllerBase
-{
+class TaxController extends ControllerBase {
 
     /**
      * The module handler.
@@ -41,8 +40,7 @@ class TaxController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container)     {
         return new static(
                 $container->get('form_builder'), $container->get('module_handler')
         );
@@ -68,8 +66,7 @@ class TaxController extends ControllerBase
      *  render Html
      *
      */
-    public function report(Request $request)
-    {
+    public function report(Request $request) {
         $items = array();
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterTax');
 
@@ -139,11 +136,18 @@ class TaxController extends ControllerBase
                         ->fetchObject();
                 
                 $try_module = "ek_finance_" . strtolower($data->code);
-                if (\Drupal::moduleHandler()->moduleExists($try_module)) {
+                $route_provider = \Drupal::service('router.route_provider');
+                $route = $route_provider->getRoutesByNames(['ek_finance_tax_' . strtolower($data->code)]);
+
+                if (\Drupal::moduleHandler()->moduleExists($try_module) && isset($routes['ek_finance_tax_' . strtolower($data->code)])) {
                     $local = Url::fromRoute('ek_finance_tax_' . strtolower($data->code), array('param' => $param), array())->toString();
                     $items['local'] =  array(
                             '#markup' => "<a href='" . $local . "'>" . $this->t('Custom tax forms') . "</a>",
                         );
+                } else {
+                    $items['local'] =  array(
+                        '#markup' =>  $this->t('Custom tax forms') ,
+                    );
                 }
             }
         }
@@ -172,8 +176,7 @@ class TaxController extends ControllerBase
      *      PhpExcel object download
      *      or markup if error
      */
-    public function exceltax($param)
-    {
+    public function exceltax($param) {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
