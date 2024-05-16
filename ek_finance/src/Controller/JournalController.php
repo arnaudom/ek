@@ -75,25 +75,25 @@ class JournalController extends ControllerBase {
      *
      */
     public function journal(Request $request) {
-        $items = array();
+        $items = [];
         $jid = ($request->query->get('jid')) ? $request->query->get('jid') : null;
         $items['filter_journal'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterJournal', $jid);
-        $items['data'] = array();
+        $items['data'] = [];
         $settings = new \Drupal\ek_finance\FinanceSettings();
         $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
 
         //todo filter by module
-        $folders = array('general', 'expense', 'receipt', 'payroll', 'invoice', 'pos', 'purchase', 'payment');
+        $folders = ['general', 'expense', 'receipt', 'payroll', 'invoice', 'pos', 'purchase', 'payment'];
 
         // todo , 'inventory'
 
         $journal = new Journal();
 
-
         if (isset($_SESSION['jfilter']['filter']) && $_SESSION['jfilter']['filter'] == 1) {
             if (isset($_SESSION['jfilter']['jid']) && $_SESSION['jfilter']['jid'] != "") {
                 //retrieve data by journal id
                 $details = $journal->journalEntryDetails($_SESSION['jfilter']['jid']);
+                $jid = $_SESSION['jfilter']['jid'];
 
                 if ($details['id'] == '') {
                     $items['#markup'] = "<div class='messages messages--warning'>"
@@ -101,7 +101,10 @@ class JournalController extends ControllerBase {
                             . '</div>';
                     return $items;
                 }
-
+                if(isset($jid)) { 
+                    $link = Url::fromRoute('ek_finance.extract.general_journal', [], ['absolute' => true, 'query' => ['jid' => $jid]])->toString();
+                    $items['link'] = "<a href='" . $link . "' title='" . $this->t('Right click copy link') . "'><span class='link'/>link</a>";
+                }
                 $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
                 if (in_array($details['coid'], $access)) {
                     $items['data'] = $journal->data_by_jid($_SESSION['jfilter']['jid']);
@@ -109,9 +112,9 @@ class JournalController extends ControllerBase {
                     return array(
                         '#theme' => 'ek_finance_journal_by_id',
                         '#items' => $items,
-                        '#attached' => array(
-                            'library' => array('ek_finance/ek_finance_css', 'ek_finance/ek_finance.journal', 'ek_admin/ek_admin_css'),
-                        ),
+                        '#attached' => [
+                            'library' => ['ek_finance/ek_finance_css', 'ek_finance/ek_finance.journal', 'ek_admin/ek_admin_css'],
+                        ],
                     );
                 } else {
                     //no access
@@ -125,9 +128,9 @@ class JournalController extends ControllerBase {
                     $items['alert'] = [
                         '#items' => $build,
                         '#theme' => 'ek_admin_message',
-                        '#attached' => array(
-                            'library' => array('ek_admin/ek_admin_css'),
-                        ),
+                        '#attached' => [
+                            'library' => ['ek_admin/ek_admin_css'],
+                        ],
                         '#cache' => ['max-age' => 0,],
                     ];
                     return $items;
@@ -164,6 +167,7 @@ class JournalController extends ControllerBase {
                 $items['excel'] = "<a href='" . $excel . "' title='" . $this->t('Excel download') . "'><span class='ico excel green'/></a>";
             }
         }
+        
 
         return array(
             '#theme' => 'ek_finance_journal',

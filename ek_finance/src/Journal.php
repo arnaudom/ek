@@ -92,39 +92,40 @@ class Journal {
         $query->fields('j');
         $query->condition('id', $id);
         $result = $query->execute()->fetchObject();
+        if($result) {
+            $ref = self::reference($result->source, $result->reference);
+            if ($result->comment == '') {
+                $result->comment = $ref[0];
+            }
+            if ($result->currency == '') {
+                $result->currency = $ref[1];
+            }
 
-        $ref = self::reference($result->source, $result->reference);
-        if ($result->comment == '') {
-            $result->comment = $ref[0];
+
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 't');
+            $query->fields('t', ['aname']);
+            $query->condition('coid', $result->coid, '=')
+                    ->condition('aid', $result->aid);
+            $aname = $query->execute()->fetchField();
+
+            return array(
+                'id' => $result->id,
+                'count' => $result->count,
+                'aid' => $result->aid,
+                'aname' => $aname,
+                'exchange' => $result->exchange,
+                'coid' => $result->coid,
+                'type' => $result->type,
+                'source' => $result->source,
+                'reference' => $result->reference,
+                'date' => $result->date,
+                'value' => $result->value,
+                'reconcile' => $result->reconcile,
+                'comment' => $result->comment,
+                'currency' => $result->currency
+            );
         }
-        if ($result->currency == '') {
-            $result->currency = $ref[1];
-        }
-
-
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_accounts', 't');
-        $query->fields('t', ['aname']);
-        $query->condition('coid', $result->coid, '=')
-                ->condition('aid', $result->aid);
-        $aname = $query->execute()->fetchField();
-
-        return array(
-            'id' => $result->id,
-            'count' => $result->count,
-            'aid' => $result->aid,
-            'aname' => $aname,
-            'exchange' => $result->exchange,
-            'coid' => $result->coid,
-            'type' => $result->type,
-            'source' => $result->source,
-            'reference' => $result->reference,
-            'date' => $result->date,
-            'value' => $result->value,
-            'reconcile' => $result->reconcile,
-            'comment' => $result->comment,
-            'currency' => $result->currency
-        );
     }
 
     /*

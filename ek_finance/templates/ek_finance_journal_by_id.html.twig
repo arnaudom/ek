@@ -5,9 +5,12 @@
 </section>
 
 
-<br/>
+
 <section class="journal" id="p{{ items.data.references.reference }}">
+<div style="display:inline-flex">
     <div class='print ico right pointer' id="{{ items.data.references.reference }}"></div>
+    <div class='left'>{{ items.link|raw }}</div>
+</div>
     <table>
         
         <tr><td colspan='6' class='journal-reference'>{{ items.data.references.company }}</td></tr>
@@ -84,14 +87,5 @@
                 <td class='right journal-total'>{{ (items.data.total_credit + items.data.total_credit_base) | number_format(2) }}</td>
             </tr>  
         </tbody>  
-
-
-
-
-
-
-
     </table>
-
-
 </section>
