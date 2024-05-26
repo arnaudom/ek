@@ -878,27 +878,43 @@ class SalesController extends ControllerBase {
                 $options = array('width' => '30%',);
                 $settings = new \Drupal\ek_finance\FinanceSettings();
                 $baseCurrency = $settings->get('baseCurrency');
-                $query = 'SELECT currency,amount,amountreceived,date,pay_date,amountbase,balancebase,taxvalue '
-                        . 'FROM {ek_sales_invoice} WHERE id=:id';
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $id))
-                        ->fetchObject();
-                $gross = $data->amount + (round($data->amount * $data->taxvalue / 100, 2));
-                $bal = $gross - $data->amountreceived;
-                $base = $data->amountbase - $data->balancebase;
+                $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_sales_invoice', 'i')
+                            ->fields('i')
+                            ->condition('id', $id)
+                            ->execute();
+                $main = $query->fetchObject();
+
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_invoice_details', 'd')
+                    ->fields('d')
+                    ->condition('serial', $main->serial)
+                    ->execute();
+                $details = $query->fetchAll();
+                $total_with_tax = 0;
+                $total_no_tax = 0;
+
+                foreach($details as $key => $line) { 
+                    if($line->opt == 0) {
+                        $total_no_tax += $line->total;
+                    } else {
+                        $total_with_tax += $line->total;
+                    }
+                }
+                $receivable = $total_with_tax * (1 + ($main->taxvalue / 100)) + $total_no_tax;
 
                 $content['#markup'] = "<table>"
                         . "<tbody>"
                         . "<tr>"
-                        . "<td>" . $this->t('Receivable') . "</td><td>" . $data->currency . " " . number_format($gross, 2) . "<td>"
+                        . "<td>" . $this->t('Receivable') . "</td><td>" . $main->currency . " " . number_format($receivable, 2) . "<td>"
                         . "</tr>"
                         . "<tr>"
-                        . "<td>" . $this->t('Received') . "</td><td>" . $data->currency . " " . number_format($data->amountreceived, 2) . "<td>"
+                        . "<td>" . $this->t('Received') . "</td><td>" . $main->currency . " " . number_format($main->amountreceived, 2) . "<td>"
                         . "</tr>"
                         . "<tr>"
-                        . "<td>" . $this->t('Balance') . "</td><td>" . $data->currency . " " . number_format($bal, 2) . "<td>"
+                        . "<td>" . $this->t('Balance') . "</td><td>" . $main->currency . " " . number_format($receivable - $main->amountreceived, 2) . "<td>"
                         . "<tr>"
-                        . "<td>" . $this->t('Exchange rate') . " " . $data->date . "</td><td>"  . round($data->amount/$data->amountbase, 4) . "<td>"
+                        . "<td>" . $this->t('Exchange rate') . " " . $main->date . "</td><td>"  . round($main->amount/$main->amountbase, 4) . "<td>"
                         . "</tbody></table><br/>";
 
                 if ($this->moduleHandler->moduleExists('ek_finance')) {
