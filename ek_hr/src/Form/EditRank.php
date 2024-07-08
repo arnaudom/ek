@@ -208,7 +208,7 @@ class EditRank extends FormBase
                 $dir = "private://hr/data/" . $form_state->getValue('coid') . '/ranks' ;
                 \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $dest = $dir . '/ranks.txt';
-                $filename = \Drupal::service('file_system')->copy($form_state->get('new_upload')->getFileUri(), $dest, 'FILE_EXISTS_REPLACE');
+                $filename = \Drupal::service('file_system')->copy($form_state->get('new_upload')->getFileUri(), $dest, FileSystemInterface::EXISTS_REPLACE);
                 \Drupal::messenger()->addStatus(t("New file uploaded"));
             } elseif ($form_state->getValue('rank')) {
                 //write the data to the file
