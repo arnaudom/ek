@@ -118,7 +118,7 @@ class AttFilePurchase extends FormBase {
         $to = "private://sales/purchase/" . $form_state->getValue('linked_po');
         \Drupal::service('file_system')
                 ->prepareDirectory($to, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-        $move = \Drupal::service('file_system')->copy($form_state->getValue('uri'), $to, 'FILE_EXISTS_RENAME');
+        $move = \Drupal::service('file_system')->copy($form_state->getValue('uri'), $to, FileSystemInterface::EXISTS_RENAME);
 
 
         if ($move) {
