@@ -224,7 +224,7 @@ class DocumentsEditController extends ControllerBase
         $doc = $query->execute()->fetchObject();
         
         $uri = "private://documents/users/" . \Drupal::currentUser()->id() . '/' . basename($doc->uri);
-        $move = \Drupal::service('file_system')->copy($doc->uri, $uri, 'FILE_EXISTS_RENAME');
+        $move = \Drupal::service('file_system')->copy($doc->uri, $uri, FileSystemInterface::EXISTS_RENAME);
         
         $fields = array(
             'uid' => \Drupal::currentUser()->id(),

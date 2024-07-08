@@ -183,13 +183,14 @@ class PostProject extends FormBase
 
             \Drupal::service('file_system')->prepareDirectory($to, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
             $to .= $data->filename;
-            $move = \Drupal::service('file_system')->copy($data->uri, $to, 'FILE_EXISTS_RENAME');
+            $move = \Drupal::service('file_system')->copy($data->uri, $to, FileSystemInterface::EXISTS_RENAME);
             if($move) {
                 $fields = [
                     'pcode' => $string[1],
                     'filename' => $data->filename,
                     'uri' => $move,
                     'folder' => $form_state->getValue('folder'),
+                    'sub_folder' => $this->t('Document'),
                     'comment' => $form_state->getValue('comment') ? Xss::filter($form_state->getValue('comment')) : $this->t('Posted from documents'),
                     'date' => date('U'),
                     'size' => filesize($move),
