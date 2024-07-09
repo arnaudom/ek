@@ -454,13 +454,13 @@ class SalesController extends ControllerBase {
                     '#tooltips' => true,
                     '#title' => $this->t('Transactions'),
                     '#chart_type' => 'column',
-                    'width' => 400,
+                    'width' => [400],
                     'series' => $seriesData,
                     'x_axis' => $x_axis,
                     'y_axis' => $y_axis,
                     '#raw_options' => [
                         'chart' => [
-                            'width' => 600, // Set the width here , other chart options ...
+                            'width' => [600], // Set the width here , other chart options ...
                         ],
                     ],
                 ];
@@ -542,7 +542,7 @@ class SalesController extends ControllerBase {
 
                 $items['payment_performance_chart'] = \Drupal::service('renderer')->render($element);
             }
-        } else {
+        } else { 
             $items['abidname'] = $this->t('No data');
             $items['abidlink'] = Url::fromRoute('ek_address_book.search')->toString();
             $items['data'] = null;
