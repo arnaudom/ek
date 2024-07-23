@@ -12,6 +12,13 @@ ek_messaging_settings:
     _controller: '\Drupal\ek_messaging\Controller\SettingsController::settings'
   requirements:
     _permission: 'administrate_messages'
+
+ek_messaging_eraser:
+  path: '/ek_messaging/admin/eraser'
+  defaults:
+    _controller: '\Drupal\ek_messaging\Controller\SettingsController::eraser'
+  requirements:
+    _permission: 'administrate_messages'
     
 ek_messaging_main:
   path: '/messaging/dashboard'

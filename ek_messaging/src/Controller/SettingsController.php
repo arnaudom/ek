@@ -9,6 +9,7 @@ namespace Drupal\ek_messaging\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Symfony\Component\HttpFoundation\Request;
@@ -60,6 +61,19 @@ class SettingsController extends ControllerBase {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
+    }
+
+    /**
+     * Erase all messages details
+     *
+     */
+    public function eraser(Request $request) {
+        $del = Database::getConnection('external_db', 'external_db')
+                ->update('ek_messaging_text')
+                ->fields(['text' => ''])
+                ->execute();
+
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
 
     /**
