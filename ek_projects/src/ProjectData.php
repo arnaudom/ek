@@ -408,14 +408,18 @@ class ProjectData {
         }
         $data = [];
         if ($param['field'] != 'new_project') {
-            //send to users following project
+            // send to users following project
             // note user still in project will be filtered out if non active
-            $query = "SELECT notify from {ek_project} WHERE id=:id";
-            $p = Database::getConnection('external_db', 'external_db')
-                            ->query($query, [':id' => $param['id']])->fetchObject();
-            if ($p->notify != '0') {
-                $notify = explode(',', $p->notify);
+           $notify = Database::getConnection('external_db', 'external_db')
+            ->select('ek_project')
+            ->fields('ek_project', ['notify'])
+            ->condition('id', $param['id'])
+            ->execute()
+            ->fetchField();
+            if ($notify != '0') {
+                $notify = explode(',', $notify);
             }
+            
         } elseif ($param['field'] == 'new_project') {
             //send to all users in country
             $access = AccessCheck::GetCountryAccess($param['cid']);
@@ -424,9 +428,15 @@ class ProjectData {
 
         if (!empty($notify)) {
             $currentuserid = \Drupal::currentUser()->id();
-            $query = "SELECT mail,name from {users_field_data} WHERE uid=:u OR mail=:m";
-            $from = Database::getConnection('default', 'default')
-                            ->query($query, [':u' => $currentuserid, ':m' => $param['mail']])->fetchObject();
+            $query = Database::getConnection('default', 'default')
+            ->select('users_field_data')
+            ->fields('users_field_data', ['mail', 'name']);
+            $or = $query->orConditionGroup()
+            ->condition('uid', $currentuserid)
+            ->condition('mail', $param['mail']);
+            $query->condition($or);
+            $from = $query->execute()->fetchObject();
+
             $params = [];
             $link = Url::fromRoute('ek_projects_view', ['id' => $param['id']])->toString();
             $params['options']['url'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
