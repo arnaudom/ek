@@ -175,7 +175,7 @@ class ProductsController extends ControllerBase {
                         $filesystem = \Drupal::service('file_system');
                         $dir = "private://products/images/" . $r->id . "/40/";
                         $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                        $filesystem->copy($item_img->uri, $thumb, 'FILE_EXISTS_REPLACE');
+                        $filesystem->copy($item_img->uri, $thumb, FileSystemInterface::EXISTS_REPLACE);
                         //Resize after copy
                         $image_factory = \Drupal::service('image.factory');
                         $image = $image_factory->get($thumb);
@@ -521,7 +521,7 @@ class ProductsController extends ControllerBase {
                     $filesystem = \Drupal::service('file_system');
                     $dir = "private://products/images/" . $items['id'] . "/100/";
                     $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                    $filesystem->copy($i['uri'], $thumb, 'FILE_EXISTS_REPLACE');
+                    $filesystem->copy($i['uri'], $thumb, FileSystemInterface::EXISTS_REPLACE);
                     //Resize after copy
                     $image_factory = \Drupal::service('image.factory');
                     $image = $image_factory->get($thumb);

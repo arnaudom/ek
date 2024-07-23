@@ -100,7 +100,7 @@ class UploadForm extends FormBase {
                 $thumb = "private://products/images/" . $form_state->getValue('for_id') . "/40/40x40_" . basename($filename);
                 $dir = "private://products/images/" . $form_state->getValue('for_id') . "/40/";
                 $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                $filesystem->copy($filename, $thumb, 'FILE_EXISTS_REPLACE');
+                $filesystem->copy($filename, $thumb, FileSystemInterface::EXISTS_REPLACE);
                 //Resize after copy
                 $image_factory = \Drupal::service('image.factory');
                 $image = $image_factory->get($thumb);
@@ -110,7 +110,7 @@ class UploadForm extends FormBase {
                 $thumb = "private://products/images/" . $form_state->getValue('for_id') . "/100/100x100_" . basename($filename);
                 $dir = "private://products/images/" . $form_state->getValue('for_id') . "/100/";
                 $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                $filesystem->copy($filename, $thumb, 'FILE_EXISTS_REPLACE');
+                $filesystem->copy($filename, $thumb, FileSystemInterface::EXISTS_REPLACE);
                 //Resize after copy
                 $image_factory = \Drupal::service('image.factory');
                 $image = $image_factory->get($thumb);
