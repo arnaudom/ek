@@ -542,7 +542,7 @@ class AddressBookController extends ControllerBase {
             return new JsonResponse(['card' => $card]);
         } elseif ($type < 4 || $type == '%') {
 
-            //pull company names
+            // pull company names
             $types = array(1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other'));
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'ab');
@@ -550,9 +550,9 @@ class AddressBookController extends ControllerBase {
 
             $query->leftJoin('ek_address_book_contacts', 'bc', 'ab.id = bc.abid');
             $or = $query->orConditionGroup()
-                    ->condition('name', $text . "%", 'like')
+                    ->condition('name', "%" . $text . "%", 'like')
                     ->condition('shortname', $text . "%", 'like')
-                    ->condition('contact_name', $text . "%", 'like')
+                    ->condition('contact_name', "%" . $text . "%", 'like')
                     ->condition('activity', "%" . $text . "%", 'like');
             $query->condition($or);
 
@@ -583,7 +583,12 @@ class AddressBookController extends ControllerBase {
                 }
             } else {
                 while ($r = $data->fetchObject()) {
-                    $result[] = html_entity_decode($r->name);
+                    if ($option == 'id') {
+                        $result[] = $r->id . " | " .html_entity_decode($r->name);
+                    } else {
+                        $result[] = html_entity_decode($r->name);
+                    }
+                    
                 }
             }
         } else {
