@@ -235,7 +235,8 @@ class JournalController extends ControllerBase {
      *
      */
     public function audit($audit, $param) {
-        $journal = new Journal();
+        $journal = new Journal(); 
+
         switch ($audit) {
             // param : [i/p]
             case 'currency':
@@ -247,12 +248,14 @@ class JournalController extends ControllerBase {
                 $audit = $journal->audit_chart($param);
                 $audit['layout'] = 'chart';
                 $audit['title'] = $this->t('Chart structure in journal');
+                break;
             case 'post-year' :
                 // param : coid|year
                 $audit = $journal->audit_newyear($param);
                 $audit['layout'] = 'newyear';
                 $audit['title'] = $this->t('Post new year report') . " " . explode('|', $param)[1] . " " 
                         . \Drupal\ek_admin\Access\AccessCheck::CompanyList()[explode('|', $param)[0]];
+                break;
         }
 
         return array(

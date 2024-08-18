@@ -1,6 +1,9 @@
 {{ items.title }}
-
 {% if items.layout == 'currency' %}
+<p>{{ 'verifies that gain or loss is properly recorded as debit or credit
+of currency gain/loss account. If audit does not states `OK`, it means that
+the particular journal ID reference is wrongly recorded. It may be adjusted
+with manual entry' }}</p>
     <table>
         <thead>
             <tr>
@@ -43,6 +46,7 @@
 
 {% if items.layout == 'chart' %}
     <p>{{ items.company }}</p>
+    <p>{{ 'List any account found in journal record that has no match with the chart for the selected company.' }}</p>
     <table>
         <thead>
             <tr>
@@ -65,7 +69,7 @@
 {% endif %}
 
 {% if items.layout == 'newyear' %}
-
+<p>{{ 'Retrieve new year posting data per year.' }}</p>
     <table>
         <thead>
             <tr>

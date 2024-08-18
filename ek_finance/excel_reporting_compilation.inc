@@ -4,10 +4,10 @@ use Drupal\Core\Database\Database;
 use Drupal\ek_admin\Access\AccessCheck;
 
 
-$param = unserialize($param);
-$year = $param['year'];
-$baseCurrency = $param['baseCurrency'];
-$rounding = $param['rounding'];
+//$param = unserialize($param);
+//$year = $p['year'];
+//$baseCurrency = $param['baseCurrency'];
+//$rounding = $param['rounding'];
 $company = AccessCheck::GetCompanyByUser();
 $purchases = [];
 $expenses = [];
@@ -84,7 +84,8 @@ $objPHPExcel->getActiveSheet()->getStyle("A$l:C$l")->applyFromArray(
 
 foreach($company as $key => $coid) {
     if($coid > 0) {
-// Get the class array structure for income
+     // Get the class array structure for income
+     /*
             $query = Database::getConnection('external_db', 'external_db')
                                 ->select('ek_accounts', 'a');
                 $query->fields('a', ['aid']);
@@ -213,31 +214,31 @@ foreach($company as $key => $coid) {
 
             $balances['all']['actual'] = $balances['all']['actual'] + $balances[$coid]['actual'];
             $balances['all']['allocation'] = $balances['all']['allocation'] + $balances[$coid]['allocation'];
-            
+            */
             
             $l++;
             //$objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[0] . $l, (string) t('Income'));            
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[1] . $l, round($income[$coid]['actual'],$rounding));
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[2] . $l, round($income[$coid]['allocation'],$rounding));
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[1] . $l, round($data['income'][$coid]['actual'],$rounding));
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[2] . $l, round($data['income'][$coid]['allocation'],$rounding));
             $objPHPExcel->getActiveSheet()->getStyle($columns[1] . $l)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
             $objPHPExcel->getActiveSheet()->getStyle($columns[2] . $l)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
             $l++;
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[0] . $l, (string) t('Purchases'));            
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[1] . $l, round($purchases[$coid]['actual'],$rounding));
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[2] . $l, round($purchases[$coid]['allocation'],$rounding));
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[1] . $l, round($data['purchases'][$coid]['actual'],$rounding));
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[2] . $l, round($data['purchases'][$coid]['allocation'],$rounding));
             $objPHPExcel->getActiveSheet()->getStyle($columns[1] . $l)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
             $objPHPExcel->getActiveSheet()->getStyle($columns[2] . $l)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
             $l++;
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[0] . $l, (string) t('Expenses'));            
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[1] . $l, round($expenses[$coid]['actual'],$rounding));
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[2] . $l, round($expenses[$coid]['allocation'],$rounding));
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[1] . $l, round($data['expenses'][$coid]['actual'],$rounding));
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[2] . $l, round($data['expenses'][$coid]['allocation'],$rounding));
             $objPHPExcel->getActiveSheet()->getStyle($columns[1] . $l)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
             $objPHPExcel->getActiveSheet()->getStyle($columns[2] . $l)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_00);
             $l++;
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[0] . $l, $items['company'][$coid]);            
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[1] . $l, round($balances[$coid]['actual'],$rounding));
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[2] . $l, round($balances[$coid]['allocation'],$rounding));
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[1] . $l, round($data['balances'][$coid]['actual'],$rounding));
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[2] . $l, round($data['balances'][$coid]['allocation'],$rounding));
             $objPHPExcel->getActiveSheet()->getStyle($columns[0] . $l)->getFont()->setBold(true);
             $objPHPExcel->getActiveSheet()->getStyle($columns[1] . $l)->getFont()->setBold(true);
             $objPHPExcel->getActiveSheet()->getStyle($columns[2] . $l)->getFont()->setBold(true);
@@ -270,8 +271,8 @@ foreach($company as $key => $coid) {
             
 $l++;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[0] . $l, (string) t('Total'));            
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[1] . $l, round($balances['all']['actual'],$rounding));
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[2] . $l, round($balances['all']['allocation'],$rounding));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[1] . $l, round($data['balances']['all']['actual'],$rounding));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue($columns[2] . $l, round($data['balances']['all']['allocation'],$rounding));
 $objPHPExcel->getActiveSheet()->getStyle($columns[0] . $l)->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle($columns[1] . $l)->getFont()->setBold(true);
 $objPHPExcel->getActiveSheet()->getStyle($columns[2] . $l)->getFont()->setBold(true);

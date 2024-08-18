@@ -22,8 +22,7 @@ use Drupal\ek_finance\FinanceSettings;
 /**
 * Controller routines for ek module routes.
 */
-class AccountsChartController extends ControllerBase
-{
+class AccountsChartController extends ControllerBase {
 
   /**
    * The form builder service.
@@ -34,11 +33,10 @@ class AccountsChartController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
-      $container->get('form_builder')
-    );
+            $container->get('form_builder')
+        );
     }
 
     /**
@@ -47,8 +45,7 @@ class AccountsChartController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(FormBuilderInterface $form_builder)
-    {
+    public function __construct(FormBuilderInterface $form_builder) {
         $this->formBuilder = $form_builder;
     }
 
@@ -57,8 +54,7 @@ class AccountsChartController extends ControllerBase
        *  Form to manage and edit accounts chart
        *
     */
-    public function chartaccounts(Request $request)
-    {
+    public function chartaccounts(Request $request) {
         $build['chart_accounts'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\ChartAccounts');
         return $build;
     }
@@ -68,8 +64,7 @@ class AccountsChartController extends ControllerBase
        * @param int $coid
        *    company id
     */
-    public function pdf($coid)
-    {
+    public function pdf($coid) {
         $markup = array();
         $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_accounts');
@@ -89,9 +84,8 @@ class AccountsChartController extends ControllerBase
       * Export chart per company in excel format
       * @param int $coid
       *    company id
-*/
-    public function exportExcel($coid)
-    {
+    */
+    public function exportExcel($coid) {
         $markup = array();
         
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
@@ -120,8 +114,7 @@ class AccountsChartController extends ControllerBase
      * AJAX callback handler.
      * @param string $param
      */
-    public function modal($param)
-    {
+    public function modal($param) {
         return $this->dialog(true, $param);
     }
 
@@ -129,8 +122,7 @@ class AccountsChartController extends ControllerBase
      * AJAX callback handler.
      * @param string $param
      */
-    public function nonModal($param)
-    {
+    public function nonModal($param) {
         return $this->dialog(false, $param);
     }
 
@@ -145,8 +137,7 @@ class AccountsChartController extends ControllerBase
      * @return \Drupal\Core\Ajax\AjaxResponse
      *   An ajax response object.
      */
-    protected function dialog($is_modal = false, $param = null)
-    {
+    protected function dialog($is_modal = false, $param = null) {
         $content = $this->formBuilder->getForm('Drupal\ek_finance\Form\NewAccountForm', $param);
         $content['#attached']['library'][] = 'core/drupal.dialog.ajax';
     

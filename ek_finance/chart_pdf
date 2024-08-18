@@ -65,7 +65,7 @@ $pdf->SetFont('helvetica','',8);
 While($d = $data->fetchObject()) {
     
     if($d->astatus == 0) {
-        $pdf->SetTextColor(192,192,192);
+        $pdf->SetTextColor(255,0,0);
     } else {
         $pdf->SetTextColor(0,0,0);
     }

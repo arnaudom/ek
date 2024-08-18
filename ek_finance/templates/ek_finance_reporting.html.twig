@@ -185,7 +185,7 @@
     
 <tbody id='purchases_data'>
 {# loop class #}
-    {% for arrays,values in items.purchases.0.classes %}
+    {% for arrays,values in items.purchases.classes %}
         <tr>
             <td colspan='3' class='detail'>{{ values.id }} {{ values.name }} </td>
             <td colspan='11'>
@@ -271,7 +271,7 @@
 </thead>
 <tbody id='expenses_data'>
     {# loop class #}
-    {% for arrays,values in items.expenses.0.classes %}
+    {% for arrays,values in items.expenses.classes %}
         <tr>
             <td colspan='3' class='detail'>{{ values.id }} {{ values.name }} </td>
             <td colspan='11'>
@@ -315,26 +315,23 @@
         </tr>
 
     {% endfor %}
-
-
-
 </tbody>
 <tbody>
     <tr>
         <td class='left grandtotal'>{{ 'Total'|trans }} {{ 'expenses'|trans }}</td>
-        <td class='right grandtotal' >{{ items.expenses.0.total.1|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.expenses.0.total.2|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.expenses.0.total.3|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.expenses.0.total.4|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.expenses.0.total.5|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.expenses.0.total.6|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.expenses.0.total.7|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.expenses.0.total.8|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.expenses.0.total.9|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.expenses.0.total.10|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.expenses.0.total.11|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.expenses.0.total.12|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.expenses.0.total.sumRow|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.expenses.total.1|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.expenses.total.2|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.expenses.total.3|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.expenses.total.4|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.expenses.total.5|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.expenses.total.6|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.expenses.total.7|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.expenses.total.8|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.expenses.total.9|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.expenses.total.10|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.expenses.total.11|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.expenses.total.12|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.expenses.total.sumRow|number_format(rounding) }}</td>
     </tr>    
 <tbody>
 
@@ -358,7 +355,7 @@
     </thead>
 <tbody id='income_data'>
 {# loop class #}
-    {% for arrays,values in items.income.0.classes %}
+    {% for arrays,values in items.income.classes %}
         <tr>
             <td colspan='3' class='detail'>{{ values.id }} {{ values.name }} </td>
             <td colspan='11'>
@@ -406,19 +403,19 @@
 <tbody>
     <tr>
         <td class='left grandtotal'>{{ 'Total'|trans }} {{ 'income'|trans }}</td>
-        <td class='right grandtotal' >{{ items.income.0.total.1|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.income.0.total.2|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.income.0.total.3|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.income.0.total.4|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.income.0.total.5|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.income.0.total.6|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.income.0.total.7|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.income.0.total.8|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.income.0.total.9|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.income.0.total.10|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.income.0.total.11|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.income.0.total.12|number_format(rounding) }}</td>
-        <td class='right grandtotal' >{{ items.income.0.total.sumRow|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.income.total.1|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.income.total.2|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.income.total.3|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.income.total.4|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.income.total.5|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.income.total.6|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.income.total.7|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.income.total.8|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.income.total.9|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.income.total.10|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.income.total.11|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.income.total.12|number_format(rounding) }}</td>
+        <td class='right grandtotal' >{{ items.income.total.sumRow|number_format(rounding) }}</td>
     </tr>      
 <tbody>
 </table>

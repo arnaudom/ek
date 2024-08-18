@@ -15,8 +15,9 @@ use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_admin\CompanySettings;
+use Drupal\ek_finance\FinanceSettings;
+use Drupal\ek_finance\ReportingData;
 
 /**
  * Controller routines for ek module routes.
@@ -70,10 +71,9 @@ class ReportController extends ControllerBase
      *  Render Html
      *
      */
-    public function reporting(Request $request)
-    {
+    public function reporting(Request $request) {
         $items = array();
-        //The chart structure is as follow
+        // The chart structure is as follow
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
@@ -105,16 +105,16 @@ class ReportController extends ControllerBase
                 $viewS = 'allocation';
                 $viewE = 'allocation';
                 if ($_SESSION['repfilter']['view'] == '1') {
-                    //actual data view selected
+                    // actual data view selected
                     $viewS = 'head';
                     $viewE = 'company';
                 } else {
-                    //control error
-                    //allocation view may be wrong if aid accounts from allocation source
-                    //are not active in allocated destination
+                    // control error
+                    // allocation view may be wrong if aid accounts from allocation source
+                    // are not active in allocated destination
                     $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
-                    //select all aid accounts that are used in journal from other companies
+                    // select all aid accounts that are used in journal from other companies
                     $or = $query->orConditionGroup();
                     $or->condition('aid', $chart['cos'] . '%', 'like');
                     $or->condition('aid', $chart['expenses'] . '%', 'like');
@@ -142,30 +142,32 @@ class ReportController extends ControllerBase
                     $items['error'] = $error;
                 }
 
-                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/reporting.inc';
+                // include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/reporting.inc';
+                $reportingData = new ReportingData($coid, $year, $baseCurrency, $rounding, $divide, $viewE, $viewS, $chart);
+                $data = $reportingData->getData();
 
+                $items = array_merge($items, $data);
                 $param = serialize(
-                    array(
+                    [
                             'coid' => $coid,
                             'year' => $year,
                             'baseCurrency' => $baseCurrency,
                             'rounding' => $rounding,
                             'divide' => $divide,
                             'view' => ['E' => $viewE, 'S' => $viewS]
-                        )
+                    ]
                 );
                 $excel = Url::fromRoute('ek_finance_reporting_excel', ['param' => $param], [])->toString();
                 $items['excel'] = array(
                     '#markup' => "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>",
                 );
-
-                
-                $items['purchases'] = $purchases;
-                $items['expenses'] = $expenses;
-                $items['income'] = $income;
-                $items['internal_received'] = $internal_received;
-                $items['internal_paid'] = $internal_paid;
-                $items['balances'] = $balances;
+    
+                $items['purchases'] = $data['purchases'];
+                $items['expenses'] = $data['expenses'];
+                $items['income'] = $data['income'];
+                $items['internal_received'] = $data['internal_received'];
+                $items['internal_paid'] = $data['internal_paid'];
+                $items['balances'] = $data['balances'];
 
                 return array(
                     '#theme' => 'ek_finance_reporting',
@@ -178,14 +180,15 @@ class ReportController extends ControllerBase
                     ],
                 );
             } else {
-                //display a compilation table
-                
-                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/reporting_compilation.inc';
-                $items['purchases'] = $purchases;
-                $items['expenses'] = $expenses;
-                $items['income'] = $income;
-                $items['balances'] = $balances;
-                $items['error'] = $error;
+                // display a compilation table
+                // include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/reporting_compilation.inc';
+                $reportingData = new ReportingData($coid, $year, $baseCurrency, $rounding, $divide, Null, Null, $chart);
+                $data = $reportingData->getCompilation();
+                $items['purchases'] = $data['purchases'];
+                $items['expenses'] = $data['expenses'];
+                $items['income'] = $data['income'];
+                $items['balances'] = $data['balances'];
+                $items['error'] = $data['error'];
       
                 $query = "SELECT id,name from {ek_company} ORDER by id";
                 $items['company'] = Database::getConnection('external_db', 'external_db')
@@ -230,22 +233,27 @@ class ReportController extends ControllerBase
      */
     public function excelreporting(Request $request, $param) {
         $markup = array();
-        //The chart structure is as follow
+        // The chart structure is as follow
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
         $p = unserialize($param);
+        $year = $p['year'];
+        $baseCurrency = $p['baseCurrency'];
+        $rounding = $p['rounding'];
+        $divide = 1;
         if (isset($p['coid'])) {
             $coid = $p['coid'];
-            $year = $p['year'];
-            $baseCurrency = $p['baseCurrency'];
-            $rounding = $p['rounding'];
-            $divide = 1;
             $viewE = $p['view']['E'];
             $viewS = $p['view']['S'];
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/reporting.inc';
+            $reportingData = new ReportingData($coid, $year, $baseCurrency, $rounding, $divide, $viewE, $viewS, $chart);
+            $data = $reportingData->getData();
+            //include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/reporting.inc';
             include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_reporting.inc';
         } else {
+            
+            $reportingData = new ReportingData(null, $year, $baseCurrency, $rounding, $divide, null, null, $chart);
+            $data = $reportingData->getCompilation();
             include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_reporting_compilation.inc';
         }
         return $markup;
@@ -257,10 +265,9 @@ class ReportController extends ControllerBase
      *      Render Html
      *
      */
-    public function budgeting(Request $request)
-    {
+    public function budgeting(Request $request) {
         $items = array();
-        //The chart structure is as follow
+        // The chart structure is as follow
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
@@ -317,8 +324,7 @@ class ReportController extends ControllerBase
      *  @return json response
      *
      */
-    public function updatebudget(Request $request)
-    {
+    public function updatebudget(Request $request) {
         $reference = $_POST['reference'];
         $value = $_POST['value'];
         str_replace(',', '', $value);
@@ -343,8 +349,7 @@ class ReportController extends ControllerBase
      *      or markup if error
      *
      */
-    public function excelbudgeting($param)
-    {
+    public function excelbudgeting($param) {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
@@ -365,8 +370,7 @@ class ReportController extends ControllerBase
      *  render Html
      *
      */
-    public function profitloss(Request $request)
-    {
+    public function profitloss(Request $request) {
         $items = array();
         //The chart structure is as follow
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
@@ -425,8 +429,7 @@ class ReportController extends ControllerBase
      *  Pdf object download
      *
      */
-    public function pdfprofitloss(Request $request, $param)
-    {
+    public function pdfprofitloss(Request $request, $param) {
         //output is controlled by pdf.inc where data are extracted
         //base on document generated
         $type = 4;
@@ -450,8 +453,7 @@ class ReportController extends ControllerBase
      * @return array
      *  render Html
      */
-    public function balancesheet(Request $request)
-    {
+    public function balancesheet(Request $request) {
         $items = array();
         //The chart structure is as follow
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
@@ -512,8 +514,7 @@ class ReportController extends ControllerBase
      * @return Object
      *  Pdf object download
      */
-    public function pdfbalancesheet(Request $request, $param)
-    {
+    public function pdfbalancesheet(Request $request, $param) {
 
         //output is controlled by pdf.inc where data are extracted
         //base on document generated
@@ -538,8 +539,7 @@ class ReportController extends ControllerBase
      *  render Html
      *
      */
-    public function cashflow()
-    {
+    public function cashflow() {
         $items = array();
         $amortization = null;
         //The chart structure is as follow
@@ -594,8 +594,7 @@ class ReportController extends ControllerBase
      *  or markup if error
      *
      */
-    public function excelcashflow($param)
-    {
+    public function excelcashflow($param) {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');

@@ -106,7 +106,7 @@ $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
         )
 );
 
-foreach ($purchases[0]['classes'] as $key => $values){
+foreach ($data['purchases']['classes'] as $key => $values){
         $l++;
         $c = 0;
         $row = "A" . $l . ":M" . $l;
@@ -187,7 +187,7 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Grand tota
 for ($m = 1; $m <= 12; $m++) {
     
     $cell = $columns[$m] . $l;
-    if ($purchases[0]['total'][$m] == "0") {
+    if ($data['purchases']['total'][$m] == "0") {
         //$objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
@@ -196,7 +196,7 @@ for ($m = 1; $m <= 12; $m++) {
     //insert line
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $purchases[0]['total'][$m]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $data['purchases']['total'][$m]);
 
    
     //$grand_total_purchases[$m] = $amount; 
@@ -254,7 +254,7 @@ $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
             )
         )
 );
-foreach ($expenses[0]['classes'] as $key => $values){
+foreach ($data['expenses']['classes'] as $key => $values){
         $l++;
         $c = 0;
         $row = "A" . $l . ":M" . $l;
@@ -337,7 +337,7 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Grand tota
 for ($m = 1; $m <= 12; $m++) {
     
     $cell = $columns[$m] . $l;
-    if ($expenses[0]['total'][$m] == "0") {
+    if ($data['expenses']['total'][$m] == "0") {
         //$objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
@@ -345,7 +345,7 @@ for ($m = 1; $m <= 12; $m++) {
     //insert line
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $expenses[0]['total'][$m]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $data['expenses']['total'][$m]);
 
   
 }  // for loop month
@@ -402,7 +402,7 @@ $objPHPExcel->getActiveSheet()->getStyle("A$l:N$l")->applyFromArray(
         )
 );
 
-foreach ($income[0]['classes'] as $key => $values){
+foreach ($data['income']['classes'] as $key => $values){
         $l++;
         $c = 0;
         $row = "A" . $l . ":M" . $l;
@@ -495,7 +495,7 @@ for ($m = 1; $m <= 12; $m++) {
     //insert line
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFont()->setBold(true);
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $income[0]['total'][$m]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $data['income']['total'][$m]);
 
 } 
 
@@ -563,18 +563,18 @@ for ($m = 1; $m <= 12; $m++) {
     $cell = $columns[$m] . $l;
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
     //$pl = $grand_total_revenue[$m] - $grand_total_purchases[$m] - $grand_total_expenses[$m];
-    if ($balances['pl'][$m] < 0) {
+    if ($data['balances']['pl'][$m] < 0) {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('ed95b0');
     } else {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('81F871');
     }
     //insert line
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $balances['pl'][$m]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $data['balances']['pl'][$m]);
 }
 $cell = $columns[$m] . $l;
 $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-if (array_sum($balances['pl']) < 0) {
+if (array_sum($data['balances']['pl']) < 0) {
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('ed95b0');
 } else {
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getFill()->getStartColor()->setRGB('81F871');
@@ -597,7 +597,7 @@ $sum_nyr = 0;
 for ($m = 1; $m <= 12; $m++) {
        
     $cell = $columns[$m] . $l;
-    if ($balances['inyr'][$m] == "0") {
+    if ($data['balances']['inyr'][$m] == "0") {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
@@ -605,7 +605,7 @@ for ($m = 1; $m <= 12; $m++) {
 
     //insert line
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $balances['inyr'][$m]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $data['balances']['inyr'][$m]);
     
 } //for loop months   
 // Line total INR
@@ -626,7 +626,7 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Short paym
 
 for ($m = 1; $m <= 12; $m++) {
     $cell = $columns[$m] . $l;
-    if ($balances['short'][$m] == "0") {
+    if ($data['balances']['short'][$m] == "0") {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
@@ -635,7 +635,7 @@ for ($m = 1; $m <= 12; $m++) {
     //insert line
     $cell = $columns[$m] . $l;
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $balances['short'][$m]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $data['balances']['short'][$m]);
 } //for loop months   
 // Line total SP
 $cell = $columns[$m] . $l;
@@ -656,7 +656,7 @@ $sum_np = 0;
 for ($m = 1; $m <= 12; $m++) {
 
     $cell = $columns[$m] . $l;
-    if ($balances['enyp'][$m] == "") {
+    if ($data['balances']['enyp'][$m] == "") {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
@@ -665,7 +665,7 @@ for ($m = 1; $m <= 12; $m++) {
     //insert line
 
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $balances['enyp'][$m]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $data['balances']['enyp'][$m]);
 } //for loop months   
 // Line total NYP
 $cell = $columns[$m] . $l;
@@ -681,14 +681,14 @@ $cell = $columns[0] . $l;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Internal transfers received'));
 for ($m = 1; $m <= 12; $m++) {
     $cell = $columns[$m] . $l;
-    if ($internal_received[0][$m] == "0") {
+    if ($data['internal_received'][$m] == "0") {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
     // insert line
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $internal_received[0][$m]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $data['internal_received'][$m]);
 }
 
 $cell = $columns[$m] . $l;
@@ -703,14 +703,14 @@ $cell = $columns[0] . $l;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, (string) t('Internal transfers paid'));
 for ($m = 1; $m <= 12; $m++) {
     $cell = $columns[$m] . $l;
-    if ($internal_paid[0][$m] == "") {
+    if ($data['internal_paid'][$m] == "") {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($greyfont);
     } else {
         $objPHPExcel->getActiveSheet()->getStyle($cell)->applyFromArray($bluefont);
     }
     // insert line
     $objPHPExcel->getActiveSheet()->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $internal_paid[0][$m]);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell, $data['internal_paid'][$m]);
 }
 
 $cell = $columns[$m] . $l;
