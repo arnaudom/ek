@@ -163,3 +163,11 @@ function ek_projects_update_8011() {
 function ek_projects_update_8012() {
    \Drupal::service('router.builder')->rebuild(); 
 }
+
+/**
+ * Project route rebuild
+ * 
+ */
+function ek_projects_update_8013() {
+   \Drupal::service('router.builder')->rebuild(); 
+}

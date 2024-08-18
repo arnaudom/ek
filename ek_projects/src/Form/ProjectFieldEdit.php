@@ -81,10 +81,19 @@ class ProjectFieldEdit extends FormBase {
             case 'client_id':
 
                 $form['value'] = [
-                    '#type' => 'select',
-                    '#options' => \Drupal\ek_address_book\AddressBookData::addresslist(1),
-                    '#title' => $this->t('client'),
-                    '#default_value' => ''
+                    //'#type' => 'select',
+                    //'#options' => \Drupal\ek_address_book\AddressBookData::addresslist(1),
+                    //'#title' => $this->t('client'),
+                    //'#default_value' => ''
+                    '#type' => 'textfield',
+                    '#size' => 50,
+                    '#maxlength' => 200,
+                    '#required' => true,
+                    '#title' => $this->t('Client'),
+                    '#attributes' => array('placeholder' => $this->t('Type name or contact to select client')),
+                    '#autocomplete_route_name' => 'ek.look_up_contact_ajax',
+                    '#autocomplete_route_parameters' => ['type' => '1'],
+                    '#autocomplete_query_parameters' => ['option' => 'id']
                 ];
                 break;
 
@@ -358,7 +367,6 @@ class ProjectFieldEdit extends FormBase {
 
             case 'status':
             case 'owner':
-            case 'client_id':
             case 'priority':
 
                 $fields = [ $form_state->getValue('field') => $form_state->getValue('value')];
@@ -368,7 +376,18 @@ class ProjectFieldEdit extends FormBase {
                         ->execute();
                 $value = $form_state->getValue('value');
                 break;
+            case 'client_id':
+                $clid = explode("|",$form_state->getValue('value'));
+                if (is_numeric(trim($clid[0]))) {
+                    $fields = [ $form_state->getValue('field') => trim($clid[0])];
+                    $update = Database::getConnection('external_db', 'external_db')
+                        ->update('ek_project')->fields($fields)
+                        ->condition('id', $form_state->getValue('for_id'))
+                        ->execute();
+                    $value = $form_state->getValue('value');
+                }
 
+                break;
             case 'pname':
 
                 $fields = ['pname' => Xss::filter($form_state->getValue('value'))];

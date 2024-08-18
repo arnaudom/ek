@@ -64,153 +64,147 @@ class NewProject extends FormBase {
             $form_state->set('step', 1);
         }
 
-
-
-        $query = "SELECT id,type from {ek_project_type} ORDER by id";
-        $type = Database::getConnection('external_db', 'external_db')->query($query)->fetchAllKeyed();
-        $link = Url::fromRoute('ek_projects_types', array(), array())->toString();
+        $type = Database::getConnection('external_db', 'external_db')
+            ->select('ek_project_type', 'p')
+            ->fields('p',['id','type'])
+            ->orderBy('id')
+            ->execute()->fetchAllKeyed();
+        $link = Url::fromRoute('ek_projects_types', [], [])->toString();
 
         if (empty($type)) {
-            $form['type'] = array(
+            $form['type'] = [
                 '#type' => 'item',
                 '#markup' => $this->t('You did not set any project type. Create a <a href="@t" >type</a> before proceeding or contact administrator.', array('@t' => $link)),
-            );
+            ];
         } else {
-            $form['type'] = array(
+            $form['type'] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $type,
                 '#required' => true,
                 '#title' => $this->t('Category'),
-                '#description' => $this->t('<a href="@t" >edit categories</a>', array('@t' => $link)),
-            );
+                '#description' => $this->t('<a href="@t" >edit categories</a>', ['@t' => $link]),
+            ];
 
 
             if (($form_state->getValue('type')) == '') {
-                $form['next'] = array(
+                $form['next'] = [
                     '#type' => 'submit',
                     '#value' => $this->t('Next') . ' >>',
-                    '#states' => array(
+                    '#states' => [
                         // Hide data fieldset when class is empty.
-                        'invisible' => array(
-                            "select[name='type']" => array('value' => ''),
-                        ),
-                    ),
-                );
+                        'invisible' => [
+                            "select[name='type']" => ['value' => ''],
+                        ],
+                    ],
+                ];
             }
         }
-
-
 
 
         if ($form_state->get('step') == 2) {
             $form_state->set('step', 3);
             $country = AccessCheck::CountryListByUid();
 
-            $form['cid'] = array(
+            $form['cid'] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $country,
                 '#required' => true,
                 '#title' => $this->t('Country'),
-            );
+            ];
 
             if ($this->moduleHandler->moduleExists('ek_address_book')) {
                 $client = \Drupal\ek_address_book\AddressBookData::addresslist(1);
 
                 if (!empty($client)) {
-                    $form['client'] = array(
-                        '#type' => 'select',
-                        '#size' => 1,
-                        '#options' => $client,
+                    $form['client'] = [
+                        '#type' => 'textfield',
+                        '#size' => 50,
+                        '#maxlength' => 200,
                         '#required' => true,
                         '#title' => $this->t('Client'),
-                        '#attributes' => array('style' => array('width:300px;')),
-                    );
+                        '#attributes' => array('placeholder' => $this->t('Type name or contact to select client')),
+                        '#autocomplete_route_name' => 'ek.look_up_contact_ajax',
+                        '#autocomplete_route_parameters' => ['type' => '1'],
+                        '#autocomplete_query_parameters' => ['option' => 'id']
+
+                    ];
                 } else {
-                    $link = Url::fromRoute('ek_address_book.new', array())->toString();
-                    $form['client'] = array(
+                    $link = Url::fromRoute('ek_address_book.new', [])->toString();
+                    $form['client'] = [
                         '#markup' => $this->t("You do not have any <a title='create' href='@cl'>client</a> in your record.", ['@cl' => $link]),
-                    );
+                    ];
                 }
             } else {
-                $form['client'] = array(
+                $form['client'] = [
                     '#markup' => $this->t('You do not have any client list.'),
-                );
+                ];
             }
 
-            $form['name'] = array(
+            $form['name'] = [
                 '#type' => 'textfield',
                 '#size' => 35,
                 '#maxlength' => 50,
                 '#required' => true,
                 '#title' => $this->t('Project name'),
-                    //'#description' => $this->t('project name'),
-            );
+            ];
 
-            $form['level'] = array(
+            $form['level'] = [
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => array('Main project' => 'Main project', 'Sub project' => 'Sub project'),
-                //'#required' => TRUE,
+                '#options' => ['Main project' => 'Main project', 'Sub project' => 'Sub project'],
                 '#title' => $this->t('Project level'),
                 '#description' => $this->t('Main projects can have sub projects. Sub projects must be linked to a main project'),
-            );
+            ];
 
-            $form['main'] = array(
+            $form['main'] = [
                 '#type' => 'textfield',
                 '#size' => 48,
                 '#maxlength' => 150,
-                //'#required' => TRUE,
-                //'#title' => $this->t('main project reference'),
-                '#attributes' => array('placeholder' => $this->t('Ex. 123')),
+                '#attributes' => ['placeholder' => $this->t('Ex. 123')],
                 '#autocomplete_route_name' => 'ek_look_up_projects',
-                '#autocomplete_route_parameters' => array('level' => 'main', 'status' => '0'),
+                '#autocomplete_route_parameters' => ['level' => 'main', 'status' => '0'],
                 '#description' => $this->t('main project reference'),
-                '#states' => array(
+                '#states' => [
                     // Hide data fieldset when class is empty.
-                    'invisible' => array(
-                        "select[name='level']" => array('value' => 'Main project'),
-                    ),
-                ),
-            );
+                    'invisible' => [
+                        "select[name='level']" => ['value' => 'Main project'],
+                    ],
+                ],
+            ];
 
-            $form['access'] = array(
+            $form['access'] = [
                 '#type' => 'checkbox',
                 '#title' => $this->t('Access'),
                 '#description' => $this->t('grant access to me only'),
                 '#default_value' => 0,
-            );
+            ];
 
 
-            $form['notify'] = array(
+            $form['notify'] = [
                 '#type' => 'checkbox',
                 '#title' => $this->t('Notify users'),
                 '#default_value' => 1,
-                '#states' => array(
-                    'unchecked' => array(
-                        ':input[name="access"]' => array('checked' => true),
-                    ),
-                ),
-            );
+                '#states' => [
+                    'unchecked' => [
+                        ':input[name="access"]' => ['checked' => true],
+                    ],
+                ],
+            ];
 
-            $form['actions'] = array(
+            $form['actions'] = [
                 '#type' => 'actions',
-                '#attributes' => array('class' => array('container-inline')),
-            );
+                '#attributes' => ['class' => ['container-inline']],
+            ];
 
-            $form['actions']['submit'] = array(
+            $form['actions']['submit'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Create'),
-            );
+            ];
         }
 
-
         $form['#attached']['library'][] = 'ek_projects/ek_projects_css';
-
-
-
-
         return $form;
     }
 
@@ -226,21 +220,40 @@ class NewProject extends FormBase {
         if ($form_state->get('step') == 3) {
             if ($form_state->getValue('client') == '') {
                 $form_state->setErrorByName("client", $this->t('You must have a client to create a project.'));
+            } else {
+                $clid = explode("|",$form_state->getValue('client'));
+                if (!is_numeric(trim($clid[0]))) { 
+                    $form_state->setErrorByName("client", $this->t('Client error. Please select one in the list.'));
+                } else {
+                    $data = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_address_book', 'ab')
+                        ->fields('ab',['shortname'])
+                        ->condition('id', trim($clid[0]))
+                        ->execute();
+                    $sn = $data->fetchField();
+                    if($sn == null) {
+                        $form_state->setErrorByName("client", $this->t('Client error.'));
+                    } else {
+                        $form_state->set('shortname',$sn);
+                        $form_state->set('clid',trim($clid[0]));
+                    }
+
+                }
             }
 
             if ($form_state->getValue('level') == 'Sub project') {
                 $main = explode(' ', $form_state->getValue('main'));
-                $query = 'SELECT pcode from {ek_project} WHERE id=:id';
-                $pcode = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => trim($main[0])))
-                        ->fetchField();
-
+                $data = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_project', 'p')
+                        ->fields('p',['pcode'])
+                        ->condition('id', trim($main[0]))
+                        ->execute();   
+                $pcode = $data->fetchField();
                 if (!$pcode) {
                     $form_state->setErrorByName("main", $this->t('Main reference cannot be found. Please check again.'));
                 }
             }
         }
-        /**/
     }
 
     /**
@@ -248,29 +261,38 @@ class NewProject extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 3) {
-            //create the project
-            //tag
-            $query = 'SELECT short FROM {ek_company} WHERE id=:id';
-            $tag = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':id' => 1))->fetchField();
+            // create the project
+            // tag
+            $data = Database::getConnection('external_db', 'external_db')
+                ->select('ek_company', 'c')
+                ->fields('c',['short'])
+                ->condition('id',1)
+                ->execute();   
+            $tag = $data->fetchField();
 
+            // country
+            $data = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_country', 'c')
+                    ->fields('c',['name','code'])
+                    ->condition('id', $form_state->getValue('cid'))
+                    ->execute();   
+            $cdata = $data->fetchObject();
 
-            //country
-            $query = 'SELECT name,code FROM {ek_country} WHERE id=:id';
-            $cdata = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $form_state->getValue('cid')))
-                    ->fetchObject();
+            // type
+            $data = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project_type', 'p')
+                ->fields('p',['short'])
+                ->condition('id', $form_state->getValue('type'))
+                ->execute();   
+            $type = str_replace('-', '_', $data->fetchField());
 
-            //type
-            $query = 'SELECT short FROM {ek_project_type} WHERE id=:id';
-            $type = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':id' => $form_state->getValue('type')))->fetchField();
-            $type = str_replace('-', '_', $type);
-
-            //ref
-            $query = "SELECT settings from {ek_project_settings} WHERE coid=:c";
-            $settings = Database::getConnection('external_db', 'external_db')
-                            ->query($query, [':c' => 0])->fetchField();
+            // ref
+            $data = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project_settings', 'p')
+                ->fields('p',['settings'])
+                ->condition('coid',0)
+                ->execute();   
+            $settings = $data->fetchField();
             $s = unserialize($settings);
             if ($s['code'] == '') {
                 $s['code'] = [1, 2, 3, 4, 5, 6];
@@ -278,18 +300,14 @@ class NewProject extends FormBase {
             if ($s['increment'] == '' || $s['increment'] < 1) {
                 $s['increment'] = 1;
             }
+
             $query = 'SELECT count(id) FROM {ek_project}';
             $count = Database::getConnection('external_db', 'external_db')->query($query)->fetchField();
-
             $ref = $count + $s['increment'];
             $main = null;
 
-            //client
-            $query = 'SELECT shortname from {ek_address_book} WHERE id=:id';
-            $client = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $form_state->getValue('client')))
-                    ->fetchField();
-            $client = str_replace('/', '|', $client);
+            // client
+            $client = str_replace('/', '|', $form_state->get('shortname'));
 
             if ($form_state->getValue('level') == 'Main project') {
                 $pcode = '';
@@ -318,17 +336,17 @@ class NewProject extends FormBase {
                     }
                 }
 
-                //used this when short name content '-' sign(s)
+                // used this when short name content '-' sign(s)
                 $pcode = str_replace('---', '-', $pcode);
                 $pcode = str_replace('--', '-', $pcode);
                 $level = 'Main project';
             } else {
                 $main = explode(' ', $form_state->getValue('main'));
-                $query = 'SELECT id,pcode,subcount from {ek_project} WHERE id=:id';
                 $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => trim($main[0])))
-                        ->fetchObject();
-
+                        ->select('ek_project', 'p')
+                        ->fields('p',['id','pcode','subcount'])
+                        ->condition('id', trim($main[0]))
+                        ->execute()->fetchObject();   
                 $sub = $data->subcount + 1;
                 Database::getConnection('external_db', 'external_db')
                         ->update('ek_project')->fields(array('subcount' => $sub))
@@ -342,10 +360,10 @@ class NewProject extends FormBase {
             $pname = Xss::filter(strip_tags($form_state->getValue('name')));
             $pname = strtolower($pname);
             $pname = ucfirst($pname);
-            //main table
-            $fields = array(
+            // main table
+            $fields = [
                 'pname' => $pname,
-                'client_id' => $form_state->getValue('client'),
+                'client_id' => $form_state->get('clid'),
                 'cid' => $form_state->getValue('cid'),
                 'date' => date('Y-m-d'),
                 'category' => $form_state->getValue('type'),
@@ -359,39 +377,37 @@ class NewProject extends FormBase {
                 'owner' => \Drupal::currentUser()->id(),
                 'last_modified' => time() . '|' . \Drupal::currentUser()->id(),
                 'notify' => \Drupal::currentUser()->id()
-            );
+            ];
             if ($form_state->getValue('access') == 1) {
                 $fields['share'] = \Drupal::currentUser()->id();
             }
-
+/*
             $pid = Database::getConnection('external_db', 'external_db')
-                            ->insert('ek_project')->fields($fields)->execute();
-            $fields = array(
-                'pcode' => $pcode,
-            );
-            //AP table
+                    ->insert('ek_project')->fields($fields)->execute();
+            $fields = ['pcode' => $pcode];
+            // AP table
             Database::getConnection('external_db', 'external_db')
                     ->insert('ek_project_actionplan')->fields($fields)->execute();
-            //description table
+            // description table
             Database::getConnection('external_db', 'external_db')
                     ->insert('ek_project_description')->fields($fields)->execute();
-            //shipment table
+            // shipment table
             Database::getConnection('external_db', 'external_db')
                     ->insert('ek_project_shipment')->fields($fields)->execute();
-            //finance table
+            // finance table
             Database::getConnection('external_db', 'external_db')
                     ->insert('ek_project_finance')->fields($fields)->execute();
-            //create document folder
+            // create document folder
             $dir = "private://projects/documents/" . $ref;
             \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
 
             \Drupal::messenger()->addStatus(t('New project created with ref @r', ['@r' => $pcode]));
             Cache::invalidateTags(['project_last_block']);
-
-            //notify users
+*/
+            // notify users
             if ($form_state->getValue('notify') == 1) {
                 $param = serialize(
-                        array(
+                        [
                             'id' => $pid,
                             'field' => 'new_project',
                             'value' => $pcode,
@@ -399,14 +415,13 @@ class NewProject extends FormBase {
                             'country' => $cdata->name,
                             'cid' => $form_state->getValue('cid'),
                             'pcode' => $pcode
-                        )
+                        ]
                 );
                 \Drupal\ek_projects\ProjectData::notify_user($param);
             }
 
-
             $form_state->setRedirect('ek_projects_view', array('id' => $pid));
-        }//step 3
+        } //step 3
     }
 
 }

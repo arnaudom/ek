@@ -48,7 +48,15 @@ ek_projects.settings.serial:
     _controller: '\Drupal\ek_projects\Controller\ProjectSettingsController::serial'
   requirements:
     _permission: 'admin_projects'
-    
+
+ek_projects.delete:
+  path: 'projects/settings/delete'
+  defaults:
+    _title: 'Delete project'
+    _form: '\Drupal\ek_projects\Form\Delete'
+  requirements:
+    _permission: 'admin_projects'
+
 ek_projects_main:
   path: 'projects/project'
   defaults:

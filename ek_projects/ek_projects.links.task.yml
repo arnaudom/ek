@@ -27,3 +27,9 @@ ek_projects_serial_tab:
   base_route: ek_projects.settings.users
   title: Serial format
   weight: 5
+    
+ek_projects_delete_tab:
+  route_name: ek_projects.delete
+  base_route: ek_projects.settings.users
+  title: Delete
+  weight: 6
