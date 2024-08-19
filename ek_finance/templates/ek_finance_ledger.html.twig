@@ -65,7 +65,7 @@
 
                         <tr class="{% if row.exchange == 1 %}journal-exchange{% else %} {% endif %}">
                           <td>{{ row.date }}</td>
-                          <td>{{ row.id  }} - {{ row.count  }}</td>
+                          <td><a href={{ row.url }}>{{ row.id  }}</a> - {{ row.count  }}</td>
                           <td>
                             <span title='{{ row.source }}'>{{ row.reference }}</span> 
                             <span class=''>{{ row.comment }}</span>

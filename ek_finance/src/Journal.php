@@ -108,8 +108,8 @@ class Journal {
             $query->condition('coid', $result->coid, '=')
                     ->condition('aid', $result->aid);
             $aname = $query->execute()->fetchField();
-
-            return array(
+            
+            return [
                 'id' => $result->id,
                 'count' => $result->count,
                 'aid' => $result->aid,
@@ -123,8 +123,9 @@ class Journal {
                 'value' => $result->value,
                 'reconcile' => $result->reconcile,
                 'comment' => $result->comment,
-                'currency' => $result->currency
-            );
+                'currency' => $result->currency,
+                'url' => Url::fromRoute('ek_finance.extract.general_journal', [], ['absolute' => true, 'query' => ['jid' => $result->id]])->toString()
+            ];
         }
     }
 
@@ -1606,20 +1607,20 @@ class Journal {
             $data['archive'] = 2;
             return $data;
         } elseif ($l['date2'] < $dates['from']) {
-            //look into archives
+            // look into archives
             $ek_accounts = "ek_accounts_" . date('Y', strtotime($l['date2'])) . '_' . $l['coid'];
             $ek_journal = "ek_journal_" . date('Y', strtotime($l['date2'])) . '_' . $l['coid'];
             $schema = Database::getConnection('external_db', 'external_db')->schema();
-            //verify that the archive journal tables exists
-            //in some cases with older data versions, posted table do not exist
+            // verify that the archive journal tables exists
+            // in some cases with older data versions, posted table do not exist
             if (!$schema->tableExists($ek_journal)) {
                 $ek_journal = "ek_journal";
             } else {
                 $ek_journal = "ek_journal_" . date('Y', strtotime($l['date2'])) . '_' . $l['coid'];
             }
 
-            //verify that the archive accounts tables exists
-            //in some cases with older data versions, posted table do not exist
+            // verify that the archive accounts tables exists
+            // in some cases with older data versions, posted table do not exist
             if (!$schema->tableExists($ek_accounts)) {
                 $ek_accounts = "ek_accounts";
             } else {
@@ -1633,8 +1634,8 @@ class Journal {
             $data['archive'] = false;
         }
 
-        //get array of all chart of accounts structure per coid
-        //(to reduce queries call rates)
+        // get array of all chart of accounts structure per coid
+        // (to reduce queries call rates)
         $query = Database::getConnection('external_db', 'external_db')
                 ->select($ek_accounts, 't');
         $query->fields('t', ['aid', 'aname']);
@@ -1642,7 +1643,7 @@ class Journal {
         $chart = $query->execute()->fetchAllKeyed();
 
 
-        //list the accounts in journal within the range selected
+        // list the accounts in journal within the range selected
         $query = Database::getConnection('external_db', 'external_db')
                 ->select($ek_accounts, 't');
         $query->fields('t', ['aid']);
@@ -1657,7 +1658,7 @@ class Journal {
         while ($r = $result->fetchObject()) {
             $aname = $chart[$r->aid];
             $data['ref'] = ['aid' => $r->aid, 'aname' => $aname];
-            //calculate opening balances and get range data per account and date selected
+            // calculate opening balances and get range data per account and date selected
             // opening balance both currency and exchange
             $query = Database::getConnection('external_db', 'external_db')
                     ->select($ek_accounts, 't');
@@ -1790,8 +1791,7 @@ class Journal {
 
             $data['ledger']['accounts'][] = $rows;
         }
-
-
+        
         return $data;
     }
 
