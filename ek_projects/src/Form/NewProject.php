@@ -309,6 +309,7 @@ class NewProject extends FormBase {
             // client
             $client = str_replace('/', '|', $form_state->get('shortname'));
 
+
             if ($form_state->getValue('level') == 'Main project') {
                 $pcode = '';
                 foreach ($s['code'] as $k => $v) {
@@ -381,7 +382,7 @@ class NewProject extends FormBase {
             if ($form_state->getValue('access') == 1) {
                 $fields['share'] = \Drupal::currentUser()->id();
             }
-/*
+
             $pid = Database::getConnection('external_db', 'external_db')
                     ->insert('ek_project')->fields($fields)->execute();
             $fields = ['pcode' => $pcode];
@@ -403,7 +404,7 @@ class NewProject extends FormBase {
 
             \Drupal::messenger()->addStatus(t('New project created with ref @r', ['@r' => $pcode]));
             Cache::invalidateTags(['project_last_block']);
-*/
+
             // notify users
             if ($form_state->getValue('notify') == 1) {
                 $param = serialize(
