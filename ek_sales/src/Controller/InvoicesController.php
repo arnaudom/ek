@@ -76,6 +76,7 @@ class InvoicesController extends ControllerBase {
     public function ListInvoices(Request $request) {
         $build['filter_invoice'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterInvoice');
         $header = array(
+            'select' => array('data' => $this->t('Select')),
             'number' => array(
                 'data' => $this->t('Number'),
                 'class' => array(),
@@ -304,8 +305,10 @@ class InvoicesController extends ControllerBase {
             }
             if ($r->type != 4) {
                 $value = $r->currency . ' ' . number_format($r->amount, 2);
+                $total_value = $r->amount;
             } else {
                 $value = $r->currency . ' (' . number_format($r->amount, 2) . ')';
+                $total_value = -$r->amount;
             }
             
             $query = Database::getConnection('external_db', 'external_db')
@@ -319,9 +322,12 @@ class InvoicesController extends ControllerBase {
             if ($tax > 0) {
                 if ($r->type != 4) {
                     $value .= '<br/>' . $this->t('tax:') . " " . $r->currency . " " . number_format($tax, 2);
+                    $total_value = $total_value + $tax;
                 } else {
                     $value .= '<br/>' . $this->t('tax:') . " " . $r->currency . " (" . number_format($tax, 2) . ')';
+                    $total_value = $total_value - $tax;
                 }
+                
             }
 
             if($r->type < 5){
@@ -349,6 +355,18 @@ class InvoicesController extends ControllerBase {
             }
             
             $options[$r->id] = [
+                'select' => [
+                    'data' => [
+                    '#type' => 'checkbox',
+                    '#description' => $this->t('Select value'),
+                    '#title_display' => 'invisible',
+                    '#return_value' => $r->id,
+                    '#attributes' => [
+                        'class' => ['select-checkbox'],
+                        'data-value' => $total_value,
+                        ],
+                    ],
+                ],
                 'number' => ['data' => ['#markup' => $number], 'id' => $r->id],
                 'reference' => ['data' => ['#markup' => $reference]],
                 'issuer' => ['data' => ['#markup' => $co], 'title' => $r->title],
@@ -480,8 +498,26 @@ class InvoicesController extends ControllerBase {
             '#rows' => $options,
             '#attributes' => ['id' => 'invoices_table'],
             '#empty' => $this->t('No invoice available'),
+            '#footer' => [
+                [
+                'data' => [
+                    [
+                    'data' => [
+                        '#markup' => $this->t('Total from selection') . ': <span id="checkbox-sum-total">0.00</span>',
+                    ],
+                    'colspan' => count($header),
+                    'class' => ['checkbox-sum-total-row'],
+                    ],
+                ],
+                ],
+            ],
             '#attached' => [
-                'library' => ['ek_sales/ek_sales_css', 'ek_admin/ek_admin_css', 'core/drupal.ajax'],
+                'library' => [
+                    'ek_sales/ek_sales_css', 
+                    'ek_sales/ek_sales.docList',
+                    'ek_admin/ek_admin_css', 
+                    'core/drupal.ajax'
+                ],
             ],
         ];
 

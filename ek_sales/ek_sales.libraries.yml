@@ -38,6 +38,13 @@ ek_sales_print:
   dependencies:
     - core/jquery
 
+ek_sales.docList:
+  version: 1
+  js:
+    js/ek_sales_doc_list.js: {}
+  dependencies:
+    - core/jquery
+
 ek_sales.invoice:
   version: 1
   css:

@@ -77,6 +77,7 @@ class PurchasesController extends ControllerBase {
     public function ListPurchases(Request $request) {
         $build['filter_purchase'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPurchase');
         $header = array(
+            'select' => array('data' => $this->t('Select')),
             'number' => array(
                 'data' => $this->t('Number'),
                 'class' => array(),
@@ -122,8 +123,6 @@ class PurchasesController extends ControllerBase {
                 'id' => 'operations',
             ),
         );
-
-
 
         /*
          * Table - query data
@@ -252,12 +251,12 @@ class PurchasesController extends ControllerBase {
         
         while ($r = $data->fetchObject()) {
             $settings = new SalesSettings($r->head);
-            $supplier_name = '';
             $supplier = '';
             $co = '';
             $duetitle = '';
             $weight = '';
             $doctype = '';
+            $total_value = 0;
 
             if (isset($abook[$r->client])) {
                 $supplier_name = $abook[$r->client];
@@ -313,8 +312,10 @@ class PurchasesController extends ControllerBase {
 
             if ($r->type < 4) {
                 $value = $r->currency . ' ' . number_format($r->amount, 2);
+                $total_value = $r->amount;
             } else {
                 $value = $r->currency . ' (' . number_format($r->amount, 2) . ')';
+                $total_value = $r->amount;
             }
 
             $query = 'SELECT sum(total) from {ek_sales_purchase_details} WHERE serial=:s and opt=:o';
@@ -325,6 +326,7 @@ class PurchasesController extends ControllerBase {
 
             if ($tax > 0) {
                 $value .= '<br/>' . $this->t('tax:') . " " . $r->currency . " " . number_format($tax, 2);
+                $total_value = $total_value + $tax;
             }
 
             if ($r->status == 0) {
@@ -348,6 +350,18 @@ class PurchasesController extends ControllerBase {
                     . 'class="use-ajax ' . $status_class . '"  data-accepts="application/vnd.drupal-modal"  >' . $status . '</a>';
 
             $options[$r->id] = [
+                'select' => [
+                    'data' => [
+                    '#type' => 'checkbox',
+                    '#description' => $this->t('Select value'),
+                    '#title_display' => 'invisible',
+                    '#return_value' => $r->id,
+                    '#attributes' => [
+                        'class' => ['select-checkbox'],
+                        'data-value' => $total_value,
+                        ],
+                    ],
+                ],
                 'number' => ['data' => ['#markup' => $number], 'id' => $r->id],
                 'reference' => ['data' => ['#markup' => $reference]],
                 'purchase' => ['data' => ['#markup' => $co], 'title' => $r->title],
@@ -481,8 +495,25 @@ class PurchasesController extends ControllerBase {
             '#rows' => $options,
             '#attributes' => ['id' => 'purchases_table'],
             '#empty' => $this->t('No purchase available.'),
+            '#footer' => [
+                [
+                'data' => [
+                    [
+                    'data' => [
+                        '#markup' => $this->t('Total from selection') . ': <span id="checkbox-sum-total">0.00</span>',
+                    ],
+                    'colspan' => count($header),
+                    'class' => ['checkbox-sum-total-row'],
+                    ],
+                ],
+                ],
+            ],
             '#attached' => [
-                'library' => ['ek_sales/ek_sales_css', 'ek_admin/ek_admin_css', 'core/drupal.ajax'],
+                'library' => [
+                    'ek_sales/ek_sales_css',
+                    'ek_sales/ek_sales.docList', 
+                    'ek_admin/ek_admin_css', 
+                    'core/drupal.ajax'],
             ],
         ];
 

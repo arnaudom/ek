@@ -92,7 +92,12 @@
 
 ._rowheader {
     display: none;  
-}    
+}
+
+.checkbox-sum-total-row {
+    font-size:larger;
+    
+}
 .delete {
     background-color:#ff0000 !important;  
 }
