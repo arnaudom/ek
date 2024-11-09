@@ -7,12 +7,13 @@
 
 namespace Drupal\ek_messaging\Form;
 
-use Drupal\Core\Database\Database;
-use Drupal\user\Entity\User;
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Database\Database;
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Form\FormBase;
 use Drupal\Core\Url;
+use Drupal\user\Entity\User;
 
 /**
  * Provides a form to send messages.
@@ -215,6 +216,15 @@ class Message extends FormBase {
                 )
         );
 
+        // parse body for images
+        try {
+            self::ckeditorSetFileUsage($message['value']);
+        }
+            catch (EntityStorageException $e) {
+                $message = $this->t('An error occurred while saving inline image file.');
+                $form_state->set('error', $message);
+        }
+
         if($form_state->getValue('users') != 'broadcast') {
             /*
              * email sending record
@@ -278,6 +288,27 @@ class Message extends FormBase {
         }
         
         $form_state->setRedirect('ek_messaging_inbox');
+    }
+
+    /**
+    * Set Images / Filesas Permanent.
+    *
+    * @param string $text
+    *
+    * @throws \Drupal\Core\Entity\EntityStorageException
+    */
+    public static function ckeditorSetFileUsage(string $text, $module = 'ckeditor') {
+        $uuids = _editor_parse_file_uuids($text);
+        foreach ($uuids as $uuid) {
+            if ($file = \Drupal::service('entity.repository')->loadEntityByUuid('file', $uuid)) {
+                /** @var \Drupal\file\FileInterface $file */
+                if ($file->isTemporary()) {
+                    $file->setPermanent();
+                    $file->save();
+                }
+                \Drupal::service('file.usage')->add($file, $module, 'file', $file->fid->value);
+            }
+        }
     }
 
 }
