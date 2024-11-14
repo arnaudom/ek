@@ -118,10 +118,18 @@ $line = Database::getConnection('external_db', 'external_db')
 
   $settings = new FinanceSettings(); 
   $baseCurrency = $settings->get('baseCurrency'); 
- 
+
+  // insert account details in filename
+  $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts','a')
+                    ->fields('a', ['aname'])
+                    ->condition('aid', $line->aid)
+                    ->condition('coid', $line->coid)
+                    ->execute();
+  $acc = $query->fetchField();
   $data = unserialize($line->data);
   $template = 'default_reco_report_pdf';
-  $fileName = t('Reconciliation_report') . '_' . $line->id;
+  $fileName = t('Reconciliation_report') . '_' . $line->id. '_' . $acc. '_' . $line->date;
   $userName =  \Drupal::currentUser()->getAccountName();
 
 }
