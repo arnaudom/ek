@@ -10,9 +10,11 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\AppendCommand;
 use Drupal\Core\Ajax\CloseDialogCommand;
 use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
+use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
 use DateTime;
 use Drupal\ek_projects\ProjectData;
@@ -66,6 +68,17 @@ class ProjectFieldEdit extends FormBase {
 
         switch ($field) {
 
+            case 'pcode':
+
+                $form['value'] = [
+                    '#type' => 'textfield',
+                    '#size' => 30,
+                    '#maxlenght' => 50,
+                    '#title' => $this->t('Project serial'),
+                    '#default_value' => $data->pcode,
+                ];
+                break;
+
             case 'owner':
                 $users = \Drupal\ek_admin\Access\AccessCheck::listUsers(1);
                 $list = [];
@@ -81,10 +94,6 @@ class ProjectFieldEdit extends FormBase {
             case 'client_id':
 
                 $form['value'] = [
-                    //'#type' => 'select',
-                    //'#options' => \Drupal\ek_address_book\AddressBookData::addresslist(1),
-                    //'#title' => $this->t('client'),
-                    //'#default_value' => ''
                     '#type' => 'textfield',
                     '#size' => 50,
                     '#maxlength' => 200,
@@ -364,7 +373,42 @@ class ProjectFieldEdit extends FormBase {
         $response->addCommand($clear);       
         
         switch ($form_state->getValue('field')) {
-
+            case 'pcode':
+                $fields = [ $form_state->getValue('field') => $form_state->getValue('value')];
+                $update = Database::getConnection('external_db', 'external_db')
+                        ->update('ek_project')->fields($fields)
+                        ->condition('id', $form_state->getValue('for_id'))
+                        ->execute();
+                $value = $form_state->getValue('value');
+                Database::getConnection('external_db', 'external_db')
+                        ->update('ek_project_description')
+                        ->fields($fields)
+                        ->condition('pcode', $form_state->getValue('pcode'))->execute();
+                Database::getConnection('external_db', 'external_db')
+                        ->update('ek_project_actionplan')
+                        ->fields($fields)
+                        ->condition('pcode', $form_state->getValue('pcode'))->execute();
+                Database::getConnection('external_db', 'external_db')
+                        ->update('ek_project_documents')
+                        ->fields($fields)
+                        ->condition('pcode', $form_state->getValue('pcode'))->execute();
+                Database::getConnection('external_db', 'external_db')
+                        ->update('ek_project_finance')
+                        ->fields($fields)
+                        ->condition('pcode', $form_state->getValue('pcode'))->execute();
+                Database::getConnection('external_db', 'external_db')
+                        ->update('ek_project_shipment')
+                        ->fields($fields)
+                        ->condition('pcode', $form_state->getValue('pcode'))->execute();
+                Database::getConnection('external_db', 'external_db')
+                        ->update('ek_project_tasks')
+                        ->fields($fields)
+                        ->condition('pcode', $form_state->getValue('pcode'))->execute();  
+                Database::getConnection('external_db', 'external_db')
+                        ->update('ek_project_tracker')
+                        ->fields($fields)
+                        ->condition('pcode', $form_state->getValue('pcode'))->execute();
+                break;
             case 'status':
             case 'owner':
             case 'priority':
@@ -470,7 +514,6 @@ class ProjectFieldEdit extends FormBase {
 
                 break;
 
-
             case 'first_ship':
             case 'second_ship':
             case 'third_ship':
@@ -555,8 +598,13 @@ class ProjectFieldEdit extends FormBase {
 
         if ($update) {
             $action = 'edit' . ' ' . str_replace('_', " ", $form_state->getValue('field'));
+            if($form_state->getValue('field') == 'pcode') {
+                $pcode = $value;
+            } else {
+                $pcode = $form_state->getValue('pcode');
+            }
             $fields = [
-                'pcode' => $form_state->getValue('pcode'),
+                'pcode' => $pcode,
                 'uid' => \Drupal::currentUser()->id(),
                 'stamp' => time(),
                 'action' => $action
@@ -575,7 +623,14 @@ class ProjectFieldEdit extends FormBase {
                     )
             );
             ProjectData::notify_user($param);
-            $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--status'>" . $this->t('saved') . "</div>"));
+            // need page relaod when main ref. pcode is edited
+            if($form_state->getValue('field') == 'pcode') {
+                $response->addCommand(new CloseDialogCommand('#drupal-modal'));
+                $response->addCommand(new RedirectCommand(Url::fromRoute('ek_projects_view', ['id' => $form_state->getValue('for_id')])->toString()));
+            } else {
+                $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--status'>" . $this->t('saved') . "</div>"));
+            }
+            
         } else {
             $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--error'>" . $this->t('error') . "</div>"));
         }

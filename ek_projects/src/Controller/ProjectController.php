@@ -360,7 +360,6 @@ class ProjectController extends ControllerBase {
             /*
              * main data collection
              */
-
             $query = $this->extdb
                     ->select('ek_project')
                     ->fields('ek_project')
@@ -458,7 +457,7 @@ class ProjectController extends ControllerBase {
             $this->extdb
                     ->insert('ek_project_tracker')->fields($fields)->execute();
 
-            //system log view
+            // system log view
             $a = array('@u' => \Drupal::currentUser()->getAccountName(), '@d' => $pcode);
             $log = $this->t("User @u has opened project @d", $a);
             \Drupal::logger('ek_projects')->notice($log);
@@ -468,17 +467,26 @@ class ProjectController extends ControllerBase {
             $data['project'][0]->priority = $prio[$data['project'][0]->priority];
 
             /*
-             * create a link to edit title
+             * create a link to edit owner, title, pcode
              */
             if (\Drupal::currentUser()->hasPermission('admin_projects')) {
+                $param_edit = 'field|pcode|' . $id;
+                $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
+                $data['project'][0]->edit_pcode = ('<a title="' . $this->t('edit serial') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+
                 $param_edit = 'field|pname|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
                 $data['project'][0]->edit_pname = ('<a title="' . $this->t('edit name') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 $param_edit = 'field|owner|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
-                $data['project'][0]->edit_owner = ('<a title="' . $this->t('edit owner') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
+                $data['project'][0]->edit_owner = ('<a title="' . $this->t('edit owner') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');               
+            }
 
+            /*
+             * create a link to edit client
+             */
+            if (\Drupal::currentUser()->id() == $data['project'][0]->owner) {
                 $param_edit = 'field|client_id|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
                 $data['project'][0]->edit_client_id = ('<a title="' . $this->t('edit client') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
