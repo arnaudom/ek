@@ -1444,7 +1444,7 @@ class ProjectController extends ControllerBase {
                                 $items[$l->sub_folder][$i]['email'] = 1;
                                 $items[$l->sub_folder][$i]['comment'] = ['#markup' => $l->comment];
                                 $items[$l->sub_folder][$i]['date'] = date('Y-m-d', $l->date);
-                                if ($l->size !== null) {
+                                if ($l->size != null) {
                                     $items[$l->sub_folder][$i]['size'] = round($l->size / 1000, 0) . " Kb";
                                 } else {
                                     $items[$l->sub_folder][$i]['size'] = " ?Kb";
