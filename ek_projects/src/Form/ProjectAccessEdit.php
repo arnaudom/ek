@@ -35,8 +35,12 @@ class ProjectAccessEdit extends FormBase {
      * @param type: project|NULL
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = null, $type = null) {
+        
         if ($type == 'project') {
-            
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project', 'p');
+            $query->fields('p', ['share', 'deny', 'cid', 'pcode', 'owner']);
+            $query->condition('id', $id);
         } else {
             // select data from documents
             $query = Database::getConnection('external_db', 'external_db')
