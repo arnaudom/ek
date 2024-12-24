@@ -71,14 +71,19 @@ class ProjectEmailBuilder extends EmailBuilderBase {
       
     $config = $this->helper()->config();
     $site_name = $config->get('system.site')->get('name');
-    $theme = theme_get_setting('logo');
-    $site_logo = \Drupal::request()->getSchemeAndHttpHost() . $theme['url'];
+    $theme = \Drupal::theme()->getActiveTheme()->getName();
+    $color_config = \Drupal::config("color.theme.{$theme}");
+    $color_settings = $color_config->getRawData();
+    $site_color = $color_settings['palette']['top'];
+    $logo = \Drupal::config('system.theme')->get('logo');
+    $site_logo = \Drupal::request()->getSchemeAndHttpHost() . $logo['url'];
     $stamp = date('F j, Y, g:i a');
     $body = $email->getParam('body');
     $render = ['#markup' => $body];
     $body = \Drupal::service('renderer')->render($render);
     $email->setVariable('site_name', $site_name)
       ->setVariable('site_logo', $site_logo)
+      ->setVariable('site_color', $site_color)
       ->setVariable('stamp', $stamp)
       ->setVariable('body', $body)  
       ->setVariable('message', $email->getParam('options'));
