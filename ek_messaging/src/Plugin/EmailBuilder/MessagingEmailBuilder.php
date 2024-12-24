@@ -51,7 +51,11 @@ class MessagingEmailBuilder extends EmailBuilderBase {
     $body = $message['params']['body'];
     $recipient = $message['to'];
     $subject = $message['params']['subject'];
-    $options = ['priority' => $message['params']['priority'], 'link' => $message['params']['link'], 'url' => $message['params']['url']];
+    $options = [
+      'priority' => $message['params']['priority'], 
+      'link' => $message['params']['link'], 
+      'url' => $message['params']['url']
+    ];
     return $factory->newTypedEmail($message['module'], $message['key'],$body,$sender,$recipient,$subject,$options);
   }
 
@@ -68,8 +72,12 @@ class MessagingEmailBuilder extends EmailBuilderBase {
       
     $config = $this->helper()->config();
     $site_name = $config->get('system.site')->get('name');
-    $theme = theme_get_setting('logo');
-    $site_logo = \Drupal::request()->getSchemeAndHttpHost() . $theme['url'];
+    $theme = \Drupal::theme()->getActiveTheme()->getName();
+    $color_config = \Drupal::config("color.theme.{$theme}");
+    $color_settings = $color_config->getRawData();
+    $site_color = $color_settings['palette']['top'];
+    $logo = \Drupal::config('system.theme')->get('logo');
+    $site_logo = \Drupal::request()->getSchemeAndHttpHost() . $logo['url'];
     $stamp = date('F j, Y, g:i a');
     $options = $email->getParam('options');
     $priority = ['3' => t('low'), '2' => t('normal'), '1' => t('high')];
@@ -94,6 +102,7 @@ class MessagingEmailBuilder extends EmailBuilderBase {
            
     $email->setVariable('site_name', $site_name)
       ->setVariable('site_logo', $site_logo)
+      ->setVariable('site_color', $site_color)
       ->setVariable('stamp', $stamp)      
       ->setVariable('origin', \Drupal::currentUser()->getAccountName())
       ->setVariable('body', $body)  

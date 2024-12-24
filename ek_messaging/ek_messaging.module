@@ -115,10 +115,14 @@ function ek_message_register($data) {
  */
 function ek_messaging_mail($key, &$message, $params) {
 
-    $theme = theme_get_setting('logo');
-    global $base_url;
-    $params['options']['logo'] = $base_url . $theme['url'];
+    global $base_url;  
+    $logo = \Drupal::config('system.theme')->get('logo');
+    $params['options']['logo'] = $base_url . $logo['url'];
     $params['options']['site'] = \Drupal::config('system.site')->get('name');
+    $theme = \Drupal::theme()->getActiveTheme()->getName();
+    $color_config = \Drupal::config("color.theme.{$theme}");
+    $color_settings = $color_config->getRawData();
+    $params['options']['site_color'] = $color_settings['palette']['top'];
     $params['options']['origin'] = \Drupal::currentUser()->getAccountName();
     $params['options']['stamp'] = date('F j, Y, g:i a');
     $priority = array('3' => t('low'), '2' => t('normal'), '1' => t('high'));
@@ -127,7 +131,6 @@ function ek_messaging_mail($key, &$message, $params) {
     $params['options']['color'] = $color[$params['priority']];
     $params['options']['link'] = $params['link'];
     $params['options']['url'] = $params['url'];
-        
     switch($key) {
         
       case 'ek_message':
