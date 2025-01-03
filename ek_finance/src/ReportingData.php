@@ -461,65 +461,62 @@ class ReportingData {
         $classes = [];
         $class_total_p = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0, 7 => 0, 8 => 0, 9 => 0, 10 => 0, 11 => 0, 12 => 0, 'sumRow' => 0];
         foreach ($this->accounts_exp_class as $key => $name) {
+            $class = substr($key, 0, 2);
+            $sum_row_amount = 0;
+            $rows = [];
+            $column_total['sumRow'] = 0;
 
-        $class = substr($key, 0, 2);
-        $sum_row_amount = 0;
-        $rows = [];
-        $column_total['sumRow'] = 0;
+            for ($m = 1; $m <= 12; $m++) {
+                $column_total[$m] = 0;
+                if ($m < 10) {
+                    $date1 = $this->year . "-0" . $m . "-01";
+                    $d = new DateTime($date1);
+                    $date2 = $d->format('Y-m-t');
+                } else {
+                    $date1 = $this->year . "-" . $m . "-01";
+                    $d = new DateTime($date1);
+                    $date2 = $d->format('Y-m-t');
+                }
+                foreach ($journal_data as $key => $values) {
+                    // compare extracted journal_data withe the class array to match purchase account.
+                    $a = substr($values->aid, 0, 2);
+                    if ($a == $class) { dpm($a,$class);
+                        if ($values->date >= $date1 && $values->date <= $date2 && $values->source == 'purchase') {
+                            
+                            $param = serialize(
+                                    [   'id' => 'reporting',
+                                        'from' => $this->year . "-01-01",
+                                        'to' => $this->year . "-12-31",
+                                        'coid' => $this->coid,
+                                        'aid' => $values->aid
+                            ]);
+                            $history = Url::fromRoute('ek_finance_modal', array('param' => $param), array())->toString();
+                            $link = "<a class='use-ajax' href='" . $history . "' >" . $values->aid . "</a>";
+                            
+                            if (!isset($rows[$values->aid][$m] )) {
+                                $rows[$values->aid][$m] = 0;
+                            }
+                            if (!isset($rows[$values->aid]['sumRow'])) {
+                                $rows[$values->aid]['sumRow'] = 0;
+                            }
+                            $v = round($values->value / $this->divide, $this->rounding);
+                            $rows[$values->aid]['desc'] = isset($this->accounts_names[$values->aid]) ? $this->accounts_names[$values->aid] : '--';
+                            $rows[$values->aid]['link'] = $link;
+                            $rows[$values->aid][$m] += $v;
+                            $rows[$values->aid ]['sumRow'] += $v;
+                            $column_total[$m] += $v;
+                            $column_total['sumRow'] += $v;
+                            $class_total_p[$m] += $v;
+                            $class_total_p['sumRow'] += $v;
+                        }
+                    } // filter account per class
+                } // loop data in month
+            } // loop months
 
-        for ($m = 1; $m <= 12; $m++) {
-
-            $column_total[$m] = 0;
-
-            if ($m < 10) {
-                $date1 = $this->year . "-0" . $m . "-01";
-                $d = new DateTime($date1);
-                $date2 = $d->format('Y-m-t');
-            } else {
-                $date1 = $this->year . "-" . $m . "-01";
-                $d = new DateTime($date1);
-                $date2 = $d->format('Y-m-t');
+            if ($column_total['sumRow'] > 0) {
+                // only compile class with positive debit; don't diaplay 0 values
+                $classes[] = ['id' => $class, 'name' => $name, 'rows' => $rows, 'subTotal' => $column_total];
             }
-            foreach ($journal_data as $key => $values) {
-                $a = substr($values->aid, 0, 2);
-                if ($a == $class) {
-
-                    if ($values->date >= $date1 && $values->date <= $date2 && $values->source == 'purchase') {
-                        
-                        $param = serialize(
-                                [   'id' => 'reporting',
-                                    'from' => $this->year . "-01-01",
-                                    'to' => $this->year . "-12-31",
-                                    'coid' => $this->coid,
-                                    'aid' => $values->aid
-                        ]);
-                        $history = Url::fromRoute('ek_finance_modal', array('param' => $param), array())->toString();
-                        $link = "<a class='use-ajax' href='" . $history . "' >" . $values->aid . "</a>";
-                        
-                        if (!isset($rows[$values->aid][$m] )) {
-                            $rows[$values->aid][$m] = 0;
-                        }
-                        if (!isset($rows[$values->aid]['sumRow'])) {
-                            $rows[$values->aid]['sumRow'] = 0;
-                        }
-                        $v = round($values->value / $this->divide, $this->rounding);
-                        $rows[$values->aid]['desc'] = isset($this->accounts_names[$values->aid]) ? $this->accounts_names[$values->aid] : '--';
-                        $rows[$values->aid]['link'] = $link;
-                        $rows[$values->aid][$m] += $v;
-                        $rows[$values->aid ]['sumRow'] += $v;
-                        $column_total[$m] += $v;
-                        $column_total['sumRow'] += $v;
-                        $class_total_p[$m] += $v;
-                        $class_total_p['sumRow'] += $v;
-                    }
-                } // filter account per class
-            } // loop data in month
-        } // loop months
-
-        if ($column_total['sumRow'] > 0) {
-            // only compile class with positive debit; don't diaplay 0 values
-            $classes[] = ['id' => $class, 'name' => $name, 'rows' => $rows, 'subTotal' => $column_total];
-        }
         } // next class
 
         //array_push($purchases, ['classes' => $classes, 'total' => $class_total_p]);
