@@ -480,7 +480,7 @@ class ReportingData {
                 foreach ($journal_data as $key => $values) {
                     // compare extracted journal_data withe the class array to match purchase account.
                     $a = substr($values->aid, 0, 2);
-                    if ($a == $class) { dpm($a,$class);
+                    if ($a == $class) { 
                         if ($values->date >= $date1 && $values->date <= $date2 && $values->source == 'purchase') {
                             
                             $param = serialize(
