@@ -12,6 +12,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Block\BlockBase;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Url;
 use Drupal\ek_finance\FinanceSettings;
 
 /**
@@ -30,29 +31,37 @@ class PurchasesPerAccount extends BlockBase
   /**
    * {@inheritdoc}
    */
-    public function build()
-    {
-        $items = array();
-
+    public function build() {
+        $items = [];
         $items['title'] = $this->t('Purchases per account');
         $items['id'] = 'purchases-per-account';
-
+        $full_screen_url = Url::fromRoute('ek_blocks.full_screen_block', ['block_id' => $this->getPluginId()]);
+        $items['full_screen_url'] = $full_screen_url;
 
         $access = AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
         $settings = new FinanceSettings();
         $baseCurrency = $settings->get('baseCurrency');
 
-        $months = array('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12');
-        $years = array(date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3, date('Y') - 4 );
+        $months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+        $years = [date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3, date('Y') - 4 ];
         $content = '';
-        $query = "SELECT sum(amountbase) as total,name FROM {ek_sales_purchase} i "
+        /*$query = "SELECT sum(amountbase) as total,name FROM {ek_sales_purchase} i "
                     . "INNER JOIN {ek_address_book} b ON i.client=b.id WHERE "
-                    . "date like :d GROUP BY b.name order by total DESC ";
-        
+                    . "date like :d GROUP BY b.name order by total DESC ";*/
+
         foreach ($years as $year) {
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':d' => $year . '%'));
+            /*$data = Database::getConnection('external_db', 'external_db')
+                    ->query($query, array(':d' => $year . '%'));*/
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_sales_purchase', 'p');
+                    $query->fields('b', ['name']);
+                    $query->addExpression('SUM(p.amountbase)', 'total');
+                    $query->innerJoin('ek_address_book', 'b', 'p.client = b.id');
+                    $query->condition('p.date', $year . '%', 'LIKE')
+                    ->groupBy('b.name')
+                    ->orderBy('total', 'DESC');
+            $data = $query->execute();
             $count = 0;
             $table = "";
             
@@ -65,7 +74,7 @@ class PurchasesPerAccount extends BlockBase
         }
         $items['content'] =  '<div>' . $content . '</div>';
 
-        return array(
+        return [
             '#items' => $items,
             '#theme' => 'ek_sales_dashboard',
             '#attached' => array(
@@ -74,7 +83,7 @@ class PurchasesPerAccount extends BlockBase
             '#cache' => [
                 'tags' => ['purchases_per_account_block'],
             ],
-        );
+        ];
     }
 
 
