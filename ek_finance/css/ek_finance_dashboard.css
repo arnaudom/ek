@@ -24,11 +24,26 @@
     position: relative;
 }
 
-.widget-title a {
-    position: absolute;
-    top: 10%;
-    right: 1em;
-}
+/*.widget-title*/
+.widget-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .widget-title .widget-title-icons {
+    display: flex;
+    align-items: center;
+  }
+  
+  .widget-title .widget-title-icons a {
+    margin-left: 5px;
+    margin-right: 10px;
+  }
+  
+  .widget-title .widget-title-icons a:first-child {
+    margin-left: 0;
+  }
 
 .widget-title h4 {
     color:#fff;

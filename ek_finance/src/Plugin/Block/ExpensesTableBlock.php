@@ -11,6 +11,8 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\FinanceSettings;
 
@@ -34,10 +36,9 @@ class ExpensesTableBlock extends BlockBase {
         $items['title'] = t('Expenses per category table');
         $items['id'] = 'expensescategories-table';
         $settings = new FinanceSettings();
-        //$chart = $settings->get('chart');
-
-        //$access = AccessCheck::GetCompanyByUser();
-        //$company = implode(',', $access);
+        // Add the link to view full screen
+        $full_screen_url = Url::fromRoute('ek_blocks.full_screen_block', ['block_id' => $this->getPluginId()]);
+        $items['full_screen_url'] = $full_screen_url;
 
         $y = date('Y');
         $coids = AccessCheck::GetCompanyByUser();
