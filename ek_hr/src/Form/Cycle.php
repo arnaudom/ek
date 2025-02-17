@@ -88,7 +88,7 @@ class Cycle extends FormBase {
 
             $form_state->set('step', 3);
             $year = date('Y');
-            $options = [$year, $year - 1];
+            $options = [$year, $year - 1, $year - 2];
 
             $query = Database::getConnection('external_db', 'external_db')
                             ->select('ek_hr_payroll_cycle', 'c')
