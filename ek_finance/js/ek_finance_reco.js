@@ -38,13 +38,17 @@
                 }
 
                 var balance = (Math.round((openbalance + sum_credit - sum_debit) * 100) / 100).toFixed(2);
+                var formattedbalance = formatNumber(balance);
                 var difference = parseFloat(Math.abs(balance)) - parseFloat(statement);
                 var difference = (Math.round(difference * 100) / 100).toFixed(settings.rounding);
                 var credit = (Math.round(credit * 100) / 100).toFixed(settings.rounding);
                 var debit = (Math.round(debit * 100) / 100).toFixed(settings.rounding);
-
-                sum_credit = (Math.round(sum_credit * 100) / 100).toFixed(settings.rounding);
-                sum_debit = (Math.round(sum_debit * 100) / 100).toFixed(settings.rounding);
+                var formattedCredit = formatNumber(credit);
+                var formattedDebit = formatNumber(debit);
+                var sum_credit = (Math.round(sum_credit * 100) / 100).toFixed(settings.rounding);
+                var sum_debit = (Math.round(sum_debit * 100) / 100).toFixed(settings.rounding);
+                var formattedsum_credit = formatNumber(sum_credit);
+                var formattedsum_debit = formatNumber(sum_debit);
 
                 jQuery("#difference").val(difference);
 
@@ -58,18 +62,18 @@
                  if ( difference >= 0.05) {form2.difference.style.backgroundColor = '#f6b4b1';jQuery('#button_1').fadeOut('fast');}
                  if ( difference <= -0.05) {form2.difference.style.backgroundColor = '#f6b4b1';jQuery('#button_1').fadeOut('fast');}
                  */
-                jQuery("#credits").val(credit);
-                jQuery("#debits").val(debit);
+                jQuery("#credits").val(formattedCredit);
+                jQuery("#debits").val(formattedDebit);
                 if (balance < 0) {
                     var solde = " (dt)";
                 } else {
                     var solde = " (ct)";
                 }
-                jQuery("#balance").html(balance);
+                jQuery("#balance").html(formattedbalance);
                 jQuery("#ab").html(solde);
 
-                jQuery("#sum_credit").html(sum_credit);
-                jQuery("#sum_debit").html(sum_debit);
+                jQuery("#sum_credit").html(formattedsum_credit);
+                jQuery("#sum_debit").html(formattedsum_debit);
 
             });
 
@@ -79,6 +83,10 @@
                 var store = 'statement' + ref;
                 cookies.set(store, value, {expires: 1});
             });
+
+            function formatNumber(num) {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
         }
     }
 })(jQuery, Drupal, drupalSettings,window.Cookies);

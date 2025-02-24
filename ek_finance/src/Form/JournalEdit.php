@@ -30,27 +30,20 @@ class JournalEdit extends FormBase {
         $this->baseCurrency = $this->settings->get('baseCurrency');
     }
     
-    /**
-     * {@inheritdoc}
-     */
     public function getFormId() {
         return 'journal_edit';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function buildForm(array $form, FormStateInterface $form_state, $param = null) {
-        $form['param'] = array(
+        $form['param'] = [
             '#type' => 'hidden',
             '#value' => $param,
-        );
+        ];
 
-        // $settings = new FinanceSettings();
-        // $baseCurrency = $settings->get('baseCurrency');
         $CurrencyOptions = CurrencyData::listcurrency(1);
         $accountOptions = ['0' => ''];
         $accountOptions += AidList::listaid($param['coid'], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 1);
+        
         $query = "SELECT name from {ek_company} WHERE id=:id";
         $company = Database::getConnection('external_db', 'external_db')
                 ->query($query, [':id' => $param['coid']])
@@ -66,6 +59,7 @@ class JournalEdit extends FormBase {
             '#type' => 'item',
             '#markup' => $company,
         ];
+        
         $form['currency'] = [
             '#type' => 'item',
             '#markup' => $param['currency'],
@@ -76,31 +70,43 @@ class JournalEdit extends FormBase {
             '#title' => $this->t('delete')
         ];
 
+        $form['record_as_new'] = [
+            '#type' => 'radios',
+            '#title' => $this->t('Record'),
+            '#options' => ['1' => $this->t('clone'), '0' => $this->t('edit')],
+            '#default_value' => 1,
+            '#states' => [
+                'invisible' => [
+                    "input[name='delete']" => ['checked' => true],
+                ],
+            ],
+        ];
+
         $form["date"] = [
             '#type' => 'date',
             '#size' => 12,
             '#required' => true,
             '#default_value' => $param['date'],
             '#title' => $this->t('record date'),
-            '#prefix' => "",
-            '#suffix' => '',
         ];
 
-        $headerline = "<div class='table'><div class='row'><div class='cell cellborder'>"
-                . $this->t("Debit account") . "</div><div class='cell cellborder'>"
-                . $this->t("Debit") . "</div><div class='cell cellborder'>"
-                . $this->t("Credit") . "</div><div class='cell cellborder'>"
-                . $this->t("Credit account") . "</div><div class='cell cellborder'>"
-                . $this->t("Comment") . "</div>";
+        $header = [
+            'd-account' => $this->t('Debit account'),
+            'debit' => $this->t('Debit'),
+            'force_dt_ex' => $this->t('Ex.'),
+            'credit' => $this->t('Credit'),
+            'force_ct_ex' => $this->t('Ex.'),
+            'c-account' => $this->t('Credit account'),
+            'comment' => $this->t('Comment'),
+        ];
 
-        $totalcredit = 0;
-        $totalcredit_exchange = 0;
-        $totaldebit = 0;
-        $totaldebit_exchange = 0;
-
-        $form['items']["headerline"] = [
-            '#type' => 'item',
-            '#markup' => $headerline,
+        $form['itemTable'] = [
+            '#tree' => true,
+            '#theme' => 'table',
+            '#header' => $header,
+            '#rows' => [],
+            '#attributes' => ['id' => 'itemTable'],
+            '#empty' => '',
         ];
 
         $query = "SELECT * FROM {ek_journal} WHERE source=:s AND reference=:r AND type=:t ORDER by id";
@@ -111,186 +117,188 @@ class JournalEdit extends FormBase {
                 ->query($query, [':s' => $param['source'], ':r' => $param['reference'], ':t' => 'credit'])
                 ->fetchAll();
 
-        if (count($dataDT) >= count($dataCT)) {
-            $count = count($dataDT);
-        } elseif (count($dataCT) >= count($dataDT)) {
-            $count = count($dataCT);
-        }
-        // loop  data
+        $count = max(count($dataDT), count($dataCT));
+        $totalDT = 0;
+        $totalCT = 0;
 
-        $i = 0;
-
-        for ($n = 0; $n < $count; $n++) {
-            $i++;
-            if ($dataDT[$n]->exchange == 0) {
-                $totaldebit += $dataDT[$n]->value;
-                $tagDT = "";
-            } else {
-                $totaldebit_exchange += $dataDT[$n]->value;
-                $tagDT = "*e";
-            }
-            if ($dataCT[$n]->exchange == 0) {
-                $totalcredit += $dataCT[$n]->value;
-                $tagCT = "";
-            } else {
-                $totalcredit_exchange += $dataCT[$n]->value;
-                $tagCT = "*e";
-            }
-
-            $form['items']["dtid$i"] = [
+        for ($i = 0; $i < $count; $i++) {
+            $n = $i + 1;
+            
+            $form["dtid$n"] = [
                 '#type' => 'hidden',
-                '#value' => $dataDT[$n]->id,
-            ];
-            $form['items']["d-account$i"] = [
-                '#type' => 'select',
-                '#size' => 1,
-                '#options' => $accountOptions,
-                '#default_value' => $dataDT[$n]->aid,
-                '#attributes' => ['style' => ['width:150px;white-space:nowrap']],
-                '#prefix' => "<div class='row'><div class='cell'>",
-                '#suffix' => '</div>',
-            ];
-
-            $form['items']["debit$i"] = [
-                '#type' => 'textfield',
-                '#id' => "debit$i",
-                '#size' => 12,
-                '#maxlength' => 255,
-                '#title' => $tagDT,
-                '#title_display' => 'after',
-                '#default_value' => $dataDT[$n]->value,
-                '#attributes' => ['placeholder' => $this->t('value'), 'class' => ['amount'], 'ondblclick' => "this.value=''", 'onKeyPress' => "return(number_format(this,',','.', event))"],
-                '#prefix' => "<div class='cell container-inline'>",
-            ];
-
-            $form['items']["force_dt_ex$i"] = [
-                '#type' => 'checkbox',
-                '#default_value' => ($dataDT[$n]->exchange == 0) ? 0 : 1,
-                '#attributes' => ['title' => $this->t('Force exchange record')],
-                '#suffix' => '</div>',
-            ];/**/
-
-            $form['items']["ctid$i"] = [
-                '#type' => 'hidden',
-                '#value' => $dataCT[$n]->id,
+                '#value' => isset($dataDT[$i]) ? $dataDT[$i]->id : '',
             ];
             
-            $form['items']["credit$i"] = [
-                '#type' => 'textfield',
-                '#id' => "credit$i",
-                '#size' => 12,
-                '#maxlength' => 255,
-                '#title' => $tagCT,
-                '#title_display' => 'after',
-                '#default_value' => $dataCT[$n]->value,
-                '#attributes' => ['placeholder' => $this->t('value'), 'class' => ['amount'], 'ondblclick' => "this.value=''", 'onKeyPress' => "return(number_format(this,',','.', event))"],
-                '#prefix' => "<div class='cell container-inline'>",
-            ];
-
-            $form['items']["force_ct_ex$i"] = [
-                '#type' => 'checkbox',
-                '#default_value' => ($dataCT[$n]->exchange == 0) ? 0 : 1,
-                '#attributes' => ['title' => $this->t('Force exchange record')],
-                '#suffix' => '</div>',
-            ];/**/
-            
-            $form['items']["c-account$i"] = [
+            $form["d-account$n"] = [
                 '#type' => 'select',
+                '#id' => "d-account$n",
                 '#size' => 1,
                 '#options' => $accountOptions,
-                '#default_value' => $dataCT[$n]->aid,
-                '#description' => '',
+                '#default_value' => isset($dataDT[$i]) ? $dataDT[$i]->aid : 0,
                 '#attributes' => ['style' => ['width:150px;white-space:nowrap']],
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div>',
             ];
 
-
-
-            $form['items']["comment$i"] = [
+            $debitValue = isset($dataDT[$i]) ? $dataDT[$i]->value : '';
+            $totalDT += (float)$debitValue;
+            
+            $form["debit$n"] = [
                 '#type' => 'textfield',
+                '#id' => "debit$n",
+                '#size' => 12,
+                '#maxlength' => 255,
+                '#default_value' => $debitValue,
+                '#attributes' => [
+                    'placeholder' => $this->t('value'),
+                    'class' => ['amount'],
+                    'ondblclick' => "this.value=''",
+                    'onKeyPress' => "return(number_format(this,',','.', event))"
+                ],
+            ];
+
+            $form["force_dt_ex$n"] = [
+                '#type' => 'checkbox',
+                '#default_value' => isset($dataDT[$i]) ? $dataDT[$i]->exchange : 0,
+                '#attributes' => ['title' => $this->t('Force exchange record')],
+            ];
+
+            $creditValue = isset($dataCT[$i]) ? $dataCT[$i]->value : '';
+            $totalCT += (float)$creditValue;
+            
+            $form["credit$n"] = [
+                '#type' => 'textfield',
+                '#id' => "credit$n",
+                '#size' => 12,
+                '#maxlength' => 255,
+                '#default_value' => $creditValue,
+                '#attributes' => [
+                    'placeholder' => $this->t('value'),
+                    'class' => ['amount'],
+                    'ondblclick' => "this.value=''",
+                    'onKeyPress' => "return(number_format(this,',','.', event))"
+                ],
+            ];
+
+            $form["force_ct_ex$n"] = [
+                '#type' => 'checkbox',
+                '#default_value' => isset($dataCT[$i]) ? $dataCT[$i]->exchange : 0,
+                '#attributes' => ['title' => $this->t('Force exchange record')],
+            ];
+
+            $form["ctid$n"] = [
+                '#type' => 'hidden',
+                '#value' => isset($dataCT[$i]) ? $dataCT[$i]->id : '',
+            ];
+
+            $form["c-account$n"] = [
+                '#type' => 'select',
+                '#id' => "c-account$n",
+                '#size' => 1,
+                '#options' => $accountOptions,
+                '#default_value' => isset($dataCT[$i]) ? $dataCT[$i]->aid : 0,
+                '#attributes' => ['style' => ['width:150px;white-space:nowrap']],
+            ];
+
+            $form["comment$n"] = [
+                '#type' => 'textfield',
+                '#id' => "comment$n",
                 '#size' => 30,
                 '#maxlength' => 255,
-                '#default_value' => $dataDT[$n]->comment,
-                '#attributes' => ['placeholder' => $this->t('comment'),],
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div></div>',
+                '#default_value' => isset($dataDT[$i]) ? $dataDT[$i]->comment : '',
+                '#attributes' => ['placeholder' => $this->t('comment')],
             ];
+
+            $form['itemTable'][$n] = [
+                'd-account' => &$form["d-account$n"],
+                'debit' => &$form["debit$n"],
+                'force_dt_ex' => &$form["force_dt_ex$n"],
+                'credit' => &$form["credit$n"],
+                'force_ct_ex' => &$form["force_ct_ex$n"],
+                'c-account' => &$form["c-account$n"],
+                'comment' => &$form["comment$n"],
+            ];
+
+            $form['itemTable']['#rows'][$n] = [
+                'data' => [
+                    ['data' => &$form["d-account$n"]],
+                    ['data' => &$form["debit$n"]],
+                    ['data' => &$form["force_dt_ex$n"]],
+                    ['data' => &$form["credit$n"]],
+                    ['data' => &$form["force_ct_ex$n"]],
+                    ['data' => &$form["c-account$n"]],
+                    ['data' => &$form["comment$n"]],
+                ],
+                'id' => [$n],
+            ];
+
+            unset($form["d-account$n"]);
+            unset($form["debit$n"]);
+            unset($form["force_dt_ex$n"]);
+            unset($form["credit$n"]);
+            unset($form["force_ct_ex$n"]);
+            unset($form["c-account$n"]);
+            unset($form["comment$n"]);
         }
 
+        // Footer
+        $form["footer1"] = ['#type' => 'item'];
+        $form["footer2"] = [
+            '#type' => 'textfield',
+            '#id' => 'totald',
+            '#size' => 12,
+            '#maxlength' => 255,
+            '#default_value' => number_format($totalDT, 2),
+            '#attributes' => ['placeholder' => $this->t('total'), 'class' => ['amount'], 'readonly' => 'readonly'],
+        ];
+        $form["footer3"] = ['#type' => 'item']; // Empty column for force_dt_ex
+        $form["footer4"] = [
+            '#type' => 'textfield',
+            '#id' => 'totalc',
+            '#size' => 12,
+            '#maxlength' => 255,
+            '#default_value' => number_format($totalCT, 2),
+            '#attributes' => ['placeholder' => $this->t('total'), 'class' => ['amount'], 'readonly' => 'readonly'],
+        ];
+        $form["footer5"] = ['#type' => 'item']; // Empty column for force_ct_ex
+        $form["footer6"] = ['#type' => 'item'];
+        $form["footer7"] = ['#type' => 'item'];
 
-        if ($totalcredit == $totaldebit && $totalcredit_exchange == $totaldebit_exchange) {
-            $style = '';
-        } else {
-            $style = 'delete';
-        }
-
-        // footer
-        $form['items']["footer1"] = [
-            '#type' => 'item',
-            '#prefix' => "<div class='row'><div class='cell cellborder'>" . $param['currency'],
-            '#suffix' => '</div>',
-        ];
-        $form['items']["footer2"] = [
-            '#type' => 'item',
-            '#prefix' => "<div class='cell cellborder $style' id='totald'>" . number_format($totaldebit, 2) . "",
-            '#suffix' => '</div>',
-        ];
-        $form['items']["footer3"] = [
-            '#type' => 'item',
-            '#prefix' => "<div class='cell cellborder $style' id='totalc'>" . number_format($totalcredit, 2) . "",
-            '#suffix' => '</div>',
-        ];
-        $form['items']["footer4"] = [
-            '#type' => 'item',
-            '#prefix' => "<div class='cell cellborder'>",
-            '#suffix' => '</div>',
-        ];
-        $form['items']["footer5"] = [
-            '#type' => 'item',
-            '#prefix' => "<div class='cell cellborder'>",
-            '#suffix' => '</div></div>',
+        $form['itemTable']['foot'] = [
+            'd-account' => &$form['footer1'],
+            'debit' => &$form['footer2'],
+            'force_dt_ex' => &$form['footer3'],
+            'credit' => &$form['footer4'],
+            'force_ct_ex' => &$form['footer5'],
+            'c-account' => &$form['footer6'],
+            'comment' => &$form['footer7'],
         ];
 
-        if ($totaldebit_exchange != 0 || $totalcredit_exchange != 0) {
-            $form['items']["footer6"] = [
-                '#type' => 'item',
-                '#prefix' => "<div class='row'><div class='cell cellborder'>" . $this->baseCurrency,
-                '#suffix' => '</div>',
-            ];
-            $form['items']["footer7"] = [
-                '#type' => 'item',
-                '#prefix' => "<div class='cell cellborder $style' id='totald'>" . number_format($totaldebit + $totaldebit_exchange, 2) . "",
-                '#suffix' => '</div>',
-            ];
-            $form['items']["footer8"] = [
-                '#type' => 'item',
-                '#prefix' => "<div class='cell cellborder $style' id='totalc'>" . number_format($totalcredit + $totalcredit_exchange, 2) . "",
-                '#suffix' => '</div>',
-            ];
-            $form['items']["footer9"] = [
-                '#type' => 'item',
-                '#prefix' => "<div class='cell cellborder'>",
-                '#suffix' => '</div>',
-            ];
-            $form['items']["footer10"] = [
-                '#type' => 'item',
-                '#prefix' => "<div class='cell cellborder'>",
-                '#suffix' => '</div></div></div>',
-            ];
-        } else {
-            $form['items']["footer6"] = [
-                '#type' => 'item',
-                '#prefix' => "</div>",
-            ];
-        }
+        $form['itemTable']['#rows']['foot'] = [
+            'data' => [
+                ['data' => &$form['footer1']],
+                ['data' => &$form['footer2']],
+                ['data' => &$form['footer3']],
+                ['data' => &$form['footer4']],
+                ['data' => &$form['footer5']],
+                ['data' => &$form['footer6']],
+                ['data' => &$form['footer7']],
+            ],
+            'id' => ['foot'],
+        ];
+
+        unset($form['footer1']);
+        unset($form['footer2']);
+        unset($form['footer3']);
+        unset($form['footer4']);
+        unset($form['footer5']);
+        unset($form['footer6']);
+        unset($form['footer7']);
 
         $form['rows'] = [
             '#type' => 'hidden',
             '#attributes' => ['id' => 'rows'],
-            '#value' => $n,
+            '#value' => $count,
         ];
-        
+
         $form['actions'] = [
             '#type' => 'actions',
             '#attributes' => ['class' => ['container-inline']],
@@ -299,19 +307,182 @@ class JournalEdit extends FormBase {
         $form['actions']['submit'] = [
             '#type' => 'submit',
             '#value' => $this->t('Save'),
-            '#suffix' => ''
         ];
 
-
         $form['#attached']['library'][] = 'ek_finance/ek_finance.journal_form';
-
 
         return $form;
     }
 
-    /**
-     * Callback
-     */
+    public function validateForm(array &$form, FormStateInterface $form_state) {
+        if ($form_state->getValue('delete') == 0) {
+            $totalCT = 0;
+            $totalDT = 0;
+            $rows = $form_state->getValue('itemTable');
+            
+            if (!empty($rows)) {
+                foreach ($rows as $key => $row) {
+                    if ($key !== 'foot') {
+                        $debit = preg_replace('/[^0-9.]/', '', $row['debit']);
+                        $credit = preg_replace('/[^0-9.]/', '', $row['credit']);
+                        
+                        if ($debit && !is_numeric($debit)) {
+                            $form_state->setErrorByName("itemTable][$key][debit", $this->t('Debit value must be numeric'));
+                        } elseif ($debit) {
+                            $totalDT += (double)$debit;
+                        }
+                        
+                        if ($credit && !is_numeric($credit)) {
+                            $form_state->setErrorByName("itemTable][$key][credit", $this->t('Credit value must be numeric'));
+                        } elseif ($credit) {
+                            $totalCT += (double)$credit;
+                        }
+                        
+                        if ($debit > 0 && $row['d-account'] == 0) {
+                            $form_state->setErrorByName("itemTable][$key][d-account", $this->t('Debit account required'));
+                        }
+                        
+                        if ($credit > 0 && $row['c-account'] == 0) {
+                            $form_state->setErrorByName("itemTable][$key][c-account", $this->t('Credit account required'));
+                        }
+                    }
+                }
+            }
+
+            if ($totalDT == 0 && $totalCT == 0) {
+                $form_state->setErrorByName("itemTable][foot][debit", $this->t('Total cannot be zero'));
+                $form_state->setErrorByName("itemTable][foot][credit");
+            }
+            
+            if (round($totalDT, $this->rounding) !== round($totalCT, $this->rounding)) {
+                $form_state->setErrorByName("itemTable][foot][debit", $this->t('Entry is not balanced'));
+                $form_state->setErrorByName("itemTable][foot][credit");
+            }
+        }
+    }
+
+    public function submitForm(array &$form, FormStateInterface $form_state) {
+        $param = $form_state->getValue('param');
+        $url = Url::fromRoute('ek_finance.extract.general_journal', [], [])->toString();
+        
+        if ($form_state->getValue('delete') == 1) {
+            if ($param['source'] == 'general cash') {
+                Database::getConnection('external_db', 'external_db')
+                    ->update('ek_cash')
+                    ->fields([
+                        'coid' => 'x' . $param['coid'],
+                        'comment' => 'journal deleted'
+                    ])
+                    ->condition('id', $param['reference'])
+                    ->execute();
+            }
+
+            $journal = new Journal();
+            $journalId = $journal->delete($param['source'], $param['reference'], $param['coid']);
+            $journal->resetCount($param['coid'], $journalId[1]);
+
+            \Drupal::messenger()->addStatus(t('Data deleted. Go to <a href="@url">journal</a>', ['@url' => $url]));
+            return;
+        }
+
+        $rows = $form_state->getValue('itemTable');
+        
+        if ($form_state->getValue('record_as_new') == 1) {
+            // Clone as new entry
+            $journal = new Journal();
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'j')
+                ->fields('j', ['reference'])
+                ->condition('source', 'general')
+                ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+                ->limit(1)
+                ->orderBy('id', 'DESC')
+                ->execute();
+                
+            $ref = $query->fetchField() + 1;
+            $rec = [];
+            
+            foreach ($rows as $key => $row) {
+                if ($key !== 'foot') {
+                    $debit = preg_replace('/[^0-9.]/', '', $row['debit']);
+                    $credit = preg_replace('/[^0-9.]/', '', $row['credit']);
+                    
+                    if ($debit) {
+                        $rec[$key] = $journal->record([
+                            'source' => 'general',
+                            'coid' => $param['coid'],
+                            'aid' => $row["d-account"],
+                            'type' => 'debit',
+                            'reference' => $ref,
+                            'date' => $form_state->getValue('date'),
+                            'value' => $debit,
+                            'currency' => $param['currency'],
+                            'comment' => Xss::filter($row["comment"]),
+                            'fxRate' => $param['fxRate'],
+                            'exchange' => $row['force_dt_ex'],
+                        ]);
+                    }
+                    
+                    if ($credit) {
+                        $journal->record([
+                            'source' => 'general',
+                            'coid' => $param['coid'],
+                            'aid' => $row["c-account"],
+                            'type' => 'credit',
+                            'reference' => $ref,
+                            'date' => $form_state->getValue('date'),
+                            'value' => $credit,
+                            'currency' => $param['currency'],
+                            'comment' => Xss::filter($row["comment"]),
+                            'fxRate' => $param['fxRate'],
+                            'exchange' => $row['force_ct_ex'],
+                        ]);
+                    }
+                }
+            }
+
+            \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
+            $editUrl = Url::fromRoute('ek_finance.manage.journal_edit', ['id' => $rec[1]], [])->toString();
+            \Drupal::messenger()->addStatus(t('New entry cloned. <a href="@url">Edit</a>', ['@url' => $editUrl]));
+        } else {
+            // Update existing entries
+            foreach ($rows as $key => $row) {
+                if ($key !== 'foot') {
+                    if ($row['debit']) {
+                        Database::getConnection('external_db', 'external_db')
+                            ->update('ek_journal')
+                            ->fields([
+                                'date' => $form_state->getValue('date'),
+                                'value' => preg_replace('/[^0-9.]/', '', $row['debit']),
+                                'aid' => $row['d-account'],
+                                'comment' => Xss::filter($row['comment']),
+                                'exchange' => $row['force_dt_ex'],
+                            ])
+                            ->condition('id', $form_state->getValue("dtid$key"))
+                            ->execute();
+                    }
+                    
+                    if ($row['credit']) {
+                        Database::getConnection('external_db', 'external_db')
+                            ->update('ek_journal')
+                            ->fields([
+                                'date' => $form_state->getValue('date'),
+                                'value' => preg_replace('/[^0-9.]/', '', $row['credit']),
+                                'aid' => $row['c-account'],
+                                'comment' => Xss::filter($row['comment']),
+                                'exchange' => $row['force_ct_ex'],
+                            ])
+                            ->condition('id', $form_state->getValue("ctid$key"))
+                            ->execute();
+                    }
+                }
+            }
+
+            \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
+            \Drupal::messenger()->addStatus(t('Data edited. Go to <a href="@url">journal</a>', ['@url' => $url]));
+        }
+    }
+
     public function fx_rate(array &$form, FormStateInterface $form_state) {
         $currency = $form_state->getValue('currency');
         $fx = CurrencyData::rate($currency);
@@ -328,114 +499,4 @@ class JournalEdit extends FormBase {
 
         return $form['fx_rate'];
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function validateForm(array &$form, FormStateInterface $form_state) {
-        if ($form_state->getValue('delete') == 0) {
-            $totalcredit = 0;
-            $totaldebit = 0;
-
-            for ($i = 1; $i <= $form_state->getValue('rows'); $i++) {
-                $debit = str_replace(',', '', $form_state->getValue("debit$i"));
-                if ($debit == '') {
-                    $debit = 0;
-                }
-                $credit = str_replace(',', '', $form_state->getValue("credit$i"));
-                if ($credit == '') {
-                    $credit = 0;
-                }
-
-                if (!is_numeric($debit)) {
-                    $form_state->setErrorByName("debit$i", $this->t('input value error'));
-                }
-                if (!is_numeric($credit)) {
-                    $form_state->setErrorByName("credit$i", $this->t('input value error'));
-                }
-
-                if ($debit > 0 && $form_state->getValue("d-account$i") == 0) {
-                    $form_state->setErrorByName("d-account$i", $this->t('no account selected'));
-                }
-
-                if ($credit > 0 && $form_state->getValue("c-account$i") == 0) {
-                    $form_state->setErrorByName("c-account$i", $this->t('no account selected'));
-                }
-
-
-                $totalcredit += (double)$credit;
-                $totaldebit += (double)$debit;
-            }
-
-            if (round($totalCT,$this->rounding) <> round($totalDT,$this->rounding)) {
-                $form_state->setErrorByName('items][footer2', $this->t('entry is not balanced'));
-                $form_state->setErrorByName('items][footer3');
-            }
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
-        $url = Url::fromRoute('ek_finance.extract.general_journal', array(), array())->toString();
-        if ($form_state->getValue('delete') == 1) {
-            $p = $form_state->getValue("param");
-
-            //if source is connected to cash, remove cash entry first
-            if ($p['source'] == 'general cash') {
-                $fields = [
-                    'coid' => 'x' . $p['coid'],
-                    'comment' => 'journal deleted'
-                ];
-
-                Database::getConnection('external_db', 'external_db')
-                        ->update('ek_cash')
-                        ->fields($fields)
-                        ->condition('id', $p['reference'])
-                        ->execute();
-            }
-
-
-            $journal = new Journal();
-            $journalId = $journal->delete($p['source'], $p['reference'], $p['coid']);
-            //count field sequence must be restored
-            $journal->resetCount($p['coid'], $journalId[1]);
-
-
-            \Drupal::messenger()->addStatus(t('Data deleted. Go to <a href="@url">journal</a>', ['@url' => $url]));
-        } else {
-            for ($i = 1; $i <= $form_state->getValue('rows'); $i++) {
-                $debit = str_replace(',', '', $form_state->getValue("debit$i"));
-                $credit = str_replace(',', '', $form_state->getValue("credit$i"));
-                $fields1 = [
-                    'date' => $form_state->getValue("date"),
-                    'value' => $debit,
-                    'aid' => $form_state->getValue("d-account$i"),
-                    'exchange' => $form_state->getValue("force_dt_ex$i"),
-                ];
-                $fields2 = [
-                    'date' => $form_state->getValue("date"),
-                    'value' => $credit,
-                    'aid' => $form_state->getValue("c-account$i"),
-                    'exchange' => $form_state->getValue("force_ct_ex$i"),
-                ];
-
-                Database::getConnection('external_db', 'external_db')
-                        ->update('ek_journal')
-                        ->fields($fields1)
-                        ->condition('id', $form_state->getValue("dtid$i"))
-                        ->execute();
-                Database::getConnection('external_db', 'external_db')
-                        ->update('ek_journal')
-                        ->fields($fields2)
-                        ->condition('id', $form_state->getValue("ctid$i"))
-                        ->execute();
-            }
-
-            \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
-            \Drupal::messenger()->addStatus(t('Data edited. Go to <a href="@url">journal</a>', ['@url' => $url]));
-        }
-    }
-
 }

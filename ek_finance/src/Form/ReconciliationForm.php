@@ -22,6 +22,7 @@ use Drupal\ek_finance\CurrencyData;
 use Drupal\ek_finance\BankData;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\FinanceSettings;
+use PhpOffice\PhpSpreadsheet\Calculation\MathTrig\Absolute;
 
 /**
  * Provides a form to filter and record reconciliation data.
@@ -276,6 +277,13 @@ class ReconciliationForm extends FormBase {
             );
 
             // top bar displaying the total
+            $form['bar'] = [
+                '#type' => 'container',
+                '#attributes' => [
+                    'class' => ['reco-bar-container row'],
+                ],
+            ];
+
             $form['bar']["debits"] = array(
                 '#type' => 'textfield',
                 '#id' => 'debits',
@@ -310,7 +318,7 @@ class ReconciliationForm extends FormBase {
 
             $form['bar']['balance'] = array(
                 '#type' => 'item',
-                '#markup' => "<span id='balance'>" . abs(round($balance, $this->rounding)) . "</span><span id='ab'> (" . $ab . ")</span>",
+                '#markup' => "<span id='balance'>" . number_format(abs(round($balance, $this->rounding))) . "</span><span id='ab'> (" . $ab . ")</span>",
                 '#prefix' => '<div class="cell cell150">',
                 '#suffix' => '</div>',
             );
