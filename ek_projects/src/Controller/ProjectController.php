@@ -903,6 +903,7 @@ class ProjectController extends ControllerBase {
                     $po_list = array();
                     $i = 0;
                     $po_status = array(t('unpaid'), $this->t('paid'), $this->t('partially paid'));
+                    $po_type = array('', '', '', '','green');
                     $sum_a = 0;
                     $sum_abc = 0;
                     while ($p = $pos->fetchObject()) {
@@ -929,6 +930,7 @@ class ProjectController extends ControllerBase {
                         $po_list[$i] = array(
                             'serial' => $p->serial,
                             'status' => $po_status[$p->status],
+                            'type' => $po_type[$p->type],
                             'amount' => $p->currency . ' ' . number_format($p->amount, 2),
                             'amountbase' => $baseCurrency . ' ' . number_format($p->amountbase, 2),
                             'date' => $p->date,
@@ -992,6 +994,7 @@ class ProjectController extends ControllerBase {
                     $invoice_list = array();
                     $i = 0;
                     $invoice_status = array(t('unpaid'), $this->t('paid'), $this->t('partially paid'));
+                    $i_type = array('', '', '', '','red');
                     $sum_a = 0;
                     $sum_abc = 0;
 
@@ -1019,6 +1022,7 @@ class ProjectController extends ControllerBase {
                         $invoice_list[$i] = array(
                             'serial' => $in->serial,
                             'status' => $invoice_status[$in->status],
+                            'type' => $i_type[$in->type],
                             'amount' => $in->currency . ' ' . number_format($in->amount, 2),
                             'amountbase' => $baseCurrency . ' ' . number_format($in->amountbase, 2),
                             'date' => $in->date,
