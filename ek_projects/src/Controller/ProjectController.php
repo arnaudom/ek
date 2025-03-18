@@ -64,6 +64,13 @@ class ProjectController extends ControllerBase {
     protected $entityTypeManager;
 
     /**
+     * The external database connection.
+     *
+     * @var \Drupal\Core\Database\Connection
+     */
+    protected $extdb;
+
+    /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
@@ -454,8 +461,7 @@ class ProjectController extends ControllerBase {
                 'stamp' => time(),
                 'action' => 'open'
             );
-            $this->extdb
-                    ->insert('ek_project_tracker')->fields($fields)->execute();
+            $this->trackerInput($fields);
 
             // system log view
             $a = array('@u' => \Drupal::currentUser()->getAccountName(), '@d' => $pcode);
@@ -1518,17 +1524,43 @@ class ProjectController extends ControllerBase {
         
     }
 
+     /**
+     * Record project tracker data
+     * @param array fields
+     * data to insert
+     *
+     */
+    public function trackerInput(array $fields) {
+        $query = $this->extdb
+        ->select('ek_project_tracker', 't')
+        ->fields('t',['pcode','uid','action'])
+        ->range(0, 1)->orderBy('stamp', 'DESC')
+        ->execute();
+        $data = $query->fetchObject();
+
+        if($data->pcode == $fields['pcode']
+        && $data->uid == $fields['uid'] 
+        && $data->action == $fields['action']) {
+            return;
+            
+        } else {
+            $this->extdb->insert('ek_project_tracker')
+            ->fields($fields)->execute();
+        }
+        
+        return;
+    }
+
     /**
      * Return project tracker data
      *
      */
     public function tracker(Request $request) {
         $id = $request->query->get('id');
+        $last_update = $request->query->get('last_update');
         $first = null;
         $today = time() - 86400;
         if (isset($id)) {
-
-
             $query = Database::getConnection()->select('users_field_data', 'u');
             $query->fields('u', ['uid', 'name']);
             $users = $query->execute()->fetchAllKeyed();
@@ -1547,6 +1579,7 @@ class ProjectController extends ControllerBase {
             $first = '';
             $i = 0;
             $name_ = '';
+            $action = '';
 
             while ($d = $data->fetchObject()) {
                 if ($d->uid != $uid) {
@@ -1556,10 +1589,16 @@ class ProjectController extends ControllerBase {
                 }
 
                 $on = date('l jS \of F Y h:i A', $d->stamp);
-
+                
                 if ($i == 0) {
+                    $stamp = $d->stamp;
                     $first = str_replace('edit', '', $d->action);
                     $first = str_replace(' ', '_', trim($first));
+                    if($last_update != 0 && ($d->stamp < $last_update)) { 
+                        // no new data
+                        return new JsonResponse(['hasChanges' => false]);
+                        break;
+                    }
                 }
 
                 if (strcmp($name, $name_) || strcmp($d->action, $action)) {
@@ -1576,7 +1615,7 @@ class ProjectController extends ControllerBase {
             }
         }
 
-        return new JsonResponse(array('data' => $t1 . $t2, 'field' => $first));
+        return new JsonResponse(['data' => $t1 . $t2, 'field' => $first, 'hasChanges' =>  $stamp]);
     }
 
     /**
@@ -1623,9 +1662,8 @@ class ProjectController extends ControllerBase {
                     'stamp' => time(),
                     'action' => 'move' . ' ' . $data->filename
                 );
-                Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_project_tracker')
-                        ->fields($fields)->execute();
+
+                $this->trackerInput($fields);
             }
         }
 
@@ -1834,8 +1872,6 @@ class ProjectController extends ControllerBase {
                     $query->fields('f', ['fid']);
                     $query->condition('uri', $p->uri);
                     $fid = $query->execute()->fetchField();
-                    //$query = "SELECT fid FROM {file_managed} WHERE uri=:u";
-                    //$file = db_query($query, [':u' => $p->uri])->fetchObject();
                     if ($fid) {
                         $obj = \Drupal\file\Entity\File::load($fid);
                         $obj->setTemporary();
@@ -1857,8 +1893,8 @@ class ProjectController extends ControllerBase {
                     'stamp' => time(),
                     'action' => $action
                 );
-                Database::getConnection('external_db', 'external_db')->insert('ek_project_tracker')
-                        ->fields($fields)->execute();
+
+                $this->trackerInput($fields);
 
                 $response = new AjaxResponse();
                 $response->addCommand(new CloseDialogCommand());

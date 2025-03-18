@@ -27,10 +27,9 @@ class TrackBlock extends BlockBase {
      * {@inheritdoc}
      */
     public function build() {
-        $sound = '../../' . \Drupal::service('extension.path.resolver')->getPath('module', 'ek_projects') . '/art/beep.mp3';
 
         return array(
-            '#items' => ['title' => t('Users activity'), 'link' => $sound],
+            '#items' => ['title' => t('Users activity')],
             '#theme' => 'activity_block',
             '#attached' => array(
                 'library' => array('ek_projects/ek_projects_css', 'ek_projects/ek_projects_updater'),

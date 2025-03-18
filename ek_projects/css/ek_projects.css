@@ -161,9 +161,12 @@
 }
 
 .tracklist {
-    background-color: #fff;
     height:10em;
     overflow:auto;
+    padding: 10px;
+    background-color: #00b515;
+    box-shadow: 3px 3px #dbdbdb;
+    font-size: larger;
 }
 
 .projectMessagesList {
@@ -340,15 +343,7 @@
 .sub-folder-title {
     border-bottom: 2px solid #94b4d0;
     padding-bottom:1px; 
-}
-
-.tracklist{
-    padding: 10px;
-    background-color: #64fe2e;
-    box-shadow: 3px 3px #dbdbdb;
-    font-size: larger;
-}
-    
+}    
 
 .projectMessagesList {
     padding: 10px;
@@ -378,4 +373,54 @@
     transition: color 0.5s ease;
     text-decoration: none !important;
     color: #85bef4 !important;
+}
+
+/* update js timer and updater */
+.update-indicator {
+    position: fixed;
+    top: 0;          /* Position at the top of the viewport */
+    left: 50%;       /* Center horizontally */
+    transform: translateX(-50%) translateY(-110%); /* Hide above the viewport */
+    background: #00b515;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: transform 0.5s ease;
+    z-index: 1000;
+}
+
+.update-indicator.visible {
+    transform: translateX(-50%) translateY(0); /* Move down into view */
+}
+
+.update-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    margin-right: 10px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.highlight-update {
+    animation: highlight-fade 2s ease-out;
+}
+
+@keyframes highlight-fade {
+    0% { background-color: rgba(255, 255, 0, 0.3); }
+    100% { background-color: transparent; }
+}
+
+.update-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
 }

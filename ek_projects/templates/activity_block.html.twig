@@ -1,11 +1,27 @@
 <div id="trackBlock" class="">
     <h4 id="activityList"><i class="fa fa-circle-o fa-fw"></i><a href='#'>{{ items.title }}</a></h4>
-    <div class="tracklist">
+    <div class="tracklist" id="tracklist">
         <ul></ul>
     </div>
-    <div>
-        <audio class="tbeep" id="tbeep" preload>
-            <source src="{{ items.link }}" type="audio/wav">
-        </audio>
+    
+    <div class="update-controls">
+        <div class="update-frequency">
+            <label>{{ 'Update frequency'|t }}:</label>
+            <select id="update-frequency">
+                <option value="realtime">{{ 'Real-time'|t }}</option>
+                <option value="normal" selected>{{ 'Normal'|t }}</option>
+                <option value="minimal">{{ 'Minimal'|t }}</option>
+                <option value="manual">{{ 'Manual only'|t }}</option>
+            </select>
+        </div>
+        <button id="manual-update" class="button button-small">
+            <i class="fa fa-refresh"></i> {{ 'Update Now'|t }}
+        </button>
+        <div class="notification-toggle">
+            <label>
+                <input type="checkbox" title="update sound" id="enable-notifications" checked>
+                {{ 'Sound'|t }}
+            </label>
+        </div>
     </div>
 </div>

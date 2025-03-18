@@ -609,10 +609,24 @@ class ProjectFieldEdit extends FormBase {
                 'stamp' => time(),
                 'action' => $action
             ];
-            Database::getConnection('external_db', 'external_db')
+
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project_tracker', 't')
+                ->fields('t',['pcode','uid','action'])
+                ->range(0, 1)->orderBy('stamp', 'DESC')
+                ->execute();
+            $data = $query->fetchObject();
+
+            if($data->pcode == $fields['pcode']
+            && $data->uid == $fields['uid'] 
+            && $data->action == $fields['action']) {
+                // no action
+            } else {
+                Database::getConnection('external_db', 'external_db')
                     ->insert('ek_project_tracker')
                     ->fields($fields)
                     ->execute();
+            }
 
             $param = serialize(
                     array(
