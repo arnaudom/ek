@@ -612,7 +612,7 @@ class ProjectFieldEdit extends FormBase {
 
             $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_project_tracker', 't')
-                ->fields('t',['pcode','uid','action'])
+                ->fields('t',['pcode','uid','action','stamp'])
                 ->range(0, 1)->orderBy('stamp', 'DESC')
                 ->execute();
             $data = $query->fetchObject();
@@ -620,7 +620,13 @@ class ProjectFieldEdit extends FormBase {
             if($data->pcode == $fields['pcode']
             && $data->uid == $fields['uid'] 
             && $data->action == $fields['action']) {
-                // no action
+                Database::getConnection('external_db', 'external_db')->update('ek_project_tracker')
+                ->fields(['stamp' => $fields['stamp']])
+                ->condition('pcode', $data->pcode)
+                ->condition('uid', $data->uid)
+                ->condition('action', $data->action)
+                ->condition('stamp', $data->stamp)
+                ->execute();
             } else {
                 Database::getConnection('external_db', 'external_db')
                     ->insert('ek_project_tracker')

@@ -1533,7 +1533,7 @@ class ProjectController extends ControllerBase {
     public function trackerInput(array $fields) {
         $query = $this->extdb
         ->select('ek_project_tracker', 't')
-        ->fields('t',['pcode','uid','action'])
+        ->fields('t',['pcode','uid','action','stamp'])
         ->range(0, 1)->orderBy('stamp', 'DESC')
         ->execute();
         $data = $query->fetchObject();
@@ -1541,8 +1541,13 @@ class ProjectController extends ControllerBase {
         if($data->pcode == $fields['pcode']
         && $data->uid == $fields['uid'] 
         && $data->action == $fields['action']) {
-            return;
-            
+            $this->extdb->update('ek_project_tracker')
+            ->fields(['stamp' => $fields['stamp']])
+            ->condition('pcode', $data->pcode)
+            ->condition('uid', $data->uid)
+            ->condition('action', $data->action)
+            ->condition('stamp', $data->stamp)
+            ->execute();
         } else {
             $this->extdb->insert('ek_project_tracker')
             ->fields($fields)->execute();
