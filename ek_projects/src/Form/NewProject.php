@@ -150,6 +150,13 @@ class NewProject extends FormBase {
                 '#title' => $this->t('Project name'),
             ];
 
+            $form['description'] = [
+                '#type' => 'textarea',
+                '#title' => $this->t('Project description'),
+                '#required' => true,
+                '#rows' => 2,
+            ];
+
             $form['level'] = [
                 '#type' => 'select',
                 '#size' => 1,
@@ -385,13 +392,15 @@ class NewProject extends FormBase {
 
             $pid = Database::getConnection('external_db', 'external_db')
                     ->insert('ek_project')->fields($fields)->execute();
+            // description table
+            $text = Xss::filter($form_state->getValue('description'));
+            $fields = ['pcode' => $pcode, 'project_description' => $text];
+            Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_project_description')->fields($fields)->execute();
             $fields = ['pcode' => $pcode];
             // AP table
             Database::getConnection('external_db', 'external_db')
                     ->insert('ek_project_actionplan')->fields($fields)->execute();
-            // description table
-            Database::getConnection('external_db', 'external_db')
-                    ->insert('ek_project_description')->fields($fields)->execute();
             // shipment table
             Database::getConnection('external_db', 'external_db')
                     ->insert('ek_project_shipment')->fields($fields)->execute();
