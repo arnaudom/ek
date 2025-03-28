@@ -1,179 +1,295 @@
 (function ($, Drupal, drupalSettings) {
     Drupal.behaviors.viewproject = {
         attach: function (context, settings) {
+            if (!window.updaterInitialized && context === document) {
+                // Only initialize the updater once
+                window.updaterInitialized = true;
+                // console.log("Initializing project updater for the first time");
 
-            // Intelligent periodic updater with activity-based adjustment
-            function initializeIntelligentUpdater(projectId) {
-                const config = {
-                    minPeriod: 3000,        // Minimum time between updates (3 seconds)
-                    maxPeriod: 5 * 60000,   // Maximum time between updates (5 minutes)
-                    initialPeriod: 3000,    // Start with frequent updates
-                    userActiveDecay: 1.0,   // No decay when user is active
-                    userInactiveDecay: 1.3, // Slower updates when user is inactive
-                    inactivityThreshold: 60000, // Consider user inactive after 1 minute
-                    manualMode: false       // Flag to track manual mode
-                };
-                
-                let currentPeriod = config.initialPeriod;
-                let lastUserActivity = Date.now();
-                let lastUpdateTime = 0;
-                let hasChanges = false;
-                let updater = null;
-                //var last_update = 0;
-                
-                // Track user activity
-                function updateUserActivity() {
-                    lastUserActivity = Date.now();
-                    // If we were in slow update mode, switch back to fast updates
-                    if (currentPeriod > config.initialPeriod && !config.manualMode) {
-                        currentPeriod = config.initialPeriod;
-                        resetUpdater();
-                    }
-                }
-                
-                // Listen for user interactions that indicate activity
-                ['click', 'keypress', 'scroll', 'mousemove'].forEach(eventType => {
-                    document.addEventListener(eventType, updateUserActivity, { passive: true });
-                });
-                
-                function resetUpdater() {
-                    if (updater) {
-                        clearTimeout(updater);
-                        updater = null;
-                    }
-                    // Only schedule next update if not in manual mode
-                    if (!config.manualMode) {
-                        updater = setTimeout(performUpdate, currentPeriod);
-                    }
-                }
-                
-                function performUpdate() {
-                    const isUserActive = (Date.now() - lastUserActivity) < config.inactivityThreshold;
+                // Intelligent periodic updater with activity-based adjustment
+                function initializeIntelligentUpdater(projectId) {
+                    const config = {
+                        minPeriod: 3000,        // Minimum time between updates (3 seconds)
+                        maxPeriod: 5 * 60000,   // Maximum time between updates (5 minutes)
+                        initialPeriod: 3000,    // Start with frequent updates
+                        userActiveDecay: 1.0,   // No decay when user is active
+                        userInactiveDecay: 1.3, // Slower updates when user is inactive
+                        inactivityThreshold: 60000, // Consider user inactive after 1 minute
+                        manualMode: false       // Flag to track manual mode
+                    };
                     
-                    // Show subtle loading indicator
-                    showUpdateIndicator(true);
+                    let currentPeriod = config.initialPeriod;
+                    let lastUserActivity = Date.now();
+                    let lastUpdateTime = 0;
+                    let hasChanges = false;
+                    let updater = null;
                     
-                    $.ajax({
-                        url: drupalSettings.path.baseUrl + 'ek_project/tracker',
-                        data: { id: projectId, last_update: lastUpdateTime },
-                        dataType: 'json',
-                        success: function(response) {
-                           
-                            if (response.hasChanges != false && lastUpdateTime < response.hasChanges) {
-                                lastUpdateTime = response.hasChanges;
-                                // Process updates
-                                update_users_activity(response); 
-                                // Reset to faster updates when changes are detected
-                                if (!config.manualMode) {
-                                    currentPeriod = config.initialPeriod;
-                                }
-                            } else {
-                                // Apply appropriate decay based on user activity (only if not in manual mode)
-                                if (!config.manualMode) {
-                                    const decayFactor = isUserActive ? 
-                                        config.userActiveDecay : config.userInactiveDecay;
-                                    
-                                    currentPeriod = Math.min(
-                                        currentPeriod * decayFactor, 
-                                        config.maxPeriod
-                                    );
-                                }
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            console.error("Update failed:", error);
-                            // On error, back off more aggressively (only if not in manual mode)
-                            if (!config.manualMode) {
-                                currentPeriod = Math.min(currentPeriod * 2, config.maxPeriod);
-                            }
-                        },
-                        complete: function() {
-                            showUpdateIndicator(false);
-                            // Only reset updater if not in manual mode
-                            if (!config.manualMode) {
-                                resetUpdater();
-                            }
-                        }
-                    });
-                }
-                
-                // Start the updater
-                resetUpdater();
-                
-                return {
-                    pause: function() {
-                        if (updater) {
-                            clearTimeout(updater);
-                            updater = null;
-                        }
-                    },
-                    resume: function() {
-                        if (!updater && !config.manualMode) {
+                    // Track user activity
+                    function updateUserActivity() {
+                        lastUserActivity = Date.now();
+                        // If we were in slow update mode, switch back to fast updates
+                        if (currentPeriod > config.initialPeriod && !config.manualMode) {
                             currentPeriod = config.initialPeriod;
                             resetUpdater();
                         }
-                    },
-                    forceUpdate: function() {
+                    }
+                    
+                    // Listen for user interactions that indicate activity
+                    ['click', 'keypress', 'scroll', 'mousemove'].forEach(eventType => {
+                        document.addEventListener(eventType, updateUserActivity, { passive: true });
+                    });
+                    
+                    function resetUpdater() {
                         if (updater) {
                             clearTimeout(updater);
                             updater = null;
                         }
-                        performUpdate();
-                        // No resetUpdater() call here - it's handled in the complete callback
-                        // of performUpdate() and will only restart auto-updates if not in manual mode
-                    },
-                    updateConfig: function(newConfig) {
-                        // Detect manual mode explicitly
-                        if (newConfig.min === 0) {
-                            config.manualMode = true;
-                            console.log("Manual mode activated:", config.manualMode);
-                        } else {
-                            config.manualMode = false;
-                            console.log("Auto mode activated:", config.manualMode);
+                        // Only schedule next update if not in manual mode
+                        if (!config.manualMode) {
+                            updater = setTimeout(performUpdate, currentPeriod);
                         }
+                    }
+                    
+                    function performUpdate() {
+                        const isUserActive = (Date.now() - lastUserActivity) < config.inactivityThreshold;
                         
-                        // Update other configuration values
-                        if (newConfig.min !== undefined) config.minPeriod = newConfig.min;
-                        if (newConfig.max !== undefined) config.maxPeriod = newConfig.max;
-                        if (newConfig.initial !== undefined) {
-                            config.initialPeriod = newConfig.initial;
-                            if (!config.manualMode) {
-                                currentPeriod = newConfig.initial; // Reset current period to new initial value
+                        // Show subtle loading indicator
+                        showUpdateIndicator(true);
+                        
+                        $.ajax({
+                            url: drupalSettings.path.baseUrl + 'ek_project/tracker',
+                            data: { id: projectId, last_update: lastUpdateTime },
+                            dataType: 'json',
+                            success: function(response) {
+                            
+                                if (response.hasChanges != false && lastUpdateTime < response.hasChanges) {
+                                    lastUpdateTime = response.hasChanges;
+                                    // Process updates
+                                    update_users_activity(response); 
+                                    // Reset to faster updates when changes are detected
+                                    if (!config.manualMode) {
+                                        currentPeriod = config.initialPeriod;
+                                        // console.log('Period: ' + currentPeriod);
+                                    }
+                                } else {
+                                    // Apply appropriate decay based on user activity (only if not in manual mode)
+                                    if (!config.manualMode) {
+                                        const decayFactor = isUserActive ? 
+                                            config.userActiveDecay : config.userInactiveDecay;
+                                        
+                                        currentPeriod = Math.min(
+                                            currentPeriod * decayFactor, 
+                                            config.maxPeriod
+                                        );
+                                        // console.log('Period: ' + currentPeriod);
+                                    }
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error("Update failed:", error);
+                                // On error, back off more aggressively (only if not in manual mode)
+                                if (!config.manualMode) {
+                                    currentPeriod = Math.min(currentPeriod * 2, config.maxPeriod);
+                                }
+                            },
+                            complete: function() {
+                                showUpdateIndicator(false);
+                                // Only reset updater if not in manual mode
+                                if (!config.manualMode) {
+                                    resetUpdater();
+                                }
                             }
-                        }
-                        
-                        // Optional parameters
-                        if (newConfig.activeDecay !== undefined) config.userActiveDecay = newConfig.activeDecay;
-                        if (newConfig.inactiveDecay !== undefined) config.userInactiveDecay = newConfig.inactiveDecay;
-                        if (newConfig.inactivityThreshold !== undefined) config.inactivityThreshold = newConfig.inactivityThreshold;
-                        
-                        // Handle updater state based on manual mode
-                        if (config.manualMode) {
-                            // In manual mode, stop any scheduled updates
+                        });
+                    }
+                    
+                    // Start the updater
+                    resetUpdater();
+                    
+                    return {
+                        pause: function() {
                             if (updater) {
                                 clearTimeout(updater);
                                 updater = null;
                             }
-                        } else {
-                            // In auto mode, restart the updater
-                            resetUpdater();
+                        },
+                        resume: function() {
+                            if (!updater && !config.manualMode) {
+                                currentPeriod = config.initialPeriod;
+                                resetUpdater();
+                            }
+                        },
+                        forceUpdate: function() {
+                            if (updater) {
+                                clearTimeout(updater);
+                                updater = null;
+                            }
+                            performUpdate();
+                            // No resetUpdater() call here - it's handled in the complete callback
+                            // of performUpdate() and will only restart auto-updates if not in manual mode
+                        },
+                        updateConfig: function(newConfig) {
+                            // Detect manual mode explicitly
+                            if (newConfig.min === 0) {
+                                config.manualMode = true;
+                                console.log("Manual mode activated:", config.manualMode);
+                            } else {
+                                config.manualMode = false;
+                                console.log("Auto mode activated:", config.manualMode);
+                            }
+                            
+                            // Update other configuration values
+                            if (newConfig.min !== undefined) config.minPeriod = newConfig.min;
+                            if (newConfig.max !== undefined) config.maxPeriod = newConfig.max;
+                            if (newConfig.initial !== undefined) {
+                                config.initialPeriod = newConfig.initial;
+                                if (!config.manualMode) {
+                                    currentPeriod = newConfig.initial; // Reset current period to new initial value
+                                }
+                            }
+                            
+                            // Optional parameters
+                            if (newConfig.activeDecay !== undefined) config.userActiveDecay = newConfig.activeDecay;
+                            if (newConfig.inactiveDecay !== undefined) config.userInactiveDecay = newConfig.inactiveDecay;
+                            if (newConfig.inactivityThreshold !== undefined) config.inactivityThreshold = newConfig.inactivityThreshold;
+                            
+                            // Handle updater state based on manual mode
+                            if (config.manualMode) {
+                                // In manual mode, stop any scheduled updates
+                                if (updater) {
+                                    clearTimeout(updater);
+                                    updater = null;
+                                }
+                            } else {
+                                // In auto mode, restart the updater
+                                resetUpdater();
+                            }
+                        },
+                        // Add a method to check current mode (useful for debugging)
+                        getMode: function() {
+                            return config.manualMode ? "manual" : "auto";
                         }
-                    },
-                    // Add a method to check current mode (useful for debugging)
-                    getMode: function() {
-                        return config.manualMode ? "manual" : "auto";
+                    };
+                }
+
+                // Initialize the updater when document is ready
+                $(function() {
+                    if (typeof drupalSettings.ek_projects !== 'undefined' && !window.projectUpdater) {
+                        // console.log("Creating project updater instance");
+                        window.projectUpdater = initializeIntelligentUpdater(drupalSettings.ek_projects.id);
                     }
-                };
+                });
+
+
             }
 
-            // Initialize the updater when document is ready
-            $(function() {
-                if (typeof drupalSettings.ek_projects !== 'undefined') {
-                    window.projectUpdater = initializeIntelligentUpdater(drupalSettings.ek_projects.id);
-                }
+            // activate tabs
+            const tabs = document.querySelectorAll(".tab");
+            const contents = document.querySelectorAll(".tab-content");
+
+            tabs.forEach(tab => {
+                tab.addEventListener("click", function () {
+                    // Remove active class from all tabs and contents
+                    tabs.forEach(t => t.classList.remove("active"));
+                    contents.forEach(c => c.classList.remove("active"));
+
+                    // Add active class to clicked tab and corresponding content
+                    tab.classList.add("active");
+                    const contentId = "content-" + tab.id.split("-")[1];
+                    document.getElementById(contentId).classList.add("active");
+                });
             });
 
-            // Add these functions to your Drupal behavior
+            // open tab with url fragment
+            const urlParams = new URLSearchParams(window.location.search);
+            const hash = window.location.hash.substring(1);             
+            // Check for hash first, then query parameter
+            const targetTab = hash || urlParams.get('tab');
+            
+            if (targetTab) {
+                const tabElement = document.getElementById(targetTab);
+                if (tabElement) {
+                    tabElement.click();
+                    // Smooth scroll to tab if needed
+                    tabElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+                        
+            // update fill progress
+            $('.progress-fill').css('width', drupalSettings.ek_projects.fillRatio + '%');
+            $('.progress-text').html(drupalSettings.ek_projects.fillRatio);
+            if(drupalSettings.ek_projects.fillRatio < 30) {
+                $('.progress-fill').css('background-color','#ff0000');
+            } else if (drupalSettings.ek_projects.fillRatio < 70) {
+                $('.progress-fill').css('background-color','#FFC900');
+            }
+
+            $(once('timeline', '.timeline-section', context)).each(function () {
+                // Get timeline points
+                const points = {
+                    proposal: document.querySelector('.timeline-point.proposal'),
+                    validation: document.querySelector('.timeline-point.validation'),
+                    start: document.querySelector('.timeline-point.start'),
+                    timelineNow: document.querySelector('.timeline-point.timelineNow'),
+                    deadline: document.querySelector('.timeline-point.deadline')
+                };
+            
+                // Function to update point color
+                function updatePointColor(pointClass, color) { 
+                    document.querySelector(`${pointClass} .point`).style.backgroundColor = color;
+                }
+            
+                // Check if dates are set
+                const hasDates = 
+                    drupalSettings.ek_projects.start_date != "0" && 
+                    drupalSettings.ek_projects.start_date != "" &&
+                    drupalSettings.ek_projects.deadline != "0" &&
+                    drupalSettings.ek_projects.deadline != "";
+      
+                // Update colors based on status
+                if (drupalSettings.ek_projects.submission != "0" && drupalSettings.ek_projects.submission != "") {
+                    updatePointColor('.proposal', '#00b515'); 
+                }
+                if (drupalSettings.ek_projects.validation != "0" && drupalSettings.ek_projects.validation !== "") {
+                    updatePointColor('.validation', '#00b515');
+                }
+                if (drupalSettings.ek_projects.start_date != "0" && drupalSettings.ek_projects.start_date != "") {
+                    updatePointColor('.start', '#00b515');
+                }
+                updatePointColor('.timelineNow', '#ffe166'); // Current always highlighted
+                if (drupalSettings.ek_projects.deadline != "0" && drupalSettings.ek_projects.deadline != "") {
+                    updatePointColor('.deadline', '#0088cc');
+                }
+            
+                // If dates are set, reposition points proportionally
+                if (hasDates) {
+                    // Calculate total duration in milliseconds
+                    const startDate = new Date(drupalSettings.ek_projects.start_date);
+                    const deadlineDate = new Date(drupalSettings.ek_projects.deadline);
+                    const totalDuration = deadlineDate - startDate;
+                    
+                    // Current date position (if provided, otherwise use today's date)
+                    const currentDate = (drupalSettings.ek_projects.current !== "0" && drupalSettings.ek_projects.current !== "") 
+                    ? new Date(drupalSettings.ek_projects.current)
+                    : new Date();
+                        
+                    const timeFromStart = currentDate - startDate;
+            
+                    // Calculate positions (5-unit scale mapped to 100% width)
+                    const startPos = 20;  // Start at 0%
+                    const deadlinePos = 90;  // Deadline at 100%
+                    const currentPos = (timeFromStart / totalDuration) * 90;
+            
+                    // Apply positions
+                    if (points.start) points.start.style.left = `${startPos}%`;
+                    if (points.timelineNow) points.timelineNow.style.left = `${Math.min(Math.max(currentPos, 0), 90)}%`; // Clamp between 0-100
+                    if (points.deadline) points.deadline.style.left = `${deadlinePos}%`;      
+                    // Keep proposal and validation at their initial positions
+                    if (points.proposal) points.proposal.style.left = '1%';
+                    if (points.validation) points.validation.style.left = '10%';
+                }
+                // If no dates are set, default positions from CSS are used
+            });
+
 
             // Create and inject UI elements for update controls and indicators
             function initializeUpdateUI() {
@@ -182,12 +298,12 @@
                     const value = $(this).val();
                     const config = {
                         realtime: { min: 2000, max: 10000, initial: 2000 },
-                        normal: { min: 5000, max: 60000, initial: 5000 },
+                        normal: { min: 6000, max: 60000, initial: 6000 },
                         minimal: { min: 60000, max: 600000, initial: 60000 },
                         manual: { min: 0, max: 0, initial: 0 }
                     };
                     
-                    console.log("Selected update frequency:", value);
+                    // console.log("Selected update frequency:", value);
                     updateProjectConfig(config[value]);
                     
                     // Update UI for manual mode
@@ -200,7 +316,7 @@
                 
                 $('#manual-update').on('click', function() {
                     if (window.projectUpdater) {
-                        console.log("Manual update triggered");
+                        // console.log("Manual update triggered");
                         window.projectUpdater.forceUpdate();
                     }
                 });
@@ -209,6 +325,7 @@
                     drupalSettings.ek_projects.soundNotifications = $(this).is(':checked');
                 });
             }
+
             // Show/hide update indicator
             function showUpdateIndicator(isUpdating) {
                 const $indicator = $('#update-status-indicator');
@@ -310,14 +427,10 @@
                     success: function (remoteData) {
                         for (key in remoteData.data) {
                             if (key == 'status_container') {
-                                $('#status_container').removeClass().addClass("p_" + remoteData.data[key]);
+                                $('#status').removeClass().addClass("status p_" + remoteData.data[key]);
                             } else {
                                 $("#" + key).html(remoteData.data[key]);
-
-                                //tbeep.play();
-                                for (i = 0; i < 3; i++) {
-                                    $("#" + key).fadeTo('slow', 0.5).fadeTo('slow', 1.0);
-                                }
+                                
                             }
                         }
                     }
@@ -359,7 +472,7 @@
             */
             function adddragdrop() {
                 /**/
-                $("#s3,#ps3,#s5,#ps5").droppable({
+                $("#s3,#ps3,#s5,#ps5,#tab-s3,#tab-s5").droppable({
                     activeClass: "ui-state-default",
                     hoverClass: "panel-drop",
                     accept: ":not(.ui-sortable-helper), .move",
@@ -371,8 +484,6 @@
                                     data: {move: 'folder',from: (ui.draggable).attr("id"), to: this.id},
                                     async: false
                                 });
-                                status = 1;
-
                             }
                 })
 
@@ -388,8 +499,6 @@
                                     data: {move: 'subfolder',from: (ui.draggable).attr("id"), to: this.id},
                                     async: false
                                 });
-                                status = 1;
-
                             }
                 });
 
@@ -400,9 +509,7 @@
                     handle: "a",
                     helper: "clone",
                     stop: function (event, ui) {
-                        if (status == 1) {
-
-                        }
+                        
                     }
                 });
             }
@@ -444,11 +551,11 @@
                     $(".field_edit").toggle("fast");
                     $('section').toggleClass("editBackground");
                     if ($('#edit_mode').hasClass('edit')) {
-                        console.log('pause auto update');
+                        // console.log('pause auto update');
                         window.projectUpdater.pause();
                     }
                     if ($('#edit_mode').hasClass('_edit')) { 
-                        console.log('resume auto update');
+                        // console.log('resume auto update');
                         window.projectUpdater.resume();
                     }
                 });
@@ -463,6 +570,19 @@
                     $("#activityList i").toggleClass('fa-power-off fa-circle-o');
                     if ($('#activityList i').hasClass('fa-power-off')) window.projectUpdater.pause();
                     if ($('#activityList i').hasClass('fa-circle-o')) window.projectUpdater.resume();
+                });
+
+            });
+
+            $(function () {
+                $('#aListExpand').click(function () { console.log($('.tracklist').css('max-height'));
+                    if ($('.tracklist').css('max-height') != 'none') {
+                        $('.tracklist').css('max-height','none');
+                        $("#aListExpand").html('▲');
+                    } else {
+                        $('.tracklist').css('max-height','10em');
+                        $("#aListExpand").html('▼');
+                    }
                 });
 
             });
@@ -513,12 +633,22 @@
             */
             $(function () {
                 $('.hideFile').click(function () {
-                    if ($('.hideFile').hasClass('show-ico'))
+                    if ($('.hideFile').hasClass('show-ico')) {
                         $('.hide').hide('fast');
-                    if ($('.hideFile').hasClass('hide-ico'))
+                    } else if ($('.hideFile').hasClass('hide-ico')) {
                         $('.hide').show('fast');
+                    }
                     $('.hideFile').toggleClass('show-ico hide-ico');
 
+                });
+            });
+
+            /* 
+            * linked project content
+            */
+            $(function () {
+                $('#link-title').click(function () {
+                    $('#link-content').toggle('fast');
                 });
             });
             
@@ -526,7 +656,7 @@
             * postit
             */
             $('.projectpostit').blur(function () {
-                var text = $(this).html(); console.log(text);
+                var text = $(this).html(); 
                 jQuery.ajax({
                     type: "POST",
                     url: drupalSettings.path.baseUrl + 'projects/project/' + drupalSettings.ek_projects.id + '/edit',
@@ -544,3 +674,26 @@
 
         }};
 })(jQuery, Drupal, drupalSettings);
+
+
+(function ($, Drupal) {
+    // Store updater state when opening a modal
+    $(document).on('dialog:beforecreate', function (e, dialog, $element, settings) {
+      if (window.projectUpdater) {
+        // Store current updater state
+        window.updaterPausedByModal = true;
+        // console.log("Pausing updater for modal dialog");
+        window.projectUpdater.pause();
+      }
+    });
+  
+    // Restore updater state when closing a modal
+    $(document).on('dialog:afterclose', function (e, dialog, $element) {
+      if (window.projectUpdater && window.updaterPausedByModal) {
+        // console.log("Resuming updater after modal dialog");
+        window.projectUpdater.resume();
+        window.updaterPausedByModal = false;
+      }
+    });
+
+  })(jQuery, Drupal);

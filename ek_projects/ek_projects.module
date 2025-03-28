@@ -58,6 +58,11 @@ function ek_projects_theme() {
       'template' => 'ek_projects_view',
       'variables' => array('items' => []),
     ], 
+    // for the project items display
+    'ek_projects_view_2' => [
+      'template' => 'ek_projects_view_2',
+      'variables' => array('items' => []),
+    ], 
     //template for attached docs in project page  
     'ek_projects_doc_view' => [
       'template' => 'ek_projects_doc_view',

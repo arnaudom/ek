@@ -52,26 +52,13 @@ td.fc-day-top.fc-future {
     color:#0064ff !important;
 }
 
+.fc-scroller {
+    scrollbar-width: thin;
+}
+
 #drupal-off-canvas td,
 #drupal-off-canvas th {
     border-bottom: 0px solid #fff;
-}
-
-/*#drupal-off-canvas *,
-#drupal-off-canvas *:not(div),
-#drupal-off-canvas *:not(span){
-    color: #2d2d2d;
-    background: transparent;
-}
-
-#drupal-off-canvas tr:hover td {
-    background: whitesmoke;
-    background-color: whitesmoke;
-}*/
-#drupal-off-canvas td a {
-}
-
-#drupal-off-canvas a {
 }
 
 #drupal-off-canvas button,

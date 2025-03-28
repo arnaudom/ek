@@ -537,4 +537,81 @@ class ProjectData {
         return new Response('', 204);
     }
 
+    /*
+     * Get ratio
+     * @param $id
+     * @return double
+     *
+     */
+     public static function data_fill($id) {
+        
+        $fields = ['priority','submission','deadline','start_date','validation','completion','project_description','project_comment','product','supplier_offer',
+        'current_offer','perso_1','repo_1','task_1','perso_2','repo_2','task_2','payment_terms','purchase_value','discount_offer','paymentdate_d','paymentdate_i','project_amount',
+        'lc_status','tender_offer','down_payment','offer_delivery','offer_validity','currency','payment','ship_status'];
+
+        // Initialize the query
+        $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
+        $query->fields('p');
+        // Add LEFT JOINs
+        $query->leftJoin('ek_project_description', 'd', 'p.pcode = d.pcode');
+        $query->fields('d');
+        $query->leftJoin('ek_project_shipment', 's', 'p.pcode = s.pcode');
+        $query->fields('s');
+        $query->leftJoin('ek_project_finance', 'f', 'p.pcode = f.pcode');
+        $query->fields('f');
+
+        // Add condition for pcode
+        $query->condition('p.id', $id);
+
+        // Initialize total counts
+        $total_null_count = 0;
+        $total_non_null_count = 0;
+
+        
+        $results = $query->execute()->fetchAssoc();
+        foreach ($results as $key => $data) {
+            if (in_array($key, $fields) && $data == "") {
+                $total_null_count++;
+            }
+        }
+        // Calculate the ratio
+        return round(((count($fields) - $total_null_count)/count($fields))*100);
+
+    }
+
+
+    /*
+     * Project followers
+     * @param $id
+     * @return html string
+     *
+     */
+    public static function followers($id) {
+        $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_project', 'p');
+            $query->fields('p', ['notify']);
+            $query->condition('id', $id, '=');
+            $data = $query->execute();
+            $notify = explode(',', $data->fetchField());
+            $list = '';
+                        
+            foreach ($notify as $value) {
+                $account = \Drupal\user\Entity\User::load($value);
+                if ($account) {
+                    $avatar = ($account->get('user_picture')->entity) ? $account->get('user_picture')->entity->getFileUri(): null;
+                    if($avatar) {
+                        $list .= "<div><a href='/user/".$value."'><img src='". \Drupal::service('file_url_generator')->generateAbsoluteString($avatar) ."' class='avatar'  title='".$account->getDisplayName() ."'></a></div>";
+                    } else {
+                        $avatar = \Drupal::service('file_url_generator')->generateAbsoluteString(\Drupal::service('extension.path.resolver')->getPath('module','ek_admin') 
+                        . "/art/avatar/default.jpeg");
+                        $list .= "<div><a href='/user/".$value."'><img src='". $avatar ."' class='avatar' title='".$account->getDisplayName() ."'></a></div>";
+                    }
+                    
+                }
+            }
+
+            return $list;
+            
+    }
+
 }

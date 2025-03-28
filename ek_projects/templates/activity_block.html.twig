@@ -1,5 +1,6 @@
 <div id="trackBlock" class="">
     <h4 id="activityList"><i class="fa fa-circle-o fa-fw"></i><a href='#'>{{ items.title }}</a></h4>
+    <div id='aListExpand'>▼</div>
     <div class="tracklist" id="tracklist">
         <ul></ul>
     </div>
@@ -9,7 +10,7 @@
             <label>{{ 'Update frequency'|t }}:</label>
             <select id="update-frequency">
                 <option value="realtime">{{ 'Real-time'|t }}</option>
-                <option value="normal" selected>{{ 'Normal'|t }}</option>
+                <option value="normal" selected >{{ 'Normal'|t }}</option>
                 <option value="minimal">{{ 'Minimal'|t }}</option>
                 <option value="manual">{{ 'Manual only'|t }}</option>
             </select>

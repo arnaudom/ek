@@ -52,7 +52,7 @@ class ProjectPostitBlock extends BlockBase {
             }
             
             
-            $text = isset($post[\Drupal::currentUser()->id()]) ? $post[\Drupal::currentUser()->id()] : '?';
+            $text = isset($post[\Drupal::currentUser()->id()]) ? $post[\Drupal::currentUser()->id()] : '';
                       
             $list = '<div class="projectpostit" contenteditable="true">';
             $list .= $text;

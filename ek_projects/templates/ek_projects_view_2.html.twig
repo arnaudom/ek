@@ -1,0 +1,506 @@
+<div id="update-status-indicator" class="update-indicator">
+        <div class="update-spinner"></div>
+        <div class="update-message">{{ 'Updating'|t }}...</div>
+</div>
+{# Header Section #}
+<div class="page-wrapper">
+    <div class="header-container">
+        <h1 class="project-title">
+            {{ items.project.0.pname }}
+            <span class="field_edit">{{ items.project.0.edit_pname|raw }}</span>
+        </h1>
+        <div class="last-viewed">
+            {{ 'Last viewed'|t }}: {{ items.project.0.last_modified }}
+        </div>        
+        <div id='project-owner'>
+            <span class="ico user-circle"></span>&nbsp;<strong>{{ 'Owner'|t }}: </strong><span id='owner'>{{ items.user.name }}</span>
+            <span class='field_edit'>{{ items.project.0.edit_owner|raw }}</span>
+        </div>
+        <div class="progress-bar-container">
+            <div>
+                <div class="progress-bar"><div class="progress-fill"></div>
+            </div>
+            <span class="progress-text">0</span><span class="progress-text_">{{ '% data filled' }}</span>
+        </div>
+        <div>
+            <div class="btn _edit" id="edit_mode"><span >{{'edit mode'}}</span><span class="ico pencil"></span></div>
+        </div>        
+        <div class="status-container">
+            <span title="{{ 'Status'|t }}" class="status p_{{ items.project.0.status }}" id="status">{{ items.project.0.status }}</span>
+            <span class="field_edit">{{ items.project.0.edit_status|raw }}</span>
+        </div>
+    </div> {#end#}
+    </div>   
+    <div class="followers">
+        {{ items.avatars|raw }}
+        <div class="follow-container">
+            <!--<a href="{{ items.followers.0.url }}" class="use-ajax follow-button">Followers</a>-->
+            <span id='project-notify'>{{ items.project.0.keep_notify|raw }}</span>
+        </div>
+    </div>
+    <div class="actions">
+        <div id='project-client'>
+            <span class="ico address-card"></span>&nbsp;{{ items.project.0.client_url|raw }} 
+            <span class='field_edit'>{{ items.project.0.edit_client_id|raw }}</span>
+        </div><br>
+        <div id='project-level'>{{ items.project.0.level }}  {% if items.project.0.split %}[{{ items.project.0.split }}]{% endif %}</div>
+        <div id='project-extranet'>
+            {% if items.project.0.extranet %}
+                <span class='ico exchange'></span>&nbsp;{{ items.project.0.extranet }}
+            {% endif %} 
+        </div>
+        <div id='project-notification'><span class='ico envelope'></span>&nbsp;{{ items.project.0.notification }}</div>       
+        <div> {% if items.project.0.access %}  <span class='ico lock'></span>&nbsp;{{ items.project.0.access }} {% endif %}</div>
+    </div>
+
+    {% if items.sub %}
+    <div class="link-project">
+        <div class="" id='link-title'>
+            <div class="">
+                {{ 'Linked projects'|t }} <span class="count-indicator">{{ items.sub|length }}</span>
+            </div>
+        </div>
+        <div class=""  style='display:none;' id="link-content">
+            {% for key, item in items.sub %}
+                <div>{{ item|raw }}</div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {# Navigation Tabs #}
+    {% if items.project.0.task_list_count > 0 %}
+        {% set t = items.project.0.task_list_count %}
+        {% set task = '<span class="count-indicator">' ~ t ~ '</span>' %}
+    {% endif %}
+
+    <div class="nav-tabs">
+        <span class="tab active" id="tab-s0">Overview</span>
+        {% if items.section_1 %}<div class="tab" id="tab-s1">{{ items.sections_name.0 }}</div>{% endif %}
+        {% if items.section_2 %}<div class="tab" id="tab-s2">{{ items.sections_name.1 }}  {{ task|raw }}</div>{% endif %}  
+        {% if items.section_3 %}<div class="tab" id="tab-s3">{{ items.sections_name.2 }}</div>{% endif %}  
+        {% if items.section_4 %}<div class="tab" id="tab-s4">{{ items.sections_name.3 }}</div>{% endif %}  
+        {% if items.section_5 %}<div class="tab" id="tab-s5">{{ items.sections_name.4 }}</div>{% endif %}  
+    </div>
+    <section class="content-section">
+        <div class="tab-content active" id="content-s0">
+            {# Project Timeline #}
+            <div class="timeline-section">
+                <h2 class="section-title">{{ 'Project Timeline'|t }}</h2>
+                <div class="timeline">
+                    <div class="timeline-bar"></div>
+                    <div class="timeline-container"> 
+                        <div class="timeline-point proposal">
+                            <span class="point"></span>
+                            <div class="label">{{ 'Proposal'|t }}</div>
+                            <div class="date">{{ items.description.0.submission }}</div>
+                        </div>
+                        <div class="timeline-point validation">
+                            <span class="point"></span>
+                            <div class="label">{{ 'Validation'|t }}</div>
+                            <div class="date">{{ items.description.0.validation }}</div>
+                        </div>
+                        <div class="timeline-point start">
+                            <span class="point"></span>
+                            <div class="label">{{ 'Start Date'|t }}</div>
+                            <div class="date">{{ items.description.0.start_date }}</div>
+                        </div>
+                        <div class="timeline-point timelineNow">
+                            <span class="point"></span>
+                            <div class="label">{{ 'Current'|t }}</div>
+                            <div class="date">{{ items.description.0.current }}</div>
+                        </div>
+                        <div class="timeline-point deadline">
+                            <span class="point"></span>
+                            <div class="label">{{ 'Deadline'|t }}</div>
+                            <div class="date">{{ items.description.0.deadline }}</div>
+                        </div>
+                    </div>   
+                </div>
+            </div>
+            {# Project Summary Dashboard #}
+            <section class="content-section">
+                <div class="summary-dashboard">
+                    
+                    <div class="summary-items">
+                        <div class="summary-item">
+                            <div><span class="label">Priority:</span> <strong>{{ items.project.0.priority }}</strong></div>
+                        </div>
+                        
+                        <div class="summary-item description-item">
+                            <div><span class="label">Description:</span></div>
+                            <div>{{ items.description.0.project_description }}</div>
+                        </div>
+                    </div>
+                </div>
+
+
+                {# Financial Overview Section #}
+                {% if items.section_5 %}
+                <div class="financial-section">
+                    <h2 class="section-title">{{ 'Financial Overview'|t }}</h2>
+                    <div class="financial-cards">
+                        <div class="financial-card agreed-value">
+                            <div class="card-label">{{ 'Quotations'|t }}</div>
+                            <div class="card-value">{{ items.finance.0.quote|length }}</div>
+                            <div class="card-subtext"></div>
+                        </div>
+                        <div class="financial-card purchase-budget">
+                            <div class="card-label">{{ 'Purchases'|t }}</div>
+                            <div class="card-value">{{ items.finance.0.po |length}}</div>
+                            <div class="card-subtext">{{ items.finance.0.po_sum.sum_bc }}</div>
+                        </div>
+                        <div class="financial-card invoices">
+                            <div class="card-label">{{ 'Invoices'|t }}</div>
+                            <div class="card-value">{{ items.finance.0.invoice|length }}</div>
+                            <div class="card-subtext">{{ items.finance.0.invoice_sum.sum_bc }}</div>
+                        </div>
+                        <div class="financial-card expenses">
+                            <div class="card-label">{{ 'Expenses'|t }}</div>
+                            <div class="card-subtext">{{ items.finance.0.expenses }}</div>
+                        </div>
+                    </div>
+                    
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        {# main #}
+        {% if items.section_1 %}
+            <div class="tab-content" id="content-s1" >
+                <div class="tab-section">
+                    <div class="summary-items">
+                        <div class="summary-item">
+                            <div><strong>{{ 'Priority'|t }}: </strong><span id='priority'>{{ items.project.0.priority }}</span> <span class='field_edit'>{{ items.project.0.edit_priority|raw }}</span></div>
+                            <div><strong>{{ 'Proposal date'|t }}: </strong><span id='submission'>{{ items.description.0.submission }}</span> <span class='field_edit'>{{ items.description.0.edit_submission|raw }}</span></div>
+                        </div>
+                        <div class="summary-item">   
+                            <div><strong>{{ 'Validation date'|t }}: </strong><span id='validation'>{{ items.description.0.validation }}</span> <span class='field_edit'>{{ items.description.0.edit_validation|raw }}</span></div>
+                            <div><strong>{{ 'Start date'|t }}: </strong><span id='start_date'>{{ items.description.0.start_date }}</span> <span class='field_edit'>{{ items.description.0.edit_start_date|raw }}</div>
+                        </div>
+                        <div class="summary-item">    
+                            <div><strong>{{ 'Deadline'|t }}: </strong><span id='deadline'>{{ items.description.0.deadline }}</span> <span class='field_edit'>{{ items.description.0.edit_deadline|raw }}</span></div>
+                            <div><strong>{{ 'Completion date'|t }}: </strong><span id='completion'>{{ items.description.0.completion }}</span> <span class='field_edit'>{{ items.description.0.edit_completion|raw }}</span></div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-section">
+                    <div class="summary-item">
+                        <div class=''  width="20%">{{ 'Suppliers'|t }}: <span class='field_edit'>{{ items.description.0.edit_supplier_offer|raw }}</span></div>
+                            {# if items.description.0.supplieroffer #} 
+                            <ul>
+                                {% for key, item in items.description.0.supplier_offer %}
+                                    <li>{{ item.url|raw }}</li>
+                                {% endfor %} 
+                            </ul>
+                            {# endif #}
+                    </div>
+
+                </div>
+
+                <div class="tab-section">
+                    <div class="summary-item description-item">
+                        <div><span class="label">{{ 'Description'|t }}:</span><span class='field_edit'>{{ items.description.0.edit_project_description|raw }}</span></div>
+                        <div>{{ items.description.0.project_description|nl2br }}</div>
+                    </div>
+                </div>
+                <div class="tab-section">
+                    <div class="summary-item description-item">
+                        <div><span class="label">{{ 'Comments'|t }}:</span><span class='field_edit'>{{ items.description.0.edit_project_comment|raw }}</span></div>
+                        <div>{{ items.description.0.project_comment|nl2br }}</div>
+                    </div>
+                </div>
+            
+                <div class="tab-section">
+                    <div class="task-header">
+                        <div class="task-column">{{ 'In charge'|t }}</div>
+                        <div class="task-column">{{ 'Responsibility'|t }}</div>
+                        <div class="task-column">{{ 'Main task'|t }}</div>
+                    </div>
+                    
+                    <div class="task-row">
+                        <div class="task-column"><span id='perso_1'>{{ items.description.0.perso_1 }}</span> <span class='field_edit'>{{ items.description.0.edit_perso_1|raw }}</span></div>
+                        <div class="task-column"><span id='repo_1'>{{ items.description.0.repo_1 }}</span> <span class='field_edit'>{{ items.description.0.edit_repo_1|raw }}</span></div>
+                        <div class="task-column"><span id='task_1'>{{ items.description.0.task_1 }}</span> <span class='field_edit'>{{ items.description.0.edit_task_1|raw }}</span></div>
+                    </div>
+                    <div class="task-row">
+                        <div class="task-column"><span id='perso_2'>{{ items.description.0.perso_2 }}</span> <span class='field_edit'>{{ items.description.0.edit_perso_2|raw }}</span></div>
+                        <div class="task-column"><span id='repo_2'>{{ items.description.0.repo_2 }}</span> <span class='field_edit'>{{ items.description.0.edit_repo_2|raw }}</span></div>
+                        <div class="task-column"><span id='task_2'>{{ items.description.0.task_2 }}</span> <span class='field_edit'>{{ items.description.0.edit_task_2|raw }}</span></div>
+                    </div>
+                    <div class="task-row">
+                        <div class="task-column"><span id='perso_3'>{{ items.description.0.perso_3 }}</span> <span class='field_edit'>{{ items.description.0.edit_perso_3|raw }}</span></div>
+                        <div class="task-column"><span id='repo_3'>{{ items.description.0.repo_3 }}</span> <span class='field_edit'>{{ items.description.0.edit_repo_3|raw }}</span></div>
+                        <div class="task-column"><span id='task_3'>{{ items.description.0.task_3 }}</span> <span class='field_edit'>{{ items.description.0.edit_task_3|raw }}</span></div>
+                    </div>
+                </div>  
+            </div>     
+        {% endif %}
+
+        {# task #}
+        {% if items.section_2 %}
+            <div class="tab-content" id="content-s2">
+                <div class="tab-section">
+                    <div class='text-right new-task-button'>
+                        {{ items.project.0.new_project_task|raw }}
+                    </div>
+                    <div  id='tasks_table'>
+                        {{ items.project.0.task_list }}
+                    </div>
+                </div>
+            </div>
+        {% endif %} 
+
+        {# doc #}
+        {% if items.section_3 %}
+            <div class="tab-content" id="content-s3" >
+                <div class="tab-section" id="s3">
+                    <div class="doc-header"><h3 class='doc-column'>{{ 'Attachments'|t }}</h3></div>
+                    <div class="doc-header">
+                        <div class="doc-column"> <a title="{{ 'Upload new file'|t }}" href="{{ items.communication.0.uploadUrl }}" class="use-ajax blue">
+                        <i class="fa fa-upload fa-2x" aria-hidden="true"></i></a></div>
+                        <div class="doc-column"></div>
+                        <div class="doc-column"><span class="hideFile ico show-ico"></span></div>
+                        <div class="doc-column"></div>
+                        <div class="doc-column"></div>
+                        {% if items.project.0.extranet %}
+                        <div class="doc-column">{{ 'Extranet'|t }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="" id='project_com_docs'></div>
+                </div>
+            
+                {% if items.reports.0.list %} 
+                    <div class="tab-section">
+                            <div class="task-header"><h3 class='task-column'>{{ 'Reports'|t }}</h3></div>
+                            <div id='_reports'>
+                                {% for key, item in items.reports.0.list %}
+                                    <div class="task-row">
+                                        <div class="task-column" title='{{ 'reference'|t }}' > {{ item.serial|raw }} </div>
+                                        <div class="task-column" title='{{ 'last edit'|t }}' > {{ item.edit }} </div>
+                                        <div class="task-column" title='{{ 'last edit'|t }}' > {{ item.description }} </div>
+                                    </div>
+                                {% endfor %}     
+                            </div>
+                    </div>        
+                {% endif %}
+                
+            </div>
+        {% endif %} 
+
+        {# log #}
+        {% if items.section_4 %}
+            <div class="tab-content" id="content-s4" >
+                <div class="tab-section">
+                    <div class="summary-items">
+                        <div class="summary-item">
+                            <div><strong>{{ 'First shipment'|t }}: </strong><span id='first_ship'>{{ items.logistic.0.first_ship }}</span>  <span class='field_edit'>{{ items.logistic.0.edit_first_ship|raw }}</span></div>
+                            <div><strong>{{ 'Second'|t }}: </strong><span id='second_ship'>{{ items.logistic.0.second_ship }}</span>  <span class='field_edit'>{{ items.logistic.0.edit_second_ship|raw }}</span></div>
+                            <div><strong>{{ 'Third'|t }}: </strong><span id='third_ship'>{{ items.logistic.0.third_ship }}</span>  <span class='field_edit'>{{ items.logistic.0.edit_third_ship|raw }}</span></div>
+                            <div><strong>{{ 'Fourth'|t }}: </strong><span id='four_ship'>{{ items.logistic.0.four_ship }}</span>  <span class='field_edit'>{{ items.logistic.0.edit_four_ship|raw }}</span></div>
+                        </div>
+                        <div class="summary-item">   
+                            <div><strong>{{ 'Status'|t }}: </strong><span id='ship_status'>{{ items.logistic.0.ship_status }}</span>  <span class='field_edit'>{{ items.logistic.0.edit_ship_status|raw }}</span></div>
+                            <div><strong>{{ 'Last delivery'|t }}: </strong><span id='last_delivery'>{{ items.logistic.0.last_delivery }}</span>  <span class='field_edit'>{{ items.logistic.0.edit_last_delivery|raw }}</span></div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-section"> {# RR list #}
+                    <div class="task-header"><h3 class='task-column'>{{ 'Receiving orders'|t }}</h3></div>
+                    {% if items.logistic.0.receiving %}        
+                        {% for key, item in items.logistic.0.receiving %}
+                            <div class="task-row">
+                                <div class='task-column'>{{ item.serial }}</div>
+                                <div class='task-column'>{{ item.client }}</div>
+                                <div class='task-column' title="{{ 'Receiving date'|t }}">{{ item.date }}</div>
+                                <div class='task-column'>{{ item.status }}</div>
+                                <div class='task-column'>{{ item.url|raw }}</div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="task-row">
+                                <div class='task-column'>{{ 'no data'|t }}</div>
+                        </div>
+                     {% endif %}    
+                </div>
+                <div class="tab-section">{# DO list #}
+                    <div class="task-header"><h3 class='task-column'>{{ 'Delivery orders'|t }}</h3></div>
+                    {% if items.logistic.0.delivery %}    
+                        {% for key, item in items.logistic.0.delivery %}
+                            <div class="task-row">
+                                <div class='task-column'>{{ item.serial }}</div>
+                                <div class='task-column'>{{ item.client }}</div>
+                                <div class='task-column' title="{{ 'Delivery date'|t }}">{{ item.date }}</div>
+                                <div class='task-column'>{{ item.status }}</div>
+                                <div class='task-column'>{{ item.url|raw }}</div>
+                            </div>
+                        {% endfor %} 
+                    {% else %}
+                        <div class="task-row">
+                                    <div class='task-column'>{{ 'no data'|t }}</div>
+                        </div>
+                    {% endif %}   
+                </div>
+
+            </div>
+        {% endif %} 
+        {# fin #}
+        {% if items.section_5 %}
+            <div class="tab-content" id="content-s5" >
+                    <div class="tab-section">
+                        <div class="summary-items">
+                            <div class="summary-item">
+                                <div><strong>{{ 'Currency'|t }}: </strong><span id='currency'>{{ items.finance.0.currency }}</span><span class='field_edit'>{{ items.finance.0.edit_currency|raw }}</span></div>
+                                <div><strong>{{ 'Proposed value'|t }}: </strong><span id='tender_offer'>{{ items.finance.0.tender_offer }}</span><span class='field_edit'>{{ items.finance.0.edit_tender_offer|raw }}</span></div>
+                                <div><strong>{{ 'Offer validity'|t }}: </strong><span id='offer_validity'>{{ items.finance.0.offer_validity }}</span><span class='field_edit'>{{ items.finance.0.edit_offer_validity|raw }}</span></div>
+                                <div><strong>{{ 'Offer deadline'|t }}: </strong><span id='offer_delivery'>{{ items.finance.0.offer_delivery }}</span><span class='field_edit'>{{ items.finance.0.edit_offer_delivery|raw }}</span></div>
+                            </div>
+                            <div class="summary-item">   
+                                <div><strong>{{ 'Contract value'|t }}: </strong><span id='project_amount'>{{ items.finance.0.project_amount }}</span><span class='field_edit'>{{ items.finance.0.edit_project_amount|raw }}</span></div>
+                                <div><strong>{{ 'Discount'|t }}: </strong><span id='discount_offer'>{{ items.finance.0.discount_offer }}</span><span class='field_edit'>{{ items.finance.0.edit_discount_offer|raw }}</span></div>
+                                <div><strong>{{ 'Purchase budget'|t }}: </strong><span id='purchase_value'>{{ items.finance.0.purchase_value }}</span><span class='field_edit'>{{ items.finance.0.edit_purchase_value|raw }}</span></div>
+                                <div><strong>{{ 'Payment Term'|t }}: </strong><span id='payment_terms'>{{ items.finance.0.payment_terms }}</span><span class='field_edit'>{{ items.finance.0.edit_payment_terms|raw }}</span></div>
+                                <div><strong>{{ 'Payment'|t }}: </strong><span id='payment'>{{ items.finance.0.payment }}</span>  <span class='field_edit'>{{ items.finance.0.edit_payment|raw }}</span></div>
+                            </div>
+                            <div class="summary-item">   
+                                <div><strong>{{ 'Incoterm'|t }}: </strong><span id='incoterm'>{{ items.finance.0.incoterm }}</span><span class='field_edit'>{{ items.finance.0.edit_incoterm|raw }}</span></div>
+                                <div><strong>{{ 'LC Status'|t }}: </strong><span id='lc_status'>{{ items.finance.0.lc_status }}</span><span class='field_edit'>{{ items.finance.0.edit_lc_status|raw }}</span></div>
+                                <div><strong>{{ 'LC revision / ref.'|t }}: </strong><span id='lc_revision'>{{ items.finance.0.lc_revision }}</span><span class='field_edit'>{{ items.finance.0.edit_lc_revision|raw }}</span></div>
+                                <div><strong>{{ 'LC expiry'|t }}: </strong><span id='lc_expiry'>{{ items.finance.0.lc_expiry }}</span><span class='field_edit'>{{ items.finance.0.edit_lc_expiry|raw }}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-section">{# Expenses #}
+                        <div class="summary-items">
+                            <div class="summary-item">
+                                <div><strong>{{ 'COS'|t }}: </strong>{{ items.finance.0.expenses5 }}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div><strong>{{ 'Overhead'|t }}: </strong>{{ items.finance.0.expenses6 }}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div><strong>{{ 'Total expenses'|t }}: </strong>{{ items.finance.0.expenses }}</div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <div class="tab-section" id="s5">{# Attachment #}
+                        <div class="doc-header"><h3 class='doc-column'>{{ 'Attachments'|t }}</h3></div>
+                        <div class="doc-header">
+                            <div class="doc-column"><a title="{{ 'Upload new file'|t }}" href="{{ items.finance.0.uploadUrl }}" class="use-ajax blue">
+                            <i class="fa fa-upload fa-2x" aria-hidden="true"></i></a></div>
+                            <div class="doc-column"></div>
+                            <div class="doc-column"><span class="hideFile ico show-ico"></span></div>
+                            <div class="doc-column"></div>
+                            <div class="doc-column"></div>
+                            {% if items.project.0.extranet %}
+                            <div class="doc-column">{{ 'Extranet'|t }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="" id='project_fi_docs'></div>
+                    </div>                
+
+                    <div class="tab-section"> {# Quote #}
+                            <div class="task-header"><h3 class='task-column'>{{ 'Quotations'|t }}</h3></div>
+                            {% if items.finance.0.quote %}        
+                                {% for key, item in items.finance.0.quote %}
+                                    <div class="task-row">
+                                        <div class='task-column'><a href="{{ item.href }}"  target="_blank" title="{{ item.head }}">{{ item.serial }}</a></div>
+                                        <div class='task-column'>{{ item.amount }}</div>
+                                        <div class='task-column'>{{ item.status }}</div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="task-row">
+                                        <div class='task-column'>{{ 'no data'|t }}</div>
+                                </div>
+                            {% endif %}    
+                    </div>
+
+                    <div class="tab-section"> {# PO #}
+                            <div class="task-header"><h3 class='task-column'>{{ 'Purchase orders'|t }}</h3></div>
+                            {% if items.finance.0.po %}        
+                                {% for key, item in items.finance.0.po %}
+                                    <div class="task-row">
+                                        <div class='task-column'><a href="{{ item.href }}" target="_blank" title="{{ item.head }}" class="{{ item.type }}">{{ item.serial }}</a></div>
+                                        <div class='task-column'>{{ item.amount }}</div>
+                                        <div class='task-column'>{{ item.amountbase }}</div>
+                                        <div class='task-column'><i class="fa fa-circle {{ item.due }}" aria-hidden="true" title="{{ item.duedate }}"></i></div>
+                                        <div class='task-column'><a class="use-ajax red"  data-accepts="application/vnd.drupal-modal" href="{{ item.more }}">{{ item.status }}</a></div>
+                                    </div>
+                                {% endfor %}
+                                    <div class="task-row row-total">
+                                        <div class='task-column'>{{ 'Total'|t }}</div>
+                                        <div class='task-column'></div>
+                                        <div class='task-column'><strong>{{ items.finance.0.po_sum.sum_bc }}</strong></div>
+                                        <div class='task-column'></div>
+                                        <div class='task-column'></div>
+                                    </div>
+                            {% else %}
+                                <div class="task-row">
+                                        <div class='task-column'>{{ 'no data'|t }}</div>
+                                </div>
+                            {% endif %}    
+                    </div>
+
+                    <div class="tab-section"> {# Invoice #}
+                            <div class="task-header"><h3 class='task-column'>{{ 'Purchase orders'|t }}</h3></div>
+                            {% if items.finance.0.invoice %}        
+                                {% for key, item in items.finance.0.invoice %}
+                                    <div class="task-row">
+                                        <div class='task-column'><a href="{{ item.href }}" target="_blank" title="{{ item.head }}" class="{{ item.type }}">{{ item.serial }}</a></div>
+                                        <div class='task-column'>{{ item.amount }}</div>
+                                        <div class='task-column'>{{ item.amountbase }}</div>
+                                        <div class='task-column'><i class="fa fa-circle {{ item.due }}" aria-hidden="true" title="{{ item.duedate }}"></i></div>
+                                        <div class='task-column'><a class="use-ajax red"  data-accepts="application/vnd.drupal-modal" href="{{ item.more }}">{{ item.status }}</a></div>
+                                    </div>
+                                {% endfor %}
+                                    <div class="task-row row-total">
+                                        <div class='task-column'>{{ 'Total'|t }}</div>
+                                        <div class='task-column'></div>
+                                        <div class='task-column'><strong>{{ items.finance.0.invoice_sum.sum_bc }}</strong></div>
+                                        <div class='task-column'></div>
+                                        <div class='task-column'></div>
+                                    </div>
+                            {% else %}
+                                <div class="task-row">
+                                        <div class='task-column'>{{ 'no data'|t }}</div>
+                                </div>
+                            {% endif %}    
+                    </div>
+                    <div class="tab-section"> {# Memo #}
+                            <div class="task-header"><h3 class='task-column'>{{ 'Internal memos'|t }}</h3></div>
+                            {% if items.finance.0.invoice %}        
+                                {% for key, item in items.finance.0.memo %}
+                                    <div class="task-row">
+                                        <div class='task-column'><a title="{{ item.mission }}" href="{{ item.href }}">{{ item.serial }}</a></div>
+                                        <div class='task-column'>{{ item.amount }}</div>
+                                        <div class='task-column'>{{ item.amountbase }}</div>
+                                        <div class='task-column'><i class="fa fa-circle {{ item.status_class }}" aria-hidden="true" title="{{ item.status }}"></i></div>
+                                    </div>
+                                {% endfor %}
+                                    <div class="task-row row-total">
+                                        <div class='task-column'>{{ 'Total'|t }}</div>
+                                        <div class='task-column'></div>
+                                        <div class='task-column'><strong>{{ items.finance.0.memo_sum.sum_bc }}</strong></div>
+                                        <div class='task-column'></div>
+                                    </div>
+                            {% else %}
+                                <div class="task-row">
+                                        <div class='task-column'>{{ 'no data'|t }}</div>
+                                </div>
+                            {% endif %}    
+                    </div>               
+                    <div class="tab-section"> {# comment #}
+                        <div class="summary-item description-item">
+                            <div><span class="label">{{ 'Comments'|t }}:</span><span class='field_edit'>{{ items.finance.0.edit_comment|raw }}</span></div>
+                            <div id='comment'>{{ items.finance.0.comment|nl2br }}</div>
+                        </div>
+                    </div>
+                    
+            </div>
+        {% endif %} 
+    </section>
+</div>

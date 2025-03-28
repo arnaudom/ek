@@ -349,7 +349,7 @@ class ProjectFieldEdit extends FormBase {
             ],
         ];
 
-        $form['#attached']['library'][] = 'ek_projects/ek_projects_css';
+        //$form['#attached']['library'][] = 'ek_projects/ek_projects_css';
         return $form;
     }
 

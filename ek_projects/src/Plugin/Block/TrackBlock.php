@@ -31,9 +31,7 @@ class TrackBlock extends BlockBase {
         return array(
             '#items' => ['title' => t('Users activity')],
             '#theme' => 'activity_block',
-            '#attached' => array(
-                'library' => array('ek_projects/ek_projects_css', 'ek_projects/ek_projects_updater'),
-            ),
+            '#attached' => []
         );
     }
 
