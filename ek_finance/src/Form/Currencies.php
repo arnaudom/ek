@@ -338,7 +338,7 @@ class Currencies extends FormBase {
         }
         
         \Drupal::messenger()->addStatus( $this->t('Currency updated @c', ['@c' => $update]));
-        if ($_SESSION['install'] == 1) {
+        if (isset($_SESSION['install']) && $_SESSION['install'] == 1) {
             unset($_SESSION['install']);
             $form_state->setRedirect('ek_admin.main');
         } 
