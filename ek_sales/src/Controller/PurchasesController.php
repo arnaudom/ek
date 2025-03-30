@@ -353,12 +353,12 @@ class PurchasesController extends ControllerBase {
                 'select' => [
                     'data' => [
                     '#type' => 'checkbox',
-                    '#description' => $this->t('Select value'),
                     '#title_display' => 'invisible',
                     '#return_value' => $r->id,
                     '#attributes' => [
                         'class' => ['select-checkbox'],
                         'data-value' => $total_value,
+                        'title' => $this->t('Select value'),
                         ],
                     ],
                 ],
