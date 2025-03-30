@@ -1027,7 +1027,7 @@ class ProjectController extends ControllerBase {
                     $invoice_list = array();
                     $i = 0;
                     $invoice_status = array(t('unpaid'), $this->t('paid'), $this->t('partially paid'));
-                    $i_type = array('', '', '', '','red');
+                    $i_type = array('', '', '', '','red','orange');
                     $sum_a = 0;
                     $sum_abc = 0;
 
