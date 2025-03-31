@@ -54,8 +54,11 @@ td.fc-day-top.fc-future {
 
 .fc-scroller {
     scrollbar-width: thin;
+    height:fit-content;
 }
-
+.fc-day-grid-container {
+    height:fit-content!important;
+}
 #drupal-off-canvas td,
 #drupal-off-canvas th {
     border-bottom: 0px solid #fff;

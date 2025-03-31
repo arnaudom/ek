@@ -37,7 +37,7 @@ class CalendarProjectButton extends BlockBase {
             'data-dialog-options' => Json::encode([
                 'width' => '33%',
                 'resizable' => 1,
-                'dialogClass' => 'ui-dialog-off-canvas calendar-off-canvas',
+                'dialogClass' => 'calendar-off-canvas',
             ]),
         ];
         $b = Link::createFromRoute($this->t('Calendar'), 'ek_projects_calendar', [], ['query' => $destination, 'attributes' => $att])->toString();

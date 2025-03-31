@@ -14,6 +14,8 @@ use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides a form to move files / projects
@@ -27,6 +29,24 @@ class MoveFile extends FormBase {
      */
     public function getFormId() {
         return 'projects_file_move';
+    }
+
+    protected $projectService;
+     /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('project.service')
+        );
+    }
+
+    /**
+     * Constructs an  object.
+     *
+     */
+    public function __construct(ProjectService $projectService) {
+        $this->projectService = $projectService;
     }
 
     /**
@@ -124,7 +144,7 @@ class MoveFile extends FormBase {
      * {@inheritDoc}
      */
     public function successfulAjaxSubmit(array $form, FormStateInterface $form_state) {
-        $l = \Drupal\ek_projects\ProjectData::geturl($form_state->getValue('linked_project'));
+        $l = $this->projectService->geturl($form_state->getValue('linked_project'));
         $command = new HtmlCommand('#moved', '-> ' . $l);
         $response = new AjaxResponse();
         return $response->addCommand($command);

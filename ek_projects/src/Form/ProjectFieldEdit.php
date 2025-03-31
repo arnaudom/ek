@@ -16,10 +16,11 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use DateTime;
-use Drupal\ek_projects\ProjectData;
 use Drupal\ek_finance\CurrencyData;
 use Drupal\ek_address_book\AddressBookData;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides a form to edit fields in project page.
@@ -31,6 +32,24 @@ class ProjectFieldEdit extends FormBase {
      */
     public function getFormId() {
         return 'ek_projects_edit_fields';
+    }
+
+    protected $projectService;
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('project.service')
+        );
+    }
+
+    /**
+     * Constructs an  object.
+     *
+     */
+    public function __construct(ProjectService $projectService) {
+        $this->projectService = $projectService;
     }
 
     /**
@@ -158,7 +177,7 @@ class ProjectFieldEdit extends FormBase {
                 $users = \Drupal\ek_admin\Access\AccessCheck::listUsers(1);
                 $list = [];
                 foreach ($users as $uid => $name) {
-                    if (ProjectData::validate_access($id, $uid)) {
+                    if ($this->projectService->validate_access($id, $uid)) {
                         $list[$name] = $name;
                     }
                 }
@@ -635,14 +654,14 @@ class ProjectFieldEdit extends FormBase {
             }
 
             $param = serialize(
-                    array(
+                    [
                         'id' => $form_state->getValue('for_id'),
                         'field' => $form_state->getValue('field'),
                         'value' => $value,
                         'pcode' => $form_state->getValue('pcode')
-                    )
+                    ]
             );
-            ProjectData::notify_user($param);
+            $this->projectService->notify_user($param);
             // need page relaod when main ref. pcode is edited
             if($form_state->getValue('field') == 'pcode') {
                 $response->addCommand(new CloseDialogCommand('#drupal-modal'));

@@ -17,6 +17,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\ek_projects\Service\ProjectService;
 
 ;
 
@@ -25,19 +26,13 @@ use Drupal\ek_admin\Access\AccessCheck;
  */
 class NewProject extends FormBase {
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
+    
     protected $moduleHandler;
+    protected $projectService;
 
-    /**
-     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler.
-     */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler, ProjectService $projectService) {
         $this->moduleHandler = $module_handler;
+        $this->projectService = $projectService;
     }
 
     /**
@@ -45,7 +40,8 @@ class NewProject extends FormBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler')
+                $container->get('module_handler'),
+                $container->get('project.service')
         );
     }
 
@@ -427,7 +423,7 @@ class NewProject extends FormBase {
                             'pcode' => $pcode
                         ]
                 );
-                \Drupal\ek_projects\ProjectData::notify_user($param);
+                $this->projectService->notify_user($param);
             }
 
             $form_state->setRedirect('ek_projects_view', array('id' => $pid));

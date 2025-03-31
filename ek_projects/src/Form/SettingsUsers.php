@@ -11,7 +11,8 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Component\Utility\Xss;
-use Drupal\ek_projects\ProjectData;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides a form to record access control to sections (1to5)
@@ -25,6 +26,24 @@ class SettingsUsers extends FormBase {
         return 'ek_projects_edit_access_section';
     }
 
+    protected $projectService;
+     /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('project.service')
+        );
+    }
+
+    /**
+     * Constructs an  object.
+     *
+     */
+    public function __construct(ProjectService $projectService) {
+        $this->projectService = $projectService;
+    }
+    
     /**
      * {@inheritdoc}
      */
@@ -121,7 +140,7 @@ class SettingsUsers extends FormBase {
                 '#markup' => '[' . $uid . '] ' . $name . $status,
             );
 
-            $access = ProjectData::validate_section_access($uid);
+            $access = $this->projectService->validate_section_access($uid);
 
             $form['list'][$uid]['s1'] = array(
                 '#type' => 'checkbox',

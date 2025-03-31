@@ -13,26 +13,24 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_projects\ProjectData;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides a form to delete task.
  */
 class DeleteTaskForm extends FormBase {
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
+    
     protected $moduleHandler;
+    protected $projectService;
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler, ProjectService $projectService) {
         $this->moduleHandler = $module_handler;
+        $this->projectService = $projectService;
     }
 
     /**
@@ -40,7 +38,8 @@ class DeleteTaskForm extends FormBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler')
+                $container->get('module_handler'),
+                $container->get('project.service')
         );
     }
 
@@ -74,7 +73,7 @@ class DeleteTaskForm extends FormBase {
                 ->query($query, array(':id' => $id))
                 ->fetchObject();
 
-        $access = ProjectData::validate_access($pid);
+        $access = $this->projectService->validate_access($pid);
         $perm = \Drupal::currentUser()->hasPermission('delete_project_task');
 
         $form['edit_item'] = array(
@@ -160,7 +159,7 @@ class DeleteTaskForm extends FormBase {
                         'value' => $task
                     )
             );
-            ProjectData::notify_user($param);
+            $this->projectService->notify_user($param);
             \Drupal::messenger()->addStatus(t('The task has been deleted'));
             $form_state->setRedirect('ek_projects_view', array('id' => $pid));
         }

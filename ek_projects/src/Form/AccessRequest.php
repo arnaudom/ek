@@ -12,7 +12,8 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
-use Drupal\ek_projects\ProjectData;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides a form for user to request access to a project.
@@ -26,6 +27,24 @@ class AccessRequest extends FormBase {
         return 'ek_projects_access_request';
     }
 
+    protected $projectService;
+     /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('project.service')
+        );
+    }
+
+    /**
+     * Constructs an  object.
+     *
+     */
+    public function __construct(ProjectService $projectService) {
+        $this->projectService = $projectService;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -34,32 +53,32 @@ class AccessRequest extends FormBase {
         $p = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
         $currentusername = \Drupal::currentUser()->getAccountName();
 
-        $form['item'] = array(
+        $form['item'] = [
             '#type' => 'item',
             '#markup' => $this->t('Sorry, you do not have access to this project.<br/> You can request access to the owner of this project @p with the form below.', array('@p' => $p->pcode)),
-        );
-        $form['pid'] = array(
+        ];
+
+        $form['pid'] = [
             '#type' => 'hidden',
             '#value' => $id,
-        );
+        ];
 
-
-        $form['message'] = array(
+        $form['message'] = [
             '#type' => 'textarea',
             '#default_value' => $this->t('@u is requesting access to project @p owned by you.', array('@u' => $currentusername, '@p' => $p->pcode)),
             '#attributes' => array('placeholder' => $this->t('optional text message')),
             '#title' => $this->t('Message to owner'),
-        );
+        ];
 
-        $form['actions'] = array(
+        $form['actions'] = [
             '#type' => 'actions',
             '#attributes' => array('class' => array('container-inline')),
-        );
+        ];
 
-        $form['actions']['submit'] = array(
+        $form['actions']['submit'] = [
             '#type' => 'submit',
             '#value' => $this->t('Send request'),
-        );
+        ];
 
 
         return $form;
@@ -88,11 +107,10 @@ class AccessRequest extends FormBase {
             $params = [];
             
             $params['body'] = Xss::filter($form_state->getValue('message'));
-            $params['options']['pcode'] = $p->pcode;
+            $params['pcode'] = $p->pcode;
             $link = Url::fromRoute('ek_projects_view', ['id' => $form_state->getValue('pid')])->toString();
             $params['options']['url'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
-            $params['options']['priority'] = 1;    
-            
+            $params['priority'] = 1;               
             $code = explode("-", $p->pcode);
             $code = array_reverse($code);
             $params['subject'] = $this->t("Access request") . ": " . $code[0] . ' | ' . $p->pcode;

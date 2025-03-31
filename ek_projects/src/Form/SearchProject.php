@@ -11,7 +11,8 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Component\Utility\Xss;
-use Drupal\ek_projects\ProjectData;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides a form for project search by keyword.
@@ -25,33 +26,51 @@ class SearchProject extends FormBase {
         return 'ek_projects_search';
     }
 
+    protected $projectService;
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('project.service')
+        );
+    }
+
+    /**
+     * Constructs an  object.
+     *
+     */
+    public function __construct(ProjectService $projectService) {
+        $this->projectService = $projectService;
+    }
+
     /**
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-        $form['p']['search'] = array(
+
+        $form['p']['search'] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#attributes' => array('placeholder' => $this->t('I.e. "123" or keyword'), 'class' => array()),
             '#required' => true,
             '#prefix' => '<div class="container-inline">',
-        );
+        ];
 
-
-        $form['actions'] = array(
+        $form['actions'] = [
             '#type' => 'actions',
-        );
-        /* */
-        $form['actions']['submit'] = array(
+        ];
+        $form['actions']['submit'] = [
             '#type' => 'submit',
             '#value' => $this->t('Search'),
             '#suffix' => '</div>'
-        );
+        ];
 
         if ($form_state->get('message') != '') {
-            $form['actions']['message'] = array(
+            $form['actions']['message'] = [
                 '#markup' => $form_state->get('message'),
-            );
+            ];
             $form_state->set('message', '');
             $form_state->setRebuild();
         }
@@ -89,14 +108,13 @@ class SearchProject extends FormBase {
                     . 'ON p.pcode=d.pcode '
                     . 'WHERE filename like :id1';
 
-
             $id1 = '%' . trim($form_state->getValue('search')) . '%';
             $a = array(':id1' => $id1);
             $data2 = Database::getConnection('external_db', 'external_db')->query($query, $a);
 
             while ($d = $data2->fetchObject()) {
                 $id = $d->id;
-                $list .= '<li>[' . $this->t('document') . '] ' . $d->pname . ' - ' . ProjectData::geturl($id) . '</li>';
+                $list .= '<li>[' . $this->t('document') . '] ' . $d->pname . ' - ' . $this->projectService->geturl($id) . '</li>';
                 $i++;
             }
         }
@@ -104,7 +122,7 @@ class SearchProject extends FormBase {
 
         while ($d = $data->fetchObject()) {
             $id = $d->id;
-            $list .= '<li>' . $d->pname . ' - ' . ProjectData::geturl($id) . '</li>';
+            $list .= '<li>' . $d->pname . ' - ' . $this->projectService->geturl($id) . '</li>';
             $i++;
         }
 
@@ -115,12 +133,6 @@ class SearchProject extends FormBase {
             $form_state->set('message', $list);
             $form_state->setRebuild();
         }
-
-
-
-
-        //submitForm
     }
 
-    //end class
 }

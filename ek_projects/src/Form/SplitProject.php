@@ -18,9 +18,9 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides a form to split a project
@@ -30,19 +30,17 @@ class SplitProject extends FormBase {
 
     use AjaxFormHelperTrait;
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
+    
     protected $moduleHandler;
+    protected $projectService;
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler, ProjectService $projectService) {
         $this->moduleHandler = $module_handler;
+        $this->projectService = $projectService;
     }
 
     /**
@@ -50,7 +48,8 @@ class SplitProject extends FormBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler')
+                $container->get('module_handler'),
+                $container->get('project.service')
         );
     }
 
@@ -288,7 +287,7 @@ class SplitProject extends FormBase {
             //notify users
             if ($form_state->getValue('notify') == 1) {
                 $param = serialize(
-                        array(
+                        [
                             'id' => $pid,
                             'field' => 'new_project',
                             'value' => $data->serial,
@@ -296,9 +295,9 @@ class SplitProject extends FormBase {
                             'country' => $cdata->name,
                             'cid' => $form_state->getValue('cid'),
                             'pcode' => $pcode
-                        )
+                        ]
                 );
-                \Drupal\ek_projects\ProjectData::notify_user($param);
+                $this->projectService->notify_user($param);
             }
 
             $form_state->set('pid',$pid);

@@ -15,44 +15,29 @@ use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Component\Utility\Xss;
-use Drupal\Core\Url;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_projects\ProjectData;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Controller routines for ek module routes.
  */
 class CalendarController extends ControllerBase {
-    /* The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
-
+    
     protected $moduleHandler;
-
-    /**
-     * The database service.
-     *
-     * @var \Drupal\Core\Database\Connection
-     */
     protected $database;
-
-    /**
-     * The form builder service.
-     *
-     * @var \Drupal\Core\Form\FormBuilderInterface
-     */
     protected $formBuilder;
+    protected $projectService;
 
     /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
+                $container->get('database'), 
+                $container->get('form_builder'), 
+                $container->get('module_handler'),
+                $container->get('project.service')
         );
     }
 
@@ -64,10 +49,11 @@ class CalendarController extends ControllerBase {
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler, ProjectService $projectService) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
+        $this->projectService = $projectService;
     }
 
     /**
@@ -167,7 +153,7 @@ class CalendarController extends ControllerBase {
                     }
 
                     $values = array(
-                        'id' => $d->t_id,
+                        'id' => $d->id,
                         'title' => $title,
                         'description' => $event,
                         'start' => $d1,
@@ -190,29 +176,8 @@ class CalendarController extends ControllerBase {
             case 4:
             case 5:
             case 6:
-                if ($id == 2) {
-                    //select project submission
-                    $date = 'submission';
-                }
-
-                if ($id == 3) {
-                    //select project validation
-                    $date = 'validation';
-                }
-
-                if ($id == 4) {
-                    //select project start dates
-                    $date = 'start_date';
-                }
-                if ($id == 5) {
-                    //select project deadline
-                    $date = 'deadline';
-                }
-                if ($id == 6) {
-                    //select project completion
-                    $date = 'completion';
-                }
-              
+                $state = [2 => 'submission', 3 => 'validation', 4 => 'start_date', 5 => 'deadline', 6 => 'completion'];
+                $date = $state[$id];
                 $no = "0000-00-00";
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_project', 'p');
@@ -227,7 +192,7 @@ class CalendarController extends ControllerBase {
                     'completion' => ['#3e4444','#fff'],];
                 $countries = \Drupal\ek_admin\Access\AccessCheck::CountryList();
                 while ($d = $r->fetchObject()) {
-                    if (ProjectData::validate_access($d->id) && $d->$date != '0000-00-00') {
+                    if ($this->projectService->validate_access($d->id) && $d->$date != '0000-00-00') {
                         $pcode = explode('-', $d->pcode);
                         $pcode = array_reverse($pcode);
                         if (strlen($d->pname > 15)) {
@@ -235,7 +200,7 @@ class CalendarController extends ControllerBase {
                         } else {
                             $title = $pcode[0] . ' - ' . $d->pname;
                         }
-                        $country = $countries[$d->cid]; 
+                        $country = isset($countries[$d->cid]) ? $countries[$d->cid] : ''; 
                         $d1 = $d->$date;
                         $d2 = $d->$date;
                         $values = array(

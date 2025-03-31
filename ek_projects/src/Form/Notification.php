@@ -19,34 +19,26 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_projects\ProjectData;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides a form to send notification.
  */
 class Notification extends FormBase {
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
-    protected $moduleHandler;
+        protected $moduleHandler;
+    protected $projectService;
 
-    /**
-     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler.
-     */
-    public function __construct(ModuleHandler $module_handler) {
+   
+    public function __construct(ModuleHandler $module_handler, ProjectService $projectService) {
         $this->moduleHandler = $module_handler;
+        $this->projectService = $projectService;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler')
+                $container->get('module_handler'),
+                $container->get('project.service')
         );
     }
 
@@ -165,7 +157,7 @@ class Notification extends FormBase {
             }
             $params['text'] = Xss::filter($form_state->getValue('message'));
             $params['pcode'] = $p->pcode;
-            $params['options']['url'] = ProjectData::geturl($form_state->getValue('pid'), true);
+            $params['options']['url'] = $this->projectService->geturl($form_state->getValue('pid'), true);
             $params['priority'] = $form_state->getValue('priority');
 
             $code = explode("-", $p->pcode);

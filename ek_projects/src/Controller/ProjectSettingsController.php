@@ -13,39 +13,27 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Form\FormBuilderInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_projects\ProjectData;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Controller routines for ek module routes.
  */
 class ProjectSettingsController extends ControllerBase {
-    /* The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
-
+    
     protected $moduleHandler;
-
-    /**
-     * The database service.
-     *
-     * @var \Drupal\Core\Database\Connection
-     */
     protected $database;
-
-    /**
-     * The form builder service.
-     *
-     * @var \Drupal\Core\Form\FormBuilderInterface
-     */
     protected $formBuilder;
+    protected $projectService;
 
     /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
+                $container->get('database'), 
+                $container->get('form_builder'), 
+                $container->get('module_handler'),
+                $container->get('project.service')
         );
     }
 
@@ -57,10 +45,11 @@ class ProjectSettingsController extends ControllerBase {
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler, ProjectService $projectService) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
+        $this->projectService = $projectService;
     }
 
     /**
@@ -139,9 +128,9 @@ class ProjectSettingsController extends ControllerBase {
                     ->fetchAllKeyed();
             $i = 0;
             while ($r = $data->fetchObject()) {
-                if (in_array($r->cid, $UserAccess)) {//filter access by country
+                if (in_array($r->cid, $UserAccess)) {
                     $i++;
-                    $pcode = ProjectData::geturl($r->id);
+                    $pcode = $this->projectService->geturl($r->id);
                     $share = explode(',', $r->share);
                     $deny = explode(',', $r->deny);
 

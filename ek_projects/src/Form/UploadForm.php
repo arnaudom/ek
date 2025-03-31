@@ -13,9 +13,8 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_projects\ProjectData;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides a form to upload file.
@@ -29,19 +28,17 @@ class UploadForm extends FormBase {
         return 'ek_projects_upload';
     }
 
-    /* The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
 
     protected $moduleHandler;
+    protected $projectService;
 
     /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler')
+                $container->get('module_handler'),
+                $container->get('project.service')
         );
     }
 
@@ -49,8 +46,9 @@ class UploadForm extends FormBase {
      * Constructs an  object.
      *
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler, ProjectService $projectService) {
         $this->moduleHandler = $module_handler;
+        $this->projectService = $projectService;
     }
 
     /**
@@ -195,12 +193,12 @@ class UploadForm extends FormBase {
             $param = serialize(
                     array(
                         'id' => $id,
-                        'field' => $this->t('File attachment'),
+                        'field' => 'File attachment',
                         'value' => $filename,
                         'pcode' => $ref[0]
                     )
             );
-            ProjectData::notify_user($param);
+            $this->projectService->notify_user($param);
             $form['doc_upload_message']['#markup'] = $this->t('file uploaded @f', array('@f' => $filename));
         } else {
             $form['doc_upload_message']['#markup'] = $this->t('error copying file');

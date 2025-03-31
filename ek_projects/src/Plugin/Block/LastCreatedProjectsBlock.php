@@ -11,7 +11,9 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Access\AccessResult;
-use Drupal\ek_projects\ProjectData;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides a 'list of latest created projects widget' .
@@ -22,7 +24,30 @@ use Drupal\ek_projects\ProjectData;
  *   category = @Translation("Ek projects block")
  * )
  */
-class LastCreatedProjectsBlock extends BlockBase {
+class LastCreatedProjectsBlock extends BlockBase implements ContainerFactoryPluginInterface {
+    
+    protected $projectService;
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+        return new static(
+            $configuration,
+            $plugin_id,
+            $plugin_definition,
+            $container->get('project.service')
+        );
+    }
+
+    /**
+     * Constructs an  object.
+     *
+     */
+    public function __construct(array $configuration, $plugin_id, $plugin_definition, ProjectService $projectService) {
+        parent::__construct($configuration, $plugin_id, $plugin_definition);
+        $this->projectService = $projectService;
+    }
 
     /**
      * {@inheritdoc}
@@ -43,7 +68,7 @@ class LastCreatedProjectsBlock extends BlockBase {
 
         while ($d = $data->fetchObject()) {
             $notify = explode(',', $d->notify);
-            if (!\Drupal\ek_projects\ProjectData::validate_access($d->id)) {
+            if (!$this->projectService->validate_access($d->id)) {
                 $cls = "disabled-square";
                 $detail = '';
                 $title = '';
@@ -60,7 +85,7 @@ class LastCreatedProjectsBlock extends BlockBase {
             $list .= '<li title="' . $detail . '" class="project_title">'
                     . '<span title=' . $title . ' id="' . $d->id . '" class="ico ' . $cls . '"></span> '
                     . $d->name . ' - '
-                    . ProjectData::geturl($d->id) . ' - [' . $d->date . ']</li>';
+                    . $this->projectService->geturl($d->id) . ' - [' . $d->date . ']</li>';
         }
 
         $list .= '</ul>';
@@ -72,16 +97,16 @@ class LastCreatedProjectsBlock extends BlockBase {
         $items['id'] = 'last_project';
 
 
-        return array(
+        return [
             '#items' => $items,
             '#theme' => 'ek_projects_dashboard',
-            '#attached' => array(
+            '#attached' => [
                 'library' => ['ek_projects/ek_projects.dashboard', 'ek_admin/ek_admin_css'],
-            ),
+            ],
             '#cache' => [
                 'tags' => ['project_last_block'],
             ],
-        );
+        ];
     }
 
     /**

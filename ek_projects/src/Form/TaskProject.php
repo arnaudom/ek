@@ -16,7 +16,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Cache\Cache;
 use Drupal\Component\Utility\Xss;
-use Drupal\ek_projects\ProjectData;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides a form to record and edit project tasks.
@@ -30,6 +31,25 @@ class TaskProject extends FormBase {
      */
     public function getFormId() {
         return 'ek_task_project';
+    }
+
+    protected $projectService;
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('project.service')
+        );
+    }
+
+    /**
+     * Constructs an  object.
+     *
+     */
+    public function __construct(ProjectService $projectService) {
+        $this->projectService = $projectService;
     }
 
     /**
@@ -317,7 +337,6 @@ class TaskProject extends FormBase {
                 }
 
                 if ($error <> '') {
-                    //$error = $this->t('invalid user(s)') . ': ' .rtrim($error, ',');
                     $form_state->setErrorByName("notify_who", $this->t('Invalid user(s)') . ': ' . rtrim($error, ','));
                 } else {
                     $form_state->setValue('notify_who', $notify_who);
@@ -326,7 +345,6 @@ class TaskProject extends FormBase {
             $or = $form_state->getValue('notify') == 2 || $form_state->getValue('notify') == 3 || $form_state->getValue('notify') == 4;
 
             if ($form_state->getValue('end') == '' && ($or)) {
-                //$error .= '<br/>' . $this->t('You need a deadline for the selected period.');
                 $form_state->setErrorByName("end", $this->t('You need a deadline for the selected period.') . ': ' . $error);
             }
         }
@@ -414,14 +432,14 @@ class TaskProject extends FormBase {
                 $name = $acc->getAccountName();
             }
             $param = serialize(
-                    array(
+                    [
                         'pcode' => $form_state->getValue('for_pcode'),
                         'id' => $form_state->getValue('for_pid'),
                         'field' => $this->t('Task edited for') . ": " . $name,
                         'value' => Xss::filter($form_state->getValue('task'))
-                    )
+                    ]
             );
-            ProjectData::notify_user($param);
+            $this->projectService->notify_user($param);
         }
 
         Cache::invalidateTags(['project_task_block']);

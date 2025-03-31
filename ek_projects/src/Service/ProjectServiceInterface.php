@@ -1,0 +1,146 @@
+<?php
+
+namespace Drupal\ek_projects\Service;
+
+/**
+ * Interface for ProjectService.
+ */
+interface ProjectServiceInterface {
+
+ /**
+  * Generate internal/external link to the project,
+  * a project code view url from id or serial
+  * @param mix $id
+  *  project id or project serial code
+  * @param bolean $abs
+  *  true|false absolute url 
+  * @param bolean $dest
+  *  true|false create link as destination
+  * @param bolean $short
+  *  true|false return only last part of serial code (number)
+  * @param string $text
+  *  custom text for link
+  * @param array $param
+  *  query string option
+  * @param array $fragment
+  *  fragment string option
+  *
+  * @return string 
+  *  element link or empty string
+ */
+  public function geturl($id, $abs = null, $dest = null, $short = null, $text = null, $param = null, $fragment = null);
+  
+ /**
+  * File managed data
+  * @param int  $uri
+  *   file uri
+  * @return object
+  *   the file object
+  */
+  public function file_owner($uri);
+  
+ /**
+  * A formated list
+  * @param array
+  *  param
+  * @return
+  *  array of formated project list for select field
+  *  pcode => description
+  *
+  */
+
+  public function format_project_list($param);
+ 
+ /**
+  * Projects list
+  * @param string
+  *  arvhive
+  * @return array
+  *  projects by user access - country / company
+  *  classified projects per staus and return array $key => $description
+  *
+ */
+
+  public function listprojects($archive = '%');
+
+ /**
+  * Validation access by user id and project id
+  * @param int  $id
+  *   project id
+  * @param int $uid  
+  *   user id provided if not current user to be checked
+  * @return bolean
+  *   true or false
+  */
+  public function validate_access($id, $uid = null);
+  
+  
+ /**
+  * Validation access by file from user
+  * @param int  $id
+  *   file id
+  * @return bolean 
+  *   true or false
+  */
+  public function validate_file_access($id);
+    
+  
+ /**
+  * Validation access by section from user
+  * @param int  $uid
+  *   user id
+  * @param int $uid  
+  *   user id provided if not current user to be checked
+  * @return
+  *   array of sections
+  */
+  public function validate_section_access($uid);
+  
+  
+ /**
+  * The sections name from settings
+  *  @return array
+  */
+  public function sectionsName();
+  
+  
+ /**
+  * Calculate ratio of filled data per project
+  * @param $id
+  *   project id
+  *  @return double
+  */
+  public function data_fill($id);
+  
+ /**
+  * List of followers per project
+  * @param $id
+  *   project id  
+  *  @return string  html list
+  */  
+  public function followers($id);
+  
+ /**
+  * Notification service to users
+  * @param $param
+  *  serialize data
+  *  id = project id, field = field edited, value = new value, 
+  *  @return object response
+  */
+  public function notify_user($param);
+  
+  
+}  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  

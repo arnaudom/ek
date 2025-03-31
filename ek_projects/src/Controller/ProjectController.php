@@ -30,58 +30,35 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\FinanceSettings;
-use Drupal\ek_projects\ProjectData;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Controller routines for ek module routes.
  */
 class ProjectController extends ControllerBase {
-    /* The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
-
+    
     protected $moduleHandler;
-
-    /**
-     * The database service.
-     *
-     * @var \Drupal\Core\Database\Connection
-     */
     protected $database;
-
-    /**
-     * The form builder service.
-     *
-     * @var \Drupal\Core\Form\FormBuilderInterface
-     */
     protected $formBuilder;
-
-    /**
-     * The entity manager service.
-     *
-     * @var \Drupal\Core\Entity\EntityTypeManager
-     */
     protected $entityTypeManager;
-
-    /**
-     * The external database connection.
-     *
-     * @var \Drupal\Core\Database\Connection
-     */
     protected $extdb;
+    protected $projectService;
 
     /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('database'), $container->get('form_builder'), $container->get('module_handler'), $container->get('entity_type.manager')
+                $container->get('database'), 
+                $container->get('form_builder'), 
+                $container->get('module_handler'), 
+                $container->get('entity_type.manager'),
+                $container->get('project.service'),
         );
     }
 
     /**
-     * Constructs a  object.
+     * Constructs an object.
      *
      * @param \Drupal\Core\Database\Connection $database
      *   A database connection.
@@ -90,12 +67,13 @@ class ProjectController extends ControllerBase {
      * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
      *   The entity manager.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler, EntityTypeManager $entity_manager) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler, EntityTypeManager $entity_manager, ProjectService $projectService) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
         $this->entityTypeManager = $entity_manager;
         $this->extdb = Database::getConnection('external_db', 'external_db');
+        $this->projectService = $projectService;
     }
 
     /**
@@ -208,7 +186,6 @@ class ProjectController extends ControllerBase {
                     
                 }
 
-
                 $data = $query
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
@@ -223,7 +200,7 @@ class ProjectController extends ControllerBase {
                 if (in_array($r->cid, $access)) {//filter access by country
                     $i++;
                     array_push($excel, $r->id);
-                    $pcode = ProjectData::geturl($r->id);
+                    $pcode = $this->projectService->geturl($r->id);
                     $country = $this->extdb->query("SELECT name FROM {ek_country} WHERE id=:cid", array(':cid' => $r->cid))->fetchField();
                     $category = $this->extdb->query("SELECT type FROM {ek_project_type} WHERE id=:t", array(':t' => $r->category))->fetchField();
 
@@ -244,8 +221,6 @@ class ProjectController extends ControllerBase {
             $url = Url::fromRoute('ek_projects_excel_list', array('param' => serialize($excel)), array())->toString();
             $build['excel'] = ['#markup' => "<br/><a href='" . $url . "'>" . $this->t('Excel') . "</a>"];
         }
-
-
 
         $header = array(
             'reference' => array(
@@ -351,15 +326,15 @@ class ProjectController extends ControllerBase {
                         ->fields('ab', ['id', 'name'])
                         ->execute()->fetchAllKeyed();
 
-        if (!ProjectData::validate_access($id)) {
+        if (!$this->projectService->validate_access($id)) {
             return $items['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\AccessRequest', $id);
         } else {
 
             $settings = ['id' => $id, 'view' => true];
-            $sections = ProjectData::validate_section_access(\Drupal::currentUser()->id());
-            $data['sections_name'] = ProjectData::sectionsName();
-            $settings['fillRatio'] = ProjectData::data_fill($id);
-            $data['avatars'] = ProjectData::followers($id);
+            $sections = $this->projectService->validate_section_access(\Drupal::currentUser()->id());
+            $data['sections_name'] = $this->projectService->sectionsName();
+            $settings['fillRatio'] = $this->projectService->data_fill($id);
+            $data['avatars'] = $this->projectService->followers($id);
 
             for ($i = 1; $i < 6; $i++) {
                 if (in_array($i, $sections)) {
@@ -400,10 +375,10 @@ class ProjectController extends ControllerBase {
                         ->execute();
 
                 while ($l = $sub->fetchObject()) {
-                    $data['sub'][] = ProjectData::geturl($l->id) . " - " . $l->pname;
+                    $data['sub'][] = $this->projectService->geturl($l->id) . " - " . $l->pname;
                 }
             } elseif ($data['project'][0]->level == 'Sub project') {
-                $data['sub'][] = ProjectData::geturl($data['project'][0]->main);
+                $data['sub'][] = $this->projectService->geturl($data['project'][0]->main);
                 $cc = $this->extdb
                             ->select('ek_country')
                             ->fields('ek_country', ['code'])
@@ -1278,12 +1253,13 @@ class ProjectController extends ControllerBase {
         $id = $request->query->get('id');
         $qfield = $request->query->get('query');
         // filter user to avoid direct access to data by entering the link in address bar
-        $access = ProjectData::validate_access($id);
-        $sections = ProjectData::validate_section_access(\Drupal::currentUser()->id());
+        $access = $this->projectService->validate_access($id);
+        $sections = $this->projectService->validate_section_access(\Drupal::currentUser()->id());
 
         if ($access) {
 
             //doc query
+
             $querydoc = Database::getConnection('external_db', 'external_db')->select('ek_project_documents', 'd');
             $querydoc->fields('d', ['id', 'fid', 'filename', 'sub_folder', 'uri', 'date', 'comment', 'size']);
             $querydoc->leftJoin('ek_project', 'p', 'd.pcode = p.pcode');
@@ -1466,7 +1442,7 @@ class ProjectController extends ControllerBase {
                             $items[$l->sub_folder][$i]['comment'] = $this->t('Document not available. Please contact administrator');
                         } else {
                             //file exist
-                            if (ProjectData::validate_file_access($l->id)) {
+                            if ($this->projectService->validate_file_access($l->id)) {
                                 $route = Url::fromRoute('ek_projects_delete_file', ['id' => $l->id])->toString();
                                 $items[$l->sub_folder][$i]['delete_url'] = $route;
                                 $items[$l->sub_folder][$i]['file_url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($l->uri);
@@ -1498,8 +1474,7 @@ class ProjectController extends ControllerBase {
                         }
                     }
 
-                    //disable because not using file_managed table (TO implement in project table?)
-                    //$owner = ProjectData::file_owner($l->id);
+                    // disable because not using file_managed table (TO implement in project table?)
                     // use project owner instead
 
                     if (($l->owner == \Drupal::currentUser()->id() || \Drupal::currentUser()->hasPermission('admin_projects')) && $l->fid != '0') {
@@ -1721,7 +1696,7 @@ class ProjectController extends ControllerBase {
      */
     public function fileData($id) {
 
-        if (ProjectData::validate_file_access($id)) {
+        if ($this->projectService->validate_file_access($id)) {
             $query = $this->extdb
                 ->select('ek_project_documents', 'd')
                 ->fields('d');
@@ -1729,7 +1704,7 @@ class ProjectController extends ControllerBase {
             $query->fields('p', ['id','pcode','main','subcount']);
             $query->condition('d.id', $id);
             $file = $query->execute()->fetchObject();
-            $file_managed = ProjectData::file_owner($file->uri);
+            $file_managed = $this->projectService->file_owner($file->uri);
             $owner = '';
             if($file_managed){
                 $user = \Drupal\user\Entity\User::load($file_managed->uid);
@@ -1883,7 +1858,7 @@ class ProjectController extends ControllerBase {
         $query->fields('p', ['id']);
         $p = $query->execute()->fetchObject();
 
-        if (ProjectData::validate_access($p->id)) {
+        if ($this->projectService->validate_access($p->id)) {
 
             //control deny access
             if (!in_array(\Drupal::currentUser()->id(), explode(',', $p->deny))) {
@@ -2252,7 +2227,7 @@ class ProjectController extends ControllerBase {
      * Currently the task form is called via off canvas dialog
      */
     public function TaskProject($pid, $id) {
-        if (ProjectData::validate_access($pid, \Drupal::currentUser()->id())) {
+        if ($this->projectService->validate_access($pid, \Drupal::currentUser()->id())) {
             $access = AccessCheck::GetCountryByUser();
             $param = [];
             $param['pid'] = $pid;
@@ -2354,7 +2329,10 @@ class ProjectController extends ControllerBase {
         $tcount = 0;
         while ($r = $data->fetchObject()) {
             $tcount++;
-            $period = date('Y-m-d', $r->start) . ' <br/>' . date('Y-m-d', $r->end);
+            $period = date('Y-m-d', $r->start) ;
+            if($r->end != '') {
+                $period .= ' <br/>' . date('Y-m-d', $r->end);
+            }
             if (\Drupal::currentUser()->id() == $r->uid) {
                 $name = $this->t('Myself');
             } else {

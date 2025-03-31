@@ -3,7 +3,6 @@
 use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\user\UserInterface;
-use Drupal\ek_projects\ProjectData;
 
 /**
  * @file
@@ -112,6 +111,9 @@ function ek_projects_mail($key, &$message, &$params) {
         ];
         $message['body'][] = \Drupal::service('renderer')->render($render);  
         $message['options'] = $params['options'];
+        $message['headers']['Priority'] = 'High';
+        $message['headers']['X-Priority'] = '1';
+        $message['headers']['X-MSMail-Priority'] = 'Highest';
         break;
 
       case 'project_note':
@@ -164,7 +166,7 @@ function ek_projects_file_download($uri) {
       $file = $query->fetchObject();
       $name = \Drupal::currentUser()->getAccountName();   
     
-      if (ProjectData::validate_file_access($file->id) ) {
+      if (\Drupal::service('project.service')->validate_file_access($file->id) ) {
 
           //////////////////////////
           //    WATCHDOG          //
@@ -173,13 +175,13 @@ function ek_projects_file_download($uri) {
           $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
           $log = t("User @u has downloaded project document @d (file id @i)", $a);
           \Drupal::logger('ek_projects')->notice( $log );         
-          return array('Content-Type' => $mime);
+          return ['Content-Type' => $mime];
 
           }  else {
               //////////////////////////
               //    WATCHDOG          //
               //////////////////////////
-              $a = array('@u' => $name, '@d' => $file->filename, '@i' => $file->id);
+              $a = ['@u' => $name, '@d' => $file->filename, '@i' => $file->id];
               $log = t("User @u tried to downlaod project document @d but access is denied (file id @i)", $a);
                 \Drupal::logger('ek_projects')->notice( $log );  
 
