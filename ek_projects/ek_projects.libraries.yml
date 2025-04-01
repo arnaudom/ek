@@ -69,7 +69,7 @@ ek_projects.calendar:
     - core/drupalSettings
     - core/drupal.ajax
     - core/drupal.dialog
- 
+    - core/drupal.dialog.off_canvas
     
 ek_projects_charts:
   js:

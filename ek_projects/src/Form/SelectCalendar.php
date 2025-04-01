@@ -26,7 +26,7 @@ class SelectCalendar extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-        $options = [0 => $this->t('Calendar'), 1 => $this->t('My tasks'), 2 => $this->t('Projects submission'),
+        $options = [0 => $this->t('Select calendar'), 1 => $this->t('My tasks'), 2 => $this->t('Projects submission'),
             3 => $this->t('Projects validation'), 4 => $this->t('Projects start'),
             5 => $this->t('Projects deadlines'), 6 => $this->t('Projects completed')];
         $form['select'] = array(
