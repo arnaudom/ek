@@ -3,6 +3,13 @@
     Drupal.behaviors.ek_calendar = {
         attach: function (context, settings) {
 
+            $(document).on('dialogafterrender', function (event, dialog, $element, settings) {
+                if (settings.dialogRenderer === 'off_canvas') {
+                  // Force remove the ID that causes style issues with off-canvas
+                  $('.ui-dialog-off-canvas').removeAttr('id');
+                }
+            });
+
             if (settings.type == 'block') {
                 display_calendar_block(settings.calendarLang);
             }

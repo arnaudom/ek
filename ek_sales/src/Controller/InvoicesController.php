@@ -278,8 +278,8 @@ class InvoicesController extends ControllerBase {
                     . $r->serial . "</a>";
 
             if ($r->pcode <> 'n/a') {
-                if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $reference = $client . "<div>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, null, null, true) . "</div>";
+                if ($this->moduleHandler->moduleExists('ek_projects')) { 
+                    $reference = $client . "<div>" . \Drupal::service('project.service')->geturl($r->pcode, null, null, true) . "</div>";
                 } else {
                     $reference = $client;
                 }
@@ -703,7 +703,7 @@ class InvoicesController extends ControllerBase {
 
                 if ($r->pcode <> 'n/a') {
                     if ($this->moduleHandler->moduleExists('ek_projects')) {
-                        $reference = $client . "<br/>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, null, null, true);
+                        $reference = $client . "<br/>" . \Drupal::service('project.service')->geturl($r->pcode, null, null, true);
                     } else {
                         $reference = $client;
                     }

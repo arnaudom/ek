@@ -13,12 +13,10 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Locale\CountryManagerInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_admin\CompanySettings;
-use Drupal\ek_projects\ProjectData;
 use Drupal\ek_finance\AidList;
 use Drupal\ek_finance\CurrencyData;
 use Drupal\ek_finance\Journal;
@@ -135,11 +133,6 @@ class RecordExpense extends FormBase {
             $query->condition('type', 'debit', '=');
             $query->condition('exchange', '0', '=');
             $j_entry = $query->execute();
-            
-            //$query = "SELECT * from {ek_journal} WHERE source like :s and reference = :r AND type=:t AND exchange=:e";
-            //$a = array(':s' => "expense%", ':r' => $id, ':t' => 'debit', ':e' => 0);
-            //$j_entry = Database::getConnection('external_db', 'external_db')
-            //        ->query($query, $a);
 
             $form_state->set('step', 2);
             $form_state->set('coid', $expense->company);
@@ -155,12 +148,6 @@ class RecordExpense extends FormBase {
                 $query->condition('type', 'credit', '=');
                 $query->condition('exchange', '0', '=');
                 $jCredit = $query->execute()->fetchField();
-                
-                //$query = "SELECT aid from {ek_journal} WHERE source like :s and reference = :r AND type=:t AND exchange=:e";
-                //$a = array(':s' => "expense%", ':r' => $id, ':t' => 'credit', ':e' => 0);
-                //$jCredit = Database::getConnection('external_db', 'external_db')
-                //        ->query($query, $a)
-                //        ->fetchField();
                 if ($expense->cash == 'Y') {
                     $credit = $expense->currency . '-' . $jCredit;
                 } else {
@@ -348,9 +335,6 @@ class RecordExpense extends FormBase {
             if ($recordProvision == '1' || $credit == 'P') {
                 $options[(string) $this->t('provision')] = ['P' => $this->t('record as provision')];
             }
-            //$form['credit']['bank_account']['#options'] = $options;
-            //$form['credit']['bank_account']['#value'] = 0;
-            //$form['credit']['bank_account']['#description'] = $alert;
             $form_state->set('bank_opt', $options);
             //$form_state->setRebuild();
 
