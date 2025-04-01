@@ -626,14 +626,14 @@
 
 .timeline {
     position: relative;
-    margin-top: 38px;
+    margin-top: 30px;
     width: 100%;
 }
 
 .timeline-container {
     min-width: 600px; 
     position: relative;
-    height: 100px;
+    height: 50px;
   }
 
 .timeline-bar {
@@ -641,7 +641,7 @@
     height: 6px;
     width: 100%;
     border-radius: 3px;
-    margin-bottom: 40px;
+    margin-bottom: -4px;
 }
 
 .timeline-point {
