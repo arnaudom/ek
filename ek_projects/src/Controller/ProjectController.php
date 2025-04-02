@@ -587,7 +587,7 @@ class ProjectController extends ControllerBase {
                  * create a link to edit date submission
                  */
                 $settings['submission'] = $data['description'][0]->submission;
-                if($data['description'][0]->submission === '0000-00-00') {
+                if($data['description'][0]->submission === '0000-00-00' || $data['description'][0]->submission == '') {
                     $data['description'][0]->submission = $this->t('not set');
                     $settings['submission'] = 0;
                 } 
@@ -598,7 +598,7 @@ class ProjectController extends ControllerBase {
                  * create a link to edit date validation
                  */
                 $settings['validation'] = $data['description'][0]->validation;
-                if($data['description'][0]->validation === '0000-00-00') {
+                if($data['description'][0]->validation === '0000-00-00' || $data['description'][0]->validation == '') {
                     $data['description'][0]->validation = $this->t('not set');
                     $settings['validation'] = 0;
                 }
@@ -609,7 +609,7 @@ class ProjectController extends ControllerBase {
                  * create a link to edit date start_date
                  */
                 $settings['start_date'] = $data['description'][0]->start_date;
-                if($data['description'][0]->start_date === '0000-00-00') {
+                if($data['description'][0]->start_date === '0000-00-00' || $data['description'][0]->start_date == '') {
                     $data['description'][0]->start_date = $this->t('not set');
                     $settings['start_date'] = 0;
                 }
@@ -620,7 +620,7 @@ class ProjectController extends ControllerBase {
                  * create a link to edit date deadline
                  */
                 $settings['deadline'] = $data['description'][0]->deadline;
-                if($data['description'][0]->deadline === '0000-00-00') {
+                if($data['description'][0]->deadline === '0000-00-00' || $data['description'][0]->deadline == '') {
                     $data['description'][0]->deadline = $this->t('not set');
                     $settings['deadline'] = 0;
                 }
