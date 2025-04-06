@@ -28,8 +28,7 @@ class NewAddressBookCardForm extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $abid = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $abid = null) {
         $form['back'] = array(
             '#type' => 'item',
             '#markup' => '<a href="' . $_SERVER['HTTP_REFERER'] . '" >' . $this->t('Back to address book') . '</a>',

@@ -18,8 +18,7 @@ use Drupal\ek_admin\Access\AccessCheck;
 /**
  * Provides a form to delete address book main entry.
  */
-class DeleteAddressBook extends FormBase
-{
+class DeleteAddressBook extends FormBase {
 
     /**
      * {@inheritdoc}
@@ -32,8 +31,7 @@ class DeleteAddressBook extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $abid = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $abid = null)    {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_address_book', 'ab');
         $query->fields('ab', ['name', 'type']);
@@ -63,20 +61,13 @@ class DeleteAddressBook extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
-        $delete = Database::getConnection('external_db', 'external_db')
-                ->delete('ek_address_book')
-                ->condition('id', $form_state->getValue('abid'))
-                ->execute();
-
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         $delete = Database::getConnection('external_db', 'external_db')
                 ->delete('ek_address_book_contacts')
                 ->condition('abid', $form_state->getValue('abid'))
@@ -94,6 +85,12 @@ class DeleteAddressBook extends FormBase
                     ->condition('abid', $form_state->getValue('abid'))
                     ->execute();
         }
+        
+        $delete = Database::getConnection('external_db', 'external_db')
+                ->delete('ek_address_book')
+                ->condition('id', $form_state->getValue('abid'))
+                ->execute();
+
         if ($delete) {
             \Drupal::messenger()->addStatus(t('The address book entry has been deleted'));
             $form_state->setRedirect("ek_address_book.search");

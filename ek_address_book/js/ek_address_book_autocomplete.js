@@ -4,14 +4,26 @@
   Drupal.behaviors.ek_abook_autocomplete = {
     attach: function (context, settings) {
 
-      jQuery('#abook-search-form').keyup(function() {
-      
-        var term = jQuery('#abook-search-form').val();
+      $('#abook-search-form').keyup(function() {
+        triggerSearch();
+      });
 
+      $('#filter_client, #filter_supplier').click(function() {
+        triggerSearch();
+      });
+
+      if ($('#abook-search-form').val() !== null && $('#abook-search-form').val() !== '') {
+        triggerSearch();
+      }
+
+      function triggerSearch() {
+        var term = $('#abook-search-form').val();
+        var client = $('#filter_client').prop('checked');
+        var supplier = $('#filter_supplier').prop('checked');
         jQuery.ajax({
           dataType: "json",
           url: drupalSettings.path.baseUrl + "look_up_contact_ajax" ,
-          data: { option: "image", term: term },
+          data: { option: "image", term: term , client: client, supplier: supplier},
           success: function (data) { 
               var content = '';
               var i = 0;
@@ -23,12 +35,12 @@
                   i++;
               }
               
-              jQuery('#abook-search-result').html(content);
+              $('#abook-search-result').html(content);
 
           }
           });      
 
-      });   
+      };   
   
     } //attach
     

@@ -61,16 +61,15 @@ class AddressBookController extends ControllerBase {
      */
     public function searchaddressbook(Request $request) {
         $form_builder = $this->formBuilder();
-        $response = $form_builder->getForm('Drupal\ek_address_book\Form\SearchAddressBookForm');
+        $r = $request->query->get('q');
+        $response = $form_builder->getForm('Drupal\ek_address_book\Form\SearchAddressBookForm', $r);
 
-        return array(
+        return [
             '#theme' => 'ek_address_book_search_form',
             '#items' => $response,
             '#title' => $this->t('Address book'),
-            '#attached' => array(
-                'library' => array('ek_address_book/ek_address_book_css'),
-            ),
-        );
+            '#attached' => ['library' => ['ek_address_book/ek_address_book_css'],],
+        ];
     }
 
     /**
@@ -108,30 +107,27 @@ class AddressBookController extends ControllerBase {
             $query->fields('ab', ['id', 'type']);
             $query->condition('name', $r['name']);
             $query->condition('type', $r['type'], '<>');
-            $check = $query->execute()->fetchObject();
-
-            if (isset($check->type) && $check->type == '1') {
-                $clone = false;
-            } elseif (isset($check->type) && $check->type == '2') {
-                $clone = false;
-            } elseif (isset($check->type) && $check->type == '3') {
-                $clone = true;
-                $into = $this->t('client');
-            } else {
-                $clone = true;
-            }
-            $into = ($r['type'] == '1') ? $this->t('supplier') : $this->t('client');
-            if ($clone == true) {
+            $query->orderBy('type');
+            $check = $query->execute()->fetchAllKeyed();
+           if(count($check) == 0) { 
+                $i = ($r['type'] == 1) ? $this->t('supplier') : $this->t('client');
                 $url_clone = Url::fromRoute('ek_address_book.clone', ['abid' => $r['id']], [])->toString();
-                $items['clone'] = $this->t('<a href="@url" title="@i">Clone</a>', ['@url' => $url_clone, '@i' => $into]);
-            } else {
-                $url_clone = Url::fromRoute('ek_address_book.view', ['abid' => $check->id], [])->toString();
-                $items['clone'] = $this->t('<a href="@url" title="@i"><-></a>', ['@url' => $url_clone, '@i' => $into]);
+                $items['clone'] = $this->t('<a href="@url" title="@i">Clone</a>', ['@url' => $url_clone, '@i' => $i]); 
+            }  elseif(count($check) == 1 && in_array("3", $check) && ($r['type'] == 2 || $r['type'] == 1)) {
+                $url_clone = Url::fromRoute('ek_address_book.clone', ['abid' => $r['id']], [])->toString();
+                $i = ($r['type'] == 1) ? $this->t('supplier') : $this->t('client');
+                $items['clone'] = $this->t('<a href="@url" title="@i">Clone</a>', ['@url' => $url_clone, '@i' => $i ]); 
+            } elseif(in_array("2", $check) && $r['type'] == 1) {
+                $url_switch = Url::fromRoute('ek_address_book.view', ['abid' => array_key_first($check)], [])->toString();
+                $items['clone'] = $this->t('<a href="@url">@t</a>', ['@url' => $url_switch, '@t' => $this->t('Switch supplier')]);
+            } elseif(in_array("1", $check) && $r['type'] == 2) {
+                $url_switch = Url::fromRoute('ek_address_book.view', ['abid' => array_key_first($check)], [])->toString();
+                $items['clone'] = $this->t('<a href="@url">@t</a>', ['@url' => $url_switch, '@t' => $this->t('Switch client')]);
             }
+
             $items['stamp'] = date('Y-m-d', $r['stamp']);
             $items['id'] = $r['id'];
             $items['search'] = $this->t('<a href="@url" >New search</a>', ['@url' => $url_search]);
-
             $items['add'] = $this->t('<a href="@url" >Add contact</a>', ['@url' => $url_add]);
             $items['name'] = ucwords($r['name']);
             $items['shortname'] = $r['shortname'];
@@ -148,6 +144,10 @@ class AddressBookController extends ControllerBase {
             $items['activity'] = ucwords($r['activity']);
             $t = [1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other')];
             $items['type'] = $t[$r['type']];
+            if ($this->moduleHandler->moduleExists('ek_projects') && $r['type'] == 1) {
+                $p = Url::fromRoute('ek_projects_new', ['abid' => $r['id']], [])->toString();
+                $items['create_project'] = $this->t('<a href="@url" >Create a project</a>', ['@url' => $p]);
+            }
 
 
 
@@ -210,7 +210,6 @@ class AddressBookController extends ControllerBase {
 
                 array_push($items['contacts'], $contact);
             }
-
 
             return array(
                 '#theme' => 'ek_address_book_card',
@@ -302,7 +301,7 @@ class AddressBookController extends ControllerBase {
         $query->condition('id', $abid);
         $r = $query->execute()->fetchObject();
 
-        //check the entry has not been cloned already
+        // check the entry has not been cloned already
         // there should be only 3 types per name
         $clone = true;
         $query = Database::getConnection('external_db', 'external_db')
@@ -346,8 +345,8 @@ class AddressBookController extends ControllerBase {
             $newid = Database::getConnection('external_db', 'external_db')
                             ->insert('ek_address_book')
                             ->fields($fields)->execute();
-            //copy contacts
-            $query = Database::getConnection('external_db', 'external_db')
+            // copy contacts
+           $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book_contacts', 'c');
 
             $data = $query
@@ -377,7 +376,7 @@ class AddressBookController extends ControllerBase {
                         ->fields($fields)->execute();
             }
 
-            //create comment entry
+            // create comment entry
             Database::getConnection('external_db', 'external_db')
                     ->insert('ek_address_book_comment')
                     ->fields(['abid' => $newid])->execute();
@@ -386,7 +385,6 @@ class AddressBookController extends ControllerBase {
             return new RedirectResponse($url);
         } else {
             //cannot clone this entry
-
             return array('#markup' => $this->t('This entry cannot be cloned.'));
         }
     }
@@ -543,7 +541,8 @@ class AddressBookController extends ControllerBase {
         } elseif ($type < 4 || $type == '%') {
 
             // pull company names
-            $types = array(1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other'));
+            $types = [1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other')];
+            
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_address_book', 'ab');
             $query->fields('ab', ['id', 'name', 'type', 'logo'])->distinct();
@@ -558,7 +557,23 @@ class AddressBookController extends ControllerBase {
 
             if ($type != '%') {
                 $query->condition('type', $type, '=');
+            } elseif ($request->query->get('client') || $request->query->get('supplier')) {
+                if($request->query->get('client') == 'true' && $request->query->get('supplier') == 'true') {
+                    $or2 = $query->orConditionGroup()
+                    ->condition('type', 1, '=')
+                    ->condition('type', 2, '=');
+                    $query->condition($or2);
+                }
+
+                if($request->query->get('client') == 'true' && $request->query->get('supplier') == 'false') {
+                    $query->condition('type', 1, '=');
+                }
+
+                if($request->query->get('client') == 'false' && $request->query->get('supplier') == 'true') {
+                    $query->condition('type', 2, '=');
+                }                
             }
+
             $data = $query->execute();
             $result = [];
             if ($option == 'image') {

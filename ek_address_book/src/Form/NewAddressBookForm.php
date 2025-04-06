@@ -29,16 +29,14 @@ class NewAddressBookForm extends FormBase {
      */
     protected $countryManager;
 
-    public function __construct(CountryManagerInterface $country_manager)
-    {
+    public function __construct(CountryManagerInterface $country_manager) {
         $this->countryManager = $country_manager;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('country_manager')
         );
@@ -47,8 +45,7 @@ class NewAddressBookForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'ek_edit_address_book_form';
     }
 
@@ -58,10 +55,10 @@ class NewAddressBookForm extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $abid = null) {
         
         if (isset($abid)) {
-            $form['for_id'] = array(
+            $form['for_id'] = [
                 '#type' => 'hidden',
                 '#value' => $abid,
-            );
+            ];
 
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_address_book', 'ab');
@@ -75,22 +72,20 @@ class NewAddressBookForm extends FormBase {
             $rc = $query->countQuery()->execute()->fetchField();
         }
 
-        $form['name'] = array(
+        $form['name'] = [
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
             '#description' => isset($abid) ? $this->t('Organization name') : '',
             '#required' => true,
             '#default_value' => isset($r['name']) ? $r['name'] : null,
-            '#attributes' => array('placeholder' => $this->t('Organization name')),
-            '#attached' => array(
-                'library' => array(
-                    'ek_address_book/ek_address_book.script.sn',
-                ),
-            ),
-        );
+            '#attributes' => ['placeholder' => $this->t('Organization name')],
+            '#attached' => [
+                'library' => ['ek_address_book/ek_address_book.script.sn',],
+            ],
+        ];
 
-        $form['shortname'] = array(
+        $form['shortname'] = [
             '#type' => 'textfield',
             '#id' => 'short_name',
             '#description' => isset($abid) ? $this->t('Short name') : '',
@@ -98,170 +93,171 @@ class NewAddressBookForm extends FormBase {
             '#maxlength' => 5,
             '#required' => true,
             '#default_value' => isset($r['shortname']) ? $r['shortname'] : null,
-            '#attributes' => array('placeholder' => $this->t('Short name')),
-        );
-
-        $form['address'] = array(
-            '#type' => 'textfield',
-            '#size' => 60,
-            '#description' => isset($abid) ? $this->t('Address line 1') : '',
-            '#maxlength' => 255,
-            '#default_value' => isset($r['address']) ? $r['address'] : null,
-            '#attributes' => array('placeholder' => $this->t('Address line 1')),
-        );
-
-        $form['address2'] = array(
-            '#type' => 'textfield',
-            '#size' => 60,
-            '#description' => isset($abid) ? $this->t('Address line 2') : '',
-            '#maxlength' => 255,
-            '#default_value' => isset($r['address2']) ? $r['address2'] : null,
-            '#attributes' => array('placeholder' => $this->t('Address line 2')),
-        );
+            '#attributes' => ['placeholder' => $this->t('Short name')],
+        ];
         
-        $form['state'] = array(
-            '#type' => 'textfield',
-            '#size' => 30,
-            '#description' => isset($abid) ? $this->t('State') : '',
-            '#maxlength' => 50,
-            '#default_value' => isset($r['state']) ? $r['state'] : null,
-            '#attributes' => array('placeholder' => $this->t('State')),
-        );
-
-        $form['postcode'] = array(
-            '#type' => 'textfield',
-            '#size' => 12,
-            '#description' => isset($abid) ? $this->t('Postcode') : '',
-            '#maxlength' => 20,
-            '#default_value' => isset($r['postcode']) ? $r['postcode'] : null,
-            '#attributes' => array('placeholder' => $this->t('Postcode')),
-        );
-
-        $form['city'] = array(
-            '#type' => 'textfield',
-            '#description' => isset($abid) ? $this->t('City') : '',
-            '#size' => 30,
-            '#maxlength' => 100,
-            '#default_value' => isset($r['city']) ? $r['city'] : null,
-            '#attributes' => array('placeholder' => $this->t('City')),
-        );
-
-
-        $countries = $this->countryManager->getList();
-        $form['country'] = array(
-            '#type' => 'select',
-            '#size' => 1,
-            '#options' => array_combine($countries, $countries),
-            '#required' => true,
-            '#default_value' => isset($r['country']) ? $r['country'] : null,
-        );
-        
-        $form['reg'] = array(
+        $form['reg'] = [
             '#type' => 'textfield',
             '#size' => 15,
             '#description' => isset($abid) ? $this->t('registration number') : '',
             '#maxlength' => 30,
             '#default_value' => isset($r['reg']) ? $r['reg'] : null,
-            '#attributes' => array('placeholder' => $this->t('reg. number')),
-        );
+            '#attributes' => ['placeholder' => $this->t('reg. number')],
+        ];
+
+        $form['address'] = [
+            '#type' => 'textfield',
+            '#size' => 60,
+            '#description' => isset($abid) ? $this->t('Address line 1') : '',
+            '#maxlength' => 65,
+            '#default_value' => isset($r['address']) ? $r['address'] : null,
+            '#attributes' => ['placeholder' => $this->t('Address line 1')],
+        ];
+
+        $form['address2'] = [
+            '#type' => 'textfield',
+            '#size' => 60,
+            '#description' => isset($abid) ? $this->t('Address line 2') : '',
+            '#maxlength' => 65,
+            '#default_value' => isset($r['address2']) ? $r['address2'] : null,
+            '#attributes' => ['placeholder' => $this->t('Address line 2')],
+        ];
         
-        $form['telephone'] = array(
+        $form['state'] = [
+            '#type' => 'textfield',
+            '#size' => 30,
+            '#description' => isset($abid) ? $this->t('State / Province') : '',
+            '#maxlength' => 50,
+            '#default_value' => isset($r['state']) ? $r['state'] : null,
+            '#attributes' => ['placeholder' => $this->t('State')],
+        ];
+
+        $form['postcode'] = [
+            '#type' => 'textfield',
+            '#size' => 12,
+            '#description' => isset($abid) ? $this->t('Postcode') : '',
+            '#maxlength' => 20,
+            '#default_value' => isset($r['postcode']) ? $r['postcode'] : null,
+            '#attributes' => ['placeholder' => $this->t('Postcode')],
+        ];
+
+        $form['city'] = [
+            '#type' => 'textfield',
+            '#description' => isset($abid) ? $this->t('City') : '',
+            '#size' => 30,
+            '#maxlength' => 100,
+            '#default_value' => isset($r['city']) ? $r['city'] : null,
+            '#attributes' => ['placeholder' => $this->t('City')],
+        ];
+
+
+        $countries = $this->countryManager->getList();
+        $form['country'] = [
+            '#type' => 'select',
+            '#size' => 1,
+            '#options' => array_combine($countries, $countries),
+            '#required' => true,
+            '#default_value' => isset($r['country']) ? $r['country'] : null,
+        ];
+        
+        $form['telephone'] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#description' => isset($abid) ? $this->t('Telephone') : '',
             '#maxlength' => 30,
             '#default_value' => isset($r['telephone']) ? $r['telephone'] : null,
             '#attributes' => array('placeholder' => $this->t('Telephone')),
-        );
+        ];
 
-        $form['fax'] = array(
+        $form['fax'] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#description' => isset($abid) ? $this->t('Fax No.') : '',
             '#maxlength' => 30,
             '#default_value' => isset($r['fax']) ? $r['fax'] : null,
-            '#attributes' => array('placeholder' => $this->t('Fax No.')),
-        );
+            '#attributes' => ['placeholder' => $this->t('Fax No.')],
+        ];
 
-        $form['website'] = array(
+        $form['website'] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#description' => isset($abid) ? $this->t('Web site') : '',
             '#maxlength' => 100,
             '#default_value' => isset($r['website']) ? $r['website'] : null,
-            '#attributes' => array('placeholder' => $this->t('Web site')),
-        );
+            '#attributes' => ['placeholder' => $this->t('Web site')],
+        ];
 
-        $form['type'] = array(
+        $form['type'] = [
             '#type' => 'select',
-            '#options' => array(1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other')),
+            '#options' => [1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other')],
             '#default_value' => isset($r['type']) ? $r['type'] : null,
             '#description' => $this->t('Organization type'),
             '#required' => true,
-        );
+        ];
 
-        $form['category'] = array(
+        $form['category'] = [
             '#type' => 'select',
-            '#options' => array(1 => $this->t('Head office'), 2 => $this->t('Store'), 3 => $this->t('Factory'), 4 => $this->t('Other')),
+            '#options' => [1 => $this->t('Head office'), 2 => $this->t('Store'), 3 => $this->t('Factory'), 4 => $this->t('Other')],
             '#default_value' => isset($r['category']) ? $r['category'] : null,
             '#description' => $this->t('Organization category'),
             '#required' => true,
-        );
+        ];
 
-        $form['status'] = array(
+        $form['status'] = [
             '#type' => 'select',
-            '#options' => array(0 => $this->t('inactive'), 1 => $this->t('active')),
+            '#options' => [0 => $this->t('inactive'), 1 => $this->t('active')],
             '#default_value' => isset($r['status']) ? $r['status'] : '1',
             //'#title' => $this->t('Status'),
             '#required' => true,
-        );
+        ];
 
 
-        $form['tags'] = array(
+        $form['tags'] = [
             '#type' => 'textfield',
             '#default_value' => isset($r['activity']) ? $r['activity'] : null,
-            '#attributes' => array('class' => ['form-select-tag'], 'style' => array('width:200px;')),
-            '#description' => $this->t('Tags'),
+            '#attributes' => ['class' => ['form-select-tag'], 'style' => array('width:200px;')],
+            '#description' => $this->t('Add Tags for classification, i.e. "manufacturer"'),
             '#required' => false,
             '#maxlength' => 200,
-            '#attached' => array(
-                'library' => array('ek_admin/ek_admin_tageditor'),
-                'drupalSettings' => array('auto_complete' => 'ek_address_book/tag_activity'),
-            ),
-        );
+            '#attached' => [
+                'library' => ['ek_admin/ek_admin_tageditor'],
+                'drupalSettings' => ['auto_complete' => 'ek_address_book/tag_activity'],
+            ],
+        ];
 
         // current logo if any
         if (isset($r['logo']) && $r['logo'] <> '') {
             $logo = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r['logo']) . 
                     "' target='_blank'><img class='thumbnail' src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($r['logo']) . "></a>";
-            $form['delete_logo'] = array(
+            $form['delete_logo'] = [
                 '#type' => 'checkbox',
-                '#title' => $this->t('delete logo'),
-                '#attributes' => array('onclick' => "jQuery('#logo ').toggleClass( 'delete');"),
-                '#prefix' => "<div class='container-inline'>",
-            );
-            $form["currentlogo"] = array(
+                '#description' => $this->t('delete logo'),
+                '#attributes' => ['onclick' => "jQuery('.currentlogo-field').toggleClass( 'delete');"],
+                //'#prefix' => "<div class='container-inline'>",
+            ];
+
+            $form["currentlogo"] = [
                 '#markup' => "<p id='logo'style='padding:2px;'>" . $logo . "</p>",
-                '#suffix' => '</div>',
-            );
+                //'#suffix' => '</div>',
+            ];
             //use to delete if upload new when submit
-            $form["logo_uri"] = array(
+            $form["logo_uri"] = [
                     '#type' => "hidden",
                     '#value' => $r['logo'],
-            );
+            ];
         } else {
             $form['delete_logo'] = null;
             $form["currentlogo"] = null;
         }
-        $form['logo'] = array(
+        $form['logo'] = [
             '#type' => 'file',
             '#title' => $this->t('Upload logo'),
-        );
+        ];
 
         // insert the name cards
         $i = 0;
         $main = 1;
-        $salutation = array('-', $this->t('Mr.'), $this->t('Mrs.'), $this->t('Miss.'));
+        $salutation = ['-', $this->t('Mr.'), $this->t('Mrs.'), $this->t('Miss.')];
         if ($vocabulary = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadTree('salutation', 0, 1)) {
             foreach ($vocabulary as $item) {
                 array_push($salutation, $item->name);
@@ -278,294 +274,276 @@ class NewAddressBookForm extends FormBase {
             $data = $query->execute();
             
             while ($rc = $data->fetchAssoc()) {
-                $form[$i] = array(
+                $form[$i] = [
                     '#type' => 'details',
-                    '#title' => $this->t('Contact card No. @i', array('@i' => $i + 1)),
+                    '#title' => $this->t('Contact card No. @i', ['@i' => $i + 1]),
                     '#collapsible' => true,
                     '#collapsed' => false,
                         //'#attributes' => ($rc['main'] == 1) ? array('class' => array('select')) : array(),
-                );
+                ];
 
-                $form[$i]['id' . $i] = array(
+                $form[$i]['id' . $i] = [
                     '#type' => 'hidden',
                     '#default_value' => $rc['id'],
-                );
+                ];
 
-                $form[$i]['delete' . $i] = array(
+                $form[$i]['delete' . $i] = [
                     '#type' => 'checkbox',
                     '#title' => $this->t('Delete card'),
-                    '#attributes' => array('onclick' => "jQuery('#edit-$i summary').toggleClass( 'delete');"),
-                );
+                    '#attributes' => ['onclick' => "jQuery('#edit-$i summary').toggleClass( 'delete');"],
+                ];
 
-                $form[$i]['main' . $i] = array(
+                $form[$i]['main' . $i] = [
                     '#type' => 'checkbox',
                     '#title' => $this->t('Set as primary'),
                     '#default_value' => isset($rc['main']) ? $rc['main'] : 0,
-                    '#attributes' => array('title' => $this->t('Set as primary'), 'onclick' => "jQuery('#edit-$i summary').toggleClass( 'select');"),
-                );
+                    '#attributes' => ['title' => $this->t('Set as primary'), 'onclick' => "jQuery('#edit-$i summary').toggleClass( 'select');"],
+                ];
 
-                $form[$i]['salutation' . $i] = array(
+                $form[$i]['salutation' . $i] = [
                     '#type' => 'select',
                     '#options' => array_combine($salutation, $salutation),
                     '#maxlength' => 255,
                     '#required' => false,
                     '#default_value' => isset($rc['salutation']) ? $rc['salutation'] : null,
                     '#prefix' => "<div class='container-inline'>",
-                );
+                ];
 
-                $form[$i]['contact_name' . $i] = array(
+                $form[$i]['contact_name' . $i] = [
                     '#type' => 'textfield',
                     '#size' => 60,
                     '#maxlength' => 255,
                     //'#required' => TRUE,
                     '#default_value' => isset($rc['contact_name']) ? $rc['contact_name'] : null,
-                    '#attributes' => array('placeholder' => $this->t('Contact name')),
+                    '#attributes' => ['placeholder' => $this->t('Contact name')],
                     '#suffix' => "</div>"
-                );
+                ];
 
-                $form[$i]['title' . $i] = array(
+                $form[$i]['title' . $i] = [
                     '#type' => 'textfield',
                     '#size' => 60,
                     '#title' => $this->t('title'),
                     '#maxlength' => 255,
                     '#required' => false,
                     '#default_value' => isset($rc['title']) ? $rc['title'] : null,
-                    '#attributes' => array('placeholder' => $this->t('Title or function')),
-                );
+                    '#attributes' => ['placeholder' => $this->t('Title or function')],
+                ];
 
-                $form[$i]['ctelephone' . $i] = array(
+                $form[$i]['ctelephone' . $i] = [
                     '#type' => 'textfield',
                     '#size' => 30,
                     '#title' => $this->t('Telephone'),
                     '#maxlength' => 30,
                     '#default_value' => isset($rc['telephone']) ? $rc['telephone'] : null,
-                    '#attributes' => array('placeholder' => $this->t('Telephone')),
-                );
+                    '#attributes' => ['placeholder' => $this->t('Telephone')],
+                ];
 
-                $form[$i]['cmobilephone' . $i] = array(
+                $form[$i]['cmobilephone' . $i] = [
                     '#type' => 'textfield',
                     '#size' => 30,
                     '#title' => $this->t('Mobile phone'),
                     '#maxlength' => 30,
                     '#default_value' => isset($rc['mobilephone']) ? $rc['mobilephone'] : null,
-                    '#attributes' => array('placeholder' => $this->t('Mobile phone')),
-                );
+                    '#attributes' => ['placeholder' => $this->t('Mobile phone')],
+                ];
 
-                $form[$i]['email' . $i] = array(
+                $form[$i]['email' . $i] = [
                     '#type' => 'email',
                     '#size' => 50,
                     '#title' => $this->t('Email'),
                     '#maxlength' => 100,
                     '#default_value' => isset($rc['email']) ? $rc['email'] : null,
-                    '#attributes' => array('placeholder' => $this->t('Email address')),
-                );
+                    '#attributes' => ['placeholder' => $this->t('Email address')],
+                ];
 
-                $form[$i]['image' . $i] = array(
+                $form[$i]['image' . $i] = [
                     '#type' => 'file',
                     '#title' => $this->t('Upload a name card image'),
-                );
+                ];
 
                 // current image if any
                 if ($rc['card'] <> '') {
                     $card = \Drupal::service('file_url_generator')->generateAbsoluteString($rc['card']);
                     $image = "<a href='" . $card . "' target='_blank'><img class='thumbnail' src=" . $card . "></a>";
-                    $form[$i]['image_delete' . $i] = array(
+                    $form[$i]['image_delete' . $i] = [
                         '#type' => 'checkbox',
                         '#title' => $this->t('delete image'),
-                        '#attributes' => array('onclick' => "jQuery('#current$i ').toggleClass( 'delete');"),
+                        '#attributes' => ['onclick' => "jQuery('#current$i ').toggleClass( 'delete');"],
                         '#prefix' => "<div class='container-inline'>",
-                    );
-                    $form[$i]["currentimage" . $i] = array(
+                    ];
+                    $form[$i]["currentimage" . $i] =[
                         '#markup' => "<p id='current$i'style='padding:2px;'>" . $image . "</p>",
                         '#suffix' => '</div>',
-                    );
+                    ];
                 }
 
 
-                $form[$i]['department' . $i] = array(
+                $form[$i]['department' . $i] = [
                     '#type' => 'textfield',
                     '#size' => 60,
                     '#title' => $this->t('Department'),
                     '#maxlength' => 100,
                     '#default_value' => isset($rc['department']) ? $rc['department'] : null,
-                    '#attributes' => array('placeholder' => $this->t('Department or office')),
-                );
+                    '#attributes' => ['placeholder' => $this->t('Department or office')],
+                ];
 
-                $form[$i]['link' . $i] = array(
+                $form[$i]['link' . $i] = [
                     '#type' => 'textfield',
                     '#size' => 60,
                     '#title' => $this->t('Social network'),
                     '#maxlength' => 100,
                     '#default_value' => isset($rc['link']) ? $rc['link'] : null,
-                    '#attributes' => array('placeholder' => $this->t('Social network')),
-                );
+                    '#attributes' => ['placeholder' => $this->t('Social network')],
+                ];
 
-                $form[$i]['ccomment' . $i] = array(
+                $form[$i]['ccomment' . $i] = [
                     '#type' => 'textarea',
                     '#default_value' => isset($rc['comment']) ? $rc['comment'] : null,
-                    '#attributes' => array('placeholder' => $this->t('Add note')),
+                    '#attributes' => ['placeholder' => $this->t('Add note')],
                     '#rows' => 1
-                );
+                ];
 
                 $i++;
             }
         }
 
-        $form[$i] = array(
+        $form[$i] = [
             '#type' => 'details',
-            '#title' => $this->t('New contact card No. @i', array('@i' => $i + 1)),
+            '#title' => $this->t('New contact card No. @i', ['@i' => $i + 1]),
             '#collapsible' => true,
             '#open' => true,
-        );
+        ];
 
-        $form[$i]['id' . $i] = array(
+        $form[$i]['id' . $i] = [
             '#type' => 'hidden',
             '#default_value' => 'new',
-        );
+        ];
 
-
-
-        $form[$i]['contact_name' . $i] = array(
+        $form[$i]['contact_name' . $i] = [
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
-            '#attributes' => array('placeholder' => $this->t('Contact name')),
-        );
+            '#attributes' => ['placeholder' => $this->t('Contact name')],
+        ];
 
-        $form[$i]['main' . $i] = array(
+        $form[$i]['main' . $i] = [
             '#type' => 'checkbox',
             '#title' => $this->t('Set as primary'),
             '#default_value' => $main,
-            '#attributes' => array('title' => $this->t('Set as primary')),
+            '#attributes' => ['title' => $this->t('Set as primary')],
             // Hide data fieldset when field is empty.
-            '#states' => array(
-                'invisible' => array(
-                    "input[name='contact_name$i']" => array('value' => ''),
-                ),
-            ),
-        );
+            '#states' => [
+                'invisible' => [
+                    "input[name='contact_name$i']" => ['value' => ''],
+                ],
+            ],
+        ];
 
-        $form[$i]['salutation' . $i] = array(
+        $form[$i]['salutation' . $i] = [
             '#type' => 'select',
             '#options' => array_combine($salutation, $salutation),
             '#required' => false,
-            '#states' => array(
+            '#states' => [
                 // Hide data fieldset when field is empty.
-                'invisible' => array(
-                    "input[name='contact_name$i']" => array('value' => ''),
-                ),
-            ),
-        );
+                'invisible' => [
+                    "input[name='contact_name$i']" => ['value' => ''],
+                ],
+            ],
+        ];
 
-        $form[$i]['title' . $i] = array(
+        $form[$i]['title' . $i] = [
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
             '#required' => false,
-            '#attributes' => array('placeholder' => $this->t('Title or function')),
-            '#states' => array(
+            '#attributes' => ['placeholder' => $this->t('Title or function')],
+            '#states' => [
                 // Hide data fieldset when field is empty.
-                'invisible' => array(
-                    "input[name='contact_name$i']" => array('value' => ''),
-                ),
-            ),
-        );
+                'invisible' => ["input[name='contact_name$i']" => ['value' => ''],],
+            ],
+        ];
 
-        $form[$i]['ctelephone' . $i] = array(
+        $form[$i]['ctelephone' . $i] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 30,
-            '#attributes' => array('placeholder' => $this->t('Telephone')),
-            '#states' => array(
+            '#attributes' => ['placeholder' => $this->t('Telephone')],
+            '#states' => [
                 // Hide data fieldset when field is empty.
-                'invisible' => array(
-                    "input[name='contact_name$i']" => array('value' => ''),
-                ),
-            ),
-        );
+                'invisible' => ["input[name='contact_name$i']" => ['value' => ''],],
+            ],
+        ];
 
-        $form[$i]['cmobilephone' . $i] = array(
+        $form[$i]['cmobilephone' . $i] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 30,
-            '#attributes' => array('placeholder' => $this->t('Mobile phone')),
-            '#states' => array(
+            '#attributes' => ['placeholder' => $this->t('Mobile phone')],
+            '#states' => [
                 // Hide data fieldset when field is empty.
-                'invisible' => array(
-                    "input[name='contact_name$i']" => array('value' => ''),
-                ),
-            ),
-        );
+                'invisible' => ["input[name='contact_name$i']" => ['value' => ''],],
+            ],
+        ];
 
-        $form[$i]['email' . $i] = array(
+        $form[$i]['email' . $i] = [
             '#type' => 'email',
             '#size' => 50,
             '#maxlength' => 50,
-            '#attributes' => array('placeholder' => $this->t('Email address')),
-            '#states' => array(
+            '#attributes' => ['placeholder' => $this->t('Email address')],
+            '#states' => [
                 // Hide data fieldset when field is empty.
-                'invisible' => array(
-                    "input[name='contact_name$i']" => array('value' => ''),
-                ),
-            ),
-        );
+                'invisible' => ["input[name='contact_name$i']" => ['value' => ''],],
+            ],
+        ];
 
-        $form[$i]['image' . $i] = array(
+        $form[$i]['image' . $i] = [
             '#type' => 'file',
             '#title' => $this->t('Upload a name card image'),
-            '#states' => array(
+            '#states' => [
                 // Hide data fieldset when field is empty.
-                'invisible' => array(
-                    "input[name='contact_name$i']" => array('value' => ''),
-                ),
-            ),
-        );
+                'invisible' => ["input[name='contact_name$i']" => ['value' => ''],],
+            ],
+        ];
 
-        $form[$i]['department' . $i] = array(
+        $form[$i]['department' . $i] = [
             '#type' => 'textfield',
             '#size' => 50,
             '#maxlength' => 100,
-            '#attributes' => array('placeholder' => $this->t('Department or office')),
-            '#states' => array(
+            '#attributes' => ['placeholder' => $this->t('Department or office')],
+            '#states' => [
                 // Hide data fieldset when field is empty.
-                'invisible' => array(
-                    "input[name='contact_name$i']" => array('value' => ''),
-                ),
-            ),
-        );
+                'invisible' => ["input[name='contact_name$i']" => ['value' => ''],],
+            ],
+        ];
 
-        $form[$i]['link' . $i] = array(
+        $form[$i]['link' . $i] = [
             '#type' => 'textfield',
             '#size' => 50,
             '#maxlength' => 100,
-            '#attributes' => array('placeholder' => $this->t('Social network')),
-            '#states' => array(
+            '#attributes' => ['placeholder' => $this->t('Social network')],
+            '#states' => [
                 // Hide data fieldset when field is empty.
-                'invisible' => array(
-                    "input[name='contact_name$i']" => array('value' => ''),
-                ),
-            ),
-        );
+                'invisible' => ["input[name='contact_name$i']" => ['value' => ''],],
+            ],
+        ];
 
-        $form[$i]['ccomment' . $i] = array(
+        $form[$i]['ccomment' . $i] = [
             '#type' => 'textarea',
             '#rows' => 1,
-            '#states' => array(
+            '#states' => [
                 // Hide data fieldset when field is empty.
-                'invisible' => array(
-                    "input[name='contact_name$i']" => array('value' => ''),
-                ),
-            ),
-        );
+                'invisible' => ["input[name='contact_name$i']" => ['value' => ''],],
+            ],
+        ];
 
-        $form['cards'] = array(
+        $form['cards'] = [
             '#type' => 'hidden',
             '#default_value' => $i,
-        );
+        ];
 
 
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['submit'] = ['#type' => 'submit', '#value' => $this->t('Record')];
 
 
 
@@ -576,17 +554,32 @@ class NewAddressBookForm extends FormBase {
      * {@inheritdoc}
      *
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         parent::validateForm($form, $form_state);
 
+        // verify double entry
+        if($form_state->getValue('for_id') == null) {
+            $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_address_book', 'ab');
+                $query->fields('ab', ['id']);
+                $query->condition('name', $form_state->getValue('name') . '%', 'LIKE');
+                $id = $query->execute()->fetchField();
+            if($id) {
+                $form_state->setErrorByName('name', $this->t('There is already a name like "@n" in the records: <stong>@p</strong>.', 
+                ['@n' => $form_state->getValue('name'), '@p' => \Drupal\ek_address_book\AddressBookData::geturl($id)]));
+            }
+        }
         // Check for a new uploaded logo.
         $field = "logo";
-        $validators = array('file_validate_is_image' => array());
+        $validators = ['file_validate_is_image' => []];
         $file = file_save_upload($field, $validators, false, 0);
 
         if ($file != null && !empty($file)) {
-            $res = file_validate_image_resolution($file, '400x400');
+            $image_factory = \Drupal::service('image.factory');
+            $image = $image_factory->get($file->getFileUri());
+            if (!$image->isValid() || $image->getWidth() > 400 || $image->getHeight() > 400) {
+                $form_state->setErrorByName($field, $this->t('Logo exceeds the maximum resolution of 400x400.'));
+            }
             // File upload was attempted.
             if ($file) {
                 // Put the temporary file in form_values so we can save it on submit.
@@ -603,7 +596,6 @@ class NewAddressBookForm extends FormBase {
             if ($form_state->getValue('contact_name' . $i) <> '') {
                 // Handle file uploads.
                 // $validators = array('file_validate_extensions' => array('ico png gif jpg jpeg svg'));
-                $validators = array('file_validate_is_image' => array());
                 $field = "image" . $i;
                 // Check for a new uploaded .
                 $file = file_save_upload($field, $validators, false, 0);
@@ -613,7 +605,7 @@ class NewAddressBookForm extends FormBase {
                         $form_state->setValue($field, $file);
                     } else {
                         // File upload failed.
-                        $form_state->setErrorByName($field, $this->t('Card No. @i could not be uploaded', array('@i' => $i + 1)));
+                        $form_state->setErrorByName($field, $this->t('Card No. @i could not be uploaded', ['@i' => $i + 1]));
                     }
                 } else {
                     $form_state->setValue($field, 0);
@@ -638,9 +630,8 @@ class NewAddressBookForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
-        $fields = array(
+    public function submitForm(array &$form, FormStateInterface $form_state) {
+        $fields = [
             'name' => $form_state->getValue('name'),
             'shortname' => str_replace('/', '|', $form_state->getValue('shortname')),
             'reg' => Xss::filter($form_state->getValue('reg')),
@@ -658,7 +649,7 @@ class NewAddressBookForm extends FormBase {
             'activity' => Xss::filter($form_state->getValue('tags')),
             'stamp' => strtotime("now"),
             'created' => date('Y-m-d')
-        );
+        ];
 
 
         if ($form_state->getValue('for_id') == '') {
@@ -785,7 +776,7 @@ class NewAddressBookForm extends FormBase {
 
 
 
-                        $fields = array(
+                        $fields = [
                             'abid' => $id,
                             'contact_name' => $form_state->getValue('contact_name' . $i),
                             'salutation' => $form_state->getValue('salutation' . $i),
@@ -799,7 +790,7 @@ class NewAddressBookForm extends FormBase {
                             'comment' => $form_state->getValue('ccomment' . $i),
                             'main' => $form_state->getValue('main' . $i),
                             'stamp' => strtotime("now"),
-                        );
+                        ];
 
 
                         //verify if it is an existing or new entry
@@ -831,7 +822,7 @@ class NewAddressBookForm extends FormBase {
             \Drupal::messenger()->addStatus(t('The address book entry is recorded'));
             Cache::invalidateTags(['address_book_card']);
 
-            $form_state->setRedirect('ek_address_book.view', array('abid' => $id));
+            $form_state->setRedirect('ek_address_book.view', ['abid' => $id]);
         }
     }
 }

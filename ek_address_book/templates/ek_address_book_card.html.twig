@@ -1,159 +1,197 @@
 <section class="address_book_card">
-    <div class='button' style='float:right;'><span class="ico search"></span>{{ items.search }}</div><br/>
+    <div class="card-header">
+        {% if items.create_project %}
+            <div class='button'><span class="ico pencil"></span>{{ items.create_project }}</div>
+        {% endif %}   
+        <div class='button'><span class="ico search"></span>{{ items.search }}</div>
+        <div class="edit-info"><span class="ico pencil"></span>{{ 'last edit'|t }} {{ items.stamp }}</div>
+    </div>
+
     <div class="address_book_card-data">
-        <div class='table'>
-            <div class='row'>
-                <div class='cell'><span class="ico pencil"></span>
-                    ({{ 'last edit'|t }} {{ items.stamp }})</div>
-                <div class='cell'></div>
+        <div class="company-header">
+            <div class="company-info">
+                <h1 id="name">{{ items.name }}</h1>
+                <div class="company-subinfo">
+                    <span class="shortname">{{ items.shortname }}</span>
+                    <span class="badge {{ items.type }}">{{ items.type|upper }}</span><span>{{ items.clone }}</span>
+                </div>
             </div>
+            {% if items.logo_url != '' %}
+                <div class="company-logo">
+                    <img alt="{{ items.name }} logo" src="{{ items.logo_url }}"/>
+                </div>
+            {% endif %}
         </div>
-        <div class='table'>
-            <div class='row'>
-                <div class='cell cellborder'>
-                    <h2 id="name">{{ items.name }}</h2>
+
+        <div class="info-grid">
+            <div class="info-column">
+                <div class="info-block">
+                    <h2><span class="ico map-marker"></span><span class="clipboard_add">{{ 'Address'|t }}</span><span class="copy copyAdd">copied to clipboard</span></h2>
+                    <div class="address-data">
+                        <div class="address-line" id="address1">{{ items.address }}</div>
+                        <div class="address-line" id="address2">{{ items.address2 }}</div>
+                        <div class="address-line">
+                            <span id="postcode">{{ items.postcode }}</span>
+                            <span id="city">{{ items.city }}</span>
+                        </div>
+                        <div class="address-line">
+                            <span id="state">{{ items.state }}</span>, 
+                            <span id="country">{{ items.country }}</span>
+                        </div>
+                    </div>
                 </div>
-                <div class='cell'>
-                     {% if items.logo_url != '' %}
-                        <img class="" style="width:40px;" alt="logo" src="{{ items.logo_url }}"/>
-                    {% endif %}
-                </div>
-            </div>
-            <div class='row'>
-                <div class='cell {{ items.type }}'>
-                    
-                </div>
-                <div class='cell'>
-                    {# righ column #}
-                </div>
-            </div>
-            <div class='row'>
-                <div class='cell '>
-                    {{ items.shortname }}
-                </div>
-                <div class='cell'>
-                    {# righ column #}
-                </div>
-            </div>
-            <div class='row'>
-                <div class='cell'>
-                    {# righ column #}
-                    <h2><span class="ico map-marker"></span><span class=" clipboard_add">{{ 'Address'|t }}</span><span class="copy copyAdd">copied to clipboard</span></h2>
-                    <table>
-                        <tr>
-                            <td id="address1">{{ items.address }}</td><td id="state">{{ items.state }}</td>
-                        </tr> 
-                        <tr>
-                            <td id="address2">{{ items.address2 }}</td><td id="country">{{ items.city }}</td>
-                        </tr>  
-                        <tr>
-                            <td id="postcode">{{ items.postcode }}</td><td id="city">{{ items.country }}</td>
-                        </tr> 
-                    </table>
-                    <hr>
+
+                <div class="info-block">
                     <h2><span class="ico phone"></span>{{ 'Contact'|t }}</h2>
-                    <table>    
-                        <tr>
-                        </tr>    
-                        <tr>
-                            <td>{{ 'Tel'|t }} {{ items.telephone }}</td>
-                            <td>{{ 'Fax'|t }} {{ items.fax }}</td>
-                        </tr> 
-                        {% if items.website != '' %}
-                            <tr>
-                                <td><a href="http://{{ items.website }}" target="_blank">{{ items.website }}</a></td>
-                                <td></td>
-                            </tr>    
+                    <div class="contact-data">
+                        {% if items.telephone %}
+                            <div class="contact-line">
+                                <span class="contact-label">{{ 'Tel'|t }}:</span>
+                                <span class="contact-value">{{ items.telephone }}</span>
+                            </div>
                         {% endif %}
-                    </table>
+
+                        {% if items.fax %}
+                            <div class="contact-line">
+                                <span class="contact-label">{{ 'Fax'|t }}:</span>
+                                <span class="contact-value">{{ items.fax }}</span>
+                            </div>
+                        {% endif %}
+
+                        {% if items.website != '' %}
+                            <div class="contact-line">
+                                <span class="contact-label">{{ 'Website'|t }}:</span>
+                                <a href="http://{{ items.website }}" target="_blank" class="website-link">{{ items.website }}</a>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class='cell'>
-                    <table>
-                        <tr>
-                            <td><span class='ab-badge'>{{ 'Reg. number'|t }}: </span></td><td  id="regnumber">{{ items.reg }}</td>
-                        </tr>
-                        <tr>
-                            <td><span class='ab-badge'>{{ 'Status'|t }}: </span></td><td  id="astatus">{{ items.status }}</td>
-                        </tr>
-                        <tr>
-                            <td><span class='ab-badge'>{{ 'Tags'|t }}:</span></td><td id="atags">{{ items.activity }}</td>
-                        </tr>
-                        <tr>
-                            <td><span class='ab-badge'>{{ 'Type'|t }}:</span></td><td id="atype">{{ items.type }} {{ items.clone }}</td>
-                        </tr>
-                    </table>
+            </div>
+
+            <div class="info-column">
+                <div class="info-block">
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class='ab-badge'>{{ 'Reg. number'|t }}</span>
+                            <span id="regnumber" class="detail-value">{{ items.reg }}</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class='ab-badge'>{{ 'Status'|t }}</span>
+                            <span id="astatus" class="status-badge status-{{ items.status|lower }}">{{ items.status }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class='ab-badge'>{{ 'Office'|t }}</span>
+                            <span id="acategory" class="detail-value">{{ items.category }}</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class='ab-badge'>{{ 'Tags'|t }}</span>
+                            <div id="atags" class="tags-list">
+                                {% set tags = items.activity|split(',') %}
+                                {% for tag in tags %}
+                                    {% set url = "/address_book?q=" ~ tag %}
+                                    <a class="tagsearch" href='{{ url }}'><span class="tag-item">{{ tag|trim }}</span></a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
     <hr>
+
     <div class="address_book_card-contacts">
+        <div class="section-header">
+            <h2><span class="ico users"></span> {{ 'Name cards'|t }}</h2>
+            <div class='add-contact'><span class='button'><span class="ico plus"></span>{{ items.add }}</span></div>
+        </div>
 
-        <div class='table'>
-            <div class='row'>
-                <div class='cell' ><h2><span class="ico users"></span> {{ 'Name cards'|t }}</h2></div>  
-                <div class='text-right cell' ><span class='button'><span class="ico plus"></span>{{ items.add }}</div>
-            </div></div><br/>
-
-        {% for item in items.contacts %}
-
-            <div class="ab-panel ab-panel-default">
-                <div class="ab-panel-heading">
-                    <a href='#{{ item.id }}'  onclick="jQuery('#{{ item.id }}').toggle();">
-                        <h3 class="ab-panel-title"><span id="salutation{{ item.id }}">{{ item.salutation }}</span> 
-                            <span id="card{{ item.id }}">{{ item.contact_name }}</span>
-                        </h3>
-                    </a>
-                </div>
-                <div class="ab-panel-body" id="{{ item.id }}">
-                    <table>
-                        <tr>
-                            <td>
-                                <span class="ico user"></span>
-                                <span> | </span><span id="{{ item.id }}" class="clipboard_name">{{ item.contact_name }}<span id="copy{{ item.id }}" class="copy">copied to clipboard</span></span>
-                            </td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td><span class="ico briefcase"></span><span> | </span><span>{{ item.title }}</span></td>
-                            <td rowspan='6' style='text-align:center;width:40%;' >
-                                {% if item.card_ != '' %}
-                                    <a href='modal/nojs/{{ item.id }}' class='use-ajax'>
-                                       <img style="width:50%" src="{{ item.card }}"></a>
-                                {% else %}
-                                    <span class="ico namecard fa-5x"></span>
+        <div class="contact-cards">
+            {% for item in items.contacts %}
+                <div class="ab-panel">
+                    <div class="ab-panel-heading">
+                        <a href='#{{ item.id }}' onclick="jQuery('#{{ item.id }}').toggle();">
+                            <h3 class="ab-panel-title">
+                                <span id="salutation{{ item.id }}">{{ item.salutation }}</span> 
+                                <span id="card{{ item.id }}">{{ item.contact_name }}</span>
+                            </h3>
+                        </a>
+                    </div>
+                    <div class="ab-panel-body" id="{{ item.id }}">
+                        <div class="contact-card-content">
+                            <div class="contact-details">
+                                <div class="contact-row">
+                                    <span class="ico user"></span>
+                                    <span id="{{ item.id }}" class="clipboard_name">{{ item.contact_name }}
+                                        <span id="copy{{ item.id }}" class="copy">copied to clipboard</span>
+                                    </span>
+                                </div>
+                                
+                                {% if item.title %}
+                                <div class="contact-row">
+                                    <span class="ico briefcase"></span>{{ item.title }}
+                                </div>
                                 {% endif %}
                                 
+                                {% if item.department %}
+                                <div class="contact-row">
+                                    <span class="ico tag"></span>{{ item.department }}
+                                </div>
+                                {% endif %}
                                 
-                                </td>
-                        </tr>
-                        <tr>
-                            <td><span class="ico tag"><span> | </span><span>{{ item.department }}</span></td>
-
-                        </tr>         
-                        <tr>
-                            <td><span class="ico phone"></span><span> | </span><span>{{ item.telephone }}</span></td>
-                        </tr>  
-                        <tr>
-                            <td><span class="ico mobile"></span><span> | </span><span>{{ item.mobilephone }}</span></td>
-                        </tr>   
-                        <tr>
-                            <td><span class="ico envelope"></span><span> | </span><span>{{ item.email }}</span></td>
-                        </tr>  
-                        <tr>
-                            <td><span class="ico link"></span><span> | </span><span>{{ item.link }}</span></td>
-                        </tr>       
-                        <tr>
-                            <td><span class="ico comment"></span><span>  </span><span>{{ item.comment }}</span></td>
-                            <td><center><span class="ico file-pdf"> {{ item.pdf|raw }}</center></td>
-                        </tr>                  
-                    </table>
+                                {% if item.telephone %}
+                                <div class="contact-row">
+                                    <span class="ico phone"></span>{{ item.telephone }}
+                                </div>
+                                {% endif %}
+                                
+                                {% if item.mobilephone %}
+                                <div class="contact-row">
+                                    <span class="ico mobile"></span>{{ item.mobilephone }}
+                                </div>
+                                {% endif %}
+                                
+                                {% if item.email %}
+                                <div class="contact-row">
+                                    <span class="ico envelope"></span>{{ item.email }}
+                                </div>
+                                {% endif %}
+                                
+                                {% if item.link %}
+                                <div class="contact-row">
+                                    <span class="ico link"></span>{{ item.link }}
+                                </div>
+                                {% endif %}
+                                
+                                {% if item.comment %}
+                                <div class="contact-row comment-row">
+                                    <span class="ico comment"></span>{{ item.comment }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="contact-card-image">
+                                {% if item.card_ != '' %}
+                                    <a href='modal/nojs/{{ item.id }}' class='use-ajax'>
+                                        <img src="{{ item.card }}" alt="{{ item.contact_name }} card">
+                                    </a>
+                                {% else %}
+                                    <span class="ico namecard"></span>
+                                {% endif %}
+                                
+                                {% if item.pdf|raw %}
+                                <div class="pdf-download">
+                                    <span class="ico file-pdf"></span>{{ item.pdf|raw }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <br/>
-        {% endfor %}
+            {% endfor %}
+        </div>
     </div>
-
 </section>
-  
-    
