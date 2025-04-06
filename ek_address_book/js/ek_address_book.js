@@ -13,51 +13,59 @@ jQuery(document).ready(function () {
         + jQuery('#address1').html() + ' \n' 
         + jQuery('#address2').html() + ' \n'
         + jQuery('#state').html() + ' \n'
-        + jQuery('#postcode').html() + ' \n'
+        + jQuery('#postcode').html() + ' '
         + jQuery('#city').html() + ' \n'
         + jQuery('#country').html() + ' \n'
-        + jQuery('#regname').html() + ' \n';
-        var $body = document.getElementsByTagName('body')[0];
-        var $tempInput = document.createElement('INPUT');
-        $body.appendChild($tempInput);
-        $tempInput.setAttribute('value', text)
-        $tempInput.select();
-        document.execCommand('copy');
-        $body.removeChild($tempInput);
-        for (i = 0; i < 2; i++) {
-            jQuery('.copyAdd').fadeTo('fast', 1.0).fadeTo('fast', 0);
-            
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(function() {
+                for (let i = 0; i < 2; i++) {
+                    jQuery('#copy' + id).fadeTo('fast', 1.0).fadeTo('fast', 0);
+                }
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+                fallbackCopyTextToClipboard(text, id);
+            });
+        } else {
+            fallbackCopyTextToClipboard(text,'.copyAdd');
         }
-        
+    });
 
-        
+    jQuery(".clipboard_name").click(function () {
+        var id = this.id;
+        var text = jQuery('#salutation' + id).html() + ' ' 
+            + jQuery('#card' + id).html() + ', \n' 
+            + jQuery('#name').html() + '\n' 
+            + jQuery('#address1').html() + '\n' 
+            + jQuery('#address2').html() + '\n'
+            + jQuery('#state').html() + '\n'
+            + jQuery('#postcode').html() + ' '
+            + jQuery('#city').html() + '\n'
+            + jQuery('#country').html();
+    
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(function() {
+                for (let i = 0; i < 2; i++) {
+                    jQuery('#copy' + id).fadeTo('fast', 1.0).fadeTo('fast', 0);
+                }
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+                fallbackCopyTextToClipboard(text, id);
+            });
+        } else {
+            fallbackCopyTextToClipboard(text,'#copy' + id);
+        }
     });
     
-    jQuery(".clipboard_name").click(function () {
-        
-        var id = this.id;
-        var text = jQuery('#salutation' + id).html() + ' \n' 
-        + jQuery('#card' + id).html() + ', \n' 
-        + jQuery('#name').html() + ' \n' 
-        + jQuery('#address1').html() + ' \n' 
-        + jQuery('#address2').html() + ' \n'
-        + jQuery('#state').html() + ' \n'
-        + jQuery('#postcode').html() + ' \n'
-        + jQuery('#city').html() + ' \n'
-        + jQuery('#country').html() + ' \n';
-
+    function fallbackCopyTextToClipboard(text, id) {
         var $body = document.getElementsByTagName('body')[0];
-        var $tempInput = document.createElement('INPUT');
+        var $tempInput = document.createElement('textarea');
         $body.appendChild($tempInput);
-        $tempInput.setAttribute('value', text)
+        $tempInput.value = text;
         $tempInput.select();
         document.execCommand('copy');
         $body.removeChild($tempInput);
-        for (i = 0; i < 2; i++) {
-            jQuery('#copy' + this.id).fadeTo('fast', 1.0).fadeTo('fast', 0);
+        for (let i = 0; i < 2; i++) {
+            jQuery(id).fadeTo('fast', 1.0).fadeTo('fast', 0);
         }
-        
-        
-    });
-
+    }
 });

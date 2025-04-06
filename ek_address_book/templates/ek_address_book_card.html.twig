@@ -26,7 +26,9 @@
         <div class="info-grid">
             <div class="info-column">
                 <div class="info-block">
-                    <h2><span class="ico map-marker"></span><span class="clipboard_add">{{ 'Address'|t }}</span><span class="copy copyAdd">copied to clipboard</span></h2>
+                    <h2><span class="ico map-marker"></span>
+                        <span class="clipboard_add">{{ 'Address'|t }}</span><span class="copy copyAdd">copied to clipboard</span>
+                    </h2>
                     <div class="address-data">
                         <div class="address-line" id="address1">{{ items.address }}</div>
                         <div class="address-line" id="address2">{{ items.address2 }}</div>
@@ -126,8 +128,8 @@
                                 <div class="contact-row">
                                     <span class="ico user"></span>
                                     <span id="{{ item.id }}" class="clipboard_name">{{ item.contact_name }}
-                                        <span id="copy{{ item.id }}" class="copy">copied to clipboard</span>
-                                    </span>
+                                        
+                                    </span><span id="copy{{ item.id }}" class="copy">copied to clipboard</span>
                                 </div>
                                 
                                 {% if item.title %}

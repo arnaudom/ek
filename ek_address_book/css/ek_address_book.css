@@ -27,27 +27,6 @@
   background-color: rgba(52, 152, 219, 0.05);
 }
 
-/*.header_tb {  
-  display: table-cell;
-  padding: 12px 8px;
-  font-weight: 600;
-  color: var(--secondary-color);
-  border-bottom: 2px solid var(--primary-color);
-}*/
-
-/*.cell {  
-  display: table-cell;
-  padding: 10px 8px !important;
-  vertical-align: middle;
-}
-
-.cellborder {  
-  border: 1px solid #e0e6ed;
-  border-radius: var(--border-radius);
-  background-color: rgba(52, 152, 219, 0.05);
-  padding: 12px !important;
-}*/
-
 /* Card panel styling */
 .ab-panel {
   background-color: #FFFFFF !important;
@@ -214,24 +193,6 @@ div .other {
   color: white;
 }
 
-/* Custom styling for address book card */
-/*.address_book_card {
-  background-color: white;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  padding: 24px;
-  margin-bottom: 30px;
-}*/
-
-/*.address_book_card h2 {
-  color: var(--secondary-color);
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-}*/
-
 .address_book_card-contacts {
   margin-top: 20px;
 }
@@ -266,12 +227,24 @@ hr {
   padding-right: 20px;
 }
 
-.clipboard_add:after, .clipboard_name:after {
+.clipboard_add:after {
   content: "\f0c5";
   font-family: FontAwesome;
   font-size: 0.8em;
   position: absolute;
   right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.5;
+  transition: var(--transition);
+}
+
+.clipboard_name:before {
+  content: "\f0c5";
+  font-family: FontAwesome;
+  font-size: 1.1em;
+  position: absolute;
+  right: -10px;
   top: 50%;
   transform: translateY(-50%);
   opacity: 0.5;
@@ -437,16 +410,6 @@ hr {
   font-weight: 600;
   font-size: 0.9em;
 }
-/*
-.status-active {
-  background-color: rgba(46, 204, 113, 0.15);
-  color: #27ae60;
-}*/
-/*
-.status-inactive {
-  background-color: rgba(231, 76, 60, 0.15);
-  color: #c0392b;
-}*/
 
 .tags-list {
   display: flex;
@@ -562,8 +525,6 @@ hr {
 .abook_image-link {
     border-bottom: 0px !important;
 }
-
-
 
 /**/
 /* Main form styling */
