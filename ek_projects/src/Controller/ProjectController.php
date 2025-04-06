@@ -295,8 +295,8 @@ class ProjectController extends ControllerBase {
      * Return project dashboard
      *
      */
-    public function newproject() {
-        return $items['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\NewProject');
+    public function newproject(Request $request) {
+        return $items['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\NewProject', $request);
     }
 
     /**
@@ -468,7 +468,7 @@ class ProjectController extends ControllerBase {
             /*
              * create a link to edit client
              */
-            if (\Drupal::currentUser()->id() == $data['project'][0]->owner) {
+            if (\Drupal::currentUser()->id() == $data['project'][0]->owner || \Drupal::currentUser()->hasPermission('admin_projects')) {
                 $param_edit = 'field|client_id|' . $id;
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
                 $data['project'][0]->edit_client_id = ('<a title="' . $this->t('edit client') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');

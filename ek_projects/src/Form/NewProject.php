@@ -55,11 +55,11 @@ class NewProject extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
+    public function buildForm(array $form, FormStateInterface $form_state, $request = null) {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
-
+        
         $type = Database::getConnection('external_db', 'external_db')
             ->select('ek_project_type', 'p')
             ->fields('p',['id','type'])
@@ -112,13 +112,17 @@ class NewProject extends FormBase {
 
             if ($this->moduleHandler->moduleExists('ek_address_book')) {
                 $client = \Drupal\ek_address_book\AddressBookData::addresslist(1);
-
+                $default = null;
+                if($request->query->get('abid') && $client[$request->query->get('abid')]) {
+                    $default =  $request->query->get('abid') . ' | ' . $client[$request->query->get('abid')];
+                }
                 if (!empty($client)) {
                     $form['client'] = [
                         '#type' => 'textfield',
                         '#size' => 50,
                         '#maxlength' => 200,
                         '#required' => true,
+                        '#default_value' => $default,
                         '#title' => $this->t('Client'),
                         '#attributes' => array('placeholder' => $this->t('Type name or contact to select client')),
                         '#autocomplete_route_name' => 'ek.look_up_contact_ajax',
