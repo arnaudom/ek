@@ -647,6 +647,7 @@ class NewAddressBookForm extends FormBase {
             'type' => $form_state->getValue('type'),
             'category' => $form_state->getValue('category'),
             'activity' => Xss::filter($form_state->getValue('tags')),
+            'status' => $form_state->getValue('status'),
             'stamp' => strtotime("now"),
             'created' => date('Y-m-d')
         ];
@@ -665,7 +666,7 @@ class NewAddressBookForm extends FormBase {
                     ->fields(['abid' => $id, 'comment' => ''])
                     ->execute();
         } else {
-
+            unset($fields['created']);
             //update existing
             $update = Database::getConnection('external_db', 'external_db')->update('ek_address_book')
                     ->condition('id', $form_state->getValue('for_id'))
