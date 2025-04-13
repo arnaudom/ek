@@ -72,7 +72,7 @@ Switch ($source) {
 
         if (isset($head->pcode) && $head->pcode != 'n/a') {
             $head->pcode_raw = $head->pcode;
-            $head->pcode = \Drupal\ek_projects\ProjectData::geturl($head->pcode);
+            $head->pcode = \Drupal::service('project.service')->geturl($head->pcode);
         } else {
             $head->pcode = "";
             $head->pcode_raw = "";
@@ -88,8 +88,6 @@ Switch ($source) {
             $query->fields('u');
             $query->condition('uid', $head->entity);
             $company = $query->execute()->fetchObject();
-            //$query = "SELECT * from {users_field_data} where uid=:id";
-            //$company = db_query($query, array(':id' => $head->entity))->fetchObject();
         }
 
         $auth = explode('|', $head->auth);
@@ -147,9 +145,6 @@ Switch ($source) {
                 $query->fields('u');
                 $query->condition('uid', $l->entity);
                 $entity = $query->execute()->fetchAssoc();
-                //$query = "SELECT * from {users_field_data} where uid=:id";
-                //$entity = db_query($query, array(':id' => $l->entity))
-                //        ->fetchAssoc();
 
                 $query = "SELECT * from {ek_company} where id=:id";
                 $entity_to = Database::getConnection('external_db', 'external_db')

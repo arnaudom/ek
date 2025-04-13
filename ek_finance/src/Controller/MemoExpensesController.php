@@ -20,13 +20,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\FinanceSettings;
-use Drupal\ek_projects\ProjectData;
+
 
 /**
  * Controller routines for ek module routes.
  */
-class MemoExpensesController extends ControllerBase
-{
+class MemoExpensesController extends ControllerBase {
 
     /**
      * The module handler.
@@ -376,7 +375,7 @@ class MemoExpensesController extends ControllerBase
             if ($r->pcode != 'not project related' && $r->pcode != '' && $r->pcode != 'n/a') {
                 if ($this->moduleHandler->moduleExists('ek_projects')) {
                     $pcode = str_replace('/', '-', $r->pcode);
-                    $ref .= '<br/>' . ProjectData::geturl($pcode, 0, 0, 1);
+                    $ref .= '<br/>' . \Drupal::service('project.service')->geturl($pcode, 0, 0, 1);
                 }
             }
 
@@ -564,10 +563,7 @@ class MemoExpensesController extends ControllerBase
                         ->condition('serial', $keyword1, 'like')
                         ->condition($or)
                         ->orderBy($order, $sort);
-            /*
-            $query = "SELECT * from {ek_expenses_memo}
-            WHERE (entity =:e  OR FIND_IN_SET (entity_to, :coid ))
-            AND category = :c AND serial like :s";*/
+            
             } else {
                 $query->condition('category', 5, '=')
                         ->condition('serial', $keyword1, 'like')
@@ -621,11 +617,11 @@ class MemoExpensesController extends ControllerBase
             $total = 0;
             $row = 0;
             $status = array('0' => $this->t('not paid'), '1' => $this->t('partial paid'), '2' => $this->t('paid'));
-            //store company data
+            // store company data
             $companies = Database::getConnection('external_db', 'external_db')
                     ->query("SELECT id,name from {ek_company}")
                     ->fetchAllKeyed();
-            //store users data
+            // store users data
             $userData = Database::getConnection()->select('users_field_data', 'u')
                         ->fields('u', ['uid', 'name'])
                         ->execute()->fetchAllKeyed();
@@ -644,7 +640,7 @@ class MemoExpensesController extends ControllerBase
                 if ($r->pcode != 'not project related' && $r->pcode != '' && $r->pcode != 'n/a') {
                     if ($this->moduleHandler->moduleExists('ek_projects')) {
                         $pcode = str_replace('/', '-', $r->pcode);
-                        $ref .= '<br/>' . ProjectData::geturl($pcode, 0, 0, 1);
+                        $ref .= '<br/>' . \Drupal::service('project.service')->geturl($pcode, 0, 0, 1);
                     }
                 }
 

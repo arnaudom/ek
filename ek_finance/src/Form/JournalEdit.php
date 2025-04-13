@@ -70,17 +70,34 @@ class JournalEdit extends FormBase {
             '#title' => $this->t('delete')
         ];
 
-        $form['record_as_new'] = [
-            '#type' => 'radios',
-            '#title' => $this->t('Record'),
-            '#options' => ['1' => $this->t('clone'), '0' => $this->t('edit')],
-            '#default_value' => 1,
-            '#states' => [
-                'invisible' => [
-                    "input[name='delete']" => ['checked' => true],
+        if($param['edit'] == false) {
+            $form['default'] = [
+                '#type' => 'item',
+                '#markup' => $this->t('Cloning record'),
+                '#states' => [
+                    'invisible' => [
+                        "input[name='delete']" => ['checked' => true],
+                    ],
                 ],
-            ],
-        ];
+            ];
+            $form['record_as_new'] = [
+                '#type' => 'hidden',
+                '#value' => 1
+            ];
+
+        } else {
+            $form['record_as_new'] = [
+                '#type' => 'radios',
+                '#title' => $this->t('Record'),
+                '#options' => ['1' => $this->t('clone'), '0' => $this->t('edit')],
+                '#default_value' => 1,
+                '#states' => [
+                    'invisible' => [
+                        "input[name='delete']" => ['checked' => true],
+                    ],
+                ],
+            ];
+        }
 
         $form["date"] = [
             '#type' => 'date',

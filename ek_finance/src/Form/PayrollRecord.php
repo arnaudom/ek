@@ -15,7 +15,6 @@ use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\CompanySettings;
-use Drupal\ek_projects\ProjectData;
 use Drupal\ek_finance\AidList;
 use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_finance\CurrencyData;
@@ -153,8 +152,8 @@ class PayrollRecord extends FormBase {
 
         $client = array('n/a' => $this->t('not applicable'));
         $client += AddressBookData::addresslist(1);
-        if ($this->moduleHandler->moduleExists('ek_projects')) {
-            $pcode = ProjectData::listprojects(0);
+        if ($this->moduleHandler->moduleExists('ek_projects')) { 
+            $pcode = \Drupal::service('project.service')->listprojects(0);
         }
         $fsettings = new FinanceSettings();
         $chart = $fsettings->get('chart');

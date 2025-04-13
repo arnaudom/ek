@@ -9,9 +9,7 @@ namespace Drupal\ek_finance\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\AppendCommand;
-use Drupal\Core\Ajax\AttachCommand;
 use Drupal\Core\Ajax\InvokeCommand;
-use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\File\FileSystemInterface;
@@ -22,7 +20,6 @@ use Drupal\Component\Utility\Bytes;
 use Drupal\Component\Utility\Environment;
 use Drupal\Component\Utility\Xss;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_projects\ProjectData;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\AidList;
 use Drupal\ek_finance\CurrencyData;
@@ -307,7 +304,7 @@ class NewMemo extends FormBase {
             $form['options']['pcode'] = [
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => ProjectData::listprojects(0),
+                '#options' => \Drupal::service('project.service')->listprojects(0),
                 '#required' => true,
                 '#default_value' => isset($data->pcode) ? $data->pcode : null,
                 '#title' => $this->t('Project'),

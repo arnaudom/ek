@@ -45,8 +45,7 @@ class ExpensesManageController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container)  {
         return new static(
                 $container->get('form_builder'), $container->get('module_handler')
         );
@@ -61,8 +60,7 @@ class ExpensesManageController extends ControllerBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler)  {
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
     }
@@ -72,8 +70,7 @@ class ExpensesManageController extends ControllerBase
      *  @return array
      *
      */
-    public function recordExpenses(Request $request)
-    {
+    public function recordExpenses(Request $request) {
         $build['new_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\RecordExpense');
 
         return $build;
@@ -83,8 +80,7 @@ class ExpensesManageController extends ControllerBase
      *  clone an expense from existing record
      *  @return array
      */
-    public function cloneExpenses(Request $request, $id)
-    {
+    public function cloneExpenses(Request $request, $id) {
         $build['new_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\RecordExpense', $id, 'clone');
 
         return $build;
@@ -325,8 +321,7 @@ class ExpensesManageController extends ControllerBase
      *  @return array
      *  rendered html
      */
-    public function listExpenses(Request $request)
-    {
+    public function listExpenses(Request $request)   {
         $build['filter_expenses'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterExpenses');
         $sort = 'asc';
         $order = 'j.id';
@@ -486,8 +481,8 @@ class ExpensesManageController extends ControllerBase
                     }
                     
                     if ($r->pcode <> 'n/a') {
-                        if ($this->moduleHandler->moduleExists('ek_projects')) {
-                            $ref['project'] = ['#markup' => \Drupal\ek_projects\ProjectData::geturl($r->pcode, null, null, true)];
+                        if ($this->moduleHandler->moduleExists('ek_projects')) { 
+                            $ref['project'] = ['#markup' => \Drupal::service('project.service')->geturl($r->pcode, null, null, true)];
                         }
                     }
 
@@ -514,7 +509,7 @@ class ExpensesManageController extends ControllerBase
                     }
                     if ($r->p_pcode <> 'n/a') {
                         if ($this->moduleHandler->moduleExists('ek_projects')) {
-                            $ref['project'] = ['#markup' => \Drupal\ek_projects\ProjectData::geturl($r->p_pcode, null, null, true)];
+                            $ref['project'] = ['#markup' => \Drupal::service('project.service')->geturl($r->p_pcode, null, null, true)];
                         }
                     }
                     if ($r->uri != '') {
@@ -693,8 +688,7 @@ class ExpensesManageController extends ControllerBase
      *  @return array
      *  rendered html table
      */
-    public function listExpensesRaw(Request $request)
-    {
+    public function listExpensesRaw(Request $request)  {
         $build['filter_expenses'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterExpenses');
 
         $build['alert'] = ['#markup' => "<div class='messages messages--warning'>" . $this->t('This is not an extract built from journal records. Data may not be accurate.') . "</div>"];
@@ -853,7 +847,7 @@ class ExpensesManageController extends ControllerBase
                 }
                 if ($r->pcode <> 'n/a') {
                     if ($this->moduleHandler->moduleExists('ek_projects')) {
-                        $ref .= \Drupal\ek_projects\ProjectData::geturl($r->pcode, false, false, true);
+                        $ref .= \Drupal::service('project.service')->geturl($r->pcode, false, false, true);
                     }
                 }
 

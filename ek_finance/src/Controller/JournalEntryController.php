@@ -19,8 +19,7 @@ use Drupal\ek_admin\Access\AccessCheck;
 /**
  * Controller routines for ek module routes.
  */
-class JournalEntryController extends ControllerBase
-{
+class JournalEntryController extends ControllerBase {
 
     /**
      * The form builder service.
@@ -32,8 +31,7 @@ class JournalEntryController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('form_builder')
         );
@@ -45,8 +43,7 @@ class JournalEntryController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(FormBuilderInterface $form_builder)
-    {
+    public function __construct(FormBuilderInterface $form_builder) {
         $this->formBuilder = $form_builder;
     }
 
@@ -56,8 +53,7 @@ class JournalEntryController extends ControllerBase
      *  form
      *
      */
-    public function entryjournal(Request $request)
-    {
+    public function entryjournal(Request $request) {
         $build['journal_entry'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\JournalEntry');
         return $build;
     }
@@ -69,8 +65,7 @@ class JournalEntryController extends ControllerBase
      *      id of journal entry
      *
      */
-    public function editjournal($id)
-    {
+    public function editjournal($id) {
         $company = AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal', 'j');
@@ -79,15 +74,17 @@ class JournalEntryController extends ControllerBase
             
         $data = $query->execute()->fetchObject();
         $edit = true;
+        $clone = null;
         if (!$data) {
             $edit = false;
         } elseif (!in_array($data->coid, $company)) {
-            //user has no access to this information
+            // user has no access to this information
             $edit = false;
         } elseif ($data->reconcile == '1') {
             $edit = false;
+            $clone = true;
         } elseif ($data->reconcile == '0') {
-            //need to check double entry recociliation status
+            // need to check double entry reconciliation status
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal', 'j');
             $query->fields('j', ['reconcile']);
@@ -97,20 +94,23 @@ class JournalEntryController extends ControllerBase
             $query->condition('id', $data->id, '<>');
             if ($query->execute()->fetchField() == '1') {
                 $edit = false;
+                $clone = true;
             }
         } elseif ($data->source != 'general' || $data->source != 'general cash') {
-            //TODO check this condition is valid : || $data->source != 'payment'
+            // TODO check this condition is valid : || $data->source != 'payment'
             $edit = false;
         }
 
-        if ($edit == true) {
+        if ($edit == true || $clone == true) {
             $param = ['id' => $id,
                 'coid' => $data->coid,
                 'source' => $data->source,
                 'reference' => $data-> reference,
                 'currency' => $data->currency,
                 'date' => $data->date,
-                    ];
+                'edit' => $edit,
+                'clone' => $clone
+                ];
             $build['journal_edit'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\JournalEdit', $param);
         } else {
             $url = Url::fromRoute('ek_finance.extract.general_journal', array(), array())->toString();

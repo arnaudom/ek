@@ -214,7 +214,7 @@ class FilterExpenses extends FormBase {
             $query->distinct();
             $list = $query->execute()->fetchAllKeyed();
 
-            $pcode += \Drupal\ek_projects\ProjectData::format_project_list($list);
+            $pcode += \Drupal::service('project.service')->format_project_list($list);
 
             $form['filters'][3]['pcode'] = [
                 '#type' => 'select',
