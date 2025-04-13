@@ -10,10 +10,6 @@ namespace Drupal\ek_address_book\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
-use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Core\Url;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_admin\Access\AccessCheck;
 
 /**
  * Provides a form to delete address book main entry.
@@ -49,10 +45,10 @@ class DeleteAddressBook extends FormBase {
             '#value' => $abid,
         );
 
-
         $form['actions']['record'] = array(
             '#type' => 'submit',
             '#value' => $this->t('Confirm delete (including attached namecards)'),
+            '#attributes' => ['class' => ['button button--primary']],
         );
 
         return $form;
@@ -93,6 +89,7 @@ class DeleteAddressBook extends FormBase {
 
         if ($delete) {
             \Drupal::messenger()->addStatus(t('The address book entry has been deleted'));
+            \Drupal::service('cache_tags.invalidator')->invalidateTags(['address_book_card']);
             $form_state->setRedirect("ek_address_book.search");
         }
     }

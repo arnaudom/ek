@@ -211,7 +211,7 @@ class AddressBookController extends ControllerBase {
                 array_push($items['contacts'], $contact);
             }
 
-            return array(
+            return [
                 '#theme' => 'ek_address_book_card',
                 '#items' => $items,
                 '#attached' => [
@@ -221,7 +221,7 @@ class AddressBookController extends ControllerBase {
                     'tags' => ['address_book_card'],
                     'contexts' => [],
                 ],
-            );
+            ];
         }
     }
 
@@ -289,104 +289,15 @@ class AddressBookController extends ControllerBase {
         );
     }
 
-    /**
-     * Clone address book entry under different type
-     * When an entity is both a client and supplier the entry can be cloned
-     * * under different type
-     */
+  /**
+   * Init clone process.
+   * Clone address book entry under different type
+   * When an entity is both a client and supplier the entry can be cloned
+   * @param int $abid
+   *   The address book ID to clone.
+   */
     public function cloneaddressbook(Request $request, $abid = null) {
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_address_book', 'ab');
-        $query->fields('ab');
-        $query->condition('id', $abid);
-        $r = $query->execute()->fetchObject();
-
-        // check the entry has not been cloned already
-        // there should be only 3 types per name
-        $clone = true;
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_address_book', 'ab');
-        $query->fields('ab', ['type']);
-        $query->condition('name', $r->name);
-        $query->condition('type', $r->type, '<>');
-        $check = $query->execute()->fetchField();
-
-        if ($check == '1') {
-            $clone = false;
-        } elseif ($check == '2') {
-            $clone = false;
-        } elseif ($check == '3') {
-            $newtype = 1;
-        } else {
-            $newtype = ($r->type == '1') ? 2 : 1;
-        }
-
-        if ($clone == true) {
-            //copy main data
-            $fields = array(
-                'name' => $r->name,
-                'shortname' => $r->shortname,
-                'address' => $r->address,
-                'address2' => $r->address2,
-                'postcode' => $r->postcode,
-                'city' => $r->city,
-                'country' => $r->country,
-                'telephone' => $r->telephone,
-                'fax' => $r->fax,
-                'website' => $r->website,
-                'type' => $newtype,
-                'category' => $r->category,
-                'activity' => $r->activity,
-                'status' => 1,
-                'stamp' => strtotime("now"),
-                'logo' => $r->logo,
-            );
-
-            $newid = Database::getConnection('external_db', 'external_db')
-                            ->insert('ek_address_book')
-                            ->fields($fields)->execute();
-            // copy contacts
-           $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_address_book_contacts', 'c');
-
-            $data = $query
-                    ->fields('c')
-                    ->condition('c.abid', $abid, '=')
-                    ->execute();
-
-            while ($r = $data->fetchObject()) {
-                $fields = array(
-                    'abid' => $newid,
-                    'contact_name' => $r->contact_name,
-                    'salutation' => $r->salutation,
-                    'title' => $r->title,
-                    'telephone' => $r->telephone,
-                    'mobilephone' => $r->mobilephone,
-                    'email' => $r->email,
-                    'card' => $r->card,
-                    'department' => $r->department,
-                    'link' => $r->link,
-                    'comment' => $r->comment,
-                    'main' => $r->main,
-                    'stamp' => strtotime("now"),
-                );
-
-                Database::getConnection('external_db', 'external_db')
-                        ->insert('ek_address_book_contacts')
-                        ->fields($fields)->execute();
-            }
-
-            // create comment entry
-            Database::getConnection('external_db', 'external_db')
-                    ->insert('ek_address_book_comment')
-                    ->fields(['abid' => $newid])->execute();
-
-            $url = Url::fromRoute('ek_address_book.edit', ['abid' => $newid])->toString();
-            return new RedirectResponse($url);
-        } else {
-            //cannot clone this entry
-            return array('#markup' => $this->t('This entry cannot be cloned.'));
-        }
+        return $this->redirect('ek_address_book.clone_confirm', ['abid' => $abid]);
     }
 
     /**

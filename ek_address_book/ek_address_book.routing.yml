@@ -110,6 +110,14 @@ ek_address_book.clone:
     _permission: 'edit_address_book'
     abid: \d*
 
+ek_address_book.clone_confirm:
+  path: '/admin/ek/addressbook/clone/{abid}/confirm'
+  defaults:
+    _form: '\Drupal\ek_address_book\Form\AddressBookCloneConfirmForm'
+    _title: 'Clone Address Book Entry'
+  requirements:
+    _permission: 'edit_address_book'
+
 ek_address_book.delete:
   path: '/delete_contact/{abid}'
   defaults:
