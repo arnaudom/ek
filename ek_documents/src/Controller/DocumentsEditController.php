@@ -27,8 +27,7 @@ use Drupal\ek_documents\DocumentsData;
 /**
  * Controller routines for ek module routes.
  */
-class DocumentsEditController extends ControllerBase
-{
+class DocumentsEditController extends ControllerBase {
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -53,8 +52,7 @@ class DocumentsEditController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -137,9 +135,9 @@ class DocumentsEditController extends ControllerBase
                 $modules['project'] = 1;
             }
             
-            $template = 'ek_documents_block_view';//default
-            if (isset($_COOKIE["list-type"]) && $_COOKIE["list-type"] == 0) {
-                $template = 'ek_documents_list_view';
+            $template = 'ek_documents_list_view';
+            if (isset($_COOKIE["list-type"]) && $_COOKIE["list-type"] == 1) {
+                $template = 'ek_documents_block_view';
             }
             
             $render = ['#theme' => $template, '#items' => $data, '#modules' => $modules];

@@ -18,8 +18,7 @@ use Drupal\Core\Access\AccessResult;
  *   category = @Translation("Ek Documents block")
  * )
  */
-class QuickUpload extends BlockBase
-{
+class QuickUpload extends BlockBase {
   
 
   /**

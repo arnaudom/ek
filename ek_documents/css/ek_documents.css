@@ -1,3 +1,15 @@
+:root {
+    --primary-color: #6ab6fc;
+    --secondary-color: #696969;
+    --success-color: #64fe2e;
+    --warning-color: #ffe166;
+    --danger-color: #ff0000;
+    --light-bg: #f5f5f5;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s ease;
+  }
+
 .shared_document_badge {
     background-color: #00b515;
     color: #fff;
@@ -15,24 +27,34 @@
 }
 
 .doc-panel {
-    background-color: #fff;
-    border-radius: 4px;
-    margin-bottom: 20px;
-    padding:0px !important;
-    border: 1px solid #dbdbdb;
-    box-shadow: 0 5px 20px #a9bcf5;
+    background-color: #FFFFFF !important;
+    border-radius: var(--border-radius);
+    border: 1px solid #e0e6ed;
+    box-shadow: var(--box-shadow);
+    margin-bottom: 20px !important;
+    overflow: hidden;
+    transition: var(--transition);
+}
+.doc-panel:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
 }
 
 .doc-panel-heading {
-    background-color: #A9BCF5;
-    border-color: #A9BCF5;
-    color: #333;
-    display: block;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    padding: 5px 20px;
-    cursor:pointer
+    background-color: #f5f7fa;
+    border-bottom: 1px solid #e0e6ed;
+    color: var(--secondary-color);
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+    padding: 12px 16px;
 }
+
+.doc-panel-heading a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    display: block;
+}
+
 .doc-panel-body {
     display : block;
     padding: 10px;

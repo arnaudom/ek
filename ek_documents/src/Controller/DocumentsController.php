@@ -45,13 +45,12 @@ class DocumentsController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
-      $container->get('database'),
-      $container->get('form_builder'),
-      $container->get('module_handler')
-    );
+          $container->get('database'),
+          $container->get('form_builder'),
+          $container->get('module_handler')
+        );
     }
 
     /**
@@ -62,8 +61,7 @@ class DocumentsController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -75,24 +73,22 @@ class DocumentsController extends ControllerBase
        *
     */
 
-    public function documents(Request $request)
-    {
-        $items = array();
+    public function documents(Request $request) {
+        $items = [];
  
-        return array(
-      '#theme' => 'ek_documents_my',
-      '#items' => $items,
-      '#attached' => array(
-        'drupalSettings' => array('ek_documents' => 'myDocs' ),
-        'library' => array('ek_documents/ek_documents_display','ek_admin/classic_doc','ek_admin/ek_admin_css' ),
-        
-      ),
-      '#cache' => [
-            'tags' => ['my_documents'],
-            'contexts' => ['user'],
-        ],
-    );
-    }
+        return [
+          '#theme' => 'ek_documents_my',
+          '#items' => $items,
+          '#attached' =>  [
+            'drupalSettings' => ['ek_documents' => 'myDocs' ],
+            'library' => ['ek_documents/ek_documents_display','ek_admin/classic_doc','ek_admin/ek_admin_css' ],
+          ],
+          '#cache' => [
+                'tags' => ['my_documents'],
+                'contexts' => ['user'],
+            ],
+          ];
+        }
 
 
     /**
@@ -105,10 +101,10 @@ class DocumentsController extends ControllerBase
         return [
             '#theme' => 'ek_documents_shared',
             '#items' => $items,
-            '#attached' => array(
-              'drupalSettings' => array('ek_documents' => 'sharedDocs'),
-              'library' => array('ek_documents/ek_documents_display','ek_admin/classic_doc','ek_admin/ek_admin_css'),
-            ),
+            '#attached' => [
+              'drupalSettings' => ['ek_documents' => 'sharedDocs'],
+              'library' => ['ek_documents/ek_documents_display','ek_admin/classic_doc','ek_admin/ek_admin_css'],
+            ],
             '#cache' => [
                   'tags' => ['shared_documents']
               ],
@@ -125,10 +121,10 @@ class DocumentsController extends ControllerBase
         return [
             '#theme' => 'ek_documents_common',
             '#items' => $items,
-            '#attached' => array(
-              'drupalSettings' => array('ek_documents' => 'commonDocs'),
-              'library' => array('ek_documents/ek_documents_display','ek_admin/classic_doc','ek_admin/ek_admin_css'),
-            ),
+            '#attached' => [
+              'drupalSettings' => ['ek_documents' => 'commonDocs'],
+              'library' => ['ek_documents/ek_documents_display','ek_admin/classic_doc','ek_admin/ek_admin_css'],
+            ],
             '#cache' => [
                   'tags' => ['common_documents']
               ],

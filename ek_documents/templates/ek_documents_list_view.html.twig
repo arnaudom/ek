@@ -33,6 +33,7 @@
  */
 #}
 {% set i = 0 %}
+<br/>
 {% for key, item in items %}
     
     {% for folder, docs in item %}
@@ -40,12 +41,14 @@
         {% set i = i+1 %}
 
         <div id="{{ folder }}" class='drop-folder doc-panel doc-panel-default'>
-            <div class='doc-panel-heading'  onclick="jQuery('#mdoc_{{ i }}').toggle('fast');">
-                <h4 class='doc-panel-title text-primary'>
+            <div class='doc-panel-heading' >
+                <a href='#mdoc_{{ i }}' onclick="jQuery('#mdoc_{{ i }}').toggle('fast');">
+                <h3 class='doc-panel-title text-primary'>
                     <span class="folder-ico" aria-hidden="true"></span>&nbsp;
                     {{ folder }}
-                    <small class='doc-badge float-right' >{{ docs|length }} {{'document(s)'|t }}</small>
-                </h4>
+                    <small class='doc-badge float-right' >{{ docs|length }} {% if docs|length > 1 %} {{'documents'|t }} {% else %} {{'document'|t }} {% endif %} </small>
+                </h3>
+                </a>
             </div>
             <div id="{{ folder }}" class='drop-folder doc-panel-body'>
                 <div class='inner' id='mdoc_{{ i }}' >

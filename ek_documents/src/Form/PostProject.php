@@ -16,19 +16,37 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Component\Utility\Xss;
-use Drupal\ek_projects\ProjectData;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides a form to post documents into projects.
  */
-class PostProject extends FormBase
-{
+class PostProject extends FormBase {
 
     /**
      * {@inheritdoc}
      */
+
     public function getFormId() {
         return 'ek_documents_post_project';
+    }
+    protected $projectService;
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('project.service')
+        );
+    }
+
+    /**
+     * Constructs an  object.
+     *
+     */
+    public function __construct(ProjectService $projectService) {
+        $this->projectService = $projectService;
     }
 
     /**
@@ -56,7 +74,7 @@ class PostProject extends FormBase
             $s3 = $this->t("Section 3");
             $s5 = $this->t("Section 5");
         }
-        $folders = ProjectData::sectionsName();
+        $folders = $this->projectService->sectionsName();
 
         $form['filename'] = [
             '#type' => 'item',
@@ -170,7 +188,7 @@ class PostProject extends FormBase
             
             return $response;
 
-        }  elseif (ProjectData::validate_access($string[0])) {
+        }  elseif ($this->projectService->validate_access($string[0])) {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_documents', 'd');
             $query->fields('d');
