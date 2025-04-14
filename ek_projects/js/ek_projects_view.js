@@ -4,7 +4,6 @@
             if (!window.updaterInitialized && context === document) {
                 // Only initialize the updater once
                 window.updaterInitialized = true;
-                // console.log("Initializing project updater for the first time");
 
                 // Intelligent periodic updater with activity-based adjustment
                 function initializeIntelligentUpdater(projectId) {
@@ -69,7 +68,6 @@
                                     // Reset to faster updates when changes are detected
                                     if (!config.manualMode) {
                                         currentPeriod = config.initialPeriod;
-                                        // console.log('Period: ' + currentPeriod);
                                     }
                                 } else {
                                     // Apply appropriate decay based on user activity (only if not in manual mode)
@@ -81,7 +79,6 @@
                                             currentPeriod * decayFactor, 
                                             config.maxPeriod
                                         );
-                                        // console.log('Period: ' + currentPeriod);
                                     }
                                 }
                             },
@@ -174,7 +171,6 @@
                 // Initialize the updater when document is ready
                 $(function() {
                     if (typeof drupalSettings.ek_projects !== 'undefined' && !window.projectUpdater) {
-                        // console.log("Creating project updater instance");
                         window.projectUpdater = initializeIntelligentUpdater(drupalSettings.ek_projects.id);
                     }
                 });
@@ -302,8 +298,7 @@
                         minimal: { min: 60000, max: 600000, initial: 60000 },
                         manual: { min: 0, max: 0, initial: 0 }
                     };
-                    
-                    // console.log("Selected update frequency:", value);
+
                     updateProjectConfig(config[value]);
                     
                     // Update UI for manual mode
@@ -316,7 +311,6 @@
                 
                 $('#manual-update').on('click', function() {
                     if (window.projectUpdater) {
-                        // console.log("Manual update triggered");
                         window.projectUpdater.forceUpdate();
                     }
                 });
@@ -551,11 +545,9 @@
                     $(".field_edit").toggle("fast");
                     $('section').toggleClass("editBackground");
                     if ($('#edit_mode').hasClass('edit')) {
-                        // console.log('pause auto update');
                         window.projectUpdater.pause();
                     }
                     if ($('#edit_mode').hasClass('_edit')) { 
-                        // console.log('resume auto update');
                         window.projectUpdater.resume();
                     }
                 });
@@ -564,7 +556,7 @@
             /* tracking data control
             */
             $(function () {
-                $('#activityList').click(function () {
+                $(once('activity-click-event','#activityList', context)).on('click', function (event) {
                     $(".tracklist").toggle();
                     $(".update-controls").toggle();
                     $("#activityList i").toggleClass('fa-power-off fa-circle-o');
@@ -575,7 +567,7 @@
             });
 
             $(function () {
-                $('#aListExpand').click(function () { console.log($('.tracklist').css('max-height'));
+                $(once('list-click-event','#aListExpand', context)).on('click', function (event) {
                     if ($('.tracklist').css('max-height') != 'none') {
                         $('.tracklist').css('max-height','none');
                         $("#aListExpand").html('▲');
@@ -591,7 +583,7 @@
             * toggle the notify me value
             */
             $(function () {
-                $('#edit_notify').click(function () {
+                $(once('join-click-event','#edit_notify', context)).on('click', function (event) {
                     jQuery.ajax({
                         type: "POST",
                         url: drupalSettings.path.baseUrl + 'ek_project/edit_notify',
@@ -616,7 +608,7 @@
             * Open or close all sections
             */
             $(function () {
-                $('#expand').click(function () {
+                $(once('expand-click-event','#expand', context)).on('click', function (event) {
                     update_fields(drupalSettings.ek_projects.id);
                     update_documents(drupalSettings.ek_projects.id);
                     if ($('#expand').hasClass('open-ico'))
@@ -632,7 +624,7 @@
             * delete files toggle
             */
             $(function () {
-                $('.hideFile').click(function () {
+                $(once('hide-click-event','.hideFile', context)).on('click', function (event) {
                     if ($('.hideFile').hasClass('show-ico')) {
                         $('.hide').hide('fast');
                     } else if ($('.hideFile').hasClass('hide-ico')) {
@@ -647,7 +639,7 @@
             * linked project content
             */
             $(function () {
-                $('#link-title').click(function () {
+                $(once('link-click-event', '#link-title', context)).on('click', function (event) {
                     $('#link-content').toggle('fast');
                 });
             });
@@ -682,7 +674,6 @@
       if (window.projectUpdater) {
         // Store current updater state
         window.updaterPausedByModal = true;
-        // console.log("Pausing updater for modal dialog");
         window.projectUpdater.pause();
       }
     });
@@ -690,7 +681,6 @@
     // Restore updater state when closing a modal
     $(document).on('dialog:afterclose', function (e, dialog, $element) {
       if (window.projectUpdater && window.updaterPausedByModal) {
-        // console.log("Resuming updater after modal dialog");
         window.projectUpdater.resume();
         window.updaterPausedByModal = false;
       }
