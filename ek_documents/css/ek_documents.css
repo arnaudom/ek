@@ -189,7 +189,7 @@
     content: "\f114"; 
     font-family: FontAwesome;
     font-size:1.5em;
-    color: #fff;
+    color: #696969;
     padding-right: 5px;
 }
 
@@ -198,7 +198,7 @@
     font-family: FontAwesome;
     font-size:1.5em;
     padding-left: 5px;
-    color: #419ff1;
+    color: #0088cc;
     cursor:pointer;
 }
 
@@ -207,7 +207,7 @@
     font-family: FontAwesome;
     padding-left: 5px;
     font-size:1.5em;
-    color: #446E9B;
+    color: #0088cc;
     cursor:pointer;
 }
 
@@ -216,7 +216,7 @@
     font-family: FontAwesome;
     padding-left: 5px;
     font-size:1.5em;
-    color: #446E9B;
+    color: #0088cc;
     cursor:pointer;
 }
 
@@ -225,19 +225,19 @@
     font-family: FontAwesome;
     padding-left: 5px;
     font-size:1.5em;
-    color: #446E9B;
+    color: #0088cc;
     cursor:pointer;
 }
 
-
 .handle-ico div {
     position:relative; 
+
 }
 .handle-ico div:before {
     content: "\f047"; 
     font-family: FontAwesome;
     font-size:1.2em;
-    color: #7d97a5;
+    color: #dbdbdb;
 }
 
 .handle-ico p:hover {
@@ -259,7 +259,7 @@
 }
 
 .trash-ico:hover {
-    color: #E91E63;
+    color: #ff0000;
     cursor:pointer;
 }
 
@@ -276,7 +276,7 @@
 }
 
 .share-ico:hover{
-    color: #DF691A;
+    color: #696969;
     cursor:pointer;
 }
 
@@ -290,11 +290,11 @@
     top:0;
     font-size:1.5em;
     padding-left: 3px;
-    color: #00D744;
+    color: #00b515;
 }
 
 .shared-ico:hover{
-    color: #DF691A !important;
+    color: #696969;
     cursor:pointer;
 }
 .post-ico {
@@ -310,7 +310,7 @@
 }
 
 .post-ico:hover {
-    color: #DF691A;
+    color: #696969;
     cursor:pointer;
 }
 
@@ -327,7 +327,7 @@
 }
 
 .move-ico:hover {
-    color: #DF691A;
+    color: #696969;
     cursor:pointer;
 }
 .remove-ico {
@@ -343,7 +343,7 @@
 }
 
 .remove-ico:hover {
-    color: #E91E63;
+    color: #696969;
     cursor:pointer;
 }
 
