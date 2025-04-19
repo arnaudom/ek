@@ -8,3 +8,19 @@ services:
     class: Drupal\ek_admin\EventSubscriber\NewUserSubscriber
     tags:
       - {name: event_subscriber }
+      
+  ek_admin.database.external_db:
+    class: Drupal\Core\Database\Connection
+    factory: Drupal\Core\Database\Database::getConnection
+    arguments: [external_db,external_db]
+  
+  ek_admin.database.external_db.entity.query.sql:
+    class: Drupal\Core\Entity\Query\Sql\QueryFactory
+    arguments: ['@ek_admin.database.external_db']
+    tags:
+      - { name: backend_overridable }
+      
+  ek_admin.twig_extension:
+    class: Drupal\ek_admin\TwigExtension\TwigExtension
+    tags:
+      - { name: twig.extension }

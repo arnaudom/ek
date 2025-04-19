@@ -12,72 +12,89 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Database\Database;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides a form to post docs to project pages.
  */
-class FilterPostDoc extends FormBase
-{
+class FilterPostDoc extends FormBase {
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+
+    public function getFormId() {
         return 'ek_admin_doc_post_filter';
+    }
+
+    protected $projectService;
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+                $container->get('project.service')
+        );
+    }
+
+    /**
+     * Constructs an  object.
+     *
+     */
+    public function __construct(ProjectService $projectService) {
+        $this->projectService = $projectService;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $param = null, $pcode = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $param = null, $pcode = null)  {
         $param = unserialize($param);
 
-        $form['source'] = array(
+        $form['source'] = [
             '#type' => 'hidden',
             '#value' => $param[1],
-        );
-        $form['pcode'] = array(
+        ];
+
+        $form['pcode'] = [
             '#type' => 'hidden',
             '#value' => $pcode,
-        );
+        ];
 
-        //insert the create file mode into param
+        // insert the create file mode into param
         array_push($param, '1');
         $newparam = serialize($param);
 
-        $form['param'] = array(
+        $form['param'] = [
             '#type' => 'hidden',
             '#value' => $newparam,
-        );
+        ];
 
-        $form['postdoc'] = array(
+        $form['postdoc'] = [
             '#type' => 'fieldset',
             '#title' => $this->t('Copy document to project') . " " . $pcode,
             '#open' => isset($param['open']) ? $param['open'] : false,
-            '#attributes' => array('class' => ''),
-        );
+            '#attributes' => ['class' => ''],
+        ];
 
-        $form['postdoc']['actions'] = array('#type' => 'actions');
-        $form['postdoc']['actions']['copy'] = array(
+        $form['postdoc']['actions'] = ['#type' => 'actions'];
+        $form['postdoc']['actions']['copy'] = [
             '#id' => 'copybuttonid',
             '#type' => 'button',
             '#value' => $this->t('Copy'),
-            //'#limit_validation_errors' => array(),
-            '#ajax' => array(
-                'callback' => array($this, 'ProcessPost'),
+            '#ajax' => [
+                'callback' => [$this, 'ProcessPost'],
                 'wrapper' => 'PostMessage',
-            ),
-        );
+            ],
+        ];
 
-        $form['postdoc']['alert'] = array(
+        $form['postdoc']['alert'] = [
             '#type' => 'item',
             '#markup' => '',
             '#prefix' => "<div id='PostMessage'>",
             '#suffix' => '</div>',
-        );
+        ];
 
         return $form;
     }
@@ -85,23 +102,20 @@ class FilterPostDoc extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         // Nothing to submit.
     }
 
     /**
      * process mail
      */
-    public function ProcessPost(array &$form, FormStateInterface $form_state)
-    {
+    public function ProcessPost(array &$form, FormStateInterface $form_state) {
         $param = $form_state->getValue('param');
         switch ($form_state->getValue('source')) {
             //generate the pdf file and save in tmp dir
@@ -115,9 +129,8 @@ class FilterPostDoc extends FormBase
             case 'invoice':
             case 'purchase':
             case 'quotation':
-                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_print_output.inc';
-                $fileName = $head->serial . ".pdf";
-                $file = \Drupal::service('file_system')->getTempDirectory() . "/" . $fileName;
+                $print = new \Drupal\ek_sales\PrintManager();
+                $file = $print->makePdf($param);
                 $sec = "fi";
                 break;
 
@@ -156,7 +169,7 @@ class FilterPostDoc extends FormBase
                 ->execute();
 
         if ($insert) {
-            $lk = ['#markup' => \Drupal\ek_projects\ProjectData::geturl($form_state->getValue('pcode'))];
+            $lk = ['#markup' => $this->projectService->geturl($form_state->getValue('pcode'))];
             $render = \Drupal::service('renderer')->render($lk);
             $message = $this->t('Document posted to @t.', array('@t' => $render));
             $form['postdoc']['alert']['#prefix'] = "<div id='PostMessage' class='messages messages--status'>";

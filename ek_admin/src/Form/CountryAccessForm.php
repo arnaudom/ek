@@ -14,25 +14,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Database\Database;
 use Drupal\user\Entity\User;
 use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\ek_projects\Service\ProjectService;
 
 /**
  * Provides form to manage access.
  */
 class CountryAccessForm extends FormBase {
 
-/**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
-    protected $moduleHandler;
 
-    /**
-     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler.
-     */
-    public function __construct(ModuleHandler $module_handler) {
+    
+    protected $moduleHandler;
+    protected $projectService;
+
+    public function __construct(ModuleHandler $module_handler, ProjectService $projectService) {
         $this->moduleHandler = $module_handler;
+        $this->projectService = $projectService;
     }
 
     /**
@@ -40,7 +36,8 @@ class CountryAccessForm extends FormBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler')
+                $container->get('module_handler'),
+                $container->get('project.service')
         );
     }
     
@@ -111,7 +108,7 @@ class CountryAccessForm extends FormBase {
                 if($obj->isBlocked()) {
                     $role = '<strong>[' . t('Bloked') . ']</strong> ' . $role ;
                 }
-                $form['list'][$form_state->getValue('cid')][$u->uid] = [
+                $form['list']['u'][$u->uid] = [
                     '#type' => 'checkbox',
                     '#title' => $obj->toLink($u->name)->toString() . " " . $role,
                     '#default_value' => in_array($u->uid, $default) ? 1 : 0,
@@ -135,16 +132,15 @@ class CountryAccessForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         if (!is_numeric($form_state->getValue('cid'))) {
             $form_state->setErrorByName('cid', $this->t('No country selected'));
         }
         
-        if ($this->moduleHandler->moduleExists('ek_projects')) {
+        if ($this->moduleHandler->moduleExists('ek_projects')) { 
             $sort = [];
-            $list = $form_state->getValue('list');
-            foreach ($list[$form_state->getValue('cid')] as $key => $value) {
+            $list = $form_state->getValue('list'); 
+            foreach ($list['u'] as $key => $value) { 
                 if ($value == 0) {
                     //check if project access for removed user
                     $query = Database::getConnection('external_db', 'external_db')
@@ -161,14 +157,14 @@ class CountryAccessForm extends FormBase {
                     }
                 }
             }
-            
-            if (!empty($sort)) {
+
+            if (!empty($sort)) { 
                 $list = "";
                 foreach ($sort as $k => $v) {
                     $u = User::load($k);
                     $pcode = "";
                     foreach ($v as $c => $code) {
-                        $pcode .= \Drupal\ek_projects\ProjectData::geturl($code, 0, 0, 1) . " ";
+                        $pcode .= $this->projectService->geturl($code, 0, 0, 1) . ", ";
                     }
                     $list .= "<li>" . $u->getAccountName() . ": " . $pcode . "</li>";
                 }
@@ -187,11 +183,10 @@ class CountryAccessForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state)  {
         $list = $form_state->getValue('list');
         $access = array();
-        foreach ($list[$form_state->getValue('cid')] as $key => $value) {
+        foreach ($list['u'] as $key => $value) {
             if ($value == 1) {
                 $access[] = $key;
             }

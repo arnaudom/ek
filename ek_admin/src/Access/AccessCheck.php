@@ -196,15 +196,16 @@ class AccessCheck {
      */
     public static function CountryList($status = null) {
         if ($status == null) {
-            $query = "SELECT id,name from {ek_country} WHERE status=:s ORDER by name";
-            $a = [':s' => 0];
+            $query = "SELECT id,name from {ek_country} ORDER by name";
+            return Database::getConnection('external_db', 'external_db')->query($query)->fetchAllKeyed();
         } else {
             $query = "SELECT id,name from {ek_country} WHERE status=:s ORDER by name";
             $a = [':s' => $status];
+            return Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchAllKeyed();
         }
 
 
-        return Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchAllKeyed();
+        
     }
 
     /**
