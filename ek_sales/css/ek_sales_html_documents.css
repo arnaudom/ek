@@ -7,49 +7,6 @@ page_wrapper {
    border: 1px black;
 }
 
-page {
-   backtop:"10mm" ;
-   backbottom:"10mm";
-   backleft: "20mm";
-   backright: "20mm"; 
-}
-
-page_header {
-    
-}
-
-page_reference {
-    
-}
-
-page_client {
-    
-}
-
-page_comments {
-    
-}
-
-page_items {
-    
-}
-
-page_total {
-    
-}
-
-page_signature {
-    
-}
-
-page_bank {
-    
-}
-
-page_correspondence {
-    
-}
-
 
 table {
     border: none 0px black;
@@ -66,12 +23,12 @@ tr {
     padding: 0.1em 0.6em;
 }
 
-
 tr td, tr th {
     border: 1px solid #fff;
     padding: 4px 9px;
     text-align: left;
 }
+
 td, th {
     padding: 0;
 }
@@ -80,9 +37,18 @@ td, th {
     border-bottom: 1px solid #888;
 }
 
+.lline {
+    border-left: 1px solid #888;
+}
+
+.rline {
+    border-right: 1px solid #888;
+}
+
 .cellbordertop {
     border-top: 2px solid #696969;
 }
+
 
 .c10 {
     width: 10%;
@@ -175,4 +141,13 @@ td, th {
     background:#9b9b9b;
     color: #fff;
     font-weight: bold;
+}
+
+.fa {
+    color: #6ab6fc;
+    margin-right: 8px;
+}
+
+.button a {
+    border-bottom: none;
 }

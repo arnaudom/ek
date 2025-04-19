@@ -272,7 +272,7 @@ class AssignNote extends FormBase {
         $markup = $this->t('Value') . " " . number_format($data->amount, 2) . " " . $data->currency . "<br/>";
         $markup .= $this->t('Balance') . ": " . $val . " " . $data->currency . "<br/>";
         if (isset($data->pcode) && $data->pcode != 'n/a') {
-            $markup .= $this->t('Project') . ": " . \Drupal\ek_projects\ProjectData::geturl($data->pcode) . "<br/>";
+            $markup .= $this->t('Project') . ": " . \Drupal::service('project.service')->geturl($data->pcode) . "<br/>";
         }
 
         $client_name = AddressBookData::getname($data->client);
@@ -503,25 +503,6 @@ class AssignNote extends FormBase {
 
         if ($update) {
 
-            /*
-              if ($this->moduleHandler->moduleExists('ek_projects')) {
-              //notify user if invoice is linked to a project
-              if ($data->pcode && $data->pcode != 'n/a') {
-              $pid = Database::getConnection('external_db', 'external_db')
-              ->query('SELECT id from {ek_project} WHERE pcode=:p', [':p' => $data->pcode])
-              ->fetchField();
-              $param = serialize(
-              array(
-              'id' => $pid,
-              'field' => 'invoice_payment',
-              'value' => $data->serial,
-              'pcode' => $data->pcode
-              )
-              );
-              \Drupal\ek_projects\ProjectData::notify_user($param);
-              }
-              }
-             */
             if ($form_state->get('table') == 'ek_sales_invoice') {
                 $form_state->setRedirect('ek_sales.invoices.list');
             } else {

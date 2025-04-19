@@ -343,11 +343,12 @@ $font3 = $format_body['font'] - 3;
 // items ///////////////////////
 $grandtotal = 0;
 $subtotal = 0;
+$taxtotal = 0;
 $i = 0;  //count item each rows;
 $ii = 0; //count groups
 $iii = 0; //count group item rows
 
-foreach ($items['lines'] as $detail) {
+foreach ($items as $detail) {
     if (is_array($detail) && $detail['item'] <> '') {
         if ($detail['item'] === "sub_total" || $detail['item'] === "[sub total]") {
             //insert sub total only
@@ -379,7 +380,7 @@ foreach ($items['lines'] as $detail) {
                 $h = $y2 - $y;
                 $pdf->Cell($lm,$h,'',0, 1);
             } else {
-                //normal item
+                // normal item
                 $pdf->SetFont('helvetica', '', $font3);
                 // column 0  
                 $iii++;
@@ -390,7 +391,7 @@ foreach ($items['lines'] as $detail) {
                 $x = $pdf->GetX();
                 $y = $pdf->GetY();
                 
-                //include text into justified cell (first column)
+                // include text into justified cell (first column)
                 if($detail['description2'] != NULL){
                     $pdf->writeHTMLCell($b2,5,$x,$y,$detail['description2'],"TLR",true,$fill,1,'',0);
                 } else {
@@ -434,6 +435,9 @@ foreach ($items['lines'] as $detail) {
                 $i++;
                 $grandtotal = round(($grandtotal + $detail['total']), 2);
                 $subtotal = round(($subtotal + $detail['total']), 2);
+                if($detail['opt'] == 1) {
+                    $taxtotal = round(($taxtotal + $detail['total']), 2);
+                }
                 // check position for a break
                 $here = $pdf->GetY();
                 if ($here > $cut) {
@@ -479,7 +483,8 @@ if ($items['incoterm_name'] != "" && $items['incoterm_name'] != "na" && $items['
 }
 $tax = 0;
 if ($items['tax_name'] != "") {
-    $tax = round(($grandtotal + $freight ) * $items['tax_rate'] / 100, 2);
+    // TODO include freight in tax?
+    $tax = round($taxtotal * $items['tax_rate'] / 100, 2);
     $pdf->Ln(2);
     $pdf->SetFont('helvetica', 'B', $font3);
     $pdf->Cell($lm);

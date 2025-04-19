@@ -481,7 +481,7 @@ class PayPurchase extends FormBase {
                                 'pcode' => $data->pcode
                             ]
                     );
-                    \Drupal\ek_projects\ProjectData::notify_user($param);
+                    \Drupal::service('project.service')->notify_user($param);
                 }
             }
             $form_state->setRedirect('ek_sales.purchases.list');

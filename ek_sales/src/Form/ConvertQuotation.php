@@ -227,7 +227,7 @@ class ConvertQuotation extends FormBase {
             $form['options']['pcode'] = [
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => \Drupal\ek_projects\ProjectData::listprojects(0),
+                '#options' => \Drupal::service('project.service')->listprojects(0),
                 '#required' => true,
                 '#default_value' => isset($data->pcode) ? $data->pcode : null,
                 '#title' => $this->t('Project'),
@@ -411,7 +411,7 @@ class ConvertQuotation extends FormBase {
             'account' => [
                 'data' => $this->t('Account'),
                 'id' => ['tour-item2'],
-                'class' => [ESPONSIVE_PRIORITY_MEDIUM],
+                'class' => [RESPONSIVE_PRIORITY_MEDIUM],
             ],
             'quantity' => [
                 'data' => $this->t('Quantity'),

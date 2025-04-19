@@ -14,7 +14,6 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Cache\Cache;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_projects\ProjectData;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\FinanceSettings;
 
@@ -194,7 +193,7 @@ class QuickEdit extends FormBase {
                 $form['options']['pcode'] = [
                     '#type' => 'select',
                     '#size' => 1,
-                    '#options' => ProjectData::listprojects(0),
+                    '#options' => \Drupal::service('project.service')->listprojects(0),
                     '#required' => true,
                     '#default_value' => isset($data->pcode) ? $data->pcode : null,
                     '#title' => $this->t('Project'),
@@ -328,7 +327,7 @@ class QuickEdit extends FormBase {
                 $form['options']['pcode'] = [
                     '#type' => 'select',
                     '#size' => 1,
-                    '#options' => ProjectData::listprojects(0),
+                    '#options' => \Drupal::service('project.service')->listprojects(0),
                     '#required' => true,
                     '#default_value' => isset($data->pcode) ? $data->pcode : null,
                     '#title' => $this->t('Project'),
@@ -584,7 +583,7 @@ class QuickEdit extends FormBase {
                                 'pcode' => $pcode
                             )
                     );
-                    \Drupal\ek_projects\ProjectData::notify_user($param);
+                    \Drupal::service('project.service')->notify_user($param);
                 }
             }
         } // if updated

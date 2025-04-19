@@ -19,6 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_sales\SalesSettings;
+use Drupal\ek_sales\PrintManager;
 
 /**
  * Controller routines for ek module routes.
@@ -240,7 +241,7 @@ class QuotationsController extends ControllerBase {
 
             if ($r->pcode <> 'n/a') {
                 if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $reference .= "<div>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, null, null, true) . "</div>";
+                    $reference .= "<div>" . \Drupal::service('project.service')->geturl($r->pcode, null, null, true) . "</div>";
                 }
             }
 
@@ -501,10 +502,9 @@ class QuotationsController extends ControllerBase {
     }
 
     public function PdfQuotations(Request $request, $param) {
-        $markup = array();
-        $format = 'pdf';
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_print_output.inc';
-        return new Response($markup);
+        $print = new PrintManager();
+        $print->makePdf($param);
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
 
     /**
@@ -529,32 +529,33 @@ class QuotationsController extends ControllerBase {
             if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
                 $id = explode('_', $_SESSION['printfilter']['for_id']);
                 $doc_id = $id[0];
+                $url_pdf = Url::fromRoute('ek_sales.quotations.print_share', ['id' => $doc_id], [])->toString();
+                $url_edit = Url::fromRoute('ek_sales.quotations.edit', ['id' => $doc_id], [])->toString();
                 $param = serialize(
-                        array(
+                        [
                             $id[0], //id
                             $id[1], //source
                             $_SESSION['printfilter']['signature'],
                             $_SESSION['printfilter']['stamp'],
                             $_SESSION['printfilter']['template'],
                             $_SESSION['printfilter']['contact'],
-                        )
+                            $url_pdf,
+                            'empty',
+                            $url_edit
+                        ]
                 );
 
-                $format = 'html';
-
-                $url_pdf = Url::fromRoute('ek_sales.quotations.print_share', ['id' => $doc_id], [])->toString();
-                $url_edit = Url::fromRoute('ek_sales.quotations.edit', ['id' => $doc_id], [])->toString();
-                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_print_output.inc';
-
+                $print = new PrintManager(); 
+                $document = $print->renderHtml($param);
 
                 $build['quotation'] = [
                     '#markup' => $document,
-                    '#attached' => array(
-                        'library' => array('ek_sales/ek_sales_html_documents_css', 'ek_admin/ek_admin_css'),
-                    ),
+                    '#attached' =>['library' => ['ek_sales/ek_sales_html_documents_css', 'ek_admin/ek_admin_css'],],
                 ];
             }
+
             return array($build);
+
         } else {
             $url = Url::fromRoute('ek_sales.quotations.list')->toString();
             $items['type'] = 'access';
@@ -604,9 +605,9 @@ class QuotationsController extends ControllerBase {
                         )
                 );
                 $_SESSION['printfilter'] = array();
-                $format = 'excel';
-
-                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_excel_output.inc';
+                $print = new PrintManager();
+                $print->exportExcel($param);
+                return new \Symfony\Component\HttpFoundation\Response('', 204);
             }
 
             return array($build);
@@ -638,6 +639,7 @@ class QuotationsController extends ControllerBase {
 
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
+            return ['#markup' => $markup];
         } else {
             $options = unserialize($param);
             $access = AccessCheck::GetCompanyByUser();
@@ -665,10 +667,126 @@ class QuotationsController extends ControllerBase {
                     ->condition('q.currency', $options['currency'], 'LIKE')
                     ->orderBy('q.id', 'ASC')
                     ->execute();
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/excel_list_quotations.inc';
-        }
+            //include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/excel_list_quotations.inc';
+            // Create new Excel object
+            $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
-        return ['#markup' => $markup];
+            $objPHPExcel->getProperties()->setCreator("Ek")
+                                            ->setLastModifiedBy('')
+                                            ->setTitle("Quotations list")
+                                            ->setSubject("computer generated")
+                                            ->setDescription("Quotations list filtered")
+                                            ->setKeywords("office 2007 openxml php")
+                                            ->setCategory("file");
+            $objPHPExcel->getActiveSheet()->setTitle((string)t('List'));
+
+            $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A3', 'ID') 
+                        ->setCellValue('B3', (string) t('Serial'))         
+                        ->setCellValue('C3', (string) t('Client'))
+                        ->setCellValue('D3', (string) t('Project'))                     
+                        ->setCellValue('E3', (string) t('Header'))
+                        ->setCellValue('F3', (string) t('Allocated'))
+                        ->setCellValue('G3', (string) t('Status'))
+                        ->setCellValue('H3', (string) t('Amount'))
+                        ->setCellValue('I3', (string) t('Currency'))
+                        ->setCellValue('J3', (string) t('Tax'))
+                        ->setCellValue('K3', (string) t("Value"))
+                        ->setCellValue('L3', (string) t("Incoterm"))
+                        ->setCellValue('M3', (string) t("Value"))
+                        ->setCellValue('N3', (string) t('Comment'));                                                                                     
+                        
+            $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(5);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(25);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);  
+            $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(12);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(10);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(10);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(10);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(10);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(10);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(30);
+            $objPHPExcel->getActiveSheet()->getStyle('A3:N3')->getFill()
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+            $objPHPExcel->getActiveSheet()->getStyle('A3:N3')
+                    ->getFill()->getStartColor()->setARGB('FFC866');
+            $objPHPExcel->getActiveSheet()->getStyle('A3:N3')
+            ->applyFromArray(
+                [
+                    'font' => ['bold' => true],
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,],
+                    'borders' => ['top' => ['style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]                                ]
+                ]
+            );
+            $l=3; 
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', (string)t('Quotations list')) ;
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', (string)t('Fom') . ':' . $options['from'] . ' ' . (string)t('to') . ':' . $options['to']) ;
+            $total = 0;
+            // store company data
+            $companies = Database::getConnection('external_db', 'external_db')
+                        ->query("SELECT id,name from {ek_company}")
+                        ->fetchAllKeyed();
+            // store a. book data
+            /*$abook = Database::getConnection('external_db', 'external_db')
+                        ->query("SELECT id,name from {ek_address_book}")
+                        ->fetchAllKeyed();*/
+
+            WHILE ($data = $result->fetchAssoc()) {
+                
+                //$client_name = $abook[$data['client']];
+                $l=$l+1; 
+                if ($l & 1) {
+                    $row="A".$l.":N".$l;
+                    $objPHPExcel->getActiveSheet()->getStyle("$row")
+                            ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+                    $objPHPExcel->getActiveSheet()->getStyle("$row")
+                            ->getFill()->getStartColor()->setARGB('e6e6fa');
+                    } 
+
+                $total += $data['amount'];
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $data['id']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $data['serial']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$l", $data['name']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $data['pcode']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $companies[$data['head']]);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $companies[$data['allocation']]);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $status[$data['status']]);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $data['amount']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $data['currency']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", explode('|', $data['tax'])[0]);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", round(explode('|', $data['tax'])[1]*$data['amount']/100,2) );
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", explode('|', $data['incoterm'])[0]);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", round(explode('|', $data['incoterm'])[1]*$data['amount']/100,2));
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $data['comment']);
+                $objPHPExcel->getActiveSheet()->getStyle("H$l")
+                    ->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+
+            }
+            $l+=1;
+            if($options['currency'] != '%'){
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", (string)t('TOTAL') );
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $total);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $options['currency']);
+                $objPHPExcel->getActiveSheet()->getStyle("H$l")
+                    ->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            }
+            $date = date('Y-m-d h:i:s');
+            $l+=2;
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $date);
+
+            $fileName = 'quotations_list.xlsx';    
+                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                header('Cache-Control: max-age=0');
+                header("Content-Disposition: attachment;filename=$fileName");
+                header('Cache-Control: max-age=0');
+                $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
+                $objWriter->save('php://output');    
+            exit;
+        }
     }
 
     public function DeleteQuotations(Request $request, $id) {

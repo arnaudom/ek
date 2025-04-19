@@ -17,9 +17,10 @@ use Drupal\Component\Serialization\Json;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
-use Drupal\ek_sales\SalesSettings;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\FinanceSettings;
+use Drupal\ek_sales\SalesSettings;
+use Drupal\ek_sales\PrintManager;
 
 /**
  * Controller routines for ek module routes.
@@ -280,8 +281,8 @@ class PurchasesController extends ControllerBase {
                     . Url::fromRoute('ek_sales.purchases.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
             if ($r->pcode <> 'n/a') {
-                if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $reference = $supplier . "<div>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, null, null, true) . "</div>";
+                if ($this->moduleHandler->moduleExists('ek_projects')) { 
+                    $reference = $supplier . "<div>" . \Drupal::service('project.service')->geturl($r->pcode, null, null, true) . "</div>";
                 } else {
                     $reference = $supplier;
                 }
@@ -624,7 +625,7 @@ class PurchasesController extends ControllerBase {
 
                 if ($r->pcode <> 'n/a') {
                     if ($this->moduleHandler->moduleExists('ek_projects')) {
-                        $reference = $client . "<br/>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode, null, null, true);
+                        $reference = $client . "<br/>" . \Drupal::service('project.service')->geturl($r->pcode, null, null, true);
                     } else {
                         $reference = $client;
                     }
@@ -867,6 +868,7 @@ class PurchasesController extends ControllerBase {
 
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
+            return ['#markup' => $markup];
         } else {
             $options = unserialize($param);
             $access = AccessCheck::GetCompanyByUser();
@@ -884,10 +886,10 @@ class PurchasesController extends ControllerBase {
 
             $or = $query->orConditionGroup();
             if ($options['status'] == 3) {
-                //any status
+                // any status
                 $or->condition('p.status', $_SESSION['pfilter']['status'], '<');
             } elseif ($options['status'] == 0) {
-                //unpaid
+                // unpaid
                 $or->condition('p.status', 0, '=');
                 $or->condition('p.status', 2, '=');
             } else {
@@ -898,7 +900,6 @@ class PurchasesController extends ControllerBase {
             $or1 = $query->orConditionGroup();
             $or1->condition('head', $access, 'IN');
             $or1->condition('allocation', $access, 'IN');
-            // skip condition on payment status, extract all statuses
             
             $result = $query
                     ->fields('p')
@@ -912,10 +913,144 @@ class PurchasesController extends ControllerBase {
                     ->condition('p.currency', $options['currency'], 'LIKE')
                     ->orderBy('p.id', 'ASC')
                     ->execute();
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/excel_list_purchases.inc';
-        }
+            // Create new Excel object
+            $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $objPHPExcel->getProperties()->setCreator("Ek")
+                        ->setLastModifiedBy('')
+                        ->setTitle("Purchases list")
+                        ->setSubject("computer generated")
+                        ->setDescription("Purchases list filtered")
+                        ->setKeywords("office 2007 openxml php")
+                        ->setCategory("file");
+            $objPHPExcel->getActiveSheet()->setTitle((string)t('List'));
+            $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A3', 'ID') 
+                        ->setCellValue('B3', (string) t('Serial'))    
+                        ->setCellValue('C3', (string) t('Due'))            
+                        ->setCellValue('D3', (string) t('Client'))
+                        ->setCellValue('E3', (string) t('Project'))                    
+                        ->setCellValue('F3', (string) t('Header'))
+                        ->setCellValue('G3', (string) t('Allocated'))
+                        ->setCellValue('H3', (string) t('Status'))
+                        ->setCellValue('I3', (string) t('Amount'))
+                        ->setCellValue('J3', (string) t('Currency'))
+                        ->setCellValue('K3', (string) t('Ex. rate'))
+                        ->setCellValue('L3', (string) t('Tax value'))
+                        ->setCellValue('M3', (string) t("Amount in base currency") . " " . $baseCurrency)
+                        ->setCellValue('N3', (string) t('Amount paid'))
+                        ->setCellValue('O3', (string) t('Payment ex. rate'))
+                        ->setCellValue('P3', (string) t('Pay date'))
+                        ->setCellValue('Q3', (string) t('Comment'));                                                                                     
+                        
+            $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(5);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(20);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(12);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);  
+            $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(20);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(10);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(8);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(8);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(12);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(10);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('Q')->setWidth(30);  
+            $objPHPExcel->getActiveSheet()->getStyle('A3:Q3')->getFill()
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+            $objPHPExcel->getActiveSheet()->getStyle('A3:Q3')
+                    ->getFill()->getStartColor()->setARGB('FFC866');
+            $objPHPExcel->getActiveSheet()->getStyle('A3:Q3')
+            ->applyFromArray(
+                [
+                    'font' => ['bold' => true],
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,],
+                    'borders' => ['top' => ['style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]                                ]
+                ]
+            );
 
-        return ['#markup' => $markup];
+            $l=3; 
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', (string)t('Purchases list')) ;
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', (string)t('Fom') . ':' . $options['from'] . ' ' . (string)t('to') . ':' . $options['to']) ;
+            $total = 0;
+            // store company data
+            $companies = Database::getConnection('external_db', 'external_db')
+                        ->query("SELECT id,name from {ek_company}")
+                        ->fetchAllKeyed();
+
+            WHILE ($data = $result->fetchAssoc()) {
+               //$client_name = $abook[$data['client']];
+                $due = date('Y-m-d', strtotime(date("Y-m-d", strtotime($data['date'])) . "+" . $data['due'] . "days"));
+                $l=$l+1; 
+                if ($l & 1) {
+                    $row="A".$l.":O".$l;
+                    $objPHPExcel->getActiveSheet()->getStyle("$row")
+                            ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+                    $objPHPExcel->getActiveSheet()->getStyle("$row")
+                            ->getFill()->getStartColor()->setARGB('e6e6fa');
+                    } 
+
+                if($data['amountbase'] && $data['amountbase'] <> 0) {
+                    $exrate = round($data['amount'] / $data['amountbase'] , 4);
+                } else {
+                    $exrate = "";
+                }            
+                $tax = round($data['taxvalue']*$data['amount']/100, 2);
+                $total += $data['amountbase'];
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $data['id']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $data['serial']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$l", $due);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $data['name']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $data['pcode']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $companies[$data['head']]);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $companies[$data['allocation']]);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $status[$data['status']]);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $data['amount']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", $data['currency']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", $exrate);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", $tax);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $data['amountbase']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $data['amountpaid']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("O$l", $data['pay_rate']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("P$l", $data['pdate']);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("Q$l", $data['comment']);
+
+                // add styles
+                if ($data['status'] == 0 || $data['status'] == 2) {
+                    $objPHPExcel->getActiveSheet()->getStyle("H$l")
+                        ->getFont()->getColor()->setARGB('FF0000');
+                }    
+                $objPHPExcel->getActiveSheet()->getStyle("I$l")
+                    ->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle("M$l")
+                    ->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle("N$l")
+                ->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            }
+            $l+=1;
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", (string)t('TOTAL') );
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", $total);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $baseCurrency);
+                $objPHPExcel->getActiveSheet()->getStyle("M$l")
+                ->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+
+            $date = date('Y-m-d h:i:s');
+            $l+=2;
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $date);
+
+            $fileName = 'purchases_list.xlsx';      
+                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                header('Cache-Control: max-age=0');
+                header("Content-Disposition: attachment;filename=$fileName");
+                header('Cache-Control: max-age=0');
+                $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
+                $objWriter->save('php://output');    
+            exit;
+
+        }
     }
 
     /**
@@ -1355,10 +1490,11 @@ class PurchasesController extends ControllerBase {
      *
      */
     public function pdfPurchases(Request $request, $param) {
-        $markup = array();
-        $format = 'pdf';
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_print_output.inc';
-        return new Response($markup);
+        //$markup = array();
+        $print = new PrintManager();
+        $print->makePdf($param);
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
+        //return new Response($markup);
     }
 
     /**
@@ -1384,32 +1520,34 @@ class PurchasesController extends ControllerBase {
                 //$_SESSION['printfilter']['filter'] = 0;
                 $id = explode('_', $_SESSION['printfilter']['for_id']);
                 $doc_id = $id[0];
+                $url_pdf = Url::fromRoute('ek_sales.purchases.print_share', ['id' => $doc_id], [])->toString();
+                $url_excel = Url::fromRoute('ek_sales.purchases.print_excel', ['id' => $doc_id], [])->toString();
+                $url_edit = Url::fromRoute('ek_sales.purchases.edit', ['id' => $doc_id], [])->toString();
                 $param = serialize(
-                        array(
+                        [
                             $id[0], //id
                             $id[1], //source
                             $_SESSION['printfilter']['signature'],
                             $_SESSION['printfilter']['stamp'],
                             $_SESSION['printfilter']['template'],
                             $_SESSION['printfilter']['contact'],
-                        )
+                            $url_pdf,
+                            $url_excel,
+                            $url_edit,
+                        ]
                 );
-
-                $format = 'html';
-                $url_pdf = Url::fromRoute('ek_sales.purchases.print_share', ['id' => $doc_id], [])->toString();
-                $url_excel = Url::fromRoute('ek_sales.purchases.print_excel', ['id' => $doc_id], [])->toString();
-                $url_edit = Url::fromRoute('ek_sales.purchases.edit', ['id' => $doc_id], [])->toString();
-
-
-                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_print_output.inc';
-                $build['purchase'] = [
+                
+                $print = new PrintManager(); 
+                $document = $print->renderHtml($param);
+                $build['purchase'] =  [
                     '#markup' => $document,
-                    '#attached' => array(
-                        'library' => array('ek_sales/ek_sales_html_documents_css', 'ek_admin/ek_admin_css'),
-                    ),
+                    '#attached' =>['library' => ['ek_sales/ek_sales_html_documents_css', 'ek_admin/ek_admin_css'],
+                    ],
                 ];
             }
+
             return array($build);
+
         } else {
             $url = Url::fromRoute('ek_sales.purchases.list')->toString();
             $items['type'] = 'access';
@@ -1459,9 +1597,9 @@ class PurchasesController extends ControllerBase {
                         )
                 );
                 $_SESSION['printfilter'] = array();
-                $format = 'excel';
-
-                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/manage_excel_output.inc';
+                $print = new PrintManager();
+                $print->exportExcel($param);
+                return new \Symfony\Component\HttpFoundation\Response('', 204);
             }
 
 

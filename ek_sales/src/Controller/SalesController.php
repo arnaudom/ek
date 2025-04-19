@@ -135,7 +135,7 @@ class SalesController extends ControllerBase {
                 while ($d = $data->fetchObject()) {
                     $dmod = explode("|", $d->last_modified);
                     $items['projects'][] = array(
-                        'link' => \Drupal\ek_projects\ProjectData::geturl($d->id),
+                        'link' => \Drupal::service('project.service')->geturl($d->id),
                         'pcode' => $d->pcode,
                         'pname' => $d->pname,
                         'date' => $d->date,

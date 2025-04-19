@@ -9,12 +9,12 @@ $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 $objPHPExcel->getProperties()->setCreator("Ek")
         ->setLastModifiedBy('')
-        ->setTitle("Purchase")
+        ->setTitle("Invoice ")
         ->setSubject("computer generated")
-        ->setDescription("Purchase in excel output format")
+        ->setDescription("Invoices in excel output format")
         ->setKeywords("office 2007 openxml php")
         ->setCategory("file");
-$objPHPExcel->getActiveSheet()->setTitle('purchase');
+$objPHPExcel->getActiveSheet()->setTitle('invoice');
 
 
 // Styles
@@ -40,7 +40,7 @@ if (($company->logo != '') && file_exists($company->logo)) {
     $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
     $objDrawing->setName('Company logo');
     $objDrawing->setDescription('Company logo');
-    $objDrawing->setPath($company->logo);
+    $objDrawing->setPath(\Drupal::service('file_system')->realpath($company->logo));
     $objDrawing->setHeight($resolution);
     $objDrawing->setCoordinates('B2');
     $objDrawing->setOffsetX(10);
@@ -113,10 +113,10 @@ $objPHPExcel->getActiveSheet()->getStyle('H11')->applyFromArray($bluefont);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('H12', "Ref: " . $head->serial);
 
 
-//Client header data
-//line 13
+// Client header data
+// line 13
 $l = 13;
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", (String) t("Purchase from") . ":");
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", (String) t("Bill to") . ":");
 $l++;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $client->name);
 if ($client->address) {
@@ -159,11 +159,9 @@ if ($next) {
 
 $l++;
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", (String) t("Attention to") . ":");
-if (isset($client_card->contact_name)) {
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $client_card->salutation . " " . $client_card->contact_name);
-}
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $client_card->salutation . " " . $client_card->contact_name);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('H14', (String) t("Date") . ": " . $head->date);
-//calculate a due date
+// calculate a due date
 if ($head->due > 0) {
     $due = date('Y-m-d', strtotime(date("Y-m-d", strtotime($head->date)) . "+" . $head->due . ' ' . t("days")));
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue('H15', (String) t("Due date") . ": " . $due);
@@ -171,7 +169,6 @@ if ($head->due > 0) {
 
 // stamps
 if ($stamp == "2") {
-
     $copy = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . "/art/copy.png";
     $objDrawing0 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
     $objDrawing0->setName('Copy');
@@ -193,7 +190,7 @@ if ($stamp == "2") {
     $objDrawing0->setWorksheet($objPHPExcel->getActiveSheet());
 }
 
-//comments
+// comments
 
 $l = 22;
 $objPHPExcel->setActiveSheetIndex(0)
@@ -213,9 +210,9 @@ if ($head->pcode && $head->pcode != "n/a") {
     $objPHPExcel->getActiveSheet()->getStyle("B$i")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
     $objPHPExcel->getActiveSheet()->mergeCells("B$l:D$l");
 }
-//invoice details
+// invoice details
 $l++;
-//merge
+// merge
 $objPHPExcel->getActiveSheet()->mergeCells("B$l:I$l");
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", (string) t("Items"));
 $objPHPExcel->getActiveSheet()->getStyle("B$l")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
@@ -234,9 +231,7 @@ $objPHPExcel->getActiveSheet()->getStyle("B$l")->getBorders()->getLeft()->setBor
 $objPHPExcel->getActiveSheet()->getStyle("J$l")->getBorders()->getLeft()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 $objPHPExcel->getActiveSheet()->getStyle("K$l")->getBorders()->getRight()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
-
-
-//loop itmes
+// loop itmes
 $i = 26;
 $doc_page = 1;
 $total_net = 0;
@@ -266,15 +261,15 @@ foreach ($items as $detail) {
             $subtotal = 0;
         } else {
 
-            //merge
+            // merge
             $objPHPExcel->getActiveSheet()->mergeCells("B$i:G$i");
-            //align
+            // align
             $objPHPExcel->getActiveSheet()->getStyle("B$i")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", $detail['itemcode'] . ' ' . $detail['item']);
-            $objPHPExcel->getActiveSheet()->getRowDimension("$i")->setRowHeight(-1);
-            $objPHPExcel->getActiveSheet()->getStyle("B$i")->getAlignment()->setWrapText(true);
-            if ($detail['total'] > 0) {
+            $objPHPExcel->getActiveSheet()->getRowDimension($i)->setRowHeight(-1);
+            $objPHPExcel->getActiveSheet()->getStyle("B$l")->getAlignment()->setWrapText(true);
 
+            if ($detail['total'] > 0) {
                 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$i", $head->currency);
                 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$i", $detail['total']);
                 $total_net += $detail['total'];
@@ -296,13 +291,13 @@ foreach ($items as $detail) {
             if ($i == 42 || $i % 42 == 0) {
                 //page break
                 $i += 1;
-
                 $doc_page += 1;
                 $i += 7;
                 $objPHPExcel->getActiveSheet()->setBreak('A' . $i, \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_ROW);
                 $i += 6;
                 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", "page: $doc_page");
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$i", "ref: " . $head->serial);
+                $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue("J$i", "ref: " . $head->serial);
                 $objPHPExcel->getActiveSheet()->getStyle("J$i")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
                 $i += 1;
                 $objPHPExcel->getActiveSheet()->getStyle("B$i:K$i")->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
@@ -313,10 +308,9 @@ foreach ($items as $detail) {
 
 $i++;
 
-
 if ($i < 32) {
 
-    //make border
+    // make border
     for ($i; $i <= 31; $i++) {
         $objPHPExcel->getActiveSheet()->getStyle("B$i")->getBorders()->getLeft()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
         $objPHPExcel->getActiveSheet()->getStyle("J$i")->getBorders()->getLeft()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
@@ -331,7 +325,7 @@ if ($doc_page > 1) {
     $objPHPExcel->getActiveSheet()->getStyle("B$i:K$i")->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 }
 
-//total values
+// total values
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$i", (String) t("Total"));
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$i", $head->currency);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$i", $total_net);
@@ -386,7 +380,7 @@ if ($signature == 1) {
         $info = getimagesize($company->sign);
         $h = $info[1];
         $w = $info[0];
-        $off = $i - $s_pos / 10;
+        $off = $i - $s_pos/10;
         $resolution = 200 / $w * $h;
         $objDrawing2 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
         $objDrawing2->setName('signature');
@@ -395,21 +389,51 @@ if ($signature == 1) {
         $objDrawing2->setCoordinates('B' . $off);
         $objDrawing2->setWorksheet($objPHPExcel->getActiveSheet());
     }
+    
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", (String) t("Authorized signatory"));
     $objPHPExcel->getActiveSheet()->getStyle("B$i")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
     $objPHPExcel->getActiveSheet()->getStyle("B$i:D$i")->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
     $objPHPExcel->getActiveSheet()->mergeCells("B$i:F$i");
 } elseif ($signature == 2) {
     $i += 7;
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", (String) t("Electronic purchase – no signature required"));
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", (String) t("Electronic invoice – no signature required"));
     $objPHPExcel->getActiveSheet()->getStyle("B$i")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
     $objPHPExcel->getActiveSheet()->getStyle("B$i:D$i")->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
     $objPHPExcel->getActiveSheet()->mergeCells("B$i:F$i");
     $objPHPExcel->getActiveSheet()->getStyle("B$i:F$i")->getFont()->setBold(true);
 }
 
+
+
 // payment
-$i += 7;
+$i += 3;
+$objPHPExcel->getActiveSheet()->getStyle("B$i:K$i")->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", (String) t("Payment information") . ":");
+$i++;
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", (String) t("Bank") . ":");
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", $bank->name);
+$objPHPExcel->getActiveSheet()->mergeCells("C$i:F$i");
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$i", (String) t("Beneficiary") . ":");
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$i", $company->name);
+$objPHPExcel->getActiveSheet()->mergeCells("I$i:K$i");
+$i++;
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", (String) t("Address") . ":");
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", $bank->address1);
+$objPHPExcel->getActiveSheet()->mergeCells("C$i:F$i");
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$i", (String) t("Account") . ":");
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$i", $bank->account_ref);
+$objPHPExcel->getActiveSheet()->mergeCells("I$i:K$i");
+$objPHPExcel->getActiveSheet()->getStyle("I$i")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+$i++;
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", $bank->address2);
+$objPHPExcel->getActiveSheet()->mergeCells("C$i:F$i");
+$i++;
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$i", $bank->postcode . ', ' . $company->country);
+$objPHPExcel->getActiveSheet()->mergeCells("C$i:F$i");
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$i", (String) t("Swift") . ":");
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$i", $bank->swift);
+$objPHPExcel->getActiveSheet()->mergeCells("I$i:K$i");
+
 
 if ($company->address3 <> "") {
 //correspondance address
@@ -439,7 +463,8 @@ if ($company->address3 <> "") {
     $objPHPExcel->getActiveSheet(0)->getStyle("B$i")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
     $objPHPExcel->getActiveSheet(0)->getStyle("B$i")->getFont()->setName('Arial');
     $objPHPExcel->getActiveSheet(0)->getStyle("B$i")->getFont()->setSize(8);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", $correspondence);
+    $objPHPExcel->setActiveSheetIndex(0)
+            ->setCellValue("B$i", $correspondence);
 
     $i += 1;
     $correspondence = '';

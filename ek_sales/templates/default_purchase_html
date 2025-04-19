@@ -261,7 +261,7 @@ $document .= '</table>
 // RECEIPT
 $receipt = '';
 if ($head->status == 1 && $stamp != 2 && $stamp != 1 ) {
- $receipt = '<div class="red">' . t('RECEIVED') . '</div>';
+ $receipt = '<div class="red">' . t('PAID') . '</div>';
  $receipt .= '<div class="red">' . t('Date') . ': ' . $head->pdate . '</div>';
  $receipt .= '<div class="red">' . $company->name . '</div>';
 }

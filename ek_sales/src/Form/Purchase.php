@@ -270,7 +270,7 @@ class Purchase extends FormBase {
             $form['options']['pcode'] = [
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => \Drupal\ek_projects\ProjectData::listprojects(0),
+                '#options' => \Drupal::service('project.service')->listprojects(0),
                 '#required' => true,
                 '#default_value' => isset($data->pcode) ? $data->pcode : null,
                 '#title' => $this->t('Project'),
@@ -1464,7 +1464,7 @@ class Purchase extends FormBase {
                                 'pcode' => $pcode
                             )
                     );
-                    \Drupal\ek_projects\ProjectData::notify_user($param);
+                    \Drupal::service('project.service')->notify_user($param);
                 }
             }
             if (isset($_SESSION['pfilter']['to'])) {

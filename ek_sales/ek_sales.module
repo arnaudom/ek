@@ -141,11 +141,22 @@ function ek_sales_theme() {
       'template' => 'iframe',
       'variables' => array('items' => array()),
     ),
-    //charts from charts api
     'charts_api' => [
       'template' => 'charts_api',
       'variables' => $vars,
     ],
+    'default_invoice' => [
+      'template' => 'default_invoice',
+      'variables' => ['content' => []],
+    ],
+    'default_purchase' => [
+      'template' => 'default_purchase',
+      'variables' => ['content' => []],
+    ],
+    'default_quotation' => [
+      'template' => 'default_quotation',
+      'variables' => ['content' => []],
+    ]
   );     
 }
 

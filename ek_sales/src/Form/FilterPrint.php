@@ -73,7 +73,7 @@ class FilterPrint extends FormBase {
         ];
 
         if ($format == 'excel') {
-            //add option to choose download as excel or csv
+            // add option to choose download as excel or csv
             $form['filters']['output_format'] = [
                 '#type' => 'radios',
                 '#options' => ['1' => $this->t('excel'), '2' => $this->t('csv')],
@@ -159,7 +159,7 @@ class FilterPrint extends FormBase {
             ]
         ];
 
-        //if client has multiple contact, provide a filter for choice
+        // if client has multiple contact, provide a filter for choice
         $query = 'SELECT id,contact_name FROM {ek_address_book_contacts} WHERE abid=:id';
         $contacts = Database::getConnection('external_db', 'external_db')->query($query, [':id' => $doc->client])->fetchAllKeyed();
 
