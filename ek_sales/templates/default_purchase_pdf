@@ -395,6 +395,10 @@ foreach ($items as $detail) {
             if ($detail['value'] <> 0) {
                 $pdf->Cell($b2);
                 $pdf->Cell($b3, $h, number_format($detail['value'], 2), 'TLB', 0, 'R', $fill);
+            } elseif($detail['quantity'] > 0 && $detail['value'] == 0){
+              // sample item with qty but no value
+              $pdf->Cell($b2);
+              $pdf->Cell($b3,$h, '0.00' ,'TLB',0,'R',$fill);
             } else {
                 $pdf->Cell($b2);
                 $pdf->Cell($b3, $h, '', 'TLB', 0, 'R', $fill);
@@ -408,6 +412,9 @@ foreach ($items as $detail) {
 
             if ($total <> 0 && ($detail['value'] <> 0 || $detail['quantity'] <> 0)) {
                 $pdf->Cell($b5, $h, number_format($total, 2), '1', 1, 'R', $fill);
+            } elseif($detail['quantity'] > 0 && $detail['value'] == 0){
+                // sample item with qty but no value
+                $pdf->Cell($b5,$h, '0.00' ,'LBR',1,'R',$fill);
             } else {
                 $pdf->Cell($b5, $h, '', 'BTR', 1, 'R', $fill);
             }

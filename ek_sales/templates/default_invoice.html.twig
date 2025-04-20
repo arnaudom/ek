@@ -133,14 +133,14 @@
                             {% if detail.item == "sub_total" or detail.item == "[sub total]" %}
                                 <td class="c10"></td>
                                 <td class="c30 right lightgrey_background"><b>{{ 'Sub total'|t }}</b></td>
-                            {% elseif detail.total == 0 and detail.value == 0 %}
-                                <td class="c10 center">{{ i }}</td>
+                            {% elseif detail.total == 0 and detail.value == 0  and detail.quantity == 0 %}
+                                <td class="c10 center">[{{ i }}]</td>
                                 <td class="c30 left"><b>{{ detail.item|nl2br }}</b></td>
                                 {% set i = i + 1 %}
                                 {% set j = 1 %}
                             {% else %}
                                 {% set l = (i > 1) ? (i - 1) : "1" %}
-                                <td class="c10 right">- {{ j }}</td>
+                                <td class="c10 right">{{ j }} -</td>
                                 <td class="c30 left">{{ detail.item|nl2br }}</td>
                                 {% set j = j + 1 %}
                             {% endif %}
@@ -149,6 +149,9 @@
                             
                             {% if detail.value != 0 %}
                                 <td class="c10 right">{{ detail.value|number_format(2) }}</td>
+                            {% elseif detail.value == 0 and detail.quantity != 0 %}
+                                {#sample#}
+                                <td class="c10 right">0.00</td>
                             {% else %}
                                 <td class="c10"></td>
                             {% endif %}
@@ -164,6 +167,9 @@
                             {% elseif detail.item == "sub_total" or detail.item == "[sub total]" %}
                                 <td class="c20 right cellbordertop lightgrey_background">{{ subtotal|number_format(2) }}</td>
                                 {% set subtotal = 0 %}
+                            {% elseif detail.value == 0 and detail.quantity != 0 %}
+                                {#sample#}
+                                <td class="c20 right">0.00</td>
                             {% else %}
                                 <td class="c20"></td>
                             {% endif %}

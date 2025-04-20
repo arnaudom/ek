@@ -210,7 +210,7 @@ $objPHPExcel->getActiveSheet()->getStyle("B$l")->getAlignment()->setVertical(\Ph
 $l++;
 if ($head->pcode && $head->pcode != "n/a") {
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", "Project ref. " . $head->pcode);
-    $objPHPExcel->getActiveSheet()->getStyle("B$i")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+    $objPHPExcel->getActiveSheet()->getStyle("B$l")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
     $objPHPExcel->getActiveSheet()->mergeCells("B$l:D$l");
 }
 //invoice details
