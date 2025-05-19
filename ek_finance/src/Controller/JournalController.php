@@ -188,12 +188,13 @@ class JournalController extends ControllerBase {
      *  PhpExcel object download
      *
      */
-    public function exceljournal($param = null) {
+    public function exceljournal(Request $request, $param = null) {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $param = unserialize($param);
+            $summary = ($request->query->get('summary')) ? $request->query->get('summary') : null;
             $markup = array();
             include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_journal.inc';
         }

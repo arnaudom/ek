@@ -2,14 +2,13 @@
 
 use Drupal\Core\Database\Database;
 use Drupal\ek_finance\Journal;
-//use Drupal\ek_finance\FinanceSettings;
 
-        //$settings = new FinanceSettings(); 
-        $baseCurrency = $param['baseCurrency']; 
-        $rounding = $param['rounding'];
-        $folders = array('general', 'expense', 'receipt', 'payroll', 'invoice', 'purchase');       
-        $journal = new Journal();
-        $sheet = 0;
+//$settings = new FinanceSettings(); 
+$baseCurrency = $param['baseCurrency']; 
+$rounding = $param['rounding'];
+$folders = array('general', 'expense', 'receipt', 'payroll', 'invoice', 'purchase');       
+$journal = new Journal();
+$sheet = 0;
      
 // Create new PHPExcel object
 $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
@@ -51,7 +50,7 @@ foreach($folders as $folder) {
 
 // title
 $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue('A1', "Journal from " . $param['date1'] . " to " . $param['date2'] );
-          
+       
 // subtitle
 $company = Database::getConnection('external_db', 'external_db')
         ->query('SELECT name from {ek_company} WHERE id=:id', array(':id' => $param['company']))
@@ -92,10 +91,8 @@ $objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->applyFromArray($FontBol
 $objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 $objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->getFill()->getStartColor()->setARGB('e6e6fa');
 
-     
-        
   $data = array();
-
+  
   $data = $journal->display( array (
     'date1' => $param['date1'],
     'date2' => $param['date2'],
@@ -106,19 +103,14 @@ $objPHPExcel->getActiveSheet($sheet)->getStyle('A3:D3')->getFill()->getStartColo
     )
   );
         
-
-
   $objPHPExcel->getActiveSheet($sheet)->setTitle($folder);
 
 
-$l = 5; // line index
-
-
+  $l = 5; // line index
     // insert journal entries
-    foreach($data as $key => $row) 
-    {
+    foreach($data as $key => $row) {
 
-$c = 0;
+      $c = 0;
       $cell=$columns[$c].$l;
       if (is_array($row['reference_detail'])) {
         $row['reference_detail'] = $row['reference_detail']['#markup'];
@@ -135,98 +127,106 @@ $c = 0;
 
                   
       $l+=1;      
-          foreach($row['transactions'] as $t => $line)                 
-          {
-              
-            $c = 0;                                  
-                    $cell=$columns[$c].$l;
-                    $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $line['id'] . " - " . $line['count']);                    
-                    $c+=1;
-                    $cell=$columns[$c].$l;
-                    if ($line['exchange'] == 1) { 
-                        $ex= (string) t('exchange') ;} else { 
-                          $ex = '';} 
-                                       
-                    $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $line['aname'] . ' ' . $ex);
+      if(!isset($summary)) {
+        foreach($row['transactions'] as $t => $line) {
+          $c = 0;                                  
+          $cell=$columns[$c].$l;
+          $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $line['id'] . " - " . $line['count']);                    
+          $c+=1;
+          $cell=$columns[$c].$l;
+          if ($line['exchange'] == 1) { 
+              $ex= (string) t('exchange') ;} 
+              else { 
+                $ex = '';
+              } 
+                              
+          $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $line['aname'] . ' ' . $ex);
+          if ($line['type'] == 'debit') {
+            $c+=1;
+            $cell=$columns[$c].$l;              
+              $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($line['value'],$rounding) );
+              $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1); 
+            $c+=2;
+            $cell=$columns[$c].$l;
+            $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $line['trail']['username'] . ' - ' . $line['trail']['time'] );  
+          } else  {
+            $c+=2;
+            $cell=$columns[$c].$l;               
+              $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($line['value'],$rounding));
+              $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $c++;
+            $cell=$columns[$c].$l;
+            $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $line['trail']['username'] . ' - ' . $line['trail']['time'] );
+          } 
+          $l+=1;
+        } // for each transactions
+      }
+      // total               
+      if($baseCurrency <> $row['currency']) {
+          
+          $c=0;
+          $cell=$columns[$c].$l;            
+          $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, (string) t('Total') . ' ' . $row['currency']);
+          $c+=2;
+          $cell=$columns[$c].$l;
+          $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_debit'],$rounding)); 
+          $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+          $c+=1;
+          $cell=$columns[$c].$l; 
+          $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_credit'],$rounding) ); 
+          $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+          $r ="A".$l.":D".$l;
+          $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+          $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->getStartColor()->setARGB('e6e6fa');   
+          $objPHPExcel->getActiveSheet()->getStyle($r)->applyFromArray($TopBorderThin);  
+          $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFont()->setBold(true);
+          $l+=1;      
+      }
+          
+      $c=0;
+      
+      $cell=$columns[$c].$l;
+      $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, (string) t('Total') . ' ' . $baseCurrency);
+      $c+=2;
+      $cell=$columns[$c].$l;
+      $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_debit']+$row['total_debit_base'],$rounding) );
+      $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1); 
+      $c+=1;
+      $cell=$columns[$c].$l; 
+      $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_credit']+$row['total_credit_base'],$rounding) ); 
+      $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+    
+      $r="A".$l.":D".$l;
+      $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+      $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->getStartColor()->setARGB('e6e6fa');
+      $objPHPExcel->getActiveSheet()->getStyle($r)->applyFromArray($TopBorderThin);
+      $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFont()->setBold(true);
 
-                    if ($line['type'] == 'debit') {
-                    $c+=1;
-                    $cell=$columns[$c].$l;              
-                      $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($line['value'],$rounding) );
-                      $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1); 
-                    $c+=2;
-                    $cell=$columns[$c].$l;
-                      $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $line['trail']['username'] . ' - ' . $line['trail']['time'] );  
-                    } else  {
-                    $c+=2;
-                    $cell=$columns[$c].$l;               
-                      $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($line['value'],$rounding));
-                      $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                    $c++;
-                    $cell=$columns[$c].$l;
-                      $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, $line['trail']['username'] . ' - ' . $line['trail']['time'] );
-                    } 
-            $l+=1;
-          } //for each transactions
-               
-               //total               
-              if($baseCurrency <> $row['currency']) {
-                  
-                  $c=0;
-                  $cell=$columns[$c].$l;            
-                  $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, (string) t('Total') . ' ' . $row['currency']);
-                  $c+=2;
-                  $cell=$columns[$c].$l;
-                  $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_debit'],$rounding)); 
-                  $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                  $c+=1;
-                  $cell=$columns[$c].$l; 
-                  $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_credit'],$rounding) ); 
-                  $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                  $r ="A".$l.":D".$l;
-                  $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-                  $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->getStartColor()->setARGB('e6e6fa');   
-                  $objPHPExcel->getActiveSheet()->getStyle($r)->applyFromArray($TopBorderThin);  
-                  $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFont()->setBold(true);
-                  $l+=1;      
-                } 
-               $c=0;
-               
-               $cell=$columns[$c].$l;
-               $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, (string) t('Total') . ' ' . $baseCurrency);
-               $c+=2;
-               $cell=$columns[$c].$l;
-               $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_debit']+$row['total_debit_base'],$rounding) );
-               $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1); 
-               $c+=1;
-               $cell=$columns[$c].$l; 
-               $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue($cell, round($row['total_credit']+$row['total_credit_base'],$rounding) ); 
-               $objPHPExcel->getActiveSheet($sheet)->getStyle($cell)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-              
-               $r="A".$l.":D".$l;
-               $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-               $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFill()->getStartColor()->setARGB('e6e6fa');
-               $objPHPExcel->getActiveSheet()->getStyle($r)->applyFromArray($TopBorderThin);
-               $objPHPExcel->getActiveSheet($sheet)->getStyle($r)->getFont()->setBold(true);
-                
+      $l+=2; 
+    } // foreach data
 
-$l+=2; 
-    } //foreach data
+  $date = date('Y-m-d h:i:s');
+  $l+=2;
+  $objPHPExcel->setActiveSheetIndex($sheet)->setCellValue("A$l", $date); 
 
-$date = date('Y-m-d h:i:s');
-$l+=2;
-$objPHPExcel->setActiveSheetIndex($sheet)->setCellValue("A$l", $date); 
+  $sheet++; 
+    if($sheet > 0) {
+      // Create a new worksheet per folder
+      $objPHPExcel->createSheet();
+    }
 
-$sheet++; 
-   if($sheet > 0) {
-  // Create a new worksheet per folder
-  $objPHPExcel->createSheet();
-  }
-
-  $objPHPExcel->setActiveSheetIndex($sheet);
+    $objPHPExcel->setActiveSheetIndex($sheet); 
 
 } //folders
    
+
+// Set tab color
+$objPHPExcel->setActiveSheetIndex(0)->getTabColor()->setRGB('BDBDBD'); 
+$objPHPExcel->setActiveSheetIndex(1)->getTabColor()->setRGB('FF0040'); 
+$objPHPExcel->setActiveSheetIndex(2)->getTabColor()->setRGB('BF00FF'); 
+$objPHPExcel->setActiveSheetIndex(3)->getTabColor()->setRGB('0040FF'); 
+$objPHPExcel->setActiveSheetIndex(4)->getTabColor()->setRGB('00FF40'); 
+$objPHPExcel->setActiveSheetIndex(5)->getTabColor()->setRGB('FFBF00'); 
 
 $objPHPExcel->setActiveSheetIndex(0);
 

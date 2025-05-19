@@ -175,7 +175,7 @@ class JournalEdit extends FormBase {
             $form["force_dt_ex$n"] = [
                 '#type' => 'checkbox',
                 '#default_value' => isset($dataDT[$i]) ? $dataDT[$i]->exchange : 0,
-                '#attributes' => ['title' => $this->t('Force exchange record')],
+                '#attributes' => ['title' => $this->t('Exchange record')],
             ];
 
             $creditValue = isset($dataCT[$i]) ? $dataCT[$i]->value : '';
@@ -198,7 +198,7 @@ class JournalEdit extends FormBase {
             $form["force_ct_ex$n"] = [
                 '#type' => 'checkbox',
                 '#default_value' => isset($dataCT[$i]) ? $dataCT[$i]->exchange : 0,
-                '#attributes' => ['title' => $this->t('Force exchange record')],
+                '#attributes' => ['title' => $this->t('Exchange record')],
             ];
 
             $form["ctid$n"] = [
@@ -340,8 +340,8 @@ class JournalEdit extends FormBase {
             if (!empty($rows)) {
                 foreach ($rows as $key => $row) {
                     if ($key !== 'foot') {
-                        $debit = preg_replace('/[^0-9.]/', '', $row['debit']);
-                        $credit = preg_replace('/[^0-9.]/', '', $row['credit']);
+                        $debit = preg_replace('/[^\d.-]/', '', $row['debit']);
+                        $credit = preg_replace('/[^\d.-]/', '', $row['credit']);
                         
                         if ($debit && !is_numeric($debit)) {
                             $form_state->setErrorByName("itemTable][$key][debit", $this->t('Debit value must be numeric'));
@@ -420,12 +420,12 @@ class JournalEdit extends FormBase {
             $rec = [];
             
             foreach ($rows as $key => $row) {
-                if ($key !== 'foot') {
-                    $debit = preg_replace('/[^0-9.]/', '', $row['debit']);
-                    $credit = preg_replace('/[^0-9.]/', '', $row['credit']);
+                if ($key !== 'foot') { 
+                    $debit = preg_replace('/[^\d.-]/', '', $row['debit']);
+                    $credit = preg_replace('/[^\d.-]/', '', $row['credit']);
                     
-                    if ($debit) {
-                        $rec[$key] = $journal->record([
+                    if ($debit) { 
+                        $a = [
                             'source' => 'general',
                             'coid' => $param['coid'],
                             'aid' => $row["d-account"],
@@ -437,11 +437,12 @@ class JournalEdit extends FormBase {
                             'comment' => Xss::filter($row["comment"]),
                             'fxRate' => $param['fxRate'],
                             'exchange' => $row['force_dt_ex'],
-                        ]);
+                        ];
+                        $rec[$key] = $journal->record($a);
                     }
                     
                     if ($credit) {
-                        $journal->record([
+                        $a = [
                             'source' => 'general',
                             'coid' => $param['coid'],
                             'aid' => $row["c-account"],
@@ -453,7 +454,8 @@ class JournalEdit extends FormBase {
                             'comment' => Xss::filter($row["comment"]),
                             'fxRate' => $param['fxRate'],
                             'exchange' => $row['force_ct_ex'],
-                        ]);
+                        ];
+                        $journal->record($a);
                     }
                 }
             }
@@ -465,12 +467,12 @@ class JournalEdit extends FormBase {
             // Update existing entries
             foreach ($rows as $key => $row) {
                 if ($key !== 'foot') {
-                    if ($row['debit']) {
+                    if ($row['debit']) { 
                         Database::getConnection('external_db', 'external_db')
                             ->update('ek_journal')
                             ->fields([
                                 'date' => $form_state->getValue('date'),
-                                'value' => preg_replace('/[^0-9.]/', '', $row['debit']),
+                                'value' => preg_replace('/[^\d.-]/', '', $row['debit']),
                                 'aid' => $row['d-account'],
                                 'comment' => Xss::filter($row['comment']),
                                 'exchange' => $row['force_dt_ex'],
@@ -484,7 +486,7 @@ class JournalEdit extends FormBase {
                             ->update('ek_journal')
                             ->fields([
                                 'date' => $form_state->getValue('date'),
-                                'value' => preg_replace('/[^0-9.]/', '', $row['credit']),
+                                'value' => preg_replace('/[^\d.-]/', '', $row['credit']),
                                 'aid' => $row['c-account'],
                                 'comment' => Xss::filter($row['comment']),
                                 'exchange' => $row['force_ct_ex'],

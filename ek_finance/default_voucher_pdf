@@ -181,7 +181,8 @@ Foreach ($data as $id => $arr) {
         $h = $info[1];
         $w = $info[0];
         $r = 140 / $w;
-        $pdf->Image(\Drupal::service('file_system')->realpath($arr['line']->attachment), 20, 60, 140, $h * $r);
+        //$pdf->Image(\Drupal::service('file_system')->realpath($arr['line']->attachment), 20, 60, 140, $h * $r);
+        $pdf->Image(\Drupal::service('file_url_generator')->generateAbsoluteString($arr['line']->attachment), 20, 60, 140, $h * $rr);
     }
 }
 
