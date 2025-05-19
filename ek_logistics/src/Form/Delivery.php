@@ -15,7 +15,6 @@ use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
 use Drupal\Core\Cache\Cache;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_projects\ProjectData;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_products\ItemSettings;
 
@@ -215,7 +214,7 @@ class Delivery extends FormBase {
             $form['options']['pcode'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => ProjectData::listprojects(0),
+                '#options' => \Drupal::service('project.service')->listprojects(0),
                 '#required' => true,
                 '#default_value' => isset($data->pcode) ? $data->pcode : null,
                 '#title' => $this->t('Project'),

@@ -16,7 +16,6 @@ use Drupal\Core\Url;
 use Drupal\Core\Cache\Cache;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
-use Drupal\ek_finance\FinanceSettings;
 
 /**
  * Provides a form to create and edit receiving/return report.
@@ -227,7 +226,7 @@ class receiving extends FormBase {
             $form['options']['pcode'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => \Drupal\ek_projects\ProjectData::listprojects(0),
+                '#options' => \Drupal::service('project.service')->listprojects(0),
                 '#required' => true,
                 '#default_value' => isset($data->pcode) ? $data->pcode : null,
                 '#title' => $this->t('Project'),

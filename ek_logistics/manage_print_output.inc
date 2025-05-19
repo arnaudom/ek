@@ -49,7 +49,7 @@ if (isset($head->type) && $head->type == 'RR') {
 
 if(\Drupal::moduleHandler()->moduleExists('ek_projects')) {      
     if ($head->pcode && $head->pcode != 'n/a') {
-            $project_link = \Drupal\ek_projects\ProjectData::geturl($head->pcode);
+            $project_link = \Drupal::service('project.service')->geturl($head->pcode);
     }
 }
 Switch ($source) {

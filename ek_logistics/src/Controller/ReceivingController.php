@@ -176,7 +176,7 @@ class ReceivingController extends ControllerBase {
 
             if ($r->pcode <> 'n/a') {
                 if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $reference = $client . "<br/>" . \Drupal\ek_projects\ProjectData::geturl($r->pcode);
+                    $reference = $client . "<br/>" . \Drupal::service('project.service')->geturl($r->pcode);
                 } else {
                     $reference = $client;
                 }
