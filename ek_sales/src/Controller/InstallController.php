@@ -108,6 +108,7 @@ class InstallController extends ControllerBase {
 	`alert` TINYINT(1) NULL DEFAULT '0',
 	`alert_who` VARCHAR(250) NULL DEFAULT NULL,
 	`uri` VARCHAR(250) NULL DEFAULT NULL COMMENT 'uri of file attached' COLLATE 'utf8mb4_unicode_ci',
+	`pay_rate` FLOAT(12) NULL DEFAULT '0' COMMENT 'exchange from payment',
         `lock` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '1 = locked',
 	PRIMARY KEY (`id`)
         )
