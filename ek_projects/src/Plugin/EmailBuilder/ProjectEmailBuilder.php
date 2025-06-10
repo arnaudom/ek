@@ -90,7 +90,8 @@ class ProjectEmailBuilder extends EmailBuilderBase {
     $email->setTo($email->getParam('to'));
     $email->setSubject($email->getParam('subject'));
     $email->setReplyTo($email->getParam('options')['sender']);
-    $email->setPriority($email->getParam('options')['priority']);
+    $priority = $email->getParam('options')['priority'] ?? 1;
+    $email->setPriority($priority);
   }
 
 
