@@ -47,7 +47,7 @@ class NewUserSubscriber implements EventSubscriberInterface
                     $maxusers = $val[0];
                 }
             } else {
-                $maxusers = 5;
+                $maxusers = 10000;
             }
        
             if ($users >= $maxusers) {
@@ -90,7 +90,7 @@ class NewUserSubscriber implements EventSubscriberInterface
                     $maxcoid = $val[1];
                 }
             } else {
-                $maxcoid = 5;
+                $maxcoid = 500;
             }
        
             if ($coids >= $maxcoid) {
