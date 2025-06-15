@@ -36,7 +36,8 @@ while ($row = $Obj->fetchObject()) {
    $params['alert'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
    $params['id'] = $row->i_id;
    $l = Url::fromRoute('ek_sales.invoices.print_html', ['id' => $row->i_id],['query' => []])->toString();
-   $params['end'] = date('Y-m-d', $row->end);
+   $endTimestamp = is_null($row->end) ? time() : (int) $row->end;
+   $params['end'] = date('Y-m-d', $endTimestamp);
    $params['task'] = $row->task;
     
     /*

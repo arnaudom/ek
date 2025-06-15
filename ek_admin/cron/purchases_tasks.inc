@@ -35,7 +35,8 @@ try {
         $params['alert'] = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $l]])->toString();
         $params['assign'] = $row->uid;
         $params['serial'] = $row->serial;
-        $params['end'] = date('Y-m-d', $row->end);
+        $endTimestamp = is_null($row->end) ? time() : (int) $row->end;
+        $params['end'] = date('Y-m-d', $endTimestamp);
         $params['task'] = $row->task;
         
         /*
