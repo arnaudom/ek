@@ -2110,7 +2110,7 @@ class ProjectController extends ControllerBase {
         $account = $request->query->get('u');
         $pid = $request->query->get('pid');
         $save = 0;
-            if($user = user_load_by_mail($account)) {
+            if (!empty($account) && ($user = user_load_by_mail($account))) {
                 $uid = $user->id();
                 $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_project', 'p')
