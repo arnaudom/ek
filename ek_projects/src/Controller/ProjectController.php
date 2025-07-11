@@ -780,6 +780,9 @@ class ProjectController extends ControllerBase {
                  */
                 $param_edit = 'field|first_ship|' . $id . '|25%';
                 $link = Url::fromRoute('ek_projects_modal', ['param' => $param_edit])->toString();
+                if (!isset($data['logistic'][0]) || !is_object($data['logistic'][0])) {
+                    $data['logistic'][0] = new \stdClass();
+                }
                 $data['logistic'][0]->edit_first_ship = ('<a title="' . $this->t('edit date') . '" href="' . $link . '" class="use-ajax blue notification" >' . $edit_icon . '</a>');
 
                 /*
@@ -1513,7 +1516,7 @@ class ProjectController extends ControllerBase {
                 $query->leftJoin('ek_project', 'p', 'p.pcode=a.pcode');
                 $query->condition('p.id', $id, '=');
                 $data = $query->execute()->fetchObject();    
-                $post = unserialize($data->ap_doc);
+                $post = $data->ap_doc !== null ? unserialize($data->ap_doc) : [];
                 $post[\Drupal::currentUser()->id()] = $_POST['string'];
                 Database::getConnection('external_db', 'external_db')
                         ->update('ek_project_actionplan')
@@ -2176,50 +2179,91 @@ class ProjectController extends ControllerBase {
     public function lookupProject(Request $request, $level = null, $status = 0) {
         $text = '%' . $request->query->get('q') . '%';
 
-        if ($level == "main") {
-            $level = 'Main project';
-        } elseif ($level == "sub") {
-            $level = 'Sub project';
-        } else {
-            $level = '%';
-        }
+        if ($level != 'doc') {
 
-        if ($status == "1") {
-            $status = 'open';
-        } elseif ($status == "2") {
-            $status = 'awarded';
-        } elseif ($status == "3") {
-            $status = 'completed';
-        } elseif ($status == "4") {
-            $status = 'closed';
-        } else {
-            $status = '%';
-        }
-
-        $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
-
-        $or = $query->orConditionGroup();
-        $or->condition('pcode', $text, 'like');
-        $or->condition('pname', $text, 'like');
-
-
-        $data = $query
-                ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'))
-                ->condition($or)
-                ->condition('level', $level, 'like')
-                ->condition('status', $status, 'like')
-                ->execute();
-
-        $name = array();
-        while ($r = $data->fetchAssoc()) {
-            if (strlen($r['pname']) > 15) {
-                $desc = substr($r['pname'], 0, 15) . "...";
+            if ($level == "main") {
+                $level = 'Main project';
+            } elseif ($level == "sub") {
+                $level = 'Sub project';
             } else {
-                $desc = $r['pname'];
+                $level = '%';
             }
-            $name[] = $r['id'] . " " . $r['pcode'] . " (" . $r['status'] . ") " . $desc;
+
+            if ($status == "1") {
+                $status = 'open';
+            } elseif ($status == "2") {
+                $status = 'awarded';
+            } elseif ($status == "3") {
+                $status = 'completed';
+            } elseif ($status == "4") {
+                $status = 'closed';
+            } else {
+                $status = '%';
+            }
+
+            $query = Database::getConnection('external_db', 'external_db')->select('ek_project', 'p');
+
+            $or = $query->orConditionGroup();
+            $or->condition('pcode', $text, 'like');
+            $or->condition('pname', $text, 'like');
+
+
+            $data = $query
+                    ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'))
+                    ->condition($or)
+                    ->condition('level', $level, 'like')
+                    ->condition('status', $status, 'like')
+                    ->execute();
+
+            $name = array();
+            while ($r = $data->fetchAssoc()) {
+                if (strlen($r['pname']) > 15) {
+                    $desc = substr($r['pname'], 0, 15) . "...";
+                } else {
+                    $desc = $r['pname'];
+                }
+                $name[] = $r['id'] . " " . $r['pcode'] . " (" . $r['status'] . ") " . $desc;
+            }
+            return new JsonResponse($name);
+        } else {
+            // search documents only
+            $term = $request->query->get('q');
+            $uid = \Drupal::currentUser()->id();
+            $return = [];
+            $key = '%' . trim($term) . '%';
+            $cache_key = 'search_documents_' . md5($term . $uid);
+
+            $cache = \Drupal::cache()->get($cache_key);
+            if ($cache) {
+                return new JsonResponse($cache->data);
+            }
+
+            if (strlen($term) >= 3 && $key != '%%%') {
+                $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_project', 'p');
+                $query->fields('p', ['pcode', 'pname']);
+                $query->addField('p', 'id', 'pid');
+                $query->leftJoin('ek_project_documents', 'd', 'p.pcode = d.pcode');
+                $query->fields('d', ['id', 'fid', 'filename', 'uri']);
+                $query->distinct();
+                $query->condition('filename', $key, 'like');
+
+                $Obj = $query->execute();
+
+                while ($result = $Obj->fetchObject()) {
+                    if (\Drupal::service('project.service')->validate_file_access($result->id) && $result->fid != '0') {
+                        //filter access
+                        $pcode = $this->projectService->geturl($result->pid);
+                        $filename = str_ireplace($term, "<mark>" . $term . "</mark>", $result->filename);
+                        $return[] = ['id' => $result->id, 'filename' => $filename, 'pcode' => $pcode, 'pname' => $result->pname];
+                    }
+                }
+
+                \Drupal::cache()->set($cache_key, $return, time() + 300);
+            }
+
+            return new JsonResponse($return);
         }
-        return new JsonResponse($name);
     }
 
     /**

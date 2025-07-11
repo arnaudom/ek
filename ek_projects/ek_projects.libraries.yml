@@ -86,3 +86,10 @@ ek_projects_settings:
     js/ek_projects_settings.js: {}
   dependencies:
     - core/jquery
+    
+
+ek_projects_search_document:
+  js:
+    js/ek_projects_search_autocomplete.js: {}
+  dependencies:
+    - core/jquery

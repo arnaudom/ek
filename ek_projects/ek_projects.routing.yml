@@ -197,7 +197,7 @@ ek_look_up_projects:
     status: 0
   requirements:
     _permission: 'filter_projects'
-    level: 'all|main|sub'
+    level: 'all|main|sub|doc'
     status: '0|1|2|3|4'
     
 ek_projects_task:
