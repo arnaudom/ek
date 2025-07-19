@@ -57,13 +57,15 @@ function ek_address_book_theme() {
     'ek_address_book_form' => [
       'template' => 'ek_address_book_form',
       'variables' => ['items' => []],
+    ],
+    'ek_address_book_dashboard' => [
+      'template' => 'ek_address_book_dashboard',
+      'variables' => ['items' => []],
     ], 
-    // for the lookup card form
     'ek_address_book_search_form' => [
       'template' => 'ek_address_book_search_form',
       'variables' => ['items' => []],
     ], 
-    // for entry of single name card
     'ek_address_book_card_form' => [
       'template' => 'ek_address_book_form',
       'variables' => ['items' => []],

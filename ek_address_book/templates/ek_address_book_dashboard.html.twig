@@ -1,0 +1,39 @@
+{#
+/**
+ * @file
+ * Default theme implementation for rendering dashboard widget.
+ *
+ *
+ * Available items:
+ *   - title.
+ *   - content.
+ *   - footer.
+ *
+ *
+ * @ingroup themeable
+ */
+#}
+    <div class="dashcolumn">
+      <div class="widget">
+      
+        <div class="widget-title">
+          <h4 class="widget-titl-text">{{ items.title }}</h4>
+          <div class="widget-title-icons">
+            {% if items.full_screen_url %}
+              <a href="{{ items.full_screen_url }}" title="{{ 'open full screen'|t }}"><span class='ui-icon ui-icon-extlink widget-link'></span></a>
+            {% endif %}
+            <a href='#s0'>
+              <span class='ui-icon ui-icon-minusthick widget-toggle'></span>
+            </a>
+          </div>
+        </div>
+
+        <div class="widget-content"  style='' id="{{ items.id }}">      
+          <div>{{ items.content|raw }}</div>
+        </div>
+        <div class="widget-footer">
+              {{ items.footer }} 
+        </div>
+      </div>
+    </div>
+

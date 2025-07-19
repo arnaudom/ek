@@ -53,6 +53,12 @@ ek_address_book.dialog:
     - core/jquery.once
     - core/drupal.ajax
 
+ek_address_book.dashboard:
+  version: 1
+  dependencies:
+    - core/jquery
+    - jquery_ui_sortable/sortabl
+
 ek_address_book.search:
   version: VERSION
   css:
