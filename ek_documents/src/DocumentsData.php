@@ -15,18 +15,9 @@ use Drupal\Core\Database\Database;
  */
 class DocumentsData {
 
-    /**
-     * Database Service Object.
-     *
-     * @var \Drupal\Core\Database\Database
-     */
     protected $database;
+    protected $appdata;
 
-    /**
-     * Constructs.
-     *
-     *
-     */
     public function __construct(Database $database) {
         $this->appdata = $database->getConnection('external_db', 'external_db');
     }

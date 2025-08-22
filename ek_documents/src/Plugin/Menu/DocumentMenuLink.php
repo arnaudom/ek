@@ -63,12 +63,15 @@ class DocumentMenuLink extends MenuLinkDefault {
                                    
                     $userdata = \Drupal::service('user.data')->get('ek_documents', $this->currentUser->id());
                     if (count($userdata) > 0) {
-                        return [
+                        /*return [
                             '#markup' => $this->t('Documents <span title=@t class="shared_document_badge">@c</span>', ['@t' => t('New document sahred'),'@c' => count($userdata)]),
                             '#attached' => [
                                 'library' => ['ek_documents/ek_documents_css'],
                             ],
-                        ];
+                        ];*/
+                        return $this->t('Documents <span title="@t" class="shared_document_badge">@c</span>', [
+                            '@t' => t('New document sahred'),'@c' => count($userdata)
+                        ]);
                     }
                     return $this->t('Documents');
             }

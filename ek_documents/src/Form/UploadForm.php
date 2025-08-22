@@ -23,11 +23,17 @@ use Drupal\ek_documents\Settings;
  */
 class UploadForm extends FormBase {
 
+    protected $settings;
+
     /**
      * {@inheritdoc}
      */
     public function getFormId() {
         return 'ek_documents_upload';
+    }
+
+    public function __construct() {
+        $this->settings = new Settings();
     }
 
     /**
@@ -49,9 +55,13 @@ class UploadForm extends FormBase {
             ];
         }
 
+        // file is not managed by Drupal
+        $extensions = $this->settings->get('file_extensions');
+        $upload_doc = ['FileExtension' => ['extensions' => $extensions]];
         $form['upload_doc'] = [
             '#type' => 'file',
-            '#title' => $this->t('Select file'),
+            '#title' => $this->t('Select file'),         
+            '#upload_validators' => $upload_doc,
         ];
 
         $form['folder'] = [
@@ -61,7 +71,6 @@ class UploadForm extends FormBase {
             '#autocomplete_route_name' => 'ek_look_up_folders',
         ];
 
-
         $form['actions'] = ['#type' => 'actions'];
         $form['actions']['upload'] = [
             '#id' => 'upbuttonid1',
@@ -70,24 +79,29 @@ class UploadForm extends FormBase {
             '#ajax' => [
                 'callback' => [$this, 'saveFile'],
                 'wrapper' => 'doc_upload_message',
-                'method' => 'replace',
+                'method' => 'replaceWith',
             ],
         ];
 
         $form['alert'] = [
             '#type' => 'item',
-            '#prefix' => "<div class='alert'>",
+            '#prefix' => "<div id='doc_upload_message' class='alert'>",
             '#suffix' => '</div>',
         ];
-
-
+        
         return $form;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state) {}
+    public function validateForm(array &$form, FormStateInterface $form_state) {
+        $field = "upload_doc";
+        $file = _file_save_upload_from_form($form[$field], $form_state, 0);
+        if($file) {
+            $form_state->set($field, $file) ;
+        }
+    }
 
     /**
      * {@inheritdoc}
@@ -108,37 +122,30 @@ class UploadForm extends FormBase {
         $response = new AjaxResponse();
         $clear = new InvokeCommand('.alert', "html", [""]);
         $response->addCommand($clear);
-        $settings = new Settings();
-        // upload
-        // $extensions = 'csv png gif jpg jpeg bmp txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip';
-        $extensions = $settings->get('file_extensions');
-        $validators = ['file_validate_extensions' => [$extensions]];
         $dir = "private://documents/users/" . $user;
         \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-        $file = file_save_upload("upload_doc", $validators, $dir, 0, FileSystemInterface::EXISTS_RENAME);
+        
+        if ($file = $form_state->get('upload_doc')) {
 
-        if ($file) {
-
-            if ($settings->get('filter_char') == '1' && preg_match('/[^\00-\255]+/u', $file->getFileName())) {
+            if ($this->settings->get('filter_char') == '1' && preg_match('/[^\00-\255]+/u', $file->getFileName())) {
                 // filter file name for special characters
-                $form_state->setValue('upload_doc', NULL);
+                $form_state->set('upload_doc', NULL);
                 $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--error'>" . $this->t('Error: check file name.') . "</div>"));
                 return $response;
             } else {
-                $file->setPermanent();
-                $file->save();
+                // move the file to private folder
+                $doc = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                 $filename = $file->getFileName();
-                $uri = $file->getFileUri();
                 $fields = array(
                     'uid' => $user,
                     //'fid' => '',
                     'type' => 0,
                     'filename' => $filename,
-                    'uri' => $uri,
+                    'uri' => $doc,
                     'folder' => Xss::filter($form_state->getValue('folder')),
                     'comment' => '',
                     'date' => time(),
-                    'size' => filesize($uri),
+                    'size' => filesize($doc),
                     'share' => 0,
                     'share_uid' => 0,
                     'share_gid' => 0,
@@ -168,8 +175,17 @@ class UploadForm extends FormBase {
                 }
             }
         } else {
-            $form_state->setValue('upload_doc', NULL);
-            $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--error'>" . $this->t('Error: check file extension.') . "</div>"));
+            $form_state->set('upload_doc', NULL);
+            if($errors = $form_state->getErrors()) {
+                $e = '';
+                foreach ($errors as $error) {
+                    $e.= $error;
+                }
+                $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--error'>" . $e . "</div>"));
+                $form_state->clearErrors();
+            } else {
+                $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--error'>" .  $this->t('Error') . "</div>"));
+            }
         }
 
         return $response;

@@ -15,6 +15,8 @@ use Drupal\Core\Database\Database;
  */
 class Settings {
 
+    protected $settings;
+
     public function __construct($uid = null) {
         $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_document_settings', 'd')

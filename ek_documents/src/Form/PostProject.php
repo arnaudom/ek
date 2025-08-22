@@ -60,20 +60,6 @@ class PostProject extends FormBase {
         $query->condition('id', $id);
         $data = $query->execute()->fetchField();
 
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_project_settings', 'p');
-        $query->fields('p', ['settings']);
-        $query->condition('coid', 0);
-        $settings = $query->execute()->fetchField();
-        $s = unserialize($settings);
-        
-        if (isset($s['sections'])) {
-            $s3 = $s['sections']['s3'];
-            $s5 = $s['sections']['s5'];
-        } else {
-            $s3 = $this->t("Section 3");
-            $s5 = $this->t("Section 5");
-        }
         $folders = $this->projectService->sectionsName();
 
         $form['filename'] = [

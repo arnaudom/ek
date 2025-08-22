@@ -61,8 +61,7 @@ class InstallController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -74,8 +73,7 @@ class InstallController extends ControllerBase
        *
     */
 
-    public function update()
-    {
+    public function update() {
         include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_documents') . '/' . 'update.php';
         return  array('#markup' => $markup) ;
     }
@@ -85,8 +83,7 @@ class InstallController extends ControllerBase
        *
     */
 
-    public function install()
-    {
+    public function install() {
         /**/
         $query = "CREATE TABLE IF NOT EXISTS `ek_documents` (
                 `id` INT(10) NOT NULL AUTO_INCREMENT,
@@ -148,4 +145,4 @@ class InstallController extends ControllerBase
       '#markup' => $markup
       ) ;
     }
-} //class
+} 

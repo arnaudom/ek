@@ -55,7 +55,8 @@ class ShareForm extends FormBase
                         $users[$account->id()] = $account->getAccountName();
                     } elseif ($settings->get('filter_permission') == '0') {
                         $roles = $account->getRoles();
-                        $users[$account->id()] = $account->getAccountName() . " [" . $roles[1] . "]";
+                        $r_ = isset($roles[1]) ? $roles[1] : $this->t('no role');
+                        $users[$account->id()] = $account->getAccountName() . " [" . $r_ . "]" ;
                     }
                 }
             }
