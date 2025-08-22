@@ -27,19 +27,9 @@ use Drupal\ek_products\ItemSettings;
  */
 class ProductsController extends ControllerBase {
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
     protected $moduleHandler;
-
-    /**
-     * The database service.
-     *
-     * @var \Drupal\Core\Database\Connection
-     */
     protected $database;
+    protected $settings;
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
@@ -248,7 +238,7 @@ class ProductsController extends ControllerBase {
     /**
      * Render excel file for items list
      *
-     * @param array $param id list
+     * @param  serialize array $param id list
      */
     public function excelItemsList($param = null) {
         $markup = [];

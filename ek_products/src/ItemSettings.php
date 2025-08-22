@@ -15,12 +15,14 @@ use Drupal\Core\Database\Database;
  */
 class ItemSettings {
 
+    protected $settings;
+
     public function __construct($uid = null) {
         $data = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT id,settings FROM {ek_item_settings} WHERE id=:id", [':id' => 0])
                 ->fetchObject();
 
-        $this->settings = unserialize($data->settings);
+        $this->settings = $data->settings !== null ? unserialize($data->settings) : [];
     }
 
     /**
@@ -28,7 +30,7 @@ class ItemSettings {
      */
     public function get($name) {
         if (!empty($this->settings)) {
-            return $this->settings[$name];
+            return isset($this->settings[$name]) ? $this->settings[$name] : '';
         }
     }
 

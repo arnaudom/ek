@@ -17,6 +17,8 @@ use Drupal\ek_products\ItemSettings;
  */
 class SettingsForm extends FormBase {
 
+    protected $settings;
+    
     /**
      * {@inheritdoc}
      */

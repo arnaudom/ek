@@ -21,17 +21,9 @@ use Drupal\ek_products\ItemSettings;
  */
 class EditProductsForm extends FormBase {
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
+   
     protected $moduleHandler;
-
-    /**
-     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler.
-     */
+    protected $settings;
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
         $this->settings = new ItemSettings();
