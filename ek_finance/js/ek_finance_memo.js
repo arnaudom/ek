@@ -55,10 +55,8 @@
                     data: {id: id, serial: serial },
                         success: function (data) { 
                             jQuery('#attachments').html(data.list);
-
                             jQuery('.delButton').on('click', function () {
-
-                                var id = this.id;
+                                /*var id = this.id;
                                 jQuery.ajax({
                                     dataType: "json",
                                     url: drupalSettings.path.baseUrl + "finance/ajax/memofilesdelete",
@@ -68,8 +66,38 @@
                                                 jQuery('#row-' + id).remove();
                                             }
                                         }
-                                    });
+                                    });*/
+                                    var $button = jQuery(this);
+                                    var id = this.id;
 
+                                    // Create throbber using Drupal's built-in theme function
+                                    var $throbber = $(Drupal.theme.ajaxProgressThrobber());
+                                    
+                                    // Replace button text with throbber
+                                    $button.prop('disabled', true)
+                                        .addClass('ajax-progress')
+                                        .append($throbber);
+
+                                    $.ajax({
+                                    dataType: "json",
+                                    url: drupalSettings.path.baseUrl + "finance/ajax/memofilesdelete",
+                                    data: {id: id},
+                                    success: function (data) {
+                                        if(data.response) {
+                                        $('#row-' + id).remove();
+                                        }
+                                    },
+                                    error: function(xhr, status, error) {
+                                        // Use Drupal's error handling
+                                        Drupal.ajaxError(error, drupalSettings.path.baseUrl + "finance/ajax/memofilesdelete");
+                                    },
+                                    complete: function() {
+                                        // Restore button state
+                                        $button.prop('disabled', false)
+                                            .removeClass('ajax-progress')
+                                            .find('.ajax-throbber').remove();
+                                        }
+                                    });
                             });
                         }
                     });
