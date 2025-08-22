@@ -14,38 +14,25 @@ use Drupal\Core\Database\Database;
 /**
  * Set and retrieve settings parameters used in accounts
  */
-  class CompanySettings
-  {
+  class CompanySettings {
 
-
-  /**
-   * company id.
-   *
-   *
-   */
       protected $coid;
-      /**
-       * The database connection to use.
-       *
-       * @var \Drupal\Core\Database\Connection
-       */
+      protected $settings;
       protected $connection;
 
 
-      public function __construct($coid = null)
-      {
+      public function __construct($coid = null)  {
           $this->coid = $coid;
           $query = "SELECT settings from {ek_company} WHERE id=:id";
           $data = Database::getConnection('external_db', 'external_db')
              ->query($query, array(':id' => $this->coid))->fetchObject();
-          $this->settings = unserialize($data->settings);
+          $this->settings = $data->settings !== null ? unserialize($data->settings) : [];
       }
  
       /**
        * Get a setting by setting name and optional currency reference if needed
        */
-      public function get($name, $currency = null)
-      {
+      public function get($name, $currency = null) {
           if (!empty($this->settings)) {
               if (!$currency == '') {
                   return  $this->settings[$currency][$name];
@@ -60,8 +47,7 @@ use Drupal\Core\Database\Database;
       /**
        * Set a setting value by setting name and optional currency reference if needed
        */
-      public function set($name, $value, $currency = null)
-      {
+      public function set($name, $value, $currency = null) {
           if (!$currency == '') {
               if (empty($this->settings[$currency])) {
                   $this->settings[$currency] = array();
@@ -75,14 +61,11 @@ use Drupal\Core\Database\Database;
       /**
        * save settings
        */
-      public function save()
-      {
+      public function save() {
           $data = serialize($this->settings) ;
           Database::getConnection('external_db', 'external_db')->update('ek_company')
-      ->condition('id', $this->coid)
-      ->fields(array(
-        'settings' => $data,
-      ))
-      ->execute();
+            ->condition('id', $this->coid)
+            ->fields(['settings' => $data])
+            ->execute();
       }
   }

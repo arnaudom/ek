@@ -11,15 +11,14 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Locale\CountryManagerInterface;
 use Drupal\Core\Database\Database;
+use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides an company form.
  */
-class EditCompanyForm extends FormBase
-{
+class EditCompanyForm extends FormBase {
 
     /**
      * The module handler.
@@ -32,16 +31,14 @@ class EditCompanyForm extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler)  {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler')
         );
@@ -50,16 +47,14 @@ class EditCompanyForm extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'ek_edit_company_form';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_country', 'c')
                         ->fields('c', ['id','name'])
@@ -69,337 +64,366 @@ class EditCompanyForm extends FormBase
         $country = $query->execute()->fetchAllKeyed();
 
         if (isset($id) && !$id == null) {
-            $form['for_id'] = array(
+            $form['for_id'] = [
                 '#type' => 'hidden',
                 '#default_value' => $id,
-            );
+            ];
 
             $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_company', 'c')
                         ->condition('id', $id)
                         ->fields('c');
             $r = $query->execute()->fetchAssoc();
-            $query = "SELECT * from {ek_company} WHERE id=:id";
+            //$query = "SELECT * from {ek_company} WHERE id=:id";
         } else {
-            $form['new_company'] = array(
+            $form['new_company'] = [
                 '#type' => 'hidden',
                 '#default_value' => 1,
-            );
+            ];
         }
 
-        $form['active'] = array(
+        $form['active'] = [
             '#type' => 'select',
-            '#options' => array(0 => $this->t('non active'), 1 => $this->t('active')),
+            '#options' => [0 => $this->t('non active'), 1 => $this->t('active')],
             '#default_value' => isset($r['active']) ? $r['active'] : '1',
             '#required' => true,
-        );
+        ];
 
-        $form['name'] = array(
+        $form['name'] = [
             '#type' => 'textfield',
             '#size' => 50,
             '#default_value' => isset($r['name']) ? $r['name'] : null,
-            '#attributes' => array('placeholder' => $this->t('Name')),
+            '#attributes' => ['placeholder' => $this->t('Name')],
             '#required' => true,
             '#description' => $this->t('name'),
             '#prefix' => "<div class='container-inline'>",
-            '#attached' => array(
-                'library' => array(
+            '#attached' => [
+                'library' => [
                     'ek_admin/ek_admin.script.sn',
-                ),
-            ),
-        );
+                ],
+            ],
+        ];
 
-        $form['short'] = array(
+        $form['short'] = [
             '#type' => 'textfield',
             '#id' => 'short_name',
             '#size' => 10,
             '#maxlength' => 5,
             '#required' => true,
             '#default_value' => isset($r['short']) ? $r['short'] : null,
-            '#attributes' => array('placeholder' => $this->t('Short name')),
+            '#attributes' => ['placeholder' => $this->t('Short name')],
             '#suffix' => '</div>',
-        );
+        ];
 
-        $form['alert'] = array(
+        $form['alert'] = [
             '#markup' => "<div id='alert'></div>",
-        );
+        ];
 
-        $form['reg_number'] = array(
+        $form['reg_number'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($r['reg_number']) ? $r['reg_number'] : null,
-            '#attributes' => array('placeholder' => $this->t('registration number')),
+            '#attributes' => ['placeholder' => $this->t('registration number')],
             '#description' => $this->t('registration number'),
-        );
+        ];
 
-        $form['address1'] = array(
+        $form['address1'] = [
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
             '#default_value' => isset($r['address1']) ? $r['address1'] : null,
-            '#attributes' => array('placeholder' => $this->t('address line 1')),
+            '#attributes' => ['placeholder' => $this->t('address line 1')],
             '#description' => $this->t('address line 1'),
-        );
+        ];
 
-        $form['address2'] = array(
+        $form['address2'] = [
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
             '#default_value' => isset($r['address2']) ? $r['address2'] : null,
-            '#attributes' => array('placeholder' => $this->t('address line 2')),
+            '#attributes' => ['placeholder' => $this->t('address line 2')],
             '#description' => $this->t('address line 2'),
-        );
+        ];
 
 
-        $form['city'] = array(
+        $form['city'] = [
             '#type' => 'textfield',
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['city']) ? $r['city'] : null,
-            '#attributes' => array('placeholder' => $this->t('city')),
+            '#attributes' => ['placeholder' => $this->t('city')],
             '#prefix' => "<div class='container-inline'>",
             '#description' => $this->t('city'),
-        );
+        ];
 
-        $form['postcode'] = array(
+        $form['postcode'] = [
             '#type' => 'textfield',
             '#size' => 10,
             '#maxlength' => 255,
             '#default_value' => isset($r['postcode']) ? $r['postcode'] : null,
-            '#attributes' => array('placeholder' => $this->t('post code')),
+            '#attributes' => ['placeholder' => $this->t('post code')],
             '#description' => $this->t('post code'),
             '#suffix' => "</div>",
-        );
+        ];
         
-        $form['state'] = array(
+        $form['state'] = [
             '#type' => 'textfield',
             '#size' => 40,
             '#maxlength' => 50,
             '#default_value' => isset($r['state']) ? $r['state'] : null,
-            '#attributes' => array('placeholder' => $this->t('state')),
+            '#attributes' => ['placeholder' => $this->t('state')],
             '#prefix' => "<div class='container-inline'>",
             '#description' => $this->t('state'),
-        );
+        ];
         
-        $form['country'] = array(
+        $form['country'] = [
             '#type' => 'select',
             '#options' => array_combine($country, $country),
             '#default_value' => isset($r['country']) ? $r['country'] : null,
             '#description' => $this->t('country'),
             '#suffix' => "</div>",
-        );
+        ];
 
-        $form['telephone'] = array(
+        $form['telephone'] = [
             '#type' => 'textfield',
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['telephone']) ? $r['telephone'] : null,
-            '#attributes' => array('placeholder' => $this->t('telephone')),
+            '#attributes' => ['placeholder' => $this->t('telephone')],
             '#description' => $this->t('telephone'),
-        );
+        ];
 
-        $form['fax'] = array(
+        $form['fax'] = [
             '#type' => 'textfield',
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['fax']) ? $r['fax'] : null,
-            '#attributes' => array('placeholder' => $this->t('fax')),
+            '#attributes' => ['placeholder' => $this->t('fax')],
             '#description' => $this->t('fax'),
-        );
+        ];
 
-        $form['mobile'] = array(
+        $form['mobile'] = [
             '#type' => 'textfield',
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['mobile']) ? $r['mobile'] : null,
-            '#attributes' => array('placeholder' => $this->t('mobile')),
+            '#attributes' => ['placeholder' => $this->t('mobile')],
             '#description' => $this->t('mobile phone'),
-        );
+        ];
 
-        $form['email'] = array(
+        $form['email'] = [
             '#type' => 'textfield',
             '#size' => 50,
             '#maxlength' => 255,
             '#default_value' => isset($r['email']) ? $r['email'] : null,
-            '#attributes' => array('placeholder' => $this->t('email')),
+            '#attributes' => ['placeholder' => $this->t('email')],
             '#description' => $this->t('email'),
-        );
+        ];
 
-        $form['contact'] = array(
+        $form['contact'] = [
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
             '#default_value' => isset($r['contact']) ? $r['contact'] : null,
-            '#attributes' => array('placeholder' => $this->t('contact name')),
+            '#attributes' => ['placeholder' => $this->t('contact name')],
             '#description' => $this->t('contact'),
-        );
+        ];
 
 
         //correspondance address data
 
-        $form['2'] = array(
+        $form['2'] = [
             '#type' => 'details',
             '#title' => $this->t('Correspondance address'),
             '#collapsible' => true,
             '#collapsed' => false,
-        );
+        ];
 
-        $form['2']['address3'] = array(
+        $form['2']['address3'] = [
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
             '#default_value' => isset($r['address3']) ? $r['address3'] : null,
-            '#attributes' => array('placeholder' => $this->t('address line 1')),
+            '#attributes' => ['placeholder' => $this->t('address line 1')],
             '#description' => $this->t('address line 1'),
-        );
+        ];
 
-        $form['2']['address4'] = array(
+        $form['2']['address4'] = [
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
             '#default_value' => isset($r['address4']) ? $r['address4'] : null,
-            '#attributes' => array('placeholder' => $this->t('address line 2')),
+            '#attributes' => ['placeholder' => $this->t('address line 2')],
             '#description' => $this->t('address line 2'),
-        );
+        ];
 
 
-        $form['2']['city2'] = array(
+        $form['2']['city2'] = [
             '#type' => 'textfield',
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['city2']) ? $r['city2'] : null,
-            '#attributes' => array('placeholder' => $this->t('city')),
+            '#attributes' => ['placeholder' => $this->t('city')],
             '#prefix' => "<div class='container-inline'>",
             '#description' => $this->t('city'),
-        );
+        ];
 
-        $form['2']['postcode2'] = array(
+        $form['2']['postcode2'] = [
             '#type' => 'textfield',
             '#size' => 10,
             '#maxlength' => 255,
             '#default_value' => isset($r['postcode2']) ? $r['postcode2'] : null,
-            '#attributes' => array('placeholder' => $this->t('post code')),
+            '#attributes' => ['placeholder' => $this->t('post code')],
             '#description' => $this->t('post code'),
             '#suffix' => "</div>",
-        );
+        ];
 
-        $form['2']['state2'] = array(
+        $form['2']['state2'] = [
             '#type' => 'textfield',
             '#size' => 40,
             '#maxlength' => 50,
             '#default_value' => isset($r['state']) ? $r['state'] : null,
-            '#attributes' => array('placeholder' => $this->t('state')),
+            '#attributes' => ['placeholder' => $this->t('state')],
             '#prefix' => "<div class='container-inline'>",
             '#description' => $this->t('state'),
-        );
+        ];
         
-        $form['2']['country2'] = array(
+        $form['2']['country2'] = [
             '#type' => 'select',
             '#options' => array_combine($country, $country),
             '#default_value' => isset($r['country2']) ? $r['country2'] : null,
             '#description' => $this->t('country'),
             '#suffix' => "</div>",
-        );
+        ];
 
-        $form['2']['telephone2'] = array(
+        $form['2']['telephone2'] = [
             '#type' => 'textfield',
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['telephone2']) ? $r['telephone2'] : null,
-            '#attributes' => array('placeholder' => $this->t('telephone')),
+            '#attributes' => ['placeholder' => $this->t('telephone')],
             '#description' => $this->t('telephone'),
-        );
+        ];
 
-        $form['2']['fax2'] = array(
+        $form['2']['fax2'] = [
             '#type' => 'textfield',
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['fax2']) ? $r['fax2'] : null,
-            '#attributes' => array('placeholder' => $this->t('fax')),
+            '#attributes' => ['placeholder' => $this->t('fax')],
             '#description' => $this->t('fax'),
-        );
+        ];
 
 
         //Images data
-
-
-        $form['i'] = array(
+        $form['i'] = [
             '#type' => 'details',
             '#title' => $this->t('Images'),
             '#collapsible' => true,
             '#collapsed' => false,
-        );
+        ];
+
         if (null !== \Drupal\Core\StreamWrapper\PrivateStream::basePath()) {
-            $form['i']['logo'] = array(
-                '#type' => 'file',
+            $form['i']['logo'] = [
+                '#type' => 'managed_file',
                 '#title' => $this->t('Upload a logo image'),
-                '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
-                '#suffix' => "</div>",
-            );
+                '#description' => $this->t('image type allowed: png, jpg, jpeg'),
+                '#upload_validators'  => [
+                    'FileExtension' => ['extensions' => 'png jpg jpeg'],
+                    'FileSizeLimit' => ['fileLimit' => 500000]
+                ],
+                //'#prefix' => "<div class='table'><div class='row'><div class='cell'>",
+                //'#suffix' => "</div>",
+            ];
+
+            $form['i']['sign'] = [
+                '#type' => 'managed_file',
+                '#title' => $this->t('Upload a signature image'),
+                '#description' => $this->t('image type allowed: png, jpg, jpeg'),
+                '#upload_validators'  => [
+                    'FileExtension' => ['extensions' => 'png jpg jpeg'],
+                    'FileSizeLimit' => ['fileLimit' => 500000]
+                ],
+                //'#prefix' => "<div class='cell'>",
+                //'#suffix' => "</div></div>",
+            ];
 
             /* current image if any */
             if (isset($r['logo']) && $r['logo'] <> '') {
                 $image = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r['logo']) 
-                        . "' target='_blank'><img class='thumbnail' src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($r['logo']) . "></a>";
-                $form['i']['logo_delete'] = array(
+                        . "' target='_blank'><img class='thumbnail' src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($r['logo']) . "></a>"; 
+
+                $form["logouri"] = [
+                    '#type' => "hidden",
+                    '#value' => $r['logo'],
+                ];
+                $form['i']['logo_delete'] = [
                     '#type' => 'checkbox',
                     '#title' => $this->t('delete logo'),
-                    '#attributes' => array('onclick' => "jQuery('#currentLogo').toggleClass( 'delete');"),
-                    '#prefix' => "<div class='cell'>",
-                );
-                $form['i']["currentlogo"] = array(
+                    '#attributes' => ['onclick' => "jQuery('#currentLogo').toggleClass( 'delete');"],
+                    '#prefix' => "<div class='row'><div class='cell'>",
+                    '#suffix' => "</div>",
+                ];
+                $form['i']["currentlogo"] = [
                     '#markup' => "<p id='currentLogo' class = 'text-right'>" . $image . "</p>",
-                    '#suffix' => "</div></div></div>",
-                );
-            } else {
-                $form['i']["currentlogo"] = array(
-                    '#type' => "item",
+                    '#prefix' => "<div class='cell'>",
                     '#suffix' => "</div></div>",
-                );
-            }
+                ];
 
-            $form['i']['sign'] = array(
-                '#type' => 'file',
-                '#title' => $this->t('Upload a signature image'),
-                '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
-                '#suffix' => "</div>",
-            );
+            } else {
+                $form['i']["currentlogo"] = [
+                    '#type' => "item",
+                    //'#suffix' => "</div></div>",
+                ];
+            }
             
             /* current image if any */
             if (isset($r['sign']) && $r['sign'] <> '') {
                 $image = "<a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r['sign']) 
                         . "' target='_blank'><img class='thumbnail' src=" . \Drupal::service('file_url_generator')->generateAbsoluteString($r['sign']) . "></a>";
-                $form['i']['sign_delete'] = array(
+                
+
+                $form["signuri"] = [
+                    '#type' => "hidden",
+                    '#value' => $r['sign'],
+                ];
+
+                $form['i']['sign_delete'] = [
                     '#type' => 'checkbox',
                     '#title' => $this->t('delete signature'),
-                    '#attributes' => array('onclick' => "jQuery('#currentSign').toggleClass('delete');"),
+                    '#attributes' => ['onclick' => "jQuery('#currentSign').toggleClass('delete');"],
+                    '#prefix' => "<div class='row'><div class='cell'>",
+                    '#suffix' => "</div>",
+                ];
+
+                $form['i']["currentsign"] = [
+                    '#markup' => "<p id='currentSign'  class='text-right'>" . $image . "</p>",
                     '#prefix' => "<div class='cell'>",
-                );
-                $form['i']["currentsign"] = array(
-                    '#markup' => "<p id='currentSign'  class = 'text-right'>" . $image . "</p>",
-                    '#suffix' => "</div></div></div>",
-                );
-            } else {
-                $form['i']["currentsign"] = array(
-                    '#type' => "item",
                     '#suffix' => "</div></div>",
-                );
+                ];
+
+            } else {
+                $form['i']["currentsign"] = [
+                    '#type' => "item",
+                    //'#suffix' => "</div></div>",
+                ];
             }
         } else {
-            $form['i']['path'] = array(
+            $form['i']['path'] = [
                 '#type' => 'item',
                 '#markup' => $this->t("Set private data folder in <a href='@c'>configuration</a> before uploading files", ['@c' => '../../../admin/config/media/file-system']),
-            );
+            ];
         }
 
         // admin data
-        $form['f'] = array(
+        $form['f'] = [
             '#type' => 'details',
             '#title' => $this->t('Other settings'),
             '#collapsible' => true,
             '#collapsed' => false,
-        );
+        ];
+
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             // choice to load standard account or use othe company accunts
 
@@ -412,93 +436,94 @@ class EditCompanyForm extends FormBase
                         ->query("SELECT id,name from {ek_company} order by name")
                         ->fetchAllKeyed();
 
-                $form['f']['use_chart'] = array(
+                $form['f']['use_chart'] = [
                     '#type' => 'select',
                     '#title' => $this->t('Select chart of accounts'),
                     '#options' => $option,
                     '#default_value' => null,
                     '#required' => true,
                     '#description' => $this->t('chart selection from other company will be copied into new entity'),
-                );
+                ];
             }
         }
         if (!$this->moduleHandler->moduleExists('ek_finance')) {
-            $form['f']['accounts_year'] = array(
+            $form['f']['accounts_year'] = [
                 '#type' => 'textfield',
                 '#size' => 6,
                 '#maxlength' => 4,
                 '#default_value' => isset($r['accounts_year']) ? $r['accounts_year'] : null,
-                '#attributes' => array('placeholder' => $this->t('year')),
+                '#attributes' => ['placeholder' => $this->t('year')],
                 '#description' => $this->t('financial year'),
-            );
+            ];
 
-            $form['f']['accounts_month'] = array(
+            $form['f']['accounts_month'] = [
                 '#type' => 'textfield',
                 '#size' => 6,
                 '#maxlength' => 2,
                 '#default_value' => isset($r['accounts_month']) ? $r['accounts_month'] : null,
-                '#attributes' => array('placeholder' => $this->t('month. ex.12')),
+                '#attributes' => ['placeholder' => $this->t('month. ex.12')],
                 '#description' => $this->t('financial month'),
-            );
+            ];
+
         } else {
             $settings = new \Drupal\ek_admin\CompanySettings($id);
-            $form['f']['accounts_year'] = array(
+            $form['f']['accounts_year'] = [
                 '#type' => 'textfield',
                 '#size' => 6,
                 '#disabled' => true,
                 '#maxlength' => 4,
                 '#default_value' => $settings->get('fiscal_year'),
                 '#description' => $this->t('financial year'),
-            );
+            ];
 
-            $form['f']['accounts_month'] = array(
+            $form['f']['accounts_month'] = [
                 '#type' => 'textfield',
                 '#size' => 6,
                 '#disabled' => true,
                 '#maxlength' => 2,
                 '#default_value' => $settings->get('fiscal_month'),
                 '#description' => $this->t('financial month'),
-            );
+            ];
         }
-        $form['f']['itax_no'] = array(
+        $form['f']['itax_no'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($r['itax_no']) ? $r['itax_no'] : null,
-            '#attributes' => array('placeholder' => $this->t('tax no.')),
+            '#attributes' => ['placeholder' => $this->t('tax no.')],
             '#description' => $this->t('income tax no.'),
-        );
+        ];
 
-        $form['f']['pension_no'] = array(
+        $form['f']['pension_no'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($r['pension_no']) ? $r['pension_no'] : null,
-            '#attributes' => array('placeholder' => $this->t('pension no.')),
+            '#attributes' => ['placeholder' => $this->t('pension no.')],
             '#description' => $this->t('pension no.'),
-        );
+        ];
 
-        $form['f']['social_no'] = array(
+        $form['f']['social_no'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($r['social_no']) ? $r['social_no'] : null,
-            '#attributes' => array('placeholder' => $this->t('social no.')),
+            '#attributes' => ['placeholder' => $this->t('social no.')],
             '#description' => $this->t('social security no.'),
-        );
+        ];
 
-        $form['f']['vat_no'] = array(
+        $form['f']['vat_no'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($r['vat_no']) ? $r['vat_no'] : null,
-            '#attributes' => array('placeholder' => $this->t('vat ref. no.')),
+            '#attributes' => ['placeholder' => $this->t('vat ref. no.')],
             '#description' => $this->t('vat ref. no.'),
-        );
+        ];
 
 
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['submit'] = ['#type' => 'submit', '#value' => $this->t('Record')];
 
         return $form;
     }
@@ -507,8 +532,7 @@ class EditCompanyForm extends FormBase
      * {@inheritdoc}
      *
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         parent::validateForm($form, $form_state);
 
         if (!filter_var($form_state->getValue('email'), FILTER_VALIDATE_EMAIL)) {
@@ -525,53 +549,12 @@ class EditCompanyForm extends FormBase
             }
         }
 
-        $validators = array('file_validate_is_image' => array());
-        $destination =  "private://admin/company" . $form_state->getValue('for_id') . "/images";
-        \Drupal::service('file_system')->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-        //LOGO
-        $field = "logo";
-        // Check for a new uploaded logo.
-        $file = file_save_upload($field, $validators, $destination, 0);
-
-        if (isset($file)) {
-            $res = file_validate_image_resolution($file, '300x300', '100x100');
-            // File upload was attempted.
-            if ($file) {
-                // Put the temporary file in form_values so we can save it on submit.
-                $form_state->setValue($field, $file);
-            } else {
-                // File upload failed.
-                $form_state->setErrorByName($field, $this->t('Logo could not be uploaded'));
-            }
-        } else {
-            $form_state->setValue($field, 0);
-        }
-
-        //SIGN
-        $field = "sign";
-        // Check for a new uploaded signature.
-        $file = file_save_upload($field, $validators, $destination, 0);
-
-        if (isset($file)) {
-            $res = file_validate_image_resolution($file, '300x300', '100x100');
-            // File upload was attempted.
-            if ($file) {
-                // Put the temporary file in form_values so we can save it on submit.
-                $form_state->setValue($field, $file);
-            } else {
-                // File upload failed.
-                $form_state->setErrorByName($field, $this->t('Signature could not be uploaded'));
-            }
-        } else {
-            $form_state->setValue($field, 0);
-        }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         $fields = array(
             'name' => $form_state->getValue('name'),
             'short' => $form_state->getValue('short'),
@@ -660,57 +643,56 @@ class EditCompanyForm extends FormBase
 
         // images
         if ($form_state->getValue('logo_delete') == 1) {
-            //delete existing file
-            $query = "SELECT logo from {ek_company} where id=:id";
-            $path = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':id' => $id))->fetchField();
-
-            \Drupal::service('file_system')->delete($path);
+           
+            \Drupal::service('file_system')->delete($form_state->getValue('logouri'));
             \Drupal::messenger()->addWarning(t("Logo image deleted"));
             Database::getConnection('external_db', 'external_db')
-                    ->update('ek_company')->fields(array('logo' => ''))->condition('id', $id)->execute();
+                    ->update('ek_company')->fields(['logo' => ''])->condition('id', $id)->execute();
         }
 
         if ($form_state->getValue('sign_delete') == 1) {
-            //delete existing file
-            $query = "SELECT sign from {ek_company} where id=:id";
-            $path = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':id' => $id))->fetchField();
-
-            \Drupal::service('file_system')->delete($path);
+          
+            \Drupal::service('file_system')->delete($form_state->getValue('signuri'));
             Database::getConnection('external_db', 'external_db')
                     ->update('ek_company')->fields(array('sign' => ''))->condition('id', $id)->execute();
             \Drupal::messenger()->addWarning(t("Signature image deleted"));
         }
 
-        if (!$form_state->getValue('logo') == 0) {
-            if ($file = $form_state->getValue('logo')) {
-                $file->setPermanent();
-                $file->save();
-                $logo = $file->getFileUri();
+        $file_ids = $form_state->getValue('logo');
+        if (!empty($file_ids)) {
+            $file_id = reset($file_ids);
+            $file = File::load($file_id);
+            if ($file) {
+                // copy from //temp to another folder
+                $dir = "private://admin/company" . $form_state->getValue('for_id') . "/images";
+                \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+                $uri = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
                 Database::getConnection('external_db', 'external_db')
                         ->update('ek_company')
-                        ->fields(array('logo' => $logo))
+                        ->fields(array('logo' => $uri))
                         ->condition('id', $id)->execute();
-                \Drupal::messenger()->addStatus(t("New logo image uploaded"));
+                \Drupal::messenger()->addStatus(t("New logo @i uploaded", ['@i' => $file->getFilename()]));
+            }
+        }
+                
+        $file_ids = $form_state->getValue('sign');
+        if (!empty($file_ids)) {
+            $file_id = reset($file_ids);
+            $file = File::load($file_id);
+            if ($file) {
+                // copy from //temp to another folder
+                $dir = "private://admin/company" . $form_state->getValue('for_id') . "/images";
+                \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+                $uri = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
+                Database::getConnection('external_db', 'external_db')
+                        ->update('ek_company')
+                        ->fields(array('sign' => $uri))
+                        ->condition('id', $id)->execute();
+                \Drupal::messenger()->addStatus(t("New signature @i uploaded", ['@i' => $file->getFilename()]));
             }
         }
 
-        if (!$form_state->getValue('sign') == 0) {
-            if ($file = $form_state->getValue('sign')) {
-                $file->setPermanent();
-                $file->save();
-                $sign = $file->getFileUri();
-                Database::getConnection('external_db', 'external_db')
-                        ->update('ek_company')
-                        ->fields(array('sign' => $sign))
-                        ->condition('id', $id)->execute();
-                \Drupal::messenger()->addStatus(t("New signature image uploaded"));
-            }
-        }
-
-
-        //insert default access for new
+        // insert default access for new
         if ($form_state->getValue('for_id') == '') {
             if (\Drupal::currentUser()->id() == 1) {
                 $access = array('1');
@@ -728,7 +710,7 @@ class EditCompanyForm extends FormBase
 
         if (isset($insert) || isset($update)) {
             \Drupal::messenger()->addStatus(t("The company is recorded"));
-            if ($_SESSION['install'] == 1) {
+            if (isset($_SESSION['install']) && $_SESSION['install'] == 1) {
                 unset($_SESSION['install']);
                 $form_state->setRedirect('ek_admin.main');
             } else {

@@ -74,9 +74,10 @@ class AdminMenuLink extends MenuLinkDefault {
                     }
                 }
                 if ($c > 0) {
-                    return [
-                        '#markup' => $this->t('Administration <span title=@t class="admin_menu_badge">@c</span>', ['@t' => t('Settings missing'), '@c' => $c]),
-                    ];
+                    return $this->t('Administration <span title="@t" class="admin_menu_badge">@c</span>', [
+                        '@t' => $this->t('Settings missing'), 
+                        '@c' => $c
+                    ]);
                 }
             }
             return $this->t('Administration');

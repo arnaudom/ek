@@ -80,7 +80,7 @@ class CountryAccessForm extends FormBase {
             $query->fields('c', ['access']);
             $query->condition('id', $form_state->getValue('cid'));
             $list_members = $query->execute()->fetchField();
-            $list = unserialize($list_members);
+            $list = $list_members !== null ? unserialize($list_members) : '';
             $query = Database::getConnection()->select('users_field_data', 'u');
             $query->fields('u', ['uid', 'name']);
             $query->condition('uid', 0, '>');

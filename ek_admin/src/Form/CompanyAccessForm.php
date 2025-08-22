@@ -59,8 +59,8 @@ class CompanyAccessForm extends FormBase
             $query = Database::getConnection('external_db', 'external_db')->select('ek_company', 'c');
             $query->fields('c', ['access']);
             $query->condition('id', $form_state->getValue('coid'));
-            $list_members = $query->execute()->fetchField();
-            $list = unserialize($list_members);
+            $list_members = $query->execute()->fetchField(); 
+            $list = $list_members !== null ? unserialize($list_members) : '';
             $query = Database::getConnection()->select('users_field_data', 'u');
             $query->fields('u', ['uid', 'name']);
             $query->condition('uid', 0, '>');

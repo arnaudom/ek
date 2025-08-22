@@ -44,16 +44,14 @@ class EditCompanySettings extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler')
         );
@@ -62,8 +60,7 @@ class EditCompanySettings extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         $form['coid'] = array(
             '#type' => 'hidden',
             '#value' => $id,
@@ -461,8 +458,8 @@ class EditCompanySettings extends FormBase
                     unset($cash2_account);
                     unset($asset_account);
                     unset($liability_account);
-                }//for
-            }//else chart exists
+                } //for
+            } //else chart exists
 
             $form['actions'] = ['#type' => 'actions'];
             $form['actions']['submit'] = ['#type' => 'submit', '#value' => $this->t('Record')];
@@ -488,8 +485,7 @@ class EditCompanySettings extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->getValue('stax_rate') != '') {
             if (!is_numeric($form_state->getValue('stax_rate')) || $form_state->getValue('stax_rate') == 0) {
                 $form_state->setErrorByName('stax_rate', $this->t('Wrong sales tax value input'));
@@ -510,12 +506,11 @@ class EditCompanySettings extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         if (!null == $form_state->getValue('edit_chart')) {
             if ($form_state->getValue('chart') == 0) {
                 // load standard accounts
-                $file = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/ek_standard_accounts.sql';
+                $file = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/ek_standard_accounts.sql';
                 $query = file_get_contents($file);
                 $acc = Database::getConnection('external_db', 'external_db')->query($query);
                 $balance_date = date('Y') . '-01-01';
@@ -535,7 +530,7 @@ class EditCompanySettings extends FormBase
                             'aname' => $a->aname,
                             'atype' => $a->atype,
                             'astatus' => $a->astatus,
-                            'coid' => $id,
+                            'coid' => $form_state->getValue('coid'),
                             'link' => '',
                             'balance' => 0,
                             'balance_base' => 0,
@@ -580,7 +575,6 @@ class EditCompanySettings extends FormBase
                     $settings->set($name, $value, $currency);
                 }
             }
-
 
             $settings->save();
             \Drupal\Core\Cache\Cache::invalidateTags(['ek_admin.settings']);

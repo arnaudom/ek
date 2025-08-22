@@ -1,0 +1,64 @@
+.tag-editor {
+  position: relative;
+  display: inline-block;
+  border: 1px solid #ccc;
+  padding: 5px;
+  min-height: 30px;
+  box-sizing: border-box;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  background: #eee;
+  padding: 2px 5px;
+  margin: 2px;
+  border-radius: 3px;
+}
+
+.tag span {
+  margin-right: 5px;
+}
+
+.tag button {
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.tag-input {
+  border: none;
+  outline: none;
+  min-width: 100px;
+  flex-grow: 1;
+}
+
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #ccc;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none;
+  width: 100%;
+}
+
+.suggestions div {
+  padding: 5px;
+  cursor: pointer;
+}
+
+.suggestions div:hover {
+  background: #f0f0f0;
+}

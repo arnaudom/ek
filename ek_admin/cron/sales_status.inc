@@ -33,7 +33,11 @@ foreach ($coids as $key => $val) {
             ->select('ek_sales_settings', 's');
     $query->fields('s', ['settings']);
     $query->condition('coid', $key);
-    $s = unserialize($query->execute()->fetchField());
+    $r = $query->execute()->fetchField();
+    $s = [];
+    if($r) {
+        $s = unserialize($r);
+    }
     $salesSettings[$key]['shortdue'] = $s['shortdue'] ? $s['shortdue'] : 7;
     $salesSettings[$key]['longdue'] = $s['longdue'] ? $s['longdue'] : 30;
     $salesSettings[$key]['body'] = $s['reminder_body'];
@@ -65,7 +69,7 @@ while ($row = $data->fetchObject()) {
      * notify 
      */
     if (!empty($doc)) {
-        $alerts = unserialize($row->alert_who);
+        $alerts = $row->alert_who !== null ? unserialize($row->alert_who) : [];
         $users = explode(',', $alerts['users']);
         
         if(!empty($alerts['client'])) {
@@ -154,7 +158,8 @@ while ($row = $data->fetchObject()) {
      * notify 
      */
     if (!empty($doc)) {
-        $alerts = unserialize($row->alert_who);
+        //$alerts = unserialize($row->alert_who);
+        $alerts = $row->alert_who !== null ? unserialize($row->alert_who) : [];
         $users = explode(',', $alerts['users']);
 
         foreach ($users as $u) {

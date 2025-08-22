@@ -30,43 +30,49 @@ class UploadForm extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
-        $form['upload_doc'] = array(
-            '#type' => 'file',
-            '#title' => $this->t('Select file'),
-            '#prefix' => '<div class="container-inline">',
-        );
 
-        $form['coid'] = array(
+
+        $form['coid'] = [
             '#type' => 'hidden',
             '#value' => $id,
-        );
+        ];
 
-        $form['comment'] = array(
+        // file is not managed by Drupal
+        $allowed = 'png gif jpg jpeg txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip';
+        $upload_doc = ['FileExtension' => ['extensions' => $allowed]];
+        $form['upload_doc'] = [
+            '#type' => 'file',
+            '#title' => $this->t('Select file'),           
+            '#upload_validators' => $upload_doc,
+            '#prefix' => '<div class="container-inline">',
+        ];
+
+        $form['comment'] = [
             '#type' => 'textfield',
             '#size' => 20,
-            '#attributes' => array('placeholder' => $this->t('comment')),
-        );
+            '#attributes' => ['placeholder' => $this->t('comment')],
+        ];
 
 
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['upload'] = array(
+        $form['actions'] = ['#type' => 'actions'];
+        $form['upload'] = [
             '#id' => 'upbuttonid1',
             '#type' => 'submit',
             '#value' => $this->t('Upload'),
-            '#ajax' => array(
-                'callback' => array($this, 'saveFile'),
+            '#ajax' => [
+                'callback' => [$this, 'saveFile'],
                 'wrapper' => 'message',
-                'mehtod' => 'replace'
-            ),
+                'method' => 'replaceWith',
+            ],
             '#suffix' => '</div>',
-        );
+        ];
 
-        $form['actions']['message'] = array(
+        $form['actions']['message'] = [
             '#type' => 'item',
             '#markup' => '',
-            '#prefix' => '<div id="message" class="red" >',
+            '#prefix' => '<div id="message" class="" >',
             '#suffix' => '</div>',
-        );
+        ];
 
 
         return $form;
@@ -76,7 +82,11 @@ class UploadForm extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-        
+        $field = "upload_doc";
+        $file = _file_save_upload_from_form($form[$field], $form_state, 0);
+        if($file) {
+            $form_state->set($field, $file) ;
+        }
     }
 
     /**
@@ -91,46 +101,53 @@ class UploadForm extends FormBase {
      */
     public function saveFile(array &$form, FormStateInterface $form_state) {
 
-        //upload
-        //function file_save_upload($form_field_name, $validators = array(), $destination = FALSE, $delta = NULL, $replace = FILE_EXISTS_RENAME)
-        $extensions = 'png gif jpg jpeg bmp txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip';
-        $validators = array('file_validate_extensions' => array($extensions));
-        $dir = "private://admin/company" . $form_state->getValue('coid') . "/documents";
-        \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-        $file = file_save_upload("upload_doc", $validators, $dir, 0, FileSystemInterface::EXISTS_RENAME);
 
-        if ($file) {
-            $file->setPermanent();
-            $file->save();
-            $uri = $file->getFileUri();
+        if ($form_state->get('upload_doc')) {
+            if ($file = $form_state->get('upload_doc')) {
+                $dir = "private://admin/company" . $form_state->getValue('coid') . "/documents";
+                \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+                $doc = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
+                
+            }
+
             $filename = $file->getFileName();
 
-            $fields = array(
+            $fields = [
                 'coid' => $form_state->getValue('coid'),
                 'fid' => 1,
                 'filename' => $filename,
-                'uri' => $uri,
+                'uri' => $doc,
                 'comment' => Xss::filter($form_state->getValue('comment')),
                 'date' => time(),
-                'size' => filesize($uri),
+                'size' => filesize($doc),
                 'share' => 0,
                 'deny' => 0,
-            );
+            ];
 
             $insert = Database::getConnection('external_db', 'external_db')
                     ->insert('ek_company_documents')
                     ->fields($fields)
                     ->execute();
 
-
             $log = 'user ' . \Drupal::currentUser()->id() . '|' . \Drupal::currentUser()->getAccountName() . '|upload|' . $filename;
             \Drupal::logger('ek_company_documents')->notice($log);
-            $form['message']['#markup'] = $this->t('file uploaded @f', array('@f' => $filename));
+            $form['message']['#markup'] = "<div class='green'>" . $this->t('file uploaded @f', array('@f' => $filename)) . "</div>";
         } else {
-            $form['message']['#markup'] = $this->t('error uploading file');
+            if($form_state->getErrors()) {
+                // Collect and display validation errors.
+                $e = [];
+                foreach ($form_state->getErrors() as $error) {
+                    $e.= $error;
+                }
+               $form['actions']['message']['#markup'] = $e;
+                
+            } else {
+                $form['actions']['message']['#markup'] = "<div class='red'>" . $this->t('Error uploading file'). "</div>";
+            }
+            
         }
 
-        return $form['message'];
+        return $form['actions']['message'];
     }
 
 }

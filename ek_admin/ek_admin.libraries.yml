@@ -1,30 +1,30 @@
 ek_admin_css:
-  version: 1
+  version: VERSION
   css:
     theme:
       css/ek_admin.css: {}
       https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css: { type: external }
 
 classic_doc:
-  version: 1
+  version: VERSION
   css:
     theme:
       css/classic_doc.css: {}
 
 frontpage:
-  version: 1
+  version: VERSION
   js:
     js/home.js: {}
       
 ek_admin.script.sn:
-  version: 1
+  version: VERSION
   js:
     js/ek_admin_sn.js: {}
   dependencies:
     - core/jquery
 
 ek_admim.users_autocomplete:
-  version: 1
+  version: VERSION
   js:
     js/ek_admin_users_autocomplete.js: {}
   dependencies:
@@ -32,7 +32,7 @@ ek_admim.users_autocomplete:
     - jquery_ui_autocomplete/autocomplete
        
 ek_admin_docs_updater:
-  version: 1
+  version: VERSION
   js:
     js/updater.js: {}
   dependencies:
@@ -47,7 +47,7 @@ ek_admin_docs_updater:
  
     
 ek_admin_charts:
-  version: 1
+  version: VERSION
   css:
     theme:
       https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css: { type: external }
@@ -60,7 +60,7 @@ ek_admin_charts:
     
 #multi-select formatting used in modules
 ek_admin_multi-select:
-  version: 0.9.12
+  version: VERSION
   js:
     /libraries/multi-select/js/jquery.multi-select.js: {}
     js/multi-select.js: {}
@@ -71,7 +71,7 @@ ek_admin_multi-select:
     - core/jquery
 
 ek_admin_chosen:
-  version: 1.8
+  version: VERSION
   js:
     /libraries/chosen/chosen.jquery.min.js: {}
     js/multi-chosen.js: {}
@@ -82,14 +82,12 @@ ek_admin_chosen:
     - core/jquery
 
 ek_admin_tageditor:
-  version: 1.8
+  version: VERSION
   js:
-    /libraries/tagEditor/jquery.tag-editor.min.js: {weight: -2}
-    /libraries/tagEditor/jquery.caret.min.js: {weight: -1}
     js/tageditor.js: {}
   css:
     theme:
-      /libraries/tagEditor/jquery.tag-editor.css: {}
+      css/tageditor.css: {}
   dependencies:
     - core/jquery
     - jquery_ui_autocomplete/autocomplete

@@ -3,7 +3,7 @@
 use Drupal\Core\Database\Database;
 
 class EKPDF extends TCPDF {
-    
+    protected $company;
     //Page header
     public function Header() {
         $data = $this->getHeaderData();
@@ -11,7 +11,9 @@ class EKPDF extends TCPDF {
         if ($this->company['logo']!= '') {
                $logo = \Drupal::service('file_system')->realpath($this->company['logo']);
                if(file_exists($logo)) {
-                   //$this->Image($logo,160,10,20);
+                    $info = getimagesize($logo);
+                    $h = $info[1] * 20 / $info[0];
+                    //$this->Image($logo, 170, 8, 15, $h);
                }
         }
     }

@@ -16,14 +16,12 @@ use Drupal\Core\Database\Database;
 /**
  * Provides an item form.
  */
-class EditCountryForm extends FormBase
-{
+class EditCountryForm extends FormBase {
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('country_manager')
         );
@@ -35,8 +33,10 @@ class EditCountryForm extends FormBase
      * @param \Drupal\Core\Locale\CountryManagerInterface $country_manager
      *   The country manager.
      */
-    public function __construct(CountryManagerInterface $country_manager)
-    {
+
+    protected $countryManager;
+
+    public function __construct(CountryManagerInterface $country_manager) {
         $this->countryManager = $country_manager;
     }
 
@@ -44,16 +44,14 @@ class EditCountryForm extends FormBase
      * {@inheritdoc}
      */
 
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'ek_edit_country_form';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state) {
         $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_country', 'c')
                         ->fields('c')
@@ -90,45 +88,44 @@ class EditCountryForm extends FormBase
             $id = $r['id'];
 
             if ($r['status'] == 1) {
-                $form['active'][$id]['name'] = array(
+                $form['active'][$id]['name'] = [
                     '#type' => 'item',
                     '#markup' => $r['name'],
                     
-                );
+                ];
 
-                $form['active'][$id]['entity'] = array(
+                $form['active'][$id]['entity'] = [
                     '#type' => 'textfield',
                     '#size' => 30,
                     '#maxlength' => 255,
                     '#default_value' => isset($r['entity']) ? $r['entity'] : null,
                     
-                );
+                ];
 
-                $form['active'][$id]['status'] = array(
+                $form['active'][$id]['status'] = [
                     '#type' => 'checkbox',
                     '#default_value' => 1,
                     
-                );
+                ];
+
             } else {
-                $form['non_active'][$id]['name'] = array(
+                $form['non_active'][$id]['name'] = [
                     '#type' => 'item',
                     '#markup' => $r['name'],
-                    
-                );
+                ];
 
-                $form['non_active'][$id]['entity'] = array(
+                $form['non_active'][$id]['entity'] = [
                     '#type' => 'textfield',
                     '#size' => 30,
                     '#maxlength' => 255,
                     '#default_value' => isset($r['entity']) ? $r['entity'] : null,
-                    
-                );
+                ];
 
-                $form['non_active'][$id]['status'] = array(
+                $form['non_active'][$id]['status'] = [
                     '#type' => 'checkbox',
                     '#default_value' => 0,
                     '#description' => '',
-                );
+                ];
             }
         }
 
@@ -138,18 +135,16 @@ class EditCountryForm extends FormBase
         $countries = $this->countryManager->getList();
         
         $form['new_country'] = [
-        '#type' => 'select',
-        '#title' => $this->t('New country'),
-        '#empty_value' => '',
-        '#options' => $countries,
-        '#description' => $this->t('Add a country for the site.'),
-      ];
+            '#type' => 'select',
+            '#title' => $this->t('New country'),
+            '#empty_value' => '',
+            '#options' => $countries,
+            '#description' => $this->t('Add a country for the site.'),
+        ];
         
         
         $form['actions'] = array('#type' => 'actions');
         $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
-
-
 
         return $form;
     }
@@ -158,15 +153,13 @@ class EditCountryForm extends FormBase
      * {@inheritdoc}
      *
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state)  {
         foreach ($form_state->getValue('active') as $key => $data) {
             $fields = [
                 'entity' => $data['entity'],

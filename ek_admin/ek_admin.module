@@ -694,17 +694,19 @@ function ek_admin_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStateInt
             $data = $query->execute();
 
             while ($d = $data->fetchObject()) {
-
-                $list = explode(',', unserialize($d->access));
-                $index = array_search($id, $list);
-                if ($index !== false) {
-                    unset($list[$index]);
+                $a = $data->access !== null ? unserialize($data->access) : [];
+                if(!empty($a)) {
+                    $list = explode(',', $a);
+                    $index = array_search($id, $list);
+                    if ($index !== false) {
+                        unset($list[$index]);
+                    }
+                    $access = serialize(implode(",", $list));
+                    $update = Database::getConnection('external_db', 'external_db')->update('ek_company')
+                            ->condition('id', $d->id)
+                            ->fields(array('access' => $access))
+                            ->execute();
                 }
-                $access = serialize(implode(",", $list));
-                $update = Database::getConnection('external_db', 'external_db')->update('ek_company')
-                        ->condition('id', $d->id)
-                        ->fields(array('access' => $access))
-                        ->execute();
             }
 
             /*
@@ -717,17 +719,19 @@ function ek_admin_form_user_delete_submit(&$form, \Drupal\Core\Form\FormStateInt
             $data = $query->execute();
 
             while ($d = $data->fetchObject()) {
-
-                $list = explode(',', unserialize($d->access));
-                $index = array_search($id, $list);
-                if ($index !== false) {
-                    unset($list[$index]);
+                $a = $data->access !== null ? unserialize($data->access) : [];
+                if(!empty($a)) {
+                    $list = explode(',', $a);
+                    $index = array_search($id, $list);
+                    if ($index !== false) {
+                        unset($list[$index]);
+                    }
+                    $access = serialize(implode(",", $list));
+                    $update = Database::getConnection('external_db', 'external_db')->update('ek_country')
+                            ->condition('id', $d->id)
+                            ->fields(array('access' => $access))
+                            ->execute();
                 }
-                $access = serialize(implode(",", $list));
-                $update = Database::getConnection('external_db', 'external_db')->update('ek_country')
-                        ->condition('id', $d->id)
-                        ->fields(array('access' => $access))
-                        ->execute();
             }
         }
 

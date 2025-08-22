@@ -12,6 +12,8 @@ use Drupal\Core\Database\Database;
  */
 class AccessCheck {
 
+    protected $account;
+
     /**
      * Constructs a CustomAccessCheck object.
      *
@@ -58,23 +60,22 @@ class AccessCheck {
      *      array of users id
      */
     public static function GetCompanyAccess($coid = null) {
-        $access = array();
+        $access = [];
 
         if (isset($coid) && !$coid == null) {
             //get array for single coid
-
             $query = "SELECT access from {ek_company} where id=:c";
             $result = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $coid))->fetchField();
-
-            $access[$coid] = explode(",", unserialize($result));
+            $a = $result !== null ? unserialize($result) : '';
+            $access[$coid] = explode(",", $a);
         } else {
             // get full companies accesses
-
             $query = "SELECT access from {ek_company}";
             $result = Database::getConnection('external_db', 'external_db')->query($query);
 
             while ($r = $result->fetchAssoc()) {
-                $access[$r['coid']] = explode(",", unserialize($r['access']));
+                $a = $r['access'] !== null ? unserialize($r['access']) : '';
+                $access[$r['coid']] = explode(",",$a);
             }
         }
 
@@ -94,19 +95,17 @@ class AccessCheck {
 
         if (isset($cid) && !$cid == null) {
             //get array for single coid
-
             $query = "SELECT access from {ek_country} where id=:c";
             $result = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $cid))->fetchField();
-
-            $access[$cid] = explode(",", unserialize($result));
+            $a = $result !== null ? unserialize($result) : '';
+            $access[$cid] = explode(",", $a);
         } else {
             // get full companies accesses
-
             $query = "SELECT access from {ek_country}";
             $result = Database::getConnection('external_db', 'external_db')->query($query);
-
             while ($r = $result->fetchAssoc()) {
-                $access[$r['cid']] = explode(",", unserialize($r['access']));
+                $a = $r['access'] !== null ? unserialize($r['access']) : '';
+                $access[$r['cid']] = explode(",", $a);
             }
         }
 
@@ -125,11 +124,11 @@ class AccessCheck {
         }
 
         $access = array();
-
         $data = Database::getConnection('external_db', 'external_db')->query("SELECT id,access from {ek_country}");
 
         while ($r = $data->fetchObject()) {
-            $list = explode(',', unserialize($r->access));
+            $access_data = !is_null($r->access) ? unserialize($r->access) : '';
+            $list = explode(',', $access_data);
 
             if (in_array($uid, $list)) {
                 array_push($access, $r->id);
@@ -153,11 +152,10 @@ class AccessCheck {
         //add default 0 id access to avoid error when query DB with no coid access defined
         // for an user. (ie expenses list in finance)
         $access = array(0);
-
         $data = Database::getConnection('external_db', 'external_db')->query("SELECT id,access from {ek_company}");
-
         while ($r = $data->fetchObject()) {
-            $list = explode(',', unserialize($r->access));
+            $a = $r->access !== null ? unserialize($r->access) : '';
+            $list = explode(',', $a);
 
             if (in_array($uid, $list)) {
                 array_push($access, $r->id);
@@ -177,13 +175,11 @@ class AccessCheck {
     public static function CompanyList($active = null) {
         if ($active == null) {
             $query = "SELECT id,name from {ek_company} ORDER by name";
-            $a = array();
+            $a = [];
         } else {
             $query = "SELECT id,name from {ek_company} WHERE active=:t ORDER by name";
-            $a = array(':t' => $active);
+            $a = [':t' => $active];
         }
-
-
         return Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchAllKeyed();
     }
 
@@ -203,9 +199,6 @@ class AccessCheck {
             $a = [':s' => $status];
             return Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchAllKeyed();
         }
-
-
-        
     }
 
     /**
@@ -220,7 +213,6 @@ class AccessCheck {
         $company = implode(',', $access);
         $query = "SELECT id,name from {ek_company} where active=:t AND FIND_IN_SET (id, :c ) order by name";
         $a = array(':t' => 1, ':c' => $company);
-
         return Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchAllKeyed();
     }
 
@@ -232,11 +224,9 @@ class AccessCheck {
      */
     public static function CountryListByUid($uid = null) {
         $access = self::GetCountryByUser($uid);
-
         $country = implode(',', $access);
         $query = "SELECT id,name from {ek_country} where status=:t AND FIND_IN_SET (id, :c ) order by name";
         $a = array(':t' => 1, ':c' => $country);
-
         return Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchAllKeyed();
     }
 

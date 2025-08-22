@@ -26,7 +26,7 @@ function hook_ek_settings($coids)
     $query->fields('m', ['id', 'settings']);
     $query->condition('id', '1');
     $data = $query->execute()->fetchObject();
-    $settings = unserialize($data->settings);
+    $settings = $data->settings !== null ? unserialize($data->settings) : [];
 
     if (empty($settings)) {
         \Drupal::messenger()->addWarning('Missing settings for module');

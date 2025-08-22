@@ -18,14 +18,12 @@ use Drupal\ek_admin\GlobalSettings;
 /**
  * Provides an global settings form.
  */
-class SettingsForm extends FormBase
-{
+class SettingsForm extends FormBase  {
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'ek_edit_global_settings_form';
     }
     
@@ -47,8 +45,7 @@ class SettingsForm extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler, StateInterface $state)
-    {
+    public function __construct(ModuleHandler $module_handler, StateInterface $state) {
         $this->moduleHandler = $module_handler;
         $this->state = $state;
     }
@@ -56,8 +53,7 @@ class SettingsForm extends FormBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler'),
                 $container->get('state')
@@ -67,24 +63,23 @@ class SettingsForm extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $coid = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $coid = null) {
         $settings = new GlobalSettings($coid);
 
-        $form['coid'] = array(
+        $form['coid'] = [
             '#type' => 'hidden',
             '#value' => $coid,
-        );
+        ];
             
-        $form['cronkey'] = array(
+        $form['cronkey'] = [
             '#type' => 'item',
             '#markup' => $this->t('Use key for cron') . ': <b>' . $this->state->get('system.cron_key') . '</b>',
-                );
+        ];
         
         $master = $this->currentUser()->hasPermission('administer site configuration');
         
         if ($master) {
-            $form['installation_id'] = array(
+            $form['installation_id'] = [
                 '#type' => 'textfield',
                 '#required' => true,
                 '#size' => 30,
@@ -92,8 +87,9 @@ class SettingsForm extends FormBase
                 '#default_value' => ($settings->get('installation_id') != '') ? $settings->get('installation_id') : 'ek_default_validation',
                 '#attributes' => array('placeholder' => $this->t('installation id')),
                 '#description' => $this->t('system installation id'),
-            );
-            $form['validation_url'] = array(
+            ];
+
+            $form['validation_url'] = [
                 '#type' => 'textfield',
                 '#required' => true,
                 '#size' => 50,
@@ -101,90 +97,90 @@ class SettingsForm extends FormBase
                 '#default_value' => $settings->get('validation_url'),
                 '#attributes' => array('placeholder' => $this->t('validation url')),
                 '#description' => $this->t('validation url address for support and installation'),
-            );
+            ];
                 
-            $form['backup_directory'] = array(
+            $form['backup_directory'] = [
                 '#type' => 'textfield',
                 '#size' => 30,
                 '#maxlength' => 200,
                 '#default_value' => $settings->get('backup_directory'),
                 '#description' => $this->t('Backup full path to directory'),
-            );
+            ];
 
-            $form['backup_filename'] = array(
+            $form['backup_filename'] = [
                 '#type' => 'textfield',
                 '#size' => 60,
                 '#maxlength' => 200,
                 '#default_value' => $settings->get('backup_filename'),
                 '#description' => $this->t('Backup file name(s) separated by comma'),
-            );
+            ];
         }
         
-        $form['protocol'] = array(
+        $form['protocol'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => array('https' => 'https', 'http' => 'http'),
             '#default_value' => $settings->get('protocol'),
             '#description' => $this->t('Connection type'),
-        );
+        ];
          
-        $form['backup_recipients'] = array(
+        $form['backup_recipients'] = [
             '#type' => 'textfield',
             '#size' => 60,
              '#default_value' => $settings->get('backup_recipients'),
             '#description' => $this->t('Backup recipients email addresses separated by comma'),
-        );
+        ];
         
-        $form['mail_receipt'] = array(
+        $form['mail_receipt'] = [
             '#type' => 'checkbox',
             '#title' => $this->t('Insert receipt in mail attachment'),
             '#default_value' => $settings->get('mail_receipt'),
-        );
+        ];
          
-        $form['cron'] = array(
+        $form['cron'] = [
             '#type' => 'details',
             '#title' => $this->t('Cron tasks'),
             '#open' => true,
-        );
+        ];
         
-        $form['cron']['sale_tasks'] = array(
+        $form['cron']['sale_tasks'] = [
                 '#type' => 'checkbox',
                 '#title' => $this->t('Sales tasks'),
                 '#default_value' => $settings->get('sale_tasks'),
-            );
+        ];
         
-        $form['cron']['sale_status'] = array(
+        $form['cron']['sale_status'] = [
                 '#type' => 'checkbox',
                 '#title' => $this->t('Sales status'),
                 '#default_value' => $settings->get('sale_status'),
-            );
+        ];
         
-        $form['cron']['purchase_tasks'] = array(
+        $form['cron']['purchase_tasks'] = [
                 '#type' => 'checkbox',
                 '#title' => $this->t('Purchases tasks'),
                 '#default_value' => $settings->get('purchase_tasks'),
-            );
+        ];
         
-        $form['cron']['project_tasks'] = array(
+        $form['cron']['project_tasks'] = [
                 '#type' => 'checkbox',
                 '#title' => $this->t('Project tasks'),
                 '#default_value' => $settings->get('project_tasks'),
-            );
+        ];
         
-        $form['cron']['project_status'] = array(
+        $form['cron']['project_status'] = [
                 '#type' => 'checkbox',
                 '#title' => $this->t('Projects status'),
                 '#default_value' => $settings->get('project_status'),
-            );
+        ];
         
-        $form['cron']['hr_tasks'] = array(
+        $form['cron']['hr_tasks'] = [
                 '#type' => 'checkbox',
                 '#title' => $this->t('HR tasks'),
                 '#default_value' => $settings->get('hr_tasks'),
-            );
+        ];
         
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['submit'] = ['#type' => 'submit', '#value' => $this->t('Record')];
 
         return $form;
     }
@@ -193,8 +189,7 @@ class SettingsForm extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         $addresses = explode(',', $form_state->getValue('backup_recipients'));
         foreach ($addresses as $email) {
             if ($email != null) {
@@ -210,8 +205,7 @@ class SettingsForm extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         $settings = new GlobalSettings($form_state->getValue('coid'));
         $master = $this->currentUser()->hasPermission('administer site configuration');
         if ($master) {
