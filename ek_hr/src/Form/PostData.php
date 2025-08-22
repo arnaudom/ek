@@ -18,8 +18,7 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to post data to archive and optionally record finance
  */
-class PostData extends FormBase
-{
+class PostData extends FormBase {
 
     /**
      * The module handler.
@@ -32,16 +31,14 @@ class PostData extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler')
         );
@@ -50,16 +47,14 @@ class PostData extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'hr_post_payroll';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
@@ -142,19 +137,13 @@ class PostData extends FormBase
 
 
         $form['#attached']['library'][] = 'ek_hr/ek_hr_css';
-
-
-
-
-
         return $form;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state)  {
         if ($form_state->get('step') == 1) {
             $form_state->set('step', 2);
             $form_state->setRebuild();
@@ -164,7 +153,7 @@ class PostData extends FormBase
             //validate settings for accounts if requested record
             if ($form_state->getValue('finance') == '1') {
                 $settings = new HrSettings($form_state->getValue('coid'));
-                $data = $settings->HrAccounts[$form_state->getValue('coid')];
+                $data = $settings->get('accounts'); //HrAccounts[$form_state->getValue('coid')];
                 if (empty($data) || $data['pay_account'] == '') {
                     $url = \Drupal\Core\Url::fromRoute('ek_hr.parameters-accounts', array(), array())->toString();
                     $form_state->setErrorByName("coid", $this->t("You do not have payroll accounts recorded. Go to <a href='@s'>settings</a> first.", ['@s' => $url]));
@@ -176,8 +165,7 @@ class PostData extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state)  {
         if ($form_state->get('step') == 3) {
 
 //@TODO : backup data first

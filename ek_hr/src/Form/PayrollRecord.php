@@ -180,7 +180,7 @@ class PayrollRecord extends FormBase {
             }
             // get allowance parameters for the coid
             $param = new HrSettings($form_state->getValue('coid'));
-            $ad = $param->HrAd[$form_state->getValue('coid')];
+            $ad = $param->get('ad'); //HrAd[$form_state->getValue('coid')];
             //re-structure paramaters to pass to js
             $settings = $this->build_settings($param, $ad, $c);
             $settings['salary'] = $e->salary;
@@ -191,7 +191,6 @@ class PayrollRecord extends FormBase {
             $settings['tax_category'] = $e->itax_c;
             $settings['ad_category'] = $e->origin;
             $settings['error'] = $this->t('Wrong input');
-
             $query = "SELECT current FROM {ek_hr_payroll_cycle} WHERE coid=:c";
             $a = array(':c' => $form_state->getValue('coid'));
             $current = Database::getConnection('external_db', 'external_db')
@@ -273,7 +272,7 @@ class PayrollRecord extends FormBase {
 
         $form['hr']['country'] = array(
             '#type' => 'hidden',
-            '#value' => trim($e->country),
+            '#value' => isset($e->country) ? trim($e->country) : '',
         );
 
         $form['hr']['data']['info'] = array(

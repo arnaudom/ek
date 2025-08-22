@@ -21,8 +21,7 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to select payslip template
  */
-class Payslip extends FormBase
-{
+class Payslip extends FormBase {
 
     /**
      * The module handler.
@@ -35,16 +34,14 @@ class Payslip extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler')
         );
@@ -53,16 +50,14 @@ class Payslip extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'payslips';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
@@ -186,8 +181,7 @@ class Payslip extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 1) {
             $form_state->set('step', 2);
             $form_state->setRebuild();
@@ -197,8 +191,7 @@ class Payslip extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         $_SESSION['printpayslip']['coid'] = $form_state->getValue('coid');
         $_SESSION['printpayslip']['from'] = $form_state->getValue('eid1');
         $_SESSION['printpayslip']['to'] = $form_state->getValue('eid2');

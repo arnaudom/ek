@@ -32,16 +32,14 @@ class EditMainParameters extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler')
         );
@@ -50,8 +48,7 @@ class EditMainParameters extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'main_parameters_edit';
     }
 
@@ -102,10 +99,8 @@ class EditMainParameters extends FormBase {
                         ->execute();
             }
 
-            $param = new HrSettings($form_state->getValue('coid'));
-            $list = $param->HrParam;
-
-
+            $HrSettings = new HrSettings($form_state->getValue('coid'));
+            $list = $HrSettings->get('param'); 
             if (empty($list)) {
                 //create a new list
                 $list = array(
@@ -159,46 +154,48 @@ class EditMainParameters extends FormBase {
                         ->condition('coid', $form_state->getValue('coid'))
                         ->execute();
 
-                $category = new HrSettings($form_state->getValue('coid'));
-                $list = $category->HrParam;
             }
 
             foreach ($list as $key => $value) {
-                $form[$key] = array(
+                $form[$key] = [
                     '#type' => 'details',
                     '#title' => str_replace('_', ' ', $key),
                     '#open' => true,
                     '#tree' => true,
-                );
+                ];
 
-                $form[$key]['name'] = array(
+                $form[$key]['name'] = [
                     '#type' => 'textfield',
                     '#size' => 50,
                     '#maxlength' => 100,
                     '#default_value' => $value['name']['value'],
                     '#description' => $value['name']['description'],
-                );
-                $form[$key]['calcul'] = array(
+                ];
+
+                $form[$key]['calcul'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => ['P' => $this->t('percent'), 'T' => $this->t('tabulation')],
                     '#default_value' => $value['calcul']['value'],
                     '#description' => $value['calcul']['description'],
-                );
-                $form[$key]['employer'] = array(
+                ];
+
+                $form[$key]['employer'] = [
                     '#type' => 'textfield',
                     '#size' => 6,
                     '#maxlength' => 6,
                     '#default_value' => $value['employer']['value'],
                     '#description' => $value['employer']['description'],
-                );
-                $form[$key]['employee'] = array(
+                ];
+
+                $form[$key]['employee'] = [
                     '#type' => 'textfield',
                     '#size' => 6,
                     '#maxlength' => 6,
                     '#default_value' => $value['employee']['value'],
                     '#description' => $value['employee']['description'],
-                );
+                ];
+
                 $o = [
                     'C' => $this->t('Contract'),
                     'B' => $this->t('Basic'),
@@ -208,26 +205,28 @@ class EditMainParameters extends FormBase {
                     'BMF' => $this->t('Basic - fixed AW'),
                     'GMFC' => $this->t('Gross - fixed AW & com.')
                     ];
-                $form[$key]['base'] = array(
+
+                $form[$key]['base'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $o,
                     '#default_value' => $value['base']['value'],
                     '#description' => $value['base']['description'],
-                );
+                ];
             }
             
             
-            $form['actions'] = array(
+            $form['actions'] = [
                 '#type' => 'actions',
-                '#attributes' => array('class' => array('container-inline')),
-            );
+                '#attributes' => ['class' => ['container-inline']],
+            ];
 
-            $form['actions']['submit'] = array(
+            $form['actions']['submit'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Save'),
                 '#suffix' => ''
-            );
+            ];
+            
             $form['#attached']['library'][] = 'ek_hr/ek_hr.hr';
         }
         return $form;
@@ -248,14 +247,13 @@ class EditMainParameters extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 3) {
-            $settings = new HrSettings($form_state->getValue('coid'));
-            $params = $settings->HrParam;
-
-            foreach ($params as $key => $values) {
+            $HrSettings = new HrSettings($form_state->getValue('coid'));
+            $params = $HrSettings->get('param');
+            foreach ($params as $key => $values) { 
                 $data = $form_state->getValue($key);
                 foreach ($data as $param => $val) {
                     $val = Xss::filter($val);
-                    $settings->set(
+                    $HrSettings->set(
                         'param',
                         $key,
                         [$param, $val]
@@ -263,7 +261,7 @@ class EditMainParameters extends FormBase {
                 }
             }
 
-            $save = $settings->save();
+            $save = $HrSettings->save();
             if ($save) {
                 \Drupal::messenger()->addStatus('Data saved');
             }

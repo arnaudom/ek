@@ -231,9 +231,10 @@ hr {
     overflow: hidden;
     vertical-align: middle;
     margin-right: 10px;
-    box-shadow: 0 0 5px #0088cc;
+    box-shadow: 0 0 3px #0088cc;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
+    border-radius: 5px;
 }
 
 .hr_default_image {
@@ -246,6 +247,10 @@ hr {
 }
 .hr_image-link {
     border-bottom: 0px !important;
+}
+
+p:has(> .hr_image-link) {
+    margin-bottom: 5px !important;
 }
 
 .badge {

@@ -17,8 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
 * Controller routines for ek module routes.
 */
-class InstallController extends ControllerBase
-{
+class InstallController extends ControllerBase {
 
    /* The module handler.
    *
@@ -40,8 +39,7 @@ class InstallController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
       $container->get('database'),
       $container->get('form_builder'),
@@ -57,8 +55,7 @@ class InstallController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -82,8 +79,7 @@ class InstallController extends ControllerBase
        *
     */
 
-    public function install()
-    {
+    public function install() {
         /**/
         $query = "CREATE TABLE IF NOT EXISTS `ek_hr_workforce_settings` (
               `coid` SMALLINT(6) NOT NULL DEFAULT '0' COMMENT 'company ID',
@@ -422,4 +418,4 @@ class InstallController extends ControllerBase
       '#markup' => $markup
       ) ;
     }
-} //class
+} 

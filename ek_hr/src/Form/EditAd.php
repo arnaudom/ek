@@ -21,8 +21,7 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to edit allowances and deductions
  */
-class EditAd extends FormBase
-{
+class EditAd extends FormBase {
 
     /**
      * The module handler.
@@ -35,16 +34,14 @@ class EditAd extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler')
         );
@@ -53,23 +50,21 @@ class EditAd extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'ad_edit';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state) {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
 
 
         $company = AccessCheck::CompanyListByUid();
-        $form['coid'] = array(
+        $form['coid'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
@@ -78,14 +73,14 @@ class EditAd extends FormBase
             '#disabled' => ($form_state->getValue('coid')) ? true : false,
             '#required' => true,
             '#disabled' => ($form_state->get('step') > 1) ? true : false,
-            '#ajax' => array(
-                'callback' => array($this, 'categories'),
+            '#ajax' => [
+                'callback' => [$this, 'categories'],
                 'wrapper' => 'category',
-            ),
-        );
+            ],
+        ];
 
         if ($form_state->get('step') <> 2) {
-            $form['category'] = array(
+            $form['category'] = [
                 '#type' => 'select',
                 '#options' => ($form_state->get('opt')) ? $form_state->get('opt') : array(),
                 '#default_value' => ($form_state->get('opt')) ? $form_state->getValue('category') : null,
@@ -94,10 +89,10 @@ class EditAd extends FormBase
                 '#prefix' => "<div id='category'>",
                 '#suffix' => '</div>',
                 '#validated' => true,
-            );
+            ];
         } else {
-            $param = new HrSettings($form_state->getValue('coid'));
-            $categories = $param->HrCat[$form_state->getValue('coid')];
+            $HrSettings = new HrSettings($form_state->getValue('coid'));
+            $categories = $HrSettings->get('category'); 
 
             $form['selected'] = array(
                 '#markup' => $this->t('category : @s', array('@s' => $categories[$form_state->getValue('category')])),
@@ -108,14 +103,13 @@ class EditAd extends FormBase
             $form['next'] = array(
                 '#type' => 'submit',
                 '#value' => $this->t('Next') . ' >>',
-                //'#limit_validation_errors' => array(array('coid', 'category')),
                 '#submit' => array(array($this, 'step_2')),
             );
         }
 
         if ($form_state->get('step') == 2) {
-            $param = new HrSettings($form_state->getValue('coid'));
-            $list = $param->HrAd[$form_state->getValue('coid')];
+            $HrSettings = new HrSettings($form_state->getValue('coid'));
+            $list = $HrSettings->get('ad'); 
             $cat = $form_state->getValue('category');
 
             if (empty($list)) {
@@ -269,16 +263,13 @@ class EditAd extends FormBase
                         ->fields(array('ad' => serialize($list)))
                         ->condition('coid', $form_state->getValue('coid'))
                         ->execute();
-
-                $category = new HrSettings($form_state->getValue('coid'));
-                $list = $category->HrAd[$form_state->getValue('coid')];
             }
 
 
-            $form['selected_category'] = array(
+            $form['selected_category'] = [
                 '#type' => 'hidden',
                 '#value' => $cat,
-            );
+            ];
 
 
             $form_state->set('step', 3);
@@ -287,53 +278,53 @@ class EditAd extends FormBase
                     . "</td><td>" . $this->t("Formula") . "</td><td>" . $this->t("Include tax") . "</td></tr>";
 
 
-            $form['AF'] = array(
+            $form['AF'] = [
                 '#type' => 'details',
                 '#title' => $this->t('Fixed allowances'),
                 '#collapsible' => true,
                 '#open' => true,
-            );
+            ];
 
-            $form['AF']["headerline"] = array(
+            $form['AF']["headerline"] = [
                 '#type' => 'item',
                 '#markup' => $headerline,
-            );
+            ];
 
-            $form['AC'] = array(
+            $form['AC'] = [
                 '#type' => 'details',
                 '#title' => $this->t('Custom allowances'),
                 '#collapsible' => true,
                 '#open' => true,
-            );
+            ];
 
-            $form['AC']["headerline"] = array(
+            $form['AC']["headerline"] = [
                 '#type' => 'item',
                 '#markup' => $headerline,
-            );
+            ];
 
-            $form['DF'] = array(
+            $form['DF'] = [
                 '#type' => 'details',
                 '#title' => $this->t('Fixed deductions'),
                 '#collapsible' => true,
                 '#open' => true,
-            );
+            ];
 
-            $form['DF']["headerline"] = array(
+            $form['DF']["headerline"] = [
                 '#type' => 'item',
                 '#markup' => $headerline,
-            );
+            ];
 
-            $form['DC'] = array(
+            $form['DC'] = [
                 '#type' => 'details',
                 '#title' => $this->t('Custom deductions'),
                 '#collapsible' => true,
                 '#open' => true,
-            );
+            ];
 
-            $form['DC']["headerline"] = array(
+            $form['DC']["headerline"] = [
                 '#type' => 'item',
                 '#markup' => $headerline,
-            );
+            ];
 
             foreach ($list as $key => $value) {
                 if (strpos($key, '-' . $cat)) {
@@ -346,86 +337,86 @@ class EditAd extends FormBase
                     }
 
 
-                    $form[$group][$key][$key . '-description'] = array(
+                    $form[$group][$key][$key . '-description'] = [
                         '#type' => 'textfield',
                         '#size' => 25,
                         '#maxlength' => 100,
                         '#default_value' => $value['description'],
-                        '#attributes' => ($read) ? array('placeholder' => $this->t('description')) : array('readonly' => 'readonly'),
+                        '#attributes' => ($read) ? ['placeholder' => $this->t('description')] : ['readonly' => 'readonly'],
                         '#description' => $value['type'],
                         '#prefix' => "<tr><td>",
                         '#suffix' => '</td>',
-                    );
+                    ];
 
-                    $form[$group][$key][$key . '-value'] = array(
+                    $form[$group][$key][$key . '-value'] = [
                         '#type' => 'textfield',
                         '#size' => 15,
                         '#maxlength' => 15,
                         '#default_value' => $value['value'],
-                        '#attributes' => array('placeholder' => $this->t('value')),
+                        '#attributes' => ['placeholder' => $this->t('value')],
                         '#prefix' => "<td>",
                         '#suffix' => '</td>',
-                    );
+                    ];
 
-                    $form[$group][$key][$key . '-formula'] = array(
+                    $form[$group][$key][$key . '-formula'] = [
                         '#type' => 'textfield',
                         '#size' => 25,
                         '#maxlength' => 255,
                         '#default_value' => $value['formula'],
-                        '#attributes' => array('placeholder' => $this->t('formula')),
+                        '#attributes' => ['placeholder' => $this->t('formula')],
                         '#prefix' => "<td>",
                         '#suffix' => '</td>',
-                    );
+                    ];
 
-                    $form[$group][$key][$key . '-tax'] = array(
+                    $form[$group][$key][$key . '-tax'] = [
                         '#type' => 'select',
                         '#size' => 1,
-                        '#options' => array(0 => $this->t('no'), 1 => $this->t('yes')),
+                        '#options' => [ 0 => $this->t('no'), 1 => $this->t('yes')],
                         '#default_value' => $value['tax'],
                         '#prefix' => "<td>",
                         '#suffix' => '</td></tr>',
-                    );
+                    ];
                 }
             }
 
-            $form['AF']["close"] = array(
+            $form['AF']["close"] = [
                 '#type' => 'item',
                 '#markup' => "</table>",
-            );
-            $form['AC']["close"] = array(
+            ];
+            $form['AC']["close"] = [
                 '#type' => 'item',
                 '#markup' => "</table>",
-            );
-            $form['DF']["close"] = array(
+            ];
+            $form['DF']["close"] = [
                 '#type' => 'item',
                 '#markup' => "</table>",
-            );
-            $form['DC']["close"] = array(
+            ];
+            $form['DC']["close"] = [
                 '#type' => 'item',
                 '#markup' => "</table>",
-            );
+            ];
 
-            $form['actions'] = array(
+            $form['actions'] = [
                 '#type' => 'actions',
-                '#attributes' => array('class' => array('container-inline')),
-            );
+                '#attributes' => ['class' => ['container-inline']],
+            ];
 
-            $form['actions']['submit'] = array(
+            $form['actions']['submit'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Save'),
                 '#suffix' => ''
-            );
+            ];
 
             $form['#attached']['library'][] = 'ek_hr/ek_hr.hr';
-        }//if
+        }
+
         return $form;
     }
 
     /**
      * Callback
      */
-    public function step_2(array &$form, FormStateInterface $form_state)
-    {
+    public function step_2(array &$form, FormStateInterface $form_state) {
         $form_state->set('step', 2);
         $form_state->setRebuild();
     }
@@ -433,8 +424,7 @@ class EditAd extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 3) {
             //TODO insert numeric validation for value
         }
@@ -443,11 +433,10 @@ class EditAd extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 3) {
-            $category = new HrSettings($form_state->getValue('coid'));
-            $list = $category->HrAd[$form_state->getValue('coid')];
+            $HrSettings = new HrSettings($form_state->getValue('coid'));
+            $list = $HrSettings->get('ad');
 
             foreach ($list as $key => $value) {
                 if (strpos($key, '-' . $form_state->getValue('selected_category'))) {
@@ -459,7 +448,7 @@ class EditAd extends FormBase
                         'tax' => $form_state->getValue($key . '-tax'),
                     );
 
-                    $category->set(
+                    $HrSettings->set(
                         'ad',
                         $key,
                         $v
@@ -467,22 +456,20 @@ class EditAd extends FormBase
                 }
             }
 
-            if ($category->save()) {
+            if ($HrSettings->save()) {
                 \Drupal::messenger()->addStatus(t('Settings saved'));
             }
-        }//step 2
+        }
     }
 
     /**
      * Callback
      */
-    public function categories(array &$form, FormStateInterface $form_state)
-    {
-        $param = new HrSettings($form_state->getValue('coid'));
-        $cat = $param->HrCat[$form_state->getValue('coid')];
+    public function categories(array &$form, FormStateInterface $form_state)  {
+        $HrSettings = new HrSettings($form_state->getValue('coid'));
+        $cat = $HrSettings->get('category'); //HrCat[$form_state->getValue('coid')];
         $form['category']['#options'] = $cat;
         $form_state->set('opt', $cat);
-        //$form_state->setRebuild();
         return $form['category'];
     }
 }

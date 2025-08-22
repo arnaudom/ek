@@ -18,8 +18,7 @@ use Drupal\ek_admin\Access\AccessCheck;
 /**
  * Provides a form to filter employee list.
  */
-class FilterEmployeeList extends FormBase
-{
+class FilterEmployeeList extends FormBase {
 
   /**
    * The module handler.
@@ -32,26 +31,23 @@ class FilterEmployeeList extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
-      $container->get('module_handler')
-    );
+          $container->get('module_handler')
+        );
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'employee_list_filter';
     }
 
@@ -59,16 +55,15 @@ class FilterEmployeeList extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state) {
         $company = AccessCheck::CompanyListByUid();
 
         $form['filters'] = array(
-      '#type' => 'details',
-      '#title' => $this->t('Filter'),
-      '#open' => true,
-      '#attributes' => array('class' => array('container-inline')),
-    );
+          '#type' => 'details',
+          '#title' => $this->t('Filter'),
+          '#open' => true,
+          '#attributes' => array('class' => array('container-inline')),
+        );
         $form['filters']['filter'] = array(
               '#type' => 'hidden',
               '#value' => 'filter',
@@ -95,23 +90,22 @@ class FilterEmployeeList extends FormBase
             
 
         $form['filters']['actions'] = array(
-      '#type' => 'actions',
-      '#attributes' => array('class' => array('container-inline')),
-    );
+          '#type' => 'actions',
+          '#attributes' => array('class' => array('container-inline')),
+        );
     
         $form['filters']['actions']['submit'] = array(
-      '#type' => 'submit',
-      '#value' => $this->t('Apply'),
-      //'#suffix' => "</div>",
-    );
+          '#type' => 'submit',
+          '#value' => $this->t('Apply'),
+        );
 
         if (!empty($_SESSION['hrlfilter'])) {
             $form['filters']['actions']['reset'] = array(
-        '#type' => 'submit',
-        '#value' => $this->t('Reset'),
-        '#limit_validation_errors' => array(),
-        '#submit' => array(array($this, 'resetForm')),
-      );
+              '#type' => 'submit',
+              '#value' => $this->t('Reset'),
+              '#limit_validation_errors' => array(),
+              '#submit' => array(array($this, 'resetForm')),
+            );
         }
         return $form;
     }
@@ -119,15 +113,13 @@ class FilterEmployeeList extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
     }
   
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         $_SESSION['hrlfilter']['coid'] = $form_state->getValue('coid');
         $_SESSION['hrlfilter']['status'] = $form_state->getValue('status');
         $_SESSION['hrlfilter']['filter'] = 1;
@@ -136,8 +128,7 @@ class FilterEmployeeList extends FormBase
     /**
      * Resets the filter form.
      */
-    public function resetForm(array &$form, FormStateInterface $form_state)
-    {
+    public function resetForm(array &$form, FormStateInterface $form_state) {
         $_SESSION['hrlfilter'] = array();
     }
 }

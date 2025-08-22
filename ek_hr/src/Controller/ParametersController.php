@@ -15,6 +15,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\File\FileExists;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
@@ -232,7 +233,7 @@ class ParametersController extends ControllerBase {
                     ->fetchField();
 
             $category = new HrSettings($data['hr'][0]->company_id);
-            $origin = $category->HrCat[$data['hr'][0]->company_id];
+            $origin = $category->get('category');
             $data['hr'][0]->origin = $origin[$data['hr'][0]->origin];
             if ($data['hr'][0]->picture) {
                 $data['hr'][0]->pictureUrl = \Drupal::service('file_url_generator')->generateAbsoluteString($data['hr'][0]->picture);
@@ -424,10 +425,9 @@ class ParametersController extends ControllerBase {
                     ->toString();
             $data['back'] = '<a href="' . $link . '">' . $this->t('back') . '</a>';
             // get allowance aparameters for the coid
-            $param = new HrSettings($data['salary']->company_id);
-            $ad = $param->HrAd[$data['salary']->company_id];
-
-
+            $$param = new HrSettings($data['salary']->company_id);
+            
+            //$ad = $HrSettings->get('ad'); //HrAd[$data['salary']->company_id];
             $c = $data['salary']->origin;
 
             $data['param'] = array(
@@ -1018,13 +1018,13 @@ class ParametersController extends ControllerBase {
                         if ($id == $term || $emp['custom_id'] == $term || str_contains($emp['name'], $term)) {
                             $line = [];
                             $dir = "private://hr/pictures/" . $emp['company_id'] . "/";
-                            if ($emp['picture'] && file_exists($dir . basename($emp['picture']))) {
+                            if ($emp['picture'] && file_exists($emp['picture'])) {
                                 $thumb = "private://hr/pictures/" . $emp['company_id'] . "/40/40x40_" . basename($emp['picture']);
                                 if (!file_exists($thumb)) {
                                     $dir = "private://hr/pictures/" . $emp['company_id'] . "/40/";
                                     $filesystem = \Drupal::service('file_system');
                                     $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                                    $filesystem->copy($emp['picture'], $thumb, FileSystemInterface::EXISTS_REPLACE);
+                                    $filesystem->copy($emp['picture'], $thumb, FileExists::Replace);
                                     // Resize after copy
                                     $image_factory = \Drupal::service('image.factory');
                                     $image = $image_factory->get($thumb);

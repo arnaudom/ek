@@ -15,6 +15,7 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,8 +26,7 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to create or edit employee
  */
-class EditEmployee extends FormBase
-{
+class EditEmployee extends FormBase {
     
     /**
      * The file storage service.
@@ -46,8 +46,7 @@ class EditEmployee extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler, EntityStorageInterface $file_storage)
-    {
+    public function __construct(ModuleHandler $module_handler, EntityStorageInterface $file_storage) {
         $this->moduleHandler = $module_handler;
         $this->fileStorage = $file_storage;
     }
@@ -55,8 +54,7 @@ class EditEmployee extends FormBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler'),
                 $container->get('entity_type.manager')->getStorage('file')
@@ -66,16 +64,14 @@ class EditEmployee extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'employee_edit';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
@@ -198,9 +194,9 @@ class EditEmployee extends FormBase
                   '#description' => $this->t('Employee picture (image type allowed: png, jpg, gif)'),
                   //'#suffix' => '</div>',
                   '#upload_validators' => [
-                    'file_validate_extensions' => ['png jpeg jpg gif'],
-                    'file_validate_image_resolution' => ['400x400'],
-                    'file_validate_size' => [500000],
+                    'FileExtension' => ['extensions' => 'png jpeg jpg gif'],
+                    'FileImageDimensions' => ['maxDimensions' => '400x400'],
+                    'FileSizeLimit' => ['fileLimit' => 500000],
                   ],
 
                 ];
@@ -415,9 +411,6 @@ class EditEmployee extends FormBase
                 '#suffix' => '</div>',
             );
 
-
-
-
             //////////
             //   3  //
             //////////
@@ -429,9 +422,9 @@ class EditEmployee extends FormBase
 
             //$origin = array(0 => '');
             $origin = [];
-            $category = new HrSettings($form_state->get('coid'));
-            if (!empty($category->HrCat[$form_state->get('coid')])) {
-                $origin += $category->HrCat[$form_state->get('coid')];
+            $HrSettings = new HrSettings($form_state->get('coid'));
+            if (!empty($HrSettings->get('category'))) {
+                $origin += $HrSettings->get('category');
             }
 
             $form[3]['origin'] = array(
@@ -443,7 +436,6 @@ class EditEmployee extends FormBase
                 '#required' => true,
                 //'#prefix' => "<div class='container-inline'>",
             );
-
 
             $form[3]['e_status'] = array(
                 '#type' => 'select',
@@ -532,7 +524,6 @@ class EditEmployee extends FormBase
                 );
             }
 
-
             $form[3]['start'] = array(
                 '#type' => 'date',
                 '#size' => 12,
@@ -573,7 +564,6 @@ class EditEmployee extends FormBase
                 '#title' => $this->t('medical leaves'),
                 '#suffix' => "</div>",
             );
-
 
             //////////
             //   4  //
@@ -699,10 +689,9 @@ class EditEmployee extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         $triggering_element = $form_state->getTriggeringElement();
-        //don't validate form on tpm image submit
+        // don't validate form on tpm image submit
         if ($triggering_element['#name'] != 'image_upload_button'
                 && $triggering_element['#name'] != 'image_remove_button') {
             if ($form_state->get('step') == 1) {
@@ -711,7 +700,7 @@ class EditEmployee extends FormBase
                 $form_state->setRebuild();
             } elseif ($form_state->get('step') == 2) {
 
-            //check name / id
+            // check name / id
                 if ($form_state->getValue('new') == 1) {
                     $query = "SELECT id FROM {ek_hr_workforce} WHERE company_id=:id AND name = :n";
                     $a = array(':id' => $form_state->getValue('coid'), ':n' => $form_state->getValue('name'));
@@ -739,11 +728,7 @@ class EditEmployee extends FormBase
                     if ($data > 0) {
                         $form_state->setErrorByName('custom_id', $this->t('The given ID already exist.'));
                     }
-                }
-                
-            
-            
-            
+                }            
 
                 if (!filter_var($form_state->getValue('email'), FILTER_VALIDATE_EMAIL)) {
                     $form_state->setErrorByName('email', $this->t('Invalid email'));
@@ -768,8 +753,7 @@ class EditEmployee extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 2) {
             
             // image
@@ -789,13 +773,15 @@ class EditEmployee extends FormBase
             }
             
             // second, upload if any image is available
-            $fid = $form_state->getValue(['image', 0]);
-            if (!empty($fid)) {
-                $file = $this->fileStorage->load($fid);
-                $name = $file->getFileName();
-                $dir = "private://hr/pictures/" . $form_state->getValue('coid');
-                \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                $image = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
+            $file_ids = $form_state->getValue('image');
+            if (!empty($file_ids)) {
+                $file_id = reset($file_ids);
+                $file = File::load($file_id);
+                if ($file) {
+                    $dir = "private://hr/pictures/" . $form_state->getValue('coid');
+                    \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+                    $image = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
+                }
                     
                 \Drupal::messenger()->addStatus(t("New Picture uploaded"));
                 // remove old if any
@@ -871,9 +857,9 @@ class EditEmployee extends FormBase
                         ->fields($fields)
                         ->execute();
                 
-                
                 $url = \Drupal\Core\Url::fromRoute('ek_hr.employee.view', array('id' => $db), array())->toString();
                 \Drupal::messenger()->addStatus(t('Data updated. <a href="@url">View</a>', ['@url' => $url]));
+
             } else {
                 //update
                 $db = Database::getConnection('external_db', 'external_db')
@@ -898,9 +884,8 @@ class EditEmployee extends FormBase
     /**
      * Callback
      */
-    public function ajaxlookupbank(Request $request)
-    {
-        //autocomplete bank name if available
+    public function ajaxlookupbank(Request $request) {
+        // autocomplete bank name if available
         $query = "SELECT DISTINCT bank from {ek_hr_workforce} WHERE bank like :b order by bank";
         $text = $request->query->get('q') . '%';
 

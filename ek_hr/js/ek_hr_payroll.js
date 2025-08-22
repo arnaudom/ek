@@ -18,7 +18,7 @@
                 //check numeric values
                 for ($i = 1; $i < 14; $i++) {
                     var input = $('#custom_aw' + $i).val();
-                    if(!$.isNumeric(input)) {
+                    if(!isNumeric(input)) {
                         $('#erroraw' + $i).html(settings.ek_hr.error);
                     } else {
                         $('#erroraw' + $i).html('');
@@ -26,7 +26,7 @@
                 }
                 for ($i = 1; $i < 8; $i++) {
                     var input = $('#custom_d' + $i).val();
-                    if(!$.isNumeric(input)) {
+                    if(!isNumeric(input)) {
                         $('#errord' + $i).html(settings.ek_hr.error);
                     } else {
                         $('#errord' + $i).html('');
@@ -34,13 +34,13 @@
                 }                
                 for ($i = 1; $i < 4; $i++) {
                     var input = $('#fund' + $i +'_employer').val();
-                    if(!$.isNumeric(input)) {
+                    if(!isNumeric(input)) {
                         $('#errorfund' + $i + 'er').html(settings.ek_hr.error);
                     } else {
                         $('#errorfund' + $i + 'er').html('');
                     }
                     var input = $('#fund' + $i +'_employee').val();
-                    if(!$.isNumeric(input)) {
+                    if(!isNumeric(input)) {
                         $('#errorfund' + $i + 'ee').html(settings.ek_hr.error);
                     } else {
                         $('#errorfund' + $i + 'ee').html('');
@@ -48,7 +48,7 @@
                 }    
                 
                 var input = $('#income_tax').val();
-                    if(!$.isNumeric(input)) {
+                    if(!isNumeric(input)) {
                         $('#errortaxee').html(settings.ek_hr.error);
                     } else {
                         $('#errortaxee').html('');
@@ -229,23 +229,23 @@
                             success: function (data) {
                                 var str_1 = data.amount1;
                                 var str_2 = data.amount2;
-                                if (!jQuery.isNumeric(str_1) && str.indexOf("%") > 0) {
+                                if (!isNumeric(str_1) && str.indexOf("%") > 0) {
                                     //else if return value is % , calculate tax
                                     var rate = str_1.replace('%', '');
                                     var f1 = eval(rate * fund_base / 100);
                                     $('#fund1_employer').val(f1);
-                                } else if (jQuery.isNumeric(str_1)) {
+                                } else if (isNumeric(str_1)) {
                                     //if the return value is double, return value
                                     $('#fund1_employer').val(data.amount1);
                                 } else {
                                     $('#fund1_employer').val(0);
                                 }
-                                if (!jQuery.isNumeric(str_2) && str.indexOf("%") > 0) {
+                                if (!isNumeric(str_2) && str.indexOf("%") > 0) {
                                     //else if return value is % , calculate tax
                                     var rate = str_2.replace('%', '');
                                     var f1 = eval(rate * fund_base / 100);
                                     $('#fund1_employee').val(f1);
-                                } else if (jQuery.isNumeric(str_2)) {
+                                } else if (isNumeric(str_2)) {
                                     //if the return value is double, return value
                                     $('#fund1_employee').val(data.amount2);
                                 } else {
@@ -309,23 +309,23 @@
 
                                 var str_1 = data.amount1;
                                 var str_2 = data.amount2;
-                                if (!jQuery.isNumeric(str_1) && str.indexOf("%") > 0) {
+                                if (!isNumeric(str_1) && str.indexOf("%") > 0) {
                                     //else if return value is % , calculate tax
                                     var rate = str_1.replace('%', '');
                                     var f2 = eval(rate * fund_base / 100);
                                     $('#fund2_employer').val(f2);
-                                } else if (jQuery.isNumeric(str_1)) {
+                                } else if (isNumeric(str_1)) {
                                     //if the return value is double, return value
                                     $('#fund2_employer').val(data.amount1);
                                 } else {
                                     $('#fund2_employer').val(0);
                                 }
-                                if (!jQuery.isNumeric(str_2) && str.indexOf("%") > 0) {
+                                if (!isNumeric(str_2) && str.indexOf("%") > 0) {
                                     //else if return value is % , calculate tax
                                     var rate = str_2.replace('%', '');
                                     var f2 = eval(rate * fund_base / 100);
                                     $('#fund2_employee').val(f2);
-                                } else if (jQuery.isNumeric(str_2)) {
+                                } else if (isNumeric(str_2)) {
                                     //if the return value is double, return value
                                     $('#fund2_employee').val(data.amount2);
                                 } else {
@@ -391,23 +391,23 @@
 
                                 var str_1 = data.amount1;
                                 var str_2 = data.amount2;
-                                if (!jQuery.isNumeric(str_1) && str.indexOf("%") > 0) {
+                                if (!isNumeric(str_1) && str.indexOf("%") > 0) {
                                     //else if return value is % , calculate tax
                                     var rate = str_1.replace('%', '');
                                     var f3 = eval(rate * fund_base / 100);
                                     $('#fund3_employer').val(f3);
-                                } else if (jQuery.isNumeric(str_1)) {
+                                } else if (isNumeric(str_1)) {
                                     //if the return value is double, return value
                                     $('#fund3_employer').val(data.amount1);
                                 } else {
                                     $('#fund3_employer').val(0);
                                 }
-                                if (!jQuery.isNumeric(str_2) && str.indexOf("%") > 0) {
+                                if (!isNumeric(str_2) && str.indexOf("%") > 0) {
                                     //else if return value is % , calculate tax
                                     var rate = str_2.replace('%', '');
                                     var f3 = eval(rate * fund_base / 100);
                                     $('#fund3_employee').val(f3);
-                                } else if (jQuery.isNumeric(str_2)) {
+                                } else if (isNumeric(str_2)) {
                                     //if the return value is double, return value
                                     $('#fund3_employee').val(data.amount2);
                                 } else {
@@ -499,13 +499,13 @@
                                 if (str == 0) {
                                     $('#incometax_alert').html("No value");
                                 } else {
-                                    if (!jQuery.isNumeric(str) && str.indexOf("%") > 0) {
+                                    if (!isNumeric(str) && str.indexOf("%") > 0) {
                                         //else if return value is % , calculate tax
                                         var rate = str.replace('%', '');
                                         var t1 = eval(rate * tax_base_val / 100);
                                         $('#income_tax').val(t1);
                                         $('#incometax_alert').html(rate + "% x " + tax_base_val + " (" + settings.ek_hr.tax_base + ")");
-                                    } else if (jQuery.isNumeric(str)) {
+                                    } else if (isNumeric(str)) {
                                         //if the return value is double, return value
                                         $('#income_tax').val(data.amount1.toFixed(2));
                                         $('#incometax_alert').html("base: " + tax_base_val + " (" + settings.ek_hr.tax_base + ")");
@@ -544,9 +544,11 @@
 
     };
 
+    function isNumeric(value) {
+        return !isNaN(parseFloat(value)) && isFinite(value);
+    }
 
-    function addCommas(nStr)
-    {
+    function addCommas(nStr) {
         nStr += '';
         x = nStr.split('.');
         x1 = x[0];

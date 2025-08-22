@@ -17,8 +17,7 @@ use Drupal\Core\Extension\ModuleHandler;
 /**
  * Controller routines for ek module routes.
  */
-class RosterController extends ControllerBase
-{
+class RosterController extends ControllerBase {
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -43,8 +42,7 @@ class RosterController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -58,8 +56,7 @@ class RosterController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -69,8 +66,7 @@ class RosterController extends ControllerBase
      * Return the roster form
      *
      */
-    public function roster(Request $request)
-    {
+    public function roster(Request $request) {
         $build['roster'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\Roster');
         return $build;
     }
@@ -79,8 +75,7 @@ class RosterController extends ControllerBase
      * Download in excel format
      *
      */
-    public function excelroster($param)
-    {
+    public function excelroster($param) {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
@@ -94,8 +89,7 @@ class RosterController extends ControllerBase
      * edit public holidays dates
      *
      */
-    public function ph(Request $request, $id = null)
-    {
+    public function ph(Request $request, $id = null) {
         $build['publicholidays'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\EditPh', $id);
         return $build;
     }

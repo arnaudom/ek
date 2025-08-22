@@ -22,8 +22,7 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Controller routines for ek module routes.
  */
-class PayrollController extends ControllerBase
-{
+class PayrollController extends ControllerBase {
     /* The module handler.
      *
      * @var \Drupal\Core\Extension\ModuleHandler
@@ -48,8 +47,7 @@ class PayrollController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
         );
@@ -62,9 +60,8 @@ class PayrollController extends ControllerBase
      *   A database connection.
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
-     */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+     */ 
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -73,8 +70,7 @@ class PayrollController extends ControllerBase
      * Return advance payroll form
      *
      */
-    public function Advance(Request $request)
-    {
+    public function Advance(Request $request) {
         $build['payrolladvance'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\Advance');
         return [
             $build ,
@@ -125,8 +121,7 @@ class PayrollController extends ControllerBase
     /**
      * Callback for payroll form for tax/fund computation
      */
-    public function readTable(Request $request)
-    {
+    public function readTable(Request $request) {
         $coid = $request->query->get('coid');
         $type = $request->query->get('type');
         $value = $request->query->get('value');
@@ -164,8 +159,7 @@ class PayrollController extends ControllerBase
      * Return current payroll list by company
      *
      */
-    public function payrollcurrent(Request $request)
-    {
+    public function payrollcurrent(Request $request) {
         $build['payrollcurrent'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\FilterCompanyList');
 
         $header = array(
@@ -288,8 +282,7 @@ class PayrollController extends ControllerBase
      * @param array $param coid
      */
 
-    public function extractcurrent($param = null)
-    {
+    public function extractcurrent($param = null) {
         $markup = array();
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
@@ -327,8 +320,7 @@ class PayrollController extends ControllerBase
      * call for for outputing payslips
      *
      */
-    public function payslip(Request $request)
-    {
+    public function payslip(Request $request) {
         $build['payslip'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\Payslip');
 
         if (isset($_SESSION['printpayslip']['filter']) && $_SESSION['printpayslip']['filter'] == 1) {

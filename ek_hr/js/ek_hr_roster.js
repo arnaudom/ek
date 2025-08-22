@@ -12,12 +12,12 @@
                     cookies.set(settings.roster.cut, value, {expires: 1});
                 });
             }
-
+            
             $('.tip').each(function(){
-                $(this).qtip({
-                    style: { 
-                        classes: 'qtip-bootstrap' 
-                    },
+                $(this).tooltip({
+                    classes: {
+                            'ui-tooltip': 'roster-tooltip'
+                        },
                     position: {
                             my: 'bottom right', // Position my 
                             at: 'top left', // 
@@ -38,6 +38,7 @@
                     }
                 })
             });
+
 
             $(".day").on("click", function () {
                 jQuery(".time").hide();

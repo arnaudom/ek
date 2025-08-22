@@ -101,53 +101,17 @@ class RosterManager implements RosterManagerInterface
             $shift .= "S2=from $r[4] to $r[5] \r\n";
         }
 
-        /*
-          if ($r[5] > $r[4] && $r[4] == $r[3] && $r[3] > $r[2] && $r[2] == $r[1] && $r[1] > $r[0]) {
-          $shift .= "S1=from $r[0] to $r[1] \r\n";
-          } elseif ($r[5] == $r[4] && $r[4] > $r[3] && $r[3] == $r[2] && $r[2] > $r[1] && $r[1] > $r[0]) {
-          $shift .= "S1=from $r[0] to $r[1] \r\n";
-          } elseif ($r[5] == $r[4] && $r[4] > $r[3] && $r[3] == $r[2] && $r[2] == $r[1] && $r[1] > $r[0]) {
-          $shift .= "S1=from $r[0] to $r[1] \r\n";
-          } elseif ($r[5] == $r[4] && $r[4] > $r[3] && $r[3] > $r[2] && $r[2] == $r[1] && $r[1] > $r[0]) {
-          $shift .= "S1=from $r[0] to $r[3] \r\n";
-          } elseif ($r[5] == $r[4] && $r[4] == $r[3] && $r[3] > $r[2] && $r[2] == $r[1] && $r[1] > $r[0]) {
-          $shift .= "S1=from $r[0] to $r[3] \r\n";
-          } elseif ($r[5] == $r[4] && $r[4] >= $r[3] && $r[3] > $r[2] && $r[2] > $r[1] && $r[1] == $r[0]) {
-          $shift .= "S1=from $r[2] to $r[3] \r\n";
-          } elseif ($r[5] == $r[4] && $r[4] >= $r[3] && $r[3] > $r[2] && $r[2] > $r[1] && $r[1] > $r[0]) {
-          $shift .= "S1=from $r[0] to $r[1] \r\n";
-          $shift .= "S2=from $r[2] to $r[3] \r\n";
-          } elseif ($r[5] > $r[4] && $r[4] == $r[3] && $r[3] > $r[2] && $r[2] > $r[1] && $r[1] == $r[0]) {
-          $shift .= "S1=from $r[2] to $r[5] \r\n";
-          } elseif ($r[5] > $r[4] && $r[4] > $r[3] && $r[3] == $r[2] && $r[2] > $r[1] && $r[1] == $r[0]) {
-          $shift .= "S1=from $r[4] to $r[5] \r\n";
-          } elseif ($r[5] > $r[4] && $r[4] > $r[3] && $r[3] == $r[2] && $r[2] > $r[1] && $r[1] > $r[0]) {
-          $shift .= "S1=from $r[0] to $r[1] \r\n";
-          $shift .= "S2=from $r[4] to $r[5] \r\n";
-          } elseif ($r[5] > $r[4] && $r[4] > $r[3] && $r[3] == $r[2] && $r[2] = $r[1] && $r[1] > $r[0]) {
-          $shift .= "S1=from $r[0] to $r[1] \r\n";
-          $shift .= "S2=from $r[4] to $r[5] \r\n";
-          } elseif ($r[5] > $r[4] && $r[4] >= $r[3] && $r[3] > $r[2] && $r[2] > $r[1] && $r[1] == $r[0]) {
-          $shift .= "S1=from $r[2] to $r[3] \r\n";
-          $shift .= "S2=from $r[4] to $r[5] \r\n";
-          } elseif ($r[5] > $r[4] && $r[4] > $r[3] && $r[3] > $r[2] && $r[2] > $r[1] && $r[1] > $r[0]) {
-          $shift .= "S1=from $r[0] to $r[1] \r\n";
-          $shift .= "S2=from $r[2] to $r[3] \r\n";
-          $shift .= "S3=from $r[4] to $r[5] \r\n";
-          }
-         */
         return $shift;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function dayType($month_0, $month_1, $start_0, $start_1, $cut_0, $cut_1, $coid)
-    {
+    public function dayType($month_0, $month_1, $start_0, $start_1, $cut_0, $cut_1, $coid) {
         $dayType = [];
         $query = "SELECT * FROM {ek_hr_workforce_ph} WHERE date=:d AND coid=:coid";
         $roster = new \Drupal\ek_hr\HrSettings($coid);
-        $settings = $roster->HrRoster[$coid];
+        $settings = $roster->get('roster'); //HrRoster[$coid];
         $last_day = isset($settings['last_day']) ? $settings['last_day'] : 7;
 
         for ($i = $start_0; $i <= $cut_0; $i++) {
@@ -194,8 +158,7 @@ class RosterManager implements RosterManagerInterface
     /**
      * {@inheritdoc}
      */
-    public function to_hms($seconds, $format = 'H:m')
-    {
+    public function to_hms($seconds, $format = 'H:m') {
         $hours = floor($seconds / 3600);
         $mins = floor(($seconds - ($hours * 3600)) / 60);
         $secs = floor($seconds % 60);
@@ -207,8 +170,7 @@ class RosterManager implements RosterManagerInterface
     /**
      * {@inheritdoc}
      */
-    public function to_second($hms)
-    {
+    public function to_second($hms) {
         $t_ = explode(":", $hms);
         $s = 0;
         $m = 0;
@@ -224,8 +186,7 @@ class RosterManager implements RosterManagerInterface
     /**
      * {@inheritdoc}
      */
-    public function filter_shift($roster)
-    {
+    public function filter_shift($roster) {
         if ($roster == '') {
             return $roster;
         }

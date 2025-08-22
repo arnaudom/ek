@@ -21,8 +21,7 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to display roster data
  */
-class Roster extends FormBase
-{
+class Roster extends FormBase {
 
     /**
      * The module handler.
@@ -35,8 +34,9 @@ class Roster extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+
+    protected $roster;
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
         $this->roster = new \Drupal\ek_hr\RosterManager();
     }
@@ -44,8 +44,7 @@ class Roster extends FormBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler')
         );
@@ -54,16 +53,14 @@ class Roster extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'hr_roster';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
@@ -162,8 +159,9 @@ class Roster extends FormBase
                 '#required' => true,
                 '#suffix' => "</div></div>"
             );
+
             $param = new HrSettings($form_state->getValue('coid'));
-            $check = $param->HrRoster[$form_state->getValue('coid')];
+            $check = $param->get('roster'); 
             if (empty($check)) {
                 //alert missing settings
                 $link = Url::fromRoute('ek_hr.roster_settings', array(), array())->toString();
@@ -734,7 +732,7 @@ class Roster extends FormBase
                     $dayType = $form_state->getValue('daytype');
                     //Get settings
                     $param = new HrSettings($form_state->getValue('coid'));
-                    $settings = $param->HrRoster[$form_state->getValue('coid')];
+                    $settings = $param->get('roster'); //HrRoster[$form_state->getValue('coid')];
                     if (!isset($settings['hours_day'])) {
                         $hours_day = 60*60*8;
                     } else {

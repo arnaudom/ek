@@ -16,10 +16,13 @@ ek_hr_tip:
   version: VERSION
   css:
     theme:
-      /libraries/qTip2/dist/jquery.qtip.min.css: {}
+      css/ek_hr.css: {}
   js:
     js/ek_hr_tip.js: {}
-    /libraries/qTip2/dist/jquery.qtip.min.js: {} 
+  dependencies:
+    - core/jquery 
+    - core/jquery.ui
+    - jquery_ui_tooltip/tooltip
     
 ek_hr_forms:
   version: VERSION
@@ -74,25 +77,23 @@ ek_hr.payroll:
       css/ek_hr.css: {}
   js:
     js/ek_hr_payroll.js: {}
-
-    
     
 ek_hr.roster:
   version: VERSION
   css:
     theme:
       css/ek_hr_roster.css: {}
-      /libraries/qTip2/dist/jquery.qtip.min.css: {}
   js:
     js/ek_hr_roster.js: {}
-    /libraries/qTip2/dist/jquery.qtip.min.js: {}
   dependencies:
     - core/jquery
     - core/drupal
     - core/drupal.form
     - core/jquery.form
     - core/js-cookie
-    - jquery_ui_slider/slider
+    - jquery_ui_slider/slider   
+    - core/jquery.ui
+    - jquery_ui_tooltip/tooltip
     
 
 ek_hr.fund_edit:

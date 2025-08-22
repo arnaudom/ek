@@ -19,8 +19,7 @@ use Drupal\ek_admin\Access\AccessCheck;
 /**
  * Provides a form to record salary advance
  */
-class Advance extends FormBase
-{
+class Advance extends FormBase {
 
     /**
      * The module handler.
@@ -33,16 +32,14 @@ class Advance extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler')
         );
@@ -51,8 +48,7 @@ class Advance extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'hr_advance_payroll';
     }
 
@@ -235,8 +231,7 @@ class Advance extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 3) {
             $rows = $form_state->getValue('itemTable');
             if (!empty($rows)) {

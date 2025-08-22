@@ -9,18 +9,18 @@ namespace Drupal\ek_hr\Form;
 
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
-use Drupal\ek_hr\HrSettings;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\file\Entity\File;
+use Drupal\Core\File\FileExists;
 
 /**
  * Provides a form to view and upload ranks file
  */
-class EditRank extends FormBase
-{
+class EditRank extends FormBase {
 
   /**
    * The module handler.
@@ -33,26 +33,23 @@ class EditRank extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container)  {
         return new static(
-      $container->get('module_handler')
-    );
+            $container->get('module_handler')
+        );
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'hr_rank_edit';
     }
 
@@ -60,67 +57,65 @@ class EditRank extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
+
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
   
   
         $company = AccessCheck::CompanyListByUid();
-        $form['coid'] = array(
-    '#type' => 'select',
-    '#size' => 1,
-    '#options' => $company,
-    '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-    '#title' => $this->t('company'),
-    '#disabled' => ($form_state->getValue('coid')) ? true : false,
-    '#required' => true,
-    
-    );
+            $form['coid'] = [
+                '#type' => 'select',
+                '#size' => 1,
+                '#options' => $company,
+                '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : $form_state->get('coid'),
+                '#title' => $this->t('company'),
+                '#disabled' => ($form_state->getValue('coid')) ? true : false,
+                '#required' => true,
+            ];
 
         if (($form_state->getValue('coid')) == '') {
-            $form['next'] = array(
-    '#type' => 'submit',
-    '#value' => $this->t('Next'). ' >>',
-    '#states' => array(
-        // Hide data fieldset when class is empty.
-        'invisible' => array(
-           "select[name='coid']" => array('value' => ''),
-        ),
-      ),
-  );
+            $form['next'] = [
+                '#type' => 'submit',
+                '#value' => $this->t('Next'). ' >>',
+                '#states' => array(
+                    'invisible' => array(
+                    "select[name='coid']" => array('value' => ''),
+                    ),
+                ),
+            ];
         }
  
-        if ($form_state->get('step') == 2) {
+        if ($form_state->get('step') == 2 || $form_state->getValue('upload')) {
             $form_state->set('step', 3);
 
             $dir = "private://hr/data/" . $form_state->getValue('coid')  ."/ranks/ranks.txt";
             if (file_exists($dir)) {
                 $ranks = file_get_contents($dir);
-                //$ranks = str_replace("\r\n","<br/>",$ranks);
 
-                $form['file'] = array(
-        '#type' => 'details',
-        '#title' => $this->t('Current file'),
-          '#collapsible' => true,
-          '#open' => true,
-        );
-                $form['file']['rank'] = array(
-            '#type' => 'textarea',
-            '#default_value' => $ranks,
-            '#rows' => 10,
-            
-        );
+                $form['file'] = [
+                    '#type' => 'details',
+                    '#title' => $this->t('Current file'),
+                    '#collapsible' => true,
+                    '#open' => true,
+                ];
+
+                $form['file']['rank'] = [
+                        '#type' => 'textarea',
+                        '#default_value' => $ranks,
+                        '#rows' => 10,   
+                ];
+
             } else {
-                $form['info1'] = array(
-            '#type' => 'item',
-            '#markup' => $this->t('You do not have any rank definition yet. You can create one directly by typing your structure or alternatively upload a text file.')
-        );
-                $form['info2'] = array(
-            '#type' => 'item',
-            '#markup' => $this->t('1) indicate ranks titles by preceeding the name with character "@" and terminated with comma "," 2) indicate rank within a title separated by comma.')
-        );
+                $form['info1'] = [
+                    '#type' => 'item',
+                    '#markup' => $this->t('You do not have any rank definition yet. You can create one directly by typing your structure or alternatively upload a text file.')
+                ];
+                $form['info2'] = [
+                    '#type' => 'item',
+                    '#markup' => $this->t('1) indicate ranks titles by preceeding the name with character "@" and terminated with comma "," 2) indicate rank within a title separated by comma.')
+                ];
        
                 $sample = "@ADMINISTRATION,"
                . "\r\n A1 General manager,"
@@ -134,35 +129,36 @@ class EditRank extends FormBase
                . "\r\n L3 Clerk,"
                . "\r\n@";
        
-                $form['rank'] = array(
-            '#type' => 'textarea',
-            '#default_value' => $sample,
-            '#rows' => 10,
-            
-        );
+                $form['rank'] = [
+                    '#type' => 'textarea',
+                    '#default_value' => $sample,
+                    '#rows' => 10,
+                ];
             }
     
-            $form['info3'] = array(
-      '#type' => 'item',
-      '#markup' => $this->t('You can also upload any text file (with .txt extension) with your structure.')
-    
-    );
+            $form['info3'] = [
+                '#type' => 'item',
+                '#markup' => $this->t('You can also upload any text file (with .txt extension) with your structure.')
+            ];
 
-            $form['upload'] = array(
-      '#type' => 'file',
-      '#description' => $this->t('Upload a new file'),
-    );
+            $form['upload'] = [
+                '#type' => 'managed_file',
+                '#description' => $this->t('Upload a new file'),
+                '#upload_validators'  => [
+                    'FileExtension' => ['extensions' => 'txt'],
+                ]
+            ];
 
-            $form['actions'] = array(
-      '#type' => 'actions',
-      '#attributes' => array('class' => array('container-inline')),
-    );
+            $form['actions'] = [
+                '#type' => 'actions',
+                '#attributes' => array('class' => array('container-inline')),
+            ];
     
-            $form['actions']['submit'] = array(
-      '#type' => 'submit',
-      '#value' => $this->t('Save'),
-      '#suffix' => ''
-    );
+            $form['actions']['submit'] = [
+                '#type' => 'submit',
+                '#value' => $this->t('Save'),
+                '#suffix' => ''
+            ];
     
     
             $form['#attached']['library'][] = 'ek_hr/ek_hr.hr';
@@ -175,25 +171,15 @@ class EditRank extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state)  {
         if ($form_state->get('step') == 1) {
             $form_state->set('step', 2);
+            $form_state->set('coid', $form_state->getValue('coid'));
             $form_state->setRebuild();
         }
   
         if ($form_state->get('step') == 3) {
-            $extensions = 'txt';
-            $validators = array( 'file_validate_extensions' => array($extensions));
-            $field = "upload";
-            //$form_state->setValue('image', '');
             
-            $file = file_save_upload($field, $validators, false, 0, FileSystemInterface::EXISTS_RENAME);
-        
-            if ($file) {
-                $form_state->set('new_upload', $file);
-                //$form_state->setRebuild();
-            }
         }
     }
 
@@ -201,21 +187,23 @@ class EditRank extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 3) {
-            if ($form_state->get('new_upload')) {
+            $file_ids = $form_state->getValue('upload');
+            if (!empty($file_ids)) {
+                $file_id = reset($file_ids);
+                $file = File::load($file_id);
                 $dir = "private://hr/data/" . $form_state->getValue('coid') . '/ranks' ;
                 \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $dest = $dir . '/ranks.txt';
-                $filename = \Drupal::service('file_system')->copy($form_state->get('new_upload')->getFileUri(), $dest, FileSystemInterface::EXISTS_REPLACE);
+                \Drupal::service('file_system')->copy($file->getFileUri(), $dest, FileExists::Replace);
                 \Drupal::messenger()->addStatus(t("New file uploaded"));
+
+
             } elseif ($form_state->getValue('rank')) {
                 //write the data to the file
                 $dir = "private://hr/data/" . $form_state->getValue('coid')  ."/ranks";
-                if (!file_exists()) {
-                    \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                }
+                \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $file = $dir . '/ranks.txt';
                 $fp = fopen($file, 'w');
                 $text = \Drupal\Component\Utility\Xss::filter($form_state->getValue('rank'));

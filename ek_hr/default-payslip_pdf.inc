@@ -2,6 +2,7 @@
 
 class EKPDF extends TCPDF {
 
+    public $company;
     //Page header
     function Header() {
         $data = $this->getHeaderData();
@@ -9,7 +10,7 @@ class EKPDF extends TCPDF {
         //Logo
         if ($this->company->logo != '') {
 
-            $logo = \Drupal::service('file_system')->realpath($this->company->logo);
+            $logo = \Drupal::service('file_system')->realpath($this->company->logo); 
             if (file_exists($logo)) {
                 $info = getimagesize($logo);
                 $h = $info[1] * 15 / $info[0];
@@ -139,7 +140,7 @@ $pdf->AddPage("P", "A4");
 
 //INSERT employee DATA
     $pdf->Ln(3);
-    $pdf->SetFont('helvetica', '', 7);
+    $pdf->SetFont('dejavusans', '', 7);
     $pdf->Cell($margin);
     $pdf->Cell($col1_width, 4, t('Payroll month') . ':', 0, 0);
     $pdf->Cell($col2_width, 4, $line['month'], 1, 0);
@@ -150,7 +151,7 @@ $pdf->AddPage("P", "A4");
     $pdf->Cell($col1_width, 4, t('Location') .':', 0, 0);
     $pdf->Cell($col2_width, 4, $line['location'], 1, 0);
     $pdf->Cell($col3_width, 4, t('Employee Name') .':', 0, 0);
-    $pdf->Cell($col4_width, 4, utf8_encode($line['name']), 1, 1);
+    $pdf->Cell($col4_width, 4,$line['name'], 1, 1);
 
     $pdf->Cell($margin);
     $pdf->Cell($col1_width, 4, t('Bank ref') .':', 0, 0);

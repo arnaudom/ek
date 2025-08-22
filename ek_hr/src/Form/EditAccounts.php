@@ -20,8 +20,7 @@ use Drupal\ek_finance\FinanceSettings;
 /**
  * Provides a form to record HR accounts
  */
-class EditAccounts extends FormBase
-{
+class EditAccounts extends FormBase {
 
     /**
      * The module handler.
@@ -34,8 +33,8 @@ class EditAccounts extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    protected $settings;
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
         $this->settings = new FinanceSettings();
     }
@@ -43,8 +42,7 @@ class EditAccounts extends FormBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler')
         );
@@ -53,16 +51,14 @@ class EditAccounts extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'hr_accounts_edit';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $id = null)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             if ($form_state->get('step') == '') {
                 $form_state->set('step', 1);
@@ -97,15 +93,11 @@ class EditAccounts extends FormBase
                 $form_state->set('step', 3);
 
                 //verify if the settings table has the company
-                
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_hr_workforce_settings')
                         ->condition('coid', $form_state->getValue('coid'));
                 $query->addExpression('Count(coid)', 'count');
                 $obj = $query->execute();
-                //$query = "SELECT count(coid) from {ek_hr_workforce_settings} where coid=:c";
-                //$row = Database::getConnection('external_db', 'external_db')->query($query, array(':c' => $form_state->getValue('coid')))->fetchField();
-
                 if ($obj->fetchObject()->count != 1) {
                     Database::getConnection('external_db', 'external_db')
                             ->insert('ek_hr_workforce_settings')
@@ -113,12 +105,11 @@ class EditAccounts extends FormBase
                             ->execute();
                 }
 
-
-                $category = new HrSettings($form_state->getValue('coid'));
-                $list = $category->HrAccounts[$form_state->getValue('coid')];
+                $HrSettings = new HrSettings($form_state->getValue('coid'));
+                $list = $HrSettings->get('accounts'); //HrAccounts[$form_state->getValue('coid')];
 
                 if (empty($list)) {
-                    $list = array(
+                    $list = [
                         $form_state->getValue('coid') => [
                             'pay_account' => '',
                             'fund1_account' => '',
@@ -129,16 +120,13 @@ class EditAccounts extends FormBase
                             'tax1_account' => '',
                             'tax2_account' => '',
                         ]
-                    );
+                        ];
 
                     Database::getConnection('external_db', 'external_db')
                             ->update('ek_hr_workforce_settings')
-                            ->fields(array('accounts' => serialize($list)))
+                            ->fields(['accounts' => serialize($list)])
                             ->condition('coid', $form_state->getValue('coid'))
                             ->execute();
-
-                    $category = new HrSettings($form_state->getValue('coid'));
-                    $list = $category->HrAccounts[$form_state->getValue('coid')];
                 }
                 $options = array('0' => null);
                 $chart = $this->settings->get('chart');
@@ -151,17 +139,19 @@ class EditAccounts extends FormBase
 
                 $param = [
                     'pay_account' => 'liability',
-                    'fund1_account' => $category->get('param', 'fund_1', ['name', 'value']),
-                    'fund2_account' => $category->get('param', 'fund_2', ['name', 'value']),
-                    'fund3_account' => $category->get('param', 'fund_3', ['name', 'value']),
-                    'fund4_account' => $category->get('param', 'fund_4', ['name', 'value']),
-                    'fund5_account' => $category->get('param', 'fund_5', ['name', 'value']),
-                    'tax_account' => $category->get('param', 'tax', ['name', 'value']),
+                    'fund1_account' => $HrSettings->get('param', 'fund_1', ['name', 'value']),
+                    'fund2_account' => $HrSettings->get('param', 'fund_2', ['name', 'value']),
+                    'fund3_account' => $HrSettings->get('param', 'fund_3', ['name', 'value']),
+                    'fund4_account' => $HrSettings->get('param', 'fund_4', ['name', 'value']),
+                    'fund5_account' => $HrSettings->get('param', 'fund_5', ['name', 'value']),
+                    'tax_account' => $HrSettings->get('param', 'tax', ['name', 'value']),
                 ];
-                foreach ($list as $key => $value) {
-                    $name = $category->get('param', $param[$key], 'value') ? $category->get('param', $param[$key], 'value') : $param[$key];
 
-                    $form[$key] = array(
+                foreach ($list as $key => $value) {
+                    $name = $HrSettings->get('param', $param[$key], 'value') ?
+                    $HrSettings->get('param', $param[$key], 'value') : $param[$key];
+
+                    /**/$form[$key] = array(
                         '#type' => 'select',
                         '#size' => 1,
                         '#options' => $options,
@@ -187,7 +177,7 @@ class EditAccounts extends FormBase
 
                 $form['#attached']['library'][] = 'ek_hr/ek_hr_css';
             }
-        }//if finance
+        }
         else {
             $form['info'] = array(
                 '#type' => 'item',
@@ -200,8 +190,7 @@ class EditAccounts extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 1) {
             $form_state->set('step', 2);
             $form_state->setRebuild();
@@ -211,22 +200,21 @@ class EditAccounts extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 3) {
-            $category = new HrSettings($form_state->getValue('coid'));
-            $list = $category->HrAccounts[$form_state->getValue('coid')];
+            $HrSettings = new HrSettings($form_state->getValue('coid'));
+            $list = $HrSettings->get('accounts'); //HrAccounts[$form_state->getValue('coid')];
 
             foreach ($list as $key => $value) {
                 $input = $form_state->getValue($key);
-                $category->set(
+                $HrSettings->set(
                     'accounts',
                     $key,
                     $input
                 );
             }
 
-            $category->save();
+            $HrSettings->save();
             \Drupal::messenger()->addStatus(t('Data updated'));
         }//step 2
     }

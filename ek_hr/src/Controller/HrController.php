@@ -16,8 +16,7 @@ use Drupal\Core\Extension\ModuleHandler;
 /**
 * Controller routines for ek module routes.
 */
-class HrController extends ControllerBase
-{
+class HrController extends ControllerBase {
 
    /* The module handler.
    *
@@ -39,8 +38,7 @@ class HrController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
       $container->get('database'),
       $container->get('form_builder'),
@@ -56,8 +54,7 @@ class HrController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -69,8 +66,7 @@ class HrController extends ControllerBase
        *
     */
 
-    public function dashboard(Request $request)
-    {
+    public function dashboard(Request $request) {
         return array('#markup' => '');
     }
 } //class

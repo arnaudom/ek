@@ -19,8 +19,7 @@ use Drupal\ek_hr\HrSettings;
 /**
  * Provides a form to edit roster settings
  */
-class RosterSettings extends FormBase
-{
+class RosterSettings extends FormBase {
 
     /**
      * The module handler.
@@ -33,16 +32,14 @@ class RosterSettings extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler')
         );
@@ -51,16 +48,14 @@ class RosterSettings extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'roster_settings';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state) {
         if ($form_state->get('step') == '') {
             $form_state->set('step', 1);
         }
@@ -107,42 +102,8 @@ class RosterSettings extends FormBase
 
 
             $roster = new HrSettings($form_state->getValue('coid'));
-            $settings = $roster->HrRoster[$form_state->getValue('coid')];
+            $settings = $roster->get('roster'); 
 
-            /*
-              if (empty($list)) {
-              $list = array(
-              $form_state->getValue('coid') => array(
-              'shift_start' => '00:00',
-              )
-              );
-
-              Database::getConnection('external_db', 'external_db')
-              ->update('ek_hr_workforce_settings')
-              ->fields(array('roster' => serialize($list)))
-              ->condition('coid', $form_state->getValue('coid'))
-              ->execute();
-
-              $roster = NEW HrSettings($form_state->getValue('coid'));
-              $list = $roster->HrRoster[$form_state->getValue('coid')];
-              }
-              $form['info'] = array(
-              '#type' => 'item',
-              '#markup' => $this->t('set the starting time of 1st shift (in a 3 x 8H shift configuration.)'),
-              );
-
-              foreach ($list as $key => $value) {
-
-              $form[$key] = array(
-              '#type' => 'textfield',
-              '#size' => 20,
-              '#maxlength' => 5,
-              '#default_value' => $value,
-              '#attributes' => array(),
-              '#title' => '',
-              );
-              }//for
-             */
             $form['hours_day'] = array(
                 '#type' => 'number',
                 '#min' => 0,
@@ -194,8 +155,7 @@ class RosterSettings extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state)  {
         if ($form_state->get('step') == 1) {
             $form_state->set('step', 2);
             $form_state->setRebuild();
@@ -209,26 +169,15 @@ class RosterSettings extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 3) {
-            $roster = new HrSettings($form_state->getValue('coid'));
-            $settings = $roster->HrRoster[$form_state->getValue('coid')];
+            $HrSettings = new HrSettings($form_state->getValue('coid'));
+            $roster = $HrSettings->get('roster'); 
 
-            $roster->set('roster', 'hours_day', $form_state->getValue('hours_day'));
-            $roster->set('roster', 'roster_hours_format', $form_state->getValue('roster_hours_format'));
-            $roster->set('roster', 'last_day', $form_state->getValue('last_day'));
-            /*
-            foreach ($list as $key => $value) {
-
-                $input = Xss::filter($form_state->getValue($key));
-                $roster->set(
-                        'roster', $key, $input
-                );
-            }*/
-            
-
-            $roster->save();
-        }//step 3
+            $HrSettings->set('roster', 'hours_day', $form_state->getValue('hours_day'));
+            $HrSettings->set('roster', 'roster_hours_format', $form_state->getValue('roster_hours_format'));
+            $HrSettings->set('roster', 'last_day', $form_state->getValue('last_day'));
+            $HrSettings->save();
+        }
     }
 }
