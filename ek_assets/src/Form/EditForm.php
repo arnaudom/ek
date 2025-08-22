@@ -17,8 +17,9 @@ use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\AidList;
-use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_assets\Amortization;
+use Drupal\ek_finance\CurrencyData;
+use Drupal\ek_finance\FinanceSettings;
 
 /**
  * Provides a form to create and edit assets.
@@ -45,7 +46,7 @@ class EditForm extends FormBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler')
+            $container->get('module_handler')
         );
     }
 
@@ -92,7 +93,7 @@ class EditForm extends FormBase {
                         ->condition('id', $data->eid, '=')
                         ->execute()
                         ->fetchObject();
-                if ($check->name) {
+                if (isset($check->name)) {
                     $data->eid = $check->id . ' | ' . $check->name;
                 }
             }
@@ -113,8 +114,10 @@ class EditForm extends FormBase {
             '#title' => $this->t('Registered under'),
             '#required' => true,
             '#ajax' => [
-                'callback' => [$this, 'get_category'],
-                'wrapper' => 'category',
+                'callback' => [$this, 'get_aid'],
+                'event' => 'change',
+                'progress' => ['type' => 'throbber', 'message' => $this->t('Loading...')],
+                'wrapper' => 'account',
             ],
         ];
 
@@ -184,13 +187,6 @@ class EditForm extends FormBase {
             ];
         }
 
-
-        $query = "SELECT id,currency from {ek_currency} where active=:a order by currency";
-        $currency = ['--' => '--'];
-        $currency += Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':a' => 1))
-                ->fetchAllKeyed();
-
         if ($form_state->getValue('coid')) {
             $aid = AidList::listaid($form_state->getValue('coid'), array($chart['assets']), 1);
         }
@@ -201,9 +197,9 @@ class EditForm extends FormBase {
             '#required' => true,
             '#options' => $aid,
             '#disabled' => $current_amortization,
-            '#title' => $this->t('Category'),
+            '#title' => $this->t('Account'),
             '#default_value' => isset($data->aid) ? $data->aid : array(),
-            '#prefix' => "<div id='category'  class='row'>",
+            '#prefix' => "<div id='account'  class='row'>",
             '#suffix' => '</div>',
         ];
 
@@ -211,7 +207,7 @@ class EditForm extends FormBase {
             '#type' => 'select',
             '#size' => 1,
             '#disabled' => $current_amortization,
-            '#options' => array_combine($currency, $currency),
+            '#options' => CurrencyData::listcurrency(1),
             '#default_value' => isset($data->currency) ? $data->currency : null,
             '#title' => $this->t('Currency'),
         ];
@@ -247,9 +243,14 @@ class EditForm extends FormBase {
             '#open' => (isset($data->asset_pic) || isset($data->asset_doc)) ? true : false,
         ];
 
+        // file is not managed by Drupal
+        $allowed = 'png jpg jpeg';
+        $upload_image = ['FileExtension' => ['extensions' => $allowed]];
         $form['i']['asset_pic'] = [
             '#type' => 'file',
-            '#title' => $this->t('Upload picture'),
+            '#title' => $this->t('Upload picture'),            
+            '#upload_validators' => $upload_image,
+            '#description' => $this->t('Format: @f', ['@f' => 'png jpg jpeg']),
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => "</div>",
         ];
@@ -275,9 +276,13 @@ class EditForm extends FormBase {
             ];
         }
 
+        // file is not managed by Drupal
+        $allowed = 'png jpg jpeg pdf doc docx odt rar tiff zip';
+        $upload_doc = ['FileExtension' => ['extensions' => $allowed]];
         $form['i']['asset_doc'] = [
             '#type' => 'file',
-            '#title' => $this->t('Upload attachment'),
+            '#title' => $this->t('Upload attachment'),            
+            '#upload_validators' => $upload_doc,
             '#prefix' => "<div class='table'><div class='row'><div class='cell'>",
             '#suffix' => "</div>",
         ];
@@ -306,7 +311,6 @@ class EditForm extends FormBase {
             ];
         }
 
-
         $redirect = [0 => $this->t('view list'), 1 => $this->t('set amotization')];
 
         $form['actions'] = [
@@ -331,8 +335,8 @@ class EditForm extends FormBase {
     /**
      * callback functions
      */
-    public function get_category(array &$form, FormStateInterface $form_state) {
-        //return aid list
+    public function get_aid(array &$form, FormStateInterface $form_state) {
+        // return aid list
         return $form['aid'];
     }
 
@@ -350,7 +354,7 @@ class EditForm extends FormBase {
             $form_state->setErrorByName('asset_value', $this->t('Non numeric value inserted: @v', ['@v' => $value]));
         }
 
-        //HR
+        // HR
         if ($this->moduleHandler->moduleExists('ek_hr')) {
             if ($form_state->getValue('eid') != '') {
                 //check if employee exist
@@ -379,47 +383,21 @@ class EditForm extends FormBase {
             }
         }
 
-
-        //Attachments
-        $validators = array('file_validate_is_image' => array());
-        //Picture
-
-        $field = "asset_pic";
-
-        // Check for a new uploaded logo.
-        $file = file_save_upload($field, $validators, false, 0);
-
-        if (isset($file)) {
-            $res = file_validate_image_resolution($file, '800x800', '100x100');
-            // File upload was attempted.
-            if ($file) {
-                // Put the temporary file in form_values so we can save it on submit.
-                $form_state->setValue($field, $file);
-            } else {
-                // File upload failed.
-                $form_state->setErrorByName($field, $this->t('Picture could not be uploaded'));
+        if($form_state->getTriggeringElement()['#name'] != 'coid') {
+            // Attachments
+            // Picture
+            $field = "asset_pic";
+            $file = _file_save_upload_from_form($form['i'][$field], $form_state, 0);
+            if($file) {
+                $form_state->set($field, $file) ;
             }
-        } else {
-            $form_state->setValue($field, 0);
-        }
 
-        //Doc
-        $field = "asset_doc";
-        $extensions = 'png gif jpg jpeg bmp txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip';
-        $validators = array('file_validate_extensions' => array($extensions));
-        // Check for a new uploaded logo.
-        $file = file_save_upload($field, $validators, false, 0);
-        if (isset($file)) {
-            // File upload was attempted.
-            if ($file) {
-                // Put the temporary file in form_values so we can save it on submit.
-                $form_state->setValue($field, $file);
-            } else {
-                // File upload failed.
-                $form_state->setErrorByName($field, $this->t('Document could not be uploaded'));
+            // Doc
+            $field = "asset_doc";
+            $file = _file_save_upload_from_form($form['i'][$field], $form_state, 0);
+            if($file) {
+                $form_state->set($field, $file) ;
             }
-        } else {
-            $form_state->setValue($field, 0);
         }
     }
 
@@ -474,29 +452,29 @@ class EditForm extends FormBase {
             \Drupal::messenger()->addWarning(t("Attachment deleted"));
         }
 
-        if ($form_state->getValue('asset_pic') != 0) {
-            if ($file = $form_state->getValue('asset_pic')) {
+        if ($form_state->get('asset_pic')) {
+            if ($file = $form_state->get('asset_pic')) {
                 $dir = "private://assets/" . $form_state->getValue('coid');
                 \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $picture = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
-
+                $image_factory = \Drupal::service('image.factory');
+                $image = $image_factory->get($picture);
+                $image->scale(300);
+                $image->save();
                 \Drupal::messenger()->addStatus(t("Picture uploaded"));
                 $fields['asset_pic'] = $picture;
             }
         }
 
-        if ($form_state->getValue('asset_doc') != 0) {
-            if ($file = $form_state->getValue('asset_doc')) {
+        if ($form_state->get('asset_doc')) {
+            if ($file = $form_state->get('asset_doc')) {
                 $dir = "private://assets/" . $form_state->getValue('coid');
                 \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $doc = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
-
                 \Drupal::messenger()->addStatus(t("Attachment uploaded"));
                 $fields['asset_doc'] = $doc;
             }
         }
-
-
 
         if ($form_state->getValue('for_id') == 0) {
             $ref = Database::getConnection('external_db', 'external_db')
@@ -509,7 +487,7 @@ class EditForm extends FormBase {
                     ->insert('ek_assets_amortization')
                     ->fields($fields)->execute();
         } else {
-            //update existing
+            // update existing
             $update = Database::getConnection('external_db', 'external_db')
                     ->update('ek_assets')
                     ->condition('id', $form_state->getValue('for_id'))

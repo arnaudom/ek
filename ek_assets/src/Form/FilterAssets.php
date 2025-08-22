@@ -18,8 +18,7 @@ use Drupal\ek_finance\FinanceSettings;
 /**
  * Provides a form to filter assets list.
  */
-class FilterAssets extends FormBase
-{
+class FilterAssets extends FormBase {
 
     /**
      * The module handler.
@@ -32,8 +31,10 @@ class FilterAssets extends FormBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+
+    protected $settings;
+
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
         $this->settings = new FinanceSettings();
     }
@@ -41,8 +42,7 @@ class FilterAssets extends FormBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container)  {
         return new static(
                 $container->get('module_handler')
         );
@@ -51,26 +51,24 @@ class FilterAssets extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId()  {
         return 'assets_list_filter';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state)
-    {
+    public function buildForm(array $form, FormStateInterface $form_state)  {
         $company = AccessCheck::CompanyListByUid();
 
-        $form['filters'] = array(
+        $form['filters'] = [
             '#type' => 'details',
             '#title' => $this->t('Filter'),
             '#open' => true,
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            '#attributes' => ['class' => ['container-inline']],
+        ];
 
-        $form['filters']['coid'] = array(
+        $form['filters']['coid'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
@@ -79,59 +77,59 @@ class FilterAssets extends FormBase
             '#required' => true,
             '#prefix' => "",
             '#suffix' => '',
-            '#ajax' => array(
-                'callback' => array($this, 'get_category'),
+            '#ajax' => [
+                'callback' => [$this, 'get_category'],
                 'wrapper' => 'category',
-            ),
-        );
+            ],
+        ];
 
         if ($form_state->getValue('coid') || isset($_SESSION['assetfilter']['coid'])) {
-            $aid = array('%' => $this->t('Any'));
+            $aid = ['%' => $this->t('Any')];
             $coid = isset($_SESSION['assetfilter']['coid']) ? isset($_SESSION['assetfilter']['coid']):$form_state->getValue('coid');
             $chart = $this->settings->get('chart');
-            $aid += AidList::listaid($coid, array($chart['assets']), 1);
+            $aid += AidList::listaid($coid, [$chart['assets']], 1);
             $_SESSION['assetfilter']['options'] = $aid;
         } else {
-            $_SESSION['assetfilter']['options'] = array('%' => $this->t('Any'));
+            $_SESSION['assetfilter']['options'] = ['%' => $this->t('Any')];
         }
         
-        $form['filters']["category"] = array(
+        $form['filters']["category"] = [
             '#type' => 'select',
             '#size' => 1,
             '#required' => true,
-            '#options' => isset($_SESSION['assetfilter']['options']) ? $_SESSION['assetfilter']['options'] : array(),
+            '#options' => isset($_SESSION['assetfilter']['options']) ? $_SESSION['assetfilter']['options'] : [],
             '#title' => $this->t('Category'),
             '#default_value' => isset($_SESSION['assetfilter']['category']) ? $_SESSION['assetfilter']['category'] : null,
-            '#attributes' => array('style' => array('width:200px;')),
+            '#attributes' => ['style' => ['width:200px;']],
             '#prefix' => "<div id='category'  class='row'>",
             '#suffix' => '</div>',
-        );
+        ];
 
-        $form['filters']["amort_status"] = array(
+        $form['filters']["amort_status"] = [
             '#type' => 'checkbox',
             '#description' => $this->t('Not amortized'),
             '#default_value' => isset($_SESSION['assetfilter']['amort_status']) ? $_SESSION['assetfilter']['amort_status'] : 0,
             '#prefix' => "<div id='category'  class='row'>",
             '#suffix' => '</div>',
-        );
+        ];
 
-        $form['filters']['actions'] = array(
+        $form['filters']['actions'] = [
             '#type' => 'actions',
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            '#attributes' => ['class' => ['container-inline']],
+        ];
 
-        $form['filters']['actions']['submit'] = array(
+        $form['filters']['actions']['submit'] = [
             '#type' => 'submit',
             '#value' => $this->t('Apply'),
-        );
+        ];
 
         if (!empty($_SESSION['assetfilter'])) {
-            $form['filters']['actions']['reset'] = array(
+            $form['filters']['actions']['reset'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Reset'),
-                '#limit_validation_errors' => array(),
-                '#submit' => array(array($this, 'resetForm')),
-            );
+                '#limit_validation_errors' => [],
+                '#submit' => [[$this, 'resetForm']],
+            ];
         }
         return $form;
     }
@@ -139,9 +137,7 @@ class FilterAssets extends FormBase
     /**
      * callback functions
      */
-    public function get_category(array &$form, FormStateInterface $form_state)
-    {
-
+    public function get_category(array &$form, FormStateInterface $form_state) {
         //return aid list
         return $form['filters']['category'];
     }
@@ -149,15 +145,13 @@ class FilterAssets extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state)  {
         $_SESSION['assetfilter']['coid'] = $form_state->getValue('coid');
         $_SESSION['assetfilter']['category'] = $form_state->getValue('category');
         $_SESSION['assetfilter']['amort_status'] = $form_state->getValue('amort_status');
@@ -167,8 +161,7 @@ class FilterAssets extends FormBase
     /**
      * Resets the filter form.
      */
-    public function resetForm(array &$form, FormStateInterface $form_state)
-    {
+    public function resetForm(array &$form, FormStateInterface $form_state) {
         $_SESSION['assetfilter'] = array();
     }
 }

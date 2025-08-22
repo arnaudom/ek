@@ -27,16 +27,15 @@ class AmortizationRecord extends FormBase {
      * Constructs a AmortizationRecord object
      *
      */
-    public function __construct()
-    {
+    protected $settings;
+    public function __construct() {
         $this->settings = new FinanceSettings();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'journal_amortization_record';
     }
 
@@ -427,8 +426,8 @@ class AmortizationRecord extends FormBase {
             );
         }
                    
-        if ($journal->credit <> $journal->debit) {
-            $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+        if ($journal->getCredit() <> $journal->getDebit()) {
+            $msg = 'debit: ' . $journal->getDebit() . ' <> ' . 'credit: ' . $journal->getCredit();
             \Drupal::messenger()->addError(t('Error journal record (@aid)', array('@aid' => $msg)));
         }
             

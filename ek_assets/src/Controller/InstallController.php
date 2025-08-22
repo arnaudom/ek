@@ -17,8 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
 * Controller routines for ek module routes.
 */
-class InstallController extends ControllerBase
-{
+class InstallController extends ControllerBase {
 
    /* The module handler.
    *
@@ -40,8 +39,7 @@ class InstallController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
       $container->get('database'),
       $container->get('form_builder'),
@@ -57,8 +55,7 @@ class InstallController extends ControllerBase
      * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
      *   The form builder service.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -69,8 +66,7 @@ class InstallController extends ControllerBase
        *
     */
 
-    public function update()
-    {
+    public function update() {
         include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_assets') . '/' . 'update.php';
         return  array('#markup' => $markup) ;
     }
@@ -79,8 +75,10 @@ class InstallController extends ControllerBase
        *
     */
 
-    public function install()
-    {
+    public function install()  {
+
+        $markup = '';
+        
         try {
             $query = "
     CREATE TABLE `ek_assets` (
@@ -109,7 +107,7 @@ class InstallController extends ControllerBase
             if ($db) {
                 $markup .= 'Assets table installed <br/>';
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $markup .= '<br/><b>Caught exception: '.  $e->getMessage() . "</b>\n";
         }
         try {
