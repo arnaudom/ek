@@ -17,6 +17,8 @@ use Drupal\ek_logistics\LogisticsSettings;
  */
 class SettingsFormCustomize extends FormBase {
 
+    protected $settings;
+    
     /**
      *
      */

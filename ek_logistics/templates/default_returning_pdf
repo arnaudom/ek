@@ -1,15 +1,64 @@
 <?php
 
 class EKPDF extends TCPDF {
+    protected $company;
+    protected $bank;
+
+    public function fetchImageContent($url) {
+        if (!function_exists('curl_init')) {
+            return false;
+        }
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Drupal TCPDF Image Fetcher');
+        
+        $content = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        return ($content !== false && $http_code == 200) ? $content : false;
+    }
 
     public function Header() {
         $data = $this->getHeaderData();
         $this->company = $data['title'];
         $format = $data['text_color'];
         if ($this->company->logo != '') {
-            if (file_exists($this->company->logo)) {
-                $logo = \Drupal::service('file_url_generator')->generateAbsoluteString($this->company->logo);
-                $this->Image($logo, $format['header']['logo_x'], $format['header']['logo_y'], $format['header']['logo_z']);
+            $logo_loaded = false;
+            // Method 1: D11 compatible
+            $logo_path = \Drupal::service('file_system')->realpath($this->company->logo);
+                if ($logo_path && file_exists($logo_path)) {
+                  $this->Image($logo_path, $format['header']['logo_x'], $format['header']['logo_y'], $format['header']['logo_z']);
+                  $logo_loaded = true;
+                }
+              
+            // Method 2: Fallback to D10 compatible
+            if (!$logo_loaded && file_exists($this->company->logo)) {
+                try {
+                    $logo_url = \Drupal::service('file_url_generator')->generateAbsoluteString($this->company->logo);
+                    
+                    // Try direct URL first (works if allow_url_fopen is enabled)
+                    if (ini_get('allow_url_fopen')) {
+                        $this->Image($logo_url, $format['header']['logo_x'], $format['header']['logo_y'], $format['header']['logo_z']);
+                        $logo_loaded = true;
+                    } else {
+                        // Fetch content via cURL and create temporary file
+                        $image_content = $this->fetchImageContent($logo_url);
+                        if ($image_content) {
+                            $temp_file = tempnam(sys_get_temp_dir(), 'tcpdf_logo_');
+                            file_put_contents($temp_file, $image_content);
+                            $this->Image($temp_file, $format['header']['logo_x'], $format['header']['logo_y'], $format['header']['logo_z']);
+                            unlink($temp_file);
+                            $logo_loaded = true;
+                        }
+                    }
+                } catch (Exception $e) {
+                    \Drupal::logger('tcpdf')->error('Failed to load logo: @error', ['@error' => $e->getMessage()]);
+                }
             }
         }
         $this->SetTextColor($format['header']['color']['red'], $format['header']['color']['green'], $format['header']['color']['blue']);
@@ -149,7 +198,7 @@ if (isset($custom)) {
 
     // set default header data
     $format_header = ['left_margin' => 2, 'col_1' => 50, 'col_2' => 50,
-        'col_3' => 30, 'col_4' => 35, 'border' => 0, 'logo_x' => 20, 'logo_y' => 10,
+        'col_3' => 30, 'col_4' => 35, 'border' => 0, 'logo_x' => 20, 'logo_y' => 20,
         'logo_z' => 43, 'color' => ['red' => 128, 'green' => 128, 'blue' => 128], 'font' => 12];
 
     // set default footer data
@@ -225,11 +274,11 @@ $pdf->SetTextColor($format_feature['color']['red'], $format_feature['color']['gr
 $pdf->SetFont('helvetica', '', $font2);
 $pdf->Cell($lm);
 $pdf->Cell($c1 + $c2);
-$pdf->Cell($c3, 3, t('Receiving No:'), $b, 0);
+$pdf->Cell($c3, 3, t('Return No:'), $b, 0);
 $pdf->Cell($c4, 3, $head->serial, $b, 1);
 $pdf->Cell($lm);
 $pdf->Cell($c1 + $c2);
-$pdf->Cell($c3, 3, t('Receiving date') . ':', $b, 0);
+$pdf->Cell($c3, 3, t('Return date') . ':', $b, 0);
 $pdf->Cell($c4, 3, $head->ddate, $b, 1);
 $pdf->Ln(5);
 
@@ -237,20 +286,20 @@ $pdf->Ln(5);
 $pdf->SetFont('helvetica', 'UB', $font2);
 $pdf->Cell($lm);
 $pdf->Cell($c1, 5, t('Received from') . ':', $b, 1);
-$pdf->SetFont('helvetica', '', $font2);
+$pdf->SetFont('dejavusans', '', $font2);
 $pdf->Cell($lm);
-$pdf->Cell($c1, 5, utf8_decode($client->name), $b, 1);
+$pdf->Cell($c1, 5, $client->name, $b, 1);
 
 if ($client->reg) {
     $pdf->Cell($lm);
-    $pdf->SetFont('helvetica', '', $font3);
+    $pdf->SetFont('dejavusans', '', $font3);
     $pdf->Cell($c1, 3, '(' . $client->reg . ')', $b, 1);
 }
-$pdf->SetFont('helvetica', '', $font2);
+$pdf->SetFont('dejavusans', '', $font2);
 $pdf->Cell($lm);
 $pdf->Cell($c1, 5, $client->address, $b, 1);
 if ($client->address2 != '') {
-    $pdf->SetFont('helvetica', '', $font2);
+    $pdf->SetFont('dejavusans', '', $font2);
     $pdf->Cell($lm);
     $pdf->Cell($c1, 5, $client->address2, $b, 1);
 }
@@ -289,7 +338,7 @@ if ($client->telephone != '' || $client->fax) {
     $pdf->Cell($lm);
     $pdf->Cell($c1, 5, $p, $b, 1);
 }
-if ($client->email) {
+if (isset($client->email)) {
     $pdf->Cell($lm);
     $pdf->Cell($c1, 5,$client->email, $b, 1);
 }
@@ -303,7 +352,7 @@ $pdf->Ln(5);
 
 
 // BODY ==========================================================
-include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . "/barcode.inc.php";
+include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . "/src/barcode.inc.php";
 
 $bar = new BARCODES();
 if ($bar == false) {
@@ -333,15 +382,10 @@ $pdf->Cell($b4 + $b5, 5, t('Barcode'), 1, 0);
 $pdf->Cell($b6, 5, t('Ref. code'), 1, 0);
 $pdf->Cell($b7 + $b8, 5, t('Qties delivered'), 1, 1);
 
-$i = 1;
-$t_quantity = 0;
-$pdf->SetFont('helvetica', '', $font2);
-
 foreach ($items as $detail) {
 
     $pdf->Cell($lm);
     $pdf->Cell($b1, 5, $i, 1, 0);
-
     /*
       $encode=$row3["encode1"];
       $bdata=$row3["barcode1"];
@@ -359,7 +403,7 @@ foreach ($items as $detail) {
       $return = $bar->genBarCode($bdata,$type,$file);
       if($return==false) {$bar->error(true);}
      */
-    $pdf->Cell($b2, 5, $detail['itemcode'], 1, 0);
+$pdf->Cell($b2, 5, $detail['itemcode'], 1, 0);
     // coordinate start
     $x = $pdf->GetX();
     $y = $pdf->GetY();
@@ -372,12 +416,14 @@ foreach ($items as $detail) {
     $h2 = $h / 2;
 
     $pdf->Cell($b3);
-    if (!isset($detail['barcode2'])) {
-        $pdf->Cell($b4 + $b5, $h, $detail['barcode1'], 1, 0, 'L');
+    if ($detail['barcode2'] == '') {
+        $pdf->Cell($b4 + $b5, $h,$detail['barcode1'], 1, 0, 'L');
     } else {
         $pdf->Cell($b4, $h, $detail['barcode1'], 1, 0, 'L');
-        $pdf->Cell($b5, $h, $detail['barcode2'], 1, 0, 'L');
+        $pdf->Cell($b5, $h, $detail['barcode2'], 0, 0, 'L');
     }
+    $x1 = $pdf->GetX() + 1;
+    $y1 = $pdf->GetY() + $h / 3 - 4;
     
     $pdf->Cell($b6, $h, $detail['supplier_code'], 1, 0, 'C');
     $pdf->Cell($b7, $h, $detail['quantity'], 1, 0, 'C');
@@ -443,10 +489,38 @@ $y= $pdf->GetY();
 $adj = ($s_pos > 0) ? $s_pos : 40;
 $bottom = ($y + $adj) > 268 ? 268: $y + $adj;
     if($signature == 1) {
-        if(isset($company->sign)) {
-            if(file_exists($company->sign)) {
-                $sign = \Drupal::service('file_url_generator')->generateAbsoluteString($company->sign);
-                $pdf->Image($sign,20,$bottom-20,$format_feature['stamp_z']);
+        if(isset($company->sign)) {   
+            $sign_loaded = false;
+            // Method 1: D11 compatible
+            $sign_path = \Drupal::service('file_system')->realpath($company->sign);
+                if ($sign_path && file_exists($sign_path)) {
+                    $pdf->Image($sign_path, 20, $bottom - 20, $format_feature['stamp_z']);
+                    $sign_loaded = true;
+                }
+                
+            // Method 2: Fallback to D10 compatible
+            if (!$sign_loaded && file_exists($company->sign)) {
+                try {
+                    $sign_url = \Drupal::service('file_url_generator')->generateAbsoluteString($company->sign);
+                    
+                    // Try direct URL first (works if allow_url_fopen is enabled)
+                    if (ini_get('allow_url_fopen')) {
+                        $pdf->Image($sign_url, 20, $bottom - 20, $format_feature['stamp_z']);
+                        $sign_loaded = true;
+                    } else {
+                        // Fetch content via cURL and create temporary file
+                        $image_content = (new EKPDF())->fetchImageContent($sign_url);
+                        if ($image_content) {
+                            $temp_file = tempnam(sys_get_temp_dir(), 'tcpdf_logo_');
+                            file_put_contents($temp_file, $image_content);
+                            $pdf->Image($temp_file,  20, $bottom - 20, $format_feature['stamp_z']);
+                            unlink($temp_file);
+                            $sign_loaded = true;
+                        }
+                    }
+                } catch (Exception $e) {
+                    \Drupal::logger('tcpdf')->error('Failed to load signature: @error', ['@error' => $e->getMessage()]);
+                }
             }
         }
         $pdf->SetXY(20,$bottom);

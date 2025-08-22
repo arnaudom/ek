@@ -13,17 +13,16 @@ use Drupal\Core\Database\Database;
 /**
  * Set and retrieve settings parameters used in sales
  */
-  class LogisticsSettings
-  {
+  class LogisticsSettings  {
 
 
   /**
    * company id.
    */
       protected $coid;
+      protected $settings;
 
-      public function __construct($coid = null)
-      {
+      public function __construct($coid = null)  {
           if ($coid == null) {
               $coid = 1;
           }
@@ -34,7 +33,7 @@ use Drupal\Core\Database\Database;
             ->fields('ek_logi_settings');
           
           $data = $query->execute()->fetchObject();
-          $this->settings = unserialize($data->settings);
+          $this->settings = $data->settings !== null ?  unserialize($data->settings) : [];
       }
  
       /**
@@ -43,8 +42,7 @@ use Drupal\Core\Database\Database;
        *
        * @param key key of array
        */
-      public function get($key)
-      {
+      public function get($key) {
           return $this->settings[$key];
       }
 
@@ -54,8 +52,7 @@ use Drupal\Core\Database\Database;
        * @param key = key of array (setting name)
        * @param value = value of key
        */
-      public function set($key, $value)
-      {
+      public function set($key, $value) {
           return  $this->settings[$key] = $value;
       }
 
@@ -63,8 +60,7 @@ use Drupal\Core\Database\Database;
        * Save settings values by key
        *
        */
-      public function save()
-      {
+      public function save() {
           $save = Database::getConnection('external_db', 'external_db')
             ->update('ek_logi_settings')
             ->condition('coid', $this->coid)

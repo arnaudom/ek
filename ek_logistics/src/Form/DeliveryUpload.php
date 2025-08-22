@@ -31,18 +31,18 @@ class DeliveryUpload extends FormBase {
         if (null == $form_state->get('step')) {
             $form_state->set('step', 1);
         }
-        $form['csv'] = array(
+        $form['csv'] = [
             '#type' => 'details',
             '#title' => $this->t('Upload'),
             '#open' => ($form_state->get('step') == 1) ? true : false,
-        );
+        ];
+
         if ($form_state->get('step') == 1) {
-            $form['csv']['file'] = array(
+            $form['csv']['file'] = [
                 '#type' => 'file',
                 '#title' => $this->t('Upload'),
                 '#description' => $this->t('Select file to upload'),
-            );
-
+            ];
 
             $form['csv']['info'] = array(
                 '#type' => 'item',
@@ -51,26 +51,26 @@ class DeliveryUpload extends FormBase {
         } else {
             $file = $form_state->get('data');
 
-            $form['csv']['info'] = array(
+            $form['csv']['info'] = [
                 '#type' => 'item',
                 '#markup' => $file->getFileName(),
-            );
+            ];
         }
 
-        $form['csv']['source'] = array(
+        $form['csv']['source'] = [
             '#type' => 'select',
             '#options' => ['1' => 'Lazada'],
             '#default_value' => $form_state->getValue('source'),
             '#required' => true,
             '#title' => $this->t('Data source'),
-        );
+        ];
 
         if ($form_state->get('step') == 1) {
-            $form['csv']['actions']['next'] = array(
+            $form['csv']['actions']['next'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Next') . ' >>',
                 '#submit' => array(array($this, 'step_2')),
-            );
+            ];
         }
 
 

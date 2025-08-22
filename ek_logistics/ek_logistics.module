@@ -36,34 +36,34 @@ function ek_logistics_ek_settings($coids) {
     }
 }
 
-/**
- * Implements hook_file_download().
- *
- * edit the file_download function in order to control access of items images
-
-  function ek_logistics_file_download($uri) {
-
-
-  }
- */
 
 /**
  * Implementation hook_theme().
  */
 function ek_logistics_theme() {
-    return array(
-        // for the dashboard
-        'ek_logistics_dashboard' => array
-            (
+    return [
+        'ek_logistics_dashboard' => [
             'template' => 'ek_logistics_dashboard',
-            'variables' => array('items' => array()),
-        ),
-        'iframe' => array
-            (
+            'variables' => ['items' => []],
+        ],
+        'iframe' => [
             'template' => 'iframe',
-            'variables' => array('items' => array()),
-        ),
-    );
+            'variables' => ['items' => []],
+        ],
+        'default_logi_delivery' => [
+            'template' => 'default_logi_delivery',
+            'variables' => ['content' => []],
+        ],
+        'default_logi_receiving' => [
+            'template' => 'default_logi_receiving',
+            'variables' => ['content' => []],
+        ],
+        'default_logi_returning' => [
+            'template' => 'default_logi_returning',
+            'variables' => ['content' => []],
+        ],
+
+    ];
 }
 
 /*

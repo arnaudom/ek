@@ -29,6 +29,7 @@ class FilterPrint extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = null, $source = null, $format = null) {
+        
         if ($source == 'delivery') {
             $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_logi_delivery', 's');
@@ -36,6 +37,7 @@ class FilterPrint extends FormBase {
         } else {
             $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_logi_receiving', 's');
+            $route = '';
         }
         
         $query->fields('s');
@@ -52,44 +54,48 @@ class FilterPrint extends FormBase {
                 $route = 'returning';
             }
         }
-        $back = Url::fromRoute('ek_logistics_list_' . $route, array(), array())->toString();
-        $form["back"] = array(
+        $back = Url::fromRoute('ek_logistics_list_' . $route, [], [])->toString();
+        $form["back"] = [
             '#markup' => "<a href='" . $back . "' >" . $this->t('list') . "</a>",
-        );
-        $form['serial'] = array(
+        ];
+
+        $form['serial'] = [
             '#type' => 'item',
             '#markup' => "<h2>" . $doc->serial . "</h2>",
-        );
-        $form['for_id'] = array(
+        ];
+
+        $form['for_id'] = [
             '#type' => 'hidden',
             '#value' => $id . '_' . $source,
-        );
-        $form['for_id'] = array(
+        ];
+
+        $form['for_id'] = [
             '#type' => 'hidden',
             '#value' => $id . '_' . $source,
-        );
-        $form['format'] = array(
+        ];
+
+        $form['format'] = [
             '#type' => 'hidden',
             '#value' => $format,
-        );
-        $form['filters'] = array(
+        ];
+
+        $form['filters'] = [
             '#type' => 'details',
             '#title' => $this->t('Options'),
             '#open' => true,
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            '#attributes' => ['class' => ['container-inline']],
+        ];
 
         if ($doc->sign != null && file_exists($doc->sign)) {
-            $form['filters']['signature'] = array(
+            $form['filters']['signature'] = [
                 '#type' => 'checkbox',
                 '#default_value' => isset($_SESSION['logisticprintfilter']['signature'][0]) ? $_SESSION['logisticprintfilter']['signature'][0] : 0,
-                '#attributes' => array('title' => $this->t('signature')),
+                '#attributes' => ['title' => $this->t('signature')],
                 '#title' => $this->t('signature'),
-                '#states' => array(
-                    'invisible' => array(':input[name="output_format"]' => array('value' => 2),
-                    ),
-                )
-            );
+                '#states' => [
+                    'invisible' => [':input[name="output_format"]' => ['value' => 2],],
+                    ]
+                ];
 
             $form['filters']['s_pos'] = [
                 '#type' => 'number',
@@ -98,36 +104,37 @@ class FilterPrint extends FormBase {
                 '#min' => 10,
                 '#max' => 100,
                 '#step' => 10,
-                '#states' => array(
-                    'visible' => array(":input[name='signature']" => ['checked' => true]),
-                ),
+                '#states' => [
+                    'visible' => [":input[name='signature']" => ['checked' => true]],
+                ],
             ];
         } else {
-            $form['filters']['signature'] = array(
+            $form['filters']['signature'] = [
                 '#type' => 'hidden',
                 '#value' => 0,
-            );
-            $form['filters']['signature_alert'] = array(
+            ];
+
+            $form['filters']['signature_alert'] = [
                 '#markup' => \Drupal\Core\Link::createFromRoute(t('Upload signature'), 'ek_admin.company.edit', ['id' => $doc->head], ['fragment' => 'edit-i'])->toString(),
-            );
+            ];
         }
         
 
-        $stamps = array('0' => $this->t('no'), '1' => $this->t('original'), '2' => $this->t('copy'));
+        $stamps = ['0' => $this->t('no'), '1' => $this->t('original'), '2' => $this->t('copy')];
 
-        $form['filters']['stamp'] = array(
+        $form['filters']['stamp'] = [
             '#type' => 'radios',
             '#options' => $stamps,
             '#default_value' => 0,
-            '#attributes' => array('title' => $this->t('stamp')),
+            '#attributes' => ['title' => $this->t('stamp')],
             '#title' => $this->t('stamp'),
-        );
+        ];
         
         //
         // provide selector for templates
         //
         $settings = new LogisticsSettings($doc->head);
-        $list = array(0 => 'default');
+        $list = [0 => 'default'];
         $tpls = $settings->get('templates');
         /*$handle = opendir('private://logistics/templates/' . $doc->head . '/' . $format . '/');
         while ($file = readdir($handle)) {
@@ -146,44 +153,48 @@ class FilterPrint extends FormBase {
             }
         }
 
-        $form['filters']['template'] = array(
+        $form['filters']['template'] = [
             '#type' => 'select',
             '#options' => $list,
             '#default_value' => $_SESSION['logisticprintfilter']['template'],
             '#title' => $this->t('template'),
-        );
+        ];
 
-        //if client has multiple contact, provide a filter for choice
-        $query = 'SELECT id,contact_name FROM {ek_address_book_contacts} WHERE abid=:id';
-        $contacts = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $doc->client))->fetchAllKeyed();
-
+       
+        $query =Database::getConnection('external_db', 'external_db')->select('ek_address_book_contacts', 't');
+        $query->fields('t',['id', 'contact_name']);
+        if($route == 'delivery') {
+            $query->condition('abid', $doc->client);
+        } else {
+            $query->condition('abid', $doc->supplier);
+        }
+        $contacts = $query->execute()->fetchAllKeyed();
         if (count($contacts) > 1) {
-            $form['filters']['contact'] = array(
+            $form['filters']['contact'] = [
                 '#type' => 'select',
                 '#options' => $contacts,
                 '#default_value' => $_SESSION['logisticprintfilter']['contact'],
                 '#title' => $this->t('addressed to'),
-            );
+            ];
         }
 
-        $form['filters']['actions'] = array(
+        $form['filters']['actions'] = [
             '#type' => 'actions',
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            '#attributes' => ['class' => ['container-inline']],
+        ];
 
         if ($format == 'html') {
-            $form['filters']['actions']['submit'] = array(
+            $form['filters']['actions']['submit'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Display'),
-            );
+            ];
+
         } else {
-            $form['filters']['actions']['submit'] = array(
+            $form['filters']['actions']['submit'] = [
                 '#type' => 'submit',
                 '#value' => ($format == 'pdf') ? $this->t('Print in Pdf') : $this->t('Download'),
-            );
+            ];
         }
-
 
         return $form;
     }

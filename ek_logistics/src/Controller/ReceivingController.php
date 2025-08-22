@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_logistics\LogisticsSettings;
+use Drupal\ek_logistics\PrintManager;
 
 /**
  * Controller routines for ek module routes.
@@ -330,11 +331,12 @@ class ReceivingController extends ControllerBase {
      */
     public function Html($id) {
 
-        //filter access to document
-        $query = "SELECT `head`, `allocation`, `type` FROM {ek_logi_receiving} WHERE id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $id])
-                ->fetchObject();
+        $query =Database::getConnection('external_db', 'external_db')
+                    ->select('ek_logi_receiving', 't')
+                    ->fields('t', ['head','allocation','type'])
+                    ->condition('id', $id)
+                    ->execute();
+        $data = $query->fetchObject();             
         $access = AccessCheck::GetCompanyByUser();
 
         if ($data->type == 'RR') {
@@ -352,32 +354,35 @@ class ReceivingController extends ControllerBase {
             if (isset($_SESSION['logisticprintfilter']['filter']) && $_SESSION['logisticprintfilter']['filter'] == $id && $_SESSION['logisticprintfilter']['format'] == 'html') {
                 $id = explode('_', $_SESSION['logisticprintfilter']['for_id']);
                 $doc_id = $id[0];
+                $url_pdf = Url::fromRoute('ek_logistics_receiving_print_share', ['id' => $doc_id], [])->toString();
+                $url_excel = Url::fromRoute('ek_logistics_receiving_excel', ['param' => serialize([$doc_id, 'logi_delivery', 0, 0])], [])->toString();
+                $url_edit = Url::fromRoute($edit_route, ['id' => $doc_id], [])->toString();
                 $param = serialize(
-                        array(
+                        [
                             0 => $id[0], //id
                             1 => 'logi_' . $id[1], //source
                             2 => $_SESSION['logisticprintfilter']['signature'],
                             3 => $_SESSION['logisticprintfilter']['stamp'],
                             4 => $_SESSION['logisticprintfilter']['template'],
                             5 => $_SESSION['logisticprintfilter']['contact'],
-                        )
+                            6 => $url_pdf,
+                            7 => $url_excel,
+                            8 => $url_edit
+                        ]
                 );
 
                 $format = 'html';
                 if ($this->moduleHandler->moduleExists('ek_products')) {
                     $product = true;
                 }
-                $url_pdf = Url::fromRoute('ek_logistics_receiving_print_share', ['id' => $doc_id], [])->toString();
-                $url_excel = Url::fromRoute('ek_logistics_receiving_excel', ['param' => serialize([$doc_id, 'logi_delivery', 0, 0])], [])->toString();
-                $url_edit = Url::fromRoute($edit_route, ['id' => $doc_id], [])->toString();
 
-                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . '/manage_print_output.inc';
-
+                $print = new PrintManager(); 
+                $document = $print->renderHtml($param, $product);
                 $build['receiving'] = [
                     '#markup' => $document,
-                    '#attached' => array(
-                        'library' => array('ek_logistics/ek_logistics_html_documents_css', 'ek_admin/ek_admin_css'),
-                    ),
+                    '#attached' => [
+                        'library' => ['ek_logistics/ek_logistics_html_documents_css', 'ek_admin/ek_admin_css'],
+                    ],
                 ];
             }
             return array($build);
@@ -389,9 +394,9 @@ class ReceivingController extends ControllerBase {
             return [
                 '#items' => $items,
                 '#theme' => 'ek_admin_message',
-                '#attached' => array(
-                    'library' => array('ek_admin/ek_admin_css'),
-                ),
+                '#attached' => [
+                    'library' => ['ek_admin/ek_admin_css'],
+                ],
                 '#cache' => ['max-age' => 0,],
             ];
         }
@@ -405,60 +410,80 @@ class ReceivingController extends ControllerBase {
      */
 
     public function printshare(Request $request, $id) {
-        $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\FilterPrint', $id, 'receiving', 'pdf');
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_logi_delivery', 'd');
+        $query->fields('d', ['head', 'allocation']);
+        $query->condition('d.id', $id);
+        $data = $query->execute()->fetchObject();
+        $access = AccessCheck::GetCompanyByUser();
 
-        if (isset($_SESSION['logisticprintfilter']['filter']) && $_SESSION['logisticprintfilter']['filter'] == $id) {
-            $id = explode('_', $_SESSION['logisticprintfilter']['for_id']);
-            $param = serialize(
-                    array(
-                        $id[0],
-                        'logi_' . $id[1], //source
-                        $_SESSION['logisticprintfilter']['signature'],
-                        $_SESSION['logisticprintfilter']['stamp'],
-                        $_SESSION['logisticprintfilter']['template'],
-                        $_SESSION['logisticprintfilter']['contact'],
-                    )
-            );
+        if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
 
-            $build['filter_mail'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterMailDoc', $param);
+            $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\FilterPrint', $id, 'receiving', 'pdf');
 
-            $path = $GLOBALS['base_url'] . "/logistics/receiving/pdf/" . $param;
-            $iframe = "<iframe src ='" . $path . "' width='100%' height='800px' id='view' name='view'></iframe>";
-            $build['iframe'] = $iframe;
-            $build['external'] = '<i class="fa fa-external-link" aria-hidden="true"></i>';
+            if (isset($_SESSION['logisticprintfilter']['filter']) && $_SESSION['logisticprintfilter']['filter'] == $id) {
+                $id = explode('_', $_SESSION['logisticprintfilter']['for_id']);
+                $param = serialize(
+                        [
+                            $id[0],
+                            'logi_' . $id[1], //source
+                            $_SESSION['logisticprintfilter']['signature'],
+                            $_SESSION['logisticprintfilter']['stamp'],
+                            $_SESSION['logisticprintfilter']['template'],
+                            $_SESSION['logisticprintfilter']['contact'],
+                        ]
+                );
+
+                $build['filter_mail'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterMailDoc', $param);
+                $path = $GLOBALS['base_url'] . "/logistics/receiving/pdf/" . $param;
+                $iframe = "<iframe src ='" . $path . "' width='100%' height='800px' id='view' name='view'></iframe>";
+                $build['iframe'] = $iframe;
+                $build['external'] = '<i class="fa fa-external-link" aria-hidden="true"></i>';
+            }
+
+            return [
+                '#items' => $build,
+                '#theme' => 'iframe',
+                '#attached' => [
+                    'library' => ['ek_logistics/ek_logistics_print', 'ek_admin/ek_admin_css'],
+                ],
+            ];
+        } else {
+            $url = ($data->type == 'RR') ? Url::fromRoute('ek_logistics_list_receiving')->toString() : Url::fromRoute('ek_logistics_list_returning')->toString();
+            $items['type'] = 'access';
+            $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
+            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+            return [
+                '#items' => $items,
+                '#theme' => 'ek_admin_message',
+                '#attached' => [
+                    'library' => ['ek_admin/ek_admin_css'],
+                ],
+                '#cache' => ['max-age' => 0,],
+            ];
         }
-
-        return array(
-            '#items' => $build,
-            '#theme' => 'iframe',
-            '#attached' => array(
-                'library' => array('ek_logistics/ek_logistics_print', 'ek_admin/ek_admin_css'),
-            ),
-        );
     }
 
     public function pdf(Request $request, $param) {
-        $markup = array();
-        $format = 'pdf';
         if ($this->moduleHandler->moduleExists('ek_products')) {
             $product = true;
         }
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . '/manage_print_output.inc';
-        return $markup;
+        $print = new PrintManager();
+        $print->makePdf($param, $product);
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
 
     public function excel(Request $request, $param) {
-        $markup = array();
         if ($this->moduleHandler->moduleExists('ek_products')) {
             $product = true;
         }
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . '/manage_excel_output.inc';
-        return $markup;
+        $print = new PrintManager();
+        $print->exportExcel($param, $product);
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
 
     public function post(Request $request, $id) {
         $build['post_receiving'] = $this->formBuilder->getForm('Drupal\ek_logistics\Form\Post', $id);
-
         return $build;
     }
 

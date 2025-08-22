@@ -3,53 +3,9 @@
     Author     : ARREA
 */
 
-page_wrapper {
-   border: 1px black;
+img {
+    max-width: 200px !important;
 }
-
-page {
-   backtop:"10mm" ;
-   backbottom:"10mm";
-   backleft: "20mm";
-   backright: "20mm"; 
-}
-
-page_header {
-    
-}
-
-page_reference {
-    
-}
-
-page_client {
-    
-}
-
-page_comments {
-    
-}
-
-page_items {
-    
-}
-
-page_total {
-    
-}
-
-page_signature {
-    
-}
-
-page_bank {
-    
-}
-
-page_correspondence {
-    
-}
-
 
 table {
     border: none 0px black;
@@ -146,4 +102,13 @@ td, th {
 
 .grey {
     color: #5a5a5a;
+}
+
+.fa {
+    color: #6ab6fc;
+    margin-right: 8px;
+}
+
+.button a {
+    border-bottom: none;
 }

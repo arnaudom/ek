@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_logistics\LogisticsSettings;
+use Drupal\ek_logistics\PrintManager;
 
 /**
  * Controller routines for ek module routes.
@@ -362,6 +363,14 @@ class DeliveryController extends ControllerBase {
             if (isset($_SESSION['logisticprintfilter']['filter']) && $_SESSION['logisticprintfilter']['filter'] == $id && $_SESSION['logisticprintfilter']['format'] == 'html') {
                 $id = explode('_', $_SESSION['logisticprintfilter']['for_id']);
                 $doc_id = $id[0];
+
+                $format = 'html';
+                if ($this->moduleHandler->moduleExists('ek_products')) {
+                    $product = true;
+                }
+                $url_pdf = Url::fromRoute('ek_logistics_delivery_print_share', ['id' => $doc_id], [])->toString();
+                $url_excel = Url::fromRoute('ek_logistics_delivery_excel', ['param' => serialize([$doc_id, 'logi_delivery', 0, 0])], [])->toString();
+                $url_edit = Url::fromRoute('ek_logistics_delivery_edit', ['id' => $doc_id], [])->toString();
                 $param = serialize(
                         array(
                             0 => $id[0], //id
@@ -370,19 +379,18 @@ class DeliveryController extends ControllerBase {
                             3 => $_SESSION['logisticprintfilter']['stamp'],
                             4 => $_SESSION['logisticprintfilter']['template'],
                             5 => $_SESSION['logisticprintfilter']['contact'],
+                            6 => $url_pdf,
+                            7 => $url_excel,
+                            8 => $url_edit
                         )
                 );
-
-                $format = 'html';
-                $url_pdf = Url::fromRoute('ek_logistics_delivery_print_share', ['id' => $doc_id], [])->toString();
-                $url_excel = Url::fromRoute('ek_logistics_delivery_excel', ['param' => serialize([$doc_id, 'logi_delivery', 0, 0])], [])->toString();
-                $url_edit = Url::fromRoute('ek_logistics_delivery_edit', ['id' => $doc_id], [])->toString();
-                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . '/manage_print_output.inc';
+                $print = new PrintManager(); 
+                $document = $print->renderHtml($param, $product);
                 $build['delivery'] = [
                     '#markup' => $document,
-                    '#attached' => array(
-                        'library' => array('ek_logistics/ek_logistics_html_documents_css', 'ek_admin/ek_admin_css'),
-                    ),
+                    '#attached' => [
+                        'library' => ['ek_logistics/ek_logistics_html_documents_css', 'ek_admin/ek_admin_css'],
+                    ],
                 ];
             }
             return array($build);
@@ -411,11 +419,11 @@ class DeliveryController extends ControllerBase {
 
     public function printshare(Request $request, $id) {
 
-        //filter access to document
-        $query = "SELECT `head`, `allocation` FROM {ek_logi_delivery} WHERE id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $id])
-                ->fetchObject();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_logi_delivery', 'd');
+        $query->fields('d', ['head', 'allocation']);
+        $query->condition('d.id', $id);
+        $data = $query->execute()->fetchObject();
         $access = AccessCheck::GetCompanyByUser();
 
         if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
@@ -426,14 +434,14 @@ class DeliveryController extends ControllerBase {
                 $id = explode('_', $_SESSION['logisticprintfilter']['for_id']);
 
                 $param = serialize(
-                        array(
+                        [
                             $id[0], //id
                             'logi_' . $id[1], //source
                             $_SESSION['logisticprintfilter']['signature'],
                             $_SESSION['logisticprintfilter']['stamp'],
                             $_SESSION['logisticprintfilter']['template'],
                             $_SESSION['logisticprintfilter']['contact'],
-                        )
+                        ]
                 );
 
                 $build['filter_mail'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterMailDoc', $param);
@@ -444,13 +452,14 @@ class DeliveryController extends ControllerBase {
                 $build['external'] = '<i class="fa fa-external-link" aria-hidden="true"></i>';
             }
 
-            return array(
+            return [
                 '#items' => $build,
                 '#theme' => 'iframe',
-                '#attached' => array(
-                    'library' => array('ek_logistics/ek_logistics_print', 'ek_admin/ek_admin_css'),
-                ),
-            );
+                '#attached' => [
+                    'library' => ['ek_logistics/ek_logistics_print', 'ek_admin/ek_admin_css'],
+                ],
+            ];
+
         } else {
             $url = Url::fromRoute('ek_logistics_list_delivery')->toString();
             $items['type'] = 'access';
@@ -475,13 +484,12 @@ class DeliveryController extends ControllerBase {
      */
 
     public function pdf(Request $request, $param) {
-        $markup = array();
-        $format = 'pdf';
         if ($this->moduleHandler->moduleExists('ek_products')) {
             $product = true;
         }
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . '/manage_print_output.inc';
-        return $markup;
+        $print = new PrintManager();
+        $print->makePdf($param, $product);
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
 
     /*
@@ -492,12 +500,12 @@ class DeliveryController extends ControllerBase {
      */
 
     public function excel(Request $request, $param) {
-        $markup = array();
         if ($this->moduleHandler->moduleExists('ek_products')) {
             $product = true;
         }
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_logistics') . '/manage_excel_output.inc';
-        return $markup;
+        $print = new PrintManager();
+        $print->exportExcel($param, $product);
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
 
     /*

@@ -71,34 +71,34 @@ $info = getimagesize($company->logo);
     $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
     $objDrawing->setName('Company logo');
     $objDrawing->setDescription('Company logo');
-    $objDrawing->setPath($company->logo);
+    $objDrawing->setPath(\Drupal::service('file_system')->realpath($company->logo));
     $objDrawing->setHeight($resolution);
     $objDrawing->setCoordinates('B2');
     $objDrawing->setOffsetX(10);
     $objDrawing->setWorksheet($objPHPExcel->getActiveSheet());
 }
 // title
-$objPHPExcel->getActiveSheet()->getStyle('B2')->getFont()->setName('Arial');
-$objPHPExcel->getActiveSheet()->getStyle('B2')->getFont()->setSize(10);
-$objPHPExcel->getActiveSheet()->getStyle('B2')->getFont()->setBold(true);
-$objPHPExcel->getActiveSheet()->getStyle('B3')->getFont()->setName('Arial');
-$objPHPExcel->getActiveSheet()->getStyle('B3')->getFont()->setSize(8);
-$objPHPExcel->getActiveSheet()->getStyle('B4')->getFont()->setName('Arial');
-$objPHPExcel->getActiveSheet()->getStyle('B4')->getFont()->setSize(8);
-$objPHPExcel->getActiveSheet()->getStyle('B5')->getFont()->setName('Arial');
-$objPHPExcel->getActiveSheet()->getStyle('B5')->getFont()->setSize(8);
-$objPHPExcel->getActiveSheet()->getStyle('B6')->getFont()->setName('Arial');
-$objPHPExcel->getActiveSheet()->getStyle('B6')->getFont()->setSize(8);
-$objPHPExcel->getActiveSheet()->getStyle('B7')->getFont()->setName('Arial');
-$objPHPExcel->getActiveSheet()->getStyle('B7')->getFont()->setSize(8);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue('B2', $company->name);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue('B3', $company->address1);
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue('B4', $company->address2);
+$objPHPExcel->getActiveSheet()->getStyle('H2')->getFont()->setName('Arial');
+$objPHPExcel->getActiveSheet()->getStyle('H2')->getFont()->setSize(10);
+$objPHPExcel->getActiveSheet()->getStyle('H2')->getFont()->setBold(true);
+$objPHPExcel->getActiveSheet()->getStyle('H3')->getFont()->setName('Arial');
+$objPHPExcel->getActiveSheet()->getStyle('H3')->getFont()->setSize(8);
+$objPHPExcel->getActiveSheet()->getStyle('H4')->getFont()->setName('Arial');
+$objPHPExcel->getActiveSheet()->getStyle('H4')->getFont()->setSize(8);
+$objPHPExcel->getActiveSheet()->getStyle('H5')->getFont()->setName('Arial');
+$objPHPExcel->getActiveSheet()->getStyle('H5')->getFont()->setSize(8);
+$objPHPExcel->getActiveSheet()->getStyle('H6')->getFont()->setName('Arial');
+$objPHPExcel->getActiveSheet()->getStyle('H6')->getFont()->setSize(8);
+$objPHPExcel->getActiveSheet()->getStyle('H7')->getFont()->setName('Arial');
+$objPHPExcel->getActiveSheet()->getStyle('H7')->getFont()->setSize(8);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue('H2', $company->name);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue('H3', $company->address1);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue('H4', $company->address2);
 
 if ($company->telephone) {             
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue('B6', t("Tel") .':'. $company->telephone);}
+  $objPHPExcel->setActiveSheetIndex(0)->setCellValue('H6', t("Tel") .':'. $company->telephone);}
 if ($company->fax) {            
-$objPHPExcel->setActiveSheetIndex(0)->setCellValue('B7', t("Fax") .':' . $company->fax); 
+  $objPHPExcel->setActiveSheetIndex(0)->setCellValue('H7', t("Fax") .':' . $company->fax); 
 }    
 
 $objPHPExcel->getActiveSheet()->getStyle('H8')->getFont()->setName('Arial');

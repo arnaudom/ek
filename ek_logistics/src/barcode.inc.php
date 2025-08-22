@@ -1126,7 +1126,7 @@
             $widebar.="0";
             
             for ($i=0;$i<strlen($barnumber);$i++) {
-                $num=(int)$barnumber{$i};
+                $num=(int)$barnumber[$i];
                 $str="";
                 $str=str_replace("N", "10", $encTable[$num]);
                 $str=str_replace("W", $widebar, $str);
@@ -1272,7 +1272,7 @@
             $encTable[$checkdigit];
             
             for ($i=0;$i<strlen($barnumber);$i++) {
-                $num=(int)$barnumber{$i};
+                $num=(int)$barnumber[$i];
                 $even=(substr($encTable[$checkdigit], $i, 1)=='E');
                 if (!$even) {
                     $mfcStr.=$leftOdd[$num];
@@ -1399,9 +1399,9 @@
             
             for ($i=0;$i<strlen($barnumber);$i++) {
                 if ($i % 2 == 0) {
-                    $csumTotal = $csumTotal + (3 * intval($barnumber{$i}));
+                    $csumTotal = $csumTotal + (3 * intval($barnumber[$i]));
                 } else {
-                    $csumTotal = $csumTotal + intval($barnumber{$i});
+                    $csumTotal = $csumTotal + intval($barnumber[$i]);
                 }
             }
 
@@ -1440,7 +1440,7 @@
             $prodStr="";
             
             for ($i=0;$i<strlen($barnumber);$i++) {
-                $num=(int)$barnumber{$i};
+                $num=(int)$barnumber[$i];
                 if ($i<4) {
                     $mfcStr.=$leftOdd[$num];
                 } elseif ($i>=4) {
@@ -1554,9 +1554,9 @@
             
             for ($i=0;$i<strlen($barnumber);$i++) {
                 if ($i % 2 == 0) {
-                    $csumTotal = $csumTotal + intval($barnumber{$i});
+                    $csumTotal = $csumTotal + intval($barnumber[$i]);
                 } else {
-                    $csumTotal = $csumTotal + (3 * intval($barnumber{$i}));
+                    $csumTotal = $csumTotal + (3 * intval($barnumber[$i]));
                 }
             }
 
@@ -1615,7 +1615,7 @@
             $encbit=$barnumber[0];
 
             for ($i=1;$i<strlen($barnumber);$i++) {
-                $num=(int)$barnumber{$i};
+                $num=(int)$barnumber[$i];
                 if ($i<7) {
                     $even=(substr($encTable[$encbit], $i-1, 1)==1);
                     if (!$even) {

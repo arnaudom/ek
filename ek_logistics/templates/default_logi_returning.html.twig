@@ -1,0 +1,220 @@
+{#
+ * Default receiving template in twig for html display
+ #}
+
+<div class='button'><i class='fa fa-edit'></i><a href='{{ content.url_edit }}'>  {{ 'Edit'|t }}</a></div>
+<div class='button'><i class='fa fa-file-excel-o'></i><a href='{{ content.url_excel }}'>  {{ 'Excel'|t }}</a></div>
+<div class='button'><i class='fa fa-file-pdf-o'></i><a href='{{ content.url_pdf }}'>  {{ 'Pdf'|t }}</a></div>
+
+<page_wrapper>
+    <page>
+        <page_header>
+            <table>
+                <tr>
+                    <td class="c70 left">
+                        {% set logo = '' %}
+                        {% if content.company.logo != '' %}
+                            {% set path = content.company.logo %}
+                            {% if file_exists(path) %}
+                                <IMG src='{{ file_url(path) }}'/>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td class="c30 left">
+                        <b><h2>{{ content.company.name }}</h2></b>
+                        {% if content.company.reg_number %}
+                            <br/><small>({{ content.company.reg_number }})</small>
+                        {% endif %}
+                        <br/>{{ content.company.address1 }}
+                        <br/>{{ content.company.address2 }}
+                        {% if content.company.postcode %}
+                            <br/>{{ content.company.postcode }}, 
+                        {% else %}
+                            <br/>
+                        {% endif %}
+                        {% if content.company.country %}
+                            {{ content.company.country }}
+                        {% endif %}
+                        {% if content.company.telephone %}
+                            <br/>{{ 'Tel'|t }}:{{ content.company.telephone }}, 
+                        {% else %}
+                            <br/>
+                        {% endif %}
+                        {% if content.company.fax %}
+                            {{ 'Fax'|t }}:{{ content.company.fax }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </page_header>
+
+        <page_reference>
+            <table>
+                <tr>
+                    <td class="c70 left"></td>
+                    <td class="c30 left">
+                        <h2 class="blue">{{ content.head.type|upper }}</h2>
+                        <br/>{{ content.head.serial }}
+                        <br/>{{ "Receive date"|t }}: {{ content.head.date }}
+                    </td>
+                </tr>
+            </table>
+        </page_reference>
+
+        <page_client>
+            <table>
+                <tr>
+                    <td class="c10 left"></td>
+                    <td class="c50 left">
+                        <h2 class="">{{ content.client.name|upper }}</h2>
+                        <br/>{{ content.client.address }}
+                        {% if content.client.address2 %}
+                            <br/>{{ content.client.address2 }}
+                        {% endif %}
+                        {% if content.client.city %}
+                            <br/>{{ content.client.city }}
+                        {% endif %}
+                        {% if content.client.postcode %}
+                            , {{ content.client.postcode }}, 
+                        {% endif %}
+                        {% if content.client.country %}
+                            , {{ content.client.country }}
+                        {% endif %}
+                        {% if content.client.telephone %}
+                            <br/>{{ 'Tel'|t }}:{{ content.client.telephone }}, 
+                        {% else %}
+                            <br/>
+                        {% endif %}
+                        {% if content.client.fax %}
+                            {{ 'Fax'|t }}:{{content. client.fax }}
+                        {% endif %}
+                        
+                        {% if content.client_card.contact_name is defined %}
+                            <br/><h3>{{ "Contact name"|t }}:{{ content.client_card.salutation }} {{ content.client_card.contact_name }}</h3>
+                        {% endif %}
+                    </td>
+                    <td class="c40 center">{{ content.copy|raw }} {{ content.original|raw }}</td>
+                </tr>
+            </table>
+        </page_client>
+
+        <page_doc>
+        {% if content.head.do %}
+            <table>
+                <tr>
+                    <td class="c10 left"></td>
+                    <td class="c90 left">{{ "Document No."|t }}: {{ content.head.do }}</td>
+                </tr>
+            </table>
+        {% endif %}
+        </page_doc>
+
+        <page_items>
+            <table>
+                <tr>
+                    <th class="c10 left"></th>
+                    <th class="c30 center">{{ 'Item code'|t }}</th>
+                    <th class="c10 left">{{ 'Description'|t }}</th>
+                    <th class="c10 left">{{ 'Barcode'|t }}</th>
+                    <th class="c10 left">{{ 'Ref. code'|t }}</th>
+                    <th class="c10 right">{{ 'Price'|t }}</th>
+                    <th class="c10 right">{{ 'Quantity'|t }}</th>
+                </tr>
+                
+                {% set grandtotal = 0 %}
+                {% set subtotal = 0 %}
+                {% set i = 1 %}
+                {% set j = 1 %}
+        
+                {% for detail in content.items %}   
+                    {% if detail is iterable and detail.item is not empty %}
+                        <tr>
+                            <td class="c10 right">{{ i }} -</td>
+                            <td class="c10 left">{{ detail.itemcode }}</td>
+                            {% set i = i + 1 %}
+                            
+                            <td class="c30 left">{{ detail.item|nl2br }}</td>
+                            <td class="c10 left">{{ detail.barcode1 }}</td>
+                            <td class="c10 left">{{ detail.supplier_code }}</td>
+                            <td class="c10 right">{{ detail.value }}</td>
+                            <td class="c10 right">{{ detail.quantity }}</td>
+                            <td class="c10 left">{{ detail.unit_measure }}</td>
+                
+                            {% set grandtotal = (grandtotal + detail.quantity)|round(2) %}
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if content.head.pcode %}
+                    <tr>
+                        <td></td>
+                        <td colspan=5>{{ "Our ref."|t }} {{ content.project_link|raw }}</td>
+                    </tr>
+                {% endif %}
+            </table>
+        </page_items>
+
+        <page_total>
+            <table>
+                <tr>
+                    <td class="c10 left"></td>
+                    <td colspan=4 class="c30 left"><b>{{ 'Total quantities'|t }}</b></td>
+                    <td class="c10 right cellbordertop"><b>{{ grandtotal|number_format(2) }}</b></td>
+                </tr>
+            </table>
+        </page_total>
+
+        <page_signature>
+            <table>
+                <tr>
+                    <td class="c10 left"></td>
+                    <td class="c60 left">
+                        {% set sign = '' %}
+                        {% if content.signature == "1" and content.company.sign is defined %}
+                            {% set path = content.company.sign %}
+                            {% if file_exists(path) %}
+                                <IMG src='{{ file_url(path) }}'/>
+                            {% endif %}
+                        {% endif %}
+                        {{ sign|raw }}
+                    </td>
+                   {#} <td class="c30 left">
+                        {% if content.head.status == 1 and content.stamp != 2 and content.stamp != 1 %}
+                            <div class="red">{{ 'RECEIVED'|t }}</div>
+                            <div class="red">{{ 'Date'|t }}: {{ content.head.pay_date }}</div>
+                            <div class="red">{{ content.company.name }}</div>
+                        {% endif %}
+                    </td>#}
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>______________________________<td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>{{ "Authorized signatory"|t }}<td>
+                    <td></td>
+                </tr>
+            </table>
+        </page_signature>
+        
+        <hr>
+        
+        {% if content.company.address3 != "" %}
+            <hr>
+            <page_correspondence>
+                <table>
+                    <tr>
+                        <td class="c100 center">
+                            <p class="grey">{{ 'Correspondence address'|t }}:
+                            {{ content.company.address3 }} {{ content.company.address4 }} {{ content.company.postcode2 }}, {{ content.company.city2 }}, {{ company.country2 }}
+                            <br/>{{ 'Tel'|t }}: {{ content.company.telephone2 }} {{ 'Fax'|t }}:{{ content.company.fax2 }}
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </page_correspondence>
+        {% endif %}
+    </page>
+</page_wrapper>
