@@ -199,7 +199,7 @@ class AddressBookCloneConfirmForm extends ConfirmFormBase {
         'link' => $contact->link,
         'comment' => $contact->comment,
         'main' => $contact->main,
-        'stamp' => strtotime("now"),
+        'stamp' => strtotime("now")
       ];
       
       Database::getConnection('external_db', 'external_db')

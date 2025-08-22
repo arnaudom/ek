@@ -97,7 +97,7 @@
 .briefcase:before {
   content: "\f0b1"; 
 }
-.tag:before {
+.lab:before {
   content: "\f02b"; 
 }
 .mobile:before {
@@ -802,3 +802,4 @@ hr {
       box-sizing: border-box;
     }
   }
+

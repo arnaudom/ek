@@ -15,19 +15,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Defines dynamic local tasks.
  */
-class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
-{
+class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface {
     /* The module handler.
     *
     * @var \Drupal\Core\Extension\ModuleHandler
     */
     protected $moduleHandler;
   
-    public static function create(ContainerInterface $container, $base_plugin_id)
-    {
+    public static function create(ContainerInterface $container, $base_plugin_id) {
         return new static(
-      $container->get('module_handler')
-    );
+            $container->get('module_handler')
+        );
     }
   
     /**
@@ -35,16 +33,14 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
    *
    *   The moduleHandler service.
    */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
     }
   
     /**
      * {@inheritdoc}
      */
-    public function getDerivativeDefinitions($base_plugin_definition)
-    {
+    public function getDerivativeDefinitions($base_plugin_definition) {
         if ($this->moduleHandler->moduleExists('ek_sales')) {
             //$p = explode('/', Drupal::getBaseUrl());
             //$p = array_reverse($p);

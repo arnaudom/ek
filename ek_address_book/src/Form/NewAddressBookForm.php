@@ -249,9 +249,14 @@ class NewAddressBookForm extends FormBase {
             $form['delete_logo'] = null;
             $form["currentlogo"] = null;
         }
+
+        // file is not managed by Drupal
+        $allowed = 'png jpg jpeg';
+        $upload_validators = ['FileExtension' => ['extensions' => $allowed]];
         $form['logo'] = [
             '#type' => 'file',
             '#title' => $this->t('Upload logo'),
+            '#upload_validators' => $upload_validators,
         ];
 
         // insert the name cards
@@ -498,7 +503,8 @@ class NewAddressBookForm extends FormBase {
 
         $form[$i]['image' . $i] = [
             '#type' => 'file',
-            '#title' => $this->t('Upload a name card image'),
+            '#title' => $this->t('Upload a name card image'),            
+            '#upload_validators' => $upload_validators,
             '#states' => [
                 // Hide data fieldset when field is empty.
                 'invisible' => ["input[name='contact_name$i']" => ['value' => ''],],
@@ -571,42 +577,28 @@ class NewAddressBookForm extends FormBase {
         }
         // Check for a new uploaded logo.
         $field = "logo";
-        $validators = ['file_validate_is_image' => []];
-        $file = file_save_upload($field, $validators, false, 0);
-
+        $file = _file_save_upload_from_form($form[$field], $form_state, 0);
         if ($file != null && !empty($file)) {
             $image_factory = \Drupal::service('image.factory');
             $image = $image_factory->get($file->getFileUri());
             if (!$image->isValid() || $image->getWidth() > 400 || $image->getHeight() > 400) {
                 $form_state->setErrorByName($field, $this->t('Logo exceeds the maximum resolution of 400x400.'));
             }
-            // File upload was attempted.
-            if ($file) {
-                // Put the temporary file in form_values so we can save it on submit.
-                $form_state->setValue($field, $file) ;
-            } else {
-                // File upload failed.
-                $form_state->setErrorByName($field, $this->t('Logo could not be uploaded'));
-            }
+            // Put the temporary file in form_values so we can save it on submit.
+                $form_state->set($field, $file) ;
+            
         } else {
             $form_state->setValue($field, 0);
         }
              
         for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
             if ($form_state->getValue('contact_name' . $i) <> '') {
-                // Handle file uploads.
-                // $validators = array('file_validate_extensions' => array('ico png gif jpg jpeg svg'));
+                // Handle name card.
                 $field = "image" . $i;
-                // Check for a new uploaded .
-                $file = file_save_upload($field, $validators, false, 0);
+                $file = _file_save_upload_from_form($form[$i][$field], $form_state, 0);
                 if ($file != null && !empty($file)) {
                     // File upload was attempted.
-                    if ($file) {
-                        $form_state->setValue($field, $file);
-                    } else {
-                        // File upload failed.
-                        $form_state->setErrorByName($field, $this->t('Card No. @i could not be uploaded', ['@i' => $i + 1]));
-                    }
+                    $form_state->set($field, $file);
                 } else {
                     $form_state->setValue($field, 0);
                 }
@@ -689,7 +681,7 @@ class NewAddressBookForm extends FormBase {
             
         // second, upload if any image is available
         if (!$form_state->getValue('logo') == 0) {
-            if ($file = $form_state->getValue('logo')) {
+            if ($file = $form_state->get('logo')) {
                 $dir = "private://address_book/cards/" . $id;
                 \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $logo = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
@@ -716,7 +708,6 @@ class NewAddressBookForm extends FormBase {
         //update contact card
         if ($form_state->getValue('cards') >= 0) {
             //update cards
-
             for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
                 //Check first for deletion
                 if ($form_state->getValue('delete' . $i) == 1) {
@@ -766,16 +757,18 @@ class NewAddressBookForm extends FormBase {
                             }
                         }
 
-
                         if (!$form_state->getValue('image' . $i) == 0) {
-                            $file = $form_state->getValue('image' . $i);
+                            $file = $form_state->get('image' . $i);
                             //unset($file);
                             $dir = "private://address_book/cards/" . $id;
                             \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                             $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
+                            //Resize after copy
+                            $image_factory = \Drupal::service('image.factory');
+                            $image = $image_factory->get($filename);
+                            $image->scale(500);
+                            $image->save();
                         }
-
-
 
                         $fields = [
                             'abid' => $id,
@@ -821,7 +814,7 @@ class NewAddressBookForm extends FormBase {
 
         if (isset($insert) || isset($update)) {
             \Drupal::messenger()->addStatus(t('The address book entry is recorded'));
-            Cache::invalidateTags(['address_book_card']);
+            Cache::invalidateTags(['address_book_card', 'ab_last_block']);
 
             $form_state->setRedirect('ek_address_book.view', ['abid' => $id]);
         }

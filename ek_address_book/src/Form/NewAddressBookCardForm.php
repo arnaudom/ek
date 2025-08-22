@@ -15,42 +15,40 @@ use Drupal\Core\Database\Database;
 /**
  * Provides a new address book contact form.
  */
-class NewAddressBookCardForm extends FormBase
-{
+class NewAddressBookCardForm extends FormBase {
 
     /**
      * {@inheritdoc}
      */
-    public function getFormId()
-    {
+    public function getFormId() {
         return 'ek_edit_address_book_card_form';
     }
     /**
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $abid = null) {
-        $form['back'] = array(
+        $form['back'] = [
             '#type' => 'item',
             '#markup' => '<a href="' . $_SERVER['HTTP_REFERER'] . '" >' . $this->t('Back to address book') . '</a>',
-        );
+        ];
 
 
         if (isset($abid)) {
-            $form['for_id'] = array(
+            $form['for_id'] = [
                 '#type' => 'hidden',
                 '#default_value' => $abid,
-            );
+            ];
         }
 
         /*pull names from other cards*/
-        $form['copy'] = array(
+        $form['copy'] = [
             '#type' => 'details',
             '#title' => $this->t('Copy existing card'),
             '#collapsible' => true,
             '#open' => true,
-        );
+        ];
 
-        $form['copy']['names'] = array(
+        $form['copy']['names'] = [
             '#type' => 'textfield',
             '#title' => $this->t('Enter names to copy'),
             '#attributes' => array('class' => ['form-select-tag']),
@@ -58,7 +56,7 @@ class NewAddressBookCardForm extends FormBase
                 'library' => array('ek_admin/ek_admin_tageditor'),
                 'drupalSettings' => array('auto_complete' => 'look_up_contact_ajax/4'),
             ),
-        );
+        ];
         
         $salutation = array('-', $this->t('Mr.'), $this->t('Mrs.'), $this->t('Miss.'));
        
@@ -71,27 +69,27 @@ class NewAddressBookCardForm extends FormBase
         $i = 0;
 
 
-        $form[$i] = array(
+        $form[$i] = [
             '#type' => 'details',
             '#title' => $this->t('New contact card'),
             '#collapsible' => true,
             '#open' => true,
-        );
+        ];
 
-        $form[$i]['id' . $i] = array(
+        $form[$i]['id' . $i] = [
             '#type' => 'hidden',
             '#default_value' => 'new',
-        );
+        ];
 
-        $form[$i]['contact_name' . $i] = array(
+        $form[$i]['contact_name' . $i] = [
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
             '#attributes' => array('placeholder' => $this->t('Contact name')),
-        );
+        ];
 
 
-        $form[$i]['salutation' . $i] = array(
+        $form[$i]['salutation' . $i] = [
             '#type' => 'select',
             '#options' => array_combine($salutation, $salutation),
             '#required' => false,
@@ -101,9 +99,9 @@ class NewAddressBookCardForm extends FormBase
                     "input[name='contact_name$i']" => array('value' => ''),
                 ),
             ),
-        );
+        ];
 
-        $form[$i]['title' . $i] = array(
+        $form[$i]['title' . $i] = [
             '#type' => 'textfield',
             '#size' => 60,
             '#maxlength' => 255,
@@ -115,9 +113,9 @@ class NewAddressBookCardForm extends FormBase
                     "input[name='contact_name$i']" => array('value' => ''),
                 ),
             ),
-        );
+        ];
 
-        $form[$i]['ctelephone' . $i] = array(
+        $form[$i]['ctelephone' . $i] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 30,
@@ -128,9 +126,9 @@ class NewAddressBookCardForm extends FormBase
                     "input[name='contact_name$i']" => array('value' => ''),
                 ),
             ),
-        );
+        ];
 
-        $form[$i]['cmobilephone' . $i] = array(
+        $form[$i]['cmobilephone' . $i] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 30,
@@ -141,9 +139,9 @@ class NewAddressBookCardForm extends FormBase
                     "input[name='contact_name$i']" => array('value' => ''),
                 ),
             ),
-        );
+        ];
 
-        $form[$i]['email' . $i] = array(
+        $form[$i]['email' . $i] = [
             '#type' => 'email',
             '#size' => 50,
             '#maxlength' => 100,
@@ -154,20 +152,24 @@ class NewAddressBookCardForm extends FormBase
                     "input[name='contact_name$i']" => array('value' => ''),
                 ),
             ),
-        );
+        ];
 
-        $form[$i]['image' . $i] = array(
+        // file is not managed by Drupal
+        $allowed = 'png jpg jpeg';
+        $upload_validators = ['FileExtension' => ['extensions' => $allowed]];
+        $form[$i]['image' . $i] = [
             '#type' => 'file',
             '#title' => $this->t('Upload a name card image'),
+            '#upload_validators' => $upload_validators,
             '#states' => array(
                 // Hide data fieldset when field is empty.
                 'invisible' => array(
                     "input[name='contact_name$i']" => array('value' => ''),
                 ),
             ),
-        );
+        ];
 
-        $form[$i]['department' . $i] = array(
+        $form[$i]['department' . $i] = [
             '#type' => 'textfield',
             '#size' => 50,
             '#maxlength' => 100,
@@ -178,9 +180,9 @@ class NewAddressBookCardForm extends FormBase
                     "input[name='contact_name$i']" => array('value' => ''),
                 ),
             ),
-        );
+        ];
 
-        $form[$i]['link' . $i] = array(
+        $form[$i]['link' . $i] = [
             '#type' => 'textfield',
             '#size' => 50,
             '#maxlength' => 100,
@@ -191,9 +193,9 @@ class NewAddressBookCardForm extends FormBase
                     "input[name='contact_name$i']" => array('value' => ''),
                 ),
             ),
-        );
+        ];
 
-        $form[$i]['ccomment' . $i] = array(
+        $form[$i]['ccomment' . $i] = [
             '#type' => 'textarea',
             '#rows' => 1,
             '#states' => array(
@@ -202,30 +204,24 @@ class NewAddressBookCardForm extends FormBase
                     "input[name='contact_name$i']" => array('value' => ''),
                 ),
             ),
-        );
+        ];
 
-        $form['cards'] = array(
+        $form['cards'] = [
             '#type' => 'hidden',
             '#default_value' => $i,
-        );
+        ];
 
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['submit'] = array('#type' => 'submit', '#value' => $this->t('Record'));
-
-
-
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['submit'] = ['#type' => 'submit', '#value' => $this->t('Record')];
 
         return $form;
-        // return parent::buildForm($form, $form_state);
-        //buildForm
     }
 
     /**
      * {@inheritdoc}
      *
      */
-    public function validateForm(array &$form, FormStateInterface $form_state)
-    {
+    public function validateForm(array &$form, FormStateInterface $form_state) {
         parent::validateForm($form, $form_state);
         
         //validate copies
@@ -260,23 +256,9 @@ class NewAddressBookCardForm extends FormBase
             for ($i = 0; $i <= $form_state->getValue('cards'); $i++) {
                 if ($form_state->getValue('contact_name' . $i) <> '') {
 
-                    // Handle file uploads.
-                    //$validators = array('file_validate_extensions' => array('ico png gif jpg jpeg apng svg'));
-                    $validators = array('file_validate_is_image' => array());
-                    $field = "image" . $i;
-                    // Check for a new uploaded logo.
-                    $file = file_save_upload($field, $validators, false, 0);
-                    if ($file != null && !empty($file)) {
-                        // File upload was attempted.
-                        if ($file) {
-                            // Put the temporary file in form_values so we can save it on submit.
-                            $form_state->setValue($field, $file);
-                        } else {
-                            // File upload failed.
-                            $form_state->setErrorByName($field, $this->t('Card No. @i could not be uploaded', array('@i' => $i + 1)));
-                        }
-                    } else {
-                        $form_state->setValue($field, 0);
+                    $file = _file_save_upload_from_form($form[$i]["image" . $i], $form_state, 0);
+                    if ($file) {
+                        $form_state->set('namecard'.$i, $file);
                     }
                 }
             }
@@ -286,8 +268,7 @@ class NewAddressBookCardForm extends FormBase
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state)
-    {
+    public function submitForm(array &$form, FormStateInterface $form_state) {
 
         //copy cards
         if ($form_state->get('ids')) {
@@ -331,8 +312,8 @@ class NewAddressBookCardForm extends FormBase
                     // retrieve previous card file if any
                     $card = '';
 
-                    if (!$form_state->getValue('image' . $i) == 0) {
-                        $file = $form_state->getValue('image' . $i);
+                    if (!empty($form_state->get('namecard' .$i))) {
+                        $file = $form_state->get('namecard' .$i);  
                         $dir = "private://address_book/cards/" . $form_state->getValue('for_id');
                         \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                         $card = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);

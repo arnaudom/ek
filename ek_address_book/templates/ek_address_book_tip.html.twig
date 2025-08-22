@@ -20,12 +20,10 @@
 {% endif %}
 
 {% if items.type == 'display' %}
-    <div style="text-align:center;padding:3px;">
-        
-    <div><strong>{{ items.name }}</strong></div>
-    {% if items.url %}
-        <hr>
-        <div><img src={{ items.url }} style="width:40px;"/></div>
+    <div style="display: flex; align-items: center; justify-content: center; padding: 3px;">
+        <div style="margin-right: 10px;"><strong>{{ items.name }}</strong></div>
+        {% if items.url %}
+            <img src="{{ items.url }}" style="width:40px;"/>
         {% endif %}
     </div>
 {% endif %}

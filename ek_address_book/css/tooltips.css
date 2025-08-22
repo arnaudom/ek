@@ -1,0 +1,9 @@
+
+  .ab-tooltip {
+    display: block !important;
+    background: #eeeeee !important;
+    visibility: visible !important;
+    border: 1px solid #444444 !important;
+    border-radius: 2px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+  }

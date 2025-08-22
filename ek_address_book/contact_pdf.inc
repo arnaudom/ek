@@ -4,7 +4,7 @@ use Drupal\Core\Database\Database;
 
 
 class EKPDF extends TCPDF {
-    
+    protected $company;
     //Page header
     public function Header() {
         $data = $this->getHeaderData();
@@ -87,17 +87,17 @@ $pdf->Cell(5, 3, "", "LT", 0);
 $pdf->Cell(100, 3, "", 0, 0);
 $pdf->Cell(5, 3, "", "RT", 1);
 
-    $pdf->SetFont('helvetica', '', 10);
+    $pdf->SetFont('dejavusans', '', 10);
     
     $pdf->Cell(5, 6, "", "0", 0);
     $pdf->Cell(100, 6, $book_data->name, 0, 0);
     $pdf->Cell(5, 6, "", "0", 1);
     
-    $pdf->SetFont('helvetica', '', 7);
+    $pdf->SetFont('dejavusans', '', 7);
     $pdf->Cell(5, 6, "", "0", 0);
     $pdf->Cell(100, 3, '(' . $book_data->reg . ')', 0, 0);
     $pdf->Cell(5, 6, "", "0", 1);
-    $pdf->SetFont('helvetica', '', 10);
+    $pdf->SetFont('dejavusans', '', 10);
     
     $pdf->Cell(5, 6, "", "0", 0);
     $pdf->Cell(100, 6, $card_data->salutation . ' ' . $card_data->contact_name, 0, 0);
@@ -105,12 +105,12 @@ $pdf->Cell(5, 3, "", "RT", 1);
     
     if($card_data->title){
         $pdf->Cell(5, 6, "", "0", 0);
-        $pdf->SetFont('helvetica', '', 8);
+        $pdf->SetFont('dejavusans', '', 8);
         $pdf->Cell(100, 6,  '(' . $card_data->title . ')', 0, 0);
         $pdf->Cell(5, 6, "", "0", 1);
     }
 
-    $pdf->SetFont('helvetica', '', 8);
+    $pdf->SetFont('dejavusans', '', 8);
 
     $pdf->Cell(10, 5, "", "0", 0);
     $pdf->Cell(90, 5, $book_data->address, 0, 0);
@@ -147,28 +147,28 @@ $pdf->Cell(5, 3, "", "LT", 0);
 $pdf->Cell(100, 3, "", 0, 0);
 $pdf->Cell(5, 3, "", "RT", 1);
 
-    $pdf->SetFont('helvetica', '', 10);
+    $pdf->SetFont('dejavusans', '', 10);
     
     $pdf->Cell(5, 6, "", "0", 0);
     $pdf->Cell(100, 6, $book_data->name, 0, 0);
     $pdf->Cell(5, 6, "", "0", 1);
-    $pdf->SetFont('helvetica', '', 7);
+    $pdf->SetFont('dejavusans', '', 7);
     $pdf->Cell(5, 6, "", "0", 0);
     $pdf->Cell(100, 3, '(' . $book_data->reg . ')', 0, 0);
     $pdf->Cell(5, 6, "", "0", 1);
-    $pdf->SetFont('helvetica', '', 10);
+    $pdf->SetFont('dejavusans', '', 10);
     $pdf->Cell(5, 6, "", "0", 0);
     $pdf->Cell(100, 6, $card_data->salutation . ' ' . $card_data->contact_name, 0, 0);
     $pdf->Cell(5, 6, "", "0", 1);
     
     if($card_data->title){
         $pdf->Cell(5, 6, "", "0", 0);
-        $pdf->SetFont('helvetica', '', 8);
+        $pdf->SetFont('dejavusans', '', 8);
         $pdf->Cell(100, 6,  '(' . $card_data->title . ')', 0, 0);
         $pdf->Cell(5, 6, "", "0", 1);
     }
 
-    $pdf->SetFont('helvetica', '', 8);
+    $pdf->SetFont('dejavusans', '', 8);
 
     $pdf->Cell(10, 5, "", "0", 0);
     $pdf->Cell(90, 5, $book_data->address, 0, 0);
@@ -191,37 +191,37 @@ $pdf->Cell(5, 3, "", "RT", 1);
     $pdf->Cell(10, 5, "", "0", 1);
 
 
-    $pdf->SetFont('helvetica', '', 10);
+    $pdf->SetFont('dejavusans', '', 10);
     
     if($card_data->telephone){
         $pdf->Cell(5, 6, "", 0, 0);
-        $pdf->SetFont('helvetica', '', 8);
+        $pdf->SetFont('dejavusans', '', 8);
         $pdf->Cell(20, 6, (STRING)t('Telephone') . ':' , 0, 0);
-        $pdf->SetFont('helvetica', '', 10);
+        $pdf->SetFont('dejavusans', '', 10);
         $pdf->Cell(80, 6, $card_data->telephone, 0, 0);
         $pdf->Cell(5, 6, "", 0, 1);
     }
     if($card_data->mobilephone){
         $pdf->Cell(5, 6, "", 0, 0);
-        $pdf->SetFont('helvetica', '', 8);
+        $pdf->SetFont('dejavusans', '', 8);
         $pdf->Cell(20, 6, (STRING)t('Mobile') . ':' , 0, 0);
-        $pdf->SetFont('helvetica', '', 10);
+        $pdf->SetFont('dejavusans', '', 10);
         $pdf->Cell(80, 6, $card_data->mobilephone, 0, 0);
         $pdf->Cell(5, 6, "", 0, 1);
     }
     if($card_data->email){
         $pdf->Cell(5, 6, "", 0, 0);
-        $pdf->SetFont('helvetica', '', 8);
+        $pdf->SetFont('dejavusans', '', 8);
         $pdf->Cell(20, 6, (STRING)t('Email') . ':' , 0, 0);
-        $pdf->SetFont('helvetica', '', 10);
+        $pdf->SetFont('dejavusans', '', 10);
         $pdf->Cell(80, 6, $card_data->email, 0, 0);
         $pdf->Cell(5, 6, "", 0, 1);
     }    
     if($book_data->fax){
         $pdf->Cell(5, 6, "", 0, 0);
-        $pdf->SetFont('helvetica', '', 8);
+        $pdf->SetFont('dejavusans', '', 8);
         $pdf->Cell(20, 6, (STRING)t('Fax') . ':' , 0, 0);
-        $pdf->SetFont('helvetica', '', 10);
+        $pdf->SetFont('dejavusans', '', 10);
         $pdf->Cell(80, 6, $book_data->fax, 0, 0);
         $pdf->Cell(5, 6, "", 0, 1);
     }  

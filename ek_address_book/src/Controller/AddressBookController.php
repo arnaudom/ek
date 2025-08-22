@@ -49,6 +49,10 @@ class AddressBookController extends ControllerBase {
      * Constructs a  object.
      *
      */
+
+    protected $fileUrlGenerator;
+    protected $fileSystem;
+
     public function __construct(ModuleHandler $module_handler,FileUrlGeneratorInterface $file_url_generator, FileSystemInterface $file_system) {
         $this->moduleHandler = $module_handler;
         $this->fileUrlGenerator = $file_url_generator;
@@ -129,19 +133,19 @@ class AddressBookController extends ControllerBase {
             $items['id'] = $r['id'];
             $items['search'] = $this->t('<a href="@url" >New search</a>', ['@url' => $url_search]);
             $items['add'] = $this->t('<a href="@url" >Add contact</a>', ['@url' => $url_add]);
-            $items['name'] = ucwords($r['name']);
+            $items['name'] =  isset($r['name']) ? ucwords($r['name']) : '';
             $items['shortname'] = $r['shortname'];
-            $items['address'] = ucwords($r['address']);
-            $items['address2'] = ucwords($r['address2']);
-            $items['state'] = ucwords($r['state']);
-            $items['postcode'] = ucwords($r['postcode']);
-            $items['city'] = ucwords($r['city']);
-            $items['country'] = ucwords($r['country']);
+            $items['address'] = isset($r['address']) ? ucwords($r['address']) : '';
+            $items['address2'] = isset($r['address2']) ?ucwords($r['address2']) : '';
+            $items['state'] = isset($r['state']) ? ucwords($r['state']) : '';
+            $items['postcode'] = isset($r['postcode']) ? ucwords($r['postcode']) : '';
+            $items['city'] = isset($r['city']) ? ucwords($r['city']) : '';
+            $items['country'] = isset($r['country']) ? ucwords($r['country']) : '';
             $items['telephone'] = $r['telephone'];
             $items['fax'] = $r['fax'];
             $items['website'] = $r['website'];
             $items['reg'] = $r['reg'];
-            $items['activity'] = ucwords($r['activity']);
+            $items['activity'] = isset($r['activity']) ? ucwords($r['activity']) : '';
             $t = [1 => $this->t('client'), 2 => $this->t('supplier'), 3 => $this->t('other')];
             $items['type'] = $t[$r['type']];
             if ($this->moduleHandler->moduleExists('ek_projects') && $r['type'] == 1) {
@@ -158,7 +162,7 @@ class AddressBookController extends ControllerBase {
                 $items['comment'] = $r['comment'];
             }
 
-            if ($r['logo'] != '' && file_exists($r['logo'])) {
+            if ($r['logo'] != '' && file_exists($r['logo'])) { 
                 $items['logo_url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($r['logo']);
                 $items['logo_img'] = "<img class='thumbnail' src='" 
                         . $items['logo_url'] . "'>";
@@ -182,9 +186,9 @@ class AddressBookController extends ControllerBase {
             while ($r = $data->fetchAssoc()) {
                 $contact = array();
                 $contact['id'] = $r['id'];
-                $contact['contact_name'] = ucwords($r['contact_name']);
+                $contact['contact_name'] = isset($r['contact_name']) ? ucwords($r['contact_name']) : '';
                 $contact['salutation'] = $r['salutation'];
-                $contact['title'] = ucwords($r['title']);
+                $contact['title'] = isset($r['title']) ? ucwords($r['title']) : '';
                 $contact['telephone'] = $r['telephone'];
                 $contact['mobilephone'] = $r['mobilephone'];
                 $contact['email'] = $r['email'];
@@ -201,7 +205,7 @@ class AddressBookController extends ControllerBase {
                 } else {
                     $contact['card_'] = "";
                 }
-                $contact['department'] = ucwords($r['department']);
+                $contact['department'] = isset($r['department']) ? ucwords($r['department']) : '';
                 $contact['link'] = $r['link'];
                 $contact['comment'] = $r['comment'];
 

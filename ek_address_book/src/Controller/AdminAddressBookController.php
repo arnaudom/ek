@@ -13,8 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 /**
 * Controller routines for ek module routes.
 */
-class AdminAddressBookController extends ControllerBase
-{
+class AdminAddressBookController extends ControllerBase {
  
 /* The module handler.
    *
@@ -25,11 +24,10 @@ class AdminAddressBookController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
-      $container->get('module_handler')
-    );
+            $container->get('module_handler')
+        );
     }
 
     /**
@@ -37,8 +35,7 @@ class AdminAddressBookController extends ControllerBase
      *
      *   The moduleexist service.
      */
-    public function __construct(ModuleHandler $module_handler)
-    {
+    public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
     }
 
@@ -47,8 +44,7 @@ class AdminAddressBookController extends ControllerBase
        * Administrate address book
        *
     */
-    public function admin(Request $request, $id = null)
-    {
+    public function admin(Request $request, $id = null) {
         return array();
     }
 
@@ -58,8 +54,7 @@ class AdminAddressBookController extends ControllerBase
        * @param int $id
        *
     */
-    public function export(Request $request, $id = null)
-    {
+    public function export(Request $request, $id = null) {
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $response = ['#markup' => $this->t('Excel library not available, please contact administrator.')];
         } else {
@@ -75,8 +70,7 @@ class AdminAddressBookController extends ControllerBase
        * @param int $id
        *
     */
-    public function import(Request $request, $id = null)
-    {
+    public function import(Request $request, $id = null) {
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $response = ['#markup' => $this->t('Excel library not available, please contact administrator.')];
         } else {
