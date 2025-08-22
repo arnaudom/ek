@@ -1,6 +1,7 @@
 <?php
 
 class EKPDF extends TCPDF {
+    protected $company;
 
     //Page header
     public function Header() {
@@ -8,8 +9,8 @@ class EKPDF extends TCPDF {
         $this->company = $data['title'];
         $format = $data['text_color'];
         if ($this->company->logo != '') {
-            if (file_exists($this->company->logo)) {
-                $logo = \Drupal::service('file_url_generator')->generateAbsoluteString($this->company->logo);
+            $logo = \Drupal::service('file_system')->realpath($this->company->logo); 
+            if (file_exists($logo)) {
                 $this->Image($logo, $format['header']['logo_x'], $format['header']['logo_y'], $format['header']['logo_z']);
             }
         }

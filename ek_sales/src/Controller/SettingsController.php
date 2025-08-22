@@ -12,6 +12,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileExists;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -253,13 +254,12 @@ class SettingsController extends ControllerBase {
         }
         $source = $_SESSION['prev'][key($_SESSION['prev'])]['source'];
         if ($source == '0') {  
-            $template = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . "/" . key($_SESSION['prev']);
+            $template = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . "/templates/" . key($_SESSION['prev']);
         } else {
             $filesystem = \Drupal::service('file_system');
            
             $path = \Drupal\Core\StreamWrapper\PublicStream::basePath() . "/" . key($_SESSION['prev']);
-            $filesystem->copy("private://sales/templates/". $source . '/' . key($_SESSION['prev']), $path, 
-                    \Drupal\Core\File\FileSystemInterface::EXISTS_REPLACE );
+            $filesystem->copy("private://sales/templates/". $source . '/' . key($_SESSION['prev']), $path, FileExists::Replace);
             $template = $path ;
         }
 

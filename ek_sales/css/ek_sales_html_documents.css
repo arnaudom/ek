@@ -3,10 +3,9 @@
     Author     : ARREA
 */
 
-page_wrapper {
-   border: 1px black;
+img {
+    max-width: 200px !important;
 }
-
 
 table {
     border: none 0px black;
@@ -109,11 +108,13 @@ td, th {
 .red {
     color:#D9230F;
 }
+
 .red_background {
     background:#EB6864;
     color: #fff;
     font-weight: bold;
 }
+
 .blue {
     color: #7896BE;
 }
@@ -123,20 +124,25 @@ td, th {
     color: #fff;
     font-weight: bold;
 }
+
 .green {
     color: #00D744;
 }
+
 .green_background {
     background: #8ee53f;
     color: #fff;
     font-weight: bold;
 }
+
 .grey {
     color: #5a5a5a;
 }
+
 .lightgrey_background {
     background: #dfdfdf;
 }
+
 .grey_background {
     background:#9b9b9b;
     color: #fff;

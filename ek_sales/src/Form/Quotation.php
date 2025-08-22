@@ -22,17 +22,10 @@ use Drupal\ek_admin\Access\AccessCheck;
  */
 class Quotation extends FormBase {
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
     protected $moduleHandler;
+    protected $salesSettings;
+    protected $Financesettings;
 
-    /**
-     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler.
-     */
     public function __construct(ModuleHandler $module_handler) {
         $this->salesSettings = new \Drupal\ek_sales\SalesSettings();
         $this->moduleHandler = $module_handler;
@@ -1062,7 +1055,8 @@ class Quotation extends FormBase {
 
             // tax
             $n++;
-            $taxamount = round(($taxable * $tax_rate / 100), 2);
+            // $taxamount = round(($taxable * $tax_rate / 100), 2);
+            $taxamount = isset($tax_rate) ? round(($taxable * $tax_rate / 100), 2) : 0;
             $form['description'] = [
                 '#type' => 'item',
                 '#markup' => $this->t('Tax applied')

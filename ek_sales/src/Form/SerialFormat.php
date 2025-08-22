@@ -17,9 +17,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class SerialFormat extends FormBase {
 
-    /**
-     *
-     */
+    protected $settings;
+    
     public function __construct() {
         $this->settings = new \Drupal\ek_sales\SalesSettings();
     }

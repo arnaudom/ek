@@ -29,7 +29,7 @@ $logo = '';
 if ($company->logo != '') {
     $path = $company->logo;
     if (file_exists($path)) {
-        $logo = "<IMG src='" . \Drupal::service('file_url_generator')->generateAbsoluteString($path) . "'/>";
+        $logo = "<IMG src='" . \Drupal::service('file_system')->realpath($path) . "'/>";
     }
 }
 // COMPANY

@@ -4,7 +4,7 @@ namespace Drupal\ek_sales;
 
 use Drupal\Core\Database\Database;
 use Drupal\Core\StreamWrapper\PublicStream;
-use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\File\FileExists;
 use Drupal\user\Entity\User;
 use Drupal\ek_products\ItemData;
 use Drupal\ek_sales\SalesSettings;
@@ -12,12 +12,7 @@ use Drupal\ek_sales\SalesSettings;
 
 class PrintManager {
 
-    /**
-    * The configuration object.
-    */
-     protected $extdb;
-
-  
+    protected $extdb;
 
     /**
     * Constructs a PromptService object.
@@ -26,9 +21,9 @@ class PrintManager {
         $this->extdb = Database::getConnection('external_db', 'external_db');
     }
 
-    /*
+    /**
     * Print document in Pdf format
-    *  @param array
+    *  @param serialize array
     *   id: database id
     *   source: string, invoice, purchase, quotation
     *   signature: array [sales, pos]
@@ -89,7 +84,7 @@ class PrintManager {
             // use this feature when storage of data is remote.
             $filesystem = \Drupal::service('file_system');
             $path = PublicStream::basePath() . "/" . $template;
-            $filesystem->copy("private://sales/templates/". $source . '/' . $template, $path, FileSystemInterface::EXISTS_REPLACE );
+            $filesystem->copy("private://sales/templates/". $source . '/' . $template, $path, FileExists::Replace);
             
             if(!empty($customSettings[$template])){
                 $custom = $customSettings[$template];
@@ -122,9 +117,9 @@ class PrintManager {
         }
     }
     
-    /*
+    /**
     * Render document in html format
-    *  @param array
+    *  @param serialize array
     *   id: database id
     *   source: string, invoice, purchase, quotation
     *   signature: array [sales, pos]
@@ -181,9 +176,9 @@ class PrintManager {
 
     }
     
-    /*
+    /**
     * Download document in excel format
-    *  @param array
+    *  @param serialize array
     *   id: database id
     *   source: string, invoice, purchase, quotation
     *   signature: array [sales, pos]
@@ -226,7 +221,7 @@ class PrintManager {
                 // use this feature when storage of data is remote.
                 $filesystem = \Drupal::service('file_system');
                 $path = PublicStream::basePath() . "/" . $template;
-                $filesystem->copy("private://sales/templates/". $source . '/' . $template, $path, FileSystemInterface::EXISTS_REPLACE );
+                $filesystem->copy("private://sales/templates/". $source . '/' . $template, $path, FileExists::Replace);
                 $template = $path ;
             }
             

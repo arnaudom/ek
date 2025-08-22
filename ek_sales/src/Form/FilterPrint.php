@@ -18,9 +18,10 @@ use Drupal\ek_sales\SalesSettings;
  */
 class FilterPrint extends FormBase {
 
-    /**
-     * 
-     */
+    
+    protected $settings;
+    protected $tpls;
+    
     public function __construct() {
         $this->settings = new SalesSettings();
         $this->tpls = $this->settings->get('templates');
@@ -113,7 +114,7 @@ class FilterPrint extends FormBase {
                 '#max' => 100,
                 '#step' => 5,
                 '#states' => [
-                    //'invisible' => [":input[name='signature']" => ['value' => 0]],
+                    //'visible' => [":input[name='signature']" => ['checked' => true]],
                 ],
         ];           
         

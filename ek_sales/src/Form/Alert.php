@@ -43,8 +43,8 @@ class Alert extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $data = null, $param = null) {
 
-        $w = unserialize($data->alert_who);
-        $alert_who = explode(',', $w['users']);
+        $w = $data->alert_who !== null ? unserialize($data->alert_who) : [];
+        $alert_who = isset($w['users']) ? explode(',', $w['users']) : [];
         $list = [];
         foreach ($alert_who as $k => $uid) {
             $acc = \Drupal\user\Entity\User::load($uid);
@@ -53,7 +53,6 @@ class Alert extends FormBase {
             }
         }
 
-        $client = $w['client'];
         $settings = new SalesSettings($data->head);
 
         $form['destination'] = [

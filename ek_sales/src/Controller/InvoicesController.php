@@ -532,7 +532,7 @@ class InvoicesController extends ControllerBase {
     /**
      * Render excel form for invoices list
      *
-     * @param array $param coid,from,to,client,status
+     * @param serialize array $param coid,from,to,client,status
      *
      *
      */

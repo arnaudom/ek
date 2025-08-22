@@ -9,16 +9,14 @@ use Drupal\Core\Url;
  * Interface for sales data
  *
  */
-class SalesData
-{
+class SalesData {
 
     /**
      * Constructs
      *
      *
      */
-    public function __construct()
-    {
+    public function __construct() {
     }
 
     /**
@@ -28,8 +26,7 @@ class SalesData
      * @param option array
      * @return markup
      */
-    public static function DocumentHtml($source = null, $id = null, $option = null)
-    {
+    public static function DocumentHtml($source = null, $id = null, $option = null) {
         switch ($source) {
             case 'invoice':
                 $link = Url::fromRoute('ek_sales.invoices.print_html', array('id' => $id))->toString();
@@ -60,8 +57,7 @@ class SalesData
      * @param id document unique id|serial
      * @return int
      */
-    public static function status($source = null, $id = null)
-    {
+    public static function status($source = null, $id = null) {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_'.$source, 's');
         $query->fields('s', ['status']);
@@ -79,8 +75,7 @@ class SalesData
      * @param id document unique id | serial
      * @return array Object
      */
-    public static function data($source = null, $id = null)
-    {
+    public static function data($source = null, $id = null) {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_'.$source, 's');
         $query->fields('s');

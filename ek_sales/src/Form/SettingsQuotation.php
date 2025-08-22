@@ -18,9 +18,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class SettingsQuotation extends FormBase {
 
-    /**
-     *
-     */
+    protected $salesSettings;
+
     public function __construct() {
         $this->salesSettings = new \Drupal\ek_sales\SalesSettings();
     }

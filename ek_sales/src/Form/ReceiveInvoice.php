@@ -25,17 +25,10 @@ use Drupal\ek_finance\FinanceSettings;
  */
 class ReceiveInvoice extends FormBase {
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
     protected $moduleHandler;
-
-    /**
-     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler.
-     */
+    protected $settings;
+    protected $journal;
+    
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
         if ($this->moduleHandler->moduleExists('ek_finance')) {

@@ -17,9 +17,8 @@ use Drupal\ek_sales\SalesSettings;
  */
 class SettingsFormCustomize extends FormBase {
 
-    /**
-     *
-     */
+    protected $settings;
+    
     public function __construct() {
         $this->settings = new SalesSettings();
     }
@@ -320,7 +319,7 @@ class SettingsFormCustomize extends FormBase {
                 '#min' => -100,
                 '#max' => 200,
                 '#default_value' => isset($s[$tpl[1]]['header']['logo_y']) ?
-                $s[$tpl[1]]['header']['logo_y'] : 10,
+                $s[$tpl[1]]['header']['logo_y'] : 25,
                 '#title' => $this->t('Logo vertical offset'),
             ];
 

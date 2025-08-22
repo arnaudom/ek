@@ -630,7 +630,7 @@ class QuotationsController extends ControllerBase {
     /**
      * Render excel form for quotations list
      *
-     * @param array $param coid,from,to,client,status, currency
+     * @param serialize array coid,from,to,client,status, currency
      *
      *
      */

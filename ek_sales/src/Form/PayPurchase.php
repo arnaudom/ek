@@ -24,17 +24,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class PayPurchase extends FormBase {
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
     protected $moduleHandler;
-
-    /**
-     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler.
-     */
+    protected $journal;
+    
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
         $this->journal = new Journal();
@@ -162,7 +154,7 @@ class PayPurchase extends FormBase {
             $form['fx_rate'] = [
                 '#type' => 'textfield',
                 '#size' => 30,
-                '#maxlength' => 255,
+                '#maxlength' => 20,
                 '#default_value' => '',
                 '#required' => false,
                 '#title' => $this->t('exchange rate'),
@@ -263,8 +255,7 @@ class PayPurchase extends FormBase {
 
         // FILTER cash account
         if (strpos($form_state->getValue('bank_account'), "-")) {
-            //the currency is in the form value
-
+            // the currency is in the form value
             $data = explode("-", $form_state->getValue('bank_account'));
             $currency2 = $data[0];
         } else {
@@ -289,7 +280,6 @@ class PayPurchase extends FormBase {
             }
         } elseif ($currency == $currency2 && $currency2 != $baseCurrency) {
             $form['fx_rate']['#required'] = true;
-
             $form['fx_rate']['#description'] = $baseCurrency;
         } else {
             $form['fx_rate']['#required'] = false;
@@ -304,7 +294,10 @@ class PayPurchase extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-        if ($form_state->getValue('fx_rate') <= 0 || !is_numeric($form_state->getValue('fx_rate'))) {
+        if ($form_state->getValue('fx_rate') <= 0 ) {
+            $form_state->setErrorByName("fx_rate", $this->t('the exchange rate cannot be negative'));
+        }
+        if (!is_numeric($form_state->getValue('fx_rate'))) {
             $form_state->setErrorByName("fx_rate", $this->t('the exchange rate value input is wrong'));
         }
 
@@ -324,9 +317,9 @@ class PayPurchase extends FormBase {
         if ($this_pay > $max_pay) {
             $form_state->setErrorByName("amount", $this->t('payment exceeds purchase amount'));
         }
-        //validate against partial payments
+        // validate against partial payments
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-            //check from journal
+            // check from journal
             $companysettings = new CompanySettings($data->head);
             $liabacc = $companysettings->get('liability_account', $data->currency);
             if ($liabacc == '') {

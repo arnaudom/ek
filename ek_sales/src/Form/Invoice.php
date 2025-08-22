@@ -23,17 +23,11 @@ use Drupal\ek_admin\Access\AccessCheck;
  */
 class Invoice extends FormBase {
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
+ 
     protected $moduleHandler;
+    protected $salesSettings;
+    protected $Financesettings;
 
-    /**
-     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler.
-     */
     public function __construct(ModuleHandler $module_handler) {
         $this->salesSettings = new \Drupal\ek_sales\SalesSettings();
         $this->moduleHandler = $module_handler;
@@ -885,7 +879,7 @@ class Invoice extends FormBase {
 
             // tax row
             $n++;
-            $taxamount = isset($data->taxvalue) ? round($taxable * $data->taxvalue / 100, 2) : null;
+            $taxamount = isset($data->taxvalue) ? round($taxable * $data->taxvalue / 100, 2) : 0;
             $form['description'] = [
                 '#type' => 'item',
                 '#markup' => $this->t('Tax payable'),
@@ -1482,8 +1476,8 @@ class Invoice extends FormBase {
                     )
             );
 
-            if (round($journal->credit, 4) <> round($journal->debit, 4)) {
-                $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+            if (round($journal->getCredit(), 4) <> round($journal->getDebit(), 4)) {
+                $msg = 'debit: ' . $journal->getDebit() . ' <> ' . 'credit: ' . $journal->getCredit();
                 \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }
         }

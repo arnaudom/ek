@@ -13,44 +13,40 @@ use Drupal\Core\Database\Database;
 /**
  * Set and retrieve settings parameters used in sales
  */
-  class SalesSettings
-  {
-
+  class SalesSettings {
 
   /**
    * company id.
    */
-      protected $coid;
 
+        protected $coid;
+        protected $settings;
 
-
-      public function __construct($coid = null)
-      {
-          if ($coid == null) {
-              $coid = 0;
-          }
-    
-          $this->settings = null;
-          $this->coid = $coid;
-          $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_settings', 's');
-          $query->fields('s');
-          $query->condition('coid', $this->coid, '=');
-          $data = $query->execute()->fetchObject();
-          if ($data) {
-              $this->settings = unserialize($data->settings);
-          }
+        public function __construct($coid = null) {
+            if ($coid == null) {
+                $coid = 0;
+            }
+        
+            $this->settings = null;
+            $this->coid = $coid;
+            $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_sales_settings', 's');
+            $query->fields('s');
+            $query->condition('coid', $this->coid, '=');
+            $data = $query->execute()->fetchObject();
+            if ($data) {
+                $this->settings = unserialize($data->settings);
+            }
       }
  
       /**
        * Get setting values by name
        *
        *
-       * @param key key of array
+       * @param key array key
        */
   
-      public function get($key)
-      {
+      public function get($key) {
           return isset($this->settings[$key]) ? $this->settings[$key] : null;
       }
 
@@ -62,8 +58,7 @@ use Drupal\Core\Database\Database;
        * @param value = key value
        */
 
-      public function set($key, $value)
-      {
+      public function set($key, $value) {
           return  $this->settings[$key] = $value;
       }
 
@@ -71,15 +66,12 @@ use Drupal\Core\Database\Database;
        * Save settings
        *
        */
-      public function save()
-      {
+      public function save() {
           $save = Database::getConnection('external_db', 'external_db')
-      ->update('ek_sales_settings')
-      ->condition('coid', $this->coid)
-      ->fields(array(
-        'settings' => serialize($this->settings) ,
-      ))
-      ->execute();
+            ->update('ek_sales_settings')
+            ->condition('coid', $this->coid)
+            ->fields(['settings' => serialize($this->settings)])
+            ->execute();
   
           if ($save) {
               return true;

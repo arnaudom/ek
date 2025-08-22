@@ -17,6 +17,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\file\Entity\File;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_admin\Access\AccessCheck;
 
@@ -43,6 +44,8 @@ class Purchase extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
+    protected $salesSettings;
+    protected $Financesettings;
     public function __construct(ModuleHandler $module_handler, EntityStorageInterface $file_storage) {
         $this->salesSettings = new \Drupal\ek_sales\SalesSettings();
         $this->moduleHandler = $module_handler;
@@ -801,7 +804,7 @@ class Purchase extends FormBase {
             unset($form['weight']);
 
             // tax
-            $taxamount = isset($data->taxvalue) ? round(($taxable * $data->taxvalue / 100), 2) : null;
+            $taxamount = isset($data->taxvalue) ? round(($taxable * $data->taxvalue / 100), 2) : 0;
             $n++;
             $form['description'] = [
                 '#type' => 'item',
@@ -910,7 +913,7 @@ class Purchase extends FormBase {
             '#title' => isset($data->uri) ? $this->t('Attach a new file') : $this->t('Attach a file'),
             '#type' => 'managed_file',
             '#upload_validators' => [
-                'file_validate_extensions' => ['png jpg jpeg doc docx xls xlsx odt ods odp pdf rar rtf tiff zip'],
+                'FileExtension' => ['extensions' => 'png jpg jpeg doc docx xls xlsx odt ods odp pdf rar rtf tiff zip'],
             ],
         ];
 
@@ -955,23 +958,6 @@ class Purchase extends FormBase {
     public function check_aid(array &$form, FormStateInterface $form_state) {
 
         //return alert
-        /*$coid = $form_state->getValue('head');
-        $currency = $form_state->getValue('currency');
-        $settings = new CompanySettings($coid);
-        $aid = $settings->get('liability_account', $currency);
-
-
-        if ($aid == '') {
-            $l = "../ek_admin/company/edit-settings/" . $coid;
-            $form['options']['alert']['#prefix'] = "<div id='alert' class='messages messages--warning'>";
-            $form['options']['alert']['#markup'] = $this->t("There is no liability account set for this company and currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]);
-            $form['options']['alert']['#description'] = '';
-        } else {
-            $form['options']['alert']['#prefix'] = "<div id='alert' class=''>";
-            $form['options']['alert']['#markup'] = '';
-            $form['options']['alert']['#description'] = '';
-        }
-        return $form['options']['alert'];*/
         $description = '';
         $fx_rate = '';
         $required = false;
@@ -1337,8 +1323,10 @@ class Purchase extends FormBase {
         // Update attachment
         // File are recorded in file_managed and purchase table
 
-        $fid = $form_state->getValue(['upload_doc', 0]);
+        $fid = $form_state->getValue('upload_doc');
         if ($fid) {
+            $file_id = reset($fid);
+            $file = File::load($file_id);
             if ($form_state->getValue('new_purchase') != 1) {
                 //delete previous file if any
                 $query = 'SELECT uri from {ek_sales_purchase} WHERE serial = :s';
@@ -1361,7 +1349,6 @@ class Purchase extends FormBase {
                 }
             }
 
-            $file = $this->fileStorage->load($fid);
             $dir = "private://sales/purchase/" . $reference . "";
             \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
             $uri = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
@@ -1430,8 +1417,8 @@ class Purchase extends FormBase {
                     )
             );
 
-            if (round($journal->credit, 4) <> round($journal->debit, 4)) {
-                $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+            if (round($journal->getCredit(), 4) <> round($journal->getDebit(), 4)) {
+                $msg = 'debit: ' . $journal->getDebit() . ' <> ' . 'credit: ' . $journal->getCredit();
                 \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }
         }
