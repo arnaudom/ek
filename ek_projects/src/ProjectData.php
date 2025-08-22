@@ -20,7 +20,7 @@ class ProjectData {
         
     }
 
-    /*
+    /**
      * @return
      *  an array of projects by user access - country / company
      *  classified projects per staus and return array $key => $description
@@ -109,7 +109,7 @@ class ProjectData {
         return $optgrouptype;
     }
 
-    /*
+    /**
      * @return
      *  array of formated project list for select field
      *  pcode => description
@@ -143,7 +143,7 @@ class ProjectData {
         return $list;
     }
 
-    /*
+    /**
      * @param mix $id
      *  project id or project serial code
      * @param bolean $abs
@@ -202,7 +202,7 @@ class ProjectData {
         }
     }  
 
-    /*
+    /**
      * @return
      *  a project name from id
      *
@@ -215,7 +215,7 @@ class ProjectData {
         return $name;
     }
 
-    /*
+    /**
      * @return
      *  access validation to a project by uid
      * @param int  $id project id,
@@ -257,7 +257,7 @@ class ProjectData {
         }
     } 
 
-    /*
+    /**
      * @return
      *  access validation to a file in a project by uid
      * @param
@@ -269,7 +269,7 @@ class ProjectData {
         $query = "SELECT settings from {ek_project_settings} WHERE coid=:c";
         $settings = Database::getConnection('external_db', 'external_db')
                         ->query($query, [':c' => 0])->fetchField();
-        $s = unserialize($settings);
+        $s = $settings !== null ? unserialize($settings) : [];
 
         $query = "SELECT p.id,cid,d.share,d.deny,owner FROM {ek_project_documents} d "
                 . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE d.id=:f";
@@ -284,9 +284,9 @@ class ProjectData {
 
 
         $query = "SELECT access FROM {ek_country} WHERE id=:id";
-        $access = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $data->cid))
+        $access_d = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $data->cid))
                 ->fetchField();
-        $access = explode(',', unserialize($access));
+        $access = $access_d !== null ? explode(',', unserialize($access_d)) : [];
 
         $uid = \Drupal::currentUser()->id();
 
@@ -311,19 +311,18 @@ class ProjectData {
         }
     } 
 
-    /*
+    /** 
      * @return
      *  array of custom sections names
      **/
     
-
     public static function sectionsName() {
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_project_settings', 'p');
         $query->fields('p', ['settings']);
         $query->condition('coid', 0);
         $settings = $query->execute()->fetchField();
-        $s = unserialize($settings);
+        $s = $settings !== null ? unserialize($settings) : [];
         
         if (isset($s['sections'])) {
             return [
@@ -343,7 +342,8 @@ class ProjectData {
             ];
         }
     } 
-    /*
+
+    /**
      * @return
      *  access to section by user
      *  return an array of accessible sections i.e (1,2,5) => access to section 1, 2 and 5

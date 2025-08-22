@@ -34,8 +34,8 @@ td.fc-day-top.fc-future {
 /* Style the dialog-off-canvas container. */
 /* Layer the dialog just under the toolbar. */
 .ui-dialog.ui-dialog-off-canvas {
-    color: #ggg;
-    background: #fff;
+    color: #333;
+    background: #d2d2d2;
 }
 #drupal-off-canvas .fc-day-top {
     padding-right: 20px !important;
@@ -75,5 +75,14 @@ td.fc-day-top.fc-future {
 
 #drupal-off-canvas th:first-child, #drupal-off-canvas td:first-child {
     width: auto;
+}
+
+.cal-tooltip {
+    display: block !important;
+    background: #eeeeee !important;
+    visibility: visible !important;
+    border: 1px solid #444444 !important;
+    border-radius: 2px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
 }
 

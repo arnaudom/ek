@@ -26,7 +26,7 @@ use Drupal\ek_projects\Service\ProjectService;
  */
 class Notification extends FormBase {
 
-        protected $moduleHandler;
+    protected $moduleHandler;
     protected $projectService;
 
    
@@ -247,6 +247,9 @@ class Notification extends FormBase {
                 
                 $alert = new InsertCommand('.alert', "<div class='messages messages--status'>" . $this->t('Message sent') . "</div>");
                 $response->addCommand($alert);$response->addCommand($alert);
+
+                $hideButton = new InvokeCommand('.ui-dialog-buttonset button:first', 'hide');
+                $response->addCommand($hideButton);
                 return $response;
             }
             

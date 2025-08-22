@@ -2,11 +2,12 @@
         <div class="update-spinner"></div>
         <div class="update-message">{{ 'Updating'|t }}...</div>
 </div>
+
 {# Header Section #}
 <div class="page-wrapper">
     <div class="header-container">
         <h1 class="project-title">
-            {{ items.project.0.pname }}
+            <span class="clipboard_name">{{ items.project.0.pname }}</span>
             <span class="field_edit">{{ items.project.0.edit_pname|raw }}</span>
         </h1>
         <div class="last-viewed">

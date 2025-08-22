@@ -664,6 +664,46 @@
                 });
             });
 
+            /*
+            * copy project url
+            */
+            $(".clipboard_name").click(function () {
+                var text = window.location.protocol + '//' + window.location.host + '/user/login?destination=/projects/project/' + drupalSettings.ek_projects.id;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(function() {
+                        for (let i = 0; i < 2; i++) {
+                            $y('#copy' + id).fadeTo('fast', 0).fadeTo('fast', 1);
+                        }
+                    }, function(err) {
+                        fallbackCopyTextToClipboard(text, id);
+                    });
+                } else {
+                    fallbackCopyTextToClipboard(text,'.clipboard_name');
+                }
+            });
+
+            function fallbackCopyTextToClipboard(text, id) {
+                var $body = document.getElementsByTagName('body')[0];
+                var $tempInput = document.createElement('textarea');
+                $body.appendChild($tempInput);
+                $tempInput.value = text;
+                $tempInput.select();
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText($tempInput.value).then(function() {
+                        // Success
+                    }, function(err) {
+                        console.error('Clipboard write failed: ', err);
+                    });
+                } else {
+                    document.execCommand('copy');
+                }
+                $body.removeChild($tempInput);
+                for (let i = 0; i < 2; i++) {
+                    $(id).fadeTo('fast', 0).fadeTo('fast', 1.0);
+                }
+            }
+
+
         }};
 })(jQuery, Drupal, drupalSettings);
 

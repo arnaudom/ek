@@ -19,6 +19,9 @@ use Drupal\ek_projects\Service\ProjectService;
  */
 class SettingsUsers extends FormBase {
 
+    protected $projectService;
+    protected $settings;
+    
     /**
      * {@inheritdoc}
      */
@@ -26,13 +29,12 @@ class SettingsUsers extends FormBase {
         return 'ek_projects_edit_access_section';
     }
 
-    protected $projectService;
      /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('project.service')
+            $container->get('project.service')
         );
     }
 
@@ -42,6 +44,12 @@ class SettingsUsers extends FormBase {
      */
     public function __construct(ProjectService $projectService) {
         $this->projectService = $projectService;
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project_settings', 'p');
+        $query->fields('p', ['settings']);
+        $query->condition('coid', 0);
+        $settings = $query->execute()->fetchField();
+        $this->settings = $settings !== null ? unserialize($settings) : [];
     }
     
     /**
@@ -49,25 +57,18 @@ class SettingsUsers extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
         
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_project_settings', 'p');
-        $query->fields('p', ['settings']);
-        $query->condition('coid', 0);
-        $settings = $query->execute()->fetchField();
-        $s = unserialize($settings);
-
         $form['access_level'] = array(
             '#type' => 'checkbox',
             '#title' => $this->t('Block file access level at page level'),
-            '#default_value' => ($s['access_level'] == 1) ? 1 : 0,
+            '#default_value' => ($this->settings['access_level'] == 1) ? 1 : 0,
         );
         
-        if (isset($s['sections'])) {
-            $s1 = $s['sections']['s1'];
-            $s2 = $s['sections']['s2'];
-            $s3 = $s['sections']['s3'];
-            $s4 = $s['sections']['s4'];
-            $s5 = $s['sections']['s5'];
+        if (isset($this->settings['sections'])) {
+            $s1 = $this->settings['sections']['s1'];
+            $s2 = $this->settings['sections']['s2'];
+            $s3 = $this->settings['sections']['s3'];
+            $s4 = $this->settings['sections']['s4'];
+            $s5 = $this->settings['sections']['s5'];
         } else {
             $s1 = $this->t("Section 1");
             $s2 = $this->t("Section 2");
@@ -134,52 +135,51 @@ class SettingsUsers extends FormBase {
         foreach ($users as $uid => $name) {
             $acc = \Drupal\user\Entity\User::load($uid);
             $status = ($acc->isBlocked()) ? ' (' . $this->t('Blocked') . ')' : '';
-            /**/
-            $form['list'][$uid]['user'] = array(
+            $form['list'][$uid]['user'] = [
                 '#type' => 'item',
                 '#markup' => '[' . $uid . '] ' . $name . $status,
-            );
+            ];
 
             $access = $this->projectService->validate_section_access($uid);
 
-            $form['list'][$uid]['s1'] = array(
+            $form['list'][$uid]['s1'] = [
                 '#type' => 'checkbox',
                 '#default_value' => in_array(1, $access) ? 1 : 0,
-            );
+            ];
 
-            $form['list'][$uid]['s2'] = array(
+            $form['list'][$uid]['s2'] = [
                 '#type' => 'checkbox',
                 '#default_value' => in_array(2, $access) ? 1 : 0,
-            );
+            ];
 
-            $form['list'][$uid]['s3'] = array(
+            $form['list'][$uid]['s3'] = [
                 '#type' => 'checkbox',
                 '#default_value' => in_array(3, $access) ? 1 : 0,
-            );
+            ];
 
-            $form['list'][$uid]['s4'] = array(
+            $form['list'][$uid]['s4'] = [
                 '#type' => 'checkbox',
                 '#default_value' => in_array(4, $access) ? 1 : 0,
-            );
+            ];
 
-            $form['list'][$uid]['s5'] = array(
+            $form['list'][$uid]['s5'] = [
                 '#type' => 'checkbox',
                 '#default_value' => in_array(5, $access) ? 1 : 0,
-            );
+            ];
         }
 
         $form['#tree'] = true;
 
 
-        $form['actions'] = array(
+        $form['actions'] = [
             '#type' => 'actions',
-            '#attributes' => array('class' => array('container-inline')),
-        );
-        $form['actions']['access'] = array(
+            '#attributes' => ['class' => ['container-inline']],
+        ];
+        $form['actions']['access'] = [
             '#id' => 'accessbutton',
             '#type' => 'submit',
             '#value' => $this->t('Save'),
-        );
+        ];
 
         $form['#attached']['library'][] = 'ek_projects/ek_projects_css';
 
@@ -245,19 +245,19 @@ class SettingsUsers extends FormBase {
             }
         }
         
-        $query = Database::getConnection('external_db', 'external_db')
+        /*$query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_project_settings', 'p');
         $query->fields('p', ['settings']);
         $query->condition('coid', 0);
         $settings = $query->execute()->fetchField();
-        $s = unserialize($settings);
+        $s = $settings !== null ? unserialize($settings) : [];*/
 
-        $s['access_level'] = $form_state->getValue('access_level');
-        $s['sections'] = $sections;
+        $this->settings['access_level'] = $form_state->getValue('access_level');
+        $this->settings['sections'] = $sections;
         Database::getConnection('external_db', 'external_db')
                 ->update('ek_project_settings')
                 ->condition('coid', 0)
-                ->fields(['settings' => serialize($s)])
+                ->fields(['settings' => serialize($this->settings)])
                 ->execute();
 
         \Drupal::messenger()->addStatus(t("Updated @n, inserted @i user(s)", ['@n' => $n, '@i' => $i]));

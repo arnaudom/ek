@@ -258,7 +258,9 @@ class ProjectFieldEdit extends FormBase {
                     '#title' => $this->t('suppliers'),
                     '#default_value' => explode(',', $data->supplier_offer),
                     '#attributes' => ['class' => ['form-select-chosen']],
-                    '#attached' => ['library' => ['ek_admin/ek_admin_chosen'],],
+                    '#attached' => [
+                        'library' => ['ek_admin/ek_admin_tageditor'],
+                    ],
                 ];
                 break;
 

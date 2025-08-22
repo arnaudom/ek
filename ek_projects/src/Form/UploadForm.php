@@ -13,6 +13,8 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\file\Entity\File;
+use Drupal\file\FileUsage\FileUsageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_projects\Service\ProjectService;
 
@@ -31,6 +33,7 @@ class UploadForm extends FormBase {
 
     protected $moduleHandler;
     protected $projectService;
+    protected $fileUsage;
 
     /**
      * {@inheritdoc}
@@ -38,7 +41,8 @@ class UploadForm extends FormBase {
     public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('module_handler'),
-                $container->get('project.service')
+                $container->get('project.service'),
+                $container->get('file.usage')
         );
     }
 
@@ -46,58 +50,77 @@ class UploadForm extends FormBase {
      * Constructs an  object.
      *
      */
-    public function __construct(ModuleHandler $module_handler, ProjectService $projectService) {
+    public function __construct(ModuleHandler $module_handler, ProjectService $projectService, FileUsageInterface $file_usage) {
         $this->moduleHandler = $module_handler;
         $this->projectService = $projectService;
+        $this->fileUsage = $file_usage;
     }
 
     /**
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
-        $form['upload_doc'] = array(
-            '#type' => 'file',
-            '#title' => $this->t('Select file'),
-        );
 
-        $form['sub_folder'] = array(
+        // D11 compatibility edit
+        $extensions = 'png gif jpg jpeg txt doc docx xls xlsx odt ods odp pdf ppt pptx rar rtf tiff zip';
+        $ref = explode('|', $id);
+        $pcode = explode('-', $ref[0]);
+        $pcode_parts = array_reverse($pcode);
+        $folder = $pcode_parts[0];
+        $destination = "private://projects/documents/{$folder}";
+
+        // Ensure the destination directory exists.
+        \Drupal::service('file_system')->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+
+        $form['upload_doc'] = [
+            '#type' => 'managed_file',
+            '#title' => $this->t('Select file'),
+            '#upload_location' => $destination,
+            '#progress_indicator' => 'bar',
+            '#progress_message'   => t('Processing...'),
+            '#required' => TRUE, 
+        ];
+
+        $form['sub_folder'] = [
             '#type' => 'textfield',
             '#size' => 25,
             '#maxlength' => 30,
             '#attributes' => array('placeholder' => $this->t('tag or folder')),
-        );
+        ];
 
-        $form['comment'] = array(
+        $form['comment'] = [
             '#type' => 'textfield',
             '#size' => 25,
             '#maxlength' => 200,
             '#attributes' => array('placeholder' => $this->t('comment')),
-        );
+        ];
 
-        $form['for_id'] = array(
+        $form['for_id'] =[
             '#type' => 'hidden',
             '#default_value' => $id,
-        );
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['upload'] = array(
+        ];
+
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['upload'] = [
             '#id' => 'upbuttonid',
             '#type' => 'submit',
             '#value' => $this->t('Upload'),
             '#ajax' => array(
                 'callback' => array($this, 'saveFile'),
                 'wrapper' => 'doc_upload_message',
-                'method' => 'replace',
+                'method' => 'replaceWith',
             ),
-        );
+        ];
 
 
-        $form['doc_upload_message'] = array(
+        $form['doc_upload_message'] = [
             '#type' => 'item',
             '#markup' => '',
-            '#prefix' => '<div id="doc_upload_message" class="red" >',
+            '#prefix' => '<div id="doc_upload_message">',
             '#suffix' => '</div>',
-        );
+        ];
 
+        $form_state->set('allowed_extensions', $extensions);
         return $form;
     }
 
@@ -105,6 +128,43 @@ class UploadForm extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
+        // Validate the uploaded file.
+        /*$file_ids = $form_state->getValue('upload_doc');
+        if (!empty($file_ids)) {
+            $file_id = reset($file_ids);
+            $file = File::load($file_id);
+            if ($file) {
+                // Validate file extensions.
+                $errors = [];
+                $allowed_extensions = $form_state->get('allowed_extensions');
+                $validators = ['FileExtension' => [ 'extensions' => $allowed_extensions ]];
+                // $validators = ['FileSizeLimit' => [ 'fileLimit' => $max_filesize ]];
+                $file_validator = \Drupal::service('file.validator');
+                $violations = $file_validator->validate($file, $validators);
+                foreach ($violations as $violation) {
+                $errors[] = $violation->getMessage();
+                }
+
+                if (!empty($errors)) {
+                    // Set validation errors and mark file for deletion.
+                    foreach ($errors as $error) {
+                        $form_state->setErrorByName('upload_doc', $error);
+                    }
+                    // Mark the temporary file for deletion.
+                    $file->delete();
+                }
+            } else {
+                $form_state->setErrorByName('upload_doc', $this->t('Unable to load the uploaded file.'));
+            }
+        } else {
+            $form_state->setErrorByName('upload_doc', $this->t('No file was uploaded.'));
+        }*/
+
+        // Validate sub_folder if provided.
+        $sub_folder = $form_state->getValue('sub_folder');
+        if (!empty($sub_folder) && !preg_match('/^[a-zA-Z0-9_-]+$/', $sub_folder)) {
+            $form_state->setErrorByName('sub_folder', $this->t('Sub-folder contains invalid characters.'));
+        }
         
     }
 
@@ -119,89 +179,104 @@ class UploadForm extends FormBase {
      * Callback
      */
     public function saveFile(array &$form, FormStateInterface $form_state) {
-        $ref = explode('|', $form_state->getValue('for_id'));
 
-        switch ($ref[1]) {
-
-            case 'doc':
-
-                $pcode = explode('-', $ref[0]);
-                $pcode_parts = array_reverse($pcode);
-                $folder = $pcode_parts[0];
-
-                //upload
-                $extensions = 'png gif jpg jpeg bmp txt doc docx xls xlsx odt ods odp pdf ppt pptx sxc rar rtf tiff zip';
-                $validators = array('file_validate_extensions' => array($extensions));
-                $dir = "private://projects/documents/" . $folder;
-                \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                $file = file_save_upload("upload_doc", $validators, $dir, 0, FileSystemInterface::EXISTS_RENAME);
-
-                if ($file) {
-                    $file->setPermanent();
-                    $file->save();
-                    $uri = $file->getFileUri();
-                    $filename = $file->getFileName();
-
-                    $fields = array(
-                        'pcode' => $ref[0],
-                        'filename' => $filename,
-                        'uri' => $uri,
-                        'folder' => $ref[2],
-                        'sub_folder' => Xss::filter($form_state->getValue('sub_folder')),
-                        'comment' => Xss::filter($form_state->getValue('comment')),
-                        'date' => time(),
-                        'size' => filesize($uri),
-                    );
-                    $insert = Database::getConnection('external_db', 'external_db')
-                            ->insert('ek_project_documents')
-                            ->fields($fields)
-                            ->execute();
-
-                    if ($this->moduleHandler->moduleExists('ek_extranet')) {
-                        if ($ref[3] == 'extranet') {
-                            //file uploaded from extranet user
-                            //add file to content
-                            $save = ek_extranet_save_content($insert, $ref[0]);
-                        }
-                    }
-                }
-
-                break;
+        
+        // Check for validation errors.
+        if ($form_state->hasAnyErrors()) {
+            // Collect and display validation errors.
+            $errors = [];
+            foreach ($form_state->getErrors() as $error) {
+                $errors[] = $error;
+            }
+            $form['doc_upload_message']['#markup'] = "<div class='red'>" . $this->t('Upload failed: @errors', ['@errors' => implode('; ', $errors)]) . "</div>";
+            return $form['doc_upload_message']['#markup'];
         }
 
 
-        if ($insert) {
+        $ref = explode('|', $form_state->getValue('for_id'));
+        $filename = NULL;
+
+        $pcode = explode('-', $ref[0]);
+        $pcode_parts = array_reverse($pcode);
+        $folder = $pcode_parts[0];
+
+        // Get the file ID from the managed_file field.
+        $file_ids = $form_state->getValue('upload_doc');
+        if (!empty($file_ids)) {
+            $file_id = reset($file_ids); // Take the first file ID.
+            $file = File::load($file_id);
+
+            if ($file) {
+                // Set the file as permanent.
+                $file->setPermanent();
+                $file->save();
+
+                // Register file usage to prevent deletion.
+                $this->fileUsage->add($file, 'ek_projects', 'project_document', $file->id());
+
+                $uri = $file->getFileUri();
+                $filename = $file->getFilename();
+
+                // Save file metadata to the external database.
+                $fields = [
+                    'pcode' => $ref[0],
+                    'filename' => $filename,
+                    'uri' => $uri,
+                    'folder' => $ref[2],
+                    'sub_folder' => Xss::filter($form_state->getValue('sub_folder')),
+                    'comment' => Xss::filter($form_state->getValue('comment')),
+                    'date' => time(),
+                    'size' => $file->getSize(),
+                ];
+
+                $insert = Database::getConnection('external_db', 'external_db')
+                    ->insert('ek_project_documents')
+                    ->fields($fields)
+                    ->execute();
+
+                if ($this->moduleHandler->moduleExists('ek_extranet') && $ref[3] === 'extranet') {
+                    // File uploaded from extranet user; add to content.
+                    $save = ek_extranet_save_content($insert, $ref[0]);
+                }
+            }
+        }
+        
+
+        // Log and notify if the file was saved successfully.
+        if (!empty($filename)) {
             $log = $ref[0] . '|' . \Drupal::currentUser()->id() . '|upload|' . $filename;
             \Drupal::logger('ek_projects')->notice($log);
 
-            $fields = array(
+            $fields = [
                 'pcode' => $ref[0],
                 'uid' => \Drupal::currentUser()->id(),
                 'stamp' => time(),
-                'action' => 'upload' . ' ' . $filename
-            );
+                'action' => 'upload ' . $filename,
+            ];
             Database::getConnection('external_db', 'external_db')
-                    ->insert('ek_project_tracker')
-                    ->fields($fields)->execute();
+                ->insert('ek_project_tracker')
+                ->fields($fields)
+                ->execute();
 
             $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_project', 'p');
-            $query->fields('p', ['id']);
-            $query->condition('pcode', $ref[0], '=');
-
+                ->select('ek_project', 'p')
+                ->fields('p', ['id'])
+                ->condition('pcode', $ref[0], '=');
             $id = $query->execute()->fetchField();
-            $param = serialize(
-                    array(
-                        'id' => $id,
-                        'field' => 'File attachment',
-                        'value' => $filename,
-                        'pcode' => $ref[0]
-                    )
-            );
+
+            $param = serialize([
+                'id' => $id,
+                'field' => 'File attachment',
+                'value' => $filename,
+                'pcode' => $ref[0],
+            ]);
+
             $this->projectService->notify_user($param);
-            $form['doc_upload_message']['#markup'] = $this->t('file uploaded @f', array('@f' => $filename));
+
+            $form['doc_upload_message']['#markup'] = "<div class='green'>" .  $this->t('File uploaded: @f', ['@f' => $filename]) . "</div>";
+
         } else {
-            $form['doc_upload_message']['#markup'] = $this->t('error copying file');
+            $form['doc_upload_message']['#markup'] = "<div class='red'>" .  $this->t('Error uploading file.') . "</div>";
         }
 
         return $form['doc_upload_message'];

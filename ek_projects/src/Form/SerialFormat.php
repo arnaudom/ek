@@ -61,7 +61,7 @@ class SerialFormat extends FormBase {
         $settings = Database::getConnection('external_db', 'external_db')
                         ->query($query, [':c' => 0])->fetchField();
 
-        $s = unserialize($settings);
+        $s = $settings !== null ? unserialize($settings) : [];
         $sample = ['', 'MYCO', 'TYPE', 'CID', 'MM_YY', 'ABC', '123'];
 
         $string = isset($s['code'][1]) ? "<span id='e1'>" . $sample[$s['code'][1]] . "-</span>" : "<span id='e1'>" . $sample[1] . "</span>-";

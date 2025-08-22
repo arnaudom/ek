@@ -208,7 +208,9 @@ class SplitProject extends FormBase {
                     ->condition('coid', 0)
                     ->execute()
                     ->fetchField();
-        $s = unserialize($settings);
+
+        $s = $settings !== null ? unserialize($settings) : [];
+
         if ($s['code'] == '') {
             $s['code'] = [1, 2, 3, 4, 5, 6];
         }
@@ -284,13 +286,21 @@ class SplitProject extends FormBase {
             \Drupal::messenger()->addStatus(t('New project created with ref @r', ['@r' => $pcode]));
             Cache::invalidateTags(['project_last_block']);
 
+            // country
+            $data = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_country', 'c')
+                    ->fields('c',['name','code'])
+                    ->condition('id', $form_state->getValue('cid'))
+                    ->execute();   
+            $cdata = $data->fetchObject();
+
             //notify users
             if ($form_state->getValue('notify') == 1) {
                 $param = serialize(
                         [
                             'id' => $pid,
                             'field' => 'new_project',
-                            'value' => $data->serial,
+                            'value' => $pcode,
                             'pname' => $pname,
                             'country' => $cdata->name,
                             'cid' => $form_state->getValue('cid'),

@@ -14,14 +14,8 @@ use Drupal\ek_admin\Access\AccessCheck;
  */
 class ProjectService implements ProjectServiceInterface {
 
-/**
-   * The configuration object.
-   *
-   *
-   */
-  protected $extdb;
 
-  
+  protected $extdb;
 
   /**
    * Constructs a PromptService object.
@@ -200,20 +194,16 @@ class ProjectService implements ProjectServiceInterface {
             $uid = \Drupal::currentUser()->id();
         }
 
-        //$query = "SELECT cid,share,deny FROM {ek_project} WHERE id=:id";
-        //$data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchObject();
         $query = $this->extdb->select('ek_project', 'p');
         $query->fields('p', ['cid', 'share', 'deny']);
         $query->condition('id', $id);
         $data = $query->execute()->fetchObject();
 
-        //$query = "SELECT access FROM {ek_country} WHERE id=:id";
-        //$access = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $data->cid))->fetchField();
         $query = $this->extdb->select('ek_country', 'c');
         $query->fields('c', ['access']);
         $query->condition('id', $data->cid);
-        $access = $query->execute()->fetchField();
-        $access = explode(',', unserialize($access));
+        $r = $query->execute()->fetchField();
+        $access = $r !== null ? explode(',', unserialize($r)) : [];
 
         if ($data->share == '0') {
             // no special restriction.
@@ -226,8 +216,8 @@ class ProjectService implements ProjectServiceInterface {
         } else {
             // restricted
             // use share / deny data
-            $share = explode(',', $data->share);
-            $deny = explode(',', $data->deny);
+            $share = explode(',', (string) ($data->share ?? ''));
+            $deny = explode(',', (string) ($data->deny ?? ''));
             if (in_array($uid, $share) && !in_array($uid, $deny)) {
                 return true;
             } else {
@@ -248,12 +238,8 @@ class ProjectService implements ProjectServiceInterface {
         $query->fields('p', ['settings']);
         $query->condition('coid', 0);
         $settings = $query->execute()->fetchField();
-        $s = unserialize($settings);
+        $s = $settings !== null ? unserialize($settings) : [];
 
-        //$query = "SELECT p.id,cid,d.share,d.deny,owner FROM {ek_project_documents} d "
-        //        . "INNER JOIN {ek_project} p ON d.pcode=p.pcode WHERE d.id=:f";
-        //$data = Database::getConnection('external_db', 'external_db')->query($query, array(':f' => $id))
-        //        ->fetchObject();
         $query = $this->extdb->select('ek_project_documents', 'd');
         $query->fields('d', ['share','deny']);
         $query->leftJoin('ek_project', 'p', 'p.pcode=d.pcode');
@@ -267,14 +253,11 @@ class ProjectService implements ProjectServiceInterface {
             return false;
         }
 
-        //$query = "SELECT access FROM {ek_country} WHERE id=:id";
-        //$access = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $data->cid))
-        //        ->fetchField();
         $query = $this->extdb->select('ek_country', 'c');
         $query->fields('c', ['access']);
         $query->condition('id', $data->cid);
         $a = $query->execute()->fetchField();
-        $access = explode(',', unserialize($a));
+        $access = $a !== null ? explode(',', unserialize($a)) : [];
 
         $uid = \Drupal::currentUser()->id();
 
@@ -289,8 +272,8 @@ class ProjectService implements ProjectServiceInterface {
         } else {
             // restricted
             // use share / deny data
-            $share = explode(',', $data->share);
-            $deny = explode(',', $data->deny);
+            $share = explode(',', (string) ($data->share ?? '')); 
+            $deny = explode(',', (string) ($data->deny ?? '')); 
             if (in_array($uid, $share) && !in_array($uid, $deny)) {
                 return true;
             } else {
@@ -304,28 +287,29 @@ class ProjectService implements ProjectServiceInterface {
      * {@inheritdoc}
      */
     public function validate_section_access($uid) {
-        //$query = 'SELECT * from {ek_project_users} wHERE uid=:u';
-        //$access = Database::getConnection('external_db', 'external_db')->query($query, array(':u' => $uid))->fetchobject();
+        
         $query = $this->extdb->select('ek_project_users', 'p');
         $query->fields('p');
         $query->condition('uid', $uid);
-        $access = $query->execute()->fetchobject();
+        $access = $query->execute()->fetchObject();
 
         $sections = [];
-        if ($access->section_1 == 1) {
-            array_push($sections, 1);
-        }
-        if ($access->section_2 == 1) {
-            array_push($sections, 2);
-        }
-        if ($access->section_3 == 1) {
-            array_push($sections, 3);
-        }
-        if ($access->section_4 == 1) {
-            array_push($sections, 4);
-        }
-        if ($access->section_5 == 1) {
-            array_push($sections, 5);
+        if ($access) {
+            if ($access->section_1 == 1) {
+                array_push($sections, 1);
+            }
+            if ($access->section_2 == 1) {
+                array_push($sections, 2);
+            }
+            if ($access->section_3 == 1) {
+                array_push($sections, 3);
+            }
+            if ($access->section_4 == 1) {
+                array_push($sections, 4);
+            }
+            if ($access->section_5 == 1) {
+                array_push($sections, 5);
+            }
         }
 
         return $sections;
@@ -432,6 +416,7 @@ class ProjectService implements ProjectServiceInterface {
      * {@inheritdoc}
      */
     public function notify_user($param) {
+        
         $param = unserialize($param);
         if (!isset($param['mail']) || $param['mail'] == null) {
             $param['mail'] = 'nomail';

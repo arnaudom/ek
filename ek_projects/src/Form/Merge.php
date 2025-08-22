@@ -28,7 +28,7 @@ class Merge extends FormBase {
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-      The module handler.
+     * The module handler.
      */
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;

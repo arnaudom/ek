@@ -37,8 +37,7 @@ function hook_project_view($data, $pcode)
  * @see \Drupal\ek_projects\Controller\ProjectController::periodicalupdater()
  *
  */
-function hook_project_doc_view($items)
-{
+function hook_project_doc_view($items) {
     foreach ($items as $folder => $docs) {
         foreach ($docs as $key => $doc) {
             if ($key && $doc['pcode']) {
@@ -57,8 +56,7 @@ function hook_project_doc_view($items)
  * @see \Drupal\ek_projects\Controller\ProjectController::deleteConfirmed()
  *
  */
-function hook_project_doc_delete($items)
-{
+function hook_project_doc_delete($items) {
     $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_extranet_pages', 'e');
     $query->fields('e', ['content']);
@@ -80,7 +78,7 @@ function hook_project_doc_delete($items)
                 ->execute();
        
     // HTTP 204 is "No content", meaning "I did what you asked and we're done."
-    return new Response('', 204);
+    return new \Symfony\Component\HttpFoundation\Response('', 204);
 }
 /**
  * @} End of "addtogroup hooks".

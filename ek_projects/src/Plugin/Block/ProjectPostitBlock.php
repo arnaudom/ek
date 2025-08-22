@@ -47,8 +47,11 @@ class ProjectPostitBlock extends BlockBase {
             $query->leftJoin('ek_project', 'p', 'p.pcode=a.pcode');
             $query->condition('p.id', $id, '=');
             $data = $query->execute()->fetchField();
-            if($data) {
-                $post = unserialize($data);
+            if ($data && is_string($data)) {
+                $post = @unserialize($data);
+                if ($post === false && $data !== 'b:0;') {
+                    $post = [];
+                }
             }
             
             

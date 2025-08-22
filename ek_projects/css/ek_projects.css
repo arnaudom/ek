@@ -823,6 +823,28 @@
     display: block;
 }
 
+/* Clipboard functionality */
+.clipboard_name {
+  cursor: pointer;
+  position: relative;
+  padding-right: 20px;
+}
+
+.clipboard_name:after {
+  content: "\f0c5";
+  font-family: FontAwesome;
+  font-size: 0.8em;
+  position: absolute;
+  right: -10px;
+  top: 5%;
+  opacity: 0.5;
+  transition: var(--transition);
+}
+
+.clipboard_name:hover:after {
+  opacity: 1;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
     .nav-tabs {

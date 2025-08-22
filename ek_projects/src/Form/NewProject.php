@@ -300,7 +300,7 @@ class NewProject extends FormBase {
                 ->condition('coid',0)
                 ->execute();   
             $settings = $data->fetchField();
-            $s = unserialize($settings);
+            $s = $settings !== null ? unserialize($settings) : [];
             if ($s['code'] == '') {
                 $s['code'] = [1, 2, 3, 4, 5, 6];
             }
