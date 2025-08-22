@@ -35,6 +35,10 @@ class ManageCash extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
+
+    protected $financeSettings;
+    protected $rounding;
+
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
         $this->financeSettings = new \Drupal\ek_finance\FinanceSettings();
@@ -74,108 +78,108 @@ class ManageCash extends FormBase {
         $CurrencyOptions = array('0' => ''); //this is added to force callback on select
         $CurrencyOptions += CurrencyData::listcurrency(1);
 
-        $form['transaction'] = array(
+        $form['transaction'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $actions,
             '#title' => $this->t('Cash movement'),
             '#required' => true,
             '#prefix' => "<div class='container-inline'>",
-        );
+        ];
 
-        $form['next'] = array(
+        $form['next'] = [
             '#type' => 'submit',
             '#value' => $this->t('Next'),
-            '#limit_validation_errors' => array(array('transaction')),
-            '#submit' => array(array($this, 'get_accounts')),
-            '#states' => array(
+            '#limit_validation_errors' => [['transaction']],
+            '#submit' => [[$this, 'get_accounts']],
+            '#states' => [
                 // Hide data fieldset when class is empty.
-                'invisible' => array(
-                    "select[name='transaction']" => array('value' => ''),
-                ),
-            ),
+                'invisible' =>[
+                    "select[name='transaction']" => ['value' => ''],
+                ],
+            ],
             '#suffix' => '</div>',
-        );
+        ];
 
         if ($form_state->get('step') == 2) {
             if ($form_state->getValue('transaction') == 1 || $form_state->getValue('transaction') == 2) {
                 // office cash
 
-                $form['coid'] = array(
+                $form['coid'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $company,
                     '#title' => $this->t('company receiving funds'),
                     '#required' => true,
-                    '#ajax' => array(
-                        'callback' => array($this, 'get_bank'),
+                    '#ajax' => [
+                        'callback' => [$this, 'get_bank'],
                         'wrapper' => 'accounts_bank',
-                    ),
-                );
+                    ],
+                ];
 
-                $form['bank'] = array(
+                $form['bank'] = [
                     '#type' => 'select',
                     '#size' => 1,
-                    '#options' => isset($_SESSION['bankoptions']) ? $_SESSION['bankoptions'] : array(),
+                    '#options' => isset($_SESSION['bankoptions']) ? $_SESSION['bankoptions'] :[],
                     '#required' => true,
                     '#title' => $this->t('bank account debited'),
                     '#prefix' => "<div id='accounts_bank'>",
                     '#suffix' => "</div>",
                     '#validated' => true,
-                );
+                ];
 
-                $form["amount"] = array(
+                $form["amount"] = [
                     '#type' => 'textfield',
                     '#size' => 15,
                     '#maxlength' => 20,
                     '#description' => '',
-                    '#attributes' => array('placeholder' => $this->t('amount credited'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                    '#attributes' => ['placeholder' => $this->t('amount credited'), 'class' => ['amount'], 'onKeyPress' => "return(number_format(this,',','.', event))"],
                     '#prefix' => "<div id='credit_amount' class='container-inline'>",
                     '#suffix' => '',
-                );
+                ];
 
-                $form["option"] = array(
+                $form["option"] = [
                     '#type' => 'checkbox',
                     '#description' => '',
                     '#title' => $this->t('convert'),
                     '#prefix' => "",
-                );
+                ];
 
-                $form['currency'] = array(
+                $form['currency'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $CurrencyOptions,
-                    '#states' => array(
-                        'invisible' => array(
-                            "input[name='option']" => array('checked' => false),
-                        ),
-                    ),
-                    '#ajax' => array(
-                        'callback' => array($this, 'fx_rate'),
+                    '#states' => [
+                        'invisible' => [
+                            "input[name='option']" => ['checked' => false],
+                        ],
+                    ],
+                    '#ajax' => [
+                        'callback' => [$this, 'fx_rate'],
                         'wrapper' => 'fx',
-                    ),
-                );
+                    ],
+                ];
 
 
-                $form["fx_rate"] = array(
+                $form["fx_rate"] = [
                     '#type' => 'textfield',
                     '#size' => 8,
                     '#maxlength' => 10,
-                    '#attributes' => array('placeholder' => $this->t('rate'), 'title' => $this->t('conversion currency exchange rate')),
+                    '#attributes' => ['placeholder' => $this->t('rate'), 'title' => $this->t('conversion currency exchange rate')],
                     '#prefix' => "<div id='fx'>",
                     '#suffix' => '</div></div>',
-                    '#states' => array(
-                        'invisible' => array(
-                            "input[name='option']" => array('checked' => false),
-                        ),
-                    ),
-                    '#ajax' => array(
-                        'callback' => array($this, 'manual_fx_rate'),
+                    '#states' => [
+                        'invisible' => [
+                            "input[name='option']" => ['checked' => false],
+                        ],
+                    ],
+                    '#ajax' => [
+                        'callback' => [$this, 'manual_fx_rate'],
                         'wrapper' => 'fx',
                         'event' => 'change',
-                    ),
-                );
-            }//1 Credit office cash
+                    ],
+                ];
+            }
 
 
             if ($form_state->getValue('transaction') == 3) {
@@ -200,63 +204,57 @@ class ManageCash extends FormBase {
                         $list[$u->uid] = $this->t('Unknown') . " " . $i;
                         $i++;
                     }
-                    //$name = db_query('SELECT name from {users_field_data} WHERE uid = :u', array(':u' => $u->uid))
-                    //        ->fetchField();
-                    //if ($name == '') {
-                    //    $name = $this->t('Unknown') . " " . $i;
-                    //    $i++;
-                    //}
-                    //$list[$u->uid] = $name;
+                   
                 }
                 natcasesort($list);
 
-                $form['info'] = array(
+                $form['info'] = [
                     '#type' => 'item',
                     '#markup' => "<div class='messages messages--warning'>" . $this->t('Use this <u>cash</u> payment only if expenses was previously <u>advanced by employee</u> in cash and recorded as "<u>not paid</u>".') . "</div>",
-                );
+                ];
 
-                $form['coid'] = array(
+                $form['coid'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $company,
                     '#title' => $this->t('refund by'),
                     '#required' => true,
-                );
+                ];
 
-                $form['currency'] = array(
+                $form['currency'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $CurrencyOptions,
                     '#prefix' => "<div id='credit_amount' class='container-inline'>",
-                    '#ajax' => array(
-                        'callback' => array($this, 'fx_rate_2'),
+                    '#ajax' => [
+                        'callback' => [this, 'fx_rate_2'],
                         'wrapper' => 'fx',
-                    ),
-                );
+                    ],
+                ];
 
-                $form["fx_rate"] = array(
+                $form["fx_rate"] = [
                     '#type' => 'textfield',
                     '#size' => 8,
                     '#maxlength' => 10,
-                    '#attributes' => array('placeholder' => $this->t('rate'), 'title' => $this->t('Currency exchange rate')),
+                    '#attributes' => ['placeholder' => $this->t('rate'), 'title' => $this->t('Currency exchange rate')],
                     '#prefix' => "<div id='fx'>",
                     '#suffix' => '</div></div>',
-                );
+                ];
 
-                $form['user'] = array(
+                $form['user'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => isset($list) ? $list : [],
                     '#required' => true,
                     '#title' => $this->t('payee'),
-                    '#attributes' => array('style' => array('width:300px;')),
-                    '#ajax' => array(
-                        'callback' => array($this, 'list_expenses'),
+                    '#attributes' => ['style' => ['width:300px;']],
+                    '#ajax' => [
+                        'callback' => [$this, 'list_expenses'],
                         'wrapper' => 'list',
-                    ),
-                );
+                    ],
+                ];
 
-                $form['list'] = array(
+                $form['list'] = [
                     '#type' => 'fieldset',
                     '#title' => $this->t('list of payments'),
                     '#prefix' => "<div id='list'>",
@@ -265,7 +263,7 @@ class ManageCash extends FormBase {
                     '#open' => true,
                     '#validated' => true,
                     '#tree' => true,
-                );
+                ];
 
                 if (($form_state->getValue('user') <> '')) {
                     $query = "SELECT id,company, type, currency from {ek_expenses}  WHERE employee=:e and cash=:c and status=:s";
@@ -303,181 +301,180 @@ class ManageCash extends FormBase {
                     $i = 1;
 
                     foreach ($form['list']['records'] as $key => $val) {
-                        $form['list']['box']['entry-' . $val['id']] = array(
+                        $form['list']['box']['entry-' . $val['id']] = [
                             '#type' => 'checkbox',
                             '#attributes' => array('class' => array('sum')),
                             '#id' => $i,
                             '#title' => '<b>' . $val['currency'] . ' ' . number_format($val['value'], 2) . '</b>, ' . $val['aname'] . ', ' . $val['date'] . ', ' . $val['company'],
                             '#return_value' => $val['value'],
-                        );
+                        ];
 
                         $i++;
                     }
 
-                    $form['list']['total'] = array(
+                    $form['list']['total'] = [
                         '#type' => 'item',
                         '#markup' => "<span>" . $this->t('total') . " : </span><b><span id='total'></span></b>",
-                    );
+                    ];
                 }
-            }//3 refund user
+            }
 
             if ($form_state->getValue('transaction') == 4 || $form_state->getValue('transaction') == 5) {
                 //allocate cash to employee or return cash from employee to company cash
                 // select employee
 
-                $form['coid'] = array(
+                $form['coid'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $company,
                     '#title' => $this->t('company cash account'),
                     '#required' => true,
-                );
+                ];
 
-                $form['user'] = array(
+                $form['user'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => \Drupal\ek_admin\Access\AccessCheck::listUsers(),
                     '#required' => true,
                     '#title' => $this->t('employee'),
-                    '#attributes' => array('style' => array('width:300px;')),
-                );
+                    '#attributes' => ['style' => ['width:300px;']],
+                ];
 
-                $form["amount"] = array(
+                $form["amount"] = [
                     '#type' => 'textfield',
                     '#size' => 15,
                     '#maxlength' => 20,
                     '#description' => '',
-                    '#attributes' => array('placeholder' => $this->t('amount credited'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                    '#attributes' => ['placeholder' => $this->t('amount credited'), 'class' => ['amount'], 'onKeyPress' => "return(number_format(this,',','.', event))"],
                     '#prefix' => "<div id='credit_amount' class='container-inline'>",
                     '#suffix' => '',
-                );
+                ];
 
-                $form['transaction_currency'] = array(
+                $form['transaction_currency'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#required' => true,
                     '#options' => $CurrencyOptions,
-                );
+                ];
 
-                $form["option"] = array(
+                $form["option"] = [
                     '#type' => 'checkbox',
                     '#description' => '',
                     '#title' => $this->t('convert'),
                     '#prefix' => "",
-                );
+                ];
 
-                $form['currency'] = array(
+                $form['currency'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $CurrencyOptions,
-                    '#states' => array(
-                        'invisible' => array(
-                            "input[name='option']" => array('checked' => false),
-                        ),
-                    ),
-                    '#ajax' => array(
-                        'callback' => array($this, 'fx_rate'),
+                    '#states' => [
+                        'invisible' => [
+                            "input[name='option']" => ['checked' => false],
+                        ],
+                    ],
+                    '#ajax' => [
+                        'callback' => [$this, 'fx_rate'],
                         'wrapper' => 'fx',
-                    ),
-                );
+                    ],
+                ];
 
 
-                $form["fx_rate"] = array(
+                $form["fx_rate"] = [
                     '#type' => 'textfield',
                     '#size' => 8,
                     '#maxlength' => 10,
-                    '#attributes' => array('placeholder' => $this->t('rate'), 'title' => $this->t('conversion currency exchange rate')),
+                    '#attributes' => ['placeholder' => $this->t('rate'), 'title' => $this->t('conversion currency exchange rate')],
                     '#prefix' => "<div id='fx'>",
                     '#suffix' => '</div></div>',
-                    '#states' => array(
-                        'invisible' => array(
-                            "input[name='option']" => array('checked' => false),
-                        ),
-                    ),
-                    '#ajax' => array(
-                        'callback' => array($this, 'manual_fx_rate'),
+                    '#states' => [
+                        'invisible' => [
+                            "input[name='option']" => ['checked' => false],
+                        ],
+                    ],
+                    '#ajax' => [
+                        'callback' => [$this, 'manual_fx_rate'],
                         'wrapper' => 'fx',
-                    ),
-                );
-            } //4 ,5
+                    ],
+                ];
+            } 
 
             if ($form_state->getValue('transaction') == 6) {
-                //Add a balance (opening) or adjustment
-                $form['coid'] = array(
+                // Add a balance (opening) or adjustment
+                $form['coid'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $company,
                     '#title' => $this->t('company'),
                     '#required' => true,
-                );
+                ];
 
-                $form["amount"] = array(
+                $form["amount"] = [
                     '#type' => 'textfield',
                     '#size' => 15,
                     '#maxlength' => 20,
                     '#description' => '',
-                    '#attributes' => array('placeholder' => $this->t('amount'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
+                    '#attributes' => ['placeholder' => $this->t('amount'), 'class' => ['amount'], 'onKeyPress' => "return(number_format(this,',','.', event))"],
                     '#prefix' => "<div id='credit_amount' class='container-inline'>",
                     '#suffix' => '',
-                );
+                ];
 
-                $form['transaction_currency'] = array(
+                $form['transaction_currency'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $CurrencyOptions,
-                    '#ajax' => array(
-                        'callback' => array($this, 'fx_rate_3'),
+                    '#ajax' => [
+                        'callback' => [$this, 'fx_rate_3'],
                         'wrapper' => 'fx',
                         'event' => 'change',
-                    ),
-                );
+                    ],
+                ];
 
-                $form["fx_rate"] = array(
+                $form["fx_rate"] = [
                     '#type' => 'textfield',
                     '#size' => 8,
                     '#maxlength' => 10,
-                    '#attributes' => array('placeholder' => $this->t('rate'), 'title' => $this->t('conversion currency exchange rate')),
+                    '#attributes' => ['placeholder' => $this->t('rate'), ],
+                    '#title' => $this->t('conversion currency exchange rate'),
                     '#prefix' => "<div id='fx'>",
                     '#suffix' => '</div></div>',
-                    '#ajax' => array(
-                        'callback' => array($this, 'manual_fx_rate_2'),
+                    '#ajax' => [
+                        'callback' => [$this, 'manual_fx_rate_2'],
                         'wrapper' => 'fx',
                         'event' => 'change',
-                    ),
-                );
+                    ],
+                ];
             }
 
 
-            $form['date'] = array(
+            $form['date'] = [
                 '#type' => 'date',
                 '#title' => $this->t('transaction date'),
                 '#size' => 14,
                 '#maxlength' => 10,
                 '#required' => true,
-            );
+            ];
 
 
             if ($form_state->getValue('transaction') <> 3) {
-                $form['comment'] = array(
+                $form['comment'] = [
                     '#type' => 'textfield',
                     '#size' => 30,
                     '#maxlength' => 200,
-                    '#attributes' => array('placeholder' => $this->t('references'),),
-                );
+                    '#attributes' => ['placeholder' => $this->t('references'),],
+                ];
             }
 
-            $form['actions'] = array(
+            $form['actions'] = [
                 '#type' => 'actions',
-                '#attributes' => array('class' => array('container-inline')),
-            );
+                '#attributes' => ['class' => ['container-inline']],
+            ];
 
-
-
-            $form['actions']['submit'] = array(
+            $form['actions']['submit'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Save'),
                 '#suffix' => ''
-            );
+            ];
         }
 
 
@@ -874,8 +871,8 @@ class ManageCash extends FormBase {
                         )
                 );
 
-                if ($journal->credit <> $journal->debit) {
-                    $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+                if ($journal->getCredit() <> $journal->getDebit()) {
+                    $msg = 'debit: ' . $journal->getDebit() . ' <> ' . 'credit: ' . $journal->getCredit();
                     \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
                 }
             }//1

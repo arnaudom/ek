@@ -11,13 +11,17 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\StreamWrapper\TemporaryStream;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\AppendCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\ek_finance\FinanceSettings;
 
 /**
  * Provides a form to upload finance forms.
  */
 class UploadForm extends FormBase {
+
+    protected $settings;
 
     /**
      * {@inheritdoc}
@@ -34,40 +38,72 @@ class UploadForm extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
-        $form['upload_doc'] = array(
-            '#type' => 'file',
-            '#title' => $this->t('Select file'),
-        );
 
-        $form['for_id'] = array(
-            '#type' => 'hidden',
-            '#default_value' => $id,
-        );
-        $ref = explode('-', $id);
-        if ($ref[1] == 'expense' && $this->settings->get('expenseAttachmentSize')) {
-            $form['info1'] = array(
-                '#type' => 'item',
-                '#markup' => $this->t('Max. file size') . ": " . $this->settings->get('expenseAttachmentSize') . 'Mb',
-            );
-            $form['info2'] = array(
-                '#type' => 'item',
-                '#markup' => $this->t('File type') . ": " . $this->settings->get('expenseAttachmentFormat'),
-            );
+        if (null !== $this->settings->get('expenseAttachmentSize')) {
+                $ext_size = $this->settings->get('expenseAttachmentSize') * 1000000;
+            } else {
+                $ext_size = '500000';
+            }
+        if (null !== $this->settings->get('expenseAttachmentFormat')) {
+            $ext_format = $this->settings->get('expenseAttachmentFormat');
         } else {
-            $form['info2'] = array(
-                '#type' => 'item',
-                '#markup' => $this->t('File type') . ": " . 'png jpg jpeg pdf',
-            );
+            $ext_format = 'png jpg jpeg doc docx xls xlsx odt ods odp pdf rar rtf zip';
         }
 
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['upload'] = array(
+        $form['for_id'] = [
+            '#type' => 'hidden',
+            '#default_value' => $id,
+        ];
+        $ref = explode('-', $id);
+        if ($ref[1] == 'expense') {
+            $form['upload_doc'] = [
+                '#type' => 'file',
+                '#title' => $this->t('Select file'),
+                '#upload_validators'  => [
+                    'FileExtension' => ['extensions' => $ext_format],
+                    'FileSizeLimit' => ['fileLimit' => $ext_size]
+                ],
+            ];
+            $form['redirect'] = [
+                '#type' => 'hidden',
+                '#default_value' => 'ek_finance.manage.list_expense',
+            ];
+
+        } else {
+            // reconciliation report
+             $form['upload_doc'] = [
+                '#type' => 'file',
+                '#title' => $this->t('Select file'),
+                '#upload_validators'  => [
+                    'FileExtension' => ['extensions' => 'jpg jpeg png pdf'],
+                    'FileSizeLimit' => ['fileLimit' => $ext_size]
+                ],
+                '#description' => $this->t('Format: @f', ['@f' => 'jpg jpeg png pdf']),
+             ];
+
+             $form['redirect'] = [
+                '#type' => 'hidden',
+                '#default_value' => 'ek_finance.manage.reconciliation_reports',
+            ];
+        }
+
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['upload'] = [
             '#id' => 'upbuttonid',
             '#type' => 'submit',
             '#value' => $this->t('Upload'),
-        );
+            '#ajax' => [
+                'callback' => [$this, 'saveFile'],
+                'wrapper' => 'alert',
+                'method' => 'replaceWith',
+            ],
+        ];
 
-
+        $form['alert'] = [
+            '#type' => 'item',
+            '#prefix' => "<div id='alert' class='alert'>",
+            '#suffix' => '</div>',
+        ];
 
         return $form;
     }
@@ -76,43 +112,45 @@ class UploadForm extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-        
+        $field = "upload_doc";
+        $file = _file_save_upload_from_form($form[$field], $form_state, 0);
+        if($file) {
+                $form_state->set($field, $file) ;
+            }      
     }
-
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, FormStateInterface $form_state) {
+    public function submitForm(array &$form, FormStateInterface $form_state) {}
+   
+
+    public function saveFile(array &$form, FormStateInterface $form_state) {
         $ref = explode('-', $form_state->getValue('for_id'));
+        $response = new AjaxResponse();
+        if (!$form_state->get('upload_doc')) {
+            if($errors = $form_state->getErrors()) {
+                $e = '';
+                foreach ($errors as $error) {
+                    $e.= $error;
+                }
+                $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--error'>" . $e . "</div>"));
+                $form_state->clearErrors();
+            } else {
+                $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--error'>" .  $this->t('Error') . "</div>"));
+            }
+            return $response;
+        }
 
         switch ($ref[1]) {
 
             case 'expense':
 
-                if (null !== $this->settings->get('expenseAttachmentFormat')) {
-                    $extensions = $this->settings->get('expenseAttachmentFormat');
-                } else {
-                    $extensions = 'png jpg jpeg doc docx xls xlsx odt ods odp pdf rar rtf zip';
-                }
-                if (null !== $this->settings->get('expenseAttachmentSize')) {
-                    $ext_size = $this->settings->get('expenseAttachmentSize') * 1000000;
-                } else {
-                    $ext_size = '500000';
-                }
                 // verify if current attachment exist
                 $att = Database::getConnection('external_db', 'external_db')
                         ->query("SELECT company, attachment from {ek_expenses} WHERE id=:id", array(':id' => $ref[0]))
                         ->fetchObject();
 
-                //upload
-                $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [$ext_size]);
-                $file = file_save_upload("upload_doc", $validators, null, 0, FileSystemInterface::EXISTS_RENAME);
-
-                if ($file) {
-                    //add the expense id to the filename
-                    //$file->filename = $ref[0] . '_' . $file->getFilename();
-                    //$file->save();
-                    //move it to a new folder
+                if ($file = $form_state->get('upload_doc')) {
 
                     $dir = "private://finance/receipt/" . $att->company;
                     \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
@@ -134,8 +172,6 @@ class UploadForm extends FormBase {
                             ->execute();
                 }
 
-                $redirect = 'ek_finance.manage.list_expense';
-
                 break;
 
             case 'statement':
@@ -145,14 +181,10 @@ class UploadForm extends FormBase {
                         ->query("SELECT coid,uri from {ek_journal_reco_history} WHERE id=:id", array(':id' => $ref[0]))
                         ->fetchObject();
 
-                $validators = array('file_validate_extensions' => array('png jpg jpeg pdf'));
-                $file = file_save_upload("upload_doc", $validators, null, 0, FileSystemInterface::EXISTS_RENAME);
-
-                if ($file) {
+                if ($file = $form_state->get('upload_doc')) {
                     $dir = "private://finance/bank/" . $att->coid;
                     \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                     $filepath = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
-
 
                     if ($att->uri) {
                         // delete current file
@@ -168,18 +200,22 @@ class UploadForm extends FormBase {
                             ->execute();
                 }
 
-                $redirect = 'ek_finance.manage.reconciliation_reports';
                 break;
         }
 
 
         if ($insert) {
-            \Drupal::messenger()->addStatus(t('file uploaded @f', array('@f' => $file->getFilename())));
+            // \Drupal::messenger()->addStatus(t('file uploaded @f', array('@f' => $file->getFilename())));
+            
+                $clear = new InvokeCommand('.alert', "html", [""]);
+                $response->addCommand($clear);
+                $response->addCommand(new AppendCommand('.alert', "<div class='messages messages--status'>" . $this->t('File uploaded') . "</div>"));
+                return $response;
         } else {
-            \Drupal::messenger()->addError(t('error copying file'));
+            // \Drupal::messenger()->addError(t('error copying file'));
         }
 
-        $form_state->setRedirect($redirect);
+        //$form_state->setRedirect($form_state->getValue('redirect'));
     }
 
 }

@@ -18,15 +18,15 @@ use Drupal\Core\Url;
 use Drupal\Core\Database\Database;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_admin\CompanySettings;
+use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_finance\AidList;
+use Drupal\ek_finance\PrintManager;
 
 /**
  * Controller routines for ek module routes.
  */
-class ExpensesManageController extends ControllerBase
-{
+class ExpensesManageController extends ControllerBase {
 
     /**
      * The module handler.
@@ -82,7 +82,6 @@ class ExpensesManageController extends ControllerBase
      */
     public function cloneExpenses(Request $request, $id) {
         $build['new_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\RecordExpense', $id, 'clone');
-
         return $build;
     }
 
@@ -338,7 +337,7 @@ class ExpensesManageController extends ControllerBase
             'id' => array(
                 'data' => $this->t('Id'),
                 'field' => 'e.id',
-            //'class' => array(RESPONSIVE_PRIORITY_LOW),
+                //'class' => array(RESPONSIVE_PRIORITY_LOW),
             ),
             'type' => array(
                 'data' => $this->t('Class'),
@@ -360,7 +359,7 @@ class ExpensesManageController extends ControllerBase
             ),
             'value' => array(
                 'data' => $this->t('Value'),
-            //'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                //'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
             ),
             'basecurrency' => array(
                 'data' => $this->t('in base currency') . " " . $baseCurrency,
@@ -537,9 +536,9 @@ class ExpensesManageController extends ControllerBase
                     'basecurrency' => ['data' => ['#markup' => $evalue]],
                     'receipt' => ['data' => ['#markup' => $receipt]],
                 );
-                //to prevent edition of expense with reconciled
-                //journal entry, sum all reco flags for common source date and ref.
-                //if not equal to 0, at least 1 entry is reconciled
+                // to prevent edition of expense with reconciled
+                // journal entry, sum all reco flags for common source date and ref.
+                // if not equal to 0, at least 1 entry is reconciled
                 $query = Database::getConnection('external_db', 'external_db')
                           ->select('ek_journal');
                 $query->addExpression('SUM(reconcile)', 'reconcile');
@@ -560,7 +559,7 @@ class ExpensesManageController extends ControllerBase
                     );
                     
                     if ($reconcile_flag == 0 && !strpos($r->source, 'payroll')) {
-                        //lock edit on reconciled and payroll data
+                        // lock edit on reconciled and payroll data
                         $links['edit'] = array(
                             'title' => $this->t('Edit'),
                             'url' => Url::fromRoute('ek_finance.manage.edit_expense', ['id' => $r->reference]),
@@ -599,7 +598,7 @@ class ExpensesManageController extends ControllerBase
                     '#type' => 'operations',
                     '#links' => $links,
                 );
-            } //while
+            } 
 
             if ($i > 0) {
                 $total = '<h4>' . number_format($total, 2) . " " . $baseCurrency . '</h4>';
@@ -616,7 +615,7 @@ class ExpensesManageController extends ControllerBase
                     'operations' => '',
                 );
 
-                /* */
+                
                 if (isset($_SESSION['efilter']['filter']) && $_SESSION['efilter']['filter'] == 1) {
                     $param = serialize(
                         array(
@@ -636,7 +635,7 @@ class ExpensesManageController extends ControllerBase
                 } else {
                     $param = serialize(0);
                 }
-                /**/
+                
 
                 $excel = Url::fromRoute('ek_finance.manage.excel_expense', array('param' => $param), [])->toString();
                 $build['excel'] = array(
@@ -709,7 +708,7 @@ class ExpensesManageController extends ControllerBase
             'id' => array(
                 'data' => $this->t('Id'),
                 'field' => 'e.id',
-            //'class' => array(RESPONSIVE_PRIORITY_LOW),
+                //'class' => array(RESPONSIVE_PRIORITY_LOW),
             ),
             'type' => array(
                 'data' => $this->t('Class'),
@@ -731,7 +730,7 @@ class ExpensesManageController extends ControllerBase
             ),
             'value' => array(
                 'data' => $this->t('Value'),
-            //'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
+                //'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
             ),
             'basecurrency' => array(
                 'data' => $this->t('in base currency') . " " . $baseCurrency,
@@ -773,8 +772,8 @@ class ExpensesManageController extends ControllerBase
                         ->execute();
             } else {
 
-                //filter by tags
-                //query data by tag
+                // filter by tags
+                // query data by tag
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_expenses', 'e');
 
@@ -860,7 +859,7 @@ class ExpensesManageController extends ControllerBase
                     $receipt = $this->t('<a href="@url" class="@c"  data-accepts=@a  >upload</a>', array('@url' => $modal_route, '@c' => 'use-ajax red', '@a' => "application/vnd.drupal-modal",));
                 }
 
-                //voucher
+                // voucher
                 $url = Url::fromRoute('ek_finance_voucher.pdf', ['type' => 1, 'id' => $r->id])->toString();
                 $voucher = '<a href="' . $url . '" target="_blank"  title="' . $this->t('voucher')
                         . ' - ' . $r->id . ' ' . $r->comment . '">' . $r->id . '</a>';
@@ -881,7 +880,7 @@ class ExpensesManageController extends ControllerBase
                     '#type' => 'operations',
                     '#links' => [],
                 );
-            } //while
+            } 
 
             if ($i > 0) {
                 $total = '<h4>' . number_format($total, 2) . " " . $baseCurrency . '</h4>';
@@ -921,16 +920,14 @@ class ExpensesManageController extends ControllerBase
     /**
      * AJAX callback handler for AjaxTestDialogForm.
      */
-    public function modal($param)
-    {
+    public function modal($param) {
         return $this->dialog(true, $param);
     }
 
     /**
      * AJAX callback handler for AjaxTestDialogForm.
      */
-    public function nonModal($param)
-    {
+    public function nonModal($param) {
         return $this->dialog(false, $param);
     }
 
@@ -945,8 +942,7 @@ class ExpensesManageController extends ControllerBase
      * @return \Drupal\Core\Ajax\AjaxResponse
      *   An ajax response object.
      */
-    protected function dialog($is_modal = false, $param = null)
-    {
+    protected function dialog($is_modal = false, $param = null) {
         $param = explode('-', $param);
         $content = '';
         switch ($param[0]) {
@@ -987,10 +983,9 @@ class ExpensesManageController extends ControllerBase
      *  @return array
      *      form
      */
-    public function editExpenses($id)
-    {
+    public function editExpenses($id) {
         
-        //filter access when editing expense to verify if user is legitimate and
+        // filter access when editing expense to verify if user is legitimate and
         // entry has not been reconciled
         
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
@@ -1043,8 +1038,8 @@ class ExpensesManageController extends ControllerBase
                     '#cache' => ['max-age' => 0,],
                 ];
         } else {
-            //verify type of expense for edition
-            //payroll has a dedicated format.
+            // verify type of expense for edition
+            // payroll has a dedicated format.
             if (strpos($expense->source, 'payroll')) {
                 $build['edit_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\EditPayrollExpense', $id);
             } else {
@@ -1055,34 +1050,35 @@ class ExpensesManageController extends ControllerBase
         return $build;
     }
 
-    /* Export list into excel format
+    /** Export list into excel format
      *
-     * @param array $param
-     * optional filters values
-     * 'keyword','int coid','int account aid','int client id',
-     * 'int supplier id',' string project pcode,
-     * 'string date from',' string date to'
+     *  @param string $param
+     *  optional filters values
+     *  'keyword','int coid','int account aid','int client id',
+     *  'int supplier id',' string project pcode,
+     *  'string date from',' string date to'
      *
-     * @return PhpExcel Object
+     *  @return PhpExcel Object
      */
 
-    public function excelExpenses(Request $request, $param = null)
-    {
-        $markup = array();
+    public function excelExpenses(Request $request, $param = null) {
+        $markup = [];
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $settings = new FinanceSettings();
             $baseCurrency = $settings->get('baseCurrency');
             $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
-            $query = "SELECT id, name from {ek_company} ";
-            $company_array = Database::getConnection('external_db', 'external_db')
-                            ->query($query)->fetchAllKeyed();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_company', 'c')
+                    ->fields('c', ['id','name'])
+                    ->execute();
+            $company_array = $query->fetchAllKeyed();
             $param = unserialize($param);
             $chartList = Aidlist::chartList();
             $result = $this->pullExpensesData($settings, $param, 'asc', 'j.id');
 
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_expenses.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_expenses.inc';
         }
         return ['#markup' => $markup];
     }
@@ -1095,11 +1091,11 @@ class ExpensesManageController extends ControllerBase
      *  expense id single or array
      *
      */
-    public function pdfVoucher($type, $id)
-    {
-        $markup = array();
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/pdf.inc';
-        return $markup;
+    public function pdfVoucher($type, $id) {
+        $print = new PrintManager();
+        $t = ($type == 1) ? 'expensevoucher' : 'cashvoucher';
+        $print->makePdf([$t ,$id]);
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
 
     /*
@@ -1111,8 +1107,7 @@ class ExpensesManageController extends ControllerBase
      *
      */
 
-    public function payrollRecord(Request $request, $param)
-    {
+    public function payrollRecord(Request $request, $param) {
         $build['new_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\PayrollRecord', $param);
         return $build;
     }
@@ -1126,8 +1121,7 @@ class ExpensesManageController extends ControllerBase
      *
      */
 
-    public function editPayrollExpense($id)
-    {
+    public function editPayrollExpense($id) {
         
         //filter access when editing expense to verify if user is legitimate and
         // entry has not been reconciled
@@ -1191,8 +1185,7 @@ class ExpensesManageController extends ControllerBase
      *  @return Object
      *      form
      */
-    public function deleteExpenses(Request $request, $id)
-    {
+    public function deleteExpenses(Request $request, $id) {
         $query = "SELECT reconcile from {ek_journal} WHERE type=:t AND source like :s AND reference=:r AND exchange=:e";
         $a = array(':t' => 'debit', ':s' => 'expense%', ':r' => $id, ':e' => 0);
         $j = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();

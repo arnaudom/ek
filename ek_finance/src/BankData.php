@@ -12,8 +12,7 @@ use Drupal\ek_admin\Access\AccessCheck;
  * used in forms lists
  *
  */
- class BankData
- {
+ class BankData {
  
  
    /**
@@ -21,8 +20,7 @@ use Drupal\ek_admin\Access\AccessCheck;
    *
    *
    */
-     public function __construct()
-     {
+     public function __construct() {
      }
  
      /**
@@ -31,8 +29,7 @@ use Drupal\ek_admin\Access\AccessCheck;
      * @param $currency = currency code i.e. 'USD'
      *
      */
-     public static function listbankaccountsbyaid($coid = null, $currency = null, $active = 1)
-     {
+     public static function listbankaccountsbyaid($coid = null, $currency = null, $active = 1)  {
          $query = Database::getConnection('external_db', 'external_db')
             ->select('ek_bank_accounts', 'a');
          $query->leftJoin('ek_bank', 'b', 'a.bid = b.id');
@@ -65,8 +62,7 @@ use Drupal\ek_admin\Access\AccessCheck;
      *
      * used in form lists
      */
-     public static function listBank()
-     {
+     public static function listBank() {
   
     //get the access to companies / entity by the current user first
          $company = AccessCheck::GetCompanyByUser();
@@ -89,8 +85,7 @@ use Drupal\ek_admin\Access\AccessCheck;
         * @param $aid = account id i.e. 12001
         * @return string or null
         */
-     public static function currencyByaid($coid = null, $aid = null)
-     {
+     public static function currencyByaid($coid = null, $aid = null) {
          $query = "SELECT currency from {ek_bank_accounts} "
             . "INNER JOIN {ek_bank} ON ek_bank_accounts.bid = ek_bank.id "
             . "WHERE coid=:c and aid=:a";

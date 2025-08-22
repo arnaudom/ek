@@ -22,6 +22,7 @@ class FilterSales extends FormBase {
     /**
      * Constructs a FilterSales object.
      */
+    protected $settings;
     public function __construct() {
         $this->settings = new FinanceSettings();
     }

@@ -4,10 +4,6 @@ use Drupal\Core\Database\Database;
 use Drupal\ek_admin\Access\AccessCheck;
 
 
-//$param = unserialize($param);
-//$year = $p['year'];
-//$baseCurrency = $param['baseCurrency'];
-//$rounding = $param['rounding'];
 $company = AccessCheck::GetCompanyByUser();
 $purchases = [];
 $expenses = [];

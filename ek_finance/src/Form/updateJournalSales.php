@@ -17,6 +17,10 @@ use Drupal\Core\Url;
  */
 class updateJournalSales extends FormBase {
 
+    protected $Financesettings;
+    protected $journal;
+    protected $chart;
+
     /**
      * {@inheritdoc}
      */

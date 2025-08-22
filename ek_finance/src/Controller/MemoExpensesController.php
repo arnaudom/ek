@@ -20,6 +20,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\FinanceSettings;
+use Drupal\ek_finance\PrintManager;
 
 
 /**
@@ -44,8 +45,7 @@ class MemoExpensesController extends ControllerBase {
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('form_builder'), $container->get('module_handler')
         );
@@ -59,8 +59,7 @@ class MemoExpensesController extends ControllerBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
     }
@@ -75,13 +74,12 @@ class MemoExpensesController extends ControllerBase {
      *  form
      *
      */
-    public function createInternalMemo(Request $request, $id)
-    {
+    public function createInternalMemo(Request $request, $id) {
 
-        //the attachment are uploded before the main memo form is submitted
-        //therefore, a temporary serial ref. is attributed
-        //once the main form is submitted, the temporary serial is updated with the permanent serial ref.
-        //a cleanup of temporary file must be done for file uploaded but main form not submitted
+        // the attachment are uploded before the main memo form is submitted
+        // therefore, a temporary serial ref. is attributed
+        // once the main form is submitted, the temporary serial is updated with the permanent serial ref.
+        // a cleanup of temporary file must be done for file uploaded but main form not submitted
 
         $query = "SELECT id,uri,doc_date FROM {ek_expenses_memo_documents} WHERE serial like :s";
         $list = Database::getConnection('external_db', 'external_db')->query($query, array(':s' => 'temp%'));
@@ -137,8 +135,7 @@ class MemoExpensesController extends ControllerBase {
      *  form
      *
      */
-    public function createPersonalMemo(Request $request, $id)
-    {
+    public function createPersonalMemo(Request $request, $id) {
         $query = "SELECT id,uri,doc_date FROM {ek_expenses_memo_documents} WHERE serial like :s";
         $list = Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':s' => 'temp%'));
@@ -874,13 +871,14 @@ class MemoExpensesController extends ControllerBase {
             $id = explode('-', $_SESSION['printfilter']['for_id']);
 
             $param = serialize(
-                array(
+                    [
+                        'expensememo',
                         $id[0], //id
                         $id[1], //source
                         $_SESSION['printfilter']['signature'],
                         $_SESSION['printfilter']['stamp'],
                         $_SESSION['printfilter']['template'],
-                    )
+                    ]
             );
 
             $build['filter_mail'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterMailDoc', $param);
@@ -909,35 +907,32 @@ class MemoExpensesController extends ControllerBase {
      *
      *
      */
-    public function printMemoRange($category = 'internal')
-    {
-        $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterPrintRange', $category);
-        if ($_SESSION['memrgfilter']['filter'] == 1) {
-            $param = serialize(
-                array(
-                        'memo_range',
-                    )
-            );
+    public function printMemoRange($category = 'internal') {
 
+        $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterPrintRange', $category);
+        
+        if ($_SESSION['memrgfilter']['filter'] == 1) {
+
+            $param = serialize(['memorange',0]);
             $path = $GLOBALS['base_url'] . "/finance/memo/print/pdf/" . $param;
 
             $iframe = Xss::filter("<iframe src ='" . $path . "' width='100%' height='1000px' id='view' name='view'></iframe>", ['iframe']);
             $build['iframe'] = $iframe;
         }
 
-        return array(
+        return [
             '#items' => $build,
             '#theme' => 'iframe',
             '#attached' => array(
                 'library' => array('ek_finance/ek_finance_css'),
             ),
-        );
+        ];
     }
 
     /**
      * a display of memo in html format
      *
-     * @param array $param
+     * @param serialized array $param
      *  document id int, source string, signature bool,
      *   stamp bool, template string, mode string
      * @retun mixed
@@ -945,10 +940,10 @@ class MemoExpensesController extends ControllerBase {
      */
     
     public function printMemoPdf(Request $request, $param) {
-        $markup = array();
-        $format = 'pdf';
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/manage_print_output.inc';
-        return $markup;
+        $print = new PrintManager();
+        $p = unserialize($param);
+        $print->makePdf([$p[0] ,0, $param]);
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
 
     /**
@@ -962,12 +957,12 @@ class MemoExpensesController extends ControllerBase {
      */
     public function Html($id) {
 
-        //filter access to document
-        $query = "SELECT `serial`, `category`, `entity`, `entity_to`, `auth` FROM {ek_expenses_memo} "
-                . "WHERE id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $id])
-                ->fetchObject();
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_expenses_memo' , 'em')
+            ->fields('em', ['serial','category', 'entity', 'entity_to', 'auth'])
+            ->condition('id', $id)
+            ->execute();
+        $data = $query->fetchObject();
 
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
         $companies = implode(',', $access);
@@ -1002,38 +997,43 @@ class MemoExpensesController extends ControllerBase {
             if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
                 $id = explode('-', $_SESSION['printfilter']['for_id']);
                 $doc_id = $id[0];
-                $param = serialize(
-                    array(
-                            $id[0], //id
-                            $id[1], //source
-                            $_SESSION['printfilter']['signature'],
-                            $_SESSION['printfilter']['stamp'],
-                            $_SESSION['printfilter']['template'],
-                        )
-                );
-
-                
+                $url_list = '';
                 
                 $url_pdf = Url::fromRoute('ek_finance_manage_print_memo', ['id' => $doc_id], [])->toString();
-                if ($data->category < 5) {
-                    $url_list = Url::fromRoute('ek_finance_manage_list_memo_internal')->toString();
+                if ($data->category < 5) {    
                     $url_edit = Url::fromRoute('ek_finance_manage_internal_memo', ['id' => $doc_id], [])->toString();
+                    $url_list = Url::fromRoute('ek_finance_manage_list_memo_internal')->toString();
                 } else {
                     $url = Url::fromRoute('ek_finance_manage_list_memo_personal')->toString();
                     if ($edit == 1) {
                         $url_edit = Url::fromRoute('ek_finance_manage_personal_memo', ['id' => $doc_id], [])->toString();
                     }
                 }
-                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/manage_print_output.inc';
-
+                $param = serialize(
+                    [
+                        $id[0], //id
+                        $id[1], //source
+                        $_SESSION['printfilter']['signature'],
+                        $_SESSION['printfilter']['stamp'],
+                        $_SESSION['printfilter']['template'],
+                        $url_edit,
+                        $url_list,
+                        $url_pdf
+                    ]
+                );
+                
+                //include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/manage_print_output.inc';
+                $print = new PrintManager();
+                $document = $print->renderHtml($param);
                 $build['html_memo'] = [
                     '#markup' => $document,
-                    '#attached' => array(
-                        'library' => array('ek_finance/ek_finance_html_documents_css','ek_admin/ek_admin_css'),
-                    ),
+                    '#attached' => [
+                        'library' => ['ek_finance/ek_finance_html_documents_css','ek_admin/ek_admin_css'],
+                    ],
                 ];
             }
-            return array($build);
+            return [$build];
+            
         } else {
             if ($data->category < 5) {
                 $url = Url::fromRoute('ek_finance_manage_list_memo_internal')->toString();
@@ -1272,8 +1272,8 @@ class MemoExpensesController extends ControllerBase {
                         'library' => array('ek_finance/ek_finance'),
                     ),
                 );
-            } //per coid
-        }//apply filter
+            } 
+        } 
         else {
             return $form;
         }

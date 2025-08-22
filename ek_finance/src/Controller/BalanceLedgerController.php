@@ -113,7 +113,7 @@ class BalanceLedgerController extends ControllerBase {
     /**
      * Finance ledger by account and date in excel format
      *
-     * @param array $param
+     * @param string $param
      *  array of exctration filters
      *  for 'accounts'
      *  int coid, int aid1, int aid2, string date1,
@@ -128,19 +128,21 @@ class BalanceLedgerController extends ControllerBase {
      *  PhpExcel object
      */
     public function excelledger($param = null) {
-        $markup = array();
+        $markup = [];
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $p = unserialize($param);
-            $company = Database::getConnection('external_db', 'external_db')
-                    ->query('SELECT name from {ek_company} WHERE id=:id', array(':id' => $p['coid']))
-                    ->fetchField();
-
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_company', 'c')
+                    ->fields('c', ['name'])
+                    ->condition('id', $p['coid'])
+                    ->execute();
+            $company = $query->fetchField();
             if ($p['type'] == 'accounts') {
-                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_ledger.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_ledger.inc';
             } elseif ($p['type'] == 'sales') {
-                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_sales_ledger.inc';
+                include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_sales_ledger.inc';
             }
         }
         return ['#markup' => $markup];

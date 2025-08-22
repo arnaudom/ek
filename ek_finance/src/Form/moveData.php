@@ -27,6 +27,7 @@ class moveData extends FormBase {
      * @var \Drupal\Core\Extension\ModuleHandler
      */
     protected $moduleHandler;
+    protected $settings;
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
@@ -34,7 +35,6 @@ class moveData extends FormBase {
      */
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
-
         $this->settings = new FinanceSettings();
     }
 
@@ -62,27 +62,26 @@ class moveData extends FormBase {
             $form_state->setValue('step', 1);
         }
 
-        $settings = new FinanceSettings();
-        $baseCurrency = $settings->get('baseCurrency');
+        $baseCurrency = $this->settings->get('baseCurrency');
         $company = AccessCheck::CompanyListByUid();
-        $form['coid'] = array(
+        $form['coid'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
             '#title' => $this->t('company'),
             '#required' => true,
-            '#ajax' => array(
-                'callback' => array($this, 'get_from_class'),
+            '#ajax' => [
+                'callback' => [$this, 'get_from_class'],
                 'wrapper' => 'from_class',
-            ),
-        );
+            ],
+        ];
 
         if ($form_state->getValue('coid')) {
             $coid = $form_state->getValue('coid');
             $classoptions = \Drupal\ek_finance\AidList::listaid($coid);
         }
 
-        $form['fromClass'] = array(
+        $form['fromClass'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => isset($classoptions) ? $classoptions : array(),
@@ -91,41 +90,41 @@ class moveData extends FormBase {
             '#validated' => true,
             '#prefix' => "<div id='from_class'>",
             '#suffix' => '</div>',
-            '#ajax' => array(
-                'callback' => array($this, 'get_to_class'),
+            '#ajax' => [
+                'callback' => [$this, 'get_to_class'],
                 'wrapper' => 'to_class',
-            ),
-        );
+            ],
+        ];
 
-        $form['toClass'] = array(
+        $form['toClass'] = [
             '#type' => 'select',
             '#size' => 1,
-            '#options' => isset($classoptions) ? $classoptions : array(),
+            '#options' => isset($classoptions) ? $classoptions : [],
             '#required' => true,
             '#title' => $this->t('To account'),
             '#validated' => true,
             '#prefix' => "<div id='to_class'>",
             '#suffix' => '</div>',
-        );
+        ];
 
 
-        $form['jid'] = array(
+        $form['jid'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#required' => false,
             '#title' => $this->t('Optional journal ID'),
             '#description' => $this->t('Will edit only journal entry'),
-        );
+        ];
 
-        $form['actions'] = array(
+        $form['actions'] = [
             '#type' => 'actions',
-        );
+        ];
 
-        $form['actions']['record'] = array(
+        $form['actions']['record'] = [
             '#type' => 'submit',
             '#value' => $this->t('Record'),
-            '#attributes' => array('class' => array('button--record')),
-        );
+            '#attributes' => ['class' => array('button--record')],
+        ];
 
 
         $form['#attached']['library'][] = 'ek_finance/ek_finance.expenses_form';
@@ -292,7 +291,7 @@ class moveData extends FormBase {
         }
 
         $dir = "private://finance/log";
-        if (!file_exists()) {
+        if (!file_exists($dir)) {
             \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
         }
         $file = $dir . '/log_' . date('Y-m-d_H-i') . '_' . $form_state->getValue('coid') . '_' . $form_state->getValue('fromClass') . '_' . $form_state->getValue('toClass') . '.txt';

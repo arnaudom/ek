@@ -30,13 +30,10 @@ use Drupal\ek_finance\FinanceSettings;
  */
 class NewMemo extends FormBase {
 
-        
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
+   
     protected $moduleHandler;
+    protected $settings;
+    protected $rounding;
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
@@ -480,7 +477,9 @@ class NewMemo extends FormBase {
             while ($d = $detail->fetchObject()) {
                 $n++;
                 $grandtotal += $d->amount;
-                $rowClass = ($rows[$n]['delete'] == 1) ? 'delete' : 'current';
+                $rowClass = (isset($rows[$n]) && isset($rows[$n]['delete']) 
+                && $rows[$n]['delete'] == 1) ? 'delete' : 'current';
+
 
                 $form['account'] = [
                     '#id' => 'account-' . $n,
@@ -632,15 +631,11 @@ class NewMemo extends FormBase {
             unset($form['delete']);
         }
 
-
-
         $form['items']['count'] = [
             '#type' => 'hidden',
             '#value' => $n - 1,
             '#attributes' => ['id' => 'itemsCount'],
         ];
-
-
 
         if (($form_state->get('num_items') && $form_state->get('num_items') > 0) || isset($detail)) {
             if (isset($id) && $baseCurrency != $data->currency) {
@@ -719,9 +714,16 @@ class NewMemo extends FormBase {
             '#title' => $this->t('Attachments'),
             '#open' => true,
         ];
+
+        // file is not managed by Drupal
+        $extensions = 'png jpeg jpg';
+        $max_bytes = Environment::getUploadMaxSize();
+        $max_filesize = Bytes::toNumber($max_bytes);
+        $upload_doc = ['FileExtension' => ['extensions' => $extensions], 'FileSizeLimit' => ['fileLimit' => $max_filesize]];
         $form['attach']['upload_doc'] = [
             '#type' => 'file',
-            '#title' => $this->t('Select file'),
+            '#title' => $this->t('Select file'),        
+            '#upload_validators' => $upload_doc,
             '#prefix' => '<div class="container-inline">',
         ];
 
@@ -817,55 +819,44 @@ class NewMemo extends FormBase {
         $response = new AjaxResponse();
         $clear = new InvokeCommand('#error', "html", [""]);
         $response->addCommand($clear);
+        // Collect errors from messenger service
+        $messenger = \Drupal::messenger();
+        $error_messages = $messenger->messagesByType('error');
+        if (!empty($error_messages)) {
+            foreach ($error_messages as $msg) {
+                $response->addCommand(new AppendCommand('#error', "<div class='messages messages--error'>". $msg ."</div>"));
+            }
+            $messenger->deleteByType('error');
+            return $response;
+        }
 
-        $extensions = 'png jpg jpeg';
-        $max_bytes = floatval(\Drupal::VERSION) < 8.7
-            ? file_upload_max_size() : Environment::getUploadMaxSize();
-        $max_filesize = Bytes::toNumber($max_bytes);
-        $validators = ['file_validate_extensions' => [$extensions], 'file_validate_size' => [$max_filesize]];
-        $file = file_save_upload("upload_doc", $validators, false, 0);
 
-        if ($file) {
+        if ($file = $form_state->get('upload_doc')) {
             $dir = "private://finance/memos";
             \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
             $dest = $dir . '/' . $file->getFilename();
-            $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $dest);
-
+            $uri = \Drupal::service('file_system')->copy($file->getFileUri(), $dest);
+        
             $fields = array(
                 'serial' => $form_state->getValue('tempSerial'),
-                'uri' => $filename,
+                'uri' => $uri,
                 'doc_date' => time(),
             );
+
             $insert = Database::getConnection('external_db', 'external_db')
                             ->insert('ek_expenses_memo_documents')->fields($fields)->execute();
 
-            
             if ($insert) {
-                //$response->addCommand(new HtmlCommand('#error', ""));
+                $field = "upload_doc";
+                 $form_state->set($field, '') ;
             } else {
                 $msg = "<div aria-label='Error message' class='messages messages--error'>"
                         . $this->t('Error') . "</div>";
                 $response->addCommand(new AppendCommand('#error', $msg));
             }
+
             return $response;
 
-        } else {
-            $m = \Drupal::messenger()->messagesByType('error');
-            $e = '';
-            if(!empty($m)){
-                foreach ($m as $k){
-                    $e .= "<p>". (string) $k . "</p>";
-                }
-                \Drupal::messenger()->deleteByType('error');
-            }
-            
-            $size = round($max_filesize / 1000000, 0);
-            $msg = "<div aria-label='Error message' class='messages messages--error'>"
-                    . $this->t('Allowed extensions') . ": " . 'png jpg jpeg'
-                    . ', ' . $this->t('maximum size') . ": " . $size . 'Mb.'
-                    . $e
-                    . "</div>";
-            return $response->addCommand(new AppendCommand('#error', $msg));
         }
     }
 
@@ -875,8 +866,7 @@ class NewMemo extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
 
-        //input used to update values set by user
-        //$input = $form_state->getUserInput();
+        // input used to update values set by user
         // validate authorizer
         if ($form_state->getValue('user')) {
             $query = Database::getConnection()
@@ -888,12 +878,12 @@ class NewMemo extends FormBase {
             if (!$uid || ($uid == \Drupal::currentUser()->id() && $uid != $this->authorizer)) {
                 $form_state->setErrorByName("user", $this->t('Authorizer is not valid or unknowned'));
             } else {
-                //save data for submission
+                // save data for submission
                 $form_state->setValue('user_uid', $uid);
             }
         }
         $triggering_element = $form_state->getTriggeringElement();
-        //enforce data input
+        // enforce data input
 
         if ($triggering_element['#id'] != 'edit-add' && $form_state->getValue('new_memo') == '1' &&
                 !$form_state->get('num_items')) {
@@ -914,6 +904,23 @@ class NewMemo extends FormBase {
                     // validate account
                     // @TODO
                 }
+            }
+        }
+
+        $field = "upload_doc";
+        if (!empty($form['attach'][$field]['#value'])) {
+            $file = _file_save_upload_from_form($form['attach'][$field], $form_state, 0);
+            if ($file) {
+                if($errors = $form_state->getErrors()) {
+                    foreach ($errors as $error) {
+                        $form_state->setErrorByName($field, $error);
+                    }
+                    $file->delete();
+                } else {
+                $form_state->set($field, $file) ; 
+                }
+            } else {
+                $form_state->setErrorByName($field, $this->t('File upload failed'));
             }
         }
     }
@@ -952,9 +959,11 @@ class NewMemo extends FormBase {
         }
 
         $currencyRate = CurrencyData::rate($form_state->getValue('currency'));
+        if ($currencyRate == 0 || $currencyRate == null) {
+            $currencyRate = 1;
+        }
 
         // Items
-
         $line = 0;
         $total = 0;
         $rows = $form_state->getValue('itemTable');
@@ -983,9 +992,9 @@ class NewMemo extends FormBase {
                         ->insert('ek_expenses_memo_list')
                         ->fields($fields)
                         ->execute();
-            }//if not delete
-        }//for
-//main
+            }
+        }
+
 
         if ($form_state->getValue('pcode') == '') {
             $pcode = 'n/a';

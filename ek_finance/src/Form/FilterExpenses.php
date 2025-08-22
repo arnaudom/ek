@@ -27,6 +27,7 @@ class FilterExpenses extends FormBase {
      * @var \Drupal\Core\Extension\ModuleHandler
      */
     protected $moduleHandler;
+    protected $settings;
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler

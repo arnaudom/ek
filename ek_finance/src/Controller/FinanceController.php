@@ -81,7 +81,7 @@ class FinanceController extends ControllerBase {
      * @param bool $is_modal
      *   (optional) TRUE if modal, FALSE if plain dialog. Defaults to FALSE.
      *
-     * @param array $param
+     * @param string $param
      *    serialized array of keys => values
      *
      * @return \Drupal\Core\Ajax\AjaxResponse

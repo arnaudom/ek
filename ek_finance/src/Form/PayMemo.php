@@ -28,6 +28,9 @@ class PayMemo extends FormBase {
     /**
      * {@inheritdoc}
      */
+
+    protected $settings;
+    protected $rounding;
     public function __construct() {
         $this->settings = new FinanceSettings();
         $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding') : 2;

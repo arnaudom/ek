@@ -213,7 +213,7 @@ function ek_finance_theme() {
  * @param
  * param = array()
  * id = a modal identifier
-  aid = account id
+ * aid = account id
  * coid = company id
  * from = from date
  * to = to date
@@ -223,13 +223,14 @@ function history($param) {
 
     $journal = new Journal();
     $history = $journal->history($param);
-    return array(
+    $data = $history !== null ?  unserialize($history) : '';
+    return [
         '#theme' => 'ek_journal_history',
-        '#items' => unserialize($history),
+        '#items' => $data,
         '#attached' => [
             'library' => ['ek_finance/ek_finance'],
         ],
-    );
+    ];
 }
 
 /**

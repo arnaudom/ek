@@ -11,6 +11,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_finance\AidList;
@@ -68,10 +69,15 @@ class FilterPrintRange extends FormBase {
             $from = date('Y-m', $f) . '-01';
         }
 
+        $back = Url::fromRoute('ek_finance_manage_list_memo_' . $category,[], [])->toString();
+        $form["back"] = [
+            '#markup' => "<a href='" . $back . "' >" . $this->t('Back') . "</a> ",
+        ];
+
         $form['filters'] = array(
             '#type' => 'details',
             '#title' => $this->t('Filter'),
-            '#open' => ($_SESSION['memrgfilter']['filter'] == 1) ? false : true,
+            '#open' => (isset($_SESSION['memrgfilter']) && $_SESSION['memrgfilter']['filter'] == 1) ? false : true,
         );
 
         $coid = array('%' => $this->t('Any'));
@@ -193,7 +199,7 @@ class FilterPrintRange extends FormBase {
         $form['filters']['template'] = array(
             '#type' => 'select',
             '#options' => $list,
-            '#default_value' => $_SESSION['memrgfilter']['template'],
+            '#default_value' => isset($_SESSION['memrgfilter']['template']) ? $_SESSION['memrgfilter']['template'] : 0,
             '#title' => $this->t('template'),
         );
 

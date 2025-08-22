@@ -17,13 +17,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\FinanceSettings;
+use Drupal\ek_finance\Journal;
 use Drupal\ek_finance\ReportingData;
+use Drupal\ek_finance\PrintManager;
 
 /**
  * Controller routines for ek module routes.
  */
-class ReportController extends ControllerBase
-{
+class ReportController extends ControllerBase {
 
     /**
      * The module handler.
@@ -42,12 +43,13 @@ class ReportController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
                 $container->get('form_builder'), $container->get('module_handler')
         );
     }
+    
+    protected $settings;
 
     /**
      * Constructs a  object.
@@ -57,8 +59,8 @@ class ReportController extends ControllerBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+
+    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
         $this->settings = new FinanceSettings();
@@ -142,7 +144,6 @@ class ReportController extends ControllerBase
                     $items['error'] = $error;
                 }
 
-                // include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/reporting.inc';
                 $reportingData = new ReportingData($coid, $year, $baseCurrency, $rounding, $divide, $viewE, $viewS, $chart);
                 $data = $reportingData->getData();
 
@@ -225,14 +226,15 @@ class ReportController extends ControllerBase
     /**
      *  Generate a monthly management report in excel format
      *  filter by company and year
-     *
+     * @param str
+     *  serialized array
      * @return Object
      *  PhpExcel object download
      *  or markup if error
      *
      */
     public function excelreporting(Request $request, $param) {
-        $markup = array();
+        $markup = [];
         // The chart structure is as follow
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
@@ -248,13 +250,12 @@ class ReportController extends ControllerBase
             $viewS = $p['view']['S'];
             $reportingData = new ReportingData($coid, $year, $baseCurrency, $rounding, $divide, $viewE, $viewS, $chart);
             $data = $reportingData->getData();
-            //include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/reporting.inc';
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_reporting.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_reporting.inc';
         } else {
             
             $reportingData = new ReportingData(null, $year, $baseCurrency, $rounding, $divide, null, null, $chart);
             $data = $reportingData->getCompilation();
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_reporting_compilation.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_reporting_compilation.inc';
         }
         return $markup;
     }
@@ -350,15 +351,15 @@ class ReportController extends ControllerBase
      *
      */
     public function excelbudgeting($param) {
-        $markup = array();
+        $markup = [];
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
-            //The chart structure is as follow
+            // The chart structure is as follow
             // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
             // 'other_liabilities', 'other_income', 'other_expenses'
             $chart = $this->settings->get('chart');
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_budgeting.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_budgeting.inc';
         }
         return ['#markup' => $markup];
     }
@@ -371,8 +372,8 @@ class ReportController extends ControllerBase
      *
      */
     public function profitloss(Request $request) {
-        $items = array();
-        //The chart structure is as follow
+        $items = [];
+        // The chart structure is as follow
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
@@ -385,36 +386,36 @@ class ReportController extends ControllerBase
             $summary = $_SESSION['bsfilter']['summary'];
             $settings = new FinanceSettings();
             $baseCurrency = $settings->get('baseCurrency');
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/profitloss.inc';
-
+            //include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/profitloss.inc';
+            $journal = new Journal();
+            $items += $journal->profitloss($coid, $year, $month, $summary);
             $param = serialize(
-                array(
-                        'coid' => $coid,
-                        'year' => $year,
-                        'month' => $month,
-                        'baseCurrency' => $baseCurrency,
-                        'summary' => $summary,
-                    )
+                [
+                    'coid' => $coid,
+                    'year' => $year,
+                    'month' => $month,
+                    'baseCurrency' => $baseCurrency,
+                    'summary' => $summary,
+                ]
             );
 
-            $pdf = Url::fromRoute('ek_finance_extract.profit_loss_pdf', array('param' => $param), array())->toString();
-            $items['pdf'] = array(
+            $pdf = Url::fromRoute('ek_finance_extract.profit_loss_pdf', ['param' => $param], [])->toString();
+            $items['pdf'] = [
                 '#markup' => "<a href='" . $pdf . "' title='" . $this->t('Export to pdf') . "' target='_blank'><span class='ico pdf red'/></a>",
-            );
-            $post = Url::fromRoute('ek_finance.admin.new_year', array(), array())->toString();
-            $items['post'] = array(
+            ];
+            $post = Url::fromRoute('ek_finance.admin.new_year', [], [])->toString();
+            $items['post'] = [
                 '#markup' => "<a href='" . $post . "' >" . $this->t('Start new year') . "</a>",
-            );
+            ];
         }
 
-
-        return array(
+        return [
             '#theme' => 'ek_profit_loss',
             '#items' => $items,
-            '#attached' => array(
-                'library' => array('ek_finance/ek_finance.reporting', 'ek_admin/ek_admin_css'),
-            ),
-        );
+            '#attached' => [
+                'library' => ['ek_finance/ek_finance.reporting', 'ek_admin/ek_admin_css'],
+            ],
+        ];
     }
 
     /**
@@ -430,21 +431,9 @@ class ReportController extends ControllerBase
      *
      */
     public function pdfprofitloss(Request $request, $param) {
-        //output is controlled by pdf.inc where data are extracted
-        //base on document generated
-        $type = 4;
-        $markup = array();
-        $params = unserialize($param);
-        //The chart structure is as follow
-        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
-        // 'other_liabilities', 'other_income', 'other_expenses'
-        $chart = $this->settings->get('chart');
-        $settings = new CompanySettings($params['coid']);
-        $fiscalYear = $settings->get('fiscal_year');
-        $fiscalMonth = $settings->get('fiscal_month');
-
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/pdf.inc';
-        return $markup;
+        $print = new PrintManager();
+        $print->makePdf(['pl' ,0, $param]);
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
 
     /**
@@ -454,11 +443,11 @@ class ReportController extends ControllerBase
      *  render Html
      */
     public function balancesheet(Request $request) {
-        $items = array();
-        //The chart structure is as follow
+        $items = [];
+        // The chart structure is as follow
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
-        $chart = $this->settings->get('chart');
+        // $chart = $this->settings->get('chart');
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterBalance');
 
         if (isset($_SESSION['bsfilter']['filter']) && $_SESSION['bsfilter']['filter'] == 1) {
@@ -468,16 +457,18 @@ class ReportController extends ControllerBase
             $summary = $_SESSION['bsfilter']['summary'];
             //$settings = new FinanceSettings();
             $baseCurrency = $this->settings->get('baseCurrency');
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/balancesheet.inc';
 
+            //include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/balancesheet.inc';
+            $journal = new Journal();
+            $items += $journal->balancesheet($coid, $year, $month, $summary);
             $param = serialize(
-                array(
-                        'coid' => $coid,
-                        'year' => $year,
-                        'month' => $month,
-                        'baseCurrency' => $baseCurrency,
-                        'summary' => $summary,
-                    )
+                [
+                    'coid' => $coid,
+                    'year' => $year,
+                    'month' => $month,
+                    'baseCurrency' => $baseCurrency,
+                    'summary' => $summary,
+                ]
             );
 
             $pdf = Url::fromRoute('ek_finance_extract.balance_sheet_pdf', array('param' => $param), array())->toString();
@@ -485,7 +476,7 @@ class ReportController extends ControllerBase
                 '#markup' => "<a href='" . $pdf . "' title='" . $this->t('Export to pdf') . "' target='_blank'><span class='ico pdf red'/></a>",
             );
 
-            if (strtotime(date("Y-m-d")) > strtotime($dates["fiscal_year"]) && $dates['archive'] == false) {
+            if (strtotime(date("Y-m-d")) > strtotime($items['dates']["fiscal_year"]) && $items['dates']['archive'] == false) {
                 $post = Url::fromRoute('ek_finance.admin.new_year', array(), array())->toString();
                 $items['post'] = array(
                     '#markup' => "<a href='" . $post . "' >" . $this->t('Start new year') . "</a>",
@@ -495,13 +486,13 @@ class ReportController extends ControllerBase
             }
         }
 
-        return array(
+        return [
             '#theme' => 'ek_balance_sheet',
             '#items' => $items,
-            '#attached' => array(
-                'library' => array('ek_finance/ek_finance.reporting','ek_admin/ek_admin_css'),
-            ),
-        );
+            '#attached' => [
+                'library' => ['ek_finance/ek_finance.reporting','ek_admin/ek_admin_css'],
+            ],
+        ];
     }
 
     /**
@@ -516,20 +507,10 @@ class ReportController extends ControllerBase
      */
     public function pdfbalancesheet(Request $request, $param) {
 
-        //output is controlled by pdf.inc where data are extracted
-        //base on document generated
-        $type = 5;
-        $markup = array();
-        $params = unserialize($param);
-        //The chart structure is as follow
-        // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
-        // 'other_liabilities', 'other_income', 'other_expenses'
-        $chart = $this->settings->get('chart');
-        $settings = new CompanySettings($params['coid']);
-        $fiscalYear = $settings->get('fiscal_year');
-        $fiscalMonth = $settings->get('fiscal_month');
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/pdf.inc';
-        return $markup;
+        $print = new PrintManager();
+        $print->makePdf(['pl' ,0, $param]);
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
+    
     }
 
     /**
@@ -540,9 +521,9 @@ class ReportController extends ControllerBase
      *
      */
     public function cashflow() {
-        $items = array();
+        $items = [];
         $amortization = null;
-        //The chart structure is as follow
+        // The chart structure is as follow
         // 'assets', 'liabilities', 'equity', 'income', 'cos', 'expenses',
         // 'other_liabilities', 'other_income', 'other_expenses'
         $chart = $this->settings->get('chart');
@@ -560,32 +541,31 @@ class ReportController extends ControllerBase
             include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/cashflow_statement.inc';
 
             $param = serialize(
-                array(
-                        'coid' => $coid,
-                        'amortization' => $amortization,
-                    )
+                [
+                    'coid' => $coid,
+                    'amortization' => $amortization,
+                ]
             );
 
-            $excel = Url::fromRoute('ek_finance.extract.cashflow_statement', array('param' => $param), array())->toString();
-            $items['excel'] = array(
+            $excel = Url::fromRoute('ek_finance.extract.cashflow_statement', ['param' => $param], [])->toString();
+            $items['excel'] = [
                 '#markup' => "<a href='" . $excel . "' title='". $this->t('Excel download') ."'><span class='ico excel green'/></a>",
-            );
+            ];
         }
 
-
-        return array(
+        return [
             '#theme' => 'ek_finance_cashflow',
             '#items' => $items,
-            '#attached' => array(
-                'library' => array('ek_finance/ek_finance.cashflow'),
-                'drupalSettings' => array('rounding' => $rounding),
-            ),
-        );
+            '#attached' => [
+                'library' => ['ek_finance/ek_finance.cashflow'],
+                'drupalSettings' => ['rounding' => $rounding],
+            ],
+        ];
     }
 
     /**
      * Generate aa cash analysis report in excel format
-     * @param array $param
+     * @param string $param
      *   serialized array
      *  Keys: coid (int company if), amortization (bool)
      *
@@ -595,7 +575,8 @@ class ReportController extends ControllerBase
      *
      */
     public function excelcashflow($param) {
-        $markup = array();
+        // @TODO excel link disables in ek_finance_cashflow
+        $markup = [];
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
@@ -605,7 +586,7 @@ class ReportController extends ControllerBase
             $items['rounding'] = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
             $extract = unserialize($param);
             $coid = $extract['coid'];
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_cash_statement.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_cash_statement.inc';
         }
         return ['#markup' => $markup];
     }

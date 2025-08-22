@@ -5,10 +5,11 @@ namespace Drupal\ek_finance;
 use DateTime;
 use Drupal\Core\Url;
 use Drupal\Core\Database\Database;
-use Drupal\ek_finance\FinanceSettings;
-use Drupal\ek_finance\CurrencyData;
+use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\AidList;
+use Drupal\ek_finance\FinanceSettings;
+use Drupal\ek_finance\CurrencyData;
 
 /**
  * record journal entries
@@ -16,20 +17,1046 @@ use Drupal\ek_finance\AidList;
  */
 class Journal {
 
+    protected $tax;
+    protected $debit;
+    protected $credit;
+
     public function __construct() {
         (double) $this->tax = 0;
         (double) $this->debit = 0;
         (double) $this->credit = 0;
     }
 
-    /* calculate start and end dates of fiscal period based on company and given year and month
+    public function getCredit() {
+        return $this->credit;
+    }
+
+    public function getDebit() {
+        return $this->debit;
+    }
+
+    public function getTax() {
+        return $this->tax;
+    }
+
+    /**
+     * Balance sheet
+     * @param int $coid
+     * @param str $year
+     * @param str $month
+     * @param bol $summary
+     * 
+     * @return array $items
+     * 
+     */
+
+     public function balancesheet($coid, $year, $month, $summary) {
+
+        $company = AccessCheck::GetCompanyByUser();
+        $company = implode(',', $company);
+        $financesettings = new FinanceSettings();
+        $chart = $financesettings->get('chart');
+        $items = [];
+        $items['baseCurrency'] = $financesettings->get('baseCurrency');
+        $items['summary'] = $summary;
+        
+        /*
+        * starting date is based on fiscal year settings 
+        * Ie a fiscal year of 2014-06 means the year is ending 30/06/14
+        * and has started on 1/07/13
+        */
+        $items['dates'] = self::getFiscalDates($coid, $year, $month);
+        $to = $items['dates']['to'];
+        // remove 1 day from stop date as we generate closing amount from opening of next period
+        $stop_date = date('Y-m-d', strtotime($items['dates']['stop_date'] . ' - 1 day'));
+
+        if($items['dates']['archive'] == TRUE) {
+            $from = $items['dates']['from'];
+            // extract data from archive tables
+            $table_accounts = "ek_accounts_" . $year . "_" . $coid;
+            $table_journal = "ek_journal_" . $year . "_" . $coid;
+            $items['title'] = t('Archive data');
+            
+        } else {
+            $from = $items['dates']['fiscal_start'];
+            // extract data from current tables
+            $table_accounts = "ek_accounts";
+            $table_journal = "ek_journal";
+            $items['title'] = t('Current fiscal year @y', ['@y' => $items['dates']['fiscal_year']]);
+            
+        }
+
+        $param = [ 'id' => 'bs', 'from' => $from, 'to' => $to, 'coid' => $coid, 'aid' => '', 'archive' => $items['dates']['archive']];
+
+        // ASSETS //
+        // header account
+        // Other assets
+        $items['other_assets'] = [];
+        $total_class0 = 0;
+        $total_class0_base = 0;
+            
+        $query = Database::getConnection('external_db', 'external_db')
+                            ->select($table_accounts, 't');
+        $query->fields('t', ['aid','aname']);
+        $query->condition('aid', $chart['other_assets'] . '%', 'like');
+        $query->condition('atype', 'header', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $data = $query->execute();
+        $rh = $data->fetchObject();
+        if($rh){
+            $items['other_assets']['header'] = ['aid' => $rh->aid, 'name' => $rh->aname];
+        }
+        $query = Database::getConnection('external_db', 'external_db')
+                            ->select($table_accounts, 't');
+        $query->fields('t', ['aid','aname']);
+        $query->condition('aid', $chart['other_assets'] . '%', 'like');
+        $query->condition('atype', 'class', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $result = $query->execute();
+
+        while ($r = $result->fetchObject()) {
+        
+            $aid = substr($r->aid, 0, 2);
+            $items['other_assets']['header']['class'][$aid] = ['aid' => $r->aid, 'name' => $r->aname];
+            $total_detail = 0;
+            $total_detail_base = 0;
+
+            $query = Database::getConnection('external_db', 'external_db')
+                            ->select($table_accounts, 't');
+            $query->fields('t', ['aid','aname']);
+            $query->condition('aid', $aid . '%', 'like');
+            $query->condition('atype', 'detail', '=');
+            $query->condition('coid', $coid, '=');
+            $query->orderBy('aid', 'ASC');
+            $result2 = $query->execute();
+            $detail = [];
+            while ($r2 = $result2->fetchObject()) {
+
+                $b = self::opening(
+                        [
+                            'aid' => $r2->aid,
+                            'coid' => $coid,
+                            'from' => $stop_date,
+                            'archive' => $items['dates']['archive']
+                        ]
+                );
+                // opening returns an array with key 0 = multicurrency and key 1 = base currency 
+                $b0 = $b[0] * -1;
+                $b1 = $b[1] * -1;
+                if (($b0 != 0 || $b1 != 0) && $summary == 0) {
+                    $param['aid'] = $r2->aid;
+                    $url = Url::fromRoute('ek_finance_modal', array('param' => serialize($param)))->toString();
+                    $detail[$r2->aid] = ['aid' => $r2->aid, 'name' => $r2->aname,'base' => $b1, 'multi' => $b0, 'url' => $url];
+                }
+                $total_detail += $b0;
+                $total_detail_base += $b1;
+            }
+            $detail['total'] = ['aid' => $r->aid, 'name' => $r->aname,'base' => $total_detail_base, 'multi' => $total_detail];
+            $items['other_assets']['header']['class'][$aid]['data'] = $detail;
+            
+
+            $total_class0 += $total_detail;
+            $total_class0_base += $total_detail_base;
+        }
+
+        $items['other_assets']['header']['total'] = ['base' => $total_class0_base, 'multi' => $total_class0];
+
+        // assets
+        $items['assets'] = [];
+        $total_class1 = 0;
+        $total_class1_base = 0;
+
+        $query = Database::getConnection('external_db', 'external_db')
+                            ->select($table_accounts, 't');
+        $query->fields('t', ['aid','aname']);
+        $query->condition('aid', $chart['assets'] . '%', 'like');
+        $query->condition('atype', 'header', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $data = $query->execute();
+        $rh = $data->fetchObject();
+        if($rh){
+            $items['assets']['header'] = ['aid' => $rh->aid, 'name' => $rh->aname];
+        }
+        $query = Database::getConnection('external_db', 'external_db')
+                            ->select($table_accounts, 't');
+        $query->fields('t', ['aid','aname']);
+        $query->condition('aid', $chart['assets'] . '%', 'like');
+        $query->condition('atype', 'class', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $result = $query->execute();
+
+        while ($r = $result->fetchObject()) {
+
+            $aid = substr($r->aid, 0, 2);
+            $items['assets']['header']['class'][$aid] = ['aid' => $r->aid, 'name' => $r->aname];
+            $total_detail = 0;
+            $total_detail_base = 0;
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                                ->select($table_accounts, 't');
+            $query->fields('t', ['aid','aname']);
+            $query->condition('aid', $aid . '%', 'like');
+            $query->condition('atype', 'detail', '=');
+            $query->condition('coid', $coid, '=');
+            $query->orderBy('aid', 'ASC');
+            $result2 = $query->execute();
+            $detail = [];
+            while ($r2 = $result2->fetchObject()) {
+
+                $b = self::opening(
+                        [
+                            'aid' => $r2->aid,
+                            'coid' => $coid,
+                            'from' => $stop_date,
+                            'archive' => $items['dates']['archive']
+                        ]
+                );
+
+                // opening returns an array with key 0 = multicurrency and key 1 = base currency 
+                $b0 = $b[0] * -1;
+                $b1 = $b[1] * -1;
+                if (($b0 != 0 || $b1 != 0) && $summary == 0) {$param['aid'] = $r2->aid;
+                    $url = Url::fromRoute('ek_finance_modal', array('param' => serialize($param)))->toString();
+                    $detail[$r2->aid] = ['aid' => $r2->aid, 'name' => $r2->aname,'base' => $b1, 'multi' => $b0, 'url' => $url];
+                }
+                $total_detail += $b0;
+                $total_detail_base += $b1;
+                
+            }
+            $detail['total'] = ['aid' => $r->aid, 'name' => $r->aname,'base' => $total_detail_base, 'multi' => $total_detail];
+            $items['assets']['header']['class'][$aid]['data'] = $detail;
+            
+
+            $total_class1 += $total_detail;
+            $total_class1_base += $total_detail_base;
+        }
+
+        $items['assets']['header']['total'] = ['base' => $total_class1_base, 'multi' => $total_class1];
+        $items['total_assets'] = ['base' => $total_class0_base + $total_class1_base, 'multi' => $total_class0 + $total_class1];
+
+        // LIABILITIES //
+        // header account
+        // liabilities
+        $items['liabilities'] = [];
+        $total_class2 = 0;
+        $total_class2_base = 0;
+
+        $query = Database::getConnection('external_db', 'external_db')
+                            ->select($table_accounts, 't');
+        $query->fields('t', ['aid','aname']);
+        $query->condition('aid', $chart['liabilities'] . '%', 'like');
+        $query->condition('atype', 'header', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $data = $query->execute();
+        $rh = $data->fetchObject();
+        if($rh){
+            $items['liabilities']['header'] = ['aid' => $rh->aid, 'name' => $rh->aname];
+        }
+
+        $query = Database::getConnection('external_db', 'external_db')
+                            ->select($table_accounts, 't');
+        $query->fields('t', ['aid','aname']);
+        $query->condition('aid', $chart['liabilities'] . '%', 'like');
+        $query->condition('atype', 'class', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $result = $query->execute();
+
+        while ($r = $result->fetchObject()) {
+
+            $aid = substr($r->aid, 0, 2);
+            $items['liabilities']['header']['class'][$aid] = ['aid' => $r->aid, 'name' => $r->aname];
+            $total_detail = 0;
+            $total_detail_base = 0;
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                                ->select($table_accounts, 't');
+            $query->fields('t', ['aid','aname']);
+            $query->condition('aid', $aid . '%', 'like');
+            $query->condition('atype', 'detail', '=');
+            $query->condition('coid', $coid, '=');
+            $query->orderBy('aid', 'ASC');
+            $result2 = $query->execute();
+            $detail = [];      
+            while ($r2 = $result2->fetchObject()) {
+
+                $b = self::opening(
+                        [
+                            'aid' => $r2->aid,
+                            'coid' => $coid,
+                            'from' => $stop_date,
+                            'archive' => $items['dates']['archive']
+                        ]
+                );
+
+                if (($b[0] != 0 || $b[1] != 0) && $summary == 0) {
+                    $param['aid'] = $r2->aid;
+                    $url = Url::fromRoute('ek_finance_modal', array('param' => serialize($param)))->toString();
+                    $detail[$r2->aid] = ['aid' => $r2->aid, 'name' => $r2->aname,'base' => $b[1], 'multi' => $b[0], 'url' => $url];
+                }
+                $total_detail += $b[0];
+                $total_detail_base += $b[1];
+                
+            }
+
+            $detail['total'] = ['aid' => $r->aid, 'name' => $r->aname,'base' => $total_detail_base, 'multi' => $total_detail];
+            $items['liabilities']['header']['class'][$aid]['data'] = $detail;
+            $total_class2 += $total_detail;
+            $total_class2_base += $total_detail_base;
+        }
+
+        $items['liabilities']['header']['total'] = ['base' => $total_class2_base, 'multi' => $total_class2];
+
+        // other liabilities
+        $items['other_liabilities'] = [];
+        $total_class7 = 0;
+        $total_class7_base = 0;
+
+        $query = Database::getConnection('external_db', 'external_db')
+                            ->select($table_accounts, 't');
+        $query->fields('t', ['aid','aname']);
+        $query->condition('aid', $chart['other_liabilities'] . '%', 'like');
+        $query->condition('atype', 'header', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $data = $query->execute();
+        $rh = $data->fetchObject();
+        if($rh){
+            $items['other_liabilities']['header'] = ['aid' => $rh->aid, 'name' => $rh->aname];
+        }
+        $query = Database::getConnection('external_db', 'external_db')
+                            ->select($table_accounts, 't');
+        $query->fields('t', ['aid','aname']);
+        $query->condition('aid', $chart['other_liabilities'] . '%', 'like');
+        $query->condition('atype', 'class', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $result = $query->execute();
+
+        while ($r = $result->fetchObject()) {
+
+            $aid = substr($r->aid, 0, 2);
+            $items['other_liabilities']['header']['class'][$aid] = ['aid' => $r->aid, 'name' => $r->aname];
+            $total_detail = 0;
+            $total_detail_base = 0;
+
+            $query = Database::getConnection('external_db', 'external_db')
+                            ->select($table_accounts, 't');
+            $query->fields('t', ['aid','aname']);
+            $query->condition('aid', $aid . '%', 'like');
+            $query->condition('atype', 'detail', '=');
+            $query->condition('coid', $coid, '=');
+            $query->orderBy('aid', 'ASC');
+            $result2 = $query->execute();
+            $detail = [];
+            while ($r2 = $result2->fetchObject()) {
+
+                $b = self::opening(
+                        [
+                            'aid' => $r2->aid,
+                            'coid' => $coid,
+                            'from' => $stop_date,
+                            'archive' => $items['dates']['archive']
+                        ]
+                );
+
+
+                if (($b[0] != 0 || $b[1] != 0) && $summary == 0) {
+                    $param['aid'] = $r2->aid;
+                    $url = Url::fromRoute('ek_finance_modal', array('param' => serialize($param)))->toString();
+                    $detail[$r2->aid] = ['aid' => $r2->aid, 'name' => $r2->aname,'base' => $b[1], 'multi' => $b[0], 'url' => $url];
+                }
+                $total_detail += $b[0];
+                $total_detail_base += $b[1];
+            }
+
+            $detail['total'] = ['aid' => $r->aid, 'name' => $r->aname,'base' => $total_detail_base, 'multi' => $total_detail];
+            $items['other_liabilities']['header']['class'][$aid]['data'] = $detail;
+            $total_class7 += $total_detail;
+            $total_class7_base += $total_detail_base;
+        }
+
+        $items['other_liabilities']['header']['total'] = ['base' => $total_class7_base, 'multi' => $total_class7];
+        $items['total_liabilities'] = ['base' => $total_class7_base + $total_class2_base, 'multi' => $total_class7 + $total_class2];
+
+        // NET ASSETS //
+
+        $net_assets = $total_class0 + $total_class1 - $total_class2 - $total_class7;
+        $net_assets_base = $total_class0_base + $total_class1_base - $total_class2_base - $total_class7_base;
+
+        $items['net_assets'] = ['base' => $net_assets_base, 'multi' => $net_assets];
+
+        // EQUITY //
+        // header account
+        // equity ref. accounts
+        $items['equity'] = [];
+        $equity_min = $chart['equity'] * 10000;
+        $equity_max = $equity_min + 9999;
+        $earnings_account = $equity_min + 9001; // default
+        $reserve_account = $equity_min + 8001; // default
+
+        $total_class3 = 0;
+        $total_class3_base = 0;
+            
+        $query = Database::getConnection('external_db', 'external_db')
+                            ->select($table_accounts, 't');
+        $query->fields('t', ['aid','aname']);
+        $query->condition('aid', $chart['equity'] . '%', 'like');
+        $query->condition('atype', 'header', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $data = $query->execute();
+        $rh = $data->fetchObject();
+        if($rh){
+            $items['equity']['header'] = ['aid' => $rh->aid, 'name' => $rh->aname];
+        }
+        $query = Database::getConnection('external_db', 'external_db')
+                            ->select($table_accounts, 't');
+        $query->fields('t', ['aid','aname']);
+        $query->condition('aid', $chart['equity'] . '%', 'like');
+        $query->condition('atype', 'class', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $result = $query->execute();
+
+        while ($r = $result->fetchObject()) {
+
+            $aid = substr($r->aid, 0, 2);
+            $items['equity']['header']['class'][$aid] = ['aid' => $r->aid, 'name' => $r->aname];
+            $total_detail = 0;
+            $total_detail_base = 0;
+
+            $query = Database::getConnection('external_db', 'external_db')
+                            ->select($table_accounts, 't');
+            $query->fields('t', ['aid','aname']);
+            $query->condition('aid', $aid . '%', 'like');
+            $query->condition('atype', 'detail', '=');
+            $query->condition('coid', $coid, '=');
+            $query->orderBy('aid', 'ASC');
+            $result2 = $query->execute();
+            $detail = []; 
+            while ($r2 = $result2->fetchObject()) {
+
+                if ($r2->aid == $earnings_account) {
+                    //caculate current year earnings
+                    $b = self::current_earning($coid, $from, $to);
+                    //add other entries on the account from journal transactions
+                    $dt = self::transactions(
+                            [
+                            'aid' => $earnings_account,
+                            'type' => 'debit',
+                            'coid' => $coid,
+                            'from' => $from,
+                            'to' => $to,
+                            'archive' => $items['dates']['archive']
+                            ]
+                        );
+            
+                    $ct = self::transactions(
+                            [ 
+                            'aid' => $earnings_account,
+                            'type' => 'credit',
+                            'coid' => $coid,
+                            'from'=> $from,
+                            'to'=> $to,
+                            'archive' => $items['dates']['archive']
+                            ]
+                        );    
+                    
+                    $b[0] = $b[0] + $ct[0]-$dt[0];
+                    $b[1] = $b[1] + $ct[1]-$dt[1];
+                    
+                } else {
+                    // look up for balance
+                    $b = self::opening(
+                            [
+                                'aid' => $r2->aid,
+                                'coid' => $coid,
+                                'from' => $stop_date,
+                                'archive' => $items['dates']['archive']
+                            ]
+                    );
+                }
+
+                if (($b[0] != 0 || $b[1] != 0 ) && $summary == 0) {
+                    $param['aid'] = $r2->aid;
+                    $url = Url::fromRoute('ek_finance_modal', array('param' => serialize($param)))->toString();
+                    $detail[$r2->aid] = ['aid' => $r2->aid, 'name' => $r2->aname,'base' => $b[1], 'multi' => $b[0], 'url' => $url];
+                }
+                $total_detail += $b[0];
+                $total_detail_base += $b[1];
+            }
+
+            $detail['total'] = ['aid' => $r->aid, 'name' => $r->aname,'base' => $total_detail_base, 'multi' => $total_detail];
+            $items['equity']['header']['class'][$aid]['data'] = $detail;
+            $total_class3 += $total_detail;
+            $total_class3_base += $total_detail_base;
+        }
+
+        $items['equity']['header']['total'] = ['base' => $total_class3_base, 'multi' => $total_class3];
+        $items['total_equity'] = ['base' => $total_class3_base, 'multi' => $total_class3];
+
+        if (round($net_assets_base,2) != round($total_class3_base,2) ) {
+            $items['error'] = number_format(round($net_assets_base,2) - round($total_class3_base,2), 2);
+        }
+
+        return $items;
+
+     }
+
+     /**
+      * Profit and loss
+     * @param int $coid
+     * @param str $year
+     * @param str $month
+     * @param bol $summary
+     * 
+     * @return array $items
+      */
+    public function profitloss($coid, $year, $month, $summary) {
+        $company = AccessCheck::GetCompanyByUser();
+        $company = implode(',', $company);
+        $financesettings = new FinanceSettings();
+        $chart = $financesettings->get('chart');
+        $items = [];
+        $items['baseCurrency'] = $financesettings->get('baseCurrency');
+        $items['summary'] = $summary; 
+
+        /*
+        * starting date is based on fiscal year settings 
+        * Ie a fiscal year of 2014-06 means the year is ending 30/06/14
+        * and has started on 1/07/13
+        */
+
+        $items['dates'] = self::getFiscalDates($coid, $year, $month);
+        $to = $items['dates']['to'];
+        $stop_date = $items['dates']['stop_date'];
+
+        if ($items['dates']['archive'] == TRUE) {
+            $from = $items['dates']['from'];
+            //extract data from archive tables
+            $table_accounts = "ek_accounts_" . $year . "_" . $coid;
+            $table_journal = "ek_journal_" . $year . "_" . $coid;
+            $items['title'] = t('Archive data');
+            /* $alert = "<div class='messages messages--warning'>" .
+            t('Archive data') .
+            "</div>"; */
+        } else {
+            $from = $items['dates']['fiscal_start'];
+            //extract data from current tables
+            $table_accounts = "ek_accounts";
+            $table_journal = "ek_journal";
+            $items['title'] = t('Current fiscal year @y', ['@y' => $items['dates']['fiscal_year']]);
+        }
+        //used to create links
+        $param = [ 'id' => 'bs',
+            'from' => $from,
+            'to' => $to,
+            'coid' => $coid,
+            'aid' => '',
+            'archive' => $items['dates']['archive']
+        ];
+
+        // REVENUE //
+        // Other income
+        $items['other_income'] = [];
+        $total_class_oincome = 0;
+        $total_class_oincome_base = 0;
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table_accounts, 't');
+        $query->fields('t', ['aid', 'aname']);
+        $query->condition('aid', $chart['other_income'] . '%', 'like');
+        $query->condition('atype', 'header', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $data = $query->execute();
+        $rh = $data->fetchObject();
+        if($rh) {
+            $items['other_income']['header'] = ['aid' => $rh->aid, 'name' => $rh->aname];
+        }
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table_accounts, 't');
+        $query->fields('t', ['aid', 'aname']);
+        $query->condition('aid', $chart['other_income'] . '%', 'like');
+        $query->condition('atype', 'class', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $result = $query->execute();
+
+        while ($r = $result->fetchObject()) {
+
+            $aid = substr($r->aid, 0, 2);
+            $items['other_income']['header']['class'][$aid] = ['aid' => $r->aid, 'name' => $r->aname];
+            $total_detail = 0;
+            $total_detail_base = 0;
+
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+            $query->fields('t', ['aid', 'aname']);
+            $query->condition('aid', $aid . '%', 'like');
+            $query->condition('atype', 'detail', '=');
+            $query->condition('coid', $coid, '=');
+            $query->orderBy('aid', 'ASC');
+            $result2 = $query->execute();
+            $detail = [];
+
+            while ($r2 = $result2->fetchObject()) {
+
+                $d = self::transactions(
+                        [
+                            'aid' => $r2->aid,
+                            'type' => 'debit',
+                            'coid' => $coid,
+                            'from' => $from,
+                            'to' => $to,
+                            'archive' => $items['dates']['archive']
+                        ]
+                );
+
+                $c = self::transactions(
+                        [
+                            'aid' => $r2->aid,
+                            'type' => 'credit',
+                            'coid' => $coid,
+                            'from' => $from,
+                            'to' => $to,
+                            'archive' => $items['dates']['archive']
+                        ]
+                );
+                $balance = $c[0] - $d[0];
+                $balance_base = $c[1] - $d[1];
+
+                if (($balance != 0 || $balance_base != 0) && $summary == 0) {
+                    $param['aid'] = $r2->aid;
+                    $url = Url::fromRoute('ek_finance_modal', ['param' => serialize($param)])->toString();
+                    $detail[$r2->aid] = ['aid' => $r2->aid, 'name' => $r2->aname, 'base' => $balance_base, 'multi' => $balance, 'url' => $url];
+                }
+                $total_detail += $balance;
+                $total_detail_base += $balance_base;
+            }
+
+            $detail['total'] = ['aid' => $r->aid, 'name' => $r->aname, 'base' => $total_detail_base, 'multi' => $total_detail];
+            $items['other_income']['header']['class'][$aid]['data'] = $detail;
+
+
+            $total_class_oincome += $total_detail;
+            $total_class_oincome_base += $total_detail_base;
+        }
+
+        $items['other_income']['header']['total'] = ['base' => $total_class_oincome_base, 'multi' => $total_class_oincome];
+
+        // Income
+
+        $items['income'] = [];
+        $total_class_income = 0;
+        $total_class_income_base = 0;
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table_accounts, 't');
+        $query->fields('t', ['aid', 'aname']);
+        $query->condition('aid', $chart['income'] . '%', 'like');
+        $query->condition('atype', 'header', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $data = $query->execute();
+        $rh = $data->fetchObject();
+        if($rh){
+            $items['income']['header'] = ['aid' => $rh->aid, 'name' => $rh->aname];
+        }
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table_accounts, 't');
+        $query->fields('t', ['aid', 'aname']);
+        $query->condition('aid', $chart['income'] . '%', 'like');
+        $query->condition('atype', 'class', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $result = $query->execute();
+
+        while ($r = $result->fetchObject()) {
+            $aid = substr($r->aid, 0, 2);
+            $items['income']['header']['class'][$aid] = ['aid' => $r->aid, 'name' => $r->aname];
+            $total_detail = 0;
+            $total_detail_base = 0;
+
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+            $query->fields('t', ['aid', 'aname']);
+            $query->condition('aid', $aid . '%', 'like');
+            $query->condition('atype', 'detail', '=');
+            $query->condition('coid', $coid, '=');
+            $query->orderBy('aid', 'ASC');
+            $result2 = $query->execute();
+            $detail = [];
+
+            while ($r2 = $result2->fetchObject()) {
+
+                $d = self::transactions(
+                    [
+                        'aid' => $r2->aid,
+                        'type' => 'debit',
+                        'coid' => $coid,
+                        'from' => $from,
+                        'to' => $to,
+                        'archive' => $items['dates']['archive']
+                    ]
+                );
+
+                $c = self::transactions(
+                    [
+                        'aid' => $r2->aid,
+                        'type' => 'credit',
+                        'coid' => $coid,
+                        'from' => $from,
+                        'to' => $to,
+                        'archive' => $items['dates']['archive']
+                    ]
+                );
+                $balance = $c[0] - $d[0];
+                $balance_base = $c[1] - $d[1];
+
+                if (($balance != 0 || $balance_base != 0) && $summary == 0) {
+                    $param['aid'] = $r2->aid;
+                    $url = Url::fromRoute('ek_finance_modal', array('param' => serialize($param)))->toString();
+                    $detail[$r2->aid] = ['aid' => $r2->aid, 'name' => $r2->aname, 'base' => $balance_base, 'multi' => $balance, 'url' => $url];
+                }
+                $total_detail += $balance;
+                $total_detail_base += $balance_base;
+            }
+
+            $detail['total'] = ['aid' => $r->aid, 'name' => $r->aname, 'base' => $total_detail_base, 'multi' => $total_detail];
+            $items['income']['header']['class'][$aid]['data'] = $detail;
+
+
+            $total_class_income += $total_detail;
+            $total_class_income_base += $total_detail_base;
+        }
+
+        $items['income']['header']['total'] = ['base' => $total_class_income_base, 'multi' => $total_class_income];
+        $items['total_income'] = ['base' => $total_class_oincome_base + $total_class_income_base, 'multi' => $total_class_oincome + $total_class_income];
+
+
+        // COST of SALES //
+        // header account
+
+        $items['cos'] = [];
+        $total_class_cos = 0;
+        $total_class_cos_base = 0;
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table_accounts, 't');
+        $query->fields('t', ['aid', 'aname']);
+        $query->condition('aid', $chart['cos'] . '%', 'like');
+        $query->condition('atype', 'header', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $data = $query->execute();
+        $rh = $data->fetchObject();
+        if($rh){
+            $items['cos']['header'] = ['aid' => $rh->aid, 'name' => $rh->aname];
+        }
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table_accounts, 't');
+        $query->fields('t', ['aid', 'aname']);
+        $query->condition('aid', $chart['cos'] . '%', 'like');
+        $query->condition('atype', 'class', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $result = $query->execute();
+
+        while ($r = $result->fetchObject()) {
+            $aid = substr($r->aid, 0, 2);
+            $items['cos']['header']['class'][$aid] = ['aid' => $r->aid, 'name' => $r->aname];
+            $total_detail = 0;
+            $total_detail_base = 0;
+
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+            $query->fields('t', ['aid', 'aname']);
+            $query->condition('aid', $aid . '%', 'like');
+            $query->condition('atype', 'detail', '=');
+            $query->condition('coid', $coid, '=');
+            $query->orderBy('aid', 'ASC');
+            $result2 = $query->execute();
+            $detail = [];
+
+            while ($r2 = $result2->fetchObject()) {
+
+                $d = self::transactions(
+                    [
+                        'aid' => $r2->aid,
+                        'type' => 'debit',
+                        'coid' => $coid,
+                        'from' => $from,
+                        'to' => $to,
+                        'archive' => $items['dates']['archive']
+                    ]
+                );
+
+                $c = self::transactions(
+                    [
+                        'aid' => $r2->aid,
+                        'type' => 'credit',
+                        'coid' => $coid,
+                        'from' => $from,
+                        'to' => $to,
+                        'archive' => $items['dates']['archive']
+                    ]
+                );
+
+                $balance = $c[0] - $d[0];
+                $balance_base = $c[1] - $d[1];
+
+                if (($balance != 0 || $balance_base != 0) && $summary == 0) {
+                    $param['aid'] = $r2->aid;
+                    $url = Url::fromRoute('ek_finance_modal', array('param' => serialize($param)))->toString();
+                    $detail[$r2->aid] = ['aid' => $r2->aid, 'name' => $r2->aname, 'base' => $balance_base, 'multi' => $balance, 'url' => $url];
+                }
+
+                $total_detail += $balance;
+                $total_detail_base += $balance_base;
+            }
+
+            $detail['total'] = ['aid' => $r->aid, 'name' => $r->aname, 'base' => $total_detail_base, 'multi' => $total_detail];
+            $items['cos']['header']['class'][$aid]['data'] = $detail;
+
+            $total_class_cos += $total_detail;
+            $total_class_cos_base += $total_detail_base;
+        }
+
+        $items['cos']['header']['total'] = ['base' => $total_class_cos_base, 'multi' => $total_class_cos];
+
+
+        // CHARGES //
+        // other expenses
+
+        $items['other_expenses'] = [];
+        $total_class_oexpenses = 0;
+        $total_class_oexpenses_base = 0;
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table_accounts, 't');
+        $query->fields('t', ['aid', 'aname']);
+        $query->condition('aid', $chart['other_expenses'] . '%', 'like');
+        $query->condition('atype', 'header', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $data = $query->execute();
+        $rh = $data->fetchObject();
+        if($rh){
+            $items['other_expenses']['header'] = ['aid' => $rh->aid, 'name' => $rh->aname];
+        }
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table_accounts, 't');
+        $query->fields('t', ['aid', 'aname']);
+        $query->condition('aid', $chart['other_expenses'] . '%', 'like');
+        $query->condition('atype', 'class', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $result = $query->execute();
+
+        while ($r = $result->fetchObject()) {
+
+            $aid = substr($r->aid, 0, 2);
+            $items['other_expenses']['header']['class'][$aid] = ['aid' => $r->aid, 'name' => $r->aname];
+            $total_detail = 0;
+            $total_detail_base = 0;
+
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+            $query->fields('t', ['aid', 'aname']);
+            $query->condition('aid', $aid . '%', 'like');
+            $query->condition('atype', 'detail', '=');
+            $query->condition('coid', $coid, '=');
+            $query->orderBy('aid', 'ASC');
+            $result2 = $query->execute();
+            $detail = [];
+
+            while ($r2 = $result2->fetchObject()) {
+
+                $d = self::transactions(
+                    [
+                        'aid' => $r2->aid,
+                        'type' => 'debit',
+                        'coid' => $coid,
+                        'from' => $from,
+                        'to' => $to,
+                        'archive' => $items['dates']['archive']
+                    ]
+                );
+
+                $c = self::transactions(
+                    [
+                        'aid' => $r2->aid,
+                        'type' => 'credit',
+                        'coid' => $coid,
+                        'from' => $from,
+                        'to' => $to,
+                        'archive' => $items['dates']['archive']
+                    ]
+                );
+
+                $balance = $c[0] - $d[0];
+                $balance_base = $c[1] - $d[1];
+
+                if (($balance != 0 || $balance_base != 0 ) && $summary == 0) {
+                    $param['aid'] = $r2->aid;
+                    $url = Url::fromRoute('ek_finance_modal', array('param' => serialize($param)))->toString();
+                    $detail[$r2->aid] = ['aid' => $r2->aid, 'name' => $r2->aname, 'base' => $balance_base, 'multi' => $balance, 'url' => $url];
+                }
+
+                $total_detail += $balance;
+                $total_detail_base += $balance_base;
+            }
+
+            $detail['total'] = ['aid' => $r->aid, 'name' => $r->aname, 'base' => $total_detail_base, 'multi' => $total_detail];
+            $items['other_expenses']['header']['class'][$aid]['data'] = $detail;
+            $total_class_oexpenses += $total_detail;
+            $total_class_oexpenses_base += $total_detail_base;
+        }
+
+        $items['other_expenses']['header']['total'] = ['base' => $total_class_oexpenses_base, 'multi' => $total_class_oexpenses];
+
+        // expenses
+
+        $items['expenses'] = [];
+        $total_class_expenses = 0;
+        $total_class_expenses_base = 0;
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table_accounts, 't');
+        $query->fields('t', ['aid', 'aname']);
+        $query->condition('aid', $chart['expenses'] . '%', 'like');
+        $query->condition('atype', 'header', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $data = $query->execute();
+        $rh = $data->fetchObject();
+        if($rh){
+            $items['expenses']['header'] = ['aid' => $rh->aid, 'name' => $rh->aname];
+        }
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select($table_accounts, 't');
+        $query->fields('t', ['aid', 'aname']);
+        $query->condition('aid', $chart['expenses'] . '%', 'like');
+        $query->condition('atype', 'class', '=');
+        $query->condition('astatus', '1', '=');
+        $query->condition('coid', $coid, '=');
+        $query->orderBy('aid', 'ASC');
+        $result = $query->execute();
+
+        while ($r = $result->fetchObject()) {
+
+            $aid = substr($r->aid, 0, 2);
+            $items['expenses']['header']['class'][$aid] = ['aid' => $r->aid, 'name' => $r->aname];
+            $total_detail = 0;
+            $total_detail_base = 0;
+
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select($table_accounts, 't');
+            $query->fields('t', ['aid', 'aname']);
+            $query->condition('aid', $aid . '%', 'like');
+            $query->condition('atype', 'detail', '=');
+            $query->condition('coid', $coid, '=');
+            $query->orderBy('aid', 'ASC');
+            $result2 = $query->execute();
+            $detail = [];
+
+            while ($r2 = $result2->fetchObject()) {
+
+                $d = self::transactions(
+                    [
+                        'aid' => $r2->aid,
+                        'type' => 'debit',
+                        'coid' => $coid,
+                        'from' => $from,
+                        'to' => $to,
+                        'archive' => $items['dates']['archive']
+                    ]
+                );
+
+                $c = self::transactions(
+                    [
+                        'aid' => $r2->aid,
+                        'type' => 'credit',
+                        'coid' => $coid,
+                        'from' => $from,
+                        'to' => $to,
+                        'archive' => $items['dates']['archive']
+                    ]
+                );
+
+                $balance = $c[0] - $d[0];
+                $balance_base = $c[1] - $d[1];
+
+                if (($balance != 0 || $balance_base != 0 ) && $summary == 0) {
+                    $param['aid'] = $r2->aid;
+                    $url = Url::fromRoute('ek_finance_modal', array('param' => serialize($param)))->toString();
+                    $detail[$r2->aid] = ['aid' => $r2->aid, 'name' => $r2->aname, 'base' => $balance_base, 'multi' => $balance, 'url' => $url];
+                }
+
+                $total_detail += $balance;
+                $total_detail_base += $balance_base;
+            }
+
+
+
+            $detail['total'] = ['aid' => $r->aid, 'name' => $r->aname, 'base' => $total_detail_base, 'multi' => $total_detail];
+            $items['expenses']['header']['class'][$aid]['data'] = $detail;
+            $total_class_expenses += $total_detail;
+            $total_class_expenses_base += $total_detail_base;
+        }
+
+        $items['expenses']['header']['total'] = ['base' => $total_class_expenses_base, 'multi' => $total_class_expenses];
+        $items['total_expenses'] = ['base' => $total_class_oexpenses_base + $total_class_expenses_base, 'multi' => $total_class_oexpenses + $total_class_expenses];
+
+
+        // RESULT //
+
+        $items['result_multi'] = $total_class_oincome + $total_class_income + $total_class_cos + $total_class_oexpenses + $total_class_expenses;
+        $items['result_base'] = $total_class_oincome_base + $total_class_income_base + $total_class_cos_base + $total_class_oexpenses_base + $total_class_expenses_base;
+
+        return $items;
+
+    }
+
+    /**
+     * calculate start and end dates of fiscal period based on company and given year and month
      * starting date is based on fiscal year settings
      * Ie a fiscal year of 2014-06 means the year is ending 30/06/14
      * and has started on 1/07/13
      * start date are used in report extraction like balance sheet or trial
      *
-     * @param $coid int
-     * @param $year int year i.e 2016
+     * @param int $coid 
+     * @param int $year int year i.e 2016
      * @return array
      *  array of dates in string format Y-m-d $from, $to, $stop_date, $fiscal_start, $fiscal_end, bool. archive
      */
@@ -160,8 +1187,6 @@ class Journal {
             case 'general':
 
                 $id = self::save($j['aid'], '0', $j['coid'], $j['type'], $j['source'], $j['reference'], $j['date'], $j['value'], '0', $j['currency'], $j['comment']);
-
-
                 //exchange
                 if ($j['currency'] <> $baseCurrency) {
                     $cash1 = $companysettings->get('cash_account', $j['currency']);
@@ -1044,7 +2069,7 @@ class Journal {
         return $credit - $debit;
     }
 
-    /*
+    /**
      * calculate total transactions between 2 dates
      * @param
      * aid = account id from chart of accounts
@@ -1795,8 +2820,6 @@ class Journal {
         return $data;
     }
 
-    //ledger
-
     /*
      * return data by reference to build a ledger by client
      * @param array $l
@@ -1968,8 +2991,6 @@ class Journal {
 
         return $data;
     }
-
-    // salesledger
 
     /*
      * return data to build Trial balance
@@ -2402,14 +3423,14 @@ class Journal {
         return array($result_l, $result);
     }
 
-    /*
+    /**
      * History per account
      * @param aid = account id
      * @param coid = the id of the company
      * @param from = from date
      * @param to = to date
      * @param source = record source type, default is wildcard %
-     * @return an array with history figures : total_debit, total_credit, total_transaction
+     * @return serialize array with history figures : total_debit, total_credit, total_transaction
      * closing,total_debit_exchange, total_credit_exchange, total_transaction_exchange
      * closing_exchange
      */

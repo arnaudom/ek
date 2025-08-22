@@ -1,7 +1,6 @@
 <?php
 
 use Drupal\Core\Database\Database;
-use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\Journal;
 $journal = new Journal();
 $period = $params['year'] . '-' . $params['month'] . 
@@ -30,17 +29,35 @@ if($dates['archive'] == TRUE) {
 }
 
 class EKPDF extends TCPDF {
-
+    protected $company;
     function Header(){
         $data = $this->getHeaderData();
-        $this->company = $data['title'];
-        if ($this->company->logo != '') {
-               if(file_exists($this->company->logo)) {
-                   $logo = \Drupal::service('file_url_generator')->generateAbsoluteString($this->company->logo);
-                   $info = getimagesize($logo);
-                    $h = $info[1] * 50 / $info[0];
-                    $this->Image($logo, 25, 10, $h);
-               }
+        $this->company = $data['title']; 
+        if (!isset($this->company->page) && $this->company->logo != '') {
+            // @TODO the logo on multiple pages generates timeout error
+            // prevent printing of logo on multiple pages
+            $this->company->page = 1;
+                try {
+                    $httpClient = \Drupal::httpClient();
+                    $response = $httpClient->get($this->company->logo_absolute, [
+                        'timeout' => 60,
+                        'headers' => [
+                            'User-Agent' => 'Mozilla/5.0 (compatible; TCPDF)'
+                        ]
+                    ]);
+                    if ($response->getStatusCode() === 200) {
+                        $imageData = $response->getBody()->getContents();
+                        $tempUri = \Drupal::service('file_system')->tempnam('temporary://', 'tcpdf_img');
+                        $tempPath = \Drupal::service('file_system')->realpath($tempUri);
+                        file_put_contents($tempPath, $imageData);
+                        $info = getimagesize($tempPath);
+                        $h = $info[1] * 50 / $info[0];
+                        $this->Image($tempPath, 25, 10, $h);
+                        unlink($tempPath);
+                    }
+                } catch (Exception $e) {
+                    \Drupal::logger('tcpdf')->error('HTTP client image download failed: ' . $e->getMessage());
+                }
         }
         $this->Ln(5);
         $this->SetFont('helvetica','',12);
@@ -135,6 +152,18 @@ $m0 = 1; $m1=5; $m2=5; $m3=5;
 $c1=25; $c2=30; $c3=30; $c3a=10; $c3b=20;
 $c4=40; $c5=40;
 
+$total_class1 = 0;
+$total_class1_l = 0;
+$total_class2 = 0;
+$total_class2_l = 0;
+$total_class3 = 0;
+$total_class3_l = 0;
+$total_class4 = 0;
+$total_class4_l = 0;
+$total_class5= 0;
+$total_class5_l = 0;
+$total_class6 = 0;
+$total_class6_l = 0;
 
 //DISPLAY DATA
 $pdf->SetTextColor(0,128,255);
@@ -173,8 +202,8 @@ $rh = Database::getConnection('external_db', 'external_db')
 //-----------------------------//
 $pdf->SetFont('helvetica','B',10);
 $pdf->SetTextColor(0,61,121);
-    $pdf->Cell($c1,5, $rh->aid ,0,0);
-    $pdf->Cell($c2,5, $rh->aname ,0,1);
+$pdf->Cell($c1,5, $rh->aid ,0,0);
+$pdf->Cell($c2,5, $rh->aname ,0,1);
 $pdf->SetTextColor(88,88,88);
 //-----------------------------//    
 
@@ -198,9 +227,9 @@ while ($r=$result->fetchObject()) {
 if($params['summary'] == 0){
     //-----------------------------//
     $pdf->SetFont('helvetica','',8);
-        $pdf->Cell($m1,5,"",0,0);
-        $pdf->Cell($c1,5, $r->aid ,0,0);
-        $pdf->Cell($c2,5, $r->aname ,0,1);    
+    $pdf->Cell($m1,5,"",0,0);
+    $pdf->Cell($c1,5, $r->aid ,0,0);
+    $pdf->Cell($c2,5, $r->aname ,0,1);    
     //-----------------------------//  
 }
 $aid = substr($r->aid,0,2);
@@ -235,22 +264,22 @@ $result2 = Database::getConnection('external_db', 'external_db')
                 'archive' => $dates['archive']
                  )
                 );    
-    $b = $c[0]-$d[0];
-    $b_exc = $c[1]-$d[1];
-    if ($params['summary'] == 0){
-        //detail-----------------------------//
-        $pdf->SetFont('helvetica','',8);
-        $pdf->Cell($m1,5,"",0,0);
-        $pdf->Cell($m2,5,"",0,0);
-        $pdf->Cell($c1,5, $r2['aid'] ,0,0);
-        $pdf->Cell($c2,5, $r2['aname'] ,0,0);
-        $pdf->Cell($c3b,5,"",0,0);   
-        $pdf->Cell($c4,5,number_format($b_exc,2),0,0,'R'); 
-        $pdf->Cell($c5,5,number_format($b,2),0,1,'R');
-        //-----------------------------//  
-    }
-    $total_detail+=$b_exc;
-    $total_detail_l+=$b;
+        $b = $c[0]-$d[0];
+        $b_exc = $c[1]-$d[1];
+        if ($params['summary'] == 0){
+            //detail-----------------------------//
+            $pdf->SetFont('helvetica','',8);
+            $pdf->Cell($m1,5,"",0,0);
+            $pdf->Cell($m2,5,"",0,0);
+            $pdf->Cell($c1,5, $r2['aid'] ,0,0);
+            $pdf->Cell($c2,5, $r2['aname'] ,0,0);
+            $pdf->Cell($c3b,5,"",0,0);   
+            $pdf->Cell($c4,5,number_format($b_exc,2),0,0,'R'); 
+            $pdf->Cell($c5,5,number_format($b,2),0,1,'R');
+            //-----------------------------//  
+        }
+        $total_detail+=$b_exc;
+        $total_detail_l+=$b;
     }    
     
     //Sub total-----------------------------//
@@ -305,8 +334,8 @@ $rh = Database::getConnection('external_db', 'external_db')
 //Head-----------------------------//
 $pdf->SetFont('helvetica','B',10);
 $pdf->SetTextColor(0,61,121);
-    $pdf->Cell($c1,5, $rh->aid ,0,0);
-    $pdf->Cell($c2,5, $rh->aname ,0,1);
+$pdf->Cell($c1,5, $rh->aid ,0,0);
+$pdf->Cell($c2,5, $rh->aname ,0,1);
 $pdf->SetTextColor(88,88,88);
 //-----------------------------//  
 
@@ -502,23 +531,23 @@ $result2 = Database::getConnection('external_db', 'external_db')
                 'archive' => $dates['archive']
                  )
                 );    
-    $b = $c[0]-$d[0];
-    $b_exc = $c[1]-$d[1];
-    if ($params['summary'] == 0){
-        //Detail-----------------------------//
-        $pdf->SetFont('helvetica','',8);
-        $pdf->Cell($m1,5, "" ,0,0);
-        $pdf->Cell($m2,5, "" ,0,0);
-        $pdf->Cell($c1,5, $r2['aid'],0,0);
-        $pdf->Cell($c2,5, $r2['aname'] ,0,0);
-        $pdf->Cell($c3b,5, "" ,0,0);   
-        $pdf->Cell($c4,5,number_format($b_exc,2),0,0,'R'); 
-        $pdf->Cell($c5,5,number_format($b,2),0,1,'R');
-        //-----------------------------//  
-    }
+        $b = $c[0]-$d[0];
+        $b_exc = $c[1]-$d[1];
+        if ($params['summary'] == 0){
+            //Detail-----------------------------//
+            $pdf->SetFont('helvetica','',8);
+            $pdf->Cell($m1,5, "" ,0,0);
+            $pdf->Cell($m2,5, "" ,0,0);
+            $pdf->Cell($c1,5, $r2['aid'],0,0);
+            $pdf->Cell($c2,5, $r2['aname'] ,0,0);
+            $pdf->Cell($c3b,5, "" ,0,0);   
+            $pdf->Cell($c4,5,number_format($b_exc,2),0,0,'R'); 
+            $pdf->Cell($c5,5,number_format($b,2),0,1,'R');
+            //-----------------------------//  
+        }
 
-    $total_detail+=$b_exc;
-    $total_detail_l+=$b;
+        $total_detail+=$b_exc;
+        $total_detail_l+=$b;
     }    
     
     //Sub total-----------------------------//

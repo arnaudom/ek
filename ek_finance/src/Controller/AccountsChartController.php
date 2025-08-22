@@ -65,18 +65,21 @@ class AccountsChartController extends ControllerBase {
        *    company id
     */
     public function pdf($coid) {
-        $markup = array();
+        $markup = [];
         $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_accounts');
         $query->fields('ek_accounts');
         $query->condition('coid', $coid, '=');
         $query->orderBy('aid', 'asc');
         $data = $query->execute();
-        $company = Database::getConnection('external_db', 'external_db')
-                ->query('SELECT name FROM {ek_company} WHERE id=:id', [':id' => $coid])
-                ->fetchField();
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_company', 'c')
+                    ->fields('c', ['name'])
+                    ->condition('id', $coid)
+                    ->execute();
+        $company = $query->fetchField();
         
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/chart_pdf';
+        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/chart_pdf';
         return $markup;
     }
 
@@ -86,7 +89,7 @@ class AccountsChartController extends ControllerBase {
       *    company id
     */
     public function exportExcel($coid) {
-        $markup = array();
+        $markup = [];
         
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
@@ -99,11 +102,14 @@ class AccountsChartController extends ControllerBase {
             $query->condition('coid', $coid, '=');
             $query->orderBy('aid', 'asc');
             $data = $query->execute();
-            $company = Database::getConnection('external_db', 'external_db')
-                ->query('SELECT name FROM {ek_company} WHERE id=:id', [':id' => $coid])
-                ->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_company', 'c')
+                    ->fields('c', ['name'])
+                    ->condition('id', $coid)
+                    ->execute();
+            $company = $query->fetchField();
         
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_chart';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_chart.inc';
         }
         
         return $markup;

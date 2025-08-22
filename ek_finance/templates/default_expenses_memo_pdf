@@ -3,18 +3,38 @@
 class EKPDF extends TCPDF {
 
 //Page header
+    protected $company;
+    protected $head;
     function Header() {
         $data = $this->getHeaderData();
         $this->company = $data['title'];
         $this->head = $data['string'];
         //Logo
-        if ($this->company->logo != '') {
-               if(file_exists($this->company->logo)) {
-                   $logo = \Drupal::service('file_url_generator')->generateAbsoluteString($this->company->logo);
-                   $info = getimagesize($logo);
-                    $h = $info[1] * 15 / $info[0];
-                    $this->Image($logo, 15, 8, $h);
-               }
+        if (!isset($this->company->page) && $this->company->logo != '') {
+            // @TODO the logo on multiple pages generates timeout error
+            // prevent printing of logo on multiple pages
+            $this->company->page = 1;
+                try {
+                    $httpClient = \Drupal::httpClient();
+                    $response = $httpClient->get($this->company->logo_absolute, [
+                        'timeout' => 60,
+                        'headers' => [
+                            'User-Agent' => 'Mozilla/5.0 (compatible; TCPDF)'
+                        ]
+                    ]);
+                    if ($response->getStatusCode() === 200) {
+                        $imageData = $response->getBody()->getContents();
+                        $tempUri = \Drupal::service('file_system')->tempnam('temporary://', 'tcpdf_img');
+                        $tempPath = \Drupal::service('file_system')->realpath($tempUri);
+                        file_put_contents($tempPath, $imageData);
+                        $info = getimagesize($tempPath);
+                        $h = $info[1] * 60 / $info[0];
+                        $this->Image($tempPath, 30, 8, $h);
+                        unlink($tempPath);
+                    }
+                } catch (Exception $e) {
+                    \Drupal::logger('tcpdf')->error('HTTP client image download failed: ' . $e->getMessage());
+                }
         }
         $category = array(1 => "Internal invoice", 2 => "Purchase", 3 => "Claim", 4 => "Advance", 5 => "Personal claim");
         //helvetica bold 15
@@ -280,7 +300,7 @@ if ($head->status > 1) {
 
     $paid = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . "/art/paid.png";
     if (file_exists($paid)) {
-        $pdf->Image($paid, 90, 95, 20);
+        $pdf->Image($paid, 150, 85, 20);
     }
 }
 
@@ -371,8 +391,8 @@ while ($d = $documents->fetchObject()) {
         $parts = explode('/', $d->uri);
         $parts = array_reverse($parts);
         $pdf->Cell(100, 5, $parts[0], 0, 1);        
-        $pdf->Image(\Drupal::service('file_url_generator')->generateAbsoluteString($d->uri), 15, 40, 150, $h*$r);
-        // $pdf->Image(\Drupal::service('file_system')->realpath($d->uri), 15, 40, 150, $h*$r);
+        //$pdf->Image(\Drupal::service('file_url_generator')->generateAbsoluteString($d->uri), 15, 40, 150, $h*$r);
+        $pdf->Image(\Drupal::service('file_system')->realpath($d->uri), 15, 40, 150, $h*$r);
 
     } else {
         $pdf->SetFont('helvetica', '', 10);

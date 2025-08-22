@@ -181,7 +181,7 @@ class JournalController extends ControllerBase {
     /**
      * Extract journal in excel format filter by date and company
      *
-     * @param array $param
+     * @param string $param
      *  serialized array
      *  keys : date1 (string), date2 (string), company (int, company id)
      * @return Object
@@ -189,14 +189,14 @@ class JournalController extends ControllerBase {
      *
      */
     public function exceljournal(Request $request, $param = null) {
-        $markup = array();
+        $markup = [];
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
             $param = unserialize($param);
             $summary = ($request->query->get('summary')) ? $request->query->get('summary') : null;
             $markup = array();
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_journal.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_journal.inc';
         }
         return ['#markup' => $markup];
     }

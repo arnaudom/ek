@@ -24,6 +24,10 @@ use Drupal\ek_finance\FinanceSettings;
  */
 class JournalEdit extends FormBase {
 
+    protected $settings;
+    protected $rounding;
+    protected $baseCurrency;
+    
     public function __construct() {
         $this->settings = new FinanceSettings();
         $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding') : 2;
@@ -435,7 +439,7 @@ class JournalEdit extends FormBase {
                             'value' => $debit,
                             'currency' => $param['currency'],
                             'comment' => Xss::filter($row["comment"]),
-                            'fxRate' => $param['fxRate'],
+                            'fxRate' => isset($param['fxRate']) ? $param['fxRate'] : null,
                             'exchange' => $row['force_dt_ex'],
                         ];
                         $rec[$key] = $journal->record($a);
@@ -452,7 +456,7 @@ class JournalEdit extends FormBase {
                             'value' => $credit,
                             'currency' => $param['currency'],
                             'comment' => Xss::filter($row["comment"]),
-                            'fxRate' => $param['fxRate'],
+                            'fxRate' => isset($param['fxRate']) ? $param['fxRate'] : null,
                             'exchange' => $row['force_ct_ex'],
                         ];
                         $journal->record($a);

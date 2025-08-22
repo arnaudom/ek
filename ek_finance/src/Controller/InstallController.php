@@ -62,8 +62,7 @@ class InstallController extends ControllerBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -74,8 +73,7 @@ class InstallController extends ControllerBase
      * @return array
      * render Html
      */
-    public function update()
-    {
+    public function update() {
         include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/' . 'update.php';
         return array('#markup' => $markup);
     }
@@ -85,8 +83,7 @@ class InstallController extends ControllerBase
      * @return array
      * render Html
      */
-    public function install()
-    {
+    public function install() {
         /**/
         $query = "CREATE TABLE IF NOT EXISTS `ek_finance` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -107,7 +104,7 @@ class InstallController extends ControllerBase
             $query = "INSERT INTO `ek_finance` (`id`, `settings`) VALUES
           (1, '')";
             $db = Database::getConnection('external_db', 'external_db')->query($query);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $markup .= '<br/><b>Caught exception for settings: ' . $e->getMessage() . "</b>\n";
         }
 
@@ -441,7 +438,7 @@ class InstallController extends ControllerBase
             if ($db) {
                 $markup .= 'Finance currencies data updated <br/>';
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $markup .= '<br/><b>Caught exception for currencies: ' . $e->getMessage() . "</b>\n";
         }
 

@@ -1,5 +1,6 @@
 <?php
 use Drupal\Core\Database\Database;
+use Drupal\file\Entity\File;
 use Drupal\ek_finance\FinanceSettings;
 
 //expense payment voucher
@@ -24,40 +25,80 @@ if ($type == 1) {
         $data[$id]['suppliername'] = t('n/a');
         $data[$id]['clientname'] = t('n/a');
 
-        $query = "SELECT * from {ek_expenses} where id=:id";
-        $a = array(':id' => $id);
-        $data[$id]['line'] = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses', 'e')
+                    ->fields('e')
+                    ->condition('id', $id)
+                    ->execute();
+        $data[$id]['line'] = $query->fetchObject();
+        if(!null == $data[$id]['line']->attachment) {
+            $data[$id]['line']->attachment_realpath = \Drupal::service('file_system')->realpath($data[$id]['line']->attachment);
+            $data[$id]['line']->attachment_absolute = \Drupal::service('file_url_generator')->generateAbsoluteString($data[$id]['line']->attachment);
+            $data[$id]['line']->attachment_image = false;
+            
+            if ($data[$id]['line']->attachment_realpath && file_exists($data[$id]['line']->attachment_realpath)) {
+                // @TODO getimagesize always return false (s3//)
+                $image_info = @getimagesize($data[$id]['line']->attachment_realpath);
+                if ($image_info !== false) {
+                    $data[$id]['line']->attachment_image = $image_info;
+                }
+            }
+        }
 
-        $query = "SELECT * FROM {ek_journal} WHERE reference=:id AND source=:s AND type=:t";
-        $a = array(':id' => $id, ':s' => 'expense', ':t' => 'debit');
-        $data[$id]['journal'] = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j')
+                    ->fields('j')
+                    ->condition('reference', $id)                    
+                    ->condition('source', 'expense')
+                    ->condition('type', 'debit')
+                    ->execute();
+        $data[$id]['journal'] = $query->fetchObject();
+
 
         if($data[$id]['line']->clientname != 'n/a'){
-            $data[$id]['clientname'] = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $data[$id]['line']->clientname))
-                    ->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book', 'b')
+                    ->fields('b',['name'])
+                    ->condition('id',  $data[$id]['line']->clientname)
+                    ->execute();
+            $data[$id]['clientname'] = $query->fetchField();
         }
+
         if($data[$id]['line']->suppliername != 'n/a'){
-            $data[$id]['suppliername'] = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT name from {ek_address_book} WHERE id=:id", array(':id' => $data[$id]['line']->suppliername))
-                    ->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book', 'b')
+                    ->fields('b',['name'])
+                    ->condition('id',  $data[$id]['line']->suppliername)
+                    ->execute();
+            $data[$id]['suppliername'] = $query->fetchField();
         }
-        $data[$id]['type'] = $data[$id]['line']->type . "-" . Database::getConnection('external_db', 'external_db')
-                ->query("SELECT aname from {ek_accounts} WHERE aid=:aid and coid=:c", 
-                        array(':aid' => $data[$id]['line']->type, ':c' => $data[$id]['line']->company ) )
-                ->fetchField();
+
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a')
+                    ->fields('a',['aname'])
+                    ->condition('aid',  $data[$id]['line']->type)
+                    ->condition('coid',  $data[$id]['line']->company)
+                    ->execute();
+        $data[$id]['type'] = $query->fetchField();
 
         if($data[$id]['line']->cash <> 'Y') {
-          $data[$id]['bank_account'] = Database::getConnection('external_db', 'external_db')
-                  ->query("SELECT account_ref from {ek_bank_accounts} WHERE id=:id", array(':id' => $data[$id]['line']->cash))
-                  ->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_bank_accounts', 'k')
+                    ->fields('k',['account_ref'])
+                    ->condition('id',  $data[$id]['line']->cash)
+                    ->execute();
+            $data[$id]['bank_account'] = $query->fetchField();
+
         } else {
           $data[$id]['bank_account'] = t('cash');
         }
 
-        $data[$id]['company'] = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT * from {ek_company} where id=:id", array(':id' => $data[$id]['line']->company))
-                ->fetchObject();        
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_company', 'c')
+                    ->fields('c')
+                    ->condition('id',  $data[$id]['line']->company)
+                    ->execute();
+        $data[$id]['company'] = $query->fetchObject();     
         
         
     }
@@ -67,15 +108,16 @@ if ($type == 1) {
 //cash voucher
 if ($type == 2) {
 
-$query = "SELECT * from {ek_cash} where id=:id";
-$a = array(':id' => $id);
-$line = Database::getConnection('external_db', 'external_db')
-        ->query($query, $a)->fetchObject();
+    $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_cash', 'c')
+                ->fields('c')
+                ->condition('id', $id)
+                ->execute();
+    $line = $query->fetchObject(); 
 
 if ($line->uid == 0) { 
     $employee = t("company cash account");
 } else {
-    //$employee = db_query('SELECT name from {users_field_data} WHERE uid=:u', array(':u' => $line->uid))->fetchField();
     $u = Drupal\user\Entity\User::load($line->uid);
     $employee = '';
     if($u) {
@@ -84,64 +126,77 @@ if ($line->uid == 0) {
     
 }
   
-  $company = Database::getConnection('external_db', 'external_db')
-          ->query("SELECT * from {ek_company} where id=:id", array(':id' => $line->coid))
-          ->fetchObject();
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_company', 'c')
+                    ->fields('c')
+                    ->condition('id', $line->coid)
+                    ->execute();
+    $company = $query->fetchObject();     
 
-  $settings = new FinanceSettings(); 
-  $baseCurrency = $settings->get('baseCurrency'); 
+    $settings = new FinanceSettings(); 
+    $baseCurrency = $settings->get('baseCurrency'); 
 
-  $template = 'default_cash_voucher_pdf';
-  $fileName = t('cash_voucher') . '_' . $line->id;
-  $userName =  \Drupal::currentUser()->getAccountName();
+    $template = 'default_cash_voucher_pdf';
+    $fileName = t('cash_voucher') . '_' . $line->id;
+    $userName =  \Drupal::currentUser()->getAccountName();
 
 }
 
 
-//reconciliation report
+// reconciliation report
 if ($type == 3) {
 
-$query = "SELECT * from {ek_journal_reco_history} where id=:id";
-$a = array(':id' => $id);
-$line = Database::getConnection('external_db', 'external_db')
-        ->query($query, $a)
-        ->fetchObject();
+    $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal_reco_history', 'j')
+                ->fields('j')
+                ->condition('id', $id)
+                ->execute();
+    $line = $query->fetchObject(); 
 
-  $aid = $line->aid;
-  $query = "SELECT aname from {ek_accounts} WHERE aid=:a AND coid=:c";
-  $aname = Database::getConnection('external_db', 'external_db')
-          ->query($query, array(':a' => $line->aid, ':c' => $line->coid))
-          ->fetchField();  
-  $company = Database::getConnection('external_db', 'external_db')
-          ->query("SELECT * from {ek_company} where id=:id", array(':id' => $line->coid))
-          ->fetchObject();
-
-  $settings = new FinanceSettings(); 
-  $baseCurrency = $settings->get('baseCurrency'); 
-
-  // insert account details in filename
-  $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_accounts','a')
-                    ->fields('a', ['aname'])
-                    ->condition('aid', $line->aid)
+    $aid = $line->aid;
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a')
+                    ->fields('a',['aname'])
+                    ->condition('aid',  $line->aid)
                     ->condition('coid', $line->coid)
                     ->execute();
-  $acc = $query->fetchField();
-  $data = unserialize($line->data);
-  $template = 'default_reco_report_pdf';
-  $fileName = t('Reconciliation_report') . '_' . $line->id. '_' . $acc. '_' . $line->date;
-  $userName =  \Drupal::currentUser()->getAccountName();
+    $aname = $query->fetchField();
+
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_company', 'c')
+                    ->fields('c')
+                    ->condition('id', $line->coid)
+                    ->execute();
+    $company = $query->fetchObject();   
+
+    $settings = new FinanceSettings(); 
+    $baseCurrency = $settings->get('baseCurrency'); 
+
+    // insert account details in filename
+    $query = Database::getConnection('external_db', 'external_db')
+                        ->select('ek_accounts','a')
+                        ->fields('a', ['aname'])
+                        ->condition('aid', $line->aid)
+                        ->condition('coid', $line->coid)
+                        ->execute();
+    $acc = $query->fetchField();
+    $data = unserialize($line->data);
+    $template = 'default_reco_report_pdf';
+    $fileName = t('Reconciliation_report') . '_' . $line->id. '_' . $acc. '_' . $line->date;
+    $userName =  \Drupal::currentUser()->getAccountName();
 
 }
 
-//profit & loss
+// profit & loss
 if ($type == 4) {
     
     $params = unserialize($param);
-    $a = array(':id' => $params['coid']);
-    $company = Database::getConnection('external_db', 'external_db')
-          ->query("SELECT * from {ek_company} where id=:id",$a)
-          ->fetchObject();
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_company', 'c')
+                    ->fields('c')
+                    ->condition('id', $params['coid'])
+                    ->execute();
+    $company = $query->fetchObject();   
     
     $template = 'profit_and_loss_pdf';
     $fileName = t('Profit_and_loss') . '_' . $params['year'] . '_' . $params['month'];
@@ -153,9 +208,12 @@ if ($type == 5) {
     
     $params = unserialize($param);
     $a = array(':id' => $params['coid']);
-    $company = Database::getConnection('external_db', 'external_db')
-          ->query("SELECT * from {ek_company} where id=:id",$a)
-          ->fetchObject();
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_company', 'c')
+                    ->fields('c')
+                    ->condition('id', $params['coid'])
+                    ->execute();
+    $company = $query->fetchObject();  
     
     $template = 'balance_sheet_pdf';
     $fileName = t('Balance_sheet') . '_' . $params['year'] . '_' . $params['month'];
@@ -163,14 +221,16 @@ if ($type == 5) {
 }
 
 
-//bank label
+// bank label
 if ($type == 6) {
 
     $params = unserialize($param);
-    $a = array(':id' => $params['id']);
-    $bank = Database::getConnection('external_db', 'external_db')
-          ->query("SELECT * from {ek_bank} where id=:id",$a)
-          ->fetchObject();
+    $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_bank', 'b')
+                    ->fields('b')
+                    ->condition('id', $params['id'])
+                    ->execute();
+    $bank = $query->fetchObject();  
     
     $template = 'bank_label_pdf';
     $fileName = $bank->name;
@@ -178,7 +238,7 @@ if ($type == 6) {
 
 }
 
-//bank acc. label
+// bank acc. label
 if ($type == 7) {
 
     $params = unserialize($param);
@@ -201,7 +261,7 @@ if ($type == 7) {
 
 }
 
-include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/' .$template;
+    include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/' .$template;
 
   header('Cache-Control: private');
   header('Content-Type: application/pdf');

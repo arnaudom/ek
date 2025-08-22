@@ -310,12 +310,24 @@ class ChartAccounts extends FormBase {
                 '#type' => 'actions',
                 '#attributes' => array('class' => array('container-inline')),
             ];
-
-            $form['actions']['submit'] =[
-                '#type' => 'submit',
-                '#value' => $this->t('Extract'),
-                '#suffix' => ''
-            ];
+            if ($form_state->getValue('class') == '1') {
+                $link = Url::fromRoute('ek_finance.admin.charts_accounts_download', ['coid' => $form_state->getValue('coid')]);
+                $form['actions']['download'] = [
+                    '#type' => 'link',
+                    '#title' => $this->t('Download PDF'),
+                    '#url' => $link,
+                    '#attributes' => ['target' => '_blank', 'class' => ['button']],
+                ];
+               
+            } else {
+                $link = Url::fromRoute('ek_finance.admin.charts_accounts_excel_export', ['coid' => $form_state->getValue('coid')]);
+                $form['actions']['download'] = [
+                    '#type' => 'link',
+                    '#title' => $this->t('Download Excel'),
+                    '#url' => $link,
+                    '#attributes' => ['target' => '_blank', 'class' => ['button']],
+                ];
+            }
         }
 
         $form['#tree'] = true;
@@ -373,14 +385,7 @@ class ChartAccounts extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        if ($form_state->getValue('class') == '0' || $form_state->getValue('class') == '1') {
-            if ($form_state->getValue('class') == '1') {
-                $form_state->setRedirect('ek_finance.admin.charts_accounts_download', ['coid' => $form_state->getValue('coid')], ['target' => '_blank']);
-            } else {
-                $form_state->setRedirect('ek_finance.admin.charts_accounts_excel_export', ['coid' => $form_state->getValue('coid')]);
-            }
-        }
-
+        
         if ($form_state->getValue('step') == 2) {
             $formValues = $form_state->getValues();
             $c = $formValues['list']['c'];

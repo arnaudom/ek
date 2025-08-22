@@ -22,8 +22,7 @@ use Drupal\ek_finance\AidList;
 /**
 * Controller routines for ek module routes.
 */
-class CashController extends ControllerBase
-{
+class CashController extends ControllerBase {
 
    /* The module handler.
    *
@@ -45,8 +44,7 @@ class CashController extends ControllerBase
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container)  {
         return new static(
       $container->get('database'),
       $container->get('form_builder'),
@@ -64,8 +62,7 @@ class CashController extends ControllerBase
        * @param \Drupal\Core\Extension\ModuleHandler $module_handler
        *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -77,8 +74,7 @@ class CashController extends ControllerBase
      *  @return array
      *      form
     */
-    public function currencies(Request $request)
-    {
+    public function currencies(Request $request) {
         
         //clear currency session
         unset($_SESSION['activeCurrencies']);
@@ -92,8 +88,7 @@ class CashController extends ControllerBase
      *  @return array
      *      render Html
     */
-    public function cashbalance(Request $request)
-    {
+    public function cashbalance(Request $request)  {
         $items['filter_cash'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterCash');
     
         if (isset($_SESSION['cfilter']['filter'])) {
@@ -138,40 +133,36 @@ class CashController extends ControllerBase
             $items['data'] = $data['data'];
             $items['total'] = $data['total'];
 
-            $param = urlencode(serialize($filter));
+            $param = serialize($filter);
             $items['excel'] = Url::fromRoute('ek_finance.extract.excel-cash', ['param' => $param])->toString();
         }
     
-        return array(
-      '#theme' => 'ek_finance_cash',
-      '#items' => $items,
-      '#attached' => array(
-          'library' => array('ek_finance/ek_finance','ek_admin/ek_admin_css'),
-      ),
-    );
+        return [
+            '#theme' => 'ek_finance_cash',
+            '#items' => $items,
+            '#attached' => [
+                'library' => ['ek_finance/ek_finance','ek_admin/ek_admin_css'],
+            ],
+        ];
     }
 
     /**
      * export cash balance in excel format
      *
-     * @param array $param
+     * @param string $param
      *  serialized array of keys
      *  type (bool, 0 company, 1 user), account (coid or uid), from (date string),
      *  to (date string),currency (code string), baseCurrency (code string),
      *  aid (chart accounts account int value)
-     * @return Object
-     *  Pdf download object
+     * @return Object  excel
      *
     */
-    public function excelcash($param)
-    {
-        $markup = array();
+    public function excelcash($param) {
+        $markup = [];
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
-        } else {
-            //$settings = new FinanceSettings();
-            //$data['baseCurrency'] = $settings->get('baseCurrency');
-            $parameters = unserialize(urldecode($param));
+        } else {           
+            $parameters = unserialize($param);
             $extract = $this->extract($parameters);
             
             $data['from'] = $_SESSION['cfilter']['from'];
@@ -179,7 +170,7 @@ class CashController extends ControllerBase
             $data['filter'] = $extract['filter'];
             $data['data'] = $extract['data'];
             $data['total'] = $extract['total'];
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_cash.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_cash.inc';
         }
         return ['#markup' => $markup];
     }
@@ -196,8 +187,7 @@ class CashController extends ControllerBase
      * @return array
      *  extracted data
     */
-    private function extract($filter)
-    {
+    private function extract($filter) {
         $journal = new Journal();
         if ($filter['type'] == '0') {
             //company cash transactions
@@ -619,8 +609,7 @@ class CashController extends ControllerBase
      *      form
      *
     */
-    public function cashmanage(Request $request)
-    {
+    public function cashmanage(Request $request)     {
         $build['manage_cash'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\ManageCash');
         return $build;
     }

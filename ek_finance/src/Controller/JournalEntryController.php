@@ -135,8 +135,7 @@ class JournalEntryController extends ControllerBase {
      *  use if sales modules is available
      *  utility to use when finance module is installed after sales modules to transfer data.
      */
-    public function updateJournalSales(Request $request)
-    {
+    public function updateJournalSales(Request $request) {
         $coid = $request->query->get('coid');
         if (!null == $coid) {
             $build = [];

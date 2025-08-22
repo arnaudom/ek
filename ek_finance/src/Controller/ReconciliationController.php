@@ -14,9 +14,9 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;;
 use Drupal\ek_finance\Journal;
+use Drupal\ek_finance\PrintManager;
 
 /**
  * Controller routines for ek module routes.
@@ -52,6 +52,7 @@ class ReconciliationController extends ControllerBase {
         );
     }
 
+    protected $financeSettings;
     /**
      * Constructs a ReconciliationController object.
      *
@@ -223,15 +224,14 @@ class ReconciliationController extends ControllerBase {
      *
      */
     public function pdfreconciliation(Request $request, $id) {
-        $type = 3;
-        $markup = [];
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/pdf.inc';
-        return $markup;
+        $print = new PrintManager();
+        $print->makePdf(['reconciliationreport' ,$id]);
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
 
     /**
      * Extract in excel format reconciliation table
-     * @param array $param
+     * @param string $param
      *  serialized array
      *  keys: coid, account, date
      * @return Object
@@ -240,41 +240,42 @@ class ReconciliationController extends ControllerBase {
      *
      */
     public function excelreco($param) {
-        $markup = array();
+        $markup = [];
         $rounding = (!null == $this->financeSettings->get('rounding')) ? $this->financeSettings->get('rounding'):2;
         
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
-            $data = array();
-            $markup = array();
+            $data = [];
             $param = unserialize($param);
             //extract needed data
             $data['date'] = $param['date'];
-            $data['company'] = Database::getConnection('external_db', 'external_db')
-                    ->query('SELECT name FROM {ek_company} WHERE id=:id', [':id' => $param['coid']])
-                    ->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_company', 'c')
+                    ->fields('c', ['name'])
+                    ->condition('id', $param['coid'])
+                    ->execute();
+            $data['company'] = $query->fetchField();
 
-            $query = "SELECT id,date from {ek_journal} WHERE aid=:aid and coid=:coid "
-                    . "AND date<=:date2 and reconcile=0 and exchange=0 order by date";
-            $a = array(
-                ':aid' => $param['account'],
-                ':coid' => $param['coid'],
-                ':date2' => $param['date']
-            );
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j')
+                    ->fields('j', ['id', 'date'])
+                    ->condition('aid', $param['account'])
+                    ->condition('coid', $param['coid'])
+                    ->condition('date', $param['date'], '<=');
+            $result = $query->execute();
 
-            $result = Database::getConnection('external_db', 'external_db')->query($query, $a);
-
-
-            $query = "SELECT * from {ek_accounts} WHERE aid=:account and coid=:coid";
-            $a = array(':account' => $param['account'], ':coid' => $param['coid']);
-            $account = Database::getConnection('external_db', 'external_db')
-                            ->query($query, $a)->fetchObject();
-
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a')
+                    ->fields('a')
+                    ->condition('aid', $param['account'])
+                    ->condition('coid', $param['coid'])
+                    ->execute(); 
+            $account = $query->fetchObject();
 
             if ($account->balance_date == '') {
                 $account->balance_date = 0;
-            } //todo input alert for opening balance
+            } // todo input alert for opening balance
             $data['aname'] = $account->aname;
             $data['aid'] = $account->aid;
 
@@ -327,7 +328,6 @@ class ReconciliationController extends ControllerBase {
             $data['opendebit'] = round($debit, $rounding);
             $data['openbalance'] = $balance;
 
-
             // top bar displaying the total
             $data["debits"] = round($debit, $rounding);
             $data["credits"] = round($credit, $rounding);
@@ -354,9 +354,9 @@ class ReconciliationController extends ControllerBase {
 
                 $data['rows'][$i] = $row;
                 $i++;
-            }//while
+            }
 
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_reconciliation.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_reconciliation.inc';
         }
         return ['#markup' => $markup];
     }

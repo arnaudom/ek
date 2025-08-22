@@ -153,7 +153,7 @@ class DeleteExpense extends FormBase {
 
 
             while ($r = $data->fetchObject()) {
-                $schedule = unserialize($r->amort_record);
+                $schedule = $r->amort_record !== null ? unserialize($r->amort_record): [];
                 $i = 0;
                 foreach ($schedule['a'] as $key => $value) {
                     if ($value['journal_reference'] != '') {

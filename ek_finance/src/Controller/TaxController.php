@@ -54,8 +54,7 @@ class TaxController extends ControllerBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
     }
@@ -181,7 +180,7 @@ class TaxController extends ControllerBase {
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_tax.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_tax.inc';
         }
         return ['#markup' => $markup];
     }

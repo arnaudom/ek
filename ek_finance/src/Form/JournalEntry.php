@@ -24,6 +24,8 @@ use Drupal\ek_finance\FinanceSettings;
  */
 class JournalEntry extends FormBase {
 
+    protected $settings;
+    protected $rounding;
     public function __construct() {
         $this->settings = new FinanceSettings();
         $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding') : 2;
@@ -617,8 +619,8 @@ class JournalEntry extends FormBase {
                     }
                 }
             
-            if (round($journal->credit,$this->rounding) <> round($journal->debit,$this->rounding)) {
-                $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+            if (round($journal->getCredit(),$this->rounding) <> round($journal->getDebit(),$this->rounding)) {
+                $msg = 'debit: ' . $journal->getDebit() . ' <> ' . 'credit: ' . $journal->getCredit();
                 \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }
 

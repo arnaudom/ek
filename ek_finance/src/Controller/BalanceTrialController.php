@@ -65,8 +65,7 @@ class BalanceTrialController extends ControllerBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler)
-    {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -79,8 +78,7 @@ class BalanceTrialController extends ControllerBase
      *      rendered Html
      *
      */
-    public function trialbalance(Request $request)
-    {
+    public function trialbalance(Request $request) {
         $items['filter_trial'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterTrial');
         $items['data'] = array();
         $journal = new Journal();
@@ -125,13 +123,12 @@ class BalanceTrialController extends ControllerBase
      * @return Object
      *  PhpExcel object
      */
-    public function exceltrial($param = null)
-    {
-        $markup = array();
+    public function exceltrial($param = null) {
+        $markup = [];
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
-            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/excel_trial.inc';
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_trial.inc';
         }
         return ['#markup' => $markup];
     }

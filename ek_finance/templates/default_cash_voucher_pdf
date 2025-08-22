@@ -1,0 +1,244 @@
+<?php
+
+class EKPDF extends TCPDF {
+    protected $company;
+    protected $logoCache = null; 
+    protected $logoCacheUrl = null; 
+    /**
+     * Download image from remote URL and return temporary file path
+     */
+    public function downloadImageToTemp($url) {
+        try {
+            $httpClient = \Drupal::httpClient();
+            $response = $httpClient->get($url, [
+                'timeout' => 60,
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (compatible; TCPDF)'
+                ]
+            ]);
+            
+            if ($response->getStatusCode() === 200) {
+                $imageData = $response->getBody()->getContents();
+                $fileSystem = \Drupal::service('file_system');
+                $tempUri = $fileSystem->tempnam('temporary://', 'tcpdf_img_');
+                
+                if (!$tempUri) {
+                    throw new Exception('Failed to create temporary file');
+                }
+                
+                // Convert URI to real path for TCPDF
+                $tempPath = $fileSystem->realpath($tempUri);
+                
+                if (file_put_contents($tempPath, $imageData) === false) {
+                    // Clean up on failure
+                    $fileSystem->delete($tempUri);
+                    throw new Exception('Failed to write image data to temporary file');
+                }
+                
+                return $tempPath;
+            } else {
+                throw new Exception('HTTP request failed with status: ' . $response->getStatusCode());
+            }
+        } catch (Exception $e) {
+            \Drupal::logger('tcpdf')->error('Image download failed for URL ' . $url . ': ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Get cached logo or download if not cached
+     */
+    protected function getCachedLogo($logoUrl) {
+        // If we already have this logo cached, return the cached file
+        if ($this->logoCache && $this->logoCacheUrl === $logoUrl && file_exists($this->logoCache)) { 
+            return $this->logoCache;
+        }
+        
+        // Clean up old cache if URL changed
+        if ($this->logoCache && $this->logoCacheUrl !== $logoUrl) {
+            @unlink($this->logoCache);
+            $this->logoCache = null;
+            $this->logoCacheUrl = null;
+        }
+        
+        // Download new logo
+        $tempFile = $this->downloadImageToTemp($logoUrl);
+        if ($tempFile) {
+            $this->logoCache = $tempFile;
+            $this->logoCacheUrl = $logoUrl;
+        }
+        
+        return $tempFile;
+    }
+    
+    /**
+     * Clean up cached logo file
+     */
+    public function cleanupCache() {
+        if ($this->logoCache && file_exists($this->logoCache)) {
+            $fileSystem = \Drupal::service('file_system');
+            $tempUri = 'temporary://' . basename($this->logoCache);
+            $fileSystem->delete($tempUri);
+            $this->logoCache = null;
+            $this->logoCacheUrl = null;
+        }
+    }
+    
+    /**
+     * Override close to cleanup cache
+     */
+    public function Close() {
+        $this->cleanupCache();
+        parent::Close();
+    }
+    function Header(){
+        $data = $this->getHeaderData();
+        $this->company = $data['title'];
+        //Logo
+        if ($this->company->logo != '') {
+           // @TODO the logo on multiple pages generates timeout error
+            // prevent printing of logo on multiple pages
+            $this->company->page = 1;
+                try {
+                    $httpClient = \Drupal::httpClient();
+                    $response = $httpClient->get($this->company->logo_absolute, [
+                        'timeout' => 60,
+                        'headers' => [
+                            'User-Agent' => 'Mozilla/5.0 (compatible; TCPDF)'
+                        ]
+                    ]);
+                    if ($response->getStatusCode() === 200) {
+                        $imageData = $response->getBody()->getContents();
+                        $tempUri = \Drupal::service('file_system')->tempnam('temporary://', 'tcpdf_img');
+                        $tempPath = \Drupal::service('file_system')->realpath($tempUri);
+                        file_put_contents($tempPath, $imageData);
+                        $info = getimagesize($tempPath);
+                        $h = $info[1] * 15 / $info[0];
+                        $this->Image($tempPath, 30, 8, $h);
+                        unlink($tempPath);
+                    }
+                } catch (Exception $e) {
+                    \Drupal::logger('tcpdf')->error('HTTP client image download failed: ' . $e->getMessage());
+                }
+        }
+        $this->Ln(5);
+        $this->SetFont('helvetica','',12);
+        $this->Cell(100);
+        $this->Cell(50,5,$this->company->name,0,1);
+        $this->SetFont('helvetica','',8);
+        if ($this->company->reg_number) {
+            $this->Cell(100);
+            $this->Cell(8,3,"(".$this->company->reg_number .")",0,1);
+        }
+        if ($this->company->address1) {
+            $this->Cell(100);    
+            $this->Cell(60,4, $this->company->address1,0,1);
+        }
+        if ($this->company->address2) {
+             $this->Cell(100);    
+            $this->Cell(60,4, $this->company->address2,0,1);
+        }
+        $next = '';
+        if ($this->company->postcode) {
+            $next .= $this->company->postcode;
+        }
+        if($this->company->city){
+            $next .= " " . $this->company->city;
+        }
+        if($this->company->country){
+            $next .= ", " . $this->company->country;
+        }
+        $this->Cell(100);
+        $this->Cell(50,4, $next ,0,1);
+            
+        if ($this->company->telephone) {
+            $this->Cell(100);
+            $this->Cell(8,3,t("tel:"). $this->company->telephone,0,1);
+        }
+        if ($this->company->fax) {
+            $this->Cell(100);
+            $this->Cell(8,4,t("fax:"). $this->company->telephone,0,1);
+        }
+        
+    }
+
+    //Page footer
+    function Footer(){
+        //Position at 1.5 cm from bottom
+        $this->SetY(-15);
+        //helvetica italic 8
+        $this->SetFont('helvetica','I',8);
+        //Page number
+        $this->Cell(0,5, t('Page') . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, 1, 'R');
+    }
+  
+}
+
+// create new PDF document
+$pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+// set document information
+
+$pdf->SetCreator($company->name);
+$pdf->SetAuthor(\Drupal::currentUser()->getAccountName());
+$pdf->SetTitle(t('Voucher') . ' ' . $cash->id);
+$pdf->SetSubject(t('Voucher'));
+$pdf->SetKeywords(t('Voucher'));
+
+// set default header data
+$pdf->SetHeaderData('','',$company,'');
+
+// set default monospaced font
+$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+// set margins
+$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+// set auto page breaks
+$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+// set image scale factor
+$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+$pdf->SetTitle($fileName);
+
+$pdf->AddPage('P','A4');
+$pdf->SetLineStyle(['width' => 0.1, 'cap' => 'square', 'join' => 'miter', 'dash' => 0, 'color' => [128, 128, 128]]);
+$pdf->Ln(35);
+$m = 20;
+$pdf->SetDrawColor(128, 128, 128);
+$pdf->SetFont('helvetica','',11);
+    $pdf->Cell($m,5);
+    $pdf->Cell(50,5, t('Cash Transaction No') ,1,0);
+    $pdf->Cell(80,5, $cash->id ,1,1);
+$pdf->SetFont('helvetica','',8);   
+    $pdf->Cell($m,5);
+    $pdf->Cell(50,5, t('Date') ,1,0);
+    $pdf->Cell(80,5, $cash->pay_date ,1,1);
+    $pdf->Cell($m,5);
+    $pdf->Cell(50,5, t('Account') ,1,0);
+    $pdf->Cell(80,5, $employee ,1,1);
+    $pdf->Cell($m,5);
+    $pdf->Cell(50,5,t("Amount (local currency)") . ' -  ' . $cash->type,1,0);
+    $pdf->Cell(80,5, $cash->amount . ' - ' .  $cash->currency ,1,1);
+    $pdf->Cell($m,5);
+    $pdf->Cell(50,5,t('Amount in base currency') ,1,0);
+    $pdf->Cell(80,5, $cash->cashamount . ' ' . $baseCurrency ,1,1);
+    $pdf->Cell($m,5);
+    $pdf->Cell(50,5, t('Comment') ,1,0);
+    $pdf->MultiCell(80,5, $cash->comment ,1,1);      
+        
+$pdf->Ln(20);
+    $pdf->Cell(80);
+    $pdf->Cell(50,3,t('Received by').':' ,'T',1);
+    $pdf->Cell(80);
+    $pdf->Cell(50,3,t('Date').':' ,0, 1);
+$pdf->Ln(10);
+$pdf->SetFont('helvetica','',7);
+$pdf->SetTextColor(60,60,60);
+$pdf->Cell($m,5);
+$pdf->Cell(40,3,"printed " . date('Y-m-d') ,0,0);
+
+

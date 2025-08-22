@@ -39,6 +39,9 @@ class PayrollRecord extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
+    protected $settings;
+    protected $rounding;
+
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
         $this->settings = new FinanceSettings();
@@ -68,7 +71,7 @@ class PayrollRecord extends FormBase {
         $pcode = [];
         $param = unserialize($param);
         $settings = new HrSettings($param['coid']);
-        $list = $settings->HrAccounts[$param['coid']];
+        $list = $settings->get('accounts'); //HrAccounts[$param['coid']];
 
         if (empty($list) || $list['pay_account'] == '') {
             $error = 1;
@@ -482,7 +485,7 @@ class PayrollRecord extends FormBase {
         $array = $form_state->getValue('HrTable');
         $journal = new Journal();
         $settings = new HrSettings($array['coid']);
-        $list = $settings->HrAccounts[$array['coid']];
+        $list = $settings->get('accounts'); //HrAccounts[$array['coid']];
         $expenses_entry = 0;
         $journal_entry = 0;
         $coid = $array['coid'];
@@ -634,8 +637,8 @@ class PayrollRecord extends FormBase {
             } // if include
         }
 
-        if (round($journal->credit, 4) <> round($journal->debit, 4)) {
-            $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+        if (round($journal->getCredit(), 4) <> round($journal->getDebit(), 4)) {
+            $msg = 'debit: ' . $journal->getDebit() . ' <> ' . 'credit: ' . $journal->getCredit();
             \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
         }
 

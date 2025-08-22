@@ -10,17 +10,19 @@ namespace Drupal\ek_finance;
 
 use Drupal\Core\Database\Database;
 
+
 /**
  * Set and retrieve settings parameters used in accounts
  */
-  class FinanceSettings
-  {
-      public function __construct()
-      {
+  class FinanceSettings {
+
+    protected $settings;
+
+      public function __construct() {
           $data = Database::getConnection('external_db', 'external_db')
             ->query("SELECT settings from {ek_finance}")->fetchObject();
     
-          $this->settings = unserialize($data->settings);
+          $this->settings = $data->settings !== null ? unserialize($data->settings) : [];
       }
  
 
@@ -28,8 +30,7 @@ use Drupal\Core\Database\Database;
        * Get settings by name
        * @param name = the setting name
        */
-      public function get($name)
-      {
+      public function get($name) {
           return  $this->settings[$name];
       }
 
@@ -39,8 +40,7 @@ use Drupal\Core\Database\Database;
        * @param value = the setting value
        */
  
-      public function set($name, $value)
-      {
+      public function set($name, $value) {
           $this->settings[$name] = $value;
       }
  
@@ -50,16 +50,13 @@ use Drupal\Core\Database\Database;
        *
        */
    
-      public function save()
-      {
+      public function save() {
           $data = serialize($this->settings) ;
           if (Database::getConnection('external_db', 'external_db')->update('ek_finance')
-      ->condition('id', '1')
-      ->fields(array(
-        'settings' => $data,
-      ))
-      ->execute()
-    ) {
+              ->condition('id', '1')
+              ->fields(array('settings' => $data,))
+              ->execute()
+          ) {
               return true;
           }
       }

@@ -42,6 +42,8 @@ class ReconciliationForm extends FormBase {
      * @var \Drupal\Core\Extension\ModuleHandler
      */
     protected $moduleHandler;
+    protected $settings;
+    protected $rounding;
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
@@ -97,7 +99,6 @@ class ReconciliationForm extends FormBase {
             '#title' => $this->t('date'),
         );
 
-
         $form['filters']['coid'] = array(
             '#type' => 'select',
             '#size' => 1,
@@ -126,7 +127,6 @@ class ReconciliationForm extends FormBase {
             '#prefix' => "<div id='accounts_'>",
             '#suffix' => '</div>',
         );
-
 
         $form['filters']['next'] = array(
             '#type' => 'submit',
@@ -193,9 +193,15 @@ class ReconciliationForm extends FormBase {
             $result = $query->execute();
 
 
-            $query = "SELECT * from {ek_accounts} WHERE aid=:account and coid=:coid";
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a');
+            $query->fields('a');
+            $query->condition('coid', $form_state->getValue('coid'), '=');
+            $query->condition('aid', $form_state->getValue('account'), '=');
+            $account = $query->execute()->fetchObject();
+            /*$query = "SELECT * from {ek_accounts} WHERE aid=:account and coid=:coid";
             $a = array(':account' => $form_state->getValue('account'), ':coid' => $form_state->getValue('coid'));
-            $account = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();
+            $account = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchObject();*/
 
 
             if ($account->balance_date == '') {
@@ -214,7 +220,23 @@ class ReconciliationForm extends FormBase {
                 $exchange = 0;
             }
 
-            $query = "SELECT sum(value) from {ek_journal} "
+            $credit = 0;
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+            //$query->fields('j');
+            $query->condition('exchange', $exchange, 'LIKE');
+            $query->condition('type', 'credit');
+            $query->condition('aid', $form_state->getValue('account'));
+            $query->condition('coid', $form_state->getValue('coid'));
+            $query->condition('date', $account->balance_date, '>=');
+            $query->condition('reconcile', 0, '<>');        
+            $query->addExpression('SUM(value)', 'total_value');
+            $cr = $query->execute()->fetchObject();
+            if ($cr) {
+                $credit = $cr->total_value;
+            }
+
+            /*$query = "SELECT sum(value) from {ek_journal} "
                     . "WHERE exchange like :exc and type=:type "
                     . "AND aid=:aid and coid=:coid "
                     . "AND date>=:dateopen AND reconcile<>:reco";
@@ -226,8 +248,9 @@ class ReconciliationForm extends FormBase {
                 ':dateopen' => $account->balance_date,
                 ':reco' => 0
             );
-            $credit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
-            $a = array(
+            $credit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();*/
+           
+           /* $a = array(
                 ':exc' => $exchange,
                 ':type' => 'debit',
                 ':aid' => $form_state->getValue('account'),
@@ -241,13 +264,31 @@ class ReconciliationForm extends FormBase {
                     . "AND date>=:dateopen AND reconcile<>:reco";
 
             $debit = Database::getConnection('external_db', 'external_db')->query($query, $a)->fetchField();
+            */
 
-            if ($debit == null) {
+            $debit = 0;
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+            //$query->fields('j');
+            $query->condition('exchange', $exchange, 'LIKE');
+            $query->condition('type', 'debit');
+            $query->condition('aid', $form_state->getValue('account'));
+            $query->condition('coid', $form_state->getValue('coid'));
+            $query->condition('date', $account->balance_date, '>=');
+            $query->condition('reconcile', 0, '<>');        
+            $query->addExpression('SUM(value)', 'total_value');
+            $dt = $query->execute()->fetchObject();
+            if ($dt) {
+                $debit = $dt->total_value;
+            }
+
+            /*if ($debit == null) {
                 $debit = 0;
             }
             if ($credit == null) {
                 $credit = 0;
-            }
+            }*/
+
             $balance = $account->balance + $credit - $debit;
             if ($balance < 0) {
                 $ab = 'dt';
@@ -491,10 +532,19 @@ class ReconciliationForm extends FormBase {
                 $i++;
             }//while
 
+            if (null !== $this->settings->get('expenseAttachmentSize')) {
+                $ext_size = $this->settings->get('expenseAttachmentSize') * 1000000;
+            } else {
+                $ext_size = '500000';
+            }
             $form['upload_doc'] = array(
                 '#type' => 'file',
                 '#title' => $this->t('Attach a file'),
                 '#description' => 'image or pdf',
+                '#upload_validators'  => [
+                    'FileExtension' => ['extensions' => 'jpg jpeg png pdf'],
+                    'FileSizeLimit' => ['fileLimit' => $ext_size]
+                ],
             );
 
             $form['rows'] = array(
@@ -568,21 +618,21 @@ class ReconciliationForm extends FormBase {
             }
 
             // attachment
-            $validators = array('file_validate_extensions' => array('png jpg jpeg pdf'));
             $field = "upload_doc";
             // Check for uploaded file.
-            $file = file_save_upload($field, $validators, false, 0);
-            if (isset($file)) {
-                // File upload was attempted.
-                if ($file) {
-                    // Put the temporary file in form_values so we can save it on submit.
-                    $form_state->setValue($field, $file);
+            $file = _file_save_upload_from_form($form[$field], $form_state, 0);
+            if ($file) {
+                if($errors = $form_state->getErrors()) {
+                    foreach ($errors as $error) {
+                        $form_state->setErrorByName($field, $error);
+                    }
+                    // Mark the temporary file for deletion.
+                    $file->delete();
                 } else {
-                    // File upload failed.
-                    $form_state->setErrorByName($field, $this->t('File could not be uploaded'));
-                }
+                    $form_state->set($field, $file) ;
+                }        
             } else {
-                $form_state->setValue($field, 0);
+                $form_state->setErrorByName($field, $this->t('File upload failed'));
             }
         }
     }
@@ -708,12 +758,10 @@ class ReconciliationForm extends FormBase {
                         $error,
                     );
                 }
-            } //for
-            //save report data
+            } 
 
-            if (!$form_state->getValue('upload_doc') == 0) {
-                $file = $form_state->getValue('upload_doc');
-                $dir = "private://finance/bank/" . $form_state->getValue('coid');
+            if ($file = $form_state->get('upload_doc')) {
+               $dir = "private://finance/bank/" . $form_state->getValue('coid');
                 \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $dir);
             } else {
@@ -733,7 +781,7 @@ class ReconciliationForm extends FormBase {
                     ->insert('ek_journal_reco_history')
                     ->fields($fields)
                     ->execute();
-        } //if
+        } 
     }
 
 }

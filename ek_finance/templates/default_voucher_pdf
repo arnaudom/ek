@@ -1,0 +1,314 @@
+<?php
+
+class EKPDF extends TCPDF {
+    protected $company;
+    protected $logoCache = null; 
+    protected $logoCacheUrl = null; 
+    /**
+     * Download image from remote URL and return temporary file path
+     */
+    public function downloadImageToTemp($url) {
+        try {
+            $httpClient = \Drupal::httpClient();
+            $response = $httpClient->get($url, [
+                'timeout' => 60,
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (compatible; TCPDF)'
+                ]
+            ]);
+            
+            if ($response->getStatusCode() === 200) {
+                $imageData = $response->getBody()->getContents();
+                $fileSystem = \Drupal::service('file_system');
+                $tempUri = $fileSystem->tempnam('temporary://', 'tcpdf_img_');
+                
+                if (!$tempUri) {
+                    throw new Exception('Failed to create temporary file');
+                }
+                
+                // Convert URI to real path for TCPDF
+                $tempPath = $fileSystem->realpath($tempUri);
+                
+                if (file_put_contents($tempPath, $imageData) === false) {
+                    // Clean up on failure
+                    $fileSystem->delete($tempUri);
+                    throw new Exception('Failed to write image data to temporary file');
+                }
+                
+                return $tempPath;
+            } else {
+                throw new Exception('HTTP request failed with status: ' . $response->getStatusCode());
+            }
+        } catch (Exception $e) {
+            \Drupal::logger('tcpdf')->error('Image download failed for URL ' . $url . ': ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Get cached logo or download if not cached
+     */
+    protected function getCachedLogo($logoUrl) {
+        // If we already have this logo cached, return the cached file
+        if ($this->logoCache && $this->logoCacheUrl === $logoUrl && file_exists($this->logoCache)) { 
+            return $this->logoCache;
+        }
+        
+        // Clean up old cache if URL changed
+        if ($this->logoCache && $this->logoCacheUrl !== $logoUrl) {
+            @unlink($this->logoCache);
+            $this->logoCache = null;
+            $this->logoCacheUrl = null;
+        }
+        
+        // Download new logo
+        $tempFile = $this->downloadImageToTemp($logoUrl);
+        if ($tempFile) {
+            $this->logoCache = $tempFile;
+            $this->logoCacheUrl = $logoUrl;
+        }
+        
+        return $tempFile;
+    }
+    
+    /**
+     * Clean up cached logo file
+     */
+    public function cleanupCache() {
+        if ($this->logoCache && file_exists($this->logoCache)) {
+            $fileSystem = \Drupal::service('file_system');
+            $tempUri = 'temporary://' . basename($this->logoCache);
+            $fileSystem->delete($tempUri);
+            $this->logoCache = null;
+            $this->logoCacheUrl = null;
+        }
+    }
+    
+    /**
+     * Override close to cleanup cache
+     */
+    public function Close() {
+        $this->cleanupCache();
+        parent::Close();
+    }
+
+    function Header() {
+        $data = $this->getHeaderData();
+        $this->company = $data['title'];
+        if ($this->company->logo != '') {
+            // Download the logo image
+            $tempFile = $this->getCachedLogo($this->company->logo_absolute);
+            
+            if ($tempFile) {
+                try {
+                    // Get image dimensions from the temporary file instead of remote URL
+                    $info = getimagesize($tempFile);
+                    if ($info !== false) {
+                        $h = $info[1] * 50 / $info[0];
+                        $this->Image($tempFile, 25, 10, $h);
+                    } else {
+                        // Fallback dimensions if getimagesize fails
+                        $this->Image($tempFile, 25, 10, 50);
+                    }
+                } catch (Exception $e) {
+                    \Drupal::logger('tcpdf')->error('Failed to add logo image: ' . $e->getMessage());
+                } 
+            }
+        }
+        
+        $this->Ln(5);
+        $this->SetFont('helvetica', '', 10);
+        $this->Cell(90);
+        $this->Cell(50, 5, $this->company->name, 0, 1);
+        $this->SetFont('helvetica', '', 8);
+        if ($this->company->reg_number) {
+            $this->Cell(90);
+            $this->Cell(8, 3, "(" . $this->company->reg_number . ")", 0, 1);
+        }
+        if ($this->company->address1) {
+            $this->Cell(90);
+            $this->Cell(60, 4, $this->company->address1, 0, 1);
+        }
+        if ($this->company->address2) {
+            $this->Cell(90);
+            $this->Cell(60, 4, $this->company->address2, 0, 1);
+        }
+        $next = '';
+        if ($this->company->postcode) {
+            $next .= $this->company->postcode;
+        }
+        if ($this->company->city) {
+            $next .= " " . $this->company->city;
+        }
+        if ($this->company->country) {
+            $next .= ", " . $this->company->country;
+        }
+        $this->Cell(90);
+        $this->Cell(50, 4, $next, 0, 1);
+
+        if ($this->company->telephone) {
+            $this->Cell(90);
+            $this->Cell(8, 3, t("tel:") . $this->company->telephone, 0, 1);
+        }
+        if ($this->company->fax) {
+            $this->Cell(90);
+            $this->Cell(8, 4, t("fax:") . $this->company->telephone, 0, 1);
+        }
+    }
+
+    function Footer() {
+        //Position at 1.5 cm from bottom
+        $this->SetY(-15);
+        //helvetica italic 8
+        $this->SetFont('helvetica', 'I', 8);
+        //Page number
+        $this->Cell(0, 5, t('Page') . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, 1, 'R');
+    }
+
+}
+
+// create new PDF document
+$pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+// set document information
+//$pdf->SetCreator($company->name);
+$pdf->SetAuthor(\Drupal::currentUser()->getAccountName());
+$pdf->SetTitle(t('Voucher'));
+$pdf->SetSubject(t('Voucher'));
+$pdf->SetKeywords(t('Voucher'));
+
+// set default monospaced font
+$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+// set margins
+$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+// set auto page breaks
+$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+// set image scale factor
+$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+$m1 = 20;
+$m2 = 30;
+
+Foreach ($data as $id => $val) {
+
+    $pdf->SetTitle($fileName);
+    $pdf->SetHeaderData('', '', $val['company'], '');
+    $pdf->AddPage('P', 'A4');
+    $pdf->Ln(25);
+    $pdf->SetFont('helvetica', 'B', 12);
+    $pdf->SetTextColor(0, 136, 204);
+    $pdf->Cell($m1, 5);
+    $pdf->Cell(140, 5, t('PAYMENT VOUCHER'), 0, 1,"C");
+    $pdf->SetTextColor(0);
+    $pdf->Ln(5);
+
+    $pdf->SetFont('helvetica', '', 8);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t('Voucher No'), 0, 0);
+    $pdf->Cell(100, 5, $val['line']->id . ' - ' . $val['journal']->id . ' - ' . $val['journal']->count, 0, 1);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t('Date'), 0, 0);
+    $pdf->Cell(100, 5, $val['line']->pdate, 0, 1);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t('From account'), 0, 0);
+    $pdf->Cell(100, 5, $val['bank_account'], 0, 1);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t("Supplier ref"), 0, 0);
+    $pdf->Cell(100, 5, $val['suppliername'], 0, 1);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t("Client ref"), 0, 0);
+    $pdf->Cell(100, 5, $val['clientname'], 0, 1);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t('Amount') . ' - ' . $val['line']->currency, 0, 0);
+    $pdf->Cell(100, 5, $val['line']->localcurrency . ' ' . $val['line']->currency, 0, 1);
+    if ($val['line']->tax > 0) {
+        $pdf->Cell($m2, 5);
+        $pdf->Cell(75, 5, t('include tax'), 0, 0);
+        $pdf->Cell(100, 5, number_format($val['line']->tax, 2) . ' ' . $val['line']->currency, 0, 1);
+    }
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t('Object'), 0, 0);
+    $pdf->Cell(100, 5, $val['type'], 0, 1);
+    $pdf->Cell($m2, 5);
+    $pdf->Cell(75, 5, t('Comment'), 0, 0);
+    $pdf->SetFont('helvetica', '', 8);
+    $pdf->MultiCell(60, 5, strip_tags($val['line']->comment), 0, 'L');
+
+    $pdf->Ln(5);
+
+    //add receipt image or link if any
+    $insert = FALSE;
+    if ($val['line']->attachment) {
+        $parts = explode('/', $val['line']->attachment);
+        $parts = array_reverse($parts);
+        $pdf->Cell($m2, 5);
+        $pdf->Cell(75, 5, t('Attachment') . ': ', 0, 0);
+        $pdf->SetFont('helvetica', '', 8);
+        $pdf->SetTextColor(0, 128, 255);
+
+        if (is_array($val['line']->attachment_image)) {
+            $insert = TRUE;
+            $link = $pdf->AddLink();
+            $pdf->SetLink($link, 1, 2);
+            $pdf->Write(5, $parts[0], $link);
+        } else {
+            $pdf->Write(5, $parts[0], $val['line']->attachment_absolute);
+        }
+    }
+    $pdf->SetTextColor(100, 100, 100);
+    $pdf->Ln(20);
+    $pdf->SetLineStyle(['width' => 0.1, 'cap' => 'square', 'join' => 'miter', 'dash' => 0, 'color' => [128, 128, 128]]);
+    $pdf->Cell($m1, 5);
+    $pdf->Cell(35, 3, t("Prepared by"), 1, 0);
+    $pdf->Cell(35, 3, t("Verified by"), 1, 0);
+    $pdf->Cell(35, 3, t("Approved by"), 1, 0);
+    $pdf->Cell(35, 3, t("Received by"), 1, 1);
+    $pdf->Cell($m1, 5);
+    $pdf->Cell(35, 10, $userName, 1, 0);
+    $pdf->Cell(35, 10, "", 1, 0);
+    $pdf->Cell(35, 10, "", 1, 0);
+    $pdf->Cell(35, 10, "", 1, 1);
+
+    // @TODO generates timeout error on s3 
+    /*if ($insert == TRUE) {
+        $pdf->AddPage('P', 'A4');
+        $pdf->Ln(10);
+        
+        // Download the attachment image using the same method
+        $tempFile = $pdf->downloadImageToTemp($val['line']->attachment_absolute);
+        
+        if ($tempFile) {
+            try {
+                // Get actual image dimensions from downloaded file
+                $imageInfo = getimagesize($tempFile);
+                if ($imageInfo !== false) {
+                    $w = $imageInfo[0];
+                    $h = $imageInfo[1];
+                    $r = 140 / $w; // Scale ratio to fit width of 140
+                    
+                    $pdf->Image($tempFile, 20, 60, 140, $h * $r);
+                } else {
+                    // Fallback if getimagesize fails - use original dimensions
+                    $h = $val['line']->attachment_image[1];
+                    $w = $val['line']->attachment_image[0];
+                    $r = 140 / $w;
+                    $pdf->Image($tempFile, 20, 60, 140, $h * $r);
+                }
+            } catch (Exception $e) {
+                \Drupal::logger('tcpdf')->error('Failed to add attachment image: ' . $e->getMessage());
+            } finally {
+                // Always clean up the temporary file
+                unlink($tempFile);
+            }
+        }
+    }*/
+  
+    
+}  
+
+$pdf->cleanupCache();

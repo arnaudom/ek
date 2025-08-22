@@ -34,6 +34,7 @@ class AttachFileMemo extends FormBase {
      * @var \Drupal\Core\Extension\ModuleHandler
      */
     protected $moduleHandler;
+    protected $settings;
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
@@ -113,15 +114,22 @@ class AttachFileMemo extends FormBase {
             '#title' => $this->t('Attachments'),
             '#open' => true,
         ];
+
+        // file is not managed by Drupal
+        $extensions = 'png jpeg jpg';
+        $max_bytes = Environment::getUploadMaxSize();
+        $max_filesize = Bytes::toNumber($max_bytes);
+        $upload_doc = ['FileExtension' => ['extensions' => $extensions], 'FileSizeLimit' => ['fileLimit' => $max_filesize]];
         $form['attach']['upload_doc'] = [
             '#type' => 'file',
-            '#title' => $this->t('Select file'),
+            '#title' => $this->t('Select file'),         
+            '#upload_validators' => $upload_doc,
             '#prefix' => '<div class="container-inline">',
         ];
 
         $form['attach']['upload'] = [
             '#id' => 'upbuttonid',
-            '#type' => 'button',
+            '#type' => 'submit',
             '#value' => $this->t('Attach'),
             '#suffix' => '</div>',
             '#ajax' => [
@@ -158,11 +166,8 @@ class AttachFileMemo extends FormBase {
             'library' => ['ek_finance/ek_finance.memo_form'],
         ];
 
-
         return $form;
     }
-
-//
 
     /**
      * Callback for the ajax upload file
@@ -170,36 +175,37 @@ class AttachFileMemo extends FormBase {
      */
     public function uploadFile(array &$form, FormStateInterface $form_state) {
 
-
         $response = new AjaxResponse();
         $clear = new InvokeCommand('#error', "html", [""]);
         $response->addCommand($clear);
+        // Collect errors from messenger service
+        $messenger = \Drupal::messenger();
+        $error_messages = $messenger->messagesByType('error');
+        if (!empty($error_messages)) {
+            foreach ($error_messages as $msg) {
+                $response->addCommand(new AppendCommand('#error', "<div class='messages messages--error'>". $msg ."</div>"));
+            }
+            $messenger->deleteByType('error');
+            return $response;
+        }
 
-        $extensions = 'png jpeg jpg';
-        // @TODO Remove for Drupal 8.5 and 8.6.
-        $max_bytes = floatval(\Drupal::VERSION) < 8.7
-            ? file_upload_max_size() : Environment::getUploadMaxSize();
-        $max_filesize = Bytes::toNumber($max_bytes);
-        $validators = array('file_validate_extensions' => [$extensions], 'file_validate_size' => [$max_filesize]);
-        $file = file_save_upload("upload_doc", $validators, false, 0);
-
-        if ($file) {
+        if ($file = $form_state->get('upload_doc')) {
             $dir = "private://finance/memos";
             \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
             $dest = $dir . '/' . $file->getFilename();
-            $filename = \Drupal::service('file_system')->copy($file->getFileUri(), $dest);
+            $uri = \Drupal::service('file_system')->copy($file->getFileUri(), $dest);
 
             $fields = array(
-                'serial' => $form_state->getValue('tempSerial'),
-                'uri' => $filename,
+                'serial' => $form_state->getValue('serial'),
+                'uri' => $uri,
                 'doc_date' => time(),
             );
             $insert = Database::getConnection('external_db', 'external_db')
-                            ->insert('ek_expenses_memo_documents')->fields($fields)->execute();
-
+                        ->insert('ek_expenses_memo_documents')->fields($fields)->execute();
             
             if ($insert) {
-                
+                 $field = "upload_doc";
+                 $form_state->set($field, '') ;
             } else {
                 $msg = "<div aria-label='Error message' class='messages messages--error'>"
                         . $this->t('Error') . "</div>";
@@ -207,24 +213,7 @@ class AttachFileMemo extends FormBase {
             }
             return $response;
 
-        } else {
-            $m = \Drupal::messenger()->messagesByType('error');
-            $e = '';
-            if(!empty($m)){
-                foreach ($m as $k){
-                    $e .= "<p>". (string) $k . "</p>";
-                }
-                \Drupal::messenger()->deleteByType('error');
-            }
-            $size = round($max_filesize / 1000000, 0);
-            $msg = "<div aria-label='Error message' class='messages messages--error'>"
-                    . $this->t('Allowed extensions') . ": " . 'png jpg jpeg'
-                    . ', ' . $this->t('maximum size') . ": " . $size . 'Mb.'
-                    . $e
-                    . "</div>";
-            $response = new AjaxResponse();
-            return $response->addCommand(new AppendCommand('#error', $msg));
-        }
+        } 
     }
 
     /**
@@ -232,21 +221,27 @@ class AttachFileMemo extends FormBase {
      *
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-        
+        $field = "upload_doc";
+        $file = _file_save_upload_from_form($form['attach'][$field], $form_state, 0);
+        if ($file) {
+            if($errors = $form_state->getErrors()) {
+                foreach ($errors as $error) {
+                    $form_state->setErrorByName($field, $error);
+                }
+                $file->delete();
+            } else {
+               $form_state->set($field, $file) ; 
+            }
+        } else {
+            $form_state->setErrorByName($field, $this->t('File upload failed'));
+        }
+           
     }
 
     /**
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
-        //update the documents table
-        Database::getConnection('external_db', 'external_db')
-                ->update('ek_expenses_memo_documents')
-                ->fields(array('serial' => $form_state->getValue('serial')))
-                ->condition('serial', $form_state->getValue('tempSerial'))
-                ->execute();
-
 
         if ($form_state->getValue('category') < 5) {
             $form_state->setRedirect('ek_finance_manage_list_memo_internal');

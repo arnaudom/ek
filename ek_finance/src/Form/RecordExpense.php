@@ -14,6 +14,7 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_admin\CompanySettings;
@@ -47,6 +48,9 @@ class RecordExpense extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
+
+    protected $settings;
+    protected $rounding;
     public function __construct(ModuleHandler $module_handler, EntityStorageInterface $file_storage) {
         $this->moduleHandler = $module_handler;
         $this->fileStorage = $file_storage;
@@ -90,6 +94,7 @@ class RecordExpense extends FormBase {
         } else {
             $ext_size = '500000';
         }
+        
         $check = [];
         $tax = [];
         $credit = null;
@@ -119,10 +124,6 @@ class RecordExpense extends FormBase {
             $query->fields('e');
             $query->condition('id', $id, '=');
             $expense = $query->execute()->fetchObject();
-            //$query = "SELECT * from {ek_expenses} WHERE id=:id";
-            //$expense = Database::getConnection('external_db', 'external_db')
-              //      ->query($query, array(':id' => $id))
-                //    ->fetchObject();
             
             // get journal data
             $query = Database::getConnection('external_db', 'external_db')
@@ -573,7 +574,7 @@ class RecordExpense extends FormBase {
                 $rowDate = $rowDate = date('Y-m-d');
             }
 
-            $form['debit']["pdate$i"] = array(
+            $form['debit']["pdate$i"] = [
                 '#type' => 'date',
                 '#id' => "edit-from$i",
                 '#size' => 16,
@@ -581,11 +582,9 @@ class RecordExpense extends FormBase {
                 '#default_value' => ($form_state->get("pdate$i")) ? $form_state->get("pdate$i") : $rowDate,
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            ///////////////////
-
-            $form['debit']["value$i"] = array(
+            $form['debit']["value$i"] = [
                 '#type' => 'textfield',
                 '#id' => 'value' . $i,
                 '#size' => 18,
@@ -595,7 +594,7 @@ class RecordExpense extends FormBase {
                 '#attributes' => array('placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
             if ($form_state->get('stax_deduct') == 1) {
                 $form['debit']["tv$i"] = array(
@@ -658,17 +657,16 @@ class RecordExpense extends FormBase {
             }
 
             $form['debit']['attachment' . $i] = [
-                '#type' => 'managed_file',
-                '#upload_validators' => [
-                    'file_validate_extensions' => [$ext_format],
-                    'file_validate_size' => [$ext_size],
-                ],
+                '#type' => 'managed_file',      
                 '#attributes' => ['class' => ['file_input', 'formexpense']],
+                '#upload_validators'  => [
+                    'FileExtension' => ['extensions' => $ext_format],
+                    'FileSizeLimit' => ['fileLimit' => $ext_size]
+                ],
                 '#title' => $this->t('Add file'),
-                
             ];
 
-            $form['debit']["comment$i"] = array(
+            $form['debit']["comment$i"] = [
                 '#type' => 'textfield',
                 '#id' => 'value' . $i,
                 '#size' => 30,
@@ -677,11 +675,11 @@ class RecordExpense extends FormBase {
                 '#attributes' => array('placeholder' => $this->t('comment'), 'ondblclick' => "this.value=''"),
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div></div>',
-            );
+            ];
 
 
-            if (isset($expense->attachment) && $i == 1) {
-                //editing current entry
+            if (!$clone && isset($expense->attachment) && $i == 1) {
+                // editing current entry
                 $form['uri' . $i] = [
                     '#type' => 'hidden',
                     '#value' => $expense->attachment,
@@ -878,9 +876,6 @@ class RecordExpense extends FormBase {
 
         if ($form_state->getValue('user') <> '') {
 
-            //$query = "SELECT uid FROM {users_field_data} WHERE name = :n";
-            //$data = db_query($query, [':n' => $form_state->getValue('user')])
-            //        ->fetchField();
             $query = Database::getConnection()->select('users_field_data', 'u');
             $query->fields('u', ['uid']);
             $query->condition('name', $form_state->getValue('user'));
@@ -896,7 +891,7 @@ class RecordExpense extends FormBase {
             }
         }
 
-        //verify that the currency selected matches the account payment currency
+        // verify that the currency selected matches the account payment currency
         if ($form_state->getValue('bank_account') != 'P') {
             if (strpos($form_state->getValue('bank_account'), "-")) {
                 $data = explode("-", $form_state->getValue('bank_account'));
@@ -916,7 +911,7 @@ class RecordExpense extends FormBase {
             }
         }
 
-        //verify project ref
+        // verify project ref
         if (!null == $form_state->getValue('pcode') && $form_state->getValue('pcode') != 'n/a') {
             $p = explode(' ', $form_state->getValue('pcode'));
             $query = "SELECT id FROM {ek_project} WHERE pcode = :p ";
@@ -937,8 +932,8 @@ class RecordExpense extends FormBase {
                 $form_state->setErrorByName("account$n", $this->t('debit account @n is not selected', array('@n' => $n)));
             }
 
-            //filter account when allocation is different from accounts entity.
-            //this has an impact on analytical report
+            // filter account when allocation is different from accounts entity.
+            // this has an impact on analytical report
             if (!null == $form_state->getValue("change_location") && $form_state->getValue("location") != $form_state->getValue("coid")) {
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_accounts', 'a')
@@ -959,10 +954,29 @@ class RecordExpense extends FormBase {
             if (!is_numeric($value)) {
                 $form_state->setErrorByName("value$n", $this->t('incorrect amount for debit @n', array('@n' => $n)));
             }
-            //$date_regex = '/^(19|20)\d\d[\-\/.](0[1-9]|1[012])[\-\/.](0[1-9]|[12][0-9]|3[01])$/';
+            // $date_regex = '/^(19|20)\d\d[\-\/.](0[1-9]|1[012])[\-\/.](0[1-9]|[12][0-9]|3[01])$/';
             if ($form_state->getValue("pdate$n") == '') {
                 $form_state->setErrorByName("pdate$n", $this->t('there is no date for debit @n', array('@n' => $n)));
             }
+
+            // attachment filter (file not managed)
+            /*$field = "attachment" . $n;
+            $file = _file_save_upload_from_form($form['debit'][$field], $form_state, 0);
+            if ($file) {
+                if($errors = $form_state->getErrors()) {
+                        foreach ($errors as $error) {
+                            $form_state->setErrorByName($field, $error);
+                        }
+                        // Mark the temporary file for deletion.
+                        $file->delete();
+                    } else {
+                        $form_state->set($field, $file) ;
+                    }        
+                   
+            } else {
+                  //  $form_state->setErrorByName($field, $this->t('File upload failed'));
+            }*/
+        
         }
     }
 
@@ -1096,28 +1110,28 @@ class RecordExpense extends FormBase {
                         ->execute();
             }
 
-            //upload with id ref. added to file name
+            // upload with id ref. added to file name
             $receipt = 'no';
             $attach = "attachment$n";
-            $fid = $form_state->getValue([$attach, 0]);
-            if (!empty($fid)) {
+            if (!empty($form_state->getValue($attach))) {
                 $receipt = 'yes';
                 if ($form_state->getValue('uri' . $n) != '') {
-                    //if edit and existing, delete current attach.
+                    // if edit and existing, delete current attach.
                     \Drupal::service('file_system')->delete($form_state->getValue('uri' . $n));
                 }
-                $file = $this->fileStorage->load($fid);
-                $name = $file->getFileName();
+                $file_id = reset($form_state->getValue($attach));
+                $file = File::load($file_id);
+                $name = $file->getFilename();
                 $dir = "private://finance/receipt/" . $form_state->getValue('coid');
                 \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
                 $load_attachment = \Drupal::service('file_system')->copy($file->getFileUri(), $dir . "/" . $insert . '_' . $name);
+
             } elseif ($form_state->getValue('uri' . $n) != '') {
                 $receipt = 'yes';
                 $load_attachment = $form_state->getValue('uri' . $n);
             } else {
                 $load_attachment = '';
             }
-
 
             Database::getConnection('external_db', 'external_db')
                     ->update('ek_expenses')
@@ -1126,7 +1140,6 @@ class RecordExpense extends FormBase {
                     ->execute();
 
             // Record the accounting journal
-
             $journal->record(
                     array(
                         'source' => "expense",
@@ -1144,8 +1157,8 @@ class RecordExpense extends FormBase {
             );
         }
 
-        if ($journal->credit <> $journal->debit) {
-            $msg = 'debit: ' . $journal->debit . ' <> ' . 'credit: ' . $journal->credit;
+        if ($journal->getCredit() <> $journal->getDebit()) {
+            $msg = 'debit: ' . $journal->getDebit() . ' <> ' . 'credit: ' . $journal->getCredit();
             \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
         }
 

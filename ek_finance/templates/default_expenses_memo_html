@@ -1,11 +1,10 @@
 <?php
 
-
-
 /*
  * Default memo template in php for html display
  */
-$document = "<a class='button' href='" . $url_list . "' ><i class='fa fa-list-ul'></i> " . t('List') . "</a>";
+$document = '';
+//$document = "<a class='button' href='" . $url_list . "' ><i class='fa fa-list-ul'></i> " . t('List') . "</a>";
 if($url_edit) {
    $document .= "<a class='button' href='" . $url_edit . "' ><i class='fa fa-edit'></i> " . t('Edit') . "</a>";
 }
@@ -30,8 +29,6 @@ if ($stamp == "2") {
 
 
 $document .= '<page_wrapper>';
-
-
 
 
 //HEADER data
@@ -275,13 +272,13 @@ $document .= '<hr>';
 //ATTACHMENTS
 $files = '<ul>';
 
-while ($d = $documents->fetchObject()) {
-    
-    if (file_exists($d->uri)) {
+while ($d = $attachments->fetchObject()) {
+    $abs = \Drupal::service('file_url_generator')->generateAbsoluteString($d->uri);
+    $path = \Drupal::service('file_system')->realpath($d->uri);
+    if (file_exists($path)) {
         $parts = explode('/', $d->uri);
         $parts = array_reverse($parts);
-        
-        $files .= "<li><a target='_blank' href='". \Drupal::service('file_url_generator')->generateAbsoluteString($d->uri) ."'>" . $parts[0] . "</a></li>";
+        $files .= "<li><a target='_blank' href='". $path ."'>" . $parts[0] . "</a></li>";
     }
 }
 $files .= '</ul>';

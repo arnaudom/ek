@@ -23,6 +23,7 @@ class FilterLedger extends FormBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
+    protected $settings;
     public function __construct() {
         $this->settings = new FinanceSettings();
     }

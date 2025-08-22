@@ -70,7 +70,7 @@ $closing_exc = 0;
                 );
         
         
-    $h = unserialize($histo);
+    $h = $histo !== null ? unserialize($histo) : [];
     $total += $h['total_transaction'];
     $total_exc += $h['total_transaction_exchange'];
     $closing += $h['closing'];
@@ -134,7 +134,7 @@ foreach($Currencies as $currency => $name) {
                 );
         
         
-    $h = unserialize($histo);    
+    $h = $histo !== null ?  unserialize($histo) : [];    
     $total += $h['total_transaction'];
     $total_exc += $h['total_transaction_exchange'];
     $closing += $h['closing'];
@@ -199,7 +199,7 @@ foreach($Currencies as $currency => $name) {
                 );
         
         
-    $h = unserialize($histo);    
+    $h = $histo !== null ?  unserialize($histo) : [];    
     $total += $h['total_transaction'];
     $total_exc += $h['total_transaction_exchange'];
     $closing += $h['closing'];
@@ -264,7 +264,7 @@ foreach($Currencies as $currency => $name) {
         );
 
 
-        $h = unserialize($histo);
+        $h = $histo !== null ? unserialize($histo) : [];
         $total += $h['total_transaction'];
         $total_exc += $h['total_transaction_exchange'];
         $closing += $h['closing'];
@@ -325,7 +325,7 @@ foreach($Currencies as $currency => $name) {
         
         While($d = $data->fetchObject()) {
                
-            $schedule = unserialize($d->amort_record);
+            $schedule = $d->amort_record !== null ? unserialize($d->amort_record) : [];
             foreach ($schedule['a'] as $key => $value) {
                 if($value['journal_reference'] == '' && $value['periods_balance'] > 0) {
                 
@@ -381,7 +381,7 @@ $items['deduct_tax_1_aid']  = $settings->get('stax_deduct_aid');
                 )
             )
         );
-    $h = unserialize($histo);
+    $h = $histo !== null ?  unserialize($histo) : [];
         $total_tax_collect = $h['total_transaction'];
         $total_tax_collect_exc = $h['total_transaction_exchange'];
         $total_closing_tax_collect = $h['closing'];
@@ -395,7 +395,7 @@ $items['deduct_tax_1_aid']  = $settings->get('stax_deduct_aid');
                 )
             )
         );
-    $h = unserialize($histo);
+    $h = $histo !== null ? unserialize($histo) : [];
         $total_tax_deduct = $h['total_transaction'];
         $total_tax_deduct_exc = $h['total_transaction_exchange'];
         $total_closing_tax_deduct = $h['closing'];
@@ -421,7 +421,7 @@ $items['deduct_tax_2_aid'] = $settings->get('wtax_deduct_aid');//not yet impleme
                 )
             )
         );
-    $h = unserialize($histo);
+    $h = $histo !== null ? unserialize($histo) : [];
         $total_tax2_collect = $h['total_transaction'];
         $total_tax2_collect_exc = $h['total_transaction_exchange'];
         $total_closing_tax2_collect = $h['closing'];
@@ -435,7 +435,7 @@ $items['deduct_tax_2_aid'] = $settings->get('wtax_deduct_aid');//not yet impleme
                 )
             )
         );
-    $h = unserialize($histo);
+    $h = $histo !== null ? unserialize($histo) : [];
         $total_tax2_deduct = $h['total_transaction'];
         $total_tax2_deduct_exc = $h['total_transaction_exchange'];
         $total_closing_tax2_deduct = $h['closing'];

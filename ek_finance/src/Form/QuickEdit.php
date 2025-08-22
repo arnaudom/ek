@@ -21,12 +21,8 @@ use Drupal\ek_finance\FinanceSettings;
  */
 class QuickEdit extends FormBase {
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
     protected $moduleHandler;
+    protected $settings;
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
@@ -34,7 +30,6 @@ class QuickEdit extends FormBase {
      */
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
-
         $this->settings = new FinanceSettings();
     }
 

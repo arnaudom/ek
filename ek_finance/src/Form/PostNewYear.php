@@ -22,12 +22,9 @@ use Drupal\ek_finance\FinanceSettings;
  */
 class PostNewYear extends FormBase {
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
     protected $moduleHandler;
+    protected $finance_settings;
+    protected $chart;
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler

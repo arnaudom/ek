@@ -15,6 +15,7 @@ use Drupal\Core\Database\Database;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\ek_finance\PrintManager;
 
 /**
  * Controller routines for ek module routes.
@@ -146,11 +147,9 @@ class BankController extends ControllerBase {
      *  Pdf render object
      */
     public function banklabel($type, $param) {
-
-        //generate bank contact card with type 6
-        $markup = array();
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/pdf.inc';
-        return $markup;
+        $print = new PrintManager();
+        $print->makePdf(['banklabel' ,0, $param]);
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
 
     /**
@@ -401,11 +400,9 @@ class BankController extends ControllerBase {
      *  Pdf render object
      */
     public function bankaccountslabel($type, $param) {
-
-        //generate bank account card with type 7
-        $markup = array();
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/pdf.inc';
-        return $markup;
+        $print = new PrintManager();
+        $print->makePdf(['banklabel' ,0, $param]);
+        return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
 
     /**

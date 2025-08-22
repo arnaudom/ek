@@ -3,19 +3,122 @@
 class EKPDF extends TCPDF {
 
 //Page header
+    protected $company;
+    protected $category;
+    /**
+     * Download image from remote URL and return temporary file path
+     */
+    public function downloadImageToTemp($url) {
+        try {
+            $httpClient = \Drupal::httpClient();
+            $response = $httpClient->get($url, [
+                'timeout' => 60,
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (compatible; TCPDF)'
+                ]
+            ]);
+            
+            if ($response->getStatusCode() === 200) {
+                $imageData = $response->getBody()->getContents();
+                $fileSystem = \Drupal::service('file_system');
+                $tempUri = $fileSystem->tempnam('temporary://', 'tcpdf_img_');
+                
+                if (!$tempUri) {
+                    throw new Exception('Failed to create temporary file');
+                }
+                
+                // Convert URI to real path for TCPDF
+                $tempPath = $fileSystem->realpath($tempUri);
+                
+                if (file_put_contents($tempPath, $imageData) === false) {
+                    // Clean up on failure
+                    $fileSystem->delete($tempUri);
+                    throw new Exception('Failed to write image data to temporary file');
+                }
+                
+                return $tempPath;
+            } else {
+                throw new Exception('HTTP request failed with status: ' . $response->getStatusCode());
+            }
+        } catch (Exception $e) {
+            \Drupal::logger('tcpdf')->error('Image download failed for URL ' . $url . ': ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Get cached logo or download if not cached
+     */
+    protected function getCachedLogo($logoUrl) {
+        // If we already have this logo cached, return the cached file
+        if ($this->logoCache && $this->logoCacheUrl === $logoUrl && file_exists($this->logoCache)) { 
+            return $this->logoCache;
+        }
+        
+        // Clean up old cache if URL changed
+        if ($this->logoCache && $this->logoCacheUrl !== $logoUrl) {
+            @unlink($this->logoCache);
+            $this->logoCache = null;
+            $this->logoCacheUrl = null;
+        }
+        
+        // Download new logo
+        $tempFile = $this->downloadImageToTemp($logoUrl);
+        if ($tempFile) {
+            $this->logoCache = $tempFile;
+            $this->logoCacheUrl = $logoUrl;
+        }
+        
+        return $tempFile;
+    }
+    
+    /**
+     * Clean up cached logo file
+     */
+    public function cleanupCache() {
+        if ($this->logoCache && file_exists($this->logoCache)) {
+            $fileSystem = \Drupal::service('file_system');
+            $tempUri = 'temporary://' . basename($this->logoCache);
+            $fileSystem->delete($tempUri);
+            $this->logoCache = null;
+            $this->logoCacheUrl = null;
+        }
+    }
+    
+    /**
+     * Override close to cleanup cache
+     */
+    public function Close() {
+        $this->cleanupCache();
+        parent::Close();
+    }
+
     function Header() {
         $data = $this->getHeaderData();
-        $this->company = $data['title'];
+        $this->company = $data['title']; 
         $this->category = $data['string'];
         //Logo
-        if ($this->company['logo'] != '') {
-               if(file_exists($this->company['logo'])) {
-                   $logo = \Drupal::service('file_url_generator')->generateAbsoluteString($this->company['logo']);
-                   $info = getimagesize($logo);
-                    $h = $info[1] * 20 / $info[0];
-                    $this->Image($logo, 25, 10, $h);
-               }
-        }
+        /*if ($this->company['logo'] != '') {
+            // Download the logo image
+            $logo = \Drupal::service('file_url_generator')->generateAbsoluteString($this->company['logo']);
+            $tempFile = $this->getCachedLogo($logo);
+            
+            if ($tempFile) {
+                try {
+                    // Get image dimensions from the temporary file instead of remote URL
+                    $info = getimagesize($tempFile);
+                    if ($info !== false) {
+                        $h = $info[1] * 15 / $info[0];
+                        $this->Image($tempFile, 30, 10, $h);
+                    } else {
+                        // Fallback dimensions if getimagesize fails
+                        $this->Image($tempFile, 25, 10, 50);
+                    }
+                } catch (Exception $e) {
+                    \Drupal::logger('tcpdf')->error('Failed to add logo image: ' . $e->getMessage());
+                } 
+            }
+        }*/
         $category = array(1 => "Internal invoice", 2 => "Purchase", 3 => "Claim", 4 => "Advance", 5 => "Personal claim");
         //helvetica bold 15
         $this->SetFont('helvetica', 'B', 15);
@@ -45,7 +148,7 @@ class EKPDF extends TCPDF {
 $pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
 // set document information
-$pdf->SetCreator($company->name);
+$pdf->SetCreator('EK');
 $pdf->SetAuthor(\Drupal::currentUser()->getAccountName());
 $pdf->SetTitle(t('Expense memos'));
 $pdf->SetSubject(t('Expense memos'));
@@ -80,7 +183,8 @@ Foreach($data as $key => $arr) {
     //$pdf->setHeaderData($arr['main']['entity'], $arr['main']['category']);
 
     // set default header data
-    $pdf->SetHeaderData('','',$arr['main']['entity'], $arr['main']['category']);
+
+    $pdf->SetHeaderData('','',$companies[$arr['main']['entity_to']['id']], $arr['main']['category']);
     $pdf->AddPage('P','A4');
     $amount = 0;
         $pdf->SetTextColor(0, 0, 0);
@@ -117,7 +221,7 @@ Foreach($data as $key => $arr) {
                 $arr['main']['entity']['address1'] : '', 0, 0);
 
         $pdf->Cell($col3_width, 5, '', 0, 0);
-        $pdf->Cell($col4_width, 5, $arr['main']['entity_to']['address1'], 0, 1);
+        $pdf->Cell($col4_width, 5,  isset($arr['main']['entity_to']['address1']) ? $arr['main']['entity_to']['address1'] : '' , 0, 1);
 
         $pdf->Cell($left_margin, 5, '', 0, 0);
         $pdf->Cell($col1_width, 5, '', 0, 0);
@@ -131,7 +235,9 @@ Foreach($data as $key => $arr) {
         $pdf->Cell($left_margin, 5, '', 0, 0);
         $pdf->Cell($col1_width, 5, '', 0, 0);
 
-        $pdf->Cell($col2_width, 5, $arr['main']['entity']['postcode'] . ' ' . $arr['main']['entity']['city'], 0, 0);
+        $a = isset($arr['main']['entity']['postcode']) ? $arr['main']['entity']['postcode'] : '';
+        $b = isset($arr['main']['entity']['city']) ? $arr['main']['entity']['city'] : '';
+        $pdf->Cell($col2_width, 5, $a . ' ' . $b, 0, 0);
 
         $pdf->Cell($col3_width, 5, '', 0, 0);
         $pdf->Cell($col4_width, 5, $arr['main']['entity_to']['postcode'] . ' ' . $arr['main']['entity_to']['city'], 0, 1);
@@ -143,18 +249,20 @@ Foreach($data as $key => $arr) {
                 $arr['main']['entity']['country'] : '', 0, 0);
 
         $pdf->Cell($col3_width, 5, '', 0, 0);
-        $pdf->Cell($col4_width, 5, $arr['main']['entity_to']['country2'], 0, 1);
+        $pdf->Cell($col4_width, 5, $arr['main']['entity_to']['country'], 0, 1);
 
-        if ($arr['main']['entity']['telephone'] != '') {
+        $t1 = '';
+        $t2 = '';
+        if (isset($arr['main']['entity']['telephone'])) {
             $t1 = t('Tel') . ':' . $arr['main']['entity_to']['telephone'];
         }
-        if ($arr['main']['entity']['fax'] != '') {
+        if (isset($arr['main']['entity']['fax'])) {
             $t1 .= ' ' . t('Fax') . ':' . $arr['main']['entity']['fax'];
         }
-        if ($arr['main']['entity_to']['telephone'] != '') {
+        if (isset($arr['main']['entity_to']['telephone'])) {
             $t1 = t('Tel') . ':' . $arr['main']['entity_to']['telephone'];
         }
-        if ($arr['main']['entity_to']['fax'] != '') {
+        if (isset($arr['main']['entity_to']['fax'])) {
             $t1 .= ' ' . t('Fax') . ':' . $arr['main']['entity_to']['fax'];
         }
 
@@ -170,7 +278,7 @@ Foreach($data as $key => $arr) {
         $pdf->Cell($col4_width, 5, $t2, 0, 1);
 
         $pdf->SetFont('helvetica', '', 10);
-        if ($arr['main']['entity']['contact']) {
+        if (isset($arr['main']['entity']['contact'])) {
             $pdf->Cell($left_margin, 5, t('Contact') . ':', 0, 0);
             $pdf->Cell($col1_width, 5, '', 0, 0);
             $pdf->SetFont('helvetica', 'B', 9);
@@ -206,7 +314,7 @@ Foreach($data as $key => $arr) {
         $pdf->Cell($left_margin, 5, '', 'L', 0);
         $pdf->Cell(50, 5, t('Project reference') . ':', 0, 0);
         $pdf->SetFont('helvetica', 'B', 10);
-        $pdf->Cell(134, 5, $arr['main']['client_card']['name'], 'R', 1);
+        $pdf->Cell(134, 5, $arr['main']['client_card'], 'R', 1);
 
         $pdf->SetFont('helvetica', '', 10);
         $pdf->Cell($left_margin, 5, '', 'L', 0);
@@ -222,10 +330,9 @@ Foreach($data as $key => $arr) {
         $pdf->Cell(185, 3, '', 'LBR', 1);
 
         if ($arr['main']['status'] > 1) {
-
             $paid = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . "/art/paid.png";
             if (file_exists($paid)) {
-                $pdf->Image($paid, 90, 95, 20);
+                $pdf->Image($paid, 150, 85, 20);
             }
         }
 
@@ -241,7 +348,6 @@ Foreach($data as $key => $arr) {
 
 
         Foreach($arr['lines'] as $l => $line) {
-
             $pdf->Cell(50, 5, $line['aid'] . ' ' . $line['aname'], 0, 0);
             $pdf->Cell(80, 5, $line['description'], 0, 0);
             $pdf->Cell(20, 5, number_format($line['amount'], 2), 0, 0, 'R');
@@ -298,3 +404,5 @@ Foreach($data as $key => $arr) {
             }
         }
 }
+
+//$pdf->cleanupCache();

@@ -28,19 +28,11 @@ use Drupal\ek_finance\FinanceSettings;
  */
 class ResetReconciliation extends FormBase {
 
-    /**
-     * The file storage service.
-     *
-     * @var \Drupal\Core\Entity\EntityStorageInterface
-     */
+    
     protected $fileStorage;
-
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
     protected $moduleHandler;
+    protected $settings;
+    protected $rounding;
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
