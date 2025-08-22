@@ -14,7 +14,6 @@ use Drupal\Component\Utility\Xss;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_projects\ProjectData;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_address_book\AddressBookData;
 
@@ -147,7 +146,7 @@ class WriteReport extends FormBase {
                     $form['pcode'] = array(
                         '#type' => 'select',
                         '#size' => 1,
-                        '#options' => ProjectData::listprojects(0),
+                        '#options' => \Drupal::service('project.service')->listprojects(0),
                         '#default_value' => $data->pcode,
                         '#title' => $this->t('Project'),
                     );

@@ -13,7 +13,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Extension\ModuleHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_projects\ProjectData;
 use Drupal\ek_address_book\AddressBookData;
 use Drupal\ek_admin\Access\AccessCheck;
 
@@ -90,7 +89,7 @@ class NewReport extends FormBase {
             $form['pcode'] = array(
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => ProjectData::listprojects(0),
+                '#options' => \Drupal::service('project.service')->listprojects(0),
                 '#title' => $this->t('Project'),
             );
         } // project
