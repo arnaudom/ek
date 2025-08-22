@@ -65,7 +65,7 @@ class MessageMenuLink extends MenuLinkDefault {
             if (!empty($external)) {
                 $db = true;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return null;
         }
 
@@ -87,13 +87,17 @@ class MessageMenuLink extends MenuLinkDefault {
 
                     $Obj = $query->execute();
                     $count = $Obj->fetchObject()->count;
+                    // todo: this returned array creates an error with /node pages when function truncate() is called by drupal core
+                    // \core\lib\Drupal\Component\Utility\Unicode.php line 310; mb_strlen() accepts parameter 1 to be string, array given
                     if ($count > 0) {
-                        return [
+                        /*return [
                             '#markup' => $this->t('Messages <span class="inbox_message_badge">@c</span>', ['@c' => $count]),
                             '#attached' => [
                                 'library' => ['ek_messaging/ek_messaging_css'],
                             ],
-                        ];
+                        ];*/
+                        return $this->t('Messages <span class="inbox_message_badge">@c</span>', ['@c' => $count]);
+                            
                     }
 
                     return $this->t('Messages');
