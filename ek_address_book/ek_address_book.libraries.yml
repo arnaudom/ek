@@ -15,11 +15,13 @@ ek_address_boook.tip:
   version: VERSION
   css:
     theme:
-      /libraries/qTip2/dist/jquery.qtip.min.css: {}
+      css/tooltips.css: {}
   js:
     js/ek_address_book_tip.js: {}
-    /libraries/qTip2/dist/jquery.qtip.min.js: {}
-    
+  dependencies:
+    - core/jquery    
+    - core/jquery.ui
+    - jquery_ui_tooltip/tooltip
     
 ek_address_book.email_autocomplete:
   version: VERSION
@@ -57,7 +59,7 @@ ek_address_book.dashboard:
   version: 1
   dependencies:
     - core/jquery
-    - jquery_ui_sortable/sortabl
+    - jquery_ui_sortable/sortable
 
 ek_address_book.search:
   version: VERSION
