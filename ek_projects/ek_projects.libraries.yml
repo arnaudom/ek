@@ -52,16 +52,13 @@ ek_projects.dashboard:
     - jquery_ui_sortable/sortable
 
 ek_projects.calendar:
-  version: 1
+  version: VERSION
   css:
     theme:
       css/ek_calendar.css: {weight: 100}
-      /libraries/fullcalendar/fullcalendar.min.css: {weight: 99}
-      /libraries/qTip2/dist/jquery.qtip.min.css: {}
+      /libraries/fullcalendar/lib/main.min.css: {weight: 99}
   js:
-    /libraries/fullcalendar/lib/moment.min.js: {}
-    /libraries/fullcalendar/fullcalendar.min.js: {}
-    /libraries/qTip2/dist/jquery.qtip.min.js: {}
+    /libraries/fullcalendar/lib/main.min.js: {}
     js/cal/calendar_script.js: {}
   dependencies:
     - core/jquery
@@ -69,7 +66,9 @@ ek_projects.calendar:
     - core/drupalSettings
     - core/drupal.ajax
     - core/drupal.dialog
-    - core/drupal.dialog.off_canvas
+    - core/drupal.dialog.off_canvas    
+    - core/jquery.ui
+    - jquery_ui_tooltip/tooltip
     
 ek_projects_charts:
   js:
@@ -86,7 +85,6 @@ ek_projects_settings:
     js/ek_projects_settings.js: {}
   dependencies:
     - core/jquery
-    
 
 ek_projects_search_document:
   js:
