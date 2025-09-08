@@ -132,9 +132,8 @@ class UploadForm extends FormBase {
         // Validate sub_folder if provided.
         $sub_folder = $form_state->getValue('sub_folder');
         if (!empty($sub_folder) && !preg_match('/^[a-zA-Z0-9 _-]+$/', $sub_folder)) {
-            //$form_state->setErrorByName('sub_folder', $this->t('Sub-folder contains invalid characters.'));
-            $form['doc_upload_message']['#markup'] = "<div class='red'>" .  $this->t('Subfolder contains invalid characters.') . "</div>";
-            return $form['doc_upload_message'];
+            $form_state->setErrorByName('sub_folder', $this->t('Sub-folder <@sf> contains invalid characters.', ['@sf' => $sub_folder]));
+            
         }
         
     }
@@ -153,14 +152,14 @@ class UploadForm extends FormBase {
 
         
         // Check for validation errors.
-        if ($form_state->hasAnyErrors()) {
+        if ($form_state->hasAnyErrors()) { 
             // Collect and display validation errors.
             $errors = [];
             foreach ($form_state->getErrors() as $error) {
                 $errors[] = $error;
             }
-            $form['doc_upload_message']['#markup'] = "<div class='red'>" . $this->t('Upload failed: @errors', ['@errors' => implode('; ', $errors)]) . "</div>";
-            return $form['doc_upload_message']['#markup'];
+            //$form['doc_upload_message']['#markup'] = "<div class='red'>" . $this->t('Upload failed: @errors', ['@errors' => implode('; ', $errors)]) . "</div>";
+            return $form;
         }
 
 
