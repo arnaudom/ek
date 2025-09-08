@@ -264,8 +264,8 @@ class updateJournalSales extends FormBase {
                     );
                 }
 
-                if (round($this->journal->credit, 4) <> round($this->journal->debit, 4)) {
-                    $msg = 'debit: ' . $this->journal->debit . ' <> ' . 'credit: ' . $this->journal->credit;
+                if ($this->journal->getCredit() <> $this->journal->getDebit()) {
+                    $msg = 'debit: ' . $this->journal->getDebit() . ' <> ' . 'credit: ' . $this->journal->getCredit();
                     \Drupal::messenger()->addError(t('Error journal record (@aid) for invoice @i', ['@aid' => $msg, '@i' => $invoice->serial]));
                 }
             }
@@ -340,8 +340,8 @@ class updateJournalSales extends FormBase {
                     );
                 }
 
-                if ($this->journal->credit <> $this->journal->debit) {
-                    $msg = 'debit: ' . $this->journal->debit . ' <> ' . 'credit: ' . $this->journal->credit;
+                 if ($this->journal->getCredit() <> $this->journal->getDebit()) {
+                $msg = 'debit: ' . $this->journal->getDebit() . ' <> ' . 'credit: ' . $this->journal->getCredit();
                     \Drupal::messenger()->addError(t('Error journal record (@aid) for purchase @p', ['@aid' => $msg, '@p' => $purchase->serial]));
                 }
             }
