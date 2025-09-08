@@ -384,7 +384,7 @@
 #drupal-off-canvas a, #drupal-off-canvas .link {
     transition: color 0.5s ease;
     text-decoration: none !important;
-    color: #85bef4 !important;
+    color: #0088cc !important;
 }
 
 /* update js timer and updater */

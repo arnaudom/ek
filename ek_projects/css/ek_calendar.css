@@ -31,11 +31,16 @@ td.fc-day-top.fc-future {
     border-bottom: 1px solid #ddd !important;
 }
 
+.fc .fc-button-primary { 
+  color: #696969!important;
+  background-color: #fff!important;
+}
+
 /* Style the dialog-off-canvas container. */
 /* Layer the dialog just under the toolbar. */
 .ui-dialog.ui-dialog-off-canvas {
-    color: #333;
-    background: #d2d2d2;
+    color: #333!important;
+    background: #f5f5f5!important;
 }
 #drupal-off-canvas .fc-day-top {
     padding-right: 20px !important;
