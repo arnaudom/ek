@@ -128,42 +128,13 @@ class UploadForm extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-        // Validate the uploaded file.
-        /*$file_ids = $form_state->getValue('upload_doc');
-        if (!empty($file_ids)) {
-            $file_id = reset($file_ids);
-            $file = File::load($file_id);
-            if ($file) {
-                // Validate file extensions.
-                $errors = [];
-                $allowed_extensions = $form_state->get('allowed_extensions');
-                $validators = ['FileExtension' => [ 'extensions' => $allowed_extensions ]];
-                // $validators = ['FileSizeLimit' => [ 'fileLimit' => $max_filesize ]];
-                $file_validator = \Drupal::service('file.validator');
-                $violations = $file_validator->validate($file, $validators);
-                foreach ($violations as $violation) {
-                $errors[] = $violation->getMessage();
-                }
-
-                if (!empty($errors)) {
-                    // Set validation errors and mark file for deletion.
-                    foreach ($errors as $error) {
-                        $form_state->setErrorByName('upload_doc', $error);
-                    }
-                    // Mark the temporary file for deletion.
-                    $file->delete();
-                }
-            } else {
-                $form_state->setErrorByName('upload_doc', $this->t('Unable to load the uploaded file.'));
-            }
-        } else {
-            $form_state->setErrorByName('upload_doc', $this->t('No file was uploaded.'));
-        }*/
-
+    
         // Validate sub_folder if provided.
         $sub_folder = $form_state->getValue('sub_folder');
-        if (!empty($sub_folder) && !preg_match('/^[a-zA-Z0-9_-]+$/', $sub_folder)) {
-            $form_state->setErrorByName('sub_folder', $this->t('Sub-folder contains invalid characters.'));
+        if (!empty($sub_folder) && !preg_match('/^[a-zA-Z0-9 _-]+$/', $sub_folder)) {
+            //$form_state->setErrorByName('sub_folder', $this->t('Sub-folder contains invalid characters.'));
+            $form['doc_upload_message']['#markup'] = "<div class='red'>" .  $this->t('Subfolder contains invalid characters.') . "</div>";
+            return $form['doc_upload_message'];
         }
         
     }
