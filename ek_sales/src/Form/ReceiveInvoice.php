@@ -404,14 +404,14 @@ class ReceiveInvoice extends FormBase {
             $form['debit_fx_rate']['#required'] = true;
             $purchase_rate = CurrencyData::rate($currency);
             $pay_rate = CurrencyData::rate($currency2);
-            if ($pay_rate && $purchase_rate) {
-                $form['debit_fx_rate']['#value'] = round($pay_rate / $purchase_rate, 4);
+            if (is_numeric($pay_rate) && is_numeric($purchase_rate) && $pay_rate && $purchase_rate) {
+                $form['debit_fx_rate']['#value'] = round(floatval($pay_rate) / floatval($purchase_rate), 4);
                 $amount = str_replace(',', '', $form_state->getValue('amount'));
-                $credit = round($amount * $pay_rate / $purchase_rate, 4);
+                $credit = round(floatval($amount) * floatval($pay_rate) / floatval($purchase_rate), 4);
                 $form['debit_fx_rate']['#description'] = $this->t('Amount debited @c @a', array('@c' => $currency2, '@a' => $credit));
             } else {
                 $form['debit_fx_rate']['#value'] = 0;
-                $form['debit_debit_fx_rate']['#description'] = '';
+                $form['debit_fx_rate']['#description'] = '';
             }
         } else {
             $form['debit_fx_rate']['#required'] = false;
@@ -516,8 +516,8 @@ class ReceiveInvoice extends FormBase {
                     )
             );
 
-            if ($this->journal->credit <> $this->journal->debit) {
-                $msg = 'debit: ' . $this->journal->debit . ' <> ' . 'credit: ' . $this->journal->credit;
+            if ($this->journal->getCredit() <> $this->journal->getDebit()) {
+                $msg = 'debit: ' . $this->journal->getDebit() . ' <> ' . 'credit: ' . $this->journal->getCredit();
                 \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }
         }

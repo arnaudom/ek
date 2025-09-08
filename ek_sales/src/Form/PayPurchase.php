@@ -221,12 +221,11 @@ class PayPurchase extends FormBase {
             $purchase_rate = CurrencyData::rate($currency);
             $pay_rate = CurrencyData::rate($currency2);
 
-            if ($pay_rate && $purchase_rate) {
-                $form['fx_rate']['#value'] = round($pay_rate / $purchase_rate, 4);
-                $credit = round($form_state->getValue('amount') * $pay_rate / $purchase_rate, 4);
-                $desc = $this->t('<strong>Warning</strong>: You are paying from different currency account. This may cause discrepancies.') . '<br/>';
-                $desc .= $this->t('Amount credited @c @a', array('@c' => $currency2, '@a' => $credit));
-                $form['fx_rate']['#description'] = $desc;
+            if (is_numeric($pay_rate) && is_numeric($purchase_rate) && $pay_rate && $purchase_rate) {
+                $form['debit_fx_rate']['#value'] = round(floatval($pay_rate) / floatval($purchase_rate), 4);
+                $amount = str_replace(',', '', $form_state->getValue('amount'));
+                $credit = round(floatval($amount) * floatval($pay_rate) / floatval($purchase_rate), 4);
+                $form['debit_fx_rate']['#description'] = $this->t('Amount debited @c @a', array('@c' => $currency2, '@a' => $credit));
             } else {
                 $form['fx_rate']['#value'] = 0;
                 $form['fx_rate']['#description'] = '';
@@ -453,8 +452,8 @@ class PayPurchase extends FormBase {
                     ]
             );
 
-            if ($this->journal->credit <> $this->journal->debit) {
-                $msg = 'debit: ' . $this->journal->debit . ' <> ' . 'credit: ' . $this->journal->credit;
+            if ($this->journal->getCredit() <> $this->journal->getDebit()) {
+                $msg = 'debit: ' . $this->journal->getDebit() . ' <> ' . 'credit: ' . $this->journal->getCredit();
                 \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }
         }
