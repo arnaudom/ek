@@ -166,11 +166,13 @@ class FilterExpenses extends FormBase {
             ],
         ];
 
-        $supplier = ['%' => $this->t('Any')];
-        $supplier += Database::getConnection('external_db', 'external_db')
-                ->query("SELECT DISTINCT ab.id,name FROM {ek_address_book} ab INNER JOIN {ek_expenses} e ON e.suppliername=ab.id order by name")
-                ->fetchAllKeyed();
-
+        if (isset($_SESSION['efilter']['supplier_list'])) {
+                $supplier = $_SESSION['efilter']['supplier_list'];
+            } else {
+               $supplier = ['%' => $this->t('Any')];
+                $supplier += \Drupal\ek_address_book\AddressBookData::addresslist(2);
+            }
+        
 
         $form['filters'][3]['supplier'] = [
             '#type' => 'select',
@@ -186,11 +188,12 @@ class FilterExpenses extends FormBase {
             ],
         ];
 
-        $client = ['%' => $this->t('Any')];
-        $client += Database::getConnection('external_db', 'external_db')
-                ->query("SELECT DISTINCT ab.id,name FROM {ek_address_book} ab INNER JOIN {ek_expenses} e ON e.clientname=ab.id order by name")
-                ->fetchAllKeyed();
-
+        if (isset($_SESSION['efilter']['supplier_list'])) {
+                $client = $_SESSION['efilter']['supplier_list'];
+            } else {
+                $client = ['%' => $this->t('Any')];
+                $client += \Drupal\ek_address_book\AddressBookData::addresslist(1);
+            }
 
         $form['filters'][3]['client'] = [
             '#type' => 'select',
@@ -213,7 +216,12 @@ class FilterExpenses extends FormBase {
             $query->fields('e', ['id', 'pcode']);
             $query->condition('pcode', 'n/a', '<>');
             $query->distinct();
-            $list = $query->execute()->fetchAllKeyed();
+            if (isset($_SESSION['efilter']['project_list'])) {
+                $list = $_SESSION['efilter']['project_list'];
+            } else {
+                $list = $query->execute()->fetchAllKeyed();
+                $_SESSION['efilter']['project_list'] = $list;
+            }
 
             $pcode += \Drupal::service('project.service')->format_project_list($list);
 
