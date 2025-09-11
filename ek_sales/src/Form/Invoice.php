@@ -79,9 +79,21 @@ class Invoice extends FormBase {
                     ->condition('serial', $data->serial)
                     ->OrderBy('id');
                 $detail = $query->execute();
-                $fx_rate = round($data->amount / $data->amountbase, 4);
+                if (!empty($data->amountbase) && $data->amountbase != 0) {
+                    $fx_rate = round($data->amount / $data->amountbase, 4);
+                    $fx_error = false;
+                } else {
+                    $fx_rate = 1;
+                    $fx_error = true;
+                    $form['fx_error'] = [
+                        '#type' => 'item',
+                        '#markup' => "<div class='messages messages--warning'>"
+                        . $this->t('Verify exchange rate')
+                        . "</div>",
+                    ];
+                }
                 $form_state->set('fx_rate', $fx_rate);
-                if ($fx_rate != '1') {
+                if ($fx_rate != '1' || $fx_error) {
                     $form_state->set('fx_rate_require', true);
                 } else {
                     $form_state->set('fx_rate_require', false);
