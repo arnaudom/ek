@@ -481,7 +481,8 @@ class ReceiveInvoice extends FormBase {
         $form_state->set('details', $data->amount);
         //$max_pay = ($data->amount * (1 + ($data->taxvalue / 100)) - $data->amountreceived); 
 
-        if ($this_pay > $form_state->getValue('balance')) {
+        // compare float values
+        if (floatval($this_pay) > floatval($form_state->getValue('balance'))) {
             $form_state->setErrorByName('amount', $this->t('payment exceeds invoice amount (input: @a, receivable: @b)', ['@a' => $this_pay, '@b' => $form_state->getValue('balance')]));
         }
 
