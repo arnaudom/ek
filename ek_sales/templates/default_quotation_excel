@@ -33,8 +33,43 @@ $bluefont = array(
 );
 
 // Add a drawing to the worksheet
-if (($company->logo != '')  && file_exists($company->logo)) {
-    $info = getimagesize($company->logo);
+$file_uri = $company->logo;
+$temp_file_path = null;
+
+// Check if file exists using Drupal's file API
+if (@file_get_contents($file_uri, false, NULL, 0, 1) !== false) {
+  // Read content with stream context for S3 compatibility
+  $content = file_get_contents($file_uri);
+  if ($content !== false && strlen($content) > 0) {
+    // Create temp file using platform-appropriate method
+    $temp_file = tempnam(sys_get_temp_dir(), 'excel_logo_');
+    
+    // Write content with proper flushing
+    if (file_put_contents($temp_file, $content) !== false) {
+      clearstatcache(true, $temp_file);
+      
+      // Windows-specific filesystem sync (only on Windows)
+      if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        usleep(100000); // 100ms delay ONLY for Windows
+      }
+      $temp_file_path = realpath($temp_file);
+      
+      // REGISTER SHUTDOWN FUNCTION
+      register_shutdown_function(function() use ($temp_file_path) {
+        if ($temp_file_path && @file_exists($temp_file_path)) {
+          @unlink($temp_file_path);
+        }
+      });
+    }
+  }
+}
+
+if ($temp_file_path && file_exists($temp_file_path) && filesize($temp_file_path) > 0) {
+  $info = @getimagesize($temp_file_path);
+  if ($info === false) {
+    // Handle corrupted images
+    \Drupal::logger('ek_sales')->error('Invalid image format: @uri', ['@uri' => $file_uri]);
+  } else {
     $h = $info[1];
     $w = $info[0];
     $resolution = 150 / $w * $h;
@@ -42,11 +77,14 @@ if (($company->logo != '')  && file_exists($company->logo)) {
     $objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
     $objDrawing->setName('Company logo');
     $objDrawing->setDescription('Company logo');
-    $objDrawing->setPath(\Drupal::service('file_system')->realpath($company->logo));
+    $objDrawing->setPath($temp_file_path);
     $objDrawing->setHeight($resolution);
     $objDrawing->setCoordinates('B2');
     $objDrawing->setOffsetX(10);
     $objDrawing->setWorksheet($objPHPExcel->getActiveSheet());
+  }
+} else {
+  \Drupal::logger('ek_sales')->error('Logo processing failed for URI: @uri', ['@uri' => $file_uri]);
 }
 // Issuer header data
 // line 2
@@ -481,28 +519,70 @@ $objPHPExcel->getActiveSheet()->getStyle("B$i")->getAlignment()->setVertical(\Ph
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", $head->currency . ' ' . $word);
 $i++;
 //SIGNATURE============================================================
-if ($signature == 1) {
-    $i += 7;
-    if (isset($company->sign)) {
-        $info = getimagesize($company->sign);
-        $h = $info[1];
-        $w = $info[0];
-        $off = $i - $s_pos / 10;
-        $resolution = 200 / $w * $h;
-        $objDrawing2 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
-        $objDrawing2->setName('signature');
-        $objDrawing2->setPath(\Drupal::service('file_system')->realpath($company->sign));
-        $objDrawing2->setHeight($resolution);
-        $objDrawing2->setCoordinates('B' . $off);
-        $objDrawing2->setWorksheet($objPHPExcel->getActiveSheet());
+if ($signature[0] == 1) { 
+    $i += 10;
+    // Add a signature to the worksheet
+    $file_uri_ = $company->sign;
+    $temp_file_path_ = null;
+
+    // Check if file exists using Drupal's file API
+    if (@file_get_contents($file_uri_, false, NULL, 0, 1) !== false) {
+    // Read content with stream context for S3 compatibility
+    $content_ = file_get_contents($file_uri_);
+        if ($content_ !== false && strlen($content_) > 0) {
+            // Create temp file using platform-appropriate method
+            $temp_file_ = tempnam(sys_get_temp_dir(), 'excel_sign_');
+            
+            // Write content with proper flushing
+            if (file_put_contents($temp_file_, $content_) !== false) {
+            clearstatcache(true, $temp_file_);
+            
+            // Windows-specific filesystem sync (only on Windows)
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                usleep(100000); // 100ms delay ONLY for Windows
+            }
+            $temp_file_path_ = realpath($temp_file_);
+            
+            // REGISTER SHUTDOWN FUNCTION
+            register_shutdown_function(function() use ($temp_file_path_) {
+                if ($temp_file_path_ && @file_exists($temp_file_path_)) {
+                    @unlink($temp_file_path_);
+                }
+            });
+            }
+        }
     }
+
+    if ($temp_file_path_ && file_exists($temp_file_path_) && filesize($temp_file_path_) > 0) {
+        $info = @getimagesize($temp_file_path_);
+        if ($info === false) {
+            // Handle corrupted images
+            \Drupal::logger('ek_sales')->error('Invalid image format: @uri', ['@uri' => $file_uri_]);
+        } else {
+            $info = getimagesize($company->sign);
+            $h = $info[1];
+            $w = $info[0];
+            $off = $i - $signature[1];
+            $resolution = 200 / $w * $h;
+
+            $objDrawing2 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+            $objDrawing2->setName('signature');
+            $objDrawing2->setPath($temp_file_path_);
+            $objDrawing2->setHeight($resolution);
+            $objDrawing2->setCoordinates('B' . $off);
+            $objDrawing2->setWorksheet($objPHPExcel->getActiveSheet());
+        }
+    } else {
+        \Drupal::logger('ek_sales')->error('Signature processing failed for URI: @uri', ['@uri' => $file_uri_]);
+    }
+    
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", (String) t("Authorized signatory"));
     $objPHPExcel->getActiveSheet()->getStyle("B$i")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
     $objPHPExcel->getActiveSheet()->getStyle("B$i:D$i")->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
     $objPHPExcel->getActiveSheet()->mergeCells("B$i:F$i");
-} elseif ($signature == 2) {
+} elseif ($signature[0] == 2) {
     $i += 7;
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", (String) t("Electronic quotation – no signature required"));
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$i", (String) t("Electronic invoice – no signature required"));
     $objPHPExcel->getActiveSheet()->getStyle("B$i")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
     $objPHPExcel->getActiveSheet()->getStyle("B$i:D$i")->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
     $objPHPExcel->getActiveSheet()->mergeCells("B$i:F$i");
