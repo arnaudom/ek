@@ -30,7 +30,6 @@ class UploadForm extends FormBase {
         return 'ek_projects_upload';
     }
 
-
     protected $moduleHandler;
     protected $projectService;
     protected $fileUsage;
@@ -62,7 +61,7 @@ class UploadForm extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
 
         // D11 compatibility edit
-        $extensions = 'png gif jpg jpeg txt doc docx xls xlsx odt ods odp pdf ppt pptx rar rtf tiff zip';
+        $extensions = 'png gif jpg jpeg txt doc docx xls xlsx odt ods odp pdf ppt pptx rar rtf tiff zip mp4';
         $ref = explode('|', $id);
         $pcode = explode('-', $ref[0]);
         $pcode_parts = array_reverse($pcode);
@@ -79,6 +78,9 @@ class UploadForm extends FormBase {
             '#progress_indicator' => 'bar',
             '#progress_message'   => t('Processing...'),
             '#required' => TRUE, 
+            '#upload_validators' => [
+                'file_validate_extensions' => [$extensions],
+            ],
         ];
 
         $form['sub_folder'] = [
@@ -120,7 +122,6 @@ class UploadForm extends FormBase {
             '#suffix' => '</div>',
         ];
 
-        $form_state->set('allowed_extensions', $extensions);
         return $form;
     }
 
