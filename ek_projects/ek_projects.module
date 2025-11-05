@@ -150,12 +150,12 @@ function ek_projects_file_download($uri) {
     
     // filter uri for document type and source type
     // if extranet type, hook_ in use is extranet hook
-    if( strpos($uri ?? "" , '/projects/documents/') 
-            &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , '/extranet/project?')
-            &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , 'extranet-file/')
-            &&  !strpos(\Drupal::request()->server->get('HTTP_REFERER') , '/extranet/chat')
-            ) { 
-      
+    if (strpos($uri ?? "", '/projects/documents/')
+        && !strpos(\Drupal::request()->server->get('HTTP_REFERER') ?? "", '/extranet/project?')
+        && !strpos(\Drupal::request()->server->get('HTTP_REFERER') ?? "", 'extranet-file/')
+        && !strpos(\Drupal::request()->server->get('HTTP_REFERER') ?? "", '/extranet/chat')
+    ) {
+          
       $guesser = \Drupal::service('file.mime_type.guesser');
       $mime = $guesser->guessMimeType($uri);
       $query = Database::getConnection('external_db', 'external_db')
