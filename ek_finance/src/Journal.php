@@ -2613,12 +2613,12 @@ class Journal {
 
     public function ledger($l) {
 
-        //determine if query cover closed years, before current fiscal year
+        // determine if query cover closed years, before current fiscal year
         $dates = self::getFiscalDates($l['coid'], date('Y', strtotime($l['date2'])), date('m', strtotime($l['date2'])));
         $settings = new FinanceSettings();
         $baseCurrency = $settings->get('baseCurrency');
         $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
-        //data holder
+        // data holder
         $data = array();
         $data['baseCurrency'] = $baseCurrency;
         $data['ledger']['accounts'] = array();
@@ -2631,7 +2631,7 @@ class Journal {
             //return message to select different range
             $data['archive'] = 2;
             return $data;
-        } elseif ($l['date2'] < $dates['from']) {
+        } elseif ($l['date2'] < $dates['fiscal_start']) {
             // look into archives
             $ek_accounts = "ek_accounts_" . date('Y', strtotime($l['date2'])) . '_' . $l['coid'];
             $ek_journal = "ek_journal_" . date('Y', strtotime($l['date2'])) . '_' . $l['coid'];
@@ -2653,7 +2653,7 @@ class Journal {
             }
             $data['archive'] = true;
         } elseif ($l['date1'] >= $dates['from']) {
-            //current year
+            // current year
             $ek_accounts = "ek_accounts";
             $ek_journal = "ek_journal";
             $data['archive'] = false;
