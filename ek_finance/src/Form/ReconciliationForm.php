@@ -303,12 +303,12 @@ class ReconciliationForm extends FormBase {
             );
             $form['opencredit'] = array(
                 '#type' => 'hidden',
-                '#default_value' => round($credit, $this->rounding),
+                '#default_value' => round($credit ?? 0, $this->rounding),
                 '#attributes' => array('id' => 'opencredits'),
             );
             $form['opendebit'] = array(
                 '#type' => 'hidden',
-                '#default_value' => round($debit, $this->rounding),
+                '#default_value' => round($debit ?? 0, $this->rounding),
                 '#attributes' => array('id' => 'opendebits'),
             );
             $form['openbalance'] = array(
@@ -332,7 +332,7 @@ class ReconciliationForm extends FormBase {
                 '#title_display' => 'before',
                 '#required' => false,
                 '#size' => 15,
-                '#default_value' => number_format($debit, 2),
+                '#default_value' => number_format($debit ?? 0, 2),
                 '#attributes' => array('title' => $this->t('total debits') . " " . $this->t('from') . " " . $account->balance_date,
                     'readonly' => 'readonly',
                     'class' => array('amount')
@@ -348,7 +348,7 @@ class ReconciliationForm extends FormBase {
                 '#title_display' => 'before',
                 '#required' => false,
                 '#size' => 15,
-                '#default_value' => number_format($credit, 2),
+                '#default_value' => number_format($credit ?? 0, 2),
                 '#attributes' => array('title' => $this->t('total credits') . " " . $this->t('from') . " " . $account->balance_date,
                     'readonly' => 'readonly',
                     'class' => array('amount')
@@ -359,7 +359,7 @@ class ReconciliationForm extends FormBase {
 
             $form['bar']['balance'] = array(
                 '#type' => 'item',
-                '#markup' => "<span id='balance'>" . number_format(abs(round($balance, $this->rounding))) . "</span><span id='ab'> (" . $ab . ")</span>",
+                '#markup' => "<span id='balance'>" . number_format(abs(round($balance ?? 0, $this->rounding))) . "</span><span id='ab'> (" . $ab . ")</span>",
                 '#prefix' => '<div class="cell cell150">',
                 '#suffix' => '</div>',
             );
@@ -371,7 +371,7 @@ class ReconciliationForm extends FormBase {
                 '#title_display' => 'before',
                 '#required' => true,
                 '#size' => 15,
-                '#default_value' => abs(round($balance, $this->rounding)),
+                '#default_value' => abs(round($balance ?? 0, $this->rounding)),
                 '#attributes' => array('title' => $this->t('statement value'),
                     'class' => array('calculate amount'),
                 ),
@@ -493,7 +493,7 @@ class ReconciliationForm extends FormBase {
                 if ($j['type'] == 'debit') {
                     $form['items'][$i]['debit'] = array(
                         '#type' => 'item',
-                        '#markup' => number_format($j['value'], 2),
+                        '#markup' => number_format($j['value'] ?? 0, 2),
                         '#prefix' => "<div class='cell cell100 $back'>",
                         '#suffix' => '</div>',
                     );
@@ -514,7 +514,7 @@ class ReconciliationForm extends FormBase {
 
                     $form['items'][$i]['credit'] = array(
                         '#type' => 'item',
-                        '#markup' => number_format($j['value'], 2),
+                        '#markup' => number_format($j['value'] ?? 0, 2),
                         '#prefix' => "<div class='cell cell100 $back'>",
                         '#suffix' => '</div>',
                     );
