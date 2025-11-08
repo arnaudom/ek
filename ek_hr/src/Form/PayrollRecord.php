@@ -181,6 +181,7 @@ class PayrollRecord extends FormBase {
             // get allowance parameters for the coid
             $param = new HrSettings($form_state->getValue('coid'));
             $ad = $param->get('ad'); //HrAd[$form_state->getValue('coid')];
+
             //re-structure paramaters to pass to js
             $settings = $this->build_settings($param, $ad, $c);
             $settings['salary'] = $e->salary;
@@ -1346,6 +1347,7 @@ class PayrollRecord extends FormBase {
     }
 
     public function build_settings($param, $ad, $c) {
+
         return array(
             'LAF1' => $ad['LAF1-' . $c]['value'], //$param->get('ad', 'LAF1' . $c, 'value'),
             'LAF1f' => $ad['LAF1-' . $c]['formula'], //$param->get('ad', 'LAF1' . $c, 'formula'),

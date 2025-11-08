@@ -15,6 +15,7 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -106,6 +107,11 @@ class EditEmployee extends FormBase {
         }
         
         $company = AccessCheck::CompanyListByUid();
+
+        $form['back'] = [
+            '#type' => 'item',
+            '#markup' => "<a href=" . Url::fromRoute('ek_hr.parameters', [], [])->toString() . ">" . $this->t('List') . "</a>",
+        ];
         
         if ($form_state->get('step') == '1') {
             $form['coid'] = array(

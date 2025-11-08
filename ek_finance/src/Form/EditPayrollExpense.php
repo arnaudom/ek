@@ -24,17 +24,12 @@ use Drupal\ek_finance\BankData;
 use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_address_book\AddressBookData;
 
+
 /**
  * Provides a form to record an expense entry.
  */
 class EditPayrollExpense extends FormBase {
 
-    /**
-     * The file storage service.
-     *
-     * @var \Drupal\Core\Entity\EntityStorageInterface
-     */
-    protected $fileStorage;
 
     /**
      * The module handler.
@@ -49,7 +44,6 @@ class EditPayrollExpense extends FormBase {
      */
     public function __construct(ModuleHandler $module_handler, EntityStorageInterface $file_storage) {
         $this->moduleHandler = $module_handler;
-        $this->fileStorage = $file_storage;
     }
 
     /**
@@ -72,6 +66,7 @@ class EditPayrollExpense extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
+
         $settingsFi = new FinanceSettings();
         $chart = $settingsFi->get('chart');
         if (null !== $settingsFi->get('expenseAttachmentFormat')) {
@@ -94,14 +89,55 @@ class EditPayrollExpense extends FormBase {
             '#weight' => -16,
             '#markup' => $this->t('<a href="@url">List</a>', array('@url' => Url::fromRoute('ek_finance.manage.list_expense', [], [])->toString())),
         );
+
         // get expense data
-        $query = Database::getConnection('external_db', 'external_db')
+        /*$query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_expenses', 'e')
                 ->fields('e')
                 ->condition('id', $id)
                 ->execute();
         $expense = $query->fetchObject();
-        $settingsHR = new \Drupal\ek_hr\HrSettings($expense->company);
+
+        $settingsHR = new \Drupal\ek_hr\HrSettings($expense->company);*/
+
+        if ($form_state->get('expense_data') === null && $id !== null) {
+            $expense = Database::getConnection('external_db', 'external_db')
+                ->select('ek_expenses', 'e')
+                ->fields('e')
+                ->condition('id', $id)
+                ->execute()
+                ->fetchObject();
+
+            if (!$expense) {
+                $form_state->setErrorByName('', $this->t('Expense record not found.'));
+                return $form;
+            }
+
+            $form_state->set('expense_data', $expense);
+
+            // Cache HR settings too
+            $settingsHR = new \Drupal\ek_hr\HrSettings($expense->company);
+            $form_state->set('settingsHR', $settingsHR);
+
+            // Cache journal entries
+            $jEntry = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'j')
+                ->fields('j')
+                ->condition('source', 'expense%', 'LIKE')
+                ->condition('reference', $id)
+                ->condition('exchange', 0)
+                ->execute();
+
+            $journal_entries = [];
+            while ($row = $jEntry->fetchObject()) {
+                $journal_entries[] = $row;
+            }
+            $form_state->set('journal_entries', $journal_entries);
+        }
+        else {
+            $expense = $form_state->get('expense_data');
+            $settingsHR = $form_state->get('settingsHR');
+        }
 
         if ($form_state->get('num_items') == null) {
             
@@ -364,6 +400,7 @@ class EditPayrollExpense extends FormBase {
             } else {
                 $thisPcode = null;
             }
+
             $form['reference']['pcode'] = [
                 '#type' => 'textfield',
                 '#size' => 50,
@@ -376,7 +413,7 @@ class EditPayrollExpense extends FormBase {
                 '#autocomplete_route_parameters' => array('level' => 'all', 'status' => '0'),
             ];
 
-        } // project
+        } 
 
         // debits
         $form['debit'] = [
@@ -660,7 +697,7 @@ class EditPayrollExpense extends FormBase {
                 $field = 'attachment' . $n;
                 if(isset($form['debit'][$field]) ) {
                 $file = _file_save_upload_from_form($form['debit'][$field], $form_state, 0);
-                    if ($file) {
+                    /*if ($file) {
                         if($errors = $form_state->getErrors()) {
                             foreach ($errors as $error) {
                                 $form_state->setErrorByName($field, $error);
@@ -672,6 +709,10 @@ class EditPayrollExpense extends FormBase {
                         }        
                     } else {
                             $form_state->setErrorByName($field, $this->t('File upload failed'));
+                    }*/
+
+                    if($file) {
+                        $form_state->set($field, $file) ;
                     }
                 }
             }
@@ -720,8 +761,12 @@ class EditPayrollExpense extends FormBase {
             }
             $pdate = date('Y-m-d', strtotime($form_state->getValue("pdate")));
             $date = explode("-", $pdate);
-            $settingsHR = new \Drupal\ek_hr\HrSettings($form_state->getValue('coid'));
-            //$paramHR = $settingsHR->HrAccounts[$form_state->getValue('coid')];
+            $settingsHR = $form_state->get('settingsHR');
+            if (!$settingsHR) {
+                // Fallback (should not happen unless form tampering)
+                $settingsHR = new \Drupal\ek_hr\HrSettings($form_state->getValue('coid'));
+            }
+            $expense = $form_state->get('expense_data');
             $deductions = 0;
             $funds = [
                 'f1' => 0,
@@ -798,7 +843,7 @@ class EditPayrollExpense extends FormBase {
                             // if edit and existing, delete current attach.
                             \Drupal::service('file_system')->delete($form_state->getValue('uri' . $n));
                         }
-                        //$file = $this->fileStorage->load($fid);
+                        
                         $name = $file->getFileName();
                         $dir = "private://finance/receipt/" . $form_state->getValue('coid');
                         \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
@@ -844,8 +889,7 @@ class EditPayrollExpense extends FormBase {
 
             $net = round($gross - $deductions, $rounding);
             $journal->record(
-                    array(
-                        'source' => "expense payroll",
+                    [   'source' => "expense payroll",
                         'coid' => $form_state->getValue('coid'),
                         'aid' => $exp_account,
                         'reference' => $insert,
@@ -853,16 +897,16 @@ class EditPayrollExpense extends FormBase {
                         'date' => $form_state->getValue('pdate'),
                         'value' => $gross,
                         'currency' => $form_state->getValue('currency'),
-                        'p1' => $net,
-                        'p1a' => $settingsHR->get('accounts','pay_account'),
+                        'netpay' => $net,
+                        'netpayaccount' => $settingsHR->get('accounts','pay_account'),
                         'funds' => $funds,
                         'tax' => $tax,
-                    )
+                    ]
             );
 
             // pay net salary to employee (DT liabilities, CT bank)
             $journal->record(
-                    array(
+                    [
                         'source' => "payroll",
                         'coid' => $form_state->getValue('coid'),
                         'aid' => $settingsHR->get('accounts','pay_account'),
@@ -873,7 +917,7 @@ class EditPayrollExpense extends FormBase {
                         'currency' => $form_state->getValue('currency'),
                         'tax' => '',
                         'fxRate' => $form_state->getValue('fx_rate'),
-                    )
+                    ]
             );
 
 

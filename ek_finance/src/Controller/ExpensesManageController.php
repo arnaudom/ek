@@ -999,7 +999,7 @@ class ExpensesManageController extends ControllerBase {
 
         $flag = true;
 
-        if (!in_array($expense->company, $access)) {
+        if (!$expense || !in_array($expense->company, $access)) {
             $flag = false;
             $markup = t(
                 'You are not authorized to edit this entry. Return to <a href="@url">list</a>',

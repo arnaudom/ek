@@ -1,5 +1,11 @@
+
+
 <table class='table'>
     <tbody>
+        <tr>
+            <td class=''><a href='{{ items.hr.0.backlink }}'>{{ 'List'|t }}</a></td>
+            <td colspan='2' class=''></td>
+        </tr>
         {% if items.hr.0.administrators != '0' %}    
             <tr>
                 <td class='title'>{{ 'Administrators'|t }} </td>

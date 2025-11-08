@@ -271,7 +271,7 @@ class ParametersController extends ControllerBase {
             $data['hr'][0]->location_description = Database::getConnection('external_db', 'external_db')
                             ->query($query, $a)->fetchField();
 
-            //filter contract expiration
+            // filter contract expiration
             $stamp = date('U');
             if ($data['hr'][0]->contract_expiration != null) {
                 $delta = round((strtotime($data['hr'][0]->contract_expiration) - $stamp) / (24 * 60 * 60), 0);
@@ -283,7 +283,7 @@ class ParametersController extends ControllerBase {
                     \Drupal::messenger()->addWarning(t('Contract will expire in @d day(s)', ['@d' => $delta]));
                 }
             }
-            //filter birthday
+            // filter birthday
             if ($data['hr'][0]->birth != null) {
                 $next = date('Y') . '-' . date('m-d', strtotime($data['hr'][0]->birth));
                 $delta = round((strtotime($next) - $stamp) / (24 * 60 * 60), 0);
@@ -296,6 +296,9 @@ class ParametersController extends ControllerBase {
                     \Drupal::messenger()->addStatus(t('Employee birthday in @d day(s)', ['@d' => $delta]));
                 }
             }
+
+            
+            $data['hr'][0]->backlink = Url::fromRoute('ek_hr.parameters', [], [])->toString();
 
             return array(
                 '#theme' => 'ek_hr_data',
@@ -528,7 +531,18 @@ class ParametersController extends ControllerBase {
             $build['edit_employee'] = $this->formBuilder->getForm('Drupal\ek_hr\Form\EditEmployee', $id);
             return $build;
         } else {
-            return array('#markup' => $this->t('Restricted access'));
+            $list_link = [
+                '#type' => 'link',
+                '#title' => $this->t('list'),
+                '#url' => Url::fromUri('internal:/human-resources/parameters'),
+            ];
+
+            $build = [];
+            $build['access_message'] = [
+            '#markup' => $this->t('Restricted access, go to '),
+            ];
+            $build['list_link'] = $list_link;
+            return $build;
         }
     }
 
