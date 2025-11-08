@@ -79,7 +79,7 @@ class UploadForm extends FormBase {
             '#progress_message'   => t('Processing...'),
             '#required' => TRUE, 
             '#upload_validators' => [
-                'file_validate_extensions' => [$extensions],
+                'FileExtension' => ['extensions' => $extensions],
             ],
         ];
 
