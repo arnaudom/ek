@@ -618,6 +618,8 @@ class ReceiveInvoice extends FormBase {
                     \Drupal::service('project.service')->notify_user($param);
                 }
             }
+
+            \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
             $form_state->setRedirect('ek_sales.invoices.list');
         }
     }
