@@ -33,6 +33,7 @@ class UploadForm extends FormBase {
     protected $moduleHandler;
     protected $projectService;
     protected $fileUsage;
+    protected $settings;
 
     /**
      * {@inheritdoc}
@@ -53,6 +54,12 @@ class UploadForm extends FormBase {
         $this->moduleHandler = $module_handler;
         $this->projectService = $projectService;
         $this->fileUsage = $file_usage;
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project_settings', 'p');
+        $query->fields('p', ['settings']);
+        $query->condition('coid', 0);
+        $settings = $query->execute()->fetchField();
+        $this->settings = $settings !== null ? unserialize($settings) : [];
     }
 
     /**
@@ -61,7 +68,7 @@ class UploadForm extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $id = null) {
 
         // D11 compatibility edit
-        $extensions = 'png gif jpg jpeg txt doc docx xls xlsx odt ods odp pdf ppt pptx rar rtf tiff zip mp4';
+        $extensions = $this->settings['file_extenions'] ? $this->settings['file_extenions'] : 'png gif jpg jpeg txt doc docx xls xlsx odt ods odp pdf ppt pptx rar rtf tiff zip';   
         $ref = explode('|', $id);
         $pcode = explode('-', $ref[0]);
         $pcode_parts = array_reverse($pcode);

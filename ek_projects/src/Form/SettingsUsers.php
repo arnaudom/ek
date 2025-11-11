@@ -62,6 +62,13 @@ class SettingsUsers extends FormBase {
             '#title' => $this->t('Block file access level at page level'),
             '#default_value' => ($this->settings['access_level'] == 1) ? 1 : 0,
         );
+
+        $form['file_extensions'] = [
+            '#type' => 'textfield',
+            '#size' => 60,
+            '#default_value' => "png gif jpg jpeg txt doc docx xls xlsx odt ods odp pdf ppt pptx rar rtf tiff zip mp4",
+            '#title' => $this->t('Allowed file upload extensions'),
+        ];
         
         if (isset($this->settings['sections'])) {
             $s1 = $this->settings['sections']['s1'];
@@ -245,15 +252,11 @@ class SettingsUsers extends FormBase {
             }
         }
         
-        /*$query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_project_settings', 'p');
-        $query->fields('p', ['settings']);
-        $query->condition('coid', 0);
-        $settings = $query->execute()->fetchField();
-        $s = $settings !== null ? unserialize($settings) : [];*/
+       
 
         $this->settings['access_level'] = $form_state->getValue('access_level');
         $this->settings['sections'] = $sections;
+        $this->settings['file_extenions'] = $form_state->getValue('file_extensions');
         Database::getConnection('external_db', 'external_db')
                 ->update('ek_project_settings')
                 ->condition('coid', 0)
