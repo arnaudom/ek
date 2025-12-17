@@ -75,7 +75,6 @@ td.fc-day-top.fc-future {
   padding: 2px;
   cursor: pointer;
   border: 1px solid #cacaca;
-  background: transparent;
 }
 
 #drupal-off-canvas th:first-child, #drupal-off-canvas td:first-child {
