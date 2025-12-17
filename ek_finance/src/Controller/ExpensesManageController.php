@@ -100,9 +100,8 @@ class ExpensesManageController extends ControllerBase {
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
         $company = implode(',', $access);
         $chart = $settings->get('chart');
-
+  
         if (!isset($session_filter) || empty($session_filter)) {
-
             //no filter is set
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal', 'j');
@@ -130,7 +129,8 @@ class ExpensesManageController extends ControllerBase {
                         ->condition('j.type', 'debit', '=')
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit(1000)->orderBy($order, $sort)
+                        //->limit(1000)->orderBy($order, $sort)
+                        ->range(0, 1000)->orderBy($order, $sort)
                         ->execute();
             } else {
                 //query data without purchases
@@ -150,12 +150,13 @@ class ExpensesManageController extends ControllerBase {
                         ->condition('j.type', 'debit', '=')
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit(1000)->orderBy($order, $sort)
+                        //->limit(1000)->orderBy($order, $sort)
+                        ->range(0,1000)->orderBy($order, $sort)
                         ->execute();
             }
         } elseif (isset($session_filter['keyword']) && $session_filter['keyword'] != '' && $session_filter['keyword'] != '%') {
 
-            //filter by keyword
+            // filter by keyword
             $keyword1 = '%' . trim(Xss::filter($session_filter['keyword'])) . '%';
 
             if ($settings->get('listPurchases') == 1 && $this->moduleHandler->moduleExists('ek_projects')) {
@@ -184,11 +185,12 @@ class ExpensesManageController extends ControllerBase {
                         ->condition('j.type', 'debit', '=')
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit($session_filter['rows'])->orderBy($order, $sort)
+                        //->limit($session_filter['rows'])->orderBy($order, $sort)
+                        ->range(0, $session_filter['rows'])->orderBy($order, $sort)
                         ->execute();
             } else {
 
-                //query data by keyword without purchases
+                // query data by keyword without purchases
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_journal', 'j');
                 $query->join('ek_expenses', 'e', 'e.id=j.reference');
@@ -206,12 +208,13 @@ class ExpensesManageController extends ControllerBase {
                         ->condition('j.type', 'debit', '=')
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit($session_filter['rows'])->orderBy($order, $sort)
+                        //->limit($session_filter['rows'])->orderBy($order, $sort)
+                        ->range(0, $session_filter['rows'])->orderBy($order, $sort)
                         ->execute();
             }
         } else {
 
-            //filter by tags
+            // filter by tags
             if ($settings->get('listPurchases') == 1 && $this->moduleHandler->moduleExists('ek_projects')) {
                
                 //query data by tag with purchases
@@ -258,13 +261,15 @@ class ExpensesManageController extends ControllerBase {
                         ->condition('j.type', 'debit', '=')
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit($session_filter['rows'])
+                        //->limit($session_filter['rows'])
+                        ->range(0, $session_filter['rows'])
                         ->orderBy($order, $sort);
 
                 $data = $query->execute();
-            }//by tag with purchase
+            } // by tag with purchase
             else {
-                //query data by tag without purchases
+                // query data by tag without purchases
+                $session_filter['rows'] = isset($session_filter['rows']) ? $session_filter['rows'] : 1000;
                 if ($session_filter['pcode'] == 'na') {
                     $session_filter['pcode'] = 'n/a';
                 }
@@ -303,12 +308,13 @@ class ExpensesManageController extends ControllerBase {
                         ->condition('j.type', 'debit', '=')
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit($session_filter['rows'])
+                        //->limit($session_filter['rows'])
+                        ->range(0, $session_filter['rows'])
                         ->orderBy($order, $sort);
 
                 $data = $query->execute();
-            }//default by tag without purchase
-        } //filter by tag
+            } 
+        } 
 
         return $data;
     }
@@ -372,9 +378,9 @@ class ExpensesManageController extends ControllerBase {
             'operations' => $this->t('Operations'),
         );
 
-        $options = array();
+        $options = [];
         $filteredIds = [];
-        
+
         if (isset($_SESSION['efilter'])) {
             $data = $this->pullExpensesData($settings,$_SESSION['efilter'], $sort, $order);
             $chartList = Aidlist::chartList();

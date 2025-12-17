@@ -62,6 +62,7 @@ class FilterExpenses extends FormBase {
         $to = Database::getConnection('external_db', 'external_db')->query($query)->fetchObject();
         $from = date('Y-m') . "-01";
         $open = true;
+
         if (isset($_SESSION['efilter']['filter']) && $_SESSION['efilter']['filter'] == 1) {
             $open = false;
         }
@@ -216,11 +217,11 @@ class FilterExpenses extends FormBase {
             $query->fields('e', ['id', 'pcode']);
             $query->condition('pcode', 'n/a', '<>');
             $query->distinct();
-            if (isset($_SESSION['efilter']['project_list'])) {
-                $list = $_SESSION['efilter']['project_list'];
+            if (isset($_SESSION['project_list'])) {
+                $list = $_SESSION['project_list'];
             } else {
                 $list = $query->execute()->fetchAllKeyed();
-                $_SESSION['efilter']['project_list'] = $list;
+                $_SESSION['project_list_p'] = $list;
             }
 
             $pcode += \Drupal::service('project.service')->format_project_list($list);

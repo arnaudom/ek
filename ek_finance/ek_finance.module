@@ -358,107 +358,112 @@ function ek_finance_form_ek_edit_address_book_form_alter(&$form, \Drupal\Core\Fo
         '#collapsible' => TRUE,
         '#collapsed' => FALSE,
     );
-    
-    $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_address_book_bank', 'b');
-    $query->fields('b');
-    $query->condition('abid', $form['for_id']['#value']);
-    $banks = $query->execute();
+
     $i = 0;
     $currencies = ['0' => t('Any')];
     $currencies += \Drupal\ek_finance\CurrencyData::listcurrency();
-                
-    while ($bank = $banks->fetchObject()) {
-        $i++;
-        $form['bank']['edit' . $i] = [
-            '#title' => t('Edit') . " : " . $bank->name,
-            '#type' => 'details',
-            '#collapsed' => true,
-        ];
-        
-        $form['bank']['edit' . $i]["bid-" . $i] = [
-            '#type' => 'hidden',
-            '#value' => $bank->id,
-        ];
-        
-        $form['bank']['edit' . $i]["currency" . $i] = [
-            '#type' => 'select',
-            '#size' => 1,
-            '#options' => $currencies,
-            '#description' => t('currency'),
-            '#default_value' => $bank->currency,
-        ];
-        
-        
-        $form['bank']['edit' . $i]["bname" . $i] = [
-            '#type' => 'textfield',
-            '#size' => 40,
-            '#maxlength' => 255,
-            '#default_value' => $bank->name,
-            '#attributes' => array('placeholder' => t('bank name')),
-        ];
-        
-        $form['bank']['edit' . $i]["beneficiary" . $i] = [
-            '#type' => 'textfield',
-            '#size' => 40,
-            '#maxlength' => 255,
-            '#default_value' => $bank->beneficiary,
-            '#attributes' => array('placeholder' => t('beneficiary')),
-        ];
-
-        $form['bank']['edit' . $i]["baddress1" . $i] = [
-            '#type' => 'textfield',
-            '#size' => 40,
-            '#maxlength' => 255,
-            '#default_value' => $bank->address1,
-            '#attributes' => array('placeholder' => t('address line 1')),
-        ];
-
-        $form['bank']['edit' . $i]["baddress2" . $i] = [
-            '#type' => 'textfield',
-            '#size' => 40,
-            '#maxlength' => 255,
-            '#default_value' => $bank->address2,
-            '#attributes' => array('placeholder' => t('address line 2')),
-        ];
-
-        $form['bank']['edit' . $i]["bpostcode" . $i] = [
-            '#type' => 'textfield',
-            '#size' => 10,
-            '#maxlength' => 30,
-            '#default_value' => $bank->postcode,
-            '#attributes' => array('placeholder' => t('postcode')),
-        ];
-       
-        $form['bank']['edit' . $i]['bank_country' . $i] = $form['country'];
-        $form['bank']['edit' . $i]['bank_country' . $i]['#default_value'] = $bank->country;
-
-        $form['bank']['edit' . $i]['account' . $i] = [
-            '#type' => 'textfield',
-            '#size' => 40,
-            '#default_value' => $bank->account,
-            '#maxlength' => 40,
-            '#attributes' => array('placeholder' => t('account')),
-        ];
-
-        $form['bank']['edit' . $i]['bank_code' . $i] = [
-            '#type' => 'textfield',
-            '#size' => 25,
-            '#maxlength' => 25,
-            '#default_value' => $bank->bank_code,
-            '#attributes' => array('placeholder' => t('bank code')),
-        ];
-
-        $form['bank']['edit' . $i]['swift' . $i] = [
-            '#type' => 'textfield',
-            '#size' => 25,
-            '#maxlength' => 25,
-            '#default_value' => $bank->swift,
-            '#attributes' => array('placeholder' => t('swift code')),
-        ];
-
-    }
     
+    if(isset($form['for_id']['#value'])) {
+        $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_address_book_bank', 'b');
+        $query->fields('b');
+        $query->condition('abid', $form['for_id']['#value']);
+        $banks = $query->execute();
+        
+        
+                    
+        while ($bank = $banks->fetchObject()) {
+            $i++;
+            $form['bank']['edit' . $i] = [
+                '#title' => t('Edit') . " : " . $bank->name,
+                '#type' => 'details',
+                '#collapsed' => true,
+            ];
+            
+            $form['bank']['edit' . $i]["bid-" . $i] = [
+                '#type' => 'hidden',
+                '#value' => $bank->id,
+            ];
+            
+            $form['bank']['edit' . $i]["currency" . $i] = [
+                '#type' => 'select',
+                '#size' => 1,
+                '#options' => $currencies,
+                '#description' => t('currency'),
+                '#default_value' => $bank->currency,
+            ];
+            
+            
+            $form['bank']['edit' . $i]["bname" . $i] = [
+                '#type' => 'textfield',
+                '#size' => 40,
+                '#maxlength' => 255,
+                '#default_value' => $bank->name,
+                '#attributes' => array('placeholder' => t('bank name')),
+            ];
+            
+            $form['bank']['edit' . $i]["beneficiary" . $i] = [
+                '#type' => 'textfield',
+                '#size' => 40,
+                '#maxlength' => 255,
+                '#default_value' => $bank->beneficiary,
+                '#attributes' => array('placeholder' => t('beneficiary')),
+            ];
+
+            $form['bank']['edit' . $i]["baddress1" . $i] = [
+                '#type' => 'textfield',
+                '#size' => 40,
+                '#maxlength' => 255,
+                '#default_value' => $bank->address1,
+                '#attributes' => array('placeholder' => t('address line 1')),
+            ];
+
+            $form['bank']['edit' . $i]["baddress2" . $i] = [
+                '#type' => 'textfield',
+                '#size' => 40,
+                '#maxlength' => 255,
+                '#default_value' => $bank->address2,
+                '#attributes' => array('placeholder' => t('address line 2')),
+            ];
+
+            $form['bank']['edit' . $i]["bpostcode" . $i] = [
+                '#type' => 'textfield',
+                '#size' => 10,
+                '#maxlength' => 30,
+                '#default_value' => $bank->postcode,
+                '#attributes' => array('placeholder' => t('postcode')),
+            ];
+        
+            $form['bank']['edit' . $i]['bank_country' . $i] = $form['country'];
+            $form['bank']['edit' . $i]['bank_country' . $i]['#default_value'] = $bank->country;
+
+            $form['bank']['edit' . $i]['account' . $i] = [
+                '#type' => 'textfield',
+                '#size' => 40,
+                '#default_value' => $bank->account,
+                '#maxlength' => 40,
+                '#attributes' => array('placeholder' => t('account')),
+            ];
+
+            $form['bank']['edit' . $i]['bank_code' . $i] = [
+                '#type' => 'textfield',
+                '#size' => 25,
+                '#maxlength' => 25,
+                '#default_value' => $bank->bank_code,
+                '#attributes' => array('placeholder' => t('bank code')),
+            ];
+
+            $form['bank']['edit' . $i]['swift' . $i] = [
+                '#type' => 'textfield',
+                '#size' => 25,
+                '#maxlength' => 25,
+                '#default_value' => $bank->swift,
+                '#attributes' => array('placeholder' => t('swift code')),
+            ];
+
+        }
+    }
+        
     $form['count'] = [
             '#type' => 'hidden',
             '#value' => $i,
@@ -544,13 +549,13 @@ function ek_finance_form_ek_edit_address_book_form_alter(&$form, \Drupal\Core\Fo
         ];
        
         $form['bank']['new']['bank_country'] = $form['country'];
-        $form['bank']['new']['bank_country']['#required'] = false;
+        $form['bank']['new']['bank_country']['#default_value'] = "";
         $form['bank']['new']['bank_country']['#states'] = [
                 'invisible' => [
                     "input[name='bname']" => ['value' => ''],
                 ],
             ];
-
+    
         $form['bank']['new']['account'] = [
             '#type' => 'textfield',
             '#size' => 40,

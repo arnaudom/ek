@@ -530,7 +530,7 @@ class ReconciliationForm extends FormBase {
                 );
 
                 $i++;
-            }//while
+            }
 
             if (null !== $this->settings->get('expenseAttachmentSize')) {
                 $ext_size = $this->settings->get('expenseAttachmentSize') * 1000000;
