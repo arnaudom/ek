@@ -53,7 +53,7 @@
                     jQuery('.area-saleschart').fadeOut();
                     jQuery('#sales-chart-select').change(function () {
                         var n = jQuery('#sales-chart-select').val();
-                        for (i = 0; i < 3; i++) {
+                        for (i = 0; i < 4; i++) {
                             if (i == n) {
                                 jQuery('#area-saleschart' + i).fadeIn(1000);
                             } else {
