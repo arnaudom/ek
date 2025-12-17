@@ -42,7 +42,9 @@
                                     xkey: c.xkey,
                                     ykeys: c.ykeys,
                                     labels: c.labels,
-                                    hideHover: 'auto'
+                                    hideHover: 'auto',
+									stacked: c.stacked,
+									resize: c.resize || true
                                 });
 
                             }
