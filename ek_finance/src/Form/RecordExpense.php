@@ -1169,7 +1169,9 @@ class RecordExpense extends FormBase {
             \Drupal::messenger()->addStatus(t('Expenses recorded ref. <a href="@url">@id</a>', ['@url' =>  $url,'@id' => $insert]));
         }
         \Drupal\Core\Cache\Cache::invalidateTags(['reporting', 'expenses']);
-        unset($_SESSION['project_list_p'] ?? null);
+        if (isset($_SESSION['project_list_p'])) {
+            unset($_SESSION['project_list_p']);
+        }
         $form_state->setRedirect('ek_finance.manage.list_expense');
     }
 
