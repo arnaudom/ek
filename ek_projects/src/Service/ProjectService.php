@@ -231,9 +231,7 @@ class ProjectService implements ProjectServiceInterface {
      * {@inheritdoc}
      */
     public function validate_file_access($id) {
-        //$query = "SELECT settings from {ek_project_settings} WHERE coid=:c";
-        //$settings = Database::getConnection('external_db', 'external_db')
-                       // ->query($query, [':c' => 0])->fetchField();
+        
         $query = $this->extdb->select('ek_project_settings', 'p');
         $query->fields('p', ['settings']);
         $query->condition('coid', 0);
@@ -551,6 +549,20 @@ class ProjectService implements ProjectServiceInterface {
         } 
 
         return new Response('', 204);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getId($pcode) {
+        $query = $this->extdb->select('ek_project', 'p');        
+        $data = $query
+              ->fields('p', ['id'])
+              ->condition('p.pcode', $pcode , '=')
+              ->execute()
+              ->fetchField();
+
+        return ($data) ? $data : null;
     }
 
 }

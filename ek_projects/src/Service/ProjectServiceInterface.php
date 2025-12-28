@@ -129,6 +129,12 @@ interface ProjectServiceInterface {
   */
   public function notify_user($param);
   
+ /**
+  * Return project id
+  * @param string $pcode
+  *  @return int id
+  */
+  public function getId($pcode);
   
 }  
   
