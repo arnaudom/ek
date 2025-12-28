@@ -13,6 +13,11 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\CloseModalDialogCommand;
+use Drupal\Core\Ajax\RedirectCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\FinanceSettings;
@@ -140,7 +145,6 @@ class QuickEdit extends FormBase {
                 '#suffix' => '',
             ];
 
-
             if ($this->moduleHandler->moduleExists('ek_address_book')) {
                 if ($doc == 'invoice' || $doc == 'quotation') {
                     $type = 1;
@@ -183,16 +187,23 @@ class QuickEdit extends FormBase {
 
 
             if ($this->moduleHandler->moduleExists('ek_projects')) {
+
+                if (isset($data->pcode) && $data->pcode != 'n/a') {
+                    $thisPcode = $this->t('code') . ' ' . $data->pcode;
+                } else {
+                    $thisPcode = null;
+                }
                 $form['options']['pcode'] = [
-                    '#type' => 'select',
-                    '#size' => 1,
-                    '#options' => \Drupal::service('project.service')->listprojects(0),
-                    '#required' => true,
-                    '#default_value' => isset($data->pcode) ? $data->pcode : null,
+                    '#type' => 'textfield',
+                    '#size' => 50,
+                    '#maxlength' => 150,
+                    '#default_value' => $thisPcode,
+                    '#attributes' => ['placeholder' => $this->t('Ex. 123')],
                     '#title' => $this->t('Project'),
-                    '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
+                    '#autocomplete_route_name' => 'ek_look_up_projects',
+                    '#autocomplete_route_parameters' => ['level' => 'all', 'status' => '0'],
                 ];
-            } // project
+            } 
 
             if ($this->moduleHandler->moduleExists('ek_finance') && $doc == 'invoice') {
                 $options['bank'] = \Drupal\ek_finance\BankData::listbankaccountsbyaid($form_state->getValue('head'));
@@ -312,19 +323,29 @@ class QuickEdit extends FormBase {
                 '#type' => 'submit',
                 '#value' => $this->t('Record'),
                 '#attributes' => array('class' => array('button--record')),
+
+                    '#ajax' => [
+                        'callback' => '::ajaxSubmitCallback',
+                        'wrapper' => 'modal-form-wrapper',
+                    ],
             ];
         } else {
             // document closed, only edit limited data
-
             if ($this->moduleHandler->moduleExists('ek_projects') || $data['lock'] == 1) {
+                if (isset($data->pcode) && $data->pcode != 'n/a') {
+                    $thisPcode = $this->t('code') . ' ' . $data->pcode;
+                } else {
+                    $thisPcode = null;
+                }
                 $form['options']['pcode'] = [
-                    '#type' => 'select',
-                    '#size' => 1,
-                    '#options' => \Drupal::service('project.service')->listprojects(0),
-                    '#required' => true,
-                    '#default_value' => isset($data->pcode) ? $data->pcode : null,
+                    '#type' => 'textfield',
+                    '#size' => 50,
+                    '#maxlength' => 150,
+                    '#default_value' => $thisPcode,
+                    '#attributes' => ['placeholder' => $this->t('Ex. 123')],
                     '#title' => $this->t('Project'),
-                    '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
+                    '#autocomplete_route_name' => 'ek_look_up_projects',
+                    '#autocomplete_route_parameters' => ['level' => 'all', 'status' => '0'],
                 ];
 
                 if( \Drupal::currentUser()->hasPermission('reset_pay') ) {
@@ -345,6 +366,10 @@ class QuickEdit extends FormBase {
                     '#type' => 'submit',
                     '#value' => $this->t('Record'),
                     '#attributes' => array('class' => array('button--record')),
+                    '#ajax' => [
+                        'callback' => '::ajaxSubmitCallback',
+                        'wrapper' => 'modal-form-wrapper',
+                    ],
                 ];
             } else {
                 $form['options']['alert'] = [
@@ -354,6 +379,15 @@ class QuickEdit extends FormBase {
                 ];
             }
         }
+
+
+        $form['#prefix'] = '<div id="modal-form-wrapper">';
+        $form['#suffix'] = '</div>';
+
+        $form['status_messages'] = [
+            '#type' => 'status_messages',
+            '#weight' => -1000,
+        ];
 
         $form['#attached']['library'][] = 'ek_sales/ek_sales.invoice';
 
@@ -380,7 +414,27 @@ class QuickEdit extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
+
+        // verify project ref
+            if (!null == $form_state->getValue('pcode') && $form_state->getValue('pcode') != 'n/a') {
+                $p = explode(' ', $form_state->getValue('pcode'));
+                $pid = \Drupal::service('project.service')->getId($p[1]);
+
+                if ($pid) {
+                    $form_state->setValue('pcode', trim($p[1]));
+                } else {
+                    $form_state->setErrorByName('pcode', $this->t('Unknown project @p', ['@p' => $p[1]]));
+                }
+            } else {
+                $form_state->setValue('pcode', 'n/a');
+            }
+
+            if ($form_state->getValue('terms') == 0 && $form_state->getValue('due') != '') {
+                $form_state->setValue('due', 0);
+            }
+
         if ($form_state->getValue('edit')) {
+
             if ($form_state->getValue('terms') == 1 && $form_state->getValue('due') == '') {
                 $form_state->setErrorByName('due', $this->t('Terms days is empty'));
             }
@@ -389,12 +443,25 @@ class QuickEdit extends FormBase {
                 $form_state->setErrorByName('due', $this->t('Terms days should be numeric'));
             }
         }
+
     }
 
     /**
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
+    }
+
+        /**
+     * {@inheritdoc}
+     */
+    public function ajaxSubmitCallback(array &$form, FormStateInterface $form_state) {
+        $response = new AjaxResponse();
+        if ($form_state->hasAnyErrors()) {
+            
+            $response->addCommand(new ReplaceCommand('#modal-form-wrapper', $form));
+            return $response;
+        }
 
         $serial = $form_state->getValue('serial');
         $doc = $form_state->getValue('doc');
@@ -581,7 +648,11 @@ class QuickEdit extends FormBase {
             }
         } // if updated
 
-        $form_state->setRedirect("ek_sales." . $doc . "s.list");
+        //$form_state->setRedirect("ek_sales." . $doc . "s.list");
+        $response->addCommand(new CloseModalDialogCommand());
+        $url = Url::fromRoute("ek_sales." . $doc . "s.list");
+        $response->addCommand(new RedirectCommand($url->toString()));
+        return $response;
         
     } // submit
 }

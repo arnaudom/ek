@@ -331,16 +331,20 @@ class Invoice extends FormBase {
         ];
 
         if ($this->moduleHandler->moduleExists('ek_projects')) {
+            if (isset($data->pcode) && $data->pcode != 'n/a') {
+                $thisPcode = $this->t('code') . ' ' . $data->pcode;
+            } else {
+                $thisPcode = null;
+            }
             $form['options']['pcode'] = [
-                '#type' => 'select',
-                '#size' => 1,
-                '#options' => \Drupal::service('project.service')->listprojects(0),
-                '#required' => true,
-                '#default_value' => isset($data->pcode) ? $data->pcode : null,
+                '#type' => 'textfield',
+                '#size' => 50,
+                '#maxlength' => 150,
+                '#default_value' => $thisPcode,
+                '#attributes' => ['placeholder' => $this->t('Ex. 123')],
                 '#title' => $this->t('Project'),
-                '#attributes' => ['style' => ['width:200px;white-space:nowrap']],
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div>',
+                '#autocomplete_route_name' => 'ek_look_up_projects',
+                '#autocomplete_route_parameters' => ['level' => 'all', 'status' => '0'],
             ];
         } // project
 
@@ -1132,7 +1136,21 @@ class Invoice extends FormBase {
             }
         }
 
-        //input used to update values set by user
+        // verify project ref
+        if (!null == $form_state->getValue('pcode') && $form_state->getValue('pcode') != 'n/a') {
+            $p = explode(' ', $form_state->getValue('pcode'));
+            $pid = \Drupal::service('project.service')->getId($p[1]);
+
+            if ($pid) {
+                $form_state->setValue('pcode', trim($p[1]));
+            } else {
+                $form_state->setErrorByName('pcode', $this->t('Unknown project'));
+            }
+        } else {
+            $form_state->setValue('pcode', 'n/a');
+        }
+
+        // input used to update values set by user
         $input = $form_state->getUserInput();
         if ($form_state->getValue('fx_rate') != '' && !is_numeric($form_state->getValue('fx_rate'))) {
             $form_state->setErrorByName('fx_rate', $this->t('Exchange rate is wrong'));
@@ -1248,7 +1266,7 @@ class Invoice extends FormBase {
                 }
             }
         } else {
-            //edit
+            // edit
             $serial = $form_state->getValue('serial');
             $delete = Database::getConnection('external_db', 'external_db')
                     ->delete('ek_sales_invoice_details')

@@ -282,18 +282,22 @@ class Purchase extends FormBase {
         ];
 
         if ($this->moduleHandler->moduleExists('ek_projects')) {
+            if (isset($data->pcode) && $data->pcode != 'n/a') {
+                $thisPcode = $this->t('code') . ' ' . $data->pcode;
+            } else {
+                $thisPcode = null;
+            }
             $form['options']['pcode'] = [
-                '#type' => 'select',
-                '#size' => 1,
-                '#options' => \Drupal::service('project.service')->listprojects(0),
-                '#required' => true,
-                '#default_value' => isset($data->pcode) ? $data->pcode : null,
+                '#type' => 'textfield',
+                '#size' => 50,
+                '#maxlength' => 150,
+                '#default_value' => $thisPcode,
+                '#attributes' => ['placeholder' => $this->t('Ex. 123')],
                 '#title' => $this->t('Project'),
-                '#attributes' => ['style' => ['width:200px;white-space:nowrap']],
-                '#prefix' => "<div class='cell'>",
-                '#suffix' => '</div>',
+                '#autocomplete_route_name' => 'ek_look_up_projects',
+                '#autocomplete_route_parameters' => ['level' => 'all', 'status' => '0'],
             ];
-        } // project
+        } 
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $form['options']['currency'] = [
@@ -324,13 +328,6 @@ class Purchase extends FormBase {
                 '#suffix' => '</div></div></div>',
             ];
             
-            /*$form['options']['alert'] = [
-                '#type' => 'item',
-                '#markup' => '',
-                '#description' => '',
-                '#prefix' => "<div id='alert' class=''>",
-                '#suffix' => '</div>',
-            ];*/
         } // finance
         else {
             $l = explode(',', file_get_contents(\Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/currencies.inc'));
@@ -750,7 +747,6 @@ class Purchase extends FormBase {
             '#attributes' => ['id' => 'itemsCount'],
         ];
 
-
         if (($form_state->get('num_items') && $form_state->get('num_items') > 0) || isset($detail)) {
             if ($form_state->get('num_items') > 0) {
                 $form['items']['remove'] = [
@@ -1061,6 +1057,20 @@ class Purchase extends FormBase {
                 $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
                 $form_state->setErrorByName('currency', $this->t("There is no liability account set for this company and currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]));
             }
+        }
+
+        // verify project ref
+        if (!null == $form_state->getValue('pcode') && $form_state->getValue('pcode') != 'n/a') {
+            $p = explode(' ', $form_state->getValue('pcode'));
+            $pid = \Drupal::service('project.service')->getId($p[1]);
+
+            if ($pid) {
+                $form_state->setValue('pcode', trim($p[1]));
+            } else {
+                $form_state->setErrorByName('pcode', $this->t('Unknown project'));
+            }
+        } else {
+            $form_state->setValue('pcode', 'n/a');
         }
 
         if ($form_state->getValue('alert') == '1') {
