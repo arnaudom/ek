@@ -2222,7 +2222,8 @@ class ProjectController extends ControllerBase {
                 } else {
                     $desc = $r['pname'];
                 }
-                $name[] = $r['id'] . " " . $r['pcode'] . " (" . $r['status'] . ") " . $desc;
+                $name[] = ['label' => $r['id'] . " <mark>" . $r['pcode'] . "</mark> (" . $r['status'] . ") " . $desc,
+                'value' => "code " . $r['pcode'] . " (" . $r['status'] . ") " . $desc ];
             }
             return new JsonResponse($name);
         } else {
