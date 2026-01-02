@@ -228,6 +228,10 @@ $pdf->SetLineStyle(['width' => 0.1, 'cap' => 'square', 'join' => 'miter', 'dash'
 
 $pdf->Ln(5);    
 $pdf->SetFont('helvetica','',8); 
+if($data[0][8]) {
+    $pdf->Cell($col1_width,5, t('Date of record') . ': ' . date('F j, Y', $data[0][8]) ,0,1);
+}
+
 $date = date("F j, Y, g:i a");
     $pdf->Cell($col1_width,5, t('Printed by') . ' ' . $userName ,0,1);
     $pdf->Cell($col1_width,5,$date,0,1);
