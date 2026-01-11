@@ -5,6 +5,7 @@ namespace Drupal\ek_projects\Service;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\user\Entity\User;
 use Symfony\Component\HttpFoundation\Response;
 use Drupal\ek_admin\Access\AccessCheck;
@@ -16,12 +17,17 @@ class ProjectService implements ProjectServiceInterface {
 
 
   protected $extdb;
+  protected $logger;
+  protected $configFactory;
+
 
   /**
    * Constructs a PromptService object.
    */
-    public function __construct() {
+    public function __construct(ConfigFactoryInterface $config_factory, LoggerChannelFactoryInterface $logger_factory) {
+        $this->configFactory = $config_factory;
         $this->extdb = Database::getConnection('external_db', 'external_db');
+        $this->logger = $logger_factory->get('ek_projects');
     }
 
 
@@ -554,6 +560,37 @@ class ProjectService implements ProjectServiceInterface {
     /**
      * {@inheritdoc}
      */
+    public function status($pcode, $status = null) {
+        $query = $this->extdb->select('ek_project', 'p')
+                ->fields('p', ['status'])
+                ->condition('pcode', $pcode);
+        $current_status = $query->execute()->fetchField();
+
+        if($current_status ) {
+            if (!null == $status && $status != $current_status && $current_status == 'open') {
+                if(in_array($status, ['open', 'awarded', 'completed', 'closed'])) {
+                    $query = $this->extdb->update('ek_project')
+                    ->fields(['status'=> $status])
+                    ->condition('pcode', $pcode)
+                    ->execute();
+                    return (string) $status;
+                } else {
+                    return (string) $current_status;
+                }
+                
+            } else {
+                return (string) $current_status;
+            }
+        } 
+        
+        return null;
+
+    }
+
+
+    /**
+     * {@inheritdoc}
+     */
     public function getId($pcode) {
         $query = $this->extdb->select('ek_project', 'p');        
         $data = $query
@@ -563,6 +600,196 @@ class ProjectService implements ProjectServiceInterface {
               ->fetchField();
 
         return ($data) ? $data : null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getProjects(array $options = []) {
+
+        // Set default options
+        $options += [
+            'include_archived' => FALSE,
+            'status_filter' => NULL,
+            'owner_id' => NULL,
+            'country' => NULL,
+            'project_code' => NULL,
+            'since' => NULL
+        ];
+
+        try {
+            // Build the query
+            $query = $this->extdb->select('ek_project', 'p')
+                ->fields('p', ['id','pcode', 'status', 'pname', 'owner', 'last_modified']);
+
+            // priority filter for data with project code
+            if($options['project_code']) {
+                $query->condition('p.pcode', $options['project_code'], '=');
+            } else {
+                // filter multi
+                if ($options['since']) {
+                    $since = is_numeric($options['since']) ? date('Y-m-d', $options['since']) : date('Y-m-d', strtotime($options['since']));
+                    $query->condition('p.date', $since, '>=');
+                }
+
+                if ($options['owner_id'] && is_numeric($options['owner_id']) && $options['owner_id'] > 0) {
+                    $query->condition('p.owner', $options['owner_id'], '=');
+                }
+            
+                if (!$options['include_archived']) {
+                    $query->condition('p.archive', 0, '=');
+                }
+
+                if ($options['status_filter']) {
+                    $query->condition('p.status', $options['status_filter'], '=');
+                }
+                if ($options['country']) {
+                    $query->condition('p.status', $options['country'], '=');
+                }
+            }
+
+            // Order by project code
+            $query->orderBy('p.pcode', 'ASC');
+
+            // Execute query
+            $results = $query->execute()->fetchAll();
+
+            // Format results
+            $projects = [];
+            foreach ($results as $row) {
+                $fill = self::data_fill($row->id);
+                $stamp = explode("|", $row->last_modified)[0];
+                $projects[] = [
+                    'id' => (int) $row->id,
+                    'project_code' => $row->pcode,
+                    'status' => $row->status,
+                    'project_name' => $row->pname,
+                    'data fill' => $fill . '%',
+                    'owner' => $row->owner,
+                    'last_modified' => date('Y-m-d H:i:s', $stamp)
+                ];
+            }
+
+            return $projects;
+
+        } catch (\Exception $e) {
+            // Log the error
+            $this->logger->error('Error retrieving projects data: @message', [
+                '@message' => $e->getMessage(),
+            ]);
+            
+            throw new \RuntimeException('Unable to retrieve project data', 0, $e);
+        }
+    }
+
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getProjectDescription($project_code) {
+        try {
+            $query = $this->extdb->select('ek_project_description', 'p')
+                ->fields('p', ['pcode', 'project_description', 'project_comment', 'submission', 'deadline', 'start_date', 'validation', 'validation', 'completion', 'current_offer'])
+                ->condition('p.pcode', $project_code, '=');
+           
+            $results = $query->execute()->fetchAll();
+            
+            $projects = [];
+            foreach ($results as $row) {
+                $projects[] = [
+                    'project_description' => $row->project_description,
+                    'project_comment' => $row->project_comment,
+                    'submission_date' => $row->submission,
+                    'completion_target' => $row->deadline,
+                    'start_date' => $row->start_date,
+                    'validation_date' => $row->validation,
+                    'completion_date' => $row->completion,
+                    'offer_reference' => $row->current_offer,
+                ];
+            }
+
+            return $projects;
+        
+        } catch (\Exception $e) {
+            $this->logger->error('Error getting project info: @message', [
+                '@message' => $e->getMessage(),
+            ]);
+            return ['data' => null];
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getProjectDocument($project_code) {
+        try {
+            $query = $this->extdb->select('ek_project_documents', 'p')
+                ->fields('p', ['pcode', 'filename', 'folder', 'sub_folder', 'comment', 'date'])
+                ->condition('p.pcode', $project_code, '=');
+            
+            $results = $query->execute()->fetchAll();
+            $fold = ['fi' => 'finance', 'com' => 'info'];
+            
+            $projects = [];
+            foreach ($results as $row) {
+                $projects[] = [
+                    'file_name' => $row->filename,
+                    'folder' => $fold[$row->folder],
+                    'tag' => $row->sub_folder,
+                    'file_comment' => $row->comment,
+                    'upload_date' => date('Y-m-d H:i:s', $row->date),
+                ];
+            }
+
+            return $projects;
+        
+        } catch (\Exception $e) {
+            $this->logger->error('Error getting project documents: @message', [
+                '@message' => $e->getMessage(),
+            ]);
+            return ['data' => null];
+        }
+
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getProjectFinance($project_code) {
+        
+        try {
+            $query = $this->extdb->select('ek_project_finance', 'p')
+                ->fields('p')
+                ->condition('p.pcode', $project_code, '=');
+            
+            $results = $query->execute()->fetchAll();
+            $fold = ['fi' => 'finance', 'com' => 'info'];
+            
+            $projects = [];
+            foreach ($results as $row) {
+                $projects[] = [
+                    'currency' => $row->currency,
+                    'payment_terms' => $row->payment_terms,
+                    'purchase_value' => $row->purchase_value,
+                    'discount_offer' => $row->discount_offer,
+                    'project_amount' => $row->project_amount,
+                    'offer_made' => $row->tender_offer,
+                    'offer_validity_date' => $row->offer_validity,
+                    'offer_deadline_date' => $row->offer_delivery,
+                    'lc_expiry_date' => $row->lc_expiry,
+                    'down_payment' => $row->down_payment,
+                    'comment' => $row->comment,
+                ];
+            }
+
+            return $projects;
+        
+        } catch (\Exception $e) {
+            $this->logger->error('Error getting project documents: @message', [
+                '@message' => $e->getMessage(),
+            ]);
+            return ['data' => null];
+        }
     }
 
 }

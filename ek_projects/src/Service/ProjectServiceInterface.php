@@ -136,6 +136,72 @@ interface ProjectServiceInterface {
   */
   public function getId($pcode);
   
+ /**
+  * Calculate ratio of filled data per project
+  * @param string $pcode
+  *   project code
+  * @param $status
+  *   project status, get or change if status != $status
+  *  @return string
+  */
+  public function status($pcode, $status = null);
+
+/**
+ * Get projects by owner.
+ *
+ 
+ * @param array $options
+ *   Optional parameters:
+ *   - include_archived: Include archived projects (default: FALSE)
+ *   - status_filter: open|awarded|completed|closed (default: NULL)
+ *   - owner_id (default: NULL)
+ *   - country (default: NULL)
+ *   - project_code (default: NULL)
+ *   - since: start from date
+ *
+ * @return array
+ *   Array of project data with pcode and status.
+ *
+ * @throws \InvalidArgumentException
+ *   If owner_id is not valid.
+ */
+  public function getProjects(array $options = []);
+
+
+/**
+ * Get project description by project code.
+ *
+ * @param string $project_code
+ *   The project code.
+ *
+ * @return array
+ *   Description text.
+ */
+  public function getProjectDescription($project_code);
+
+
+/**
+ * Get project documents by project code.
+ *
+ * @param string $project_code
+ *   The project code.
+ *
+ * @return array
+ *   Attached document(s) list.
+ */
+  public function getProjectDocument($project_code);
+
+/**
+ * Get project finance data by project code.
+ *
+ * @param string $project_code
+ *   The project code.
+ *
+ * @return array
+ *   Array of project data.
+ */
+  public function getProjectFinance($project_code);
+
 }  
   
   

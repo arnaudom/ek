@@ -1,5 +1,4 @@
 services:
-  
   project.service:
     class: Drupal\ek_projects\Service\ProjectService
-    arguments: ['@config.factory']
+    arguments: ['@config.factory', '@logger.factory']
