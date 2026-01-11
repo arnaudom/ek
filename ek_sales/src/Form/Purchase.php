@@ -1451,6 +1451,11 @@ class Purchase extends FormBase {
             \Drupal::messenger()->addStatus(t('The purchase is recorded. Ref @r', ['@r' => $serial]));
 
             if ($this->moduleHandler->moduleExists('ek_projects')) {
+                if ($pcode && $pcode != 'n/a') {
+                    // update project status by default
+                    \Drupal::service('project.service')->status($pcode, 'awarded');
+                }
+                
                 //notify user if purchase is linked to a project
                 if ($pcode && $pcode != 'n/a') {
                     $pid = Database::getConnection('external_db', 'external_db')

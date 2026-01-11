@@ -1,1 +1,4 @@
-
+services:
+  sales.service:
+    class: Drupal\ek_sales\Service\SalesService
+    arguments: ['@config.factory', '@logger.factory', '@module_handler']

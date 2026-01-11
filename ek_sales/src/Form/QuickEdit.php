@@ -622,6 +622,10 @@ class QuickEdit extends FormBase {
             \Drupal::messenger()->addStatus(t('The @doc is recorded. Ref. @r', ['@r' => $serial, '@doc' => $doc]));
 
             if ($this->moduleHandler->moduleExists('ek_projects')) {
+                if ($pcode && $pcode != 'n/a' && $doc != 'quotation') {
+                    // update project status by default
+                    \Drupal::service('project.service')->status($pcode, 'awarded');
+                }
                 // notify user if invoice is linked to a project
                 if ($pcode && $pcode != 'n/a') {
                     $pid = Database::getConnection('external_db', 'external_db')
