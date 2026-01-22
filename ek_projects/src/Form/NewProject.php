@@ -253,7 +253,7 @@ class NewProject extends FormBase {
                 $data = Database::getConnection('external_db', 'external_db')
                         ->select('ek_project', 'p')
                         ->fields('p',['pcode'])
-                        ->condition('id', trim($main[0]))
+                        ->condition('pcode', trim($main[1]))
                         ->execute();   
                 $pcode = $data->fetchField();
                 if (!$pcode) {
@@ -353,12 +353,12 @@ class NewProject extends FormBase {
                 $data = Database::getConnection('external_db', 'external_db')
                         ->select('ek_project', 'p')
                         ->fields('p',['id','pcode','subcount'])
-                        ->condition('id', trim($main[0]))
+                        ->condition('pcode', trim($main[1]))
                         ->execute()->fetchObject();   
                 $sub = $data->subcount + 1;
                 Database::getConnection('external_db', 'external_db')
                         ->update('ek_project')->fields(array('subcount' => $sub))
-                        ->condition('id', $main[0])
+                        ->condition('id', $data->id)
                         ->execute();
                 $pcode = $data->pcode . '_sub' . $sub;
                 $level = 'Sub project';
