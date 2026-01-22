@@ -23,6 +23,7 @@ use Drupal\Core\Ajax\CloseDialogCommand;
 use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\file\FileUsage\FileUsageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -43,6 +44,7 @@ class ProjectController extends ControllerBase {
     protected $entityTypeManager;
     protected $extdb;
     protected $projectService;
+    protected $fileUsage;
 
     /**
      * {@inheritdoc}
@@ -54,6 +56,7 @@ class ProjectController extends ControllerBase {
                 $container->get('module_handler'), 
                 $container->get('entity_type.manager'),
                 $container->get('project.service'),
+                $container->get('file.usage')
         );
     }
 
@@ -67,13 +70,16 @@ class ProjectController extends ControllerBase {
      * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
      *   The entity manager.
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler, EntityTypeManager $entity_manager, ProjectService $projectService) {
+    public function __construct(Connection $database, FormBuilderInterface $form_builder, 
+    ModuleHandler $module_handler, EntityTypeManager $entity_manager, 
+    ProjectService $projectService, FileUsageInterface $file_usage) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
         $this->entityTypeManager = $entity_manager;
         $this->extdb = Database::getConnection('external_db', 'external_db');
         $this->projectService = $projectService;
+        $this->fileUsage = $file_usage;
     }
 
     /**
@@ -1878,8 +1884,8 @@ class ProjectController extends ControllerBase {
                         ->execute();
 
                 if ($delete) {
-                    //Set file status as tmp in file managed DB for recovering process if needed
-                    //file will be delete by cron as per settings
+                    // Set file status as tmp in file managed DB for recovering process if needed
+                    // file will be delete by cron as per settings
                     $query = Database::getConnection()->select('file_managed', 'f');
                     $query->fields('f', ['fid']);
                     $query->condition('uri', $p->uri);
@@ -1889,6 +1895,8 @@ class ProjectController extends ControllerBase {
                         $obj->setTemporary();
                         $obj->save();
                     }
+                    // need to update file usage as well 
+                    $this->fileUsage->delete($obj, 'ek_projects', 'project_document', $fid);
                 }
 
                 $this->moduleHandler()->invokeAll('project_doc_delete', [['pcode' => $p->pcode, 'id' => $id]]);
