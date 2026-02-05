@@ -1,0 +1,4 @@
+services:
+  address_book.service:
+    class: Drupal\ek_address_book\Service\AddressBookService
+    arguments: ['@config.factory', '@logger.factory']

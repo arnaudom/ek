@@ -88,7 +88,7 @@ class InstallController extends ControllerBase {
                 `fax` VARCHAR(45) NOT NULL DEFAULT '',
                 `website` VARCHAR(255) NULL DEFAULT NULL,
                 `type` VARCHAR(20) NULL DEFAULT NULL COMMENT '1 client, 2 supplier, 3 other',
-                `category` VARCHAR(45) NULL DEFAULT NULL,
+                `category` VARCHAR(45) NULL DEFAULT NULL, COMMENT '1 Head office, 2 Store, 3 Factory, 4 Other'
                 `status` VARCHAR(1) NULL DEFAULT '1' COMMENT 'status, 1=active, 0=inactive',
                 `stamp` VARCHAR(50) NULL DEFAULT NULL,
                 `created` VARCHAR(20) NULL DEFAULT NULL,

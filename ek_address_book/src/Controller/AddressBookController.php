@@ -156,7 +156,7 @@ class AddressBookController extends ControllerBase {
 
 
             $c = [1 => $this->t('Head office'), 2 => $this->t('Store'), 3 => $this->t('Factory'), 4 => $this->t('Other')];
-            $items['category'] = $c[$r['category']];
+            $items['category'] = isset($r['category']) ? $c[$r['category']]: '';
 
             if (\Drupal::currentUser()->hasPermission('sales_data')) {
                 $items['comment'] = $r['comment'];
