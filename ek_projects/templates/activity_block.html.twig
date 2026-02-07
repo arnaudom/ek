@@ -8,12 +8,25 @@
     <div class="update-controls">
         <div class="update-frequency">
             <label>{{ 'Update frequency'|t }}:</label>
-            <select id="update-frequency">
-                <option value="realtime">{{ 'Real-time'|t }}</option>
-                <option value="normal" selected >{{ 'Normal'|t }}</option>
-                <option value="minimal">{{ 'Minimal'|t }}</option>
-                <option value="manual">{{ 'Manual only'|t }}</option>
-            </select>
+            <div class="radio-group" id="update-frequency">
+            <label>
+                <input type="radio" name="update-frequency" value="realtime">
+                {{ 'Fast'|t }}
+            </label>
+            <label>
+                <input type="radio" name="update-frequency" value="normal" checked>
+                {{ 'Normal'|t }}
+            </label>
+            <label>
+                <input type="radio" name="update-frequency" value="minimal">
+                {{ 'Slow'|t }}
+            </label>
+            <label>
+                <input type="radio" name="update-frequency" value="manual">
+                {{ 'Manual'|t }}
+            </label>
+            </div>
+
         </div>
         <button id="manual-update" class="button button-small">
             <i class="fa fa-refresh"></i> {{ 'Update Now'|t }}

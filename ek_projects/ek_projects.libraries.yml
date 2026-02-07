@@ -32,6 +32,19 @@ ek_projects_view:
     - jquery_ui_droppable/droppable
     - jquery_ui_draggable/draggable
 
+ek_projects_upload:
+  version: 1.0
+  css:
+    theme:
+      css/upload.css: {}
+  js:
+    js/upload.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/once
+
 ek_projects_autocomplete:
   version: 1  
   js:

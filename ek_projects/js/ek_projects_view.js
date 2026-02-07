@@ -290,8 +290,8 @@
             // Create and inject UI elements for update controls and indicators
             function initializeUpdateUI() {
                 // Set up event handlers for the UI controls
-                $('#update-frequency').on('change', function() {
-                    const value = $(this).val();
+                $('input[name="update-frequency"]').on('change', function() {
+                    const value = $(this).val(); console.log('frequency ' + value);
                     const config = {
                         realtime: { min: 2000, max: 10000, initial: 2000 },
                         normal: { min: 6000, max: 60000, initial: 6000 },
