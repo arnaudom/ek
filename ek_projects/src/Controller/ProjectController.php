@@ -1230,11 +1230,9 @@ class ProjectController extends ControllerBase {
                 $data['finance'][0]->uploadUrl = $link;
                 $data['finance'][0]->upload = $this->t('<a href="@url" class="@c" >upload new file</a>', array('@url' => $link, '@c' => 'use-ajax red '));
             } //if section_5
+            
             // Let other modules add data to the page.
-            if ($invoke = $this->moduleHandler()->invokeAll('project_view', [$data], $pcode)) {
-                $data = $invoke;
-            }
-
+            $this->moduleHandler()->alter('project_view', $data, $settings);
             $data['#theme'] = 1;
 
             return array(
@@ -1243,7 +1241,7 @@ class ProjectController extends ControllerBase {
                 '#title' => $code_serial . ' | ' . $this->t('Reference') . ': ' . $pcode,
                 '#attached' => array(
                     'drupalSettings' => array('ek_projects' => $settings),
-                    'library' => array('ek_projects/ek_projects_view', 'ek_admin/ek_admin_css'),
+                    'library' => array('ek_projects/ek_projects_view', 'ek_admin/ek_admin_css', $data['#attached']['library'][0]),
                 ),
                 '#cache' => [
                     'tags' => ['project_page_view'],
