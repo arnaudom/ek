@@ -1234,6 +1234,11 @@ class ProjectController extends ControllerBase {
             // Let other modules add data to the page.
             $this->moduleHandler()->alter('project_view', $data, $settings);
             $data['#theme'] = 1;
+            if(isset($data['#attached']['library'][0])) {
+                $lib = ['ek_projects/ek_projects_view', 'ek_admin/ek_admin_css', $data['#attached']['library'][0]];
+            } else {
+                $lib = ['ek_projects/ek_projects_view', 'ek_admin/ek_admin_css'];
+            }
 
             return array(
                 '#theme' => 'ek_projects_view_2',
@@ -1241,7 +1246,7 @@ class ProjectController extends ControllerBase {
                 '#title' => $code_serial . ' | ' . $this->t('Reference') . ': ' . $pcode,
                 '#attached' => array(
                     'drupalSettings' => array('ek_projects' => $settings),
-                    'library' => array('ek_projects/ek_projects_view', 'ek_admin/ek_admin_css', $data['#attached']['library'][0]),
+                    'library' => $lib,
                 ),
                 '#cache' => [
                     'tags' => ['project_page_view'],
