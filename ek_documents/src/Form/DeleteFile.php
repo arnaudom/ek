@@ -145,7 +145,8 @@ class DeleteFile extends FormBase {
 
         \Drupal\Core\Cache\Cache::invalidateTags(['common_documents','my_documents','shared_documents','new_documents_shared']);
         // remove from user data for new document
-        \Drupal::service('user.data')->delete('ek_documents', \Drupal::currentUser()->id(), $id, 'shared');
+        // fix undefine variable $id
+        // \Drupal::service('user.data')->delete('ek_documents', \Drupal::currentUser()->id(), $id, 'shared');
 
         if ($delete) {
             $query = Database::getConnection()->select('file_managed', 'f');

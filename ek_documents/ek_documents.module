@@ -134,7 +134,8 @@ function ek_documents_file_download($uri) {
                         $log = t("1- User @u has downloaded document @d (file id @i)", $a);
                         \Drupal::logger('ek_documents')->notice($log);
                         // remove from user data for new document
-                        \Drupal::service('user.data')->delete('ek_documents', $uid, $l->id, 'shared');
+                        // fix Attempt to read property "id" on null
+                        // \Drupal::service('user.data')->delete('ek_documents', $uid, $l->id, 'shared');
                         return array('Content-Type' => $mime);
                     } else {
                         //////////////////////////
