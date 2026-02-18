@@ -105,11 +105,29 @@ class FilterExpenses extends FormBase {
             ],
         ];
 
+        // optimize database calls
         if ($form_state->getValue('coid')) {
-            $aid = ['%' => $this->t('Any')];
-            $chart = $this->settings->get('chart');
-            $aid += AidList::listaid($form_state->getValue('coid'), [$chart['liabilities'], $chart['cos'], $chart['expenses'], $chart['other_expenses']], 1);
-            $_SESSION['efilter']['options'] = $aid;
+            if (!isset($_SESSION['efilter'])) {
+                $_SESSION['efilter'] = [];
+            }
+
+            // Check cache
+            if (
+                !isset($_SESSION['efilter']['coid']) ||
+                $_SESSION['efilter']['coid'] !== $form_state->getValue('coid') ||
+                empty($_SESSION['efilter']['options'])
+            ) {
+                $aid = ['%' => $this->t('Any')];
+                $chart = $this->settings->get('chart');
+                $aid += AidList::listaid(
+                    $form_state->getValue('coid'),
+                    [$chart['liabilities'], $chart['cos'], $chart['expenses'], $chart['other_expenses']],
+                    1
+                );
+
+                $_SESSION['efilter']['coid'] = $form_state->getValue('coid');
+                $_SESSION['efilter']['options'] = $aid;
+            }
         }
 
         $form['filters'][1]["aid"] = [
@@ -118,11 +136,11 @@ class FilterExpenses extends FormBase {
             '#options' => isset($_SESSION['efilter']['options']) ? $_SESSION['efilter']['options'] : [],
             '#title' => $this->t('class'),
             '#default_value' => isset($_SESSION['efilter']['aid']) ? $_SESSION['efilter']['aid'] : null,
-            '#attributes' => ['style' => array('width:200px;')],
+            '#attributes' => ['style' => ['width:200px;']],
             '#prefix' => "<div id='add'  class='cell cellfloat'>",
             '#suffix' => '</div>',
             '#states' => [
-                'invisible' => [':input[name="keyword"]' => array('filled' => true),],
+                'invisible' => [':input[name="keyword"]' => ['filled' => true]],
             ],
         ];
 

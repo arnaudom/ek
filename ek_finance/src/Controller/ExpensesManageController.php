@@ -23,6 +23,7 @@ use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_finance\AidList;
 use Drupal\ek_finance\PrintManager;
 
+
 /**
  * Controller routines for ek module routes.
  */
@@ -72,7 +73,6 @@ class ExpensesManageController extends ControllerBase {
      */
     public function recordExpenses(Request $request) {
         $build['new_expense'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\RecordExpense');
-
         return $build;
     }
 
@@ -270,10 +270,11 @@ class ExpensesManageController extends ControllerBase {
             else {
                 // query data by tag without purchases
                 $session_filter['rows'] = isset($session_filter['rows']) ? $session_filter['rows'] : 1000;
-                if ($session_filter['pcode'] == 'na') {
+                // fix Undefined array
+                if (isset($session_filter['pcode']) && $session_filter['pcode'] == 'na') {
                     $session_filter['pcode'] = 'n/a';
                 }
-                if ($session_filter['allocation'] == '0') {
+                if (isset($session_filter['allocation']) && $session_filter['allocation'] == '0') {
                     $session_filter['allocation'] = '%';
                 }
                 $query = Database::getConnection('external_db', 'external_db')
@@ -282,7 +283,7 @@ class ExpensesManageController extends ControllerBase {
                 $query->fields('j', array('id', 'aid', 'date', 'value', 'exchange', 'currency', 'reconcile', 'reference', 'coid', 'source'))
                         ->fields('e', array('id', 'tax', 'cash', 'comment', 'pcode', 'clientname', 'suppliername', 'attachment', 'allocation'));
 
-                if ($session_filter['aid'] == '%') {
+                if (isset($session_filter['aid']) && $session_filter['aid'] == '%') {
                     $or = $query->orConditionGroup();
                     $or->condition('aid', $chart['expenses'] . '%', 'like');
                     $or->condition('aid', $chart['cos'] . '%', 'like');

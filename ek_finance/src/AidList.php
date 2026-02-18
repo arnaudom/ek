@@ -14,8 +14,7 @@ use Drupal\Core\Database\Database;
  *  - class + header list by company /  entity id
  *
  */
-class AidList
-{
+class AidList {
 
     /**
      * list accounts id from chart of accounts by class -> detail
@@ -25,16 +24,18 @@ class AidList
      * @param $type = header, class, detail
      * @param $status 1 or 0
      */
-    public static function listaid($coid = null, $type = array(), $status = null)
-    {
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_accounts', 'a');
+    public static function listaid($coid = null, $type = array(), $status = null) {
+       
+        $db = Database::getConnection('external_db', 'external_db');
+
+        // 1) Get classes
+        $query = $db->select('ek_accounts', 'a');
         $query->fields('a', ['aid', 'aname']);
         $query->distinct();
         $query->condition('atype', 'class', '=');
         $query->condition('coid', $coid, '=');
 
-        if ($status != null) {
+        if ($status !== null) {
             $query->condition('astatus', 1, '=');
         }
 
@@ -49,33 +50,52 @@ class AidList
         }
 
         $query->orderBy('aid');
+        $classes = $query->execute()->fetchAllAssoc('aid');
 
-        $data = $query->execute();
-        $options = array();
-
-        while ($r = $data->fetchObject()) {
-            $class = substr($r->aid, 0, 2);
-
-            $query2 = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_accounts', 'a');
-            $query2->fields('a', ['aid', 'aname']);
-            $query2->condition('atype', 'detail', '=');
-            $query2->condition('coid', $coid, '=');
-            $query2->condition('aid', $class . '%', 'like');
-
-            if ($status != null) {
-                $query2->condition('astatus', 1, '=');
-            }
-            $query2->orderBy('aid');
-            $data2 = $query2->execute();
-
-            $list = array();
-            while ($r2 = $data2->fetchObject()) {
-                $list[$r2->aid] = $r2->aid . ' - ' . $r2->aname;
-            }
-
-            $options[$class . ' ' . $r->aname] = $list;
+        if (empty($classes)) {
+            return [];
         }
+
+        // 2) Get all details for those classes in one query
+        // Build a single OR condition for all class prefixes
+        $detailQuery = $db->select('ek_accounts', 'd');
+        $detailQuery->fields('d', ['aid', 'aname']);
+        $detailQuery->condition('atype', 'detail', '=');
+        $detailQuery->condition('coid', $coid, '=');
+
+        if ($status !== null) {
+            $detailQuery->condition('astatus', 1, '=');
+        }
+
+        $or = $detailQuery->orConditionGroup();
+        foreach ($classes as $aid => $classRow) {
+            $classPrefix = substr($aid, 0, 2);
+            $or->condition('aid', $classPrefix . '%', 'like');
+        }
+        $detailQuery->condition($or);
+        $detailQuery->orderBy('aid');
+
+        $details = $detailQuery->execute();
+
+        // 3) Group details by class
+        $options = [];
+        foreach ($classes as $aid => $classRow) {
+            $classPrefix = substr($aid, 0, 2);
+            $options[$classPrefix . ' ' . $classRow->aname] = [];
+        }
+
+        while ($d = $details->fetchObject()) {
+            $classPrefix = substr($d->aid, 0, 2);
+            // find matching class key
+            foreach ($classes as $aid => $classRow) {
+                if (substr($aid, 0, 2) === $classPrefix) {
+                    $key = $classPrefix . ' ' . $classRow->aname;
+                    $options[$key][$d->aid] = $d->aid . ' - ' . $d->aname;
+                    break;
+                }
+            }
+        }
+
         return $options;
     }
 
