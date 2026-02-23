@@ -227,28 +227,15 @@ App
 }
 
 .green {
-    color: #00D744 !important;
+    color: #00b515 !important;
 }
 
 .blue {
-    color: #2E64FE !important;
+    color: #0088cc !important;
 }
 
 .orange {
-    color: #FFC900 !important;
-}
-
-.ek_messages {
-    background-color: #e6f5ff !important;
-    color: #A9BCF5 !important;
-    border: 5px solid;
-    border-radius: 5px;
-    padding: 20px;
-}
-
-.ek_messages p {
-    color: #3276b1 !important;
-    text-align: center;
+    color: #ffe166 !important;
 }
 
 .loading {
