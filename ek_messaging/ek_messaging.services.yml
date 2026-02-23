@@ -1,1 +1,14 @@
 services:
+
+  # Encryption / decryption service.
+  ek_messaging.encryption:
+    class: Drupal\ek_messaging\Service\MessageEncryptionService
+    arguments:
+      - '@logger.factory'
+
+  # Message registration service (replaces procedural ek_message_register()).
+  ek_messaging.message_registration:
+    class: Drupal\ek_messaging\Service\MessageRegistrationService
+    arguments:
+      - '@database'
+      - '@ek_messaging.encryption'

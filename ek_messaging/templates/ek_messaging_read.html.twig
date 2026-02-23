@@ -1,67 +1,68 @@
-<div id="line{{ items.id }}">
-    <table>
-        <tbody>
-            <tr>
-                <td>
-                    <span class='badge'>{{ 'From'|t }} : </span> 
-                </td>
-                <td>
-                    <h1><img src={{ items.avatar }} class='avatar'> {{ items.from }}</h1>
-                </td>
-            </tr>
-            <tr>      
-                <td>
-                    <span class='badge'>{{ 'Subject'|t }} : </span>
-                </td>
-                <td>
-                    <h1><i class="fa fa-circle {{ items.color }}" aria-hidden="true"></i> {{ items.subject }}</h1>
-                </td>        
-            </tr>
-            <tr>    
-                <td>
-                    <span class='badge'>{{ 'Received'|t }} : </span>
-                </td>
-                <td>
-                    {{ items.time }}
-                </td>        
-            </tr>
-            <tr>
-                <td colspan='2'>
-                    <span class='badge'>{{ 'Message'|t }} :</span>
-                </td>
+{#
+  ek_messaging_read_html.twig
+  Modernised read-message template.
+  All {{ items.* }} variables and |raw / |nl2br filters are preserved exactly
+  as the controller provides them.
+#}
 
-            </tr>
-        </tbody>
-    </table>
-    <br/>
-    <div class="table">
-        <div class='row'>
-            <div class="cell message">
-                {% if items.format == "restricted_html" %}
-                    {{ items.text|nl2br}}
-                {% else %}
-                    {{ items.text}}
-                {% endif %}
-                
-            </div>
-        </div>
+<article class="msg-card" id="line{{ items.id }}">
+
+  {# ── Header ─────────────────────────────────────────────────────────────── #}
+  <header class="msg-header">
+
+    <div class="msg-sender">
+      <img src="{{ items.avatar }}" alt="{{ items.from }}" class="msg-avatar">
+      <div class="msg-sender-info">
+        <span class="msg-label">{{ 'From'|t }}</span>
+        <strong class="msg-from">{{ items.from }}</strong>
+      </div>
     </div>
-    <br/>        
-</div>
 
-<hr>
+    <div class="msg-meta">
+      <span class="msg-priority-dot msg-priority-dot--{{ items.color }}"
+            title="{{ items.color == 'red' ? 'High priority' : (items.color == 'blue' ? 'Normal priority' : 'Low priority') }}">
+      </span>
+      <time class="msg-time">{{ items.time }}</time>
+    </div>
 
-<table>
-    <tbody>
-        <tr>
-            <td><span class='fa fa-reply'></span> {{ items.reply|raw }}</td>
-            <td><span class='fa fa-paper-plane-o'></span> {{ items.send|raw }}</td>
-            <td><span class='fa fa-inbox'></span> {{ items.inbox|raw }}</td>
-            <td><span class='fa fa-folder'></span> {{ items.archive|raw }}</td>
-            <td><span class='fa fa-times red'></span> {{ items.delete|raw }}</td>
-        </tr>
+  </header>
 
+  {# ── Subject ─────────────────────────────────────────────────────────────── #}
+  <div class="msg-subject-row">
+    <h2 class="msg-subject">{{ items.subject }}</h2>
+  </div>
 
-    </tbody>
+  {# ── Body ────────────────────────────────────────────────────────────────── #}
+  <div class="msg-body">
+    {% if items.format == "restricted_html" %}
+      {{ items.text|nl2br }}
+    {% else %}
+      {{ items.text }}
+    {% endif %}
+  </div>
 
-</table>
+</article>
+
+{# ── Action bar ──────────────────────────────────────────────────────────── #}
+<nav class="msg-actions" aria-label="{{ 'Message actions'|t }}">
+  <div class="msg-action-btn">
+    <span class="fa fa-reply" aria-hidden="true"></span>
+    {{ items.reply|raw }}
+  </div>
+  <div class="msg-action-btn">
+    <span class="fa fa-paper-plane-o" aria-hidden="true"></span>
+    {{ items.send|raw }}
+  </div>
+  <div class="msg-action-btn" >
+    <span class="fa fa-inbox" aria-hidden="true"></span>
+    {{ items.inbox|raw }}
+  </div>
+  <div class="msg-action-btn msg-action-btn--muted">
+    <span class="fa fa-folder" aria-hidden="true"></span>
+    {{ items.archive|raw }}
+  </div>
+  <div class="msg-action-btn msg-action-btn--danger">
+    <span class="fa fa-times" aria-hidden="true"></span>
+    {{ items.delete|raw }}
+  </div>
+</nav>

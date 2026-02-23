@@ -1,185 +1,147 @@
 <?php
 
-    
-use Drupal\Core\Database\Database;   
-   
-   
 /**
- * Implementation hook_theme().
+ * @file
+ * ek_messaging.module
+ *
+ * Changes from original:
+ *  - ek_message_register() is now a thin backward-compatibility wrapper that
+ *    delegates to the ek_messaging.message_registration service.  Existing
+ *    callers in other modules continue to work without modification.
+ *  - hook_theme(), hook_mail(), etc. are unchanged.
+ */
+
+use Drupal\Core\Database\Database;
+
+
+// =============================================================================
+// Theme
+// =============================================================================
+
+/**
+ * Implements hook_theme().
  */
 function ek_messaging_theme() {
-  return array(
+    return [
+        'ek_messaging_read' => [
+            'template'  => 'ek_messaging_read',
+            'variables' => ['items' => []],
+        ],
+        'ek_messaging_mail' => [
+            'template'  => 'ek_messaging_mail',
+            'variables' => ['items' => []],
+        ],
+    ];
+}
 
-    // to read message
-    'ek_messaging_read' => array
-    (
-      'template' => 'ek_messaging_read',
-      'variables' => array('items' => array()),
-    ), 
-    // mail body
-    'ek_messaging_mail' => array
-    (
-      'template' => 'ek_messaging_mail',
-      'variables' => array('items' => array()),
-    ),       
-      
-  );     
-}   
+
+// =============================================================================
+// Message registration (BC wrapper)
+// =============================================================================
 
 /**
- * Implementation hook ek_home.
+ * Register a message.
+ *
+ * @deprecated
+ *   Use \Drupal::service('ek_messaging.message_registration')->register($data)
+ *   directly.  This procedural function is kept only for backward compatibility
+ *   with third-party modules that call it.
+ *
+ * @param array $data
+ *   Same keys as before – see MessageRegistrationService::register() for docs.
+ *   The 'body' value may be passed pre-serialized (legacy) or as a plain
+ *   string; the service handles both forms.
+ *
+ * @return int
+ *   The new message ID.
+ */
+function ek_message_register(array $data): int {
+    return \Drupal::service('ek_messaging.message_registration')->register($data);
+}
+
+
+// =============================================================================
+// Hooks
+// =============================================================================
+
+/**
+ * Implements hook_ek_home().
  */
 function ek_messaging_ek_home() {
-    $build = [];
-    $build[] = [
-        'name' => 'feature_broadcast',
-        'module' => 'Messaging',
-        'stamp' => 1597560000,
-        'type' => "new",
-        'content' => 'Send <a href="/messaging/send/broadcast">broadcast</a> messages to all users.',
-        'footer' => 'August 2020',
+    return [
+        [
+            'name'    => 'feature_broadcast',
+            'module'  => 'Messaging',
+            'stamp'   => 1597560000,
+            'type'    => 'new',
+            'content' => 'Send <a href="/messaging/send/broadcast">broadcast</a> messages to all users.',
+            'footer'  => 'August 2020',
+        ],
     ];
-    
-    return $build;
 }
 
 /**
  * Implements hook_file_download().
- *
- * edit the file_download function in order to control access of inline files
-*/
+ */
 function ek_messaging_file_download($uri) {
-    if (strpos($uri ?? "",'/inline-images/')) {
-        return array('Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($uri));
+    if (strpos($uri ?? '', '/inline-images/')) {
+        return ['Content-Type' => \Drupal::service('file.mime_type.guesser')->guessMimeType($uri)];
     }
-    
-}
- 
- 
-/*
- * REGISTER A MESSAGE
- * used by dependent modules to register a message
- * @param $data
- * uid : int user id
- * to: string of ids separated by comma
- * to_group : int
- * type : int
- * status: null|string of ids separated by comma
- * inbox : null|string of ids separated by comma
- * archive : null|string of ids separated by comma
- * subject : string
- * priority : int
-*/
-function ek_message_register($data) {
-    
-    $fields = array (
-      'stamp' => strtotime("now"),
-      'from_uid' => $data['uid'],
-      '`to`' => $data['to'],
-      'to_group' => $data['to_group'],
-      'type' => $data['type'],
-      'status' => $data['status'],
-      'inbox' => $data['inbox'],
-      'archive' => '',
-      'subject' => $data['subject'],
-      'priority' => $data['priority']
-
-      );
-
-    $result = Database::getConnection('external_db', 'external_db')
-            ->insert('ek_messaging')->fields($fields)->execute();
-
-    $fields = array (
-          'id' => $result,
-          'text' => unserialize($data['body']),
-          'format' => isset($data['format']) ? $data['format'] : 'basic_html',
-      );  
-
-    if ($result) {
-    $body = Database::getConnection('external_db', 'external_db')
-            ->insert('ek_messaging_text')->fields($fields)->execute();
-    }
-    //when registering new message clear cache for menu link display
-    \Drupal\Core\Cache\Cache::invalidateTags(['ek_message_inbox']);
-    \Drupal\Core\Cache\Cache::invalidateTags(['config:system.menu.tools']);
-    
-    return $result;
-
-    
-
-
 }
 
 /**
- * Implementation hook_mail().
+ * Implements hook_mail().
  */
 function ek_messaging_mail($key, &$message, $params) {
-
-    global $base_url;  
-    $logo = \Drupal::config('system.theme')->get('logo');
-    $params['options']['logo'] = $base_url . $logo['url'];
-    $params['options']['site'] = \Drupal::config('system.site')->get('name');
-    $theme = \Drupal::theme()->getActiveTheme()->getName();
-    $color_config = \Drupal::config("color.theme.{$theme}");
-    $color_settings = $color_config->getRawData();
+    global $base_url;
+    $logo               = \Drupal::config('system.theme')->get('logo');
+    $params['options']['logo']      = $base_url . $logo['url'];
+    $params['options']['site']      = \Drupal::config('system.site')->get('name');
+    $theme              = \Drupal::theme()->getActiveTheme()->getName();
+    $color_config       = \Drupal::config("color.theme.{$theme}");
+    $color_settings     = $color_config->getRawData();
     $params['options']['site_color'] = $color_settings['palette']['top'];
-    $params['options']['origin'] = \Drupal::currentUser()->getAccountName();
-    $params['options']['stamp'] = date('F j, Y, g:i a');
-    $priority = array('3' => t('low'), '2' => t('normal'), '1' => t('high'));
-    $color = array('3' => '#159F45', '2' => '#0D67A7' , '1' => '#A70D0D');
+    $params['options']['origin']    = \Drupal::currentUser()->getAccountName();
+    $params['options']['stamp']     = date('F j, Y, g:i a');
+    $priority = ['3' => t('low'), '2' => t('normal'), '1' => t('high')];
+    $color    = ['3' => '#159F45', '2' => '#0D67A7', '1' => '#A70D0D'];
     $params['options']['priority'] = $priority[$params['priority']];
-    $params['options']['color'] = $color[$params['priority']];
-    $params['options']['link'] = $params['link'];
-    $params['options']['url'] = $params['url'];
-    switch($key) {
-        
-      case 'ek_message':
-        
-        if($params['link'] == 0) {
-            //filter body for images / links
-            if(preg_match("/src=\"([^\"]+)\"/", $params['body'], $body)){
-                $params['body'] = str_replace('src="/', 'src="' . $base_url, $params['body']);
-            }
-        }
-                
-        $render = [
-            '#markup' => $params['body'],
-        ];
-        
-        $message['From'] = $params['from'];
-        $message['subject'] = $params['subject'];
-        $message['body'][] = \Drupal::service('renderer')->render($render);
-        $message['options'] = $params['options'];
-    
-        $message['headers']['Disposition-Notification-To'] = $params['from'];
-        $message['headers']['X-Confirm-Reading-To'] = $params['from'];
-        if($params['priority'] == 1) {
-            $message['headers']['Priority'] = 'High';
-            $message['headers']['X-Priority'] = '1';
-            $message['headers']['X-MSMail-Priority'] = 'Highest';
-        } else {
-            $message['headers']['Priority'] = 'normal';
-            $message['headers']['X-Priority'] = '3';
-            $message['headers']['X-MSMail-Priority'] = 'Normal';
-        }
-        break;
+    $params['options']['color']    = $color[$params['priority']];
+    $params['options']['link']     = $params['link'];
+    $params['options']['url']      = $params['url'];
 
+    switch ($key) {
+        case 'ek_message':
+            if ($params['link'] == 0) {
+                if (preg_match('/src="([^"]+)"/', $params['body'], $body)) {
+                    $params['body'] = str_replace('src="/', 'src="' . $base_url, $params['body']);
+                }
+            }
+            $render = ['#markup' => $params['body']];
+            $message['From']    = $params['from'];
+            $message['subject'] = $params['subject'];
+            $message['body'][]  = \Drupal::service('renderer')->render($render);
+            $message['options'] = $params['options'];
+            $message['headers']['Disposition-Notification-To'] = $params['from'];
+            $message['headers']['X-Confirm-Reading-To']        = $params['from'];
+            if ($params['priority'] == 1) {
+                $message['headers']['Priority']         = 'High';
+                $message['headers']['X-Priority']       = '1';
+                $message['headers']['X-MSMail-Priority'] = 'Highest';
+            } else {
+                $message['headers']['Priority']         = 'normal';
+                $message['headers']['X-Priority']       = '3';
+                $message['headers']['X-MSMail-Priority'] = 'Normal';
+            }
+            break;
     }
 }
 
 /**
- * Implements hook_mailer_
- * function invokeHooks(EmailInterface $email) in symfony_mailer/EmailFactory
-*/
+ * Implements hook_mailer_PLUGIN_ID_init() via symfony_mailer.
+ */
+function ek_messaging_mailer_ek_messaging_init(\Drupal\symfony_mailer\EmailInterface $email) {}
 
-function ek_messaging_mailer_ek_messaging_init(\Drupal\symfony_mailer\EmailInterface $email) {
-     // i.e $email->getParams()
-}
+function ek_messaging_mailer_ek_messaging_build(\Drupal\symfony_mailer\EmailInterface $email) {}
 
-function ek_messaging_mailer_ek_messaging_build(\Drupal\symfony_mailer\EmailInterface $email) {
-     
-}
-
-function ek_messaging_mailer_ek_messaging_post_send(\Drupal\symfony_mailer\EmailInterface $email) {
-     
-}
+function ek_messaging_mailer_ek_messaging_post_send(\Drupal\symfony_mailer\EmailInterface $email) {}

@@ -8,8 +8,8 @@ ek_messaging_install:
 ek_messaging_settings:
   path: '/ek_messaging/admin/settings'
   defaults:
-    _title: 'Settings'
-    _controller: '\Drupal\ek_messaging\Controller\SettingsController::settings'
+    _title: 'Messaging settings'
+    _form: '\Drupal\ek_messaging\Form\EncryptionSettingsForm'
   requirements:
     _permission: 'administrate_messages'
 

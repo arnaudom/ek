@@ -8,3 +8,4 @@ version: VERSION
 package: ek 
 project: "ARREA"
 datestamp: "1398873600"
+configure: ek_messaging_settings

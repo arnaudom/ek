@@ -14,6 +14,7 @@ use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\ek_messaging\Service\MessageEncryptionService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -22,48 +23,40 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Controller routines for ek module routes.
  */
 class MessageController extends ControllerBase {
-    /* The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
-
+     /** @var \Drupal\Core\Extension\ModuleHandler */
     protected $moduleHandler;
 
-    /**
-     * The database service.
-     *
-     * @var \Drupal\Core\Database\Connection
-     */
+    /** @var \Drupal\Core\Database\Connection */
     protected $database;
 
-    /**
-     * The form builder service.
-     *
-     * @var \Drupal\Core\Form\FormBuilderInterface
-     */
+    /** @var \Drupal\Core\Form\FormBuilderInterface */
     protected $formBuilder;
+
+    /** @var \Drupal\ek_messaging\Service\MessageEncryptionService */
+    protected $encryption;
 
     /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
+            $container->get('database'),
+            $container->get('form_builder'),
+            $container->get('module_handler'),
+            $container->get('ek_messaging.encryption') 
         );
     }
 
-    /**
-     * Constructs a  object.
-     *
-     * @param \Drupal\Core\Database\Connection $database
-     *   A database connection.
-     * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-     *   The form builder service.
-     */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
-        $this->database = $database;
-        $this->formBuilder = $form_builder;
+    public function __construct(
+        Connection $database,
+        FormBuilderInterface $form_builder,
+        ModuleHandler $module_handler,
+        MessageEncryptionService $encryption
+    ) {
+        $this->database     = $database;
+        $this->formBuilder  = $form_builder;
         $this->moduleHandler = $module_handler;
+        $this->encryption   = $encryption;
     }
 
     /**
@@ -91,81 +84,106 @@ class MessageController extends ControllerBase {
     }
 
     /**
-     * read message page
-     * @return array
+     * Read message page.
+     *
+     * Decrypts the stored body before passing it to the Twig template.
      */
     public function read(Request $request, $id) {
         $query = Database::getConnection('external_db', 'external_db')->select('ek_messaging', 'm');
         $query->leftJoin('ek_messaging_text', 't', 't.id=m.id');
         $user = '%,' . \Drupal::currentUser()->id() . ',%';
-        $or = $query->orConditionGroup();
+        $or   = $query->orConditionGroup();
         $or->condition('m.to', $user, 'like');
         $or->condition('m.from_uid', \Drupal::currentUser()->id(), '=');
-        $data = $query
-                ->fields('m')
-                ->fields('t')
-                ->condition('m.id', $id, '=')
-                ->condition($or)
-                ->execute();
 
-        $message = $data->fetchObject();
+        $message = $query
+            ->fields('m')
+            ->fields('t')
+            ->condition('m.id', $id, '=')
+            ->condition($or)
+            ->execute()
+            ->fetchObject();
+
+        // --- DECRYPTION ------------------------------------------------------
+        // Decrypt the body. If the row is legacy plaintext the service returns
+        // it unchanged, so this is fully backward-compatible.
+        try {
+            $message->text = $this->encryption->decrypt($message->text);
+        } catch (\RuntimeException $e) {
+            \Drupal::logger('ek_messaging')->error(
+                'Failed to decrypt message @id: @msg',
+                ['@id' => $id, '@msg' => $e->getMessage()]
+            );
+            $message->text = $this->t('[Message body could not be decrypted. Please contact your administrator.]');
+        }
+        // ---------------------------------------------------------------------
+
         $account = \Drupal\user\Entity\User::load($message->from_uid);
         if ($account) {
-            $message->from = $account->getDisplayName();
-            $message->avatar = ($account->get('user_picture')->entity) ? \Drupal::service('file_url_generator')->generateAbsoluteString($account->get('user_picture')->entity->getFileUri())
-                    : \Drupal::service('file_url_generator')->generateAbsoluteString(\Drupal::service('extension.path.resolver')->getPath('module','ek_admin') . "/art/avatar/default.jpeg");
-               
+            $message->from   = $account->getDisplayName();
+            $message->avatar = ($account->get('user_picture')->entity)
+                ? \Drupal::service('file_url_generator')->generateAbsoluteString($account->get('user_picture')->entity->getFileUri())
+                : \Drupal::service('file_url_generator')->generateAbsoluteString(
+                    \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/avatar/default.jpeg'
+                );
         }
 
         $message->time = date('l jS \of F Y h:i:s A', $message->stamp);
         if ($message->priority == 3) {
-            $message->color = "green";
+            $message->color = 'green';
         } elseif ($message->priority == 2) {
-            $message->color = "blue";
+            $message->color = 'blue';
         } else {
-            $message->color = "red";
+            $message->color = 'red';
         }
 
-        $message->delete = "<a href='#' title='" . $this->t('Delete') . "' id='" . $message->id . "' class='deleteButton' >" . $this->t('Delete') . "</a>";
+        $message->delete  = "<a href='#' title='" . $this->t('Delete') . "' id='" . $message->id . "' class='deleteButton' >" . $this->t('Delete') . "</a>";
         $message->archive = "<a href='#' title='" . $this->t('Archive') . "' id='" . $message->id . "' class='archiveButton' >" . $this->t('Archive') . "</a>";
-        $url_inbox = Url::fromRoute('ek_messaging_inbox', array(), array())->toString();
-        $message->inbox = $this->t('<a href="@url" >Go to inbox</a>', array('@url' => $url_inbox));
-        $url_send = Url::fromRoute('ek_messaging_send', array(), array())->toString();
-        $message->send = $this->t('<a href="@url" >New message</a>', array('@url' => $url_send));
-        $url_reply = Url::fromRoute('ek_messaging_reply', array('id' => $message->id), array())->toString();
-        $message->reply = $this->t('<a href="@url" >Reply</a>', array('@url' => $url_reply));
 
-        $render = [
-            '#markup' => $message->text,
-        ];
+        $url_inbox      = Url::fromRoute('ek_messaging_inbox')->toString();
+        $message->inbox = $this->t('<a href="@url" >Go to inbox</a>', ['@url' => $url_inbox]);
+        $url_send       = Url::fromRoute('ek_messaging_send')->toString();
+        $message->send  = $this->t('<a href="@url" >New message</a>', ['@url' => $url_send]);
+        $url_reply      = Url::fromRoute('ek_messaging_reply', ['id' => $message->id])->toString();
+        $message->reply = $this->t('<a href="@url" >Reply</a>', ['@url' => $url_reply]);
+
+        $render        = ['#markup' => $message->text];
         $message->text = \Drupal::service('renderer')->render($render);
-        
-        //update read status in reader list
-        $list = explode(',', $message->status);
-        array_push($list, \Drupal::currentUser()->id());
-        $unique = array_values(array_unique($list));
-        $list = ',' . implode(',', $unique) . ',';
-        Database::getConnection('external_db', 'external_db')
-                ->update('ek_messaging')
-                ->condition('id', $id)
-                ->fields(array('status' => $list))
-                ->execute();
 
-        // when reading new message clear cache for menu link display
+        // Update read status.
+        $list   = explode(',', $message->status);
+        $list[] = \Drupal::currentUser()->id();
+        $unique = array_values(array_unique($list));
+        $list   = ',' . implode(',', $unique) . ',';
+        Database::getConnection('external_db', 'external_db')
+            ->update('ek_messaging')
+            ->condition('id', $id)
+            ->fields(['status' => $list])
+            ->execute();
+
         \Drupal\Core\Cache\Cache::invalidateTags(['ek_message_inbox']);
         \Drupal\Core\Cache\Cache::invalidateTags(['config:system.menu.tools']);
 
-        return array(
-            '#theme' => 'ek_messaging_read',
-            '#items' => $message,
-            '#title' => $this->t('Message'),
-            '#attached' => array(
-                'library' => array('ek_admin/ek_admin_css', 'ek_messaging/ek_messaging'),
-            ),
-            '#cache' => ['tags' => ['ek_message_' . $id]],
-        );
+        return [
+            '#theme'    => 'ek_messaging_read',
+            '#items'    => $message,
+            '#title'    => $this->t('Message'),
+            '#attached' => ['library' => ['ek_admin/ek_admin_css', 'ek_messaging/ek_messaging']],
+            '#cache'    => ['tags' => ['ek_message_' . $id]],
+        ];
     }
 
+    // -------------------------------------------------------------------------
+    // NOTE on keyword search:
+    //   Full-text search against ek_messaging_text.text will no longer work
+    //   once rows are encrypted, because the ciphertext is opaque.  Options:
+    //     a) Accept the limitation and search only by subject (unencrypted).
+    //     b) Maintain a separate plaintext search-index table that is updated
+    //        on insert and cleared on delete.
+    //     c) Decrypt rows on the fly in PHP – only feasible for small datasets.
+    //   The current implementation leaves this as a TODO; subject search still
+    //   works because the subject column is not encrypted.
+    // -------------------------------------------------------------------------
     /**
      * inbox page
      * @return array
@@ -180,8 +198,6 @@ class MessageController extends ControllerBase {
             //search inbox by keyword
 
             $key = Xss::filter($_SESSION['mefilter']['keyword']);
-
-
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_messaging', 'm');
             $query->leftJoin('ek_messaging_text', 't', 't.id=m.id');
@@ -216,7 +232,7 @@ class MessageController extends ControllerBase {
                     ->limit(20)->orderBy('m.id', 'DESC')
                     ->execute();
         } else {
-            //query all inbox messages
+            // query all inbox messages
             $query = Database::getConnection('external_db', 'external_db')->select('ek_messaging', 'm');
             $query->leftJoin('ek_messaging_text', 't', 't.id=m.id');
 
@@ -637,7 +653,7 @@ class MessageController extends ControllerBase {
      * @return array json message id if archived, 0 if error
      *
      * @TODO when user delete archived message sent by user (Outbox->archive->delete),
-     * message is displaye again in archived
+     * message is display again in archived
      */
     public function delete(Request $request) {
         $query = Database::getConnection('external_db', 'external_db')
@@ -725,17 +741,7 @@ class MessageController extends ControllerBase {
      * Deprecated : use default ek_admin resources userAutocomplete
      */
     public function autocomplete(Request $request) {
-        /*
-          $text = $request->query->get('term');
-          $name = array();
-
-          $query = "SELECT distinct name from {users_field_data} WHERE mail like :t1 or name like :t2 ";
-          $a = array(':t1' => "$text%", ':t2' => "$text%");
-          //$name = db_query($query, $a)->fetchCol();
-
-          return new JsonResponse($name);
-
-         */
+        
     }
 
 }

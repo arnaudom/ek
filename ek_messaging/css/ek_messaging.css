@@ -1,109 +1,306 @@
-.right {
-    text-align:right;
+/* ek_messaging.css – modernised
+   Replaces the original file entirely.
+   Non-read-page classes (inbox table utilities) are preserved at the bottom.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Design tokens ──────────────────────────────────────────────────────── */
+:root {
+  --msg-font-body:    'Lato', 'Segoe UI', sans-serif;
+  --msg-font-mono:    'JetBrains Mono', 'Courier New', monospace;
+
+  --msg-bg:           #f7f8fc;
+  --msg-card-bg:      #ffffff;
+  --msg-border:       #e4e7f0;
+  --msg-shadow:       0 2px 12px rgba(30, 40, 80, 0.07),
+                      0 1px 3px  rgba(30, 40, 80, 0.05);
+  --msg-shadow-hover: 0 6px 24px rgba(30, 40, 80, 0.11),
+                      0 2px 6px  rgba(30, 40, 80, 0.07);
+
+  --msg-accent:       #0088cc;
+  --msg-accent-light: #eff4ff;
+  --msg-text-primary: #1a1f36;
+  --msg-text-secondary: #6b7280;
+  --msg-text-label:   #9ca3af;
+
+  --msg-red:          #ff0000;
+  --msg-green:        #64fe2e;
+  --msg-blue:         #6ab6fc;
+  --msg-orange:       #ffe166;
+
+  --msg-radius:       12px;
+  --msg-radius-sm:    6px;
+  --msg-transition:   0.18s ease;
 }
 
-.table {
-    display: table;
-    width: 100%;
-    font-family: 'nunito' ,sans-serif;
+/* ── Message card ───────────────────────────────────────────────────────── */
+.msg-card {
+  background: var(--msg-card-bg);
+  border: 1px solid var(--msg-border);
+  border-radius: var(--msg-radius);
+  box-shadow: var(--msg-shadow);
+  margin: 1.5rem 0;
+  overflow: hidden;
+  transition: box-shadow var(--msg-transition);
 }
 
-.row {
-    display : table-row;
-    height:auto;
+.msg-card:hover {
+  box-shadow: var(--msg-shadow-hover);
 }
 
-.header_tb {  
-    display : table-cell;
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.msg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--msg-border);
+  background: linear-gradient(135deg, #fafbff 0%, #f3f5fb 100%);
 }
 
-.cell {  
-    display : table-cell;
-    padding-left: 10px;
+.msg-sender {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
 }
 
-.cell150 {  
-    display :table-cell;
-    width: 150px;
-    float: left;
-    padding-left: 10px;
+.msg-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--msg-border);
+  flex-shrink: 0;
 }
 
-.message {  
-    padding: 15px;
-    font-size: 1.2em;
+.msg-sender-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
-.amount {
-    text-align:right;
+.msg-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--msg-text-label);
+  font-family: var(--msg-font-body);
 }
 
-.current {
-    background-color:#F2F5A9;
+.msg-from {
+  font-size: 0.975rem;
+  font-weight: 700;
+  color: var(--msg-text-primary);
+  font-family: var(--msg-font-body);
 }
 
-.red {
-    color: #ff0000;
+/* ── Meta (priority + time) ─────────────────────────────────────────────── */
+.msg-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-shrink: 0;
 }
 
-.green {
-    color: #00D744;
+.msg-priority-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.msg-priority-dot--red   { background: var(--msg-red);   box-shadow: 0 0 0 3px rgba(239,68,68,.15);  }
+.msg-priority-dot--blue  { background: var(--msg-blue);  box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+.msg-priority-dot--green { background: var(--msg-green); box-shadow: 0 0 0 3px rgba(34,197,94,.15);  }
+
+.msg-time {
+  font-size: 0.8rem;
+  color: var(--msg-text-secondary);
+  font-family: var(--msg-font-body);
+  white-space: nowrap;
 }
 
-.blue {
-    color: #2E64FE;
+/* ── Subject row ────────────────────────────────────────────────────────── */
+.msg-subject-row {
+  padding: 1rem 1.5rem 0.75rem;
+  border-bottom: 1px solid var(--msg-border);
 }
 
-.orange {
-    color: #FFC900;
+.msg-subject {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--msg-text-primary);
+  font-family: var(--msg-font-body);
+  line-height: 1.35;
 }
 
-hr {
-    -moz-border-bottom-colors: none;
-    -moz-border-left-colors: none;
-    -moz-border-right-colors: none;
-    -moz-border-top-colors: none;
-    border-color: #696969 -moz-use-text-color -moz-use-text-color;
-    border-image: none;
-    border-right: 0 none;
-    border-style: solid none none;
-    border-width: 1px 0 0;
-    margin-bottom: 2px;
-    margin-top: 2px;
-    height: 0;
+/* ── Body ───────────────────────────────────────────────────────────────── */
+.msg-body {
+  padding: 1.5rem;
+  font-family: var(--msg-font-body);
+  font-size: 0.975rem;
+  line-height: 1.75;
+  color: var(--msg-text-primary);
+  min-height: 4rem;
 }
 
-.read {
-    font-weight: bold;
+/* quoted reply block (the "On DATE, USER wrote" section) */
+.msg-body blockquote,
+.msg-body p + p {
+  border-left: 3px solid var(--msg-border);
+  margin-left: 0;
+  padding-left: 1rem;
+  color: var(--msg-text-secondary);
 }
 
+/* inline images from CKEditor */
+.msg-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--msg-radius-sm);
+}
+
+/* ── Action bar ─────────────────────────────────────────────────────────── */
+.msg-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0 1rem;
+  background: var(--msg-card-bg);
+  border: 1px solid var(--msg-border);
+  border-radius: var(--msg-radius);
+  box-shadow: var(--msg-shadow);
+}
+
+.msg-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.875rem;
+  border-radius: var(--msg-radius-sm);
+  font-family: var(--msg-font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--msg-accent);
+  text-decoration: none !important;
+  transition: background var(--msg-transition), color var(--msg-transition);
+  white-space: nowrap;
+}
+
+/* strip the <a> tags injected by the controller (they arrive via |raw) */
+.msg-action-btn a,
+.msg-actions td a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.msg-action-btn:hover {
+  background: var(--msg-accent-light);
+  color: var(--msg-accent);
+  text-decoration: none;
+}
+
+.msg-action-btn .fa {
+  font-size: 0.875rem;
+  width: 1em;
+  text-align: center;
+}
+
+.msg-action-btn--muted {
+  color: var(--msg-text-secondary);
+}
+.msg-action-btn--muted:hover {
+  background: #f3f4f6;
+  color: var(--msg-text-primary);
+}
+
+.msg-action-btn--danger {
+  color: var(--msg-red);
+  margin-left: auto; /* push delete to the right */
+}
+.msg-action-btn--danger:hover {
+  background: #fef2f2;
+  color: var(--msg-red);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .msg-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .msg-meta {
+    align-self: flex-end;
+  }
+  .msg-action-btn--danger {
+    margin-left: 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Preserved / updated legacy utilities used by inbox, outbox, archive tables
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.right   { text-align: right; }
+.amount  { text-align: right; }
+.current { background-color: #f0f4ff; }
+
+/* Priority colour dots in list views */
+.red    { color: var(--msg-red);    }
+.green  { color: var(--msg-green);  }
+.blue   { color: var(--msg-blue);   }
+.orange { color: var(--msg-orange); }
+
+/* Unread indicator in inbox table */
+.read { font-weight: 700; }
+
+/* Legacy table layout helpers (inbox/outbox still use them) */
+.table      { display: table; width: 100%; font-family: var(--msg-font-body); }
+.row        { display: table-row; height: auto; }
+.header_tb  { display: table-cell; }
+.cell       { display: table-cell; padding-left: 10px; }
+.cell150    { display: table-cell; width: 150px; float: left; padding-left: 10px; }
+.message    { padding: 15px; font-size: 1.05em; }
+
+/* Badges */
 .badge {
-    background-color: #0088cc;
-    border-radius: 5px;
-    color: #fff;
-    display: inline-block;
-    font-size: 1.1em;
-    font-weight: bold;
-    line-height: 1;
-    min-width: 10px;
-    padding: 5px 9px;
-    text-align: center;
-    vertical-align: baseline;
-    white-space: nowrap;
+  background: var(--msg-accent);
+  border-radius: var(--msg-radius-sm);
+  color: #fff;
+  display: inline-block;
+  font-family: var(--msg-font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  text-transform: uppercase;
+  vertical-align: baseline;
+  white-space: nowrap;
 }
 
 .inbox_message_badge {
-    background-color: #a9bcf5;
-    color: #fff;
-    border: 1px solid #0696ff;
-    border-radius: 25px;
-    display: inline-block;
-    font-size: 0.9em;
-    font-weight: bold;
-    text-align: center;
-    min-width: 20px;
-    top:-5px;
-    -webkit-box-shadow: 3px 3px 5px 0px rgba(0,0,0,0.5);
-    -moz-box-shadow: 3px 3px 5px 0px rgba(0,0,0,0.5);
-    box-shadow: 3px 3px 5px 0px rgba(0,0,0,0.5);
+  background: #dbeafe;
+  color: var(--msg-accent);
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  min-width: 20px;
+  padding: 1px 6px;
+  position: relative;
+  top: -4px;
+  box-shadow: 0 1px 4px rgba(30,40,80,0.10);
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--msg-border);
+  margin: 1rem 0;
 }
