@@ -133,6 +133,7 @@ class QuotationsController extends ControllerBase {
          } else {
              $limit = 25;
          }
+        
         $access = AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_quotation', 'q');
@@ -143,14 +144,26 @@ class QuotationsController extends ControllerBase {
 
         if (isset($_SESSION['qfilter']['filter']) && $_SESSION['qfilter']['filter'] == 1) {
             if ($_SESSION['qfilter']['keyword'] != '') {
-                //search based on keyword
+                // keyword search base
                 $or2 = $query->orConditionGroup();
-                $or2->condition('q.serial', '%' . $_SESSION['qfilter']['keyword'] . '%', 'like');
-                $or2->condition('q.pcode', '%' . $_SESSION['qfilter']['keyword'] . '%', 'like');
-                $f = array('id', 'head', 'allocation', 'serial', 'client', 'status', 'title', 'currency', 'date',
-                    'amount', 'pcode', 'incoterm', 'tax', 'type');
+                // Explode input by comma and trim whitespace from each keyword
+                $keywords = array_filter(array_map('trim', explode(',', $_SESSION['qfilter']['keyword'])));
+                if (count($keywords) > 1) {
+                    // Multiple keywords — create an OR group per keyword
+                    foreach ($keywords as $kw) {
+                        $kw_group = $query->orConditionGroup();
+                        $kw_group->condition('q.serial',  '%' . $kw . '%', 'LIKE');
+                        $kw_group->condition('q.pcode',   '%' . $kw . '%', 'LIKE');
+                        $or2->condition($kw_group);
+                    }
+                } else {
+                    // Single keyword — original behaviour
+                    $kw = $keywords[0] ?? '';
+                    $or2->condition('q.serial',  '%' . $kw . '%', 'LIKE');
+                    $or2->condition('q.pcode',   '%' . $kw . '%', 'LIKE');
+                }
                 $data = $query
-                        ->fields('q', $f)
+                        ->fields('q')
                         ->condition($or1)
                         ->condition($or2)
                         ->extend('Drupal\Core\Database\Query\TableSortExtender')

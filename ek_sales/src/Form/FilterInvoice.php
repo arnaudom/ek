@@ -93,8 +93,8 @@ class FilterInvoice extends FormBase {
         $form['filters']['keyword'] = [
             '#type' => 'textfield',
             '#maxlength' => 75,
-            '#size' => 30,
-            '#attributes' => array('placeholder' => $this->t('Search with keyword, ref No.')),
+            '#size' => 60,
+            '#attributes' => array('placeholder' => $this->t('Keyword search, multiple search separated by comma, i.e. abc1, def2')),
             '#default_value' => isset($_SESSION['ifilter']['keyword']) ? $_SESSION['ifilter']['keyword'] : null,
         ];
 

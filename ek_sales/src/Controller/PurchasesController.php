@@ -188,11 +188,27 @@ class PurchasesController extends ControllerBase {
                         ->orderBy('id', 'ASC')
                         ->execute();
             } else {
-                //search based on keyword
+
+                // keyword search base
                 $or2 = $query->orConditionGroup();
-                $or2->condition('p.serial', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
-                $or2->condition('p.pcode', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
-                $or2->condition('p.comment', '%' . $_SESSION['pfilter']['keyword'] . '%', 'like');
+                // Explode input by comma and trim whitespace from each keyword
+                $keywords = array_filter(array_map('trim', explode(',', $_SESSION['pfilter']['keyword'])));
+                if (count($keywords) > 1) {
+                    // Multiple keywords — create an OR group per keyword
+                    foreach ($keywords as $kw) {
+                        $kw_group = $query->orConditionGroup();
+                        $kw_group->condition('p.serial',  '%' . $kw . '%', 'LIKE');
+                        $kw_group->condition('p.pcode',   '%' . $kw . '%', 'LIKE');
+                        $kw_group->condition('p.comment', '%' . $kw . '%', 'LIKE');
+                        $or2->condition($kw_group);
+                    }
+                } else {
+                    // Single keyword — original behaviour
+                    $kw = $keywords[0] ?? '';
+                    $or2->condition('p.serial',  '%' . $kw . '%', 'LIKE');
+                    $or2->condition('p.pcode',   '%' . $kw . '%', 'LIKE');
+                    $or2->condition('p.comment', '%' . $kw . '%', 'LIKE');
+                }
                 $data = $query
                         ->fields('p', $f)
                         ->condition($or1)

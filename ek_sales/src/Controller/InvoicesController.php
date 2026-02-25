@@ -190,12 +190,28 @@ class InvoicesController extends ControllerBase {
                         ->orderBy('id', 'ASC')
                         ->execute();
             } else {
-                // search based on keyword
+                // keyword search base
                 $or2 = $query->orConditionGroup();
-                $or2->condition('i.serial', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
-                $or2->condition('i.pcode', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
-                $or2->condition('i.po_no', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
-                $or2->condition('i.comment', '%' . $_SESSION['ifilter']['keyword'] . '%', 'like');
+                // Explode input by comma and trim whitespace from each keyword
+                $keywords = array_filter(array_map('trim', explode(',', $_SESSION['ifilter']['keyword'])));
+                if (count($keywords) > 1) {
+                    // Multiple keywords — create an OR group per keyword
+                    foreach ($keywords as $kw) {
+                        $kw_group = $query->orConditionGroup();
+                        $kw_group->condition('i.serial',  '%' . $kw . '%', 'LIKE');
+                        $kw_group->condition('i.pcode',   '%' . $kw . '%', 'LIKE');
+                        $kw_group->condition('i.po_no',   '%' . $kw . '%', 'LIKE');
+                        $kw_group->condition('i.comment', '%' . $kw . '%', 'LIKE');
+                        $or2->condition($kw_group);
+                    }
+                } else {
+                    // Single keyword — original behaviour
+                    $kw = $keywords[0] ?? '';
+                    $or2->condition('i.serial',  '%' . $kw . '%', 'LIKE');
+                    $or2->condition('i.pcode',   '%' . $kw . '%', 'LIKE');
+                    $or2->condition('i.po_no',   '%' . $kw . '%', 'LIKE');
+                    $or2->condition('i.comment', '%' . $kw . '%', 'LIKE');
+                }
                 $data = $query
                         ->fields('i', $f)
                         ->condition($or1)
