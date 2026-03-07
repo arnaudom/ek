@@ -10,12 +10,12 @@ namespace Drupal\ek_finance\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
-use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\Component\Utility\Xss;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_finance\AidList;
 use Drupal\ek_finance\CurrencyData;
-use Drupal\ek_finance\Journal;
+use Drupal\ek_finance\Service\JournalService;
 use Drupal\ek_finance\FinanceSettings;
 
 /**
@@ -27,13 +27,24 @@ class JournalEdit extends FormBase {
     protected $settings;
     protected $rounding;
     protected $baseCurrency;
+    protected $journal;
     
-    public function __construct() {
+    public function __construct(JournalService $journal) {
         $this->settings = new FinanceSettings();
         $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding') : 2;
         $this->baseCurrency = $this->settings->get('baseCurrency');
+        $this->journal = $journal;
     }
     
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        return new static(
+            $container->get('ek_finance.journal')
+        );
+    }
+
     public function getFormId() {
         return 'journal_edit';
     }
@@ -48,10 +59,13 @@ class JournalEdit extends FormBase {
         $accountOptions = ['0' => ''];
         $accountOptions += AidList::listaid($param['coid'], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 1);
         
-        $query = "SELECT name from {ek_company} WHERE id=:id";
-        $company = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $param['coid']])
-                ->fetchField();
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_company', 'c')
+                ->fields('c', ['name'])
+                ->condition('id', $param['coid'])
+                ->execute();
+
+        $company = $query->fetchField();
 
         $url = Url::fromRoute('ek_finance.extract.general_journal', [], [])->toString();
         $form['back'] = [
@@ -398,9 +412,9 @@ class JournalEdit extends FormBase {
                     ->execute();
             }
 
-            $journal = new Journal();
-            $journalId = $journal->delete($param['source'], $param['reference'], $param['coid']);
-            $journal->resetCount($param['coid'], $journalId[1]);
+            
+            $journalId = $this->journal->delete($param['source'], $param['reference'], $param['coid']);
+            $this->journal->resetCount($param['coid'], $journalId[1]);
 
             \Drupal::messenger()->addStatus(t('Data deleted. Go to <a href="@url">journal</a>', ['@url' => $url]));
             return;
@@ -410,7 +424,6 @@ class JournalEdit extends FormBase {
         
         if ($form_state->getValue('record_as_new') == 1) {
             // Clone as new entry
-            $journal = new Journal();
             $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_journal', 'j')
                 ->fields('j', ['reference'])
@@ -442,7 +455,7 @@ class JournalEdit extends FormBase {
                             'fxRate' => isset($param['fxRate']) ? $param['fxRate'] : null,
                             'exchange' => $row['force_dt_ex'],
                         ];
-                        $rec[$key] = $journal->record($a);
+                        $rec[$key] = $this->journal->record($a);
                     }
                     
                     if ($credit) {
@@ -459,7 +472,7 @@ class JournalEdit extends FormBase {
                             'fxRate' => isset($param['fxRate']) ? $param['fxRate'] : null,
                             'exchange' => $row['force_ct_ex'],
                         ];
-                        $journal->record($a);
+                        $this->journal->record($a);
                     }
                 }
             }

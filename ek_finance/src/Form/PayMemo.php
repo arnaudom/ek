@@ -11,12 +11,11 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\Component\Utility\Xss;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\AidList;
 use Drupal\ek_finance\CurrencyData;
-use Drupal\ek_finance\Journal;
+use Drupal\ek_finance\Service\JournalService;
 use Drupal\ek_finance\BankData;
 use Drupal\ek_finance\FinanceSettings;
 
@@ -31,9 +30,18 @@ class PayMemo extends FormBase {
 
     protected $settings;
     protected $rounding;
-    public function __construct() {
+    protected $journal;
+    
+    public function __construct(JournalService $journal) {
         $this->settings = new FinanceSettings();
         $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding') : 2;
+        $this->journal = $journal;
+    }
+
+    public static function create(ContainerInterface $container) {
+        return new static(
+            $container->get('ek_finance.journal')
+        );
     }
 
     /**
@@ -63,72 +71,76 @@ class PayMemo extends FormBase {
             $attachment[$val] = $str[0];
         }
 
-        $form['ref'] = array(
+        $form['ref'] = [
             '#type' => 'item',
             '#markup' => $this->t('Memo ref. @p', array('@p' => $data->serial)),
-        );
+        ];
 
-        $form['pay'] = array(
+        $form['pay'] = [
             '#type' => 'item',
             '#markup' => $this->t('Total value @p', array('@p' => number_format($data->value, 2) . ' ' . $data->currency)),
-        );
+        ];
 
-        $form['baseValue'] = array(
+        $form['baseValue'] = [
             '#type' => 'hidden',
             '#value' => $data->value,
-        );
-        $form['for_id'] = array(
+        ];
+
+        $form['for_id'] = [
             '#type' => 'hidden',
             '#value' => $id,
-        );
+        ];
 
-        $form['date'] = array(
+        $form['date'] = [
             '#type' => 'date',
             '#id' => 'edit-from',
             '#size' => 12,
             '#required' => true,
             '#default_value' => date('Y-m-d'),
             '#title' => $this->t('Payment date'),
-        );
+        ];
 
-
-
-        $form['close'] = array(
+        $form['close'] = [
             '#type' => 'checkbox',
             '#default_value' => 0,
             '#title' => $this->t('Close'),
             '#description' => $this->t('Set status as closed or paid on partial payment.'),
-        );
+        ];
 
-
-
-        //bank account
-
+        // bank account
         $settings = new CompanySettings($data->entity_to);
         $aid = $settings->get('cash_account', $data->currency);
         if ($aid <> '') {
-            $query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";
-            $name = Database::getConnection('external_db', 'external_db')
+            
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_accounts', 'a')
+                ->fields('a', ['aname'])
+                ->condition('coid',$data->entity_to)
+                ->condition('aid', $aid)
+                ->execute();
+            $name = $query->fetchField();
+
+            /*$query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";Database::getConnection('external_db', 'external_db')
                     ->query($query, array(':c' => $data->entity_to, ':a' => $aid))
-                    ->fetchField();
+                    ->fetchField();*/
             $key = $data->currency . "-" . $aid;
             $cash = array($key => $name);
         }
         $aid = $settings->get('cash2_account', $data->currency);
         if ($aid <> '') {
-            $query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";
-            $name = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':c' => $data->entity_to, ':a' => $aid))
-                    ->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_accounts', 'a')
+                ->fields('a', ['aname'])
+                ->condition('coid',$data->entity_to)
+                ->condition('aid', $aid)
+                ->execute();
+            $name = $query->fetchField();
             $key = $data->currency . "-" . $aid;
             $cash += array($key => $name);
         }
 
         if ($data->category == 5) {
             //add option to pay from user cash account
-            //$query = "SELECT name from {users_field_data} WHERE uid=:uid";
-            //$name = db_query($query, array(':uid' => $data->entity))
-            //        ->fetchField();
             $uaccount = \Drupal\user\Entity\User::load($data->entity);
             if ($uaccount) {
                 $options[(string) $this->t('user cash account')] = array('user' => $uaccount->getAccountName());
@@ -137,20 +149,20 @@ class PayMemo extends FormBase {
         $options[(string) $this->t('cash')] = $cash;
         $options[(string) $this->t('bank')] = BankData::listbankaccountsbyaid($data->entity_to);
 
-        $form['bank_account'] = array(
+        $form['bank_account'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $options,
             '#required' => true,
             '#default_value' => null,
             '#title' => $this->t('Account payment'),
-            '#ajax' => array(
-                'callback' => array($this, 'fx_rate'),
+            '#ajax' => [
+                'callback' => [$this, 'fx_rate'],
                 'wrapper' => 'fx',
-            ),
-        );
+            ],
+        ];
 
-        $form['fx_rate'] = array(
+        $form['fx_rate'] = [
             '#type' => 'textfield',
             '#size' => 15,
             '#maxlength' => 255,
@@ -160,21 +172,22 @@ class PayMemo extends FormBase {
             '#description' => '',
             '#prefix' => "<div id='fx'>",
             '#suffix' => '</div>',
-            '#ajax' => array(
-                'callback' => array($this, 'credit_amount'),
+            '#ajax' => [
+                'callback' => [$this, 'credit_amount'],
                 'wrapper' => 'fx',
                 'event' => 'change',
-            ),
-        );
+            ],
+        ];
+
         if ($data->status == 1) {
-            $form['info'] = array(
+            $form['info'] = [
                 '#type' => 'item',
                 '#markup' => '<div class="orangedot floatleft"></div><b>' . $this->t('Balance not paid : @p @c', ['@p' => $data->value - $data->amount_paid, '@c' => $data->currency]) . '</b>',
-            );
+            ];
         }
 
         $chart = $this->settings->get('chart');
-        $AidOptions = AidList::listaid($data->entity_to, array($chart['liabilities'], $chart['expenses'], $chart['other_expenses']), 1);
+        $AidOptions = AidList::listaid($data->entity_to, [$chart['liabilities'], $chart['expenses'], $chart['other_expenses']], 1);
         $i = 0;
 
         $form['items']['table'] = array(
@@ -186,93 +199,91 @@ class PayMemo extends FormBase {
         while ($l = $list->fetchObject()) {
             $i++;
 
-            $form['items']["aid$i"] = array(
+            $form['items']["aid$i"] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $AidOptions,
                 '#required' => true,
                 '#default_value' => $l->aid,
-                '#attributes' => array('style' => array('width:130px;')),
+                '#attributes' => ['style' => ['width:130px;']],
                 '#prefix' => "<div class='row'><div class='cell'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            $form['items']["description$i"] = array(
+            $form['items']["description$i"] = [
                 '#type' => 'textfield',
                 '#size' => 50,
                 '#maxlength' => 255,
                 '#default_value' => $data->serial . ' ' . $l->description,
-                '#attributes' => array('placeholder' => $this->t('description')),
+                '#attributes' => ['placeholder' => $this->t('description')],
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            $form['items']["amount$i"] = array(
+            $form['items']["amount$i"] = [
                 '#type' => 'textfield',
                 '#id' => 'amount' . $i,
                 '#size' => 12,
                 '#maxlength' => 255,
                 '#default_value' => $l->amount,
-                '#attributes' => array('placeholder' => $this->t('amount'), 'class' => array('amount')),
+                '#attributes' => ['placeholder' => $this->t('amount'), 'class' => ['amount']],
                 '#prefix' => "<div class='cell right'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
-            $form['items']["attachment$i"] = array(
+            $form['items']["attachment$i"] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $attachment,
                 '#required' => true,
                 '#default_value' => null,
-                '#attributes' => array('style' => array('width:130px;')),
+                '#attributes' => ['style' => ['width:130px;']],
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div></div>',
-            );
+            ];
         }
 
-
-
-
-        $form['items']['1'] = array(
+        $form['items']['1'] = [
             '#type' => 'item',
             '#markup' => $this->t('Total'),
             '#prefix' => "<div class='row' id='memo_form_footer'><div class='cell'>",
             '#suffix' => '</div>',
-        );
+        ];
 
-        $form['items']['2'] = array(
+        $form['items']['2'] = [
             '#type' => 'item',
             '#prefix' => "<div class='cell'>",
             '#suffix' => '</div>',
-        );
+        ];
 
-        $form['items']["grandtotal"] = array(
+        $form['items']["grandtotal"] = [
             '#type' => 'textfield',
             '#id' => 'grandtotal',
             '#size' => 12,
             '#maxlength' => 255,
             '#default_value' => number_format($data->value, 2),
-            '#attributes' => array('placeholder' => $this->t('total'), 'readonly' => 'readonly', 'class' => array('amount')),
+            '#attributes' => ['placeholder' => $this->t('total'), 'readonly' => 'readonly', 'class' => ['amount']],
             '#prefix' => "<div class='cell right'> ",
             '#suffix' => $data->currency . '</div></div></div>',
-        );
+        ];
 
 
-        $form['items']['count'] = array(
+        $form['items']['count'] = [
             '#type' => 'hidden',
             '#value' => $i,
-            '#attributes' => array('id' => 'itemsCount'),
-        );
+            '#attributes' => ['id' => 'itemsCount'],
+        ];
 
-        $form['actions'] = array(
+        $form['actions'] = [
             '#type' => 'actions',
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            '#attributes' => ['class' => ['container-inline']],
+        ];
 
-        $form['actions']['record'] = array(
+        $form['actions']['record'] = [
             '#type' => 'submit',
             '#value' => $this->t('Record'),
-        );
+        ];
+
         $form['#attached']['library'][] = 'ek_finance/ek_finance.memo_pay_form';
 
         return $form;
@@ -424,21 +435,25 @@ class PayMemo extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        $journal = new Journal();
 
-        $query = "SELECT * from {ek_expenses_memo} where id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
+        
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_expenses_memo', 'em')
+            ->fields('em')
+            ->condition('id', $form_state->getValue('for_id'))
+            ->execute();
+        $data = $query->fetchObject();
+
+        /*$query = "SELECT * from {ek_expenses_memo} where id=:id";Database::getConnection('external_db', 'external_db')
                 ->query($query, array(':id' => $form_state->getValue('for_id')))
-                ->fetchObject();
+                ->fetchObject();*/
         (float) $max_pay = $data->value - $data->amount_paid;
         $memo_rate = CurrencyData::rate($data->currency);
 
         // FILTER payment account
         if ($form_state->getValue('bank_account') == "user") {
-            //use user cash account
-            //$query = "SELECT name from {users_field_data} WHERE uid=:uid";
-            //$employee = db_query($query, array(':uid' => $data->entity))
-            //        ->fetchField();
+            // use user cash account
+            
             $uaccount = \Drupal\user\Entity\User::load($data->entity);
             if ($uaccount) {
                 $employee = $uaccount->getAccountName();
@@ -449,7 +464,7 @@ class PayMemo extends FormBase {
             $aid = $settings->get('cash_account', $data->currency);
             $credit = $currency2 . '-' . $aid;
         } elseif (strpos($form_state->getValue('bank_account'), "-")) {
-            //the currency is in the form value
+            // the currency is in the form value
             $employee = 'n/a';
             $bk = explode("-", $form_state->getValue('bank_account'));
             $currency2 = $bk[0];
@@ -504,14 +519,13 @@ class PayMemo extends FormBase {
                 'attachment' => $attachment,
             );
 
-
             $insert = Database::getConnection('external_db', 'external_db')
                     ->insert('ek_expenses')
                     ->fields($fields)
                     ->execute();
 
-            $journal->record(
-                    array(
+            $this->journal->record(
+                    [
                         'source' => "expense",
                         'coid' => $data->entity_to,
                         'aid' => $form_state->getValue('aid' . $i),
@@ -521,7 +535,7 @@ class PayMemo extends FormBase {
                         'value' => $localcurrency,
                         'currency' => $currency2,
                         'fx_rate' => $rate,
-                    )
+                    ]
             );
 
             $this_pay += $form_state->getValue('amount' . $i);
@@ -539,13 +553,13 @@ class PayMemo extends FormBase {
             }
         }
 
-        $fields = array(
+        $fields = [
             'status' => $paid,
             'amount_paid' => $this_pay,
             'amount_paid_base' => round($this_pay / $memo_rate, $this->rounding),
             'pdate' => $form_state->getValue('date'),
             'post' => $post,
-        );
+        ];
 
 
         $update = Database::getConnection('external_db', 'external_db')
@@ -560,7 +574,7 @@ class PayMemo extends FormBase {
             \Drupal::messenger()->addStatus(t('Payment recorded for @id. Go to <a href="@url">expense</a> if you need to edit record.', ['@id' => $data->serial, '@url' => $url]));
             $action = array(1 => $this->t('Partially paid'), 2 => $this->t('Paid'));
 
-            //notify for payment
+            // notify for payment
             if ($data->category < 5) {
                 $query = Database::getConnection('external_db', 'external_db')
                         ->select('ek_company', 'c');
@@ -569,9 +583,6 @@ class PayMemo extends FormBase {
                 $entity = $query->execute()->fetchObject();
                 $entity_mail = $entity->email;
             } else {
-                //$query = "SELECT name,mail from {users_field_data} WHERE uid=:u";
-                //$entity = db_query($query, array(':u' => $data->entity))
-                //        ->fetchObject();
                 $uaccount = \Drupal\user\Entity\User::load($data->entity);
                 if ($uaccount) {
                     $entity_mail = $uaccount->getEmail();
@@ -589,7 +600,6 @@ class PayMemo extends FormBase {
                 $params['subject'] = $this->t('Payment information') . ': ' . $data->serial;
                 $link = Url::fromRoute('ek_finance_manage_print_html', array('id' => $data->id))->toString();
                 $url = Url::fromRoute('user.login', [], ['absolute' => true, 'query' => ['destination' => $link]])->toString();
-                //$url = $GLOBALS['base_url'] . Url::fromRoute('ek_finance_manage_print_html', array('id' => $data->id))->toString();
                 $params['options']['url'] = "<a href='" . $url . "'>" . $data->serial . "</a>";
                 $params['options']['user'] = $entity->name;
 

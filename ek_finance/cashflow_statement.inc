@@ -3,13 +3,13 @@
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Drupal\ek_admin\Access\AccessCheck;
-use Drupal\ek_finance\Journal;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\AidList;
 use Drupal\ek_finance\CurrencyData;
 
 
-$journal = new Journal();
+// Run service
+$journal = \Drupal::service('ek_finance.journal');
 $settings = new CompanySettings($coid);
 $access = AccessCheck::GetCompanyByUser();
 $company = implode(',',$access);

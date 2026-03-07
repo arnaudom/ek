@@ -15,9 +15,8 @@ use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\FinanceSettings;
-use Drupal\ek_finance\Journal;
+use Drupal\ek_finance\Service\JournalService;
 use Drupal\ek_finance\ReportingData;
 use Drupal\ek_finance\PrintManager;
 
@@ -26,26 +25,19 @@ use Drupal\ek_finance\PrintManager;
  */
 class ReportController extends ControllerBase {
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
+   
     protected $moduleHandler;
-
-    /**
-     * The form builder service.
-     *
-     * @var \Drupal\Core\Form\FormBuilderInterface
-     */
     protected $formBuilder;
+    protected $journal;
 
     /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('form_builder'), $container->get('module_handler')
+                $container->get('form_builder'), 
+                $container->get('module_handler'),
+                $container->get('ek_finance.journal')
         );
     }
     
@@ -60,10 +52,11 @@ class ReportController extends ControllerBase {
      *   The module handler service
      */
 
-    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(FormBuilderInterface $form_builder, ModuleHandler $module_handler,JournalService $journal) {
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
         $this->settings = new FinanceSettings();
+        $this->journal = $journal;
     }
 
     /**
@@ -386,9 +379,8 @@ class ReportController extends ControllerBase {
             $summary = $_SESSION['bsfilter']['summary'];
             $settings = new FinanceSettings();
             $baseCurrency = $settings->get('baseCurrency');
-            //include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/profitloss.inc';
-            $journal = new Journal();
-            $items += $journal->profitloss($coid, $year, $month, $summary);
+           
+            $items += $this->journal->profitloss($coid, $year, $month, $summary);
             $param = serialize(
                 [
                     'coid' => $coid,
@@ -458,9 +450,7 @@ class ReportController extends ControllerBase {
             //$settings = new FinanceSettings();
             $baseCurrency = $this->settings->get('baseCurrency');
 
-            //include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/balancesheet.inc';
-            $journal = new Journal();
-            $items += $journal->balancesheet($coid, $year, $month, $summary);
+            $items += $this->journal->balancesheet($coid, $year, $month, $summary);
             $param = serialize(
                 [
                     'coid' => $coid,
@@ -508,7 +498,7 @@ class ReportController extends ControllerBase {
     public function pdfbalancesheet(Request $request, $param) {
 
         $print = new PrintManager();
-        $print->makePdf(['pl' ,0, $param]);
+        $print->makePdf(['bs' ,0, $param]);
         return new \Symfony\Component\HttpFoundation\Response('', 204);
     
     }

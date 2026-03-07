@@ -1,8 +1,10 @@
 <?php
 
 use Drupal\Core\Database\Database;
-use Drupal\ek_finance\Journal;
-$journal = new Journal();
+
+// $journal = new Journal();
+// Run service
+$journal = \Drupal::service('ek_finance.journal');
 $period = $params['year'] . '-' . $params['month'] . 
         '-' . cal_days_in_month(CAL_GREGORIAN,$params['month'] ,$params['year']);
 $dates = $journal->getFiscalDates($params['coid'], $params['year'], $params['month']);

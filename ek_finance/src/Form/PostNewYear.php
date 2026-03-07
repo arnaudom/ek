@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Database\Database;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_admin\CompanySettings;
-use Drupal\ek_finance\Journal;
+use Drupal\ek_finance\Service\JournalService;
 use Drupal\ek_finance\FinanceSettings;
 
 /**
@@ -25,15 +25,17 @@ class PostNewYear extends FormBase {
     protected $moduleHandler;
     protected $finance_settings;
     protected $chart;
+    protected $journal;
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler.
      */
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler, JournalService $journal) {
         $this->moduleHandler = $module_handler;
         $this->finance_settings = new FinanceSettings();
         $this->chart = $this->finance_settings->get('chart');
+        $this->journal = $journal;
     }
 
     /**
@@ -41,7 +43,8 @@ class PostNewYear extends FormBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler')
+                $container->get('module_handler'),
+                $container->get('ek_finance.journal')
         );
     }
 
@@ -72,7 +75,7 @@ class PostNewYear extends FormBase {
 
 
 
-        $form['coid'] = array(
+        $form['coid'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
@@ -80,20 +83,20 @@ class PostNewYear extends FormBase {
             '#title' => $this->t('company'),
             '#disabled' => $form_state->getValue('coid') ? true : false,
             '#default_value' => ($form_state->getValue('coid')) ? $form_state->getValue('coid') : null,
-        );
+        ];
 
         if ($form_state->get('step') == 1) {
-            $form['next'] = array(
+            $form['next'] = [
                 '#type' => 'submit',
                 '#value' => $this->t('Next') . ' >>',
-                '#submit' => array(array($this, 'get_accounts')),
-                '#states' => array(
+                '#submit' => [[$this, 'get_accounts']],
+                '#states' => [
                     // Hide data fieldset when class is empty.
-                    'invisible' => array(
-                        "select[name='coid']" => array('value' => ''),
-                    ),
-                ),
-            );
+                    'invisible' => [
+                        "select[name='coid']" => ['value' => ''],
+                    ],
+                ],
+            ];
         }
 
         if ($form_state->get('step') == 2) {
@@ -112,31 +115,30 @@ class PostNewYear extends FormBase {
                 );
             } elseif ($year == $settings->get('fiscal_year') && $month < $settings->get('fiscal_month')) {
                 //already posted?
-                $form['info'] = array(
+                $form['info'] = [
                     '#type' => 'item',
                     '#markup' => "<div class='messages messages--warning'>" .
                     $this->t('Fiscal year is already set to current year @y - @m', array('@y' => $settings->get('fiscal_year'), '@m' => $settings->get('fiscal_month'))) .
                     "</div>",
-                );
+                ];
             } else {
-                $form['info'] = array(
+                $form['info'] = [
                     '#type' => 'item',
                     '#markup' => "<div class='messages messages--warning'>" .
                     $this->t('You are going to post accounting data to next fiscal year.') .
                     "</div>",
-                );
+                ];
 
 
                 //display detail of posted data
-                $journal = new Journal();
                 $settings = new CompanySettings($form_state->getValue('coid'));
                 $fiscal_year = $settings->get('fiscal_year');
                 $fiscal_month = $settings->get('fiscal_month');
-                $dates = $journal->getFiscalDates($form_state->getValue('coid'), $fiscal_year, $fiscal_month);
+                $dates = $this->journal->getFiscalDates($form_state->getValue('coid'), $fiscal_year, $fiscal_month);
                 $from = $dates['from'];
                 $to = $dates['to'];
                 $earn_date = $dates['fiscal_end'];
-                $earning = $journal->current_earning($form_state->getValue('coid'), $from, $to);
+                $earning = $this->journal->current_earning($form_state->getValue('coid'), $from, $to);
                 $display = '';
                 $rows = '';
 
@@ -177,7 +179,7 @@ class PostNewYear extends FormBase {
                             $r['balance_base'] = $earning[1];
                             $r['balance'] = $earning[0];
                         } elseif ($r['aid'] == $reserve_account) {
-                            $e = $journal->opening(
+                            $e = $this->journal->opening(
                                     array(
                                         'aid' => $r['aid'],
                                         'coid' => $form_state->getValue('coid'),
@@ -187,7 +189,7 @@ class PostNewYear extends FormBase {
                             $b[1] = $e[1] + $earning[1];
                             $b[0] = $e[0] + $earning[0];
                         } else {
-                            $b = $journal->opening(
+                            $b = $this->journal->opening(
                                     array(
                                         'aid' => $r['aid'],
                                         'coid' => $form_state->getValue('coid'),
@@ -234,19 +236,20 @@ class PostNewYear extends FormBase {
 
                 //////////////////////////////
 
-                $form['table'] = array(
+                $form['table'] = [
                     '#type' => 'item',
                     '#markup' => $display,
-                );
+                ];
 
-                $form['actions'] = array(
+                $form['actions'] = [
                     '#type' => 'actions',
-                    '#attributes' => array('class' => array('container-inline')),
-                );
-                $form['actions']['submit'] = array(
+                    '#attributes' => ['class' => ['container-inline']],
+                ];
+
+                $form['actions']['submit'] = [
                     '#type' => 'submit',
                     '#value' => $this->t('Confirm New year posting'),
-                );
+                ];
             }
         }
 
@@ -276,17 +279,16 @@ class PostNewYear extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        $journal = new Journal();
         $settings = new CompanySettings($form_state->getValue('coid'));
         $fiscal_year = $settings->get('fiscal_year');
         $fiscal_month = $settings->get('fiscal_month');
         $fiscal_year = $settings->get('fiscal_year');
         $fiscal_month = $settings->get('fiscal_month');
-        $dates = $journal->getFiscalDates($form_state->getValue('coid'), $fiscal_year, $fiscal_month);
+        $dates = $this->journal->getFiscalDates($form_state->getValue('coid'), $fiscal_year, $fiscal_month);
         $from = $dates['from'];
         $to = $dates['to'];
         $earn_date = $dates['fiscal_end'];
-        $earning = $journal->current_earning($form_state->getValue('coid'), $from, $earn_date);
+        $earning = $this->journal->current_earning($form_state->getValue('coid'), $from, $earn_date);
 
         /* clone current tables as archives
          * name archive = table + fiscal year + coid
@@ -349,7 +351,7 @@ class PostNewYear extends FormBase {
                 $r['balance_base'] = $earning[1];
                 $r['balance'] = $earning[0];
             } elseif ($r['aid'] == $reserve_account) {
-                $e = $journal->opening(
+                $e = $this->journal->opening(
                         array(
                             'aid' => $r['aid'],
                             'coid' => $form_state->getValue('coid'),
@@ -359,7 +361,7 @@ class PostNewYear extends FormBase {
                 $b[1] = $e[1] + $earning[1];
                 $b[0] = $e[0] + $earning[0];
             } else {
-                $b = $journal->opening(
+                $b = $this->journal->opening(
                         array(
                             'aid' => $r['aid'],
                             'coid' => $form_state->getValue('coid'),

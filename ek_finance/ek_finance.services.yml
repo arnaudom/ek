@@ -1,0 +1,9 @@
+services:
+  ek_finance.journal:
+    class: Drupal\ek_finance\Service\JournalService
+    shared: false   # new instance on every ::service() call ($tax, $debit, $credit reset at each call)
+    # No arguments needed since the constructor takes none
+
+  ek_finance.account:
+    class: Drupal\ek_finance\Service\AidList
+    # No arguments needed since the constructor takes none

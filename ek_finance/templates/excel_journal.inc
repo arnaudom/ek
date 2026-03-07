@@ -7,7 +7,8 @@ use Drupal\ek_finance\Journal;
 $baseCurrency = $param['baseCurrency']; 
 $rounding = $param['rounding'];
 $folders = array('general', 'expense', 'receipt', 'payroll', 'invoice', 'purchase');       
-$journal = new Journal();
+// Run service
+$journal = \Drupal::service('ek_finance.journal');
 $sheet = 0;
      
 // Create new PHPExcel object

@@ -12,10 +12,11 @@ namespace Drupal\ek_finance\Form;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\AidList;
 use Drupal\ek_finance\CurrencyData;
-use Drupal\ek_finance\Journal;
+use Drupal\ek_finance\Service\JournalService;
 use Drupal\ek_finance\BankData;
 use Drupal\ek_finance\FinanceSettings;
 
@@ -30,9 +31,17 @@ class ReceiveMemo extends FormBase {
      */
     protected $settings;
     protected $rounding;
-    public function __construct() {
+    protected $journal;
+    public function __construct(JournalService $journal) {
         $this->settings = new FinanceSettings();
         $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding') : 2;
+        $this->journal = $journal;
+    }
+
+    public static function create(ContainerInterface $container) {
+        return new static(
+            $container->get('ek_finance.journal')
+        );
     }
 
     /**
@@ -50,30 +59,29 @@ class ReceiveMemo extends FormBase {
                         ->query("SELECT * from {ek_expenses_memo} where id=:id", array(':id' => $id))->fetchObject();
 
 
-        $form['ref'] = array(
+        $form['ref'] = [
             '#type' => 'item',
             '#markup' => $this->t('Memo ref. @p', array('@p' => $data->serial)),
-        );
+        ];
 
-        $form['pay'] = array(
+        $form['pay'] = [
             '#type' => 'item',
-            '#markup' => $this->t('Recorded value @p', array('@p' => number_format($data->value, 2) . ' ' . $data->currency)),
-        );
+            '#markup' => $this->t('Recorded value @p', ['@p' => number_format($data->value, 2) . ' ' . $data->currency]),
+        ];
 
-
-        $form['for_id'] = array(
+        $form['for_id'] = [
             '#type' => 'hidden',
             '#value' => $id,
-        );
+        ];
 
-        $form['date'] = array(
+        $form['date'] = [
             '#type' => 'date',
             '#id' => 'edit-from',
             '#size' => 12,
             '#required' => true,
             '#default_value' => date('Y-m-d'),
             '#title' => $this->t('Receive date'),
-        );
+        ];
 
 
         //bank account
@@ -99,20 +107,20 @@ class ReceiveMemo extends FormBase {
         $options[(string) $this->t('cash')] = $cash;
         $options[(string) $this->t('bank')] = BankData::listbankaccountsbyaid($data->entity);
 
-        $form['bank_account'] = array(
+        $form['bank_account'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $options,
             '#required' => true,
             '#default_value' => null,
             '#title' => $this->t('Account to be debited'),
-            '#ajax' => array(
-                'callback' => array($this, 'fx_rate'),
+            '#ajax' => [
+                'callback' => [$this, 'fx_rate'],
                 'wrapper' => 'fx',
-            ),
-        );
+            ],
+        ];
 
-        $form['debit_fx_rate'] = array(
+        $form['debit_fx_rate'] = [
             '#type' => 'textfield',
             '#size' => 15,
             '#maxlength' => 255,
@@ -122,55 +130,51 @@ class ReceiveMemo extends FormBase {
             '#description' => '',
             '#prefix' => "<div id='fx'>",
             '#suffix' => '</div>',
-        );
+        ];
 
         $settings = new FinanceSettings();
         $chart = $settings->get('chart');
         $AidOptions = AidList::listaid($data->entity, array($chart['income'], $chart['other_income']), 1);
         $i = 0;
 
-        $form['items']['table'] = array(
+        $form['items']['table'] = [
             '#type' => 'item',
             '#prefix' => "<div class='table'>"
-        );
+        ];
 
-
-
-        $form["aid"] = array(
+        $form["aid"] = [
             '#type' => 'select',
             '#size' => 1,
             '#title' => $this->t('Credit account'),
             '#options' => $AidOptions,
             '#required' => true,
             '#default_value' => null,
-            '#attributes' => array('style' => array('width:130px;')),
+            '#attributes' => ['style' => array('width:130px;')],
             '#prefix' => "<div class=''>",
             '#suffix' => '</div>',
-        );
+        ];
 
-        $form["grandtotal"] = array(
+        $form["grandtotal"] = [
             '#type' => 'textfield',
             '#id' => 'grandtotal',
             '#title' => $this->t('Value'),
             '#size' => 25,
             '#maxlength' => 255,
             '#default_value' => $data->amount_paid,
-            '#attributes' => array('placeholder' => $this->t('total'), 'title' => $this->t('value received expressed in debited account currency')),
+            '#attributes' => ['placeholder' => $this->t('total'), 'title' => $this->t('value received expressed in debited account currency')],
             '#prefix' => "<div class=''>",
             '#suffix' => '</div>',
-        );
+        ];
 
-
-
-        $form['actions'] = array(
+        $form['actions'] = [
             '#type' => 'actions',
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            '#attributes' => ['class' => ['container-inline']],
+        ];
 
-        $form['actions']['record'] = array(
+        $form['actions']['record'] = [
             '#type' => 'submit',
             '#value' => $this->t('Record'),
-        );
+        ];
 
         $form['#attached']['library'][] = 'ek_finance/ek_finance.memo_pay_form';
 
@@ -241,7 +245,6 @@ class ReceiveMemo extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        $journal = new Journal();
 
         $query = "SELECT * from {ek_expenses_memo} where id=:id";
         $memo = Database::getConnection('external_db', 'external_db')
@@ -267,8 +270,8 @@ class ReceiveMemo extends FormBase {
         }
 
 
-        $journal->record(
-                array(
+        $this->journal->record(
+                [
                     'aid' => $form_state->getValue('aid'),
                     'coid' => $memo->entity,
                     'type' => 'credit',
@@ -279,11 +282,11 @@ class ReceiveMemo extends FormBase {
                     'currency' => $currency,
                     'comment' => $this->t('Receipt memo') . ' ' . $memo->serial,
                     'fxRate' => $form_state->getValue('debit_fx_rate'),
-                )
+                ]
         );
 
-        $journal->record(
-                array(
+        $this->journal->record(
+                [
                     'aid' => $aid,
                     'coid' => $memo->entity,
                     'type' => 'debit',
@@ -294,14 +297,12 @@ class ReceiveMemo extends FormBase {
                     'currency' => $currency,
                     'comment' => $this->t('Receipt memo') . ' ' . $memo->serial,
                     'fxRate' => $form_state->getValue('debit_fx_rate'),
-                )
+                ]
         );
 
         $post = 2;
 
-        $fields = array(
-            'post' => $post,
-        );
+        $fields = ['post' => $post];
 
         $update = Database::getConnection('external_db', 'external_db')
                         ->update('ek_expenses_memo')->fields($fields)

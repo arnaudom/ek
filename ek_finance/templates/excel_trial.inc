@@ -3,13 +3,12 @@
 use Drupal\Core\Database\Database;
 use Drupal\ek_finance\Journal;
 
-     $items['data'] = array();
-     $journal = new Journal();
-     $param = unserialize($param);
-     $items['data'] = $journal->trial( $param, 0 );
-     
-     
-     
+$items['data'] = array();
+// Run service
+$journal = \Drupal::service('ek_finance.journal');
+$param = unserialize($param);
+$items['data'] = $journal->trial( $param, 0 );
+          
 // Create new Excel object
 $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
@@ -21,8 +20,6 @@ $objPHPExcel->getProperties()->setCreator("Ek")
                                 ->setKeywords("office 2007 openxml php")
                                 ->setCategory("file");
 $objPHPExcel->getActiveSheet()->setTitle("Trial balance");
-
-
 
 $columns=Array ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ');
 

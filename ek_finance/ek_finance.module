@@ -221,7 +221,8 @@ function ek_finance_theme() {
  */
 function history($param) {
 
-    $journal = new Journal();
+    // Run service
+    $journal = \Drupal::service('ek_finance.journal');
     $history = $journal->history($param);
     $data = $history !== null ?  unserialize($history) : '';
     return [

@@ -549,12 +549,14 @@ class ReconciliationForm extends FormBase {
      */
     public function get_accounts(array &$form, FormStateInterface $form_state) {
         return $form['filters']['account'];
+        
     }
 
     /**
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
+
         if ($form_state->get('step') == 1) {
             if ($form_state->getValue('date') > date('Y-m-d')) {
                 $form_state->setErrorByName("date", $this->t('Future date not allowed'));

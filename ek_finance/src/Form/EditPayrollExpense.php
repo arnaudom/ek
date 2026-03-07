@@ -19,7 +19,7 @@ use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\AidList;
 use Drupal\ek_finance\CurrencyData;
-use Drupal\ek_finance\Journal;
+use Drupal\ek_finance\Service\JournalService;
 use Drupal\ek_finance\BankData;
 use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_address_book\AddressBookData;
@@ -31,19 +31,13 @@ use Drupal\ek_address_book\AddressBookData;
 class EditPayrollExpense extends FormBase {
 
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
     protected $moduleHandler;
+    protected $journal;
 
-    /**
-     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler.
-     */
-    public function __construct(ModuleHandler $module_handler, EntityStorageInterface $file_storage) {
+    
+    public function __construct(ModuleHandler $module_handler, JournalService $journal) {
         $this->moduleHandler = $module_handler;
+        $this->journal = $journal;
     }
 
     /**
@@ -51,7 +45,8 @@ class EditPayrollExpense extends FormBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler'), $container->get('entity_type.manager')->getStorage('file')
+                $container->get('module_handler'),
+                $container->get('ek_finance.journal')
         );
     }
 
@@ -90,15 +85,6 @@ class EditPayrollExpense extends FormBase {
             '#markup' => $this->t('<a href="@url">List</a>', array('@url' => Url::fromRoute('ek_finance.manage.list_expense', [], [])->toString())),
         );
 
-        // get expense data
-        /*$query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_expenses', 'e')
-                ->fields('e')
-                ->condition('id', $id)
-                ->execute();
-        $expense = $query->fetchObject();
-
-        $settingsHR = new \Drupal\ek_hr\HrSettings($expense->company);*/
 
         if ($form_state->get('expense_data') === null && $id !== null) {
             $expense = Database::getConnection('external_db', 'external_db')
@@ -141,7 +127,7 @@ class EditPayrollExpense extends FormBase {
 
         if ($form_state->get('num_items') == null) {
             
-            //get journal data
+            // get journal data
             $query = "SELECT * from {ek_journal} WHERE source like :s and reference = :r AND exchange=:e";
             $a = array(':s' => "expense%", ':r' => $id, ':e' => 0);
             $jEntry = Database::getConnection('external_db', 'external_db')
@@ -748,7 +734,6 @@ class EditPayrollExpense extends FormBase {
             ->execute();          
             
         if($form_state->getValue('delete') == 0) {
-            $journal = new Journal();
             $settings = new FinanceSettings();
             $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
             $baseCurrency = $settings->get('baseCurrency');
@@ -835,8 +820,6 @@ class EditPayrollExpense extends FormBase {
                     // upload with id ref. added to file name
                     $receipt = 'no';
                     $attach = "attachment$n";
-                    //$fid = $form_state->getValue([$attach, 0]);
-                    //if (!empty($fid)) {
                     if ($file = $form_state->get($attach)) {
                         $receipt = 'yes';
                         if ($form_state->getValue('uri' . $n) != '') {
@@ -888,7 +871,7 @@ class EditPayrollExpense extends FormBase {
                     ->execute();
 
             $net = round($gross - $deductions, $rounding);
-            $journal->record(
+            $this->journal->record(
                     [   'source' => "expense payroll",
                         'coid' => $form_state->getValue('coid'),
                         'aid' => $exp_account,
@@ -905,7 +888,7 @@ class EditPayrollExpense extends FormBase {
             );
 
             // pay net salary to employee (DT liabilities, CT bank)
-            $journal->record(
+            $this->journal->record(
                     [
                         'source' => "payroll",
                         'coid' => $form_state->getValue('coid'),
@@ -928,8 +911,8 @@ class EditPayrollExpense extends FormBase {
                     ->execute();
 
             // Record the accounting journal
-            if (round($journal->getCredit(), 4) <> round($journal->getDebit(), 4)) {
-                $msg = 'debit: ' . $journal->getDebit() . ' <> ' . 'credit: ' . $journal->getCredit();
+            if (round($this->journal->getCredit(), 4) <> round($this->journal->getDebit(), 4)) {
+                $msg = 'debit: ' . $this->journal->getDebit() . ' <> ' . 'credit: ' . $this->journal->getCredit();
                 \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }
 

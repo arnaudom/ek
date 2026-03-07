@@ -15,40 +15,28 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Drupal\ek_finance\Journal;
+use Drupal\ek_finance\Service\JournalService;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Controller routines for ek module routes.
  */
 class BalanceLedgerController extends ControllerBase {
-    /* The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
-
+ 
     protected $moduleHandler;
-
-    /**
-     * The database service.
-     *
-     * @var \Drupal\Core\Database\Connection
-     */
     protected $database;
-
-    /**
-     * The form builder service.
-     *
-     * @var \Drupal\Core\Form\FormBuilderInterface
-     */
     protected $formBuilder;
+    protected $journal;
 
     /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
+                $container->get('database'), 
+                $container->get('form_builder'), 
+                $container->get('module_handler'),
+                $container->get('ek_finance.journal'),
         );
     }
 
@@ -62,10 +50,15 @@ class BalanceLedgerController extends ControllerBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(
+        Connection $database, 
+        FormBuilderInterface $form_builder, 
+        ModuleHandler $module_handler,
+        JournalService $journal) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
+        $this->journal = $journal;
     }
 
     /**
@@ -77,14 +70,13 @@ class BalanceLedgerController extends ControllerBase {
      */
     public function ledgerbalance(Request $request) {
         $items['filter_ledger'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterLedger');
-        $items['data'] = array();
-        $journal = new Journal();
+        $items['data'] = [];
         $settings = new \Drupal\ek_finance\FinanceSettings();
         $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
 
 
         if (isset($_SESSION['lfilter']['filter']) && $_SESSION['lfilter']['filter'] == 1) {
-            $param = array(
+            $param = [
                 'coid' => $_SESSION['lfilter']['coid'],
                 'aid1' => $_SESSION['lfilter']['account_from'],
                 'aid2' => $_SESSION['lfilter']['account_to'],
@@ -92,22 +84,21 @@ class BalanceLedgerController extends ControllerBase {
                 'date2' => $_SESSION['lfilter']['to'],
                 'type' => 'accounts',
                 'rounding' => $rounding,
-            );
+            ];
 
-            $items['data'] = $journal->ledger($param);
+            $items['data'] = $this->journal->ledger($param);
             $items['rounding'] = $rounding;
             if ($items['data']['archive'] != 2) {
-                $excel = Url::fromRoute('ek_finance.extract.excel-ledger', array('param' => serialize($param)), array())->toString();
+                $excel = Url::fromRoute('ek_finance.extract.excel-ledger', ['param' => serialize($param)], [])->toString();
                 $items['excel'] = "<a href='" . $excel . "' title='" . $this->t('Excel download') . "'><span class='ico excel green'/></a>";
             }
         }
 
-        return array(
+        return [
             '#theme' => 'ek_finance_ledger',
             '#items' => $items,
-            '#attached' => array(
-                'library' => array('ek_finance/ek_finance.ledger'),),
-        );
+            '#attached' => ['library' => ['ek_finance/ek_finance.ledger'],],
+        ];
     }
 
     /**
@@ -170,7 +161,6 @@ class BalanceLedgerController extends ControllerBase {
         $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterSales', $id);
 
         if (isset($_SESSION['salesledger']['filter']) && $_SESSION['salesledger']['filter'] == 1) {
-            $journal = new Journal();
             $settings = new \Drupal\ek_finance\FinanceSettings();
             $items['rounding'] = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
 
@@ -243,7 +233,7 @@ class BalanceLedgerController extends ControllerBase {
                     ];
 
 
-                    $row['journal'] = $journal->salesledger($param);
+                    $row['journal'] = $this->journal->salesledger($param);
 
                     $items['data'][] = $row;
                 }
@@ -254,16 +244,15 @@ class BalanceLedgerController extends ControllerBase {
             $param['references'] = '';
             $param['rounding'] = $items['rounding'];
 
-            $excel = Url::fromRoute('ek_finance.extract.excel-ledger', array('param' => serialize($param)), array())->toString();
+            $excel = Url::fromRoute('ek_finance.extract.excel-ledger', ['param' => serialize($param)], [])->toString();
             $items['excel'] = "<a href='" . $excel . "' ><span class='ico excel green'/></a>";
 
 
             return array(
                 '#theme' => 'ek_finance_sales_ledger',
                 '#items' => $items,
-                '#attached' => array(
-                    'library' => array('ek_finance/ek_finance.ledger', 'ek_admin/ek_admin_css')
-                ),
+                '#attached' => ['library' => ['ek_finance/ek_finance.ledger', 'ek_admin/ek_admin_css']
+                ],
             );
         } else {
             return $items['form'];

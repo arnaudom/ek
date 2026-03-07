@@ -12,10 +12,11 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\AidList;
 use Drupal\ek_finance\CurrencyData;
-use Drupal\ek_finance\Journal;
+use Drupal\ek_finance\Service\JournalService;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\FinanceSettings;
 
@@ -26,10 +27,20 @@ class JournalEntry extends FormBase {
 
     protected $settings;
     protected $rounding;
-    public function __construct() {
+    protected $journal;
+
+    public function __construct(JournalService $journal) {
         $this->settings = new FinanceSettings();
         $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding') : 2;
+        $this->journal = $journal;
     }
+
+    public static function create(ContainerInterface $container) {
+        return new static(
+            $container->get('ek_finance.journal')
+        );
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -567,14 +578,12 @@ class JournalEntry extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) { 
         if ($form_state->get('step') == 2) {
-            $journal = new Journal();
 
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal', 'j')
                     ->fields('j', ['reference'])
                     ->condition('source','general')
-                    ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                    ->limit(1)
+                    ->range(0, 1)
                     ->orderBy('id', 'DESC')
                     ->execute();
 
@@ -599,7 +608,7 @@ class JournalEntry extends FormBase {
                                 'comment' => Xss::filter($row["comment"]),
                                 'fxRate' => $form_state->getValue('fx_rate')
                             ];
-                            $rec[$key] = $journal->record($a);
+                            $rec[$key] = $this->journal->record($a);
                         }
                         if ($credit <> '') {
                             $a = [
@@ -614,13 +623,13 @@ class JournalEntry extends FormBase {
                                 'comment' => Xss::filter($row["comment"]),
                                 'fxRate' => $form_state->getValue('fx_rate')
                             ];
-                            $journal->record($a);
+                            $this->journal->record($a);
                         }
                     }
                 }
             
-            if (round($journal->getCredit(),$this->rounding) <> round($journal->getDebit(),$this->rounding)) {
-                $msg = 'debit: ' . $journal->getDebit() . ' <> ' . 'credit: ' . $journal->getCredit();
+            if (round($this->journal->getCredit(),$this->rounding) <> round($this->journal->getDebit(),$this->rounding)) {
+                $msg = 'debit: ' . $this->journal->getDebit() . ' <> ' . 'credit: ' . $this->journal->getCredit();
                 \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
             }
 

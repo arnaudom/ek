@@ -8,50 +8,34 @@
 namespace Drupal\ek_finance\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\user\UserInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ek_finance\Journal;
+use Drupal\ek_finance\Service\JournalService;
 
 /**
  * Controller routines for ek module routes.
  */
-class BalanceTrialController extends ControllerBase
-{
-    /* The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
+class BalanceTrialController extends ControllerBase {
 
     protected $moduleHandler;
-
-    /**
-     * The database service.
-     *
-     * @var \Drupal\Core\Database\Connection
-     */
     protected $database;
-
-    /**
-     * The form builder service.
-     *
-     * @var \Drupal\Core\Form\FormBuilderInterface
-     */
     protected $formBuilder;
+    protected $journal;
 
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)
-    {
+    public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
+                $container->get('database'), 
+                $container->get('form_builder'), 
+                $container->get('module_handler'),
+                $container->get('ek_finance.journal')
         );
     }
 
@@ -65,10 +49,15 @@ class BalanceTrialController extends ControllerBase
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(
+        Connection $database, 
+        FormBuilderInterface $form_builder, 
+        ModuleHandler $module_handler,
+        JournalService $journal) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
+        $this->journal = $journal;
     }
 
     /**
@@ -80,37 +69,34 @@ class BalanceTrialController extends ControllerBase
      */
     public function trialbalance(Request $request) {
         $items['filter_trial'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterTrial');
-        $items['data'] = array();
-        $journal = new Journal();
+        $items['data'] = [];
 
         if (isset($_SESSION['tfilter']['filter']) && $_SESSION['tfilter']['filter'] == 1) {
-            $param = array(
+            $param = [
                 'coid' => $_SESSION['tfilter']['coid'],
                 'year' => $_SESSION['tfilter']['year'],
                 'month' => $_SESSION['tfilter']['month'],
                 'active' => $_SESSION['tfilter']['active'],
                 'null' => $_SESSION['tfilter']['null'],
-            );
+            ];
 
-            $items['data'] = $journal->trial($param);
+            $items['data'] = $this->journal->trial($param);
 
-            $excel = Url::fromRoute('ek_finance.extract.excel-trial', array('param' => serialize($param)), array())->toString();
+            $excel = Url::fromRoute('ek_finance.extract.excel-trial', ['param' => serialize($param)], [])->toString();
 
             $items['excel'] = "<a href='" . $excel . "' title='". $this->t('Excel download') . "'><span class='ico excel green'/></a>";
             
             if ($items['data']['total']['error1'] == '1') {
                 //try to identify balances errors
                 $start = $_SESSION['tfilter']['year'] . '-01-01';
-                $dates = $journal->getFiscalDates($_SESSION['tfilter']['coid'], $_SESSION['tfilter']['year'], $_SESSION['tfilter']['month']);
-                $items['error'] = $journal->traceError(['coid' => $_SESSION['tfilter']['coid'], 'from' => $start, 'to' => $dates['to']]);
+                $dates = $this->journal->getFiscalDates($_SESSION['tfilter']['coid'], $_SESSION['tfilter']['year'], $_SESSION['tfilter']['month']);
+                $items['error'] = $this->journal->traceError(['coid' => $_SESSION['tfilter']['coid'], 'from' => $start, 'to' => $dates['to']]);
             }
         } 
         return array(
             '#theme' => 'ek_finance_trial',
             '#items' => $items,
-            '#attached' => array(
-                'library' => array('ek_finance/ek_finance', 'ek_finance/ek_finance.dialog','ek_admin/ek_admin_css'),
-            ),
+            '#attached' => ['library' => ['ek_finance/ek_finance', 'ek_finance/ek_finance.dialog','ek_admin/ek_admin_css'],],
         );
     }
 

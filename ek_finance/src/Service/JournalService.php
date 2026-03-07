@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ek_finance;
+namespace Drupal\ek_finance\Service;
 
 use DateTime;
 use Drupal\Core\Url;
@@ -8,23 +8,30 @@ use Drupal\Core\Database\Database;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\AidList;
+use Drupal\ek_finance\BankData;
 use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_finance\CurrencyData;
 
 /**
- * record journal entries
- * @see /Service/Journal.php for next version
+ * Journal service for recording journal entries.
+ *
+ * @service ek_finance.journal
  */
-class Journal {
+class JournalService {
 
     protected $tax;
     protected $debit;
     protected $credit;
+    protected $financeSettings;
+    protected $rounding;
 
     public function __construct() {
         (double) $this->tax = 0;
         (double) $this->debit = 0;
         (double) $this->credit = 0;
+        $this->financeSettings  = new FinanceSettings();
+        $this->rounding  = (!null == $this->financeSettings->get('rounding'))
+                            ? $this->financeSettings->get('rounding') : 2;
     }
 
     public function getCredit() {
@@ -2274,6 +2281,7 @@ class Journal {
             $row['count'] = $d->count;
             $row['aid'] = $d->aid;
             $row['aname'] = $aid . " - " . $account_list[$d->coid][$d->aid];
+            $row['account_description'] = $d->aid . " " . $account_list[$d->coid][$d->aid];
             $row['coid'] = $d->coid;
             $row['exchange'] = $d->exchange;
             $row['value'] = $d->value;
@@ -2426,6 +2434,7 @@ class Journal {
                     $transaction['id'] = $entry->id;
                     $transaction['count'] = $entry->count;
                     $transaction['aname'] = $aid . "  " . $aname;
+                    $transaction['account_description'] = $entry->aid  . "  " . $aname;
                     $transaction['exchange'] = $entry->exchange;
                     $transaction['type'] = $entry->type;
                     if ($entry->type == 'debit') {
@@ -2614,7 +2623,7 @@ class Journal {
      */
 
     public function ledger($l) {
-
+        
         // determine if query cover closed years, before current fiscal year
         $dates = self::getFiscalDates($l['coid'], date('Y', strtotime($l['date2'])), date('m', strtotime($l['date2'])));
         $settings = new FinanceSettings();
@@ -3627,6 +3636,80 @@ class Journal {
         }
 
         return $return;
+    }
+    
+    /*
+     * Get journal entries lines that are not reconciled by company, date and account
+     * @param int $coid
+     *  the company ID
+     * 
+     * @param int $accunt 
+     *  the journal account
+     * 
+     * @param string $data
+     *  the recociliation date
+     * 
+     * @return array of journal entries
+     */
+    public function getUnreconciledLines($coid, $account, $date) {
+        $currencies      = CurrencyData::listcurrency(1);
+        $companysettings = new CompanySettings($coid);
+        $account_currency = NULL;
+
+        foreach ($currencies as $key => $value) {
+        $cash1 = $companysettings->get('cash_account', $key);
+        $cash2 = $companysettings->get('cash2_account', $key);
+        if ($cash1 == $account || $cash2 == $account) { $account_currency = $key; }
+        if (BankData::currencyByaid($coid, $account) == $key)  { $account_currency = $key; }
+        }
+
+        $query = Database::getConnection('external_db', 'external_db')
+        ->select('ek_journal', 'j');
+        $query->fields('j');
+        $query->condition('coid', $coid, '=');
+        $query->condition('aid', $account, '=');
+        $query->condition('date', $date, '<=');
+        $query->condition('reconcile', '0', '=');
+        $query->condition('exchange', '0', '=');
+        $query->orderBy('date', 'ASC');
+        $result = $query->execute();
+
+        $journalLines = [];
+        while ($r = $result->fetchObject()) {
+            $j = self::journalEntryDetails($r->id);
+
+            // Apply exchange correction before passing values to AI.
+            if ($account_currency && ($account_currency != $j['currency'])) {
+                $queryEx = Database::getConnection('external_db', 'external_db')
+                ->select('ek_journal', 'jr');
+                $queryEx->fields('jr', ['value']);
+                $queryEx->condition('coid', $j['coid'], '=');
+                $queryEx->condition('aid', $j['aid'], '=');
+                $queryEx->condition('date', $j['date'], '=');
+                $queryEx->condition('type', $j['type'], '=');
+                $queryEx->condition('source', $j['source'], '=');
+                $queryEx->condition('reference', $j['reference'], '=');
+                $queryEx->condition('exchange', 1, '=');
+                $exRow = $queryEx->execute()->fetchObject();
+                if ($exRow) {
+                $j['value'] = $j['value'] + $exRow->value;
+                }
+            }
+
+            $comment = is_array($j['comment']) ? $j['comment']['#markup'] : $j['comment'];
+
+            $journalLines[] = [
+                'id'        => (int) $r->id,
+                'date'      => $j['date'],
+                'type'      => $j['type'],
+                'value'     => round((float) $j['value'], $this->rounding),
+                'reference' => $j['reference'],
+                'comment'   => substr(strip_tags($comment), 0, 80),
+            ];
+
+        }
+        
+        return $journalLines;
     }
 
     /*

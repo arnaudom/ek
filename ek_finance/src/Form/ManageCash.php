@@ -14,8 +14,7 @@ use Drupal\Core\Extension\ModuleHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\CurrencyData;
-use Drupal\ek_finance\Journal;
-use Drupal\ek_finance\FinanceSettings;
+use Drupal\ek_finance\Service\JournalService;
 use Drupal\ek_finance\BankData;
 use Drupal\ek_admin\CompanySettings;
 
@@ -24,25 +23,17 @@ use Drupal\ek_admin\CompanySettings;
  */
 class ManageCash extends FormBase {
 
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
+  
     protected $moduleHandler;
-
-    /**
-     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler.
-     */
-
     protected $financeSettings;
     protected $rounding;
+    protected $journal;
 
-    public function __construct(ModuleHandler $module_handler) {
+    public function __construct(ModuleHandler $module_handler,JournalService $journal) {
         $this->moduleHandler = $module_handler;
         $this->financeSettings = new \Drupal\ek_finance\FinanceSettings();
         $this->rounding = (!null == $this->financeSettings->get('rounding')) ? $this->financeSettings->get('rounding') : 2;
+        $this->journal = $journal;
     }
 
     /**
@@ -50,7 +41,8 @@ class ManageCash extends FormBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler')
+                $container->get('module_handler'),
+                $container->get('ek_finance.journal')
         );
     }
 
@@ -745,7 +737,6 @@ class ManageCash extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->get('step') == 2) {
-            $journal = new Journal();
             $companysettings = new CompanySettings($form_state->getValue('coid'));
 
             if ($form_state->getValue('transaction') == 1 || $form_state->getValue('transaction') == 2) {
@@ -843,7 +834,7 @@ class ManageCash extends FormBase {
                     $t2 = 'debit';
                 }
 
-                $journal->record(
+                $this->journal->record(
                         array(
                             'source' => "general cash",
                             'coid' => $form_state->getValue('coid'),
@@ -857,7 +848,7 @@ class ManageCash extends FormBase {
                         )
                 );
 
-                $journal->record(
+                $this->journal->record(
                         array(
                             'source' => "general cash",
                             'coid' => $form_state->getValue('coid'),
@@ -871,8 +862,8 @@ class ManageCash extends FormBase {
                         )
                 );
 
-                if ($journal->getCredit() <> $journal->getDebit()) {
-                    $msg = 'debit: ' . $journal->getDebit() . ' <> ' . 'credit: ' . $journal->getCredit();
+                if ($this->journal->getCredit() <> $this->journal->getDebit()) {
+                    $msg = 'debit: ' . $this->journal->getDebit() . ' <> ' . 'credit: ' . $this->journal->getCredit();
                     \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
                 }
             }//1

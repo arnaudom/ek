@@ -14,15 +14,14 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\AidList;
 use Drupal\ek_finance\CurrencyData;
-use Drupal\ek_finance\Journal;
 use Drupal\ek_finance\BankData;
 use Drupal\ek_finance\FinanceSettings;
+use Drupal\ek_finance\Service\JournalService;
 use Drupal\ek_address_book\AddressBookData;
 
 /**
@@ -30,32 +29,25 @@ use Drupal\ek_address_book\AddressBookData;
  */
 class RecordExpense extends FormBase {
 
-    /**
-     * The file storage service.
-     *
-     * @var \Drupal\Core\Entity\EntityStorageInterface
-     */
+    //protected $database;
     protected $fileStorage;
-
-    /**
-     * The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
     protected $moduleHandler;
-
-    /**
-     * @param \Drupal\Core\Extension\ModuleHandler $module_handler
-     *   The module handler.
-     */
-
     protected $settings;
     protected $rounding;
-    public function __construct(ModuleHandler $module_handler, EntityStorageInterface $file_storage) {
+    protected $journal;
+    protected $fileSystem;
+
+    public function __construct(ModuleHandler $module_handler, 
+    EntityStorageInterface $file_storage, 
+    JournalService $journal, 
+    FileSystemInterface $file_system ) {
+        //$this->database = Database::getConnection('external_db', 'external_db');
         $this->moduleHandler = $module_handler;
         $this->fileStorage = $file_storage;
         $this->settings = new FinanceSettings();
         $this->rounding = (!null == $this->settings->get('rounding')) ? $this->settings->get('rounding') : 2;
+        $this->journal = $journal;
+        $this->fileSystem = $file_system;
     }
 
     /**
@@ -63,7 +55,10 @@ class RecordExpense extends FormBase {
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler'), $container->get('entity_type.manager')->getStorage('file')
+                $container->get('module_handler'), 
+                $container->get('entity_type.manager')->getStorage('file'),
+                $container->get('ek_finance.journal'),
+                $container->get('file_system')
         );
     }
 
@@ -233,7 +228,7 @@ class RecordExpense extends FormBase {
         $CurrencyOptions = CurrencyData::listcurrency(1);
         $company = AccessCheck::CompanyListByUid();
 
-        $form['coid'] = array(
+        $form['coid'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
@@ -241,28 +236,29 @@ class RecordExpense extends FormBase {
             '#title' => $this->t('company'),
             '#required' => true,
             '#weight' => -15,
-            '#ajax' => array(
-                'callback' => array($this, 'set_currency'),
+            '#ajax' => [
+                'callback' => [$this, 'set_currency'],
                 'wrapper' => 'currency',
-            ),
-        );
+            ],
+        ];
 
         $add = isset($expense->allocation) ? $company[$expense->allocation] : "";
-        $form['allocation'] = array(
+        $form['allocation'] = [
             '#type' => 'details',
             '#title' => $this->t('Allocation') . " " . $add,
             '#group' => '1',
             '#open' => false,
             '#weight' => -11,
-        );
-        $form['allocation']["change_location"] = array(
+        ];
+        
+        $form['allocation']["change_location"] = [
             '#type' => 'checkbox',
             '#default_value' => isset($expense->allocation) ? true : null,
             '#title' => $this->t('assign to other entity'),
             '#prefix' => "<div class='container-inline'>",
-        );
+        ];
 
-        $form['allocation']['location'] = array(
+        $form['allocation']['location'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $company,
@@ -270,35 +266,35 @@ class RecordExpense extends FormBase {
             '#title' => $this->t('allocation'),
             '#required' => false,
             '#suffix' => "</div>",
-            '#states' => array(
-                'invisible' => array(
-                    "input[name='change_location']" => array('checked' => false),
-                ),
-            ),
-        );
+            '#states' => [
+                'invisible' => [
+                    "input[name='change_location']" => ['checked' => false],
+                ],
+            ],
+        ];
 
-        $form['credit'] = array(
+        $form['credit'] = [
             '#type' => 'details',
             '#title' => $this->t('Credit'),
             '#group' => '1',
             '#open' => true,
             '#weight' => -10,
-        );
+        ];
 
-        $form['credit']['currency'] = array(
+        $form['credit']['currency'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $CurrencyOptions,
             '#required' => true,
             '#default_value' => ($form_state->get('currency')) ? $form_state->get('currency') : null,
             '#title' => $this->t('currency'),
-            '#ajax' => array(
-                'callback' => array($this, 'set_credit_account'),
+            '#ajax' => [
+                'callback' => [$this, 'set_credit_account'],
                 'wrapper' => 'credit',
-            ),
+            ],
             '#prefix' => "<div class='table'><div class='row'><div class='cell' id='currency'>",
             '#suffix' => '</div>',
-        );
+        ];
 
         // bank account
         if (($form_state->getValue('coid') || $form_state->get('coid')) && ($form_state->getValue('currency') || $form_state->get('currency'))) {
@@ -310,16 +306,26 @@ class RecordExpense extends FormBase {
             $cash = [];
             if ($aid <> '') {
                 $query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";
-                $name = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':c' => $coid, ':a' => $aid))->fetchField();
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a')
+                    ->fields('a', ['aname'])
+                    ->condition('coid', $coid)
+                    ->condition('aid', $aid);
+                $name =  $query->execute()->fetchField();
                 $key = $currency . "-" . $aid;
                 $cash = array($key => $name);
             }
             $aid = $settings->get('cash2_account', $currency);
             if ($aid <> '') {
-                $query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";
+                /*$query = "SELECT aname from {ek_accounts} WHERE coid=:c and aid=:a";
                 $name = Database::getConnection('external_db', 'external_db')
-                                ->query($query, array(':c' => $coid, ':a' => $aid))->fetchField();
+                                ->query($query, array(':c' => $coid, ':a' => $aid))->fetchField();*/
+                $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_accounts', 'a')
+                    ->fields('a', ['aname'])
+                    ->condition('coid', $coid)
+                    ->condition('aid', $aid);
+                $name =  $query->execute()->fetchField();             
                 $key = $currency . "-" . $aid;
                 $cash += array($key => $name);
             }
@@ -340,7 +346,7 @@ class RecordExpense extends FormBase {
             //$form_state->setRebuild();
 
 
-            $form['credit']['bank_account'] = array(
+            $form['credit']['bank_account'] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $form_state->get('bank_opt'),
@@ -351,17 +357,17 @@ class RecordExpense extends FormBase {
                 '#suffix' => '</div>',
                 '#description' => $alert,
                 '#validated' => true,
-                '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
-                '#ajax' => array(
-                    'callback' => array($this, 'fx_rate'),
+                '#attributes' => ['style' => array('width:200px;white-space:nowrap')],
+                '#ajax' => [
+                    'callback' => [$this, 'fx_rate'],
                     'wrapper' => 'fx',
-                ),
-            );
+                ],
+            ];
         } else {
-            $form['credit']['bank_account'] = array(
+            $form['credit']['bank_account'] = [
                 '#type' => 'select',
                 '#size' => 1,
-                '#options' => array(0 => $this->t('- Select -')),
+                '#options' => [0 => $this->t('- Select -')],
                 '#required' => true,
                 '#default_value' => '',
                 '#title' => $this->t('account payment'),
@@ -369,11 +375,11 @@ class RecordExpense extends FormBase {
                 '#suffix' => '</div>',
                 '#description' => $this->t('Select a company first'),
                 '#validated' => true,
-                '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
-            );
+                '#attributes' => ['style' => ['width:200px;white-space:nowrap']],
+            ];
         }
 
-        $form['credit']['fx_rate'] = array(
+        $form['credit']['fx_rate'] = [
             '#type' => 'textfield',
             '#size' => 15,
             '#maxlength' => 15,
@@ -383,17 +389,17 @@ class RecordExpense extends FormBase {
             '#description' => '',
             '#prefix' => "<div id='fx' class='cell'>",
             '#suffix' => '</div></div></div>',
-        );
+        ];
 
         // user acc
         // used to control cash payments and advances
-        $form['user_acc'] = array(
+        $form['user_acc'] = [
             '#type' => 'details',
             '#title' => $this->t('User account'),
             '#group' => '1a',
             '#open' => true,
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            '#attributes' => ['class' => ['container-inline']],
+        ];
 
         if ($id != null && !null == $expense->employee && $expense->employee != 'n/a') {
             $user = \Drupal\user\Entity\User::load($expense->employee);
@@ -401,70 +407,67 @@ class RecordExpense extends FormBase {
                 $userName = $user->getAccountName;
             }
         }
-        $form['user_acc']['user'] = array(
+        $form['user_acc']['user'] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#default_value' => isset($userName) ? $userName : null,
             '#autocomplete_route_name' => 'ek_admin.user_autocomplete',
             '#title' => $this->t('user account'),
-            '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
+            '#attributes' => ['style' => ['width:200px;white-space:nowrap']],
             '#prefix' => "<div  class='container-inline'>",
-        );
+        ];
 
-        $form['user_acc']['paid'] = array(
+        $form['user_acc']['paid'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => array(0 => '', 'paid' => $this->t('paid'), 'no' => $this->t('not paid')),
             '#description' => $this->t('indicate "paid" if advanced by company or "not paid" if advanced by employee'),
             '#suffix' => '</div>',
-            '#states' => array(
-                'invisible' => array(
-                    "input[name='user']" => array(
-                        //array('value' => 'not applicable'),
-                        array('value' => '')
-                    ),
-                ),
-            ),
-        );
+            '#states' => [
+                'invisible' => [
+                    "input[name='user']" => [
+                        ['value' => '']
+                    ],
+                ],
+            ],
+        ];
 
         // References / tags
-        $form['reference'] = array(
+        $form['reference'] = [
             '#type' => 'details',
             '#title' => $this->t('References'),
             '#group' => '2',
             '#open' => true,
-        );
+        ];
 
 
-        $supplier = array('n/a' => $this->t('not applicable'));
+        $supplier = ['n/a' => $this->t('not applicable')];
         $supplier += AddressBookData::addresslist(2);
 
-
-        $form['reference']['supplier'] = array(
+        $form['reference']['supplier'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $supplier,
             '#required' => true,
             '#default_value' => isset($expense->suppliername) ? $expense->suppliername : null,
             '#title' => $this->t('supplier'),
-            '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
+            '#attributes' => ['style' => ['width:200px;white-space:nowrap']],
             '#prefix' => "<div  class='container-inline'>",
-        );
+        ];
 
         $client = array('n/a' => $this->t('not applicable'));
         $client += AddressBookData::addresslist(1);
 
-
-        $form['reference']['client'] = array(
+        $form['reference']['client'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => $client,
             '#required' => true,
             '#default_value' => isset($expense->clientname) ? $expense->clientname : null,
             '#title' => $this->t('client'),
-            '#attributes' => array('style' => array('width:200px;white-space:nowrap')),
+            '#attributes' => ['style' => ['width:200px;white-space:nowrap']],
             '#suffix' => '</div>',
-        );
+        ];
 
         if ($this->moduleHandler->moduleExists('ek_projects')) {
             if (isset($expense->pcode) && $expense->pcode != 'n/a') {
@@ -472,35 +475,34 @@ class RecordExpense extends FormBase {
             } else {
                 $thisPcode = null;
             }
-            $form['reference']['pcode'] = array(
+            $form['reference']['pcode'] = [
                 '#type' => 'textfield',
                 '#size' => 50,
                 '#maxlength' => 150,
-                //'#required' => TRUE,
                 '#default_value' => $thisPcode,
-                '#attributes' => array('placeholder' => $this->t('Ex. 123')),
+                '#attributes' => ['placeholder' => $this->t('Ex. 123')],
                 '#title' => $this->t('Project'),
                 '#autocomplete_route_name' => 'ek_look_up_projects',
-                '#autocomplete_route_parameters' => array('level' => 'all', 'status' => '0'),
-            );
+                '#autocomplete_route_parameters' => ['level' => 'all', 'status' => '0'],
+            ];
         } // project
         
         // provision type entry options
         if ($recordProvision == '1' || $credit == 'P') {
-            $form['provision'] = array(
+            $form['provision'] = [
                 '#type' => 'details',
                 '#title' => $this->t('Provision'),
                 '#group' => '2a',
                 '#open' => true,
-                '#attributes' => array('class' => array('container-inline')),
-                '#states' => array(
-                    'visible' => array(
-                        "select[name='bank_account']" => array(
-                            array('value' => 'P'),
-                        ),
-                    ),
-                ),
-            );
+                '#attributes' => ['class' => ['container-inline']],
+                '#states' => [
+                    'visible' => [
+                        "select[name='bank_account']" => [
+                            ['value' => 'P'],
+                        ],
+                    ],
+                ],
+            ];
             $form['provision']['provision_account'] = array(
                 '#type' => 'select',
                 '#size' => 1,
@@ -519,28 +521,28 @@ class RecordExpense extends FormBase {
         }
 
         // debits
-        $form['debit'] = array(
+        $form['debit'] = [
             '#type' => 'details',
             '#title' => $this->t('Debits'),
             '#group' => '3',
             '#open' => true,
-        );
+        ];
 
-        $form['debit']['actions']['add'] = array(
+        $form['debit']['actions']['add'] = [
             '#type' => 'submit',
             '#value' => '+ ' . $this->t('Add item'),
             //'#limit_validation_errors' => array(),
-            '#submit' => array(array($this, 'addForm')),
+            '#submit' => [[$this, 'addForm']],
             '#prefix' => "<div id='add' class='right'>",
             '#suffix' => '</div>',
-            '#attributes' => array('class' => array('button--add')),
-            '#states' => array(
+            '#attributes' => ['class' => array('button--add')],
+            '#states' => [
                 // Hide data fieldset when coid is empty.
-                'invisible' => array(
-                    "select[name='coid']" => array('value' => ''),
-                ),
-            ),
-        );
+                'invisible' => [
+                    "select[name='coid']" => ['value' => ''],
+                ],
+            ],
+        ];
 
 
         if (isset($n)) {
@@ -557,7 +559,7 @@ class RecordExpense extends FormBase {
         );
 
         for ($i = 1; $i <= $max; $i++) {
-            $form['debit']["account$i"] = array(
+            $form['debit']["account$i"] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $form_state->get('AidOptions'),
@@ -566,7 +568,7 @@ class RecordExpense extends FormBase {
                 '#attributes' => ['style' => ['width:100px;white-space:nowrap']],
                 '#prefix' => "<div class='row'><div class='cell'>",
                 '#suffix' => '</div>',
-            );
+            ];
 
             if ($form_state->getValue("pdate1")) {
                 $rowDate = $form_state->getValue("pdate1");
@@ -606,21 +608,21 @@ class RecordExpense extends FormBase {
                 
                 if ($form_state->get('wtax_rate') == null || $form_state->get('wtax_rate') == 0){
                 // only 1 tax rate    
-                    $form['debit']["tax$i"] = array(
+                    $form['debit']["tax$i"] = [
                         '#type' => 'checkbox',
                         '#id' => 'tax-' . $i,
                         '#default_value' => isset($check[$i]) ? $check[$i] : null,
-                        '#attributes' => array('title' => $this->t('add sales tax')),
+                        '#attributes' => ['title' => $this->t('add sales tax')],
                         '#prefix' => "<div class='cell' style='padding-right:2px' id='tval$i'>",
                         '#suffix' => "</div>",
                         '#description_display' => 'after',
                         '#description' => isset($tax[$i]) ? '' . $tax[$i] : null,
-                        '#ajax' => array(
-                            'callback' => array($this, "singletax"),
+                        '#ajax' => [
+                            'callback' => [$this, "singletax"],
                             'wrapper' => "tval$i",
-                            'progress' => array('message' => null),
-                        ),
-                    );
+                            'progress' => ['message' => null],
+                        ],
+                    ];
                 } else { 
                     // select option 2 rates
                     if($clone == 'clone') {
@@ -672,7 +674,7 @@ class RecordExpense extends FormBase {
                 '#size' => 30,
                 '#maxlength' => 255,
                 '#default_value' => ($form_state->get("comment$i")) ? $form_state->get("comment$i") : null,
-                '#attributes' => array('placeholder' => $this->t('comment'), 'ondblclick' => "this.value=''"),
+                '#attributes' => ['placeholder' => $this->t('comment'), 'ondblclick' => "this.value=''"],
                 '#prefix' => "<div class='cell'>",
                 '#suffix' => '</div></div>',
             ];
@@ -696,36 +698,35 @@ class RecordExpense extends FormBase {
         } // loop added debits
 
 
-        $form['debit']['_table'] = array(
+        $form['debit']['_table'] = [
             '#markup' => "</div>",
-        );
+        ];
 
 
         if ((($form_state->get('num_items') <> '' && $form_state->get('num_items') > 0) || isset($detail))) {
             if ($form_state->get('num_items') > 0) {
-                $form['debit']['remove'] = array(
+                $form['debit']['remove'] = [
                     '#type' => 'submit',
                     '#value' => $this->t('remove last item'),
-                    '#limit_validation_errors' => array(['coid'], ['currency'], ['bank_account']),
-                    '#submit' => array(array($this, 'removeForm')),
+                    '#limit_validation_errors' => [['coid'], ['currency'], ['bank_account']],
+                    '#submit' => [[$this, 'removeForm']],
                     '#prefix' => "<p class='right'>",
                     '#suffix' => '</p>',
-                    '#attributes' => array('class' => array('button--remove')),
-                );
+                    '#attributes' => ['class' => ['button--remove']],
+                ];
             }
         }
 
-
-        $form['actions'] = array(
+        $form['actions'] = [
             '#type' => 'actions',
-            '#attributes' => array('class' => array('container-inline')),
-        );
+            '#attributes' => ['class' => ['container-inline']],
+        ];
 
-        $form['actions']['submit'] = array(
+        $form['actions']['submit'] = [
             '#type' => 'submit',
             '#value' => $this->t('Record'),
-            '#attributes' => array('class' => array('button--record')),
-        );
+            '#attributes' => ['class' => ['button--record']],
+        ];
 
         $form['#attached']['library'][] = 'ek_finance/ek_finance.expenses_form';
 
@@ -839,10 +840,12 @@ class RecordExpense extends FormBase {
             $currency = $form_state->getValue('currency');
         } else {
             // bank account
-            $query = "SELECT currency from {ek_bank_accounts} where id=:id ";
-            $currency = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':id' => $form_state->getValue('bank_account')))
-                    ->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_bank_accounts', 'ba')
+                ->fields('ba', ['currency'])
+                ->condition('id', $form_state->getValue('bank_account'))
+                ->execute();
+            $currency = $query->fetchField();
         }
 
         $fx = CurrencyData::rate($currency);
@@ -898,10 +901,16 @@ class RecordExpense extends FormBase {
                 $currency = $data[0];
             } else {
                 // bank account
-                $query = "SELECT currency from {ek_bank_accounts} where id=:id ";
+                /*$query = "SELECT currency from {ek_bank_accounts} where id=:id ";
                 $currency = Database::getConnection('external_db', 'external_db')
                         ->query($query, array(':id' => $form_state->getValue('bank_account')))
-                        ->fetchField();
+                        ->fetchField();*/
+                 $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_bank_accounts', 'ba')
+                    ->fields('ba', ['currency'])
+                    ->condition('id', $form_state->getValue('bank_account'))
+                    ->execute();
+                $currency = $query->fetchField();
             }
 
             if ($form_state->getValue('currency') != $currency) {
@@ -914,11 +923,17 @@ class RecordExpense extends FormBase {
         // verify project ref
         if (!null == $form_state->getValue('pcode') && $form_state->getValue('pcode') != 'n/a') {
             $p = explode(' ', $form_state->getValue('pcode'));
-            $query = "SELECT id FROM {ek_project} WHERE pcode = :p ";
-            $data = Database::getConnection('external_db', 'external_db')
+            //$query = "SELECT id FROM {ek_project} WHERE pcode = :p ";
+            /*$data = Database::getConnection('external_db', 'external_db')
                     ->query($query, [':p' => $p[1]])
-                    ->fetchField();
-            if ($data) {
+                    ->fetchField();*/
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_project', 'p')
+                ->fields('p', ['id'])
+                ->condition('pcode', $p[1])
+                ->execute();
+            $id = $query->fetchField();
+            if ($id) {
                 $form_state->setValue('pcode', $p[1]);
             } else {
                 $form_state->setErrorByName('pcode', $this->t('Unknown project'));
@@ -958,24 +973,6 @@ class RecordExpense extends FormBase {
             if ($form_state->getValue("pdate$n") == '') {
                 $form_state->setErrorByName("pdate$n", $this->t('there is no date for debit @n', array('@n' => $n)));
             }
-
-            // attachment filter (file not managed)
-            /*$field = "attachment" . $n;
-            $file = _file_save_upload_from_form($form['debit'][$field], $form_state, 0);
-            if ($file) {
-                if($errors = $form_state->getErrors()) {
-                        foreach ($errors as $error) {
-                            $form_state->setErrorByName($field, $error);
-                        }
-                        // Mark the temporary file for deletion.
-                        $file->delete();
-                    } else {
-                        $form_state->set($field, $file) ;
-                    }        
-                   
-            } else {
-                  //  $form_state->setErrorByName($field, $this->t('File upload failed'));
-            }*/
         
         }
     }
@@ -984,19 +981,19 @@ class RecordExpense extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        $journal = new Journal();
         $baseCurrency = $this->settings->get('baseCurrency');
         $currency = $form_state->getValue('currency');
         
-
         if ($form_state->getValue('edit') != '') {
-            //delete old  journal records
+            // delete old  journal records
             $query = "SELECT company FROM {ek_expenses} WHERE id =:r";
             $a = array(':r' => $form_state->getValue('edit'));
 
-            $old = Database::getConnection('external_db', 'external_db')
-                    ->query($query, $a)
-                    ->fetchField();
+            $query=  Database::getConnection('external_db', 'external_db')
+                    ->select('ek_expenses', 'e')
+                    ->fields('e', ['company'])
+                    ->condition('id', $form_state->getValue('edit'));
+            $old = $query->execute()->fetchField();
 
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_journal', 'j');
@@ -1015,7 +1012,6 @@ class RecordExpense extends FormBase {
                     ->condition('reference', $form_state->getValue('edit'))
                     ->execute();
         }
-
 
         if ($form_state->getValue('change_location') == 1) {
             $allocation = $form_state->getValue('location');
@@ -1117,14 +1113,14 @@ class RecordExpense extends FormBase {
                 $receipt = 'yes';
                 if ($form_state->getValue('uri' . $n) != '') {
                     // if edit and existing, delete current attach.
-                    \Drupal::service('file_system')->delete($form_state->getValue('uri' . $n));
+                    $this->fileSystem->delete($form_state->getValue('uri' . $n));
                 }
                 $file_id = reset($form_state->getValue($attach));
-                $file = File::load($file_id);
+                $file = $this->fileStorage->load($file_id);
                 $name = $file->getFilename();
                 $dir = "private://finance/receipt/" . $form_state->getValue('coid');
-                \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                $load_attachment = \Drupal::service('file_system')->copy($file->getFileUri(), $dir . "/" . $insert . '_' . $name);
+                $this->fileSystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+                $load_attachment = $this->fileSystem->copy($file->getFileUri(), $dir . "/" . $insert . '_' . $name);
 
             } elseif ($form_state->getValue('uri' . $n) != '') {
                 $receipt = 'yes';
@@ -1140,8 +1136,8 @@ class RecordExpense extends FormBase {
                     ->execute();
 
             // Record the accounting journal
-            $journal->record(
-                    array(
+            $this->journal->record(
+                    [
                         'source' => "expense",
                         'coid' => $form_state->getValue('coid'),
                         'aid' => $form_state->getValue("account$n"),
@@ -1153,12 +1149,12 @@ class RecordExpense extends FormBase {
                         'currency' => $form_state->getValue('currency'),
                         'tax' => $tax,
                         'fxRate' => $form_state->getValue('fx_rate'),
-                    )
+                    ]
             );
         }
 
-        if ($journal->getCredit() <> $journal->getDebit()) {
-            $msg = 'debit: ' . $journal->getDebit() . ' <> ' . 'credit: ' . $journal->getCredit();
+        if ($this->journal->getCredit() <> $this->journal->getDebit()) {
+            $msg = 'debit: ' . $this->journal->getDebit() . ' <> ' . 'credit: ' . $this->journal->getCredit();
             \Drupal::messenger()->addError(t('Error journal record (@aid)', ['@aid' => $msg]));
         }
 

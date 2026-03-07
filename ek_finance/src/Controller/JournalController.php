@@ -15,39 +15,27 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Drupal\ek_finance\Journal;
+use Drupal\ek_finance\Service\JournalService;
 
 /**
  * Controller routines for ek module routes.
  */
 class JournalController extends ControllerBase {
-    /* The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
 
     protected $moduleHandler;
-
-    /**
-     * The database service.
-     *
-     * @var \Drupal\Core\Database\Connection
-     */
     protected $database;
-
-    /**
-     * The form builder service.
-     *
-     * @var \Drupal\Core\Form\FormBuilderInterface
-     */
     protected $formBuilder;
+    protected $journal;
 
     /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
+                $container->get('database'), 
+                $container->get('form_builder'), 
+                $container->get('module_handler'),
+                $container->get('ek_finance.journal')
         );
     }
 
@@ -61,10 +49,15 @@ class JournalController extends ControllerBase {
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
      *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(
+        Connection $database, 
+        FormBuilderInterface $form_builder, 
+        ModuleHandler $module_handler,
+        JournalService $journal) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
+        $this->journal = $journal;
     }
 
     /**
@@ -85,14 +78,10 @@ class JournalController extends ControllerBase {
         //todo filter by module
         $folders = ['general', 'expense', 'receipt', 'payroll', 'invoice', 'pos', 'purchase', 'payment'];
 
-        // todo , 'inventory'
-
-        $journal = new Journal();
-
         if (isset($_SESSION['jfilter']['filter']) && $_SESSION['jfilter']['filter'] == 1) {
             if (isset($_SESSION['jfilter']['jid']) && $_SESSION['jfilter']['jid'] != "") {
                 //retrieve data by journal id
-                $details = $journal->journalEntryDetails($_SESSION['jfilter']['jid']);
+                $details = $this->journal->journalEntryDetails($_SESSION['jfilter']['jid']);
                 $jid = $_SESSION['jfilter']['jid'];
 
                 if ($details['id'] == '') {
@@ -107,15 +96,15 @@ class JournalController extends ControllerBase {
                 }
                 $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
                 if (in_array($details['coid'], $access)) {
-                    $items['data'] = $journal->data_by_jid($_SESSION['jfilter']['jid']);
+                    $items['data'] = $this->journal->data_by_jid($_SESSION['jfilter']['jid']);
                     $items['rounding'] = $rounding;
-                    return array(
+                    return [
                         '#theme' => 'ek_finance_journal_by_id',
                         '#items' => $items,
                         '#attached' => [
                             'library' => ['ek_finance/ek_finance_css', 'ek_finance/ek_finance.journal', 'ek_admin/ek_admin_css'],
                         ],
-                    );
+                    ];
                 } else {
                     //no access
                     $query = "SELECT name from {ek_company} WHERE id=:id";
@@ -139,27 +128,27 @@ class JournalController extends ControllerBase {
                 foreach ($folders as $folder) {
                     $data = array();
 
-                    $data[$folder] = $journal->display(
-                            array(
+                    $data[$folder] = $this->journal->display(
+                            [
                                 'date1' => $_SESSION['jfilter']['from'],
                                 'date2' => $_SESSION['jfilter']['to'],
                                 'company' => $_SESSION['jfilter']['coid'],
                                 'edit' => 0,
                                 'source' => $folder
-                            )
+                            ]
                     );
 
                     $items['data'] += $data;
                 }
 
                 $param = serialize(
-                        array(
+                        [
                             'date1' => $_SESSION['jfilter']['from'],
                             'date2' => $_SESSION['jfilter']['to'],
                             'company' => $_SESSION['jfilter']['coid'],
                             'baseCurrency' => $settings->get('baseCurrency'),
                             'rounding' => $rounding
-                        )
+                        ]
                 );
 
                 $items['rounding'] = $rounding;
@@ -169,13 +158,13 @@ class JournalController extends ControllerBase {
         }
         
 
-        return array(
+        return [
             '#theme' => 'ek_finance_journal',
             '#items' => $items,
-            '#attached' => array(
-                'library' => array('ek_finance/ek_finance_css', 'ek_finance/ek_finance.journal', 'ek_admin/ek_admin_css'),
-            ),
-        );
+            '#attached' => [
+                'library' => ['ek_finance/ek_finance_css', 'ek_finance/ek_finance.journal', 'ek_admin/ek_admin_css'],
+            ],
+        ];
     }
 
     /**
@@ -214,8 +203,7 @@ class JournalController extends ControllerBase {
      *
      */
     public function history($param) {
-        $journal = new Journal();
-        $history = $journal->history($param);
+        $history = $this->journal->history($param);
         return array(
             '#theme' => 'ek_journal_history',
             '#items' => unserialize($history),
@@ -236,36 +224,35 @@ class JournalController extends ControllerBase {
      *
      */
     public function audit($audit, $param) {
-        $journal = new Journal(); 
 
         switch ($audit) {
             // param : [i/p]
             case 'currency':
-                $audit = $journal->audit_currency($param);
+                $audit = $this->journal->audit_currency($param);
                 $audit['layout'] = 'currency';
                 break;
             case 'chart':
                 // param : coid
-                $audit = $journal->audit_chart($param);
+                $audit = $this->journal->audit_chart($param);
                 $audit['layout'] = 'chart';
                 $audit['title'] = $this->t('Chart structure in journal');
                 break;
             case 'post-year' :
                 // param : coid|year
-                $audit = $journal->audit_newyear($param);
+                $audit = $this->journal->audit_newyear($param);
                 $audit['layout'] = 'newyear';
                 $audit['title'] = $this->t('Post new year report') . " " . explode('|', $param)[1] . " " 
                         . \Drupal\ek_admin\Access\AccessCheck::CompanyList()[explode('|', $param)[0]];
                 break;
         }
 
-        return array(
+        return [
             '#theme' => 'ek_journal_audit',
             '#items' => $audit,
-            '#attached' => array(
-                'library' => array('ek_finance/ek_finance'),
-            ),
-        );
+            '#attached' => [
+                'library' => ['ek_finance/ek_finance'],
+            ],
+        ];
     }
 
 }

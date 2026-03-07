@@ -1,12 +1,12 @@
 <?php
 use Drupal\Core\Database\Database;
-use Drupal\ek_finance\Journal;
 
-     $items['data'] = array();
-     $journal = new Journal();
-     $param = unserialize($param);
-     $items['data'] = $journal->ledger( $param );
-     $rounding = $param['rounding'];
+$items['data'] = array();
+// Run service
+$journal = \Drupal::service('ek_finance.journal');
+$param = unserialize($param);
+$items['data'] = $journal->ledger( $param );
+$rounding = $param['rounding'];
      
      
 // Create new PHPExcel object

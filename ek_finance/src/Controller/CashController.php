@@ -15,41 +15,30 @@ use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\ek_finance\FinanceSettings;
-use Drupal\ek_finance\Journal;
 use Drupal\ek_admin\CompanySettings;
 use Drupal\ek_finance\AidList;
+use Drupal\ek_finance\Service\JournalService;
 
 /**
 * Controller routines for ek module routes.
 */
 class CashController extends ControllerBase {
 
-   /* The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandler
-   */
     protected $moduleHandler;
-    /**
-     * The database service.
-     *
-     * @var \Drupal\Core\Database\Connection
-     */
     protected $database;
-    /**
-     * The form builder service.
-     *
-     * @var \Drupal\Core\Form\FormBuilderInterface
-     */
     protected $formBuilder;
+    protected $journal;
+
     /**
      * {@inheritdoc}
      */
-    public static function create(ContainerInterface $container)  {
+    public static function create(ContainerInterface $container) {
         return new static(
-      $container->get('database'),
-      $container->get('form_builder'),
-      $container->get('module_handler')
-    );
+                $container->get('database'), 
+                $container->get('form_builder'), 
+                $container->get('module_handler'),
+                $container->get('ek_finance.journal')
+        );
     }
 
     /**
@@ -62,10 +51,15 @@ class CashController extends ControllerBase {
        * @param \Drupal\Core\Extension\ModuleHandler $module_handler
        *   The module handler service
      */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    public function __construct(
+        Connection $database, 
+        FormBuilderInterface $form_builder, 
+        ModuleHandler $module_handler,
+        JournalService $journal) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
+        $this->journal = $journal;
     }
 
     /**
@@ -75,8 +69,7 @@ class CashController extends ControllerBase {
      *      form
     */
     public function currencies(Request $request) {
-        
-        //clear currency session
+        // clear currency session
         unset($_SESSION['activeCurrencies']);
         $build['currency'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\Currencies', $request);
         return $build;
@@ -188,16 +181,23 @@ class CashController extends ControllerBase {
      *  extracted data
     */
     private function extract($filter) {
-        $journal = new Journal();
         if ($filter['type'] == '0') {
             //company cash transactions
             $account1 = 0;
             $account2 = 'n/a';
             $company = $filter['account'];
             $items['filter']['type'] = 0;
-            $items['filter']['username'] = Database::getConnection('external_db', 'external_db')
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_company', 'c')
+                ->fields('c', ['name'])
+                ->condition('id', $company)
+                ->execute();
+            
+            $items['filter']['username'] = $query->fetchField();
+            
+            /*Database::getConnection('external_db', 'external_db')
                     ->query('SELECT name FROM {ek_company} WHERE id=:id', [':id' => $company])
-                    ->fetchField();
+                    ->fetchField();*/
             $account_list = AidList::chartList($company);
         } else {
             //user cash transactions
@@ -340,7 +340,7 @@ class CashController extends ControllerBase {
         }
 
         while ($row = $data2->fetchAssoc()) {
-            //process cash table
+            // process cash table
             $comment = str_replace("&", "and", $row['comment']);
             $comment = str_replace("'", "", $comment);
             $month = explode("-", $row['pay_date']);
@@ -485,10 +485,10 @@ class CashController extends ControllerBase {
             }
         }
             
-        //compile balance from 1st day of the year
-        //for each source
+        // compile balance from 1st day of the year
+        // for each source
            
-        //cash table
+        // cash table
         $year = explode('-', $filter['from']);
         $query = "SELECT sum(amount) as a, sum(cashamount) as b FROM {ek_cash} "
                      . "WHERE type=:t and coid=:c and uid=:u AND currency = :cu "
@@ -523,7 +523,7 @@ class CashController extends ControllerBase {
         $open_debit = $result->a;
         $open_debit_base = $result->b;
 
-        //expenses table
+        // expenses table
         $query = "SELECT sum(localcurrency) as a, sum(amount) as b FROM {ek_expenses} "
                     . "WHERE company=:c AND cash=:y AND status=:s AND currency = :cu "
                     . "AND employee=:e AND pdate < :p1 AND pdate >= :p2";
@@ -542,18 +542,20 @@ class CashController extends ControllerBase {
         $open_debit += $result->a;
         $open_debit_base += $result->b;
             
-        //journal
-        //Warning: debit and credit are alternate for user point of view
-        //filter only general record to avoid double values
+        // journal
+        // Warning: debit and credit are alternate for user point of view
+        // filter only general record to avoid double values
         if ($filter['type'] == '0') {
-            $history = unserialize($journal->history(serialize(
+            $data = serialize(
                 ['aid' => $filter['aid'],
                      'source' => 'general',
                      'coid' => $company,
                      'from' => $year[0].'-01-01',
                      'to' => date('Y-m-d', strtotime('-1 day', strtotime($filter['from'])))
-                     ]
-            )));
+                ]
+            );
+            $h = $this->journal->history($data);
+            $history = unserialize($h);
         } else {
             $history['total_debit_exchange'] = 0;
             $history['total_debit'] = 0;

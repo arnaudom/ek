@@ -1,9 +1,9 @@
 <?php
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
-use Drupal\ek_finance\Journal;
-$journal = new Journal();
 
+// Run service
+$journal = \Drupal::service('ek_finance.journal');
 
 /*
  * Tax deductibe

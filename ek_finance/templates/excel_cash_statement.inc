@@ -8,7 +8,8 @@ use Drupal\ek_finance\AidList;
 use Drupal\ek_finance\CurrencyData;
 
 
-$journal = new Journal();
+// Run service
+$journal = \Drupal::service('ek_finance.journal');
 $settings = new CompanySettings($coid);
 $access = AccessCheck::GetCompanyByUser();
 $company = implode(',', $access);

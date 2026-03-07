@@ -1,84 +1,84 @@
 <?php
 
 use Drupal\Core\Database\Database;
-use Drupal\ek_finance\Journal;
 
-    $items['data'] = array();
-    $journal = new Journal();
+  $items['data'] = array();
+  // Run service
+  $journal = \Drupal::service('ek_finance.journal');
   
-            if ($p['source1'] == 'purchase') {
-                $entity = 'purchase';
-                $source2 = 'payment';
-                $source3 = 'purchase dn';
-                $book = 2;
-                if ($p['client'] == '%') {
-                    $query = Database::getConnection('external_db', 'external_db')
-                            ->select('ek_address_book', 'ab');
-                    $query->fields('ab', ['id']);
-                    $query->innerJoin('ek_sales_purchase', 'p', 'ab.id = p.client');
-                    $query->orderBy('ab.name', 'ASC');
-                    $data = $query->execute()->fetchCol();
-                    $clients = array_unique($data);
-                } else {
-                    $clients = [0 => $p['client']];
-                }
-            } else {
-                $entity = 'invoice';
-                $source2 = 'receipt';
-                $source3 = 'invoice cn';
-                $book = 1;
-                if ($p['client'] == '%') {
-                    $query = Database::getConnection('external_db', 'external_db')
-                            ->select('ek_address_book', 'ab');
-                    $query->fields('ab', ['id']);
-                    $query->innerJoin('ek_sales_invoice', 'i', 'ab.id = i.client');
-                    $query->orderBy('ab.name', 'ASC');
-                    $data = $query->execute()->fetchCol();
-                    $clients = array_unique($data);
-                } else {
-                    $clients = [0 => $p['client']];
-                }
-            }
-            $items['book'] = \Drupal\ek_address_book\AddressBookData::addresslist($book);
-            $items['data'] = [];
-            
-            foreach ($clients as $clientId) {
-                //select the documents ids related to the selected client
-                $query = Database::getConnection('external_db', 'external_db')
-                        ->select('ek_sales_' .$entity, 's');
+  if ($p['source1'] == 'purchase') {
+      $entity = 'purchase';
+      $source2 = 'payment';
+      $source3 = 'purchase dn';
+      $book = 2;
+      if ($p['client'] == '%') {
+          $query = Database::getConnection('external_db', 'external_db')
+                  ->select('ek_address_book', 'ab');
+          $query->fields('ab', ['id']);
+          $query->innerJoin('ek_sales_purchase', 'p', 'ab.id = p.client');
+          $query->orderBy('ab.name', 'ASC');
+          $data = $query->execute()->fetchCol();
+          $clients = array_unique($data);
+      } else {
+          $clients = [0 => $p['client']];
+      }
+  } else {
+      $entity = 'invoice';
+      $source2 = 'receipt';
+      $source3 = 'invoice cn';
+      $book = 1;
+      if ($p['client'] == '%') {
+          $query = Database::getConnection('external_db', 'external_db')
+                  ->select('ek_address_book', 'ab');
+          $query->fields('ab', ['id']);
+          $query->innerJoin('ek_sales_invoice', 'i', 'ab.id = i.client');
+          $query->orderBy('ab.name', 'ASC');
+          $data = $query->execute()->fetchCol();
+          $clients = array_unique($data);
+      } else {
+          $clients = [0 => $p['client']];
+      }
+  }
+  $items['book'] = \Drupal\ek_address_book\AddressBookData::addresslist($book);
+  $items['data'] = [];
+  
+  foreach ($clients as $clientId) {
+      //select the documents ids related to the selected client
+      $query = Database::getConnection('external_db', 'external_db')
+              ->select('ek_sales_' .$entity, 's');
 
-                $result = $query->fields('s', array('id'))
-                        ->condition('s.client', $clientId, '=')
-                        ->condition('head', $p['coid'], '=')
-                        ->execute();
+      $result = $query->fields('s', array('id'))
+              ->condition('s.client', $clientId, '=')
+              ->condition('head', $p['coid'], '=')
+              ->execute();
 
-                $ids = $result->fetchCol();
-                $row = [];
-               
-                $row['client_id'] = $clientId;
-                $row['client_name'] = $items['book'][$clientId];
+      $ids = $result->fetchCol();
+      $row = [];
+      
+      $row['client_id'] = $clientId;
+      $row['client_name'] = $items['book'][$clientId];
 
-                if (!empty($ids)) {
+      if (!empty($ids)) {
 
-                    $param = [
-                        'coid' => $p['coid'],
-                        'references' => $ids,
-                        'source1' => $entity,
-                        'source2' => $source2,
-                        'source3' => $source3,
-                        'date1' => $p['date1'],
-                        'date2' => $p['date2'],
-                    ];
+          $param = [
+              'coid' => $p['coid'],
+              'references' => $ids,
+              'source1' => $entity,
+              'source2' => $source2,
+              'source3' => $source3,
+              'date1' => $p['date1'],
+              'date2' => $p['date2'],
+          ];
 
 
-                    $row['journal'] = $journal->salesledger($param);
-                 
-                    $items['data'][] = $row;
-                
-                }
-                
-                
-            }
+          $row['journal'] = $journal->salesledger($param);
+        
+          $items['data'][] = $row;
+      
+      }
+      
+      
+  }
 
 
 // Create new PHPExcel object

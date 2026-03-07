@@ -16,10 +16,9 @@ TODO
  *  An associative array containing:
  *  - aid aname by coid, class
  */
- class AidList
- {
-     public function listaid($coid = null, $type = array(), $status = null)
-     {
+ class AidList {
+
+     public function listaid($coid = null, $type = array(), $status = null) {
          if ($status == '') {
              $status = '';
          } else {
@@ -76,4 +75,21 @@ TODO
          // new JsonResponse()
          return $options;
      }
- }//class
+
+     /*
+     * list full accounts detail be company id
+     */
+     public function listByCompany($coid) {
+
+        $coid = (filter_var($coid, FILTER_VALIDATE_INT)) ? $coid : 0;
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_accounts', 'a')
+            ->fields('a')
+            ->condition('coid', $coid)
+            ->execute();
+
+        $result = $query->fetchAllAssoc('aid');
+        return $result;
+
+     }
+ }
