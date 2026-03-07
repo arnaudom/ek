@@ -1423,11 +1423,14 @@ class ProjectController extends ControllerBase {
 
                     $extension = explode(".", $l->filename);
                     $extension = array_pop($extension);
+                    $extension = strtolower($extension);
 
                     $items[$l->sub_folder][$i]['icon_path'] = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_projects') . '/art/icons/';
 
                     if (file_exists(\Drupal::service('extension.path.resolver')->getPath('module', 'ek_projects') . '/art/icons/' . $extension . ".png")) {
-                        $items[$l->sub_folder][$i]['icon'] = strtolower($extension);
+                        $items[$l->sub_folder][$i]['icon'] = $extension;
+                    } else {
+                        $items[$l->sub_folder][$i]['icon'] = 'file';
                     }
 
                     //filename formating
