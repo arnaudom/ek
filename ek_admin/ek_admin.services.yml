@@ -24,3 +24,7 @@ services:
     class: Drupal\ek_admin\TwigExtension\TwigExtension
     tags:
       - { name: twig.extension }
+
+  ek_admin.service:
+    class: Drupal\ek_admin\Service\AdminService
+    arguments: ['@config.factory', '@logger.factory']
