@@ -13,6 +13,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Form\FormBuilderInterface;
+use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Cache\Cache;
@@ -44,7 +45,8 @@ class ProjectController extends ControllerBase {
     protected $entityTypeManager;
     protected $extdb;
     protected $projectService;
-    protected $fileUsage;
+    protected $fileUsage; 
+    protected $tempStore;
 
     /**
      * {@inheritdoc}
@@ -56,7 +58,8 @@ class ProjectController extends ControllerBase {
                 $container->get('module_handler'), 
                 $container->get('entity_type.manager'),
                 $container->get('project.service'),
-                $container->get('file.usage')
+                $container->get('file.usage'),
+                $container->get('tempstore.private')
         );
     }
 
@@ -72,7 +75,7 @@ class ProjectController extends ControllerBase {
      */
     public function __construct(Connection $database, FormBuilderInterface $form_builder, 
     ModuleHandler $module_handler, EntityTypeManager $entity_manager, 
-    ProjectService $projectService, FileUsageInterface $file_usage) {
+    ProjectService $projectService, FileUsageInterface $file_usage, PrivateTempStoreFactory $temp_store_factory) {
         $this->database = $database;
         $this->formBuilder = $form_builder;
         $this->moduleHandler = $module_handler;
@@ -80,6 +83,7 @@ class ProjectController extends ControllerBase {
         $this->extdb = Database::getConnection('external_db', 'external_db');
         $this->projectService = $projectService;
         $this->fileUsage = $file_usage;
+        $this->tempStore = $temp_store_factory->get('ek_projects_filter');
     }
 
     /**
@@ -94,7 +98,7 @@ class ProjectController extends ControllerBase {
      * Return a search form
      *
      */
-    public function search(Request $request) {
+    /*public function search(Request $request) {
         $build['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\FilterProjects');
 
         $access = \Drupal\ek_admin\Access\AccessCheck::GetCountryByUser();
@@ -273,6 +277,260 @@ class ProjectController extends ControllerBase {
         );
 
         return $build;
+    }*/
+    /**
+     * Return a search / listing page.
+     *
+     * Assumes the following are available as controller properties:
+     *   $this->formBuilder   — form_builder service
+     *   $this->extdb         — external DB connection
+     *   $this->tempStore     — PrivateTempStore keyed to 'ek_projects_filter'
+     *   $this->projectService
+     *   $this->accessCheck   — result of AccessCheck::GetCountryByUser()
+     */
+    public function search(Request $request) {
+        $build['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\FilterProjects');
+
+        $access  = \Drupal\ek_admin\Access\AccessCheck::GetCountryByUser();
+        $options = [];
+        $excel   = [];
+
+        // ------------------------------------------------------------------ //
+        // Guard: only run the query when the filter form has been submitted.
+        // ------------------------------------------------------------------ //
+        if (!$this->tempStore->get('filter')) {
+            return $this->buildOutput($build, $options);
+        }
+
+        $keyword = trim((string) $this->tempStore->get('keyword'));
+
+        // ================================================================== //
+        // Branch A: keyword search.
+        // ================================================================== //
+        if ($keyword !== '' && $keyword !== '%') {
+
+            if (is_numeric($keyword)) {
+            // Numeric: match against project reference code.
+            $id1 = '%-' . $keyword . '%';
+            $id2 = '%-' . $keyword . '-sub%';
+
+            $query = $this->extdb->select('ek_project', 'p');
+            $or    = $query->orConditionGroup()
+                ->condition('pcode', $id1, 'LIKE')
+                ->condition('pcode', $id2, 'LIKE');
+
+            $data = $query
+                ->fields('p', ['id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'])
+                ->condition($or)
+                ->extend('Drupal\Core\Database\Query\TableSortExtender')
+                ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+                ->limit(10)
+                ->orderBy('id', 'ASC')
+                ->execute();
+
+            } else {
+            // Text: XSS-filter and search across name, documents, descriptions.
+            $key = \Drupal\Component\Utility\Xss::filter($keyword);
+
+            // Allow user to prefix a number with # to force a numeric-style lookup.
+            if (preg_match('/^#+([0-9]+)$/', $key, $m)) {
+                $key = $m[1];
+            }
+
+            $keyword2 = '%' . trim($key) . '%';
+
+            $query = $this->extdb->select('ek_project', 'p');
+            $query->leftJoin('ek_project_documents',   'd', 'p.pcode = d.pcode');
+            $query->leftJoin('ek_project_description', 't', 'p.pcode = t.pcode');
+
+            $or = $query->orConditionGroup()
+                ->condition('p.pname',              $keyword2, 'LIKE')
+                ->condition('d.filename',           $keyword2, 'LIKE')
+                ->condition('d.comment',            $keyword2, 'LIKE')
+                ->condition('t.project_description',$keyword2, 'LIKE')
+                ->condition('t.project_comment',    $keyword2, 'LIKE');
+
+            $data = $query
+                ->fields('p', ['id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'])
+                ->condition($or)
+                ->distinct()
+                ->extend('Drupal\Core\Database\Query\TableSortExtender')
+                ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+                ->limit(10)
+                ->orderBy('id', 'ASC')
+                ->execute();
+            }
+
+        // ================================================================== //
+        // Branch B: structured filter search.
+        // ================================================================== //
+        } else {
+
+            $filter_cid      = $this->tempStore->get('cid');
+            $filter_type     = $this->tempStore->get('type')     ?: '%';
+            $filter_status   = $this->tempStore->get('status')   ?: '%';
+            $filter_client   = (array) ($this->tempStore->get('client')   ?: ['%']);
+            $filter_supplier = (array) ($this->tempStore->get('supplier') ?: ['%']);
+            $filter_date     = $this->tempStore->get('date');
+            $filter_start    = $this->tempStore->get('start') ?: date('Y') . '-01-01';
+            $filter_end      = $this->tempStore->get('end')   ?: date('Y-m-d');
+
+            // Normalise "Any" selections.
+            $use_all_clients   = in_array('%', $filter_client,   TRUE);
+            $use_all_suppliers = in_array('%', $filter_supplier, TRUE);
+            $cid_value         = empty($filter_cid) ? '%' : (int) $filter_cid;
+
+            $query = $this->extdb->select('ek_project', 'p');
+
+            // Only join description table when we actually filter on supplier.
+            if (!$use_all_suppliers) {
+            $query->leftJoin('ek_project_description', 'd', 'd.pcode = p.pcode');
+            }
+
+            $query
+            ->fields('p', ['id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'])
+            ->condition('cid',      $cid_value,    'LIKE')
+            ->condition('category', $filter_type,  'LIKE')
+            ->condition('status',   $filter_status,'LIKE');
+
+            if (!$use_all_clients) {
+            // Cast to int array to prevent injection via multiselect values.
+            $safe_clients = array_map('intval', $filter_client);
+            $query->condition('p.client_id', $safe_clients, 'IN');
+            }
+
+            if ($filter_date == 1) {
+            $query
+                ->condition('p.date', $filter_start, '>=')
+                ->condition('p.date', $filter_end,   '<=');
+            }
+
+            if (!$use_all_suppliers) {
+            // A project stores suppliers as a CSV in supplier_offer.
+            // Build OR conditions to find $id anywhere in the CSV.
+            $or = $query->orConditionGroup();
+            foreach ($filter_supplier as $id) {
+                $id = (int) $id; // safe cast
+                $or->condition('d.supplier_offer', $id . ',%',  'LIKE')  // first item
+                ->condition('d.supplier_offer', '%,' . $id . ',%', 'LIKE') // middle
+                ->condition('d.supplier_offer', '%,' . $id, 'LIKE')  // last item
+                ->condition('d.supplier_offer', (string) $id, '=');  // only item
+            }
+            $query->condition($or);
+            }
+
+            $data = $query
+            ->extend('Drupal\Core\Database\Query\TableSortExtender')
+            ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+            ->limit(30)
+            ->orderBy('id', 'ASC')
+            ->execute();
+        }
+
+        // ================================================================== //
+        // Collect results — AVOID N+1 queries by bulk-loading lookups.
+        // ================================================================== //
+        $rows = $data->fetchAllAssoc('id');
+
+        // Filter rows by country access first (in PHP, cheap).
+        $allowed_rows = array_filter($rows, fn($r) => in_array($r->cid, $access));
+
+        if ($allowed_rows) {
+            // Bulk-load all needed country names in ONE query.
+            $cids_needed = array_unique(array_column($allowed_rows, 'cid'));
+            $country_map = $this->extdb
+            ->select('ek_country', 'c')
+            ->fields('c', ['id', 'name'])
+            ->condition('id', $cids_needed, 'IN')
+            ->execute()
+            ->fetchAllKeyed();
+
+            // Bulk-load all needed category names in ONE query.
+            $cats_needed = array_unique(array_column($allowed_rows, 'category'));
+            // Remove empty / "any" values.
+            $cats_needed = array_filter($cats_needed, fn($v) => $v !== '' && $v !== '%');
+            $category_map = [];
+            if ($cats_needed) {
+            $category_map = $this->extdb
+                ->select('ek_project_type', 'pt')
+                ->fields('pt', ['id', 'type'])
+                ->condition('id', $cats_needed, 'IN')
+                ->execute()
+                ->fetchAllKeyed();
+            }
+
+            $archive_labels = [0 => $this->t('No'), 1 => $this->t('Yes')];
+
+            foreach ($allowed_rows as $r) {
+            $excel[] = (int) $r->id;
+
+            $pcode    = $this->projectService->geturl($r->id);
+            $country  = $country_map[$r->cid]      ?? '';
+            $category = $category_map[$r->category] ?? '';
+
+            $archive_route = Url::fromRoute('ek_projects_archive', ['id' => $r->id])->toString();
+            $archive_btn   = sprintf(
+                "<a id='arch%d' title='%s' href='%s' class='use-ajax'>%s</a>",
+                $r->id,
+                $this->t('Change archive status'),
+                $archive_route,
+                $archive_labels[(int) $r->archive]
+            );
+
+            $options[] = [
+                'reference' => ['data' => ['#markup' => $pcode]],
+                'date'      => $r->date,
+                'name'      => $r->pname,
+                'country'   => $country,
+                'category'  => $category,
+                'status'    => $r->status,
+                'archive'   => ['data' => ['#markup' => $archive_btn]],
+            ];
+            }
+    }
+
+    // Excel export link — use base64(json) instead of serialize() for safety.
+    if ($excel) {
+        $param = base64_encode(json_encode($excel));
+        $url   = Url::fromRoute('ek_projects_excel_list', ['param' => $param])->toString();
+        $build['excel'] = ['#markup' => "<br/><a href='{$url}'>" . $this->t('Excel') . '</a>'];
+    }
+
+    return $this->buildOutput($build, $options);
+    }
+
+    /**
+     * Assembles the final render array with table + pager.
+     *
+     * Extracted as a helper so both the "no filter yet" early-return and the
+     * normal path share the same table structure.
+     */
+    private function buildOutput(array $build, array $options): array {
+    $header = [
+        'reference' => ['data' => $this->t('Reference'), 'class' => [RESPONSIVE_PRIORITY_LOW]],
+        'date'      => ['data' => $this->t('Date'),      'class' => [RESPONSIVE_PRIORITY_LOW]],
+        'name'      => ['data' => $this->t('Name'),      'class' => [RESPONSIVE_PRIORITY_MEDIUM]],
+        'country'   => ['data' => $this->t('Country'),   'class' => [RESPONSIVE_PRIORITY_LOW]],
+        'category'  => ['data' => $this->t('Category')],
+        'status'    => ['data' => $this->t('Status')],
+        'archive'   => ['data' => $this->t('Archive')],
+    ];
+
+    $build['project_list'] = [
+        '#type'       => 'table',
+        '#header'     => $header,
+        '#rows'       => $options,
+        '#attributes' => ['id' => 'projects_table'],
+        '#empty'      => $this->t('No results found. Please adjust your filters.'),
+        '#attached'   => ['library' => ['ek_projects/ek_projects_css']],
+    ];
+
+    $build['pager'] = [
+        '#type'   => 'pager',
+        '#weight' => 5,
+    ];
+
+    return $build;
     }
 
     /**

@@ -104,3 +104,8 @@ ek_projects_search_document:
     js/ek_projects_search_autocomplete.js: {}
   dependencies:
     - core/jquery
+    
+ek_projects_filter:
+  css:
+    component:
+      css/ek_projects_filter.css: {}

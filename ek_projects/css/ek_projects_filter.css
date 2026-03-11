@@ -1,0 +1,188 @@
+/**
+ * ek_projects — project filter form layout
+ *
+ * Registers as: ek_projects/ek_projects_filter
+ * Add to ek_projects.libraries.yml:
+ *
+ *   ek_projects_filter:
+ *     css:
+ *       component:
+ *         css/ek_projects_filter.css: {}
+ */
+
+/* ------------------------------------------------------------------ *
+ * Scope everything to the form wrapper so we never bleed into Drupal  *
+ * ------------------------------------------------------------------ */
+.ek-projects-filter-form {
+  font-family: inherit;
+  margin-bottom: 1.5rem;
+}
+
+/* ------------------------------------------------------------------ *
+ * Search bar row — full width                                          *
+ * ------------------------------------------------------------------ */
+.pjf-search-row {
+  margin-bottom: 0.75rem;
+}
+
+.pjf-search-row .pjf-keyword {
+  width: 100%;
+  max-width: 560px;
+  box-sizing: border-box;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.95rem;
+  border: 1px solid #b0b8c4;
+  border-radius: 4px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pjf-search-row .pjf-keyword:focus {
+  outline: none;
+  border-color: #0071b8;
+  box-shadow: 0 0 0 3px rgba(0, 113, 184, 0.18);
+}
+
+/* Drupal wraps the input in a form-item div; remove its default margin */
+.pjf-search-row .form-item {
+  margin: 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * Advanced block                                                        *
+ * ------------------------------------------------------------------ */
+.pjf-advanced {
+  background: #f7f9fb;
+  border: 1px solid #dde3ea;
+  border-radius: 6px;
+  padding: 1rem 1.25rem 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ------------------------------------------------------------------ *
+ * Generic row — flex, wraps on narrow viewports                        *
+ * ------------------------------------------------------------------ */
+.pjf-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: flex-end;   /* labels + inputs baseline-align cleanly */
+  margin-bottom: 0.85rem;
+}
+
+/* Divider between row groups */
+.pjf-row + .pjf-row {
+  padding-top: 0.85rem;
+  border-top: 1px solid #e3e8ef;
+}
+
+/* ------------------------------------------------------------------ *
+ * Column — each form field occupies one column                         *
+ * ------------------------------------------------------------------ */
+.pjf-col {
+  flex: 1 1 180px;     /* grow, shrink, base width */
+  min-width: 140px;
+  max-width: 260px;
+}
+
+/* Multi-select listboxes are wider */
+.pjf-row:has(.form-select[multiple]) .pjf-col {
+  flex-basis: 200px;
+  max-width: 300px;
+}
+
+/* Checkbox column is narrow */
+.pjf-col--checkbox {
+  flex: 0 0 auto;
+  min-width: unset;
+  max-width: unset;
+  align-self: center;
+  padding-top: 1.4rem; /* vertically centre with adjacent date inputs */
+}
+
+/* ------------------------------------------------------------------ *
+ * Drupal form-item overrides inside our layout                         *
+ * ------------------------------------------------------------------ */
+.pjf-advanced .form-item {
+  margin: 0;         /* Drupal adds bottom margin — we handle spacing via gap */
+}
+
+.pjf-advanced .form-item label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #5a6474;
+  margin-bottom: 0.3rem;
+}
+
+.pjf-advanced .form-select,
+.pjf-advanced input[type="date"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.875rem;
+  border: 1px solid #b0b8c4;
+  border-radius: 4px;
+  background-color: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  color: #2c3441;
+}
+
+.pjf-advanced .form-select:focus,
+.pjf-advanced input[type="date"]:focus {
+  outline: none;
+  border-color: #0071b8;
+  box-shadow: 0 0 0 3px rgba(0, 113, 184, 0.18);
+}
+
+/* Multi-select gets a fixed height that shows ~5 rows without scroll */
+.pjf-advanced .form-select[multiple] {
+  height: 7.5rem;   /* approx 5 options × 1.5rem line-height */
+  resize: vertical;
+}
+
+/* ------------------------------------------------------------------ *
+ * Date row specifics                                                    *
+ * ------------------------------------------------------------------ */
+.pjf-row--date {
+  align-items: center;
+}
+
+/* ------------------------------------------------------------------ *
+ * Actions row                                                           *
+ * ------------------------------------------------------------------ */
+.pjf-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.pjf-actions .button,
+.pjf-actions .button--primary,
+.pjf-actions .button--danger {
+  padding: 0.45rem 1.1rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+/* ------------------------------------------------------------------ *
+ * Responsive — stack to single column on small screens                 *
+ * ------------------------------------------------------------------ */
+@media (max-width: 600px) {
+  .pjf-col {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .pjf-col--checkbox {
+    padding-top: 0;
+  }
+
+  .pjf-search-row .pjf-keyword {
+    max-width: 100%;
+  }
+}
