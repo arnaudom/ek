@@ -244,6 +244,80 @@ class JournalController extends ControllerBase {
                 $audit['title'] = $this->t('Post new year report') . " " . explode('|', $param)[1] . " " 
                         . \Drupal\ek_admin\Access\AccessCheck::CompanyList()[explode('|', $param)[0]];
                 break;
+            
+            case 'balancesheet':
+            $parts = explode('|', $param);
+
+            // ── Structural check: must have exactly 3 segments ─────────────────
+            if (count($parts) !== 3) {
+                return [
+                    '#theme'  => 'ek_journal_audit',
+                    '#items'  => [
+                        'layout' => 'balancesheet',
+                        'title'  => $this->t('Balance sheet audit'),
+                        'error'  => $this->t('Invalid parameters. Expected format: coid|year|month.'),
+                    ],
+                    '#attached' => ['library' => ['ek_finance/ek_finance']],
+                ];
+            }
+
+            [$coid_raw, $year_raw, $month_raw] = $parts;
+
+            $errors = [];
+
+            // ── coid: must be a positive integer ───────────────────────────────
+            $coid = filter_var($coid_raw, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if ($coid === false) {
+                $errors[] = $this->t('Company ID "@v" must be a positive integer.', ['@v' => $coid_raw]);
+            }
+
+            // ── year: must be a 4-digit year in a sensible range ───────────────
+            $year = filter_var($year_raw, FILTER_VALIDATE_INT, ['options' => ['min_range' => 2000, 'max_range' => 2100]]);
+            if ($year === false) {
+                $errors[] = $this->t('Year "@v" must be a 4-digit year between 2000 and 2100.', ['@v' => $year_raw]);
+            }
+
+            // ── month: must be 1–12, normalised to zero-padded string ──────────
+            $month_int = filter_var($month_raw, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 12]]);
+            if ($month_int === false) {
+                $errors[] = $this->t('Month "@v" must be a number between 1 and 12.', ['@v' => $month_raw]);
+            } else {
+                $month = str_pad((string) $month_int, 2, '0', STR_PAD_LEFT);
+            }
+
+            // ── company access check ────────────────────────────────────────────
+            if ($coid !== false) {
+                $companies = \Drupal\ek_admin\Access\AccessCheck::CompanyList();
+                if (!isset($companies[$coid])) {
+                    $errors[] = $this->t('Company ID @coid is not accessible.', ['@coid' => $coid]);
+                }
+            }
+
+            // ── Return early if any validation failed ───────────────────────────
+            if (!empty($errors)) {
+                return [
+                    '#theme'  => 'ek_journal_audit',
+                    '#items'  => [
+                        'layout' => 'balancesheet',
+                        'title'  => $this->t('Balance sheet audit'),
+                        'error'  => $errors,
+                    ],
+                    '#attached' => ['library' => ['ek_finance/ek_finance']],
+                ];
+            }
+
+            // ── All clean — call the service ────────────────────────────────────
+            $audit = $this->journal->auditBalanceSheet($coid, (string) $year, $month);
+            $audit['layout'] = 'balancesheet';
+            $audit['title']  = $this->t(
+                'Balance sheet audit @year-@month — @company',
+                [
+                    '@year'    => $year,
+                    '@month'   => $month,
+                    '@company' => $companies[$coid],
+                ]
+            );
+            break;
         }
 
         return [

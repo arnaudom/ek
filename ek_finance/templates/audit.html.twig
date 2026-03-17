@@ -101,3 +101,268 @@ with manual entry' }}</p>
     </table>
     
 {% endif %}
+
+
+{% if items.layout == 'balancesheet' %}
+
+<p>{{ 'Trace balance sheet discrepancies.'|t }}</p>
+
+{# ── Validation errors ────────────────────────────────────────────────── #}
+{% if items.error is defined %}
+  <div style="border-left:3px solid var(--color-border-danger); padding:0.75rem 1rem; background:var(--color-background-danger); border-radius:0 var(--border-radius-md) var(--border-radius-md) 0; margin-bottom:1rem;">
+    <p style="font-size:13px; font-weight:500; color:var(--color-text-danger); margin:0 0 6px;">{{ 'Invalid parameters'|t }}</p>
+    {% if items.error is iterable %}
+      {% for message in items.error %}
+        <p style="font-size:13px; color:var(--color-text-danger); margin:0;">{{ message }}</p>
+      {% endfor %}
+    {% else %}
+      <p style="font-size:13px; color:var(--color-text-danger); margin:0;">{{ items.error }}</p>
+    {% endif %}
+    <p style="font-size:12px; color:var(--color-text-danger); margin:6px 0 0; opacity:0.8;">
+      {{ 'Expected URL format:'|t }} <code>/finance/audit/balancesheet/coid|year|month</code>
+      &nbsp;{{ 'e.g.'|t }} <code>/finance/audit/balancesheet/1|2024|03</code>
+    </p>
+  </div>
+
+{# ── Normal report (only rendered when no errors) ─────────────────────── #}
+{% else %}
+
+    {# ── Delta summary cards ──────────────────────────────────────────────── #}
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:12px; margin-bottom:1.5rem;">
+
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:1rem;">
+        <p style="font-size:13px; color:var(--color-text-secondary); margin:0 0 4px;">{{ 'Status'|t }}</p>
+        {% if items.status == 'pass' %}
+        <p style="font-size:16px; font-weight:500; color:var(--color-text-success); margin:0;">&#10003; {{ 'Balanced'|t }}</p>
+        {% else %}
+        <p style="font-size:16px; font-weight:500; color:var(--color-text-danger); margin:0;">&#10007; {{ 'Discrepancy'|t }}</p>
+        {% endif %}
+    </div>
+
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:1rem;">
+        <p style="font-size:13px; color:var(--color-text-secondary); margin:0 0 4px;">{{ 'Delta (base)'|t }}</p>
+        <p style="font-size:20px; font-weight:500; margin:0; color:{% if items.delta_base != 0 %}var(--color-text-danger){% else %}var(--color-text-success){% endif %};">
+        {{ items.delta_base|number_format(2) }}
+        </p>
+    </div>
+
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:1rem;">
+        <p style="font-size:13px; color:var(--color-text-secondary); margin:0 0 4px;">{{ 'Delta (multi)'|t }}</p>
+        <p style="font-size:20px; font-weight:500; margin:0; color:{% if items.delta_multi != 0 %}var(--color-text-danger){% else %}var(--color-text-success){% endif %};">
+        {{ items.delta_multi|number_format(2) }}
+        </p>
+    </div>
+
+    </div>
+
+    {# ── Early exit if balanced ───────────────────────────────────────────── #}
+    {% if items.status == 'pass' %}
+    <p style="color:var(--color-text-success);">{{ 'No discrepancy detected. Net assets equals equity.'|t }}</p>
+
+    {% else %}
+
+    {# ── Diagnosis banner ───────────────────────────────────────────────── #}
+    {% if items.diagnosis %}
+    <div style="border-left:3px solid var(--color-border-danger); padding:0.75rem 1rem; margin-bottom:1.5rem; background:var(--color-background-danger); border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;">
+        <p style="font-size:13px; font-weight:500; color:var(--color-text-danger); margin:0 0 4px;">{{ 'Diagnosis'|t }}</p>
+        <p style="font-size:13px; color:var(--color-text-danger); margin:0;">{{ items.diagnosis }}</p>
+    </div>
+    {% endif %}
+
+    {# ══════════════════════════════════════════════════════════════════════
+        LAYER 3 — Section coverage
+    ══════════════════════════════════════════════════════════════════════ #}
+    <div style="border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-lg); margin-bottom:1rem; overflow:hidden;">
+
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; border-bottom:0.5px solid var(--color-border-tertiary);">
+        <span style="font-size:14px; font-weight:500; color:var(--color-text-primary);">{{ 'Layer 3 — Section coverage'|t }}</span>
+        {% if items.layer3.status == 'pass' %}
+            <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-success); color:var(--color-text-success);">{{ 'Pass'|t }}</span>
+        {% else %}
+            <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-danger); color:var(--color-text-danger);">{{ 'Fail'|t }}</span>
+        {% endif %}
+        </div>
+
+        <div style="padding:0.75rem 1rem;">
+        {% if items.layer3.status == 'pass' %}
+            <p style="font-size:13px; color:var(--color-text-secondary); margin:0;">{{ 'All active accounts with non-zero balances are mapped to a balance sheet section.'|t }}</p>
+
+        {% else %}
+            <p style="font-size:13px; color:var(--color-text-secondary); margin:0 0 0.75rem;">
+            {{ 'The following accounts have non-zero balances but are not reachable by any balance sheet section prefix. They contribute to journal totals but are silently excluded from the report.'|t }}
+            </p>
+
+            <table style="width:100%; font-size:13px; border-collapse:collapse;">
+            <thead>
+                <tr style="border-bottom:0.5px solid var(--color-border-tertiary);">
+                <th style="text-align:left; padding:6px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'AID'|t }}</th>
+                <th style="text-align:left; padding:6px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Account name'|t }}</th>
+                <th style="text-align:right; padding:6px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Balance (multi)'|t }}</th>
+                <th style="text-align:right; padding:6px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Balance (base)'|t }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in items.layer3.orphaned %}
+                <tr style="border-bottom:0.5px solid var(--color-border-tertiary);">
+                <td style="padding:6px 8px; font-family:var(--font-mono); color:var(--color-text-primary);">{{ account.aid }}</td>
+                <td style="padding:6px 8px; color:var(--color-text-primary);">{{ account.name }}</td>
+                <td style="padding:6px 8px; text-align:right; color:var(--color-text-primary);">{{ account.multi|number_format(2) }}</td>
+                <td style="padding:6px 8px; text-align:right; color:var(--color-text-primary);">{{ account.base|number_format(2) }}</td>
+                </tr>
+                {% endfor %}
+                <tr style="border-top:0.5px solid var(--color-border-secondary);">
+                <td colspan="2" style="padding:6px 8px; font-weight:500; color:var(--color-text-primary);">{{ 'Total orphaned'|t }}</td>
+                <td style="padding:6px 8px; text-align:right; font-weight:500; color:var(--color-text-danger);">{{ items.layer3.orphaned_sum_multi|number_format(2) }}</td>
+                <td style="padding:6px 8px; text-align:right; font-weight:500; color:var(--color-text-danger);">{{ items.layer3.orphaned_sum_base|number_format(2) }}</td>
+                </tr>
+            </tbody>
+            </table>
+
+        {% endif %}
+        </div>
+    </div>
+
+    {# ══════════════════════════════════════════════════════════════════════
+        LAYER 4 — Currency divergence
+    ══════════════════════════════════════════════════════════════════════ #}
+    <div style="border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-lg); margin-bottom:1rem; overflow:hidden;">
+
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; border-bottom:0.5px solid var(--color-border-tertiary);">
+        <span style="font-size:14px; font-weight:500; color:var(--color-text-primary);">{{ 'Layer 4 — Currency divergence'|t }}</span>
+        {% if items.layer4.status == 'pass' %}
+            <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-success); color:var(--color-text-success);">{{ 'Pass'|t }}</span>
+        {% elseif items.layer4.type == 'fx_only' or items.layer4.type == 'multi_only' %}
+            <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-warning); color:var(--color-text-warning);">{{ 'FX issue'|t }}</span>
+        {% else %}
+            <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-danger); color:var(--color-text-danger);">{{ 'Fail'|t }}</span>
+        {% endif %}
+        </div>
+
+        <div style="padding:0.75rem 1rem;">
+        {% if items.layer4.status == 'pass' %}
+            <p style="font-size:13px; color:var(--color-text-secondary); margin:0;">{{ 'Both currencies diverge consistently. This is not an FX rate issue.'|t }}</p>
+        {% else %}
+            {# Type badge #}
+            {% set type_labels = {
+            'fx_only':    'FX rate inconsistency',
+            'multi_only': 'Multi-currency only',
+            'structural': 'Structural classification',
+            'mixed':      'Mixed FX + structural'
+            } %}
+            <p style="font-size:13px; margin:0 0 0.5rem;">
+            <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-info); color:var(--color-text-info);">
+                {{ type_labels[items.layer4.type]|default(items.layer4.type)|t }}
+            </span>
+            </p>
+            <p style="font-size:13px; color:var(--color-text-secondary); margin:0.5rem 0 0;">{{ items.layer4.message }}</p>
+        {% endif %}
+        </div>
+    </div>
+
+    {# ══════════════════════════════════════════════════════════════════════
+        LAYER 5 — Earnings account
+    ══════════════════════════════════════════════════════════════════════ #}
+    <div style="border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-lg); margin-bottom:1rem; overflow:hidden;">
+
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; border-bottom:0.5px solid var(--color-border-tertiary);">
+        <span style="font-size:14px; font-weight:500; color:var(--color-text-primary);">{{ 'Layer 5 — Earnings account'|t }}</span>
+        {% if items.layer5.status == 'pass' %}
+            <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-success); color:var(--color-text-success);">{{ 'Pass'|t }}</span>
+        {% elseif items.layer5.status == 'warning' %}
+            <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-warning); color:var(--color-text-warning);">{{ 'Warning'|t }}</span>
+        {% else %}
+            <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-danger); color:var(--color-text-danger);">{{ 'Fail'|t }}</span>
+        {% endif %}
+        </div>
+
+        <div style="padding:0.75rem 1rem;">
+
+        {# Archive mismatch #}
+        {% if items.layer5.checks.archive_mismatch.status == 'fail' %}
+        <div style="border-left:3px solid var(--color-border-warning); padding:0.5rem 0.75rem; margin-bottom:0.75rem; background:var(--color-background-warning); border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;">
+            <p style="font-size:12px; font-weight:500; color:var(--color-text-warning); margin:0 0 2px;">{{ 'Archive table mismatch'|t }}</p>
+            <p style="font-size:12px; color:var(--color-text-warning); margin:0;">{{ items.layer5.checks.archive_mismatch.message }}</p>
+        </div>
+        {% endif %}
+
+        {# Direct transactions #}
+        {% set dt = items.layer5.checks.direct_transactions %}
+        {% if dt.status == 'warning' %}
+        <div style="border-left:3px solid var(--color-border-warning); padding:0.5rem 0.75rem; margin-bottom:0.75rem; background:var(--color-background-warning); border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;">
+            <p style="font-size:12px; font-weight:500; color:var(--color-text-warning); margin:0 0 2px;">{{ 'Direct transactions on earnings account'|t }}</p>
+            <p style="font-size:12px; color:var(--color-text-warning); margin:0 0 6px;">{{ dt.message }}</p>
+            <table style="font-size:12px; border-collapse:collapse;">
+            <tr>
+                <td style="padding:2px 12px 2px 0; color:var(--color-text-secondary);">{{ 'Debit (multi)'|t }}</td>
+                <td style="font-family:var(--font-mono);">{{ dt.debit_multi|number_format(2) }}</td>
+                <td style="padding:2px 0 2px 16px; color:var(--color-text-secondary);">{{ 'Debit (base)'|t }}</td>
+                <td style="font-family:var(--font-mono);">{{ dt.debit_base|number_format(2) }}</td>
+            </tr>
+            <tr>
+                <td style="padding:2px 12px 2px 0; color:var(--color-text-secondary);">{{ 'Credit (multi)'|t }}</td>
+                <td style="font-family:var(--font-mono);">{{ dt.credit_multi|number_format(2) }}</td>
+                <td style="padding:2px 0 2px 16px; color:var(--color-text-secondary);">{{ 'Credit (base)'|t }}</td>
+                <td style="font-family:var(--font-mono);">{{ dt.credit_base|number_format(2) }}</td>
+            </tr>
+            </table>
+        </div>
+        {% endif %}
+
+        {# P&L section breakdown #}
+        {% set pl = items.layer5.checks.pl_breakdown %}
+        <p style="font-size:13px; font-weight:500; color:var(--color-text-primary); margin:0 0 0.5rem;">{{ 'P&L section breakdown'|t }}</p>
+        <table style="width:100%; font-size:13px; border-collapse:collapse; margin-bottom:0.75rem;">
+            <thead>
+            <tr style="border-bottom:0.5px solid var(--color-border-tertiary);">
+                <th style="text-align:left; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Section'|t }}</th>
+                <th style="text-align:right; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Multi'|t }}</th>
+                <th style="text-align:right; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Base'|t }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for section_name, section in pl.sections %}
+            <tr style="border-bottom:0.5px solid var(--color-border-tertiary);">
+                <td style="padding:5px 8px; color:var(--color-text-primary);">{{ section_name|replace({'_': ' '})|capitalize|t }}</td>
+                <td style="padding:5px 8px; text-align:right; font-family:var(--font-mono); color:var(--color-text-primary);">{{ section.multi|number_format(2) }}</td>
+                <td style="padding:5px 8px; text-align:right; font-family:var(--font-mono); color:var(--color-text-primary);">{{ section.base|number_format(2) }}</td>
+            </tr>
+            {% endfor %}
+            {# Audit grand total vs current_earning() result #}
+            <tr style="border-top:0.5px solid var(--color-border-secondary);">
+                <td style="padding:5px 8px; font-weight:500; color:var(--color-text-primary);">{{ 'Audit total'|t }}</td>
+                <td style="padding:5px 8px; text-align:right; font-weight:500; font-family:var(--font-mono); color:var(--color-text-primary);">{{ pl.audit_grand_multi|number_format(2) }}</td>
+                <td style="padding:5px 8px; text-align:right; font-weight:500; font-family:var(--font-mono); color:var(--color-text-primary);">{{ pl.audit_grand_base|number_format(2) }}</td>
+            </tr>
+            <tr>
+                <td style="padding:5px 8px; color:var(--color-text-secondary);">{{ 'current_earning() returned'|t }}</td>
+                <td style="padding:5px 8px; text-align:right; font-family:var(--font-mono);
+                color:{% if pl.audit_grand_multi != pl.current_earning_multi %}var(--color-text-danger){% else %}var(--color-text-secondary){% endif %};">
+                {{ pl.current_earning_multi|number_format(2) }}</td>
+                <td style="padding:5px 8px; text-align:right; font-family:var(--font-mono);
+                color:{% if pl.audit_grand_base != pl.current_earning_base %}var(--color-text-danger){% else %}var(--color-text-secondary){% endif %};">
+                {{ pl.current_earning_base|number_format(2) }}</td>
+            </tr>
+            </tbody>
+        </table>
+
+        {% if pl.status == 'fail' %}
+        <div style="border-left:3px solid var(--color-border-danger); padding:0.5rem 0.75rem; background:var(--color-background-danger); border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;">
+            <p style="font-size:12px; color:var(--color-text-danger); margin:0;">{{ pl.message }}</p>
+        </div>
+        {% endif %}
+
+        {# Naming notice — shown as a subtle code-level remark #}
+        {% if items.layer5.checks.naming_note is defined %}
+        <p style="font-size:11px; color:var(--color-text-tertiary); margin:0.75rem 0 0; border-top:0.5px solid var(--color-border-tertiary); padding-top:0.5rem;">
+            &#9432; {{ items.layer5.checks.naming_note.message }}
+        </p>
+        {% endif %}
+
+        </div>
+    </div>
+
+    {% endif %}{# end status == fail #}
+
+{% endif %}{# end error check #}
+
+{% endif %}{# end layout == balancesheet #}

@@ -190,109 +190,117 @@ class ChartAccounts extends FormBase {
                 '#suffix' => '</div></div>',
             ];
 
-            $class = substr($form_state->getValue('class'), 0, 2) . '%';
+            $class = substr($form_state->getValue('class'), 0, 2);
+            $total_opening_balance = 0;
             $list = Database::getConnection('external_db', 'external_db')
                     ->select('ek_accounts', 'a')
                     ->fields('a', ['id','aid','aname','astatus','balance', 'balance_base','balance_date'])
                     ->condition('atype', 'detail')
-                    ->condition('aid', $class, 'LIKE')
+                    //->condition('aid', $class, 'LIKE')
                     ->condition('coid',$form_state->getValue('coid'))
                     ->orderBy('aid')
                     ->execute();
             
             while ($row = $list->fetchObject()) {
-                $id = $row->id;
-                if ($row->astatus == '1') {
-                    $css = 'grey';
-                } else {
+
+                // track the chart balance for discrepancies
+                $total_opening_balance += $row->balance_base;
+                // filter only selected class
+                if(substr($row->aid, 0, 2) ==  $class) {
+                    // display account
+                    $id = $row->id;
                     $css = '';
+                    if ($row->astatus == '1') { $css = 'grey'; } 
+
+                    // check if the account is used
+                    $query = Database::getConnection('external_db', 'external_db')
+                            ->select('ek_journal', 'j')
+                            ->fields('j', ['id'])
+                            ->condition('coid', $form_state->getValue('coid'))
+                            ->condition('aid', $row->aid)
+                            ->range(0,1)
+                            ->execute();
+                    $check = $query->fetchField();
+                    if ($check > 0) {
+                        $markup = "<b title='" . $this->t('account used in journal') . "'>" . $row->aid . '</b>';
+                    } else {
+                        $markup = $row->aid;
+                    }
+
+                    // Force edit name for Site admin
+                    $user = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
+                    if ($user->hasRole('administrator')) {
+                        $check = false;
+                    }
+
+                    $form['list']['d'][$id]['aid'] = [
+                        '#type' => 'item',
+                        '#markup' => $markup,
+                        '#prefix' => "<div class='row " . $css . "' id='a" . $id . "' ><div class='cell cell50'>",
+                        '#suffix' => '</div>',
+                    ];
+
+                    $form['list']['d'][$id]['aname'] = [
+                        '#type' => 'textfield',
+                        '#size' => 30,
+                        '#maxlength' => 50,
+                        '#default_value' => $row->aname,
+                        '#disabled' => $check ? true : false,
+                        '#prefix' => "<div class='cell cell150'>",
+                        '#suffix' => '</div>',
+                    ];
+
+                    $form['list']['d'][$id]['balance'] = [
+                        '#type' => 'textfield',
+                        '#default_value' => number_format($row->balance, 2),
+                        '#size' => 15,
+                        '#attributes' => ['placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"],
+                        '#prefix' => "<div class='cell cell100'>",
+                        '#suffix' => '</div>',
+                    ];
+
+                    $form['list']['d'][$id]['balance_base'] = [
+                        '#type' => 'textfield',
+                        '#default_value' => number_format($row->balance_base, 2),
+                        '#size' => 15,
+                        '#attributes' => ['placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"],
+                        '#prefix' => "<div class='cell cell100'>",
+                        '#suffix' => '</div>',
+                    ];
+
+                    $form['list']['d'][$id]['balance_date'] = [
+                        '#type' => 'date',
+                        '#default_value' => $row->balance_date,
+                        '#size' => 14,
+                        '#prefix' => "<div class='cell cell150'>",
+                        '#suffix' => '</div>',
+                    ];
+
+                    $form['list']['d'][$id]['astatus'] = [
+                        '#type' => 'checkbox',
+                        '#default_value' => $row->astatus,
+                        '#attributes' => array('onclick' => "jQuery('#a" . $id . "' ).toggleClass('grey');"),
+                        '#prefix' => "<div class='cell cell50 cellcenter'>",
+                        '#suffix' => '</div></div>',
+                    ];
                 }
-
-                // check if the account is used
-                $query = Database::getConnection('external_db', 'external_db')
-                         ->select('ek_journal', 'j')
-                         ->fields('j', ['id'])
-                         ->condition('coid', $form_state->getValue('coid'))
-                         ->condition('aid', $row->aid)
-                         ->extend('Drupal\Core\Database\Query\TableSortExtender')
-                         ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                         ->limit(1)
-                         ->execute();
-                $check = $query->fetchField();
-                if ($check > 0) {
-                    $markup = "<b title='" . $this->t('account used in journal') . "'>" . $row->aid . '</b>';
-                } else {
-                    $markup = $row->aid;
-                }
-
-                 // Force edit name for Site admin
-                $user = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
-                if ($user->hasRole('administrator')) {
-                    $check = false;
-                }
-
-                $form['list']['d'][$id]['aid'] = [
-                    '#type' => 'item',
-                    '#markup' => $markup,
-                    '#prefix' => "<div class='row " . $css . "' id='a" . $id . "' ><div class='cell cell50'>",
-                    '#suffix' => '</div>',
-                ];
-
-                $form['list']['d'][$id]['aname'] = [
-                    '#type' => 'textfield',
-                    '#size' => 30,
-                    '#maxlength' => 50,
-                    '#default_value' => $row->aname,
-                    '#disabled' => $check ? true : false,
-                    '#prefix' => "<div class='cell cell150'>",
-                    '#suffix' => '</div>',
-                ];
-
-
-                $form['list']['d'][$id]['balance'] = [
-                    '#type' => 'textfield',
-                    '#default_value' => number_format($row->balance, 2),
-                    '#size' => 15,
-                    '#attributes' => ['placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"],
-                    '#prefix' => "<div class='cell cell100'>",
-                    '#suffix' => '</div>',
-                ];
-
-                $form['list']['d'][$id]['balance_base'] = [
-                    '#type' => 'textfield',
-                    '#default_value' => number_format($row->balance_base, 2),
-                    '#size' => 15,
-                    '#attributes' => ['placeholder' => $this->t('value'), 'class' => array('amount'), 'onKeyPress' => "return(number_format(this,',','.', event))"],
-                    '#prefix' => "<div class='cell cell100'>",
-                    '#suffix' => '</div>',
-                ];
-
-                $form['list']['d'][$id]['balance_date'] = [
-                    '#type' => 'date',
-                    '#default_value' => $row->balance_date,
-                    '#size' => 14,
-                    '#prefix' => "<div class='cell cell150'>",
-                    '#suffix' => '</div>',
-                ];
-
-                $form['list']['d'][$id]['astatus'] = [
-                    '#type' => 'checkbox',
-                    '#default_value' => $row->astatus,
-                    '#attributes' => array('onclick' => "jQuery('#a" . $id . "' ).toggleClass('grey');"),
-                    '#prefix' => "<div class='cell cell50 cellcenter'>",
-                    '#suffix' => '</div></div>',
-                ];
             }
 
             $param = $form_state->getValue('coid') . '-' . $class;
             $url = Url::fromRoute('ek_finance.admin.modal_charts_accounts', array('param' => $param))->toString();
             $new = $this->t('<a href="@url" class="@c" >+ new account</a>', array('@url' => $url, '@c' => 'use-ajax red'));
 
+            if($total_opening_balance <> 0) {
+                $form['error'] = [
+                    '#type'   => 'markup',
+                    '#markup' => '<div class="messages messages--warning">' 
+                    . $this->t('The opening balance values (base) of the whole chart are not equal to 0: @v.', ['@v' => $total_opening_balance]) . '</div>',
+                ];
+            }
             $form['list']['close'] = [
                 '#type' => 'item',
                 '#markup' => $new . '</div></div>',
             ];
-
 
             $form['actions'] = [
                 '#type' => 'actions',
@@ -330,8 +338,10 @@ class ChartAccounts extends FormBase {
             }
         }
 
+
         $form['#tree'] = true;
         $form['#attached']['library'][] = 'ek_finance/ek_finance.journal_form';
+
         return $form;
     }
 

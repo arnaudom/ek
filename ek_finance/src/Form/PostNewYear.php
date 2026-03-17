@@ -164,6 +164,7 @@ class PostNewYear extends FormBase {
                 $equity_max = $equity_min + 9999;
                 $earnings_account = $equity_min + 9001; //default
                 $reserve_account = $equity_min + 8001; //default
+                $total_open_base = 0;
 
                 $q = Database::getConnection('external_db', 'external_db')
                         ->select('ek_accounts', 'a')
@@ -173,11 +174,18 @@ class PostNewYear extends FormBase {
                         ->execute();
 
                 while ($r = $q->fetchAssoc()) {
-                    if (($r['aid'] >= $other_assets_min && $r['aid'] <= $other_assets_max) || ($r['aid'] >= $assets_min && $r['aid'] <= $assets_max) || ($r['aid'] >= $liabilities_min && $r['aid'] <= $liabilities_max) || ($r['aid'] >= $other_liabilities_min && $r['aid'] <= $other_liabilities_max) || ($r['aid'] >= $equity_min && $r['aid'] <= $equity_max)
+                    if (($r['aid'] >= $other_assets_min && $r['aid'] <= $other_assets_max) 
+                        || ($r['aid'] >= $assets_min && $r['aid'] <= $assets_max) 
+                        || ($r['aid'] >= $liabilities_min && $r['aid'] <= $liabilities_max) 
+                        || ($r['aid'] >= $other_liabilities_min && $r['aid'] <= $other_liabilities_max) 
+                        || ($r['aid'] >= $equity_min && $r['aid'] <= $equity_max)
                     ) {
-                        if ($r['aid'] == $earnings_account) {
+                        if ($r['aid'] == $earnings_account) { 
                             $r['balance_base'] = $earning[1];
                             $r['balance'] = $earning[0];
+                            $b = [];
+                            $b[0] = 0;
+                            $b[1] = 0;
                         } elseif ($r['aid'] == $reserve_account) {
                             $e = $this->journal->opening(
                                     array(
@@ -207,6 +215,8 @@ class PostNewYear extends FormBase {
                                 . "<td align=right>" . number_format($b[1], 2) . "</td>"
                                 . "<td align=right>" . number_format($b[0], 2) . "</td>
                           </tr>";
+
+                          $total_open_base += $b[1];
                     }
                 }
 
@@ -231,7 +241,19 @@ class PostNewYear extends FormBase {
                                     <th>" . $this->t('Local currency') . "</th>
                                   </tr>
                                 </thead>
-                                <tbody >" . $rows . "</tbody></table>";
+                                <tbody >" . $rows . "</tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>" . $this->t('Total') . "</th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th>" . $total_open_base  . "</th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
+                                </table>";
 
 
                 //////////////////////////////
@@ -337,7 +359,7 @@ class PostNewYear extends FormBase {
         $liabilities_max = $liabilities_min + 9999;
 
         //other liabilities
-        $other_liabilities_min = $this->chart['liabilities'] * 10000;
+        $other_liabilities_min = $this->chart['other_liabilities'] * 10000;
         $other_liabilities_max = $other_liabilities_min + 9999;
 
         //equity

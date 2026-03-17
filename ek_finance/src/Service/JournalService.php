@@ -77,20 +77,32 @@ class JournalService {
         // remove 1 day from stop date as we generate closing amount from opening of next period
         $stop_date = date('Y-m-d', strtotime($items['dates']['stop_date'] . ' - 1 day'));
 
-        if($items['dates']['archive'] == TRUE) {
-            $from = $items['dates']['from'];
-            // extract data from archive tables
-            $table_accounts = "ek_accounts_" . $year . "_" . $coid;
-            $table_journal = "ek_journal_" . $year . "_" . $coid;
-            $items['title'] = t('Archive data');
-            
-        } else {
-            $from = $items['dates']['fiscal_start'];
-            // extract data from current tables
-            $table_accounts = "ek_accounts";
-            $table_journal = "ek_journal";
-            $items['title'] = t('Current fiscal year @y', ['@y' => $items['dates']['fiscal_year']]);
-            
+        $connection = Database::getConnection('external_db', 'external_db');
+
+        $is_archive_requested = !empty($items['dates']['archive']) && $items['dates']['archive'] === TRUE;
+
+        $table_accounts = 'ek_accounts';
+        $table_journal  = 'ek_journal';
+        $from           = $items['dates']['fiscal_start'];
+        $items['title'] = t('Current fiscal year @y', ['@y' => $items['dates']['fiscal_year']]);
+
+        if ($is_archive_requested) {
+
+            $candidate_table = "ek_accounts_{$year}_{$coid}";
+
+            // ── Actual table existence check ───────────────────────────────────────
+            if ($connection->schema()->tableExists($candidate_table)) {
+                $table_accounts = $candidate_table;
+                $table_journal  = "ek_journal_{$year}_{$coid}";
+                $from           = $items['dates']['from'];
+                $items['title'] = t('Archive data');
+            }
+            else {
+                // Archive was requested but table does not exist
+                
+                 $items['error'] = t('Archive tables for year @year do not exist.', ['@year' => $year]);
+                 return $items;
+            }
         }
 
         $param = [ 'id' => 'bs', 'from' => $from, 'to' => $to, 'coid' => $coid, 'aid' => '', 'archive' => $items['dates']['archive']];
@@ -3245,7 +3257,8 @@ class JournalService {
     public function current_earning($coid, $from, $to) {
         $settings = new FinanceSettings();
         $chart = $settings->get('chart');
-        //REVENUE - class //
+
+        // REVENUE - class //
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_accounts', 't');
         $query->fields('t', ['aid', 'aname']);
@@ -3259,13 +3272,13 @@ class JournalService {
         $query->orderBy('aid', 'ASC');
         $result = $query->execute();
 
-        $total_class4 = 0;
-        $total_class4_l = 0;
+        $total_class4_multi = 0;   // was: $total_class4_l  (local/multi)
+        $total_class4_base  = 0;   // was: $total_class4    (base/exchange)
 
         while ($r = $result->fetchAssoc()) {
             $aid = substr($r['aid'], 0, 2);
-            $total_detail = 0;
-            $total_detail_l = 0;
+            $total_detail_multi = 0;   // was: $total_detail_l
+            $total_detail_base  = 0;   // was: $total_detail
 
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_accounts', 't');
@@ -3278,33 +3291,30 @@ class JournalService {
             $result3 = $query->execute();
 
             while ($r3 = $result3->fetchAssoc()) {
-                $d = self::transactions(
-                                array(
-                                    'aid' => $r3['aid'],
-                                    'type' => 'debit',
-                                    'coid' => $coid,
-                                    'from' => $from,
-                                    'to' => $to
-                                )
-                );
+                $d = self::transactions([
+                    'aid'  => $r3['aid'],
+                    'type' => 'debit',
+                    'coid' => $coid,
+                    'from' => $from,
+                    'to'   => $to,
+                ]);
+                $c = self::transactions([
+                    'aid'  => $r3['aid'],
+                    'type' => 'credit',
+                    'coid' => $coid,
+                    'from' => $from,
+                    'to'   => $to,
+                ]);
+                // transactions() returns [0] = multi/local, [1] = base/exchange
+                $net_multi = $c[0] - $d[0];   // was: $b     accumulated into $total_detail_l
+                $net_base  = $c[1] - $d[1];   // was: $b_exc accumulated into $total_detail
 
-                $c = self::transactions(
-                                array(
-                                    'aid' => $r3['aid'],
-                                    'type' => 'credit',
-                                    'coid' => $coid,
-                                    'from' => $from,
-                                    'to' => $to
-                                )
-                );
-                $b = $c[0] - $d[0];
-                $b_exc = $c[1] - $d[1];
-                $total_detail += $b_exc;
-                $total_detail_l += $b;
+                $total_detail_multi += $net_multi;
+                $total_detail_base  += $net_base;
             }
 
-            $total_class4 += $total_detail;
-            $total_class4_l += $total_detail_l;
+            $total_class4_multi += $total_detail_multi;
+            $total_class4_base  += $total_detail_base;
         }
 
         // COS - class //
@@ -3318,13 +3328,13 @@ class JournalService {
         $query->orderBy('aid', 'ASC');
         $result = $query->execute();
 
-        $total_class5 = 0;
-        $total_class5_l = 0;
+        $total_class5_multi = 0;   // was: $total_class5_l
+        $total_class5_base  = 0;   // was: $total_class5
 
         while ($r = $result->fetchAssoc()) {
             $aid = substr($r['aid'], 0, 2);
-            $total_detail = 0;
-            $total_detail_l = 0;
+            $total_detail_multi = 0;
+            $total_detail_base  = 0;
 
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_accounts', 't');
@@ -3337,33 +3347,29 @@ class JournalService {
             $result3 = $query->execute();
 
             while ($r3 = $result3->fetchAssoc()) {
-                $d = self::transactions(
-                                array(
-                                    'aid' => $r3['aid'],
-                                    'type' => 'debit',
-                                    'coid' => $coid,
-                                    'from' => $from,
-                                    'to' => $to
-                                )
-                );
+                $d = self::transactions([
+                    'aid'  => $r3['aid'],
+                    'type' => 'debit',
+                    'coid' => $coid,
+                    'from' => $from,
+                    'to'   => $to,
+                ]);
+                $c = self::transactions([
+                    'aid'  => $r3['aid'],
+                    'type' => 'credit',
+                    'coid' => $coid,
+                    'from' => $from,
+                    'to'   => $to,
+                ]);
+                $net_multi = $c[0] - $d[0];
+                $net_base  = $c[1] - $d[1];
 
-                $c = self::transactions(
-                                array(
-                                    'aid' => $r3['aid'],
-                                    'type' => 'credit',
-                                    'coid' => $coid,
-                                    'from' => $from,
-                                    'to' => $to
-                                )
-                );
-                $b = $c[0] - $d[0];
-                $b_exc = $c[1] - $d[1];
-                $total_detail += $b_exc;
-                $total_detail_l += $b;
+                $total_detail_multi += $net_multi;
+                $total_detail_base  += $net_base;
             }
 
-            $total_class5 += $total_detail;
-            $total_class5_l += $total_detail_l;
+            $total_class5_multi += $total_detail_multi;
+            $total_class5_base  += $total_detail_base;
         }
 
         // CHARGES - class //
@@ -3380,13 +3386,14 @@ class JournalService {
         $query->orderBy('aid', 'ASC');
         $result = $query->execute();
 
-        $total_class6 = 0;
-        $total_class6_l = 0;
+        $total_class6_multi = 0;   // was: $total_class6_l
+        $total_class6_base  = 0;   // was: $total_class6
 
         while ($r = $result->fetchAssoc()) {
             $aid = substr($r['aid'], 0, 2);
-            $total_detail = 0;
-            $total_detail_l = 0;
+            $total_detail_multi = 0;
+            $total_detail_base  = 0;
+
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_accounts', 't');
             $query->fields('t', ['aid', 'aname']);
@@ -3398,40 +3405,36 @@ class JournalService {
             $result3 = $query->execute();
 
             while ($r3 = $result3->fetchAssoc()) {
-                $d = self::transactions(
-                                array(
-                                    'aid' => $r3['aid'],
-                                    'type' => 'debit',
-                                    'coid' => $coid,
-                                    'from' => $from,
-                                    'to' => $to
-                                )
-                );
+                $d = self::transactions([
+                    'aid'  => $r3['aid'],
+                    'type' => 'debit',
+                    'coid' => $coid,
+                    'from' => $from,
+                    'to'   => $to,
+                ]);
+                $c = self::transactions([
+                    'aid'  => $r3['aid'],
+                    'type' => 'credit',
+                    'coid' => $coid,
+                    'from' => $from,
+                    'to'   => $to,
+                ]);
+                $net_multi = $c[0] - $d[0];
+                $net_base  = $c[1] - $d[1];
 
-                $c = self::transactions(
-                                array(
-                                    'aid' => $r3['aid'],
-                                    'type' => 'credit',
-                                    'coid' => $coid,
-                                    'from' => $from,
-                                    'to' => $to
-                                )
-                );
-                $b = $c[0] - $d[0];
-                $b_exc = $c[1] - $d[1];
-                $total_detail += $b_exc;
-                $total_detail_l += $b;
+                $total_detail_multi += $net_multi;
+                $total_detail_base  += $net_base;
             }
 
-            $total_class6 += $total_detail;
-            $total_class6_l += $total_detail_l;
+            $total_class6_multi += $total_detail_multi;
+            $total_class6_base  += $total_detail_base;
         }
 
-
-        $result = $total_class4 + $total_class5 + $total_class6;
-        $result_l = $total_class4_l + $total_class5_l + $total_class6_l;
-
-        return array($result_l, $result);
+        // [0] = multi/local, [1] = base/exchange — consistent with opening() and transactions()
+        return [
+            $total_class4_multi + $total_class5_multi + $total_class6_multi,  // [0] multi
+            $total_class4_base  + $total_class5_base  + $total_class6_base,   // [1] base
+        ];
     }
 
     /**
@@ -4033,6 +4036,363 @@ class JournalService {
                 }
             }
         }
+    }
+
+    /**
+     * Audit balance sheet discrepancy
+     * Route: /finance/audit/balancesheet/{param}
+     * param = serialized [coid, year, month]
+     */
+    public function auditBalanceSheet($coid, $year, $month): array {
+
+        $report = [];
+        $financesettings = new FinanceSettings();
+        $chart = $financesettings->get('chart');
+        $dates = self::getFiscalDates($coid, $year, $month);
+        $stop_date = date('Y-m-d', strtotime($dates['stop_date'] . ' - 1 day'));
+        $from = $dates['fiscal_start'];
+        $to = $dates['to'];
+
+        // ── Re-run the BS to get current delta ─────────────────────────────────
+        $bs = $this->balancesheet($coid, $year, $month, 0);
+        $delta_base  = round($bs['net_assets']['base'], 2) - round($bs['total_equity']['base'], 2);
+        $delta_multi = round($bs['net_assets']['multi'], 2) - round($bs['total_equity']['multi'], 2);
+
+        $report['delta_base']  = $delta_base;
+        $report['delta_multi'] = $delta_multi;
+        $report['bs_error']    = isset($bs['error']);
+
+        if ($delta_base == 0 && $delta_multi == 0) {
+            $report['status'] = 'pass';
+            return $report;
+        }
+
+        $report['layout'] = 'balancesheet';
+        $report['status'] = 'fail';
+
+        // ── Layer 3: Section Coverage ───────────────────────────────────────────
+        $report['layer3'] = $this->auditSectionCoverage($coid, $chart, $stop_date);
+
+        // ── Layer 4: Currency Divergence ────────────────────────────────────────
+        $report['layer4'] = $this->auditCurrencyDivergence($delta_base, $delta_multi);
+
+        // ── Layer 5: Earnings Account ───────────────────────────────────────────
+        $report['layer5'] = $this->auditEarningsAccount($coid, $year, $month, $chart, $from, $to, $dates);
+
+        // ── Diagnosis summary ───────────────────────────────────────────────────
+        $report['diagnosis'] = $this->buildDiagnosis($report);
+
+        return $report;
+    }
+
+    private function auditSectionCoverage($coid, $chart, $stop_date): array {
+
+        $result = ['status' => 'pass', 'orphaned' => []];
+
+        // Accounts that belong on the balance sheet
+        $bs_sections = [
+            'other_assets'      => (string) $chart['other_assets'],
+            'assets'            => (string) $chart['assets'],
+            'liabilities'       => (string) $chart['liabilities'],
+            'other_liabilities' => (string) $chart['other_liabilities'],
+            'equity'            => (string) $chart['equity'],
+        ];
+
+        // Accounts that intentionally live in the P&L — not BS orphans
+        $pl_sections = [
+            'income'         => (string) $chart['income'],
+            'other_income'   => (string) $chart['other_income'],
+            'cos'            => (string) $chart['cos'],
+            'expenses'       => (string) $chart['expenses'],
+            'other_expenses' => (string) $chart['other_expenses'],
+        ];
+
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_accounts', 'a');
+        $query->fields('a', ['aid', 'aname']);
+        $query->condition('coid', $coid);
+        $query->condition('atype', 'detail');
+        $query->condition('astatus', '1');
+        $all_accounts = $query->execute()->fetchAllAssoc('aid');
+
+        foreach ($all_accounts as $aid => $account) {
+
+            $aid_str = (string) $aid;
+
+            // Skip if this account belongs to a known P&L section — intentional
+            $is_pl = false;
+            foreach ($pl_sections as $prefix) {
+                if (str_starts_with($aid_str, $prefix)) {
+                    $is_pl = true;
+                    break;
+                }
+            }
+            if ($is_pl) {
+                continue;
+            }
+
+            // Check if it maps to a BS section
+            $matched = false;
+            foreach ($bs_sections as $prefix) {
+                if (str_starts_with($aid_str, $prefix)) {
+                    $matched = true;
+                    break;
+                }
+            }
+
+            if (!$matched) {
+                // Truly orphaned — not BS, not P&L
+                // Only report if it carries a non-zero balance
+                $b = self::opening([
+                    'aid'     => $aid,
+                    'coid'    => $coid,
+                    'from'    => $stop_date,
+                    'archive' => false,
+                ]);
+
+                if ($b[0] != 0 || $b[1] != 0) {
+                    $result['orphaned'][] = [
+                        'aid'   => $aid,
+                        'name'  => $account->aname,
+                        'multi' => $b[0],
+                        'base'  => $b[1],
+                    ];
+                    $result['status'] = 'fail';
+                }
+            }
+        }
+
+        $result['orphaned_sum_base']  = array_sum(array_column($result['orphaned'], 'base'));
+        $result['orphaned_sum_multi'] = array_sum(array_column($result['orphaned'], 'multi'));
+
+        return $result;
+    }
+
+    private function auditCurrencyDivergence($delta_base, $delta_multi): array {
+
+        $result = ['status' => 'pass'];
+
+        if ($delta_base == 0 && $delta_multi == 0) {
+            return $result;
+        }
+
+        $result['status']      = 'fail';
+        $result['delta_base']  = $delta_base;
+        $result['delta_multi'] = $delta_multi;
+
+        if ($delta_multi == 0 && $delta_base != 0) {
+            // Multi balances, base does not → pure FX rate inconsistency
+            $result['type']    = 'fx_only';
+            $result['message'] = 'Discrepancy in base currency only. '
+                            . 'Multi-currency is balanced. '
+                            . 'Check exchange rates applied during journal entry posting.';
+
+        } elseif ($delta_base == 0 && $delta_multi != 0) {
+            // Base balances, multi does not → unusual, likely FX rounding or
+            // a multi-currency entry posted without base recalculation
+            $result['type']    = 'multi_only';
+            $result['message'] = 'Discrepancy in multi-currency only. '
+                            . 'Base currency is balanced. '
+                            . 'Check foreign currency journal entries for missing exchange conversion.';
+
+        } elseif (($delta_base > 0) === ($delta_multi > 0)) {
+            // Both non-zero, same sign → structural classification error
+            $result['type']    = 'structural';
+            $result['message'] = 'Both currencies diverge in the same direction. '
+                            . 'Likely a chart-of-accounts classification or section coverage issue.';
+
+        } else {
+            // Both non-zero, opposite signs → mixed FX + structural
+            $result['type']    = 'mixed';
+            $result['message'] = 'Currencies diverge in opposite directions. '
+                            . 'Mixed issue: FX rate inconsistency and structural classification error.';
+        }
+
+        return $result;
+    }
+
+    private function auditEarningsAccount($coid, $year, $month, $chart, $from, $to, $dates): array {
+
+        $result = [
+            'status'  => 'pass',
+            'checks'  => [],
+            'message' => '',
+        ];
+
+        $equity_min      = $chart['equity'] * 10000;
+        $earnings_account = $equity_min + 9001;
+
+        // ── Check 1: Archive table mismatch ────────────────────────────────────
+        // current_earning() always reads live tables regardless of archive flag
+        if (!empty($dates['archive']) && $dates['archive'] === TRUE) {
+            $result['status'] = 'fail';
+            $result['checks']['archive_mismatch'] = [
+                'status'  => 'fail',
+                'message' => 'current_earning() always reads live ek_accounts/ek_journal. '
+                        . 'For archive year ' . $year . ', earnings are pulled from '
+                        . 'the current fiscal year instead of the archive tables. '
+                        . 'This will produce an incorrect equity figure on the balance sheet.',
+            ];
+        } else {
+            $result['checks']['archive_mismatch'] = ['status' => 'pass'];
+        }
+
+        // ── Check 2: Direct transactions on earnings account ───────────────────
+        $dt = self::transactions([
+            'aid'     => $earnings_account,
+            'type'    => 'debit',
+            'coid'    => $coid,
+            'from'    => $from,
+            'to'      => $to,
+            'archive' => $dates['archive'],
+        ]);
+        $ct = self::transactions([
+            'aid'     => $earnings_account,
+            'type'    => 'credit',
+            'coid'    => $coid,
+            'from'    => $from,
+            'to'      => $to,
+            'archive' => $dates['archive'],
+        ]);
+
+        $result['checks']['direct_transactions'] = [
+            'debit_multi'   => $dt[0],
+            'credit_multi'  => $ct[0],
+            'debit_base'    => $dt[1],
+            'credit_base'   => $ct[1],
+        ];
+
+        if ($dt[0] != 0 || $ct[0] != 0 || $dt[1] != 0 || $ct[1] != 0) {
+            $result['status'] = 'warning';
+            $result['checks']['direct_transactions']['status']  = 'warning';
+            $result['checks']['direct_transactions']['message'] =
+                'Direct journal entries exist on earnings account ' . $earnings_account
+                . '. These are added on top of current_earning() in balancesheet(). '
+                . 'Verify these are intentional closing/adjustment entries and not duplicates.';
+        } else {
+            $result['checks']['direct_transactions']['status'] = 'pass';
+        }
+
+        // ── Check 3: P&L section breakdown ────────────────────────────────────
+        // Re-run each P&L section independently so we can report section by section
+        $pl_sections = [
+            'income'         => $chart['income'],
+            'other_income'   => $chart['other_income'],
+            'cos'            => $chart['cos'],
+            'expenses'       => $chart['expenses'],
+            'other_expenses' => $chart['other_expenses'],
+        ];
+
+        $pl_totals = [];
+        $pl_grand_multi = 0;
+        $pl_grand_base  = 0;
+
+        foreach ($pl_sections as $section_name => $prefix) {
+
+            $section_multi = 0;
+            $section_base  = 0;
+
+            $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_accounts', 't');
+            $query->fields('t', ['aid']);
+            $query->condition('aid', $prefix . '%', 'like');
+            $query->condition('atype', 'detail');
+            $query->condition('astatus', '1');
+            $query->condition('coid', $coid);
+            $aids = $query->execute()->fetchCol();
+
+            foreach ($aids as $aid) {
+                $d = self::transactions([
+                    'aid' => $aid, 'type' => 'debit',
+                    'coid' => $coid, 'from' => $from, 'to' => $to,
+                ]);
+                $c = self::transactions([
+                    'aid' => $aid, 'type' => 'credit',
+                    'coid' => $coid, 'from' => $from, 'to' => $to,
+                ]);
+                $section_multi += $c[0] - $d[0];
+                $section_base  += $c[1] - $d[1];
+            }
+
+            $pl_totals[$section_name] = [
+                'multi' => $section_multi,
+                'base'  => $section_base,
+            ];
+            $pl_grand_multi += $section_multi;
+            $pl_grand_base  += $section_base;
+        }
+
+        // What current_earning() actually returned
+        $ce = self::current_earning($coid, $from, $to);
+
+        $result['checks']['pl_breakdown'] = [
+            'sections'              => $pl_totals,
+            'audit_grand_multi'     => $pl_grand_multi,
+            'audit_grand_base'      => $pl_grand_base,
+            'current_earning_multi' => $ce[0],
+            'current_earning_base'  => $ce[1],
+        ];
+
+        // Compare — rounding tolerance 0.02
+        $diff_multi = round($pl_grand_multi, 2) - round($ce[0], 2);
+        $diff_base  = round($pl_grand_base,  2) - round($ce[1], 2);
+
+        if (abs($diff_multi) > 0.02 || abs($diff_base) > 0.02) {
+            $result['status'] = 'fail';
+            $result['checks']['pl_breakdown']['status']  = 'fail';
+            $result['checks']['pl_breakdown']['message'] =
+                'current_earning() result does not match independent P&L section sum. '
+                . 'Difference multi: ' . number_format($diff_multi, 2)
+                . ' / base: '          . number_format($diff_base,  2) . '. '
+                . 'Likely cause: a class-level account prefix in chart settings '
+                . 'skips one or more detail accounts, or a class account has no '
+                . 'parent header and is silently excluded from the loop.';
+        } else {
+            $result['checks']['pl_breakdown']['status'] = 'pass';
+        }
+
+        // further note
+        $result['checks']['naming_note'] = [];
+
+        return $result;
+    }
+
+    private function buildDiagnosis(array $report): string {
+
+        $clues = [];
+
+        if ($report['layer3']['status'] === 'fail') {
+            $count = count($report['layer3']['orphaned']);
+            $sum   = $report['layer3']['orphaned_sum_base'];
+            $clues[] = $count
+                    . ' account(s) carry a balance but are not mapped to any '
+                    . 'balance sheet section or recognised P&L section. '
+                    . 'Combined base balance: ' . number_format($sum, 2) . '.';
+
+            if (abs($sum - abs($report['delta_base'])) < 0.05) {
+                $clues[] = '→ This sum matches the balance sheet delta. '
+                        . 'Fix: assign these accounts to the correct chart section.';
+            }
+        }
+
+        // Only include currency analysis if multi is not purely informational
+        if (isset($report['layer4']['type']) && !$report['multi_informational']) {
+            $clues[] = 'Currency analysis: ' . $report['layer4']['message'];
+        } elseif (isset($report['layer4']['type']) && $report['multi_informational']) {
+            $clues[] = 'Multi-currency delta is a raw transaction-currency figure '
+                    . 'and is not used as a discrepancy indicator for this company.';
+        }
+
+        if ($report['layer5']['status'] !== 'pass') {
+            $clues[] = 'Earnings account: ' . $report['layer5']['message'];
+        }
+
+        if (empty($clues)) {
+            return 'Delta detected but root cause not isolated by available layers. '
+                . 'Run trial() and audit_chart() for deeper journal-level inspection.';
+        }
+
+        return implode(' | ', $clues);
     }
 
 }
