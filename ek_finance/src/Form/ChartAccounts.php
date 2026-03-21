@@ -294,7 +294,7 @@ class ChartAccounts extends FormBase {
                 $form['error'] = [
                     '#type'   => 'markup',
                     '#markup' => '<div class="messages messages--warning">' 
-                    . $this->t('The opening balance values (base) of the whole chart are not equal to 0: @v.', ['@v' => $total_opening_balance]) . '</div>',
+                    . $this->t('The opening balance values (base) of the whole chart are not equal to zero: @v.', ['@v' => round($total_opening_balance,4)]) . '</div>',
                 ];
             }
             $form['list']['close'] = [
@@ -430,7 +430,7 @@ class ChartAccounts extends FormBase {
             }
 
             \Drupal::messenger()->addStatus(t('Data updated'));
-        }//step 2
+        }
     }
 
 }

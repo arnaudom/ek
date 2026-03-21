@@ -165,6 +165,7 @@ class PostNewYear extends FormBase {
                 $earnings_account = $equity_min + 9001; //default
                 $reserve_account = $equity_min + 8001; //default
                 $total_open_base = 0;
+                $total_close_base = 0;
 
                 $q = Database::getConnection('external_db', 'external_db')
                         ->select('ek_accounts', 'a')
@@ -196,6 +197,7 @@ class PostNewYear extends FormBase {
                             );
                             $b[1] = $e[1] + $earning[1];
                             $b[0] = $e[0] + $earning[0];
+                            $total_close_base += $r['balance_base'];
                         } else {
                             $b = $this->journal->opening(
                                     array(
@@ -204,6 +206,7 @@ class PostNewYear extends FormBase {
                                         'from' => $to
                                     )
                             );
+                            $total_close_base += $r['balance_base'];
                         }
 
                         $rows .= "<tr class='detail'>
@@ -246,10 +249,10 @@ class PostNewYear extends FormBase {
                                     <tr>
                                         <th>" . $this->t('Total') . "</th>
                                         <th></th>
+                                        <th>" . round($total_close_base,2)  . "</th>
                                         <th></th>
                                         <th></th>
-                                        <th></th>
-                                        <th>" . $total_open_base  . "</th>
+                                        <th>" . round($total_open_base,2)  . "</th>
                                         <th></th>
                                     </tr>
                                 </tfoot>

@@ -4006,7 +4006,7 @@ class JournalService {
 
     public function audit_newyear($param) {
 
-        $param = explode('|', $param);
+        $param = explode('-', $param);
         $audit = [];
         $companies = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
         if (in_array($param[0], $companies)) {
@@ -4018,7 +4018,7 @@ class JournalService {
                     ->execute();
             while ($r = $q->fetchObject()) {
                 $data = json_decode($r->data);
-                if ($data[1] == $param[1]) {
+                if ($data[1] == $param[1]) { 
                     $settings = new FinanceSettings();
                     $audit['baseCurrency'] = $settings->get('baseCurrency');
                     $coset = new CompanySettings($param[0]);
@@ -4040,12 +4040,17 @@ class JournalService {
 
     /**
      * Audit balance sheet discrepancy
-     * Route: /finance/audit/balancesheet/{param}
-     * param = serialized [coid, year, month]
+     * @param int $coid
+     * @param string $year
+     * @param string $month
+     * @return array
      */
     public function auditBalanceSheet($coid, $year, $month): array {
 
         $report = [];
+        $report['layout'] = 'balancesheet';
+        $report['title'] = t('Balance sheet audit');
+
         $financesettings = new FinanceSettings();
         $chart = $financesettings->get('chart');
         $dates = self::getFiscalDates($coid, $year, $month);
@@ -4053,8 +4058,15 @@ class JournalService {
         $from = $dates['fiscal_start'];
         $to = $dates['to'];
 
-        // ── Re-run the BS to get current delta ─────────────────────────────────
+        // ── Re-run the BS to get current delta
         $bs = $this->balancesheet($coid, $year, $month, 0);
+
+        // Handle balancesheet() early return (e.g. missing archive tables)
+        if (!isset($bs['net_assets']) || !isset($bs['total_equity'])) {
+            $report['error'] = $bs['error'] ?? t('Balance sheet data incomplete.');
+            return $report;
+        }
+
         $delta_base  = round($bs['net_assets']['base'], 2) - round($bs['total_equity']['base'], 2);
         $delta_multi = round($bs['net_assets']['multi'], 2) - round($bs['total_equity']['multi'], 2);
 
@@ -4067,19 +4079,27 @@ class JournalService {
             return $report;
         }
 
-        $report['layout'] = 'balancesheet';
         $report['status'] = 'fail';
 
-        // ── Layer 3: Section Coverage ───────────────────────────────────────────
+        // ── Layer 3: Section Coverage
         $report['layer3'] = $this->auditSectionCoverage($coid, $chart, $stop_date);
 
-        // ── Layer 4: Currency Divergence ────────────────────────────────────────
+        // ── Layer 4: Currency Divergence
         $report['layer4'] = $this->auditCurrencyDivergence($delta_base, $delta_multi);
 
-        // ── Layer 5: Earnings Account ───────────────────────────────────────────
+        // ── Layer 5: Earnings Account
         $report['layer5'] = $this->auditEarningsAccount($coid, $year, $month, $chart, $from, $to, $dates);
 
-        // ── Diagnosis summary ───────────────────────────────────────────────────
+        // ── Layer 6: Stored Balance Equation
+        $report['layer6'] = $this->auditStoredBalances($coid, $chart, $year, $dates);
+
+        // ── Layer 10: balance_date Consistency
+        $report['layer10'] = $this->auditBalanceDateConsistency($coid, $year, $dates);
+
+        // ── Reference Integrity
+        $report['trace_errors'] = $this->auditReferenceIntegrity($coid, $year, $dates);
+
+        // ── Diagnosis summary
         $report['diagnosis'] = $this->buildDiagnosis($report);
 
         return $report;
@@ -4357,16 +4377,436 @@ class JournalService {
         return $result;
     }
 
+    /**
+     * Layer 6: Verify that stored account balances satisfy the accounting equation.
+     *
+     * In a correct double-entry system the sum of all stored balances across
+     * every account for a given coid must equal zero.  The earnings account
+     * (equity_min + 9001) is excluded from the pass/fail check because its
+     * stored value is not used by balancesheet() — current_earning() is called
+     * instead.
+     *
+     * @param int    $coid
+     * @param array  $chart
+     * @param string $year
+     * @param array  $dates  Return value of getFiscalDates()
+     *
+     * @return array
+     */
+    private function auditStoredBalances($coid, $chart, $year, $dates): array {
+
+        $result = [
+            'status'                  => 'pass',
+            'sections'                => [],
+            'sum_balance'             => 0,
+            'sum_balance_base'        => 0,
+            'sum_excl_earnings'       => 0,
+            'sum_excl_earnings_base'  => 0,
+            'earnings_account'        => null,
+            'pl_warning'              => null,
+            'message'                 => '',
+        ];
+
+        // ── Determine table ────────────────────────────────────────────────
+        $table_accounts = 'ek_accounts';
+        if (!empty($dates['archive']) && $dates['archive'] === TRUE) {
+            $candidate = "ek_accounts_{$year}_{$coid}";
+            if (Database::getConnection('external_db', 'external_db')
+                    ->schema()->tableExists($candidate)) {
+                $table_accounts = $candidate;
+            }
+        }
+
+        $equity_min          = $chart['equity'] * 10000;
+        $earnings_account_aid = (string) ($equity_min + 9001);
+
+        // ── Section prefixes ───────────────────────────────────────────────
+        $bs_sections = [
+            'other_assets'      => (string) $chart['other_assets'],
+            'assets'            => (string) $chart['assets'],
+            'liabilities'       => (string) $chart['liabilities'],
+            'other_liabilities' => (string) $chart['other_liabilities'],
+            'equity'            => (string) $chart['equity'],
+        ];
+        $pl_sections = [
+            'income'         => (string) $chart['income'],
+            'other_income'   => (string) $chart['other_income'],
+            'cos'            => (string) $chart['cos'],
+            'expenses'       => (string) $chart['expenses'],
+            'other_expenses' => (string) $chart['other_expenses'],
+        ];
+
+        // Sort by prefix length descending so longer prefixes match first
+        uasort($bs_sections, function ($a, $b) {
+            return strlen($b) - strlen($a);
+        });
+        uasort($pl_sections, function ($a, $b) {
+            return strlen($b) - strlen($a);
+        });
+
+        // ── Initialise section sums ────────────────────────────────────────
+        $section_sums = [];
+        foreach (array_keys($bs_sections) as $name) {
+            $section_sums[$name] = ['balance' => 0, 'balance_base' => 0, 'count' => 0];
+        }
+        $section_sums['pl']       = ['balance' => 0, 'balance_base' => 0, 'count' => 0];
+        $section_sums['unmapped'] = ['balance' => 0, 'balance_base' => 0, 'count' => 0];
+
+        // ── Query all detail accounts (regardless of astatus) ──────────────
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select($table_accounts, 'a');
+        $query->fields('a', ['aid', 'aname', 'balance', 'balance_base']);
+        $query->condition('coid', $coid);
+        $query->condition('atype', 'detail');
+        $query->orderBy('aid');
+        $accounts = $query->execute()->fetchAll();
+
+        $total_balance             = 0;
+        $total_balance_base        = 0;
+        $total_excl_earnings       = 0;
+        $total_excl_earnings_base  = 0;
+
+        foreach ($accounts as $account) {
+            $aid_str = (string) $account->aid;
+
+            $total_balance      += $account->balance;
+            $total_balance_base += $account->balance_base;
+
+            // ── Earnings account: track separately ─────────────────────────
+            if ($aid_str === $earnings_account_aid) {
+                $result['earnings_account'] = [
+                    'aid'          => $account->aid,
+                    'name'         => $account->aname,
+                    'balance'      => $account->balance,
+                    'balance_base' => $account->balance_base,
+                ];
+                // Still tally under equity for the section breakdown
+                $section_sums['equity']['balance']      += $account->balance;
+                $section_sums['equity']['balance_base']  += $account->balance_base;
+                $section_sums['equity']['count']++;
+                continue;  // excluded from excl_earnings totals
+            }
+
+            $total_excl_earnings      += $account->balance;
+            $total_excl_earnings_base += $account->balance_base;
+
+            // ── Classify into a section ────────────────────────────────────
+            $matched = false;
+            foreach ($bs_sections as $name => $prefix) {
+                if (str_starts_with($aid_str, $prefix)) {
+                    $section_sums[$name]['balance']      += $account->balance;
+                    $section_sums[$name]['balance_base']  += $account->balance_base;
+                    $section_sums[$name]['count']++;
+                    $matched = true;
+                    break;
+                }
+            }
+
+            if (!$matched) {
+                $is_pl = false;
+                foreach ($pl_sections as $prefix) {
+                    if (str_starts_with($aid_str, $prefix)) {
+                        $is_pl = true;
+                        break;
+                    }
+                }
+                if ($is_pl) {
+                    $section_sums['pl']['balance']      += $account->balance;
+                    $section_sums['pl']['balance_base']  += $account->balance_base;
+                    $section_sums['pl']['count']++;
+                } else {
+                    $section_sums['unmapped']['balance']      += $account->balance;
+                    $section_sums['unmapped']['balance_base']  += $account->balance_base;
+                    $section_sums['unmapped']['count']++;
+                }
+            }
+        }
+
+        $result['sections']                = $section_sums;
+        $result['sum_balance']             = round($total_balance, 2);
+        $result['sum_balance_base']        = round($total_balance_base, 2);
+        $result['sum_excl_earnings']       = round($total_excl_earnings, 2);
+        $result['sum_excl_earnings_base']  = round($total_excl_earnings_base, 2);
+
+        // ── Pass / fail on excl-earnings sum ───────────────────────────────
+        if (round($total_excl_earnings, 2) != 0
+            || round($total_excl_earnings_base, 2) != 0) {
+            $result['status']  = 'fail';
+            $result['message'] = 'Stored balances (excluding earnings account) do not sum to zero. '
+                . 'Multi: ' . number_format(round($total_excl_earnings, 2), 2)
+                . ' / Base: ' . number_format(round($total_excl_earnings_base, 2), 2) . '. '
+                . 'This indicates a year-end posting error.';
+        }
+
+        // ── P&L accounts should always be zero after posting ───────────────
+        if (round($section_sums['pl']['balance'], 2) != 0
+            || round($section_sums['pl']['balance_base'], 2) != 0) {
+            if ($result['status'] === 'pass') {
+                $result['status'] = 'warning';
+            }
+            $result['pl_warning'] = 'P&L accounts have non-zero stored balances. '
+                . 'Multi: ' . number_format(round($section_sums['pl']['balance'], 2), 2)
+                . ' / Base: ' . number_format(round($section_sums['pl']['balance_base'], 2), 2) . '. '
+                . 'These should be zero after year-end posting.';
+        }
+
+        return $result;
+    }
+
+    /**
+     * Layer 10: Verify that all active detail accounts share the same
+     * balance_date.  Accounts created after the last year-end posting will
+     * have a different (or NULL) balance_date, causing opening() to use a
+     * misaligned transaction window.
+     *
+     * @param int    $coid
+     * @param string $year
+     * @param array  $dates
+     *
+     * @return array
+     */
+    private function auditBalanceDateConsistency($coid, $year, $dates): array {
+
+        $result = [
+            'status'        => 'pass',
+            'expected_date' => null,
+            'outliers'      => [],
+            'message'       => '',
+        ];
+
+        $table_accounts = 'ek_accounts';
+        if (!empty($dates['archive']) && $dates['archive'] === TRUE) {
+            $candidate = "ek_accounts_{$year}_{$coid}";
+            if (Database::getConnection('external_db', 'external_db')
+                    ->schema()->tableExists($candidate)) {
+                $table_accounts = $candidate;
+            }
+        }
+
+        // ── Fetch all active detail accounts ───────────────────────────────
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select($table_accounts, 'a');
+        $query->fields('a', ['aid', 'aname', 'balance_date', 'balance', 'balance_base']);
+        $query->condition('coid', $coid);
+        $query->condition('atype', 'detail');
+        $query->condition('astatus', '1');
+        $query->orderBy('aid');
+        $all_accounts = $query->execute()->fetchAll();
+
+        // ── Count occurrences of each balance_date ─────────────────────────
+        $date_counts = [];
+        foreach ($all_accounts as $acc) {
+            $bd = (isset($acc->balance_date) && $acc->balance_date !== '')
+                ? $acc->balance_date
+                : 'NULL';
+            if (!isset($date_counts[$bd])) {
+                $date_counts[$bd] = 0;
+            }
+            $date_counts[$bd]++;
+        }
+        arsort($date_counts);
+
+        if (empty($date_counts)) {
+            return $result;
+        }
+
+        $expected_date = key($date_counts);
+        $result['expected_date'] = $expected_date;
+
+        if (count($date_counts) <= 1) {
+            return $result;
+        }
+
+        // ── Multiple dates found ───────────────────────────────────────────
+        $result['status'] = 'warning';
+
+        foreach ($all_accounts as $acc) {
+            $bd = (isset($acc->balance_date) && $acc->balance_date !== '')
+                ? $acc->balance_date
+                : 'NULL';
+            if ($bd !== $expected_date) {
+                $result['outliers'][] = [
+                    'aid'          => $acc->aid,
+                    'name'         => $acc->aname,
+                    'balance_date' => $acc->balance_date ?? t('not set'),
+                    'balance'      => $acc->balance,
+                    'balance_base' => $acc->balance_base,
+                ];
+            }
+        }
+
+        $result['message'] = count($result['outliers'])
+            . ' account(s) have a balance_date different from the expected '
+            . $expected_date
+            . '. The opening() calculation window may be misaligned for these accounts.';
+
+        return $result;
+    }
+
+    /**
+     * Verify that every (reference, source) group in the journal has
+     * balanced debits and credits.  Also checks for journal entries that
+     * reference disabled or unknown chart accounts.
+     *
+     * Uses a single aggregation query instead of iterating per-reference.
+     *
+     * @param int    $coid
+     * @param string $year
+     * @param array  $dates
+     *
+     * @return array
+     */
+    private function auditReferenceIntegrity($coid, $year, $dates): array {
+
+        $result = [
+            'status'                 => 'pass',
+            'unbalanced_count'       => 0,
+            'unbalanced_total'       => 0,
+            'unbalanced_references'  => [],
+            'disabled_accounts'      => [],
+            'available'              => true,
+            'message'                => '',
+        ];
+
+        $is_archive = !empty($dates['archive']) && $dates['archive'] === TRUE;
+
+        // ── Determine journal table ────────────────────────────────────────
+        if ($is_archive) {
+            $table_journal = "ek_journal_{$year}_{$coid}";
+            if (!Database::getConnection('external_db', 'external_db')
+                    ->schema()->tableExists($table_journal)) {
+                $result['available'] = false;
+                $result['message']   = 'Archive journal table does not exist for this period.';
+                return $result;
+            }
+        } else {
+            $table_journal = 'ek_journal';
+        }
+
+        $from = $is_archive ? $dates['from'] : $dates['fiscal_start'];
+        $to   = $dates['to'];
+
+        // ── Single aggregation query ───────────────────────────────────────
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select($table_journal, 'j');
+        $query->fields('j', ['reference', 'source']);
+        $query->addExpression(
+            "SUM(CASE WHEN j.type = 'credit' THEN j.value ELSE 0 END)",
+            'total_credit'
+        );
+        $query->addExpression(
+            "SUM(CASE WHEN j.type = 'debit' THEN j.value ELSE 0 END)",
+            'total_debit'
+        );
+        $query->condition('j.coid', $coid);
+        $query->condition('j.date', $from, '>=');
+        $query->condition('j.date', $to, '<=');
+        $query->groupBy('j.reference');
+        $query->groupBy('j.source');
+        $data = $query->execute();
+
+        $net_imbalance  = 0;
+        $count          = 0;
+        $top_offenders  = [];
+
+        while ($row = $data->fetchObject()) {
+            $delta = round($row->total_debit, 2) - round($row->total_credit, 2);
+            if ($delta != 0) {
+                $count++;
+                $net_imbalance += $delta;
+                if (count($top_offenders) < 10) {
+                    $top_offenders[] = [
+                        'reference' => $row->reference,
+                        'source'    => $row->source,
+                        'debit'     => round($row->total_debit, 2),
+                        'credit'    => round($row->total_credit, 2),
+                        'delta'     => $delta,
+                    ];
+                }
+            }
+        }
+
+        // ── Disabled / unknown accounts ────────────────────────────────────
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select($table_journal, 'j');
+        $query->fields('j', ['aid']);
+        $query->distinct();
+        $query->condition('j.coid', $coid);
+        $query->condition('j.date', $from, '>=');
+        $query->condition('j.date', $to, '<=');
+        $journal_aids = $query->execute()->fetchCol();
+
+        $table_accounts = $is_archive ? "ek_accounts_{$year}_{$coid}" : 'ek_accounts';
+        if ($is_archive
+            && !Database::getConnection('external_db', 'external_db')
+                    ->schema()->tableExists($table_accounts)) {
+            $table_accounts = 'ek_accounts';
+        }
+
+        $query = Database::getConnection('external_db', 'external_db')
+            ->select($table_accounts, 'a');
+        $query->fields('a', ['aid', 'astatus']);
+        $query->condition('coid', $coid);
+        $chart_accounts = $query->execute()->fetchAllKeyed();
+
+        $disabled = [];
+        foreach ($journal_aids as $aid) {
+            if (!isset($chart_accounts[$aid])) {
+                $disabled[] = ['aid' => $aid, 'status' => 'unknown'];
+            } elseif ($chart_accounts[$aid] == '0') {
+                $disabled[] = ['aid' => $aid, 'status' => 'disabled'];
+            }
+        }
+
+        // ── Build result ───────────────────────────────────────────────────
+        $result['unbalanced_count']      = $count;
+        $result['unbalanced_total']      = round($net_imbalance, 2);
+        $result['unbalanced_references'] = $top_offenders;
+        $result['disabled_accounts']     = $disabled;
+
+        if ($count > 0) {
+            $result['status']  = 'fail';
+            $result['message'] = $count . ' reference(s) have unbalanced debits/credits. '
+                . 'Net imbalance: ' . number_format(round($net_imbalance, 2), 2) . '.';
+        }
+
+        if (!empty($disabled)) {
+            if ($result['status'] === 'pass') {
+                $result['status'] = 'warning';
+            }
+            $result['message'] .= (strlen($result['message']) > 0 ? ' ' : '')
+                . count($disabled)
+                . ' account(s) used in journal are disabled or unknown in the chart.';
+        }
+
+        return $result;
+    }
+
     private function buildDiagnosis(array $report): string {
 
         $clues = [];
 
+        // Layer 6: Stored balance equation (strongest signal)
+        if ($report['layer6']['status'] === 'fail') {
+            $clues[] = 'Stored balance equation: ' . $report['layer6']['message'];
+
+            $sb_base = $report['layer6']['sum_excl_earnings_base'];
+            if (abs(abs($sb_base) - abs($report['delta_base'])) < 0.05) {
+                $clues[] = '→ Stored balance imbalance closely matches the BS delta. '
+                        . 'Root cause is likely in year-end posting.';
+            }
+        }
+        if (!empty($report['layer6']['pl_warning'])) {
+            $clues[] = $report['layer6']['pl_warning'];
+        }
+
+        // Layer 3: Section coverage
         if ($report['layer3']['status'] === 'fail') {
             $count = count($report['layer3']['orphaned']);
             $sum   = $report['layer3']['orphaned_sum_base'];
             $clues[] = $count
                     . ' account(s) carry a balance but are not mapped to any '
-                    . 'balance sheet section or recognised P&L section. '
+                    . 'balance sheet or P&L section. '
                     . 'Combined base balance: ' . number_format($sum, 2) . '.';
 
             if (abs($sum - abs($report['delta_base'])) < 0.05) {
@@ -4375,21 +4815,44 @@ class JournalService {
             }
         }
 
-        // Only include currency analysis if multi is not purely informational
-        if (isset($report['layer4']['type']) && !$report['multi_informational']) {
+        // Layer 4: Currency divergence
+        if (isset($report['layer4']['type'])) {
             $clues[] = 'Currency analysis: ' . $report['layer4']['message'];
-        } elseif (isset($report['layer4']['type']) && $report['multi_informational']) {
-            $clues[] = 'Multi-currency delta is a raw transaction-currency figure '
-                    . 'and is not used as a discrepancy indicator for this company.';
         }
 
+        // Layer 5: Earnings account
         if ($report['layer5']['status'] !== 'pass') {
-            $clues[] = 'Earnings account: ' . $report['layer5']['message'];
+            foreach ($report['layer5']['checks'] as $check_name => $check) {
+                if (is_array($check)
+                    && isset($check['status'])
+                    && $check['status'] !== 'pass'
+                    && !empty($check['message'])) {
+                    $clues[] = 'Earnings (' . str_replace('_', ' ', $check_name) . '): ' . $check['message'];
+                }
+            }
+        }
+
+        // Reference integrity
+        if (isset($report['trace_errors'])
+            && $report['trace_errors']['available']
+            && $report['trace_errors']['status'] !== 'pass') {
+            $clues[] = 'Reference integrity: ' . $report['trace_errors']['message'];
+
+            // Cross-reference with Layer 6
+            if ($report['layer6']['status'] === 'pass' && $report['trace_errors']['unbalanced_count'] > 0) {
+                $clues[] = '→ Stored balances are correct but transactions are unbalanced. '
+                        . 'The delta originates from current-period journal entries.';
+            }
+        }
+
+        // Layer 10: balance_date
+        if ($report['layer10']['status'] === 'warning') {
+            $clues[] = 'Balance date: ' . $report['layer10']['message'];
         }
 
         if (empty($clues)) {
             return 'Delta detected but root cause not isolated by available layers. '
-                . 'Run trial() and audit_chart() for deeper journal-level inspection.';
+                . 'Run trial() and manual journal inspection for deeper analysis.';
         }
 
         return implode(' | ', $clues);

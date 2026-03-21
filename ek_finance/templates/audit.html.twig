@@ -120,7 +120,7 @@ with manual entry' }}</p>
     {% endif %}
     <p style="font-size:12px; color:var(--color-text-danger); margin:6px 0 0; opacity:0.8;">
       {{ 'Expected URL format:'|t }} <code>/finance/audit/balancesheet/coid|year|month</code>
-      &nbsp;{{ 'e.g.'|t }} <code>/finance/audit/balancesheet/1|2024|03</code>
+      &nbsp;{{ 'e.g.'|t }} <code>/finance/audit/balancesheet/1-2025-12</code>
     </p>
   </div>
 
@@ -359,6 +359,269 @@ with manual entry' }}</p>
         {% endif %}
 
         </div>
+    </div>
+
+    {# ══════════════════════════════════════════════════════════════════════
+       LAYER 6 — Stored balance equation
+    ══════════════════════════════════════════════════════════════════════ #}
+    <div style="border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-lg); margin-bottom:1rem; overflow:hidden;">
+
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; border-bottom:0.5px solid var(--color-border-tertiary);">
+        <span style="font-size:14px; font-weight:500; color:var(--color-text-primary);">{{ 'Layer 6 — Stored balance equation'|t }}</span>
+        {% if items.layer6.status == 'pass' %}
+          <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-success); color:var(--color-text-success);">{{ 'Pass'|t }}</span>
+        {% elseif items.layer6.status == 'warning' %}
+          <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-warning); color:var(--color-text-warning);">{{ 'Warning'|t }}</span>
+        {% else %}
+          <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-danger); color:var(--color-text-danger);">{{ 'Fail'|t }}</span>
+        {% endif %}
+      </div>
+
+      <div style="padding:0.75rem 1rem;">
+
+        {% if items.layer6.status == 'pass' and items.layer6.pl_warning is empty %}
+          <p style="font-size:13px; color:var(--color-text-secondary); margin:0;">
+            {{ 'All stored balances sum to zero. Year-end posting is consistent.'|t }}
+          </p>
+
+        {% else %}
+
+          {% if items.layer6.message %}
+          <div style="border-left:3px solid var(--color-border-danger); padding:0.5rem 0.75rem; margin-bottom:0.75rem; background:var(--color-background-danger); border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;">
+            <p style="font-size:12px; color:var(--color-text-danger); margin:0;">{{ items.layer6.message }}</p>
+          </div>
+          {% endif %}
+
+          {% if items.layer6.pl_warning %}
+          <div style="border-left:3px solid var(--color-border-warning); padding:0.5rem 0.75rem; margin-bottom:0.75rem; background:var(--color-background-warning); border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;">
+            <p style="font-size:12px; color:var(--color-text-warning); margin:0;">{{ items.layer6.pl_warning }}</p>
+          </div>
+          {% endif %}
+
+          {# Section breakdown table #}
+          {% set section_labels = {
+            'other_assets':      'Other assets',
+            'assets':            'Assets',
+            'liabilities':       'Liabilities',
+            'other_liabilities': 'Other liabilities',
+            'equity':            'Equity',
+            'pl':                'P&L accounts',
+            'unmapped':          'Unmapped'
+          } %}
+
+          <p style="font-size:13px; font-weight:500; color:var(--color-text-primary); margin:0 0 0.5rem;">{{ 'Stored balance by section'|t }}</p>
+          <table style="width:100%; font-size:13px; border-collapse:collapse; margin-bottom:0.75rem;">
+            <thead>
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary);">
+                <th style="text-align:left; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Section'|t }}</th>
+                <th style="text-align:right; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Accounts'|t }}</th>
+                <th style="text-align:right; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Balance (multi)'|t }}</th>
+                <th style="text-align:right; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Balance (base)'|t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for section_key, section in items.layer6.sections %}
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary);">
+                <td style="padding:5px 8px; color:var(--color-text-primary);">{{ section_labels[section_key]|default(section_key)|t }}</td>
+                <td style="padding:5px 8px; text-align:right; color:var(--color-text-secondary);">{{ section.count }}</td>
+                <td style="padding:5px 8px; text-align:right; font-family:var(--font-mono);
+                  color:{% if section.balance != 0 and section_key != 'other_assets' and section_key != 'assets' and section_key != 'liabilities' and section_key != 'other_liabilities' and section_key != 'equity' %}var(--color-text-danger){% else %}var(--color-text-primary){% endif %};">
+                  {{ section.balance|number_format(2) }}
+                </td>
+                <td style="padding:5px 8px; text-align:right; font-family:var(--font-mono);
+                  color:{% if section.balance_base != 0 and (section_key == 'pl' or section_key == 'unmapped') %}var(--color-text-danger){% else %}var(--color-text-primary){% endif %};">
+                  {{ section.balance_base|number_format(2) }}
+                </td>
+              </tr>
+              {% endfor %}
+
+              {# Totals #}
+              <tr style="border-top:0.5px solid var(--color-border-secondary);">
+                <td colspan="2" style="padding:5px 8px; font-weight:500; color:var(--color-text-primary);">{{ 'Sum (excl. earnings)'|t }}</td>
+                <td style="padding:5px 8px; text-align:right; font-weight:500; font-family:var(--font-mono);
+                  color:{% if items.layer6.sum_excl_earnings != 0 %}var(--color-text-danger){% else %}var(--color-text-success){% endif %};">
+                  {{ items.layer6.sum_excl_earnings|number_format(2) }}
+                </td>
+                <td style="padding:5px 8px; text-align:right; font-weight:500; font-family:var(--font-mono);
+                  color:{% if items.layer6.sum_excl_earnings_base != 0 %}var(--color-text-danger){% else %}var(--color-text-success){% endif %};">
+                  {{ items.layer6.sum_excl_earnings_base|number_format(2) }}
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" style="padding:5px 8px; color:var(--color-text-secondary);">{{ 'Sum (all accounts)'|t }}</td>
+                <td style="padding:5px 8px; text-align:right; font-family:var(--font-mono); color:var(--color-text-secondary);">
+                  {{ items.layer6.sum_balance|number_format(2) }}
+                </td>
+                <td style="padding:5px 8px; text-align:right; font-family:var(--font-mono); color:var(--color-text-secondary);">
+                  {{ items.layer6.sum_balance_base|number_format(2) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          {# Earnings account note #}
+          {% if items.layer6.earnings_account %}
+          <p style="font-size:11px; color:var(--color-text-tertiary); margin:0; border-top:0.5px solid var(--color-border-tertiary); padding-top:0.5rem;">
+            &#9432; {{ 'Earnings account'|t }} {{ items.layer6.earnings_account.aid }}
+            {{ 'stored balance'|t }}: {{ items.layer6.earnings_account.balance|number_format(2) }}
+            / {{ items.layer6.earnings_account.balance_base|number_format(2) }} {{ '(base)'|t }}.
+            {{ 'This value is not used by the balance sheet (current_earning() is called instead). Excluded from pass/fail check.'|t }}
+          </p>
+          {% endif %}
+
+        {% endif %}
+      </div>
+    </div>
+
+    {# ══════════════════════════════════════════════════════════════════════
+       REFERENCE INTEGRITY
+    ══════════════════════════════════════════════════════════════════════ #}
+    <div style="border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-lg); margin-bottom:1rem; overflow:hidden;">
+
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; border-bottom:0.5px solid var(--color-border-tertiary);">
+        <span style="font-size:14px; font-weight:500; color:var(--color-text-primary);">{{ 'Reference integrity'|t }}</span>
+        {% if items.trace_errors.available == false %}
+          <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-secondary); color:var(--color-text-secondary);">{{ 'N/A'|t }}</span>
+        {% elseif items.trace_errors.status == 'pass' %}
+          <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-success); color:var(--color-text-success);">{{ 'Pass'|t }}</span>
+        {% elseif items.trace_errors.status == 'warning' %}
+          <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-warning); color:var(--color-text-warning);">{{ 'Warning'|t }}</span>
+        {% else %}
+          <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-danger); color:var(--color-text-danger);">{{ 'Fail'|t }}</span>
+        {% endif %}
+      </div>
+
+      <div style="padding:0.75rem 1rem;">
+
+        {% if items.trace_errors.available == false %}
+          <p style="font-size:13px; color:var(--color-text-secondary); margin:0;">{{ items.trace_errors.message }}</p>
+
+        {% elseif items.trace_errors.status == 'pass' %}
+          <p style="font-size:13px; color:var(--color-text-secondary); margin:0;">
+            {{ 'All journal references have balanced debits and credits. No disabled or unknown accounts found.'|t }}
+          </p>
+
+        {% else %}
+
+          {% if items.trace_errors.message %}
+          <p style="font-size:13px; color:var(--color-text-secondary); margin:0 0 0.75rem;">{{ items.trace_errors.message }}</p>
+          {% endif %}
+
+          {# Unbalanced references table #}
+          {% if items.trace_errors.unbalanced_references|length > 0 %}
+          <p style="font-size:13px; font-weight:500; color:var(--color-text-primary); margin:0 0 0.5rem;">
+            {{ 'Unbalanced references'|t }}
+            {% if items.trace_errors.unbalanced_count > 10 %}
+              <span style="font-size:12px; font-weight:400; color:var(--color-text-secondary);">({{ 'showing top 10 of'|t }} {{ items.trace_errors.unbalanced_count }})</span>
+            {% endif %}
+          </p>
+          <table style="width:100%; font-size:13px; border-collapse:collapse; margin-bottom:0.75rem;">
+            <thead>
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary);">
+                <th style="text-align:left; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Reference'|t }}</th>
+                <th style="text-align:left; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Source'|t }}</th>
+                <th style="text-align:right; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Total debit'|t }}</th>
+                <th style="text-align:right; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Total credit'|t }}</th>
+                <th style="text-align:right; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Delta'|t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ref in items.trace_errors.unbalanced_references %}
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary);">
+                <td style="padding:5px 8px; font-family:var(--font-mono); color:var(--color-text-primary);">{{ ref.reference }}</td>
+                <td style="padding:5px 8px; color:var(--color-text-primary);">{{ ref.source }}</td>
+                <td style="padding:5px 8px; text-align:right; font-family:var(--font-mono); color:var(--color-text-primary);">{{ ref.debit|number_format(2) }}</td>
+                <td style="padding:5px 8px; text-align:right; font-family:var(--font-mono); color:var(--color-text-primary);">{{ ref.credit|number_format(2) }}</td>
+                <td style="padding:5px 8px; text-align:right; font-family:var(--font-mono); font-weight:500; color:var(--color-text-danger);">{{ ref.delta|number_format(2) }}</td>
+              </tr>
+              {% endfor %}
+              <tr style="border-top:0.5px solid var(--color-border-secondary);">
+                <td colspan="4" style="padding:5px 8px; font-weight:500; color:var(--color-text-primary);">{{ 'Net imbalance'|t }}</td>
+                <td style="padding:5px 8px; text-align:right; font-weight:500; font-family:var(--font-mono); color:var(--color-text-danger);">{{ items.trace_errors.unbalanced_total|number_format(2) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          {% endif %}
+
+          {# Disabled / unknown accounts #}
+          {% if items.trace_errors.disabled_accounts|length > 0 %}
+          <p style="font-size:13px; font-weight:500; color:var(--color-text-primary); margin:0 0 0.5rem;">{{ 'Problematic accounts in journal'|t }}</p>
+          <table style="width:100%; font-size:13px; border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary);">
+                <th style="text-align:left; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'AID'|t }}</th>
+                <th style="text-align:left; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Status'|t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for acc in items.trace_errors.disabled_accounts %}
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary);">
+                <td style="padding:5px 8px; font-family:var(--font-mono); color:var(--color-text-primary);">{{ acc.aid }}</td>
+                <td style="padding:5px 8px; color:var(--color-text-warning);">{{ acc.status|t }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% endif %}
+
+        {% endif %}
+      </div>
+    </div>
+
+    {# ══════════════════════════════════════════════════════════════════════
+       LAYER 10 — Balance date consistency
+    ══════════════════════════════════════════════════════════════════════ #}
+    <div style="border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-lg); margin-bottom:1rem; overflow:hidden;">
+
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; border-bottom:0.5px solid var(--color-border-tertiary);">
+        <span style="font-size:14px; font-weight:500; color:var(--color-text-primary);">{{ 'Layer 10 — Balance date consistency'|t }}</span>
+        {% if items.layer10.status == 'pass' %}
+          <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-success); color:var(--color-text-success);">{{ 'Pass'|t }}</span>
+        {% else %}
+          <span style="font-size:12px; padding:3px 10px; border-radius:var(--border-radius-md); background:var(--color-background-warning); color:var(--color-text-warning);">{{ 'Warning'|t }}</span>
+        {% endif %}
+      </div>
+
+      <div style="padding:0.75rem 1rem;">
+
+        <p style="font-size:13px; color:var(--color-text-secondary); margin:0 0 0.25rem;">
+          {{ 'Expected balance_date'|t }}: <span style="font-family:var(--font-mono);">{{ items.layer10.expected_date|default('—') }}</span>
+        </p>
+
+        {% if items.layer10.status == 'pass' %}
+          <p style="font-size:13px; color:var(--color-text-secondary); margin:0;">
+            {{ 'All active accounts share the same balance_date.'|t }}
+          </p>
+
+        {% else %}
+
+          <p style="font-size:13px; color:var(--color-text-secondary); margin:0.5rem 0 0.75rem;">{{ items.layer10.message }}</p>
+
+          <table style="width:100%; font-size:13px; border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary);">
+                <th style="text-align:left; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'AID'|t }}</th>
+                <th style="text-align:left; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Account name'|t }}</th>
+                <th style="text-align:left; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Balance date'|t }}</th>
+                <th style="text-align:right; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Balance (multi)'|t }}</th>
+                <th style="text-align:right; padding:5px 8px; font-weight:500; color:var(--color-text-secondary);">{{ 'Balance (base)'|t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for outlier in items.layer10.outliers %}
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary);">
+                <td style="padding:5px 8px; font-family:var(--font-mono); color:var(--color-text-primary);">{{ outlier.aid }}</td>
+                <td style="padding:5px 8px; color:var(--color-text-primary);">{{ outlier.name }}</td>
+                <td style="padding:5px 8px; font-family:var(--font-mono); color:var(--color-text-warning);">{{ outlier.balance_date }}</td>
+                <td style="padding:5px 8px; text-align:right; font-family:var(--font-mono); color:var(--color-text-primary);">{{ outlier.balance|number_format(2) }}</td>
+                <td style="padding:5px 8px; text-align:right; font-family:var(--font-mono); color:var(--color-text-primary);">{{ outlier.balance_base|number_format(2) }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+        {% endif %}
+      </div>
     </div>
 
     {% endif %}{# end status == fail #}

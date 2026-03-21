@@ -241,12 +241,12 @@ class JournalController extends ControllerBase {
                 // param : coid|year
                 $audit = $this->journal->audit_newyear($param);
                 $audit['layout'] = 'newyear';
-                $audit['title'] = $this->t('Post new year report') . " " . explode('|', $param)[1] . " " 
-                        . \Drupal\ek_admin\Access\AccessCheck::CompanyList()[explode('|', $param)[0]];
+                $audit['title'] = $this->t('Post new year report') . " " . explode('-', $param)[1] . " " 
+                        . \Drupal\ek_admin\Access\AccessCheck::CompanyList()[explode('-', $param)[0]];
                 break;
             
             case 'balancesheet':
-            $parts = explode('|', $param);
+            $parts = explode('-', $param);
 
             // ── Structural check: must have exactly 3 segments ─────────────────
             if (count($parts) !== 3) {
@@ -255,7 +255,7 @@ class JournalController extends ControllerBase {
                     '#items'  => [
                         'layout' => 'balancesheet',
                         'title'  => $this->t('Balance sheet audit'),
-                        'error'  => $this->t('Invalid parameters. Expected format: coid|year|month.'),
+                        'error'  => $this->t('Invalid parameters. Expected format: id-year-month.'),
                     ],
                     '#attached' => ['library' => ['ek_finance/ek_finance']],
                 ];
@@ -326,6 +326,7 @@ class JournalController extends ControllerBase {
             '#attached' => [
                 'library' => ['ek_finance/ek_finance'],
             ],
+            '#cache' => ['max-age' => 0,],
         ];
     }
 
