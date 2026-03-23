@@ -76,58 +76,200 @@
             </div>
     </section>
 
-    <section class="statistics">    
-        <div class="panel panel-default">
-
-            <div class="panel-heading"><a href='#'  onclick="jQuery('#sec4').toggle('fast');">
-                    <h4 class="panel-title">{{ 'Statistics'|t }}</h4></a>
-            </div>
-            <div class="panel-body"  style='' id="sec4">
-                <table class='table'>
-                    <tbody id='sales_statistics'>
-                        <tr>
-                            <td>
-                                <h3>{{ 'Projects by status'|t }}</h3><br/>
+    <section class="statistics sales-data-statistics">    
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <a href='#' onclick="jQuery('#sec4').toggle('fast');">
+                <h4 class="panel-title">{{ 'Statistics'|t }}</h4>
+            </a>
+        </div>
+        <div class="panel-body" id="sec4">
+            
+            {# Projects Section #}
+            {% if items.category_statistics %}
+                <div class="statistics-section">
+                    <h3 class="section-title">{{ 'Projects Overview'|t }}</h3>
+                    
+                    <div class="stats-row">
+                        <div class="stats-col stats-col-half">
+                            <div class="stats-table">
+                                <h4>{{ 'Projects by status'|t }}</h4>
                                 {% set category = items.category_statistics %} 
-
-                                <span>{{ 'Open'|t }}</span> : <em>{{ category.open }}</em><br/>
-                                <span>{{ 'Awarded'|t }}</span> : <em>{{ category.awarded }}</em><br/>
-                                <span>{{ 'Completed'|t }}</span> : <em>{{ category.completed }}</em><br/>
-                                <span>{{ 'Closed'|t }}</span> : <em>{{ category.closed }}</em><br/>
-                                <hr>
-                                <span>{{ 'Total'|t }}</span> : <em>{{ category.total }}</em>
-
-                            </td> 
-                            <td>
-                                <h3>{{ 'Projects by year'|t }}</h3><br/>
-                                {% for year, item in items.category_year_statistics %} 
-                                    {{ year }}
-                                    {% for key,value in item %}
-                                        | {{ key }} : <em>{{ value }}</em>
-                                    {% endfor %}
-                                    <br/>
-                                {% endfor %}    
-                            </td>
-                        </tr> 
-                        <tr>
-                            <td>
-                                <h3>{{ 'Sales'|t }}</h3><br/>
-                                {{ 'Total income'|t }} : {{ items.total_income|number_format }} {{ items.baseCurrency }}
-                            </td>
-                            <td>
-                                <h3>{{ 'Payment performances'|t }}</h3><br/>
-                                <span>{{ 'Higher payment terms'|t }}</span> : <em>{{ items.payment_performance.max }} {{ 'days'|t }}</em><br/>
-                                <span>{{ 'Lowest payment terms'|t }}</span> : <em>{{ items.payment_performance.min }} {{ 'days'|t }}</em><br/>
-                                <span>{{ 'Average payment terms'|t }}</span> : <em>{{ items.payment_performance.avg }} {{ 'days'|t }}</em><br/>
-                            </td>
-
-                        </tr>
-                    </tbody>
-                    <tfoot>
-
-                    </tfoot>
-                </table>
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <tr>
+                                            <td>{{ 'Open'|t }}</td>
+                                            <td class="text-right"><strong>{{ category.open }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ 'Awarded'|t }}</td>
+                                            <td class="text-right"><strong>{{ category.awarded }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ 'Completed'|t }}</td>
+                                            <td class="text-right"><strong>{{ category.completed }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ 'Closed'|t }}</td>
+                                            <td class="text-right"><strong>{{ category.closed }}</strong></td>
+                                        </tr>
+                                        <tr class="info">
+                                            <td><strong>{{ 'Total'|t }}</strong></td>
+                                            <td class="text-right"><strong>{{ category.total }}</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="stats-col stats-col-half">
+                            {% if items.project_status_chart_html %}
+                                <div class="chart-container">
+                                    <h4>{{ 'Projects Distribution'|t }}</h4>
+                                    {{ items.project_status_chart_html|raw }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if items.category_year_statistics %}
+                        <div class="stats-row">
+                            <div class="stats-col stats-col-full">
+                                <h4>{{ 'Projects by year'|t }}</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>{{ 'Year'|t }}</th>
+                                                {% for year, item in items.category_year_statistics %}
+                                                    {% if loop.first %}
+                                                        {% for key, value in item %}
+                                                            <th>{{ key }}</th>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for year, item in items.category_year_statistics %} 
+                                                <tr>
+                                                    <td><strong>{{ year }}</strong></td>
+                                                    {% for key, value in item %}
+                                                        <td class="text-center">{{ value }}</td>
+                                                    {% endfor %}
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                <hr class="section-divider">
+            {% endif %}
+            
+            {# Financial Section #}
+            <div class="statistics-section">
+                <h3 class="section-title">{{ 'Financial Overview'|t }}</h3>
+                
+                <div class="stats-row">
+                    <div class="stats-col stats-col-third">
+                        <div class="stats-summary">
+                            <h4>{{ 'Total Income'|t }}</h4>
+                            <div class="stat-value">
+                                {{ items.total_income|number_format(2) }}
+                            </div>
+                            <div class="currency">{{ items.baseCurrency }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-col stats-col-two-thirds">
+                        <div class="stats-table">
+                            <h4>{{ 'Invoice Statistics'|t }}</h4>
+                            <table class="table table-striped">
+                                <tbody>
+                                    <tr>
+                                        <td>{{ 'Highest invoice'|t }}</td>
+                                        <td class="text-right"><strong>{{ items.invoices.max|number_format(2) }}</strong> {{ items.baseCurrency }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ 'Lowest invoice'|t }}</td>
+                                        <td class="text-right"><strong>{{ items.invoices.min|number_format(2) }}</strong> {{ items.baseCurrency }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ 'Average invoice'|t }}</td>
+                                        <td class="text-right"><strong>{{ items.invoices.avg|number_format(2) }}</strong> {{ items.baseCurrency }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-row">
+                    <div class="stats-col stats-col-half">
+                        {% if items.invoice_chart_html %}
+                            <div class="chart-container">
+                                <h4>{{ 'Invoice Range Distribution'|t }}</h4>
+                                {{ items.invoice_chart_html|raw }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="stats-col stats-col-half">
+                        {% if items.sales_year_chart_html %}
+                            <div class="chart-container">
+                                <h4>{{ 'Sales Trend'|t }}</h4>
+                                {{ items.sales_year_chart_html|raw }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
+            <hr class="section-divider">
+            
+            {# Payment Performance Section #}
+            <div class="statistics-section">
+                <h3 class="section-title">{{ 'Payment Performance'|t }}</h3>
+                
+                <div class="stats-row">
+                    <div class="stats-col stats-col-half">
+                        <div class="stats-table">
+                            <h4>{{ 'Payment Terms Analysis'|t }}</h4>
+                            <table class="table table-striped">
+                                <tbody>
+                                    <tr>
+                                        <td>{{ 'Highest payment terms'|t }}</td>
+                                        <td class="text-right"><strong>{{ items.payment_performance.max }}</strong> {{ 'days'|t }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ 'Lowest payment terms'|t }}</td>
+                                        <td class="text-right"><strong>{{ items.payment_performance.min }}</strong> {{ 'days'|t }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ 'Average payment terms'|t }}</td>
+                                        <td class="text-right"><strong>{{ items.payment_performance.avg }}</strong> {{ 'days'|t }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-col stats-col-half">
+                        {% if items.payment_chart_html %}
+                            <div class="chart-container">
+                                <h4>{{ 'Payment Terms Distribution'|t }}</h4>
+                                {{ items.payment_chart_html|raw }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</section>
 
-    </section>
+
 {% endif %}

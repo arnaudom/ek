@@ -120,6 +120,7 @@ ek_sales.doc_search:
     - core/jquery
     
 ek_sales_charts:
+  version: VERSION
   css:
     theme:
       css/ek_sales_charts.css: {}
@@ -127,4 +128,17 @@ ek_sales_charts:
     js/ek_sales_charts.js: {}
   dependencies:
     - core/jquery
+    - core/jquery.once
+
+ek_sales_data_charts:
+  version: VERSION
+  css:
+    theme:
+      css/ek_sales_data_charts.css: {}
+  js:
+    js/ek_sales_data_charts.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
     - core/jquery.once
