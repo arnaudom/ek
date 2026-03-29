@@ -422,3 +422,138 @@ function ek_sales_update_8019() {
         \Drupal::service('router.builder')->rebuild();
   
 }
+
+
+/**
+ * Migrate task notification system to bitmask approach.
+ * - Add tracking columns (last_notified, notify_count, priority)
+ * - Fix ek_project_tasks.id from TINYINT to INT
+ * - Migrate notify values to bitmask format
+ * - Add performance indexes
+ */
+function ek_sales_update_10001() {
+  $messages = [];
+  
+  $connection = Database::getConnection('external_db', 'external_db');
+  $schema = $connection->schema();
+  
+  $tables = ['ek_sales_invoice_tasks', 'ek_sales_purchase_tasks'];
+
+  foreach ($tables as $table) {
+    if (!$schema->tableExists($table)) {
+      $messages[] = t('Table @table does not exist, skipping.', ['@table' => $table]);
+      continue;
+    }
+
+    // ================================================
+    // STEP 1: Add new columns
+    // ================================================
+    
+    $new_columns = [
+      'last_notified' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'default' => NULL,
+        'description' => 'Timestamp of last notification sent',
+      ],
+      'notify_count' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Number of notifications sent',
+      ],
+      'priority' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 2,
+        'description' => 'Priority: 1=high, 2=medium, 3=low',
+      ],
+    ];
+
+    foreach ($new_columns as $column_name => $column_spec) {
+      if (!$schema->fieldExists($table, $column_name)) {
+        $schema->addField($table, $column_name, $column_spec);
+        $messages[] = t('Added column @column to @table.', [
+          '@column' => $column_name,
+          '@table' => $table,
+        ]);
+      }
+    }
+
+    // ================================================
+    // STEP 2: Migrate notify values to bitmask format
+    // ================================================
+    
+    if (!$schema->fieldExists($table, 'notify_new')) {
+      $schema->addField($table, 'notify_new', [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ]);
+
+      // Migrate values
+      $connection->query("
+        UPDATE {" . $table . "} SET notify_new = CASE CAST(notify AS UNSIGNED)
+          WHEN 0 THEN 0
+          WHEN 5 THEN 1
+          WHEN 1 THEN 2
+          WHEN 6 THEN 4
+          WHEN 2 THEN 8
+          WHEN 3 THEN 16
+          WHEN 4 THEN 32
+          ELSE 0
+        END
+      ");
+
+      $count = $connection->query("SELECT COUNT(*) FROM {" . $table . "} WHERE notify_new > 0")->fetchField();
+      $messages[] = t('Migrated @count notification settings in @table.', [
+        '@count' => $count,
+        '@table' => $table,
+      ]);
+
+      // Replace old column with new
+      $schema->dropField($table, 'notify');
+      $connection->query("ALTER TABLE {" . $table . "} CHANGE `notify_new` `notify` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Bitmask: 1=daily,2=weekly,4=monthly,8=5days,16=3days,32=1day,64=overdue,128=complete'");
+      
+      $messages[] = t('Replaced notify column in @table with bitmask version.', ['@table' => $table]);
+    }
+
+    // ================================================
+    // STEP 3: Add indexes
+    // ================================================
+    
+    $indexes = [
+      'idx_notify_completion' => ['notify', 'completion_rate'],
+      'idx_end' => ['end'],
+      'idx_serial' => ['serial'],
+      'idx_uid' => ['uid'],
+    ];
+
+    foreach ($indexes as $index_name => $columns) {
+      if (!$schema->indexExists($table, $index_name)) {
+        try {
+          $cols = implode(', ', array_map(function($c) { return "`$c`"; }, $columns));
+          $connection->query("CREATE INDEX `{$index_name}` ON {" . $table . "} ({$cols})");
+          $messages[] = t('Added index @index to @table.', [
+            '@index' => $index_name,
+            '@table' => $table,
+          ]);
+        }
+        catch (\Exception $e) {
+          $messages[] = t('Skipped index @index on @table (may already exist).', [
+            '@index' => $index_name,
+            '@table' => $table,
+          ]);
+        }
+      }
+    }
+  }
+
+  return implode("\n", $messages);
+}
