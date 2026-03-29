@@ -28,3 +28,11 @@ services:
   ek_admin.service:
     class: Drupal\ek_admin\Service\AdminService
     arguments: ['@config.factory', '@logger.factory']
+  
+  ek_admin.task_notification:
+    class: Drupal\ek_admin\Service\TaskNotificationService
+    arguments: ['@logger.factory', '@module_handler']
+
+  ek_admin.task_api:
+    class: Drupal\ek_admin\Service\TaskApiService
+    arguments: ['@logger.factory']
