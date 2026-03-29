@@ -84,11 +84,11 @@
                             <td  ></td><td class='right'>{{  row.value  }}</td>
                             {% endif %}
     {#indicate reconciliation status#}                      
-                        {% if row.reconcile == "1" %}  
-                          <td  class='center'>{{ 'Y' }}</td>
+                        {% if row.reconcile == "0" %}  
+                          <td  class='center'>{{ 'N' }}</td>
 
                           {% else %}
-                            <td class='center'>{{ 'N' }}</td>
+                            <td class='center'>{{ 'Y' }}</td>
                             {% endif %}                      
                         </tr> 
 

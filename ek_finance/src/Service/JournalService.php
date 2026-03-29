@@ -2839,7 +2839,7 @@ class JournalService {
 
             $data['ledger']['accounts'][] = $rows;
         }
-        
+
         return $data;
     }
 
@@ -3023,23 +3023,11 @@ class JournalService {
      *     int $coid
      *     bolean $active : 0,1 to show active accounts
      *     bolean $null : 0,1 to show acount without transaction
-     *      bolean $option : 1 = link history , 0 no link
+     *     bolean $option : 1 = link history , 0 no link
      */
 
     public function trial($t, $option = 1) {
-        if ($t['active'] == 0) {
-            $t['active'] = '%';
-        }
-
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_accounts', 't');
-        $list = $query->fields('t')
-                ->condition('atype', 'detail', '=')
-                ->condition('astatus', $t['active'], 'like')
-                ->condition('coid', $t['coid'], '=')
-                ->orderBy('aid', 'ASC')
-                ->execute();
-
+        
         $data = [];
         $total_td = 0;
         $total_tc = 0;
@@ -3059,6 +3047,21 @@ class JournalService {
         $d2 = $t['year'] . '-' . $t['month'] . '-' . cal_days_in_month(CAL_GREGORIAN, $t['month'], $t['year']);
         $data['baseCurrency'] = $settings->get('baseCurrency');
         $data['coid'] = $t['coid'];
+        $filter = isset($t['aid']) ? 1 : 0;
+
+        if ($t['active'] == 0) {
+            $t['active'] = '%';
+        }
+
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_accounts', 't');
+        $list = $query->fields('t')
+                ->condition('atype', 'detail', '=')
+                ->condition('astatus', $t['active'], 'like')
+                ->condition('coid', $t['coid'], '=')
+                ->orderBy('aid', 'ASC')
+                ->execute();
+                
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_company', 't');
         $query->fields('t', ['name']);
@@ -3071,92 +3074,95 @@ class JournalService {
         $data['transactions'] = [];
 
         while ($l = $list->fetchObject()) {
-            $row = [];
+            if( ($filter == 1 && $t['aid'] == $l->aid) || $filter == 0) {
+                $row = [];
+                $row['aname'] = $l->aname;
+                $row['active'] = $l->astatus;
 
-            $row['aname'] = $l->aname;
-            $row['active'] = $l->astatus;
+                // build an history link
+                $param = serialize(
+                        [
+                            'id' => 'trial',
+                            'from' => $ytd ,
+                            'to' => $d2,
+                            'coid' => $t['coid'],
+                            'aid' => $l->aid
+                        ]
+                );
+                if ($option == 1) {
+                    $history = Url::fromRoute('ek_finance_modal', ['param' => $param], [])->toString();
+                    $row['aid'] = "<a class='use-ajax' href='" . $history . "' >" . $l->aid . "</a>";
+                } else {
+                    $row['aid'] = $l->aid;
+                }
 
-            // build an history link
-            $param = serialize(
-                    [
-                        'id' => 'trial',
-                        'from' => $ytd ,
-                        'to' => $d2,
-                        'coid' => $t['coid'],
-                        'aid' => $l->aid
-                    ]
-            );
-            if ($option == 1) {
-                $history = Url::fromRoute('ek_finance_modal', ['param' => $param], [])->toString();
-                $row['aid'] = "<a class='use-ajax' href='" . $history . "' >" . $l->aid . "</a>";
-            } else {
-                $row['aid'] = $l->aid;
-            }
+                $row['open'] = round($l->balance,2);
+                $row['open_base'] = round($l->balance_base,2);
+                $c = unserialize(self::history($param));
+                $row['closing'] = round($c['closing'],2);
+                $row['closing_base'] = round($c['closing_exchange'],2);
+                $row['transaction_debit'] = self::transactions(
+                                [
+                                    'aid' => $l->aid,
+                                    'type' => 'debit',
+                                    'coid' => $t['coid'],
+                                    'from' => $d1,
+                                    'to' => $d2
+                                ]
+                );
+                $row['transaction_credit'] = self::transactions(
+                                [
+                                    'aid' => $l->aid,
+                                    'type' => 'credit',
+                                    'coid' => $t['coid'],
+                                    'from' => $d1,
+                                    'to' => $d2
+                                ]
+                );
 
-            $row['open'] = round($l->balance,2);
-            $row['open_base'] = round($l->balance_base,2);
-            $c = unserialize(self::history($param));
-            $row['closing'] = round($c['closing'],2);
-            $row['closing_base'] = round($c['closing_exchange'],2);
-            $row['transaction_debit'] = self::transactions(
-                            [
-                                'aid' => $l->aid,
-                                'type' => 'debit',
-                                'coid' => $t['coid'],
-                                'from' => $d1,
-                                'to' => $d2
-                            ]
-            );
-            $row['transaction_credit'] = self::transactions(
-                            [
-                                'aid' => $l->aid,
-                                'type' => 'credit',
-                                'coid' => $t['coid'],
-                                'from' => $d1,
-                                'to' => $d2
-                            ]
-            );
+                $row['transaction_ytd_debit'] = self::transactions(
+                                [
+                                    'aid' => $l->aid,
+                                    'type' => 'debit',
+                                    'coid' => $t['coid'],
+                                    'from' => $ytd,
+                                    'to' => $d2
+                                ]
+                );
 
-            $row['transaction_ytd_debit'] = self::transactions(
-                            [
-                                'aid' => $l->aid,
-                                'type' => 'debit',
-                                'coid' => $t['coid'],
-                                'from' => $ytd,
-                                'to' => $d2
-                            ]
-            );
+                $row['transaction_ytd_credit'] = self::transactions(
+                                [
+                                    'aid' => $l->aid,
+                                    'type' => 'credit',
+                                    'coid' => $t['coid'],
+                                    'from' => $ytd,
+                                    'to' => $d2
+                                ]
+                );
 
-            $row['transaction_ytd_credit'] = self::transactions(
-                            [
-                                'aid' => $l->aid,
-                                'type' => 'credit',
-                                'coid' => $t['coid'],
-                                'from' => $ytd,
-                                'to' => $d2
-                            ]
-            );
+                if (
+                        ($t['null'] == 1 
+                        && ($row['transaction_ytd_debit'][0] != 0 || $row['transaction_ytd_credit'][0] != 0 || $row['transaction_ytd_debit'][1] != 0 || $row['transaction_ytd_credit'][1] != 0)) 
+                        || $t['null'] == 0
+                ) {
+                    // show
+                    $data['transactions'][] = $row;
 
-            if (
-                    ($t['null'] == 1 && ($row['transaction_ytd_debit'][0] != 0 || $row['transaction_ytd_credit'][0] != 0 || $row['transaction_ytd_debit'][1] != 0 || $row['transaction_ytd_credit'][1] != 0)) || $t['null'] == 0
-            ) {
-                // show
-                $data['transactions'][] = $row;
-
-                $total_td += $row['transaction_debit'][0];
-                $total_tc += $row['transaction_credit'][0];
-                $total_td_base += $row['transaction_debit'][1];
-                $total_tc_base += $row['transaction_credit'][1];
-                $total_ytdd += $row['transaction_ytd_debit'][0];
-                $total_ytdc += $row['transaction_ytd_credit'][0];
-                $total_ytdd_base += $row['transaction_ytd_debit'][1];
-                $total_ytdc_base += $row['transaction_ytd_credit'][1];
-                $total_net += $row['transaction_credit'][0] - $row['transaction_debit'][0];
-                $total_net_base += $row['transaction_credit'][1] - $row['transaction_debit'][1];
+                    $total_td += $row['transaction_debit'][0];
+                    $total_tc += $row['transaction_credit'][0];
+                    $total_td_base += $row['transaction_debit'][1];
+                    $total_tc_base += $row['transaction_credit'][1];
+                    $total_ytdd += $row['transaction_ytd_debit'][0];
+                    $total_ytdc += $row['transaction_ytd_credit'][0];
+                    $total_ytdd_base += $row['transaction_ytd_debit'][1];
+                    $total_ytdc_base += $row['transaction_ytd_credit'][1];
+                    $total_net += $row['transaction_credit'][0] - $row['transaction_debit'][0];
+                    $total_net_base += $row['transaction_credit'][1] - $row['transaction_debit'][1];
+                }
             }
         } 
 
-        if (abs(round($total_td, $rounding) - round($total_tc, $rounding)) > 0) {
+        if(abs(round($total_td, $rounding) - round($total_tc, $rounding)) > 0) {
             $error1 = 1;
         } else {
             $error1 = 0;
