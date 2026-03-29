@@ -175,100 +175,88 @@ class AddressBookService implements AddressBookServiceInterface {
     /**
      * {@inheritdoc}
      */
-    public function record($table, string $data = "") {
+    public function record($table, string $data = ""): ?int {
 
-        if ($data == "") {
-            return null;
+        if ($data === '') {
+            return null; // keep backward compatibility
         }
 
-        $data = unserialize($data);
-        switch ($table) {
-                case 'main': 
-                    $tb = "ek_address_book";
-                break;
+        $tableMap = [
+            'main' => 'ek_address_book',
+            'contact' => 'ek_address_book_contacts',
+        ];
 
-                case 'contact':
-                    $tb = "ek_address_book_contacts";
-                break;
-        }
-            
-        if($tb == "ek_address_book") {
-
-            try {
-                $fields = [
-                    'name' => $data['name'],
-                    'shortname' => $data['shortname'],
-                    'reg' => $data['reg'],
-                    'address' => $data['address'],
-                    'address2' => $data['address2'],
-                    'city' => $data['city'],
-                    'postcode' => $data['postcode'],
-                    'state' => $data['state'],
-                    'country' => $data['country'],
-                    'telephone' => $data['telephone'],
-                    'fax' => $data['fax'],
-                    'website' => $data['website'],
-                    'type' => $data['type'],
-                    'category' => $data['category'],
-                    'activity' => $data['activity'],
-                    'status' => 1,
-                    'stamp' => strtotime("now"),
-                    'created' => date('Y-m-d')
-                ];
-
-                $insert = $this->extdb
-                    ->insert($tb)
-                    ->fields($fields)
-                    ->execute();
-
-            } catch (\Exception $e) {
-                // Log the error
-                $this->logger->error('Error record address book: @message', [
-                    '@message' => $e->getMessage(),
-                ]);
-                
-                throw new \RuntimeException('Unable to record address book data', 0, $e);
-            }
-
+        if (!isset($tableMap[$table])) {
+            throw new \InvalidArgumentException(sprintf('Invalid table "%s".', $table));
         }
 
+        $tb = $tableMap[$table];
+        $payload = $this->decodePayload($data);
 
-        if($tb == "ek_address_book_contacts") {
+        try {
+        if ($tb === 'ek_address_book') {
+            $this->assertRequired($payload, ['name', 'type']);
 
-            try {
-                $fields = [
-                    'abid' => $data['abid'],
-                    'contact_name' => $data['contact_name'],
-                    'salutation' => $data['salutation'],
-                    'title' => $data['title'],
-                    'telephone' => $data['telephone'],
-                    'mobilephone' => $data['mobilephone'],
-                    'email' => $data['email'],
-                    'card' => $data['card'],
-                    'department' => $data['department'],
-                    'link' => $data['link'],
-                    'comment' => $data['comment'],
-                    'main' => $data['main'],
-                    'stamp' => strtotime("now"),
-                ];
-
-                $insert = $this->extdb
-                    ->insert($tb)
-                    ->fields($fields)
-                    ->execute();
-
-            } catch (\Exception $e) {
-                // Log the error
-                $this->logger->error('Error record address book contact: @message', [
-                    '@message' => $e->getMessage(),
-                ]);
-                
-                throw new \RuntimeException('Unable to record address book contact data', 0, $e);
-            }
-
+            $fields = [
+            'name' => $this->str($payload, 'name'),
+            'shortname' => $this->str($payload, 'shortname'),
+            'reg' => $this->str($payload, 'reg'),
+            'address' => $this->str($payload, 'address'),
+            'address2' => $this->str($payload, 'address2'),
+            'city' => $this->str($payload, 'city'),
+            'postcode' => $this->str($payload, 'postcode'),
+            'state' => $this->str($payload, 'state'),
+            'country' => $this->str($payload, 'country'),
+            'telephone' => $this->str($payload, 'telephone'),
+            'fax' => $this->str($payload, 'fax'),
+            'website' => $this->str($payload, 'website'),
+            'type' => $this->str($payload, 'type'),
+            'category' => $this->str($payload, 'category'),
+            'activity' => $this->str($payload, 'activity'),
+            'status' => 1,
+            'stamp' => time(),
+            'created' => date('Y-m-d'),
+            ];
         }
-        
-        return $insert;
+        else {
+            $this->assertRequired($payload, ['abid', 'contact_name']);
+
+            $fields = [
+            'abid' => (int) ($payload['abid'] ?? 0),
+            'contact_name' => $this->str($payload, 'contact_name'),
+            'salutation' => $this->str($payload, 'salutation'),
+            'title' => $this->str($payload, 'title'),
+            'telephone' => $this->str($payload, 'telephone'),
+            'mobilephone' => $this->str($payload, 'mobilephone'),
+            'email' => $this->str($payload, 'email'),
+            'card' => $this->str($payload, 'card'),
+            'department' => $this->str($payload, 'department'),
+            'link' => $this->str($payload, 'link'),
+            'comment' => $this->str($payload, 'comment'),
+            'main' => (int) ($payload['main'] ?? 0),
+            'stamp' => time(),
+            ];
+        }
+
+        $insertId = $this->extdb
+            ->insert($tb)
+            ->fields($fields)
+            ->execute();
+
+        return $insertId ? (int) $insertId : null;
+        }
+        catch (\Throwable $e) {
+        $this->logger->error('Address book record failed. table={table}, error={message}', [
+            'table' => $table,
+            'message' => $e->getMessage(),
+        ]);
+
+        throw new \RuntimeException(
+            sprintf('Unable to record %s data.', $table),
+            0,
+            $e
+        );
+        }
     }
 
 
@@ -370,5 +358,47 @@ class AddressBookService implements AddressBookServiceInterface {
         
         return $update;
 
+    }
+
+    /**
+     * Accept JSON first, fallback to serialized array.
+     */
+    private function decodePayload(string $data): array {
+        $data = trim($data);
+
+        // JSON input support.
+        if ($data !== '' && ($data[0] === '{' || $data[0] === '[')) {
+        $decoded = json_decode($data, TRUE);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        // Safe unserialize (no objects).
+        $decoded = @unserialize($data, ['allowed_classes' => false]);
+        if (!is_array($decoded)) {
+            throw new \InvalidArgumentException('Payload must be valid JSON or serialized array string.');
+        }
+
+        return $decoded;
+    }
+
+    /**
+     * Validate required keys are present and non-empty.
+     */
+    private function assertRequired(array $payload, array $required): void {
+        foreach ($required as $key) {
+            if (!array_key_exists($key, $payload) || $payload[$key] === '' || $payload[$key] === null) {
+                throw new \InvalidArgumentException(sprintf('Missing required field: %s', $key));
+            }
+        }
+    }
+
+    /**
+     * Read value as trimmed string, default empty.
+     */
+    private function str(array $payload, string $key): string {
+        $value = $payload[$key] ?? '';
+        return is_scalar($value) ? trim((string) $value) : '';
     }
 }

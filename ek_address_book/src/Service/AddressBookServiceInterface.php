@@ -33,11 +33,14 @@ interface AddressBookServiceInterface {
 
 /**
  * Record address book.
- *
+ * Route example:
+ * - POST /api/v1/ab/record/main
+ * - POST /api/v1/ab/record/contact
  * @param string $table
  *   main | contact
  * @param serialized $data
- *
+ * Optional legacy route param:
+ * - /api/v1/ab/record/{table}/{data}
  * @return id
  */
   public function record(string $table, string $data);
