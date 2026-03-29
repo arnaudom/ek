@@ -89,7 +89,7 @@ class InstallController extends ControllerBase {
 	`pcode` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'Generated serial code',
 	`status` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'open awarded completed closed',
 	`level` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'Main or Sub project',
-        `main` INT(10) NULL DEFAULT NULL COMMENT 'Group by main project id',
+    `main` INT(10) NULL DEFAULT NULL COMMENT 'Group by main project id',
 	`subcount` INT(11) NOT NULL DEFAULT '0' COMMENT 'Number of sub projects attached',
 	`priority` INT(11) NOT NULL DEFAULT '0' COMMENT '0 to 3',
 	`editor` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'User id',

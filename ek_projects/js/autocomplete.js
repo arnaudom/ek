@@ -83,7 +83,7 @@ Drupal.behaviors.ek_projects_auto = {
                         })
                         .autocomplete({
                             source: function (request, response) {
-                                jQuery.getJSON("../../ek_projects/autocomplete/user", {
+                                jQuery.getJSON(drupalSettings.path.baseUrl + "ek_admin/user/autocomplete", {
                                     term: extractLast(request.term)
                                 }, response);
                             },
