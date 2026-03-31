@@ -50,17 +50,29 @@
                             }
                         });
                     }
-                    jQuery('.area-saleschart').fadeOut();
-                    jQuery('#sales-chart-select').change(function () {
-                        var n = jQuery('#sales-chart-select').val();
-                        for (i = 0; i < 4; i++) {
-                            if (i == n) {
-                                jQuery('#area-saleschart' + i).fadeIn(1000);
-                            } else {
-                                jQuery('#area-saleschart' + i).hide();
-                            }
+             // Initialize chart visibility on first load
+                once('ek-sales-init', '#sales-chart-select', context).forEach(function (element) {
+                    // Hide all charts
+                    jQuery('.area-saleschart').hide();
+                    // Show the first chart (most recent year - option 3)
+                    jQuery('#area-saleschart3').show();
+                    // Set select to default value
+                    jQuery('#sales-chart-select').val(3);
+                });
+            
+                // Handle chart switching
+                once('ek-sales-change', '#sales-chart-select', context).forEach(function (element) {
+                    jQuery(element).on('change', function () {
+                    var n = jQuery(this).val();
+                    for (var i = 0; i < 4; i++) {
+                        if (i == n) {
+                        jQuery('#area-saleschart' + i).fadeIn(1000);
+                        } else {
+                        jQuery('#area-saleschart' + i).fadeOut(500);
                         }
-                    }); 
+                    }
+                    });
+                });
             }
 
         } //attach

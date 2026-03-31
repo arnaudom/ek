@@ -190,7 +190,7 @@ tr.drop-folder {
 
 
 /*
-* Searc doc
+* Search doc
 */
 #doc-search-result {
     list-style-type: none;
@@ -244,4 +244,477 @@ tr.drop-folder {
 #drupal-off-canvas .ui-autocomplete li > div:hover {
     color: #fff !important;
     cursor:pointer;
+}
+
+/* ========================================
+ * IMPROVED UPLOAD FORM STYLES
+ * Integrated with existing ek_sales design
+ * ======================================== */
+
+.upload-drop-zone {
+    max-width: 100%;
+    margin: 15px 0;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    padding: 0;
+}
+
+/* Drop zone container - matches panel styling */
+.drop-hint-container {
+    padding: 40px 20px;
+    text-align: center;
+    border: 2px dashed #696969;
+    border-radius: 4px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.drop-hint-container:hover {
+    border-color: #2E64FE;
+    background: linear-gradient(135deg, #eef2f9 0%, #e6eef5 100%);
+    box-shadow: 0 2px 8px rgba(46, 100, 254, 0.1);
+}
+
+.drop-hint-container.drag-over {
+    border-color: #2E64FE;
+    background: linear-gradient(135deg, #e3f2fd 0%, #e1f5fe 100%);
+    box-shadow: 0 4px 12px rgba(46, 100, 254, 0.2);
+    transform: scale(1.01);
+}
+
+/* Upload icon */
+.upload-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 16px;
+    color: #2E64FE;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.drop-hint-container:hover .upload-icon,
+.drop-hint-container.drag-over .upload-icon {
+    color: #1a5db5;
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Drop hint text */
+.drop-hint {
+    pointer-events: none;
+}
+
+.drop-text {
+    margin: 12px 0 8px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+.file-format-hint {
+    margin: 0;
+    font-size: 12px;
+    color: #696969;
+    line-height: 1.4;
+}
+
+/* Hidden file input */
+.file-input-hidden {
+    display: none;
+}
+
+/* Selected files list */
+#file-list {
+    list-style: none;
+    margin: 0;
+    padding: 0 15px;
+    display: none;
+}
+
+#file-list.has-files {
+    display: block;
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #dbdbdb;
+}
+
+#file-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+#file-list li:last-child {
+    border-bottom: none;
+}
+
+#file-list li:hover {
+    background-color: #e6f5ff;
+    padding: 10px 8px;
+    margin: 0 -8px;
+    border-radius: 4px;
+}
+
+/* File item structure */
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.file-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    background-color: #e6f5ff;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #2E64FE;
+    border: 1px solid #dbdbdb;
+}
+
+.file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-name {
+    display: block;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+
+.file-size {
+    display: block;
+    font-size: 12px;
+    color: #696969;
+}
+
+.file-remove-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 18px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+}
+
+.file-remove-btn:hover {
+    color: #ff0000;
+    background-color: #ffe6e6;
+}
+
+/* Form fields - match panel styling */
+.upload-drop-zone label {
+    display: block;
+    margin: 15px 15px 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.folder-input,
+.comment-input {
+    width: calc(100% - 30px);
+    padding: 10px 12px;
+    margin: 8px 15px;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.folder-input:focus,
+.comment-input:focus {
+    outline: none;
+    border-color: #2E64FE;
+    box-shadow: 0 0 0 3px rgba(46, 100, 254, 0.1);
+}
+
+/* Action buttons */
+.upload-drop-zone .form-actions {
+    display: flex;
+    gap: 12px;
+    margin: 15px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.upload-button,
+.reset-button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid;
+}
+
+/* Upload button - green like button--add */
+.upload-button {
+    background-color: #FFF;
+    color: #FFF;
+    background-image: linear-gradient(to bottom, #A9F5A9, #298A08);
+    border-color: #A9F5A9 #298A08 #298A08;
+}
+
+.upload-button:hover {
+    background-color: #FFF;
+    color: #FFF !important;
+    background-image: linear-gradient(to bottom, #A9F5A9, #298A08) !important;
+    border-color: #A9F5A9 #298A08 #298A08 !important;
+    box-shadow: 0 2px 8px rgba(41, 138, 8, 0.3);
+}
+
+.upload-button:active {
+    transform: translateY(1px);
+}
+
+.upload-button:disabled {
+    background-color: #ccc;
+    color: #999 !important;
+    border-color: #ccc;
+    cursor: not-allowed;
+    background-image: none;
+}
+
+/* Reset button - neutral */
+.reset-button {
+    background-color: #f0f0f0;
+    color: #333;
+    border-color: #dbdbdb;
+}
+
+.reset-button:hover {
+    background-color: #e0e0e0;
+    border-color: #696969;
+}
+
+/* Message container */
+.upload-messages {
+    margin: 15px;
+}
+
+.messages {
+    padding: 15px;
+    border-radius: 4px;
+    border-left: 4px solid;
+    margin-bottom: 12px;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.messages h2 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.messages ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.messages li {
+    padding: 4px 0;
+    font-size: 14px;
+}
+
+/* Status messages (success) - green theme */
+.messages--status {
+    background-color: #d4edda;
+    border-color: #298A08;
+    color: #155724;
+}
+
+.messages--status h2 {
+    color: #155724;
+}
+
+/* Error messages - red theme */
+.messages--error {
+    background-color: #f8d7da;
+    border-color: #ff0000;
+    color: #721c24;
+}
+
+.messages--error h2 {
+    color: #721c24;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .drop-hint-container {
+        padding: 30px 16px;
+    }
+
+    .upload-icon {
+        width: 48px;
+        height: 48px;
+    }
+
+    .drop-text {
+        font-size: 14px;
+    }
+
+    .upload-drop-zone .form-actions {
+        flex-direction: column;
+    }
+
+    .upload-button,
+    .reset-button {
+        width: 100%;
+    }
+
+    .file-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #file-list li {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .folder-input,
+    .comment-input {
+        width: calc(100% - 30px);
+    }
+}
+
+/* Compact two-column layout on large screens */
+@media (min-width: 992px) {
+    #upload-drop-zone {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "drop folder"
+            "list comment"
+            "actions actions"
+            "messages messages";
+        gap: 12px 20px;
+        align-items: start;
+    }
+
+    #upload-drop-zone .drop-hint-container { grid-area: drop; padding: 24px 16px; min-height: 90px; }
+    #upload-drop-zone #file-list { grid-area: list; margin-top: 0; }
+
+    #upload-drop-zone .form-item-folder { grid-area: folder; }
+    #upload-drop-zone .form-item-comment { grid-area: comment; }
+
+    #upload-drop-zone .folder-input,
+    #upload-drop-zone .comment-input {
+        margin: 0 0 0 30px;
+    }
+
+    #upload-drop-zone label { margin: 0 0 0 30px; }
+
+    #upload-drop-zone .form-actions { grid-area: actions; margin: 8px 0 0 0; justify-content: flex-end; }
+    #upload-drop-zone .upload-messages { grid-area: messages; margin: 8px 0 0 0; }
+}
+
+@media (min-width: 992px) {
+    #upload-drop-zone {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-auto-rows: min-content;
+        column-gap: 20px;
+        row-gap: 12px;
+        align-items: start;
+    }
+
+    /* Force exact placement */
+    #upload-drop-zone .drop-hint-container {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    #upload-drop-zone #file-list {
+        grid-column: 1;
+        grid-row: 2;
+        width: 100%;
+    }
+
+    #upload-drop-zone .form-item-folder {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    #upload-drop-zone .form-item-comment {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    #upload-drop-zone .form-actions {
+        grid-column: 1 / span 2;
+        grid-row: 3;
+        margin: 8px 0 0 0;
+        justify-content: flex-end;
+    }
+
+    #upload-drop-zone .upload-messages {
+        grid-column: 1 / span 2;
+        grid-row: 4;
+        margin: 8px 0 0 0;
+    }
+
+    /* Prevent floats/widths from breaking the grid */
+    #upload-drop-zone > * {
+        float: none !important;
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+/* Keep single column on smaller screens */
+@media (max-width: 991px) {
+    #upload-drop-zone {
+        display: block;
+    }
+}
+
+/* Print friendly */
+@media print {
+    .upload-drop-zone {
+        display: none;
+    }
 }
