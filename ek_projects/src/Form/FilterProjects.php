@@ -124,14 +124,18 @@ class FilterProjects extends FormBase {
     // which is O(n) queries. We still need to handle the CSV-stored IDs,
     // but we do it in PHP without extra DB round-trips.
     // ------------------------------------------------------------------ //
-    $supplier_list = ['%' => $this->t('Any')];
-    $raw_suppliers = $this->extdb
-      ->query(
+    //$supplier_list = ['%' => $this->t('Any')];
+    $query = $this->extdb
+    ->select('ek_project_description', 'p')
+    ->fields('p', ['supplier_offer'])
+    ->condition('supplier_offer', 0, '<>');
+    $raw_suppliers = $query->execute()->fetchCol();
+      /*->query(
         "SELECT DISTINCT supplier_offer FROM {ek_project_description}
          WHERE supplier_offer <> :s",
         [':s' => '']
       )
-      ->fetchCol();
+      ->fetchCol();*/
 
     $supplier_ids = [];
     foreach ($raw_suppliers as $csv) {
@@ -143,9 +147,13 @@ class FilterProjects extends FormBase {
       }
     }
     foreach ($supplier_ids as $id) {
-      $supplier_list[$id] = \Drupal\ek_address_book\AddressBookData::getname($id);
+      $n = \Drupal\ek_address_book\AddressBookData::getname($id);
+      if($n != null) {
+        $supplier_list[$id] = trim($n);
+      }
     }
     asort($supplier_list);
+    $supplier_list = ['%' => $this->t('Any')] + $supplier_list;
 
     // ------------------------------------------------------------------ //
     // Project type / category list.
