@@ -124,18 +124,11 @@ class FilterProjects extends FormBase {
     // which is O(n) queries. We still need to handle the CSV-stored IDs,
     // but we do it in PHP without extra DB round-trips.
     // ------------------------------------------------------------------ //
-    //$supplier_list = ['%' => $this->t('Any')];
     $query = $this->extdb
     ->select('ek_project_description', 'p')
     ->fields('p', ['supplier_offer'])
     ->condition('supplier_offer', 0, '<>');
     $raw_suppliers = $query->execute()->fetchCol();
-      /*->query(
-        "SELECT DISTINCT supplier_offer FROM {ek_project_description}
-         WHERE supplier_offer <> :s",
-        [':s' => '']
-      )
-      ->fetchCol();*/
 
     $supplier_ids = [];
     foreach ($raw_suppliers as $csv) {

@@ -96,6 +96,12 @@ class TaskProject extends TaskFormBase {
       '#value' => $param['pid'],
     ];
 
+    // task id from project task table
+    $form['for_id'] = [
+        '#type' => 'hidden',
+        '#value' => $param['id'],
+    ];
+
     // Build common form elements
     $this->buildCommonElements($form, $form_state, $param['data'], $read);
 
@@ -131,7 +137,6 @@ class TaskProject extends TaskFormBase {
     $database = Database::getConnection('external_db', 'external_db');
     $taskId = $form_state->getValue('for_id');
     $wasComplete = FALSE;
-
     // Check if task was already complete
     if ($taskId) {
       $previousRate = $database->select('ek_project_tasks', 't')
