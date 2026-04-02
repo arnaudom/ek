@@ -160,11 +160,7 @@ abstract class TaskFormBase extends FormBase {
     
     // Delete checkbox (only when editing)
     if (!empty($data->id)) {
-      $form['for_id'] = [
-        '#type' => 'hidden',
-        '#value' => $data->id,
-      ];
-
+      
       $form['delete'] = [
         '#type' => 'checkbox',
         '#title' => $read['delete_description'] ?? $this->t('Delete this task'),
