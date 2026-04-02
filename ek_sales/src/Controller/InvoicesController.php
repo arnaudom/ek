@@ -1269,7 +1269,9 @@ class InvoicesController extends ControllerBase {
                 ->condition('i.id', $id, '=')
                 ->execute()
                 ->fetchObject();
+    
         $param = [];
+        $param['for_id'] = $data->id;
         $param['delete'] = \Drupal::currentUser()->hasPermission('sales_task');
         $param['owner'] = (\Drupal::currentUser()->id() == $data->uid) ? 1 : 0;
         $param['destination'] = $request->query->get('destination');

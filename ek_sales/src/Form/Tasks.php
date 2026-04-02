@@ -91,6 +91,12 @@ class Tasks extends TaskFormBase {
       '#value' => $param['destination'] ?? '',
     ];
 
+    // task id from sales task table
+    $form['for_id'] = [
+        '#type' => 'hidden',
+        '#value' => $param['for_id'],
+    ];
+
     // Build common form elements
     $this->buildCommonElements($form, $form_state, $data, $read);
 
