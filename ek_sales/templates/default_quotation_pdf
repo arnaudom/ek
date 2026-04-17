@@ -366,7 +366,6 @@ if ($head->pcode != "n/a") {
 $pdf->Ln(2);
 
 //BODY OF QUOTATION ================================================
-$cut = $format_body['cut'];
 $lm = $format_body['left_margin'];
 $b1 = $format_body['col_1'];
 $b2 = $format_body['col_2'];
@@ -375,147 +374,183 @@ $b4 = $format_body['col_4'];
 $b5 = $format_body['col_5'];
 $b6 = $format_body['col_6'];
 $b7 = $format_body['col_7'];
-$pdf->SetFillColor($format_body['fillcolor']['red'], $format_body['fillcolor']['green'], $format_body['fillcolor']['blue']);
-$pdf->SetTextColor($format_body['color']['red'], $format_body['color']['green'], $format_body['color']['blue']);
-$pdf->SetDrawColor($format_body['color']['red'], $format_body['color']['green'], $format_body['color']['blue']);
-$pdf->SetFont('helvetica', 'B', $font3);
-$pdf->Cell($lm);
-$pdf->Cell($b1, 5, t('No.'), 1, 0);
-$pdf->Cell($b2, 5, t('Description'), 1, 0, 'C', '0');
-$pdf->Cell($b3, 5, $items['column_name4'], 1, 0, 'C', '0');
-$pdf->Cell($b4, 5, $items['column_name5'], 1, 0, 'C', '0');
-$pdf->Cell($b5, 5, $items['column_name6'] . " " . $head->currency, 1, 1, 'C', '0');
+
 $font1 = $format_body['font'];
 $font2 = $format_body['font'] - 2;
 $font3 = $format_body['font'] - 3;
+$lineH = 5;
 
-// items ///////////////////////
+$pdf->SetFillColor($format_body['fillcolor']['red'], $format_body['fillcolor']['green'], $format_body['fillcolor']['blue']);
+$pdf->SetTextColor($format_body['color']['red'], $format_body['color']['green'], $format_body['color']['blue']);
+$pdf->SetDrawColor($format_body['color']['red'], $format_body['color']['green'], $format_body['color']['blue']);
+
+$printQuotationTableHeader = function() use ($pdf, $lm, $b1, $b2, $b3, $b4, $b5, $font3, $items, $head) {
+    $pdf->SetFont('helvetica', 'B', $font3);
+    $pdf->Cell($lm);
+    $pdf->Cell($b1, 5, t('No.'), 1, 0);
+    $pdf->Cell($b2, 5, t('Description'), 1, 0, 'C', 0);
+    $pdf->Cell($b3, 5, $items['column_name4'], 1, 0, 'C', 0);
+    $pdf->Cell($b4, 5, $items['column_name5'], 1, 0, 'C', 0);
+    $pdf->Cell($b5, 5, $items['column_name6'] . " " . $head->currency, 1, 1, 'C', 0);
+};
+
+$normalizeDescription = function(array $detail) {
+    if (!empty($detail['description2'])) {
+        $txt = $detail['description2'];
+        $txt = preg_replace('/<\s*br\s*\/?>/i', "\n", $txt);
+        $txt = preg_replace('/<\/p>/i', "\n", $txt);
+        $txt = preg_replace('/<li[^>]*>/i', "• ", $txt);
+        $txt = preg_replace('/<\/li>/i', "\n", $txt);
+        $txt = strip_tags($txt);
+        $txt = html_entity_decode($txt, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        return trim($txt);
+    }
+    return isset($detail['item']) ? (string)$detail['item'] : '';
+};
+
+$printQuotationTableHeader();
+
 $grandtotal = 0;
 $subtotal = 0;
 $taxtotal = 0;
-$i = 0;  //count item each rows;
-$ii = 0; //count groups
-$iii = 0; //count group item rows
+
+$i = 0;   // zebra index for normal rows
+$ii = 0;  // group index
+$iii = 0; // item index within group
 
 foreach ($items as $detail) {
-    if (is_array($detail) && $detail['item'] <> '') {
-        if ($detail['item'] === "sub_total" || $detail['item'] === "[sub total]") {
-            //insert sub total only
+    if (!is_array($detail) || empty($detail['item'])) {
+        continue;
+    }
+
+    if ($detail['item'] === "sub_total" || $detail['item'] === "[sub total]") {
+        $pdf->SetFont('helvetica', 'B', $font2);
+        $pdf->Cell($lm);
+        $pdf->Cell($b1);
+        $pdf->Cell($b2 + $b3 + $b4, 5, t('Sub total'), 'T', 0, 'R', 0);
+        $pdf->Cell($b5, 5, number_format($subtotal, 2), 'RT', 1, 'R', 1);
+        $subtotal = 0;
+        continue;
+    }
+
+    $isGroupRow = ((float)$detail['total'] == 0.0 && (float)$detail['value'] == 0.0);
+    $descText = $normalizeDescription($detail);
+
+    if ($isGroupRow) {
+        $pdf->SetFont('helvetica', 'B', $font2);
+        $fill = 0;
+        $ii++;
+        $row = $ii . '_';
+        $iii = 0;
+    } else {
+        $pdf->SetFont('helvetica', '', $font3);
+        $i++;
+        $fill = ($i % 2 == 0) ? 1 : 0;
+        $iii++;
+        $row = $iii;
+    }
+
+    // First line height based on description
+    $descH = $pdf->getStringHeight($b2, $descText, false, true, '', 1);
+    $h1 = max($lineH, $descH);
+
+    // Optional second line (only for normal rows)
+    $hasExtraLine = !$isGroupRow && (!empty($items['column_active2']) || !empty($items['column_active3']));
+    $h2 = $hasExtraLine ? 5 : 0;
+
+    $rowTotalH = $h1 + $h2;
+
+    // Page-fit check BEFORE drawing row
+    $pageBottomY = $pdf->getPageHeight() - $pdf->getBreakMargin();
+    if (($pdf->GetY() + $rowTotalH) > $pageBottomY) {
+        $pdf->AddPage($format_doc['orientation'], $format_doc['format']);
+
+        // continuation heading
+        $f1 = $format_feature['font'];
+        $f2 = $format_feature['font'] - 4;
+
+        $pdf->SetFont('helvetica', 'B', $f1);
+        $pdf->Cell($lm);
+        $pdf->Cell($c2 + $c3);
+        $pdf->SetTextColor($format_feature['colortitle']['red'], $format_feature['colortitle']['green'], $format_feature['colortitle']['blue']);
+        $pdf->Cell($c3, 10, strtoupper($head->title), 0, 1);
+
+        $pdf->SetTextColor($format_feature['color']['red'], $format_feature['color']['green'], $format_feature['color']['blue']);
+        $pdf->SetFont('helvetica', 'B', $f2);
+        $pdf->Cell($lm);
+        $pdf->Cell($c2 + $c3);
+        $pdf->Cell($c3, 10, $head->serial, 0, 1);
+        $pdf->Ln(3);
+
+        $printQuotationTableHeader();
+
+        // Recompute height in current context
+        if ($isGroupRow) {
             $pdf->SetFont('helvetica', 'B', $font2);
-            $pdf->Cell($lm);
-            $pdf->Cell($b1);
-            $pdf->Cell($b2 + $b3 + $b4, 5, t('Sub total'), 'T', "", 'R', 0);
-            $pdf->Cell($b5, 5, number_format($subtotal, 2), 'RT', 1, 'R', 1);
-            $subtotal = 0;
         } else {
-
-            if ($detail['total'] == 0 && $detail['value'] == 0) {
-                //description line
-                $pdf->SetFont('helvetica', 'B', $font2);
-                $fill = 0;
-                $ii++;
-                $row = $ii . '_';
-                $iii = 0;
-                //item row number
-                $pdf->Cell($lm);
-                $pdf->Cell($b1, 5, $row, 1, 0, 'L');
-                // column 1
-                $x = $pdf->GetX();
-                $y = $pdf->GetY();
-                $pdf->MultiCell($b2, 5, $detail['item'], 1, 'L');
-                $y2 = $pdf->GetY();
-                $pdf->SetFont('helvetica', '', $font2);
-                $pdf->SetXY($x, $y);
-                $h = $y2 - $y;
-                $pdf->Cell($lm,$h,'',0, 1);
-            } else {
-                // normal item
-                $pdf->SetFont('helvetica', '', $font3);
-                // column 0  
-                $iii++;
-                ($i % 2 == 0) ? $fill = 1 : $fill = 0;
-                $pdf->Cell($lm);
-                $pdf->Cell($b1, 5, $iii, 1, 0, 'R');
-                // column 1
-                $x = $pdf->GetX();
-                $y = $pdf->GetY();
-                
-                // include text into justified cell (first column)
-                if($detail['description2'] != NULL){
-                    $pdf->writeHTMLCell($b2,5,$x,$y,$detail['description2'],"TLR",true,$fill,1,'',0);
-                } else {
-                    $pdf->MultiCell($b2,5, $detail['item'],"TLR",'L',$fill);
-                }
-                
-                $y2 = $pdf->GetY();
-                $pdf->SetFont('helvetica', '', $font2);
-                $pdf->SetXY($x, $y);
-                $h = $y2 - $y;
-
-                // column 4
-                $pdf->Cell($b2);
-                $pdf->Cell($b3, $h, $detail['unit'], 1, 0, 'C');
-                $pdf->Cell($b4, $h, number_format($detail['value'], 2), 1, 0, 'R');
-                $pdf->Cell($b5, $h, number_format($detail['total'], 2), 1, 1, 'R');
-
-                // line 2 
-                if ($items['column_active2']) {
-                    $pdf->Cell($lm);
-                    $pdf->Cell($b1);
-                    $pdf->SetFont('helvetica', '', $font3);
-                    $pdf->Cell($b3, 5, $items['column_name2'], 'LB', 0, 'L',$fill, '1');
-                    $pdf->Cell($b6, 5, $detail['column_2'], 'B', 0, 'L', $fill);
-
-                    if ($items['column_active3']) {
-                        $pdf->Cell($b3, 5, $items['column_name3'], 'B', 0, 'L',$fill, '1');
-                        $pdf->Cell($b7, 5, $detail['column_3'], 'B', 0,'L',$fill);
-                        $pdf->Cell($b3+$b4+$b5, 5, "", 'BR', 1,'L',$fill);
-                    } else {
-                        $pdf->Cell($b3+$b3+$b4+$b5+$b7, 5, "", 'BR', 1, 'L',$fill);
-                    }
-                } elseif ($items['column_active3']) {
-                    $pdf->Cell($lm);
-                    $pdf->Cell($b1);
-                    $pdf->SetFont('helvetica', '', $font3);
-                    $pdf->Cell($b3, 5, $items['column_name3'], 'LB', 0, 'L', $fill);
-                    $pdf->Cell($b7, 5, $detail['column_3'], 'B', 1, 'L',$fill);
-                }
-
-                $i++;
-                $grandtotal = round(($grandtotal + $detail['total']), 2);
-                $subtotal = round(($subtotal + $detail['total']), 2);
-                if($detail['opt'] == 1) {
-                    $taxtotal = round(($taxtotal + $detail['total']), 2);
-                }
-                // check position for a break
-                $here = $pdf->GetY();
-                if ($here > $cut) {
-                    $pdf->AddPage($format_doc['orientation'], $format_doc['format']);
-                    $font1 = $format_feature['font'];
-                    $font2 = $format_feature['font'] - 4;
-                    $font3 = $format_feature['font'] - 6;
-                    $pdf->SetFont('helvetica', 'B', $font1);
-                    $pdf->Cell($lm);
-                    $pdf->Cell($c2 + $c3);
-                    $pdf->SetTextColor($format_feature['colortitle']['red'], $format_feature['colortitle']['green'], $format_feature['colortitle']['blue']);
-                    $pdf->Cell($c3, 10, strtoupper($head->title), 0, 1);
-                    $pdf->SetTextColor($format_feature['color']['red'], $format_feature['color']['green'], $format_feature['color']['blue']);
-                    $pdf->SetFont('helvetica', 'B', $font2);
-                    $pdf->Cell($lm);
-                    $pdf->Cell($c2 + $c3);
-                    $pdf->Cell($c3, 10, $head->serial, 0, 1);
-                    $pdf->Ln(3);
-                    $font3 = $format_body['font'] - 3;
-                    $pdf->SetFont('helvetica', '', $font3);
-                    $pdf->Cell($lm);
-                    $pdf->Cell($b1, 5, '', 1, 0);
-                    $pdf->Cell($b2, 5, t('Description'), 1, 0, 'C', '0');
-                    $pdf->Cell($b3, 5, $items['column_name4'], 1, 0, 'C', '0');
-                    $pdf->Cell($b4, 5, $items['column_name5'], 1, 0, 'C', '0');
-                    $pdf->Cell($b5, 5, $items['column_name6'] . " " . $head->currency, 1, 1, 'C', '0');
-                }
-            }
+            $pdf->SetFont('helvetica', '', $font3);
         }
+        $descH = $pdf->getStringHeight($b2, $descText, false, true, '', 1);
+        $h1 = max($lineH, $descH);
+        $h2 = $hasExtraLine ? 5 : 0;
+        $rowTotalH = $h1 + $h2;
+    }
+
+    // ---------- First line ----------
+    $pdf->Cell($lm);
+    $x = $pdf->GetX();
+    $y = $pdf->GetY();
+
+    // No.
+    $pdf->Cell($b1, $h1, $row, 1, 0, $isGroupRow ? 'L' : 'R', $fill);
+
+    // Description
+    $pdf->MultiCell($b2, $h1, $descText, 1, 'L', $fill, 0);
+
+    // Numeric columns
+    $pdf->SetXY($x + $b1 + $b2, $y);
+
+    if ($isGroupRow) {
+        $pdf->Cell($b3, $h1, '', 1, 0, 'C', $fill);
+        $pdf->Cell($b4, $h1, '', 1, 0, 'R', $fill);
+        $pdf->Cell($b5, $h1, '', 1, 1, 'R', $fill);
+        continue;
+    }
+
+    $pdf->SetFont('helvetica', '', $font2);
+    $pdf->Cell($b3, $h1, isset($detail['unit']) ? $detail['unit'] : '', 1, 0, 'C', $fill);
+    $pdf->Cell($b4, $h1, number_format((float)$detail['value'], 2), 1, 0, 'R', $fill);
+    $pdf->Cell($b5, $h1, number_format((float)$detail['total'], 2), 1, 1, 'R', $fill);
+
+    // ---------- Optional second line ----------
+    if (!empty($items['column_active2'])) {
+        $pdf->Cell($lm);
+        $pdf->Cell($b1);
+        $pdf->SetFont('helvetica', '', $font3);
+        $pdf->Cell($b3, 5, $items['column_name2'], 'LB', 0, 'L', $fill);
+        $pdf->Cell($b6, 5, isset($detail['column_2']) ? $detail['column_2'] : '', 'B', 0, 'L', $fill);
+
+        if (!empty($items['column_active3'])) {
+            $pdf->Cell($b3, 5, $items['column_name3'], 'B', 0, 'L', $fill);
+            $pdf->Cell($b7, 5, isset($detail['column_3']) ? $detail['column_3'] : '', 'B', 0, 'L', $fill);
+            $pdf->Cell($b3 + $b4 + $b5, 5, "", 'BR', 1, 'L', $fill);
+        } else {
+            $pdf->Cell($b3 + $b3 + $b4 + $b5 + $b7, 5, "", 'BR', 1, 'L', $fill);
+        }
+    } elseif (!empty($items['column_active3'])) {
+        $pdf->Cell($lm);
+        $pdf->Cell($b1);
+        $pdf->SetFont('helvetica', '', $font3);
+        $pdf->Cell($b3, 5, $items['column_name3'], 'LB', 0, 'L', $fill);
+        $pdf->Cell($b7, 5, isset($detail['column_3']) ? $detail['column_3'] : '', 'B', 1, 'L', $fill);
+    }
+
+    $lineTotal = (float)$detail['total'];
+    $grandtotal = round($grandtotal + $lineTotal, 2);
+    $subtotal = round($subtotal + $lineTotal, 2);
+
+    if (!empty($detail['opt']) && (int)$detail['opt'] === 1) {
+        $taxtotal = round($taxtotal + $lineTotal, 2);
     }
 }
 
