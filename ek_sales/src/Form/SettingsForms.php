@@ -66,6 +66,7 @@ class SettingsForms extends FormBase {
             '#title' => $this->t('Purchase forms'),
             '#collapsible' => true,
             '#open' => false,
+            '#tree' => TRUE, 
         ];
 
         $form['p']['new_purchase'] = [
@@ -96,6 +97,7 @@ class SettingsForms extends FormBase {
             '#title' => $this->t('Quotations forms'),
             '#collapsible' => true,
             '#open' => false,
+            '#tree' => TRUE, 
         ];
 
         $form['q']['new_quotation'] = [
@@ -124,6 +126,7 @@ class SettingsForms extends FormBase {
             '#title' => $this->t('Invoice forms'),
             '#collapsible' => true,
             '#open' => false,
+            '#tree' => TRUE, 
         ];
 
         $form['i']['new_invoice'] = [
