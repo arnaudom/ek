@@ -81,9 +81,9 @@ class InstallController extends ControllerBase {
     public function install() {
         /**/
         $query = "CREATE TABLE IF NOT EXISTS `ek_items` (
-	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-	`itemcode` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'main ref code',
-	`coid` VARCHAR(5) NOT NULL DEFAULT '' COMMENT 'company id',
+	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COLLATE 'utf8mb4_bin',
+	`itemcode` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'main ref code' COLLATE 'utf8mb4_bin'
+	`coid` VARCHAR(5) NOT NULL DEFAULT '' COMMENT 'company id' COLLATE 'utf8mb4_bin',
 	`type` VARCHAR(45) NULL DEFAULT '' COMMENT 'tag for type - taxonomy, ex service, tool',
 	`description1` TEXT NULL COMMENT 'main description',
 	`description2` TEXT NULL COMMENT 'other description',
@@ -100,7 +100,7 @@ class InstallController extends ControllerBase {
 	UNIQUE INDEX `Index 1` (`id`, `itemcode`)
         )
         COMMENT='items list'
-        COLLATE='utf8mb4_general_ci'
+        COLLATE='utf8mb4_0900_ai_ci'
         ENGINE=InnoDB
         ";
 
@@ -115,7 +115,7 @@ class InstallController extends ControllerBase {
         PRIMARY KEY (`id`)
         )
         COMMENT='Stores items settings.'
-        COLLATE='utf8mb4_general_ci'
+        COLLATE='utf8mb4_0900_ai_ci'
         ENGINE=InnoDB";
 
         $db = Database::getConnection('external_db', 'external_db')->query($query);
@@ -134,14 +134,14 @@ class InstallController extends ControllerBase {
 
         $query = "CREATE TABLE IF NOT EXISTS `ek_item_barcodes` (
 	`id` INT(10) NOT NULL AUTO_INCREMENT,
-	`itemcode` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'code in main table',
+	`itemcode` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'code in main table' ,
 	`barcode` VARCHAR(45) NOT NULL DEFAULT '0' COMMENT 'barcode',
 	`encode` VARCHAR(45) NULL DEFAULT NULL COMMENT 'encoding value',
 	PRIMARY KEY (`id`),
 	INDEX `Index 2` (`itemcode`)
         )
-        COMMENT='Itams barcode list'
-        COLLATE='utf8mb4_general_ci'
+        COMMENT='Items barcode list'
+        COLLATE='utf8mb4_bin'
         ENGINE=InnoDB";
 
         $db = Database::getConnection('external_db', 'external_db')->query($query);
@@ -157,7 +157,7 @@ class InstallController extends ControllerBase {
 	INDEX `Index 2` (`itemcode`)
         )
         COMMENT='List images for items'
-        COLLATE='utf8mb4_general_ci'
+        COLLATE='utf8mb4_bin'
         ENGINE=InnoDB";
         $db = Database::getConnection('external_db', 'external_db')->query($query);
         if ($db) {
@@ -167,7 +167,7 @@ class InstallController extends ControllerBase {
 
         $query = "CREATE TABLE IF NOT EXISTS `ek_item_packing` (
 	`id` INT(10) NOT NULL AUTO_INCREMENT,
-	`itemcode` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'code in main table',
+	`itemcode` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'code in main table' ,
 	`units` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'stock units',
 	`unit_measure` VARCHAR(45) NOT NULL DEFAULT '' COMMENT 'unit measure',
 	`item_size` VARCHAR(45) NULL DEFAULT NULL COMMENT 'size',
@@ -181,7 +181,7 @@ class InstallController extends ControllerBase {
 	INDEX `Index 2` (`itemcode`)
         )
         COMMENT='packing data and stock value'
-        COLLATE='utf8mb4_general_ci'
+        COLLATE='utf8mb4_bin' 
         ENGINE=InnoDB";
         $db = Database::getConnection('external_db', 'external_db')->query($query);
         if ($db) {
@@ -223,7 +223,7 @@ class InstallController extends ControllerBase {
 	PRIMARY KEY (`id`)
         )
         COMMENT='Record of prices history per item'
-        COLLATE='utf8mb4_general_ci'
+        COLLATE='utf8mb4_bin'
         ENGINE=InnoDB";
         $db = Database::getConnection('external_db', 'external_db')->query($query);
         if ($db) {

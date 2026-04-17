@@ -24,9 +24,11 @@ class EditProductsForm extends FormBase {
    
     protected $moduleHandler;
     protected $settings;
+    protected $extdb;
     public function __construct(ModuleHandler $module_handler) {
         $this->moduleHandler = $module_handler;
         $this->settings = new ItemSettings();
+        $this->extdb = Database::getConnection('external_db', 'external_db');
     }
 
     /**
@@ -55,508 +57,526 @@ class EditProductsForm extends FormBase {
                 '#default_value' => $id,
             );
 
-            $query = "SELECT * from ek_items WHERE id=:id";
-            $r = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $id))->fetchAssoc();
+            $query = $this->extdb->select('ek_items', 'i')
+                    ->fields('i')
+                    ->condition('id', $id)
+                    ->execute();
+            $r = $query->fetchAssoc();
 
-            $query = "SELECT * from ek_item_barcodes WHERE itemcode=:id";
-            $rb_data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $r['itemcode']));
+            $query = $this->extdb->select('ek_item_packing', 'p')
+                    ->fields('p')
+                    ->condition('itemcode', $r['itemcode'])
+                    ->execute();
+            $rp = $query->fetchAssoc();
+            $query = $this->extdb->select('ek_item_prices', 'p')
+                    ->fields('p')
+                    ->condition('itemcode', $r['itemcode'])
+                    ->execute();
+            $rs = $query->fetchAssoc();
 
-            $query = "SELECT * from ek_item_packing WHERE itemcode=:id";
-            $rp = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $r['itemcode']))->fetchAssoc();
+            $ri_data = $this->extdb->select('ek_item_images', 'b')
+                    ->fields('b')
+                    ->condition('itemcode', $r['itemcode'])->execute();
+            
+            $rb_data = $this->extdb->select('ek_item_barcodes', 'b')
+                    ->fields('b')
+                    ->condition('itemcode', $r['itemcode'])->execute();
 
-            $query = "SELECT * from ek_item_prices WHERE itemcode=:id";
-            $rs = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $r['itemcode']))->fetchAssoc();
-
-            $query = "SELECT * from ek_item_images WHERE itemcode=:id";
-            $ri_data = Database::getConnection('external_db', 'external_db')->query($query, array(':id' => $r['itemcode']));
-
-            $form['itemcode'] = array(
+            $form['itemcode'] = [
                 '#type' => 'hidden',
                 '#default_value' => $r['itemcode'],
-            );
+            ];
 
             if (!null == $clone) {
-                $form['clone'] = array(
+                $form['clone'] = [
                     '#type' => 'hidden',
                     '#default_value' => 1,
-                );
-                $form['info'] = array(
+                ];
+
+                $form['info'] = [
                     '#type' => 'item',
                     '#markup' => "<div class='messages messages--warning'>" . $this->t('Item will be duplicated under different itemcode') . '</div>',
-                );
+                ];
             }
+
         } else {
-            $form['new_item'] = array(
+            $form['new_item'] = [
                 '#type' => 'hidden',
                 '#default_value' => 1,
-            );
+            ];
 
-            $rb_data = null;
-            $ri_data = null;
+            $rb_data = [];
+            $ri_data = [];
         }
 
-        $form['active'] = array(
+        $form['active'] = [
             '#type' => 'select',
-            '#options' => array(0 => $this->t('stop'), 1 => $this->t('active')),
+            '#options' => [0 => $this->t('stop'), 1 => $this->t('active')],
             '#default_value' => isset($r['active']) ? $r['active'] : '1',
             '#required' => true,
-        );
+        ];
 
         if ($this->moduleHandler->moduleExists('ek_admin')) {
-            $coid = Database::getConnection('external_db', 'external_db')->query("SELECT id,name from {ek_company} order by name")->fetchAllKeyed();
-            $form['coid'] = array(
+            $coid = $this->extdb->query("SELECT id,name from {ek_company} order by name")->fetchAllKeyed();
+            $form['coid'] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $coid,
                 '#required' => true,
                 '#default_value' => isset($r['coid']) ? $r['coid'] : null,
-            );
+            ];
+
         } else {
-            $form['coid'] = array(
+            $form['coid'] = [
                 '#type' => 'hidden',
                 '#required' => true,
                 '#default_value' => 1,
-            );
+            ];
         }
 
-        $form['type'] = array(
+        $form['type'] = [
             '#type' => 'textfield',
             '#size' => 30,
-            '#maxlength' => 150,
+            '#maxlength' => 45,
             '#default_value' => isset($r['type']) ? $r['type'] : null,
             '#description' => isset($r['type']) ? $this->t('Item type') : $this->t('Item type. The first 3 letters of the type will be used to generate an item code for new item.'),
             '#required' => true,
             '#disabled' => isset($r['type']) ? true : false,
             '#autocomplete_route_name' => 'ek_look_up_item_type',
-        );
+        ];
 
-
-
-        $form['description1'] = array(
+        $form['description1'] = [
             '#type' => 'textarea',
             '#default_value' => isset($r['description1']) ? $r['description1'] : null,
             '#rows' => 3,
-            '#attributes' => array('placeholder' => $this->t('Main description')),
-        );
+            '#attributes' => ['placeholder' => $this->t('Main description')],
+        ];
 
-        //second description can be used to add formatted text
-        //that can be used or html display or pdf forms for instance
-        $form['description2'] = array(
+        // second description can be used to add formatted text
+        // that can be used or html display or pdf forms for instance
+        $form['description2'] = [
             '#type' => 'text_format',
             '#default_value' => isset($r['description2']) ? $r['description2'] : null,
             '#rows' => 2,
-            '#attributes' => array('placeholder' => $this->t('Extended description')),
+            '#attributes' => ['placeholder' => $this->t('Extended description')],
             '#format' => isset($r['format']) ? $r['format'] : 'restricted_html',
-        );
+        ];
 
-        $form['supplier_code'] = array(
+        $form['supplier_code'] = [
             '#type' => 'textfield',
             '#size' => 50,
             '#maxlength' => 255,
             '#default_value' => isset($r['supplier_code']) ? $r['supplier_code'] : null,
-            '#attributes' => array('placeholder' => $this->t('supplier item code if any')),
+            '#attributes' => ['placeholder' => $this->t('supplier item code if any')],
             '#title' => $this->t('supplier item code'),
-        );
+        ];
 
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
             $supplier = array('' => $this->t('Not applicable'));
             $supplier += \Drupal\ek_address_book\AddressBookData::addresslist(2);
             if (!empty($supplier)) {
-                $form['supplier'] = array(
+                $form['supplier'] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $supplier,
                     '#default_value' => isset($r['supplier']) ? $r['supplier'] : null,
                     '#title' => $this->t('supplier name'),
-                );
+                ];
+
             } else {
                 $new = l(t('supplier'), 'new_contact');
-                $form['supplier'] = array(
+                $form['supplier'] = [
                     '#markup' => $this->t("You do not have any $new in your record."),
                     '#default_value' => 0,
-                );
+                ];
             }
         } else {
-            $form['supplier'] = array(
+            $form['supplier'] = [
                 '#markup' => $this->t('You do not have any supplier list.'),
                 '#default_value' => 0,
-            );
+            ];
         }
 
-        $form['department'] = array(
+        $form['department'] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 150,
             '#default_value' => isset($r['department']) ? $r['department'] : null,
             '#description' => $this->t('item department'),
             '#autocomplete_route_name' => 'ek_look_up_item_department',
-        );
+        ];
 
-        $form['family'] = array(
+        $form['family'] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 150,
             '#default_value' => isset($r['family']) ? $r['family'] : null,
             '#description' => $this->t('item family'),
             '#autocomplete_route_name' => 'ek_look_up_item_family',
-        );
+        ];
 
-
-        $form['collection'] = array(
+        $form['collection'] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 150,
             '#default_value' => isset($r['collection']) ? $r['collection'] : null,
             '#description' => $this->t('item collection'),
             '#autocomplete_route_name' => 'ek_look_up_item_collection',
-        );
+        ];
 
-
-        $form['color'] = array(
+        $form['color'] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 150,
             '#default_value' => isset($r['color']) ? $r['color'] : null,
             '#description' => $this->t('item color'),
             '#autocomplete_route_name' => 'ek_look_up_item_color',
-        );
+        ];
 
-
-        $form['size'] = array(
+        $form['size'] = [
             '#type' => 'textfield',
             '#size' => 40,
             '#maxlength' => 255,
             '#default_value' => isset($r['size']) ? $r['size'] : null,
             '#description' => $this->t('item size'),
-        );
+        ];
+
+        $specs_default = '';
+        if (isset($r['specs']) && !empty($r['specs'])) {
+            $decoded = json_decode($r['specs'], true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                // Re-encode with JSON_PRETTY_PRINT for readable editing in the textarea
+                $specs_default = json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            } else {
+                // Fallback to raw string if it's not valid JSON
+                $specs_default = $r['specs'];
+            }
+
+            $form['specs'] = [
+                '#type' => 'textarea',
+                '#title' => $this->t('Item Specifications'),
+                '#default_value' => $specs_default,
+                '#description' => $this->t('Enter specifications in JSON format (e.g., {"key": "value"}).'),
+                '#rows' => 6,
+            ];
+
+        } else {
+            $r['specs'] = '';
+        }
+
+        if (isset($r['source_url']) && !empty($r['source_url'])) {
+            $form['source_url'] = [
+                '#type' => 'url',
+                '#title' => $this->t('Source URL'),
+                '#default_value' => isset($r['source_url']) ? $r['source_url'] : null,
+                '#description' => $this->t('Enter the source URL for this item.'),
+                '#size' => 60,
+                '#maxlength' => 255,
+            ];
+        }else {
+            $r['source_url'] = '';
+        }
+
 
 
 //
         //logistic data
 //
 
-        $form['logistic'] = array(
+        $form['logistic'] = [
             '#type' => 'details',
             '#title' => $this->t('Logistics'),
             '#collapsible' => true,
             '#collapsed' => false,
-        );
+        ];
 
-        $form['logistic']['units'] = array(
+        $form['logistic']['units'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rp['units']) ? $rp['units'] : null,
-            '#attributes' => array('placeholder' => $this->t('stock in units')),
+            '#attributes' => ['placeholder' => $this->t('stock in units')],
             '#description' => $this->t('stock in units'),
             '#prefix' => '<div class="container-inline">',
-        );
+        ];
 
 
-        $form['logistic']['unit_measure'] = array(
+        $form['logistic']['unit_measure'] = [
             '#type' => 'textfield',
             '#size' => 15,
             '#default_value' => isset($rp['unit_measure']) ? $rp['unit_measure'] : null,
             '#description' => $this->t('unit measure'),
             '#autocomplete_route_name' => 'ek_look_up_item_measure',
             '#suffix' => '</div>',
-        );
+        ];
 
 
-        $form['logistic']['item_size'] = array(
+        $form['logistic']['item_size'] = [
             '#type' => 'textfield',
             '#size' => 25,
             '#maxlength' => 255,
             '#default_value' => isset($rp['item_size']) ? $rp['item_size'] : null,
-            '#attributes' => array('placeholder' => $this->t('item size')),
+            '#attributes' => ['placeholder' => $this->t('item size')],
             '#description' => $this->t('item size'),
-        );
+        ];
 
-        $form['logistic']['pack_size'] = array(
+        $form['logistic']['pack_size'] = [
             '#type' => 'textfield',
             '#size' => 25,
             '#maxlength' => 255,
             '#default_value' => isset($rp['pack_size']) ? $rp['pack_size'] : null,
-            '#attributes' => array('placeholder' => $this->t('pack size')),
+            '#attributes' => ['placeholder' => $this->t('pack size')],
             '#description' => $this->t('pack size'),
-        );
+        ];
 
-        $form['logistic']['qty_pack'] = array(
+        $form['logistic']['qty_pack'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rp['qty_pack']) ? $rp['qty_pack'] : null,
-            '#attributes' => array('placeholder' => $this->t('quantity per pack')),
+            '#attributes' => ['placeholder' => $this->t('quantity per pack')],
             '#description' => $this->t('quantity per pack'),
-        );
+        ];
 
-        $form['logistic']['c20'] = array(
+        $form['logistic']['c20'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rp['c20']) ? $rp['c20'] : null,
-            '#attributes' => array('placeholder' => $this->t('20ft quantity')),
+            '#attributes' => ['placeholder' => $this->t('20ft quantity')],
             '#description' => $this->t('quantity per 20ft container'),
-        );
+        ];
 
-        $form['logistic']['c40'] = array(
+        $form['logistic']['c40'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rp['c40']) ? $rp['c40'] : null,
-            '#attributes' => array('placeholder' => $this->t('40ft quantity')),
+            '#attributes' => ['placeholder' => $this->t('40ft quantity')],
             '#description' => $this->t('quantity per 40ft container'),
-        );
+        ];
 
-        $form['logistic']['min_order'] = array(
+        $form['logistic']['min_order'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rp['min_order']) ? $rp['min_order'] : null,
-            '#attributes' => array('placeholder' => $this->t('minimum order')),
+            '#attributes' => ['placeholder' => $this->t('minimum order')],
             '#description' => $this->t('minimum order quantity'),
-        );
-
-        /*
-          $form['logistic']['logistic_cost'] = array(
-          '#type' => 'textfield',
-          '#size' => 50,
-          '#maxlength' => 255,
-          '#default_value' => isset($rp['logistic_cost']) ? $rp['logistic_cost'] :null,
-          '#attributes' => array('placeholder'=>t('cost')),
-          '#description' => $this->t('logistic cost'),
-          );
-         */
+        ];
 
 //
         //prices data
 //
 
-        $form['price'] = array(
+        $form['price'] = [
             '#type' => 'details',
             '#title' => $this->t('Prices'),
             '#collapsible' => true,
             '#collapsed' => false,
-        );
+        ];
 
-        $form['price']['purchase_price'] = array(
+        $form['price']['purchase_price'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rs['purchase_price']) ? $rs['purchase_price'] : 0,
-            '#attributes' => array(),
+            '#attributes' => [],
             '#title' => $this->t('purchase price'),
             '#prefix' => '<div class="container-inline">',
-        );
+        ];
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $query = "SELECT id,currency from {ek_currency} where active=:a order by currency";
-            $currency = array('--' => '--');
-            $currency += Database::getConnection('external_db', 'external_db')->query($query, array(':a' => 1))->fetchAllKeyed();
-            $form['price']['currency'] = array(
+            $currency = ['--' => '--'];
+            $currency += $this->extdb->query($query, [':a' => 1])->fetchAllKeyed();
+            $form['price']['currency'] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => array_combine($currency, $currency),
                 '#default_value' => isset($rs['currency']) ? $rs['currency'] : null,
                 '#title' => $this->t('purchase currency'),
                 '#suffix' => '</div>',
-            );
+            ];
         } else {
-            $currency = array('ALL' => 'Albania Lek', 'AFN' => 'Afghanistan Afghani', 'ARS' => 'Argentina Peso', 'AWG' => 'Aruba Guilder', 'AUD' => 'Australia Dollar', 'AZN' => 'Azerbaijan New Manat', 'BSD' => 'Bahamas Dollar', 'BBD' => 'Barbados Dollar', 'BDT' => 'Bangladeshi taka', 'BYR' => 'Belarus Ruble', 'BZD' => 'Belize Dollar', 'BMD' => 'Bermuda Dollar', 'BOB' => 'Bolivia Boliviano', 'BAM' => 'Bosnia and Herzegovina Convertible Marka', 'BWP' => 'Botswana Pula', 'BGN' => 'Bulgaria Lev', 'BRL' => 'Brazil Real', 'BND' => 'Brunei Darussalam Dollar', 'KHR' => 'Cambodia Riel', 'CAD' => 'Canada Dollar', 'KYD' => 'Cayman Islands Dollar', 'CLP' => 'Chile Peso', 'CNY' => 'China Yuan Renminbi', 'COP' => 'Colombia Peso', 'CRC' => 'Costa Rica Colon', 'HRK' => 'Croatia Kuna', 'CUP' => 'Cuba Peso', 'CZK' => 'Czech Republic Koruna', 'DKK' => 'Denmark Krone', 'DOP' => 'Dominican Republic Peso', 'XCD' => 'East Caribbean Dollar', 'EGP' => 'Egypt Pound', 'SVC' => 'El Salvador Colon', 'EEK' => 'Estonia Kroon', 'EUR' => 'Euro', 'FKP' => 'Falkland Islands (Malvinas) Pound', 'FJD' => 'Fiji Dollar', 'GHC' => 'Ghana Cedis', 'GIP' => 'Gibraltar Pound', 'GTQ' => 'Guatemala Quetzal', 'GGP' => 'Guernsey Pound', 'GYD' => 'Guyana Dollar', 'HNL' => 'Honduras Lempira', 'HKD' => 'Hong Kong Dollar', 'HUF' => 'Hungary Forint', 'ISK' => 'Iceland Krona', 'INR' => 'India Rupee', 'IDR' => 'Indonesia Rupiah', 'IRR' => 'Iran Rial', 'IMP' => 'Isle of Man Pound', 'ILS' => 'Israel Shekel', 'JMD' => 'Jamaica Dollar', 'JPY' => 'Japan Yen', 'JEP' => 'Jersey Pound', 'KZT' => 'Kazakhstan Tenge', 'KPW' => 'Korea (North) Won', 'KRW' => 'Korea (South) Won', 'KGS' => 'Kyrgyzstan Som', 'LAK' => 'Laos Kip', 'LVL' => 'Latvia Lat', 'LBP' => 'Lebanon Pound', 'LRD' => 'Liberia Dollar', 'LTL' => 'Lithuania Litas', 'MKD' => 'Macedonia Denar', 'MYR' => 'Malaysia Ringgit', 'MUR' => 'Mauritius Rupee', 'MXN' => 'Mexico Peso', 'MNT' => 'Mongolia Tughrik', 'MZN' => 'Mozambique Metical', 'NAD' => 'Namibia Dollar', 'NPR' => 'Nepal Rupee', 'ANG' => 'Netherlands Antilles Guilder', 'NZD' => 'New Zealand Dollar', 'NIO' => 'Nicaragua Cordoba', 'NGN' => 'Nigeria Naira', 'NOK' => 'Norway Krone', 'OMR' => 'Oman Rial', 'PKR' => 'Pakistan Rupee', 'PAB' => 'Panama Balboa', 'PYG' => 'Paraguay Guarani', 'PEN' => 'Peru Nuevo Sol', 'PHP' => 'Philippines Peso', 'PLN' => 'Poland Zloty', 'QAR' => 'Qatar Riyal', 'RON' => 'Romania New Leu', 'RUB' => 'Russia Ruble', 'SHP' => 'Saint Helena Pound', 'SAR' => 'Saudi Arabia Riyal', 'RSD' => 'Serbia Dinar', 'SCR' => 'Seychelles Rupee', 'SGD' => 'Singapore Dollar', 'SBD' => 'Solomon Islands Dollar', 'SOS' => 'Somalia Shilling', 'ZAR' => 'South Africa Rand', 'LKR' => 'Sri Lanka Rupee', 'SEK' => 'Sweden Krona', 'CHF' => 'Switzerland Franc', 'SRD' => 'Suriname Dollar', 'SYP' => 'Syria Pound', 'TWD' => 'Taiwan New Dollar', 'THB' => 'Thailand Baht', 'TTD' => 'Trinidad and Tobago Dollar', 'TRY' => 'Turkey Lira', 'TRL' => 'Turkey Lira', 'TVD' => 'Tuvalu Dollar', 'UAH' => 'Ukraine Hryvna', 'GBP' => 'United Kingdom Pound', 'USD' => 'United States Dollar', 'UYU' => 'Uruguay Peso', 'UZS' => 'Uzbekistan Som', 'VEF' => 'Venezuela Bolivar', 'VND' => 'Viet Nam Dong', 'YER' => 'Yemen Rial', 'ZWD' => 'Zimbabwe Dollar');
+            $currency = ['ALL' => 'Albania Lek', 'AFN' => 'Afghanistan Afghani', 'ARS' => 'Argentina Peso', 'AWG' => 'Aruba Guilder', 'AUD' => 'Australia Dollar', 'AZN' => 'Azerbaijan New Manat', 'BSD' => 'Bahamas Dollar', 'BBD' => 'Barbados Dollar', 'BDT' => 'Bangladeshi taka', 'BYR' => 'Belarus Ruble', 'BZD' => 'Belize Dollar', 'BMD' => 'Bermuda Dollar', 'BOB' => 'Bolivia Boliviano', 'BAM' => 'Bosnia and Herzegovina Convertible Marka', 'BWP' => 'Botswana Pula', 'BGN' => 'Bulgaria Lev', 'BRL' => 'Brazil Real', 'BND' => 'Brunei Darussalam Dollar', 'KHR' => 'Cambodia Riel', 'CAD' => 'Canada Dollar', 'KYD' => 'Cayman Islands Dollar', 'CLP' => 'Chile Peso', 'CNY' => 'China Yuan Renminbi', 'COP' => 'Colombia Peso', 'CRC' => 'Costa Rica Colon', 'HRK' => 'Croatia Kuna', 'CUP' => 'Cuba Peso', 'CZK' => 'Czech Republic Koruna', 'DKK' => 'Denmark Krone', 'DOP' => 'Dominican Republic Peso', 'XCD' => 'East Caribbean Dollar', 'EGP' => 'Egypt Pound', 'SVC' => 'El Salvador Colon', 'EEK' => 'Estonia Kroon', 'EUR' => 'Euro', 'FKP' => 'Falkland Islands (Malvinas) Pound', 'FJD' => 'Fiji Dollar', 'GHC' => 'Ghana Cedis', 'GIP' => 'Gibraltar Pound', 'GTQ' => 'Guatemala Quetzal', 'GGP' => 'Guernsey Pound', 'GYD' => 'Guyana Dollar', 'HNL' => 'Honduras Lempira', 'HKD' => 'Hong Kong Dollar', 'HUF' => 'Hungary Forint', 'ISK' => 'Iceland Krona', 'INR' => 'India Rupee', 'IDR' => 'Indonesia Rupiah', 'IRR' => 'Iran Rial', 'IMP' => 'Isle of Man Pound', 'ILS' => 'Israel Shekel', 'JMD' => 'Jamaica Dollar', 'JPY' => 'Japan Yen', 'JEP' => 'Jersey Pound', 'KZT' => 'Kazakhstan Tenge', 'KPW' => 'Korea (North) Won', 'KRW' => 'Korea (South) Won', 'KGS' => 'Kyrgyzstan Som', 'LAK' => 'Laos Kip', 'LVL' => 'Latvia Lat', 'LBP' => 'Lebanon Pound', 'LRD' => 'Liberia Dollar', 'LTL' => 'Lithuania Litas', 'MKD' => 'Macedonia Denar', 'MYR' => 'Malaysia Ringgit', 'MUR' => 'Mauritius Rupee', 'MXN' => 'Mexico Peso', 'MNT' => 'Mongolia Tughrik', 'MZN' => 'Mozambique Metical', 'NAD' => 'Namibia Dollar', 'NPR' => 'Nepal Rupee', 'ANG' => 'Netherlands Antilles Guilder', 'NZD' => 'New Zealand Dollar', 'NIO' => 'Nicaragua Cordoba', 'NGN' => 'Nigeria Naira', 'NOK' => 'Norway Krone', 'OMR' => 'Oman Rial', 'PKR' => 'Pakistan Rupee', 'PAB' => 'Panama Balboa', 'PYG' => 'Paraguay Guarani', 'PEN' => 'Peru Nuevo Sol', 'PHP' => 'Philippines Peso', 'PLN' => 'Poland Zloty', 'QAR' => 'Qatar Riyal', 'RON' => 'Romania New Leu', 'RUB' => 'Russia Ruble', 'SHP' => 'Saint Helena Pound', 'SAR' => 'Saudi Arabia Riyal', 'RSD' => 'Serbia Dinar', 'SCR' => 'Seychelles Rupee', 'SGD' => 'Singapore Dollar', 'SBD' => 'Solomon Islands Dollar', 'SOS' => 'Somalia Shilling', 'ZAR' => 'South Africa Rand', 'LKR' => 'Sri Lanka Rupee', 'SEK' => 'Sweden Krona', 'CHF' => 'Switzerland Franc', 'SRD' => 'Suriname Dollar', 'SYP' => 'Syria Pound', 'TWD' => 'Taiwan New Dollar', 'THB' => 'Thailand Baht', 'TTD' => 'Trinidad and Tobago Dollar', 'TRY' => 'Turkey Lira', 'TRL' => 'Turkey Lira', 'TVD' => 'Tuvalu Dollar', 'UAH' => 'Ukraine Hryvna', 'GBP' => 'United Kingdom Pound', 'USD' => 'United States Dollar', 'UYU' => 'Uruguay Peso', 'UZS' => 'Uzbekistan Som', 'VEF' => 'Venezuela Bolivar', 'VND' => 'Viet Nam Dong', 'YER' => 'Yemen Rial', 'ZWD' => 'Zimbabwe Dollar'];
 
-            $form['price']['currency'] = array(
+            $form['price']['currency'] = [
                 '#type' => 'select',
                 '#size' => 1,
                 '#options' => $currency,
                 '#default_value' => isset($rs['currency']) ? $rs['currency'] : null,
                 '#title' => $this->t('purchase currency'),
                 '#suffix' => '</div>',
-            );
+            ];
         }
 
-        $form['price']['date_purchase'] = array(
+        $form['price']['date_purchase'] = [
             '#type' => 'date',
             '#size' => 12,
-            '#default_value' => isset($rs['date_purchase']) ? date('Y-m-d', $rs['date_purchase']) : date('Y-m-d'),
+            '#default_value' => (!null == $rs['date_purchase']) ? date('Y-m-d', $rs['date_purchase']) : date('Y-m-d'),
             '#description' => $this->t('date purchase'),
-        );
+        ];
 
-
-
-        $form['price']['loc_currency'] = array(
+        $form['price']['loc_currency'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => array_combine($currency, $currency),
             '#default_value' => isset($rs['loc_currency']) ? $rs['loc_currency'] : null,
             '#title' => $this->t('local prices currency'),
-        );
+        ];
 
-        $form['price']['selling_price'] = array(
+        $form['price']['selling_price'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rs['selling_price']) ? $rs['selling_price'] : 0,
-            '#attributes' => array('class' => array('amount')),
+            '#attributes' => ['class' => array('amount')],
             '#title' => $this->settings->get('selling_price_label'),
             '#prefix' => '<div class="">',
-        );
+        ];
 
-
-        $form['price']['promo_price'] = array(
+        $form['price']['promo_price'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rs['promo_price']) ? $rs['promo_price'] : 0,
-            '#attributes' => array('class' => array('amount')),
+            '#attributes' => ['class' => array('amount')],
             '#title' => $this->settings->get('promo_price_label'),
-        );
+        ];
 
-        $form['price']['discount_price'] = array(
+        $form['price']['discount_price'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rs['discount_price']) ? $rs['discount_price'] : 0,
-            '#attributes' => array('class' => array('amount')),
+            '#attributes' => ['class' => array('amount')],
             '#title' => $this->settings->get('discount_price_label'),
             '#suffix' => '</div>',
-        );
+        ];
 
-
-
-        $form['price']['exp_currency'] = array(
+        $form['price']['exp_currency'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => array_combine($currency, $currency),
             '#default_value' => isset($rs['exp_currency']) ? $rs['exp_currency'] : null,
             '#title' => $this->t('export currency'),
-        );
+        ];
 
-        $form['price']['exp_selling_price'] = array(
+        $form['price']['exp_selling_price'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rs['exp_selling_price']) ? $rs['exp_selling_price'] : 0,
-            '#attributes' => array('class' => array('amount')),
+            '#attributes' => ['class' => ['amount']],
             '#title' => $this->settings->get('exp_selling_price_label'),
             '#prefix' => '<div class="">',
-        );
+        ];
 
-
-        $form['price']['exp_promo_price'] = array(
+        $form['price']['exp_promo_price'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rs['promo_price']) ? $rs['exp_promo_price'] : 0,
-            '#attributes' => array('placeholder' => $this->t('promotion price'), 'class' => array('amount')),
+            '#attributes' => ['placeholder' => $this->t('promotion price'), 'class' => ['amount']],
             '#title' => $this->settings->get('exp_promo_price_label'),
-        );
+        ];
 
-        $form['price']['exp_discount_price'] = array(
+        $form['price']['exp_discount_price'] = [
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 255,
             '#default_value' => isset($rs['exp_discount_price']) ? $rs['exp_discount_price'] : 0,
-            '#attributes' => array('class' => array('amount')),
+            '#attributes' => ['class' => ['amount']],
             '#title' => $this->settings->get('exp_discount_price_label'),
             '#suffix' => '</div>',
-        );
-
-
-
-
-
+        ];
 
 //
         //barcode data
 //
-        $encode = array('EAN-13', 'UPC-A', 'EAN-8', 'EAN5', 'EAN2', 'UPC-E',
+        $encode = ['EAN-13', 'UPC-A', 'EAN-8', 'EAN5', 'EAN2', 'UPC-E',
             'S205', 'I2O5', 'I25', 'I25 with checksum', 'S25', 'POSTNET', 'CODABAR',
             'CODE11', 'CODE128', 'CODE128 A', 'CODE128 B', 'CODE128 C', 'CODE39', 'PLANET',
             'CODE39 EXTENDED', 'CODE39 with checksum', 'CODE39 EXTENDED + CHECKSUM',
             'CODE93', 'MSI', 'MSI with checksum', 'PHARMACODE', 'PHARMACODE TWO-TRACKS',
-            'IMB - Onecode - USPS-B-3200', 'KIX', 'RMS4CC', 'CBC');
+            'IMB - Onecode - USPS-B-3200', 'KIX', 'RMS4CC', 'CBC'];
 
-        $form['bc'] = array(
+        $form['bc'] = [
             '#type' => 'details',
             '#title' => $this->t('Barcodes'),
             '#collapsible' => true,
             '#collapsed' => false,
-        );
+        ];
 
-
-        $form['bc']["barcode"] = array(
+        $form['bc']["barcode"] = [
             '#type' => 'textfield',
             '#size' => 30,
             '#maxlength' => 255,
-            '#attributes' => array('placeholder' => $this->t('new barcode')),
+            '#attributes' => ['placeholder' => $this->t('new barcode')],
             '#description' => $this->t('add new barcode'),
-        );
+        ];
 
-
-        $form['bc']['encode'] = array(
+        $form['bc']['encode'] = [
             '#type' => 'select',
             '#size' => 1,
             '#options' => array_combine($encode, $encode),
             '#title' => $this->t('encoding'),
-        );
-
+        ];
 
         $i = 0;
 
         if ($rb_data) {
             while ($rb = $rb_data->fetchAssoc()) {
 
-                //loop barcodes
-                $form['bc']['line' . $i] = array(
+                // loop barcodes
+                $form['bc']['line' . $i] = [
                     '#markup' => '<hr>',
-                );
-                $form['bc']['bcid' . $i] = array(
+                ];
+                $form['bc']['bcid' . $i] = [
                     '#type' => 'hidden',
                     '#default_value' => $rb['id'],
-                );
-                $form['bc']['bcvalue' . $i] = array(
+                ];
+                $form['bc']['bcvalue' . $i] = [
                     '#type' => 'hidden',
                     '#default_value' => $rb['barcode'],
-                ); //used to validate only new entry
+                ]; // used to validate only new entry
 
-                $form['bc']['barcode_delete' . $i] = array(
+                $form['bc']['barcode_delete' . $i] = [
                     '#type' => 'checkbox',
                     '#title' => $this->t('delete barcode'),
                     '#attributes' => array('onclick' => "jQuery('#edit-barcode$i ').toggleClass( 'delete');"),
-                );
+                ];
 
-                $form['bc']["barcode" . $i] = array(
+                $form['bc']["barcode" . $i] = [
                     '#type' => 'textfield',
                     '#size' => 30,
                     '#maxlength' => 255,
                     '#default_value' => isset($rb['barcode']) ? $rb['barcode'] : null,
-                    '#attributes' => array('placeholder' => $this->t('barcode')),
+                    '#attributes' => ['placeholder' => $this->t('Barcode')],
                     '#description' => $this->t('barcode'),
-                );
+                ];
 
-
-                $form['bc']['encode' . $i] = array(
+                $form['bc']['encode' . $i] = [
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => array_combine($encode, $encode),
                     '#default_value' => isset($rb['encode']) ? $rb['encode'] : null,
                     '#title' => $this->t('encoding'),
-                );
+                ];
 
                 $i++;
             }
 
-            $form['barcodes'] = array(
+            $form['barcodes'] = [
                 '#type' => 'hidden',
                 '#default_value' => $i,
-            );
+            ];
         }
 
-
-
 //
-        //image data / can delete only , upload ajax via item card
-        //non new item only
+        // image data / can delete only , upload ajax via item card
+        // non new item only
 //
 
 
@@ -573,10 +593,10 @@ class EditProductsForm extends FormBase {
 
                     //loop images
 
-                    $form['images']['imageid' . $i] = array(
+                    $form['images']['imageid' . $i] = [
                         '#type' => 'hidden',
                         '#default_value' => $ri['id'],
-                    );
+                    ];
 
                     $mod = serialize(['content' => 'img', 'id' => $ri['id'], 'width' => '50%']);
                     $route = Url::fromRoute('ek_products_modal', ['param' => $mod])->toString();
@@ -595,20 +615,18 @@ class EditProductsForm extends FormBase {
 
                     $i++;
                 }
-                $form['images_count'] = array(
+                $form['images_count'] = [
                     '#type' => 'hidden',
                     '#default_value' => $i,
-                );
+                ];
             }
         }
 
-        $form['actions'] = array('#type' => 'actions');
-        $form['actions']['submit'] = array(
+        $form['actions'] = ['#type' => 'actions'];
+        $form['actions']['submit'] = [
             '#type' => 'submit',
             '#value' => $clone ? $this->t('Clone') : $this->t('Record'),
-        );
-
-
+        ];
 
         return $form;
     }
@@ -679,13 +697,23 @@ class EditProductsForm extends FormBase {
             $itemcode = strtoupper(substr($t_code, 0, 3)) . $id; //take 3 first letters
         }
 
+        // Process specs: decode the pretty-printed JSON from the form and re-encode it compactly
+        $specs_input = $form_state->getValue('specs');
+        $specs_data = json_decode($specs_input, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($specs_data)) {
+            $specs_value = json_encode($specs_data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        } else {
+            // Keep raw input if it's not valid JSON, or set to empty string
+            $specs_value = $specs_input;
+        }
+
         //main
 
         $dsc2 = $form_state->getValue('description2');
         $fields1 = array(
             'coid' => $form_state->getValue('coid'),
             'type' => $form_state->getValue('type'),
-            'description1' => Xss::filter($form_state->getValue('description1')),
+            'description1' => $form_state->getValue('description1'), // will need to Html::escape() in html output
             'description2' => $dsc2['value'],
             'supplier_code' => $form_state->getValue('supplier_code'),
             'active' => $form_state->getValue('active'),
@@ -697,6 +725,8 @@ class EditProductsForm extends FormBase {
             'supplier' => $form_state->getValue('supplier'),
             'stamp' => strtotime('now'),
             'format' => $dsc2['format'],
+            'specs' => $specs_value,
+            'source_url' => Xss::filter($form_state->getValue('source_url')),
         );
 
         // item logistic

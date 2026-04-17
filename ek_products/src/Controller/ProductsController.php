@@ -30,6 +30,7 @@ class ProductsController extends ControllerBase {
     protected $moduleHandler;
     protected $database;
     protected $settings;
+    protected $extdb;
 
     /**
      * @param \Drupal\Core\Extension\ModuleHandler $module_handler
@@ -39,6 +40,7 @@ class ProductsController extends ControllerBase {
         $this->database = $database;
         $this->moduleHandler = $module_handler;
         $this->settings = new ItemSettings();
+        $this->extdb = Database::getConnection('external_db', 'external_db');
     }
 
     /**
@@ -391,16 +393,20 @@ class ProductsController extends ControllerBase {
 
         $url_pdf = Url::fromRoute('ek_item.pdf', ['id' => $id], [])->toString();
         $items['pdf'] = $this->t('<a href="@url" target="_blank">Print</a>', ['@url' => $url_pdf]);
-
-        $query = "SELECT * from {ek_items} where id=:id";
-        $r = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $id])
-                ->fetchAssoc();
-
-        $query = "SELECT name from {ek_company} where id=:id";
-        $items['company'] = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $r['coid']])
-                ->fetchField();
+        $query = $this->extdb->select('ek_items', 'i')
+                    ->fields('i')
+                    ->condition('id', $id)
+                    ->execute();
+        $r = $query->fetchAssoc();
+        $items['company'] = '';
+        if($r['coid'] != null) {
+            $query = $this->extdb->select('ek_company', 'c')
+                    ->fields('c', ['name'])
+                    ->condition('id', $r['coid'])
+                    ->execute();
+            $items['company'] = $query->fetchField();
+        }
+        
         $items['itemcode'] = $r['itemcode'];
         $items['id'] = $r['id'];
         $items['type'] = $r['type'];
@@ -414,21 +420,52 @@ class ProductsController extends ControllerBase {
         $items['family'] = $r['family'];
         $items['size'] = $r['size'];
         $items['color'] = $r['color'];
-
+        $items['specs'] = json_decode($r['specs'], true);
+        $items['source_url'] = $r['source_url'];
+        $items['supplier'] = '';
         if ($this->moduleHandler->moduleExists('ek_address_book')) {
-            $query = "SELECT name from {ek_address_book} where id=:id";
-            $items['supplier'] = Database::getConnection('external_db', 'external_db')
-                            ->query($query, [':id' => $r['supplier']])->fetchField();
-        } else {
-            $items['supplier'] = '';
-        }
-        
+            if($r['supplier'] != null) {
+                $query = $this->extdb->select('ek_address_book', 'c')
+                        ->fields('c', ['name'])
+                        ->condition('id', $r['supplier'])
+                        ->execute();
+                $items['supplier'] = $query->fetchField();
+            }
+        } 
         $items['stamp'] = is_int($r['stamp']) ? date('Y-m-d', $r['stamp']) : $this->t('never');
 
-        $query = "SELECT * from {ek_item_packing} where itemcode=:id";
-        $k = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $items['itemcode']])
-                ->fetchAssoc();
+        // linked items
+        $items['links'] = [];
+        $query = $this->extdb->select('ek_item_relations', 'r')
+                    ->fields('r', ['child_itemcode'])
+                    ->condition('parent_itemcode', $items['itemcode'])
+                    ->execute();
+        while ($l = $query->fetchAssoc()) {
+            $lid = $this->extdb->select('ek_items', 'i')
+                    ->fields('i', ['id'])
+                    ->condition('itemcode', $l['child_itemcode'])
+                    ->execute()
+                    ->fetchField();
+            $items['links'][] = [$l['child_itemcode'] => $lid];
+        }
+        $query = $this->extdb->select('ek_item_relations', 'r')
+                    ->fields('r', ['parent_itemcode'])
+                    ->condition('child_itemcode', $items['itemcode'])
+                    ->execute();
+        while ($l = $query->fetchAssoc()) {
+            $lid = $this->extdb->select('ek_items', 'i')
+                    ->fields('i', ['id'])
+                    ->condition('itemcode', $l['child_itemcode'])
+                    ->execute()
+                    ->fetchField();
+            $items['links'][] = [$l['parent_itemcode'] => $lid];
+        }
+     
+        $query = $this->extdb->select('ek_item_packing', 'p')
+                    ->fields('p')
+                    ->condition('itemcode', $items['itemcode'])
+                    ->execute();
+        $k = $query->fetchAssoc();
 
         $items['units'] = $k['units'];
         $items['unit_measure'] = $k['unit_measure'];
@@ -439,15 +476,15 @@ class ProductsController extends ControllerBase {
         $items['c40'] = $k['c40'];
         $items['min_order'] = $k['min_order'];
 
-
-        $query = "SELECT * from {ek_item_prices} where itemcode=:id";
-        $p = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $items['itemcode']])
-                ->fetchAssoc();
+        $query = $this->extdb->select('ek_item_prices', 'p')
+                    ->fields('p')
+                    ->condition('itemcode', $items['itemcode'])
+                    ->execute();
+        $p = $query->fetchAssoc();
 
         $items['purchase_price'] = $p['purchase_price'];
         $items['currency'] = $p['currency'];
-        $items['date_purchase'] = date('Y-m-d', $p['date_purchase']);
+        $items['date_purchase'] = (is_int($p['date_purchase']) && $p['date_purchase'] != null) ? date('Y-m-d', $p['date_purchase']) : null;
         $items['selling_price'] = $p['selling_price'];
         $items['selling_price_label'] = $this->settings->get('selling_price_label');
         $items['promo_price'] = $p['promo_price'];
@@ -463,22 +500,23 @@ class ProductsController extends ControllerBase {
         $items['loc_currency'] = $p['loc_currency'];
         $items['exp_currency'] = $p['exp_currency'];
 
-        $query = "SELECT count(id) from {ek_item_barcodes} where itemcode=:id";
-        $c = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $items['itemcode']])
-                ->fetchField();
+        $query = $this->extdb->select('ek_item_barcodes', 'b')
+                    ->condition('itemcode', $items['itemcode']);
+        $countBc = $query->countQuery()->execute()->fetchField();
 
         $items['barcodes'] = [];
-        if ($c > 0) {
-            $query = "SELECT * from {ek_item_barcodes} where itemcode=:id";
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, [':id' => $items['itemcode']]);
+        if ($countBc > 0) {
+            $query = $this->extdb->select('ek_item_barcodes', 'bc')
+                    ->fields('bc')
+                    ->condition('itemcode', $items['itemcode'])
+                    ->execute();
+
             if (class_exists('TCPDF2DBarcode')) {
                 $add_barcode = true;
                 include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_products') . '/code.inc';
             }
             $barcodes = [];
-            while ($r = $data->fetchAssoc()) {
+            while ($r = $query->fetchAssoc()) {
                 $barcodes['id'] = $r['id'];
                 $barcodes['barcode'] = $r['barcode'];
                 $barcodes['encode'] = $r['encode'];
@@ -491,18 +529,18 @@ class ProductsController extends ControllerBase {
             }
         }
         $items['pictures'] = [];
+        $query = $this->extdb->select('ek_item_images', 'i')
+                    ->condition('itemcode', $items['itemcode']);
+        $img = $query->countQuery()->execute()->fetchField();
 
-        $query = "SELECT count(id) from {ek_item_images} where itemcode=:id";
-        $i = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $items['itemcode']])
-                ->fetchField();
-        if ($i > 0) {
+        if ($img > 0) {
             $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_item_images', 'i');
             $query->fields('i');
             $query->condition('itemcode', $items['itemcode'], '=');
             $query->orderBy('id', 'ASC');
             $data = $query->execute();
+
             $picture = [];
             while ($i = $data->fetchAssoc()) {
                 $thumb = "private://products/images/" . $items['id'] . "/100/100x100_" . basename($i['uri']);
@@ -542,7 +580,7 @@ class ProductsController extends ControllerBase {
             '#attached' => ['library' => ['ek_products/ek_products_card'],],
             '#cache' => [
                 'tags' => ['item_card:' . $items['id']],
-                'max-age' => 'PERMANENT',
+                'max-age' => 3600,
             ],
         ];
     }

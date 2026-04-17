@@ -1,0 +1,4 @@
+services:
+  products.service:
+    class: Drupal\ek_products\Service\ProductsService
+    arguments: ['@config.factory', '@logger.factory']

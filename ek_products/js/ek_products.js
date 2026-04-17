@@ -12,4 +12,23 @@
         });
     });
 
+    (function (Drupal, once) {
+    Drupal.behaviors.ekProductsCardToggle = {
+        attach: function (context) {
+        once('ek-products-toggle', '.toggle-heading', context).forEach(function (el) {
+            el.addEventListener('click', function () {
+            const targetSelector = el.getAttribute('data-target');
+            if (!targetSelector) return;
+
+            const target = document.querySelector(targetSelector);
+            if (!target) return;
+
+            target.classList.toggle('active');
+            el.classList.toggle('active');
+            });
+        });
+        }
+    };
+    })(Drupal, once);
+
 
