@@ -27,6 +27,14 @@ ek_products.parameters:
   requirements:
     _permission: 'edit_products'
     
+ek_products.link:
+  path: '/item_link'
+  defaults:
+    _title: 'Link products'
+    _form: '\Drupal\ek_products\Form\LinkItem'
+  requirements:
+    _permission: 'edit_products'
+    
 ek_products.search:
   path: '/item_search'
   defaults:

@@ -39,6 +39,12 @@ ek_products.clone:
   base_route: ek_products.view
   title: 'Clone'
   weight: 3
+
+ek_products.link:
+  route_name: ek_products.link
+  base_route: ek_products.view
+  title: 'Clone'
+  weight: 4
  
 ek_products.delete:
   route_name: ek_products.delete
