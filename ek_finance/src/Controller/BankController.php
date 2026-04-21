@@ -401,7 +401,7 @@ class BankController extends ControllerBase {
      */
     public function bankaccountslabel($type, $param) {
         $print = new PrintManager();
-        $print->makePdf(['banklabel' ,0, $param]);
+        $print->makePdf(['bankaccount' ,0, $param]);
         return new \Symfony\Component\HttpFoundation\Response('', 204);
     }
 
