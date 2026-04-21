@@ -52,7 +52,7 @@ class NewAddressBookForm extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $abid = null) {
+    public function buildForm(array $form, FormStateInterface $form_state, $abid = null, $use = null) {
         
         if (isset($abid)) {
             $form['for_id'] = [
@@ -70,6 +70,27 @@ class NewAddressBookForm extends FormBase {
                         ->select('ek_address_book_contacts', 'abc');
             $query->condition('abid', $abid);
             $rc = $query->countQuery()->execute()->fetchField();
+        
+            $lock = 0;
+            $warn = 0;
+            foreach ($use as $key => $value) {
+                if($value > 0 && !\Drupal::currentUser()->hasPermission('admin_address_book')) {
+                    $lock = 1;
+                } elseif ($value > 0) {
+                    $warn = 1;
+                }
+
+                
+            }
+
+            if($warn == 1) {
+                $form['warnings'] = [
+                    '#type' => 'item',
+                    '#markup' => "<div class='messages messages--warning'>" . $this->t('Name cannot be edited; This book entry is used in modules.') . "</div>",
+                ];
+            } else {
+                 $form['warnings'] = [];
+            }
         }
 
         $form['name'] = [
@@ -80,6 +101,7 @@ class NewAddressBookForm extends FormBase {
             '#required' => true,
             '#default_value' => isset($r['name']) ? $r['name'] : null,
             '#attributes' => ['placeholder' => $this->t('Organization name')],
+            '#disabled' => ($lock == 1) ? true : false,
             '#attached' => [
                 'library' => ['ek_address_book/ek_address_book.script.sn',],
             ],

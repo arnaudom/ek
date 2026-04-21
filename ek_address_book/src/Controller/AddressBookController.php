@@ -280,8 +280,74 @@ class AddressBookController extends ControllerBase {
      *  id: main address book id
      */
     public function newaddressbook(Request $request, $abid = null) {
+
+        $use = ['sales' => 0, 'logistics' => 0, 'finance' => 0, 'project' => 0, 'products' => 0];
+        // If abid != null => edit mode, verify if abid is used 
+        if($abid != null) {
+            $i = 0;
+            $p = 0;
+            $q = 0;
+            $d = 0;
+            $r = 0;
+            $j = 0;
+            $e = 0;
+            $t = 0;
+
+            if ($this->moduleHandler->moduleExists('ek_sales')) {
+                $connection = Database::getConnection('external_db', 'external_db');
+                $sql = "SELECT
+                    (SELECT COUNT(id) FROM {ek_sales_invoice}   WHERE client = :abid) AS invoice_count,
+                    (SELECT COUNT(id) FROM {ek_sales_purchase}  WHERE client = :abid) AS purchase_count,
+                    (SELECT COUNT(id) FROM {ek_sales_quotation} WHERE client = :abid) AS quotation_count";
+                $result = $connection->query($sql, [':abid' => $abid])->fetchObject();
+
+                $i = $result->invoice_count;
+                $p = $result->purchase_count;
+                $q = $result->quotation_count;
+            }
+             if ($this->moduleHandler->moduleExists('ek_logistics')) {
+                $connection = Database::getConnection('external_db', 'external_db');
+                $sql = "SELECT
+                    (SELECT COUNT(id) FROM {ek_logi_delivery}   WHERE client = :abid) AS delivery_count,
+                    (SELECT COUNT(id) FROM {ek_logi_receiving}  WHERE supplier = :abid) AS receiving_count";
+                $result = $connection->query($sql, [':abid' => $abid])->fetchObject();
+
+                $d = $result->delivery_count;
+                $r = $result->receiving_count;
+            }
+            if ($this->moduleHandler->moduleExists('ek_project')) {
+                $query = Database::getConnection('external_db', 'external_db')
+                 ->select('ek_project', 's');
+                    $query->addExpression('Count(id)', 'count');
+                    $query->condition('client_id', $abid);
+                    $result = $query->execute(); 
+                    $j = $result->fetchObject()->count;
+            }
+            if ($this->moduleHandler->moduleExists('ek_finance')) {
+                $query = Database::getConnection('external_db', 'external_db')
+                 ->select('ek_expenses', 's');
+                    $condition = $query->orConditionGroup()
+                        ->condition('clientname', $abid,'=')
+                        ->condition('suppliername', $abid,'=');
+                    $query->addExpression('Count(id)', 'count');
+                    $query->condition($condition);
+                    $result = $query->execute(); 
+                    $e = $result->fetchObject()->count;
+            }
+            if ($this->moduleHandler->moduleExists('ek_product')) {
+                $query = Database::getConnection('external_db', 'external_db')
+                 ->select('ek_items', 's');
+                    $query->addExpression('Count(id)', 'count');
+                    $query->condition('supplier', $abid);
+                    $result = $query->execute(); 
+                    $t = $result->fetchObject()->count;
+            }
+
+            $use = ['sales' => $i+$p+$q, 'logistics' => $d+$r, 'finance' => $e, 'project' => $j, 'products' => $t];
+        }
+
         $form_builder = $this->formBuilder();
-        $response = $form_builder->getForm('Drupal\ek_address_book\Form\NewAddressBookForm', $abid);
+        $response = $form_builder->getForm('Drupal\ek_address_book\Form\NewAddressBookForm', $abid, $use);
 
         return array(
             '#theme' => 'ek_address_book_form',

@@ -96,6 +96,16 @@ function template_preprocess_ek_address_book_form(&$variables) {
   $variables['attributes']['class'][] = 'edit-address-book-form';
   
   // Create table sections with custom classes
+  
+  $row0 = [
+    [
+      'data' => [
+        ['data' => $form['warnings'], 'class' => ['']],
+      ],
+      'class' => [''],
+    ]
+  ];
+
   $row1 = [
     [
       'data' => [
@@ -177,7 +187,7 @@ function template_preprocess_ek_address_book_form(&$variables) {
   
   // Unset the original form elements as they've been added to the tables
   unset(
-    $form['name'], $form['shortname'], $form['status'], $form['address'],
+    $form['warnings'], $form['name'], $form['shortname'], $form['status'], $form['address'],
     $form['address2'], $form['state'], $form['city'], $form['postcode'], 
     $form['country'], $form['reg'], $form['telephone'], $form['fax'],
     $form['website'], $form['type'], $form['category'], $form['tags'],
@@ -187,6 +197,13 @@ function template_preprocess_ek_address_book_form(&$variables) {
   // Prepare the tables with section headers
   $variables['form'] = $form;
   
+  $variables['form'][] = [
+    '#theme' => 'table',
+    '#header' => '',
+    '#rows' => $row0,
+    '#attributes' => ['class' => ['']],
+    '#weight' => -11,
+  ];
   // Basic Info Table
   $variables['form'][] = [
     '#type' => 'markup',
