@@ -303,14 +303,16 @@ class ItemData {
         $name = array();
         while ($r = $data->fetchObject()) {
             if (strlen($r->description1) > 30) {
-                $desc = substr($r->description1, 0, 30) . "...";
+                $ins = str_ireplace($term, "<mark>" . $term . "</mark>", $r->description1);
+                $desc = substr($ins, 0, 30) . "...";
             } else {
-                $desc = $r->description1;
+                $desc = str_ireplace($term, "<mark>" . $term . "</mark>", $r->description1);
             }
             if (strlen($r->description2) > 60) {
-                $desc2 = substr($r->description2, 0, 60) . "...";
+                $ins = str_ireplace($term, "<mark>" . $term . "</mark>", $r->description2);
+                $desc2 = substr($ins, 0, 60) . "...";
             } else {
-                $desc2 = $r->description2;
+                $desc2 = str_ireplace($term, "<mark>" . $term . "</mark>", $r->description2);
             }
 
             if ($option == 'image') {
@@ -344,25 +346,31 @@ class ItemData {
                 $name[] = $line;
             } else {
                 $settings = new \Drupal\ek_products\ItemSettings();
-                $str = $r->id . " " . $r->itemcode . " ";
+                $itemcode = str_ireplace($term, "<mark>" . $term . "</mark>", $r->itemcode);
+                $lab = $r->id . " " . $itemcode . " ";
+                $val = $r->id . " " . $r->itemcode. " ";
 
                 if ($settings->get('auto_barcode') == 1) {
-                    $str .= $r->barcode . " ";
+                    $barcode = str_ireplace($term, "<mark>" . $term . "</mark>", $r->barcode);
+                    $lab .= $barcode . " ";
+                    $val .= $r->barcode . " ";
                 }
 
                 if ($settings->get('auto_main_description') == 1) {
-                    $str .= $desc . " ";
+                    $lab .= $desc . " ";
                 }
 
                 if ($settings->get('auto_supplier_code') == 1) {
-                    $str .= $r->supplier_code;
+                    $scode = str_ireplace($term, "<mark>" . $term . "</mark>", $r->supplier_code);
+                    $lab .= $scode. " ";;
+                    $val .= $r->supplier_code . " ";
                 }
 
                 if ($settings->get('auto_other_description') == 1) {
-                    $str .= '<br>' . $desc2;
+                    $lab .= '<br>' . $desc2;
                 }
 
-                $name[] = $str;
+                $name[] = ['label' => $lab,  'value' => $val ];
             }
         }
         return new JsonResponse($name);
