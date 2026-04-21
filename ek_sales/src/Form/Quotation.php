@@ -10,6 +10,7 @@ namespace Drupal\ek_sales\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Database\Database;
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Url;
 use Drupal\Core\Cache\Cache;
@@ -32,6 +33,7 @@ class Quotation extends FormBase {
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             $this->Financesettings = new \Drupal\ek_finance\FinanceSettings();
         }
+        //$this->extdb = Database::getConnection('external_db', 'external_db');
     }
 
     /**
@@ -54,23 +56,36 @@ class Quotation extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $id = null, $clone = false) {
+        
         $quotationSettings = $this->salesSettings->get('quotation');
         $revision = null;
 
         if (isset($id) && !$id == null) {
-            //edit
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT * FROM {ek_sales_quotation} where id=:id",[':id' => $id])
-                    ->fetchObject();
-            $detail = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT * FROM {ek_sales_quotation_details} where serial=:id ORDER BY weight,id", [':id' => $data->serial]);
+            // edit
+            
+            $query = Database::getConnection('external_db', 'external_db')->select('ek_sales_quotation', 'q')->fields('q')->condition('id', $id)->execute();
+            $data = $query->fetchObject();
 
-            $itemLines = Database::getConnection('external_db', 'external_db')
-                    ->query("SELECT count(id) FROM {ek_sales_quotation_details} where serial=:id", [':id' => $data->serial])
-                    ->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')->select('ek_sales_quotation_details', 'd')
+            ->fields('d')  // Select all fields from table 'd'
+            ->condition('serial', $data->serial)
+            ->orderBy('weight')
+            ->orderBy('id');
+            $detail = $query->execute();
 
-            $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision DESC";
-            $revision = Database::getConnection('external_db', 'external_db')->query($query, [':s' => $data->serial])->fetchField();
+            $query = Database::getConnection('external_db', 'external_db')->select('ek_sales_quotation_details', 'd');
+            $query->addExpression('Count(id)', 'count');
+            $query->condition('serial', $data->serial);
+            $result = $query->execute();  // Execute the query first
+            $itemLines = $result->fetchObject()->count;
+
+            $revision = Database::getConnection('external_db', 'external_db')->select('ek_sales_quotation_details', 'd')
+            ->fields('d', ['revision'])
+            ->orderBy('revision', 'DESC')
+            ->condition('serial', $data->serial)
+            ->execute()
+            ->fetchField();
+
             if ($clone) {
                 $form['clone_quotation'] = [
                     '#type' => 'item',
@@ -409,34 +424,42 @@ class Quotation extends FormBase {
                 'description' => [
                     'data' => $this->t('Item'),
                     'id' => ['tour-item1'],
+                    'style' => 'width:30%;',
                 ],
                 'priceType' => [
                     'data' => $this->t('Price type'),
                     'id' => ['tour-item2'],
+                    'style' => 'width:18%;',
                 ],
                 'quantity' => [
                     'data' => $this->t('Quantity'),
                     'id' => ['tour-item3'],
+                    'style' => 'width:10%;',
                 ],
                 'value' => [
                     'data' => $this->t('Unit price'),
                     'id' => ['tour-item4'],
+                    'style' => 'width:12%;',
                 ],
                 'tax' => [
                     'data' => $this->t('Tax'),
                     'id' => ['tour-item5'],
+                    'style' => 'width:5%;',
                 ],
                 'total' => [
                     'data' => $this->t('Total'),
                     'id' => ['tour-item6'],
+                    'style' => 'width:12%;',
                 ],
                 'delete' => [
                     'data' => $this->t('Delete'),
                     'id' => ['tour-item7'],
+                    'style' => 'width:8%;',
                 ],
                 'weight' => [
                     'data' => '',
                     'id' => ['tour-item8'],
+                    'style' => 'width:5%;',
                 ],
         ];
         
@@ -461,7 +484,7 @@ class Quotation extends FormBase {
             '#theme' => 'table',
             '#header' => $header,
             '#rows' => [],
-            '#attributes' => ['id' => 'itemTable'],
+            '#attributes' => ['id' => 'itemTable', 'style' => 'table-layout:fixed;width:100%;'],
             '#empty' => '',
         ];
 
@@ -505,12 +528,13 @@ class Quotation extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 35,
                     '#maxlength' => 255,
-                    '#attributes' => ['placeholder' => $this->t('item'),'class' => ['expand']],
+                    '#attributes' => ['placeholder' => $this->t('item'), 'class' => ['expand'], 'style' => 'max-width:100%;width:100%;box-sizing:border-box;'],
                     '#default_value' => $name,
                     '#field_prefix' => "<span class='s-s-badge'>" . $z . "</span>",
                     '#field_suffix' => isset($link) ? "<span class='s-s-badge'>" . $link . "</span>" : '',
                     '#autocomplete_route_name' => 'ek.look_up_item_ajax',
                 ];
+                
                 if ($this->moduleHandler->moduleExists('ek_products')) {
                     //default data is record
 
@@ -541,14 +565,14 @@ class Quotation extends FormBase {
                         $sellPrice = isset($rows[$n]['value']) ? $rows[$n]['value'] : $d->value;
                         $disabled = false;
                     }
+
                     $form['priceType'] = [
                         '#id' => 'priceType-' . $n,
                         '#type' => 'select',
                         '#size' => 1,
                         '#options' => $prices_options,
-                        '#attributes' => ['class' => ['amount']],
+                        '#attributes' => ['class' => ['amount'], 'style' => 'max-width:70px;width:70px;box-sizing:border-box;'],
                         '#default_value' => $priceType,
-                        //'#required' => TRUE,
                         '#ajax' => [
                             'callback' => [$this, 'put_price'],
                             'wrapper' => 'v' . $n,
@@ -562,7 +586,7 @@ class Quotation extends FormBase {
                     '#type' => 'textfield',
                     '#size' => 8,
                     '#maxlength' => 30,
-                    '#attributes' => ['placeholder' => $this->t('units'), 'class' => ['amount']],
+                    '#attributes' => ['placeholder' => $this->t('units'), 'class' => ['amount'], 'style' => 'max-width:70px;width:70px;box-sizing:border-box;'],
                     '#default_value' => $d->unit,
                     '#required' => true,
                 ];
@@ -572,7 +596,7 @@ class Quotation extends FormBase {
                     '#size' => 12,
                     '#maxlength' => 250,
                     '#default_value' => isset($sellPrice) ? $sellPrice : $d->value,
-                    '#attributes' => ['placeholder' => $this->t('price'), 'class' => ['amount']],
+                    '#attributes' => ['placeholder' => $this->t('price'), 'class' => ['amount'], 'style' => 'max-width:90px;width:90px;box-sizing:border-box;'],
                     '#disabled' => $disabled,
                     '#prefix' => "<div class='cell' id='v$n'>",
                     '#suffix' => '</div>',
@@ -592,7 +616,7 @@ class Quotation extends FormBase {
                     '#size' => 12,
                     '#maxlength' => 250,
                     '#default_value' => $total,
-                    '#attributes' => ['placeholder' => $this->t('line total'), 'readonly' => 'readonly', 'class' => ['amount', 'right']],
+                    '#attributes' => ['placeholder' => $this->t('line total'), 'readonly' => 'readonly', 'class' => ['amount', 'right'], 'style' => 'max-width:90px;width:90px;box-sizing:border-box;'],
                 ];
                 $form['delete'] = [
                     '#id' => 'del-' . $n,
@@ -746,7 +770,7 @@ class Quotation extends FormBase {
                 '#size' => 40,
                 '#maxlength' => 255,
                 '#field_prefix' => "<span class='s-s-badge'>" . $z . "</span>",
-                '#attributes' => ['placeholder' => $this->t('item'),'class' => ['expand']],
+                '#attributes' => ['placeholder' => $this->t('item'), 'class' => ['expand'], 'style' => 'max-width:100%;width:100%;box-sizing:border-box;'],
                 '#autocomplete_route_name' => 'ek.look_up_item_ajax',
             ];
             if ($this->moduleHandler->moduleExists('ek_products')) {
@@ -769,7 +793,7 @@ class Quotation extends FormBase {
                     '#type' => 'select',
                     '#size' => 1,
                     '#options' => $prices_options,
-                    '#attributes' => ['class' => ['amount']],
+                    '#attributes' => ['class' => ['amount'], 'style' => 'max-width:70px;width:70px;box-sizing:border-box;'],
                     '#ajax' => [
                         'callback' => [$this, 'put_price'],
                         'wrapper' => 'v' . $n,
@@ -783,7 +807,7 @@ class Quotation extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 8,
                 '#maxlength' => 30,
-                '#attributes' => ['placeholder' => $this->t('units'), 'class' => ['amount']],
+                '#attributes' => ['placeholder' => $this->t('units'), 'class' => ['amount'], 'style' => 'max-width:70px;width:70px;box-sizing:border-box;'],
                 '#required' => true,
             ];
             $form['value'] = [
@@ -792,7 +816,7 @@ class Quotation extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => isset($sellPrice) ? $sellPrice : 0,
-                '#attributes' => ['placeholder' => $this->t('price'), 'class' => ['amount']],
+                '#attributes' => ['placeholder' => $this->t('price'), 'class' => ['amount'], 'style' => 'max-width:90px;width:90px;box-sizing:border-box;'],
                 '#disabled' => $disabled,
                 '#prefix' => "<div class='cell' id='v$n'>",
                 '#suffix' => '</div>',
@@ -803,6 +827,7 @@ class Quotation extends FormBase {
                 '#attributes' => [
                     'title' => $this->t('tax include'),
                     'class' => ['amount'],
+                    'style' => 'box-sizing:border-box;'
                 ],
             ];
             $form['total'] = [
@@ -810,7 +835,7 @@ class Quotation extends FormBase {
                 '#type' => 'textfield',
                 '#size' => 12,
                 '#maxlength' => 250,
-                '#attributes' => ['placeholder' => $this->t('line total'), 'readonly' => 'readonly', 'class' => ['amount', 'right']],
+                '#attributes' => ['placeholder' => $this->t('line total'), 'readonly' => 'readonly', 'class' => ['amount', 'right'], 'style' => 'max-width:90px;width:90px;box-sizing:border-box;'],
             ];
             $form['delete'] = [
                 '#type' => 'hidden',
@@ -957,7 +982,7 @@ class Quotation extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => isset($grandtotal) ? number_format($grandtotal, 2) : 0,
-                '#attributes' => ['placeholder' => $this->t('total'), 'readonly' => 'readonly', 'class' => ['amount', 'right']],
+                '#attributes' => ['placeholder' => $this->t('total'), 'readonly' => 'readonly', 'class' => ['amount', 'right'], 'style' => 'max-width:90px;width:90px;box-sizing:border-box;'],
             ];
             $form['delete'] = ['#item' => "",];
             $form['weight'] = ['#item' => "",];
@@ -1018,7 +1043,7 @@ class Quotation extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => number_format($grandtotal * $incoterm_rate / 100, 2),
-                '#attributes' => ['placeholder' => $this->t('incoterm'), 'readonly' => 'readonly', 'class' => ['amount', 'right']],
+                '#attributes' => ['placeholder' => $this->t('incoterm'), 'readonly' => 'readonly', 'class' => ['amount', 'right'], 'style' => 'max-width:90px;width:90px;box-sizing:border-box;'],
             ];
             $form['delete'] = ['#type' => 'item'];
             $form['weight'] = ['#type' => 'item'];
@@ -1074,7 +1099,7 @@ class Quotation extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => number_format($taxamount, 2),
-                '#attributes' => ['placeholder' => $this->t('tax'), 'readonly' => 'readonly', 'class' => ['amount', 'right']],
+                '#attributes' => ['placeholder' => $this->t('tax'), 'readonly' => 'readonly', 'class' => ['amount', 'right'], 'style' => 'max-width:90px;width:90px;box-sizing:border-box;'],
             ];
             $form['delete'] = ['#type' => 'item'];
             $form['weight'] = ['#type' => 'item'];
@@ -1128,7 +1153,7 @@ class Quotation extends FormBase {
                 '#size' => 12,
                 '#maxlength' => 250,
                 '#default_value' => number_format($grandtotal + ($grandtotal * $incoterm_rate / 100) + $taxamount, 2),
-                '#attributes' => ['placeholder' => $this->t('total quotation'), 'readonly' => 'readonly', 'class' => ['amount', 'right']],
+                '#attributes' => ['placeholder' => $this->t('total quotation'), 'readonly' => 'readonly', 'class' => ['amount', 'right'], 'style' => 'max-width:90px;width:90px;box-sizing:border-box;'],
             ];
             $form['delete'] = ['#type' => 'item'];
             $form['weight'] = ['#type' => 'item'];

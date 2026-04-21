@@ -48,7 +48,7 @@
     display : table-cell;
     vertical-align: top;
     float: left;
-    padding-left: 30px;
+    padding-left: 1px;
 
 }
 .cellcenter > div {

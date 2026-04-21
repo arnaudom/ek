@@ -2,6 +2,7 @@
 
 namespace Drupal\ek_sales;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Database\Database;
 use Drupal\Core\StreamWrapper\PublicStream;
 use Drupal\Core\File\FileExists;

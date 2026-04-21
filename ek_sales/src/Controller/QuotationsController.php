@@ -172,7 +172,7 @@ class QuotationsController extends ControllerBase {
                         ->orderBy('id', 'ASC')
                         ->execute();
             } else {
-                //search based on input fields
+                // search based on input fields
                 $param = serialize(array(
                     'coid' => $_SESSION['qfilter']['coid'],
                     'from' => $_SESSION['qfilter']['from'],
@@ -226,17 +226,19 @@ class QuotationsController extends ControllerBase {
                     ->execute();
         }
 
-        //store company data
+        // store company data
         $companies = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT id,name from {ek_company}")
                 ->fetchAllKeyed();
-        //store a. book data
+        // store a. book data
         $abook = Database::getConnection('external_db', 'external_db')
                 ->query("SELECT id,name from {ek_address_book}")
                 ->fetchAllKeyed();
         $options = [];
-
+        
         while ($r = $data->fetchObject()) {
+
+            $reference = "";
             $number = "<a title='" . $this->t('view') . "' href='"
                     . Url::fromRoute('ek_sales.quotations.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
@@ -257,15 +259,17 @@ class QuotationsController extends ControllerBase {
                     $reference .= "<div>" . \Drupal::service('project.service')->geturl($r->pcode, null, null, true) . "</div>";
                 }
             }
-
+            $reference .= $r->title;
             $value = $r->currency . ' ' . number_format($r->amount, 2);
 
-            $incoterm = explode('|', $r->incoterm);
-            if ($incoterm[0] != '0') {
-                $value .= '<br/>' . $incoterm[0] . ' ' . $r->currency . ' ' . number_format(($r->amount * $incoterm[1] / 100), 2);
-                $term = $r->amount * $incoterm[1] / 100;
-            } else {
-                $term = 0;
+            if($r->incoterm != null) {
+                $incoterm = explode('|', $r->incoterm);
+                if ($incoterm[0] != '0') {
+                    $value .= '<br/>' . $incoterm[0] . ' ' . $r->currency . ' ' . number_format(($r->amount * $incoterm[1] / 100), 2);
+                    $term = $r->amount * $incoterm[1] / 100;
+                } else {
+                    $term = 0;
+                }
             }
 
             if ($r->tax) {
@@ -273,8 +277,8 @@ class QuotationsController extends ControllerBase {
                 $value .= '<br/>' . $tax[0] . ' ' . $r->currency . ' ' . number_format(($r->amount) * $tax[1] / 100, 2);
             }
 
-            //quotations are recorded by revision No. Each revision is kept in history
-            //only last revision is displayed
+            // quotations are recorded by revision No. Each revision is kept in history
+            // only last revision is displayed
 
             $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision";
             $revisions = Database::getConnection('external_db', 'external_db')
