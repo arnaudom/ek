@@ -1042,7 +1042,8 @@ class RecordExpense extends FormBase {
                 $tax = 0;
             }
             
-            if (strpos($form_state->getValue('bank_account'), "-")) {
+            // if (strpos($form_state->getValue('bank_account'), "-")) {
+            if (strpos($form_state->getValue('bank_account'), "-") !== false) {
                 $cash = 'Y';
                 $credit = $form_state->getValue('bank_account');
                 $provision = 0;

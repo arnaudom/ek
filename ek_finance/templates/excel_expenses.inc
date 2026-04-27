@@ -200,7 +200,7 @@ WHILE ($r = $result->fetchObject()) {
             if ($r->reconcile == '0')
                 $reco = (string) t('no');
 
-            if ($r->cash == "Y") {
+            if ($r->cash == "Y" || (strpos($r->cash, "-") !== false)) {
                 $credit = (string) t('cash');
             } else {
                 // bank account
