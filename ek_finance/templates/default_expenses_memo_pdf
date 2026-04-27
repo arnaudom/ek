@@ -63,6 +63,69 @@ class EKPDF extends TCPDF {
 
 }
 
+if (!function_exists('ek_finance_tcpdf_resolve_local_image_path')) {
+    /**
+     * Resolve a Drupal file URI to a local path compatible with TCPDF::Image().
+     *
+     * For remote/stream-wrapper URIs (e.g. s3://, private:// without local realpath),
+     * copy the stream into temporary:// and return the local temp path.
+     */
+    function ek_finance_tcpdf_resolve_local_image_path($uri, array &$tempFiles = []) {
+        if (empty($uri)) {
+            return false;
+        }
+
+        $fileSystem = \Drupal::service('file_system');
+        $realPath = $fileSystem->realpath($uri);
+        if ($realPath && file_exists($realPath)) {
+            return $realPath;
+        }
+
+        if (strpos($uri, '://') === false) {
+            return false;
+        }
+
+        $tempUri = $fileSystem->tempnam('temporary://', 'tcpdf_img_');
+        $tempPath = $fileSystem->realpath($tempUri);
+        if (!$tempPath) {
+            return false;
+        }
+
+        $in = @fopen($uri, 'rb');
+        if (!$in) {
+            @unlink($tempPath);
+            return false;
+        }
+
+        $out = @fopen($tempPath, 'wb');
+        if (!$out) {
+            fclose($in);
+            @unlink($tempPath);
+            return false;
+        }
+
+        stream_copy_to_stream($in, $out);
+        fclose($in);
+        fclose($out);
+
+        $tempFiles[] = $tempPath;
+        return $tempPath;
+    }
+}
+
+if (!function_exists('ek_finance_tcpdf_cleanup_temp_files')) {
+    /**
+     * Cleanup temporary files created for TCPDF image rendering.
+     */
+    function ek_finance_tcpdf_cleanup_temp_files(array $tempFiles) {
+        foreach ($tempFiles as $tempFile) {
+            if ($tempFile && file_exists($tempFile)) {
+                @unlink($tempFile);
+            }
+        }
+    }
+}
+
 // create new PDF document
 $pdf = new EKPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
@@ -368,11 +431,14 @@ if ($auth[0] == 3) {
 }
 
 //SIGNATURE============================================================ 
+$tempFiles = [];
 if ($signature == 1) {
     $pdf->Cell(100);
     if (isset($company->sign)) {
-        $sign = \Drupal::service('file_system')->realpath($company->sign);
-        $pdf->Image($sign, 20, 210, 50);
+        $sign = ek_finance_tcpdf_resolve_local_image_path($company->sign, $tempFiles);
+        if ($sign) {
+            $pdf->Image($sign, 20, 210, 50);
+        }
     }
 }
 
@@ -382,19 +448,25 @@ if ($signature == 1) {
 /**/
 
 while ($d = $documents->fetchObject()) {
-    $realPath = \Drupal::service('file_system')->realpath($d->uri);
-    if ($realPath && file_exists($realPath)) {
-        $pdf->AddPage('P','A4');
-        $info = getimagesize($realPath);
-        $h = $info[1] ;
-        $w = $info[0] ;
-        $r = 150/$w;
-        $parts = explode('/', $d->uri);
-        $parts = array_reverse($parts);
-        $pdf->Cell(100, 5, $parts[0], 0, 1);        
-        $pdf->Image($realPath, 15, 40, 150, $h*$r);
+    $imagePath = ek_finance_tcpdf_resolve_local_image_path($d->uri, $tempFiles);
 
-    } else {
+    if ($imagePath) {
+        $info = @getimagesize($imagePath);
+        if ($info && !empty($info[0]) && !empty($info[1])) {
+            $h = $info[1];
+            $w = $info[0];
+            $r = 150 / $w;
+            $parts = explode('/', $d->uri);
+            $parts = array_reverse($parts);
+
+            $pdf->AddPage('P', 'A4');
+            $pdf->Cell(100, 5, $parts[0], 0, 1);
+            $pdf->Image($imagePath, 15, 40, 150, $h * $r);
+            continue;
+        }
+    }
+
+    {
         $pdf->SetFont('helvetica', '', 10);
         $pdf->Cell(50, 5, t('Attachment') . ': ', 0, 0);
         $pdf->SetFont('helvetica', '', 8);
@@ -404,3 +476,5 @@ while ($d = $documents->fetchObject()) {
         
     }
 }
+
+ek_finance_tcpdf_cleanup_temp_files($tempFiles);

@@ -901,10 +901,6 @@ class RecordExpense extends FormBase {
                 $currency = $data[0];
             } else {
                 // bank account
-                /*$query = "SELECT currency from {ek_bank_accounts} where id=:id ";
-                $currency = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $form_state->getValue('bank_account')))
-                        ->fetchField();*/
                  $query = Database::getConnection('external_db', 'external_db')
                     ->select('ek_bank_accounts', 'ba')
                     ->fields('ba', ['currency'])
@@ -923,10 +919,7 @@ class RecordExpense extends FormBase {
         // verify project ref
         if (!null == $form_state->getValue('pcode') && $form_state->getValue('pcode') != 'n/a') {
             $p = explode(' ', $form_state->getValue('pcode'));
-            //$query = "SELECT id FROM {ek_project} WHERE pcode = :p ";
-            /*$data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, [':p' => $p[1]])
-                    ->fetchField();*/
+            
             $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_project', 'p')
                 ->fields('p', ['id'])
