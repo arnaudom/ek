@@ -38,21 +38,23 @@ class ProjectMessagesBlock extends BlockBase {
             $path = \Drupal::service('path.current')->getPath();
             $parts = explode('/', $path);
             $id = array_pop($parts);
-            $query = "SELECT pcode FROM {ek_project} WHERE id=:id";
-            $pcode = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':id' => $id))->fetchField();
 
-            $query = "SELECT m.id,`subject`,`stamp`,`from_uid`,`to`,`text` "
-                    . "FROM {ek_messaging} m "
-                    . "INNER JOIN {ek_messaging_text} t ON m.id=t.id "
-                    . "WHERE text like :text order by m.id";
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_project', 'p');
+            $query->fields('p', ['pcode']);
+            $query->condition('id', $id, '=');
+            $pcode = $query->execute()->fetchField();              
 
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query, array(':text' => '%' . $pcode . '%'));
+            $query = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_messaging', 'm');
+            $query->fields('m', ['id', 'subject', 'stamp', 'from_uid', 'to']);
+            $query->condition('subject', '%' . $pcode . '%', 'LIKE');
+            $Obj = $query->execute();
+
 
             $list = '<ul class="projectMessagesList">';
 
-            while ($d = $data->fetchObject()) {
+            while ($d = $Obj->fetchObject()) {
                 $to = explode(',', $d->to);
                 if (in_array(\Drupal::currentUser()->id(), $to) || $d->from_uid == \Drupal::currentUser()->id()) {
                     $from = User::load($d->from_uid);
