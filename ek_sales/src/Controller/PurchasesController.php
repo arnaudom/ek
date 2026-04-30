@@ -306,7 +306,11 @@ class PurchasesController extends ControllerBase {
                 $reference = $supplier;
             }
             if ($r->uri <> '') {
-                $attachment = "<div><a class='blue' href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($r->uri) . "' target='_blank'>" . $this->t('Attachment') . "</a></div>";
+                $ftitle = basename($r->uri,"/");
+                $ext = pathinfo($ftitle, PATHINFO_EXTENSION).  "_doc_list";
+                $ico = '<p class="smallico icon_doc_list '. $ext . '"></p>';
+                $furl = \Drupal::service('file_url_generator')->generateAbsoluteString($r->uri);
+                $attachment = "<div><a class='blue' title='".$ftitle."' href='" . $furl . "' target='_blank'>" . $ico . "</a></div>";
                 $reference .= $attachment;
             }
 
@@ -530,6 +534,7 @@ class PurchasesController extends ControllerBase {
                     'ek_sales/ek_sales_css',
                     'ek_sales/ek_sales.docList', 
                     'ek_admin/ek_admin_css', 
+                    'ek_admin/classic_doc',
                     'core/drupal.ajax'],
             ],
         ];
