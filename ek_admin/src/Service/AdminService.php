@@ -58,4 +58,79 @@ class AdminService implements AdminServiceInterface {
         return $data;
 
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUser($uid = null) {
+
+        $core = Database::getConnection();
+        $user = filter_var($uid, FILTER_VALIDATE_INT) ? (int) $uid : null;
+
+        $query = $core->select('users_field_data', 'u');
+        $query->fields('u', ['uid', 'langcode', 'preferred_langcode', 'name', 'mail', 'timezone', 'status']);
+
+        if ($user !== null) {
+            $query->condition('uid', $user);
+        }
+
+        $result = $query->execute();
+        $users = [];
+
+        while ($r = $result->fetchObject()) {
+            $users[(int) $r->uid] = [
+                'uid' => (int) $r->uid,
+                'name' => trim((string) $r->name),
+                'mail' => (string) $r->mail,
+                'status' => (int) $r->status,
+                'langcode' => (string) $r->langcode,
+                'preferred_langcode' => (string) $r->preferred_langcode,
+                'timezone' => (string) $r->timezone,
+                'roles' => [],
+                'company_access' => [],
+                'country_access' => [],
+            ];
+        }
+
+        if (!$users) {
+            return [];
+        }
+
+        $uids = array_keys($users);
+
+        $roles_query = $core->select('user__roles', 'r');
+        $roles_query->fields('r', ['entity_id', 'roles_target_id']);
+        $roles_query->condition('entity_id', $uids, 'IN');
+        $roles = $roles_query->execute();
+
+        while ($role = $roles->fetchObject()) {
+            $rid = (int) $role->entity_id;
+            if (isset($users[$rid])) {
+                $users[$rid]['roles'][] = (string) $role->roles_target_id;
+            }
+        }
+
+        foreach ($users as $id => &$item) {
+            $company_list = AccessCheck::CompanyListByUid($id);
+            $country_list = AccessCheck::CountryListByUid($id);
+
+            $item['company_access'] = [];
+            foreach ($company_list as $cid => $name) {
+                $item['company_access'][] = [
+                    'id' => (int) $cid,
+                    'name' => trim((string) $name),
+                ];
+            }
+
+            $item['country_access'] = [];
+            foreach ($country_list as $cid => $name) {
+                $item['country_access'][] = [
+                    'id' => (int) $cid,
+                    'name' => trim((string) $name),
+                ];
+            }
+        }
+
+        return array_values($users);
+    }
 }
