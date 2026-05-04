@@ -17,6 +17,7 @@ namespace Drupal\ek_sales\Form;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Database\Database;
 use Drupal\Core\File\FileSystemInterface;
+use \Drupal\Core\File\FileExists;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -204,7 +205,7 @@ class UploadForm extends FormBase {
                 $validators,
                 FALSE,
                 $delta,
-                FileSystemInterface::EXISTS_RENAME
+                FileExists::Rename
             );
 
             if ($file) {
@@ -267,7 +268,7 @@ class UploadForm extends FormBase {
                     $moved = \Drupal::service('file.repository')->move(
                         $file,
                         $dir,
-                        FileSystemInterface::EXISTS_RENAME
+                        FileExists::Rename
                     );
 
                     if ($moved) {
