@@ -28,4 +28,15 @@ interface AdminServiceInterface {
   */
   public function getUser($uid = null);
 
+ /**
+  * Get user id-name map with roles and company/country accesses.
+  *
+  * @param mixed $uid
+  *   User id or null.
+  *
+  * @return array
+  *   List of users with uid, name, roles, company_access and country_access.
+  */
+  public function getUserAccessMap($uid = null);
+
 }
