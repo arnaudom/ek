@@ -12,3 +12,12 @@ services:
     arguments:
       - '@database'
       - '@ek_messaging.encryption'
+
+  # Messaging API service for inbox/read/send operations.
+  ek_messaging.messaging_api:
+    class: Drupal\ek_messaging\Service\MessagingApiService
+    arguments:
+      - '@logger.factory'
+      - '@ek_messaging.message_registration'
+      - '@ek_messaging.encryption'
+      - '@plugin.manager.mail'
