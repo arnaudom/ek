@@ -124,6 +124,45 @@ class TaskNotificationService {
   }
 
   /**
+   * Return a human-readable list of notification labels for a bitmask.
+   *
+   * @param int $bitmask
+   *   The notification bitmask.
+   *
+   * @return string
+   *   Comma-separated notification labels or "Never" if none selected.
+   */
+  public static function formatNotifyBitmask(int $bitmask): string {
+    $labels = [];
+    foreach (self::getNotificationStatusLabels() as $mask => $label) {
+      if ($bitmask & $mask) {
+        $labels[] = $label;
+      }
+    }
+
+    return empty($labels) ? t('Never') : implode(', ', $labels);
+  }
+
+  /**
+   * Returns notification labels used for display in lists.
+   *
+   * @return array
+   *   Array of notification labels keyed by bitmask constant.
+   */
+  public static function getNotificationStatusLabels(): array {
+    return [
+      self::NOTIFY_DAILY => t('Daily'),
+      self::NOTIFY_WEEKLY => t('Weekly'),
+      self::NOTIFY_MONTHLY => t('Monthly'),
+      self::NOTIFY_5_DAYS_BEFORE => t('5 days before deadline'),
+      self::NOTIFY_3_DAYS_BEFORE => t('3 days before deadline'),
+      self::NOTIFY_1_DAY_BEFORE => t('1 day before deadline'),
+      self::NOTIFY_ON_OVERDUE => t('On overdue'),
+      self::NOTIFY_ON_COMPLETE => t('On complete'),
+    ];
+  }
+
+  /**
    * Process all task notifications.
    *
    * @param \Drupal\ek_admin\GlobalSettings $settings
