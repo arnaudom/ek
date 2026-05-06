@@ -14,6 +14,7 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Component\Serialization\Json;
+use Drupal\ek_admin\Service\TaskNotificationService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -1299,16 +1300,6 @@ class PurchasesController extends ControllerBase {
 
             $result = $query->execute();
 
-            $notify = array(
-                '0' => $this->t('Never'),
-                '5' => $this->t('Daily'),
-                '1' => $this->t('Weekly'),
-                '6' => $this->t('Monthly'),
-                '2' => $this->t('5 days before deadline'),
-                '3' => $this->t('3 days before dealine'),
-                '4' => $this->t('1 day before dealine'),
-            );
-
             while ($r = $result->fetchObject()) {
                 if ($r->end < $stamp) {
                     $expired = $this->t('yes');
@@ -1370,7 +1361,7 @@ class PurchasesController extends ControllerBase {
                     'expired' => $expired,
                     'rate' => ['data' => ['#markup' => "<meter title='" . $r->completion_rate . "%'  value=" . $r->completion_rate . " max=100>". $r->completion_rate." %</meter>"]],
                     'who' => $who,
-                    'notify' => $notify[$r->notify],
+                    'notify' => TaskNotificationService::formatNotifyBitmask((int) $r->notify),
                     'operations' => ['data' => ['#type' => 'operations','#links' => $ops,]],
                 ];
             }

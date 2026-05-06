@@ -98,11 +98,12 @@ class SalesService implements SalesServiceInterface {
 
             // Format results
             $inv = [];
+            $stat = [0 => 'unpaid',1 => 'paid',2 => 'partially paid'];
             foreach ($results as $row) {
                 $inv[] = [
                 'serial' => $row->serial,
                 'company_id' => $row->head,
-                'status' => $row->status,
+                'status' => $row->status . " - " . $stat[$row->status],
                 'value' => $row->amount . " " . $row->currency,
                 'date' => $row->date,
                 'type' => $type[$row->type],
@@ -171,11 +172,12 @@ class SalesService implements SalesServiceInterface {
 
             // Format results
             $pur = [];
+            $stat = [0 => 'unpaid',1 => 'paid',2 => 'partially paid'];
             foreach ($results as $row) {
                 $pur[] = [
                 'serial' => $row->serial,
                 'company_id' => $row->head,
-                'status' => $row->status,
+                'status' => $row->status . " - " . $stat[$row->status],,
                 'value' => $row->amount . " " . $row->currency,
                 'date' => $row->date,
                 'type' => $type[$row->type],
