@@ -202,6 +202,36 @@ interface ProjectServiceInterface {
  */
   public function getProjectFinance($project_code);
 
+/**
+ * Download a project document by document ID.
+ *
+ * @param int $document_id
+ *   The document ID.
+ *
+ * @return array
+ *   Array with 'success' boolean and 'file' or 'error' key.
+ */
+  public function downloadProjectDocument($document_id);
+
+/**
+ * Upload a project document.
+ *
+ * @param string $project_code
+ *   The project code.
+ * @param array $file_data
+ *   The uploaded file data with 'name', 'tmp_name', 'size', 'type'.
+ * @param string $folder
+ *   The folder type (fi for finance, com for commercial).
+ * @param string|null $sub_folder
+ *   Optional sub folder or tag.
+ * @param string|null $comment
+ *   Optional comment.
+ *
+ * @return array
+ *   Result array with success status, document ID, or errors.
+ */
+  public function uploadProjectDocument($project_code, $file_data, $folder, $sub_folder = null, $comment = null);
+
 }  
   
   

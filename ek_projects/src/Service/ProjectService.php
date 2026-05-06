@@ -9,6 +9,11 @@ use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\user\Entity\User;
 use Symfony\Component\HttpFoundation\Response;
 use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\file\Entity\File;
+use Drupal\file\FileInterface;
+use Drupal\Core\File\FileSystemInterface;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Class ProjectService.
@@ -789,6 +794,180 @@ class ProjectService implements ProjectServiceInterface {
                 '@message' => $e->getMessage(),
             ]);
             return ['data' => null];
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function downloadProjectDocument($document_id) {
+        try {
+            $query = $this->extdb->select('ek_project_documents', 'd')
+                ->fields('d', ['id', 'pcode', 'filename', 'uri', 'fid'])
+                ->condition('d.id', $document_id);
+            $doc = $query->execute()->fetchObject();
+
+            if (!$doc) {
+                return ['success' => FALSE, 'error' => 'Document not found'];
+            }
+
+            if ($doc->fid == '0') {
+                return ['success' => FALSE, 'error' => 'File has been deleted'];
+            }
+
+            if (!$this->validate_file_access($document_id)) {
+                return ['success' => FALSE, 'error' => 'Access denied to this document'];
+            }
+
+            $realpath = \Drupal::service('file_system')->realpath($doc->uri);
+            if (!$realpath || !file_exists($realpath)) {
+                return ['success' => FALSE, 'error' => 'File not found on disk'];
+            }
+
+            return [
+                'success' => TRUE,
+                'file' => [
+                    'uri' => $doc->uri,
+                    'realpath' => $realpath,
+                    'filename' => $doc->filename,
+                    'pcode' => $doc->pcode,
+                ],
+            ];
+        } catch (\Exception $e) {
+            $this->logger->error('Error downloading project document: @message', [
+                '@message' => $e->getMessage(),
+            ]);
+            return ['success' => FALSE, 'error' => 'Internal error retrieving document'];
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function uploadProjectDocument($project_code, $file_data, $folder, $sub_folder = null, $comment = null) {
+        try {
+            // Validate project exists
+            $query = $this->extdb->select('ek_project', 'p')
+                ->fields('p', ['id', 'pcode'])
+                ->condition('p.pcode', $project_code);
+            $project = $query->execute()->fetchObject();
+
+            if (!$project) {
+                return ['success' => FALSE, 'errors' => ['project_code' => 'Project not found']];
+            }
+
+            // Validate folder type
+            $allowed_folders = ['fi', 'com'];
+            if (!in_array($folder, $allowed_folders)) {
+                return ['success' => FALSE, 'errors' => ['folder' => 'Invalid folder type. Use "fi" or "com"']];
+            }
+
+            // Validate file data
+            if (empty($file_data['tmp_name']) || !file_exists($file_data['tmp_name'])) {
+                return ['success' => FALSE, 'errors' => ['file' => 'No valid file provided']];
+            }
+
+            // Validate sub_folder if provided
+            if (!empty($sub_folder) && !preg_match('/^[a-zA-Z0-9 _-]+$/', $sub_folder)) {
+                return ['success' => FALSE, 'errors' => ['sub_folder' => 'Sub-folder contains invalid characters']];
+            }
+
+            // Build destination directory
+            $pcode_parts = explode('-', $project_code);
+            $pcode_reversed = array_reverse($pcode_parts);
+            $dir = $pcode_reversed[0];
+            $destination = "private://projects/documents/{$dir}";
+
+            /** @var \Drupal\Core\File\FileSystemInterface $file_system */
+            $file_system = \Drupal::service('file_system');
+            $file_system->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+
+            // Move uploaded file to destination
+            $filename = $file_data['name'];
+            $destination_uri = $destination . '/' . $filename;
+
+            // Handle duplicate filenames
+            $counter = 0;
+            $base_name = pathinfo($filename, PATHINFO_FILENAME);
+            $extension = pathinfo($filename, PATHINFO_EXTENSION);
+            while (file_exists($file_system->realpath($destination_uri))) {
+                $counter++;
+                $filename = $base_name . '_' . $counter . '.' . $extension;
+                $destination_uri = $destination . '/' . $filename;
+            }
+
+            $uri = $file_system->copy($file_data['tmp_name'], $destination_uri, FileSystemInterface::EXISTS_REPLACE);
+
+            if (!$uri) {
+                return ['success' => FALSE, 'errors' => ['file' => 'Failed to save file']];
+            }
+
+            // Create file managed entry
+            $file = File::create([
+                'uri' => $uri,
+                'uid' => \Drupal::currentUser()->id(),
+                'filename' => $filename,
+                'filesize' => filesize($file_data['tmp_name']),
+                'filemime' => $file_data['type'] ?? mime_content_type($file_data['tmp_name']),
+                'status' => FileInterface::STATUS_PERMANENT,
+            ]);
+            $file->save();
+
+            /** @var \Drupal\file\FileUsage\FileUsageInterface $file_usage */
+            $file_usage = \Drupal::service('file.usage');
+            $file_usage->add($file, 'ek_projects', 'project_document', $file->id());
+
+            // Insert record into ek_project_documents
+            $fields = [
+                'pcode' => $project_code,
+                'filename' => $filename,
+                'uri' => $uri,
+                'folder' => $folder,
+                'sub_folder' => $sub_folder,
+                'comment' => $comment,
+                'date' => time(),
+                'size' => $file->getSize(),
+            ];
+
+            $document_id = $this->extdb->insert('ek_project_documents')
+                ->fields($fields)
+                ->execute();
+
+            // Log the action
+            $log = $project_code . '|' . \Drupal::currentUser()->id() . '|upload|' . $filename;
+            $this->logger->notice($log);
+
+            // Track the action
+            $this->extdb->insert('ek_project_tracker')
+                ->fields([
+                    'pcode' => $project_code,
+                    'uid' => \Drupal::currentUser()->id(),
+                    'stamp' => time(),
+                    'action' => 'upload ' . $filename,
+                ])
+                ->execute();
+
+            // Notify followers
+            $param = serialize([
+                'id' => $project->id,
+                'field' => 'File attachment',
+                'value' => $filename,
+                'pcode' => $project_code,
+            ]);
+            $this->notify_user($param);
+
+            return [
+                'success' => TRUE,
+                'document_id' => (int) $document_id,
+                'filename' => $filename,
+                'message' => 'Document uploaded successfully',
+            ];
+
+        } catch (\Exception $e) {
+            $this->logger->error('Error uploading project document: @message', [
+                '@message' => $e->getMessage(),
+            ]);
+            return ['success' => FALSE, 'errors' => ['file' => 'Internal error uploading document']];
         }
     }
 
