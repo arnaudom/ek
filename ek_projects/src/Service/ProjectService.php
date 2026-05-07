@@ -731,7 +731,7 @@ class ProjectService implements ProjectServiceInterface {
     public function getProjectDocument($project_code) {
         try {
             $query = $this->extdb->select('ek_project_documents', 'p')
-                ->fields('p', ['pcode', 'filename', 'folder', 'sub_folder', 'comment', 'date'])
+                ->fields('p', ['id','pcode', 'filename', 'folder', 'sub_folder', 'comment', 'date'])
                 ->condition('p.pcode', $project_code, '=');
             
             $results = $query->execute()->fetchAll();
@@ -740,6 +740,7 @@ class ProjectService implements ProjectServiceInterface {
             $projects = [];
             foreach ($results as $row) {
                 $projects[] = [
+                    'file_id'=> $row->id,
                     'file_name' => $row->filename,
                     'folder' => $fold[$row->folder],
                     'tag' => $row->sub_folder,
