@@ -79,10 +79,12 @@ interface ProjectServiceInterface {
   * Validation access by file from user
   * @param int  $id
   *   file id
+  * @param int|null $uid
+  *   user id provided if not current user to be checked
   * @return bolean 
   *   true or false
   */
-  public function validate_file_access($id);
+  public function validate_file_access($id, $uid = null);
     
   
  /**

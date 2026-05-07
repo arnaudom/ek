@@ -241,8 +241,12 @@ class ProjectService implements ProjectServiceInterface {
     /**
      * {@inheritdoc}
      */
-    public function validate_file_access($id) {
+    public function validate_file_access($id, $uid = null) {
         
+        if ($uid == null) {
+            $uid = \Drupal::currentUser()->id();
+        }
+
         $query = $this->extdb->select('ek_project_settings', 'p');
         $query->fields('p', ['settings']);
         $query->condition('coid', 0);
@@ -258,7 +262,7 @@ class ProjectService implements ProjectServiceInterface {
 
         // if settings are set to block all at page level, and page is blocked, return False
         
-        if (isset($s['access_level']) && $s['access_level'] == 1 && !self::validate_access($data->id)) {
+        if (isset($s['access_level']) && $s['access_level'] == 1 && !self::validate_access($data->id, $uid)) {
             return false;
         }
 
@@ -267,8 +271,6 @@ class ProjectService implements ProjectServiceInterface {
         $query->condition('id', $data->cid);
         $a = $query->execute()->fetchField();
         $access = $a !== null ? explode(',', unserialize($a)) : [];
-
-        $uid = \Drupal::currentUser()->id();
 
         if ($data->share == '0') {
             // no special restriction.
@@ -816,7 +818,7 @@ class ProjectService implements ProjectServiceInterface {
             }
 
             if (!$this->validate_file_access($document_id)) {
-                return ['success' => FALSE, 'error' => 'Access denied to this document'];
+                return ['success' => FALSE, 'error' => 'User access denied to this document'];
             }
 
             $realpath = \Drupal::service('file_system')->realpath($doc->uri);
