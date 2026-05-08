@@ -36,3 +36,7 @@ services:
   ek_admin.task_api:
     class: Drupal\ek_admin\Service\TaskApiService
     arguments: ['@logger.factory']
+
+  ek_admin.webhook:
+    class: Drupal\ek_admin\Service\WebhookService
+    arguments: ['@queue', '@http_client', '@logger.factory']

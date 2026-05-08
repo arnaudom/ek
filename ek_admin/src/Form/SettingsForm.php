@@ -179,6 +179,62 @@ class SettingsForm extends FormBase  {
                 '#default_value' => $settings->get('hr_tasks'),
         ];
         
+        // Webhook settings section.
+        $form['webhook'] = [
+            '#type' => 'details',
+            '#title' => $this->t('Webhook'),
+            '#open' => false,
+            '#description' => $this->t('Configure external webhook notifications. Webhook events are queued and processed via cron. Only events matching configured user IDs will trigger a webhook call.'),
+        ];
+        
+        $form['webhook']['webhook_enabled'] = [
+            '#type' => 'checkbox',
+            '#title' => $this->t('Enable webhooks'),
+            '#default_value' => $settings->get('webhook_enabled'),
+            '#description' => $this->t('Check to enable webhook event dispatching.'),
+        ];
+        
+        $form['webhook']['webhook_url'] = [
+            '#type' => 'textfield',
+            '#size' => 60,
+            '#maxlength' => 255,
+            '#default_value' => $settings->get('webhook_url'),
+            '#attributes' => array('placeholder' => $this->t('https://example.com/webhook/endpoint')),
+            '#description' => $this->t('The URL endpoint where webhook POST requests will be sent.'),
+            '#states' => [
+                'visible' => [
+                    ':input[name="webhook_enabled"]' => ['checked' => true],
+                ],
+            ],
+        ];
+        
+        $form['webhook']['webhook_secret'] = [
+            '#type' => 'password',
+            '#size' => 40,
+            '#maxlength' => 128,
+            '#default_value' => $settings->get('webhook_secret'),
+            '#description' => $this->t('The secret key used for HMAC-SHA256 signature generation (X-Hub-Signature header). Leave blank to keep existing value.'),
+            '#states' => [
+                'visible' => [
+                    ':input[name="webhook_enabled"]' => ['checked' => true],
+                ],
+            ],
+        ];
+        
+        $form['webhook']['webhook_uids'] = [
+            '#type' => 'textfield',
+            '#size' => 20,
+            '#maxlength' => 50,
+            '#default_value' => $settings->get('webhook_uids'),
+            '#attributes' => array('placeholder' => $this->t('2, 3, 7')),
+            '#description' => $this->t('Comma-separated user IDs that will trigger webhook events. Only events targeting these users will be sent.'),
+            '#states' => [
+                'visible' => [
+                    ':input[name="webhook_enabled"]' => ['checked' => true],
+                ],
+            ],
+        ];
+
         $form['actions'] = ['#type' => 'actions'];
         $form['actions']['submit'] = ['#type' => 'submit', '#value' => $this->t('Record')];
 
@@ -224,6 +280,16 @@ class SettingsForm extends FormBase  {
         $settings->set('hr_tasks', $form_state->getValue('hr_tasks'));
         $settings->set('sale_status', $form_state->getValue('sale_status'));
         $settings->set('project_status', $form_state->getValue('project_status'));
+
+        // Webhook settings.
+        $settings->set('webhook_enabled', $form_state->getValue('webhook_enabled'));
+        $settings->set('webhook_url', $form_state->getValue('webhook_url'));
+        // Only update secret if a new value was provided (not empty).
+        $secretValue = trim($form_state->getValue('webhook_secret'));
+        if ($secretValue !== '') {
+            $settings->set('webhook_secret', $secretValue);
+        }
+        $settings->set('webhook_uids', $form_state->getValue('webhook_uids'));
         
         $settings->save();
         

@@ -19,7 +19,7 @@ use Drupal\Core\Database\Database;
       protected $settings;
 
       public function __construct($coid = null)       {
-        $this->coid = $coid;
+        $this->coid = ($coid == null) ? 0 : $coid;
         $external = Database::getConnectionInfo('external_db');
         $this->settings = [];
         if (!empty($external)) {
