@@ -135,7 +135,7 @@ class WebhookService implements WebhookServiceInterface {
 
         try {
             $payloadJson = json_encode($item['payload']);
-            $url = isset($item['route']) ? $url .  "/" . $item['route']: $url;
+            $url = isset($item['payload']['route']) ? $url .  "/" . $item['payload']['route']: $url;
             $signature = hash_hmac('sha256', $payloadJson, $secret);
 
             $response = $this->httpClient->post($url, [
@@ -161,18 +161,20 @@ class WebhookService implements WebhookServiceInterface {
             }
             else {
                 $this->loggerFactory->get('ek_admin_webhook')
-                    ->warning('Webhook returned non-2xx status: event=@event, status=@status', [
+                    ->warning('Webhook returned non-2xx status: event=@event, status=@status, route=@route', [
                         '@event' => $item['event'],
                         '@status' => $statusCode,
+                        '@route' => $item['payload']['route']
                     ]);
                 return FALSE;
             }
         }
         catch (RequestException $e) {
             $this->loggerFactory->get('ek_admin_webhook')
-                ->error('Webhook request failed: event=@event, error=@error', [
+                ->error('Webhook request failed: event=@event, error=@error, route=@route', [
                     '@event' => $item['event'],
                     '@error' => $e->getMessage(),
+                    '@route' => $item['payload']['route']
                 ]);
             return FALSE;
         }
