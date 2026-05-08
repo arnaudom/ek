@@ -822,18 +822,23 @@ class ProjectService implements ProjectServiceInterface {
                 return ['success' => FALSE, 'error' => 'User access denied to this document'];
             }
 
-            $realpath = \Drupal::service('file_system')->realpath($doc->uri);
-            if (!$realpath || !file_exists($realpath)) {
-                return ['success' => FALSE, 'error' => 'File not found on disk'];
+            // Verify file is accessible via stream wrapper (works for local and remote)
+            $handle = @fopen($doc->uri, 'r');
+            if (!$handle) {
+                return ['success' => FALSE, 'error' => 'File not found or not accessible'];
             }
+            fclose($handle);
+
+            $name = \Drupal::currentUser()->getAccountName();
+            $log = t("User @u has downloaded project document @d (file id @i)", ['@u' => $name, '@d' => $doc->filename, '@i' => $document_id]);
+            $this->logger->notice($log);
 
             return [
                 'success' => TRUE,
                 'file' => [
-                    'uri' => $doc->uri,
-                    'realpath' => $realpath,
+                    'uri'      => $doc->uri,
                     'filename' => $doc->filename,
-                    'pcode' => $doc->pcode,
+                    'pcode'    => $doc->pcode,
                 ],
             ];
         } catch (\Exception $e) {
