@@ -76,8 +76,10 @@ class MessagingEmailBuilder extends EmailBuilderBase {
     $color_config = \Drupal::config("color.theme.{$theme}");
     $color_settings = $color_config->getRawData();
     $site_color = $color_settings['palette']['top'];
-    $logo = \Drupal::config('system.theme')->get('logo');
-    $site_logo = \Drupal::request()->getSchemeAndHttpHost() . $logo['url'];
+    // fix warning trying to access array on null / deprecated in drupal 11
+    // $logo = \Drupal::config('system.theme')->get('logo');
+    // $site_logo = \Drupal::request()->getSchemeAndHttpHost() . $logo['url'];
+    $site_logo = \Drupal::request()->getSchemeAndHttpHost() . theme_get_setting('logo.url');
     $stamp = date('F j, Y, g:i a');
     $options = $email->getParam('options');
     $priority = ['3' => t('low'), '2' => t('normal'), '1' => t('high')];

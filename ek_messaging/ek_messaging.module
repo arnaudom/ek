@@ -94,8 +94,10 @@ function ek_messaging_file_download($uri) {
  */
 function ek_messaging_mail($key, &$message, $params) {
     global $base_url;
-    $logo               = \Drupal::config('system.theme')->get('logo');
-    $params['options']['logo']      = $base_url . $logo['url'];
+    // fix warning trying to access array on null / deprecated in drupal 11
+    // $logo = \Drupal::config('system.theme')->get('logo');
+    // $site_logo = \Drupal::request()->getSchemeAndHttpHost() . $logo['url'];
+    $params['options']['logo']      = \Drupal::request()->getSchemeAndHttpHost() . theme_get_setting('logo.url');
     $params['options']['site']      = \Drupal::config('system.site')->get('name');
     $theme              = \Drupal::theme()->getActiveTheme()->getName();
     $color_config       = \Drupal::config("color.theme.{$theme}");

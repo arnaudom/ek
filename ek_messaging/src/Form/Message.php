@@ -265,6 +265,7 @@ class Message extends FormBase {
             }
 
             $list_ids = explode(',', rtrim($form_state->getValue('list_ids'), ','));
+            $webhook = \Drupal::service('ek_admin.webhook');
             foreach (User::loadMultiple($list_ids) as $account) {
                 if ($account->isActive()) {
                     $send = \Drupal::service('plugin.manager.mail')->mail(
@@ -279,6 +280,14 @@ class Message extends FormBase {
                         $error .= $account->getEmail() . ' ';
                     }
                 }
+
+                // init webhook per user
+                $webhook->queueWebhook($account->id(), 'message_received', [
+                    'route' => 'ek-messaging',
+                    'from_uid' => $currentuserId,
+                    'from_name' => \Drupal::currentUser()->getAccountName(),
+                    'subject' => $subject,
+                ]);
             }
 
             if ($error != '') {
