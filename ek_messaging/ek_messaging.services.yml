@@ -12,6 +12,7 @@ services:
     arguments:
       - '@database'
       - '@ek_messaging.encryption'
+      - '@ek_admin.webhook'
 
   # Messaging API service for inbox/read/send operations.
   ek_messaging.messaging_api:

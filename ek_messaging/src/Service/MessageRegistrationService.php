@@ -9,6 +9,8 @@ namespace Drupal\ek_messaging\Service;
 
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Database\Connection;
+use Drupal\ek_admin\Service\WebhookServiceInterface;
+use Drupal\user\Entity\User;
 
 /**
  * Service replacement for the procedural ek_message_register() helper.
@@ -35,12 +37,19 @@ class MessageRegistrationService {
      */
     protected $encryption;
 
+    /**
+     * @var \Drupal\ek_admin\Service\WebhookServiceInterface
+     */
+    protected $webhook;
+
     public function __construct(
         Connection $database,
-        MessageEncryptionService $encryption
+        MessageEncryptionService $encryption,
+        WebhookServiceInterface $webhook
     ) {
         $this->database = $database;
         $this->encryption = $encryption;
+        $this->webhook = $webhook;
     }
 
     /**
@@ -103,6 +112,15 @@ class MessageRegistrationService {
         Cache::invalidateTags(['ek_message_inbox']);
         Cache::invalidateTags(['config:system.menu.tools']);
 
+        // Init webhook for each recipient if webhook_data is provided.
+        if (isset($data['webhook_data']) && is_array($data['webhook_data'])) {
+            $this->initWebhooksForRecipients(
+                (int) $data['uid'],
+                $inbox ?? $data['to'],
+                $data['webhook_data']
+            );
+        }
+
         return $messageId;
     }
 
@@ -133,5 +151,45 @@ class MessageRegistrationService {
      */
     protected function getExternalDb(): Connection {
         return \Drupal\Core\Database\Database::getConnection('external_db', 'external_db');
+    }
+
+    /**
+     * Queue webhooks for each active recipient of the message.
+     *
+     * @param int $from_uid
+     *   The sender user ID.
+     * @param string $inbox
+     *   Comma-separated recipient UIDs (e.g. ",3,5,").
+     * @param array $webhook_data
+     *   Base payload data to include in each webhook.
+     */
+    protected function initWebhooksForRecipients(int $from_uid, string $inbox, array $webhook_data): void {
+        $recipientUids = $this->parseRecipients($inbox);
+        if (empty($recipientUids)) {
+            return;
+        }
+
+        foreach (User::loadMultiple($recipientUids) as $account) {
+            if ($account->isActive()) {
+                $this->webhook->queueWebhook($account->id(), 'message_received', array_merge([
+                    'route' => 'ek-messaging',
+                    'from_uid' => $from_uid,
+                ], $webhook_data));
+            }
+        }
+    }
+
+    /**
+     * Extract numeric user IDs from a comma-separated inbox string.
+     *
+     * @param string $inbox
+     *   Comma-separated UIDs, e.g. ",3,5,".
+     *
+     * @return int[]
+     *   Array of unique integer UIDs.
+     */
+    protected function parseRecipients(string $inbox): array {
+        $uids = array_filter(array_map('intval', explode(',', $inbox)));
+        return array_unique(array_filter($uids));
     }
 }

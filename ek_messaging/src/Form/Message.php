@@ -229,6 +229,10 @@ class Message extends FormBase {
             'body'     => $message['value'],  // pass raw value, not serialised
             'format'   => $message['format'],
             'priority' => $form_state->getValue('priority'),
+            'webhook_data' => [
+                'from_name' => \Drupal::currentUser()->getAccountName(),
+                'subject'   => $subject,
+            ],
         ]);
 
         // Parse body for CKEditor inline images.
@@ -265,7 +269,6 @@ class Message extends FormBase {
             }
 
             $list_ids = explode(',', rtrim($form_state->getValue('list_ids'), ','));
-            $webhook = \Drupal::service('ek_admin.webhook');
             foreach (User::loadMultiple($list_ids) as $account) {
                 if ($account->isActive()) {
                     $send = \Drupal::service('plugin.manager.mail')->mail(
@@ -280,14 +283,6 @@ class Message extends FormBase {
                         $error .= $account->getEmail() . ' ';
                     }
                 }
-
-                // init webhook per user
-                $webhook->queueWebhook($account->id(), 'message_received', [
-                    'route' => 'ek-messaging',
-                    'from_uid' => $currentuserId,
-                    'from_name' => \Drupal::currentUser()->getAccountName(),
-                    'subject' => $subject,
-                ]);
             }
 
             if ($error != '') {
