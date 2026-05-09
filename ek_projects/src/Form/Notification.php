@@ -20,6 +20,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ek_projects\Service\ProjectService;
+use Drupal\ek_messaging\Service\MessageRegistrationService;
 
 /**
  * Provides a form to send notification.
@@ -29,16 +30,26 @@ class Notification extends FormBase {
     protected $moduleHandler;
     protected $projectService;
 
-   
-    public function __construct(ModuleHandler $module_handler, ProjectService $projectService) {
+    /**
+     * @var \Drupal\ek_messaging\Service\MessageRegistrationService|null
+     */
+    protected $messageRegistration;
+
+    public function __construct(
+        ModuleHandler $module_handler,
+        ProjectService $projectService,
+        ?MessageRegistrationService $message_registration
+    ) {
         $this->moduleHandler = $module_handler;
         $this->projectService = $projectService;
+        $this->messageRegistration = $message_registration;
     }
 
     public static function create(ContainerInterface $container) {
         return new static(
-                $container->get('module_handler'),
-                $container->get('project.service')
+            $container->get('module_handler'),
+            $container->get('project.service'),
+            $container->has('ek_messaging.message_registration') ? $container->get('ek_messaging.message_registration') : null
         );
     }
 
@@ -75,7 +86,6 @@ class Notification extends FormBase {
             '#attached' => ['library' => ['ek_projects/ek_projects_autocomplete',],],
         ];
 
-
         $form['priority'] = [
             '#type' => 'radios',
             '#options' => ['3' => $this->t('low'), '2' => $this->t('normal'), '1' => $this->t('high')],
@@ -83,7 +93,6 @@ class Notification extends FormBase {
             '#default_value' => 2,
             '#attributes' => ['class' => array('container-inline')],
         ];
-
 
         $form['message'] = [
             '#type' => 'textarea',
@@ -173,9 +182,9 @@ class Notification extends FormBase {
             $addresses = $form_state->getValue('notify');
             $error = [];
             //
-            // System message record
+            // System message record (via MessageRegistrationService)
             //
-            if ($this->moduleHandler->moduleExists('ek_messaging')) {
+            if ($this->messageRegistration !== null) {
                 $inbox = ',';
                 foreach ($addresses as $key => $email) {
                     if ($email != null) {
@@ -191,20 +200,23 @@ class Notification extends FormBase {
                         . $this->t('Project ref.') . ': '
                         . $params['options']['url'];
 
-                ek_message_register(
-                        [
-                            'uid' => \Drupal::currentUser()->id(),
-                            'to' => $inbox,
-                            'to_group' => 0,
-                            'type' => 2,
-                            'status' => '',
-                            'inbox' => $inbox,
-                            'archive' => '',
-                            'subject' => $params['subject'],
-                            'body' => serialize($text),
-                            'priority' => $form_state->getValue('priority'),
-                        ]
-                );
+                $this->messageRegistration->register([
+                    'uid'      => \Drupal::currentUser()->id(),
+                    'to'       => $inbox,
+                    'to_group' => 0,
+                    'type'     => 2,
+                    'status'   => '',
+                    'inbox'    => $inbox,
+                    'archive'  => '',
+                    'subject'  => $params['subject'],
+                    'body'     => $text,   // raw string; service handles serialisation detection + encryption
+                    'format'   => 'restricted_html',
+                    'priority' => $form_state->getValue('priority'),
+                    'webhook_data' => [
+                        'from_name' => \Drupal::currentUser()->getAccountName(),
+                        'subject'   => $params['subject'],
+                    ],
+                ]);
             }
 
             //
