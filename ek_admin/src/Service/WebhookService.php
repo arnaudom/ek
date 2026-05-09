@@ -134,17 +134,24 @@ class WebhookService implements WebhookServiceInterface {
         }
 
         try {
-            $payloadJson = json_encode($item['payload']);
-            $url = isset($item['payload']['route']) ? $url .  "/" . $item['payload']['route']: $url;
+            $requestBody = [
+                'event' => $item['event'],
+                'payload' => $item['payload'],
+            ];
+            
+            // Encode the full request body to JSON
+            $payloadJson = json_encode($requestBody);
+            
+            // Generate signature using the full JSON that will be sent
             $signature = hash_hmac('sha256', $payloadJson, $secret);
+            
+            // Build URL with route if present
+            $url = isset($item['payload']['route']) ? $url . "/" . $item['payload']['route'] : $url;
 
             $response = $this->httpClient->post($url, [
-                'json' => [
-                    'event' => $item['event'],
-                    'payload' => $item['payload'],
-                ],
+                'json' => $requestBody,
                 'headers' => [
-                    'X-Hub-Signature' => 'sha256=' . $signature,
+                    'X-Webhook-Signature' => $signature,
                     'Content-Type' => 'application/json',
                 ],
                 'timeout' => 10,
