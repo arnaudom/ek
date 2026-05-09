@@ -135,7 +135,7 @@ class WebhookService implements WebhookServiceInterface {
 
         try {
             $requestBody = [
-                'event' => $item['event'],
+                'event_type' => $item['event'],
                 'payload' => $item['payload'],
             ];
             
