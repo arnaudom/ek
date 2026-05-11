@@ -978,5 +978,65 @@ class ProjectService implements ProjectServiceInterface {
             return ['success' => FALSE, 'errors' => ['file' => 'Internal error uploading document']];
         }
     }
+   /**
+     * {@inheritdoc}
+     */
+    public function toggleFollow($project_id) {
+
+        try {
+        // Use the authenticated current user (from API auth).
+            $uid = (int) \Drupal::currentUser()->id();
+            $project_id = (int) $project_id;
+
+            // Use external_db connection as per project convention.
+            $extdb = Database::getConnection('external_db', 'external_db');
+
+            $notify = $extdb->select('ek_project', 'p')
+                ->fields('p', ['notify'])
+                ->condition('id', $project_id)
+                ->execute()
+                ->fetchField();
+
+            $action = 0;
+
+            if ($notify == NULL) {
+                // No notify list yet — set to current user only.
+                $notify = (string) $uid;
+                $action = 1;
+            }
+            else {
+                $notify_list = explode(',', $notify);
+
+                if (in_array($uid, $notify_list)) {
+                // Remove user from notify list.
+                if (($key = array_search($uid, $notify_list)) !== FALSE) {
+                    unset($notify_list[$key]);
+                }
+                // action stays 0 = unfollowed
+                }
+                else {
+                // Add user to notify list.
+                $notify_list[] = $uid;
+                $action = 1; // followed
+                }
+
+                $notify = implode(',', $notify_list);
+            }
+
+            $update = $extdb->update('ek_project')
+                ->fields(['notify' => $notify])
+                ->condition('id', $project_id)
+                ->execute();
+
+            return (int) $action;
+
+        } catch (\Exception $e) {
+            $this->logger->error('Error toggle follow project: @message', [
+                '@message' => $e->getMessage(),
+            ]);
+            return ['data' => null];
+        }
+
+    }
 
 }

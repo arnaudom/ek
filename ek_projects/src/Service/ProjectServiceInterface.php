@@ -148,6 +148,15 @@ interface ProjectServiceInterface {
   */
   public function status($pcode, $status = null);
 
+ /**
+  * Calculate ratio of filled data per project
+  * @param string $project_id
+  *   project id
+  *  @return int
+  *   
+  */
+  public function toggleFollow($project_id);
+
 /**
  * Get projects by owner.
  *
